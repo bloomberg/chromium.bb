@@ -302,6 +302,13 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
     database_->Init(database_filename_);
   }
 
+  bool ContainsDownloadUrl(const std::vector<GURL>& urls,
+                           std::vector<SBPrefix>* prefix_hits) {
+    std::vector<SBPrefix> prefixes;
+    SafeBrowsingDatabase::GetDownloadUrlPrefixes(urls, &prefixes);
+    return database_->ContainsDownloadUrlPrefixes(prefixes, prefix_hits);
+  }
+
   void GetListsInfo(std::vector<SBListChunkRanges>* lists) {
     lists->clear();
     ASSERT_TRUE(database_->UpdateStarted(lists));
@@ -1174,7 +1181,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
 }
 
 // Checks database reading and writing.
-TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
+TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrlPrefixes) {
   const char kEvil1Url1[] = "www.evil1.com/download1/";
   const char kEvil1Url2[] = "www.evil1.com/download2.html";
 
@@ -1191,37 +1198,37 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   std::vector<GURL> urls(1);
 
   urls[0] = GURL(std::string("http://") + kEvil1Url1);
-  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  EXPECT_TRUE(ContainsDownloadUrl(urls, &prefix_hits));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString(kEvil1Url1), prefix_hits[0]);
 
   urls[0] = GURL(std::string("http://") + kEvil1Url2);
-  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  EXPECT_TRUE(ContainsDownloadUrl(urls, &prefix_hits));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString(kEvil1Url2), prefix_hits[0]);
 
   urls[0] = GURL(std::string("https://") + kEvil1Url2);
-  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  EXPECT_TRUE(ContainsDownloadUrl(urls, &prefix_hits));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString(kEvil1Url2), prefix_hits[0]);
 
   urls[0] = GURL(std::string("ftp://") + kEvil1Url2);
-  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  EXPECT_TRUE(ContainsDownloadUrl(urls, &prefix_hits));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString(kEvil1Url2), prefix_hits[0]);
 
   urls[0] = GURL("http://www.randomevil.com");
-  EXPECT_FALSE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  EXPECT_FALSE(ContainsDownloadUrl(urls, &prefix_hits));
 
   // Should match with query args stripped.
   urls[0] = GURL(std::string("http://") + kEvil1Url2 + "?blah");
-  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  EXPECT_TRUE(ContainsDownloadUrl(urls, &prefix_hits));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString(kEvil1Url2), prefix_hits[0]);
 
   // Should match with extra path stuff and query args stripped.
   urls[0] = GURL(std::string("http://") + kEvil1Url1 + "foo/bar?blah");
-  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  EXPECT_TRUE(ContainsDownloadUrl(urls, &prefix_hits));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString(kEvil1Url1), prefix_hits[0]);
 
@@ -1229,7 +1236,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   urls.clear();
   urls.push_back(GURL(std::string("http://") + kEvil1Url1));
   urls.push_back(GURL("http://www.randomevil.com"));
-  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  EXPECT_TRUE(ContainsDownloadUrl(urls, &prefix_hits));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString(kEvil1Url1), prefix_hits[0]);
 
@@ -1238,7 +1245,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   urls.push_back(GURL("http://www.randomevil.com"));
   urls.push_back(GURL(std::string("http://") + kEvil1Url1));
   urls.push_back(GURL("http://www.randomevil2.com"));
-  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  EXPECT_TRUE(ContainsDownloadUrl(urls, &prefix_hits));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString(kEvil1Url1), prefix_hits[0]);
 
@@ -1246,7 +1253,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   urls.clear();
   urls.push_back(GURL("http://www.randomevil.com"));
   urls.push_back(GURL(std::string("http://") + kEvil1Url1));
-  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  EXPECT_TRUE(ContainsDownloadUrl(urls, &prefix_hits));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString(kEvil1Url1), prefix_hits[0]);
 
@@ -1254,7 +1261,7 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsDownloadUrl) {
   urls.clear();
   urls.push_back(GURL(std::string("http://") + kEvil1Url1));
   urls.push_back(GURL(std::string("https://") + kEvil1Url2));
-  EXPECT_TRUE(database_->ContainsDownloadUrl(urls, &prefix_hits));
+  EXPECT_TRUE(ContainsDownloadUrl(urls, &prefix_hits));
   ASSERT_EQ(2U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString(kEvil1Url1), prefix_hits[0]);
   EXPECT_EQ(SBPrefixForString(kEvil1Url2), prefix_hits[1]);

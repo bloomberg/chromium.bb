@@ -7,14 +7,37 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 
 using content::TestBrowserThreadBundle;
+
+namespace {
+
+class TestClient : public SafeBrowsingDatabaseManager::Client {
+ public:
+  TestClient() {}
+  ~TestClient() override {}
+
+  void OnCheckBrowseUrlResult(const GURL& url,
+                              SBThreatType threat_type,
+                              const std::string& metadata) override {}
+
+  void OnCheckDownloadUrlResult(const std::vector<GURL>& url_chain,
+                                SBThreatType threat_type) override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestClient);
+};
+
+}  // namespace
 
 class SafeBrowsingDatabaseManagerTest : public PlatformTest {
  public:
@@ -179,4 +202,44 @@ TEST_F(SafeBrowsingDatabaseManagerTest, GetUrlSeverestThreatType) {
             SafeBrowsingDatabaseManager::GetUrlSeverestThreatType(
                 kSafeUrl, full_hashes, &index));
   EXPECT_EQ(kArbitraryValue, index);
+}
+
+TEST_F(SafeBrowsingDatabaseManagerTest, ServiceStopWithPendingChecks) {
+  // Force the "blocking pool" mode for the test. This allows test coverage
+  // for this behavior while that mode is still not the default. Additionally,
+  // it is currently required for this test to work - as RunUntilIdle() will
+  // not run tasks of the special spawned thread, but will for the worker pool.
+  // TODO(asvitkine): Clean up, when blocking pool mode is made the default.
+  base::FieldTrialList list(nullptr);
+  std::map<std::string, std::string> params;
+  params["SBThreadingMode"] = "BlockingPool2";
+  variations::AssociateVariationParams("LightSpeed", "X", params);
+  base::FieldTrialList::CreateFieldTrial("LightSpeed", "X");
+
+  scoped_refptr<SafeBrowsingService> sb_service(
+      SafeBrowsingService::CreateSafeBrowsingService());
+  scoped_refptr<SafeBrowsingDatabaseManager> db_manager(
+      new SafeBrowsingDatabaseManager(sb_service));
+  TestClient client;
+
+  // Start the service and flush tasks to ensure database is made available.
+  db_manager->StartOnIOThread();
+  content::RunAllBlockingPoolTasksUntilIdle();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(db_manager->DatabaseAvailable());
+
+  // Start an extension check operation, which is done asynchronously.
+  std::set<std::string> extension_ids;
+  extension_ids.insert("testtesttesttesttesttesttesttest");
+  db_manager->CheckExtensionIDs(extension_ids, &client);
+
+  // Stop the service without first flushing above tasks.
+  db_manager->StopOnIOThread(false);
+
+  // Now run posted tasks, whish should include the extension check which has
+  // been posted to the safe browsing task runner. This should not crash.
+  content::RunAllBlockingPoolTasksUntilIdle();
+  base::RunLoop().RunUntilIdle();
+
+  variations::testing::ClearAllVariationParams();
 }

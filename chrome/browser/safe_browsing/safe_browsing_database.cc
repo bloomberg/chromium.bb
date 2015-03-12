@@ -162,17 +162,6 @@ void UrlToFullHashes(const GURL& url,
   }
 }
 
-// Get the prefixes matching the download |urls|.
-void GetDownloadUrlPrefixes(const std::vector<GURL>& urls,
-                            std::vector<SBPrefix>* prefixes) {
-  std::vector<SBFullHash> full_hashes;
-  for (size_t i = 0; i < urls.size(); ++i)
-    UrlToFullHashes(urls[i], false, &full_hashes);
-
-  for (size_t i = 0; i < full_hashes.size(); ++i)
-    prefixes->push_back(full_hashes[i].prefix);
-}
-
 // Helper function to compare addprefixes in |store| with |prefixes|.
 // The |list_bit| indicates which list (url or hash) to compare.
 //
@@ -451,6 +440,18 @@ base::FilePath SafeBrowsingDatabase::IpBlacklistDBFilename(
 base::FilePath SafeBrowsingDatabase::UnwantedSoftwareDBFilename(
     const base::FilePath& db_filename) {
   return base::FilePath(db_filename.value() + kUnwantedSoftwareDBFile);
+}
+
+// static
+void SafeBrowsingDatabase::GetDownloadUrlPrefixes(
+    const std::vector<GURL>& urls,
+    std::vector<SBPrefix>* prefixes) {
+  std::vector<SBFullHash> full_hashes;
+  for (size_t i = 0; i < urls.size(); ++i)
+    UrlToFullHashes(urls[i], false, &full_hashes);
+
+  for (size_t i = 0; i < full_hashes.size(); ++i)
+    prefixes->push_back(full_hashes[i].prefix);
 }
 
 SafeBrowsingStore* SafeBrowsingDatabaseNew::GetStore(const int list_id) {
@@ -938,8 +939,8 @@ bool SafeBrowsingDatabaseNew::PrefixSetContainsUrlHashes(
   return !prefix_hits->empty() || !cache_hits->empty();
 }
 
-bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(
-    const std::vector<GURL>& urls,
+bool SafeBrowsingDatabaseNew::ContainsDownloadUrlPrefixes(
+    const std::vector<SBPrefix>& prefixes,
     std::vector<SBPrefix>* prefix_hits) {
   DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
 
@@ -947,8 +948,6 @@ bool SafeBrowsingDatabaseNew::ContainsDownloadUrl(
   if (!download_store_.get())
     return false;
 
-  std::vector<SBPrefix> prefixes;
-  GetDownloadUrlPrefixes(urls, &prefixes);
   return MatchAddPrefixes(download_store_.get(),
                           safe_browsing_util::BINURL % 2,
                           prefixes,

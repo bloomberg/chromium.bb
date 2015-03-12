@@ -110,11 +110,12 @@ class SafeBrowsingDatabase {
       std::vector<SBPrefix>* prefix_hits,
       std::vector<SBFullHashResult>* cache_hits) = 0;
 
-  // Returns false if none of |urls| are in Download database. If it returns
+  // Returns false if none of |prefixes| are in Download database. If it returns
   // true, |prefix_hits| should contain the prefixes for the URLs that were in
   // the database.  This function can ONLY be accessed from creation thread.
-  virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
-                                   std::vector<SBPrefix>* prefix_hits) = 0;
+  virtual bool ContainsDownloadUrlPrefixes(
+      const std::vector<SBPrefix>& prefixes,
+      std::vector<SBPrefix>* prefix_hits) = 0;
 
   // Returns false if |url| is not on the client-side phishing detection
   // whitelist.  Otherwise, this function returns true.  Note: the whitelist
@@ -136,7 +137,7 @@ class SafeBrowsingDatabase {
   virtual bool ContainsInclusionWhitelistedUrl(const GURL& url) = 0;
 
   // Populates |prefix_hits| with any prefixes in |prefixes| that have matches
-  // in the database.
+  // in the database, returning true if there were any matches.
   //
   // This function can ONLY be accessed from the creation thread.
   virtual bool ContainsExtensionPrefixes(
@@ -240,6 +241,10 @@ class SafeBrowsingDatabase {
   static base::FilePath UnwantedSoftwareDBFilename(
       const base::FilePath& db_filename);
 
+  // Get the prefixes matching the download |urls|.
+  static void GetDownloadUrlPrefixes(const std::vector<GURL>& urls,
+                                     std::vector<SBPrefix>* prefixes);
+
   // SafeBrowsing Database failure types for histogramming purposes.  Explicitly
   // label new values and do not re-use old values. Also make sure to reflect
   // modifications made below in the SB2DatabaseFailure histogram enum.
@@ -323,8 +328,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
       const GURL& url,
       std::vector<SBPrefix>* prefix_hits,
       std::vector<SBFullHashResult>* cache_hits) override;
-  bool ContainsDownloadUrl(const std::vector<GURL>& urls,
-                           std::vector<SBPrefix>* prefix_hits) override;
+  bool ContainsDownloadUrlPrefixes(const std::vector<SBPrefix>& prefixes,
+                                   std::vector<SBPrefix>* prefix_hits) override;
   bool ContainsCsdWhitelistedUrl(const GURL& url) override;
   bool ContainsDownloadWhitelistedUrl(const GURL& url) override;
   bool ContainsDownloadWhitelistedString(const std::string& str) override;

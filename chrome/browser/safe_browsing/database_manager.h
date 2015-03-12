@@ -79,14 +79,13 @@ class SafeBrowsingDatabaseManager
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
 
-    // Vends weak pointers for TimeoutCallback().  If the response is
-    // received before the timeout fires, factory is destructed and
-    // the timeout won't be fired.
+    // Vends weak pointers for async callbacks on the IO thread, such as
+    // timeout checks and replies from checks performed on the SB task runner.
     // TODO(lzheng): We should consider to use this time out check
-    // for browsing too (instead of implementin in
+    // for browsing too (instead of implementing in
     // safe_browsing_resource_handler.cc).
     scoped_ptr<base::WeakPtrFactory<
-        SafeBrowsingDatabaseManager> > timeout_factory_;
+        SafeBrowsingDatabaseManager> > weak_ptr_factory_;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(SafeBrowsingCheck);
@@ -217,6 +216,8 @@ class SafeBrowsingDatabaseManager
   friend class SafeBrowsingDatabaseManagerTest;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
                            GetUrlSeverestThreatType);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
+                           ServiceStopWithPendingChecks);
 
   typedef std::set<SafeBrowsingCheck*> CurrentChecks;
   typedef std::vector<SafeBrowsingCheck*> GetHashRequestors;
@@ -318,18 +319,21 @@ class SafeBrowsingDatabaseManager
                       const std::vector<SBFullHashResult>& full_hashes);
 
   // Invoked by CheckDownloadUrl. It checks the download URL on
-  // safe_browsing_thread_.
-  void CheckDownloadUrlOnSBThread(SafeBrowsingCheck* check);
+  // |safe_browsing_task_runner_|.
+  std::vector<SBPrefix> CheckDownloadUrlOnSBThread(
+      const std::vector<SBPrefix>& prefixes);
 
   // The callback function when a safebrowsing check is timed out. Client will
   // be notified that the safebrowsing check is SAFE when this happens.
   void TimeoutCallback(SafeBrowsingCheck* check);
 
   // Calls the Client's callback on IO thread after CheckDownloadUrl finishes.
-  void CheckDownloadUrlDone(SafeBrowsingCheck* check);
+  void OnAsyncCheckDone(SafeBrowsingCheck* check,
+                        const std::vector<SBPrefix>& prefix_hits);
 
-  // Checks all extension ID hashes on safe_browsing_thread_.
-  void CheckExtensionIDsOnSBThread(SafeBrowsingCheck* check);
+  // Checks all extension ID hashes on |safe_browsing_task_runner_|.
+  std::vector<SBPrefix> CheckExtensionIDsOnSBThread(
+      const std::vector<SBPrefix>& prefixes);
 
   // Helper function that calls safe browsing client and cleans up |checks_|.
   void SafeBrowsingCheckDone(SafeBrowsingCheck* check);
@@ -337,8 +341,9 @@ class SafeBrowsingDatabaseManager
   // Helper function to set |check| with default values and start a safe
   // browsing check with timeout of |timeout|. |task| will be called on
   // success, otherwise TimeoutCallback will be called.
-  void StartSafeBrowsingCheck(SafeBrowsingCheck* check,
-                              const base::Closure& task);
+  void StartSafeBrowsingCheck(
+      SafeBrowsingCheck* check,
+      const base::Callback<std::vector<SBPrefix>(void)>& task);
 
   // SafeBrowsingProtocolManageDelegate override
   void ResetDatabase() override;

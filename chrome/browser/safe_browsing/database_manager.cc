@@ -356,10 +356,12 @@ bool SafeBrowsingDatabaseManager::CheckDownloadUrl(
                             safe_browsing_util::BINURL,
                             std::vector<SBThreatType>(1,
                                 SB_THREAT_TYPE_BINARY_MALWARE_URL));
+  std::vector<SBPrefix> prefixes;
+  SafeBrowsingDatabase::GetDownloadUrlPrefixes(url_chain, &prefixes);
   StartSafeBrowsingCheck(
       check,
       base::Bind(&SafeBrowsingDatabaseManager::CheckDownloadUrlOnSBThread, this,
-                 check));
+                 prefixes));
   return false;
 }
 
@@ -375,6 +377,9 @@ bool SafeBrowsingDatabaseManager::CheckExtensionIDs(
   std::transform(extension_ids.begin(), extension_ids.end(),
                  std::back_inserter(extension_id_hashes),
                  safe_browsing_util::StringToSBFullHash);
+  std::vector<SBPrefix> prefixes;
+  for (const SBFullHash& hash : extension_id_hashes)
+    prefixes.push_back(hash.prefix);
 
   SafeBrowsingCheck* check = new SafeBrowsingCheck(
       std::vector<GURL>(),
@@ -382,12 +387,10 @@ bool SafeBrowsingDatabaseManager::CheckExtensionIDs(
       client,
       safe_browsing_util::EXTENSIONBLACKLIST,
       std::vector<SBThreatType>(1, SB_THREAT_TYPE_EXTENSION));
-
   StartSafeBrowsingCheck(
       check,
       base::Bind(&SafeBrowsingDatabaseManager::CheckExtensionIDsOnSBThread,
-                 this,
-                 check));
+                 this, prefixes));
   return false;
 }
 
@@ -660,24 +663,12 @@ void SafeBrowsingDatabaseManager::StartOnIOThread() {
   if (enabled_)
     return;
 
-  DCHECK(!safe_browsing_task_runner_);
   // Use the blocking pool instead of a dedicated thread for safe browsing work,
   // if specified by an experiment.
   const bool use_blocking_pool =
       variations::GetVariationParamValue("LightSpeed", "SBThreadingMode") ==
-      "BlockingPool";
-  if (use_blocking_pool) {
-    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is
-    // fixed.
-    tracked_objects::ScopedTracker tracking_profile2(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "455469 SafeBrowsingDatabaseManager::StartOnIOThread2"));
-    base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-    safe_browsing_task_runner_ =
-        pool->GetSequencedTaskRunnerWithShutdownBehavior(
-            pool->GetSequenceToken(),
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-  } else {
+      "BlockingPool2";
+  if (!use_blocking_pool) {
     // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is
     // fixed.
     tracked_objects::ScopedTracker tracking_profile3(
@@ -689,6 +680,20 @@ void SafeBrowsingDatabaseManager::StartOnIOThread() {
     if (!safe_browsing_thread_->Start())
       return;
     safe_browsing_task_runner_ = safe_browsing_thread_->task_runner();
+  } else if (!safe_browsing_task_runner_) {
+    // Only get a new task runner if there isn't one already. If the service has
+    // previously been started and stopped, a task runner could already exist.
+
+    // TODO(pkasting): Remove ScopedTracker below once crbug.com/455469 is
+    // fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "455469 SafeBrowsingDatabaseManager::StartOnIOThread2"));
+    base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+    safe_browsing_task_runner_ =
+        pool->GetSequencedTaskRunnerWithShutdownBehavior(
+            pool->GetSequenceToken(),
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   }
 
   enabled_ = true;
@@ -784,8 +789,8 @@ void SafeBrowsingDatabaseManager::DoStopOnIOThread() {
     base::ThreadRestrictions::ScopedAllowIO allow_io_for_thread_join;
     safe_browsing_thread_->Stop();
     safe_browsing_thread_.reset();
+    safe_browsing_task_runner_ = nullptr;
   }
-  safe_browsing_task_runner_ = nullptr;
 
   // Delete pending checks, calling back any clients with 'SB_THREAT_TYPE_SAFE'.
   // We have to do this after the db thread returns because methods on it can
@@ -1101,56 +1106,42 @@ bool SafeBrowsingDatabaseManager::HandleOneCheck(
   return is_threat;
 }
 
-void SafeBrowsingDatabaseManager::CheckDownloadUrlOnSBThread(
-    SafeBrowsingCheck* check) {
+void SafeBrowsingDatabaseManager::OnAsyncCheckDone(
+    SafeBrowsingCheck* check,
+    const std::vector<SBPrefix>& prefix_hits) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(enable_download_protection_);
+
+  check->prefix_hits = prefix_hits;
+  if (check->prefix_hits.empty()) {
+    SafeBrowsingCheckDone(check);
+  } else {
+    check->need_get_hash = true;
+    OnCheckDone(check);
+  }
+}
+
+std::vector<SBPrefix> SafeBrowsingDatabaseManager::CheckDownloadUrlOnSBThread(
+    const std::vector<SBPrefix>& prefixes) {
   DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(enable_download_protection_);
 
   std::vector<SBPrefix> prefix_hits;
-
-  if (!database_->ContainsDownloadUrl(check->urls, &prefix_hits)) {
-    // Good, we don't have hash for this url prefix.
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&SafeBrowsingDatabaseManager::CheckDownloadUrlDone, this,
-                   check));
-    return;
-  }
-
-  check->need_get_hash = true;
-  check->prefix_hits.clear();
-  check->prefix_hits = prefix_hits;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SafeBrowsingDatabaseManager::OnCheckDone, this, check));
+  const bool result =
+      database_->ContainsDownloadUrlPrefixes(prefixes, &prefix_hits);
+  DCHECK_EQ(result, !prefix_hits.empty());
+  return prefix_hits;
 }
 
-void SafeBrowsingDatabaseManager::CheckExtensionIDsOnSBThread(
-    SafeBrowsingCheck* check) {
+std::vector<SBPrefix> SafeBrowsingDatabaseManager::CheckExtensionIDsOnSBThread(
+    const std::vector<SBPrefix>& prefixes) {
   DCHECK(safe_browsing_task_runner_->RunsTasksOnCurrentThread());
 
-  std::vector<SBPrefix> prefixes;
-  for (std::vector<SBFullHash>::iterator it = check->full_hashes.begin();
-       it != check->full_hashes.end(); ++it) {
-    prefixes.push_back((*it).prefix);
-  }
-  database_->ContainsExtensionPrefixes(prefixes, &check->prefix_hits);
-
-  if (check->prefix_hits.empty()) {
-    // No matches for any extensions.
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&SafeBrowsingDatabaseManager::SafeBrowsingCheckDone, this,
-                   check));
-  } else {
-    // Some prefixes matched, we need to ask Google whether they're legit.
-    check->need_get_hash = true;
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&SafeBrowsingDatabaseManager::OnCheckDone, this, check));
-  }
+  std::vector<SBPrefix> prefix_hits;
+  const bool result =
+      database_->ContainsExtensionPrefixes(prefixes, &prefix_hits);
+  DCHECK_EQ(result, !prefix_hits.empty());
+  return prefix_hits;
 }
 
 void SafeBrowsingDatabaseManager::TimeoutCallback(SafeBrowsingCheck* check) {
@@ -1165,13 +1156,6 @@ void SafeBrowsingDatabaseManager::TimeoutCallback(SafeBrowsingCheck* check) {
     check->client->OnSafeBrowsingResult(*check);
     check->client = NULL;
   }
-}
-
-void SafeBrowsingDatabaseManager::CheckDownloadUrlDone(
-    SafeBrowsingCheck* check) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(enable_download_protection_);
-  SafeBrowsingCheckDone(check);
 }
 
 void SafeBrowsingDatabaseManager::SafeBrowsingCheckDone(
@@ -1192,16 +1176,18 @@ void SafeBrowsingDatabaseManager::SafeBrowsingCheckDone(
 
 void SafeBrowsingDatabaseManager::StartSafeBrowsingCheck(
     SafeBrowsingCheck* check,
-    const base::Closure& task) {
+    const base::Callback<std::vector<SBPrefix>(void)>& task) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  check->timeout_factory_.reset(
+  check->weak_ptr_factory_.reset(
       new base::WeakPtrFactory<SafeBrowsingDatabaseManager>(this));
   checks_.insert(check);
 
-  safe_browsing_task_runner_->PostTask(FROM_HERE, task);
-
+  base::PostTaskAndReplyWithResult(
+      safe_browsing_task_runner_.get(), FROM_HERE, task,
+      base::Bind(&SafeBrowsingDatabaseManager::OnAsyncCheckDone,
+                 check->weak_ptr_factory_->GetWeakPtr(), check));
   base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
       base::Bind(&SafeBrowsingDatabaseManager::TimeoutCallback,
-                 check->timeout_factory_->GetWeakPtr(), check),
+                 check->weak_ptr_factory_->GetWeakPtr(), check),
       check_timeout_);
 }
