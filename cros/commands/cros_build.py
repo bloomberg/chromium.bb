@@ -127,7 +127,7 @@ To just build a single package:
       packages: Packages to emerge.
       board: Board to emerge to. If None, emerge to host.
     """
-    modified_packages = list(workon.ListModifiedWorkonPackages(board,
+    modified_packages = list(workon.ListModifiedWorkonPackages(board, None,
                                                                board is None))
     cmd = self._GetEmergeCommand(board) + [
         '-uNv',

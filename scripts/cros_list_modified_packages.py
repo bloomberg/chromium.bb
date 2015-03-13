@@ -25,7 +25,6 @@ from __future__ import print_function
 import errno
 import logging
 import multiprocessing
-import optparse
 import os
 try:
   import Queue
@@ -37,11 +36,17 @@ except ImportError:
 
 from chromite.cbuildbot import constants
 from chromite.lib import brick_lib
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
+
+
+def _AssertExactlyOneSet(*args):
+  if len(filter(None, args)) != 1:
+    raise ValueError("One and only one of board, brick, host can be set.")
 
 
 class ModificationTimeMonitor(object):
@@ -104,43 +109,63 @@ class WorkonPackageInfo(object):
     self.src_ebuild_mtime = src_ebuild_mtime
 
 
-def ListWorkonPackages(board, host, all_opt=False):
+def ListWorkonPackages(board=None, brick=None, host=False, all_opt=False):
   """List the packages that are currently being worked on.
 
   Args:
     board: The board to look at. If host is True, this should be set to None.
+    brick: The brick to look at. If host is True, this should be set to None.
     host: Whether to look at workon packages for the host.
     all_opt: Pass --all to cros_workon. For testing purposes.
   """
+  _AssertExactlyOneSet(board, brick, host)
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'cros_workon'), 'list']
-  cmd.extend(['--host'] if host else ['--board', board])
+  cmd.extend(['--host'] if host else ['--board', board or brick.FriendlyName()])
   if all_opt:
     cmd.append('--all')
   result = cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
   return result.output.split()
 
 
-def ListWorkonPackagesInfo(board, host):
+def ListWorkonPackagesInfo(board=None, brick=None, host=False):
   """Find the specified workon packages for the specified board.
 
   Args:
     board: The board to look at. If host is True, this should be set to None.
+    brick: The brick to look at. If host is True, this should be set to None.
     host: Whether to look at workon packages for the host.
 
   Returns:
     A list of WorkonPackageInfo objects for unique packages being worked on.
   """
+  _AssertExactlyOneSet(board, brick, host)
   # Import portage late so that this script can be imported outside the chroot.
   # pylint: disable=F0401
   import portage.const
-  packages = ListWorkonPackages(board, host)
+  packages = ListWorkonPackages(board, brick, host)
   if not packages:
     return []
   results = {}
-  install_root = cros_build_lib.GetSysroot(board=board)
+
+  if brick:
+    install_root = cros_build_lib.GetSysroot(board=brick.FriendlyName())
+    brick_stack = brick.BrickStack()
+    overlays = [b.OverlayDir() for b in brick_stack]
+    if any([b.legacy for b in brick_stack]):
+      # Overlays in third_party/ are not supported by brick_lib. If one of the
+      # brick in the brick stack referers to a board overlay, we will be missing
+      # chromiumos overlay and its dependencies. Add chromiumos and  its
+      # dependencies to the overlay list here to compensate.
+      # TODO(bsimonnet): remove this when legacy overlays don't need to be
+      # supported (brbug.com/589).
+      overlays = portage_util.FindOverlays(
+          constants.PUBLIC_OVERLAYS, 'chromiumos') + overlays
+  else:
+    install_root = cros_build_lib.GetSysroot(board=board)
+    overlays = portage_util.FindOverlays(constants.BOTH_OVERLAYS, board)
+
   vdb_path = os.path.join(install_root, portage.const.VDB_PATH)
-  buildroot, both = constants.SOURCE_ROOT, constants.BOTH_OVERLAYS
-  for overlay in portage_util.FindOverlays(both, board, buildroot):
+  for overlay in overlays:
     # Is this a brick overlay? Get its source base directory.
     brick_srcbase = ''
     brick = brick_lib.FindBrickInPath(overlay)
@@ -201,14 +226,16 @@ def WorkonSrcpathsMonitor(srcpaths):
   return ModificationTimeMonitor(zip(srcpaths, srcpaths))
 
 
-def ListModifiedWorkonPackages(board, host):
+def ListModifiedWorkonPackages(board=None, brick=None, host=False):
   """List the workon packages that need to be rebuilt.
 
   Args:
     board: The board to look at. If host is True, this should be set to None.
+    brick: The brick to look at. If host is True, this should be set to None.
     host: Whether to look at workon packages for the host.
   """
-  packages = ListWorkonPackagesInfo(board, host)
+  _AssertExactlyOneSet(board, brick, host)
+  packages = ListWorkonPackagesInfo(board, brick, host)
   if not packages:
     return
 
@@ -227,30 +254,27 @@ def ListModifiedWorkonPackages(board, host):
 
 
 def _ParseArguments(argv):
-  parser = optparse.OptionParser(usage='USAGE: %prog [options]')
+  parser = commandline.ArgumentParser(description=__doc__)
 
-  parser.add_option('--board', default=None,
-                    dest='board',
-                    help='Board name')
-  parser.add_option('--host', default=False,
-                    dest='host', action='store_true',
-                    help='Look at host packages instead of board packages')
+  target = parser.add_mutually_exclusive_group(required=True)
+  target.add_argument('--board', help='Board name')
+  target.add_argument('--brick', help='Brick locator')
+  target.add_argument('--host', default=False, action='store_true',
+                      help='Look at host packages instead of board packages')
 
-  flags, remaining_arguments = parser.parse_args(argv)
-  if not flags.board and not flags.host:
-    parser.print_help()
-    cros_build_lib.Die('--board or --host is required')
-  if flags.board is not None and flags.host:
-    parser.print_help()
-    cros_build_lib.Die('--board and --host are mutually exclusive')
-  if remaining_arguments:
-    parser.print_help()
-    cros_build_lib.Die('Invalid arguments')
+  flags = parser.parse_args(argv)
+  flags.Freeze()
   return flags
 
 
 def main(argv):
   logging.getLogger().setLevel(logging.INFO)
   flags = _ParseArguments(argv)
-  modified = ListModifiedWorkonPackages(flags.board, flags.host)
+  if flags.brick:
+    try:
+      modified = ListModifiedWorkonPackages(brick=brick_lib.Brick(flags.brick))
+    except brick_lib.BrickNotFound:
+      cros_build_lib.Die('Could not load brick %s.' % flags.brick)
+  else:
+    modified = ListModifiedWorkonPackages(board=flags.board, host=flags.host)
   print(' '.join(sorted(modified)))
