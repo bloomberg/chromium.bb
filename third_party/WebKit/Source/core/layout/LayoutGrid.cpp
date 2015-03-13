@@ -431,7 +431,7 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
 
     // 2. Resolve content-based TrackSizingFunctions.
     if (!sizingData.contentSizedTracksIndex.isEmpty())
-        resolveContentBasedTrackSizingFunctions(direction, sizingData, freeSpace);
+        resolveContentBasedTrackSizingFunctions(direction, sizingData);
 
     for (const auto& track: tracks) {
         ASSERT(!track.growthLimitIsInfinite());
@@ -723,7 +723,7 @@ static inline size_t integerSpanForDirection(const GridCoordinate& coordinate, G
     return (direction == ForRows) ? coordinate.rows.integerSpan() : coordinate.columns.integerSpan();
 }
 
-void LayoutGrid::resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection direction, GridSizingData& sizingData, LayoutUnit& availableLogicalSpace)
+void LayoutGrid::resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection direction, GridSizingData& sizingData)
 {
     sizingData.itemsSortedByIncreasingSpan.shrink(0);
     HashSet<LayoutBox*> itemsSet;

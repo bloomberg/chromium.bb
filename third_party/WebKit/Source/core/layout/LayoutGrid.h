@@ -81,7 +81,7 @@ private:
     LayoutUnit computeUsedBreadthOfMinLength(GridTrackSizingDirection, const GridLength&) const;
     LayoutUnit computeUsedBreadthOfMaxLength(GridTrackSizingDirection, const GridLength&, LayoutUnit usedBreadth) const;
     LayoutUnit computeUsedBreadthOfSpecifiedLength(GridTrackSizingDirection, const Length&) const;
-    void resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection, GridSizingData&, LayoutUnit& availableLogicalSpace);
+    void resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection, GridSizingData&);
 
     void ensureGridSize(size_t maximumRowIndex, size_t maximumColumnIndex);
     void insertItemIntoGrid(LayoutBox&, const GridCoordinate&);
