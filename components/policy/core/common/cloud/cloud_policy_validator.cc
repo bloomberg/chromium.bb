@@ -21,7 +21,7 @@ namespace policy {
 namespace {
 
 // Grace interval for policy timestamp checks, in seconds.
-const int kTimestampGraceIntervalSeconds = 60;
+const int kTimestampGraceIntervalSeconds = 7200;
 
 // DER-encoded ASN.1 object identifier for the SHA1-RSA signature algorithm.
 const uint8 kSHA1SignatureAlgorithm[] = {
@@ -68,8 +68,8 @@ void CloudPolicyValidatorBase::ValidateTimestamp(
     base::Time not_before,
     base::Time now,
     ValidateTimestampOption timestamp_option) {
-  // Timestamp should be from the past. We allow for a 1-minute grace interval
-  // to cover clock drift.
+  // Timestamp should be from the past. We allow for a grace interval to cover
+  // clock drift.
   validation_flags_ |= VALIDATE_TIMESTAMP;
   timestamp_not_before_ =
       (not_before - base::Time::UnixEpoch()).InMilliseconds();

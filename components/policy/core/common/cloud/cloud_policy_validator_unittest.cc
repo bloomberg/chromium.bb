@@ -194,7 +194,7 @@ TEST_F(CloudPolicyValidatorTest, ErrorOldTimestamp) {
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorTimestampFromTheFuture) {
-  base::Time timestamp(timestamp_ + base::TimeDelta::FromMinutes(5));
+  base::Time timestamp(timestamp_ + base::TimeDelta::FromHours(3));
   policy_.policy_data().set_timestamp(
       (timestamp - base::Time::UnixEpoch()).InMilliseconds());
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_BAD_TIMESTAMP));
