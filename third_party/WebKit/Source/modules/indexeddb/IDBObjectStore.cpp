@@ -30,7 +30,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
-#include "bindings/modules/v8/IDBBindingUtilities.h"
+#include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"

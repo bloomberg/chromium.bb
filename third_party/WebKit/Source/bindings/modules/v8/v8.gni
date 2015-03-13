@@ -8,8 +8,6 @@ import("custom/custom.gni")
 bindings_modules_v8_files = get_path_info(
   [
     "DictionaryHelperForModules.cpp",
-    "IDBBindingUtilities.cpp",
-    "IDBBindingUtilities.h",
     "ModuleBindingsInitializer.cpp",
     "ModuleBindingsInitializer.h",
     "ScriptValueSerializerForModules.cpp",
@@ -17,12 +15,13 @@ bindings_modules_v8_files = get_path_info(
     "SerializedScriptValueForModulesFactory.cpp",
     "SerializedScriptValueForModulesFactory.h",
     "ToV8ForModules.h",
+    "V8BindingForModules.cpp",
     "V8BindingForModules.h",
   ],
   "abspath") + bindings_modules_v8_custom_files
 
 bindings_modules_v8_unittest_files = get_path_info(
   [
-    "IDBBindingUtilitiesTest.cpp",
+    "V8BindingForModulesTest.cpp",
   ],
   "abspath")

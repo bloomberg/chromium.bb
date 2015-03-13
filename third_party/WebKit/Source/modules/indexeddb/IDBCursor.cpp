@@ -28,7 +28,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/modules/v8/IDBBindingUtilities.h"
+#include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "modules/IndexedDBNames.h"

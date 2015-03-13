@@ -30,7 +30,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
-#include "bindings/modules/v8/IDBBindingUtilities.h"
+#include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventQueue.h"
 #include "core/inspector/ScriptCallStack.h"

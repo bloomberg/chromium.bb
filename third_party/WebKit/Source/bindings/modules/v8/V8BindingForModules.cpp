@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "bindings/modules/v8/IDBBindingUtilities.h"
+#include "bindings/modules/v8/V8BindingForModules.h"
 
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
