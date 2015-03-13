@@ -45,6 +45,7 @@ class EncodedProgram {
   CheckBool AddRel32(int label_index) WARN_UNUSED_RESULT;
   CheckBool AddRel32ARM(uint16 op, int label_index) WARN_UNUSED_RESULT;
   CheckBool AddAbs32(int label_index) WARN_UNUSED_RESULT;
+  CheckBool AddAbs64(int label_index) WARN_UNUSED_RESULT;
   CheckBool AddPeMakeRelocs(ExecutableType kind) WARN_UNUSED_RESULT;
   CheckBool AddElfMakeRelocs() WARN_UNUSED_RESULT;
   CheckBool AddElfARMMakeRelocs() WARN_UNUSED_RESULT;
@@ -76,6 +77,8 @@ class EncodedProgram {
     MAKE_ELF_RELOCATION_TABLE = 6, // Emit Elf relocation table for X86
     MAKE_ELF_ARM_RELOCATION_TABLE = 7, // Emit Elf relocation table for ARM
     MAKE_PE64_RELOCATION_TABLE = 8, // Emit PE64 base relocation table blocks.
+    ABS64 = 9,     // ABS64 <index> - emit abs64 encoded reference to address at
+                   // address table offset <index>
     // ARM reserves 0x1000-LAST_ARM, bits 13-16 define the opcode
     // subset, and 1-12 are the compressed ARM op.
     REL32ARM8   = 0x1000,

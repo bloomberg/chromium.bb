@@ -71,6 +71,10 @@ class Disassembler {
     return *reinterpret_cast<const uint32*>(address);
   }
 
+  static uint64 Read64LittleEndian(const void* address) {
+    return *reinterpret_cast<const uint64*>(address);
+  }
+
   static uint16 Read16LittleEndian(const void* address) {
     return *reinterpret_cast<const uint16*>(address);
   }

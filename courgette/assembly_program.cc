@@ -26,10 +26,11 @@ enum OP {
   MAKEELFRELOCS,  // Generates a base relocation table.
   DEFBYTE,        // DEFBYTE <value> - emit a byte literal.
   REL32,          // REL32 <label> - emit a rel32 encoded reference to 'label'.
-  ABS32,          // REL32 <label> - emit am abs32 encoded reference to 'label'.
+  ABS32,          // ABS32 <label> - emit an abs32 encoded reference to 'label'.
   REL32ARM,       // REL32ARM <c_op> <label> - arm-specific rel32 reference
-  MAKEELFARMRELOCS, // Generates a base relocation table.
+  MAKEELFARMRELOCS,  // Generates a base relocation table.
   DEFBYTES,       // Emits any number of byte literals
+  ABS64,          // ABS64 <label> - emit an abs64 encoded reference to 'label'.
   LAST_OP
 };
 
@@ -197,6 +198,10 @@ CheckBool AssemblyProgram::EmitAbs32(Label* label) {
   return Emit(new(std::nothrow) InstructionWithLabel(ABS32, label));
 }
 
+CheckBool AssemblyProgram::EmitAbs64(Label* label) {
+  return Emit(new (std::nothrow) InstructionWithLabel(ABS64, label));
+}
+
 Label* AssemblyProgram::FindOrMakeAbs32Label(RVA rva) {
   return FindLabel(rva, &abs32_labels_);
 }
@@ -223,6 +228,13 @@ void AssemblyProgram::AssignRemainingIndexes() {
 Label* AssemblyProgram::InstructionAbs32Label(
     const Instruction* instruction) const {
   if (instruction->op() == ABS32)
+    return static_cast<const InstructionWithLabel*>(instruction)->label();
+  return NULL;
+}
+
+Label* AssemblyProgram::InstructionAbs64Label(
+    const Instruction* instruction) const {
+  if (instruction->op() == ABS64)
     return static_cast<const InstructionWithLabel*>(instruction)->label();
   return NULL;
 }
@@ -448,6 +460,12 @@ EncodedProgram* AssemblyProgram::Encode() const {
       case ABS32: {
         Label* label = static_cast<InstructionWithLabel*>(instruction)->label();
         if (!encoded->AddAbs32(label->index_))
+          return NULL;
+        break;
+      }
+      case ABS64: {
+        Label* label = static_cast<InstructionWithLabel*>(instruction)->label();
+        if (!encoded->AddAbs64(label->index_))
           return NULL;
         break;
       }

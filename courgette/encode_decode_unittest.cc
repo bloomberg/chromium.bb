@@ -70,20 +70,20 @@ void EncodeDecodeTest::TestAssembleToStreamDisassemble(
 
 TEST_F(EncodeDecodeTest, PE) {
   std::string file = FileContents("setup1.exe");
-  TestAssembleToStreamDisassemble(file, 971850);
+  TestAssembleToStreamDisassemble(file, 971851);
 }
 
 TEST_F(EncodeDecodeTest, PE64) {
   std::string file = FileContents("chrome64_1.exe");
-  TestAssembleToStreamDisassemble(file, 814709);
+  TestAssembleToStreamDisassemble(file, 803782);
 }
 
 TEST_F(EncodeDecodeTest, Elf_Small) {
   std::string file = FileContents("elf-32-1");
-  TestAssembleToStreamDisassemble(file, 135988);
+  TestAssembleToStreamDisassemble(file, 135989);
 }
 
 TEST_F(EncodeDecodeTest, Elf_HighBSS) {
   std::string file = FileContents("elf-32-high-bss");
-  TestAssembleToStreamDisassemble(file, 7308);
+  TestAssembleToStreamDisassemble(file, 7309);
 }

@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 
 #include "courgette/assembly_program.h"
 #include "courgette/courgette.h"
@@ -568,15 +569,13 @@ CheckBool DisassemblerWin32X64::ParseFileRegion(
       ++abs32_pos;
 
     if (abs32_pos != abs32_locations_.end() && *abs32_pos == current_rva) {
-      uint32 target_address = Read32LittleEndian(p);
-      // TODO(wfh): image_base() can be larger than 32 bits, so this math can
-      // underflow.  Figure out the right solution here.
-      RVA target_rva = target_address - static_cast<uint32>(image_base());
+      uint64 target_address = Read64LittleEndian(p);
+      RVA target_rva = base::checked_cast<RVA>(target_address - image_base());
       // TODO(sra): target could be Label+offset.  It is not clear how to guess
       // which it might be.  We assume offset==0.
-      if (!program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva)))
+      if (!program->EmitAbs64(program->FindOrMakeAbs32Label(target_rva)))
         return false;
-      p += 4;
+      p += 8;
       continue;
     }
 

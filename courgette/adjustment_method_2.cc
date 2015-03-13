@@ -1254,6 +1254,8 @@ class Adjuster : public AdjustmentMethod {
       Instruction* instruction = instructions[i];
       if (Label* label = program->InstructionAbs32Label(instruction))
         ReferenceLabel(abs32, label, is_model);
+      if (Label* label = program->InstructionAbs64Label(instruction))
+        ReferenceLabel(abs32, label, is_model);
       if (Label* label = program->InstructionRel32Label(instruction))
         ReferenceLabel(rel32, label, is_model);
     }

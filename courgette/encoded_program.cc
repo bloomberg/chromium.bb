@@ -12,6 +12,8 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "courgette/courgette.h"
@@ -237,6 +239,10 @@ CheckBool EncodedProgram::AddAbs32(int label_index) {
   return ops_.push_back(ABS32) && abs32_ix_.push_back(label_index);
 }
 
+CheckBool EncodedProgram::AddAbs64(int label_index) {
+  return ops_.push_back(ABS64) && abs32_ix_.push_back(label_index);
+}
+
 CheckBool EncodedProgram::AddRel32(int label_index) {
   return ops_.push_back(REL32) && rel32_ix_.push_back(label_index);
 }
@@ -315,9 +321,11 @@ CheckBool EncodedProgram::WriteTo(SinkStreamSet* streams) {
   // the rest can be interleaved.
 
   if (select & INCLUDE_MISC) {
-    // TODO(sra): write 64 bits.
-    if (!streams->stream(kStreamMisc)->WriteVarint32(
-            static_cast<uint32>(image_base_))) {
+    uint32 high = static_cast<uint32>(image_base_ >> 32);
+    uint32 low = static_cast<uint32>(image_base_ & 0xffffffffU);
+
+    if (!streams->stream(kStreamMisc)->WriteVarint32(high) ||
+        !streams->stream(kStreamMisc)->WriteVarint32(low)) {
       return false;
     }
   }
@@ -359,11 +367,14 @@ CheckBool EncodedProgram::WriteTo(SinkStreamSet* streams) {
 }
 
 bool EncodedProgram::ReadFrom(SourceStreamSet* streams) {
-  // TODO(sra): read 64 bits.
-  uint32 temp;
-  if (!streams->stream(kStreamMisc)->ReadVarint32(&temp))
+  uint32 high;
+  uint32 low;
+
+  if (!streams->stream(kStreamMisc)->ReadVarint32(&high) ||
+      !streams->stream(kStreamMisc)->ReadVarint32(&low)) {
     return false;
-  image_base_ = temp;
+  }
+  image_base_ = (static_cast<uint64>(high) << 32) | low;
 
   if (!ReadU32Delta(&abs32_rva_, streams->stream(kStreamAbs32Addresses)))
     return false;
@@ -593,7 +604,8 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
         break;
       }
 
-      case ABS32: {
+      case ABS32:
+      case ABS64: {
         uint32 index;
         if (!VectorAt(abs32_ix_, ix_abs32_ix, &index))
           return false;
@@ -601,10 +613,25 @@ CheckBool EncodedProgram::AssembleTo(SinkStream* final_buffer) {
         RVA rva;
         if (!VectorAt(abs32_rva_, index, &rva))
           return false;
-        uint32 abs32 = static_cast<uint32>(rva + image_base_);
-        if (!abs32_relocs_.push_back(current_rva) || !output->Write(&abs32, 4))
-          return false;
-        current_rva += 4;
+        if (op == ABS32) {
+          base::CheckedNumeric<uint32> abs32 = image_base_;
+          abs32 += rva;
+          uint32 safe_abs32 = abs32.ValueOrDie();
+          if (!abs32_relocs_.push_back(current_rva) ||
+              !output->Write(&safe_abs32, 4)) {
+            return false;
+          }
+          current_rva += 4;
+        } else {
+          base::CheckedNumeric<uint64> abs64 = image_base_;
+          abs64 += rva;
+          uint64 safe_abs64 = abs64.ValueOrDie();
+          if (!abs32_relocs_.push_back(current_rva) ||
+              !output->Write(&safe_abs64, 8)) {
+            return false;
+          }
+          current_rva += 8;
+        }
         break;
       }
 
