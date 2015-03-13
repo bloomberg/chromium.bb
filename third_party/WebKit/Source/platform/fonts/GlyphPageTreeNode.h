@@ -152,7 +152,6 @@ private:
     PassRefPtr<GlyphPage> initializePage();
 
     struct UScriptCodeHashTraits : WTF::GenericHashTraits<UScriptCode> {
-        static const bool needsDestruction = false;
         static UScriptCode emptyValue() { return USCRIPT_CODE_LIMIT; }
         static void constructDeletedValue(UScriptCode& slot, bool) { slot = USCRIPT_INVALID_CODE; }
         static bool isDeletedValue(UScriptCode value) { return value == USCRIPT_INVALID_CODE; }

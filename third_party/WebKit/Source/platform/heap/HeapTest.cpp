@@ -184,7 +184,6 @@ template<> struct DefaultHash<blink::PairWithWeakHandling> {
 // memset to zero, and we use -1 in the first part of the pair to represent
 // deleted slots.
 template<> struct HashTraits<blink::PairWithWeakHandling> : blink::WeakHandlingHashTraits<blink::PairWithWeakHandling> {
-    static const bool needsDestruction = false;
     static const bool hasIsEmptyValueFunction = true;
     static bool isEmptyValue(const blink::PairWithWeakHandling& value) { return !value.first; }
     static void constructDeletedValue(blink::PairWithWeakHandling& slot, bool) { new (NotNull, &slot) blink::PairWithWeakHandling(HashTableDeletedValue); }
@@ -2893,10 +2892,6 @@ private:
 
 int ThingWithDestructor::s_liveThingsWithDestructor;
 
-struct ThingWithDestructorTraits : public HashTraits<ThingWithDestructor> {
-    static const bool needsDestruction = true;
-};
-
 static void heapMapDestructorHelper(bool clearMaps)
 {
     clearOutOldGarbage();
@@ -2908,8 +2903,7 @@ static void heapMapDestructorHelper(bool clearMaps)
         WeakMember<IntWrapper>,
         ThingWithDestructor,
         DefaultHash<WeakMember<IntWrapper>>::Hash,
-        HashTraits<WeakMember<IntWrapper>>,
-        ThingWithDestructorTraits> Map;
+        HashTraits<WeakMember<IntWrapper>>> Map;
 
     Persistent<Map> map(new Map());
     Persistent<RefMap> refMap(new RefMap());
@@ -5334,7 +5328,6 @@ struct AllocatesOnAssignmentHashTraits : WTF::GenericHashTraits<AllocatesOnAssig
     typedef std::nullptr_t EmptyValueType;
     static EmptyValueType emptyValue() { return nullptr; }
     static const bool emptyValueIsZero = false; // Can't be zero if it has a vtable.
-    static const bool needsDestruction = false;
     static void constructDeletedValue(T& slot, bool) { slot = T(AllocatesOnAssignment::DeletedValue); }
     static bool isDeletedValue(const T& value) { return value.isDeleted(); }
 };

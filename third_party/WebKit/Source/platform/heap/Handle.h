@@ -1036,7 +1036,6 @@ template <typename T, size_t inlineCapacity> struct VectorTraits<blink::HeapDequ
 };
 
 template<typename T> struct HashTraits<blink::Member<T>> : SimpleClassHashTraits<blink::Member<T>> {
-    static const bool needsDestruction = false;
     // FIXME: The distinction between PeekInType and PassInType is there for
     // the sake of the reference counting handles. When they are gone the two
     // types can be merged into PassInType.

@@ -257,7 +257,8 @@ namespace WTF {
         swap(a.value, b.value);
     }
 
-    template<typename T, typename Allocator, bool useSwap> struct Mover;
+    template<typename T, typename Allocator, bool useSwap = !IsTriviallyDestructible<T>::value>
+    struct Mover;
     template<typename T, typename Allocator> struct Mover<T, Allocator, true> {
         static void move(T& from, T& to)
         {
@@ -909,7 +910,7 @@ namespace WTF {
         ++m_stats->numReinserts;
 #endif
         Value* newEntry = lookupForWriting(Extractor::extract(entry)).first;
-        Mover<ValueType, Allocator, Traits::needsDestruction>::move(entry, *newEntry);
+        Mover<ValueType, Allocator>::move(entry, *newEntry);
 
         return newEntry;
     }
@@ -1010,7 +1011,7 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::deleteAllBucketsAndDeallocate(ValueType* table, unsigned size)
     {
-        if (Traits::needsDestruction) {
+        if (!IsTriviallyDestructible<ValueType>::value) {
             for (unsigned i = 0; i < size; ++i) {
                 // This code is called when the hash table is cleared or
                 // resized. We have allocated a new backing store and we need
@@ -1074,7 +1075,7 @@ namespace WTF {
                     initializeBucket(temporaryTable[i]);
                 }
             } else {
-                Mover<ValueType, Allocator, Traits::needsDestruction>::move(m_table[i], temporaryTable[i]);
+                Mover<ValueType, Allocator>::move(m_table[i], temporaryTable[i]);
             }
         }
         m_table = temporaryTable;

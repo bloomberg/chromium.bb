@@ -45,7 +45,6 @@ template<> struct DefaultHash<SkSize> {
 
 template<> struct HashTraits<SkSize> : GenericHashTraits<SkSize> {
     static const bool emptyValueIsZero = true;
-    static const bool needsDestruction = false;
     static SkSize emptyValue() { return SkSize::Make(0, 0); }
     static void constructDeletedValue(SkSize& slot, bool)
     {
@@ -69,7 +68,6 @@ template<> struct DefaultHash<SkISize> {
 
 template<> struct HashTraits<SkISize> : GenericHashTraits<SkISize> {
     static const bool emptyValueIsZero = true;
-    static const bool needsDestruction = false;
     static SkISize emptyValue() { return SkISize::Make(0, 0); }
     static void constructDeletedValue(SkISize& slot, bool)
     {

@@ -311,10 +311,6 @@ struct LinkedHashSetTraits : public SimpleClassHashTraits<LinkedHashSetNode<Valu
     static void constructDeletedValue(Node& slot, bool) { slot.m_next = reinterpret_cast<Node*>(deletedValue); }
     static bool isDeletedValue(const Node& slot) { return slot.m_next == reinterpret_cast<Node*>(deletedValue); }
 
-    // We always need to call destructors, that's how we get linked and
-    // unlinked from the chain.
-    static const bool needsDestruction = true;
-
     // Whether we need to trace and do weak processing depends on the traits of
     // the type inside the node.
     template<typename U = void>

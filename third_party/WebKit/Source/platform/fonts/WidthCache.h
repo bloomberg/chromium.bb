@@ -115,7 +115,6 @@ private:
     struct SmallStringKeyHashTraits : WTF::SimpleClassHashTraits<SmallStringKey> {
         static const bool hasIsEmptyValueFunction = true;
         static bool isEmptyValue(const SmallStringKey& key) { return key.isHashTableEmptyValue(); }
-        static const bool needsDestruction = false;
         static const unsigned minimumTableSize = 16;
     };
 

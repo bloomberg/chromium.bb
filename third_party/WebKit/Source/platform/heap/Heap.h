@@ -2000,7 +2000,7 @@ struct GCInfoTrait<WTF::ListHashSetNode<T, Allocator>> {
         static const GCInfo gcInfo = {
             TraceTrait<TargetType>::trace,
             TargetType::finalize,
-            WTF::HashTraits<T>::needsDestruction, // The node needs destruction if its data does.
+            !WTF::IsTriviallyDestructible<T>::value, // The node needs destruction if its data does.
             false, // no vtable.
 #if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
@@ -2136,7 +2136,7 @@ struct GCInfoTrait<HeapHashTableBacking<Table>> {
         static const GCInfo gcInfo = {
             TraceTrait<TargetType>::trace,
             HeapHashTableBacking<Table>::finalize,
-            Table::ValueTraits::needsDestruction,
+            !WTF::IsTriviallyDestructible<typename Table::ValueType>::value,
             WTF::IsPolymorphic<TargetType>::value,
 #if ENABLE(GC_PROFILING)
             TypenameStringTrait<TargetType>::get()
@@ -2489,7 +2489,7 @@ template<typename Table>
 void HeapHashTableBacking<Table>::finalize(void* pointer)
 {
     using Value = typename Table::ValueType;
-    ASSERT(Table::ValueTraits::needsDestruction);
+    ASSERT(!WTF::IsTriviallyDestructible<Value>::value);
     HeapObjectHeader* header = HeapObjectHeader::fromPayload(pointer);
     // Use the payload size as recorded by the heap to determine how many
     // elements to finalize.

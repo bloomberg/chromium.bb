@@ -54,9 +54,6 @@ namespace WTF {
         // for cases like String that need them.
         static const bool hasIsEmptyValueFunction = false;
 
-        // The needsDestruction flag is used to optimize destruction and rehashing.
-        static const bool needsDestruction = true;
-
         // The starting table size. Can be overridden when we know beforehand that
         // a hash table will have at least N entries.
 #if defined(MEMORY_SANITIZER_INITIAL_SIZE)
@@ -75,7 +72,6 @@ namespace WTF {
     // Default integer traits disallow both 0 and -1 as keys (max value instead of -1 for unsigned).
     template<typename T> struct GenericHashTraitsBase<true, T> : GenericHashTraitsBase<false, T> {
         static const bool emptyValueIsZero = true;
-        static const bool needsDestruction = false;
         static void constructDeletedValue(T& slot, bool) { slot = static_cast<T>(-1); }
         static bool isDeletedValue(T value) { return value == static_cast<T>(-1); }
     };
@@ -114,7 +110,6 @@ namespace WTF {
     template<typename T> struct HashTraits : GenericHashTraits<T> { };
 
     template<typename T> struct FloatHashTraits : GenericHashTraits<T> {
-        static const bool needsDestruction = false;
         static T emptyValue() { return std::numeric_limits<T>::infinity(); }
         static void constructDeletedValue(T& slot, bool) { slot = -std::numeric_limits<T>::infinity(); }
         static bool isDeletedValue(T value) { return value == -std::numeric_limits<T>::infinity(); }
@@ -126,7 +121,6 @@ namespace WTF {
     // Default unsigned traits disallow both 0 and max as keys -- use these traits to allow zero and disallow max - 1.
     template<typename T> struct UnsignedWithZeroKeyHashTraits : GenericHashTraits<T> {
         static const bool emptyValueIsZero = false;
-        static const bool needsDestruction = false;
         static T emptyValue() { return std::numeric_limits<T>::max(); }
         static void constructDeletedValue(T& slot, bool) { slot = std::numeric_limits<T>::max() - 1; }
         static bool isDeletedValue(T value) { return value == std::numeric_limits<T>::max() - 1; }
@@ -134,7 +128,6 @@ namespace WTF {
 
     template<typename P> struct HashTraits<P*> : GenericHashTraits<P*> {
         static const bool emptyValueIsZero = true;
-        static const bool needsDestruction = false;
         static void constructDeletedValue(P*& slot, bool) { slot = reinterpret_cast<P*>(-1); }
         static bool isDeletedValue(P* value) { return value == reinterpret_cast<P*>(-1); }
     };
@@ -225,8 +218,6 @@ namespace WTF {
         static const bool emptyValueIsZero = FirstTraits::emptyValueIsZero && SecondTraits::emptyValueIsZero;
         static EmptyValueType emptyValue() { return std::make_pair(FirstTraits::emptyValue(), SecondTraits::emptyValue()); }
 
-        static const bool needsDestruction = FirstTraits::needsDestruction || SecondTraits::needsDestruction;
-
         static const unsigned minimumTableSize = FirstTraits::minimumTableSize;
 
         static void constructDeletedValue(TraitType& slot, bool zeroValue)
@@ -280,7 +271,6 @@ namespace WTF {
         static const bool emptyValueIsZero = KeyTraits::emptyValueIsZero && ValueTraits::emptyValueIsZero;
         static EmptyValueType emptyValue() { return KeyValuePair<typename KeyTraits::EmptyValueType, typename ValueTraits::EmptyValueType>(KeyTraits::emptyValue(), ValueTraits::emptyValue()); }
 
-        static const bool needsDestruction = KeyTraits::needsDestruction || ValueTraits::needsDestruction;
         template<typename U = void>
         struct NeedsTracingLazily {
             static const bool value = ShouldBeTraced<KeyTraits>::value || ShouldBeTraced<ValueTraits>::value;
