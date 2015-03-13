@@ -185,10 +185,11 @@ bool SocketsUdpBindFunction::Prepare() {
   return socket_event_dispatcher_ != NULL;
 }
 
-void SocketsUdpBindFunction::Work() {
+void SocketsUdpBindFunction::AsyncWorkStart() {
   ResumableUDPSocket* socket = GetUdpSocket(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
+    AsyncWorkCompleted();
     return;
   }
 
@@ -196,18 +197,22 @@ void SocketsUdpBindFunction::Work() {
       SocketPermissionRequest::UDP_BIND, params_->address, params_->port);
   if (!SocketsManifestData::CheckRequest(extension(), param)) {
     error_ = kPermissionError;
+    AsyncWorkCompleted();
     return;
   }
 
   int net_result = socket->Bind(params_->address, params_->port);
+  results_ = sockets_udp::Bind::Results::Create(net_result);
   if (net_result == net::OK) {
     socket_event_dispatcher_->OnSocketBind(extension_->id(),
                                            params_->socket_id);
+  } else {
+    error_ = net::ErrorToString(net_result);
+    AsyncWorkCompleted();
+    return;
   }
 
-  if (net_result != net::OK)
-    error_ = net::ErrorToString(net_result);
-  results_ = sockets_udp::Bind::Results::Create(net_result);
+  OpenFirewallHole(params_->address, params_->socket_id, socket);
 }
 
 SocketsUdpSendFunction::SocketsUdpSendFunction() : io_buffer_size_(0) {}

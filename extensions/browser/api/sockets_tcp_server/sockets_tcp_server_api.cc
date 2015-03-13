@@ -176,10 +176,11 @@ bool SocketsTcpServerListenFunction::Prepare() {
   return socket_event_dispatcher_ != NULL;
 }
 
-void SocketsTcpServerListenFunction::Work() {
+void SocketsTcpServerListenFunction::AsyncWorkStart() {
   ResumableTCPServerSocket* socket = GetTcpSocket(params_->socket_id);
   if (!socket) {
     error_ = kSocketNotFoundError;
+    AsyncWorkCompleted();
     return;
   }
 
@@ -187,6 +188,7 @@ void SocketsTcpServerListenFunction::Work() {
       SocketPermissionRequest::TCP_LISTEN, params_->address, params_->port);
   if (!SocketsManifestData::CheckRequest(extension(), param)) {
     error_ = kPermissionError;
+    AsyncWorkCompleted();
     return;
   }
 
@@ -195,16 +197,17 @@ void SocketsTcpServerListenFunction::Work() {
       params_->port,
       params_->backlog.get() ? *params_->backlog.get() : kDefaultListenBacklog,
       &error_);
-
-  if (net_result != net::OK)
-    error_ = net::ErrorToString(net_result);
-
+  results_ = sockets_tcp_server::Listen::Results::Create(net_result);
   if (net_result == net::OK) {
     socket_event_dispatcher_->OnServerSocketListen(extension_->id(),
                                                    params_->socket_id);
+  } else {
+    error_ = net::ErrorToString(net_result);
+    AsyncWorkCompleted();
+    return;
   }
 
-  results_ = sockets_tcp_server::Listen::Results::Create(net_result);
+  OpenFirewallHole(params_->address, params_->socket_id, socket);
 }
 
 SocketsTcpServerDisconnectFunction::SocketsTcpServerDisconnectFunction() {}

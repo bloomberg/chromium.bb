@@ -6095,4 +6095,10 @@ All users must sign out to continue.
   <message name="IDS_OPTIONS_CAPTIVE_PORTAL_BYPASS_PROXY_LABEL" desc="Option in chrome://settings that allows Captive Portal authorization pages to ignore proxy settings.">
     Allow captive portal sign-in page to bypass proxy servers
   </message>
+  <message name="IDS_FLAGS_ENABLE_FIREWALL_HOLE_PUNCHING_NAME" desc="Name of the option to enable punching holes in the Chrome OS firewall.">
+    Enable firewall hole punching.
+  </message>
+  <message name="IDS_FLAGS_ENABLE_FIREWALL_HOLE_PUNCHING_DESCRIPTION" desc="Description of the option to enable punching holes in the Chrome OS firewall.">
+    Enable punching holes in the Chrome OS firewall for Chrome Apps that open a TCP/IP server socket or UDP socket.
+  </message>
 </grit-part>

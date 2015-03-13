@@ -18,6 +18,10 @@
 #include "net/base/ip_endpoint.h"
 #include "net/socket/tcp_client_socket.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/network/firewall_hole.h"
+#endif  // OS_CHROMEOS
+
 namespace net {
 class AddressList;
 class IPEndPoint;
@@ -54,6 +58,12 @@ class Socket : public ApiResource {
   // series of U-LABELs (UTF-8), not A-LABELs. IP literals for IPv6 will be
   // unbracketed.
   void set_hostname(const std::string& hostname) { hostname_ = hostname; }
+
+#if defined(OS_CHROMEOS)
+  void set_firewall_hole(scoped_ptr<chromeos::FirewallHole> firewall_hole) {
+    firewall_hole_.reset(firewall_hole.release());
+  }
+#endif  // OS_CHROMEOS
 
   // Note: |address| contains the resolved IP address, not the hostname of
   // the remote endpoint. In order to upgrade this socket to TLS, callers
@@ -135,6 +145,12 @@ class Socket : public ApiResource {
   };
   std::queue<WriteRequest> write_queue_;
   scoped_refptr<net::IOBuffer> io_buffer_write_;
+
+#if defined(OS_CHROMEOS)
+  // Represents a hole punched in the system firewall for this socket.
+  scoped_ptr<chromeos::FirewallHole, content::BrowserThread::DeleteOnUIThread>
+      firewall_hole_;
+#endif  // OS_CHROMEOS
 };
 
 }  //  namespace extensions

@@ -94,7 +94,7 @@ class SocketsTcpServerListenFunction : public TCPServerSocketAsyncApiFunction {
 
   // AsyncApiFunction:
   bool Prepare() override;
-  void Work() override;
+  void AsyncWorkStart() override;
 
  private:
   scoped_ptr<sockets_tcp_server::Listen::Params> params_;

@@ -2266,6 +2266,15 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kV8PacMojoOutOfProcess),
   },
+#if defined(OS_CHROMEOS)
+  {
+    "enable-firewall-hole-punching",
+    IDS_FLAGS_ENABLE_FIREWALL_HOLE_PUNCHING_NAME,
+    IDS_FLAGS_ENABLE_FIREWALL_HOLE_PUNCHING_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kEnableFirewallHolePunching)
+  },
+#endif  // defined(OS_CHROMEOS)
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

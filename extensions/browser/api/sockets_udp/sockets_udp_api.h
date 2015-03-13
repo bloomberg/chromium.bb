@@ -102,7 +102,7 @@ class SocketsUdpBindFunction : public UDPSocketAsyncApiFunction {
 
   // AsyncApiFunction:
   bool Prepare() override;
-  void Work() override;
+  void AsyncWorkStart() override;
 
  private:
   scoped_ptr<sockets_udp::Bind::Params> params_;

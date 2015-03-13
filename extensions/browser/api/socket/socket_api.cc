@@ -29,6 +29,13 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/network/firewall_hole.h"
+#include "content/public/browser/browser_thread.h"
+#endif  // OS_CHROMEOS
+
 namespace extensions {
 
 using content::SocketPermissionRequest;
@@ -51,6 +58,10 @@ const char kSecureSocketTypeError[] = "Only TCP sockets are supported for TLS.";
 const char kSocketNotConnectedError[] = "Socket not connected";
 const char kWildcardAddress[] = "*";
 const uint16 kWildcardPort = 0;
+
+#if defined(OS_CHROMEOS)
+const char kFirewallFailure[] = "Failed to open firewall port";
+#endif  // OS_CHROMEOS
 
 SocketAsyncApiFunction::SocketAsyncApiFunction() {}
 
@@ -89,6 +100,77 @@ base::hash_set<int>* SocketAsyncApiFunction::GetSocketIds() {
 void SocketAsyncApiFunction::RemoveSocket(int api_resource_id) {
   manager_->Remove(extension_->id(), api_resource_id);
 }
+
+void SocketAsyncApiFunction::OpenFirewallHole(const std::string& address,
+                                              int socket_id,
+                                              Socket* socket) {
+#if defined(OS_CHROMEOS)
+  if (!net::IsLocalhost(address) &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableFirewallHolePunching)) {
+    net::IPEndPoint local_address;
+    if (!socket->GetLocalAddress(&local_address)) {
+      NOTREACHED() << "Cannot get address of recently bound socket.";
+      error_ = kFirewallFailure;
+      SetResult(new base::FundamentalValue(-1));
+      AsyncWorkCompleted();
+      return;
+    }
+
+    chromeos::FirewallHole::PortType port_type;
+    if (socket->GetSocketType() == Socket::TYPE_TCP) {
+      port_type = chromeos::FirewallHole::PortType::TCP;
+    } else {
+      port_type = chromeos::FirewallHole::PortType::UDP;
+    }
+
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &chromeos::FirewallHole::Open, port_type, local_address.port(),
+            "" /* all interfaces */,
+            base::Bind(&SocketAsyncApiFunction::OnFirewallHoleOpenedOnUIThread,
+                       this, socket_id)));
+    return;
+  }
+#endif
+  AsyncWorkCompleted();
+}
+
+#if defined(OS_CHROMEOS)
+
+void SocketAsyncApiFunction::OnFirewallHoleOpenedOnUIThread(
+    int socket_id,
+    scoped_ptr<chromeos::FirewallHole> hole) {
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&SocketAsyncApiFunction::OnFirewallHoleOpened, this, socket_id,
+                 base::Passed(&hole)));
+}
+
+void SocketAsyncApiFunction::OnFirewallHoleOpened(
+    int socket_id,
+    scoped_ptr<chromeos::FirewallHole> hole) {
+  if (!hole) {
+    error_ = kFirewallFailure;
+    SetResult(new base::FundamentalValue(-1));
+    AsyncWorkCompleted();
+    return;
+  }
+
+  Socket* socket = GetSocket(socket_id);
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    SetResult(new base::FundamentalValue(-1));
+    AsyncWorkCompleted();
+    return;
+  }
+
+  socket->set_firewall_hole(hole.Pass());
+  AsyncWorkCompleted();
+}
+
+#endif  // OS_CHROMEOS
 
 SocketExtensionWithDnsLookupFunction::SocketExtensionWithDnsLookupFunction()
     : resource_context_(NULL),
@@ -294,33 +376,41 @@ bool SocketBindFunction::Prepare() {
   return true;
 }
 
-void SocketBindFunction::Work() {
-  int result = -1;
+void SocketBindFunction::AsyncWorkStart() {
   Socket* socket = GetSocket(socket_id_);
-
   if (!socket) {
     error_ = kSocketNotFoundError;
-    SetResult(new base::FundamentalValue(result));
+    SetResult(new base::FundamentalValue(-1));
+    AsyncWorkCompleted();
     return;
   }
 
-  if (socket->GetSocketType() == Socket::TYPE_UDP) {
-    SocketPermission::CheckParam param(
-        SocketPermissionRequest::UDP_BIND, address_, port_);
-    if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
-            APIPermission::kSocket, &param)) {
-      error_ = kPermissionError;
-      SetResult(new base::FundamentalValue(result));
-      return;
-    }
-  } else if (socket->GetSocketType() == Socket::TYPE_TCP) {
+  if (socket->GetSocketType() == Socket::TYPE_TCP) {
     error_ = kTCPSocketBindError;
-    SetResult(new base::FundamentalValue(result));
+    SetResult(new base::FundamentalValue(-1));
+    AsyncWorkCompleted();
     return;
   }
 
-  result = socket->Bind(address_, port_);
+  CHECK(socket->GetSocketType() == Socket::TYPE_UDP);
+  SocketPermission::CheckParam param(SocketPermissionRequest::UDP_BIND,
+                                     address_, port_);
+  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
+          APIPermission::kSocket, &param)) {
+    error_ = kPermissionError;
+    SetResult(new base::FundamentalValue(-1));
+    AsyncWorkCompleted();
+    return;
+  }
+
+  int result = socket->Bind(address_, port_);
   SetResult(new base::FundamentalValue(result));
+  if (result != net::OK) {
+    AsyncWorkCompleted();
+    return;
+  }
+
+  OpenFirewallHole(address_, socket_id_, socket);
 }
 
 SocketListenFunction::SocketListenFunction() {}
@@ -333,30 +423,35 @@ bool SocketListenFunction::Prepare() {
   return true;
 }
 
-void SocketListenFunction::Work() {
-  int result = -1;
-
+void SocketListenFunction::AsyncWorkStart() {
   Socket* socket = GetSocket(params_->socket_id);
-  if (socket) {
-    SocketPermission::CheckParam param(
-        SocketPermissionRequest::TCP_LISTEN, params_->address, params_->port);
-    if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
-            APIPermission::kSocket, &param)) {
-      error_ = kPermissionError;
-      SetResult(new base::FundamentalValue(result));
-      return;
-    }
-
-    result =
-        socket->Listen(params_->address,
-                       params_->port,
-                       params_->backlog.get() ? *params_->backlog.get() : 5,
-                       &error_);
-  } else {
+  if (!socket) {
     error_ = kSocketNotFoundError;
+    SetResult(new base::FundamentalValue(-1));
+    AsyncWorkCompleted();
+    return;
   }
 
+  SocketPermission::CheckParam param(SocketPermissionRequest::TCP_LISTEN,
+                                     params_->address, params_->port);
+  if (!extension()->permissions_data()->CheckAPIPermissionWithParam(
+          APIPermission::kSocket, &param)) {
+    error_ = kPermissionError;
+    SetResult(new base::FundamentalValue(-1));
+    AsyncWorkCompleted();
+    return;
+  }
+
+  int result = socket->Listen(
+      params_->address, params_->port,
+      params_->backlog.get() ? *params_->backlog.get() : 5, &error_);
   SetResult(new base::FundamentalValue(result));
+  if (result != net::OK) {
+    AsyncWorkCompleted();
+    return;
+  }
+
+  OpenFirewallHole(params_->address, params_->socket_id, socket);
 }
 
 SocketAcceptFunction::SocketAcceptFunction() {}

@@ -332,6 +332,9 @@ const char kDisableTimeZoneTrackingOption[] =
 // Disable new GAIA sign-in flow.
 const char kDisableWebviewSigninFlow[] = "disable-webview-signin-flow";
 
+// Enable Chrome OS firewall hole-punching for Chrome Apps.
+const char kEnableFirewallHolePunching[] = "enable-firewall-hole-punching";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }

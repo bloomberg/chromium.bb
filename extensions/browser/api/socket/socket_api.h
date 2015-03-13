@@ -17,6 +17,10 @@
 #include "net/dns/host_resolver.h"
 #include "net/socket/tcp_client_socket.h"
 
+namespace chromeos {
+class FirewallHole;
+}
+
 namespace content {
 class BrowserContext;
 class ResourceContext;
@@ -118,7 +122,19 @@ class SocketAsyncApiFunction : public AsyncApiFunction {
   void RemoveSocket(int api_resource_id);
   base::hash_set<int>* GetSocketIds();
 
+  // Only implemented on Chrome OS.
+  void OpenFirewallHole(const std::string& address,
+                        int socket_id,
+                        Socket* socket);
+
  private:
+#if defined(OS_CHROMEOS)
+  void OnFirewallHoleOpenedOnUIThread(int socket_id,
+                                      scoped_ptr<chromeos::FirewallHole> hole);
+  void OnFirewallHoleOpened(int socket_id,
+                            scoped_ptr<chromeos::FirewallHole> hole);
+#endif  // OS_CHROMEOS
+
   scoped_ptr<SocketResourceManagerInterface> manager_;
 };
 
@@ -230,7 +246,7 @@ class SocketBindFunction : public SocketAsyncApiFunction {
 
   // AsyncApiFunction:
   bool Prepare() override;
-  void Work() override;
+  void AsyncWorkStart() override;
 
  private:
   int socket_id_;
@@ -249,7 +265,7 @@ class SocketListenFunction : public SocketAsyncApiFunction {
 
   // AsyncApiFunction:
   bool Prepare() override;
-  void Work() override;
+  void AsyncWorkStart() override;
 
  private:
   scoped_ptr<core_api::socket::Listen::Params> params_;
