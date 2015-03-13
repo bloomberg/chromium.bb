@@ -72,7 +72,7 @@ acceleratedCompositingEnabled initial=true, invalidate=AcceleratedCompositing
 
 shrinksStandaloneImagesToFit initial=true
 
-offlineWebApplicationCacheEnabled initial=false
+offlineWebApplicationCacheEnabled initial=true
 usesEncodingDetector initial=false
 allowScriptsToCloseWindows initial=false
 regionBasedColumnsEnabled initial=false
