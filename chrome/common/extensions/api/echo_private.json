@@ -9,7 +9,6 @@
       "implemented_in": "chrome/browser/chromeos/extensions/echo_private_api.h"
     },
     "description": "none",
-    "platforms": ["chromeos"],
     "functions": [
       {
         "name": "setOfferInfo",

@@ -6,7 +6,6 @@
   {
     "namespace":"fileBrowserHandler",
     "description": "Use the <code>chrome.fileBrowserHandler</code> API to extend the Chrome OS file browser. For example, you can use this API to enable users to upload files to your website.",
-    "platforms": ["chromeos"],
     "types": [
       {
         "id": "FileHandlerExecuteEventDetails",

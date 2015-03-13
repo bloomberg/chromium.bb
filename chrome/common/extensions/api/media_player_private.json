@@ -9,15 +9,14 @@
       "implemented_in": "chrome/browser/chromeos/extensions/media_player_api.h"
     },
     "description": "none",
-    "platforms": ["chromeos"],
-   "events": [
+    "events": [
       {
         "name": "onNextTrack",
         "type": "function",
         "description": "Notifies that the next track was requested.",
         "parameters": []
       },
-     {
+      {
         "name": "onPrevTrack",
         "type": "function",
         "description": "Notifies that the previous tack was requested.",

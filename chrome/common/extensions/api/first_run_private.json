@@ -8,7 +8,6 @@
     "compiler_options": {
       "implemented_in": "chrome/browser/chromeos/extensions/first_run_private_api.h"
     },
-    "platforms": ["chromeos"],
     "description": "none",
     "functions": [
       {

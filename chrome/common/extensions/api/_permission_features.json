@@ -925,18 +925,6 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
-  "virtualKeyboardPrivate": {
-    "channel": "stable",
-    "extension_types": ["extension"],
-    "platforms": ["chromeos"],
-    "whitelist": [
-      "3F50C3A83839D9C76334BCE81CDEC06174F266AF",  // System-level virtual kbd
-      "06BE211D5F014BAB34BC22D9DDA09C63A81D828E",  // Official XKB virtual kbd
-      "CFBF7EE448FA48960FFDA7CEB30F7A21B26AA981",  // Official m17n virtual kbd
-      "F94EE6AB36D6C6588670B2B01EB65212D9C64E33",  // Public XKB virtual kbd
-      "3E03D9B67FDD31B2438D1CF5070573415DCB3CBA"  // Public m17n virtual kbd
-    ]
-  },
   "wallpaper": {
     "channel": "stable",
     "extension_types": ["platform_app", "extension"],

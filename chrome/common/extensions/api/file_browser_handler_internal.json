@@ -9,7 +9,6 @@
       "implemented_in": "chrome/browser/chromeos/extensions/file_manager/file_browser_handler_api.h"
     },
     "description": "none",
-    "platforms": ["chromeos"],
     "types": [
       {
         "id": "FileEntryInfo",
