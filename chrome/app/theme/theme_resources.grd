@@ -436,6 +436,9 @@
       <if expr="chromeos">
         <!-- TODO(nkostylev): This resource needs to be removed when cros login code is moved to ash. -->
         <structure type="chrome_scaled_image" name="IDR_LAUNCHER_BACKGROUND" file="cros/launcher_background.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_CLOSE_BUTTTON" file="cros/login_close_button.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_CLOSE_BUTTTON_MASKED" file="cros/login_close_button_masked.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_CLOSE_BUTTTON_ON_WHITE" file="cros/login_close_button_on_white.png" />
         <structure type="chrome_scaled_image" name="IDR_LOGIN_PASSWORD_CAPS_LOCK" file="cros/login_password_capslock.png" />
       </if>
       <if expr="chromeos">

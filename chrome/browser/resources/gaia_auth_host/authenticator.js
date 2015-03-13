@@ -311,6 +311,12 @@ cr.define('cr.login', function() {
       this.email_ = msg.email;
       this.password_ = msg.password;
       this.chooseWhatToSync_ = msg.chooseWhatToSync;
+    } else if (msg.method == 'dialogShown') {
+      this.dispatchEvent(new Event('dialogShown'));
+    } else if (msg.method == 'dialogHidden') {
+      this.dispatchEvent(new Event('dialogHidden'));
+    } else {
+      console.warning('Unrecognized message from GAIA: ' + msg.method);
     }
   };
 

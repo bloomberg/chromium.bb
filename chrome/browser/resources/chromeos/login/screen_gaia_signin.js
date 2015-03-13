@@ -116,6 +116,10 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       }
       this.gaiaAuthHost_.addEventListener(
           'ready', this.onAuthReady_.bind(this));
+      this.gaiaAuthHost_.addEventListener(
+          'dialogShown', this.onDialogShown_.bind(this));
+      this.gaiaAuthHost_.addEventListener(
+          'dialogHidden', this.onDialogHidden_.bind(this));
       this.gaiaAuthHost_.confirmPasswordCallback =
           this.onAuthConfirmPassword_.bind(this);
       this.gaiaAuthHost_.noPasswordCallback =
@@ -180,6 +184,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('signin-right').hidden = show;
       $('enterprise-info-container').hidden = show;
       $('gaia-signin-divider').hidden = show;
+      this.classList.toggle('loading', show);
     },
 
     /**
@@ -257,6 +262,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       window.requestAnimationFrame(function() {
         chrome.send('loginVisible', ['gaia-loading']);
       });
+      $('close-button-item').disabled = false;
+      this.classList.toggle('loading', this.loading);
 
       // Button header is always visible when sign in is presented.
       // Header is hidden once GAIA reports on successful sign in.
@@ -402,7 +409,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     updateCancelButtonState: function() {
       this.cancelAllowed_ = this.isShowUsers_ && $('pod-row').pods.length;
       $('login-header-bar').allowCancel = this.cancelAllowed_;
-      $('close-button-item').hidden = !this.cancelAllowed_;
+      if (this.isMinuteMaid)
+        $('close-button-item').hidden = !this.cancelAllowed_;
     },
 
     switchToFullTab: function() {
@@ -438,7 +446,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (Oobe.getInstance().currentScreen === this) {
         Oobe.getInstance().updateScreenSize(this);
         $('login-header-bar').allowCancel = isSAML || this.cancelAllowed_;
-        $('close-button-item').hidden = !(isSAML || this.cancelAllowed_);
+        if (this.isMinuteMaid)
+          $('close-button-item').hidden = !(isSAML || this.cancelAllowed_);
       }
     },
 
@@ -461,6 +470,22 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       // Warm up the user images screen.
       Oobe.getInstance().preloadScreen({id: SCREEN_USER_IMAGE_PICKER});
+    },
+
+    /**
+     * Invoked when the auth host emits 'dialogShown' event.
+     * @private
+     */
+    onDialogShown_: function() {
+      $('close-button-item').disabled = true;
+    },
+
+    /**
+     * Invoked when the auth host emits 'dialogHidden' event.
+     * @private
+     */
+    onDialogHidden_: function() {
+      $('close-button-item').disabled = false;
     },
 
     /**

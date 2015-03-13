@@ -47,12 +47,30 @@
   display: none;
 }
 
-.minute-maid #close-button-item {
+#close-button-item {
   background: transparent none;
-  background-image: url(chrome://theme/IDR_PANEL_CLOSE);
-  background-position: left center;
+  background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON);
+  background-position: center;
   background-repeat: no-repeat;
-  background-size: 30px;
+  height: 14px;
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  width: 14px;
+  z-index: 1;
+}
+
+html[dir=rtl] #close-button-item {
+  left: 15px;
+  right: auto;
+}
+
+.loading #close-button-item {
+  background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON_ON_WHITE);
+}
+
+#close-button-item:disabled {
+  background-image: url(chrome://theme/IDR_LOGIN_CLOSE_BUTTTON_MASKED);
 }
 
 .signin-text {

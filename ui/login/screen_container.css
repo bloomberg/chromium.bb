@@ -105,17 +105,6 @@
   top: 15px;
 }
 
-#close-button-item {
-  -webkit-margin-start: 17px;
-  display: flex;
-  position: absolute;
-  right: 15px;
-  top: 15px;
-  width: 30px;
-  height: 30px;
-  z-index: 1;
-}
-
 #progress-dots {
   -webkit-box-pack: center;
   -webkit-transition: opacity 200ms ease-in-out,
