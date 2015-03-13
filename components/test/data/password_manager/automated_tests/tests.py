@@ -55,6 +55,15 @@ class Google(WebsiteTest):
     self.Submit("#Passwd")
 
 
+class Imgur(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https://imgur.com/signin")
+    self.FillUsernameInto("[name='username']")
+    self.FillPasswordInto("[name='password']")
+    self.Submit("[name='password']")
+
+
 class Liveinternet(WebsiteTest):
 
   def Login(self):
@@ -289,6 +298,7 @@ def Tests(environment, tests_to_run=None):
     "alexa": Alexa("alexa"),
     "facebook": Facebook("facebook"),
     "google": Google("google"),
+    "imgur": Imgur("imgur"),
     "liveinternet": Liveinternet("liveinternet"),
     "linkedin": Linkedin("linkedin"),
     "mailru": Mailru("mailru"),
