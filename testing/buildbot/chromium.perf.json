@@ -4,6 +4,11 @@
       {
         "name": "host_info",
         "script": "host_info.py"
+      },
+      {
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["gpu_perftests"]
       }
     ]
   },
@@ -12,6 +17,20 @@
       {
         "name": "host_info",
         "script": "host_info.py"
+      },
+      {
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["gpu_perftests"]
+      }
+    ]
+  },
+  "Android Nexus6 Perf": {
+    "scripts": [
+      {
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["gpu_perftests"]
       }
     ]
   },
@@ -20,6 +39,20 @@
       {
         "name": "host_info",
         "script": "host_info.py"
+      },
+      {
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["gpu_perftests"]
+      }
+    ]
+  },
+  "Android Nexus9 Perf": {
+    "scripts": [
+      {
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["gpu_perftests"]
       }
     ]
   },
@@ -28,6 +61,20 @@
       {
         "name": "host_info",
         "script": "host_info.py"
+      },
+      {
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["gpu_perftests"]
+      }
+    ]
+  },
+  "Android One Perf": {
+    "scripts": [
+      {
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["gpu_perftests"]
       }
     ]
   },
@@ -36,6 +83,11 @@
       {
         "name": "host_info",
         "script": "host_info.py"
+      },
+      {
+        "name": "gpu_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["gpu_perftests"]
       }
     ]
   },
