@@ -141,16 +141,22 @@ void NetExportMessageHandler::OnGetExportNetLogInfo(
 }
 
 void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
-  bool strip_private_data = false;
-  if (!list->GetBoolean(0, &strip_private_data)) {
-    NOTREACHED() << "Failed to convert argument 1";
-    return;
+  std::string log_mode;
+  bool result = list->GetString(0, &log_mode);
+  DCHECK(result);
+
+  NetLogTempFile::Command command;
+  if (log_mode == "LOG_BYTES") {
+    command = NetLogTempFile::DO_START_LOG_BYTES;
+  } else if (log_mode == "NORMAL") {
+    command = NetLogTempFile::DO_START;
+  } else {
+    DCHECK_EQ("STRIP_PRIVATE_DATA", log_mode);
+    command = NetLogTempFile::DO_START_STRIP_PRIVATE_DATA;
   }
-  ProcessNetLogCommand(weak_ptr_factory_.GetWeakPtr(),
-                       net_log_temp_file_,
-                       (strip_private_data ?
-                            NetLogTempFile::DO_START_STRIP_PRIVATE_DATA :
-                            NetLogTempFile::DO_START));
+
+  ProcessNetLogCommand(weak_ptr_factory_.GetWeakPtr(), net_log_temp_file_,
+                       command);
 }
 
 void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {

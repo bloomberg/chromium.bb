@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/base/net_log.h"
 
 namespace base {
 class DictionaryValue;
@@ -43,6 +44,7 @@ class NetLogTempFile {
  public:
   // This enum lists the UI button commands it could receive.
   enum Command {
+    DO_START_LOG_BYTES,  // Call StartNetLog logging all bytes received.
     DO_START,  // Call StartNetLog.
     DO_START_STRIP_PRIVATE_DATA,  // Call StartNetLog stripping private data.
     DO_STOP,   // Call StopNetLog.
@@ -103,11 +105,16 @@ class NetLogTempFile {
     // The file predates this session. May or may not have private data.
     // TODO(davidben): This state is kind of silly.
     LOG_TYPE_UNKNOWN,
-    // The file has credentials and cookies stripped.
-    LOG_TYPE_STRIP_PRIVATE_DATA,
+    // The log includes raw bytes.
+    LOG_TYPE_LOG_BYTES,
     // The file includes all data.
     LOG_TYPE_NORMAL,
+    // The file has credentials and cookies stripped.
+    LOG_TYPE_STRIP_PRIVATE_DATA,
   };
+
+  // Returns the NetLog::LogLevel corresponding to a LogType.
+  static net::NetLog::LogLevel GetLogLevelForLogType(LogType log_type);
 
   // Initializes the |state_| to STATE_NOT_LOGGING and |log_type_| to
   // LOG_TYPE_NONE (if there is no temporary file from earlier run) or
@@ -116,10 +123,10 @@ class NetLogTempFile {
   bool EnsureInit();
 
   // Start collecting NetLog data into chrome-net-export-log.json file in
-  // base::GetTempDir() directory. If |strip_private_data| is true, do not log
-  // cookies and credentials. It is a no-op if we are already collecting data
-  // into a file.
-  void StartNetLog(bool strip_private_data);
+  // base::GetTempDir() directory, using the specified log level. It is a no-op
+  // if we are already collecting data into a file, and |log_level| is ignored.
+  // TODO(mmenke):  That's rather weird behavior, think about improving it.
+  void StartNetLog(LogType log_type);
 
   // Stop collecting NetLog data into the temporary file. It is a no-op if we
   // are not collecting data into a file.

@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -12,21 +12,14 @@
 <link rel="stylesheet" href="net_export.css">
 </head>
 <body>
-  <h2>NetLog Export</h2>
+  <h2>Network Log Export</h2>
   <div id="net-export-main">
-    <div>
-      <label>
-        <input id="export-view-private-data-toggle"
-               type="checkbox" checked disabled>
-        Strip private information (cookies and credentials)
-      </label>
-    </div>
     <div>
       <button id="export-view-start-data" disabled>
         Start Logging to Disk
-	<div class="warning" id="export-view-deletes-log-text" hidden>
+        <div class="warning" id="export-view-deletes-log-text" hidden>
           Deletes old log
-	</div>
+        </div>
       </button>
     </div>
     <div>
@@ -43,7 +36,6 @@
         </div>
       </button>
     </div>
-    <pre id="export-view-file-path-text"></pre>
     <p>
       <b>INSTRUCTIONS</b>: Start logging, reproduce the problem,
       and then stop logging.  Make sure to send the email before
@@ -55,12 +47,38 @@
       of desktop Chrome.
     </p>
     <p>
-      <span class="warning">WARNING</span>: Logs contain a list of sites visited
-      from when logging started to when logging stopped.  They may also contain
-      general network configuration information, such as DNS and proxy
+      <b><span class="warning">WARNING</span></b>: Logs contain a list of sites
+      visited from when logging started to when logging stopped.  They may also
+      contain general network configuration information, such as DNS and proxy
       configuration. If private information is not stripped, the logs also
       contain cookies and credentials.
     </p>
+    <p>
+      <b>ADVANCED</b>:
+      <span class="warning">This section should normally be left alone.</span>
+      <div class="radio-button-div">
+        <label>
+          <input id="export-view-strip-private-data-button" type="radio"
+                 name="log-mode" value="STRIP_PRIVATE_DATA" checked disabled>
+          Strip private information
+        </label>
+      </div>
+      <div class="radio-button-div">
+        <label>
+          <input id="export-view-include-private-data-button" type="radio"
+                 name="log-mode" value="NORMAL" disabled>
+          Include cookies and credentials
+        </label>
+      </div>
+      <div class="radio-button-div">
+        <label>
+          <input id="export-view-log-bytes-button" type="radio"
+                 name="log-mode" value="LOG_BYTES" disabled>
+          Include raw bytes (will include cookies and credentials)
+        </label>
+      </div>
+    </p>
   </div>
+  <pre id="export-view-file-path-text"></pre>
 </body>
 </html>

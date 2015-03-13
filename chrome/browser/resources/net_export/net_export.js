@@ -46,8 +46,9 @@ var NetExportView = (function() {
      * Starts saving NetLog data to a file.
      */
     onStartData_: function() {
-      var stripPrivateData = $('export-view-private-data-toggle').checked;
-      chrome.send('startNetLog', [stripPrivateData]);
+      var logMode =
+          document.querySelector('input[name="log-mode"]:checked').value;
+      chrome.send('startNetLog', [logMode]);
     },
 
     /**
@@ -81,16 +82,20 @@ var NetExportView = (function() {
         $('export-view-file-path-text').textContent = '';
       }
 
-      $('export-view-private-data-toggle').disabled = true;
-      $('export-view-start-data').disabled = true;
+      // Disable all controls.  Useable controls are enabled below.
+      var controls = document.querySelectorAll('button, input');
+      for (var i = 0; i < controls.length; ++i) {
+        controls[i].disabled = true;
+      }
+
       $('export-view-deletes-log-text').hidden = true;
-      $('export-view-stop-data').disabled = true;
-      $('export-view-send-data').disabled = true;
       $('export-view-private-data-text').hidden = true;
       $('export-view-send-old-log-text').hidden = true;
       if (exportNetLogInfo.state == 'NOT_LOGGING') {
         // Allow making a new log.
-        $('export-view-private-data-toggle').disabled = false;
+        $('export-view-strip-private-data-button').disabled = false;
+        $('export-view-include-private-data-button').disabled = false;
+        $('export-view-log-bytes-button').disabled = false;
         $('export-view-start-data').disabled = false;
 
         // If there's an existing log, allow sending it.
@@ -104,9 +109,9 @@ var NetExportView = (function() {
           }
         }
       } else if (exportNetLogInfo.state == 'LOGGING') {
-        // Only possible to stop logging. Checkbox reflects current state.
-        $('export-view-private-data-toggle').checked =
-            (exportNetLogInfo.logType == 'STRIP_PRIVATE_DATA');
+        // Only possible to stop logging. Radio buttons reflects current state.
+        document.querySelector('input[name="log-mode"][value="' +
+                               exportNetLogInfo.logType + '"]').checked = true;
         $('export-view-stop-data').disabled = false;
       } else if (exportNetLogInfo.state == 'UNINITIALIZED') {
         $('export-view-file-path-text').textContent =

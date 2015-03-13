@@ -31,11 +31,14 @@ void NetLogTempFile::ProcessCommand(Command command) {
     return;
 
   switch (command) {
+    case DO_START_LOG_BYTES:
+      StartNetLog(LOG_TYPE_LOG_BYTES);
+      break;
     case DO_START:
-      StartNetLog(false);
+      StartNetLog(LOG_TYPE_NORMAL);
       break;
     case DO_START_STRIP_PRIVATE_DATA:
-      StartNetLog(true);
+      StartNetLog(LOG_TYPE_STRIP_PRIVATE_DATA);
       break;
     case DO_STOP:
       StopNetLog();
@@ -75,6 +78,9 @@ base::DictionaryValue* NetLogTempFile::GetState() {
     case LOG_TYPE_UNKNOWN:
       dict->SetString("logType", "UNKNOWN");
       break;
+    case LOG_TYPE_LOG_BYTES:
+      dict->SetString("logType", "LOG_BYTES");
+      break;
     case LOG_TYPE_NORMAL:
       dict->SetString("logType", "NORMAL");
       break;
@@ -84,6 +90,21 @@ base::DictionaryValue* NetLogTempFile::GetState() {
   }
 
   return dict;
+}
+
+net::NetLog::LogLevel NetLogTempFile::GetLogLevelForLogType(LogType log_type) {
+  switch (log_type) {
+  case LOG_TYPE_LOG_BYTES:
+    return net::NetLog::LOG_ALL;
+  case LOG_TYPE_NORMAL:
+    return net::NetLog::LOG_ALL_BUT_BYTES;
+  case LOG_TYPE_STRIP_PRIVATE_DATA:
+    return net::NetLog::LOG_STRIP_PRIVATE_DATA;
+  case LOG_TYPE_NONE:
+  case LOG_TYPE_UNKNOWN:
+    NOTREACHED();
+  }
+  return net::NetLog::LOG_STRIP_PRIVATE_DATA;
 }
 
 bool NetLogTempFile::EnsureInit() {
@@ -103,7 +124,7 @@ bool NetLogTempFile::EnsureInit() {
   return true;
 }
 
-void NetLogTempFile::StartNetLog(bool strip_private_data) {
+void NetLogTempFile::StartNetLog(LogType log_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
   if (state_ == STATE_LOGGING)
     return;
@@ -118,17 +139,13 @@ void NetLogTempFile::StartNetLog(bool strip_private_data) {
   if (file == NULL)
     return;
 
+  log_type_ = log_type;
+  state_ = STATE_LOGGING;
+
   scoped_ptr<base::Value> constants(NetInternalsUI::GetConstants());
   net_log_logger_.reset(new net::NetLogLogger(file, *constants));
-  if (strip_private_data) {
-    net_log_logger_->set_log_level(net::NetLog::LOG_STRIP_PRIVATE_DATA);
-    log_type_ = LOG_TYPE_STRIP_PRIVATE_DATA;
-  } else {
-    net_log_logger_->set_log_level(net::NetLog::LOG_ALL_BUT_BYTES);
-    log_type_ = LOG_TYPE_NORMAL;
-  }
+  net_log_logger_->set_log_level(GetLogLevelForLogType(log_type));
   net_log_logger_->StartObserving(chrome_net_log_);
-  state_ = STATE_LOGGING;
 }
 
 void NetLogTempFile::StopNetLog() {

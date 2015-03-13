@@ -16,6 +16,10 @@ button {
   width: 200px;
 }
 
+.radio-button-div {
+  margin: 7px auto;
+}
+
 .warning {
   color: red;
   font-size: 90%;
