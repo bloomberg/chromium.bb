@@ -50,6 +50,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/svg/SVGScriptElement.h"
 #include "platform/NotImplemented.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/text/TextBreakIterator.h"
 #include <limits>
 
@@ -102,8 +103,10 @@ static inline void insert(HTMLConstructionSiteTask& task)
     if (isHTMLTemplateElement(*task.parent))
         task.parent = toHTMLTemplateElement(task.parent.get())->content();
 
-    if (ContainerNode* parent = task.child->parentNode())
+    if (ContainerNode* parent = task.child->parentNode()) {
+        ScriptForbiddenScope forbidScript;
         parent->parserRemoveChild(*task.child);
+    }
 
     if (task.nextChild)
         task.parent->parserInsertBefore(task.child.get(), *task.nextChild);
@@ -150,8 +153,10 @@ static inline void executeReparentTask(HTMLConstructionSiteTask& task)
 {
     ASSERT(task.operation == HTMLConstructionSiteTask::Reparent);
 
-    if (ContainerNode* parent = task.child->parentNode())
+    if (ContainerNode* parent = task.child->parentNode()) {
+        ScriptForbiddenScope forbidScript;
         parent->parserRemoveChild(*task.child);
+    }
 
     task.parent->parserAppendChild(task.child);
 }

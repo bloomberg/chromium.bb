@@ -1,0 +1,20 @@
+<script type="foo" id="torun">
+document.getElementById("torun").appendChild(p);
+</script>
+
+<b>
+<p>
+<script>
+  if (window.testRunner)
+    window.testRunner.dumpAsText();
+  p = document.querySelector("p");
+  s = document.getElementById("torun");
+  s.appendChild(p);
+  s.type = "";
+</script>
+</b>
+</p>
+
+<script>
+  document.body.innerHTML = "PASS unless crash.";
+</script>
