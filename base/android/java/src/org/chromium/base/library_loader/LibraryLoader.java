@@ -5,6 +5,8 @@
 package org.chromium.base.library_loader;
 
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.util.Log;
 
@@ -13,6 +15,13 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.TraceEvent;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.HashMap;
 import java.util.Locale;
 
 import javax.annotation.Nullable;
@@ -87,6 +96,9 @@ public class LibraryLoader {
     // final (like now) or be protected in some way (volatile of synchronized).
     private final int mLibraryProcessType;
 
+    // Library -> Path it has been loaded from.
+    private final HashMap<String, String> mLoadedFrom;
+
     /**
      * @param libraryProcessType the process the shared library is loaded in. refer to
      *                           LibraryProcessType for possible values.
@@ -106,6 +118,7 @@ public class LibraryLoader {
 
     private LibraryLoader(int libraryProcessType) {
         mLibraryProcessType = libraryProcessType;
+        mLoadedFrom = new HashMap<String, String>();
     }
 
     /**
@@ -189,6 +202,68 @@ public class LibraryLoader {
         }
     }
 
+    private void prefetchLibraryToMemory(Context context, String library) {
+        String libFilePath = mLoadedFrom.get(library);
+        if (libFilePath == null) {
+            Log.i(TAG, "File path not found for " + library);
+            return;
+        }
+        String apkFilePath = context.getApplicationInfo().sourceDir;
+        if (libFilePath.equals(apkFilePath)) {
+            // TODO(lizeb): Make pre-faulting work with libraries loaded from the APK.
+            return;
+        }
+        try {
+            TraceEvent.begin("LibraryLoader.prefetchLibraryToMemory");
+            File file = new File(libFilePath);
+            int size = (int) file.length();
+            FileChannel channel = new RandomAccessFile(file, "r").getChannel();
+            MappedByteBuffer buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, size);
+            // TODO(lizeb): Figure out whether walking the entire library is really necessary.
+            // Page size is 4096 for all current Android architectures.
+            for (int index = 0; index < size; index += 4096) {
+                // Note: Testing shows that neither the Java compiler nor
+                // Dalvik/ART eliminates this loop.
+                buffer.get(index);
+            }
+        } catch (FileNotFoundException e) {
+            Log.w(TAG, "Library file not found: " + e);
+        } catch (IOException e) {
+            Log.w(TAG, "Impossible to map the file: " + e);
+        } finally {
+            TraceEvent.end("LibraryLoader.prefetchLibraryToMemory");
+        }
+    }
+
+    /** Prefetches the native libraries in a background thread.
+     *
+     * Launches an AsyncTask that maps the native libraries into memory, reads a
+     * part of each page from it, than unmaps it. This is done to warm up the
+     * page cache, turning hard page faults into soft ones.
+     *
+     * This is done this way, as testing shows that fadvise(FADV_WILLNEED) is
+     * detrimental to the startup time.
+     *
+     * @param context the application context.
+     */
+    public void asyncPrefetchLibrariesToMemory(final Context context) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                // Note: AsyncTasks are executed in a low priority background
+                // thread, which is the desired behavior here since we don't
+                // want to interfere with the rest of the initialization.
+                for (String library : NativeLibraries.LIBRARIES) {
+                    if (Linker.isChromiumLinkerLibrary(library)) {
+                        continue;
+                    }
+                    prefetchLibraryToMemory(context, library);
+                }
+                return null;
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
     // Invoke System.loadLibrary(...), triggering JNI_OnLoad in native code
     private void loadAlreadyLocked(
             Context context, boolean shouldDeleteFallbackLibraries)
@@ -263,6 +338,7 @@ public class LibraryLoader {
                                                 ? "using no map executable support fallback"
                                                 : "directly")
                                         + " from within " + apkFilePath);
+                                mLoadedFrom.put(library, apkFilePath);
                             } else {
                                 // Unpack library fallback.
                                 Log.i(TAG, "Loading " + library
@@ -272,10 +348,14 @@ public class LibraryLoader {
                                         context, library);
                                 fallbackWasUsed = true;
                                 Log.i(TAG, "Built fallback library " + libFilePath);
+                                mLoadedFrom.put(library, libFilePath);
                             }
                         } else {
                             // The library is in its own file.
                             Log.i(TAG, "Loading " + library);
+                            ApplicationInfo applicationInfo = context.getApplicationInfo();
+                            mLoadedFrom.put(library, new File(applicationInfo.nativeLibraryDir,
+                                                              libFilePath).getAbsolutePath());
                         }
 
                         // Load the library.
