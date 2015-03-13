@@ -253,8 +253,7 @@ bool WebKitTestController::PrepareForLayoutTest(
       ShellContentBrowserClient::Get()->browser_context();
   if (test_url.spec().find("compositing/") != std::string::npos)
     is_compositing_test_ = true;
-  initial_size_ = gfx::Size(
-      Shell::kDefaultTestWindowWidthDip, Shell::kDefaultTestWindowHeightDip);
+  initial_size_ = Shell::GetShellDefaultSize();
   // The W3C SVG layout tests use a different size than the other layout tests.
   if (test_url.spec().find("W3C-SVG-1.1") != std::string::npos)
     initial_size_ = gfx::Size(kTestSVGWindowWidthDip, kTestSVGWindowHeightDip);

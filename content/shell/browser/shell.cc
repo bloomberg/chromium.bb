@@ -31,33 +31,13 @@
 
 namespace content {
 
-const int Shell::kDefaultTestWindowWidthDip = 800;
-const int Shell::kDefaultTestWindowHeightDip = 600;
+const int kDefaultTestWindowWidthDip = 800;
+const int kDefaultTestWindowHeightDip = 600;
 
 std::vector<Shell*> Shell::windows_;
 base::Callback<void(Shell*)> Shell::shell_created_callback_;
 
 bool Shell::quit_message_loop_ = true;
-
-namespace {
-gfx::Size ShellDefaultSize() {
-  static gfx::Size default_shell_size;
-  if (!default_shell_size.IsEmpty())
-    return default_shell_size;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kContentShellHostWindowSize)) {
-    const std::string size_str = command_line->GetSwitchValueASCII(
-                  switches::kContentShellHostWindowSize);
-    int width, height;
-    CHECK_EQ(2, sscanf(size_str.c_str(), "%dx%d", &width, &height));
-    default_shell_size = gfx::Size(width, height);
-  } else {
-    default_shell_size = gfx::Size(
-      Shell::kDefaultTestWindowWidthDip, Shell::kDefaultTestWindowHeightDip);
-  }
-  return default_shell_size;
-}
-}  // namespace
 
 class Shell::DevToolsWebContentsObserver : public WebContentsObserver {
  public:
@@ -163,13 +143,13 @@ Shell* Shell::FromRenderViewHost(RenderViewHost* rvh) {
 
 // static
 void Shell::Initialize() {
-  PlatformInitialize(ShellDefaultSize());
+  PlatformInitialize(GetShellDefaultSize());
 }
 
 gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {
   if (!initial_size.IsEmpty())
     return initial_size;
-  return ShellDefaultSize();
+  return GetShellDefaultSize();
 }
 
 Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
@@ -406,6 +386,24 @@ void Shell::WebContentsFocused(WebContents* contents) {
 #if defined(TOOLKIT_VIEWS)
   PlatformWebContentsFocused(contents);
 #endif
+}
+
+gfx::Size Shell::GetShellDefaultSize() {
+  static gfx::Size default_shell_size;
+  if (!default_shell_size.IsEmpty())
+    return default_shell_size;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kContentShellHostWindowSize)) {
+    const std::string size_str = command_line->GetSwitchValueASCII(
+                  switches::kContentShellHostWindowSize);
+    int width, height;
+    CHECK_EQ(2, sscanf(size_str.c_str(), "%dx%d", &width, &height));
+    default_shell_size = gfx::Size(width, height);
+  } else {
+    default_shell_size = gfx::Size(
+      kDefaultTestWindowWidthDip, kDefaultTestWindowHeightDip);
+  }
+  return default_shell_size;
 }
 
 void Shell::TitleWasSet(NavigationEntry* entry, bool explicit_set) {

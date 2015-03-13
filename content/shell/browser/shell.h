@@ -53,9 +53,6 @@ class WebContents;
 class Shell : public WebContentsDelegate,
               public WebContentsObserver {
  public:
-  static const int kDefaultTestWindowWidthDip;
-  static const int kDefaultTestWindowHeightDip;
-
   ~Shell() override;
 
   void LoadURL(const GURL& url);
@@ -151,6 +148,8 @@ class Shell : public WebContentsDelegate,
   void WorkerCrashed(WebContents* source) override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
   void WebContentsFocused(WebContents* contents) override;
+
+  static gfx::Size GetShellDefaultSize();
 
  private:
   enum UIControl {
