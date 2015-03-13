@@ -627,48 +627,80 @@ void ThreadState::schedulePreciseGC()
     setGCState(PreciseGCScheduled);
 }
 
+namespace {
+
+#define UNEXPECTED_GCSTATE(s) case ThreadState::s: RELEASE_ASSERT_WITH_MESSAGE(false, "Unexpected transition while in GCState " #s); return
+
+void unexpectedGCState(ThreadState::GCState gcState)
+{
+    switch (gcState) {
+        UNEXPECTED_GCSTATE(NoGCScheduled);
+        UNEXPECTED_GCSTATE(IdleGCScheduled);
+        UNEXPECTED_GCSTATE(PreciseGCScheduled);
+        UNEXPECTED_GCSTATE(GCScheduledForTesting);
+        UNEXPECTED_GCSTATE(StoppingOtherThreads);
+        UNEXPECTED_GCSTATE(GCRunning);
+        UNEXPECTED_GCSTATE(EagerSweepScheduled);
+        UNEXPECTED_GCSTATE(LazySweepScheduled);
+        UNEXPECTED_GCSTATE(Sweeping);
+        UNEXPECTED_GCSTATE(SweepingAndIdleGCScheduled);
+        UNEXPECTED_GCSTATE(SweepingAndPreciseGCScheduled);
+    default:
+        ASSERT_NOT_REACHED();
+        return;
+    }
+}
+
+#undef UNEXPECTED_GCSTATE
+
+} // namespace
+
+#define VERIFY_STATE_TRANSITION(condition) if (UNLIKELY(!(condition))) unexpectedGCState(m_gcState)
+
 void ThreadState::setGCState(GCState gcState)
 {
     switch (gcState) {
     case NoGCScheduled:
         checkThread();
-        RELEASE_ASSERT(m_gcState == StoppingOtherThreads || m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled);
+        VERIFY_STATE_TRANSITION(m_gcState == StoppingOtherThreads || m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled);
         break;
     case IdleGCScheduled:
     case PreciseGCScheduled:
     case GCScheduledForTesting:
         checkThread();
-        RELEASE_ASSERT(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == GCScheduledForTesting || m_gcState == StoppingOtherThreads || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
+        VERIFY_STATE_TRANSITION(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == GCScheduledForTesting || m_gcState == StoppingOtherThreads || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
         completeSweep();
         break;
     case StoppingOtherThreads:
         checkThread();
-        RELEASE_ASSERT(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == GCScheduledForTesting || m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
+        VERIFY_STATE_TRANSITION(m_gcState == NoGCScheduled || m_gcState == IdleGCScheduled || m_gcState == PreciseGCScheduled || m_gcState == GCScheduledForTesting || m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled);
         completeSweep();
         break;
     case GCRunning:
         ASSERT(!isInGC());
-        RELEASE_ASSERT(m_gcState != GCRunning);
+        VERIFY_STATE_TRANSITION(m_gcState != GCRunning);
         break;
     case EagerSweepScheduled:
     case LazySweepScheduled:
         ASSERT(isInGC());
-        RELEASE_ASSERT(m_gcState == GCRunning);
+        VERIFY_STATE_TRANSITION(m_gcState == GCRunning);
         break;
     case Sweeping:
         checkThread();
-        RELEASE_ASSERT(m_gcState == EagerSweepScheduled || m_gcState == LazySweepScheduled);
+        VERIFY_STATE_TRANSITION(m_gcState == EagerSweepScheduled || m_gcState == LazySweepScheduled);
         break;
     case SweepingAndIdleGCScheduled:
     case SweepingAndPreciseGCScheduled:
         checkThread();
-        RELEASE_ASSERT(m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled || m_gcState == StoppingOtherThreads);
+        VERIFY_STATE_TRANSITION(m_gcState == Sweeping || m_gcState == SweepingAndIdleGCScheduled || m_gcState == SweepingAndPreciseGCScheduled || m_gcState == StoppingOtherThreads);
         break;
     default:
         ASSERT_NOT_REACHED();
     }
     m_gcState = gcState;
 }
+
+#undef VERIFY_STATE_TRANSITION
 
 ThreadState::GCState ThreadState::gcState() const
 {
