@@ -99,6 +99,8 @@ class NET_EXPORT HttpServerPropertiesImpl
                             AlternateProtocol alternate_protocol,
                             double probability) override;
   void SetBrokenAlternateProtocol(const HostPortPair& server) override;
+  void MarkAlternativeServiceRecentlyBroken(
+      const AlternativeService& alternative_service) override;
   bool IsAlternativeServiceBroken(
       const AlternativeService& alternative_service) override;
   bool WasAlternateProtocolRecentlyBroken(const HostPortPair& server) override;

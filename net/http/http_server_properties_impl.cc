@@ -343,6 +343,12 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
   }
 }
 
+void HttpServerPropertiesImpl::MarkAlternativeServiceRecentlyBroken(
+    const AlternativeService& alternative_service) {
+  if (!ContainsKey(recently_broken_alternative_services_, alternative_service))
+    recently_broken_alternative_services_[alternative_service] = 1;
+}
+
 bool HttpServerPropertiesImpl::IsAlternativeServiceBroken(
     const AlternativeService& alternative_service) {
   return ContainsKey(broken_alternative_services_, alternative_service);
