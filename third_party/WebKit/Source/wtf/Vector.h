@@ -22,6 +22,7 @@
 #define WTF_Vector_h
 
 #include "wtf/Alignment.h"
+#include "wtf/ConditionalDestructor.h"
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/DefaultAllocator.h"
 #include "wtf/FastAllocBase.h"
@@ -590,30 +591,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         friend class Deque;
     };
 
-    template<typename T, size_t inlineCapacity, typename Allocator>
-    class Vector;
-
-    // VectorDestructorBase defines the destructor of a vector. This base is used in order to
-    // completely avoid creating a destructor for a vector that does not need to be destructed.
-    // By doing so, the clang compiler will have correct information about whether or not a
-    // vector has a trivial destructor and we use that in a compiler plugin to ensure the
-    // correctness of non-finalized garbage-collected classes and the use of VectorTraits::needsDestruction.
-
-    // All non-GC managed vectors and heap-allocated vectors with inlineCapacity
-    // need a destructor.  This destructor will simply call finalize on the
-    // actual vector type.
-    template<typename Derived, bool hasInlineCapacity, bool isGarbageCollected>
-    class VectorDestructorBase {
-    public:
-        ~VectorDestructorBase() { static_cast<Derived*>(this)->finalize(); }
-    };
-
-    // Heap-allocated vectors with no inlineCapacity never need a destructor.
-    template<typename Derived>
-    class VectorDestructorBase<Derived, false, true> { };
-
-    template<typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator>
-    class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator>, public VectorDestructorBase<Vector<T, INLINE_CAPACITY, Allocator>, (INLINE_CAPACITY > 0), Allocator::isGarbageCollected> {
+    template<typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator> // Heap-allocated vectors with no inlineCapacity never need a destructor.
+    class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator>, public ConditionalDestructor<Vector<T, INLINE_CAPACITY, Allocator>, (INLINE_CAPACITY == 0) && Allocator::isGarbageCollected> {
         WTF_USE_ALLOCATOR(Vector, Allocator);
     private:
         typedef VectorBuffer<T, INLINE_CAPACITY, Allocator> Base;

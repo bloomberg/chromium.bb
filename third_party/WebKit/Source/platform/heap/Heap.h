@@ -1682,6 +1682,7 @@ public:
 
         // No allocator object is needed.
         void createAllocatorIfNeeded() { }
+        void releaseAllocator() { }
 
         // There is no allocator object in the HeapListHashSet (unlike in the
         // regular ListHashSet) so there is nothing to swap.

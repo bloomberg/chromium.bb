@@ -22,6 +22,7 @@
 
 #include "wtf/Alignment.h"
 #include "wtf/Assertions.h"
+#include "wtf/ConditionalDestructor.h"
 #include "wtf/DefaultAllocator.h"
 #include "wtf/HashTraits.h"
 #include "wtf/WTF.h"
@@ -346,23 +347,10 @@ namespace WTF {
         }
     };
 
-    // Don't declare a destructor for HeapAllocated hash tables.
-    template<typename Derived, bool isGarbageCollected>
-    class HashTableDestructorBase;
-
-    template<typename Derived>
-    class HashTableDestructorBase<Derived, true> { };
-
-    template<typename Derived>
-    class HashTableDestructorBase<Derived, false> {
-    public:
-        ~HashTableDestructorBase() { static_cast<Derived*>(this)->finalize(); }
-    };
-
     // Note: empty or deleted key values are not allowed, using them may lead to undefined behavior.
     // For pointer keys this means that null pointers are not allowed unless you supply custom key traits.
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-    class HashTable : public HashTableDestructorBase<HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>, Allocator::isGarbageCollected> {
+    class HashTable : public ConditionalDestructor<HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>, Allocator::isGarbageCollected> {
     public:
         typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> iterator;
         typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> const_iterator;
