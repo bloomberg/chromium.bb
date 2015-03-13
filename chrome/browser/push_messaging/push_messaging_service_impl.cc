@@ -121,11 +121,8 @@ PushMessagingServiceImpl::PushMessagingServiceImpl(Profile* profile)
       push_registration_count_(0),
       pending_push_registration_count_(0),
       weak_factory_(this) {
-  // In some tests, we might end up with |profile_| being null at this point.
-  // When that is the case |profile_| will be set in SetProfileForTesting(), at
-  // which point the service will start to observe HostContentSettingsMap.
-  if (profile_)
-    profile_->GetHostContentSettingsMap()->AddObserver(this);
+  DCHECK(profile);
+  profile_->GetHostContentSettingsMap()->AddObserver(this);
 }
 
 PushMessagingServiceImpl::~PushMessagingServiceImpl() {
