@@ -128,7 +128,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
       base::Bind(&ReportToUMA, content::VaapiH264Decoder::VAAPI_ERROR));
 
   if (!vaapi_wrapper_.get()) {
-    LOG(ERROR) << "Failed initializing VAAPI";
+    DVLOG(1) << "Failed initializing VAAPI for profile " << profile;
     return false;
   }
 

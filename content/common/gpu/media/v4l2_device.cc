@@ -35,7 +35,7 @@ scoped_refptr<V4L2Device> V4L2Device::Create(Type type) {
     return tegra_device;
 #endif
 
-  LOG(ERROR) << "Failed to create V4L2Device";
+  DVLOG(1) << "Failed to create V4L2Device";
   return scoped_refptr<V4L2Device>();
 }
 

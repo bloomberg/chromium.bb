@@ -266,7 +266,7 @@ void GpuVideoDecodeAccelerator::Initialize(
     return;
   }
   video_decode_accelerator_.reset();
-  NOTIMPLEMENTED() << "HW video decode acceleration not available.";
+  LOG(ERROR) << "HW video decode not available for profile " << profile;
   SendCreateDecoderReply(init_done_msg, false);
 }
 

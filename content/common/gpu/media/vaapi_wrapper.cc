@@ -141,15 +141,18 @@ scoped_ptr<VaapiWrapper> VaapiWrapper::Create(
     CodecMode mode,
     VAProfile va_profile,
     const base::Closure& report_error_to_uma_cb) {
+  if (!profile_infos_.Get().IsProfileSupported(mode, va_profile)) {
+    DVLOG(1) << "Unsupported va_profile: " << va_profile;
+    return nullptr;
+  }
+
   scoped_ptr<VaapiWrapper> vaapi_wrapper(new VaapiWrapper());
-
-  if (!vaapi_wrapper->VaInitialize(report_error_to_uma_cb))
-    return nullptr;
-
-  if (!vaapi_wrapper->Initialize(mode, va_profile))
-    return nullptr;
-
-  return vaapi_wrapper.Pass();
+  if (vaapi_wrapper->VaInitialize(report_error_to_uma_cb)) {
+    if (vaapi_wrapper->Initialize(mode, va_profile))
+      return vaapi_wrapper.Pass();
+  }
+  LOG(ERROR) << "Failed to create VaapiWrapper for va_profile: " << va_profile;
+  return nullptr;
 }
 
 // static
@@ -157,15 +160,9 @@ scoped_ptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
     CodecMode mode,
     media::VideoCodecProfile profile,
     const base::Closure& report_error_to_uma_cb) {
-  scoped_ptr<VaapiWrapper> vaapi_wrapper(new VaapiWrapper());
-
-  if (!vaapi_wrapper->VaInitialize(report_error_to_uma_cb))
-    return nullptr;
-
   VAProfile va_profile = ProfileToVAProfile(profile, mode);
-  if (!vaapi_wrapper->Initialize(mode, va_profile))
-    return nullptr;
-
+  scoped_ptr<VaapiWrapper> vaapi_wrapper =
+      Create(mode, va_profile, report_error_to_uma_cb);
   return vaapi_wrapper.Pass();
 }
 
@@ -443,11 +440,6 @@ bool VaapiWrapper::GetMaxResolution_Locked(
 }
 
 bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
-  if (!profile_infos_.Get().IsProfileSupported(mode, va_profile)) {
-    DVLOG(1) << "Unsupported va profile: " << va_profile;
-    return false;
-  }
-
   TryToSetVADisplayAttributeToLocalGPU();
 
   VAEntrypoint entrypoint =
