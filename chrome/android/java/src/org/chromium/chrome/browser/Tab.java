@@ -2051,9 +2051,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * @return The current {@link TabChromeWebContentsDelegateAndroid} instance.
+     * @return The current {@link ChromeWebContentsDelegateAndroid} instance.
      */
-    protected TabChromeWebContentsDelegateAndroid getChromeWebContentsDelegateAndroid() {
+    public ChromeWebContentsDelegateAndroid getChromeWebContentsDelegateAndroid() {
         return mWebContentsDelegate;
     }
 

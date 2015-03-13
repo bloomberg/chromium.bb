@@ -19,12 +19,47 @@ import org.chromium.content_public.browser.WebContents;
  */
 public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
-    @CalledByNative
-    public void onFindResultAvailable(FindNotificationDetails result) {
+    private FindResultListener mFindResultListener;
+
+
+    private FindMatchRectsListener mFindMatchRectsListener = null;
+
+    /**
+     * Listener to be notified when a find result is received.
+     */
+    public interface FindResultListener {
+        public void onFindResult(FindNotificationDetails result);
+    }
+
+    /**
+     * Listener to be notified when the rects corresponding to find matches are received.
+     */
+    public interface FindMatchRectsListener {
+        public void onFindMatchRects(FindMatchRectsDetails result);
     }
 
     @CalledByNative
-    public void onFindMatchRectsAvailable(FindMatchRectsDetails result) {
+    private void onFindResultAvailable(FindNotificationDetails result) {
+        if (mFindResultListener != null) {
+            mFindResultListener.onFindResult(result);
+        }
+    }
+
+    @CalledByNative
+    private void onFindMatchRectsAvailable(FindMatchRectsDetails result) {
+        if (mFindMatchRectsListener != null) {
+            mFindMatchRectsListener.onFindMatchRects(result);
+        }
+    }
+
+    /** Register to receive the results of startFinding calls. */
+    public void setFindResultListener(FindResultListener listener) {
+        mFindResultListener = listener;
+    }
+
+    /** Register to receive the results of requestFindMatchRects calls. */
+    public void setFindMatchRectsListener(FindMatchRectsListener listener) {
+        mFindMatchRectsListener = listener;
     }
 
     @CalledByNative
