@@ -188,7 +188,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
       if service_environment != 'prod':
         raise Exception('Invalid service_environment targeted for '
                         + buildtype + ': ' + service_environment)
-      if 'out/Release' not in destination:
+      if 'out/Release' not in destination and 'out\Release' not in destination:
         raise Exception('Prod builds must be placed in the out/Release folder')
       if app_id != None:
         raise Exception('Cannot pass in an app_id for '
