@@ -128,7 +128,7 @@ deps = {
    Var('chromium_git') + '/external/colorama.git' + '@' + '799604a1041e9b3bc5d2789ecbd7e8db2e18e6b8',
 
   'src/third_party/crashpad/crashpad':
-  Var('chromium_git') + '/crashpad/crashpad.git' + '@' + '58c7519598b39f58ec2ff1a821ace113f523b0fa',
+   Var('chromium_git') + '/crashpad/crashpad.git' + '@' + 'e7b80a52f5b9832814485b58f66d4b13117a5186',
 
   'src/third_party/trace-viewer':
    Var('chromium_git') + '/external/trace-viewer.git' + '@' + 'b3571f53f1bd7870ffd293a4bfca6473a21193d2',
