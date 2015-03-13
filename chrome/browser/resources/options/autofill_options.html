@@ -2,6 +2,15 @@
   <div class="close-button"></div>
   <h1 i18n-content="autofillOptionsPage"></h1>
   <div class="content-area">
+    <div id="autofill-wallet-setting-area" class="checkbox">
+      <label>
+        <input pref="autofill.wallet_import_enabled" type="checkbox">
+        <span>
+          Show addresses and credit cards from Google Payments
+          <!-- A reminder not to launch this UI. -->
+          <span style="font-size: 80%">translate me!</span>
+        </span>
+    </div>
 <if expr="is_macosx">
     <div class="checkbox">
       <label>
@@ -15,24 +24,6 @@
     <!-- TODO(estade): This section shouldn't show if you're not signed into
          sync. Or perhaps it should show with a link to go sign in with sync?
       -->
-    <div id="autofill-wallet-setting-area" class="settings-row" hidden>
-      <div class="checkbox">
-        <label>
-          <input pref="autofill.wallet_import_enabled" type="checkbox">
-          <span>
-            Include
-              <a target="_blank" i18n-values="href:manageWalletAddressesUrl">
-                  addresses</a>
-            and
-              <a target="_blank"
-                  i18n-values="href:manageWalletPaymentMethodsUrl">cards</a>
-            stored in your Google Wallet
-            <!-- A reminder not to launch this UI. -->
-            <span style="font-size: 80%">translate me!</span>
-          </span>
-      </div>
-    </div>
-
     <h3 i18n-content="autofillAddresses"></h3>
     <div class="settings-list">
       <list id="address-list"></list>

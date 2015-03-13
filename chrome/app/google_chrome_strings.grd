@@ -896,6 +896,9 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
       <message name="IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR" desc="Text explaining that user must upgrade Chrome to use Wallet.">
         You must upgrade Chrome to use Google Wallet [<ph name="ERROR_CODE">$1<ex>54</ex></ph>].
       </message>
+      <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that described a Wallet credit card which has been copied to the local Chrome instance.">
+        Copied to Chrome
+      </message>
 
       <!-- Network Error Pages -->
       <if expr="not is_android">

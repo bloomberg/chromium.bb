@@ -665,6 +665,19 @@ void PersonalDataManager::UpdateServerCreditCard(
   Refresh();
 }
 
+void PersonalDataManager::ResetFullServerCard(const std::string& guid) {
+  for (const CreditCard* card : server_credit_cards_) {
+    if (card->guid() == guid) {
+      DCHECK_EQ(card->record_type(), CreditCard::FULL_SERVER_CARD);
+      CreditCard card_copy = *card;
+      card_copy.set_record_type(CreditCard::MASKED_SERVER_CARD);
+      card_copy.SetNumber(card->LastFourDigits());
+      UpdateServerCreditCard(card_copy);
+      break;
+    }
+  }
+}
+
 void PersonalDataManager::ResetFullServerCards() {
   for (const CreditCard* card : server_credit_cards_) {
     CreditCard card_copy = *card;

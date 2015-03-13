@@ -181,25 +181,31 @@ cr.define('options', function() {
     },
 
     /**
-     * Requests profile data for the address represented by |guid| from the
-     * PersonalDataManager. Once the data is loaded, the AutofillOptionsHandler
-     * calls showEditAddressOverlay().
-     * @param {string} guid The GUID of the address to edit.
+     * For local Autofill data, this function causes the AutofillOptionsHandler
+     * to call showEditAddressOverlay(). For Wallet data, the user is
+     * redirected to the Wallet web interface.
+     * @param {Object} entry The relevant entry in data model.
      * @private
      */
-    loadAddressEditor_: function(guid) {
-      chrome.send('loadAddressEditor', [guid]);
+    loadAddressEditor_: function(entry) {
+      if (entry.isLocal)
+        chrome.send('loadAddressEditor', [entry.guid]);
+      else
+        window.open(loadTimeData.getString('manageWalletAddressesUrl'));
     },
 
     /**
-     * Requests profile data for the credit card represented by |guid| from the
-     * PersonalDataManager. Once the data is loaded, the AutofillOptionsHandler
-     * calls showEditCreditCardOverlay().
-     * @param {string} guid The GUID of the credit card to edit.
+     * For local Autofill data, this function causes the AutofillOptionsHandler
+     * to call showEditCreditCardOverlay(). For Wallet data, the user is
+     * redirected to the Wallet web interface.
+     * @param {Object} entry The relevant entry in data model.
      * @private
      */
-    loadCreditCardEditor_: function(guid) {
-      chrome.send('loadCreditCardEditor', [guid]);
+    loadCreditCardEditor_: function(entry) {
+      if (entry.isLocal)
+        chrome.send('loadCreditCardEditor', [entry.guid]);
+      else
+        window.open(loadTimeData.getString('manageWalletPaymentMethodsUrl'));
     },
 
     /**
@@ -242,12 +248,12 @@ cr.define('options', function() {
     AutofillOptions.getInstance().removeData_(guid, metricsAction);
   };
 
-  AutofillOptions.loadAddressEditor = function(guid) {
-    AutofillOptions.getInstance().loadAddressEditor_(guid);
+  AutofillOptions.loadAddressEditor = function(entry) {
+    AutofillOptions.getInstance().loadAddressEditor_(entry);
   };
 
-  AutofillOptions.loadCreditCardEditor = function(guid) {
-    AutofillOptions.getInstance().loadCreditCardEditor_(guid);
+  AutofillOptions.loadCreditCardEditor = function(entry) {
+    AutofillOptions.getInstance().loadCreditCardEditor_(entry);
   };
 
   AutofillOptions.editAddress = function(address) {

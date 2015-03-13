@@ -17,13 +17,12 @@
   text-overflow: ellipsis;
 }
 
-.autofill-list-item + img {
-  -webkit-padding-end: 20px;
-  vertical-align: top;
-}
-
 #autofill-options > div:last-child {
   margin-top: 15px;
+}
+
+#autofill-options .deletable-item > span {
+  color: #777;
 }
 
 #autofill-options > div.settings-list > div:last-child {
@@ -37,6 +36,7 @@
 }
 
 #autofill-options .list-inline-button {
+  -webkit-margin-start: 12px;
   margin-top: 0;
   vertical-align: top;
 }

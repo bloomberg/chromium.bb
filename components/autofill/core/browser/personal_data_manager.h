@@ -121,7 +121,11 @@ class PersonalDataManager : public KeyedService,
   // status can be changed.
   void UpdateServerCreditCard(const CreditCard& credit_card);
 
+  // Resets the card for |guid| to the masked state.
+  void ResetFullServerCard(const std::string& guid);
+
   // Resets all unmasked cards to the masked state.
+  // TODO(estade): remove this.
   void ResetFullServerCards();
 
   // Returns the credit card with the specified |guid|, or NULL if there is

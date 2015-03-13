@@ -10503,6 +10503,9 @@ Chrome ran out of memory.
         <message name="IDS_AUTOFILL_EDIT_PROFILE_BUTTON" desc="The label of the button that edits the currently selected Autofill profile.">
           Edit...
         </message>
+        <message name="IDS_AUTOFILL_CLEAR_LOCAL_COPY_BUTTON" desc="The label of the button that clears the local copy of a Wallet Credit Card.">
+          Clear copy
+        </message>
         <message name="IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS_LINK" desc="The label of the 'Manage Autofill settings' link">
           Manage Autofill settings
         </message>

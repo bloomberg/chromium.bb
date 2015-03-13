@@ -964,7 +964,7 @@ bool AutofillManager::RefreshDataModels() {
     for (AutofillProfile* profile : profiles) {
       if (profile->record_type() == AutofillProfile::LOCAL_PROFILE)
         is_local_data_available = true;
-      else
+      else if (profile->record_type() == AutofillProfile::SERVER_PROFILE)
         is_server_data_available = true;
     }
     address_form_event_logger_->set_is_server_data_available(

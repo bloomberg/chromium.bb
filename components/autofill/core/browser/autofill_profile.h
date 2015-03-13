@@ -34,6 +34,9 @@ class AutofillProfile : public AutofillDataModel {
 
     // A profile synced down from the server. These are read-only locally.
     SERVER_PROFILE,
+
+    // An auxiliary profile, such as a Mac address book entry.
+    AUXILIARY_PROFILE,
   };
 
   AutofillProfile(const std::string& guid, const std::string& origin);
@@ -69,6 +72,7 @@ class AutofillProfile : public AutofillDataModel {
 
   // How this card is stored.
   RecordType record_type() const { return record_type_; }
+  void set_record_type(RecordType type) { record_type_ = type; }
 
   // Multi-value equivalents to |GetInfo| and |SetInfo|.
   void SetRawMultiInfo(ServerFieldType type,

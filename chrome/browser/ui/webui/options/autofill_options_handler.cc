@@ -22,6 +22,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/core/browser/autofill_country.h"
@@ -63,6 +64,17 @@ static const char kCountryField[] = "country";
 
 static const char kComponents[] = "components";
 static const char kLanguageCode[] = "languageCode";
+
+scoped_ptr<base::DictionaryValue> CreditCardToDictionary(
+    const CreditCard& card) {
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+  value->SetString("guid", card.guid());
+  value->SetString("label", card.Label());
+  value->SetBoolean("isLocal", card.record_type() == CreditCard::LOCAL_CARD);
+  value->SetBoolean("isCached",
+                    card.record_type() == CreditCard::FULL_SERVER_CARD);
+  return value.Pass();
+}
 
 // Fills |components| with the address UI components that should be used to
 // input an address for |country_code| when UI BCP 47 language code is
@@ -319,6 +331,8 @@ void AutofillOptionsHandler::GetLocalizedValues(
     { "autofillAddAddress", IDS_AUTOFILL_ADD_ADDRESS_BUTTON },
     { "autofillAddCreditCard", IDS_AUTOFILL_ADD_CREDITCARD_BUTTON },
     { "autofillEditProfileButton", IDS_AUTOFILL_EDIT_PROFILE_BUTTON },
+    { "autofillDescribeLocalCopy", IDS_AUTOFILL_DESCRIBE_LOCAL_COPY },
+    { "autofillClearLocalCopyButton", IDS_AUTOFILL_CLEAR_LOCAL_COPY_BUTTON },
     { "helpButton", IDS_AUTOFILL_HELP_LABEL },
     { "addAddressTitle", IDS_AUTOFILL_ADD_ADDRESS_CAPTION },
     { "editAddressTitle", IDS_AUTOFILL_EDIT_ADDRESS_CAPTION },
@@ -402,8 +416,8 @@ void AutofillOptionsHandler::RegisterMessages() {
       base::Bind(&AutofillOptionsHandler::ValidatePhoneNumbers,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "remaskServerCards",
-      base::Bind(&AutofillOptionsHandler::RemaskServerCards,
+      "clearLocalCardCopy",
+      base::Bind(&AutofillOptionsHandler::RemaskServerCard,
                  base::Unretained(this)));
 }
 
@@ -446,8 +460,7 @@ void AutofillOptionsHandler::LoadAutofillData() {
   if (!IsPersonalDataLoaded())
     return;
 
-  const std::vector<AutofillProfile*>& profiles =
-      personal_data_->web_profiles();
+  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   std::vector<base::string16> labels;
   AutofillProfile::CreateDifferentiatingLabels(
       profiles,
@@ -457,26 +470,24 @@ void AutofillOptionsHandler::LoadAutofillData() {
 
   base::ListValue addresses;
   for (size_t i = 0; i < profiles.size(); ++i) {
-    base::ListValue* entry = new base::ListValue();
-    entry->Append(new base::StringValue(profiles[i]->guid()));
-    entry->Append(new base::StringValue(labels[i]));
-    addresses.Append(entry);
+    // Skip showing auxiliary profiles (e.g. Mac Contacts) for now.
+    if (profiles[i]->record_type() == AutofillProfile::AUXILIARY_PROFILE)
+      continue;
+
+    scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+    value->SetString("guid", profiles[i]->guid());
+    value->SetString("label", labels[i]);
+    value->SetBoolean("isLocal", profiles[i]->record_type() ==
+                                     AutofillProfile::LOCAL_PROFILE);
+    addresses.Append(value.release());
   }
 
   web_ui()->CallJavascriptFunction("AutofillOptions.setAddressList", addresses);
 
   base::ListValue credit_cards;
-  const std::vector<CreditCard*>& cards = personal_data_->GetLocalCreditCards();
+  const std::vector<CreditCard*>& cards = personal_data_->GetCreditCards();
   for (const CreditCard* card : cards) {
-    // TODO(estade): this should be a dictionary.
-    base::ListValue* entry = new base::ListValue();
-    entry->Append(new base::StringValue(card->guid()));
-    entry->Append(new base::StringValue(card->Label()));
-    entry->Append(new base::StringValue(
-        webui::GetBitmapDataUrlFromResource(
-            CreditCard::IconResourceId(card->type()))));
-    entry->Append(new base::StringValue(card->TypeForDisplay()));
-    credit_cards.Append(entry);
+    credit_cards.Append(CreditCardToDictionary(*card).release());
   }
 
   web_ui()->CallJavascriptFunction("AutofillOptions.setCreditCardList",
@@ -694,11 +705,17 @@ void AutofillOptionsHandler::ValidatePhoneNumbers(const base::ListValue* args) {
   scoped_ptr<base::ListValue> list_value = ValidatePhoneArguments(args);
 
   web_ui()->CallJavascriptFunction(
-    "AutofillEditAddressOverlay.setValidatedPhoneNumbers", *list_value);
+      "AutofillEditAddressOverlay.setValidatedPhoneNumbers", *list_value);
 }
 
-void AutofillOptionsHandler::RemaskServerCards(const base::ListValue* args) {
-  personal_data_->ResetFullServerCards();
+void AutofillOptionsHandler::RemaskServerCard(const base::ListValue* args) {
+  std::string guid;
+  if (!args->GetString(0, &guid)) {
+    NOTREACHED();
+    return;
+  }
+
+  personal_data_->ResetFullServerCard(guid);
 }
 
 bool AutofillOptionsHandler::IsPersonalDataLoaded() const {

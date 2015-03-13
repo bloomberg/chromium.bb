@@ -94,8 +94,9 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   // array of numbers, and the country code string set on the profile.
   void ValidatePhoneNumbers(const base::ListValue* args);
 
-  // Resets the masked state on all unmasked Wallet cards.
-  void RemaskServerCards(const base::ListValue* args);
+  // Resets the masked state on the unmasked Wallet card described by the GUID
+  // in args[0].
+  void RemaskServerCard(const base::ListValue* args);
 
   // Returns true if |personal_data_| is non-null and loaded.
   bool IsPersonalDataLoaded() const;

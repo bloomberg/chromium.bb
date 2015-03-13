@@ -11,13 +11,13 @@ cr.define('options.autofillOptions', function() {
   /**
    * @return {!HTMLButtonElement}
    */
-  function AutofillEditProfileButton(guid, edit) {
+  function AutofillEditProfileButton(edit) {
     var editButtonEl = /** @type {HTMLButtonElement} */(
         document.createElement('button'));
     editButtonEl.className = 'list-inline-button custom-appearance';
     editButtonEl.textContent =
         loadTimeData.getString('autofillEditProfileButton');
-    editButtonEl.onclick = function(e) { edit(guid); };
+    editButtonEl.onclick = edit;
 
     editButtonEl.onmousedown = function(e) {
       // Don't select the row when clicking the button.
@@ -31,14 +31,15 @@ cr.define('options.autofillOptions', function() {
 
   /**
    * Creates a new address list item.
-   * @param {Array} entry An array of the form [guid, label].
+   * @param {Object} entry An object with metadata about an address profile.
    * @constructor
    * @extends {options.DeletableItem}
    */
   function AddressListItem(entry) {
     var el = cr.doc.createElement('div');
-    el.guid = entry[0];
-    el.label = entry[1];
+    for (var key in entry) {
+      el[key] = entry[key];
+    }
     el.__proto__ = AddressListItem.prototype;
     el.decorate();
 
@@ -58,26 +59,28 @@ cr.define('options.autofillOptions', function() {
       label.textContent = this.label;
       this.contentElement.appendChild(label);
 
+      if (!this.isLocal)
+        this.deletable = false;
+
       // The 'Edit' button.
+      var guid = this.guid;
       var editButtonEl = AutofillEditProfileButton(
-        this.guid,
-        AutofillOptions.loadAddressEditor);
+          function() { AutofillOptions.loadAddressEditor(guid); });
       this.contentElement.appendChild(editButtonEl);
     },
   };
 
   /**
    * Creates a new credit card list item.
-   * @param {Array} entry An array of the form [guid, label, icon].
+   * @param {Object} entry An object with metadata about a credit card.
    * @constructor
    * @extends {options.DeletableItem}
    */
   function CreditCardListItem(entry) {
     var el = cr.doc.createElement('div');
-    el.guid = entry[0];
-    el.label = entry[1];
-    el.icon = entry[2];
-    el.description = entry[3];
+    for (var key in entry) {
+      el[key] = entry[key];
+    }
     el.__proto__ = CreditCardListItem.prototype;
     el.decorate();
 
@@ -97,16 +100,26 @@ cr.define('options.autofillOptions', function() {
       label.textContent = this.label;
       this.contentElement.appendChild(label);
 
-      // The credit card icon.
-      var icon = this.ownerDocument.createElement('img');
-      icon.src = this.icon;
-      icon.alt = this.description;
-      this.contentElement.appendChild(icon);
+      if (!this.isLocal)
+        this.deletable = false;
+
+      var guid = this.guid;
+      if (this.isCached) {
+        var localCopyText = this.ownerDocument.createElement('span');
+        localCopyText.textContent =
+            loadTimeData.getString('autofillDescribeLocalCopy');
+        this.contentElement.appendChild(localCopyText);
+
+        var clearLocalCopyButton = AutofillEditProfileButton(
+            function() { chrome.send('clearLocalCardCopy', [guid]); });
+        clearLocalCopyButton.textContent =
+            loadTimeData.getString('autofillClearLocalCopyButton');
+        this.contentElement.appendChild(clearLocalCopyButton);
+      }
 
       // The 'Edit' button.
       var editButtonEl = AutofillEditProfileButton(
-        this.guid,
-        AutofillOptions.loadCreditCardEditor);
+          function() { AutofillOptions.loadCreditCardEditor(guid); });
       this.contentElement.appendChild(editButtonEl);
     },
   };
@@ -362,7 +375,7 @@ cr.define('options.autofillOptions', function() {
 
     /** @override */
     activateItemAtIndex: function(index) {
-      AutofillOptions.loadAddressEditor(this.dataModel.item(index)[0]);
+      AutofillOptions.loadAddressEditor(this.dataModel.item(index));
     },
 
     /**
@@ -375,7 +388,7 @@ cr.define('options.autofillOptions', function() {
 
     /** @override */
     deleteItemAtIndex: function(index) {
-      AutofillOptions.removeData(this.dataModel.item(index)[0],
+      AutofillOptions.removeData(this.dataModel.item(index).guid,
                                  'Options_AutofillAddressDeleted');
     },
   };
@@ -396,7 +409,7 @@ cr.define('options.autofillOptions', function() {
 
     /** @override */
     activateItemAtIndex: function(index) {
-      AutofillOptions.loadCreditCardEditor(this.dataModel.item(index)[0]);
+      AutofillOptions.loadCreditCardEditor(this.dataModel.item(index));
     },
 
     /**
@@ -409,7 +422,7 @@ cr.define('options.autofillOptions', function() {
 
     /** @override */
     deleteItemAtIndex: function(index) {
-      AutofillOptions.removeData(this.dataModel.item(index)[0],
+      AutofillOptions.removeData(this.dataModel.item(index).guid,
                                  'Options_AutofillCreditCardDeleted');
     },
   };
