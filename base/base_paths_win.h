@@ -16,8 +16,14 @@ enum {
 
   DIR_WINDOWS,  // Windows directory, usually "c:\windows"
   DIR_SYSTEM,   // Usually c:\windows\system32"
-  DIR_PROGRAM_FILES,      // Usually c:\program files
-  DIR_PROGRAM_FILESX86,   // Usually c:\program files or c:\program files (x86)
+  //                         32-bit     32-bit on 64-bit   64-bit on 64-bit
+  // DIR_PROGRAM_FILES         1               2                  1
+  // DIR_PROGRAM_FILESX86      1               2                  2
+  // DIR_PROGRAM_FILES6432     1               1                  1
+  // 1 - C:\Program Files   2 - C:\Program Files (x86)
+  DIR_PROGRAM_FILES,      // See table above.
+  DIR_PROGRAM_FILESX86,   // See table above.
+  DIR_PROGRAM_FILES6432,  // See table above.
 
   DIR_IE_INTERNET_CACHE,  // Temporary Internet Files directory.
   DIR_COMMON_START_MENU,  // Usually "C:\Documents and Settings\All Users\

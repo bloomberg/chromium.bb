@@ -6,8 +6,10 @@
 #include <shlobj.h>
 
 #include "base/base_paths.h"
+#include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
 
@@ -60,6 +62,27 @@ bool PathProviderWin(int key, FilePath* result) {
       }
       // Fall through to base::DIR_PROGRAM_FILES if we're on an X86 machine.
     case base::DIR_PROGRAM_FILES:
+      if (FAILED(SHGetFolderPath(NULL, CSIDL_PROGRAM_FILES, NULL,
+                                 SHGFP_TYPE_CURRENT, system_buffer)))
+        return false;
+      cur = FilePath(system_buffer);
+      break;
+    case base::DIR_PROGRAM_FILES6432:
+#if !defined(_WIN64)
+      if (base::win::OSInfo::GetInstance()->wow64_status() ==
+          base::win::OSInfo::WOW64_ENABLED) {
+        scoped_ptr<base::Environment> env(base::Environment::Create());
+        std::string programfiles_w6432;
+        // 32-bit process running in WOW64 sets ProgramW6432 environment
+        // variable. See
+        // https://msdn.microsoft.com/library/windows/desktop/aa384274.aspx.
+        if (!env->GetVar("ProgramW6432", &programfiles_w6432))
+          return false;
+        // GetVar returns UTF8 - convert back to Wide.
+        cur = FilePath(UTF8ToWide(programfiles_w6432));
+        break;
+      }
+#endif
       if (FAILED(SHGetFolderPath(NULL, CSIDL_PROGRAM_FILES, NULL,
                                  SHGFP_TYPE_CURRENT, system_buffer)))
         return false;

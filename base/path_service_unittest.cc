@@ -220,3 +220,55 @@ TEST_F(PathServiceTest, RemoveOverride) {
   EXPECT_TRUE(PathService::Get(base::DIR_TEMP, &new_user_data_dir));
   EXPECT_EQ(original_user_data_dir, new_user_data_dir);
 }
+
+#if defined(OS_WIN)
+TEST_F(PathServiceTest, GetProgramFiles) {
+  base::FilePath programfiles_dir;
+#if defined(_WIN64)
+  // 64-bit on 64-bit.
+  EXPECT_TRUE(PathService::Get(base::DIR_PROGRAM_FILES,
+      &programfiles_dir));
+  EXPECT_EQ(programfiles_dir.value(),
+      FILE_PATH_LITERAL("C:\\Program Files"));
+  EXPECT_TRUE(PathService::Get(base::DIR_PROGRAM_FILESX86,
+      &programfiles_dir));
+  EXPECT_EQ(programfiles_dir.value(),
+      FILE_PATH_LITERAL("C:\\Program Files (x86)"));
+  EXPECT_TRUE(PathService::Get(base::DIR_PROGRAM_FILES6432,
+      &programfiles_dir));
+  EXPECT_EQ(programfiles_dir.value(),
+      FILE_PATH_LITERAL("C:\\Program Files"));
+#else
+  if (base::win::OSInfo::GetInstance()->wow64_status() ==
+      base::win::OSInfo::WOW64_ENABLED) {
+    // 32-bit on 64-bit.
+    EXPECT_TRUE(PathService::Get(base::DIR_PROGRAM_FILES,
+        &programfiles_dir));
+    EXPECT_EQ(programfiles_dir.value(),
+        FILE_PATH_LITERAL("C:\\Program Files (x86)"));
+    EXPECT_TRUE(PathService::Get(base::DIR_PROGRAM_FILESX86,
+        &programfiles_dir));
+    EXPECT_EQ(programfiles_dir.value(),
+        FILE_PATH_LITERAL("C:\\Program Files (x86)"));
+    EXPECT_TRUE(PathService::Get(base::DIR_PROGRAM_FILES6432,
+        &programfiles_dir));
+    EXPECT_EQ(programfiles_dir.value(),
+        FILE_PATH_LITERAL("C:\\Program Files"));
+  } else {
+    // 32-bit on 32-bit.
+    EXPECT_TRUE(PathService::Get(base::DIR_PROGRAM_FILES,
+        &programfiles_dir));
+    EXPECT_EQ(programfiles_dir.value(),
+        FILE_PATH_LITERAL("C:\\Program Files"));
+    EXPECT_TRUE(PathService::Get(base::DIR_PROGRAM_FILESX86,
+        &programfiles_dir));
+    EXPECT_EQ(programfiles_dir.value(),
+        FILE_PATH_LITERAL("C:\\Program Files"));
+    EXPECT_TRUE(PathService::Get(base::DIR_PROGRAM_FILES6432,
+        &programfiles_dir));
+    EXPECT_EQ(programfiles_dir.value(),
+        FILE_PATH_LITERAL("C:\\Program Files"));
+  }
+#endif
+}
+#endif
