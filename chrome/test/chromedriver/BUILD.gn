@@ -86,6 +86,9 @@ source_set("automation_client_lib") {
                   ".",
                   "//chrome")
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   # Also compile the generated files.
   sources += get_target_outputs(":embed_extension_in_cpp")
   sources += get_target_outputs(":embed_js_in_cpp")
