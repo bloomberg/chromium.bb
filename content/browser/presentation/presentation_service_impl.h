@@ -78,10 +78,14 @@ class CONTENT_EXPORT PresentationServiceImpl
       PresentationServiceDelegate* delegate);
 
   // PresentationService implementation.
+  void SetDefaultPresentationURL(
+      const mojo::String& presentation_url,
+      const mojo::String& presentation_id) override;
   void GetScreenAvailability(
       const mojo::String& presentation_url,
       const ScreenAvailabilityMojoCallback& callback) override;
-  void OnScreenAvailabilityListenerRemoved() override;
+  void OnScreenAvailabilityListenerRemoved(
+      const mojo::String& presentation_url) override;
   void ListenForDefaultSessionStart(
       const DefaultSessionMojoCallback& callback) override;
   void StartSession(

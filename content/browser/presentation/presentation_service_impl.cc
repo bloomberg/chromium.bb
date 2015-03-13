@@ -60,6 +60,13 @@ void PresentationServiceImpl::OnConnectionError() {
           << render_frame_host_->GetRoutingID();
 }
 
+void PresentationServiceImpl::SetDefaultPresentationURL(
+    const mojo::String& presentation_url,
+    const mojo::String& presentation_id) {
+  NOTIMPLEMENTED();
+}
+
+
 void PresentationServiceImpl::GetScreenAvailability(
     const mojo::String& presentation_url,
     const ScreenAvailabilityMojoCallback& callback) {
@@ -95,7 +102,8 @@ void PresentationServiceImpl::GetScreenAvailability(
   it->second->CallbackReceived(callback);
 }
 
-void PresentationServiceImpl::OnScreenAvailabilityListenerRemoved() {
+void PresentationServiceImpl::OnScreenAvailabilityListenerRemoved(
+    const mojo::String& presentation_url) {
   NOTIMPLEMENTED();
 }
 

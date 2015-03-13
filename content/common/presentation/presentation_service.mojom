@@ -25,6 +25,12 @@ struct PresentationError {
 };
 
 interface PresentationService {
+    // Called when the frame sets or changes the default presentation URL or
+    // presentation ID.
+    SetDefaultPresentationURL(
+        string default_presentation_url,
+        string? default_presentation_id);
+
     // Returns the last screen availability state if it’s changed since the last
     // time the method was called. The client has to call this method again when
     // handling the result (provided via Mojo callback) to get the next update
@@ -37,7 +43,7 @@ interface PresentationService {
 
     // Called when the frame no longer listens to the
     // |availablechange| event.
-    OnScreenAvailabilityListenerRemoved();
+    OnScreenAvailabilityListenerRemoved(string? presentation_url);
 
     // Called when the renderer is ready to receive the browser initiated
     // session. If the default session is started by the embedder before this
@@ -57,7 +63,7 @@ interface PresentationService {
     // rather than get a new one. An empty presentation id means that the
     // UA will generate the presentation id.
     StartSession(string presentation_url, string? presentation_id)
-         => (PresentationSessionInfo? sessionInfo, PresentationError? error);
+        => (PresentationSessionInfo? sessionInfo, PresentationError? error);
 
     // Called when joinSession() is called by the frame. The result callback
     // works the same as for the method above. JoinSession will join a known

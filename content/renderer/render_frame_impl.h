@@ -515,6 +515,7 @@ class CONTENT_EXPORT RenderFrameImpl
         const blink::WebAXObject& end_object,
         int end_offset);
   virtual void didChangeManifest(blink::WebLocalFrame*);
+  virtual void didChangeDefaultPresentation(blink::WebLocalFrame*);
   virtual bool enterFullscreen();
   virtual bool exitFullscreen();
   void suddenTerminationDisablerChanged(

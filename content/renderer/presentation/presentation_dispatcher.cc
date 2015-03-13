@@ -12,6 +12,9 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationError.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -28,6 +31,13 @@ blink::WebPresentationError::ErrorType GetWebPresentationErrorTypeFromMojo(
     default:
       return blink::WebPresentationError::ErrorTypeUnknown;
   }
+}
+
+GURL GetPresentationURLFromFrame(content::RenderFrame* frame) {
+  DCHECK(frame);
+
+  GURL url(frame->GetWebFrame()->document().defaultPresentationURL());
+  return url.is_valid() ? url : GURL();
 }
 
 }  // namespace
@@ -56,14 +66,17 @@ void PresentationDispatcher::setController(
 }
 
 void PresentationDispatcher::updateAvailableChangeWatched(bool watched) {
+  GURL presentation_url(GetPresentationURLFromFrame(render_frame()));
+
   ConnectToPresentationServiceIfNeeded();
   if (watched) {
     presentation_service_->GetScreenAvailability(
-        mojo::String(),
+        presentation_url.spec(),
         base::Bind(&PresentationDispatcher::OnScreenAvailabilityChanged,
                  base::Unretained(this)));
   } else {
-    presentation_service_->OnScreenAvailabilityListenerRemoved();
+    presentation_service_->OnScreenAvailabilityListenerRemoved(
+        presentation_url.spec());
   }
 }
 
@@ -101,6 +114,14 @@ void PresentationDispatcher::joinSession(
       base::Bind(&PresentationDispatcher::OnSessionCreated,
           base::Unretained(this),
           base::Owned(callback)));
+}
+
+void PresentationDispatcher::DidChangeDefaultPresentation() {
+  GURL presentation_url(GetPresentationURLFromFrame(render_frame()));
+
+  ConnectToPresentationServiceIfNeeded();
+  presentation_service_->SetDefaultPresentationURL(
+      presentation_url.spec(), mojo::String());
 }
 
 void PresentationDispatcher::OnScreenAvailabilityChanged(bool available) {

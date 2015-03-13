@@ -42,6 +42,9 @@ class CONTENT_EXPORT PresentationDispatcher
       const blink::WebString& presentationId,
       blink::WebPresentationSessionClientCallbacks* callback);
 
+  // RenderFrameObserver
+  void DidChangeDefaultPresentation() override;
+
   void OnScreenAvailabilityChanged(bool available);
   void OnSessionCreated(
     blink::WebPresentationSessionClientCallbacks* callback,
