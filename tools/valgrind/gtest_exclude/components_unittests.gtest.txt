@@ -3,6 +3,3 @@ WebDataServiceAutofillTest.ProfileUpdate
 
 # Fails under valgrind, see http://crbug.com/444516
 AudioDirectiveListTest.*
-
-# http://crbug.com/462352
-FeedbackUploaderChromeTest.VariationHeaders
