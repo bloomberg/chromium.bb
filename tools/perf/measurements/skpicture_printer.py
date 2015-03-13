@@ -13,8 +13,7 @@ _JS = 'chrome.gpuBenchmarking.printToSkPicture("{0}");'
 
 class SkpicturePrinter(page_test.PageTest):
   def __init__(self, skp_outdir):
-    super(SkpicturePrinter, self).__init__(
-        action_name_to_run='RunPageInteractions')
+    super(SkpicturePrinter, self).__init__()
     self._skp_outdir = skp_outdir
 
   def CustomizeBrowserOptions(self, options):

@@ -14,8 +14,7 @@ from telemetry.page import page_test
 
 class MemoryMultiTab(page_test.PageTest):
   def __init__(self):
-    super(MemoryMultiTab, self).__init__(
-      action_name_to_run='RunPageInteractions')
+    super(MemoryMultiTab, self).__init__()
     self._memory_metric = None
     # _first_tab is used to make memory measurements
     self._first_tab = None

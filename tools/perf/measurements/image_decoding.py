@@ -13,8 +13,7 @@ from telemetry.value import scalar
 
 class ImageDecoding(page_test.PageTest):
   def __init__(self):
-    super(ImageDecoding, self).__init__(
-      action_name_to_run='RunPageInteractions')
+    super(ImageDecoding, self).__init__()
     self._power_metric = None
 
   def CustomizeBrowserOptions(self, options):

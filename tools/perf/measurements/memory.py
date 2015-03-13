@@ -8,7 +8,7 @@ from telemetry.page import page_test
 
 class Memory(page_test.PageTest):
   def __init__(self):
-    super(Memory, self).__init__('RunPageInteractions')
+    super(Memory, self).__init__()
     self._memory_metric = None
     self._power_metric = None
 

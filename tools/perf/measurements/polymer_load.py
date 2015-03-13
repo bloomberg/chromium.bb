@@ -30,8 +30,7 @@ class PageForPolymerLoad(page.Page):
 
 class PolymerLoadMeasurement(page_test.PageTest):
   def __init__(self):
-    super(PolymerLoadMeasurement, self).__init__(
-      action_name_to_run='RunPageInteractions')
+    super(PolymerLoadMeasurement, self).__init__()
 
   def ValidateAndMeasurePage(self, _, tab, results):
     result = int(tab.EvaluateJavaScript('__polymer_ready_time'))

@@ -30,8 +30,7 @@ from telemetry.value import list_of_scalar_values
 
 class _JetstreamMeasurement(page_test.PageTest):
   def __init__(self):
-    super(_JetstreamMeasurement, self).__init__(
-        action_name_to_run='RunPageInteractions')
+    super(_JetstreamMeasurement, self).__init__()
 
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = """

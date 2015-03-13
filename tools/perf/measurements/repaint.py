@@ -8,7 +8,7 @@ from telemetry.page import page_test
 
 class Repaint(page_test.PageTest):
   def __init__(self, mode='viewport', width=None, height=None):
-    super(Repaint, self).__init__('RunPageInteractions', False)
+    super(Repaint, self).__init__()
     self._smoothness_controller = None
     self._micro_benchmark_id = None
     self._mode = mode

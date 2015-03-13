@@ -40,8 +40,7 @@ SCORE_TRACE_NAME = 'score'
 
 class _DomPerfMeasurement(page_test.PageTest):
   def __init__(self):
-    super(_DomPerfMeasurement, self).__init__(
-        action_name_to_run='RunPageInteractions')
+    super(_DomPerfMeasurement, self).__init__()
 
   def ValidateAndMeasurePage(self, page, tab, results):
     try:

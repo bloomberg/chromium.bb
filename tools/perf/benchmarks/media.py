@@ -12,8 +12,7 @@ from telemetry.value import scalar
 
 class _MSEMeasurement(page_test.PageTest):
   def __init__(self):
-    super(_MSEMeasurement, self).__init__(
-        action_name_to_run='RunPageInteractions')
+    super(_MSEMeasurement, self).__init__()
 
   def ValidateAndMeasurePage(self, page, tab, results):
     media_metric = tab.EvaluateJavaScript('window.__testMetrics')

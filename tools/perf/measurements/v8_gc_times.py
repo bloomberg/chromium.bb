@@ -22,7 +22,7 @@ class V8GCTimes(page_test.PageTest):
   _IDLE_TASK_PARENT = 'SingleThreadIdleTaskRunner::RunTask'
 
   def __init__(self):
-    super(V8GCTimes, self).__init__('RunPageInteractions')
+    super(V8GCTimes, self).__init__()
     self._v8_event_stats = [
         V8EventStat('V8.GCIncrementalMarking',
                     'v8_gc_incremental_marking',

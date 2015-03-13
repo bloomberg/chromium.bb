@@ -7,7 +7,7 @@ from telemetry.page import page_test
 
 class Power(page_test.PageTest):
   def __init__(self):
-    super(Power, self).__init__('RunPageInteractions')
+    super(Power, self).__init__()
     self._power_metric = None
 
   def WillStartBrowser(self, platform):

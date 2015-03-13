@@ -32,7 +32,6 @@ class PageCycler(page_test.PageTest):
   def __init__(self, page_repeat, pageset_repeat, cold_load_percent=50,
                report_speed_index=False, clear_cache_before_each_run=False):
     super(PageCycler, self).__init__(
-        action_name_to_run='RunPageInteractions',
         clear_cache_before_each_run=clear_cache_before_each_run)
 
     with open(os.path.join(os.path.dirname(__file__),

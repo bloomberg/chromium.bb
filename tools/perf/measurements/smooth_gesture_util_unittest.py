@@ -123,8 +123,7 @@ class SmoothGestureTest(page_test_test_case.PageTestTestCase):
     class ScrollingGestureTestMeasurement(page_test.PageTest):
       def __init__(self):
         # pylint: disable=bad-super-call
-        super(ScrollingGestureTestMeasurement, self).__init__(
-          'RunPageInteractions', False)
+        super(ScrollingGestureTestMeasurement, self).__init__()
 
       def WillRunActions(self, _page, tab):
         options = tracing_options.TracingOptions()

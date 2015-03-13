@@ -17,13 +17,6 @@ from telemetry.util import classes
 from telemetry.web_perf import timeline_based_measurement
 
 
-# Do NOT add new items to this list!
-# crbug.com/418375
-_ACTION_NAMES_WHITE_LIST = (
-  'RunPageInteractions',
-)
-
-
 def _GetAllPossiblePageTestInstances():
   page_test_instances = []
   measurements_dir = os.path.dirname(__file__)
@@ -61,19 +54,6 @@ def _GetAllPossiblePageTestInstances():
 
 
 class MeasurementSmokeTest(unittest.TestCase):
-  # TODO(nednguyen): Remove this test when crbug.com/418375 is marked fixed.
-  def testNoNewActionNameToRunUsed(self):
-    invalid_tests = []
-    for test in _GetAllPossiblePageTestInstances():
-      if not hasattr(test, 'action_name_to_run'):
-        invalid_tests.append(test)
-        logging.error('Test %s missing action_name_to_run attribute.',
-                      test.__class__.__name__)
-      if test.action_name_to_run not in _ACTION_NAMES_WHITE_LIST:
-        invalid_tests.append(test)
-        logging.error('Page test %s has invalid action_name_to_run: %s' %
-                     (test.__class__.__name__, repr(test.action_name_to_run)))
-    self.assertFalse(
-      invalid_tests,
-      'New page tests with invalid action_name_to_run found. Please only use '
-      'action_name_to_run="RunPageInteractions" (crbug.com/418375).')
+  # Simple smoke test to make sure that all page_test are constructible.
+  def testAllMeasurementInstance(self):
+    _GetAllPossiblePageTestInstances()

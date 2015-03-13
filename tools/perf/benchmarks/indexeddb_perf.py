@@ -33,8 +33,7 @@ from telemetry.value import scalar
 
 class _IndexedDbMeasurement(page_test.PageTest):
   def __init__(self):
-    super(_IndexedDbMeasurement, self).__init__(
-        action_name_to_run='RunPageInteractions')
+    super(_IndexedDbMeasurement, self).__init__()
     self._memory_metric = None
     self._power_metric = None
 

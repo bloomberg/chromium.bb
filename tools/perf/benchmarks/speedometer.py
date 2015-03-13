@@ -38,8 +38,7 @@ class SpeedometerMeasurement(page_test.PageTest):
   ]
 
   def __init__(self):
-    super(SpeedometerMeasurement, self).__init__(
-        action_name_to_run='RunPageInteractions')
+    super(SpeedometerMeasurement, self).__init__()
 
   def CustomizeBrowserOptions(self, options):
     keychain_metric.KeychainMetric.CustomizeBrowserOptions(options)

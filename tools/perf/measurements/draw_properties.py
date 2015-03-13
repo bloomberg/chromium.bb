@@ -11,8 +11,7 @@ from telemetry.value import scalar
 
 class DrawProperties(page_test.PageTest):
   def __init__(self):
-    super(DrawProperties, self).__init__(
-      action_name_to_run='RunPageInteractions')
+    super(DrawProperties, self).__init__()
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([

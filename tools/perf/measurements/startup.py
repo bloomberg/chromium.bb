@@ -16,9 +16,8 @@ class Startup(page_test.PageTest):
   repeat the page set to ensure it's cached.
   """
 
-  def __init__(self, cold=False, action_name_to_run='RunPageInteractions'):
-    super(Startup, self).__init__(needs_browser_restart_after_each_page=True,
-                                  action_name_to_run=action_name_to_run)
+  def __init__(self, cold=False):
+    super(Startup, self).__init__(needs_browser_restart_after_each_page=True)
     self._cold = cold
 
   def CustomizeBrowserOptions(self, options):
@@ -51,5 +50,4 @@ class StartWithUrl(Startup):
   """
 
   def __init__(self, cold=False):
-    super(StartWithUrl, self).__init__(cold=cold,
-                                       action_name_to_run='RunPageInteractions')
+    super(StartWithUrl, self).__init__(cold=cold)

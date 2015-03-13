@@ -27,7 +27,7 @@ class TabSwitching(page_test.PageTest):
   SAMPLE_TIME = 30
 
   def __init__(self):
-    super(TabSwitching, self).__init__(action_name_to_run='RunPageInteractions')
+    super(TabSwitching, self).__init__()
     self._first_page_in_pageset = True
     self._power_metric = None
 

@@ -28,7 +28,7 @@ def _GetMaxDetachedContextAge(tab, data_start):
 
 class V8DetachedContextAgeInGC(page_test.PageTest):
   def __init__(self):
-    super(V8DetachedContextAgeInGC, self).__init__('RunPageInteractions')
+    super(V8DetachedContextAgeInGC, self).__init__()
     self._data_start = None
 
   def CustomizeBrowserOptions(self, options):

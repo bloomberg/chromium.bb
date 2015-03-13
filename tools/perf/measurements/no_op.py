@@ -6,7 +6,7 @@ from telemetry.page import page_test
 
 class NoOp(page_test.PageTest):
   def __init__(self):
-    super(NoOp, self).__init__('RunPageInteractions')
+    super(NoOp, self).__init__()
 
   def ValidateAndMeasurePage(self, page, tab, results):
     pass

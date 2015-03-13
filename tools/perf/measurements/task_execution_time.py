@@ -36,7 +36,7 @@ class TaskExecutionTime(page_test.PageTest):
                  'webkit.console']
 
   def __init__(self):
-    super(TaskExecutionTime, self).__init__('RunPageInteractions')
+    super(TaskExecutionTime, self).__init__()
     self._renderer_process = None
     self._browser_process = None
     self._results = None
