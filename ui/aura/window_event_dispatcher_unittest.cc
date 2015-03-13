@@ -2128,6 +2128,8 @@ TEST_F(WindowEventDispatcherTestInHighDPI,
   // before it reaches the window.
   EXPECT_EQ(gfx::Point(40, 40).ToString(),
             handler.mouse_move_location().ToString());
+  EXPECT_EQ(gfx::Point(40, 40).ToString(),
+            Env::GetInstance()->last_mouse_location().ToString());
   window->RemovePreTargetHandler(&handler);
 }
 

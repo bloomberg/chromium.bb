@@ -170,6 +170,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // Returns a target window for the given gesture event.
   Window* GetGestureTarget(ui::GestureEvent* event);
 
+  bool is_dispatched_held_event(const ui::Event& event) const;
+
   // Overridden from aura::client::CaptureDelegate:
   void UpdateCapture(Window* old_capture, Window* new_capture) override;
   void OnOtherRootGotCapture() override;

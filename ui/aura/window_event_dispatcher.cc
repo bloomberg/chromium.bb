@@ -352,6 +352,11 @@ Window* WindowEventDispatcher::GetGestureTarget(ui::GestureEvent* event) {
   return target;
 }
 
+bool WindowEventDispatcher::is_dispatched_held_event(
+    const ui::Event& event) const {
+  return dispatching_held_event_ == &event;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowEventDispatcher, aura::client::CaptureDelegate implementation:
 
@@ -432,7 +437,7 @@ void WindowEventDispatcher::OnEventProcessingStarted(ui::Event* event) {
   // The held events are already in |window()|'s coordinate system. So it is
   // not necessary to apply the transform to convert from the host's
   // coordinate system to |window()|'s coordinate system.
-  if (event->IsLocatedEvent() && dispatching_held_event_ != event)
+  if (event->IsLocatedEvent() && !is_dispatched_held_event(*event))
     TransformEventForDeviceScaleFactor(static_cast<ui::LocatedEvent*>(event));
 }
 
@@ -488,7 +493,7 @@ ui::EventDispatchDetails WindowEventDispatcher::PostDispatchEvent(
   if (event.IsTouchEvent() && !details.target_destroyed) {
     // Do not let 'held' touch events contribute to any gestures unless it is
     // being dispatched.
-    if (dispatching_held_event_ || !held_move_event_ ||
+    if (is_dispatched_held_event(event) || !held_move_event_ ||
         !held_move_event_->IsTouchEvent()) {
       const ui::TouchEvent& touchevent =
           static_cast<const ui::TouchEvent&>(event);
@@ -736,7 +741,7 @@ void WindowEventDispatcher::PreDispatchLocatedEvent(Window* target,
     flags |= ui::EF_IS_NON_CLIENT;
   event->set_flags(flags);
 
-  if (!dispatching_held_event_ &&
+  if (!is_dispatched_held_event(*event) &&
       (event->IsMouseEvent() || event->IsScrollEvent()) &&
       !(event->flags() & ui::EF_IS_SYNTHESIZED)) {
     if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)
