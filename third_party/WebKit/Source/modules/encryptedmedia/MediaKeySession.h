@@ -81,8 +81,6 @@ public:
     ScriptPromise close(ScriptState*);
     ScriptPromise remove(ScriptState*);
 
-    void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
-
     // EventTarget
     virtual const AtomicString& interfaceName() const override;
     virtual ExecutionContext* executionContext() const override;
