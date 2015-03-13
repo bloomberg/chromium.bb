@@ -220,8 +220,13 @@ blink::WebMediaPlayer* HTMLDocument::createMediaPlayer(
   if (!media_permission_)
     media_permission_.reset(new media::DefaultMediaPermission(true));
 
-  return web_media_player_factory_->CreateMediaPlayer(
-      frame, url, client, media_permission_.get(), initial_cdm, shell_);
+  blink::WebMediaPlayer* player =
+      web_media_player_factory_
+          ? web_media_player_factory_->CreateMediaPlayer(
+                frame, url, client, media_permission_.get(), initial_cdm,
+                shell_)
+          : nullptr;
+  return player;
 }
 
 blink::WebFrame* HTMLDocument::createChildFrame(

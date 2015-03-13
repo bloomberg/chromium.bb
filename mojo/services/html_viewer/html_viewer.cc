@@ -194,9 +194,6 @@ class HTMLViewer : public mojo::ApplicationDelegate,
     // Display process ID, thread ID and timestamp in logs.
     logging::SetLogItems(true, true, true, false);
 
-    bool enable_mojo_media_renderer =
-        command_line->HasSwitch(kEnableMojoMediaRenderer);
-
     if (command_line->HasSwitch(kDisableEncryptedMedia))
       blink::WebRuntimeFeatures::enableEncryptedMedia(false);
 
@@ -208,8 +205,16 @@ class HTMLViewer : public mojo::ApplicationDelegate,
     }
 
     compositor_thread_.Start();
+#if defined(OS_ANDROID)
+    // TODO(sky): Get WebMediaPlayerFactory working on android.
+    NOTIMPLEMENTED();
+#else
+    bool enable_mojo_media_renderer =
+        command_line->HasSwitch(kEnableMojoMediaRenderer);
+
     web_media_player_factory_.reset(new WebMediaPlayerFactory(
         compositor_thread_.message_loop_proxy(), enable_mojo_media_renderer));
+#endif
   }
 
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
