@@ -91,10 +91,6 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
         deps += [ "//ash" ]
       }
 
-      if (!use_x11) {
-        sources -= [ "input_injector_x11.cc" ]
-      }
-
       if (use_ozone) {
         deps += [ "//ui/ozone" ]
       } else {
