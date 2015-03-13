@@ -1882,6 +1882,11 @@ crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailu
 crbug.com/463302 virtual/slimmingpaint/fast/repaint/absolute-position-and-opacity-changed.html [ ImageOnlyFailure ]
 crbug.com/463608 virtual/slimmingpaint/fast/repaint/4774354.html [ ImageOnlyFailure ]
 
+crbug.com/464612 fast/repaint/overflow-move-after-scroll.html [ NeedsRebaseline ]
+crbug.com/464612 fast/repaint/overflow-scroll-after-move.html [ NeedsRebaseline ]
+crbug.com/464612 virtual/slimmingpaint/fast/repaint/overflow-move-after-scroll.html [ NeedsRebaseline ]
+crbug.com/464612 virtual/slimmingpaint/fast/repaint/overflow-scroll-after-move.html [ NeedsRebaseline ]
+
 # These need a manual rebaseline after crbug.com/461107
 crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
 

@@ -373,6 +373,7 @@ void LayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset)
     if (scrollOffset() == toDoubleSize(newScrollOffset))
         return;
 
+    DoubleSize scrollDelta = scrollOffset() - toDoubleSize(newScrollOffset);
     m_scrollOffset = toDoubleSize(newScrollOffset);
 
     LocalFrame* frame = box().frame();
@@ -382,11 +383,15 @@ void LayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset)
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ScrollLayer", "data", InspectorScrollLayerEvent::data(&box()));
 
+    // FIXME(420741): Resolve circular dependency between scroll offset and
+    // compositing state, and remove this disabler.
+    DisableCompositingQueryAsserts disabler;
+
     // Update the positions of our child layers (if needed as only fixed layers should be impacted by a scroll).
     // We don't update compositing layers, because we need to do a deep update from the compositing ancestor.
     if (!frameView->isInPerformLayout()) {
         // If we're in the middle of layout, we'll just update layers once layout has finished.
-        layer()->updateLayerPositionsAfterOverflowScroll();
+        layer()->updateLayerPositionsAfterOverflowScroll(scrollDelta);
         // Update regions, scrolling may change the clip of a particular region.
         frameView->updateAnnotatedRegions();
         frameView->setNeedsUpdateWidgetPositions();
@@ -404,20 +409,15 @@ void LayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset)
 
     bool requiresPaintInvalidation = true;
 
-    {
-        // FIXME(420741): Since scrolling depends on compositing state, the scroll should be
-        // deferred until after the compositing update.
-        DisableCompositingQueryAsserts disabler;
-        if (box().view()->compositor()->inCompositingMode()) {
-            bool onlyScrolledCompositedLayers = scrollsOverflow()
-                && !layer()->hasVisibleNonLayerContent()
-                && !layer()->hasNonCompositedChild()
-                && !layer()->hasBlockSelectionGapBounds()
-                && box().style()->backgroundLayers().attachment() != LocalBackgroundAttachment;
+    if (box().view()->compositor()->inCompositingMode()) {
+        bool onlyScrolledCompositedLayers = scrollsOverflow()
+            && !layer()->hasVisibleNonLayerContent()
+            && !layer()->hasNonCompositedChild()
+            && !layer()->hasBlockSelectionGapBounds()
+            && box().style()->backgroundLayers().attachment() != LocalBackgroundAttachment;
 
-            if (usesCompositedScrolling() || onlyScrolledCompositedLayers)
-                requiresPaintInvalidation = false;
-        }
+        if (usesCompositedScrolling() || onlyScrolledCompositedLayers)
+            requiresPaintInvalidation = false;
     }
 
     // Just schedule a full paint invalidation of our object.
@@ -1331,7 +1331,6 @@ void LayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
 
 void LayerScrollableArea::updateCompositingLayersAfterScroll()
 {
-    DisableCompositingQueryAsserts disabler;
     LayerCompositor* compositor = box().view()->compositor();
     if (compositor->inCompositingMode()) {
         if (usesCompositedScrolling()) {

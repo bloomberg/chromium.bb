@@ -147,7 +147,7 @@ public:
     void contentChanged(ContentChangeType);
 
     void updateLayerPositionsAfterLayout();
-    void updateLayerPositionsAfterOverflowScroll();
+    void updateLayerPositionsAfterOverflowScroll(const DoubleSize& scrollDelta);
 
     bool isPaginated() const { return m_isPaginated; }
     Layer* enclosingPaginationLayer() const { return m_enclosingPaginationLayer; }
@@ -536,7 +536,7 @@ private:
     bool updateLayerPosition();
 
     void updateLayerPositionRecursive();
-    void updateLayerPositionsAfterScrollRecursive();
+    void updateLayerPositionsAfterScrollRecursive(const DoubleSize& scrollDelta, bool paintInvalidationContainerWasScrolled);
 
     void setNextSibling(Layer* next) { m_next = next; }
     void setPreviousSibling(Layer* prev) { m_previous = prev; }
