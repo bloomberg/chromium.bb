@@ -21,6 +21,7 @@
 
 class FaviconClient;
 class FaviconDriver;
+class FaviconService;
 class SkBitmap;
 
 namespace base {
@@ -80,7 +81,8 @@ class FaviconHandler {
     TOUCH,
   };
 
-  FaviconHandler(FaviconClient* client,
+  FaviconHandler(FaviconService* service,
+                 FaviconClient* client,
                  FaviconDriver* driver,
                  Type icon_type,
                  bool download_largest_icon);
@@ -282,6 +284,10 @@ class FaviconHandler {
 
   // The FaviconRawBitmapResults from history.
   std::vector<favicon_base::FaviconRawBitmapResult> history_results_;
+
+  // The FaviconService which implements favicon operations. May be null during
+  // testing.
+  FaviconService* service_;
 
   // The client which implements embedder-specific Favicon operations.
   FaviconClient* client_;  // weak

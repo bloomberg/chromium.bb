@@ -179,11 +179,6 @@ class TestFaviconClient : public FaviconClient {
  public:
   ~TestFaviconClient() override{};
 
-  FaviconService* GetFaviconService() override {
-    // Just give none NULL value, so overridden methods can be hit.
-    return (FaviconService*)(1);
-  }
-
   bool IsBookmarked(const GURL& url) override { return false; }
 };
 
@@ -283,7 +278,7 @@ class TestFaviconHandler : public FaviconHandler {
                      TestFaviconDriver* driver,
                      Type type,
                      bool download_largest_icon)
-      : FaviconHandler(client, driver, type, download_largest_icon),
+      : FaviconHandler(nullptr, client, driver, type, download_largest_icon),
         download_id_(0) {
     driver->SetActiveURL(page_url);
     download_handler_.reset(new DownloadHandler(this));

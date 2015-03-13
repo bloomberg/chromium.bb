@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 
-class FaviconService;
 class GURL;
 class Profile;
 
@@ -20,7 +19,6 @@ class ChromeFaviconClient : public FaviconClient {
   ~ChromeFaviconClient() override;
 
   // FaviconClient implementation:
-  FaviconService* GetFaviconService() override;
   bool IsBookmarked(const GURL& url) override;
 
  private:

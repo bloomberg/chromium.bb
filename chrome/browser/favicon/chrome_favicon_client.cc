@@ -5,7 +5,6 @@
 #include "chrome/browser/favicon/chrome_favicon_client.h"
 
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 
 using bookmarks::BookmarkModel;
@@ -14,11 +13,6 @@ ChromeFaviconClient::ChromeFaviconClient(Profile* profile) : profile_(profile) {
 }
 
 ChromeFaviconClient::~ChromeFaviconClient() {
-}
-
-FaviconService* ChromeFaviconClient::GetFaviconService() {
-  return FaviconServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
 }
 
 bool ChromeFaviconClient::IsBookmarked(const GURL& url) {

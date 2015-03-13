@@ -6,13 +6,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/favicon/chrome_favicon_client_factory.h"
+#include "chrome/browser/favicon/favicon_service.h"
+#include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/search/suggestions/url_suggestion_result.h"
-#include "components/favicon/core/browser/favicon_client.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/suggestions/suggestions_service.h"
 #include "components/suggestions/suggestions_utils.h"
@@ -41,13 +41,12 @@ SuggestionsSearchProvider::SuggestionsSearchProvider(
     AppListControllerDelegate* list_controller)
     : profile_(profile),
       list_controller_(list_controller),
+      favicon_service_(FaviconServiceFactory::GetForProfile(
+          profile,
+          ServiceAccessType::EXPLICIT_ACCESS)),
       suggestions_service_(
           suggestions::SuggestionsServiceFactory::GetForProfile(profile)),
       weak_ptr_factory_(this) {
-  FaviconClient* favicon_client =
-      ChromeFaviconClientFactory::GetForProfile(profile);
-  if (favicon_client)
-    favicon_service_ = favicon_client->GetFaviconService();
 }
 
 SuggestionsSearchProvider::~SuggestionsSearchProvider() {

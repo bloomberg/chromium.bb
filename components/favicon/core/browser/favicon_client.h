@@ -7,7 +7,6 @@
 
 #include "components/keyed_service/core/keyed_service.h"
 
-class FaviconService;
 class GURL;
 
 // This class abstracts operations that depend on the embedder's environment,
@@ -15,8 +14,6 @@ class GURL;
 class FaviconClient : public KeyedService {
  public:
   ~FaviconClient() override{};
-
-  virtual FaviconService* GetFaviconService() = 0;
 
   // Returns true if the specified URL is bookmarked.
   virtual bool IsBookmarked(const GURL& url) = 0;
