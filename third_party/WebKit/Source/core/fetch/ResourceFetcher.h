@@ -35,7 +35,6 @@
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/fetch/ResourcePtr.h"
 #include "platform/Timer.h"
-#include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
@@ -72,9 +71,6 @@ class ResourceLoaderSet;
 class ResourceFetcher final : public RefCountedWillBeGarbageCollectedFinalized<ResourceFetcher>, public ResourceLoaderHost {
     WTF_MAKE_NONCOPYABLE(ResourceFetcher); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ResourceFetcher);
-friend class ImageLoader;
-friend class ResourceCacheValidationSuppressor;
-
 public:
     static PassRefPtrWillBeRawPtr<ResourceFetcher> create(PassOwnPtrWillBeRawPtr<FetchContext> context) { return adoptRefWillBeNoop(new ResourceFetcher(context)); }
     virtual ~ResourceFetcher();
@@ -174,6 +170,8 @@ public:
     static ResourceFetcher* toResourceFetcher(ResourceLoaderHost*);
 
 private:
+    friend class ImageLoader;
+    friend class ResourceCacheValidationSuppressor;
     friend class ResourceFetcherUpgradeTest;
     friend class ResourceFetcherHintsTest;
 
@@ -251,7 +249,7 @@ private:
 
 class ResourceCacheValidationSuppressor {
     WTF_MAKE_NONCOPYABLE(ResourceCacheValidationSuppressor);
-    WTF_MAKE_FAST_ALLOCATED;
+    STACK_ALLOCATED();
 public:
     ResourceCacheValidationSuppressor(ResourceFetcher* loader)
         : m_loader(loader)
@@ -268,10 +266,10 @@ public:
             m_loader->m_allowStaleResources = m_previousState;
     }
 private:
-    ResourceFetcher* m_loader;
+    RawPtrWillBeMember<ResourceFetcher> m_loader;
     bool m_previousState;
 };
 
 } // namespace blink
 
-#endif
+#endif // ResourceFetcher_h
