@@ -91,6 +91,13 @@ void RunIDMapCallbacks(IDMAP* callbacks, const Params&... params) {
   callbacks->Clear();
 }
 
+void RunStartWorkerCallback(
+    const StatusCallback& callback,
+    scoped_refptr<ServiceWorkerRegistration> protect,
+    ServiceWorkerStatusCode status) {
+  callback.Run(status);
+}
+
 // A callback adapter to start a |task| after StartWorker.
 void RunTaskAfterStartWorker(
     base::WeakPtr<ServiceWorkerVersion> version,
@@ -377,30 +384,20 @@ void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
 void ServiceWorkerVersion::StartWorker(
     bool pause_after_download,
     const StatusCallback& callback) {
-  if (is_doomed()) {
+  if (!context_) {
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
     return;
   }
-  switch (running_status()) {
-    case RUNNING:
-      RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
-      return;
-    case STOPPING:
-    case STOPPED:
-    case STARTING:
-      if (!timeout_timer_.IsRunning())
-        StartTimeoutTimer();
-      start_callbacks_.push_back(callback);
-      if (running_status() == STOPPED) {
-        DCHECK(!cache_listener_.get());
-        cache_listener_.reset(new ServiceWorkerCacheListener(this, context_));
-        embedded_worker_->Start(
-            version_id_, scope_, script_url_, pause_after_download,
-            base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
-                       weak_factory_.GetWeakPtr()));
-      }
-      return;
-  }
+
+  // Ensure the live registration during starting worker so that the worker can
+  // get associated with it in SWDispatcherHost::OnSetHostedVersionId().
+  context_->storage()->FindRegistrationForId(
+      registration_id_,
+      scope_.GetOrigin(),
+      base::Bind(&ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker,
+                 weak_factory_.GetWeakPtr(),
+                 pause_after_download,
+                 callback));
 }
 
 void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
@@ -1417,6 +1414,40 @@ void ServiceWorkerVersion::OnClaimClients(int request_id) {
 
 void ServiceWorkerVersion::OnPongFromWorker() {
   ClearTick(&ping_time_);
+}
+
+void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
+    bool pause_after_download,
+    const StatusCallback& callback,
+    ServiceWorkerStatusCode status,
+    const scoped_refptr<ServiceWorkerRegistration>& protect) {
+  if (status != SERVICE_WORKER_OK || is_doomed()) {
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
+    return;
+  }
+
+  switch (running_status()) {
+    case RUNNING:
+      RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
+      return;
+    case STOPPING:
+    case STOPPED:
+    case STARTING:
+      if (!timeout_timer_.IsRunning())
+        StartTimeoutTimer();
+      // Start callbacks keep the live registration.
+      start_callbacks_.push_back(
+          base::Bind(&RunStartWorkerCallback, callback, protect));
+      if (running_status() == STOPPED) {
+        DCHECK(!cache_listener_.get());
+        cache_listener_.reset(new ServiceWorkerCacheListener(this, context_));
+        embedded_worker_->Start(
+            version_id_, scope_, script_url_, pause_after_download,
+            base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
+                       weak_factory_.GetWeakPtr()));
+      }
+      return;
+  }
 }
 
 void ServiceWorkerVersion::DidClaimClients(

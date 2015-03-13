@@ -207,12 +207,18 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void PurgeResources(const ResourceList& resources);
 
  private:
+  friend class ServiceWorkerHandleTest;
   friend class ServiceWorkerStorageTest;
   friend class ServiceWorkerResourceStorageTest;
   friend class ServiceWorkerControlleeRequestHandlerTest;
   friend class ServiceWorkerContextRequestHandlerTest;
   friend class ServiceWorkerRequestHandlerTest;
+  friend class ServiceWorkerURLRequestJobTest;
+  friend class ServiceWorkerVersionBrowserTest;
+  friend class ServiceWorkerVersionTest;
   friend class ServiceWorkerWriteToCacheJobTest;
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTest,
+                           CleanupOnRendererCrash);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,
                            DeleteRegistration_NoLiveVersion);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerResourceStorageTest,

@@ -130,6 +130,17 @@ class ServiceWorkerVersionTest : public testing::Test {
         1L,
         helper_->context()->AsWeakPtr());
 
+    // Make the registration findable via storage functions.
+    helper_->context()->storage()->LazyInitialize(base::Bind(&base::DoNothing));
+    base::RunLoop().RunUntilIdle();
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+    helper_->context()->storage()->StoreRegistration(
+        registration_.get(),
+        version_.get(),
+        CreateReceiverOnCurrentThread(&status));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_EQ(SERVICE_WORKER_OK, status);
+
     // Simulate adding one process to the pattern.
     helper_->SimulateAddProcessToPattern(pattern_, kRenderProcessId);
     ASSERT_TRUE(helper_->context()->process_manager()

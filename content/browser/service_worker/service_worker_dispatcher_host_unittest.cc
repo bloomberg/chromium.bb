@@ -517,11 +517,24 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
                                GURL("http://www.example.com/service_worker.js"),
                                1L,
                                helper_->context()->AsWeakPtr()));
+
+  // Make the registration findable via storage functions.
+  helper_->context()->storage()->LazyInitialize(base::Bind(&base::DoNothing));
+  base::RunLoop().RunUntilIdle();
+  bool called = false;
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_ABORT;
+  helper_->context()->storage()->StoreRegistration(
+      registration.get(),
+      version.get(),
+      base::Bind(&SaveStatusCallback, &called, &status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+  ASSERT_EQ(SERVICE_WORKER_OK, status);
+
   helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
 
   // Start up the worker.
-  bool called;
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_ABORT;
+  status = SERVICE_WORKER_ERROR_ABORT;
   version->StartWorker(base::Bind(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
 

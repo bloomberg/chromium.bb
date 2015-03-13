@@ -594,10 +594,12 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
   if (!provider_host->SetHostedVersionId(version_id))
     BadMessageReceived();
 
-  // Retrieve the registration associated with |version_id|.
   ServiceWorkerVersion* version = GetContext()->GetLiveVersion(version_id);
   if (!version)
     return;
+
+  // Retrieve the registration associated with |version|. The registration
+  // must be alive because the version keeps it during starting worker.
   ServiceWorkerRegistration* registration =
       GetContext()->GetLiveRegistration(version->registration_id());
   DCHECK(registration);

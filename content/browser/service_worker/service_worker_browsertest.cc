@@ -524,6 +524,11 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         embedded_test_server()->GetURL(worker_url),
         wrapper()->context()->storage()->NewVersionId(),
         wrapper()->context()->AsWeakPtr());
+
+    // Make the registration findable via storage functions.
+    wrapper()->context()->storage()->NotifyInstallingRegistration(
+        registration_.get());
+
     AssociateRendererProcessToPattern(pattern);
   }
 

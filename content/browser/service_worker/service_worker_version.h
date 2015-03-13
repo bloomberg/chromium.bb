@@ -390,6 +390,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
                              const std::string& client_uuid,
                              const ServiceWorkerClientInfo& client);
 
+  void DidEnsureLiveRegistrationForStartWorker(
+      bool pause_after_download,
+      const StatusCallback& callback,
+      ServiceWorkerStatusCode status,
+      const scoped_refptr<ServiceWorkerRegistration>& protect);
   void DidSkipWaiting(int request_id);
   void DidClaimClients(int request_id, ServiceWorkerStatusCode status);
   void DidGetClients(

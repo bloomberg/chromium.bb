@@ -128,6 +128,18 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
         GURL("http://example.com/service_worker.js"),
         1L,
         helper_->context()->AsWeakPtr());
+
+    // Make the registration findable via storage functions.
+    helper_->context()->storage()->LazyInitialize(base::Bind(&base::DoNothing));
+    base::RunLoop().RunUntilIdle();
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+    helper_->context()->storage()->StoreRegistration(
+        registration_.get(),
+        version_.get(),
+        CreateReceiverOnCurrentThread(&status));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_EQ(SERVICE_WORKER_OK, status);
+
     net::HttpResponseInfo http_info;
     http_info.ssl_info.cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(),
