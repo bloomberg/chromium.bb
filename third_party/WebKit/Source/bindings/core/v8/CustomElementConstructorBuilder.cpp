@@ -208,7 +208,8 @@ bool CustomElementConstructorBuilder::prototypeIsValid(const AtomicString& type,
         return false;
     }
 
-    if (m_prototype->GetPropertyAttributes(v8String(m_scriptState->isolate(), "constructor")) & v8::DontDelete) {
+    v8::PropertyAttribute propertyAttribute;
+    if (!getValueFromMaybe(m_prototype->GetPropertyAttributes(m_scriptState->isolate()->GetCurrentContext(), v8String(m_scriptState->isolate(), "constructor")), propertyAttribute) || (propertyAttribute & v8::DontDelete)) {
         CustomElementException::throwException(CustomElementException::ConstructorPropertyNotConfigurable, type, exceptionState);
         return false;
     }
