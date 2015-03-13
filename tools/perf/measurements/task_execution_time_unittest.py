@@ -46,7 +46,8 @@ class TaskExecutionTimeUnitTest(page_test_test_case.PageTestTestCase):
 
     self.assertGreater(len(results.all_page_specific_values), 0)
 
-  @decorators.Enabled('android')
+  # http://crbug.com/466994
+  @decorators.Disabled
   def testSlicesConformToRequiredNamingConventionsUsingDummyPage(self):
     """This test ensures the presence of required keywords.
 
