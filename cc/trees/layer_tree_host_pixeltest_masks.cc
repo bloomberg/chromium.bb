@@ -12,9 +12,6 @@
 
 #if !defined(OS_ANDROID)
 
-// TODO(enne): these time out on Windows.  http://crbug.com/435632
-#if !defined(OS_WIN)
-
 namespace cc {
 namespace {
 
@@ -465,5 +462,4 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
 }  // namespace
 }  // namespace cc
 
-#endif  // !defined(OS_WIN)
 #endif  // !defined(OS_ANDROID)
