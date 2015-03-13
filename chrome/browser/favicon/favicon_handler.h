@@ -76,10 +76,7 @@ class RefCountedMemory;
 
 class FaviconHandler {
  public:
-  enum Type {
-    FAVICON,
-    TOUCH,
-  };
+  enum Type { FAVICON, TOUCH };
 
   FaviconHandler(FaviconService* service,
                  FaviconClient* client,

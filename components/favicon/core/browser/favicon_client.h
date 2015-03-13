@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_CLIENT_H_
 #define COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_CLIENT_H_
 
+#include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
@@ -13,10 +14,15 @@ class GURL;
 // e.g. Chrome.
 class FaviconClient : public KeyedService {
  public:
-  ~FaviconClient() override{};
-
   // Returns true if the specified URL is bookmarked.
   virtual bool IsBookmarked(const GURL& url) = 0;
+
+ protected:
+  FaviconClient() {}
+  ~FaviconClient() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FaviconClient);
 };
 
 #endif  // COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_CLIENT_H_

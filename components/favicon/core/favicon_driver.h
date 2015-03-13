@@ -16,7 +16,6 @@ class Image;
 // implementation must be provided by the driver.
 class FaviconDriver {
  public:
-
   // Starts the download for the given favicon. When finished, the driver
   // will call OnDidDownloadFavicon() with the results.
   // Returns the unique id of the download request. The id will be passed
@@ -53,6 +52,13 @@ class FaviconDriver {
   virtual void OnFaviconAvailable(const gfx::Image& image,
                                   const GURL& icon_url,
                                   bool is_active_favicon) = 0;
+
+ protected:
+  FaviconDriver() {}
+  virtual ~FaviconDriver() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FaviconDriver);
 };
 
 #endif  // COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_H_

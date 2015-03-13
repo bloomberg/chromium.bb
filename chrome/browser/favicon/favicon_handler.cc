@@ -47,9 +47,9 @@ bool DoUrlsAndIconsMatch(
 
   const favicon_base::IconType icon_type = favicon_url.icon_type;
 
-  for (size_t i = 0; i < bitmap_results.size(); ++i) {
-    if (favicon_url.icon_url != bitmap_results[i].icon_url ||
-        icon_type != bitmap_results[i].icon_type) {
+  for (const auto& bitmap_result : bitmap_results) {
+    if (favicon_url.icon_url != bitmap_result.icon_url ||
+        icon_type != bitmap_result.icon_type) {
       return false;
     }
   }
@@ -100,14 +100,14 @@ bool HasExpiredOrIncompleteResult(
   // - Favicons inserted into the history backend by sync.
   // - Favicons for imported bookmarks.
   std::vector<gfx::Size> favicon_sizes;
-  for (size_t i = 0; i < bitmap_results.size(); ++i)
-    favicon_sizes.push_back(bitmap_results[i].pixel_size);
+  for (const auto& bitmap_result : bitmap_results)
+    favicon_sizes.push_back(bitmap_result.pixel_size);
 
   std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
-  for (size_t i = 0; i < favicon_scales.size(); ++i) {
-    int edge_size_in_pixel = std::ceil(desired_size_in_dip * favicon_scales[i]);
-    std::vector<gfx::Size>::iterator it = std::find(favicon_sizes.begin(),
-        favicon_sizes.end(), gfx::Size(edge_size_in_pixel, edge_size_in_pixel));
+  for (float favicon_scale : favicon_scales) {
+    int edge_size_in_pixel = std::ceil(desired_size_in_dip * favicon_scale);
+    auto it = std::find(favicon_sizes.begin(), favicon_sizes.end(),
+                        gfx::Size(edge_size_in_pixel, edge_size_in_pixel));
     if (it == favicon_sizes.end())
       return true;
   }
@@ -163,7 +163,8 @@ bool CompareIconSize(const FaviconURL& b1, const FaviconURL& b2) {
 ////////////////////////////////////////////////////////////////////////////////
 
 FaviconHandler::DownloadRequest::DownloadRequest()
-    : icon_type(favicon_base::INVALID_ICON) {}
+    : icon_type(favicon_base::INVALID_ICON) {
+}
 
 FaviconHandler::DownloadRequest::~DownloadRequest() {
 }
@@ -172,12 +173,14 @@ FaviconHandler::DownloadRequest::DownloadRequest(
     const GURL& url,
     const GURL& image_url,
     favicon_base::IconType icon_type)
-    : url(url), image_url(image_url), icon_type(icon_type) {}
+    : url(url), image_url(image_url), icon_type(icon_type) {
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
 FaviconHandler::FaviconCandidate::FaviconCandidate()
-    : score(0), icon_type(favicon_base::INVALID_ICON) {}
+    : score(0), icon_type(favicon_base::INVALID_ICON) {
+}
 
 FaviconHandler::FaviconCandidate::~FaviconCandidate() {
 }
@@ -324,10 +327,9 @@ void FaviconHandler::OnUpdateFaviconURL(
     const std::vector<FaviconURL>& candidates) {
   image_urls_.clear();
   best_favicon_candidate_ = FaviconCandidate();
-  for (std::vector<FaviconURL>::const_iterator i = candidates.begin();
-       i != candidates.end(); ++i) {
-    if (!i->icon_url.is_empty() && (i->icon_type & icon_types_))
-      image_urls_.push_back(*i);
+  for (const FaviconURL& candidate : candidates) {
+    if (!candidate.icon_url.is_empty() && (candidate.icon_type & icon_types_))
+      image_urls_.push_back(candidate);
   }
 
   if (download_largest_icon_)
@@ -670,14 +672,15 @@ int FaviconHandler::ScheduleDownload(const GURL& url,
 }
 
 void FaviconHandler::SortAndPruneImageUrls() {
-  for (std::vector<FaviconURL>::iterator i = image_urls_.begin();
-       i != image_urls_.end(); ++i) {
-    if (i->icon_sizes.empty())
+  // Not using const-reference since the loop mutates FaviconURL::icon_sizes.
+  for (favicon::FaviconURL& image_url : image_urls_) {
+    if (image_url.icon_sizes.empty())
       continue;
 
-    gfx::Size largest = i->icon_sizes[GetLargestSizeIndex(i->icon_sizes)];
-    i->icon_sizes.clear();
-    i->icon_sizes.push_back(largest);
+    gfx::Size largest =
+        image_url.icon_sizes[GetLargestSizeIndex(image_url.icon_sizes)];
+    image_url.icon_sizes.clear();
+    image_url.icon_sizes.push_back(largest);
   }
   std::stable_sort(image_urls_.begin(), image_urls_.end(),
                    CompareIconSize);
