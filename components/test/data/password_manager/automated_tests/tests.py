@@ -229,6 +229,28 @@ class Cnn(WebsiteTest):
     self.Wait(5)
 
 
+# Fails due to "Too many failed logins. Please wait a minute".
+# http://crbug.com/466953
+class Craigslist(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https://accounts.craigslist.org/login")
+    self.FillUsernameInto("#inputEmailHandle")
+    self.FillPasswordInto("#inputPassword")
+    self.Submit("button")
+
+
+# Crashes.
+class Dailymotion(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("http://www.dailymotion.com/gb")
+    self.Click(".sd_header__login span")
+    self.FillUsernameInto("[name='username']")
+    self.FillPasswordInto("[name='password']")
+    self.Submit("[name='save']")
+
+
 # http://crbug.com/368690
 class Ebay(WebsiteTest):
 
@@ -239,7 +261,7 @@ class Ebay(WebsiteTest):
     self.Submit("[name='pass']")
 
 
-# Iframe, password saved but not autofileld.
+# Iframe, password saved but not autofilled.
 class Espn(WebsiteTest):
 
   def Login(self):
@@ -255,6 +277,19 @@ class Espn(WebsiteTest):
     while self.IsDisplayed("#password"):
       self.ClickIfClickable("#submitBtn")
       self.Wait(1)
+
+
+# Iframe, password saved but not autofilled.
+class Instagram(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https://instagram.com/accounts/login/")
+    self.Wait(5)
+    frame = self.driver.find_element_by_css_selector(".hiFrame")
+    self.driver.switch_to_frame(frame)
+    self.FillUsernameInto("#lfFieldInputUsername")
+    self.FillPasswordInto("#lfFieldInputPassword")
+    self.Submit(".lfSubmit")
 
 
 # http://crbug.com/367768
@@ -292,6 +327,16 @@ class Vube(WebsiteTest):
       self.Wait(1)
 
 
+# Password not saved.
+class Ziddu(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("http://www.ziddu.com/login.php")
+    self.FillUsernameInto("#email")
+    self.FillPasswordInto("#password")
+    self.Click(".login input")
+
+
 def Tests(environment, tests_to_run=None):
 
   working_tests = {
@@ -318,11 +363,15 @@ def Tests(environment, tests_to_run=None):
     "ask": Ask("ask"), # Password not saved.
     "baidu": Baidu("baidu"), # Password not saved.
     "cnn": Cnn("cnn"), # http://crbug.com/368690
+    "craigslist": Craigslist("craigslist"), # Too many failed logins per time.
+    "dailymotion": Dailymotion("dailymotion"), # Crashes.
     "ebay": Ebay("ebay"), # http://crbug.com/368690
     "espn": Espn("espn"), # Iframe, password saved but not autofileld.
+    "instagram": Instagram("instagram"), # Iframe, pw saved but not autofilled.
     "live": Live("live", username_not_auto=True),  # http://crbug.com/367768
     "163": One63("163"), # http://crbug.com/368690
     "vube": Vube("vube"), # http://crbug.com/368690
+    "ziddu": Ziddu("ziddu"), #Password not saved
   }
 
   if tests_to_run:
