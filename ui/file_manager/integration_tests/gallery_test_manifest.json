@@ -5,7 +5,15 @@
   "version": "0.1",
   "manifest_version": 2,
   "web_accessible_resources": ["*"],
-  "background": {"scripts": ["gallery/background.js"]},
+  "background": {
+    "scripts": [
+      "test_util.js",
+      "remote_call.js",
+      "gallery/background.js",
+      "gallery/open_image_files.js",
+      "gallery/slide_mode.js",
+      "gallery/photo_editor.js"
+    ]},
   "incognito" : "split",
   "permissions": ["commandLinePrivate"]
 }

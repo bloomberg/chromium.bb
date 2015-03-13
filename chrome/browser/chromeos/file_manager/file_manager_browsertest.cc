@@ -1276,22 +1276,8 @@ class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
   }
 
  protected:
-  virtual void SetUp() override {
-    AddScript("gallery/test_util.js");
-    FileManagerBrowserTestBase::SetUp();
-  }
-
-  virtual void OnMessage(const std::string& name,
-                         const base::DictionaryValue& value,
-                         std::string* output) override;
-
   virtual const char* GetTestManifestName() const override {
     return "gallery_test_manifest.json";
-  }
-
-  void AddScript(const std::string& name) {
-    scripts_.AppendString(
-        "chrome-extension://ejhcmmdhhpdhhgmifplfmjobgegbibkn/" + name);
   }
 
   void set_test_case_name(const std::string& name) {
@@ -1303,56 +1289,37 @@ class GalleryBrowserTestBase : public FileManagerBrowserTestBase {
   std::string test_case_name_;
 };
 
-template <GuestMode M>
-void GalleryBrowserTestBase<M>::OnMessage(const std::string& name,
-                                          const base::DictionaryValue& value,
-                                          std::string* output) {
-  if (name == "getScripts") {
-    std::string jsonString;
-    base::JSONWriter::Write(&scripts_, output);
-    return;
-  }
-
-  FileManagerBrowserTestBase::OnMessage(name, value, output);
-}
-
 typedef GalleryBrowserTestBase<NOT_IN_GUEST_MODE> GalleryBrowserTest;
 typedef GalleryBrowserTestBase<IN_GUEST_MODE> GalleryBrowserTestInGuestMode;
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenSingleImageOnDownloads) {
-  AddScript("gallery/open_image_files.js");
   set_test_case_name("openSingleImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        OpenSingleImageOnDownloads) {
-  AddScript("gallery/open_image_files.js");
   set_test_case_name("openSingleImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenSingleImageOnDrive) {
-  AddScript("gallery/open_image_files.js");
   set_test_case_name("openSingleImageOnDrive");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDownloads) {
-  AddScript("gallery/open_image_files.js");
   set_test_case_name("openMultipleImagesOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        OpenMultipleImagesOnDownloads) {
-  AddScript("gallery/open_image_files.js");
   set_test_case_name("openMultipleImagesOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDrive) {
-  AddScript("gallery/open_image_files.js");
   set_test_case_name("openMultipleImagesOnDrive");
   StartTest();
 }
@@ -1360,7 +1327,6 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDrive) {
 // Disabled due to flakiness: crbug.com/437293
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
                        DISABLED_TraverseSlideImagesOnDownloads) {
-  AddScript("gallery/slide_mode.js");
   set_test_case_name("traverseSlideImagesOnDownloads");
   StartTest();
 }
@@ -1368,108 +1334,91 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
 // Disabled due to flakiness: crbug.com/437293
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        DISABLED_TraverseSlideImagesOnDownloads) {
-  AddScript("gallery/slide_mode.js");
   set_test_case_name("traverseSlideImagesOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideImagesOnDrive) {
-  AddScript("gallery/slide_mode.js");
   set_test_case_name("traverseSlideImagesOnDrive");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageOnDownloads) {
-  AddScript("gallery/slide_mode.js");
   set_test_case_name("renameImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        RenameImageOnDownloads) {
-  AddScript("gallery/slide_mode.js");
   set_test_case_name("renameImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RenameImageOnDrive) {
-  AddScript("gallery/slide_mode.js");
   set_test_case_name("renameImageOnDrive");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteImageOnDownloads) {
-  AddScript("gallery/slide_mode.js");
   set_test_case_name("deleteImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        DeleteImageOnDownloads) {
-  AddScript("gallery/slide_mode.js");
   set_test_case_name("deleteImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, DeleteImageOnDrive) {
-  AddScript("gallery/slide_mode.js");
   set_test_case_name("deleteImageOnDrive");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RotateImageOnDownloads) {
-  AddScript("gallery/photo_editor.js");
   set_test_case_name("rotateImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        RotateImageOnDownloads) {
-  AddScript("gallery/photo_editor.js");
   set_test_case_name("rotateImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, RotateImageOnDrive) {
-  AddScript("gallery/photo_editor.js");
   set_test_case_name("rotateImageOnDrive");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, CropImageOnDownloads) {
-  AddScript("gallery/photo_editor.js");
   set_test_case_name("cropImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        CropImageOnDownloads) {
-  AddScript("gallery/photo_editor.js");
   set_test_case_name("cropImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, CropImageOnDrive) {
-  AddScript("gallery/photo_editor.js");
   set_test_case_name("cropImageOnDrive");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ExposureImageOnDownloads) {
-  AddScript("gallery/photo_editor.js");
   set_test_case_name("exposureImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTestInGuestMode,
                        ExposureImageOnDownloads) {
-  AddScript("gallery/photo_editor.js");
   set_test_case_name("exposureImageOnDownloads");
   StartTest();
 }
 
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ExposureImageOnDrive) {
-  AddScript("gallery/photo_editor.js");
   set_test_case_name("exposureImageOnDrive");
   StartTest();
 }

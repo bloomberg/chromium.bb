@@ -4,6 +4,123 @@
 
 'use strict';
 
-chrome.runtime.sendMessage(
-    'nlkncpkkdoccmpiclbokaimcnedabhhm',
-    {name: 'testResourceLoaded'});
+/**
+ * Extension ID of gallery app.
+ * @type {string}
+ * @const
+ */
+var GALLERY_APP_ID = 'nlkncpkkdoccmpiclbokaimcnedabhhm';
+
+var gallery = new RemoteCallGallery(GALLERY_APP_ID);
+
+/**
+ * Launches the gallery with the given entries.
+ *
+ * @param {string} testVolumeName Test volume name passed to the addEntries
+ *     function. Either 'drive' or 'local'.
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @param {Array.<TestEntryInfo>} entries Entries to be parepared and passed to
+ *     the application.
+ * @param {Array.<TestEntryInfo>=} opt_selected Entries to be selected. Should
+ *     be a sub-set of the entries argument.
+ * @return {Promise} Promise to be fulfilled with the data of the main element
+ *     in the allery.
+ */
+function launch(testVolumeName, volumeType, entries, opt_selected) {
+  var entriesPromise = addEntries([testVolumeName], entries).then(function() {
+    var selectedEntries = opt_selected || entries;
+    var selectedEntryNames =
+        selectedEntries.map(function(entry) { return entry.nameText; });
+    return gallery.callRemoteTestUtil(
+        'getFilesUnderVolume', null, [volumeType, selectedEntryNames]);
+  });
+
+  var appId = null;
+  var urls = [];
+  return entriesPromise.then(function(result) {
+    urls = result;
+    return gallery.callRemoteTestUtil('openGallery', null, [urls]);
+  }).then(function(windowId) {
+    chrome.test.assertTrue(!!windowId);
+    appId = windowId;
+    return gallery.waitForElement(appId, 'div.gallery');
+  }).then(function(args) {
+    return {
+      appId: appId,
+      mailElement: args[0],
+      urls: urls,
+    };
+  });
+}
+
+/**
+ * Verifies if there are no Javascript errors in any of the app windows.
+ * @param {function()} Completion callback.
+ */
+function checkIfNoErrorsOccured(callback) {
+  var countPromise = gallery.callRemoteTestUtil('getErrorCount', null, []);
+  countPromise.then(function(count) {
+    chrome.test.assertEq(0, count, 'The error count is not 0.');
+    callback();
+  });
+}
+
+/**
+ * Adds check of chrome.test to the end of the given promise.
+ * @param {Promise} promise Promise.
+ */
+function testPromise(promise) {
+  promise.then(function() {
+    return new Promise(checkIfNoErrorsOccured);
+  }).then(chrome.test.callbackPass(function() {
+    // The callbacPass is necessary to avoid prematurely finishing tests.
+    // Don't put chrome.test.succeed() here to avoid doubled success log.
+  }), function(error) {
+    chrome.test.fail(error.stack || error);
+  });
+};
+
+/**
+ * Namespace for test cases.
+ */
+var testcase = {};
+
+// Ensure the test cases are loaded.
+window.addEventListener('load', function() {
+  var steps = [
+    // Check for the guest mode.
+    function() {
+      chrome.test.sendMessage(
+          JSON.stringify({name: 'isInGuestMode'}), steps.shift());
+    },
+    // Obtain the test case name.
+    function(result) {
+      if (JSON.parse(result) != chrome.extension.inIncognitoContext)
+        return;
+      chrome.test.sendMessage(
+          JSON.stringify({name: 'getRootPaths'}), steps.shift());
+    },
+    // Obtain the root entry paths.
+    function(result) {
+      var roots = JSON.parse(result);
+      RootPath.DOWNLOADS = roots.downloads;
+      RootPath.DRIVE = roots.drive;
+      chrome.test.sendMessage(
+          JSON.stringify({name: 'getTestName'}), steps.shift());
+    },
+    // Run the test case.
+    function(testCaseName) {
+      var targetTest = testcase[testCaseName];
+      if (!targetTest) {
+        chrome.test.fail(testCaseName + ' is not found.');
+        return;
+      }
+      // Specify the name of test to the test system.
+      targetTest.generatedName = testCaseName;
+      chrome.test.runTests([function() {
+        return testPromise(targetTest());
+      }]);
+    }
+  ];
+  steps.shift()();
+});

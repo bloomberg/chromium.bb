@@ -1098,7 +1098,10 @@ SlideMode.prototype.onClick_ = function(event) {
  * @private
  */
 SlideMode.prototype.onDocumentClick_ = function(event) {
-  event = assertInstanceof(event, MouseEvent);
+  // Events created in fakeMouseClick in test util don't pass this test.
+  if (!window.IN_TEST)
+    event = assertInstanceof(event, MouseEvent);
+
   var targetElement = assertInstanceof(event.target, HTMLElement);
   // Close the bubble if clicked outside of it and if it is visible.
   if (!this.bubble_.contains(targetElement) &&

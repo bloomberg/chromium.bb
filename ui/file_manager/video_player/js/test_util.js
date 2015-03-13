@@ -47,33 +47,5 @@ test.util.async.openVideoPlayer = function(urls, pos, callback) {
   openVideoPlayerWindow({items: urls, position: pos}, false).then(callback);
 };
 
-/**
- * Gets file entries just under the volume.
- *
- * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
- * @param {Array.<string>} names File name list.
- * @param {function(*)} callback Callback function with results returned by the
- *     script.
- */
-test.util.async.getFilesUnderVolume = function(volumeType, names, callback) {
-  var displayRootPromise =
-      VolumeManager.getInstance().then(function(volumeManager) {
-    var volumeInfo = volumeManager.getCurrentProfileVolumeInfo(volumeType);
-    return volumeInfo.resolveDisplayRoot();
-  });
-
-  var retrievePromise = displayRootPromise.then(function(displayRoot) {
-    var filesPromise = names.map(function(name) {
-      return new Promise(
-          displayRoot.getFile.bind(displayRoot, name, {}));
-    });
-    return Promise.all(filesPromise).then(function(aa) {
-      return util.entriesToURLs(aa);
-    });
-  });
-
-  retrievePromise.then(callback);
-};
-
 // Register the test utils.
 test.util.registerRemoteTestUtils();

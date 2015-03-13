@@ -22,7 +22,6 @@ var windowCreateOptions = {
  */
 var background = new BackgroundBase();
 
-
 /**
  * Wrapper of gallery window.
  * @type {SingletonAppWindowWrapper}
@@ -115,29 +114,9 @@ function openGalleryWindow(urls, reopen) {
     });
   }).then(function(gallery) {
     gallery.rawAppWindow.focus();
-    return gallery.rawAppWindow;
+    return gallery.rawAppWindow.contentWindow.appID;
   }).catch(function(error) {
     console.error('Launch failed' + error.stack || error);
     return Promise.reject(error);
-  });
-}
-
-// If is is run in the browser test, wait for the test resources are installed
-// as a component extension, and then load the test resources.
-if (chrome.test) {
-  // Sets a global flag that we are in tests, so other components are aware of
-  // it.
-  window.IN_TEST = true;
-
-  /** @type {string} */
-  window.testExtensionId = 'ejhcmmdhhpdhhgmifplfmjobgegbibkn';
-  chrome.runtime.onMessageExternal.addListener(function(message) {
-    if (message.name !== 'testResourceLoaded')
-      return;
-    var script = document.createElement('script');
-    script.src =
-        'chrome-extension://' + window.testExtensionId +
-        '/gallery/test_loader.js';
-    document.documentElement.appendChild(script);
   });
 }

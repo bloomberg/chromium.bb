@@ -58,6 +58,7 @@
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/background_base.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/test_util_base.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/volume_manager.js",
+        "js/test_util.js",
         "js/background.js"
       ]
     },

@@ -219,6 +219,19 @@ RemoteCall.prototype.fakeKeyDown =
 };
 
 /**
+ * Gets file entries just under the volume.
+ *
+ * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
+ * @param {Array.<string>} names File name list.
+ * @return {Promise} Promise to be fulfilled with file entries or rejected
+ *     depending on the result.
+ */
+RemoteCall.prototype.getFilesUnderVolume = function(volumeType, names) {
+  return this.callRemoteTestUtil(
+      'getFilesUnderVolume', null, [volumeType, names]);
+};
+
+/**
  * Class to manipulate the window in the remote extension.
  *
  * @param {string} extensionId ID of extension to be manipulated.
@@ -334,4 +347,95 @@ RemoteCallFilesApp.prototype.waitUntilCurrentDirectoryIsChanged =
           return pending('Expected path is %s', expectedPath);
       });
   }.bind(this));
+};
+
+/**
+ * Class to manipulate the window in the remote extension.
+ *
+ * @param {string} extensionId ID of extension to be manipulated.
+ * @extends {RemoteCall}
+ * @constructor
+ */
+function RemoteCallGallery() {
+  RemoteCall.apply(this, arguments);
+}
+
+RemoteCallGallery.prototype.__proto__ = RemoteCall.prototype;
+
+/**
+ * Waits until the expected image is shown.
+ *
+ * @param {document} document Document.
+ * @param {number} width Expected width of the image.
+ * @param {number} height Expected height of the image.
+ * @param {string|null} name Expected name of the image.
+ * @return {Promise} Promsie to be fulfilled when the check is passed.
+ */
+RemoteCallGallery.prototype.waitForSlideImage =
+    function(windowId, width, height, name) {
+  var expected = {};
+  if (width)
+    expected.width = width;
+  if (height)
+    expected.height = height;
+  if (name)
+    expected.name = name;
+
+  return repeatUntil(function() {
+    var query = '.gallery[mode="slide"] .content canvas.fullres';
+    return Promise.all([
+        this.waitForElement(windowId, '.namebox'),
+        this.waitForElement(windowId, query)
+    ]).then(function(args) {
+      var nameBox = args[0];
+      var fullResCanvas = args[1];
+      var actual = {};
+      if (width && fullResCanvas)
+        actual.width = Number(fullResCanvas.attributes.width);
+      if (height && fullResCanvas)
+        actual.height = Number(fullResCanvas.attributes.height);
+      if (name && nameBox)
+        actual.name = nameBox.value;
+
+      if (!chrome.test.checkDeepEq(expected, actual)) {
+        return pending('Slide mode state, expected is %j, actual is %j.',
+                       expected, actual);
+      }
+      return actual;
+    });
+  }.bind(this));
+};
+
+RemoteCallGallery.prototype.changeNameAndWait = function(windowId, newName) {
+  return this.callRemoteTestUtil('changeName', windowId, [newName]
+  ).then(function() {
+    return this.waitForSlideImage(windowId, 0, 0, newName);
+  }.bind(this));
+};
+
+/**
+ * Shorthand for clicking an element.
+ * @param {AppWindow} appWindow Application window.
+ * @param {string} query Query for the element.
+ * @param {Promise} Promise to be fulfilled with the clicked element.
+ */
+RemoteCallGallery.prototype.waitAndClickElement = function(windowId, query) {
+  return this.waitForElement(windowId, query).then(function(element) {
+    return this.callRemoteTestUtil('fakeMouseClick', windowId, [query])
+    .then(function() { return element; });
+  }.bind(this));
+};
+
+/**
+ * Waits for the "Press Enter" message.
+ *
+ * @param {AppWindow} appWindow App window.
+ * @return {Promise} Promise to be fulfilled when the element appears.
+ */
+RemoteCallGallery.prototype.waitForPressEnterMessage = function(appId) {
+  return this.waitForElement(appId, '.prompt-wrapper .prompt').
+      then(function(element) {
+        chrome.test.assertEq(
+            'Press Enter when done', element.text.trim());
+      });
 };

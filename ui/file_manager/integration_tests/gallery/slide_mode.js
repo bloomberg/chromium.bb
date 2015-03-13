@@ -14,28 +14,26 @@
  */
 function traverseSlideImages(testVolumeName, volumeType) {
   var testEntries = [ENTRIES.desktop, ENTRIES.image2, ENTRIES.image3];
-  var launchedPromise = launchWithTestEntries(
+  var launchedPromise = launch(
       testVolumeName, volumeType, testEntries, testEntries.slice(0, 1));
-  var appWindow;
+  var appId;
   return launchedPromise.then(function(args) {
-    appWindow = args.appWindow;
-    return waitForSlideImage(appWindow.contentWindow.document,
-                             800, 600, 'My Desktop Background');
+    appId = args.appId;
+    return gallery.waitForElement(appId, '.gallery[mode="slide"]');
   }).then(function() {
-    return waitAndClickElement(appWindow, '.arrow.right');
+    return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
   }).then(function() {
-    return waitForSlideImage(appWindow.contentWindow.document,
-                             1024, 768, 'image2');
+    return gallery.waitAndClickElement(appId, '.arrow.right');
   }).then(function() {
-    return waitAndClickElement(appWindow, '.arrow.right');
+    return gallery.waitForSlideImage(appId, 1024, 768, 'image2');
   }).then(function() {
-    return waitForSlideImage(appWindow.contentWindow.document,
-                             640, 480, 'image3');
+    return gallery.waitAndClickElement(appId, '.arrow.right');
   }).then(function() {
-    return waitAndClickElement(appWindow, '.arrow.right');
+    return gallery.waitForSlideImage(appId, 640, 480, 'image3');
   }).then(function() {
-    return waitForSlideImage(appWindow.contentWindow.document,
-                             800, 600, 'My Desktop Background');
+    return gallery.waitAndClickElement(appId, '.arrow.right');
+  }).then(function() {
+    return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
   });
 }
 
@@ -48,25 +46,22 @@ function traverseSlideImages(testVolumeName, volumeType) {
  * @return {Promise} Promise to be fulfilled with on success.
  */
 function renameImage(testVolumeName, volumeType) {
-  var launchedPromise = launchWithTestEntries(
+  var launchedPromise = launch(
       testVolumeName, volumeType, [ENTRIES.desktop]);
-  var appWindow;
+  var appId;
   return launchedPromise.then(function(args) {
-    appWindow = args.appWindow;
-    return waitForSlideImage(appWindow.contentWindow.document,
-                             800, 600, 'My Desktop Background');
+    appId = args.appId;
+    return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
   }).then(function() {
-    var nameBox = appWindow.contentWindow.document.querySelector('.namebox');
-    nameBox.focus();
-    nameBox.value = 'New Image Name';
-    nameBox.blur();
-    return waitForSlideImage(appWindow.contentWindow.document,
-                             800, 600, 'New Image Name');
+     return gallery.changeNameAndWait(appId, 'New Image Name');
   }).then(function() {
-    return repeatUntil(function() {
-      return getFilesUnderVolume(volumeType, ['New Image Name.png']).then(
-          function() { return true; },
-          function() { return pending('"New Image Name.png" is not found.'); });
+     return repeatUntil(function() {
+      return gallery.getFilesUnderVolume(volumeType, ['New Image Name.png'])
+      .then(function(urls) {
+        if (urls.length == 1)
+          return true;
+        return pending('"New Image Name.png" is not found.');
+      });
     });
   });
 }
@@ -80,23 +75,24 @@ function renameImage(testVolumeName, volumeType) {
  * @return {Promise} Promise to be fulfilled with on success.
  */
 function deleteImage(testVolumeName, volumeType) {
-  var launchedPromise = launchWithTestEntries(
+  var launchedPromise = launch(
       testVolumeName, volumeType, [ENTRIES.desktop]);
-  var appWindow;
+  var appId;
   return launchedPromise.then(function(args) {
-    appWindow = args.appWindow;
-    return waitForSlideImage(appWindow.contentWindow.document,
-                             800, 600, 'My Desktop Background');
+    appId = args.appId;
+    return gallery.waitForSlideImage(appId, 800, 600, 'My Desktop Background');
   }).then(function() {
-    return waitAndClickElement(appWindow, 'button.delete').
-        then(waitAndClickElement.bind(null, appWindow, '.cr-dialog-ok'));
+    return gallery.waitAndClickElement(appId, 'button.delete');
+  }).then(function() {
+    return gallery.waitAndClickElement(appId, '.cr-dialog-ok');
   }).then(function() {
     return repeatUntil(function() {
-      return getFilesUnderVolume(volumeType, ['New Image Name.png']).then(
-          function() {
-            return pending('"New Image Name.png" is still there.');
-          },
-          function() { return true; });
+      return gallery.getFilesUnderVolume(volumeType, ['New Image Name.png'])
+      .then(function(urls) {
+        if (urls.length == 0)
+          return true;
+        return pending('"New Image Name.png" is still there.');
+      });
     });
   });
 }
@@ -105,46 +101,46 @@ function deleteImage(testVolumeName, volumeType) {
  * The traverseSlideImages test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function traverseSlideImagesOnDownloads() {
-  return traverseSlideImages('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
-}
+testcase.traverseSlideImagesOnDownloads = function() {
+  return traverseSlideImages('local', 'downloads');
+};
 
 /**
  * The traverseSlideImages test for Google Drive.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function traverseSlideImagesOnDrive() {
-  return traverseSlideImages('drive', VolumeManagerCommon.VolumeType.DRIVE);
-}
+testcase.traverseSlideImagesOnDrive = function() {
+  return traverseSlideImages('drive', 'drive');
+};
 
 /**
  * The renameImage test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function renameImageOnDownloads() {
-  return renameImage('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
-}
+testcase.renameImageOnDownloads = function() {
+  return renameImage('local', 'downloads');
+};
 
 /**
  * The renameImage test for Google Drive.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function renameImageOnDrive() {
-  return renameImage('drive', VolumeManagerCommon.VolumeType.DRIVE);
-}
+testcase.renameImageOnDrive = function() {
+  return renameImage('drive', 'drive');
+};
 
 /**
  * The deleteImage test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function deleteImageOnDownloads() {
-  return deleteImage('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
-}
+testcase.deleteImageOnDownloads = function() {
+  return deleteImage('local', 'downloads');
+};
 
 /**
  * The deleteImage test for Google Drive.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function deleteImageOnDrive() {
-  return deleteImage('drive', VolumeManagerCommon.VolumeType.DRIVE);
-}
+testcase.deleteImageOnDrive = function() {
+  return deleteImage('drive', 'drive');
+};

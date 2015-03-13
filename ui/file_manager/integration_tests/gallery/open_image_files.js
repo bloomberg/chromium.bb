@@ -13,35 +13,46 @@
  * @return {Promise} Promise to be fulfilled with on success.
  */
 function openSingleImage(testVolumeName, volumeType) {
-  var launchedPromise = launchWithTestEntries(
-      testVolumeName, volumeType, [ENTRIES.desktop]);
+  var launchedPromise = launch(testVolumeName, volumeType, [ENTRIES.desktop]);
   return launchedPromise.then(function(args) {
-    var appWindow = args.appWindow;
-    appWindow.resizeTo(480, 480);
-    var resizedWindowPromise = repeatUntil(function() {
-      if (appWindow.innerBounds.width !== 480 ||
-          appWindow.innerBounds.height !== 480) {
-        return pending(
-            'Window bounds is expected %d x %d, but is %d x %d',
-            480,
-            480,
-            appWindow.innerBounds.width,
-            appWindow.innerBounds.height);
-      }
-      return appWindow;
-    }).then(function(appWindow) {
+    var WIDTH = 880;
+    var HEIGHT = 570;
+    var appId = args.appId;
+    var resizedWindowPromise = gallery.callRemoteTestUtil(
+        'resizeWindow', appId, [WIDTH, HEIGHT]
+    ).then(function() {
+      return repeatUntil(function() {
+        return gallery.callRemoteTestUtil('getWindows', null, []
+        ).then(function(windows) {
+          var bounds = windows[appId];
+          if (!bounds)
+            return pending('Window is not ready yet.');
+
+          if (bounds.outerWidth !== WIDTH || bounds.outerHeight !== HEIGHT) {
+            return pending(
+                'Window bounds is expected %d x %d, but is %d x %d',
+                WIDTH, HEIGHT,
+                bounds.outerWidth,
+                bounds.outerHeight);
+          }
+          return true;
+        });
+      });
+    });
+
+    return resizedWindowPromise.then(function() {
       var rootElementPromise =
-          waitForElement(appWindow, '.gallery[mode="slide"]');
-      var imagePromise =
-          waitForElement(appWindow, '.gallery .content canvas.image');
-      var fullImagePromsie =
-          waitForElement(appWindow, '.gallery .content canvas.fullres');
+          gallery.waitForElement(appId, '.gallery[mode="slide"]');
+      var imagePromise = gallery.waitForElement(
+          appId, '.gallery .content canvas.image[width="760"]');
+      var fullImagePromsie = gallery.waitForElement(
+          appId, '.gallery .content canvas.fullres[width="800"]');
       return Promise.all([rootElementPromise, imagePromise, fullImagePromsie]).
           then(function(args) {
-            chrome.test.assertEq(480, args[1].width);
-            chrome.test.assertEq(360, args[1].height);
-            chrome.test.assertEq(800, args[2].width);
-            chrome.test.assertEq(600, args[2].height);
+            chrome.test.assertEq('760', args[1].attributes.width);
+            chrome.test.assertEq('570', args[1].attributes.height);
+            chrome.test.assertEq('800', args[2].attributes.width);
+            chrome.test.assertEq('600', args[2].attributes.height);
           });
     });
   });
@@ -57,19 +68,22 @@ function openSingleImage(testVolumeName, volumeType) {
  */
 function openMultipleImages(testVolumeName, volumeType) {
   var testEntries = [ENTRIES.desktop, ENTRIES.image2, ENTRIES.image3];
-  var launchedPromise = launchWithTestEntries(
-      testVolumeName, volumeType, testEntries);
+  var launchedPromise = launch(testVolumeName, volumeType, testEntries);
   return launchedPromise.then(function(args) {
-    var appWindow = args.appWindow;
+    var appId = args.appId;
     var rootElementPromise =
-        waitForElement(appWindow, '.gallery[mode="mosaic"]');
+        gallery.waitForElement(appId, '.gallery[mode="mosaic"]');
     var tilesPromise = repeatUntil(function() {
-      var tiles = appWindow.contentWindow.document.querySelectorAll(
-          '.mosaic-tile');
-      if (tiles.length !== 3)
-        return pending('The number of tiles is expected 3, but is %d',
-                       tiles.length);
-      return tiles;
+      return gallery.callRemoteTestUtil(
+          'queryAllElements',
+          appId,
+          ['.mosaic-tile']
+      ).then(function(tiles) {
+        if (tiles.length !== 3)
+          return pending('The number of tiles is expected 3, but is %d',
+                         tiles.length);
+        return tiles;
+      });
     });
     return Promise.all([rootElementPromise, tilesPromise]);
   });
@@ -79,30 +93,30 @@ function openMultipleImages(testVolumeName, volumeType) {
  * The openSingleImage test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function openSingleImageOnDownloads() {
-  return openSingleImage('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
-}
+testcase.openSingleImageOnDownloads = function() {
+  return openSingleImage('local', 'downloads');
+};
 
 /**
  * The openSingleImage test for Google Drive.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function openSingleImageOnDrive() {
-  return openSingleImage('drive', VolumeManagerCommon.VolumeType.DRIVE);
-}
+testcase.openSingleImageOnDrive = function() {
+  return openSingleImage('drive', 'drive');
+};
 
 /**
  * The openMultiImages test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function openMultipleImagesOnDownloads() {
-  return openMultipleImages('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
-}
+testcase.openMultipleImagesOnDownloads = function() {
+  return openMultipleImages('local', 'downloads');
+};
 
 /**
  * The openMultiImages test for Google Drive.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function openMultipleImagesOnDrive() {
-  return openMultipleImages('drive', VolumeManagerCommon.VolumeType.DRIVE);
-}
+testcase.openMultipleImagesOnDrive = function() {
+  return openMultipleImages('drive', 'drive');
+};

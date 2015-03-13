@@ -38,8 +38,8 @@ function launch(testVolumeName, volumeType, entries, opt_selected) {
     var selectedEntries = opt_selected || entries;
     var selectedEntryNames =
         selectedEntries.map(function(entry) { return entry.nameText; });
-    return remoteCallVideoPlayer.callRemoteTestUtil(
-        'getFilesUnderVolume', null, [volumeType, selectedEntryNames]);
+    return remoteCallVideoPlayer.getFilesUnderVolume(
+        volumeType, selectedEntryNames);
   });
 
   var appWindow = null;

@@ -5,20 +5,6 @@
 'use strict';
 
 /**
- * Waits for the "Press Enter" message.
- *
- * @param {AppWindow} appWindow App window.
- * @return {Promise} Promise to be fulfilled when the element appears.
- */
-function waitForPressEnterMessage(appWindow) {
-  return waitForElement(appWindow, '.prompt-wrapper .prompt').
-      then(function(element) {
-        chrome.test.assertEq(
-            'Press Enter when done', element.innerText.trim());
-      });
-}
-
-/**
  * Prepares the photo editor.
  *
  * @param {string} testVolumeName Test volume name passed to the addEntries
@@ -28,26 +14,23 @@ function waitForPressEnterMessage(appWindow) {
  */
 function setupPhotoEditor(testVolumeName, volumeType) {
   // Lauch the gallery.
-  observeWindowError(window);
-  var launchedPromise = launchWithTestEntries(
+  var launchedPromise = launch(
       testVolumeName,
       volumeType,
       [ENTRIES.desktop]);
   return launchedPromise.then(function(args) {
-    var appWindow = args.appWindow;
-    observeWindowError(appWindow.contentWindow);
+    var appId = args.appId;
 
     // Show the slide image.
-    var slideImagePromise = waitForSlideImage(
-        appWindow.contentWindow.document,
+    var slideImagePromise = gallery.waitForSlideImage(
+        appId,
         800,
         600,
         'My Desktop Background');
 
     // Lauch the photo editor.
     var photoEditorPromise = slideImagePromise.then(function() {
-      return waitAndClickElement(
-          appWindow, 'button.edit');
+      return gallery.waitAndClickElement(appId, 'button.edit');
     });
 
     return photoEditorPromise.then(function() {
@@ -67,23 +50,22 @@ function setupPhotoEditor(testVolumeName, volumeType) {
 function rotateImage(testVolumeName, volumeType) {
   var launchedPromise = setupPhotoEditor(testVolumeName, volumeType);
   return launchedPromise.then(function(args) {
-    var appWindow = args.appWindow;
-    return waitAndClickElement(
-        appWindow, '.gallery:not([locked]) button.rotate_right').
-        then(function() {
-          return waitForSlideImage(
-              appWindow.contentWindow.document,
+    var appId = args.appId;
+    return gallery.waitAndClickElement(
+        appId, '.gallery:not([locked]) button.rotate_right').then(function() {
+          return gallery.waitForSlideImage(
+              appId,
               600,
               800,
               'My Desktop Background');
         }).
         then(function() {
-          return waitAndClickElement(
-              appWindow, '.gallery:not([locked]) button.rotate_left');
+          return gallery.waitAndClickElement(
+              appId, '.gallery:not([locked]) button.rotate_left');
         }).
         then(function() {
-          return waitForSlideImage(
-              appWindow.contentWindow.document,
+          return gallery.waitForSlideImage(
+              appId,
               800,
               600,
               'My Desktop Background');
@@ -102,52 +84,44 @@ function rotateImage(testVolumeName, volumeType) {
 function cropImage(testVolumeName, volumeType) {
   var launchedPromise = setupPhotoEditor(testVolumeName, volumeType);
   return launchedPromise.then(function(args) {
-    var appWindow = args.appWindow;
-    return waitAndClickElement(appWindow, '.gallery:not([locked]) button.crop').
+    var appId = args.appId;
+    return gallery.waitAndClickElement(appId,
+                                       '.gallery:not([locked]) button.crop').
         then(function() {
           return Promise.all([
-            waitForPressEnterMessage(appWindow),
-            waitForElement(appWindow, '.crop-overlay')
+            gallery.waitForPressEnterMessage(appId),
+            gallery.waitForElement(appId, '.crop-overlay')
           ]);
         }).
         then(function() {
-          chrome.test.assertTrue(sendKeyDown(appWindow, 'body', 'Enter'));
+          return gallery.fakeKeyDown(appId, 'body', 'Enter', false);
         }).
-        then(function() {
+        then(function(ret) {
+          chrome.test.assertTrue(ret);
           return Promise.all([
-            waitForElementLost(appWindow, '.prompt-wrapper .prompt'),
-            waitForElementLost(appWindow, '.crop-overlay')
+            gallery.waitForElementLost(appId, '.prompt-wrapper .prompt'),
+            gallery.waitForElementLost(appId, '.crop-overlay')
           ]);
         }).
         then(function() {
-          return waitForSlideImage(
-              appWindow.contentWindow.document,
+          return gallery.waitForSlideImage(
+              appId,
               533,
               400,
               'My Desktop Background');
         }).
         then(function() {
-          return waitAndClickElement(
-              appWindow, '.gallery:not([locked]) button.undo');
+          return gallery.waitAndClickElement(
+              appId, '.gallery:not([locked]) button.undo');
         }).
         then(function() {
-          return waitForSlideImage(
-              appWindow.contentWindow.document,
+           return gallery.waitForSlideImage(
+              appId,
               800,
               600,
               'My Desktop Background');
         });
   });
-}
-
-/**
- * Obtains metadata from an entry.
- *
- * @param {Entry} entry Entry.
- * @return {Promise} Promise to be fulfilled with the result metadata.
- */
-function getMetadata(entry) {
-  return new Promise(entry.getMetadata.bind(entry));
 }
 
 /**
@@ -161,50 +135,48 @@ function getMetadata(entry) {
 function exposureImage(testVolumeName, volumeType) {
   var launchedPromise = setupPhotoEditor(testVolumeName, volumeType);
   return launchedPromise.then(function(args) {
-    var appWindow = args.appWindow;
-    var entry = args.entries[0];
+    var appId = args.appId;
+    var url = args.urls[0];
     var buttonQuery = '.gallery:not([locked]) button.exposure';
 
+    var origMetadata = null;
+
     // Click the exposure button.
-    return waitAndClickElement(appWindow, buttonQuery).then(function() {
+    return gallery.waitAndClickElement(appId, buttonQuery).then(function() {
       // Wait until the edit controls appear.
       return Promise.all([
-        waitForPressEnterMessage(appWindow),
-        waitForElement(appWindow, 'input.range[name="brightness"]'),
-        waitForElement(appWindow, 'input.range[name="contrast"]'),
+        gallery.waitForPressEnterMessage(appId),
+        gallery.waitForElement(appId, 'input.range[name="brightness"]'),
+        gallery.waitForElement(appId, 'input.range[name="contrast"]'),
       ]);
-    }).then(function(results) {
-      // Update bright.
-      var brightnessRange = results[1];
-      brightnessRange.value = 20;
-      chrome.test.assertTrue(
-          brightnessRange.dispatchEvent(new Event('change')));
+    }).then(function() {
+      return gallery.callRemoteTestUtil(
+          'changeValue', appId, ['input.range[name="brightness"]', 20]);
+    }).then(function() {
+      return gallery.callRemoteTestUtil(
+          'changeValue', appId, ['input.range[name="contrast"]', -20]);
+    }).then(function() {
+      return gallery.callRemoteTestUtil('getMetadata', null, [url]);
+    }).then(function(metadata) {
+      origMetadata = metadata;
 
-      // Update contrast.
-      var contrastRange = results[2];
-      contrastRange.value = -20;
-      chrome.test.assertTrue(
-          contrastRange.dispatchEvent(new Event('change')));
-
-      return getMetadata(entry).then(function(firstMetadata) {
-        // Push the Enter key.
-        chrome.test.assertTrue(sendKeyDown(appWindow, 'body', 'Enter'));
-
-        // Wait until the image is updated.
-        return repeatUntil(function() {
-          return getMetadata(entry).then(function(secondMetadata) {
-            if (firstMetadata.modificationTime !=
-                secondMetadata.modificationTime) {
-              return true;
-            } else {
-              return pending(
-                  '%s is not updated. ' +
-                      'First last modified: %s, Second last modified: %s.',
-                  entry.name,
-                  firstMetadata.modificationTime.toString(),
-                  secondMetadata.modificationTime.toString());
-            }
-          });
+      // Push the Enter key.
+      return gallery.fakeKeyDown(appId, 'body', 'Enter', false);
+    }).then(function() {
+      // Wait until the image is updated.
+      return repeatUntil(function() {
+        return gallery.callRemoteTestUtil('getMetadata', null, [url])
+        .then(function(metadata) {
+          if (origMetadata.modificationTime != metadata.modificationTime) {
+            return true;
+          } else {
+            return pending(
+                '%s is not updated. ' +
+                    'First last modified: %s, Second last modified: %s.',
+                entry.name,
+                origMetadata.modificationTime.toString(),
+                metadata.modificationTime.toString());
+          }
         });
       });
     });
@@ -215,46 +187,46 @@ function exposureImage(testVolumeName, volumeType) {
  * The rotateImage test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function rotateImageOnDownloads() {
-  return rotateImage('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
-}
+testcase.rotateImageOnDownloads = function() {
+  return rotateImage('local', 'downloads');
+};
 
 /**
  * The rotateImage test for Google Drive.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function rotateImageOnDrive() {
-  return rotateImage('drive', VolumeManagerCommon.VolumeType.DRIVE);
-}
+testcase.rotateImageOnDrive = function() {
+  return rotateImage('drive', 'drive');
+};
 
 /**
  * The cropImage test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function cropImageOnDownloads() {
-  return cropImage('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
-}
+testcase.cropImageOnDownloads = function() {
+  return cropImage('local', 'downloads');
+};
 
 /**
  * The cropImage test for Google Drive.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function cropImageOnDrive() {
-  return cropImage('drive', VolumeManagerCommon.VolumeType.DRIVE);
-}
+testcase.cropImageOnDrive = function() {
+  return cropImage('drive', 'drive');
+};
 
 /**
  * The exposureImage test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function exposureImageOnDownloads() {
-  return exposureImage('local', VolumeManagerCommon.VolumeType.DOWNLOADS);
-}
+testcase.exposureImageOnDownloads = function() {
+  return exposureImage('local', 'downloads');
+};
 
 /**
  * The exposureImage test for Google Drive.
  * @return {Promise} Promise to be fulfilled with on success.
  */
-function exposureImageOnDrive() {
-  return exposureImage('drive', VolumeManagerCommon.VolumeType.DRIVE);
-}
+testcase.exposureImageOnDrive = function() {
+  return exposureImage('drive', 'drive');
+};
