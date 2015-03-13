@@ -373,6 +373,10 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   manager->Initialize(chromeos::SOUND_STARTUP,
                       bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
+
+  // Disable Drag'n'Drop for the login session.
+  scoped_drag_drop_disabler_.reset(new aura::client::ScopedDragDropDisabler(
+      ash::Shell::GetPrimaryRootWindow()));
 }
 
 LoginDisplayHostImpl::~LoginDisplayHostImpl() {

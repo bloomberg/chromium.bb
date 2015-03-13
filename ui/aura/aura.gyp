@@ -43,6 +43,8 @@
         '../wm/public/drag_drop_client.h',
         '../wm/public/drag_drop_delegate.cc',
         '../wm/public/drag_drop_delegate.h',
+        '../wm/public/scoped_drag_drop_disabler.cc',
+        '../wm/public/scoped_drag_drop_disabler.h',
         '../wm/public/scoped_tooltip_disabler.cc',
         '../wm/public/scoped_tooltip_disabler.h',
         '../wm/public/tooltip_client.cc',

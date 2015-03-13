@@ -29,6 +29,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/widget/widget_removals_observer.h"
+#include "ui/wm/public/scoped_drag_drop_disabler.h"
 
 class PrefService;
 
@@ -310,6 +311,10 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // True if the host is showing a new version of OOBE screen.
   bool is_new_oobe_;
+
+  // Keeps a copy of the old Drag'n'Drop client, so that it would be disabled
+  // during a login session and restored afterwards.
+  scoped_ptr<aura::client::ScopedDragDropDisabler> scoped_drag_drop_disabler_;
 
   base::WeakPtrFactory<LoginDisplayHostImpl> pointer_factory_;
   base::WeakPtrFactory<LoginDisplayHostImpl> animation_weak_ptr_factory_;
