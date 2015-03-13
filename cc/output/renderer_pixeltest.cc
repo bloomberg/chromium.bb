@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "cc/layers/append_quads_data.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
