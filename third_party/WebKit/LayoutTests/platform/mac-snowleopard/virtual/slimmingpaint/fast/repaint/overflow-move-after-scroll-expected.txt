@@ -1,0 +1,80 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [10, 60],
+          "bounds": [700, 400],
+          "drawsContent": true,
+          "repaintRects": [
+            [300, 100, 120, 50],
+            [50, 100, 120, 50]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow (positioned) DIV",
+            "LayoutBlockFlow (positioned) DIV id='block'"
+          ],
+          "children": [
+            {
+              "bounds": [685, 385],
+              "children": [
+                {
+                  "bounds": [685, 600],
+                  "shouldFlattenTransform": false,
+                  "drawsContent": true,
+                  "repaintRects": [
+                    [300, 200, 120, 50],
+                    [50, 200, 120, 50]
+                  ],
+                  "paintInvalidationClients": [
+                    "LayoutBlockFlow (positioned) DIV",
+                    "LayoutBlockFlow (positioned) DIV id='block'"
+                  ],
+                  "children": [
+                    {
+                      "shouldFlattenTransform": false
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "children": [
+                {
+                  "position": [0, 385],
+                  "bounds": [685, 15],
+                  "drawsContent": true
+                },
+                {
+                  "position": [685, 0],
+                  "bounds": [15, 385],
+                  "drawsContent": true,
+                  "repaintRects": [
+                    [0, 0, 15, 385],
+                    [0, 0, 15, 385],
+                    [0, 0, 15, 385]
+                  ],
+                  "paintInvalidationClients": [
+                    "##ALL##",
+                    "##ALL##",
+                    "##ALL##"
+                  ]
+                },
+                {
+                  "position": [685, 385],
+                  "bounds": [15, 15],
+                  "drawsContent": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
