@@ -46,6 +46,7 @@ SHADER(
 );
 const char kFragmentShader[] =
 SHADER(
+  precision mediump float;
   uniform sampler2D a_texture;
   varying vec2 v_texCoord;
   void main() {
