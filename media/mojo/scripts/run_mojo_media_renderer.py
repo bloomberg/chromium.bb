@@ -4,10 +4,10 @@
 # found in the LICENSE file.
 #
 # The script follows mojo/services/html_viewer/view_url.py and modified it for
-# test the mojo media renderer. The page will be rendered in a windowless mode.
+# test the mojo media renderer. The page will be rendered in a headless mode.
 #
 # TODO(xhwang): Explore the possibility of running this with the Kiosk window
-# manager.
+# manager. See http://crbug.com/467176
 
 import argparse
 import os
@@ -35,7 +35,7 @@ def _BuildShellCommand(args):
            sdk_version)
   options.append("--url-mappings=mojo:html_viewer=file://%s/html_viewer.mojo,"
                  "mojo:media=file://%s/media.mojo" % (build_dir, build_dir))
-  args_for_html_viewer = "--enable-mojo-media-renderer "
+  args_for_html_viewer = "--enable-mojo-media-renderer --is-headless "
   if args.verbose:
     args_for_html_viewer += \
         "--vmodule=pipeline*=3,*renderer_impl*=3,*mojo_demuxer*=3"
