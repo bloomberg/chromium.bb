@@ -233,7 +233,10 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
 
 // These tests are irrelevant if NACL is disabled. See crbug.com/449198.
 // TODO(crbug/464120): There is also a problem in Windows debug mode.
-#if defined(DISABLE_NACL) || (!defined(NDEBUG) && defined(OS_WIN))
+// TODO(crbug/464843): There is also a problem under MSan.
+#if defined(DISABLE_NACL) || \
+    (!defined(NDEBUG) && defined(OS_WIN)) || \
+    defined(MEMORY_SANITIZER)
 #define MAYBE_Initialize DISABLED_Initialize
 #define MAYBE_EncodeAndDecode DISABLED_EncodeAndDecode
 #define MAYBE_TokenLengths DISABLED_TokenLengths
