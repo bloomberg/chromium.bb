@@ -23,7 +23,7 @@ const DataResource kDataResources[] = {
     {"themeChromiumAndroid.css", IDR_UASTYLE_THEME_CHROMIUM_ANDROID_CSS},
     {"mediaControlsAndroid.css", IDR_UASTYLE_MEDIA_CONTROLS_ANDROID_CSS},
 #endif
-#if defined(OS_LINUX)
+#if !defined(OS_WIN)
     {"themeChromiumLinux.css", IDR_UASTYLE_THEME_CHROMIUM_LINUX_CSS},
 #endif
     {"themeChromiumSkia.css", IDR_UASTYLE_THEME_CHROMIUM_SKIA_CSS},
