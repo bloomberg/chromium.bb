@@ -84,7 +84,7 @@ static bool parseKeyTimes(const String& string, Vector<float>& result, bool veri
     Vector<String> parseList;
     string.split(';', true, parseList);
     for (unsigned n = 0; n < parseList.size(); ++n) {
-        String timeString = parseList[n];
+        String timeString = parseList[n].stripWhiteSpace();
         bool ok;
         float time = timeString.toFloat(&ok);
         if (!ok || time < 0 || time > 1)
