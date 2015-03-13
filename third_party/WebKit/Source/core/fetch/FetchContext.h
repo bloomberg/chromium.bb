@@ -49,6 +49,7 @@ class ResourceError;
 class ResourceLoader;
 class ResourceResponse;
 class ResourceRequest;
+class ResourceTimingInfo;
 
 enum FetchResourceType {
     FetchMainResource,
@@ -69,7 +70,6 @@ public:
     virtual Document* document() const { return nullptr; }
     virtual DocumentLoader* documentLoader() const { return nullptr; }
 
-    virtual void reportLocalLoadFailed(const KURL&);
     virtual void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
     virtual void setFirstPartyForCookies(ResourceRequest&);
     virtual CachePolicy cachePolicy() const;
@@ -89,6 +89,13 @@ public:
     virtual void dispatchWillRequestResource(FetchRequest*);
     virtual void willStartLoadingResource(ResourceRequest&);
     virtual void didLoadResource();
+
+    virtual void addResourceTiming(ResourceTimingInfo*, bool isMainResource);
+    virtual bool allowImage(bool, const KURL&) const { return false; }
+    virtual bool canRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction) const { return false; }
+
+    virtual bool isControlledByServiceWorker() const { return false; }
+    virtual int64_t serviceWorkerID() const { return -1; }
 };
 
 }

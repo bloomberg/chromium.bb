@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/fetch/ResourceFetcher.h"
 
-#include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
@@ -58,17 +57,13 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/PingLoader.h"
-#include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/Performance.h"
 #include "core/timing/ResourceTimingInfo.h"
-#include "core/svg/graphics/SVGImageChromeClient.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/mhtml/ArchiveResourceCollection.h"
 #include "platform/weborigin/KnownPorts.h"
-#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
@@ -193,16 +188,6 @@ static void populateResourceTiming(ResourceTimingInfo* info, Resource* resource,
     }
 }
 
-static void reportResourceTiming(ResourceTimingInfo* info, Document* initiatorDocument, bool isMainResource)
-{
-    if (initiatorDocument && isMainResource)
-        initiatorDocument = initiatorDocument->parentDocument();
-    if (!initiatorDocument || !initiatorDocument->loader())
-        return;
-    if (LocalDOMWindow* initiatorWindow = initiatorDocument->domWindow())
-        DOMWindowPerformance::performance(*initiatorWindow)->addResourceTiming(*info, initiatorDocument);
-}
-
 static WebURLRequest::RequestContext requestContextFromType(const ResourceFetcher* fetcher, Resource::Type type)
 {
     switch (type) {
@@ -285,7 +270,7 @@ ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
     if (LocalFrame* f = frame()) {
         if (f->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal) {
             KURL requestURL = request.resourceRequest().url();
-            if (requestURL.isValid() && canRequest(Resource::Image, request.resourceRequest(), requestURL, request.options(), request.forPreload(), request.originRestriction()))
+            if (requestURL.isValid() && context().canRequest(Resource::Image, request.resourceRequest(), requestURL, request.options(), request.forPreload(), request.originRestriction()))
                 PingLoader::loadImage(f, requestURL);
             return 0;
         }
@@ -416,169 +401,11 @@ void ResourceFetcher::preCacheSubstituteDataForMainResource(const FetchRequest& 
     memoryCache()->add(resource.get());
 }
 
-bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& resourceRequest, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction) const
-{
-    SecurityOrigin* securityOrigin = options.securityOrigin.get();
-    if (!securityOrigin && document())
-        securityOrigin = document()->securityOrigin();
-
-    if (originRestriction != FetchRequest::NoOriginRestriction && securityOrigin && !securityOrigin->canDisplay(url)) {
-        if (!forPreload)
-            context().reportLocalLoadFailed(url);
-        WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource URL was not allowed by SecurityOrigin::canDisplay");
-        return 0;
-    }
-
-    // Some types of resources can be loaded only from the same origin. Other
-    // types of resources, like Images, Scripts, and CSS, can be loaded from
-    // any URL.
-    switch (type) {
-    case Resource::MainResource:
-    case Resource::Image:
-    case Resource::CSSStyleSheet:
-    case Resource::Script:
-    case Resource::Font:
-    case Resource::Raw:
-    case Resource::LinkPrefetch:
-    case Resource::LinkSubresource:
-    case Resource::TextTrack:
-    case Resource::ImportResource:
-    case Resource::Media:
-        // By default these types of resources can be loaded from any origin.
-        // FIXME: Are we sure about Resource::Font?
-        if (originRestriction == FetchRequest::RestrictToSameOrigin && !securityOrigin->canRequest(url)) {
-            printAccessDeniedMessage(url);
-            return false;
-        }
-        break;
-    case Resource::XSLStyleSheet:
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-    case Resource::SVGDocument:
-        if (!securityOrigin->canRequest(url)) {
-            printAccessDeniedMessage(url);
-            return false;
-        }
-        break;
-    }
-
-    // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
-    bool shouldBypassMainWorldCSP = (frame() && frame()->script().shouldBypassMainWorldCSP()) || (options.contentSecurityPolicyOption == DoNotCheckContentSecurityPolicy);
-
-    // Don't send CSP messages for preloads, we might never actually display those items.
-    ContentSecurityPolicy::ReportingStatus cspReporting = forPreload ?
-        ContentSecurityPolicy::SuppressReport : ContentSecurityPolicy::SendReport;
-
-    // As of CSP2, for requests that are the results of redirects, the match
-    // algorithm should ignore the path component of the URL.
-    ContentSecurityPolicy::RedirectStatus redirectStatus = resourceRequest.followedRedirect() ? ContentSecurityPolicy::DidRedirect : ContentSecurityPolicy::DidNotRedirect;
-
-    // document() can be null, but not in any of the cases where csp is actually used below.
-    // ImageResourceTest.MultipartImage crashes w/o the document() null check.
-    // I believe it's the Resource::Raw case.
-    const ContentSecurityPolicy* csp = document() ? document()->contentSecurityPolicy() : nullptr;
-
-    // FIXME: This would be cleaner if moved this switch into an allowFromSource()
-    // helper on this object which took a Resource::Type, then this block would
-    // collapse to about 10 lines for handling Raw and Script special cases.
-    switch (type) {
-    case Resource::XSLStyleSheet:
-        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, redirectStatus, cspReporting))
-            return false;
-        break;
-    case Resource::Script:
-    case Resource::ImportResource:
-        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, redirectStatus, cspReporting))
-            return false;
-
-        if (frame()) {
-            Settings* settings = frame()->settings();
-            if (!frame()->loader().client()->allowScriptFromSource(!settings || settings->scriptEnabled(), url)) {
-                frame()->loader().client()->didNotAllowScript();
-                return false;
-            }
-        }
-        break;
-    case Resource::CSSStyleSheet:
-        if (!shouldBypassMainWorldCSP && !csp->allowStyleFromSource(url, redirectStatus, cspReporting))
-            return false;
-        break;
-    case Resource::SVGDocument:
-    case Resource::Image:
-        if (!shouldBypassMainWorldCSP && !csp->allowImageFromSource(url, redirectStatus, cspReporting))
-            return false;
-        break;
-    case Resource::Font: {
-        if (!shouldBypassMainWorldCSP && !csp->allowFontFromSource(url, redirectStatus, cspReporting))
-            return false;
-        break;
-    }
-    case Resource::MainResource:
-    case Resource::Raw:
-    case Resource::LinkPrefetch:
-    case Resource::LinkSubresource:
-        break;
-    case Resource::Media:
-    case Resource::TextTrack:
-        if (!shouldBypassMainWorldCSP && !csp->allowMediaFromSource(url, redirectStatus, cspReporting))
-            return false;
-
-        if (frame()) {
-            if (!frame()->loader().client()->allowMedia(url))
-                return false;
-        }
-        break;
-    }
-
-    // SVG Images have unique security rules that prevent all subresource requests
-    // except for data urls.
-    if (type != Resource::MainResource) {
-        if (frame() && frame()->chromeClient().isSVGImageChromeClient() && !url.protocolIsData())
-            return false;
-    }
-
-    // FIXME: Once we use RequestContext for CSP (http://crbug.com/390497), remove this extra check.
-    if (resourceRequest.requestContext() == WebURLRequest::RequestContextManifest) {
-        if (!shouldBypassMainWorldCSP && !csp->allowManifestFromSource(url, redirectStatus, cspReporting))
-            return false;
-    }
-
-    // Measure the number of legacy URL schemes ('ftp://') and the number of embedded-credential
-    // ('http://user:password@...') resources embedded as subresources. in the hopes that we can
-    // block them at some point in the future.
-    if (frame() && resourceRequest.frameType() != WebURLRequest::FrameTypeTopLevel) {
-        ASSERT(frame()->document());
-        if (SchemeRegistry::shouldTreatURLSchemeAsLegacy(url.protocol()) && !SchemeRegistry::shouldTreatURLSchemeAsLegacy(frame()->document()->securityOrigin()->protocol()))
-            UseCounter::count(frame()->document(), UseCounter::LegacyProtocolEmbeddedAsSubresource);
-        if (!url.user().isEmpty() || !url.pass().isEmpty())
-            UseCounter::count(frame()->document(), UseCounter::RequestedSubresourceWithEmbeddedCredentials);
-    }
-
-    // Last of all, check for mixed content. We do this last so that when
-    // folks block mixed content with a CSP policy, they don't get a warning.
-    // They'll still get a warning in the console about CSP blocking the load.
-
-    // If we're loading the main resource of a subframe, ensure that we check
-    // against the parent of the active frame, rather than the frame itself.
-    LocalFrame* effectiveFrame = frame();
-    if (effectiveFrame && resourceRequest.frameType() == WebURLRequest::FrameTypeNested) {
-        // FIXME: Deal with RemoteFrames.
-        Frame* parentFrame = effectiveFrame->tree().parent();
-        ASSERT(parentFrame);
-        if (parentFrame->isLocalFrame())
-            effectiveFrame = toLocalFrame(parentFrame);
-    }
-
-    MixedContentChecker::ReportingStatus mixedContentReporting = forPreload ?
-        MixedContentChecker::SuppressReport : MixedContentChecker::SendReport;
-    return !MixedContentChecker::shouldBlockFetch(effectiveFrame, resourceRequest, url, mixedContentReporting);
-}
-
 bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sourceOrigin, const KURL& url, AccessControlLoggingDecision logErrorsDecision) const
 {
     // Redirects can change the response URL different from one of request.
     bool forPreload = resource->isUnusedPreload();
-    if (!canRequest(resource->type(), resource->resourceRequest(), url, resource->options(), forPreload, FetchRequest::UseDefaultOriginRestrictionForType))
+    if (!context().canRequest(resource->type(), resource->resourceRequest(), url, resource->options(), forPreload, FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
 
     if (!sourceOrigin && document())
@@ -602,30 +429,7 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
 
 bool ResourceFetcher::isControlledByServiceWorker() const
 {
-    LocalFrame* localFrame = frame();
-    if (!localFrame)
-        return false;
-    ASSERT(documentLoader() || localFrame->loader().documentLoader());
-    if (documentLoader())
-        return localFrame->loader().client()->isControlledByServiceWorker(*documentLoader());
-    // documentLoader() is null while loading resources from the imported HTML.
-    // In such cases whether the request is controlled by ServiceWorker or not
-    // is determined by the document loader of the frame.
-    return localFrame->loader().client()->isControlledByServiceWorker(*localFrame->loader().documentLoader());
-}
-
-int64_t ResourceFetcher::serviceWorkerID() const
-{
-    LocalFrame* localFrame = frame();
-    if (!localFrame)
-        return -1;
-    ASSERT(documentLoader() || localFrame->loader().documentLoader());
-    if (documentLoader())
-        return localFrame->loader().client()->serviceWorkerID(*documentLoader());
-    // documentLoader() is null while loading resources from the imported HTML.
-    // In such cases a service worker ID could be retrieved from the document
-    // loader of the frame.
-    return localFrame->loader().client()->serviceWorkerID(*localFrame->loader().documentLoader());
+    return context().isControlledByServiceWorker();
 }
 
 bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& request, RevalidationPolicy policy)
@@ -685,7 +489,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     if (!url.isValid())
         return nullptr;
 
-    if (!canRequest(type, request.resourceRequest(), url, request.options(), request.forPreload(), request.originRestriction()))
+    if (!context().canRequest(type, request.resourceRequest(), url, request.options(), request.forPreload(), request.originRestriction()))
         return nullptr;
 
     context().dispatchWillRequestResource(&request);
@@ -793,7 +597,7 @@ void ResourceFetcher::resourceTimingReportTimerFired(Timer<ResourceFetcher>* tim
     HashMap<RefPtr<ResourceTimingInfo>, bool> timingReports;
     timingReports.swap(m_scheduledResourceTimingReports);
     for (const auto& timingInfo : timingReports)
-        reportResourceTiming(timingInfo.key.get(), document(), timingInfo.value);
+        context().addResourceTiming(timingInfo.key.get(), timingInfo.value);
 }
 
 void ResourceFetcher::determineRequestContext(ResourceRequest& request, Resource::Type type)
@@ -866,7 +670,7 @@ ResourcePtr<Resource> ResourceFetcher::createResourceForRevalidation(const Fetch
     ASSERT(resource->isLoaded());
     ASSERT(resource->canUseCacheValidator());
     ASSERT(!resource->resourceToRevalidate());
-    ASSERT(!isControlledByServiceWorker());
+    ASSERT(!context().isControlledByServiceWorker());
 
     ResourceRequest revalidatingRequest(resource->resourceRequest());
     revalidatingRequest.clearHTTPReferrer();
@@ -1059,7 +863,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         || request.cacheControlContainsNoCache()) {
         // See if the resource has usable ETag or Last-modified headers.
         // If the page is controlled by the ServiceWorker, we choose the Reload policy because the revalidation headers should not be exposed to the ServiceWorker.(crbug.com/429570)
-        if (existingResource->canUseCacheValidator() && !isControlledByServiceWorker())
+        if (existingResource->canUseCacheValidator() && !context().isControlledByServiceWorker())
             return Revalidate;
 
         // No, must reload.
@@ -1068,23 +872,6 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     }
 
     return Use;
-}
-
-void ResourceFetcher::printAccessDeniedMessage(const KURL& url) const
-{
-    if (url.isNull())
-        return;
-
-    if (!frame())
-        return;
-
-    String message;
-    if (!document() || document()->url().isNull())
-        message = "Unsafe attempt to load URL " + url.elidedString() + '.';
-    else
-        message = "Unsafe attempt to load URL " + url.elidedString() + " from frame with URL " + document()->url().elidedString() + ". Domains, protocols and ports must match.\n";
-
-    frame()->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message));
 }
 
 void ResourceFetcher::setAutoLoadImages(bool enable)
@@ -1305,7 +1092,7 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
             RefPtr<ResourceTimingInfo> info = it->value;
             m_resourceTimingInfoMap.remove(it);
             populateResourceTiming(info.get(), resource, false);
-            reportResourceTiming(info.get(), document(), resource->type() == Resource::MainResource);
+            context().addResourceTiming(info.get(), resource->type() == Resource::MainResource);
         }
     }
     context().dispatchDidFinishLoading(resource->identifier(), finishTime, encodedDataLength);
@@ -1336,7 +1123,7 @@ void ResourceFetcher::didReceiveResponse(const Resource* resource, const Resourc
     // We check the URL not to load the resources which are forbidden by the page CSP. This behavior is not specified in the CSP specification yet.
     if (response.wasFetchedViaServiceWorker()) {
         const KURL& originalURL = response.originalURLViaServiceWorker();
-        if (!canRequest(resource->type(), resource->resourceRequest(), originalURL, resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType)) {
+        if (!context().canRequest(resource->type(), resource->resourceRequest(), originalURL, resource->options(), false, FetchRequest::UseDefaultOriginRestrictionForType)) {
             resource->loader()->cancel();
             bool isInternalRequest = resource->options().initiatorInfo.name == FetchInitiatorTypeNames::internal;
             context().dispatchDidFail(resource->identifier(), ResourceError(errorDomainBlinkInternal, 0, originalURL.string(), "Unsafe attempt to load URL " + originalURL.elidedString() + " fetched by a ServiceWorker."), isInternalRequest);
@@ -1436,7 +1223,7 @@ bool ResourceFetcher::isLoadedBy(ResourceLoaderHost* possibleOwner) const
 
 bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& request, const ResourceResponse& redirectResponse, ResourceLoaderOptions& options)
 {
-    if (!canRequest(resource->type(), request, request.url(), options, resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
+    if (!context().canRequest(resource->type(), request, request.url(), options, resource->isUnusedPreload(), FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
     if (options.corsEnabled == IsCORSEnabled) {
         SecurityOrigin* sourceOrigin = options.securityOrigin.get();
@@ -1527,8 +1314,8 @@ const ResourceLoaderOptions& ResourceFetcher::defaultResourceOptions()
 
 String ResourceFetcher::getCacheIdentifier() const
 {
-    if (isControlledByServiceWorker())
-        return String::number(serviceWorkerID());
+    if (context().isControlledByServiceWorker())
+        return String::number(context().serviceWorkerID());
     return MemoryCache::defaultCacheIdentifier();
 }
 

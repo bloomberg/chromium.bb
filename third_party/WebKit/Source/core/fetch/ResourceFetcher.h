@@ -99,9 +99,6 @@ public:
     ResourcePtr<RawResource> fetchMedia(FetchRequest&);
     ResourcePtr<RawResource> fetchTextTrack(FetchRequest&);
 
-    // Logs an access denied message to the console for the specified URL.
-    void printAccessDeniedMessage(const KURL&) const;
-
     Resource* cachedResource(const KURL&) const;
 
     typedef HashMap<String, ResourcePtr<Resource>> DocumentResourceMap;
@@ -161,7 +158,6 @@ public:
     virtual void derefResourceLoaderHost() override;
 #endif
 
-    int64_t serviceWorkerID() const;
     void acceptDataFromThreadedReceiver(unsigned long identifier, const char* data, int dataLength, int encodedDataLength);
 
     enum ResourceLoadStartType {
@@ -198,8 +194,6 @@ private:
     void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
     void upgradeInsecureRequest(FetchRequest&);
     void addClientHintsIfNeccessary(FetchRequest&);
-
-    bool canRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction) const;
 
     static bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
 

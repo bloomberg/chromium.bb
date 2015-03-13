@@ -31,12 +31,15 @@
 #include "config.h"
 #include "core/loader/FrameFetchContext.h"
 
+#include "bindings/core/v8/ScriptController.h"
 #include "core/dom/Document.h"
 #include "core/fetch/AcceptClientHints.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/html/imports/HTMLImportsController.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
@@ -47,7 +50,11 @@
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/Page.h"
-#include "core/frame/Settings.h"
+#include "core/svg/graphics/SVGImageChromeClient.h"
+#include "core/timing/DOMWindowPerformance.h"
+#include "core/timing/Performance.h"
+#include "platform/Logging.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {
@@ -71,11 +78,6 @@ LocalFrame* FrameFetchContext::frame() const
     if (m_document && m_document->importsController())
         return m_document->importsController()->master()->frame();
     return 0;
-}
-
-void FrameFetchContext::reportLocalLoadFailed(const KURL& url)
-{
-    FrameLoader::reportLocalLoadFailed(frame(), url.elidedString());
 }
 
 void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request, FetchResourceType type)
@@ -335,6 +337,217 @@ void FrameFetchContext::didLoadResource()
 {
     if (frame())
         frame()->loader().checkCompleted();
+}
+
+void FrameFetchContext::addResourceTiming(ResourceTimingInfo* info, bool isMainResource)
+{
+    Document* initiatorDocument = m_document && isMainResource ? m_document->parentDocument() : m_document.get();
+    if (!frame() || !initiatorDocument || !initiatorDocument->domWindow())
+        return;
+    DOMWindowPerformance::performance(*initiatorDocument->domWindow())->addResourceTiming(*info, initiatorDocument);
+}
+
+bool FrameFetchContext::allowImage(bool imagesEnabled, const KURL& url) const
+{
+    return frame() && !frame()->loader().client()->allowImage(imagesEnabled, url);
+}
+
+void FrameFetchContext::printAccessDeniedMessage(const KURL& url) const
+{
+    if (url.isNull())
+        return;
+
+    String message;
+    if (!m_document || m_document->url().isNull())
+        message = "Unsafe attempt to load URL " + url.elidedString() + '.';
+    else
+        message = "Unsafe attempt to load URL " + url.elidedString() + " from frame with URL " + m_document->url().elidedString() + ". Domains, protocols and ports must match.\n";
+
+    frame()->document()->addConsoleMessage(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message));
+}
+
+bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& resourceRequest, const KURL& url, const ResourceLoaderOptions& options, bool forPreload, FetchRequest::OriginRestriction originRestriction) const
+{
+    // FIXME: CachingCorrectnessTest needs us to permit loads when there isn't a frame.
+    // Once CachingCorrectnessTest can create a FetchContext mock to meet its needs (without
+    // also needing to mock Document, DocumentLoader, and Frame), this should either be reverted to
+    // return false or removed entirely.
+    if (!frame())
+        return true;
+
+    SecurityOrigin* securityOrigin = options.securityOrigin.get();
+    if (!securityOrigin && document())
+        securityOrigin = document()->securityOrigin();
+
+    if (originRestriction != FetchRequest::NoOriginRestriction && securityOrigin && !securityOrigin->canDisplay(url)) {
+        if (!forPreload)
+            FrameLoader::reportLocalLoadFailed(frame(), url.elidedString());
+        WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource URL was not allowed by SecurityOrigin::canDisplay");
+        return false;
+    }
+
+    // Some types of resources can be loaded only from the same origin. Other
+    // types of resources, like Images, Scripts, and CSS, can be loaded from
+    // any URL.
+    switch (type) {
+    case Resource::MainResource:
+    case Resource::Image:
+    case Resource::CSSStyleSheet:
+    case Resource::Script:
+    case Resource::Font:
+    case Resource::Raw:
+    case Resource::LinkPrefetch:
+    case Resource::LinkSubresource:
+    case Resource::TextTrack:
+    case Resource::ImportResource:
+    case Resource::Media:
+        // By default these types of resources can be loaded from any origin.
+        // FIXME: Are we sure about Resource::Font?
+        if (originRestriction == FetchRequest::RestrictToSameOrigin && !securityOrigin->canRequest(url)) {
+            printAccessDeniedMessage(url);
+            return false;
+        }
+        break;
+    case Resource::XSLStyleSheet:
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+    case Resource::SVGDocument:
+        if (!securityOrigin->canRequest(url)) {
+            printAccessDeniedMessage(url);
+            return false;
+        }
+        break;
+    }
+
+    // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
+    bool shouldBypassMainWorldCSP = frame()->script().shouldBypassMainWorldCSP() || options.contentSecurityPolicyOption == DoNotCheckContentSecurityPolicy;
+
+    // Don't send CSP messages for preloads, we might never actually display those items.
+    ContentSecurityPolicy::ReportingStatus cspReporting = forPreload ?
+        ContentSecurityPolicy::SuppressReport : ContentSecurityPolicy::SendReport;
+
+    // As of CSP2, for requests that are the results of redirects, the match
+    // algorithm should ignore the path component of the URL.
+    ContentSecurityPolicy::RedirectStatus redirectStatus = resourceRequest.followedRedirect() ? ContentSecurityPolicy::DidRedirect : ContentSecurityPolicy::DidNotRedirect;
+
+    // m_document can be null, but not in any of the cases where csp is actually used below.
+    // ImageResourceTest.MultipartImage crashes w/o the m_document null check.
+    // I believe it's the Resource::Raw case.
+    const ContentSecurityPolicy* csp = m_document ? m_document->contentSecurityPolicy() : nullptr;
+
+    // FIXME: This would be cleaner if moved this switch into an allowFromSource()
+    // helper on this object which took a Resource::Type, then this block would
+    // collapse to about 10 lines for handling Raw and Script special cases.
+    switch (type) {
+    case Resource::XSLStyleSheet:
+        ASSERT(RuntimeEnabledFeatures::xsltEnabled());
+        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, redirectStatus, cspReporting))
+            return false;
+        break;
+    case Resource::Script:
+    case Resource::ImportResource:
+        if (!shouldBypassMainWorldCSP && !csp->allowScriptFromSource(url, redirectStatus, cspReporting))
+            return false;
+
+        if (!frame()->loader().client()->allowScriptFromSource(!frame()->settings() || frame()->settings()->scriptEnabled(), url)) {
+            frame()->loader().client()->didNotAllowScript();
+            return false;
+        }
+        break;
+    case Resource::CSSStyleSheet:
+        if (!shouldBypassMainWorldCSP && !csp->allowStyleFromSource(url, redirectStatus, cspReporting))
+            return false;
+        break;
+    case Resource::SVGDocument:
+    case Resource::Image:
+        if (!shouldBypassMainWorldCSP && !csp->allowImageFromSource(url, redirectStatus, cspReporting))
+            return false;
+        break;
+    case Resource::Font: {
+        if (!shouldBypassMainWorldCSP && !csp->allowFontFromSource(url, redirectStatus, cspReporting))
+            return false;
+        break;
+    }
+    case Resource::MainResource:
+    case Resource::Raw:
+    case Resource::LinkPrefetch:
+    case Resource::LinkSubresource:
+        break;
+    case Resource::Media:
+    case Resource::TextTrack:
+        if (!shouldBypassMainWorldCSP && !csp->allowMediaFromSource(url, redirectStatus, cspReporting))
+            return false;
+
+        if (!frame()->loader().client()->allowMedia(url))
+            return false;
+        break;
+    }
+
+    // SVG Images have unique security rules that prevent all subresource requests
+    // except for data urls.
+    if (type != Resource::MainResource && frame()->chromeClient().isSVGImageChromeClient() && !url.protocolIsData())
+        return false;
+
+    // FIXME: Once we use RequestContext for CSP (http://crbug.com/390497), remove this extra check.
+    if (resourceRequest.requestContext() == WebURLRequest::RequestContextManifest) {
+        if (!shouldBypassMainWorldCSP && !csp->allowManifestFromSource(url, redirectStatus, cspReporting))
+            return false;
+    }
+
+    // Measure the number of legacy URL schemes ('ftp://') and the number of embedded-credential
+    // ('http://user:password@...') resources embedded as subresources. in the hopes that we can
+    // block them at some point in the future.
+    if (resourceRequest.frameType() != WebURLRequest::FrameTypeTopLevel) {
+        ASSERT(frame()->document());
+        if (SchemeRegistry::shouldTreatURLSchemeAsLegacy(url.protocol()) && !SchemeRegistry::shouldTreatURLSchemeAsLegacy(frame()->document()->securityOrigin()->protocol()))
+            UseCounter::count(frame()->document(), UseCounter::LegacyProtocolEmbeddedAsSubresource);
+        if (!url.user().isEmpty() || !url.pass().isEmpty())
+            UseCounter::count(frame()->document(), UseCounter::RequestedSubresourceWithEmbeddedCredentials);
+    }
+
+    // Last of all, check for mixed content. We do this last so that when
+    // folks block mixed content with a CSP policy, they don't get a warning.
+    // They'll still get a warning in the console about CSP blocking the load.
+
+    // If we're loading the main resource of a subframe, ensure that we check
+    // against the parent of the active frame, rather than the frame itself.
+    LocalFrame* effectiveFrame = frame();
+    if (resourceRequest.frameType() == WebURLRequest::FrameTypeNested) {
+        // FIXME: Deal with RemoteFrames.
+        Frame* parentFrame = effectiveFrame->tree().parent();
+        ASSERT(parentFrame);
+        if (parentFrame->isLocalFrame())
+            effectiveFrame = toLocalFrame(parentFrame);
+    }
+
+    MixedContentChecker::ReportingStatus mixedContentReporting = forPreload ?
+        MixedContentChecker::SuppressReport : MixedContentChecker::SendReport;
+    return !MixedContentChecker::shouldBlockFetch(effectiveFrame, resourceRequest, url, mixedContentReporting);
+}
+
+bool FrameFetchContext::isControlledByServiceWorker() const
+{
+    if (!frame())
+        return false;
+    ASSERT(m_documentLoader || frame()->loader().documentLoader());
+    if (m_documentLoader)
+        return frame()->loader().client()->isControlledByServiceWorker(*m_documentLoader);
+    // m_documentLoader is null while loading resources from an HTML import.
+    // In such cases whether the request is controlled by ServiceWorker or not
+    // is determined by the document loader of the frame.
+    return frame()->loader().client()->isControlledByServiceWorker(*frame()->loader().documentLoader());
+}
+
+int64_t FrameFetchContext::serviceWorkerID() const
+{
+    if (!frame())
+        return -1;
+    ASSERT(m_documentLoader || frame()->loader().documentLoader());
+    if (m_documentLoader)
+        return frame()->loader().client()->serviceWorkerID(*m_documentLoader);
+    // m_documentLoader is null while loading resources from an HTML import.
+    // In such cases a service worker ID could be retrieved from the document
+    // loader of the frame.
+    return frame()->loader().client()->serviceWorkerID(*frame()->loader().documentLoader());
 }
 
 DEFINE_TRACE(FrameFetchContext)

@@ -44,10 +44,6 @@ void FetchContext::dispatchDidChangeResourcePriority(unsigned long, ResourceLoad
 {
 }
 
-void FetchContext::reportLocalLoadFailed(const KURL&)
-{
-}
-
 void FetchContext::addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType)
 {
 }
@@ -107,6 +103,10 @@ void FetchContext::willStartLoadingResource(ResourceRequest&)
 }
 
 void FetchContext::didLoadResource()
+{
+}
+
+void FetchContext::addResourceTiming(ResourceTimingInfo*, bool)
 {
 }
 

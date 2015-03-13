@@ -62,7 +62,6 @@ public:
     DocumentLoader* documentLoader() const override { return m_documentLoader; }
     void clearDocumentLoader() { m_documentLoader = nullptr; }
 
-    void reportLocalLoadFailed(const KURL&) override;
     void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType) override;
     void setFirstPartyForCookies(ResourceRequest&) override;
     CachePolicy cachePolicy() const override;
@@ -82,11 +81,20 @@ public:
     void willStartLoadingResource(ResourceRequest&) override;
     void didLoadResource() override;
 
+    void addResourceTiming(ResourceTimingInfo*, bool isMainResource) override;
+    bool allowImage(bool imagesEnabled, const KURL&) const override;
+    bool canRequest(Resource::Type, const ResourceRequest&, const KURL&, const ResourceLoaderOptions&, bool forPreload, FetchRequest::OriginRestriction) const override;
+
+    bool isControlledByServiceWorker() const override;
+    int64_t serviceWorkerID() const override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit FrameFetchContext(DocumentLoader*);
     inline DocumentLoader* ensureLoaderForNotifications();
+
+    void printAccessDeniedMessage(const KURL&) const;
 
     // FIXME: Oilpan: Ideally this should just be a traced Member but that will
     // currently leak because LayoutStyle and its data are not on the heap.
