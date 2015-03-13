@@ -32,10 +32,16 @@ test.util.async.openGallery = function(urls, callback) {
  */
 test.util.async.getMetadata = function(url, callback) {
   util.URLsToEntries([url]).then(function(result) {
-    if (result.entries.length != 1)
+    if (result.entries.length != 1) {
       callback(null);
-    else
-      result.entries[0].getMetadata(callback);
+    } else {
+      result.entries[0].getMetadata(function(metadata) {
+        callback({
+          modificationTime: metadata.modificationTime,
+          size: metadata.size
+        });
+      });
+    }
   });
 };
 

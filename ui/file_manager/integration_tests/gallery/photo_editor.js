@@ -174,8 +174,8 @@ function exposureImage(testVolumeName, volumeType) {
                 '%s is not updated. ' +
                     'First last modified: %s, Second last modified: %s.',
                 url,
-                origMetadata.modificationTime.toString(),
-                metadata.modificationTime.toString());
+                origMetadata.modificationTime,
+                metadata.modificationTime);
           }
         });
       });
