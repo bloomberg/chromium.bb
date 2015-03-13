@@ -81,18 +81,24 @@ GLuint LoadShader(const GLenum type, const char* const src) {
   return shader;
 }
 
+int GLFormatBytePerPixel(GLenum format) {
+  DCHECK(format == GL_RGBA || format == GL_LUMINANCE || format == GL_RED_EXT);
+  return format == GL_RGBA ? 4 : 1;
+}
+
 void GenerateTextureData(const gfx::Size& size,
                          int bytes_per_pixel,
                          const int seed,
                          std::vector<uint8>* const pixels) {
-  int bytes = size.GetArea() * bytes_per_pixel;
-  pixels->resize(bytes);
-  for (int i = 0; i < bytes; ++i) {
-    int channel = i % bytes_per_pixel;
-    if (channel == 3) {  // Alpha channel.
-      pixels->at(i) = 255;
-    } else {
-      pixels->at(i) = (i + (seed << 2)) % (32 << channel);
+  // Row bytes has to be multiple of 4 (GL_PACK_ALIGNMENT defaults to 4).
+  int stride = ((size.width() * bytes_per_pixel) + 3) & ~0x3;
+  pixels->resize(size.height() * stride);
+  for (int y = 0; y < size.height(); ++y) {
+    for (int x = 0; x < size.width(); ++x) {
+      for (int channel = 0; channel < bytes_per_pixel; ++channel) {
+        int index = y * stride + x * bytes_per_pixel;
+        pixels->at(index) = (index + (seed << 2)) % (0x20 << channel);
+      }
     }
   }
 }
@@ -101,33 +107,34 @@ void GenerateTextureData(const gfx::Size& size,
 // where the former buffer have been uploaded as a texture and drawn on the
 // RGBA buffer.
 bool CompareBufferToRGBABuffer(GLenum format,
+                               const gfx::Size& size,
                                const std::vector<uint8>& pixels,
-                               const std::vector<uint8>& pixels_rgba) {
-  for (size_t i = 0; i < pixels.size(); i += 4) {
-    switch (format) {
-      case GL_RED_EXT:  // (R_t, 0, 0, 1)
-        if (pixels_rgba[i] != pixels[i / 4] || pixels_rgba[i + 1] != 0 ||
-            pixels_rgba[i + 2] != 0 || pixels_rgba[i + 3] != 255) {
-          return false;
-        }
-        break;
-      case GL_LUMINANCE:  // (L_t, L_t, L_t, 1)
-        if (pixels_rgba[i] != pixels[i / 4] ||
-            pixels_rgba[i + 1] != pixels[i / 4] ||
-            pixels_rgba[i + 2] != pixels[i / 4] || pixels_rgba[i + 3] != 255) {
-          return false;
-        }
-        break;
-      case GL_RGBA:  // (R_t, G_t, B_t, A_t)
-        if (pixels_rgba[i] != pixels[i] ||
-            pixels_rgba[i + 1] != pixels[i + 1] ||
-            pixels_rgba[i + 2] != pixels[i + 2] ||
-            pixels_rgba[i + 3] != pixels[i + 3]) {
-          return false;
-        }
-        break;
-      default:
-        NOTREACHED();
+                               const std::vector<uint8>& rgba) {
+  int bytes_per_pixel = GLFormatBytePerPixel(format);
+  int pixels_stride = ((size.width() * bytes_per_pixel) + 3) & ~0x3;
+  int rgba_stride = size.width() * GLFormatBytePerPixel(GL_RGBA);
+  for (int y = 0; y < size.height(); ++y) {
+    for (int x = 0; x < size.width(); ++x) {
+      int rgba_index = y * rgba_stride + x * GLFormatBytePerPixel(GL_RGBA);
+      int pixels_index = y * pixels_stride + x * bytes_per_pixel;
+      uint8 expected[4] = {0};
+      switch (format) {
+        case GL_LUMINANCE:  // (L_t, L_t, L_t, 1)
+          expected[1] = pixels[pixels_index];
+          expected[2] = pixels[pixels_index];
+        case GL_RED_EXT:  // (R_t, 0, 0, 1)n
+          expected[0] = pixels[pixels_index];
+          expected[3] = 255;
+          break;
+        case GL_RGBA:  // (R_t, G_t, B_t, A_t)
+          memcpy(expected, &pixels[pixels_index], 4);
+          break;
+        default:
+          NOTREACHED();
+      }
+      if (memcmp(&rgba[rgba_index], expected, 4)) {
+        return false;
+      }
     }
   }
   return true;
@@ -302,7 +309,8 @@ class TextureUploadPerfTest : public testing::Test {
     glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE,
                  &pixels_rendered[0]);
     CheckNoGlError();
-    EXPECT_TRUE(CompareBufferToRGBABuffer(format, pixels, pixels_rendered))
+    EXPECT_TRUE(
+        CompareBufferToRGBABuffer(format, size, pixels, pixels_rendered))
         << "Format is: " << gfx::GLEnums::GetStringEnum(format);
 
     std::vector<Measurement> measurements;
@@ -323,9 +331,8 @@ class TextureUploadPerfTest : public testing::Test {
     base::SmallMap<std::map<std::string, Measurement>>
         aggregates;  // indexed by name
     int successful_runs = 0;
-    ASSERT_THAT(format, testing::AnyOf(GL_RGBA, GL_LUMINANCE, GL_RED_EXT));
     for (int i = 0; i < kUploadPerfWarmupRuns + kUploadPerfTestRuns; ++i) {
-      GenerateTextureData(size, format == GL_RGBA ? 4 : 1, i + 1, &pixels);
+      GenerateTextureData(size, GLFormatBytePerPixel(format), i + 1, &pixels);
       auto run = UploadAndDraw(size, pixels, format);
       if (i < kUploadPerfWarmupRuns || !run.size()) {
         continue;
@@ -367,7 +374,7 @@ class TextureUploadPerfTest : public testing::Test {
 // Perf test that generates, uploads and draws a texture on a surface repeatedly
 // and prints out aggregated measurements for all the runs.
 TEST_F(TextureUploadPerfTest, glTexImage2d) {
-  int sizes[] = {128, 256, 512, 1024};
+  int sizes[] = {21, 128, 256, 512, 1024};
   std::vector<GLenum> formats;
   formats.push_back(GL_RGBA);
   // Used by default for ResourceProvider::yuv_resource_format_.
@@ -379,7 +386,7 @@ TEST_F(TextureUploadPerfTest, glTexImage2d) {
 
   if (has_texture_rg) {
     // Used as ResourceProvider::yuv_resource_format_ if
-    // {ARB,EXT}_texture_rg is available.
+    // {ARB,EXT}_texture_rg are available.
     formats.push_back(GL_RED_EXT);
   }
   for (int side : sizes) {
