@@ -145,6 +145,16 @@ class Twitter(WebsiteTest):
     self.Submit("#signin-password")
 
 
+class Wikia(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https://wikia.com");
+    self.Click("#AccountNavigation");
+    self.FillUsernameInto("#usernameInput")
+    self.FillPasswordInto("#passwordInput")
+    self.Submit("input.login-button")
+
+
 class Wikipedia(WebsiteTest):
 
   def Login(self):
@@ -377,6 +387,7 @@ def Tests(environment, tests_to_run=None):
     "reddit": Reddit("reddit", username_not_auto=True),
     "tumblr": Tumblr("tumblr", username_not_auto=True),
     "twitter": Twitter("twitter"),
+    "wikia": Wikia("wikia"),
     "wikipedia": Wikipedia("wikipedia", username_not_auto=True),
     "yahoo": Yahoo("yahoo", username_not_auto=True),
     "yandex": Yandex("yandex")
