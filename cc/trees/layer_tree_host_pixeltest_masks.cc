@@ -62,13 +62,13 @@ class MaskContentLayerClient : public ContentLayerClient {
 
 TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayer) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+      gfx::Rect(100, 100), SK_ColorWHITE);
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
-      gfx::Rect(50, 50, 100, 100), kCSSGreen, 1, SK_ColorBLACK);
+      gfx::Rect(25, 25, 50, 50), kCSSGreen, 1, SK_ColorBLACK);
   background->AddChild(green);
 
-  gfx::Size mask_bounds(100, 100);
+  gfx::Size mask_bounds(50, 50);
   MaskContentLayerClient client(mask_bounds);
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
@@ -82,9 +82,9 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayer) {
 
 TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+      gfx::Rect(100, 100), SK_ColorWHITE);
 
-  gfx::Size mask_bounds(100, 100);
+  gfx::Size mask_bounds(50, 50);
 
   scoped_refptr<PictureImageLayer> mask = PictureImageLayer::Create();
   mask->SetIsDrawable(true);
@@ -92,7 +92,7 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   mask->SetBounds(mask_bounds);
 
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(400, 400);
+  bitmap.allocN32Pixels(200, 200);
   SkCanvas canvas(bitmap);
   canvas.scale(SkIntToScalar(4), SkIntToScalar(4));
   MaskContentLayerClient client(mask_bounds);
@@ -101,7 +101,7 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   mask->SetBitmap(bitmap);
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
-      gfx::Rect(50, 50, 100, 100), kCSSGreen, 1, SK_ColorBLACK);
+      gfx::Rect(25, 25, 50, 50), kCSSGreen, 1, SK_ColorBLACK);
   green->SetMaskLayer(mask.get());
   background->AddChild(green);
 
@@ -111,20 +111,20 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
 
 TEST_P(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+      gfx::Rect(100, 100), SK_ColorWHITE);
 
   // Clip to the top half of the green layer.
   scoped_refptr<Layer> clip = Layer::Create();
   clip->SetPosition(gfx::Point(0, 0));
-  clip->SetBounds(gfx::Size(200, 100));
+  clip->SetBounds(gfx::Size(100, 50));
   clip->SetMasksToBounds(true);
   background->AddChild(clip);
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
-      gfx::Rect(50, 50, 100, 100), kCSSGreen, 1, SK_ColorBLACK);
+      gfx::Rect(25, 25, 50, 50), kCSSGreen, 1, SK_ColorBLACK);
   clip->AddChild(green);
 
-  gfx::Size mask_bounds(100, 100);
+  gfx::Size mask_bounds(50, 50);
   MaskContentLayerClient client(mask_bounds);
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
@@ -139,9 +139,9 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
 
 TEST_P(LayerTreeHostMasksPixelTest, MaskWithReplica) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+      gfx::Rect(100, 100), SK_ColorWHITE);
 
-  gfx::Size mask_bounds(100, 100);
+  gfx::Size mask_bounds(50, 50);
   MaskContentLayerClient client(mask_bounds);
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
@@ -149,7 +149,7 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskWithReplica) {
   mask->SetIsMask(true);
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
-      gfx::Rect(0, 0, 100, 100), kCSSGreen, 1, SK_ColorBLACK);
+      gfx::Rect(0, 0, 50, 50), kCSSGreen, 1, SK_ColorBLACK);
   background->AddChild(green);
   green->SetMaskLayer(mask.get());
 
@@ -157,8 +157,8 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskWithReplica) {
   replica_transform.Rotate(-90.0);
 
   scoped_refptr<Layer> replica = Layer::Create();
-  replica->SetTransformOrigin(gfx::Point3F(50.f, 50.f, 0.f));
-  replica->SetPosition(gfx::Point(100, 100));
+  replica->SetTransformOrigin(gfx::Point3F(25.f, 25.f, 0.f));
+  replica->SetPosition(gfx::Point(50, 50));
   replica->SetTransform(replica_transform);
   green->SetReplicaLayer(replica.get());
 
@@ -168,9 +168,9 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskWithReplica) {
 
 TEST_P(LayerTreeHostMasksPixelTest, MaskWithReplicaOfClippedLayer) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+      gfx::Rect(100, 100), SK_ColorWHITE);
 
-  gfx::Size mask_bounds(100, 100);
+  gfx::Size mask_bounds(50, 50);
   MaskContentLayerClient client(mask_bounds);
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
@@ -180,13 +180,13 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskWithReplicaOfClippedLayer) {
   // Clip to the bottom half of the green layer, and the left half of the
   // replica.
   scoped_refptr<Layer> clip = Layer::Create();
-  clip->SetPosition(gfx::Point(0, 50));
-  clip->SetBounds(gfx::Size(150, 150));
+  clip->SetPosition(gfx::Point(0, 25));
+  clip->SetBounds(gfx::Size(75, 75));
   clip->SetMasksToBounds(true);
   background->AddChild(clip);
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
-      gfx::Rect(0, -50, 100, 100), kCSSGreen, 1, SK_ColorBLACK);
+      gfx::Rect(0, -25, 50, 50), kCSSGreen, 1, SK_ColorBLACK);
   clip->AddChild(green);
   green->SetMaskLayer(mask.get());
 
@@ -194,8 +194,8 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskWithReplicaOfClippedLayer) {
   replica_transform.Rotate(-90.0);
 
   scoped_refptr<Layer> replica = Layer::Create();
-  replica->SetTransformOrigin(gfx::Point3F(50.f, 50.f, 0.f));
-  replica->SetPosition(gfx::Point(100, 100));
+  replica->SetTransformOrigin(gfx::Point3F(25.f, 25.f, 0.f));
+  replica->SetPosition(gfx::Point(50, 50));
   replica->SetTransform(replica_transform);
   green->SetReplicaLayer(replica.get());
 
@@ -206,9 +206,9 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskWithReplicaOfClippedLayer) {
 
 TEST_P(LayerTreeHostMasksPixelTest, MaskOfReplica) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+      gfx::Rect(100, 100), SK_ColorWHITE);
 
-  gfx::Size mask_bounds(100, 100);
+  gfx::Size mask_bounds(50, 50);
   MaskContentLayerClient client(mask_bounds);
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
@@ -216,19 +216,19 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfReplica) {
   mask->SetIsMask(true);
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
-      gfx::Rect(50, 0, 100, 100), kCSSGreen, 1, SK_ColorBLACK);
+      gfx::Rect(25, 0, 50, 50), kCSSGreen, 1, SK_ColorBLACK);
   background->AddChild(green);
 
   scoped_refptr<SolidColorLayer> orange = CreateSolidColorLayer(
-      gfx::Rect(-50, 50, 50, 50), kCSSOrange);
+      gfx::Rect(-25, 25, 25, 25), kCSSOrange);
   green->AddChild(orange);
 
   gfx::Transform replica_transform;
   replica_transform.Rotate(180.0);
-  replica_transform.Translate(100.0, 0.0);
+  replica_transform.Translate(50.0, 0.0);
 
   scoped_refptr<Layer> replica = Layer::Create();
-  replica->SetTransformOrigin(gfx::Point3F(100.f, 100.f, 0.f));
+  replica->SetTransformOrigin(gfx::Point3F(50.f, 50.f, 0.f));
   replica->SetPosition(gfx::Point());
   replica->SetTransform(replica_transform);
   replica->SetMaskLayer(mask.get());
@@ -240,9 +240,9 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfReplica) {
 
 TEST_P(LayerTreeHostMasksPixelTest, MaskOfReplicaOfClippedLayer) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(200, 200), SK_ColorWHITE);
+      gfx::Rect(100, 100), SK_ColorWHITE);
 
-  gfx::Size mask_bounds(100, 100);
+  gfx::Size mask_bounds(50, 50);
   MaskContentLayerClient client(mask_bounds);
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   mask->SetBounds(mask_bounds);
@@ -251,25 +251,25 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfReplicaOfClippedLayer) {
 
   // Clip to the bottom 3/4 of the green layer, and the top 3/4 of the replica.
   scoped_refptr<Layer> clip = Layer::Create();
-  clip->SetPosition(gfx::Point(0, 25));
-  clip->SetBounds(gfx::Size(200, 150));
+  clip->SetPosition(gfx::Point(0, 12));
+  clip->SetBounds(gfx::Size(100, 75));
   clip->SetMasksToBounds(true);
   background->AddChild(clip);
 
   scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
-      gfx::Rect(50, -25, 100, 100), kCSSGreen, 1, SK_ColorBLACK);
+      gfx::Rect(25, -12, 50, 50), kCSSGreen, 1, SK_ColorBLACK);
   clip->AddChild(green);
 
   scoped_refptr<SolidColorLayer> orange = CreateSolidColorLayer(
-      gfx::Rect(-50, 50, 50, 50), kCSSOrange);
+      gfx::Rect(-25, 25, 25, 25), kCSSOrange);
   green->AddChild(orange);
 
   gfx::Transform replica_transform;
   replica_transform.Rotate(180.0);
-  replica_transform.Translate(100.0, 0.0);
+  replica_transform.Translate(50.0, 0.0);
 
   scoped_refptr<Layer> replica = Layer::Create();
-  replica->SetTransformOrigin(gfx::Point3F(100.f, 100.f, 0.f));
+  replica->SetTransformOrigin(gfx::Point3F(50.f, 50.f, 0.f));
   replica->SetPosition(gfx::Point());
   replica->SetTransform(replica_transform);
   replica->SetMaskLayer(mask.get());
@@ -368,16 +368,16 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
        MaskOfLayerWithBackgroundFilter) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(256, 256), SK_ColorWHITE);
+      gfx::Rect(128, 128), SK_ColorWHITE);
 
-  gfx::Size picture_bounds(256, 256);
+  gfx::Size picture_bounds(128, 128);
   CheckerContentLayerClient picture_client(picture_bounds, SK_ColorGREEN, true);
   scoped_refptr<PictureLayer> picture = PictureLayer::Create(&picture_client);
   picture->SetBounds(picture_bounds);
   picture->SetIsDrawable(true);
 
   scoped_refptr<SolidColorLayer> blur = CreateSolidColorLayer(
-      gfx::Rect(256, 256), SK_ColorTRANSPARENT);
+      gfx::Rect(128, 128), SK_ColorTRANSPARENT);
   background->AddChild(picture);
   background->AddChild(blur);
 
@@ -385,7 +385,7 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
   filters.Append(FilterOperation::CreateBlurFilter(2.f));
   blur->SetBackgroundFilters(filters);
 
-  gfx::Size mask_bounds(256, 256);
+  gfx::Size mask_bounds(128, 128);
   CircleContentLayerClient mask_client(mask_bounds);
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
   mask->SetBounds(mask_bounds);
@@ -393,7 +393,7 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
   mask->SetIsMask(true);
   blur->SetMaskLayer(mask.get());
 
-  float percentage_pixels_large_error = 2.5f;  // 2.5%, ~1600px / (256*256)
+  float percentage_pixels_large_error = 2.5f;  // 2.5%, ~400px / (128*128)
   float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 100.0f;
   int large_error_allowed = 256;
@@ -414,9 +414,9 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
 TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
        MaskOfLayerWithBlend) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(256, 256), SK_ColorWHITE);
+      gfx::Rect(128, 128), SK_ColorWHITE);
 
-  gfx::Size picture_bounds(256, 256);
+  gfx::Size picture_bounds(128, 128);
   CheckerContentLayerClient picture_client_vertical(
       picture_bounds, SK_ColorGREEN, true);
   scoped_refptr<PictureLayer> picture_vertical =
@@ -436,7 +436,7 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
   background->AddChild(picture_vertical);
   background->AddChild(picture_horizontal);
 
-  gfx::Size mask_bounds(256, 256);
+  gfx::Size mask_bounds(128, 128);
   CircleContentLayerClient mask_client(mask_bounds);
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
   mask->SetBounds(mask_bounds);
@@ -444,7 +444,7 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
   mask->SetIsMask(true);
   picture_horizontal->SetMaskLayer(mask.get());
 
-  float percentage_pixels_large_error = 0.01f;  // 0.01%, ~6px / (256*256)
+  float percentage_pixels_large_error = 0.04f;  // 0.04%, ~6px / (128*128)
   float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 256.0f;
   int large_error_allowed = 256;
