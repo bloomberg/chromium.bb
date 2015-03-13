@@ -11,6 +11,20 @@
       url(chrome://resources/roboto/roboto.woff) format('woff');
 }
 
+/* TODO(pedrosimonetti): Find a better way to fix the problem when the
+ * text scaling preference is set to a high value.
+ *
+ * This CSS rule prevents the promo text from scaling as explained here:
+ * https://code.google.com/p/chromium/issues/detail?id=252828#c10
+ *
+ * For for background about the problem, see:
+ * https://code.google.com/p/chromium/issues/detail?id=466773
+ */
+#heading,
+#description {
+  max-height: 999999px;
+}
+
 body {
   color: #414141;
   font-family: 'Roboto2', sans-serif;
