@@ -982,10 +982,15 @@ std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {
 
 void PersonalDataManager::SetPrefService(PrefService* pref_service) {
   enabled_pref_.reset(new BooleanPrefMember);
+  wallet_enabled_pref_.reset(new BooleanPrefMember);
   pref_service_ = pref_service;
   // |pref_service_| can be NULL in tests.
   if (pref_service_) {
     enabled_pref_->Init(prefs::kAutofillEnabled, pref_service_,
+        base::Bind(&PersonalDataManager::EnabledPrefChanged,
+                   base::Unretained(this)));
+    wallet_enabled_pref_->Init(prefs::kAutofillWalletImportEnabled,
+        pref_service_,
         base::Bind(&PersonalDataManager::EnabledPrefChanged,
                    base::Unretained(this)));
   }

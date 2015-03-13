@@ -10515,6 +10515,9 @@ Chrome ran out of memory.
         <message name="IDS_AUTOFILL_EDIT_PROFILE_BUTTON" desc="The label of the button that edits the currently selected Autofill profile.">
           Edit...
         </message>
+        <message name="IDS_AUTOFILL_FROM_GOOGLE_ACCOUNT" desc="Text that indicates an address or credit card came from Google.">
+          Google Wallet
+        </message>
         <message name="IDS_AUTOFILL_CLEAR_LOCAL_COPY_BUTTON" desc="The label of the button that clears the local copy of a Wallet Credit Card.">
           Clear copy
         </message>

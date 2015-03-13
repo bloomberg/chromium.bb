@@ -7,6 +7,7 @@
 
 #include <iosfwd>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -94,9 +95,10 @@ class CreditCard : public AutofillDataModel {
                const base::string16& value,
                const std::string& app_locale) override;
 
-  // Credit card preview summary, for example: Visa - 1234, Exp: 01/2020
-  // Used for settings and the requestAutocomplete dialog, but not
-  // the autofill dropdown.
+  // Credit card preview summary, for example: "Visa - 1234", ", 01/2020".
+  const std::pair<base::string16, base::string16> LabelPieces() const;
+
+  // Like LabelPieces, but appends the two pieces together.
   const base::string16 Label() const;
 
   // Special method to set value for HTML5 month input type.

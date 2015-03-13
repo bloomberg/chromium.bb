@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -33,6 +34,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "content/public/browser/web_ui.h"
+#include "grit/components_strings.h"
 #include "third_party/libaddressinput/messages.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui_component.h"
@@ -69,7 +71,9 @@ scoped_ptr<base::DictionaryValue> CreditCardToDictionary(
     const CreditCard& card) {
   scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   value->SetString("guid", card.guid());
-  value->SetString("label", card.Label());
+  std::pair<base::string16, base::string16> label_pieces = card.LabelPieces();
+  value->SetString("label", label_pieces.first);
+  value->SetString("sublabel", label_pieces.second);
   value->SetBoolean("isLocal", card.record_type() == CreditCard::LOCAL_CARD);
   value->SetBoolean("isCached",
                     card.record_type() == CreditCard::FULL_SERVER_CARD);
@@ -331,6 +335,7 @@ void AutofillOptionsHandler::GetLocalizedValues(
     { "autofillAddAddress", IDS_AUTOFILL_ADD_ADDRESS_BUTTON },
     { "autofillAddCreditCard", IDS_AUTOFILL_ADD_CREDITCARD_BUTTON },
     { "autofillEditProfileButton", IDS_AUTOFILL_EDIT_PROFILE_BUTTON },
+    { "autofillFromGoogleAccount", IDS_AUTOFILL_FROM_GOOGLE_ACCOUNT },
     { "autofillDescribeLocalCopy", IDS_AUTOFILL_DESCRIBE_LOCAL_COPY },
     { "autofillClearLocalCopyButton", IDS_AUTOFILL_CLEAR_LOCAL_COPY_BUTTON },
     { "helpButton", IDS_AUTOFILL_HELP_LABEL },
@@ -474,9 +479,15 @@ void AutofillOptionsHandler::LoadAutofillData() {
     if (profiles[i]->record_type() == AutofillProfile::AUXILIARY_PROFILE)
       continue;
 
+    base::string16 separator =
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR);
+    std::vector<base::string16> label_parts;
+    base::SplitStringUsingSubstr(labels[i], separator, &label_parts);
+
     scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
     value->SetString("guid", profiles[i]->guid());
-    value->SetString("label", labels[i]);
+    value->SetString("label", label_parts[0]);
+    value->SetString("sublabel", labels[i].substr(label_parts[0].size()));
     value->SetBoolean("isLocal", profiles[i]->record_type() ==
                                      AutofillProfile::LOCAL_PROFILE);
     addresses.Append(value.release());

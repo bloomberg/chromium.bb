@@ -14,7 +14,8 @@ cr.define('options.autofillOptions', function() {
   function AutofillEditProfileButton(edit) {
     var editButtonEl = /** @type {HTMLButtonElement} */(
         document.createElement('button'));
-    editButtonEl.className = 'list-inline-button custom-appearance';
+    editButtonEl.className =
+        'list-inline-button hide-until-hover custom-appearance';
     editButtonEl.textContent =
         loadTimeData.getString('autofillEditProfileButton');
     editButtonEl.onclick = edit;
@@ -27,6 +28,16 @@ cr.define('options.autofillOptions', function() {
     };
 
     return editButtonEl;
+  }
+
+  /**
+   * @return {!HTMLSpanElement}
+   */
+  function CreateGoogleAccountLabel() {
+    var label = document.createElement('div');
+    label.className = 'deemphasized hides-on-hover';
+    label.textContent = loadTimeData.getString('autofillFromGoogleAccount');
+    return label;
   }
 
   /**
@@ -53,14 +64,20 @@ cr.define('options.autofillOptions', function() {
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
 
-      // The stored label.
       var label = this.ownerDocument.createElement('div');
       label.className = 'autofill-list-item';
       label.textContent = this.label;
       this.contentElement.appendChild(label);
 
-      if (!this.isLocal)
+      var sublabel = this.ownerDocument.createElement('div');
+      sublabel.className = 'deemphasized';
+      sublabel.textContent = this.sublabel;
+      this.contentElement.appendChild(sublabel);
+
+      if (!this.isLocal) {
         this.deletable = false;
+        this.contentElement.appendChild(CreateGoogleAccountLabel());
+      }
 
       // The 'Edit' button.
       var guid = this.guid;
@@ -94,18 +111,25 @@ cr.define('options.autofillOptions', function() {
     decorate: function() {
       DeletableItem.prototype.decorate.call(this);
 
-      // The stored label.
       var label = this.ownerDocument.createElement('div');
       label.className = 'autofill-list-item';
       label.textContent = this.label;
       this.contentElement.appendChild(label);
 
-      if (!this.isLocal)
+      var sublabel = this.ownerDocument.createElement('div');
+      sublabel.className = 'deemphasized';
+      sublabel.textContent = this.sublabel;
+      this.contentElement.appendChild(sublabel);
+
+      if (!this.isLocal) {
         this.deletable = false;
+        this.contentElement.appendChild(CreateGoogleAccountLabel());
+      }
 
       var guid = this.guid;
       if (this.isCached) {
         var localCopyText = this.ownerDocument.createElement('span');
+        localCopyText.className = 'hide-until-hover deemphasized';
         localCopyText.textContent =
             loadTimeData.getString('autofillDescribeLocalCopy');
         this.contentElement.appendChild(localCopyText);

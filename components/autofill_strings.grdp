@@ -43,11 +43,6 @@
   <message name="IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR" desc="The separator character used in the summary of an address.">
     , '''
   </message>
-  <message name="IDS_CREDIT_CARD_NUMBER_PREVIEW_FORMAT" desc="Credit card preview format">
-    <ph name="OBFUSCATED_CC_NUMBER">$1<ex>************1234</ex>
-    </ph>, Exp: <ph name="CC_EXPIRATION_DATE">$2<ex>03/2020</ex>
-    </ph>
-  </message>
 
   <!-- These are all variants of the same logical field: The major subdivision below the "country" level. -->
   <message name="IDS_AUTOFILL_FIELD_LABEL_STATE" desc="The label of the State entry.">

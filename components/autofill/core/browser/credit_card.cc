@@ -467,23 +467,29 @@ void CreditCard::GetMatchingTypes(const base::string16& text,
 }
 
 const base::string16 CreditCard::Label() const {
+  std::pair<base::string16, base::string16> pieces = LabelPieces();
+  return pieces.first + pieces.second;
+}
+
+const std::pair<base::string16, base::string16> CreditCard::LabelPieces()
+    const {
   base::string16 label;
+  // No CC number, return name only.
   if (number().empty())
-    return name_on_card_;  // No CC number, return name only.
+    return std::make_pair(name_on_card_, base::string16());
 
   base::string16 obfuscated_cc_number = TypeAndLastFourDigits();
+  // No expiration date set.
   if (!expiration_month_ || !expiration_year_)
-    return obfuscated_cc_number;  // No expiration date set.
+    return std::make_pair(obfuscated_cc_number, base::string16());
 
-  // TODO(georgey): Internationalize date.
   base::string16 formatted_date(ExpirationMonthAsString());
   formatted_date.append(base::ASCIIToUTF16("/"));
   formatted_date.append(Expiration4DigitYearAsString());
 
-  label = l10n_util::GetStringFUTF16(IDS_CREDIT_CARD_NUMBER_PREVIEW_FORMAT,
-                                     obfuscated_cc_number,
-                                     formatted_date);
-  return label;
+  base::string16 separator =
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR);
+  return std::make_pair(obfuscated_cc_number, separator + formatted_date);
 }
 
 void CreditCard::SetInfoForMonthInputType(const base::string16& value) {

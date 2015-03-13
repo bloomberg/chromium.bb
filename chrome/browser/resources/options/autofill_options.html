@@ -6,7 +6,7 @@
       <label>
         <input pref="autofill.wallet_import_enabled" type="checkbox">
         <span>
-          Show addresses and credit cards from Google Payments
+          Suggest addresses and credit cards from Google Wallet
           <!-- A reminder not to launch this UI. -->
           <span style="font-size: 80%">translate me!</span>
         </span>
@@ -40,18 +40,6 @@
         <button id="autofill-add-creditcard"
             i18n-content="autofillAddCreditCard"></button>
       </div>
-    </div>
-
-    <!-- TODO(estade): what do we do with this section when the pref is unset?
-      -->
-    <div id="autofill-wallet-remask-cards-area">
-      <span class="settings-row">Credit cards from Wallet require authentication
-          once and then remain unlocked.
-      </span>
-      <a id="remask-server-cards-link"
-          is="action-link">Reset authenticated cards</a>
-      <!-- A reminder not to launch this UI. -->
-      <span style="font-size: 80%">translate me!</span>
     </div>
   </div>
 

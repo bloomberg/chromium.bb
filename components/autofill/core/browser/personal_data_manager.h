@@ -377,6 +377,9 @@ class PersonalDataManager : public KeyedService,
   // An observer to listen for changes to prefs::kAutofillEnabled.
   scoped_ptr<BooleanPrefMember> enabled_pref_;
 
+  // An observer to listen for changes to prefs::kAutofillWalletImportEnabled.
+  scoped_ptr<BooleanPrefMember> wallet_enabled_pref_;
+
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };
 

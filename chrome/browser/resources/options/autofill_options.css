@@ -11,8 +11,11 @@
 }
 
 .autofill-list-item {
-  -webkit-box-flex: 1;
   -webkit-padding-start: 8px;
+}
+
+.autofill-list-item + .deemphasized {
+  -webkit-box-flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -21,7 +24,7 @@
   margin-top: 15px;
 }
 
-#autofill-options .deletable-item > span {
+#autofill-options .deemphasized {
   color: #777;
 }
 
@@ -42,6 +45,11 @@
 }
 
 #autofill-options div[role='listitem']:not(:hover):not([selected])
-    .list-inline-button {
+    .hide-until-hover {
+  display: none;
+}
+
+#autofill-options div[role='listitem']:-webkit-any(:hover,[selected])
+    .hides-on-hover {
   display: none;
 }
