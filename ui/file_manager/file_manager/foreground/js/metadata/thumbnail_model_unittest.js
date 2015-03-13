@@ -20,7 +20,6 @@ function setUp() {
   metadata = new MetadataItem();
   metadata.modificationTime = new Date(2015, 0, 1);
   metadata.present = true;
-  metadata.dirty = false;
   metadata.thumbnailUrl = 'EXTERNAL_THUMBNAIL_URL';
   metadata.customIconUrl = 'CUSTOM_ICON_URL';
   metadata.contentThumbnailUrl = 'CONTENT_THUMBNAIL_URL';
@@ -46,7 +45,7 @@ function testThumbnailModelGetBasic(callback) {
         results[0].filesystem.modificationTime.toString());
     assertEquals('EXTERNAL_THUMBNAIL_URL', results[0].external.thumbnailUrl);
     assertEquals('CUSTOM_ICON_URL', results[0].external.customIconUrl);
-    assertFalse(results[0].external.dirty);
+    assertTrue(results[0].external.present);
     assertEquals('CONTENT_THUMBNAIL_URL', results[0].thumbnail.url);
     assertEquals('CONTENT_THUMBNAIL_TRANSFORM', results[0].thumbnail.transform);
     assertEquals('CONTENT_IMAGE_TRANSFORM', results[0].media.imageTransform);
@@ -62,7 +61,7 @@ function testThumbnailModelGetNotPresent(callback) {
         results[0].filesystem.modificationTime.toString());
     assertEquals('EXTERNAL_THUMBNAIL_URL', results[0].external.thumbnailUrl);
     assertEquals('CUSTOM_ICON_URL', results[0].external.customIconUrl);
-    assertFalse(results[0].external.dirty);
+    assertFalse(results[0].external.present);
     assertEquals(undefined, results[0].thumbnail.url);
     assertEquals(undefined, results[0].thumbnail.transform);
     assertEquals(undefined, results[0].media.imageTransform);
@@ -77,7 +76,7 @@ function testThumbnailModelGetNonImage(callback) {
         results[0].filesystem.modificationTime.toString());
     assertEquals('EXTERNAL_THUMBNAIL_URL', results[0].external.thumbnailUrl);
     assertEquals('CUSTOM_ICON_URL', results[0].external.customIconUrl);
-    assertFalse(results[0].external.dirty);
+    assertTrue(results[0].external.present);
     assertEquals(undefined, results[0].thumbnail.url);
     assertEquals(undefined, results[0].thumbnail.transform);
     assertEquals(undefined, results[0].media.imageTransform);

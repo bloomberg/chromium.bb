@@ -61,7 +61,7 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
         break;
       case ThumbnailLoader.LoadTarget.EXTERNAL_METADATA:
         if (opt_metadata.external && opt_metadata.external.thumbnailUrl &&
-            (!opt_metadata.external.dirty || !FileType.isImage(entry))) {
+            (!opt_metadata.external.present || !FileType.isImage(entry))) {
           this.thumbnailUrl_ = opt_metadata.external.thumbnailUrl;
           this.loadTarget_ = ThumbnailLoader.LoadTarget.EXTERNAL_METADATA;
         }

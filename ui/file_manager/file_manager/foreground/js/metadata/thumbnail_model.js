@@ -34,8 +34,7 @@ ThumbnailModel.prototype.get = function(entries) {
         'modificationTime',
         'customIconUrl',
         'thumbnailUrl',
-        'present',
-        'dirty'
+        'present'
       ]).then(function(metadataList) {
         var contentRequestEntries = [];
         for (var i = 0; i < entries.length; i++) {
@@ -52,8 +51,8 @@ ThumbnailModel.prototype.get = function(entries) {
               thumbnailUrlError: metadataList[i].thumbnailUrlError,
               customIconUrl: metadataList[i].customIconUrl,
               customIconUrlError: metadataList[i].customIconUrlError,
-              dirty: metadataList[i].dirty,
-              dirtyError: metadataList[i].dirtyError
+              present: metadataList[i].present,
+              presentError: metadataList[i].presentError
             },
             thumbnail: {},
             media: {}

@@ -39,7 +39,7 @@ function testImageView() {
 
   // Item with external thumbnail but present localy.
   var itemWithExternalThumbnailPresent = new Gallery.Item(
-      mockEntry, null, {external: {thumbnailUrl: 'url', dirty: true}}, null,
+      mockEntry, null, {external: {thumbnailUrl: 'url', present: true}}, null,
       false);
   assertEquals(
       ImageView.LoadTarget.MAIN_IMAGE,

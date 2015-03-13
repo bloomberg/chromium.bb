@@ -41,17 +41,17 @@ function testShouldUseMetadataThumbnail() {
       ThumbnailLoader.LoadTarget.EXTERNAL_METADATA,
       getLoadTarget(imageEntry, {external: {thumbnailUrl: 'url'}}));
 
-  // Drive thumbnail is provided but the file is not synced.
+  // Drive thumbnail is provided but the file is cached locally.
   assertEquals(
       ThumbnailLoader.LoadTarget.FILE_ENTRY,
       getLoadTarget(
-          imageEntry, {external: {thumbnailUrl: 'url', dirty: true}}));
+          imageEntry, {external: {thumbnailUrl: 'url', present: true}}));
 
   // Drive thumbnail is provided and it is not an image file.
   assertEquals(
       ThumbnailLoader.LoadTarget.EXTERNAL_METADATA,
       getLoadTarget(
-          pdfEntry, {external: {thumbnailUrl: 'url', dirty: true}}));
+          pdfEntry, {external: {thumbnailUrl: 'url', present: true}}));
 }
 
 function testLoadAsDataUrlFromImageClient(callback) {
@@ -149,7 +149,7 @@ function testLoadAsDataUrlFromExternal(callback) {
     external: {
       thumbnailUrl: externalThumbnailUrl
     }
-  }
+  };
 
   var fileSystem = new MockFileSystem('volume-id');
   var entry = new MockEntry(fileSystem, '/Test1.jpg');
