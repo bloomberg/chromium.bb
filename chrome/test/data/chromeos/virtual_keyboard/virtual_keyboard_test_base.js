@@ -124,12 +124,14 @@ function adjustScreenForTesting() {
   Object.defineProperty(window.screen, 'width', {
     get: function() {
       return document.body.clientWidth;
-    }
+    },
+    configurable: true
   });
   Object.defineProperty(window.screen, 'height', {
     get: function() {
       return document.body.clientHeight;
-    }
+    },
+    configurable: true
   });
 }
 
