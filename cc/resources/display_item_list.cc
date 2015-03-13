@@ -138,8 +138,8 @@ DisplayItemList::AsValue() const {
 
 void DisplayItemList::EmitTraceSnapshot() const {
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug") "," TRACE_DISABLED_BY_DEFAULT(
-          "devtools.timeline.picture"),
+      TRACE_DISABLED_BY_DEFAULT("cc.debug.picture") ","
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline.picture"),
       "cc::DisplayItemList", this, AsValue());
 }
 
