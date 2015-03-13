@@ -20,6 +20,10 @@ class SyncEntity;
 namespace fake_server {
 
 // An entity that is unique per client account.
+//
+// TODO(pvalenzuela): Reconsider the naming of this class. In some cases, this
+// type is used to represent entities where the unique client tag is irrelevant
+// (e.g., Autofill Wallet).
 class UniqueClientEntity : public FakeServerEntity {
  public:
   UniqueClientEntity(const std::string& id,

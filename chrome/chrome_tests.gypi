@@ -1322,6 +1322,7 @@
       'browser/sync/test/integration/single_client_supervised_user_settings_sync_test.cc',
       'browser/sync/test/integration/single_client_themes_sync_test.cc',
       'browser/sync/test/integration/single_client_typed_urls_sync_test.cc',
+      'browser/sync/test/integration/single_client_wallet_sync_test.cc',
       'browser/sync/test/integration/single_client_wifi_credentials_sync_test.cc',
       'browser/sync/test/integration/sync_auth_test.cc',
       'browser/sync/test/integration/sync_errors_test.cc',

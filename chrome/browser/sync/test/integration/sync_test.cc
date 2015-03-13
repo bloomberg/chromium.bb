@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -311,7 +312,6 @@ Profile* SyncTest::MakeProfileForUISignin(
   return profile_manager->GetProfileByPath(profile_path);
 }
 
-// static
 Profile* SyncTest::MakeProfile(const base::FilePath::StringType name) {
   base::FilePath path;
   // Create new profiles in user data dir so that other profiles can know about
@@ -322,6 +322,15 @@ Profile* SyncTest::MakeProfile(const base::FilePath::StringType name) {
 
   if (!base::PathExists(path))
     CHECK(base::CreateDirectory(path));
+
+  if (!preexisting_preferences_file_contents_.empty()) {
+    base::FilePath pref_path(path.Append(chrome::kPreferencesFilename));
+    const char* contents = preexisting_preferences_file_contents_.c_str();
+    size_t contents_length = preexisting_preferences_file_contents_.size();
+    if (!base::WriteFile(pref_path, contents, contents_length)) {
+      LOG(FATAL) << "Preexisting Preferences file could not be written.";
+    }
+  }
 
   Profile* profile =
       Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
@@ -1007,4 +1016,9 @@ void SyncTest::SetupNetwork(net::URLRequestContextGetter* context_getter) {
 
 fake_server::FakeServer* SyncTest::GetFakeServer() const {
   return fake_server_.get();
+}
+
+void SyncTest::SetPreexistingPreferencesFileContents(
+    const std::string& contents) {
+  preexisting_preferences_file_contents_ = contents;
 }
