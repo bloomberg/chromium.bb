@@ -160,7 +160,7 @@ bool FrameAccessibility::GetParent(
        ++iter) {
     if (iter->child_frame_tree_node_id) {
       FrameTreeNode* child_node =
-          FrameTree::GloballyFindByID(iter->child_frame_tree_node_id);
+          FrameTreeNode::GloballyFindByID(iter->child_frame_tree_node_id);
       if (child_node &&
           child_node->current_frame_host() == child_frame_host) {
         // Assert that the child node is a descendant of the parent frame in
@@ -206,7 +206,7 @@ RenderFrameHostImpl* FrameAccessibility::GetRFHIFromFrameTreeNodeId(
     RenderFrameHostImpl* parent_frame_host,
     int64 child_frame_tree_node_id) {
   FrameTreeNode* child_node =
-      FrameTree::GloballyFindByID(child_frame_tree_node_id);
+      FrameTreeNode::GloballyFindByID(child_frame_tree_node_id);
   if (!child_node)
     return nullptr;
 

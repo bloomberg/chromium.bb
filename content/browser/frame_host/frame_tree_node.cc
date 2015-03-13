@@ -12,11 +12,31 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 
 namespace content {
 
+namespace {
+
+// This is a global map between frame_tree_node_ids and pointers to
+// FrameTreeNodes.
+typedef base::hash_map<int64, FrameTreeNode*> FrameTreeNodeIDMap;
+
+base::LazyInstance<FrameTreeNodeIDMap> g_frame_tree_node_id_map =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 int64 FrameTreeNode::next_frame_tree_node_id_ = 1;
+
+// static
+FrameTreeNode* FrameTreeNode::GloballyFindByID(int64 frame_tree_node_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FrameTreeNodeIDMap* nodes = g_frame_tree_node_id_map.Pointer();
+  FrameTreeNodeIDMap::iterator it = nodes->find(frame_tree_node_id);
+  return it == nodes->end() ? nullptr : it->second;
+}
 
 FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
                              Navigator* navigator,
@@ -36,9 +56,16 @@ FrameTreeNode::FrameTreeNode(FrameTree* frame_tree,
       parent_(NULL),
       replication_state_(name),
       effective_sandbox_flags_(SandboxFlags::NONE) {
+  std::pair<FrameTreeNodeIDMap::iterator, bool> result =
+      g_frame_tree_node_id_map.Get().insert(
+          std::make_pair(frame_tree_node_id_, this));
+  CHECK(result.second);
 }
 
 FrameTreeNode::~FrameTreeNode() {
+  frame_tree_->FrameRemoved(this);
+
+  g_frame_tree_node_id_map.Get().erase(frame_tree_node_id_);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBrowserSideNavigation)) {
     navigator_->CancelNavigation(this);
@@ -69,7 +96,6 @@ void FrameTreeNode::AddChild(scoped_ptr<FrameTreeNode> child,
 
 void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
   std::vector<FrameTreeNode*>::iterator iter;
-
   for (iter = children_.begin(); iter != children_.end(); ++iter) {
     if ((*iter) == child)
       break;
@@ -92,14 +118,6 @@ void FrameTreeNode::ResetForNewProcess() {
   // commits before the old process cleans everything up.  Make sure the child
   // nodes get deleted before swapping to a new process.
   ScopedVector<FrameTreeNode> old_children = children_.Pass();
-
-  // Loop over all children removing them from the FrameTree. This will ensure
-  // that nodes are properly removed from the tree and notifications are sent.
-  // Note: since the |children_| vector is now empty, the calls into RemoveChild
-  // will be a noop and will not result in repeatedly traversing the list.
-  for (const auto& child : old_children)
-    frame_tree_->RemoveFrame(child);
-
   old_children.clear();  // May notify observers.
 }
 

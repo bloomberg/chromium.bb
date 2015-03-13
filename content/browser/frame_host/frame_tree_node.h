@@ -30,6 +30,10 @@ class RenderFrameHostImpl;
 // are frame-specific (as opposed to page-specific).
 class CONTENT_EXPORT FrameTreeNode {
  public:
+  // Returns the FrameTreeNode with the given global |frame_tree_node_id|,
+  // regardless of which FrameTree it is in.
+  static FrameTreeNode* GloballyFindByID(int64 frame_tree_node_id);
+
   FrameTreeNode(FrameTree* frame_tree,
                 Navigator* navigator,
                 RenderFrameHostDelegate* render_frame_delegate,
