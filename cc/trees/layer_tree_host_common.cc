@@ -681,9 +681,10 @@ static bool SubtreeShouldRenderToSeparateSurface(
 // This function returns a translation matrix that can be applied on a vector
 // that's in the layer's target surface coordinate, while the position offset is
 // specified in some ancestor layer's coordinate.
+template <typename LayerType>
 gfx::Transform ComputeSizeDeltaCompensation(
-    LayerImpl* layer,
-    LayerImpl* container,
+    LayerType* layer,
+    LayerType* container,
     const gfx::Vector2dF& position_offset) {
   gfx::Transform result_transform;
 
@@ -698,8 +699,8 @@ gfx::Transform ComputeSizeDeltaCompensation(
 
   gfx::Transform target_surface_space_to_container_layer_space;
   // Calculate step 1a
-  LayerImpl* container_target_surface = container->render_target();
-  for (LayerImpl* current_target_surface = NextTargetSurface(layer);
+  LayerType* container_target_surface = container->render_target();
+  for (LayerType* current_target_surface = NextTargetSurface(layer);
       current_target_surface &&
           current_target_surface != container_target_surface;
       current_target_surface = NextTargetSurface(current_target_surface)) {
@@ -746,14 +747,10 @@ gfx::Transform ComputeSizeDeltaCompensation(
   return result_transform;
 }
 
+template <typename LayerType>
 void ApplyPositionAdjustment(
-    Layer* layer,
-    Layer* container,
-    const gfx::Transform& scroll_compensation,
-    gfx::Transform* combined_transform) {}
-void ApplyPositionAdjustment(
-    LayerImpl* layer,
-    LayerImpl* container,
+    LayerType* layer,
+    LayerType* container,
     const gfx::Transform& scroll_compensation,
     gfx::Transform* combined_transform) {
   if (!layer->position_constraint().is_fixed_position())
@@ -784,8 +781,9 @@ void ApplyPositionAdjustment(
       ComputeSizeDeltaCompensation(layer, container, position_offset));
 }
 
+template <typename LayerType>
 gfx::Transform ComputeScrollCompensationForThisLayer(
-    LayerImpl* scrolling_layer,
+    LayerType* scrolling_layer,
     const gfx::Transform& parent_matrix,
     const gfx::Vector2dF& scroll_delta) {
   // For every layer that has non-zero scroll_delta, we have to compute a
@@ -823,18 +821,9 @@ gfx::Transform ComputeScrollCompensationForThisLayer(
   return scroll_compensation_for_this_layer;
 }
 
+template <typename LayerType>
 gfx::Transform ComputeScrollCompensationMatrixForChildren(
-    Layer* current_layer,
-    const gfx::Transform& current_parent_matrix,
-    const gfx::Transform& current_scroll_compensation,
-    const gfx::Vector2dF& scroll_delta) {
-  // The main thread (i.e. Layer) does not need to worry about scroll
-  // compensation.  So we can just return an identity matrix here.
-  return gfx::Transform();
-}
-
-gfx::Transform ComputeScrollCompensationMatrixForChildren(
-    LayerImpl* layer,
+    LayerType* layer,
     const gfx::Transform& parent_matrix,
     const gfx::Transform& current_scroll_compensation_matrix,
     const gfx::Vector2dF& scroll_delta) {
