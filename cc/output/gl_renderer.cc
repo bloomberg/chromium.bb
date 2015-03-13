@@ -2010,9 +2010,9 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   // filtering from filtering outside the tex coord rect.
   gfx::RectF clamp_rect(quad->tex_coord_rect);
   // Special case: empty texture size implies no clamping.
-  if (!quad->tex_size.IsEmpty()) {
-    clamp_rect.Inset(0.5f / quad->tex_size.width(),
-                     0.5f / quad->tex_size.height());
+  if (!quad->min_tex_size.IsEmpty()) {
+    clamp_rect.Inset(0.5f / quad->min_tex_size.width(),
+                     0.5f / quad->min_tex_size.height());
   }
   GLC(gl_, gl_->Uniform4f(clamp_rect_location, clamp_rect.x(), clamp_rect.y(),
                           clamp_rect.right(), clamp_rect.bottom()));
