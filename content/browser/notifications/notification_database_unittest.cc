@@ -6,6 +6,8 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace content {
 
@@ -30,6 +32,35 @@ class NotificationDatabaseTest : public ::testing::Test {
   // Returns if |database| is an in-memory only database.
   bool IsInMemoryDatabase(NotificationDatabase* database) {
     return database->IsInMemoryDatabase();
+  }
+
+  // Writes a LevelDB key-value pair directly to the LevelDB backing the
+  // notification database in |database|.
+  void WriteLevelDBKeyValuePair(NotificationDatabase* database,
+                                const std::string& key,
+                                const std::string& value) {
+    leveldb::Status status =
+        database->GetDBForTesting()->Put(leveldb::WriteOptions(), key, value);
+    ASSERT_TRUE(status.ok());
+  }
+
+  // Increments the next notification id value in the database. Normally this
+  // is managed by the NotificationDatabase when writing notification data.
+  //
+  // TODO(peter): Stop doing this manually when writing notification data will
+  // do this for us, except for tests verifying corruption behavior.
+  void IncrementNextNotificationId(NotificationDatabase* database) {
+    int64_t next_notification_id;
+    ASSERT_EQ(NotificationDatabase::STATUS_OK,
+              database->GetNextNotificationId(&next_notification_id));
+
+    leveldb::WriteBatch batch;
+    database->WriteNextNotificationId(&batch, next_notification_id + 1);
+
+    leveldb::Status status =
+        database->GetDBForTesting()->Write(leveldb::WriteOptions(), &batch);
+
+    ASSERT_TRUE(status.ok());
   }
 };
 
@@ -99,6 +130,65 @@ TEST_F(NotificationDatabaseTest, DestroyDatabase) {
   database.reset(CreateDatabaseOnFileSystem(database_dir.path()));
   EXPECT_EQ(NotificationDatabase::STATUS_ERROR_NOT_FOUND,
             database->Open(false /* create_if_missing */));
+}
+
+TEST_F(NotificationDatabaseTest, GetNextNotificationIdIncrements) {
+  base::ScopedTempDir database_dir;
+  ASSERT_TRUE(database_dir.CreateUniqueTempDir());
+
+  scoped_ptr<NotificationDatabase> database(
+      CreateDatabaseOnFileSystem(database_dir.path()));
+
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->Open(true /* create_if_missing */));
+
+  int64_t notification_id = 0;
+
+  // Verify that getting two ids on the same database instance results in
+  // incrementing values. Notification ids will start at 1.
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->GetNextNotificationId(&notification_id));
+  EXPECT_EQ(1, notification_id);
+
+  ASSERT_NO_FATAL_FAILURE(IncrementNextNotificationId(database.get()));
+
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->GetNextNotificationId(&notification_id));
+  EXPECT_EQ(2, notification_id);
+
+  ASSERT_NO_FATAL_FAILURE(IncrementNextNotificationId(database.get()));
+
+  database.reset(CreateDatabaseOnFileSystem(database_dir.path()));
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->Open(false /* create_if_missing */));
+
+  // Verify that the next notification id was stored in the database, and
+  // continues where we expect it to be, even after closing and opening it.
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->GetNextNotificationId(&notification_id));
+  EXPECT_EQ(3, notification_id);
+}
+
+TEST_F(NotificationDatabaseTest, GetNextNotificationIdCorruption) {
+  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->Open(true /* create_if_missing */));
+
+  int64_t notification_id = 0;
+
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->GetNextNotificationId(&notification_id));
+  EXPECT_EQ(1, notification_id);
+
+  // Deliberately write an invalid value as the next notification id to the
+  // database, which should cause GetNextNotificationId to realize that
+  // something is wrong with the data it's reading.
+  ASSERT_NO_FATAL_FAILURE(WriteLevelDBKeyValuePair(database.get(),
+                                                   "NEXT_NOTIFICATION_ID",
+                                                   "-42"));
+
+  EXPECT_EQ(NotificationDatabase::STATUS_ERROR_CORRUPTED,
+            database->GetNextNotificationId(&notification_id));
 }
 
 }  // namespace content

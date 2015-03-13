@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_NOTIFICATIONS_NOTIFICATION_DATABASE_H_
 #define CONTENT_BROWSER_NOTIFICATIONS_NOTIFICATION_DATABASE_H_
 
+#include <stdint.h>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/sequence_checker.h"
@@ -13,6 +15,7 @@
 namespace leveldb {
 class DB;
 class Env;
+class WriteBatch;
 }
 
 namespace content {
@@ -49,6 +52,10 @@ class CONTENT_EXPORT NotificationDatabase {
   // |create_if_missing| determines whether to create the database if necessary.
   Status Open(bool create_if_missing);
 
+  // Returns whether the next available notification id could be read, and
+  // stores the id in |notification_id| if the read was successful.
+  Status GetNextNotificationId(int64_t* notification_id) const;
+
   // Completely destroys the contents of this database.
   Status Destroy();
 
@@ -63,11 +70,19 @@ class CONTENT_EXPORT NotificationDatabase {
     STATE_DISABLED,
   };
 
+  // Writes the next available notification id as a put operation to |batch|.
+  void WriteNextNotificationId(leveldb::WriteBatch* batch,
+                               int64_t next_notification_id) const;
+
   // Returns whether the database has been opened.
   bool IsOpen() const { return db_ != nullptr; }
 
   // Returns whether the database should only exist in memory.
   bool IsInMemoryDatabase() const { return path_.empty(); }
+
+  // Exposes the LevelDB database used to back this notification database.
+  // Should only be used for testing purposes.
+  leveldb::DB* GetDBForTesting() const { return db_.get(); }
 
   base::FilePath path_;
 

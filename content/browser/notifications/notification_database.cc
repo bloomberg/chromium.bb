@@ -4,14 +4,31 @@
 
 #include "content/browser/notifications/notification_database.h"
 
+#include <string>
+
 #include "base/files/file_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
+
+// Notification LevelDB database schema (in alphabetized order)
+// =======================
+//
+// key: "NEXT_NOTIFICATION_ID"
+// value: Decimal string which fits into an int64_t.
+//
 
 namespace content {
 namespace {
+
+// Keys of the fields defined in the database.
+const char kNextNotificationIdKey[] = "NEXT_NOTIFICATION_ID";
+
+// The first notification id which to be handed out by the database.
+const int64_t kFirstNotificationId = 1;
 
 // Converts the LevelDB |status| to one of the notification database's values.
 NotificationDatabase::Status LevelDBStatusToStatus(
@@ -71,6 +88,34 @@ NotificationDatabase::Status NotificationDatabase::Open(
   return STATUS_OK;
 }
 
+NotificationDatabase::Status NotificationDatabase::GetNextNotificationId(
+    int64_t* notification_id) const {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK_EQ(state_, STATE_INITIALIZED);
+  DCHECK(notification_id);
+
+  std::string value;
+  Status status = LevelDBStatusToStatus(
+      db_->Get(leveldb::ReadOptions(), kNextNotificationIdKey, &value));
+
+  if (status == STATUS_ERROR_NOT_FOUND) {
+    *notification_id = kFirstNotificationId;
+    return STATUS_OK;
+  }
+
+  if (status != STATUS_OK)
+    return status;
+
+  int64_t next_notification_id;
+  if (!base::StringToInt64(value, &next_notification_id) ||
+      next_notification_id < kFirstNotificationId) {
+    return STATUS_ERROR_CORRUPTED;
+  }
+
+  *notification_id = next_notification_id;
+  return STATUS_OK;
+}
+
 NotificationDatabase::Status NotificationDatabase::Destroy() {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
@@ -87,6 +132,15 @@ NotificationDatabase::Status NotificationDatabase::Destroy() {
 
   return LevelDBStatusToStatus(
       leveldb::DestroyDB(path_.AsUTF8Unsafe(), options));
+}
+
+void NotificationDatabase::WriteNextNotificationId(
+    leveldb::WriteBatch* batch,
+    int64_t next_notification_id) const {
+  DCHECK_GE(next_notification_id, kFirstNotificationId);
+  DCHECK(batch);
+
+  batch->Put(kNextNotificationIdKey, base::Int64ToString(next_notification_id));
 }
 
 }  // namespace content
