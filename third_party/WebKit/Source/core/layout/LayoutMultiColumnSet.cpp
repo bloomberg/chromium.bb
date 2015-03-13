@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/layout/LayoutMultiColumnSet.h"
 
+#include "core/editing/PositionWithAffinity.h"
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/MultiColumnFragmentainerGroup.h"
 #include "core/paint/MultiColumnSetPainter.h"
@@ -54,6 +55,12 @@ MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtFlowThr
 }
 
 const MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtFlowThreadOffset(LayoutUnit) const
+{
+    // FIXME: implement this, once we have support for multiple rows.
+    return m_fragmentainerGroups.first();
+}
+
+const MultiColumnFragmentainerGroup& LayoutMultiColumnSet::fragmentainerGroupAtVisualPoint(const LayoutPoint&) const
 {
     // FIXME: implement this, once we have support for multiple rows.
     return m_fragmentainerGroups.first();
@@ -183,6 +190,15 @@ void LayoutMultiColumnSet::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTo
         logicalHeight += group.logicalHeight();
     computedValues.m_extent = logicalHeight;
     computedValues.m_position = logicalTop;
+}
+
+PositionWithAffinity LayoutMultiColumnSet::positionForPoint(const LayoutPoint& point)
+{
+    // Convert the visual point to a flow thread point.
+    const MultiColumnFragmentainerGroup& row = fragmentainerGroupAtVisualPoint(point);
+    LayoutPoint flowThreadPoint = row.visualPointToFlowThreadPoint(point + row.offsetFromColumnSet());
+    // Then drill into the flow thread, where we'll find the actual content.
+    return flowThread()->positionForPoint(flowThreadPoint);
 }
 
 LayoutUnit LayoutMultiColumnSet::columnGap() const

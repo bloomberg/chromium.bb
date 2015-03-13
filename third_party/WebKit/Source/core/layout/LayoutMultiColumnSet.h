@@ -66,6 +66,7 @@ public:
     const MultiColumnFragmentainerGroup& lastFragmentainerGroup() const { return m_fragmentainerGroups.last(); }
     MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit);
     const MultiColumnFragmentainerGroup& fragmentainerGroupAtFlowThreadOffset(LayoutUnit) const;
+    const MultiColumnFragmentainerGroup& fragmentainerGroupAtVisualPoint(const LayoutPoint&) const;
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutMultiColumnSet || LayoutRegion::isOfType(type); }
 
@@ -158,6 +159,7 @@ private:
     virtual bool isSelfCollapsingBlock() const override { return false; }
 
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
+    virtual PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 
     virtual void paintObject(const PaintInfo&, const LayoutPoint& paintOffset) override;
 

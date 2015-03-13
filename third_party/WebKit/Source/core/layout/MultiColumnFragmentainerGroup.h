@@ -60,6 +60,7 @@ public:
 
     LayoutSize flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread) const;
     LayoutUnit columnLogicalTopForOffset(LayoutUnit offsetInFlowThread) const;
+    LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const;
     void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) const;
     LayoutRect calculateOverflow() const;
 
@@ -83,6 +84,7 @@ private:
     LayoutUnit calculateColumnHeight(BalancedColumnHeightCalculation) const;
 
     LayoutRect columnRectAt(unsigned columnIndex) const;
+    LayoutUnit logicalTopInFlowThreadAt(unsigned columnIndex) const { return m_logicalTopInFlowThread + columnIndex * m_columnHeight; }
     LayoutRect flowThreadPortionRectAt(unsigned columnIndex) const;
     LayoutRect flowThreadPortionOverflowRect(const LayoutRect& flowThreadPortion, unsigned columnIndex, unsigned columnCount, LayoutUnit columnGap) const;
 
@@ -91,6 +93,11 @@ private:
         AssumeNewColumns // Allow column indices outside the range of already existing columns.
     };
     unsigned columnIndexAtOffset(LayoutUnit offsetInFlowThread, ColumnIndexCalculationMode = ClampToExistingColumns) const;
+
+    // Return the column that the specified visual point belongs to. Only the coordinate on the
+    // column progression axis is relevant. Every point belongs to a column, even if said point is
+    // not inside any of the columns.
+    unsigned columnIndexAtVisualPoint(const LayoutPoint& visualPoint) const;
 
     LayoutMultiColumnSet& m_columnSet;
 

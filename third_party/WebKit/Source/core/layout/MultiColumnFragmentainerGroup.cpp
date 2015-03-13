@@ -146,6 +146,33 @@ LayoutUnit MultiColumnFragmentainerGroup::columnLogicalTopForOffset(LayoutUnit o
     return m_logicalTopInFlowThread + columnIndex * m_columnHeight;
 }
 
+LayoutPoint MultiColumnFragmentainerGroup::visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const
+{
+    unsigned columnIndex = columnIndexAtVisualPoint(visualPoint);
+    LayoutRect columnRect = columnRectAt(columnIndex);
+    LayoutPoint localPoint(visualPoint);
+    localPoint.moveBy(-columnRect.location());
+    // Before converting to a flow thread position, if the block direction coordinate is outside the
+    // column, snap to the bounds of the column, and reset the inline direction coordinate to the
+    // start position in the column. The effect of this is that if the block position is before the
+    // column rectangle, we'll get to the beginning of this column, while if the block position is
+    // after the column rectangle, we'll get to the beginning of the next column.
+    if (!m_columnSet.isHorizontalWritingMode()) {
+        LayoutUnit columnStart = m_columnSet.style()->isLeftToRightDirection() ? LayoutUnit() : columnRect.height();
+        if (localPoint.x() < 0)
+            localPoint = LayoutPoint(LayoutUnit(), columnStart);
+        else if (localPoint.x() > logicalHeight())
+            localPoint = LayoutPoint(logicalHeight(), columnStart);
+        return LayoutPoint(localPoint.x() + logicalTopInFlowThreadAt(columnIndex), localPoint.y());
+    }
+    LayoutUnit columnStart = m_columnSet.style()->isLeftToRightDirection() ? LayoutUnit() : columnRect.width();
+    if (localPoint.y() < 0)
+        localPoint = LayoutPoint(columnStart, LayoutUnit());
+    else if (localPoint.y() > logicalHeight())
+        localPoint = LayoutPoint(columnStart, logicalHeight());
+    return LayoutPoint(localPoint.x(), localPoint.y() + logicalTopInFlowThreadAt(columnIndex));
+}
+
 void MultiColumnFragmentainerGroup::collectLayerFragments(LayerFragments& fragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) const
 {
     // |layerBoundingBox| is in the flow thread coordinate space, relative to the top/left edge of
@@ -488,6 +515,24 @@ unsigned MultiColumnFragmentainerGroup::columnIndexAtOffset(LayoutUnit offsetInF
     if (m_columnHeight)
         return (offsetInFlowThread - m_logicalTopInFlowThread).toFloat() / m_columnHeight.toFloat();
     return 0;
+}
+
+unsigned MultiColumnFragmentainerGroup::columnIndexAtVisualPoint(const LayoutPoint& visualPoint) const
+{
+    bool isColumnProgressionInline = m_columnSet.multiColumnFlowThread()->progressionIsInline();
+    bool isHorizontalWritingMode = m_columnSet.isHorizontalWritingMode();
+    LayoutUnit columnLengthInColumnProgressionDirection = isColumnProgressionInline ? m_columnSet.pageLogicalWidth() : m_columnSet.pageLogicalHeight();
+    LayoutUnit offsetInColumnProgressionDirection = isHorizontalWritingMode == isColumnProgressionInline ? visualPoint.x() : visualPoint.y();
+    if (!m_columnSet.style()->isLeftToRightDirection() && isColumnProgressionInline)
+        offsetInColumnProgressionDirection = m_columnSet.logicalWidth() - offsetInColumnProgressionDirection;
+    LayoutUnit columnGap = m_columnSet.columnGap();
+    if (columnLengthInColumnProgressionDirection + columnGap <= 0)
+        return 0;
+    // Column boundaries are in the middle of the column gap.
+    int index = (offsetInColumnProgressionDirection + columnGap / 2) / (columnLengthInColumnProgressionDirection + columnGap);
+    if (index < 0)
+        return 0;
+    return std::min(unsigned(index), actualColumnCount() - 1);
 }
 
 MultiColumnFragmentainerGroupList::MultiColumnFragmentainerGroupList(LayoutMultiColumnSet& columnSet)

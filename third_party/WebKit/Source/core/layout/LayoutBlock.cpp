@@ -2518,7 +2518,7 @@ PositionWithAffinity LayoutBlock::positionForPointWithInlineChildren(const Layou
 
 static inline bool isChildHitTestCandidate(LayoutBox* box)
 {
-    return box->size().height() && box->style()->visibility() == VISIBLE && !box->isFloatingOrOutOfFlowPositioned();
+    return box->size().height() && box->style()->visibility() == VISIBLE && !box->isFloatingOrOutOfFlowPositioned() && !box->isLayoutFlowThread();
 }
 
 PositionWithAffinity LayoutBlock::positionForPoint(const LayoutPoint& point)
