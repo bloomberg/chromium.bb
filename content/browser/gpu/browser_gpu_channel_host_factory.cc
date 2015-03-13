@@ -420,6 +420,11 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
   if (pending_request_->channel_handle().name.empty()) {
     DCHECK(!gpu_channel_.get());
   } else {
+    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/466866
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "466866 BrowserGpuChannelHostFactory::GpuChannelEstablished1"));
     GetContentClient()->SetGpuInfo(pending_request_->gpu_info());
     gpu_channel_ =
         GpuChannelHost::Create(this,
@@ -430,6 +435,12 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
   }
   gpu_host_id_ = pending_request_->gpu_host_id();
   pending_request_ = NULL;
+
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/466866 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466866 BrowserGpuChannelHostFactory::GpuChannelEstablished2"));
 
   for (size_t n = 0; n < established_callbacks_.size(); n++)
     established_callbacks_[n].Run();
