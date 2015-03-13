@@ -759,8 +759,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
+// Disabled because it fails on all trunk official build bots.
+// http://crbug.com/467072
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       TestPauseWhenLoadingDevTools) {
+                       DISABLED_TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
@@ -873,7 +875,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
   CloseDevToolsWindow();
 }
 
-IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, InspectSharedWorker) {
+// Disabled because it fails on all trunk official build bots.
+// http://crbug.com/467072
+IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, DISABLED_InspectSharedWorker) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
