@@ -21,19 +21,16 @@ function initTest() {
 }
 
 function onContextCreationError(e) {
-  var vendorInfoStr = "VendorInfo = ";
-  var renderInfoStr = "RendererInfo = ";
-  var driverInfoStr = "DriverInfo = ";
-  var stringIndex = e.statusMessage.search(vendorInfoStr) + vendorInfoStr.length;
-  var vendorInfo = e.statusMessage.substring(stringIndex, e.statusMessage.search(renderInfoStr) - 2);
-  stringIndex = e.statusMessage.search(renderInfoStr) + renderInfoStr.length;
-  var rendererInfo = e.statusMessage.substring(stringIndex, e.statusMessage.search(driverInfoStr) - 2 );
-  stringIndex = e.statusMessage.search(driverInfoStr) + driverInfoStr.length;
-  var driverInfo = e.statusMessage.substring(stringIndex, e.statusMessage.length - 1);
-  if((e.statusMessage.search("GPUInfoCollectionFailure") != -1) ||
-        vendorInfo.length > 0 ||
-        rendererInfo.length > 0 ||
-        driverInfo.length > 0)
+  var splitStatus = e.statusMessage.split(",");
+  var stringLocator = 1;
+  var status = true;
+  // Start iterating from 1 as , the initial message has no data.
+  for (var i = 1; i < splitStatus.length; i++) {
+    var gpuInfoStr = splitStatus[i].split(" = ");
+    if (gpuInfoStr[stringLocator] == "")
+      status = false;
+  }
+  if(status)
     testPassed("Status message displayed for webglcontextcreationerror");
   else
     testFailed("Context creation error test failed");

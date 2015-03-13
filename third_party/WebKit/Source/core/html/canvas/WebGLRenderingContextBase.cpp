@@ -573,15 +573,25 @@ PassOwnPtr<blink::WebGraphicsContext3D> WebGLRenderingContextBase::createWebGrap
         shouldFailContextCreationForTesting = false;
         String statusMessage;
         if (!glInfo.contextInfoCollectionFailure.isEmpty()) {
-            statusMessage.append("Could not create a WebGL context.");
+            statusMessage.append("Could not create a WebGL context. ");
             statusMessage.append(glInfo.contextInfoCollectionFailure);
+            String vendorId = String::number(glInfo.vendorId);
+            String deviceId = String::number(glInfo.deviceId);
+            if (vendorId.isEmpty())
+                statusMessage.append("VendorId = Not Available");
+            else
+                statusMessage.append("VendorId = " + vendorId);
+            if (deviceId.isEmpty())
+                statusMessage.append(", DeviceId = Not Available");
+            else
+                statusMessage.append(", DeviceId = " + deviceId);
         } else {
             statusMessage.append("Could not create a WebGL context");
             if (!glInfo.vendorInfo.isEmpty()) {
-                statusMessage.append(" VendorInfo = ");
+                statusMessage.append(", VendorInfo = ");
                 statusMessage.append(glInfo.vendorInfo);
             } else {
-                statusMessage.append(" VendorInfo = Not Available");
+                statusMessage.append(", VendorInfo = Not Available");
             }
             if (!glInfo.rendererInfo.isEmpty()) {
                 statusMessage.append(", RendererInfo = ");
