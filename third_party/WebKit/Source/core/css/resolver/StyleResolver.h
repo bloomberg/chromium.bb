@@ -109,7 +109,7 @@ public:
         RuleMatchingBehavior = MatchAllRules);
 
     PassRefPtr<LayoutStyle> styleForKeyframe(Element&, const LayoutStyle&, LayoutStyle* parentStyle, const StyleRuleKeyframe*, const AtomicString& animationName);
-    static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(Element&, CSSPropertyID, CSSValue*);
+    static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(Element&, const LayoutStyle* baseStyle, CSSPropertyID, CSSValue*);
     static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(StyleResolverState&, CSSPropertyID, CSSValue*);
 
     PassRefPtr<LayoutStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, LayoutStyle* parentStyle);

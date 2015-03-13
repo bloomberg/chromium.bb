@@ -62,7 +62,7 @@ PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> AnimatableValueKeyfra
     return adoptPtrWillBeNoop(theClone);
 }
 
-PassRefPtrWillBeRawPtr<Interpolation> AnimatableValueKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element*) const
+PassRefPtrWillBeRawPtr<Interpolation> AnimatableValueKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element*, const LayoutStyle*) const
 {
     AnimatableValuePropertySpecificKeyframe& to = toAnimatableValuePropertySpecificKeyframe(end);
     return LegacyStyleInterpolation::create(value(), to.value(), property);

@@ -32,15 +32,15 @@ void InterpolationEffect::getActiveInterpolations(double fraction, double iterat
         result->shrink(resultIndex);
 }
 
-void InterpolationEffect::addInterpolationsFromKeyframes(CSSPropertyID property, Element* element, Keyframe::PropertySpecificKeyframe& keyframeA, Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo)
+void InterpolationEffect::addInterpolationsFromKeyframes(CSSPropertyID property, Element* element, const LayoutStyle* baseStyle, Keyframe::PropertySpecificKeyframe& keyframeA, Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo)
 {
-    RefPtrWillBeRawPtr<Interpolation> interpolation = keyframeA.maybeCreateInterpolation(property, keyframeB, element);
+    RefPtrWillBeRawPtr<Interpolation> interpolation = keyframeA.maybeCreateInterpolation(property, keyframeB, element, baseStyle);
 
     if (interpolation) {
         addInterpolation(interpolation, &keyframeA.easing(), keyframeA.offset(), keyframeB.offset(), applyFrom, applyTo);
     } else {
-        RefPtrWillBeRawPtr<Interpolation> interpolationA = keyframeA.maybeCreateInterpolation(property, keyframeA, element);
-        RefPtrWillBeRawPtr<Interpolation> interpolationB = keyframeB.maybeCreateInterpolation(property, keyframeB, element);
+        RefPtrWillBeRawPtr<Interpolation> interpolationA = keyframeA.maybeCreateInterpolation(property, keyframeA, element, baseStyle);
+        RefPtrWillBeRawPtr<Interpolation> interpolationB = keyframeB.maybeCreateInterpolation(property, keyframeB, element, baseStyle);
 
         ASSERT(interpolationA);
         ASSERT(interpolationB);

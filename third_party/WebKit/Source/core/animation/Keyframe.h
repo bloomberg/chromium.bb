@@ -15,6 +15,7 @@ namespace blink {
 using PropertySet = HashSet<CSSPropertyID>;
 
 class Element;
+class LayoutStyle;
 
 // FIXME: Make Keyframe immutable
 class Keyframe : public RefCountedWillBeGarbageCollectedFinalized<Keyframe> {
@@ -59,14 +60,14 @@ public:
         virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const = 0;
 
         // FIXME: Remove this once CompositorAnimations no longer depends on AnimatableValues
-        virtual void ensureAnimatableValue(CSSPropertyID, Element&) const { }
+        virtual void ensureAnimatableValue(CSSPropertyID, Element&, const LayoutStyle* baseStyle) const { }
         virtual const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const = 0;
 
         virtual bool isAnimatableValuePropertySpecificKeyframe() const { return false; }
         virtual bool isStringPropertySpecificKeyframe() const { return false; }
 
         virtual PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const = 0;
-        virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(CSSPropertyID, blink::Keyframe::PropertySpecificKeyframe& end, Element*) const = 0;
+        virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(CSSPropertyID, blink::Keyframe::PropertySpecificKeyframe& end, Element*, const LayoutStyle* baseStyle) const = 0;
 
         DEFINE_INLINE_VIRTUAL_TRACE() { }
 

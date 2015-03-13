@@ -103,7 +103,7 @@ public:
 
     // FIXME: This is a hack used to resolve CSSValues to AnimatableValues while we have a valid handle on an element.
     // This should be removed once AnimatableValues are obsolete.
-    void forceConversionsToAnimatableValues(Element&);
+    void forceConversionsToAnimatableValues(Element&, const LayoutStyle* baseStyle);
     void updateNeutralKeyframeAnimatableValues(CSSPropertyID, PassRefPtrWillBeRawPtr<AnimatableValue>);
 
     template<typename T>
@@ -127,8 +127,8 @@ protected:
 
     // Lazily computes the groups of property-specific keyframes.
     void ensureKeyframeGroups() const;
-    void ensureInterpolationEffect(Element* = nullptr) const;
-    void snapshotCompositableProperties(Element&);
+    void ensureInterpolationEffect(Element* = nullptr, const LayoutStyle* baseStyle = nullptr) const;
+    void snapshotCompositableProperties(Element&, const LayoutStyle* baseStyle);
 
     KeyframeVector m_keyframes;
     // The spec describes filtering the normalized keyframes at sampling time

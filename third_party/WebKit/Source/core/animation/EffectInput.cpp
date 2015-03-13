@@ -39,6 +39,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/NodeLayoutStyle.h"
 #include "wtf/NonCopyingSort.h"
 
 namespace blink {
@@ -116,7 +117,7 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
         exceptionState.throwDOMException(NotSupportedError, "Additive animations are not supported.");
         return nullptr;
     }
-    keyframeEffectModel->forceConversionsToAnimatableValues(*element);
+    keyframeEffectModel->forceConversionsToAnimatableValues(*element, element->layoutStyle());
 
     return keyframeEffectModel;
 }

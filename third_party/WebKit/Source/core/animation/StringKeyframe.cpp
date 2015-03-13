@@ -84,10 +84,10 @@ StringKeyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset
     ASSERT(!isNull(m_offset));
 }
 
-void StringKeyframe::PropertySpecificKeyframe::ensureAnimatableValue(CSSPropertyID property, Element& element) const
+void StringKeyframe::PropertySpecificKeyframe::ensureAnimatableValue(CSSPropertyID property, Element& element, const LayoutStyle* baseStyle) const
 {
     if (!m_animatableValueCache)
-        m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(element, property, m_value.get());
+        m_animatableValueCache = StyleResolver::createAnimatableValueSnapshot(element, baseStyle, property, m_value.get());
 }
 
 namespace {
@@ -120,7 +120,7 @@ InterpolationRange setRange(CSSPropertyID id)
 } // namespace
 
 // FIXME: Refactor this into a generic piece that lives in InterpolationEffect, and a template parameter specific converter.
-PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element* element) const
+PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::maybeCreateInterpolation(CSSPropertyID property, Keyframe::PropertySpecificKeyframe& end, Element* element, const LayoutStyle* baseStyle) const
 {
     CSSValue* fromCSSValue = m_value.get();
     CSSValue* toCSSValue = toStringPropertySpecificKeyframe(end).value();
@@ -372,14 +372,14 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
 
         // FIXME: Remove the use of AnimatableValues and Elements here.
         ASSERT(element);
-        ensureAnimatableValue(property, *element);
-        end.ensureAnimatableValue(property, *element);
+        ensureAnimatableValue(property, *element, baseStyle);
+        end.ensureAnimatableValue(property, *element, baseStyle);
         return LegacyStyleInterpolation::create(getAnimatableValue(), end.getAnimatableValue(), property);
     }
 
     ASSERT(AnimatableValue::usesDefaultInterpolation(
-        StyleResolver::createAnimatableValueSnapshot(*element, property, fromCSSValue).get(),
-        StyleResolver::createAnimatableValueSnapshot(*element, property, toCSSValue).get()));
+        StyleResolver::createAnimatableValueSnapshot(*element, baseStyle, property, fromCSSValue).get(),
+        StyleResolver::createAnimatableValueSnapshot(*element, baseStyle, property, toCSSValue).get()));
 
     return nullptr;
 

@@ -39,12 +39,12 @@ public:
         CSSValue* value() const { return m_value.get(); }
         void setEasing(PassRefPtrWillBeRawPtr<TimingFunction> easing) { m_easing = easing; }
 
-        virtual void ensureAnimatableValue(CSSPropertyID, Element&) const;
+        virtual void ensureAnimatableValue(CSSPropertyID, Element&, const LayoutStyle* baseStyle) const;
         virtual const PassRefPtrWillBeRawPtr<AnimatableValue> getAnimatableValue() const override final { return m_animatableValueCache.get(); }
         void setAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value) { m_animatableValueCache = value; }
 
         virtual PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(double offset, PassRefPtr<TimingFunction> easing) const override final;
-        virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(CSSPropertyID, blink::Keyframe::PropertySpecificKeyframe& end, Element*) const override final;
+        virtual PassRefPtrWillBeRawPtr<Interpolation> maybeCreateInterpolation(CSSPropertyID, blink::Keyframe::PropertySpecificKeyframe& end, Element*, const LayoutStyle* baseStyle) const override final;
 
         DECLARE_VIRTUAL_TRACE();
 

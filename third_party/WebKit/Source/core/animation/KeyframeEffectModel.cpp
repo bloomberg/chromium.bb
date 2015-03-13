@@ -65,22 +65,22 @@ void KeyframeEffectModelBase::sample(int iteration, double fraction, double iter
     return m_interpolationEffect->getActiveInterpolations(fraction, iterationDuration, result);
 }
 
-void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& element)
+void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& element, const LayoutStyle* baseStyle)
 {
     ensureKeyframeGroups();
     element.updateDistribution();
-    snapshotCompositableProperties(element);
-    ensureInterpolationEffect(&element);
+    snapshotCompositableProperties(element, baseStyle);
+    ensureInterpolationEffect(&element, baseStyle);
 }
 
-void KeyframeEffectModelBase::snapshotCompositableProperties(Element& element)
+void KeyframeEffectModelBase::snapshotCompositableProperties(Element& element, const LayoutStyle* baseStyle)
 {
     ensureKeyframeGroups();
     for (CSSPropertyID property : CompositorAnimations::CompositableProperties) {
         if (!affects(property))
             continue;
         for (auto& keyframe : m_keyframeGroups->get(property)->m_keyframes)
-            keyframe->ensureAnimatableValue(property, element);
+            keyframe->ensureAnimatableValue(property, element, baseStyle);
     }
 }
 
@@ -177,7 +177,7 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
     }
 }
 
-void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element) const
+void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element, const LayoutStyle* baseStyle) const
 {
     if (m_interpolationEffect)
         return;
@@ -191,7 +191,7 @@ void KeyframeEffectModelBase::ensureInterpolationEffect(Element* element) const
             if (applyTo == 1)
                 applyTo = std::numeric_limits<double>::infinity();
 
-            m_interpolationEffect->addInterpolationsFromKeyframes(entry.key, element, *keyframes[i], *keyframes[i + 1], applyFrom, applyTo);
+            m_interpolationEffect->addInterpolationsFromKeyframes(entry.key, element, baseStyle, *keyframes[i], *keyframes[i + 1], applyFrom, applyTo);
         }
     }
 }

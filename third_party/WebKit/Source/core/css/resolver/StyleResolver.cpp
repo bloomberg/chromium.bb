@@ -693,15 +693,10 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForKeyframe(Element& element, const 
 
 // This function is used by the WebAnimations JavaScript API method animate().
 // FIXME: Remove this when animate() switches away from resolution-dependent parsing.
-PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, CSSPropertyID property, CSSValue* value)
+PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnapshot(Element& element, const LayoutStyle* baseStyle, CSSPropertyID property, CSSValue* value)
 {
-    RefPtr<LayoutStyle> style;
-    if (LayoutStyle* elementStyle = element.layoutStyle())
-        style = LayoutStyle::clone(*elementStyle);
-    else
-        style = LayoutStyle::create();
     StyleResolverState state(element.document(), &element);
-    state.setStyle(style);
+    state.setStyle(baseStyle ? LayoutStyle::clone(*baseStyle) : LayoutStyle::create());
     return createAnimatableValueSnapshot(state, property, value);
 }
 
