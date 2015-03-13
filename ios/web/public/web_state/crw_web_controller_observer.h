@@ -80,10 +80,6 @@ class DictionaryValue;
 - (void)setWebViewProxy:(CRWWebViewProxy*)webView
              controller:(CRWWebController*)webController;
 
-// Obtains the scripts that should be injected into pages ASAP when this
-// observer is active.
-- (Class)scriptManagerForEarlyInjection:(CRWWebController*)webController;
-
 @end
 
 #endif  // IOS_WEB_PUBLIC_WEB_STATE_CRW_WEB_CONTROLLER_OBSERVER_H_

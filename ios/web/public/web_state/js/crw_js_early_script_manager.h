@@ -7,17 +7,12 @@
 
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 
+// TODO(eugenebut): remove this class from web's public interface.
+
 // Manager to handle all the scripts that need to be injected before the page
 // scripts take effect. Includes the base scripts and any feature scripts
 // that might need to perform global actions such as overriding HTML methods.
 @interface CRWJSEarlyScriptManager : CRWJSInjectionManager
-
-// Adds a |JsInjectionManager| class that should be injected ASAP to pages.
-- (void)addDependency:(Class)scriptManager;
-
-// Removes a class added previously with |addDependency|.
-- (void)removeDependency:(Class)scriptManager;
-
 @end
 
 #endif  // IOS_WEB_PUBLIC_WEB_STATE_JS_CRW_JS_EARLY_SCRIPT_MANAGER_H_

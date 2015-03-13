@@ -95,6 +95,8 @@
         'web_state/js/crw_js_message_dynamic_manager.h',
         'web_state/js/crw_js_message_dynamic_manager.mm',
         'web_state/js/crw_js_message_manager.mm',
+        'web_state/js/page_script_util.h',
+        'web_state/js/page_script_util.mm',
         'web_state/web_state_observer.cc',
         'web_state/web_state_observer_bridge.mm',
         'web_state/wk_web_view_ssl_error_util.h',
