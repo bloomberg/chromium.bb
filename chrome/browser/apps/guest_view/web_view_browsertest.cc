@@ -1963,18 +1963,15 @@ static bool ContextMenuNotificationCallback(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   auto context_menu = content::Source<RenderViewContextMenu>(source).ptr();
-  context_menu->Cancel();
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&RenderViewContextMenuBase::Cancel,
+                            base::Unretained(context_menu)));
   return true;
 }
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_TestContextMenu DISABLED_TestContextMenu
-#else
-#define MAYBE_TestContextMenu TestContextMenu
-#endif
 // Tests that a context menu is created when right-clicking in the webview. This
 // also tests that the 'contextmenu' event is handled correctly.
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TestContextMenu) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, TestContextMenu) {
   LoadAppWithGuest("web_view/context_menus/basic");
   content::WebContents* guest_web_contents = GetGuestWebContents();
 
