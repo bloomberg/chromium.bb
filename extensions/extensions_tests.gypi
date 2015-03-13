@@ -38,9 +38,6 @@
       'shell/test/shell_test_launcher_delegate.h',
       'shell/test/shell_tests_main.cc',
     ],
-    'extensions_browsertests_sources_chromeos': [
-      'browser/api/vpn_provider/vpn_provider_apitest.cc',
-    ],
     'extensions_unittests_sources': [
       'browser/api/alarms/alarms_api_unittest.cc',
       'browser/api/api_resource_manager_unittest.cc',

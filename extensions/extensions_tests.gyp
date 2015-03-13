@@ -96,11 +96,6 @@
             'shell/app_shell.gyp:app_shell',  # Needed for App Shell.app's Helper.
           ],
         }],
-        ['chromeos==1', {
-          'sources': [
-            '<@(extensions_browsertests_sources_chromeos)',
-          ],
-        }],
         # This is only here to keep gyp happy. This target never builds on
         # mobile platforms.
         ['OS != "ios" and OS != "android"', {

@@ -84,7 +84,7 @@ namespace vpnProvider {
     // |callback|: Called when the configuration is created or if there is an
     // error.
     static void createConfig(DOMString name,
-                             CallCompleteCallback callback);
+                             CreateConfigCompleteCallback callback);
 
     // Destroys a VPN configuration created by the extension.
     // |id|: ID of the VPN configuration to destroy.

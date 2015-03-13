@@ -142,6 +142,20 @@ class VpnService : public KeyedService,
       const SuccessCallback& success,
       const FailureCallback& failure);
 
+  // Verifies if a configuration with name |configuration_name| exists for the
+  // extension with id |extension_id|.
+  bool VerifyConfigExistsForTesting(const std::string& extension_id,
+                                    const std::string& configuration_name);
+
+  // Verifies if the extension has a configuration that is connected.
+  bool VerifyConfigIsConnectedForTesting(const std::string& extension_id);
+
+  // Gets the unique key for the configuration |configuration_name| created by
+  // the extension with id |extension_id|.
+  // This method is made public for testing.
+  static std::string GetKey(const std::string& extension_id,
+                            const std::string& configuration_name);
+
  private:
   class VpnConfiguration;
 

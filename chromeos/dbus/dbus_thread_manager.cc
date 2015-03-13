@@ -593,6 +593,12 @@ void DBusThreadManagerSetter::SetShillProfileClient(
       client.Pass();
 }
 
+void DBusThreadManagerSetter::SetShillThirdPartyVpnDriverClient(
+    scoped_ptr<ShillThirdPartyVpnDriverClient> client) {
+  DBusThreadManager::Get()
+      ->client_bundle_->shill_third_party_vpn_driver_client_ = client.Pass();
+}
+
 void DBusThreadManagerSetter::SetGsmSMSClient(
     scoped_ptr<GsmSMSClient> client) {
   DBusThreadManager::Get()->client_bundle_->gsm_sms_client_ = client.Pass();

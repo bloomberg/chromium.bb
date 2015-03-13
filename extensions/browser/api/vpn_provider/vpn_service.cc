@@ -12,6 +12,7 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -34,11 +35,6 @@ namespace chromeos {
 namespace {
 
 namespace api_vpn = extensions::core_api::vpn_provider;
-
-std::string GetKey(const std::string& extension_id, const std::string& name) {
-  const std::string key = crypto::SHA256HashString(extension_id + name);
-  return base::HexEncode(key.data(), key.size());
-}
 
 void DoNothingFailureCallback(const std::string& error_name,
                               const std::string& error_message) {
@@ -149,6 +145,9 @@ VpnService::VpnService(
   extension_registry_->AddObserver(this);
   network_state_handler_->AddObserver(this, FROM_HERE);
   network_configuration_handler_->AddObserver(this);
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&VpnService::NetworkListChanged, weak_factory_.GetWeakPtr()));
 }
 
 VpnService::~VpnService() {
@@ -172,6 +171,12 @@ void VpnService::SendShowConfigureDialogToExtension(
       extension_id, api_vpn::OnUIEvent::kEventName,
       api_vpn::OnUIEvent::Create(api_vpn::UI_EVENT_SHOWCONFIGUREDIALOG,
                                  configuration_id));
+}
+
+std::string VpnService::GetKey(const std::string& extension_id,
+                               const std::string& name) {
+  const std::string key = crypto::SHA256HashString(extension_id + name);
+  return base::HexEncode(key.data(), key.size());
 }
 
 void VpnService::OnConfigurationCreated(const std::string& service_path,
@@ -343,6 +348,10 @@ void VpnService::DestroyConfiguration(const std::string& extension_id,
 
   VpnConfiguration* configuration = key_to_configuration_map_[key];
   const std::string service_path = configuration->service_path();
+  if (service_path.empty()) {
+    failure.Run(std::string(), std::string("Pending create."));
+    return;
+  }
   if (active_configuration_ == configuration) {
     configuration->OnPlatformMessage(api_vpn::PLATFORM_MESSAGE_DISCONNECTED);
   }
@@ -399,6 +408,18 @@ void VpnService::NotifyConnectionStateChanged(const std::string& extension_id,
   shill_client_->UpdateConnectionState(active_configuration_->object_path(),
                                        static_cast<uint32_t>(state), success,
                                        failure);
+}
+
+bool VpnService::VerifyConfigExistsForTesting(
+    const std::string& extension_id,
+    const std::string& configuration_name) {
+  const std::string key = GetKey(extension_id, configuration_name);
+  return ContainsKey(key_to_configuration_map_, key);
+}
+
+bool VpnService::VerifyConfigIsConnectedForTesting(
+    const std::string& extension_id) {
+  return DoesActiveConfigurationExistAndIsAccessAuthorized(extension_id);
 }
 
 void VpnService::OnExtensionUninstalled(

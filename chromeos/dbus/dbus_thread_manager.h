@@ -236,6 +236,8 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   void SetShillManagerClient(scoped_ptr<ShillManagerClient> client);
   void SetShillServiceClient(scoped_ptr<ShillServiceClient> client);
   void SetShillProfileClient(scoped_ptr<ShillProfileClient> client);
+  void SetShillThirdPartyVpnDriverClient(
+      scoped_ptr<ShillThirdPartyVpnDriverClient> client);
   void SetGsmSMSClient(scoped_ptr<GsmSMSClient> client);
   void SetImageBurnerClient(scoped_ptr<ImageBurnerClient> client);
   void SetIntrospectableClient(scoped_ptr<IntrospectableClient> client);

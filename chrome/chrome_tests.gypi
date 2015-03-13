@@ -739,6 +739,7 @@
       'browser/chromeos/shutdown_policy_browsertest.cc',
       'browser/chromeos/system/device_disabling_browsertest.cc',
       'browser/chromeos/system/tray_accessibility_browsertest.cc',
+      'browser/extensions/api/vpn_provider/vpn_provider_apitest.cc',
       'browser/ui/webui/options/chromeos/accounts_options_browsertest.cc',
       'browser/ui/webui/options/chromeos/guest_mode_options_ui_browsertest.cc',
       'browser/ui/webui/options/chromeos/shared_options_browsertest.cc',

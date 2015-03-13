@@ -213,13 +213,6 @@ test("extensions_browsertests") {
     "//third_party/mojo/src/mojo/public/cpp/bindings",
   ]
 
-  if (is_chromeos) {
-    sources += rebase_path(
-            extensions_tests_gypi_values.extensions_browsertests_sources_chromeos,
-            ".",
-            "//extensions")
-  }
-
   if (is_win) {
     deps += [ "//base/allocator" ]
   }
