@@ -8,7 +8,7 @@ Test that console.log() would linkify the links. Bug 231074.
 console-log-linkify-links.html:6 http://www.chromium.org/ console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
 console-log-linkify-links.html:7 follow http://www.chromium.org/ console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
 console-log-linkify-links.html:8 string http://www.chromium.org/ console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
-console-log-linkify-links.html:9 123 "http://www.chromium.org/" console-message-text source-code > console-message-url webkit-html-resource-link > console-formatted-number source-code > source-code > console-formatted-string source-code > webkit-html-external-link
+console-log-linkify-links.html:9 123 "http://www.chromium.org/" console-message-text source-code > console-message-url webkit-html-resource-link > object-value-number source-code > source-code > object-value-string source-code > webkit-html-external-link
 console-log-linkify-links.html:10 http://www.chromium.org/some?v=114:56:57 console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
 Dump urls in messages
 linked url:http://www.chromium.org/

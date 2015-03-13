@@ -29,7 +29,7 @@ function test()
         var messages = WebInspector.ConsolePanel._view()._visibleViewMessages;
 
         for (var i = 0; i < messages.length; i++)
-            InspectorTest.addResult(">" + messages[i].toMessageElement().textContent);
+            InspectorTest.addResult(">" + messages[i].toMessageElement().deepTextContent());
     }
 
     var testSuite = [
