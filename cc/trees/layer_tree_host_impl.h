@@ -39,6 +39,10 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace gfx {
+class ScrollOffset;
+}
+
 namespace cc {
 
 class CompletionEvent;
@@ -592,6 +596,12 @@ class CC_EXPORT LayerTreeHostImpl
 
   void NotifySwapPromiseMonitorsOfSetNeedsRedraw();
   void NotifySwapPromiseMonitorsOfForwardingToMainThread();
+
+  void ScrollAnimationCreate(LayerImpl* layer_impl,
+                             const gfx::ScrollOffset& target_offset,
+                             const gfx::ScrollOffset& current_offset);
+  bool ScrollAnimationUpdateTarget(LayerImpl* layer_impl,
+                                   const gfx::Vector2dF& scroll_delta);
 
   typedef base::hash_map<UIResourceId, UIResourceData>
       UIResourceMap;

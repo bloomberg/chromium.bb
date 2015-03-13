@@ -74,6 +74,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
@@ -2435,26 +2436,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     const gfx::Point& viewport_point,
     const gfx::Vector2dF& scroll_delta) {
   if (LayerImpl* layer_impl = CurrentlyScrollingLayer()) {
-    Animation* animation =
-        layer_impl->layer_animation_controller()->GetAnimation(
-            Animation::SCROLL_OFFSET);
-    if (!animation)
-      return SCROLL_IGNORED;
-
-    ScrollOffsetAnimationCurve* curve =
-        animation->curve()->ToScrollOffsetAnimationCurve();
-
-    gfx::ScrollOffset new_target =
-        gfx::ScrollOffsetWithDelta(curve->target_value(), scroll_delta);
-    new_target.SetToMax(gfx::ScrollOffset());
-    new_target.SetToMin(layer_impl->MaxScrollOffset());
-
-    curve->UpdateTarget(
-        animation->TrimTimeToCurrentIteration(
-                       CurrentBeginFrameArgs().frame_time).InSecondsF(),
-        new_target);
-
-    return SCROLL_STARTED;
+    return ScrollAnimationUpdateTarget(layer_impl, scroll_delta)
+               ? SCROLL_STARTED
+               : SCROLL_IGNORED;
   }
   // ScrollAnimated is only used for wheel scrolls. We use the same bubbling
   // behavior as ScrollBy to determine which layer to animate, but we do not
@@ -2486,17 +2470,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
 
       active_tree_->SetCurrentlyScrollingLayer(layer_impl);
 
-      scoped_ptr<ScrollOffsetAnimationCurve> curve =
-          ScrollOffsetAnimationCurve::Create(target_offset,
-                                             EaseInOutTimingFunction::Create());
-      curve->SetInitialValue(current_offset);
-
-      scoped_ptr<Animation> animation = Animation::Create(
-          curve.Pass(), AnimationIdProvider::NextAnimationId(),
-          AnimationIdProvider::NextGroupId(), Animation::SCROLL_OFFSET);
-      animation->set_is_impl_only(true);
-
-      layer_impl->layer_animation_controller()->AddAnimation(animation.Pass());
+      ScrollAnimationCreate(layer_impl, target_offset, current_offset);
 
       SetNeedsAnimate();
       return SCROLL_STARTED;
@@ -3459,4 +3433,47 @@ void LayerTreeHostImpl::NotifySwapPromiseMonitorsOfForwardingToMainThread() {
     (*it)->OnForwardScrollUpdateToMainThreadOnImpl();
 }
 
+void LayerTreeHostImpl::ScrollAnimationCreate(
+    LayerImpl* layer_impl,
+    const gfx::ScrollOffset& target_offset,
+    const gfx::ScrollOffset& current_offset) {
+  scoped_ptr<ScrollOffsetAnimationCurve> curve =
+      ScrollOffsetAnimationCurve::Create(target_offset,
+                                         EaseInOutTimingFunction::Create());
+  curve->SetInitialValue(current_offset);
+
+  scoped_ptr<Animation> animation = Animation::Create(
+      curve.Pass(), AnimationIdProvider::NextAnimationId(),
+      AnimationIdProvider::NextGroupId(), Animation::SCROLL_OFFSET);
+  animation->set_is_impl_only(true);
+
+  layer_impl->layer_animation_controller()->AddAnimation(animation.Pass());
+}
+
+bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
+    LayerImpl* layer_impl,
+    const gfx::Vector2dF& scroll_delta) {
+  Animation* animation =
+      layer_impl->layer_animation_controller()
+          ? layer_impl->layer_animation_controller()->GetAnimation(
+                Animation::SCROLL_OFFSET)
+          : nullptr;
+  if (!animation)
+    return false;
+
+  ScrollOffsetAnimationCurve* curve =
+      animation->curve()->ToScrollOffsetAnimationCurve();
+
+  gfx::ScrollOffset new_target =
+      gfx::ScrollOffsetWithDelta(curve->target_value(), scroll_delta);
+  new_target.SetToMax(gfx::ScrollOffset());
+  new_target.SetToMin(layer_impl->MaxScrollOffset());
+
+  curve->UpdateTarget(
+      animation->TrimTimeToCurrentIteration(CurrentBeginFrameArgs().frame_time)
+          .InSecondsF(),
+      new_target);
+
+  return true;
+}
 }  // namespace cc
