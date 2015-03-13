@@ -209,8 +209,7 @@ class Brick(object):
     Returns:
       Whether |brick_name| is contained in this brick.
     """
-    return bool('name' in self.config and
-                _FindBrickInOverlays(brick_name, self.config['name']))
+    return brick_name in [b.config['name'] for b in self.BrickStack()]
 
   def MainPackages(self):
     """Returns the brick's main package(s).
