@@ -681,17 +681,16 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
     const std::string& channel_id) {
   scoped_refptr<base::SingleThreadTaskRunner> runner =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+  scoped_refptr<base::SequencedTaskRunner> mojo_task_runner =
+      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
+            ->task_runner();
+  if (run_renderer_in_process()) {
+    ChannelInit::SetSingleProcessIOTaskRunner(mojo_task_runner);
+  }
   if (ShouldUseMojoChannel()) {
     VLOG(1) << "Mojo Channel is enabled on host";
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner =
-        BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
-              ->task_runner();
     if (!channel_mojo_host_) {
-      channel_mojo_host_.reset(new IPC::ChannelMojoHost(io_task_runner));
-    }
-
-    if (run_renderer_in_process()) {
-      ChannelInit::SetSingleProcessIOTaskRunner(io_task_runner);
+      channel_mojo_host_.reset(new IPC::ChannelMojoHost(mojo_task_runner));
     }
 
     return IPC::ChannelProxy::Create(
