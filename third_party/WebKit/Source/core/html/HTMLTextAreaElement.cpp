@@ -525,7 +525,7 @@ String HTMLTextAreaElement::validationMessage() const
 bool HTMLTextAreaElement::valueMissing() const
 {
     // We should not call value() for performance.
-    return willValidate() && valueMissing(0);
+    return willValidate() && valueMissing(nullptr);
 }
 
 bool HTMLTextAreaElement::valueMissing(const String* value) const
@@ -536,13 +536,13 @@ bool HTMLTextAreaElement::valueMissing(const String* value) const
 bool HTMLTextAreaElement::tooLong() const
 {
     // We should not call value() for performance.
-    return willValidate() && tooLong(0, CheckDirtyFlag);
+    return willValidate() && tooLong(nullptr, CheckDirtyFlag);
 }
 
 bool HTMLTextAreaElement::tooShort() const
 {
     // We should not call value() for performance.
-    return willValidate() && tooShort(0, CheckDirtyFlag);
+    return willValidate() && tooShort(nullptr, CheckDirtyFlag);
 }
 
 bool HTMLTextAreaElement::tooLong(const String* value, NeedsToCheckDirtyFlag check) const
