@@ -72,6 +72,8 @@ declare_args() {
   enable_google_now = !is_ios && !is_android
 
   enable_one_click_signin = is_win || is_mac || (is_linux && !is_chromeos)
+
+  enable_remoting = !is_ios && !is_android
 }
 
 # Additional dependent variables -----------------------------------------------
@@ -157,8 +159,6 @@ enable_wifi_bootstrapping = is_win || is_mac
 
 # Image loader extension is enabled on ChromeOS only.
 enable_image_loader_extension = is_chromeos
-
-enable_remoting = !is_ios && !is_android
 
 # Chrome OS: whether to also build the upcoming version of
 # ChromeVox, which can then be enabled via a command-line switch.
