@@ -803,6 +803,20 @@ void SequencedWorkerPool::Inner::ThreadLoop(Worker* this_worker) {
           delete_these_outside_lock.clear();
           break;
         }
+
+        // No work was found, but there are tasks that need deletion. The
+        // deletion must happen outside of the lock.
+        if (delete_these_outside_lock.size()) {
+          AutoUnlock unlock(lock_);
+          delete_these_outside_lock.clear();
+
+          // Since the lock has been released, |status| may no longer be
+          // accurate. It might read GET_WORK_WAIT even if there are tasks
+          // ready to perform work. Jump to the top of the loop to recalculate
+          // |status|.
+          continue;
+        }
+
         waiting_thread_count_++;
 
         switch (status) {
