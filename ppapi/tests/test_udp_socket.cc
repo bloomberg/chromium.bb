@@ -47,7 +47,10 @@ pp::NetAddress ReplacePort(const pp::InstanceHandle& instance,
 
 }  // namespace
 
-TestUDPSocket::TestUDPSocket(TestingInstance* instance) : TestCase(instance) {
+TestUDPSocket::TestUDPSocket(TestingInstance* instance)
+    : TestCase(instance),
+      socket_interface_1_0_(NULL),
+      socket_interface_1_1_(NULL) {
 }
 
 bool TestUDPSocket::Init() {
@@ -71,19 +74,36 @@ bool TestUDPSocket::Init() {
   if (!init_address)
     instance_->AppendError("Can't init address");
 
+  socket_interface_1_0_ =
+      static_cast<const PPB_UDPSocket_1_0*>(
+          pp::Module::Get()->GetBrowserInterface(PPB_UDPSOCKET_INTERFACE_1_0));
+  if (!socket_interface_1_0_)
+    instance_->AppendError("PPB_UDPSocket_1_0 interface not available");
+
+  socket_interface_1_1_ =
+      static_cast<const PPB_UDPSocket_1_1*>(
+          pp::Module::Get()->GetBrowserInterface(PPB_UDPSOCKET_INTERFACE_1_1));
+  if (!socket_interface_1_1_)
+    instance_->AppendError("PPB_UDPSocket_1_1 interface not available");
+
   return tcp_socket_is_available &&
       udp_socket_is_available &&
       net_address_is_available &&
       init_address &&
       CheckTestingInterface() &&
-      EnsureRunningOverHTTP();
+      EnsureRunningOverHTTP() &&
+      socket_interface_1_0_ != NULL &&
+      socket_interface_1_1_ != NULL;
 }
 
 void TestUDPSocket::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestUDPSocket, ReadWrite, filter);
   RUN_CALLBACK_TEST(TestUDPSocket, Broadcast, filter);
+  RUN_CALLBACK_TEST(TestUDPSocket, SetOption_1_0, filter);
+  RUN_CALLBACK_TEST(TestUDPSocket, SetOption_1_1, filter);
   RUN_CALLBACK_TEST(TestUDPSocket, SetOption, filter);
   RUN_CALLBACK_TEST(TestUDPSocket, ParallelSend, filter);
+  RUN_CALLBACK_TEST(TestUDPSocket, Multicast, filter);
 }
 
 std::string TestUDPSocket::GetLocalAddress(pp::NetAddress* address) {
@@ -131,16 +151,18 @@ std::string TestUDPSocket::LookupPortAndBindUDPSocket(
   ASSERT_SUBTEST_SUCCESS(GetLocalAddress(&base_address));
 
   bool is_free_port_found = false;
+  std::string ret;
   for (uint16_t port = kPortScanFrom; port < kPortScanTo; ++port) {
     pp::NetAddress new_address = ReplacePort(instance_, base_address, port);
     ASSERT_NE(0, new_address.pp_resource());
-    if (BindUDPSocket(socket, new_address).empty()) {
+    ret = BindUDPSocket(socket, new_address);
+    if (ret.empty()) {
       is_free_port_found = true;
       break;
     }
   }
   if (!is_free_port_found)
-    return "Can't find available port";
+    return "Can't find available port (" + ret + ")";
 
   *address = socket->GetBoundAddress();
   ASSERT_NE(0, address->pp_resource());
@@ -185,6 +207,22 @@ std::string TestUDPSocket::PassMessage(pp::UDPSocket* target,
   ASSERT_FALSE(callback.result() < 0);
   ASSERT_EQ(message.size(), static_cast<size_t>(callback.result()));
   ASSERT_EQ(message, str);
+  PASS();
+}
+
+std::string TestUDPSocket::SetMulticastOptions(pp::UDPSocket* socket) {
+  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
+  callback.WaitForResult(socket->SetOption(
+      PP_UDPSOCKET_OPTION_MULTICAST_LOOP, pp::Var(true),
+      callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
+  callback.WaitForResult(socket->SetOption(
+      PP_UDPSOCKET_OPTION_MULTICAST_TTL, pp::Var(1), callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_OK, callback.result());
+
   PASS();
 }
 
@@ -258,15 +296,93 @@ std::string TestUDPSocket::TestBroadcast() {
   PASS();
 }
 
+int32_t TestUDPSocket::SetOptionValue(UDPSocketSetOption func,
+                                      PP_Resource socket,
+                                      PP_UDPSocket_Option option,
+                                      const PP_Var& value) {
+  PP_TimeTicks start_time(NowInTimeTicks());
+  TestCompletionCallback cb(instance_->pp_instance(), callback_type());
+  cb.WaitForResult(func(socket, option, value,
+                        cb.GetCallback().pp_completion_callback()));
+
+  // Expanded from CHECK_CALLBACK_BEHAVIOR macro.
+  if (cb.failed()) {
+    std::string msg = MakeFailureMessage(__FILE__, __LINE__,
+                                         cb.errors().c_str());
+
+    instance_->LogTest("SetOptionValue", msg, start_time);
+    return PP_ERROR_FAILED;
+  }
+  return cb.result();
+}
+
+std::string TestUDPSocket::TestSetOption_1_0() {
+  PP_Resource socket = socket_interface_1_0_->Create(instance_->pp_instance());
+  ASSERT_NE(0, socket);
+
+  // Multicast options are not supported in interface 1.0.
+  ASSERT_EQ(PP_ERROR_BADARGUMENT,
+            SetOptionValue(socket_interface_1_0_->SetOption,
+                           socket,
+                           PP_UDPSOCKET_OPTION_MULTICAST_LOOP,
+                           PP_MakeBool(PP_TRUE)));
+
+  ASSERT_EQ(PP_ERROR_BADARGUMENT,
+            SetOptionValue(socket_interface_1_0_->SetOption,
+                           socket,
+                           PP_UDPSOCKET_OPTION_MULTICAST_TTL,
+                           PP_MakeInt32(1)));
+
+  socket_interface_1_0_->Close(socket);
+  pp::Module::Get()->core()->ReleaseResource(socket);
+
+  PASS();
+}
+
+std::string TestUDPSocket::TestSetOption_1_1() {
+  PP_Resource socket = socket_interface_1_1_->Create(instance_->pp_instance());
+  ASSERT_NE(0, socket);
+
+  // Multicast options are not supported in interface 1.1.
+  ASSERT_EQ(PP_ERROR_BADARGUMENT,
+            SetOptionValue(socket_interface_1_1_->SetOption,
+                           socket,
+                           PP_UDPSOCKET_OPTION_MULTICAST_LOOP,
+                           PP_MakeBool(PP_TRUE)));
+
+  ASSERT_EQ(PP_ERROR_BADARGUMENT,
+            SetOptionValue(socket_interface_1_1_->SetOption,
+                           socket,
+                           PP_UDPSOCKET_OPTION_MULTICAST_TTL,
+                           PP_MakeInt32(1)));
+
+  socket_interface_1_1_->Close(socket);
+  pp::Module::Get()->core()->ReleaseResource(socket);
+
+  PASS();
+}
+
 std::string TestUDPSocket::TestSetOption() {
   pp::UDPSocket socket(instance_);
 
   ASSERT_SUBTEST_SUCCESS(SetBroadcastOptions(&socket));
+  ASSERT_SUBTEST_SUCCESS(SetMulticastOptions(&socket));
 
   // Try to pass incorrect option value's type.
   TestCompletionCallback callback(instance_->pp_instance(), callback_type());
   callback.WaitForResult(socket.SetOption(
       PP_UDPSOCKET_OPTION_ADDRESS_REUSE, pp::Var(1), callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_ERROR_BADARGUMENT, callback.result());
+
+  // Invalid multicast TTL values (less than 0 and greater than 255).
+  callback.WaitForResult(socket.SetOption(
+      PP_UDPSOCKET_OPTION_MULTICAST_TTL, pp::Var(-1), callback.GetCallback()));
+  CHECK_CALLBACK_BEHAVIOR(callback);
+  ASSERT_EQ(PP_ERROR_BADARGUMENT, callback.result());
+
+  callback.WaitForResult(socket.SetOption(
+      PP_UDPSOCKET_OPTION_MULTICAST_TTL, pp::Var(256), callback.GetCallback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_ERROR_BADARGUMENT, callback.result());
 
@@ -385,6 +501,18 @@ std::string TestUDPSocket::TestParallelSend() {
 
   server_socket.Close();
   client_socket.Close();
+
+  PASS();
+}
+
+std::string TestUDPSocket::TestMulticast() {
+  pp::UDPSocket server1(instance_), server2(instance_);
+
+  ASSERT_SUBTEST_SUCCESS(SetMulticastOptions(&server1));
+  ASSERT_SUBTEST_SUCCESS(SetMulticastOptions(&server2));
+
+  server1.Close();
+  server2.Close();
 
   PASS();
 }

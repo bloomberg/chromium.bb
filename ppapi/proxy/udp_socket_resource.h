@@ -40,9 +40,17 @@ class PPAPI_PROXY_EXPORT UDPSocketResource : public UDPSocketResourceBase,
       PP_UDPSocket_Option name,
       const PP_Var& value,
       scoped_refptr<TrackedCallback> callback) override;
+  virtual int32_t SetOption1_1(
+      PP_UDPSocket_Option name,
+      const PP_Var& value,
+      scoped_refptr<TrackedCallback> callback) override;
   virtual int32_t SetOption(PP_UDPSocket_Option name,
                             const PP_Var& value,
                             scoped_refptr<TrackedCallback> callback) override;
+  virtual int32_t JoinGroup(PP_Resource group,
+                            scoped_refptr<TrackedCallback> callback) override;
+  virtual int32_t LeaveGroup(PP_Resource group,
+                             scoped_refptr<TrackedCallback> callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UDPSocketResource);

@@ -8,8 +8,16 @@
 #include <string>
 
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/ppb_udp_socket.h"
 #include "ppapi/cpp/net_address.h"
 #include "ppapi/tests/test_case.h"
+
+namespace {
+typedef int32_t (*UDPSocketSetOption)(PP_Resource udp_socket,
+                                      PP_UDPSocket_Option name,
+                                      struct PP_Var value,
+                                      struct PP_CompletionCallback callback);
+}
 
 namespace pp {
 class UDPSocket;
@@ -39,13 +47,24 @@ class TestUDPSocket: public TestCase {
                           const pp::NetAddress& target_address,
                           const std::string& message,
                           pp::NetAddress* recvfrom_address);
+  std::string SetMulticastOptions(pp::UDPSocket* socket);
 
   std::string TestReadWrite();
   std::string TestBroadcast();
+  int32_t SetOptionValue(UDPSocketSetOption func,
+                         PP_Resource socket,
+                         PP_UDPSocket_Option option,
+                         const PP_Var& value);
+  std::string TestSetOption_1_0();
+  std::string TestSetOption_1_1();
   std::string TestSetOption();
   std::string TestParallelSend();
+  std::string TestMulticast();
 
   pp::NetAddress address_;
+
+  const PPB_UDPSocket_1_0* socket_interface_1_0_;
+  const PPB_UDPSocket_1_1* socket_interface_1_1_;
 };
 
 #endif  // PPAPI_TESTS_TEST_UDP_SOCKET_H_

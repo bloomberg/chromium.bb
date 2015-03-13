@@ -518,6 +518,12 @@ std::string NetAddressPrivateImpl::DescribeNetAddress(
 }
 
 // static
+void NetAddressPrivateImpl::GetAnyAddress(PP_Bool is_ipv6,
+    PP_NetAddress_Private* addr) {
+  ppapi::GetAnyAddress(is_ipv6, addr);
+}
+
+// static
 void NetAddressPrivateImpl::CreateNetAddressPrivateFromIPv4Address(
     const PP_NetAddress_IPv4& ipv4_addr,
     PP_NetAddress_Private* addr) {

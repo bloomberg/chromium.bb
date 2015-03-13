@@ -34,8 +34,15 @@ class PPAPI_THUNK_EXPORT PPB_UDPSocket_API {
   virtual int32_t SetOption1_0(PP_UDPSocket_Option name,
                                const PP_Var& value,
                                scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t SetOption1_1(PP_UDPSocket_Option name,
+                               const PP_Var& value,
+                               scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t SetOption(PP_UDPSocket_Option name,
                             const PP_Var& value,
+                            scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t JoinGroup(PP_Resource group,
+                            scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t LeaveGroup(PP_Resource group,
                             scoped_refptr<TrackedCallback> callback) = 0;
 };
 

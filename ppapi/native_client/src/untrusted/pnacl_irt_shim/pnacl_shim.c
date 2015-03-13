@@ -134,6 +134,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TCPSocket_1_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TextInputController_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_1_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_1_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoader_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLRequestInfo_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLResponseInfo_1_0;
@@ -1761,6 +1762,60 @@ static int32_t Pnacl_M41_PPB_UDPSocket_SetOption(PP_Resource udp_socket, PP_UDPS
 }
 
 /* End wrapper methods for PPB_UDPSocket_1_1 */
+
+/* Begin wrapper methods for PPB_UDPSocket_1_2 */
+
+static PP_Resource Pnacl_M43_PPB_UDPSocket_Create(PP_Instance instance) {
+  const struct PPB_UDPSocket_1_2 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_2.real_iface;
+  return iface->Create(instance);
+}
+
+static PP_Bool Pnacl_M43_PPB_UDPSocket_IsUDPSocket(PP_Resource resource) {
+  const struct PPB_UDPSocket_1_2 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_2.real_iface;
+  return iface->IsUDPSocket(resource);
+}
+
+static int32_t Pnacl_M43_PPB_UDPSocket_Bind(PP_Resource udp_socket, PP_Resource addr, struct PP_CompletionCallback* callback) {
+  const struct PPB_UDPSocket_1_2 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_2.real_iface;
+  return iface->Bind(udp_socket, addr, *callback);
+}
+
+static PP_Resource Pnacl_M43_PPB_UDPSocket_GetBoundAddress(PP_Resource udp_socket) {
+  const struct PPB_UDPSocket_1_2 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_2.real_iface;
+  return iface->GetBoundAddress(udp_socket);
+}
+
+static int32_t Pnacl_M43_PPB_UDPSocket_RecvFrom(PP_Resource udp_socket, char* buffer, int32_t num_bytes, PP_Resource* addr, struct PP_CompletionCallback* callback) {
+  const struct PPB_UDPSocket_1_2 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_2.real_iface;
+  return iface->RecvFrom(udp_socket, buffer, num_bytes, addr, *callback);
+}
+
+static int32_t Pnacl_M43_PPB_UDPSocket_SendTo(PP_Resource udp_socket, const char* buffer, int32_t num_bytes, PP_Resource addr, struct PP_CompletionCallback* callback) {
+  const struct PPB_UDPSocket_1_2 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_2.real_iface;
+  return iface->SendTo(udp_socket, buffer, num_bytes, addr, *callback);
+}
+
+static void Pnacl_M43_PPB_UDPSocket_Close(PP_Resource udp_socket) {
+  const struct PPB_UDPSocket_1_2 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_2.real_iface;
+  iface->Close(udp_socket);
+}
+
+static int32_t Pnacl_M43_PPB_UDPSocket_SetOption(PP_Resource udp_socket, PP_UDPSocket_Option name, struct PP_Var* value, struct PP_CompletionCallback* callback) {
+  const struct PPB_UDPSocket_1_2 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_2.real_iface;
+  return iface->SetOption(udp_socket, name, *value, *callback);
+}
+
+static int32_t Pnacl_M43_PPB_UDPSocket_JoinGroup(PP_Resource udp_socket, PP_Resource group, struct PP_CompletionCallback* callback) {
+  const struct PPB_UDPSocket_1_2 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_2.real_iface;
+  return iface->JoinGroup(udp_socket, group, *callback);
+}
+
+static int32_t Pnacl_M43_PPB_UDPSocket_LeaveGroup(PP_Resource udp_socket, PP_Resource group, struct PP_CompletionCallback* callback) {
+  const struct PPB_UDPSocket_1_2 *iface = Pnacl_WrapperInfo_PPB_UDPSocket_1_2.real_iface;
+  return iface->LeaveGroup(udp_socket, group, *callback);
+}
+
+/* End wrapper methods for PPB_UDPSocket_1_2 */
 
 /* Begin wrapper methods for PPB_URLLoader_1_0 */
 
@@ -4929,6 +4984,19 @@ static const struct PPB_UDPSocket_1_1 Pnacl_Wrappers_PPB_UDPSocket_1_1 = {
     .SetOption = (int32_t (*)(PP_Resource udp_socket, PP_UDPSocket_Option name, struct PP_Var value, struct PP_CompletionCallback callback))&Pnacl_M41_PPB_UDPSocket_SetOption
 };
 
+static const struct PPB_UDPSocket_1_2 Pnacl_Wrappers_PPB_UDPSocket_1_2 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M43_PPB_UDPSocket_Create,
+    .IsUDPSocket = (PP_Bool (*)(PP_Resource resource))&Pnacl_M43_PPB_UDPSocket_IsUDPSocket,
+    .Bind = (int32_t (*)(PP_Resource udp_socket, PP_Resource addr, struct PP_CompletionCallback callback))&Pnacl_M43_PPB_UDPSocket_Bind,
+    .GetBoundAddress = (PP_Resource (*)(PP_Resource udp_socket))&Pnacl_M43_PPB_UDPSocket_GetBoundAddress,
+    .RecvFrom = (int32_t (*)(PP_Resource udp_socket, char* buffer, int32_t num_bytes, PP_Resource* addr, struct PP_CompletionCallback callback))&Pnacl_M43_PPB_UDPSocket_RecvFrom,
+    .SendTo = (int32_t (*)(PP_Resource udp_socket, const char* buffer, int32_t num_bytes, PP_Resource addr, struct PP_CompletionCallback callback))&Pnacl_M43_PPB_UDPSocket_SendTo,
+    .Close = (void (*)(PP_Resource udp_socket))&Pnacl_M43_PPB_UDPSocket_Close,
+    .SetOption = (int32_t (*)(PP_Resource udp_socket, PP_UDPSocket_Option name, struct PP_Var value, struct PP_CompletionCallback callback))&Pnacl_M43_PPB_UDPSocket_SetOption,
+    .JoinGroup = (int32_t (*)(PP_Resource udp_socket, PP_Resource group, struct PP_CompletionCallback callback))&Pnacl_M43_PPB_UDPSocket_JoinGroup,
+    .LeaveGroup = (int32_t (*)(PP_Resource udp_socket, PP_Resource group, struct PP_CompletionCallback callback))&Pnacl_M43_PPB_UDPSocket_LeaveGroup
+};
+
 static const struct PPB_URLLoader_1_0 Pnacl_Wrappers_PPB_URLLoader_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M14_PPB_URLLoader_Create,
     .IsURLLoader = (PP_Bool (*)(PP_Resource resource))&Pnacl_M14_PPB_URLLoader_IsURLLoader,
@@ -5947,6 +6015,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_1_1 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_1_2 = {
+  .iface_macro = PPB_UDPSOCKET_INTERFACE_1_2,
+  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_UDPSocket_1_2,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLLoader_1_0 = {
   .iface_macro = PPB_URLLOADER_INTERFACE_1_0,
   .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_URLLoader_1_0,
@@ -6419,6 +6493,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_TextInputController_1_0,
   &Pnacl_WrapperInfo_PPB_UDPSocket_1_0,
   &Pnacl_WrapperInfo_PPB_UDPSocket_1_1,
+  &Pnacl_WrapperInfo_PPB_UDPSocket_1_2,
   &Pnacl_WrapperInfo_PPB_URLLoader_1_0,
   &Pnacl_WrapperInfo_PPB_URLRequestInfo_1_0,
   &Pnacl_WrapperInfo_PPB_URLResponseInfo_1_0,

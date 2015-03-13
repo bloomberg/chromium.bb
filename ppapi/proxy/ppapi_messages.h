@@ -130,7 +130,7 @@ IPC_ENUM_TRAITS(PP_TrueTypeFontWeight_Dev)
 IPC_ENUM_TRAITS(PP_TrueTypeFontWidth_Dev)
 IPC_ENUM_TRAITS(PP_TrueTypeFontCharset_Dev)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_UDPSocket_Option,
-                          PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE)
+                          PP_UDPSOCKET_OPTION_MULTICAST_TTL)
 IPC_ENUM_TRAITS(PP_VideoDecodeError_Dev)
 IPC_ENUM_TRAITS(PP_VideoDecoder_Profile)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_VideoFrame_Format, PP_VIDEOFRAME_FORMAT_LAST)
@@ -1781,6 +1781,12 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_UDPSocket_SendTo,
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_UDPSocket_SendToReply,
                      int32_t /* bytes_written */)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_UDPSocket_Close)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocket_JoinGroup,
+                     PP_NetAddress_Private /* net_addr */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_UDPSocket_JoinGroupReply)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_UDPSocket_LeaveGroup,
+                     PP_NetAddress_Private /* net_addr */)
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_UDPSocket_LeaveGroupReply)
 
 // URLLoader ------------------------------------------------------------------
 

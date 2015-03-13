@@ -56056,6 +56056,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1262834677" label="PPB_CameraDevice_Private;0.1"/>
   <int value="1272679676" label="PPB_TCPSocket_Private;0.5"/>
   <int value="1296231808" label="PPB_VideoDecoder;0.1"/>
+  <int value="1304992407" label="PPB_UDPSocket;1.2"/>
   <int value="1316246754" label="PPB_KeyboardInputEvent;1.0"/>
   <int value="1316320941" label="PPB_Graphics2D(Dev);0.1"/>
   <int value="1321620067" label="PPB_Instance;1.0"/>

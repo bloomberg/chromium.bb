@@ -68,10 +68,12 @@ int32_t UDPSocketResourceBase::SetOptionImpl(
   if (closed_)
     return PP_ERROR_FAILED;
 
-  SocketOptionData option_data;
+  // Check if socket is expected to be bound or not according to the option.
   switch (name) {
     case PP_UDPSOCKET_OPTION_ADDRESS_REUSE:
-    case PP_UDPSOCKET_OPTION_BROADCAST: {
+    case PP_UDPSOCKET_OPTION_BROADCAST:
+    case PP_UDPSOCKET_OPTION_MULTICAST_LOOP:
+    case PP_UDPSOCKET_OPTION_MULTICAST_TTL: {
       if ((check_bind_state || name == PP_UDPSOCKET_OPTION_ADDRESS_REUSE) &&
           bind_called_) {
         // SetOption should fail in this case in order to give predictable
@@ -80,6 +82,21 @@ int32_t UDPSocketResourceBase::SetOptionImpl(
         // of Bind().
         return PP_ERROR_FAILED;
       }
+      break;
+    }
+    case PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE:
+    case PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE: {
+      if (check_bind_state && !bound_)
+        return PP_ERROR_FAILED;
+      break;
+    }
+  }
+
+  SocketOptionData option_data;
+  switch (name) {
+    case PP_UDPSOCKET_OPTION_ADDRESS_REUSE:
+    case PP_UDPSOCKET_OPTION_BROADCAST:
+    case PP_UDPSOCKET_OPTION_MULTICAST_LOOP: {
       if (value.type != PP_VARTYPE_BOOL)
         return PP_ERROR_BADARGUMENT;
       option_data.SetBool(PP_ToBool(value.value.as_bool));
@@ -87,11 +104,16 @@ int32_t UDPSocketResourceBase::SetOptionImpl(
     }
     case PP_UDPSOCKET_OPTION_SEND_BUFFER_SIZE:
     case PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE: {
-      if (check_bind_state && !bound_)
-        return PP_ERROR_FAILED;
       if (value.type != PP_VARTYPE_INT32)
         return PP_ERROR_BADARGUMENT;
       option_data.SetInt32(value.value.as_int);
+      break;
+    }
+    case PP_UDPSOCKET_OPTION_MULTICAST_TTL: {
+      int32_t ival = value.value.as_int;
+      if (value.type != PP_VARTYPE_INT32 && (ival < 0 || ival > 255))
+        return PP_ERROR_BADARGUMENT;
+      option_data.SetInt32(ival);
       break;
     }
     default: {
@@ -103,7 +125,7 @@ int32_t UDPSocketResourceBase::SetOptionImpl(
   Call<PpapiPluginMsg_UDPSocket_SetOptionReply>(
       BROWSER,
       PpapiHostMsg_UDPSocket_SetOption(name, option_data),
-      base::Bind(&UDPSocketResourceBase::OnPluginMsgSetOptionReply,
+      base::Bind(&UDPSocketResourceBase::OnPluginMsgGeneralReply,
                  base::Unretained(this),
                  callback),
       callback);
@@ -233,6 +255,36 @@ void UDPSocketResourceBase::CloseImpl() {
   bytes_to_read_ = -1;
 }
 
+int32_t UDPSocketResourceBase::JoinGroupImpl(
+    const PP_NetAddress_Private *group,
+    scoped_refptr<TrackedCallback> callback) {
+  DCHECK(group);
+
+  Call<PpapiPluginMsg_UDPSocket_JoinGroupReply>(
+      BROWSER,
+      PpapiHostMsg_UDPSocket_JoinGroup(*group),
+      base::Bind(&UDPSocketResourceBase::OnPluginMsgGeneralReply,
+                 base::Unretained(this),
+                 callback),
+      callback);
+  return PP_OK_COMPLETIONPENDING;
+}
+
+int32_t UDPSocketResourceBase::LeaveGroupImpl(
+    const PP_NetAddress_Private *group,
+    scoped_refptr<TrackedCallback> callback) {
+  DCHECK(group);
+
+  Call<PpapiPluginMsg_UDPSocket_LeaveGroupReply>(
+      BROWSER,
+      PpapiHostMsg_UDPSocket_LeaveGroup(*group),
+      base::Bind(&UDPSocketResourceBase::OnPluginMsgGeneralReply,
+                 base::Unretained(this),
+                 callback),
+      callback);
+  return PP_OK_COMPLETIONPENDING;
+}
+
 void UDPSocketResourceBase::OnReplyReceived(
     const ResourceMessageReplyParams& params,
     const IPC::Message& msg) {
@@ -251,7 +303,7 @@ void UDPSocketResourceBase::PostAbortIfNecessary(
     (*callback)->PostAbort();
 }
 
-void UDPSocketResourceBase::OnPluginMsgSetOptionReply(
+void UDPSocketResourceBase::OnPluginMsgGeneralReply(
     scoped_refptr<TrackedCallback> callback,
     const ResourceMessageReplyParams& params) {
   if (TrackedCallback::IsPending(callback))

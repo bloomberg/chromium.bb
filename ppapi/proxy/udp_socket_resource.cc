@@ -79,8 +79,23 @@ int32_t UDPSocketResource::SetOption1_0(
     PP_UDPSocket_Option name,
     const PP_Var& value,
     scoped_refptr<TrackedCallback> callback) {
+  if (name > PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE)
+    return PP_ERROR_BADARGUMENT;
+
   return SetOptionImpl(name, value,
                        true,  // Check bind() state.
+                       callback);
+}
+
+int32_t UDPSocketResource::SetOption1_1(
+    PP_UDPSocket_Option name,
+    const PP_Var& value,
+    scoped_refptr<TrackedCallback> callback) {
+  if (name > PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE)
+    return PP_ERROR_BADARGUMENT;
+
+  return SetOptionImpl(name, value,
+                       false,  // Check bind() state.
                        callback);
 }
 
@@ -91,6 +106,28 @@ int32_t UDPSocketResource::SetOption(
   return SetOptionImpl(name, value,
                        false,  // Check bind() state.
                        callback);
+}
+
+int32_t UDPSocketResource::JoinGroup(
+    PP_Resource group,
+    scoped_refptr<TrackedCallback> callback) {
+  EnterNetAddressNoLock enter(group, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
+
+  return JoinGroupImpl(&enter.object()->GetNetAddressPrivate(),
+                       callback);
+}
+
+int32_t UDPSocketResource::LeaveGroup(
+    PP_Resource group,
+    scoped_refptr<TrackedCallback> callback) {
+  EnterNetAddressNoLock enter(group, true);
+  if (enter.failed())
+    return PP_ERROR_BADRESOURCE;
+
+  return LeaveGroupImpl(&enter.object()->GetNetAddressPrivate(),
+                        callback);
 }
 
 }  // namespace proxy

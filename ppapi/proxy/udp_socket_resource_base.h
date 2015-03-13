@@ -73,6 +73,10 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
                      const PP_NetAddress_Private* addr,
                      scoped_refptr<TrackedCallback> callback);
   void CloseImpl();
+  int32_t JoinGroupImpl(const PP_NetAddress_Private *group,
+                        scoped_refptr<TrackedCallback> callback);
+  int32_t LeaveGroupImpl(const PP_NetAddress_Private *group,
+                         scoped_refptr<TrackedCallback> callback);
 
  private:
   struct RecvBuffer {
@@ -88,8 +92,8 @@ class PPAPI_PROXY_EXPORT UDPSocketResourceBase: public PluginResource {
   void PostAbortIfNecessary(scoped_refptr<TrackedCallback>* callback);
 
   // IPC message handlers.
-  void OnPluginMsgSetOptionReply(scoped_refptr<TrackedCallback> callback,
-                                 const ResourceMessageReplyParams& params);
+  void OnPluginMsgGeneralReply(scoped_refptr<TrackedCallback> callback,
+                               const ResourceMessageReplyParams& params);
   void OnPluginMsgBindReply(const ResourceMessageReplyParams& params,
                             const PP_NetAddress_Private& bound_addr);
   void OnPluginMsgPushRecvResult(const ResourceMessageReplyParams& params,

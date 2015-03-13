@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_socket_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/socket_permission_request.h"
 #include "ipc/ipc_message_macros.h"
@@ -60,6 +61,8 @@ PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
     : socket_options_(0),
       rcvbuf_size_(0),
       sndbuf_size_(0),
+      multicast_ttl_(0),
+      can_use_multicast_(PP_ERROR_FAILED),
       closed_(false),
       remaining_recv_slots_(UDPSocketResourceBase::kPluginReceiveBufferSlots),
       external_plugin_(host->external_plugin()),
@@ -95,6 +98,8 @@ PepperUDPSocketMessageFilter::OverrideTaskRunnerForMessage(
       return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
     case PpapiHostMsg_UDPSocket_Bind::ID:
     case PpapiHostMsg_UDPSocket_SendTo::ID:
+    case PpapiHostMsg_UDPSocket_JoinGroup::ID:
+    case PpapiHostMsg_UDPSocket_LeaveGroup::ID:
       return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
   }
   return NULL;
@@ -113,6 +118,10 @@ int32_t PepperUDPSocketMessageFilter::OnResourceMessageReceived(
                                         OnMsgClose)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
         PpapiHostMsg_UDPSocket_RecvSlotAvailable, OnMsgRecvSlotAvailable)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UDPSocket_JoinGroup,
+                                      OnMsgJoinGroup)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UDPSocket_LeaveGroup,
+                                      OnMsgLeaveGroup)
   PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -151,7 +160,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSetOption(
       if (!value.GetBool(&boolean_value))
         return PP_ERROR_BADARGUMENT;
 
-      // If the socket is already connected, proxy the value to TCPSocket.
+      // If the socket is already bound, proxy the value to UDPSocket.
       if (socket_.get())
         return NetErrorToPepperError(socket_->SetBroadcast(boolean_value));
 
@@ -171,7 +180,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSetOption(
               ppapi::proxy::UDPSocketResourceBase::kMaxSendBufferSize)
         return PP_ERROR_BADARGUMENT;
 
-      // If the socket is already connected, proxy the value to UDPSocket.
+      // If the socket is already bound, proxy the value to UDPSocket.
       if (socket_.get()) {
         return NetErrorToPepperError(
             socket_->SetSendBufferSize(integer_value));
@@ -190,7 +199,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSetOption(
               ppapi::proxy::UDPSocketResourceBase::kMaxReceiveBufferSize)
         return PP_ERROR_BADARGUMENT;
 
-      // If the socket is already connected, proxy the value to UDPSocket.
+      // If the socket is already bound, proxy the value to UDPSocket.
       if (socket_.get()) {
         return NetErrorToPepperError(
             socket_->SetReceiveBufferSize(integer_value));
@@ -199,6 +208,48 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSetOption(
       // UDPSocket instance is not yet created, so remember the value here.
       socket_options_ |= SOCKET_OPTION_RCVBUF_SIZE;
       rcvbuf_size_ = integer_value;
+      return PP_OK;
+    }
+    case PP_UDPSOCKET_OPTION_MULTICAST_LOOP: {
+      bool boolean_value = false;
+      if (!value.GetBool(&boolean_value))
+        return PP_ERROR_BADARGUMENT;
+
+      // If the socket is already bound, proxy the value to UDPSocket.
+      if (socket_) {
+        if (can_use_multicast_ != PP_OK)
+          return can_use_multicast_;
+
+        return NetErrorToPepperError(
+            socket_->SetMulticastLoopbackMode(boolean_value));
+      }
+
+      // UDPSocket instance is not yet created, so remember the value here.
+      if (boolean_value) {
+        socket_options_ |= SOCKET_OPTION_MULTICAST_LOOP;
+      } else {
+        socket_options_ &= ~SOCKET_OPTION_MULTICAST_LOOP;
+      }
+      return PP_OK;
+    }
+    case PP_UDPSOCKET_OPTION_MULTICAST_TTL: {
+      int32_t integer_value = 0;
+      if (!value.GetInt32(&integer_value) ||
+          integer_value < 0 || integer_value > 255)
+        return PP_ERROR_BADARGUMENT;
+
+      // If the socket is already bound, proxy the value to UDPSocket.
+      if (socket_) {
+        if (can_use_multicast_ != PP_OK)
+          return can_use_multicast_;
+
+        return NetErrorToPepperError(
+            socket_->SetMulticastTimeToLive(integer_value));
+      }
+
+      // UDPSocket instance is not yet created, so remember the value here.
+      socket_options_ |= SOCKET_OPTION_MULTICAST_TTL;
+      multicast_ttl_ = integer_value;
       return PP_OK;
     }
     default: {
@@ -213,6 +264,12 @@ int32_t PepperUDPSocketMessageFilter::OnMsgBind(
     const PP_NetAddress_Private& addr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context);
+
+  // Check for permissions to use multicast APIS. This check must be done while
+  // on the UI thread, so we cache the value here to be used later on.
+  PP_NetAddress_Private any_addr;
+  NetAddressPrivateImpl::GetAnyAddress(PP_FALSE, &any_addr);
+  can_use_multicast_ = CanUseMulticastAPI(any_addr);
 
   SocketPermissionRequest request =
       pepper_socket_utils::CreateSocketPermissionRequest(
@@ -286,6 +343,48 @@ int32_t PepperUDPSocketMessageFilter::OnMsgRecvSlotAvailable(
   return PP_OK;
 }
 
+int32_t PepperUDPSocketMessageFilter::OnMsgJoinGroup(
+    const ppapi::host::HostMessageContext* context,
+    const PP_NetAddress_Private& addr) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  int32_t ret = CanUseMulticastAPI(addr);
+  if (ret != PP_OK)
+    return ret;
+
+  if (!socket_)
+    return PP_ERROR_FAILED;
+
+  net::IPAddressNumber group;
+  uint16 port;
+
+  if (!NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &group, &port))
+    return PP_ERROR_ADDRESS_INVALID;
+
+  return NetErrorToPepperError(socket_->JoinGroup(group));
+}
+
+int32_t PepperUDPSocketMessageFilter::OnMsgLeaveGroup(
+    const ppapi::host::HostMessageContext* context,
+    const PP_NetAddress_Private& addr) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  int32_t ret = CanUseMulticastAPI(addr);
+  if (ret != PP_OK)
+    return ret;
+
+  if (!socket_)
+    return PP_ERROR_FAILED;
+
+  net::IPAddressNumber group;
+  uint16 port;
+
+  if (!NetAddressPrivateImpl::NetAddressToIPEndPoint(addr, &group, &port))
+    return PP_ERROR_ADDRESS_INVALID;
+
+  return NetErrorToPepperError(socket_->LeaveGroup(group));
+}
+
 void PepperUDPSocketMessageFilter::DoBind(
     const ppapi::host::ReplyMessageContext& context,
     const PP_NetAddress_Private& addr) {
@@ -338,6 +437,30 @@ void PepperUDPSocketMessageFilter::DoBind(
   }
   if (socket_options_ & SOCKET_OPTION_RCVBUF_SIZE) {
     int net_result = socket->SetReceiveBufferSize(rcvbuf_size_);
+    if (net_result != net::OK) {
+      SendBindError(context, NetErrorToPepperError(net_result));
+      return;
+    }
+  }
+  if (socket_options_ & SOCKET_OPTION_MULTICAST_LOOP) {
+    if (can_use_multicast_ != PP_OK) {
+      SendBindError(context, NetErrorToPepperError(can_use_multicast_));
+      return;
+    }
+
+    int net_result = socket->SetMulticastLoopbackMode(true);
+    if (net_result != net::OK) {
+      SendBindError(context, NetErrorToPepperError(net_result));
+      return;
+    }
+  }
+  if (socket_options_ & SOCKET_OPTION_MULTICAST_TTL) {
+    if (can_use_multicast_ != PP_OK) {
+      SendBindError(context, NetErrorToPepperError(can_use_multicast_));
+      return;
+    }
+
+    int net_result = socket->SetMulticastTimeToLive(multicast_ttl_);
     if (net_result != net::OK) {
       SendBindError(context, NetErrorToPepperError(net_result));
       return;
@@ -568,6 +691,32 @@ void PepperUDPSocketMessageFilter::SendSendToError(
     const ppapi::host::ReplyMessageContext& context,
     int32_t result) {
   SendSendToReply(context, result, 0);
+}
+
+int32_t PepperUDPSocketMessageFilter::CanUseMulticastAPI(
+    const PP_NetAddress_Private& addr) {
+  // Check for Dev API.
+  // TODO(etrunko): remove check when Multicast API reaches beta/stable.
+  // https://crbug.com/464452
+  ContentBrowserClient* content_browser_client = GetContentClient()->browser();
+  if (!content_browser_client->IsPluginAllowedToUseDevChannelAPIs(nullptr,
+                                                                  GURL())) {
+    return PP_ERROR_NOTSUPPORTED;
+  }
+
+  // Check for plugin permissions.
+  SocketPermissionRequest request =
+      pepper_socket_utils::CreateSocketPermissionRequest(
+          SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP, addr);
+  if (!pepper_socket_utils::CanUseSocketAPIs(external_plugin_,
+                                             private_api_,
+                                             &request,
+                                             render_process_id_,
+                                             render_frame_id_)) {
+    return PP_ERROR_NOACCESS;
+  }
+
+  return PP_OK;
 }
 
 }  // namespace content

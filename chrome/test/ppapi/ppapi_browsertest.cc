@@ -319,31 +319,38 @@ TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 #define MAYBE_UDPSocket_Broadcast UDPSocket_Broadcast
 #endif
 
-#define RUN_UDPSOCKET_SUBTESTS \
-  RunTestViaHTTP( \
-      LIST_TEST(UDPSocket_ReadWrite) \
-      LIST_TEST(UDPSocket_SetOption) \
-      LIST_TEST(MAYBE_UDPSocket_Broadcast) \
-      LIST_TEST(UDPSocket_ParallelSend))
+#define UDPSOCKET_TEST(_test) \
+  IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, _test) { \
+    RunTestViaHTTP(LIST_TEST(_test)); \
+  } \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, _test) { \
+    RunTestViaHTTP(LIST_TEST(_test)); \
+  } \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(_test)) { \
+    RunTestViaHTTP(LIST_TEST(_test)); \
+  } \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, _test) { \
+    RunTestViaHTTP(LIST_TEST(_test)); \
+  } \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, \
+                         MAYBE_PNACL_NONSFI(_test)) { \
+    RunTestViaHTTP(LIST_TEST(_test)); \
+  } \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTransitionalNonSfiTest, \
+                         MAYBE_PNACL_TRANSITIONAL_NONSFI(_test)) { \
+    RunTestViaHTTP(LIST_TEST(_test)); \
+  }
 
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, UDPSocket) {
-  RUN_UDPSOCKET_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, UDPSocket) {
-  RUN_UDPSOCKET_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, UDPSocket) {
-  RUN_UDPSOCKET_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
-                       MAYBE_PNACL_NONSFI(UDPSocket)) {
-  RUN_UDPSOCKET_SUBTESTS;
-}
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTransitionalNonSfiTest,
-                       MAYBE_PNACL_TRANSITIONAL_NONSFI(UDPSocket)) {
-  RUN_UDPSOCKET_SUBTESTS;
-}
-
+// Instead of one single test for all UDPSocket features (like it is done for
+// TCPSocket), split them into multiple, making it easier to isolate which tests
+// are failing.
+UDPSOCKET_TEST(UDPSocket_ReadWrite)
+UDPSOCKET_TEST(UDPSocket_SetOption)
+UDPSOCKET_TEST(UDPSocket_SetOption_1_0)
+UDPSOCKET_TEST(UDPSocket_SetOption_1_1)
+UDPSOCKET_TEST(MAYBE_UDPSocket_Broadcast)
+UDPSOCKET_TEST(UDPSocket_ParallelSend)
+UDPSOCKET_TEST(UDPSocket_Multicast)
 
 // UDPSocketPrivate tests.
 // UDPSocketPrivate_Broadcast is disabled for OSX because it requires root

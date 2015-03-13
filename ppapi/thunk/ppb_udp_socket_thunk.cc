@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_udp_socket.idl modified Mon Jun 24 15:10:54 2013.
+// From ppb_udp_socket.idl modified Fri Feb 20 20:28:39 2015.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -83,16 +83,28 @@ void Close(PP_Resource udp_socket) {
   enter.object()->Close();
 }
 
-int32_t SetOption1_0(PP_Resource udp_socket,
-                     PP_UDPSocket_Option name,
-                     struct PP_Var value,
-                     struct PP_CompletionCallback callback) {
-  VLOG(4) << "PPB_UDPSocket::SetOption1_0()";
+int32_t SetOption_1_0(PP_Resource udp_socket,
+                      PP_UDPSocket_Option name,
+                      struct PP_Var value,
+                      struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_UDPSocket::SetOption()";
   EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(
       enter.object()->SetOption1_0(name, value, enter.callback()));
+}
+
+int32_t SetOption_1_1(PP_Resource udp_socket,
+                      PP_UDPSocket_Option name,
+                      struct PP_Var value,
+                      struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_UDPSocket::SetOption()";
+  EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(
+      enter.object()->SetOption1_1(name, value, enter.callback()));
 }
 
 int32_t SetOption(PP_Resource udp_socket,
@@ -107,27 +119,54 @@ int32_t SetOption(PP_Resource udp_socket,
       enter.object()->SetOption(name, value, enter.callback()));
 }
 
-const PPB_UDPSocket_1_0 g_ppb_udpsocket_thunk_1_0 = {
-  &Create,
-  &IsUDPSocket,
-  &Bind,
-  &GetBoundAddress,
-  &RecvFrom,
-  &SendTo,
-  &Close,
-  &SetOption1_0
-};
+int32_t JoinGroup(PP_Resource udp_socket,
+                  PP_Resource group,
+                  struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_UDPSocket::JoinGroup()";
+  EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->JoinGroup(group, enter.callback()));
+}
 
-const PPB_UDPSocket_1_1 g_ppb_udpsocket_thunk_1_1 = {
-  &Create,
-  &IsUDPSocket,
-  &Bind,
-  &GetBoundAddress,
-  &RecvFrom,
-  &SendTo,
-  &Close,
-  &SetOption
-};
+int32_t LeaveGroup(PP_Resource udp_socket,
+                   PP_Resource group,
+                   struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_UDPSocket::LeaveGroup()";
+  EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->LeaveGroup(group, enter.callback()));
+}
+
+const PPB_UDPSocket_1_0 g_ppb_udpsocket_thunk_1_0 = {&Create,
+                                                     &IsUDPSocket,
+                                                     &Bind,
+                                                     &GetBoundAddress,
+                                                     &RecvFrom,
+                                                     &SendTo,
+                                                     &Close,
+                                                     &SetOption_1_0};
+
+const PPB_UDPSocket_1_1 g_ppb_udpsocket_thunk_1_1 = {&Create,
+                                                     &IsUDPSocket,
+                                                     &Bind,
+                                                     &GetBoundAddress,
+                                                     &RecvFrom,
+                                                     &SendTo,
+                                                     &Close,
+                                                     &SetOption_1_1};
+
+const PPB_UDPSocket_1_2 g_ppb_udpsocket_thunk_1_2 = {&Create,
+                                                     &IsUDPSocket,
+                                                     &Bind,
+                                                     &GetBoundAddress,
+                                                     &RecvFrom,
+                                                     &SendTo,
+                                                     &Close,
+                                                     &SetOption,
+                                                     &JoinGroup,
+                                                     &LeaveGroup};
 
 }  // namespace
 
@@ -137,6 +176,10 @@ PPAPI_THUNK_EXPORT const PPB_UDPSocket_1_0* GetPPB_UDPSocket_1_0_Thunk() {
 
 PPAPI_THUNK_EXPORT const PPB_UDPSocket_1_1* GetPPB_UDPSocket_1_1_Thunk() {
   return &g_ppb_udpsocket_thunk_1_1;
+}
+
+PPAPI_THUNK_EXPORT const PPB_UDPSocket_1_2* GetPPB_UDPSocket_1_2_Thunk() {
+  return &g_ppb_udpsocket_thunk_1_2;
 }
 
 }  // namespace thunk

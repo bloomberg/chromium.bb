@@ -7,9 +7,12 @@
  * This file defines the <code>PPB_UDPSocket</code> interface.
  */
 
+[generate_thunk]
+
 label Chrome {
   M29 = 1.0,
-  M41 = 1.1
+  M41 = 1.1,
+  [channel=dev] M43 = 1.2
 };
 
 /**
@@ -56,7 +59,28 @@ enum PP_UDPSocket_Option {
    * size. Even if <code>SetOption()</code> succeeds, the browser doesn't
    * guarantee it will conform to the size.
    */
-  PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE = 3
+  PP_UDPSOCKET_OPTION_RECV_BUFFER_SIZE = 3,
+
+  /**
+   * Specifies whether the packets sent from the host to the multicast group
+   * should be looped back to the host or not. Value's type should be
+   * <code>PP_VARTYPE_BOOL</code>.
+   * This option can only be set before calling <code>Bind()</code>.
+   *
+   * This is only supported in version 1.2 of the API (Chrome 43) and later.
+   */
+  PP_UDPSOCKET_OPTION_MULTICAST_LOOP = 4,
+
+  /**
+   * Specifies the time-to-live for packets sent to the multicast group. The
+   * value should be within 0 to 255 range. The default value is 1 and means
+   * that packets will not be routed beyond the local network. Value's type
+   * should be <code>PP_VARTYPE_INT32</code>.
+   * This option can only be set before calling <code>Bind()</code>.
+   *
+   * This is only supported in version 1.2 of the API (Chrome 43) and later.
+   */
+  PP_UDPSOCKET_OPTION_MULTICAST_TTL = 5
 };
 
 /**
@@ -220,4 +244,60 @@ interface PPB_UDPSocket {
                     [in] PP_UDPSocket_Option name,
                     [in] PP_Var value,
                     [in] PP_CompletionCallback callback);
+
+  /**
+   * Sets a socket option on the UDP socket.
+   * Please see the <code>PP_UDPSocket_Option</code> description for option
+   * names, value types and allowed values.
+   *
+   * @param[in] udp_socket A <code>PP_Resource</code> corresponding to a UDP
+   * socket.
+   * @param[in] name The option to set.
+   * @param[in] value The option value to set.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   */
+  [version=1.2]
+  int32_t SetOption([in] PP_Resource udp_socket,
+                    [in] PP_UDPSocket_Option name,
+                    [in] PP_Var value,
+                    [in] PP_CompletionCallback callback);
+
+  /**
+   * Joins the multicast group with address specified by <code>group</code>
+   * parameter, which is expected to be a <code>PPB_NetAddress</code> object.
+   *
+   * @param[in] udp_socket A <code>PP_Resource</code> corresponding to a UDP
+   * socket.
+   * @param[in] group A <code>PP_Resource</code> corresponding to the network
+   * address of the multicast group.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   */
+  [version=1.2]
+  int32_t JoinGroup([in] PP_Resource udp_socket,
+                    [in] PP_Resource group,
+                    [in] PP_CompletionCallback callback);
+
+  /**
+   * Leaves the multicast group with address specified by <code>group</code>
+   * parameter, which is expected to be a <code>PPB_NetAddress</code> object.
+   *
+   * @param[in] udp_socket A <code>PP_Resource</code> corresponding to a UDP
+   * socket.
+   * @param[in] group A <code>PP_Resource</code> corresponding to the network
+   * address of the multicast group.
+   * @param[in] callback A <code>PP_CompletionCallback</code> to be called upon
+   * completion.
+   *
+   * @return An int32_t containing an error code from <code>pp_errors.h</code>.
+   */
+  [version=1.2]
+  int32_t LeaveGroup([in] PP_Resource udp_socket,
+                     [in] PP_Resource group,
+                     [in] PP_CompletionCallback callback);
 };
