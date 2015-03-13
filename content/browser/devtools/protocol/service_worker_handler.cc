@@ -360,7 +360,7 @@ Response ServiceWorkerHandler::Stop(
   auto it = attached_hosts_.find(worker_id);
   if (it == attached_hosts_.end())
     return Response::InternalError("Not connected to the worker");
-  it->second->Close();
+  it->second->UnregisterWorker();
   return Response::OK();
 }
 

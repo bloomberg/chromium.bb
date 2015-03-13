@@ -19,6 +19,8 @@ class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
   ServiceWorkerDevToolsAgentHost(WorkerId worker_id,
                                  const ServiceWorkerIdentifier& service_worker);
 
+  void UnregisterWorker();
+
   // DevToolsAgentHost override.
   Type GetType() override;
   std::string GetTitle() override;
