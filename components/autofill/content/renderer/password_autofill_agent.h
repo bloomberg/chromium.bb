@@ -243,10 +243,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // but the submit may still fail (i.e. doesn't pass JavaScript validation).
   scoped_ptr<PasswordForm> provisionally_saved_form_;
 
-  // Contains the most recent text that user typed in input elements. Used for
-  // storing username/password before JavaScript changes them.
+  // Contains the most recent text that user typed or PasswordManager autofilled
+  // in input elements. Used for storing username/password before JavaScript
+  // changes them.
   std::map<const blink::WebInputElement, blink::WebString>
-      user_modified_elements_;
+      nonscript_modified_values_;
 
   PasswordValueGatekeeper gatekeeper_;
 

@@ -108,13 +108,14 @@ bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
 }
 
 // Get information about a login form encapsulated in a PasswordForm struct.
-// If an element of |form| has an entry in |user_modified_elements|, the
+// If an element of |form| has an entry in |nonscript_modified_values|, the
 // associated string is used instead of the element's value to create
 // the PasswordForm.
-void GetPasswordForm(const WebFormElement& form,
-                     PasswordForm* password_form,
-                     const std::map<const blink::WebInputElement,
-                                    blink::WebString>* user_modified_elements) {
+void GetPasswordForm(
+    const WebFormElement& form,
+    PasswordForm* password_form,
+    const std::map<const blink::WebInputElement, blink::WebString>*
+        nonscript_modified_values) {
   WebInputElement latest_input_element;
   WebInputElement username_element;
   password_form->username_marked_by_site = false;
@@ -197,9 +198,10 @@ void GetPasswordForm(const WebFormElement& form,
   if (!username_element.isNull()) {
     password_form->username_element = username_element.nameForAutofill();
     base::string16 username_value = username_element.value();
-    if (user_modified_elements != nullptr) {
-      auto username_iterator = user_modified_elements->find(username_element);
-      if (username_iterator != user_modified_elements->end()) {
+    if (nonscript_modified_values != nullptr) {
+      auto username_iterator =
+        nonscript_modified_values->find(username_element);
+      if (username_iterator != nonscript_modified_values->end()) {
         base::string16 typed_username_value = username_iterator->second;
         if (!StartsWith(username_value, typed_username_value, false)) {
           // We check that |username_value| was not obtained by autofilling
@@ -246,9 +248,9 @@ void GetPasswordForm(const WebFormElement& form,
   if (!password.isNull()) {
     password_form->password_element = password.nameForAutofill();
     blink::WebString password_value = password.value();
-    if (user_modified_elements != nullptr) {
-      auto password_iterator = user_modified_elements->find(password);
-      if (password_iterator != user_modified_elements->end())
+    if (nonscript_modified_values != nullptr) {
+      auto password_iterator = nonscript_modified_values->find(password);
+      if (password_iterator != nonscript_modified_values->end())
         password_value = password_iterator->second;
     }
     password_form->password_value = password_value;
@@ -271,12 +273,12 @@ void GetPasswordForm(const WebFormElement& form,
 scoped_ptr<PasswordForm> CreatePasswordForm(
     const WebFormElement& web_form,
     const std::map<const blink::WebInputElement, blink::WebString>*
-        user_modified_elements) {
+        nonscript_modified_values) {
   if (web_form.isNull())
     return scoped_ptr<PasswordForm>();
 
   scoped_ptr<PasswordForm> password_form(new PasswordForm());
-  GetPasswordForm(web_form, password_form.get(), user_modified_elements);
+  GetPasswordForm(web_form, password_form.get(), nonscript_modified_values);
 
   if (!password_form->action.is_valid())
     return scoped_ptr<PasswordForm>();

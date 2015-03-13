@@ -23,13 +23,13 @@ struct PasswordForm;
 // custom metadata to DOM nodes, so we have to do this every time an event
 // happens with a given form and compare against previously Create'd forms
 // to identify..which sucks.
-// If an element of |form| has an entry in |user_modified_elements|, the
+// If an element of |form| has an entry in |nonscript_modified_values|, the
 // associated string is used instead of the element's value to create
 // the PasswordForm.
 scoped_ptr<PasswordForm> CreatePasswordForm(
     const blink::WebFormElement& form,
     const std::map<const blink::WebInputElement, blink::WebString>*
-        user_modified_elements);
+        nonscript_modified_values);
 
 }  // namespace autofill
 

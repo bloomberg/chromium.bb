@@ -356,6 +356,8 @@ bool FillUserNameAndPassword(
     const PasswordFormFillData& fill_data,
     bool exact_username_match,
     bool set_selection,
+    std::map<const blink::WebInputElement, blink::WebString>&
+        nonscript_modified_values,
     base::Callback<void(blink::WebInputElement*)> registration_callback) {
   bool other_possible_username_selected = false;
   // Don't fill username if password can't be set.
@@ -420,6 +422,7 @@ bool FillUserNameAndPassword(
   if (!username_element->isNull() &&
       IsElementAutocompletable(*username_element)) {
     username_element->setValue(username, true);
+    nonscript_modified_values[*username_element] = username;
     username_element->setAutofilled(true);
 
     if (set_selection) {
@@ -436,6 +439,7 @@ bool FillUserNameAndPassword(
   // sure that we do not fill in the DOM with a password until we believe the
   // user is intentionally interacting with the page.
   password_element->setSuggestedValue(password);
+  nonscript_modified_values[*password_element] = password;
   registration_callback.Run(password_element);
 
   password_element->setAutofilled(true);
@@ -454,6 +458,8 @@ bool FillFormOnPasswordReceived(
     const PasswordFormFillData& fill_data,
     blink::WebInputElement username_element,
     blink::WebInputElement password_element,
+    std::map<const blink::WebInputElement, blink::WebString>&
+        nonscript_modified_values,
     base::Callback<void(blink::WebInputElement*)> registration_callback) {
   // Do not fill if the password field is in an iframe.
   DCHECK(password_element.document().frame());
@@ -510,6 +516,7 @@ bool FillFormOnPasswordReceived(
                                  fill_data,
                                  true /* exact_username_match */,
                                  false /* set_selection */,
+                                 nonscript_modified_values,
                                  registration_callback);
 }
 
@@ -616,6 +623,7 @@ bool PasswordAutofillAgent::TextFieldDidEndEditing(
   // mess with focus.
   if (FillUserNameAndPassword(
           &username, &password, fill_data, true, false,
+          nonscript_modified_values_,
           base::Bind(&PasswordValueGatekeeper::RegisterElement,
                      base::Unretained(&gatekeeper_)))) {
     usernames_usage_ = OTHER_POSSIBLE_USERNAME_SELECTED;
@@ -629,7 +637,7 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   blink::WebInputElement mutable_element = element;  // We need a non-const.
 
   if (element.isTextField())
-    user_modified_elements_[element] = element.value();
+    nonscript_modified_values_[element] = element.value();
 
   DCHECK_EQ(element.document().frame(), render_frame()->GetWebFrame());
 
@@ -1107,7 +1115,7 @@ void PasswordAutofillAgent::LegacyDidStartProvisionalLoad(
                       form_element);
         }
         scoped_ptr<PasswordForm> password_form(
-            CreatePasswordForm(form_element, &user_modified_elements_));
+            CreatePasswordForm(form_element, &nonscript_modified_values_));
         if (password_form.get() && !password_form->username_value.empty() &&
             FormContainsNonDefaultPasswordValue(*password_form, form_element)) {
           password_forms_found = true;
@@ -1178,6 +1186,7 @@ void PasswordAutofillAgent::OnFillPasswordForm(
             form_data,
             username_element,
             password_element,
+            nonscript_modified_values_,
             base::Bind(&PasswordValueGatekeeper::RegisterElement,
                        base::Unretained(&gatekeeper_)))) {
       usernames_usage_ = OTHER_POSSIBLE_USERNAME_SELECTED;
@@ -1294,6 +1303,7 @@ void PasswordAutofillAgent::PerformInlineAutocomplete(
           fill_data,
           false /* exact_username_match */,
           true /* set selection */,
+          nonscript_modified_values_,
           base::Bind(&PasswordValueGatekeeper::RegisterElement,
                      base::Unretained(&gatekeeper_)))) {
     usernames_usage_ = OTHER_POSSIBLE_USERNAME_SELECTED;
@@ -1308,7 +1318,7 @@ void PasswordAutofillAgent::FrameClosing() {
   }
   login_to_password_info_.clear();
   provisionally_saved_form_.reset();
-  user_modified_elements_.clear();
+  nonscript_modified_values_.clear();
 }
 
 bool PasswordAutofillAgent::FindLoginInfo(const blink::WebNode& node,
@@ -1346,7 +1356,7 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
     const blink::WebFormElement& form,
     ProvisionallySaveRestriction restriction) {
   scoped_ptr<PasswordForm> password_form(
-      CreatePasswordForm(form, &user_modified_elements_));
+      CreatePasswordForm(form, &nonscript_modified_values_));
   if (!password_form || (restriction == RESTRICTION_NON_EMPTY_PASSWORD &&
                          password_form->password_value.empty() &&
                          password_form->new_password_value.empty())) {
