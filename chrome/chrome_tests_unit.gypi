@@ -2358,6 +2358,14 @@
             'browser/ui/views/app_list/linux/app_list_linux_unittest.cc',
             'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
           ],
+          'conditions': [
+            ['use_ozone==1', {
+              'sources!': [
+                # crbug.com/354036
+                'browser/chromeos/events/event_rewriter_unittest.cc',
+              ],
+            }],
+          ],
         }],
         ['use_x11==1', {
           'dependencies': [
@@ -2597,12 +2605,6 @@
           'sources': [ '<@(chrome_unit_tests_app_list_sources)' ],
           'dependencies': [
             '../ui/app_list/app_list.gyp:app_list_test_support',
-          ],
-        }],
-        ['use_ozone==1', {
-          'sources!': [
-            # crbug.com/354036
-            'browser/chromeos/events/event_rewriter_unittest.cc',
           ],
         }],
         ['enable_plugin_installation==0', {

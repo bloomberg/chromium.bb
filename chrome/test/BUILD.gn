@@ -997,13 +997,6 @@ if (!is_android) {
     if (!enable_autofill_dialog || is_android || is_ios) {
       deps -= [ "//third_party/libaddressinput" ]
     }
-    if (use_ozone) {
-      sources -= [
-        # crbug.com/362698
-        "../browser/chromeos/input_method/input_method_engine_browsertests.cc",
-        "../browser/extensions/api/input_ime/input_ime_apitest_chromeos.cc",
-      ]
-    }
     if (enable_remoting) {
       sources += rebase_path(
               chrome_tests_gypi_values.chrome_browser_tests_remoting_sources,
@@ -1503,6 +1496,10 @@ if (!is_android) {
         "../browser/ui/views/app_list/linux/app_list_linux_unittest.cc",
         "../browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc",
       ]
+      if (use_ozone) {
+        # crbug.com/354036
+        sources -= [ "../browser/chromeos/events/event_rewriter_unittest.cc" ]
+      }
     }
     if (use_x11) {
       deps += [ "//ui/events/devices" ]
@@ -1667,10 +1664,6 @@ if (!is_android) {
                       ".",
                       "//chrome")
       deps += [ "//ui/app_list:test_support" ]
-    }
-    if (use_ozone) {
-      # crbug.com/354036
-      sources -= [ "../browser/chromeos/events/event_rewriter_unittest.cc" ]
     }
     if (!enable_plugin_installation) {
       sources -= [ "../browser/plugins/plugin_installer_unittest.cc" ]
