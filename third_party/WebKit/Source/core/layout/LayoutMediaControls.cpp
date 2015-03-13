@@ -39,6 +39,7 @@ namespace blink {
 
 typedef WTF::HashMap<const char*, Image*> MediaControlImageMap;
 static MediaControlImageMap* gMediaControlImageMap = 0;
+static double kCurrentTimeBufferedDelta = 1.0;
 
 static Image* platformResource(const char* name)
 {
@@ -215,7 +216,15 @@ static bool paintMediaSlider(LayoutObject* object, const PaintInfo& paintInfo, c
     for (unsigned i = 0; i < bufferedTimeRanges->length(); ++i) {
         float start = bufferedTimeRanges->start(i, ASSERT_NO_EXCEPTION);
         float end = bufferedTimeRanges->end(i, ASSERT_NO_EXCEPTION);
-        if (std::isnan(start) || std::isnan(end) || start > currentTime || end < currentTime)
+        // The delta is there to avoid corner cases when buffered
+        // ranges is out of sync with current time because of
+        // asynchronous media pipeline and current time caching in
+        // HTMLMediaElement.
+        // This is related to https://www.w3.org/Bugs/Public/show_bug.cgi?id=28125
+        // FIXME: Remove this workaround when WebMediaPlayer
+        // has an asynchronous pause interface.
+        if (std::isnan(start) || std::isnan(end)
+            || start > currentTime + kCurrentTimeBufferedDelta || end < currentTime)
             continue;
         int startPosition = int(start * rect.width() / duration);
         int currentPosition = int(currentTime * rect.width() / duration);
