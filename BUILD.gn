@@ -368,10 +368,9 @@ group("gn_all") {
 
     if (use_x11) {
       deps += [ "//media:player_x11" ]
-    }
-
-    if (target_cpu != "arm") {
-      deps += [ "//gpu:compositor_model_bench" ]
+      if (target_cpu != "arm") {
+        deps += [ "//gpu:compositor_model_bench" ]
+      }
     }
   }
 
