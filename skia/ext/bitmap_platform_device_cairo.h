@@ -93,6 +93,7 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
 
  protected:
   SkBaseDevice* onCreateCompatibleDevice(const CreateInfo& info) override;
+  virtual SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*);
 
  private:
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,

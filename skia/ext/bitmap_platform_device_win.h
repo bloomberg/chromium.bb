@@ -65,6 +65,7 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
 
   virtual SkBaseDevice* onCreateCompatibleDevice(const CreateInfo& info)
     override;
+  virtual SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*);
 
  private:
   // Private constructor.

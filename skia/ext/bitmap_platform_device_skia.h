@@ -41,6 +41,7 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
 
  protected:
   SkBaseDevice* onCreateCompatibleDevice(const CreateInfo& info) override;
+  virtual SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);

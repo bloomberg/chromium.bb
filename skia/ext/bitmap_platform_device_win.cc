@@ -282,6 +282,12 @@ SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
   return Create(info.width(), info.height(), info.isOpaque(), NULL, do_clear);
 }
 
+SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& cinfo,
+                                                   const SkPaint*) {
+  // until skia lands its new virtual for this method
+  return onCreateCompatibleDevice(cinfo);
+}
+
 // PlatformCanvas impl
 
 SkCanvas* CreatePlatformCanvas(int width,
