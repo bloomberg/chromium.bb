@@ -530,11 +530,12 @@ class RemoteDeviceUpdater(object):
           # TODO(garnold) In fact we should find the board/overlay that the
           # device inherits from and which defines the SDK "baseline" image
           # (brillo:339).
-          if self.board:
+          if self.board and not self.force:
             logging.warning(
-                'Ignoring board value (%s) and deferring to device instead.',
+                'Ignoring board value (%s) and deferring to device; use '
+                '--force to override',
                 self.board)
-          self.board = None
+            self.board = None
 
         self.board = cros_build_lib.GetBoard(device_board=device.board,
                                              override_board=self.board,
