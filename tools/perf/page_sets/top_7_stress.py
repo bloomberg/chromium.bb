@@ -233,18 +233,23 @@ class BlogspotPage(Top7StressPage):
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
     interaction.End()
+    # Insert 300ms wait to simulate user finger movement,
+    # and ensure scheduling of idle tasks.
+    action_runner.Wait(0.3)
     action_runner.ClickElement(text='advanced')
     action_runner.WaitForNavigate()
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
     interaction.End()
+    action_runner.Wait(0.3)
     action_runner.ClickElement(text='beginner')
     action_runner.WaitForNavigate()
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
     interaction.End()
+    action_runner.Wait(0.3)
     action_runner.ClickElement(text='Home')
     action_runner.WaitForNavigate()
 
@@ -271,6 +276,9 @@ class WordpressPage(Top7StressPage):
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
     interaction.End()
+    # Insert 300ms wait to simulate user finger movement,
+    # and ensure scheduling of idle tasks.
+    action_runner.Wait(0.3)
     action_runner.ClickElement(
         # pylint: disable=C0301
         'a[href="http://en.blog.wordpress.com/2012/08/30/new-themes-able-and-sight/"]')
@@ -279,12 +287,14 @@ class WordpressPage(Top7StressPage):
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
     interaction.End()
+    action_runner.Wait(0.3)
     action_runner.ClickElement(text='Features')
     action_runner.WaitForNavigate()
     interaction = action_runner.BeginGestureInteraction(
         'ScrollAction', is_smooth=True)
     action_runner.ScrollPage()
     interaction.End()
+    action_runner.Wait(0.3)
     action_runner.ClickElement(text='News')
     action_runner.WaitForNavigate()
     interaction = action_runner.BeginGestureInteraction(
