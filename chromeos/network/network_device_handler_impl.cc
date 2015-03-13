@@ -128,6 +128,7 @@ void SetDevicePropertyInternal(
     const base::Value& value,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
+  NET_LOG(USER) << "Device.SetProperty: " << property_name;
   DBusThreadManager::Get()->GetShillDeviceClient()->SetProperty(
       dbus::ObjectPath(device_path),
       property_name,
@@ -340,6 +341,8 @@ void NetworkDeviceHandlerImpl::RegisterCellularNetwork(
     const std::string& network_id,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
+  NET_LOG(USER) << "Device.RegisterCellularNetwork: " << device_path
+                << " Id: " << network_id;
   DBusThreadManager::Get()->GetShillDeviceClient()->Register(
       dbus::ObjectPath(device_path),
       network_id,
@@ -352,6 +355,8 @@ void NetworkDeviceHandlerImpl::SetCarrier(
     const std::string& carrier,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
+  NET_LOG(USER) << "Device.SetCarrier: " << device_path
+                << " carrier: " << carrier;
   DBusThreadManager::Get()->GetShillDeviceClient()->SetCarrier(
       dbus::ObjectPath(device_path),
       carrier,
@@ -365,6 +370,7 @@ void NetworkDeviceHandlerImpl::RequirePin(
     const std::string& pin,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
+  NET_LOG(USER) << "Device.RequirePin: " << device_path << ": " << require_pin;
   DBusThreadManager::Get()->GetShillDeviceClient()->RequirePin(
       dbus::ObjectPath(device_path),
       pin,
@@ -378,6 +384,7 @@ void NetworkDeviceHandlerImpl::EnterPin(
     const std::string& pin,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
+  NET_LOG(USER) << "Device.EnterPin: " << device_path;
   DBusThreadManager::Get()->GetShillDeviceClient()->EnterPin(
       dbus::ObjectPath(device_path),
       pin,
@@ -391,6 +398,7 @@ void NetworkDeviceHandlerImpl::UnblockPin(
     const std::string& new_pin,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
+  NET_LOG(USER) << "Device.UnblockPin: " << device_path;
   DBusThreadManager::Get()->GetShillDeviceClient()->UnblockPin(
       dbus::ObjectPath(device_path),
       puk,
@@ -405,6 +413,7 @@ void NetworkDeviceHandlerImpl::ChangePin(
     const std::string& new_pin,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
+  NET_LOG(USER) << "Device.ChangePin: " << device_path;
   DBusThreadManager::Get()->GetShillDeviceClient()->ChangePin(
       dbus::ObjectPath(device_path),
       old_pin,
@@ -459,6 +468,7 @@ void NetworkDeviceHandlerImpl::AddWifiWakeOnPacketConnection(
   if (!device_state)
     return;
 
+  NET_LOG(USER) << "Device.AddWakeOnWifi: " << device_state->path();
   DBusThreadManager::Get()->GetShillDeviceClient()->AddWakeOnPacketConnection(
       dbus::ObjectPath(device_state->path()),
       ip_endpoint,
@@ -476,6 +486,7 @@ void NetworkDeviceHandlerImpl::RemoveWifiWakeOnPacketConnection(
   if (!device_state)
     return;
 
+  NET_LOG(USER) << "Device.RemoveWakeOnWifi: " << device_state->path();
   DBusThreadManager::Get()
       ->GetShillDeviceClient()
       ->RemoveWakeOnPacketConnection(dbus::ObjectPath(device_state->path()),
@@ -493,6 +504,7 @@ void NetworkDeviceHandlerImpl::RemoveAllWifiWakeOnPacketConnections(
   if (!device_state)
     return;
 
+  NET_LOG(USER) << "Device.RemoveAllWakeOnWifi: " << device_state->path();
   DBusThreadManager::Get()
       ->GetShillDeviceClient()
       ->RemoveAllWakeOnPacketConnections(dbus::ObjectPath(device_state->path()),
