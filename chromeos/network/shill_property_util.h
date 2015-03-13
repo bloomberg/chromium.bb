@@ -82,8 +82,13 @@ bool DoIdentifyingPropertiesMatch(
     const base::DictionaryValue& new_properties,
     const base::DictionaryValue& old_properties);
 
-// Returns true if |key| corresponds to a passphrase property.
-bool IsPassphraseKey(const std::string& key);
+// Returns false if |key| is something that should not be logged either
+// because it is sensitive or noisy. Note: this is not necessarily
+// comprehensive, do not use it for anything genuinely sensitive (user logs
+// should always be treated as sensitive data, but sometimes they end up
+// attached to public issues so this helps prevent accidents, but it should not
+// be relied upon).
+bool IsLoggableShillProperty(const std::string& key);
 
 // Parses |value| (which should be a Dictionary). Returns true and sets
 // |home_provider_id| if |value| was succesfully parsed.

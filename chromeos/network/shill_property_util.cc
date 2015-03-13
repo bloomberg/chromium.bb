@@ -4,6 +4,8 @@
 
 #include "chromeos/network/shill_property_util.h"
 
+#include <set>
+
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_writer.h"
@@ -313,18 +315,38 @@ bool DoIdentifyingPropertiesMatch(const base::DictionaryValue& new_properties,
   return new_identifying.Equals(&old_identifying);
 }
 
-bool IsPassphraseKey(const std::string& key) {
-  return key == shill::kEapPrivateKeyPasswordProperty ||
-      key == shill::kEapPasswordProperty ||
-      key == shill::kL2tpIpsecPasswordProperty ||
-      key == shill::kOpenVPNPasswordProperty ||
-      key == shill::kOpenVPNAuthUserPassProperty ||
-      key == shill::kOpenVPNTLSAuthContentsProperty ||
-      key == shill::kPassphraseProperty ||
-      key == shill::kOpenVPNOTPProperty ||
-      key == shill::kEapPrivateKeyProperty ||
-      key == shill::kEapPinProperty ||
-      key == shill::kApnPasswordProperty;
+bool IsLoggableShillProperty(const std::string& key) {
+  static std::set<std::string>* s_skip_properties = nullptr;
+  if (!s_skip_properties) {
+    s_skip_properties = new std::set<std::string>;
+    s_skip_properties->insert(shill::kApnPasswordProperty);
+    s_skip_properties->insert(shill::kEapCaCertNssProperty);
+    s_skip_properties->insert(shill::kEapCaCertPemProperty);
+    s_skip_properties->insert(shill::kEapCaCertProperty);
+    s_skip_properties->insert(shill::kEapClientCertNssProperty);
+    s_skip_properties->insert(shill::kEapClientCertProperty);
+    s_skip_properties->insert(shill::kEapPasswordProperty);
+    s_skip_properties->insert(shill::kEapPinProperty);
+    s_skip_properties->insert(shill::kEapPrivateKeyPasswordProperty);
+    s_skip_properties->insert(shill::kEapPrivateKeyProperty);
+    s_skip_properties->insert(shill::kL2tpIpsecCaCertPemProperty);
+    s_skip_properties->insert(shill::kL2tpIpsecPasswordProperty);
+    s_skip_properties->insert(shill::kL2tpIpsecPinProperty);
+    s_skip_properties->insert(shill::kL2tpIpsecPskProperty);
+    s_skip_properties->insert(shill::kOpenVPNAuthUserPassProperty);
+    s_skip_properties->insert(shill::kOpenVPNCaCertNSSProperty);
+    s_skip_properties->insert(shill::kOpenVPNCaCertPemProperty);
+    s_skip_properties->insert(shill::kOpenVPNCaCertProperty);
+    s_skip_properties->insert(shill::kOpenVPNCertProperty);
+    s_skip_properties->insert(shill::kOpenVPNExtraCertPemProperty);
+    s_skip_properties->insert(shill::kOpenVPNOTPProperty);
+    s_skip_properties->insert(shill::kOpenVPNPasswordProperty);
+    s_skip_properties->insert(shill::kOpenVPNPinProperty);
+    s_skip_properties->insert(shill::kOpenVPNTLSAuthContentsProperty);
+    s_skip_properties->insert(shill::kPPPoEPasswordProperty);
+    s_skip_properties->insert(shill::kPassphraseProperty);
+  }
+  return s_skip_properties->count(key) == 0;
 }
 
 bool GetHomeProviderFromProperty(const base::Value& value,
