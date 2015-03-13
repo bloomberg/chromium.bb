@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
@@ -275,6 +276,13 @@ void CloseFileDescriptor(const int file_descriptor) {
   IGNORE_EINTR(close(file_descriptor));
 }
 
+// Deletes a temporary file |file_path|.
+void DeleteTemporaryFile(const base::FilePath& file_path) {
+  content::BrowserThread::PostBlockingPoolTask(
+      FROM_HERE, base::Bind(base::IgnoreResult(base::DeleteFile), file_path,
+                            false /* not recursive*/));
+}
+
 }  // namespace
 
 MTPDeviceDelegateImplLinux::PendingTaskInfo::PendingTaskInfo(
@@ -533,6 +541,26 @@ void MTPDeviceDelegateImplLinux::ReadBytes(
 
 bool MTPDeviceDelegateImplLinux::IsReadOnly() const {
   return read_only_;
+}
+
+void MTPDeviceDelegateImplLinux::CopyFileLocal(
+    const base::FilePath& source_file_path,
+    const base::FilePath& device_file_path,
+    const CreateTemporaryFileCallback& create_temporary_file_callback,
+    const CopyFileProgressCallback& progress_callback,
+    const CopyFileLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(!source_file_path.empty());
+  DCHECK(!device_file_path.empty());
+
+  // Create a temporary file for creating a copy of source file on local.
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE, FROM_HERE, create_temporary_file_callback,
+      base::Bind(
+          &MTPDeviceDelegateImplLinux::OnDidCreateTemporaryFileToCopyFileLocal,
+          weak_ptr_factory_.GetWeakPtr(), source_file_path, device_file_path,
+          progress_callback, success_callback, error_callback));
 }
 
 void MTPDeviceDelegateImplLinux::CopyFileFromLocal(
@@ -1167,6 +1195,63 @@ void MTPDeviceDelegateImplLinux::OnFillFileCacheFailed(
   pending_tasks_.front().path.clear();
 }
 
+void MTPDeviceDelegateImplLinux::OnDidCreateTemporaryFileToCopyFileLocal(
+    const base::FilePath& source_file_path,
+    const base::FilePath& device_file_path,
+    const CopyFileProgressCallback& progress_callback,
+    const CopyFileLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback,
+    const base::FilePath& temporary_file_path) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (temporary_file_path.empty()) {
+    error_callback.Run(base::File::FILE_ERROR_FAILED);
+    return;
+  }
+
+  CreateSnapshotFile(
+      source_file_path, temporary_file_path,
+      base::Bind(
+          &MTPDeviceDelegateImplLinux::OnDidCreateSnapshotFileOfCopyFileLocal,
+          weak_ptr_factory_.GetWeakPtr(), device_file_path, progress_callback,
+          success_callback, error_callback),
+      base::Bind(&MTPDeviceDelegateImplLinux::HandleCopyFileLocalError,
+                 weak_ptr_factory_.GetWeakPtr(), error_callback,
+                 temporary_file_path));
+}
+
+void MTPDeviceDelegateImplLinux::OnDidCreateSnapshotFileOfCopyFileLocal(
+    const base::FilePath& device_file_path,
+    const CopyFileProgressCallback& progress_callback,
+    const CopyFileLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback,
+    const base::File::Info& file_info,
+    const base::FilePath& temporary_file_path) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  // Consider that half of copy is completed by creating a temporary file.
+  progress_callback.Run(file_info.size / 2);
+
+  CopyFileFromLocal(
+      temporary_file_path, device_file_path,
+      base::Bind(
+          &MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocalOfCopyFileLocal,
+          weak_ptr_factory_.GetWeakPtr(), success_callback,
+          temporary_file_path),
+      base::Bind(&MTPDeviceDelegateImplLinux::HandleCopyFileLocalError,
+                 weak_ptr_factory_.GetWeakPtr(), error_callback,
+                 temporary_file_path));
+}
+
+void MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocalOfCopyFileLocal(
+    const CopyFileFromLocalSuccessCallback success_callback,
+    const base::FilePath& temporary_file_path) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  DeleteTemporaryFile(temporary_file_path);
+  success_callback.Run();
+}
+
 void MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocal(
     const CopyFileFromLocalSuccessCallback& success_callback,
     const int source_file_descriptor) {
@@ -1180,6 +1265,16 @@ void MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocal(
 
   success_callback.Run();
   PendingRequestDone();
+}
+
+void MTPDeviceDelegateImplLinux::HandleCopyFileLocalError(
+    const ErrorCallback& error_callback,
+    const base::FilePath& temporary_file_path,
+    const base::File::Error error) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  DeleteTemporaryFile(temporary_file_path);
+  error_callback.Run(error);
 }
 
 void MTPDeviceDelegateImplLinux::HandleCopyFileFromLocalError(

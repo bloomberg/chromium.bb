@@ -465,6 +465,16 @@ bool MTPDeviceDelegateImplWin::IsReadOnly() const {
   return true;
 }
 
+void MTPDeviceDelegateImplWin::CopyFileLocal(
+    const base::FilePath& source_file_path,
+    const base::FilePath& device_file_path,
+    const CreateTemporaryFileCallback& create_temporary_file_callback,
+    const CopyFileProgressCallback& progress_callback,
+    const CopyFileLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
 void MTPDeviceDelegateImplWin::CopyFileFromLocal(
     const base::FilePath& source_file_path,
     const base::FilePath& device_file_path,

@@ -55,6 +55,13 @@ class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
                  const ReadBytesSuccessCallback& success_callback,
                  const ErrorCallback& error_callback) override;
   bool IsReadOnly() const override;
+  void CopyFileLocal(
+      const base::FilePath& source_file_path,
+      const base::FilePath& device_file_path,
+      const CreateTemporaryFileCallback& create_temporary_file_callback,
+      const CopyFileProgressCallback& progress_callback,
+      const CopyFileLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) override;
   void CopyFileFromLocal(
       const base::FilePath& source_file_path,
       const base::FilePath& device_file_path,

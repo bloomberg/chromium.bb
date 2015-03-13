@@ -141,6 +141,10 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
       const EntryList& file_list,
       bool has_more);
 
+  // Called when CopyFileLocal method call succeeds. |callback| is invoked to
+  // complete the CopyFileLocal request.
+  void OnDidCopyFileLocal(const StatusCallback& callback);
+
   // Called when CopyInForeignFile method call succeeds. |callback| is invoked
   // to complete the CopyInForeignFile request.
   void OnDidCopyInForeignFile(const StatusCallback& callback);

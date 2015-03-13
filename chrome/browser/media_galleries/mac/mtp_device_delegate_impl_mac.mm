@@ -213,6 +213,16 @@ bool MTPDeviceDelegateImplMac::IsReadOnly() const {
   return true;
 }
 
+void MTPDeviceDelegateImplMac::CopyFileLocal(
+    const base::FilePath& source_file_path,
+    const base::FilePath& device_file_path,
+    const CreateTemporaryFileCallback& create_temporary_file_callback,
+    const CopyFileProgressCallback& progress_callback,
+    const CopyFileLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
 void MTPDeviceDelegateImplMac::CopyFileFromLocal(
     const base::FilePath& source_file_path,
     const base::FilePath& device_file_path,

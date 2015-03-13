@@ -95,6 +95,13 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
                  const ReadBytesSuccessCallback& success_callback,
                  const ErrorCallback& error_callback) override;
   bool IsReadOnly() const override;
+  void CopyFileLocal(
+      const base::FilePath& source_file_path,
+      const base::FilePath& device_file_path,
+      const CreateTemporaryFileCallback& create_temporary_file_callback,
+      const CopyFileProgressCallback& progress_callback,
+      const CopyFileLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) override;
   void CopyFileFromLocal(
       const base::FilePath& source_file_path,
       const base::FilePath& device_file_path,
@@ -267,10 +274,38 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // Called when FillFileCache() fails.
   void OnFillFileCacheFailed(base::File::Error error);
 
+  // Called when CreateTemporaryFile() completes for CopyFileLocal.
+  void OnDidCreateTemporaryFileToCopyFileLocal(
+      const base::FilePath& source_file_path,
+      const base::FilePath& device_file_path,
+      const CopyFileProgressCallback& progress_callback,
+      const CopyFileLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const base::FilePath& temporary_file_path);
+
+  // Called when CreateSnapshotFile() succeeds for CopyFileLocal.
+  void OnDidCreateSnapshotFileOfCopyFileLocal(
+      const base::FilePath& device_file_path,
+      const CopyFileProgressCallback& progress_callback,
+      const CopyFileLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const base::File::Info& file_info,
+      const base::FilePath& temporary_file_path);
+
+  // Called when CopyFileFromLocal() succeeds for CopyFileLocal.
+  void OnDidCopyFileFromLocalOfCopyFileLocal(
+      const CopyFileFromLocalSuccessCallback success_callback,
+      const base::FilePath& temporary_file_path);
+
   // Called when CopyFileFromLocal() succeeds.
   void OnDidCopyFileFromLocal(
       const CopyFileFromLocalSuccessCallback& success_callback,
       const int source_file_descriptor);
+
+  // Called when CopyFileLocal() fails.
+  void HandleCopyFileLocalError(const ErrorCallback& error_callback,
+                                const base::FilePath& temporary_file_path,
+                                const base::File::Error error);
 
   // Called when CopyFileFromLocal() fails.
   void HandleCopyFileFromLocalError(const ErrorCallback& error_callback,

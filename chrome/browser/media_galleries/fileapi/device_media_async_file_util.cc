@@ -79,6 +79,13 @@ void OnReadDirectoryError(const AsyncFileUtil::ReadDirectoryCallback& callback,
   callback.Run(error, AsyncFileUtil::EntryList(), false /*no more*/);
 }
 
+// Called when CopyFileLocal method call failed.
+void OnCopyFileLocalError(const AsyncFileUtil::StatusCallback& callback,
+                          base::File::Error error) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  callback.Run(error);
+}
+
 // Called when CopyInForeignFile method call failed.
 void OnCopyInForeignFileError(const AsyncFileUtil::StatusCallback& callback,
                               base::File::Error error) {
@@ -105,7 +112,6 @@ void OnDeleteDirectoryError(const AsyncFileUtil::StatusCallback& callback,
 // "profile_path/kDeviceMediaAsyncFileUtilTempDir" directory. Return the
 // snapshot file path or an empty path on failure.
 base::FilePath CreateSnapshotFileOnBlockingPool(
-    const base::FilePath& device_file_path,
     const base::FilePath& profile_path) {
   base::FilePath snapshot_file_path;
   base::FilePath media_file_system_dir_path =
@@ -390,8 +396,24 @@ void DeviceMediaAsyncFileUtil::CopyFileLocal(
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_SECURITY);
+
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(dest_url);
+  if (!delegate) {
+    OnCopyFileLocalError(callback, base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  if (delegate->IsReadOnly()) {
+    OnCopyFileLocalError(callback, base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  delegate->CopyFileLocal(
+      src_url.path(), dest_url.path(),
+      base::Bind(&CreateSnapshotFileOnBlockingPool, profile_path_),
+      progress_callback,
+      base::Bind(&DeviceMediaAsyncFileUtil::OnDidCopyFileLocal,
+                 weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&OnCopyFileLocalError, callback));
 }
 
 void DeviceMediaAsyncFileUtil::MoveFileLocal(
@@ -494,14 +516,10 @@ void DeviceMediaAsyncFileUtil::CreateSnapshotFile(
 
   scoped_refptr<base::SequencedTaskRunner> task_runner(context->task_runner());
   base::PostTaskAndReplyWithResult(
-      task_runner.get(),
-      FROM_HERE,
-      base::Bind(&CreateSnapshotFileOnBlockingPool, url.path(), profile_path_),
-      base::Bind(&OnSnapshotFileCreatedRunTask,
-                 base::Passed(&context),
-                 callback,
-                 url,
-                 validate_media_files()));
+      task_runner.get(), FROM_HERE,
+      base::Bind(&CreateSnapshotFileOnBlockingPool, profile_path_),
+      base::Bind(&OnSnapshotFileCreatedRunTask, base::Passed(&context),
+                 callback, url, validate_media_files()));
 }
 
 scoped_ptr<storage::FileStreamReader>
@@ -571,6 +589,13 @@ void DeviceMediaAsyncFileUtil::OnDidReadDirectory(
                  media_path_filter_wrapper_,
                  file_list),
       base::Bind(&OnDidCheckMediaForReadDirectory, callback, has_more));
+}
+
+void DeviceMediaAsyncFileUtil::OnDidCopyFileLocal(
+    const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  callback.Run(base::File::FILE_OK);
 }
 
 void DeviceMediaAsyncFileUtil::OnDidCopyInForeignFile(
