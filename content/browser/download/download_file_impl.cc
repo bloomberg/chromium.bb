@@ -59,12 +59,12 @@ DownloadFileImpl::DownloadFileImpl(
 }
 
 DownloadFileImpl::~DownloadFileImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   --number_active_objects_;
 }
 
 void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   update_timer_.reset(new base::RepeatingTimer<DownloadFileImpl>());
   DownloadInterruptReason result =
@@ -95,7 +95,7 @@ void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
 
 DownloadInterruptReason DownloadFileImpl::AppendDataToFile(
     const char* data, size_t data_len) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (!update_timer_->IsRunning()) {
     update_timer_->Start(FROM_HERE,
@@ -144,7 +144,7 @@ void DownloadFileImpl::RenameWithRetryInternal(
     int retries_left,
     base::TimeTicks time_of_first_failure,
     const RenameCompletionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   base::FilePath new_path(full_path);
 

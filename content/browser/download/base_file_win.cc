@@ -353,7 +353,7 @@ DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
 }
 
 DownloadInterruptReason BaseFile::AnnotateWithSourceInformation() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!detached_);
 
   bound_net_log_.BeginEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ANNOTATED);

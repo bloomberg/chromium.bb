@@ -44,7 +44,7 @@ bool ServiceWorkerDevToolsManager::ServiceWorkerIdentifier::Matches(
 
 // static
 ServiceWorkerDevToolsManager* ServiceWorkerDevToolsManager::GetInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return Singleton<ServiceWorkerDevToolsManager>::get();
 }
 
@@ -69,7 +69,7 @@ bool ServiceWorkerDevToolsManager::WorkerCreated(
     int worker_process_id,
     int worker_route_id,
     const ServiceWorkerIdentifier& service_worker_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = FindExistingWorkerAgentHost(service_worker_id);
   if (it == workers_.end()) {
@@ -97,7 +97,7 @@ bool ServiceWorkerDevToolsManager::WorkerCreated(
 void ServiceWorkerDevToolsManager::WorkerReadyForInspection(
     int worker_process_id,
     int worker_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = workers_.find(id);
   DCHECK(it != workers_.end());
@@ -115,14 +115,14 @@ void ServiceWorkerDevToolsManager::WorkerReadyForInspection(
 
 void ServiceWorkerDevToolsManager::WorkerStopIgnored(int worker_process_id,
                                                       int worker_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(pfeldman): Show a console message to tell the user that UA didn't
   // terminate the worker because devtools is attached.
 }
 
 void ServiceWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
                                                    int worker_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = workers_.find(id);
   DCHECK(it != workers_.end());
@@ -133,7 +133,7 @@ void ServiceWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
 }
 
 void ServiceWorkerDevToolsManager::RemoveInspectedWorkerData(WorkerId id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   workers_.erase(id);
 }
 

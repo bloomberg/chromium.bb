@@ -20,7 +20,7 @@ namespace content {
 SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(ui::Compositor* compositor)
     : compositor_(compositor), display_(gfx::GetXDisplay()), gc_(NULL) {
   // TODO(skaslev) Remove this when crbug.com/180702 is fixed.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   gc_ = XCreateGC(display_, compositor_->widget(), 0, NULL);
   if (!XGetWindowAttributes(display_, compositor_->widget(), &attributes_)) {
@@ -31,13 +31,13 @@ SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(ui::Compositor* compositor)
 }
 
 SoftwareOutputDeviceX11::~SoftwareOutputDeviceX11() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   XFreeGC(display_, gc_);
 }
 
 void SoftwareOutputDeviceX11::EndPaint(cc::SoftwareFrameData* frame_data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(surface_);
   DCHECK(frame_data);
 

@@ -98,7 +98,7 @@ void DownloadControllerAndroidImpl::CancelDeferredDownload(
 
 void DownloadControllerAndroidImpl::CreateGETDownload(
     int render_process_id, int render_view_id, int request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GlobalRequestID global_id(render_process_id, request_id);
 
   // We are yielding the UI thread and render_view_host may go away by
@@ -118,7 +118,7 @@ void DownloadControllerAndroidImpl::CreateGETDownload(
 void DownloadControllerAndroidImpl::PrepareDownloadInfo(
     const GlobalRequestID& global_id,
     const GetDownloadInfoCB& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::URLRequest* request =
       ResourceDispatcherHostImpl::Get()->GetURLRequest(global_id);
@@ -150,7 +150,7 @@ void DownloadControllerAndroidImpl::PrepareDownloadInfo(
 void DownloadControllerAndroidImpl::CheckPolicyAndLoadCookies(
     const DownloadInfoAndroid& info, const GetDownloadInfoCB& callback,
     const GlobalRequestID& global_id, const net::CookieList& cookie_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::URLRequest* request =
       ResourceDispatcherHostImpl::Get()->GetURLRequest(global_id);
@@ -170,7 +170,7 @@ void DownloadControllerAndroidImpl::CheckPolicyAndLoadCookies(
 void DownloadControllerAndroidImpl::DoLoadCookies(
     const DownloadInfoAndroid& info, const GetDownloadInfoCB& callback,
     const GlobalRequestID& global_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::CookieOptions options;
   options.set_include_httponly();
@@ -201,7 +201,7 @@ void DownloadControllerAndroidImpl::OnCookieResponse(
 void DownloadControllerAndroidImpl::StartDownloadOnUIThread(
     const GetDownloadInfoCB& callback,
     const DownloadInfoAndroid& info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(callback, info));
 }
@@ -209,7 +209,7 @@ void DownloadControllerAndroidImpl::StartDownloadOnUIThread(
 void DownloadControllerAndroidImpl::StartAndroidDownload(
     int render_process_id, int render_view_id,
     const DownloadInfoAndroid& info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = base::android::AttachCurrentThread();
 
   // Call newHttpGetDownload
@@ -260,7 +260,7 @@ void DownloadControllerAndroidImpl::StartAndroidDownload(
 
 void DownloadControllerAndroidImpl::OnDownloadStarted(
     DownloadItem* download_item) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!download_item->GetWebContents())
     return;
 
@@ -285,7 +285,7 @@ void DownloadControllerAndroidImpl::OnDownloadStarted(
 }
 
 void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (item->IsDangerous() && (item->GetState() != DownloadItem::CANCELLED))
     OnDangerousDownload(item);
 

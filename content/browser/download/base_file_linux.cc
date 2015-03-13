@@ -10,7 +10,7 @@
 namespace content {
 
 DownloadInterruptReason BaseFile::AnnotateWithSourceInformation() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!detached_);
 
   AddOriginMetadataToFile(full_path_, source_url_, referrer_url_);

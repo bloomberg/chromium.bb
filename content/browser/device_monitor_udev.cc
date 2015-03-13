@@ -45,7 +45,7 @@ DeviceMonitorLinux::~DeviceMonitorLinux() {
 }
 
 void DeviceMonitorLinux::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // We want to be notified of IO message loop destruction to delete |udev_|.
   base::MessageLoop::current()->AddDestructionObserver(this);
@@ -66,7 +66,7 @@ void DeviceMonitorLinux::WillDestroyCurrentMessageLoop() {
 }
 
 void DeviceMonitorLinux::OnDevicesChanged(udev_device* device) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(device);
 
   base::SystemMonitor::DeviceType device_type =

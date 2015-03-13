@@ -58,7 +58,7 @@ namespace content {
 namespace {
 
 bool DeleteDownloadedFile(const base::FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // Make sure we only delete files.
   if (base::DirectoryExists(path))
@@ -70,7 +70,7 @@ void DeleteDownloadedFileDone(
     base::WeakPtr<DownloadItemImpl> item,
     const base::Callback<void(bool)>& callback,
     bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (success && item.get())
     item->OnDownloadedFileRemoved();
   callback.Run(success);
@@ -81,14 +81,14 @@ void DeleteDownloadedFileDone(
 // at the end of the function.
 static base::FilePath DownloadFileDetach(
     scoped_ptr<DownloadFile> download_file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::FilePath full_path = download_file->FullPath();
   download_file->Detach();
   return full_path;
 }
 
 static void DownloadFileCancel(scoped_ptr<DownloadFile> download_file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   download_file->Cancel();
 }
 
@@ -272,7 +272,7 @@ DownloadItemImpl::DownloadItemImpl(
 }
 
 DownloadItemImpl::~DownloadItemImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Should always have been nuked before now, at worst in
   // DownloadManager shutdown.
@@ -284,25 +284,25 @@ DownloadItemImpl::~DownloadItemImpl() {
 }
 
 void DownloadItemImpl::AddObserver(Observer* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   observers_.AddObserver(observer);
 }
 
 void DownloadItemImpl::RemoveObserver(Observer* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   observers_.RemoveObserver(observer);
 }
 
 void DownloadItemImpl::UpdateObservers() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadUpdated(this));
 }
 
 void DownloadItemImpl::ValidateDangerousDownload() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!IsDone());
   DCHECK(IsDangerous());
 
@@ -328,7 +328,7 @@ void DownloadItemImpl::ValidateDangerousDownload() {
 void DownloadItemImpl::StealDangerousDownload(
     const AcquireFileCallback& callback) {
   DVLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(IsDangerous());
   if (download_file_) {
     BrowserThread::PostTaskAndReplyWithResult(
@@ -345,7 +345,7 @@ void DownloadItemImpl::StealDangerousDownload(
 }
 
 void DownloadItemImpl::Pause() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Ignore irrelevant states.
   if (state_ != IN_PROGRESS_INTERNAL || is_paused_)
@@ -357,7 +357,7 @@ void DownloadItemImpl::Pause() {
 }
 
 void DownloadItemImpl::Resume() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   switch (state_) {
     case IN_PROGRESS_INTERNAL:
       if (!is_paused_)
@@ -384,7 +384,7 @@ void DownloadItemImpl::Resume() {
 }
 
 void DownloadItemImpl::Cancel(bool user_cancel) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DVLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
   if (state_ != IN_PROGRESS_INTERNAL &&
@@ -435,7 +435,7 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
 
 void DownloadItemImpl::Remove() {
   DVLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   delegate_->AssertStateConsistent(this);
   Cancel(true);
@@ -447,7 +447,7 @@ void DownloadItemImpl::Remove() {
 }
 
 void DownloadItemImpl::OpenDownload() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!IsDone()) {
     // We don't honor the open_when_complete_ flag for temporary
@@ -472,7 +472,7 @@ void DownloadItemImpl::OpenDownload() {
 }
 
 void DownloadItemImpl::ShowDownloadInShell() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   delegate_->ShowDownloadInShell(this);
 }
@@ -641,7 +641,7 @@ bool DownloadItemImpl::GetFileExternallyRemoved() const {
 }
 
 void DownloadItemImpl::DeleteFile(const base::Callback<void(bool)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (GetState() != DownloadItem::COMPLETE) {
     // Pass a null WeakPtr so it doesn't call OnDownloadedFileRemoved.
     BrowserThread::PostTask(
@@ -779,7 +779,7 @@ WebContents* DownloadItemImpl::GetWebContents() const {
 }
 
 void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(AllDataSaved());
   DVLOG(20) << __FUNCTION__ << " danger_type=" << danger_type
             << " download=" << DebugString(true);
@@ -864,7 +864,7 @@ std::string DownloadItemImpl::DebugString(bool verbose) const {
 }
 
 DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // We can't continue without a handle on the intermediate file.
   // We also can't continue if we don't have some verifier to make sure
   // we're getting the same file.
@@ -938,7 +938,7 @@ DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
 
 void DownloadItemImpl::MergeOriginInfoOnResume(
     const DownloadCreateInfo& new_create_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(RESUMING_INTERNAL, state_);
   DCHECK(!new_create_info.url_chain.empty());
 
@@ -1004,7 +1004,7 @@ void DownloadItemImpl::SetTotalBytes(int64 total_bytes) {
 }
 
 void DownloadItemImpl::OnAllDataSaved(const std::string& final_hash) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK_EQ(IN_PROGRESS_INTERNAL, state_);
   DCHECK(!all_data_saved_);
@@ -1019,7 +1019,7 @@ void DownloadItemImpl::OnAllDataSaved(const std::string& final_hash) {
 }
 
 void DownloadItemImpl::MarkAsComplete() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DCHECK(all_data_saved_);
   end_time_ = base::Time::Now();
@@ -1029,7 +1029,7 @@ void DownloadItemImpl::MarkAsComplete() {
 void DownloadItemImpl::DestinationUpdate(int64 bytes_so_far,
                                          int64 bytes_per_sec,
                                          const std::string& hash_state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(20) << __FUNCTION__ << " so_far=" << bytes_so_far
             << " per_sec=" << bytes_per_sec << " download="
             << DebugString(true);
@@ -1086,7 +1086,7 @@ void DownloadItemImpl::DestinationCompleted(const std::string& final_hash) {
 
 void DownloadItemImpl::Init(bool active,
                             DownloadType download_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (active)
     RecordDownloadCount(START_COUNT);
@@ -1123,7 +1123,7 @@ void DownloadItemImpl::Init(bool active,
 void DownloadItemImpl::Start(
     scoped_ptr<DownloadFile> file,
     scoped_ptr<DownloadRequestHandleInterface> req_handle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!download_file_.get());
   DCHECK(file.get());
   DCHECK(req_handle.get());
@@ -1152,7 +1152,7 @@ void DownloadItemImpl::Start(
 
 void DownloadItemImpl::OnDownloadFileInitialized(
     DownloadInterruptReason result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
     Interrupt(result);
     // TODO(rdsmith/asanka): Arguably we should show this in the UI, but
@@ -1178,7 +1178,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
     TargetDisposition disposition,
     DownloadDangerType danger_type,
     const base::FilePath& intermediate_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If the |target_path| is empty, then we consider this download to be
   // canceled.
@@ -1241,7 +1241,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
 void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
     DownloadInterruptReason reason,
     const base::FilePath& full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
 
   if (DOWNLOAD_INTERRUPT_REASON_NONE != destination_error_) {
@@ -1275,7 +1275,7 @@ void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
 // downloads. SavePackage always uses its own Finish() to mark downloads
 // complete.
 void DownloadItemImpl::MaybeCompleteDownload() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_save_package_download_);
 
   if (!IsDownloadReadyForCompletion(
@@ -1299,7 +1299,7 @@ void DownloadItemImpl::MaybeCompleteDownload() {
 // Called by MaybeCompleteDownload() when it has determined that the download
 // is ready for completion.
 void DownloadItemImpl::OnDownloadCompleting() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (state_ != IN_PROGRESS_INTERNAL)
     return;
@@ -1336,7 +1336,7 @@ void DownloadItemImpl::OnDownloadCompleting() {
 void DownloadItemImpl::OnDownloadRenamedToFinalName(
     DownloadInterruptReason reason,
     const base::FilePath& full_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_save_package_download_);
 
   // If a cancel or interrupt hit, we'll cancel the DownloadFile, which
@@ -1387,14 +1387,14 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
 }
 
 void DownloadItemImpl::DelayedDownloadOpened(bool auto_opened) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   auto_opened_ = auto_opened;
   Completed();
 }
 
 void DownloadItemImpl::Completed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DVLOG(20) << __FUNCTION__ << "() " << DebugString(false);
 
@@ -1439,7 +1439,7 @@ void DownloadItemImpl::OnResumeRequestStarted(
 
 // An error occurred somewhere.
 void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(DOWNLOAD_INTERRUPT_REASON_NONE, reason);
 
   // Somewhat counter-intuitively, it is possible for us to receive an
@@ -1499,7 +1499,7 @@ void DownloadItemImpl::Interrupt(DownloadInterruptReason reason) {
 }
 
 void DownloadItemImpl::ReleaseDownloadFile(bool destroy_file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (destroy_file) {
     BrowserThread::PostTask(
@@ -1560,7 +1560,7 @@ bool DownloadItemImpl::IsDownloadReadyForCompletion(
 
 void DownloadItemImpl::TransitionTo(DownloadInternalState new_state,
                                     ShouldUpdateObservers notify_action) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (state_ == new_state)
     return;
@@ -1650,7 +1650,7 @@ void DownloadItemImpl::SetDangerType(DownloadDangerType danger_type) {
 }
 
 void DownloadItemImpl::SetFullPath(const base::FilePath& new_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(20) << __FUNCTION__ << "()"
             << " new_path = \"" << new_path.value() << "\""
             << " " << DebugString(true);
@@ -1665,7 +1665,7 @@ void DownloadItemImpl::SetFullPath(const base::FilePath& new_path) {
 
 void DownloadItemImpl::AutoResumeIfValid() {
   DVLOG(20) << __FUNCTION__ << "() " << DebugString(true);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ResumeMode mode = GetResumeMode();
 
   if (mode != RESUME_MODE_IMMEDIATE_RESTART &&
@@ -1679,7 +1679,7 @@ void DownloadItemImpl::AutoResumeIfValid() {
 }
 
 void DownloadItemImpl::ResumeInterruptedDownload() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If the flag for downloads resumption isn't enabled, ignore
   // this request.

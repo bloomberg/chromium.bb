@@ -41,7 +41,7 @@ void SynchronousInputEventFilter::SetBoundHandler(const Handler& handler) {
 
 void SynchronousInputEventFilter::SetBoundHandlerOnUIThread(
     const Handler& handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   handler_ = handler;
 }
 

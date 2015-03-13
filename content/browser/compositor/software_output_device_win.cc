@@ -19,19 +19,19 @@ SoftwareOutputDeviceWin::SoftwareOutputDeviceWin(ui::Compositor* compositor)
     : hwnd_(compositor->widget()),
       is_hwnd_composited_(false) {
   // TODO(skaslev) Remove this when crbug.com/180702 is fixed.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   LONG style = GetWindowLong(hwnd_, GWL_EXSTYLE);
   is_hwnd_composited_ = !!(style & WS_EX_COMPOSITED);
 }
 
 SoftwareOutputDeviceWin::~SoftwareOutputDeviceWin() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void SoftwareOutputDeviceWin::Resize(const gfx::Size& viewport_pixel_size,
                                      float scale_factor) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scale_factor_ = scale_factor;
 
@@ -47,7 +47,7 @@ void SoftwareOutputDeviceWin::Resize(const gfx::Size& viewport_pixel_size,
 }
 
 SkCanvas* SoftwareOutputDeviceWin::BeginPaint(const gfx::Rect& damage_rect) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(contents_);
 
   damage_rect_ = damage_rect;
@@ -55,7 +55,7 @@ SkCanvas* SoftwareOutputDeviceWin::BeginPaint(const gfx::Rect& damage_rect) {
 }
 
 void SoftwareOutputDeviceWin::EndPaint(cc::SoftwareFrameData* frame_data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(contents_);
   DCHECK(frame_data);
 

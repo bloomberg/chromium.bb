@@ -55,7 +55,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
 
   void InitiateDownload(base::File file,
                         const base::FilePath& file_path) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext());
 
@@ -72,26 +72,26 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
   }
 
   void Cancel() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (download_item_)
       download_item_->Cancel(true);
   }
 
   void Delete() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     delete this;
   }
 
  private:
   ~DragDownloadFileUI() override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (download_item_)
       download_item_->RemoveObserver(this);
   }
 
   void OnDownloadStarted(DownloadItem* item,
                          DownloadInterruptReason interrupt_reason) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!item) {
       DCHECK_NE(DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
       on_completed_loop_->PostTask(FROM_HERE, base::Bind(on_completed_, false));
@@ -104,7 +104,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
 
   // DownloadItem::Observer:
   void OnDownloadUpdated(DownloadItem* item) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(download_item_, item);
     DownloadItem::DownloadState state = download_item_->GetState();
     if (state == DownloadItem::COMPLETE ||
@@ -122,7 +122,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
   }
 
   void OnDownloadDestroyed(DownloadItem* item) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK_EQ(download_item_, item);
     if (!on_completed_.is_null()) {
       const bool is_complete =
@@ -236,7 +236,7 @@ void DragDownloadFile::CheckThread() {
 #if defined(OS_WIN)
   DCHECK(drag_message_loop_ == base::MessageLoop::current());
 #else
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #endif
 }
 

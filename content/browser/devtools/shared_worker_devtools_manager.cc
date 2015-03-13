@@ -13,7 +13,7 @@ namespace content {
 
 // static
 SharedWorkerDevToolsManager* SharedWorkerDevToolsManager::GetInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return Singleton<SharedWorkerDevToolsManager>::get();
 }
 
@@ -38,7 +38,7 @@ bool SharedWorkerDevToolsManager::WorkerCreated(
     int worker_process_id,
     int worker_route_id,
     const SharedWorkerInstance& instance) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it =
       FindExistingWorkerAgentHost(instance);
@@ -60,7 +60,7 @@ bool SharedWorkerDevToolsManager::WorkerCreated(
 void SharedWorkerDevToolsManager::WorkerReadyForInspection(
     int worker_process_id,
     int worker_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = workers_.find(id);
   DCHECK(it != workers_.end());
@@ -70,7 +70,7 @@ void SharedWorkerDevToolsManager::WorkerReadyForInspection(
 void SharedWorkerDevToolsManager::WorkerDestroyed(
     int worker_process_id,
     int worker_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const WorkerId id(worker_process_id, worker_route_id);
   AgentHostMap::iterator it = workers_.find(id);
   DCHECK(it != workers_.end());
@@ -80,7 +80,7 @@ void SharedWorkerDevToolsManager::WorkerDestroyed(
 }
 
 void SharedWorkerDevToolsManager::RemoveInspectedWorkerData(WorkerId id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   workers_.erase(id);
 }
 SharedWorkerDevToolsManager::SharedWorkerDevToolsManager() {

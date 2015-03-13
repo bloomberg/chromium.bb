@@ -253,7 +253,7 @@ void ServerWrapper::Close(int connection_id) {
 void TerminateOnUI(base::Thread* thread,
                    ServerWrapper* server_wrapper,
                    DevToolsHttpHandler::ServerSocketFactory* socket_factory) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (server_wrapper) {
     DCHECK(thread);
     thread->message_loop()->DeleteSoon(FROM_HERE, server_wrapper);
@@ -273,7 +273,7 @@ void ServerStartedOnUI(
     ServerWrapper* server_wrapper,
     DevToolsHttpHandler::ServerSocketFactory* socket_factory,
     scoped_ptr<net::IPEndPoint> ip_address) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (handler && thread && server_wrapper) {
     handler->ServerStarted(thread, server_wrapper, socket_factory,
                            ip_address.Pass());
@@ -321,7 +321,7 @@ void StartServerOnFile(
     const base::FilePath& output_directory,
     const base::FilePath& frontend_dir,
     bool bundles_resources) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   scoped_ptr<base::Thread> thread(new base::Thread(kDevToolsHandlerThreadName));
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -432,7 +432,7 @@ class BrowserTarget {
   }
 
   void HandleMessage(const std::string& message) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::string error_response;
     scoped_ptr<base::DictionaryValue> command =
         protocol_handler_->ParseCommand(message);
@@ -441,7 +441,7 @@ class BrowserTarget {
   }
 
   void Respond(const std::string& message) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&ServerWrapper::SendOverWebSocket,

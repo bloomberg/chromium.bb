@@ -24,7 +24,7 @@ BrowserPluginMessageFilter::BrowserPluginMessageFilter(int render_process_id)
 }
 
 BrowserPluginMessageFilter::~BrowserPluginMessageFilter() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 bool BrowserPluginMessageFilter::OnMessageReceived(
@@ -53,7 +53,7 @@ void BrowserPluginMessageFilter::OverrideThreadForMessage(
 
 void BrowserPluginMessageFilter::ForwardMessageToGuest(
     const IPC::Message& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto rph = RenderProcessHost::FromID(render_process_id_);
   if (!rph)
     return;

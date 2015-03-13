@@ -50,7 +50,7 @@ namespace {
 
 void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
                    uint32 download_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
   // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
   // we must down cast. RDHI is the only subclass of RDH as of 2012 May 4.
@@ -249,7 +249,7 @@ DownloadManagerImpl::~DownloadManagerImpl() {
 
 DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
     uint32 id, const DownloadCreateInfo& info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!ContainsKey(downloads_, id));
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
@@ -260,7 +260,7 @@ DownloadItemImpl* DownloadManagerImpl::CreateActiveItem(
 }
 
 void DownloadManagerImpl::GetNextId(const DownloadIdCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (delegate_) {
     delegate_->GetNextId(callback);
     return;
@@ -358,7 +358,7 @@ void DownloadManagerImpl::StartDownload(
     scoped_ptr<DownloadCreateInfo> info,
     scoped_ptr<ByteStreamReader> stream,
     const DownloadUrlParameters::OnStartedCallback& on_started) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(info);
   uint32 download_id = info->download_id;
   const bool new_download = (download_id == content::DownloadItem::kInvalidId);
@@ -382,7 +382,7 @@ void DownloadManagerImpl::StartDownloadWithId(
     const DownloadUrlParameters::OnStartedCallback& on_started,
     bool new_download,
     uint32 id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(content::DownloadItem::kInvalidId, id);
   DownloadItemImpl* download = NULL;
   if (new_download) {
@@ -445,7 +445,7 @@ void DownloadManagerImpl::StartDownloadWithId(
 }
 
 void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (DownloadMap::iterator it = downloads_.begin();
        it != downloads_.end(); ++it) {
     DownloadItemImpl* item = it->second;
@@ -454,7 +454,7 @@ void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
 }
 
 void DownloadManagerImpl::CheckForFileRemoval(DownloadItemImpl* download_item) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if ((download_item->GetState() == DownloadItem::COMPLETE) &&
       !download_item->GetFileExternallyRemoved() &&
       delegate_) {
@@ -467,7 +467,7 @@ void DownloadManagerImpl::CheckForFileRemoval(DownloadItemImpl* download_item) {
 
 void DownloadManagerImpl::OnFileExistenceChecked(uint32 download_id,
                                                  bool result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!result) {  // File does not exist.
     if (ContainsKey(downloads_, download_id))
       downloads_[download_id]->OnDownloadedFileRemoved();
@@ -484,7 +484,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItem(
     const std::string& mime_type,
     scoped_ptr<DownloadRequestHandleInterface> request_handle,
     const DownloadItemImplCreated& item_created) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetNextId(base::Bind(
       &DownloadManagerImpl::CreateSavePackageDownloadItemWithId,
       weak_factory_.GetWeakPtr(),
@@ -502,7 +502,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
     scoped_ptr<DownloadRequestHandleInterface> request_handle,
     const DownloadItemImplCreated& item_created,
     uint32 id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(content::DownloadItem::kInvalidId, id);
   DCHECK(!ContainsKey(downloads_, id));
   net::BoundNetLog bound_net_log =

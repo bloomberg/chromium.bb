@@ -25,7 +25,7 @@ void ChromeAppCacheService::InitializeOnIOThread(
     ResourceContext* resource_context,
     net::URLRequestContextGetter* request_context_getter,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   cache_path_ = cache_path;
   resource_context_ = resource_context;
@@ -51,7 +51,7 @@ void ChromeAppCacheService::InitializeOnIOThread(
 
 bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url,
                                             const GURL& first_party) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // We don't prompt for read access.
   return GetContentClient()->browser()->AllowAppCache(
       manifest_url, first_party, resource_context_);
@@ -59,7 +59,7 @@ bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url,
 
 bool ChromeAppCacheService::CanCreateAppCache(
     const GURL& manifest_url, const GURL& first_party) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return GetContentClient()->browser()->AllowAppCache(
       manifest_url, first_party, resource_context_);
 }

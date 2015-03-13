@@ -46,7 +46,7 @@ void CallStartedCBOnUIThread(
     const DownloadUrlParameters::OnStartedCallback& started_cb,
     DownloadItem* item,
     DownloadInterruptReason interrupt_reason) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (started_cb.is_null())
     return;
@@ -60,7 +60,7 @@ static void StartOnUIThread(
     DownloadResourceHandler::DownloadTabInfo* tab_info,
     scoped_ptr<ByteStreamReader> stream,
     const DownloadUrlParameters::OnStartedCallback& started_cb) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   DownloadManager* download_manager = info->request_handle.GetDownloadManager();
   if (!download_manager) {
@@ -84,7 +84,7 @@ static void StartOnUIThread(
 void InitializeDownloadTabInfoOnUIThread(
     const DownloadRequestHandle& request_handle,
     DownloadResourceHandler::DownloadTabInfo* tab_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents = request_handle.GetWebContents();
   if (web_contents) {
@@ -150,7 +150,7 @@ bool DownloadResourceHandler::OnRequestRedirected(
 bool DownloadResourceHandler::OnResponseStarted(
     ResourceResponse* response,
     bool* defer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // There can be only one (call)
   DCHECK(!on_response_started_called_);
   on_response_started_called_ = true;
@@ -260,7 +260,7 @@ bool DownloadResourceHandler::OnResponseStarted(
 void DownloadResourceHandler::CallStartedCB(
     DownloadItem* item,
     DownloadInterruptReason interrupt_reason) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (started_cb_.is_null())
     return;
   BrowserThread::PostTask(
@@ -285,7 +285,7 @@ bool DownloadResourceHandler::OnBeforeNetworkStart(const GURL& url,
 bool DownloadResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
                                          int* buf_size,
                                          int min_size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(buf && buf_size);
   DCHECK(!read_buffer_.get());
 
@@ -298,7 +298,7 @@ bool DownloadResourceHandler::OnWillRead(scoped_refptr<net::IOBuffer>* buf,
 
 // Pass the buffer to the download file writer.
 bool DownloadResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(read_buffer_.get());
 
   base::TimeTicks now(base::TimeTicks::Now());
@@ -340,7 +340,7 @@ void DownloadResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     const std::string& security_info,
     bool* defer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int response_code = status.is_success() ? request()->GetResponseCode() : 0;
   DVLOG(20) << __FUNCTION__ << "()" << DebugString()
             << " status.status() = " << status.status()
@@ -463,13 +463,13 @@ void DownloadResourceHandler::OnDataDownloaded(int bytes_downloaded) {
 }
 
 void DownloadResourceHandler::PauseRequest() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ++pause_count_;
 }
 
 void DownloadResourceHandler::ResumeRequest() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_LT(0, pause_count_);
 
   --pause_count_;
@@ -489,7 +489,7 @@ void DownloadResourceHandler::ResumeRequest() {
 }
 
 void DownloadResourceHandler::CancelRequest() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const ResourceRequestInfo* info = GetRequestInfo();
   ResourceDispatcherHostImpl::Get()->CancelRequest(
@@ -517,7 +517,7 @@ std::string DownloadResourceHandler::DebugString() const {
 }
 
 DownloadResourceHandler::~DownloadResourceHandler() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // This won't do anything if the callback was called before.
   // If it goes through, it will likely be because OnWillStart() returned

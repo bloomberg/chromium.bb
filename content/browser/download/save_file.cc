@@ -23,14 +23,14 @@ SaveFile::SaveFile(const SaveFileCreateInfo* info, bool calculate_hash)
             base::File(),
             net::BoundNetLog()),
       info_(info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   DCHECK(info);
   DCHECK(info->path.empty());
 }
 
 SaveFile::~SaveFile() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 }
 
 DownloadInterruptReason SaveFile::Initialize() {

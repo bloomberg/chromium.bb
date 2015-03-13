@@ -98,7 +98,7 @@ MHTMLGenerationManager::~MHTMLGenerationManager() {
 void MHTMLGenerationManager::SaveMHTML(WebContents* web_contents,
                                        const base::FilePath& file,
                                        const GenerateMHTMLCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   int job_id = NewJob(web_contents, callback);
 
@@ -113,7 +113,7 @@ void MHTMLGenerationManager::StreamMHTML(
     WebContents* web_contents,
     base::File browser_file,
     const GenerateMHTMLCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   int job_id = NewJob(web_contents, callback);
 
@@ -134,7 +134,7 @@ void MHTMLGenerationManager::MHTMLGenerated(int job_id, int64 mhtml_data_size) {
 void MHTMLGenerationManager::CreateFile(
     int job_id, const base::FilePath& file_path,
     base::ProcessHandle renderer_process) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::File browser_file(
       file_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   if (!browser_file.IsValid()) {
@@ -160,7 +160,7 @@ void MHTMLGenerationManager::FileAvailable(
     int job_id,
     base::File browser_file,
     IPC::PlatformFileForTransit renderer_file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!browser_file.IsValid()) {
     LOG(ERROR) << "Failed to create file";
     JobFinished(job_id, -1);
@@ -189,7 +189,7 @@ void MHTMLGenerationManager::FileAvailable(
 }
 
 void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   IDToJobMap::iterator iter = id_to_job_.find(job_id);
   if (iter == id_to_job_.end()) {
     NOTREACHED();
@@ -208,7 +208,7 @@ void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
 }
 
 void MHTMLGenerationManager::CloseFile(base::File file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   file.Close();
 }
 
@@ -224,7 +224,7 @@ int MHTMLGenerationManager::NewJob(WebContents* web_contents,
 }
 
 void MHTMLGenerationManager::RenderProcessExited(Job* job) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (IDToJobMap::iterator it = id_to_job_.begin(); it != id_to_job_.end();
        ++it) {
     if (it->second == job) {

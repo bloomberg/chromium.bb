@@ -67,12 +67,12 @@ scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
 DevToolsAgentHostImpl::DevToolsAgentHostImpl()
     : id_(base::GenerateGUID()),
       client_(NULL) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   g_instances.Get()[id_] = this;
 }
 
 DevToolsAgentHostImpl::~DevToolsAgentHostImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   g_instances.Get().erase(g_instances.Get().find(id_));
 }
 

@@ -210,13 +210,13 @@ class CrossSiteTransferTest : public ContentBrowserTest {
   }
 
   void InjectResourceDisptcherHostDelegate() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     old_delegate_ = ResourceDispatcherHostImpl::Get()->delegate();
     ResourceDispatcherHostImpl::Get()->SetDelegate(&tracking_delegate_);
   }
 
   void RestoreResourceDisptcherHostDelegate() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     ResourceDispatcherHostImpl::Get()->SetDelegate(old_delegate_);
     old_delegate_ = NULL;
   }

@@ -291,7 +291,7 @@ void SavePackage::InternalInit() {
 
 bool SavePackage::Init(
     const SavePackageDownloadCreatedCallback& download_created_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Set proper running state.
   if (wait_state_ != INITIALIZE)
     return false;
@@ -322,7 +322,7 @@ bool SavePackage::Init(
 void SavePackage::InitWithDownloadItem(
     const SavePackageDownloadCreatedCallback& download_created_callback,
     DownloadItemImpl* item) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(item);
   download_ = item;
   download_->AddObserver(this);

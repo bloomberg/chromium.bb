@@ -45,7 +45,7 @@ SystemHotkeyHelperMac::~SystemHotkeyHelperMac() {
 }
 
 void SystemHotkeyHelperMac::LoadSystemHotkeys() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   std::string library_path(base::mac::GetUserLibraryPath().value());
   NSString* expanded_file_path =
@@ -67,7 +67,7 @@ void SystemHotkeyHelperMac::LoadSystemHotkeys() {
 }
 
 void SystemHotkeyHelperMac::FileDidLoad(NSDictionary* dictionary) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   bool success = map()->ParseDictionary(dictionary);
   UMA_HISTOGRAM_BOOLEAN("OSX.SystemHotkeyMap.LoadSuccess", success);

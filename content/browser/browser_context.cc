@@ -113,7 +113,7 @@ void BrowserContext::GarbageCollectStoragePartitions(
 
 DownloadManager* BrowserContext::GetDownloadManager(
     BrowserContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!context->GetUserData(kDownloadManagerKeyName)) {
     ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
     DCHECK(rdh);
@@ -210,7 +210,7 @@ StoragePartition* BrowserContext::GetDefaultStoragePartition(
 void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
                                             const char* data, size_t length,
                                             const BlobCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ChromeBlobStorageContext* blob_context =
       ChromeBlobStorageContext::GetFor(browser_context);
@@ -229,7 +229,7 @@ void BrowserContext::CreateFileBackedBlob(
     int64_t size,
     const base::Time& expected_modification_time,
     const BlobCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ChromeBlobStorageContext* blob_context =
       ChromeBlobStorageContext::GetFor(browser_context);
@@ -248,7 +248,7 @@ void BrowserContext::DeliverPushMessage(
     int64 service_worker_registration_id,
     const std::string& data,
     const base::Callback<void(PushDeliveryStatus)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PushMessagingRouter::DeliverMessage(
       browser_context, origin, service_worker_registration_id, data, callback);
 }

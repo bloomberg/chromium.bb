@@ -46,7 +46,7 @@ void DevToolsNetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
 
 void DevToolsNetLogObserver::OnAddURLRequestEntry(
     const net::NetLog::Entry& entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   bool is_begin = entry.phase() == net::NetLog::PHASE_BEGIN;
   bool is_end = entry.phase() == net::NetLog::PHASE_END;
@@ -174,7 +174,7 @@ void DevToolsNetLogObserver::Attach() {
 }
 
 void DevToolsNetLogObserver::Detach() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (instance_) {
     // Safest not to do this in the destructor to maintain thread safety across
@@ -186,7 +186,7 @@ void DevToolsNetLogObserver::Detach() {
 }
 
 DevToolsNetLogObserver* DevToolsNetLogObserver::GetInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   return instance_;
 }

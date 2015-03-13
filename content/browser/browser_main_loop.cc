@@ -352,7 +352,7 @@ class BrowserMainLoop::MemoryObserver : public base::MessageLoop::TaskObserver {
 // BrowserMainLoop construction / destruction =============================
 
 BrowserMainLoop* BrowserMainLoop::GetInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return g_current_browser_main_loop;
 }
 

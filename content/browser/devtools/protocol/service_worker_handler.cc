@@ -142,11 +142,11 @@ ServiceWorkerHandler::ContextObserver::ContextObserver(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     base::WeakPtr<ServiceWorkerHandler> handler)
     : context_(context), handler_(handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void ServiceWorkerHandler::ContextObserver::Start() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&ServiceWorkerHandler::ContextObserver::
                                          GetStoredRegistrationsOnIOThread,
@@ -154,14 +154,14 @@ void ServiceWorkerHandler::ContextObserver::Start() {
 }
 
 void ServiceWorkerHandler::ContextObserver::Stop() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ServiceWorkerHandler::ContextObserver::StopOnIOThread, this));
 }
 
 void ServiceWorkerHandler::ContextObserver::GetStoredRegistrationsOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context_->context()->storage()->GetAllRegistrations(base::Bind(
       &ServiceWorkerHandler::ContextObserver::OnStoredRegistrationsOnIOThread,
       this));
@@ -169,7 +169,7 @@ void ServiceWorkerHandler::ContextObserver::GetStoredRegistrationsOnIOThread() {
 
 void ServiceWorkerHandler::ContextObserver::OnStoredRegistrationsOnIOThread(
     const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context_->AddObserver(this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -186,7 +186,7 @@ void ServiceWorkerHandler::ContextObserver::OnStoredRegistrationsOnIOThread(
 }
 
 void ServiceWorkerHandler::ContextObserver::StopOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context_->RemoveObserver(this);
 }
 
@@ -194,7 +194,7 @@ ServiceWorkerHandler::ContextObserver::~ContextObserver() {
 }
 
 void ServiceWorkerHandler::ContextObserver::OnVersionUpdated(int64 version_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   content::ServiceWorkerVersion* version =
       context_->context()->GetLiveVersion(version_id);
   if (!version)
@@ -235,7 +235,7 @@ void ServiceWorkerHandler::ContextObserver::OnVersionStateChanged(
 void ServiceWorkerHandler::ContextObserver::OnRegistrationStored(
     int64 registration_id,
     const GURL& pattern) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   content::ServiceWorkerRegistration* registration =
       context_->context()->GetLiveRegistration(registration_id);
   DCHECK(registration);
@@ -250,7 +250,7 @@ void ServiceWorkerHandler::ContextObserver::OnRegistrationStored(
 void ServiceWorkerHandler::ContextObserver::OnRegistrationDeleted(
     int64 registration_id,
     const GURL& pattern) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ServiceWorkerHandler::OnWorkerRegistrationDeleted, handler_,

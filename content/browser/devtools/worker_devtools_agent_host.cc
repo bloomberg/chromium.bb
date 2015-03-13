@@ -55,7 +55,7 @@ void WorkerDevToolsAgentHost::OnClientDetached() {
 
 bool WorkerDevToolsAgentHost::OnMessageReceived(
     const IPC::Message& msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WorkerDevToolsAgentHost, msg)
   IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,

@@ -16,7 +16,7 @@ namespace content {
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 
 void EnableIPCLoggingForChildProcesses(bool enabled) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserChildProcessHostIterator i;  // default constr references a singleton
   while (!i.Done()) {

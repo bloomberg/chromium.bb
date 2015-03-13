@@ -14,7 +14,7 @@ DeviceLightMessageFilter::DeviceLightMessageFilter()
 }
 
 DeviceLightMessageFilter::~DeviceLightMessageFilter() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (is_started_) {
     DeviceInertialSensorService::GetInstance()->RemoveConsumer(
         CONSUMER_TYPE_LIGHT);
