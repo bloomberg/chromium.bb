@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "extensions/browser/api/web_view/web_view_internal_api.h"
+#include "extensions/browser/api/guest_view/web_view/web_view_internal_api.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 
 namespace extensions {

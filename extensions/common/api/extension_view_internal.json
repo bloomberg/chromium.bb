@@ -7,7 +7,7 @@
     "namespace": "extensionViewInternal",
     "description": "none",
     "compiler_options": {
-      "implemented_in": "extensions/browser/api/extension_view/extension_view_internal_api.h"
+      "implemented_in": "extensions/browser/api/guest_view/extension_view/extension_view_internal_api.h"
     },
     "functions": [
       {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/extension_view/extension_view_internal_api.h"
+#include "extensions/browser/api/guest_view/extension_view/extension_view_internal_api.h"
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

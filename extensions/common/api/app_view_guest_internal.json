@@ -6,7 +6,7 @@
   {
     "namespace": "appViewGuestInternal",
     "compiler_options": {
-      "implemented_in": "extensions/browser/api/app_view/app_view_guest_internal_api.h"
+      "implemented_in": "extensions/browser/api/guest_view/app_view/app_view_guest_internal_api.h"
     },
     "description": "none",
     "functions": [
