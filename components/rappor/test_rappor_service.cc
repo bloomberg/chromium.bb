@@ -34,6 +34,18 @@ TestRapporService::TestRapporService()
 
 TestRapporService::~TestRapporService() {}
 
+void TestRapporService::RecordSample(const std::string& metric_name,
+                                     RapporType type,
+                                     const std::string& sample) {
+  // Save the recorded sample to the local structure.
+  RapporSample rappor_sample;
+  rappor_sample.type = type;
+  rappor_sample.value = sample;
+  samples_[metric_name] = rappor_sample;
+  // Original version is still called.
+  RapporService::RecordSample(metric_name, type, sample);
+}
+
 int TestRapporService::GetReportsCount() {
   RapporReports reports;
   ExportMetrics(&reports);
@@ -42,6 +54,18 @@ int TestRapporService::GetReportsCount() {
 
 void TestRapporService::GetReports(RapporReports* reports) {
   ExportMetrics(reports);
+}
+
+bool TestRapporService::GetRecordedSampleForMetric(
+    const std::string& metric_name,
+    std::string* sample,
+    RapporType* type) {
+  SamplesMap::iterator it = samples_.find(metric_name);
+  if (it == samples_.end())
+    return false;
+  *sample = it->second.value;
+  *type = it->second.type;
+  return true;
 }
 
 // Cancel the next call to OnLogInterval.
