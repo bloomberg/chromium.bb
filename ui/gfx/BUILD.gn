@@ -439,6 +439,7 @@ test("gfx_unittests") {
       "image/image_mac_unittest.mm",
       "image/image_util_unittest.cc",
       "mac/coordinate_conversion_unittest.mm",
+      "nine_image_painter_unittest.cc",
       "platform_font_mac_unittest.mm",
       "range/range_mac_unittest.mm",
       "range/range_unittest.cc",
@@ -492,6 +493,8 @@ test("gfx_unittests") {
 
   if (use_aura) {
     sources -= [ "screen_unittest.cc" ]
+  } else {
+    sources -= [ "nine_image_painter_unittest.cc" ]
   }
 
   if (is_win) {

@@ -63,6 +63,7 @@
         'image/image_mac_unittest.mm',
         'image/image_util_unittest.cc',
         'mac/coordinate_conversion_unittest.mm',
+        'nine_image_painter_unittest.cc',
         'platform_font_linux_unittest.cc',
         'platform_font_mac_unittest.mm',
         'range/range_mac_unittest.mm',
@@ -118,6 +119,10 @@
         ['use_aura==1', {
           'sources!': [
             'screen_unittest.cc',
+          ],
+        },{
+          'sources!': [
+            'nine_image_painter_unittest.cc',
           ],
         }],
         ['OS == "win"', {

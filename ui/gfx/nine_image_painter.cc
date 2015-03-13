@@ -60,21 +60,12 @@ NineImagePainter::NineImagePainter(const std::vector<ImageSkia>& images) {
 
 NineImagePainter::NineImagePainter(const ImageSkia& image,
                                    const Insets& insets) {
-  DCHECK_GE(image.width(), insets.width());
-  DCHECK_GE(image.height(), insets.height());
+  std::vector<gfx::Rect> regions;
+  GetSubsetRegions(image, insets, &regions);
+  DCHECK_EQ(9u, regions.size());
 
-  // Extract subsets of the original image to match the |images_| format.
-  const int x[] =
-      { 0, insets.left(), image.width() - insets.right(), image.width() };
-  const int y[] =
-      { 0, insets.top(), image.height() - insets.bottom(), image.height() };
-
-  for (size_t j = 0; j < 3; ++j) {
-    for (size_t i = 0; i < 3; ++i) {
-      images_[i + j * 3] = ImageSkiaOperations::ExtractSubset(image,
-          Rect(x[i], y[j], x[i + 1] - x[i], y[j + 1] - y[j]));
-    }
-  }
+  for (size_t i = 0; i < 9; ++i)
+    images_[i] = ImageSkiaOperations::ExtractSubset(image, regions[i]);
 }
 
 NineImagePainter::~NineImagePainter() {
@@ -173,6 +164,28 @@ void NineImagePainter::Paint(Canvas* canvas,
 
   Fill(canvas, images_[8], width_in_pixels - i8w, height_in_pixels - i8h, i8w,
        i8h, paint);
+}
+
+// static
+void NineImagePainter::GetSubsetRegions(const ImageSkia& image,
+                                        const Insets& insets,
+                                        std::vector<Rect>* regions) {
+  DCHECK_GE(image.width(), insets.width());
+  DCHECK_GE(image.height(), insets.height());
+
+  std::vector<Rect> result(9);
+
+  const int x[] = {
+      0, insets.left(), image.width() - insets.right(), image.width()};
+  const int y[] = {
+      0, insets.top(), image.height() - insets.bottom(), image.height()};
+
+  for (size_t j = 0; j < 3; ++j) {
+    for (size_t i = 0; i < 3; ++i) {
+      result[i + j * 3] = Rect(x[i], y[j], x[i + 1] - x[i], y[j + 1] - y[j]);
+    }
+  }
+  result.swap(*regions);
 }
 
 }  // namespace gfx

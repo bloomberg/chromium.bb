@@ -5,6 +5,8 @@
 #ifndef UI_GFX_NINE_IMAGE_PAINTER_H_
 #define UI_GFX_NINE_IMAGE_PAINTER_H_
 
+#include <vector>
+
 #include "base/logging.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/image/image_skia.h"
@@ -27,6 +29,14 @@ class GFX_EXPORT NineImagePainter {
   void Paint(Canvas* canvas, const Rect& bounds, uint8 alpha);
 
  private:
+  friend class NineImagePainterTest;
+  FRIEND_TEST_ALL_PREFIXES(NineImagePainterTest, GetSubsetRegions);
+
+  // Gets the regions for the subimages into |regions|.
+  static void GetSubsetRegions(const ImageSkia& image,
+                               const Insets& insets,
+                               std::vector<Rect>* regions);
+
   // Images are numbered as depicted below.
   //  ____________________
   // |__i0__|__i1__|__i2__|
