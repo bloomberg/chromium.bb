@@ -367,7 +367,19 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
     distance.set_x(-distance_length);
   else if (direction == "left")
     distance.set_x(distance_length);
-  else {
+  else if (direction == "upleft") {
+    distance.set_y(distance_length);
+    distance.set_x(distance_length);
+  } else if (direction == "upright") {
+    distance.set_y(distance_length);
+    distance.set_x(-distance_length);
+  } else if (direction == "downleft") {
+    distance.set_y(-distance_length);
+    distance.set_x(distance_length);
+  } else if (direction == "downright") {
+    distance.set_y(-distance_length);
+    distance.set_x(-distance_length);
+  } else {
     return false;
   }
   gesture_params->distances.push_back(distance);
