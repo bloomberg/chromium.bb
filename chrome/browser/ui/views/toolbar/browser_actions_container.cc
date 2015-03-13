@@ -449,7 +449,8 @@ void BrowserActionsContainer::Layout() {
 }
 
 void BrowserActionsContainer::OnMouseEntered(const ui::MouseEvent& event) {
-  if (!shown_bubble_ && !toolbar_action_views_.empty()) {
+  if (!shown_bubble_ && !toolbar_action_views_.empty() &&
+      toolbar_actions_bar_->ShouldShowInfoBubble()) {
     ExtensionToolbarIconSurfacingBubble* bubble =
         new ExtensionToolbarIconSurfacingBubble(toolbar_action_views_[0],
                                                 toolbar_actions_bar_.get());
