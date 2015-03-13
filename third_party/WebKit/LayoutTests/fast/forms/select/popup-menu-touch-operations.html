@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script src="../resources/common.js"></script>
+<script src="../resources/picker-common.js"></script>
+</head>
+<body>
+<select id="menu">
+  <option>foo</option>
+  <option selected>bar</option>
+  <option>baz</option>
+</select>
+<script>
+var menuElement = document.getElementById('menu');
+var picker = null;
+eventSender.clearTouchPoints();
+openPicker(menuElement, function () {
+    picker = window.internals.pagePopupWindow.global.picker;
+    shouldBeEqualToString('picker._selectElement.value', '1');
+    shouldBeEqualToString('menuElement.value', 'bar');
+
+    var position = elementCenterPosition(picker._selectElement.children[0]);
+    eventSender.addTouchPoint(position[0], position[1]);
+    eventSender.touchStart();
+    shouldBeEqualToString('picker._selectElement.value', '0');
+
+    position = elementCenterPosition(picker._selectElement.children[2]);
+    eventSender.updateTouchPoint(0, position[0], position[1]);
+    eventSender.touchMove();
+    shouldBeEqualToString('picker._selectElement.value', '2');
+
+    eventSender.releaseTouchPoint(0);
+    eventSender.touchEnd();
+
+    shouldBeNull('window.internals.pagePopupWindow');
+    shouldBeEqualToString('menuElement.value', 'baz');
+
+    finishJSTest();
+}, function () {
+    testFailed('picker didn\'t open')
+    finishJSTest();
+});
+</script>
+</body>
+</html>

@@ -134,11 +134,16 @@ function cumulativeOffset(element) {
     return [x, y];
 }
 
-function hoverOverElement(element) {
+function elementCenterPosition(element) {
     var offset = cumulativeOffset(element);
     var centerX = offset[0] + element.offsetWidth / 2;
     var centerY = offset[1] + element.offsetHeight / 2;
-    eventSender.mouseMoveTo(centerX, centerY);
+    return [centerX, centerY];
+}
+
+function hoverOverElement(element) {
+    var center = elementCenterPosition(element);
+    eventSender.mouseMoveTo(center[0], center[1]);
 }
 
 function clickElement(element) {

@@ -47,12 +47,17 @@ function ListPicker(element, config) {
     this._selectElement.focus();
     this._selectElement.addEventListener("mouseover", this._handleMouseOver.bind(this), false);
     this._selectElement.addEventListener("mouseup", this._handleMouseUp.bind(this), false);
+    this._selectElement.addEventListener("touchstart", this._handleTouchStart.bind(this), false);
     this._selectElement.addEventListener("keydown", this._handleKeyDown.bind(this), false);
     this._selectElement.addEventListener("change", this._handleChange.bind(this), false);
     window.addEventListener("message", this._handleWindowMessage.bind(this), false);
     window.addEventListener("mousemove", this._handleWindowMouseMove.bind(this), false);
+    window.addEventListener("touchmove", this._handleWindowTouchMove.bind(this), false);
+    window.addEventListener("touchend", this._handleWindowTouchEnd.bind(this), false);
     this.lastMousePositionX = Infinity;
     this.lastMousePositionY = Infinity;
+
+    this._trackingTouchId = null;
 
     // Not sure why but we need to delay this call so that offsetHeight is
     // accurate. We wait for the window to resize to work around an issue
@@ -86,17 +91,58 @@ ListPicker.prototype._handleWindowMouseMove = function (event) {
 };
 
 ListPicker.prototype._handleMouseOver = function(event) {
-    if (event.toElement.tagName !== "OPTION")
-        return;
-    var savedScrollTop = this._selectElement.scrollTop;
-    event.toElement.selected = true;
-    this._selectElement.scrollTop = savedScrollTop;
+    this._highlightOption(event.toElement);
 };
 
 ListPicker.prototype._handleMouseUp = function(event) {
     if (event.target.tagName !== "OPTION")
         return;
     window.pagePopupController.setValueAndClosePopup(0, this._selectElement.value);
+};
+
+ListPicker.prototype._handleTouchStart = function(event) {
+    if (this._trackingTouchId !== null)
+        return;
+    var touch = event.touches[0];
+    this._trackingTouchId = touch.identifier;
+    this._highlightOption(touch.target);
+};
+
+ListPicker.prototype._handleWindowTouchMove = function(event) {
+    if (this._trackingTouchId === null)
+        return;
+    var touch = this._getTouchForId(event.touches, this._trackingTouchId);
+    if (!touch)
+        return;
+    this._highlightOption(document.elementFromPoint(touch.clientX, touch.clientY));
+};
+
+ListPicker.prototype._handleWindowTouchEnd = function(event) {
+    if (this._trackingTouchId === null)
+        return;
+    var touch = this._getTouchForId(event.changedTouches, this._trackingTouchId);
+    if (!touch)
+        return;
+    var target = document.elementFromPoint(touch.clientX, touch.clientY)
+    if (target.tagName === "OPTION")
+        window.pagePopupController.setValueAndClosePopup(0, this._selectElement.value);
+    this._trackingTouchId = null;
+};
+
+ListPicker.prototype._getTouchForId = function (touchList, id) {
+    for (var i = 0; i < touchList.length; i++) {
+        if (touchList[i].identifier === id)
+            return touchList[i];
+    }
+    return null;
+};
+
+ListPicker.prototype._highlightOption = function(target) {
+    if (target.tagName !== "OPTION" || target.selected)
+        return;
+    var savedScrollTop = this._selectElement.scrollTop;
+    target.selected = true;
+    this._selectElement.scrollTop = savedScrollTop;
 };
 
 ListPicker.prototype._handleChange = function(event) {
