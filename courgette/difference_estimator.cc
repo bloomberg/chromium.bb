@@ -41,6 +41,8 @@ class DifferenceEstimator::Base {
   explicit Base(const Region& region) : region_(region) { }
 
   void Init() {
+    if (region_.length() < kTupleSize)
+      return;
     const uint8* start = region_.start();
     const uint8* end = region_.end() - (kTupleSize - 1);
     for (const uint8* p = start;  p < end;  ++p) {
@@ -96,16 +98,18 @@ DifferenceEstimator::Subject* DifferenceEstimator::MakeSubject(
 
 size_t DifferenceEstimator::Measure(Base* base, Subject* subject) {
   size_t mismatches = 0;
-  const uint8* start = subject->region().start();
-  const uint8* end = subject->region().end() - (kTupleSize - 1);
+  if (subject->region().length() >= kTupleSize) {
+    const uint8* start = subject->region().start();
+    const uint8* end = subject->region().end() - (kTupleSize - 1);
 
-  const uint8* p = start;
-  while (p < end) {
-    size_t hash = HashTuple(p);
-    if (base->hashes_.find(hash) == base->hashes_.end()) {
-      ++mismatches;
+    const uint8* p = start;
+    while (p < end) {
+      size_t hash = HashTuple(p);
+      if (base->hashes_.find(hash) == base->hashes_.end()) {
+        ++mismatches;
+      }
+      p += 1;
     }
-    p += 1;
   }
 
   if (mismatches == 0) {
