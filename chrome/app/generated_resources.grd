@@ -6504,6 +6504,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_DELAY_AGNOSTIC_AEC_DESCRIPTION" desc="Description for the flag to enable DA-AEC in WebRTC.">
         Enable Delay Agnostic AEC in WebRTC. Use if reported system delays are untrusted. Specifically applies to Mac OS X and CrOS, but also if audio is routed through a different device like TV.
       </message>
+      <message name="IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_NAME" desc="Name of the flag to enable out-of-process V8 proxy resolver.">
+        Enable Out-of-process V8 Proxy Resolver.
+      </message>
+      <message name="IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_DESCRIPTION" desc="Description for the flag to enable out-of-process V8 proxy resolver.">
+        Enable Out-of-process V8 Proxy Resolver. Runs the V8 proxy resolver in a utility process instead of inside the browser process.
+      </message>
 
       <!-- Data Reduction Proxy -->
       <if expr="is_android">

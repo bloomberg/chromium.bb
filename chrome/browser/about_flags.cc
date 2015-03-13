@@ -2252,6 +2252,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kOzoneTestSingleOverlaySupport)
   },
 #endif  // defined(OS_CHROMEOS) && defined(USE_OZONE)
+  {
+    "v8-pac-mojo-out-of-process",
+    IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_NAME,
+    IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kV8PacMojoOutOfProcess),
+  },
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in

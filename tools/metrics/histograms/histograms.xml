@@ -52693,6 +52693,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-328361990" label="enable-experimental-extension-apis"/>
   <int value="-320820051" label="enable-zero-copy"/>
   <int value="-314910380" label="disable-distance-field-text"/>
+  <int value="-311148335" label="v8-pac-mojo-out-of-process"/>
   <int value="-300018686" label="disable-cloud-import"/>
   <int value="-288316828" label="enable-delegated-renderer"/>
   <int value="-278347667" label="default-tile-height"/>
