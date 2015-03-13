@@ -6,6 +6,7 @@
 
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
+#include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,6 +15,9 @@ using remoting::protocol::InputStub;
 using remoting::protocol::KeyEvent;
 using remoting::protocol::MockInputStub;
 using remoting::protocol::MouseEvent;
+using remoting::protocol::test::EqualsKeyEventWithNumLock;
+using remoting::protocol::test::EqualsMouseButtonEvent;
+using remoting::protocol::test::EqualsMouseMoveEvent;
 
 namespace remoting {
 
@@ -28,34 +32,17 @@ const unsigned int kUsbFunctionKey    = 0x07003a;  // F1
 const unsigned int kUsbExtendedKey    = 0x070049;  // Insert
 const unsigned int kUsbOtherKey       = 0x07002b;  // Tab
 
-// A hardcoded value used to verify |lock_states| is preserved.
-static const uint32 kTestLockStates = protocol::KeyEvent::LOCK_STATES_NUMLOCK;
-
-MATCHER_P2(EqualsKeyEvent, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
-         arg.pressed() == pressed &&
-         arg.lock_states() == kTestLockStates;
-}
-
 KeyEvent MakeKeyEvent(uint32 keycode, bool pressed) {
   KeyEvent event;
   event.set_usb_keycode(keycode);
   event.set_pressed(pressed);
-  event.set_lock_states(kTestLockStates);
+  event.set_lock_states(protocol::KeyEvent::LOCK_STATES_NUMLOCK);
   return event;
 }
 
 void PressAndReleaseKey(InputStub* input_stub, uint32 keycode) {
   input_stub->InjectKeyEvent(MakeKeyEvent(keycode, true));
   input_stub->InjectKeyEvent(MakeKeyEvent(keycode, false));
-}
-
-MATCHER_P2(EqualsMouseMoveEvent, x, y, "") {
-  return arg.x() == x && arg.y() == y;
-}
-
-MATCHER_P2(EqualsMouseButtonEvent, button, button_down, "") {
-  return arg.button() == button && arg.button_down() == button_down;
 }
 
 static MouseEvent MakeMouseMoveEvent(int x, int y) {
@@ -84,11 +71,15 @@ TEST(NormalizingInputFilterCrosTest, PressReleaseOsKey) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftOsKey, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftOsKey, false)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, false)));
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbRightOsKey, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbRightOsKey, false)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOsKey, true)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightOsKey, false)));
   }
 
   // Inject press & release events for left & right OSKeys.
@@ -105,9 +96,12 @@ TEST(NormalizingInputFilterCrosTest, OSKeyRepeats) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftOsKey, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftOsKey, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftOsKey, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
   }
 
   // Inject a press and repeats for the left OSKey, but don't release it, and
@@ -127,8 +121,10 @@ TEST(NormalizingInputFilterCrosTest, FunctionKey) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbFunctionKey, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbFunctionKey, false)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbFunctionKey, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(kUsbFunctionKey, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
@@ -147,8 +143,10 @@ TEST(NormalizingInputFilterCrosTest, ExtendedKey) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbExtendedKey, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbExtendedKey, false)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbExtendedKey, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(kUsbExtendedKey, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
@@ -167,10 +165,14 @@ TEST(NormalizingInputFilterCrosTest, OtherKey) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftOsKey, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbOtherKey, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbOtherKey, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftOsKey, false)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbOtherKey, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbOtherKey, false)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
@@ -189,12 +191,18 @@ TEST(NormalizingInputFilterCrosTest, ExtendedThenOtherKey) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbExtendedKey, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbExtendedKey, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftOsKey, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbOtherKey, true)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbOtherKey, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftOsKey, false)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbExtendedKey, true)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(kUsbExtendedKey, false)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbOtherKey, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbOtherKey, false)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
@@ -213,9 +221,11 @@ TEST(NormalizingInputFilterCrosTest, MouseEvent) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftOsKey, true)));
+    EXPECT_CALL(stub,
+                InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, true)));
     EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseMoveEvent(0, 0)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftOsKey, false)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftOsKey, false)));
   }
 
   // Hold the left OSKey while pressing & releasing the function key.
@@ -233,12 +243,14 @@ TEST(NormalizingInputFilterCrosTest, LeftAltClick) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftAltKey, true)));
-    EXPECT_CALL(stub, InjectMouseEvent(
-        EqualsMouseButtonEvent(MouseEvent::BUTTON_LEFT, true)));
-    EXPECT_CALL(stub, InjectMouseEvent(
-        EqualsMouseButtonEvent(MouseEvent::BUTTON_LEFT, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbLeftAltKey, false)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftAltKey, true)));
+    EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseButtonEvent(
+                          MouseEvent::BUTTON_LEFT, true)));
+    EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseButtonEvent(
+                          MouseEvent::BUTTON_LEFT, false)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbLeftAltKey, false)));
   }
 
   // Hold the left alt key while left-clicking. ChromeOS will rewrite this as
@@ -260,12 +272,14 @@ TEST(NormalizingInputFilterCrosTest, RightAltClick) {
   {
     InSequence s;
 
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbRightAltKey, true)));
-    EXPECT_CALL(stub, InjectMouseEvent(
-        EqualsMouseButtonEvent(MouseEvent::BUTTON_RIGHT, true)));
-    EXPECT_CALL(stub, InjectMouseEvent(
-        EqualsMouseButtonEvent(MouseEvent::BUTTON_RIGHT, false)));
-    EXPECT_CALL(stub, InjectKeyEvent(EqualsKeyEvent(kUsbRightAltKey, false)));
+    EXPECT_CALL(
+        stub, InjectKeyEvent(EqualsKeyEventWithNumLock(kUsbRightAltKey, true)));
+    EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseButtonEvent(
+                          MouseEvent::BUTTON_RIGHT, true)));
+    EXPECT_CALL(stub, InjectMouseEvent(EqualsMouseButtonEvent(
+                          MouseEvent::BUTTON_RIGHT, false)));
+    EXPECT_CALL(stub, InjectKeyEvent(
+                          EqualsKeyEventWithNumLock(kUsbRightAltKey, false)));
   }
 
   // Hold the right alt key while left-clicking. ChromeOS will rewrite this as

@@ -48,6 +48,9 @@ using testing::ReturnRef;
 
 namespace remoting {
 
+using protocol::test::EqualsTouchEvent;
+using protocol::test::EqualsTouchEventTypeAndId;
+
 namespace {
 
 // Receives messages sent from the network process to the daemon.
@@ -674,9 +677,10 @@ TEST_F(IpcDesktopEnvironmentTest, InjectTouchEvent) {
   // Expect that the event gets propagated to remote_input_injector_.
   // And one more call for ReleaseAll().
   EXPECT_CALL(*remote_input_injector_,
-              InjectTouchEvent(protocol::TouchEventEqual(event)));
+              InjectTouchEvent(EqualsTouchEvent(event)));
   EXPECT_CALL(*remote_input_injector_,
-              InjectTouchEvent(protocol::IsTouchCancelEvent()));
+              InjectTouchEvent(EqualsTouchEventTypeAndId(
+                  protocol::TouchEvent::TOUCH_POINT_CANCEL, 0u)));
 
   // Send the touch event.
   input_injector_->InjectTouchEvent(event);

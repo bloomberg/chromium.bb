@@ -6,6 +6,7 @@
 
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
+#include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,22 +19,7 @@ namespace remoting {
 using protocol::InputStub;
 using protocol::KeyEvent;
 using protocol::MockInputStub;
-
-// A hardcoded value used to verify |lock_states| is preserved.
-static const uint32 kTestLockStates = protocol::KeyEvent::LOCK_STATES_CAPSLOCK;
-
-MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
-         arg.pressed() == pressed &&
-         // |lock_states| is hardcoded to kTestLockStates in all key events.
-         arg.lock_states() == kTestLockStates;
-}
-
-MATCHER_P2(EqualsUsbEventLockStates, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
-         arg.pressed() == pressed &&
-         arg.lock_states() == kTestLockStates;
-}
+using protocol::test::EqualsKeyEventWithCapsLock;
 
 static KeyEvent NewUsbEvent(uint32 usb_keycode,
                             bool pressed,
@@ -47,8 +33,10 @@ static KeyEvent NewUsbEvent(uint32 usb_keycode,
 }
 
 static void PressAndReleaseUsb(InputStub* input_stub, uint32 usb_keycode) {
-  input_stub->InjectKeyEvent(NewUsbEvent(usb_keycode, true, kTestLockStates));
-  input_stub->InjectKeyEvent(NewUsbEvent(usb_keycode, false, kTestLockStates));
+  input_stub->InjectKeyEvent(
+      NewUsbEvent(usb_keycode, true, KeyEvent::LOCK_STATES_CAPSLOCK));
+  input_stub->InjectKeyEvent(
+      NewUsbEvent(usb_keycode, false, KeyEvent::LOCK_STATES_CAPSLOCK));
 }
 
 static void InjectTestSequence(InputStub* input_stub) {
@@ -65,12 +53,15 @@ TEST(KeyEventMapperTest, NoMappingOrTrapping) {
     InSequence s;
 
     for (int i = 1; i <= 5; ++i) {
-      EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(i, true)));
-      EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(i, false)));
+      EXPECT_CALL(mock_stub,
+                  InjectKeyEvent(EqualsKeyEventWithCapsLock(i, true)));
+      EXPECT_CALL(mock_stub,
+                  InjectKeyEvent(EqualsKeyEventWithCapsLock(i, false)));
     }
 
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, false)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(3, true)));
+    EXPECT_CALL(mock_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(3, false)));
   }
 
   InjectTestSequence(&event_mapper);
@@ -88,16 +79,21 @@ TEST(KeyEventMapperTest, RemapKeys) {
   {
     InSequence s;
 
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(1, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(1, false)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, false)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(4, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(4, false)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, false)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, false)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(1, true)));
+    EXPECT_CALL(mock_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(1, false)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(2, true)));
+    EXPECT_CALL(mock_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(2, false)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(4, true)));
+    EXPECT_CALL(mock_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(4, false)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(3, true)));
+    EXPECT_CALL(mock_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(3, false)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(3, true)));
+    EXPECT_CALL(mock_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(3, false)));
   }
 
   InjectTestSequence(&event_mapper);
@@ -124,17 +120,22 @@ TEST(KeyEventMapperTest, TrapKeys) {
   {
     InSequence s;
 
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(1, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(1, false)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, false)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(4, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(4, false)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(1, true)));
+    EXPECT_CALL(mock_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(1, false)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(2, true)));
+    EXPECT_CALL(mock_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(2, false)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(4, true)));
+    EXPECT_CALL(mock_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(4, false)));
 
-    EXPECT_CALL(trap_stub, InjectKeyEvent(EqualsUsbEvent(4, true)));
-    EXPECT_CALL(trap_stub, InjectKeyEvent(EqualsUsbEvent(4, false)));
-    EXPECT_CALL(trap_stub, InjectKeyEvent(EqualsUsbEvent(5, true)));
-    EXPECT_CALL(trap_stub, InjectKeyEvent(EqualsUsbEvent(5, false)));
+    EXPECT_CALL(trap_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(4, true)));
+    EXPECT_CALL(trap_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(4, false)));
+    EXPECT_CALL(trap_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(5, true)));
+    EXPECT_CALL(trap_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(5, false)));
   }
 
   InjectTestSequence(&event_mapper);

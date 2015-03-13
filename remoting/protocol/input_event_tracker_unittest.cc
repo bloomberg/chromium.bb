@@ -6,6 +6,7 @@
 
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
+#include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,33 +17,14 @@ using ::testing::InSequence;
 namespace remoting {
 namespace protocol {
 
+using test::EqualsKeyEventWithCapsLock;
+using test::EqualsMouseEvent;
+using test::EqualsKeyEventWithoutLockStates;
+
 namespace {
 
 static const MouseEvent::MouseButton BUTTON_LEFT = MouseEvent::BUTTON_LEFT;
 static const MouseEvent::MouseButton BUTTON_RIGHT = MouseEvent::BUTTON_RIGHT;
-
-// A hardcoded value used to verify |lock_states| is preserved.
-static const uint32 kTestLockStates = protocol::KeyEvent::LOCK_STATES_CAPSLOCK;
-
-// Verify the usb key code and the "pressed" state.
-// Also verify that the event doesn't have |lock_states| set.
-MATCHER_P2(EqualsUsbEventWithoutLockStates, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
-         arg.pressed() == pressed &&
-         !arg.has_lock_states();
-}
-
-// Verify the usb key code, the "pressed" state, and the lock states.
-MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
-          arg.pressed() == pressed &&
-          arg.lock_states() == kTestLockStates;
-}
-
-MATCHER_P4(EqualsMouseEvent, x, y, button, down, "") {
-  return arg.x() == x && arg.y() == y && arg.button() == button &&
-         arg.button_down() == down;
-}
 
 MATCHER_P2(TouchPointIdsAndTypeEqual, ids, type, "") {
   if (arg.event_type() != type)
@@ -55,24 +37,24 @@ MATCHER_P2(TouchPointIdsAndTypeEqual, ids, type, "") {
   return touch_ids == ids;
 }
 
-static KeyEvent NewUsbEvent(uint32 usb_keycode,
-                            bool pressed) {
+static KeyEvent NewUsbEvent(uint32 usb_keycode, bool pressed) {
   KeyEvent event;
   event.set_usb_keycode(usb_keycode);
   event.set_pressed(pressed);
   // Create all key events with the hardcoded |lock_state| in this test.
-  event.set_lock_states(kTestLockStates);
+  event.set_lock_states(KeyEvent::LOCK_STATES_CAPSLOCK);
   return event;
 }
 
-static void PressAndReleaseUsb(InputStub* input_stub,
-                               uint32 usb_keycode) {
+static void PressAndReleaseUsb(InputStub* input_stub, uint32 usb_keycode) {
   input_stub->InjectKeyEvent(NewUsbEvent(usb_keycode, true));
   input_stub->InjectKeyEvent(NewUsbEvent(usb_keycode, false));
 }
 
-static MouseEvent NewMouseEvent(int x, int y,
-    MouseEvent::MouseButton button, bool down) {
+static MouseEvent NewMouseEvent(int x,
+                                int y,
+                                MouseEvent::MouseButton button,
+                                bool down) {
   MouseEvent event;
   event.set_x(x);
   event.set_y(y);
@@ -96,15 +78,17 @@ TEST(InputEventTrackerTest, NothingToRelease) {
   {
     InSequence s;
 
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(1, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(1, false)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, true)));
-    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, false)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(1, true)));
+    EXPECT_CALL(mock_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(1, false)));
+    EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(2, true)));
+    EXPECT_CALL(mock_stub,
+                InjectKeyEvent(EqualsKeyEventWithCapsLock(2, false)));
 
     EXPECT_CALL(mock_stub,
-        InjectMouseEvent(EqualsMouseEvent(0, 0, BUTTON_LEFT, true)));
+                InjectMouseEvent(EqualsMouseEvent(0, 0, BUTTON_LEFT, true)));
     EXPECT_CALL(mock_stub,
-        InjectMouseEvent(EqualsMouseEvent(0, 0, BUTTON_LEFT, false)));
+                InjectMouseEvent(EqualsMouseEvent(0, 0, BUTTON_LEFT, false)));
   }
 
   PressAndReleaseUsb(&input_tracker, 1);
@@ -125,27 +109,30 @@ TEST(InputEventTrackerTest, ReleaseAllKeys) {
   {
     InSequence s;
 
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(1, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(1, false)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, false)));
+    injects += EXPECT_CALL(mock_stub,
+                           InjectKeyEvent(EqualsKeyEventWithCapsLock(3, true)));
+    injects += EXPECT_CALL(mock_stub,
+                           InjectKeyEvent(EqualsKeyEventWithCapsLock(1, true)));
+    injects += EXPECT_CALL(
+        mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(1, false)));
+    injects += EXPECT_CALL(mock_stub,
+                           InjectKeyEvent(EqualsKeyEventWithCapsLock(2, true)));
+    injects += EXPECT_CALL(
+        mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(2, false)));
 
-    injects += EXPECT_CALL(mock_stub,
-        InjectMouseEvent(EqualsMouseEvent(0, 0, BUTTON_RIGHT, true)));
-    injects += EXPECT_CALL(mock_stub,
-        InjectMouseEvent(EqualsMouseEvent(0, 0, BUTTON_LEFT, true)));
-    injects += EXPECT_CALL(mock_stub,
-        InjectMouseEvent(EqualsMouseEvent(1, 1, BUTTON_LEFT, false)));
+    injects += EXPECT_CALL(mock_stub, InjectMouseEvent(EqualsMouseEvent(
+                                          0, 0, BUTTON_RIGHT, true)));
+    injects += EXPECT_CALL(
+        mock_stub, InjectMouseEvent(EqualsMouseEvent(0, 0, BUTTON_LEFT, true)));
+    injects += EXPECT_CALL(mock_stub, InjectMouseEvent(EqualsMouseEvent(
+                                          1, 1, BUTTON_LEFT, false)));
   }
 
   // The key should be released but |lock_states| should not be set.
-  EXPECT_CALL(mock_stub,
-              InjectKeyEvent(EqualsUsbEventWithoutLockStates(3, false)))
-      .After(injects);
-  EXPECT_CALL(mock_stub,
-              InjectMouseEvent(EqualsMouseEvent(1, 1, BUTTON_RIGHT, false)))
-      .After(injects);
+  EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsKeyEventWithoutLockStates(
+                             3, false))).After(injects);
+  EXPECT_CALL(mock_stub, InjectMouseEvent(EqualsMouseEvent(
+                             1, 1, BUTTON_RIGHT, false))).After(injects);
 
   input_tracker.InjectKeyEvent(NewUsbEvent(3, true));
   PressAndReleaseUsb(&input_tracker, 1);
@@ -172,27 +159,34 @@ TEST(InputEventTrackerTest, TrackUsbKeyEvents) {
   {
     InSequence s;
 
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(6, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(7, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(5, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(5, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, false)));
+    injects += EXPECT_CALL(mock_stub,
+                           InjectKeyEvent(EqualsKeyEventWithCapsLock(3, true)));
+    injects += EXPECT_CALL(mock_stub,
+                           InjectKeyEvent(EqualsKeyEventWithCapsLock(6, true)));
+    injects += EXPECT_CALL(mock_stub,
+                           InjectKeyEvent(EqualsKeyEventWithCapsLock(7, true)));
+    injects += EXPECT_CALL(mock_stub,
+                           InjectKeyEvent(EqualsKeyEventWithCapsLock(5, true)));
+    injects += EXPECT_CALL(mock_stub,
+                           InjectKeyEvent(EqualsKeyEventWithCapsLock(5, true)));
+    injects += EXPECT_CALL(mock_stub,
+                           InjectKeyEvent(EqualsKeyEventWithCapsLock(2, true)));
+    injects += EXPECT_CALL(
+        mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(2, false)));
   }
 
   // The key should be auto released with no |lock_states|.
   EXPECT_CALL(mock_stub,
-              InjectKeyEvent(EqualsUsbEventWithoutLockStates(3, false)))
+              InjectKeyEvent(EqualsKeyEventWithoutLockStates(3, false)))
       .After(injects);
   EXPECT_CALL(mock_stub,
-              InjectKeyEvent(EqualsUsbEventWithoutLockStates(6, false)))
+              InjectKeyEvent(EqualsKeyEventWithoutLockStates(6, false)))
       .After(injects);
   EXPECT_CALL(mock_stub,
-              InjectKeyEvent(EqualsUsbEventWithoutLockStates(7, false)))
+              InjectKeyEvent(EqualsKeyEventWithoutLockStates(7, false)))
       .After(injects);
   EXPECT_CALL(mock_stub,
-              InjectKeyEvent(EqualsUsbEventWithoutLockStates(5, false)))
+              InjectKeyEvent(EqualsKeyEventWithoutLockStates(5, false)))
       .After(injects);
 
   input_tracker.InjectKeyEvent(NewUsbEvent(3, true));
@@ -222,16 +216,21 @@ TEST(InputEventTrackerTest, InvalidEventsNotTracked) {
   {
     InSequence s;
 
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(3, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(1, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(1, false)));
+    injects += EXPECT_CALL(mock_stub,
+                           InjectKeyEvent(EqualsKeyEventWithCapsLock(3, true)));
+    injects += EXPECT_CALL(mock_stub,
+                           InjectKeyEvent(EqualsKeyEventWithCapsLock(1, true)));
+    injects += EXPECT_CALL(
+        mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(1, false)));
     injects += EXPECT_CALL(mock_stub, InjectKeyEvent(_)).Times(2);
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, true)));
-    injects += EXPECT_CALL(mock_stub, InjectKeyEvent(EqualsUsbEvent(2, false)));
+    injects += EXPECT_CALL(mock_stub,
+                           InjectKeyEvent(EqualsKeyEventWithCapsLock(2, true)));
+    injects += EXPECT_CALL(
+        mock_stub, InjectKeyEvent(EqualsKeyEventWithCapsLock(2, false)));
   }
 
   EXPECT_CALL(mock_stub,
-              InjectKeyEvent(EqualsUsbEventWithoutLockStates(3, false)))
+              InjectKeyEvent(EqualsKeyEventWithoutLockStates(3, false)))
       .After(injects);
 
   input_tracker.InjectKeyEvent(NewUsbEvent(3, true));

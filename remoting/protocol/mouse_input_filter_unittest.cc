@@ -6,6 +6,7 @@
 
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
+#include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -16,9 +17,7 @@ using ::testing::InSequence;
 namespace remoting {
 namespace protocol {
 
-MATCHER_P2(EqualsMouseMoveEvent, x, y, "") {
-  return arg.x() == x && arg.y() == y;
-}
+using test::EqualsMouseMoveEvent;
 
 static MouseEvent MouseMoveEvent(int x, int y) {
   MouseEvent event;

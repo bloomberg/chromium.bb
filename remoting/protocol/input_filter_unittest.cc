@@ -6,6 +6,7 @@
 
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
+#include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,18 +15,9 @@ using ::testing::_;
 namespace remoting {
 namespace protocol {
 
-MATCHER_P2(EqualsKeyEvent, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == static_cast<uint32>(usb_keycode) &&
-         arg.pressed() == pressed;
-}
-
-MATCHER_P(EqualsTextEvent, text, "") {
-  return arg.text() == text;
-}
-
-MATCHER_P2(EqualsMouseMoveEvent, x, y, "") {
-  return arg.x() == x && arg.y() == y;
-}
+using test::EqualsKeyEvent;
+using test::EqualsMouseMoveEvent;
+using test::EqualsTextEvent;
 
 static KeyEvent NewKeyEvent(uint32 usb_keycode, bool pressed) {
   KeyEvent event;
@@ -88,5 +80,5 @@ TEST(InputFilterTest, IgnoreEventsIfNotConfigured) {
   InjectTestSequence(&input_filter);
 }
 
-} // namespace protocol
-} // namespace remoting
+}  // namespace protocol
+}  // namespace remoting

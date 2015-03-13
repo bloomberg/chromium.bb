@@ -22,6 +22,7 @@
 #include "remoting/host/host_extension_session.h"
 #include "remoting/host/host_mock_objects.h"
 #include "remoting/protocol/protocol_mock_objects.h"
+#include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,13 +32,17 @@
 
 namespace remoting {
 
-using protocol::MockConnectionToClient;
 using protocol::MockClientStub;
+using protocol::MockConnectionToClient;
 using protocol::MockHostStub;
 using protocol::MockInputStub;
 using protocol::MockSession;
 using protocol::MockVideoStub;
 using protocol::SessionConfig;
+using protocol::test::EqualsClipboardEvent;
+using protocol::test::EqualsMouseButtonEvent;
+using protocol::test::EqualsMouseMoveEvent;
+using protocol::test::EqualsKeyEvent;
 
 using testing::_;
 using testing::AnyNumber;
@@ -87,19 +92,6 @@ ACTION_P2(SetCapabilities, client_session, capabilities) {
   protocol::Capabilities capabilities_message;
   capabilities_message.set_capabilities(capabilities);
   client_session->SetCapabilities(capabilities_message);
-}
-
-MATCHER_P2(EqualsUsbEvent, usb_keycode, pressed, "") {
-  return arg.usb_keycode() == (unsigned int)usb_keycode &&
-         arg.pressed() == pressed;
-}
-
-MATCHER_P2(EqualsMouseEvent, x, y, "") {
-  return arg.x() == x && arg.y() == y;
-}
-
-MATCHER_P2(EqualsMouseButtonEvent, button, down, "") {
-  return arg.button() == button && arg.button_down() == down;
 }
 
 // Matches a |protocol::Capabilities| argument against a list of capabilities
@@ -249,12 +241,12 @@ void ClientSessionTest::CreateClientSession() {
 
   client_session_.reset(new ClientSession(
       &session_event_handler_,
-      task_runner_, // Audio thread.
-      task_runner_, // Input thread.
-      task_runner_, // Capture thread.
-      task_runner_, // Encode thread.
-      task_runner_, // Network thread.
-      task_runner_, // UI thread.
+      task_runner_,  // Audio thread.
+      task_runner_,  // Input thread.
+      task_runner_,  // Capture thread.
+      task_runner_,  // Encode thread.
+      task_runner_,  // Network thread.
+      task_runner_,  // UI thread.
       connection.Pass(),
       desktop_environment_factory_.get(),
       base::TimeDelta(),
@@ -290,7 +282,7 @@ DesktopEnvironment* ClientSessionTest::CreateDesktopEnvironment() {
           Invoke(this, &ClientSessionTest::CreateMouseCursorMonitor));
   EXPECT_CALL(*desktop_environment, GetCapabilities())
       .Times(AtMost(1))
-       .WillOnce(Return(kDefaultTestCapability));
+      .WillOnce(Return(kDefaultTestCapability));
   EXPECT_CALL(*desktop_environment, SetCapabilities(_))
       .Times(AtMost(1));
 
@@ -338,18 +330,13 @@ void ClientSessionTest::SetSendMessageAndDisconnectExpectation(
 
   Expectation authenticated =
       EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
-      .WillOnce(Return(true));
+          .WillOnce(Return(true));
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
       .After(authenticated)
       .WillOnce(DoAll(
           DeliverClientMessage(client_session_.get(), message),
           InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
           InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
-}
-
-MATCHER_P2(EqualsClipboardEvent, m, d, "") {
-  return (strcmp(arg.mime_type().c_str(), m) == 0 &&
-      memcmp(arg.data().data(), d, arg.data().size()) == 0);
 }
 
 TEST_F(ClientSessionTest, ClipboardStubFilter) {
@@ -371,15 +358,17 @@ TEST_F(ClientSessionTest, ClipboardStubFilter) {
   {
     EXPECT_CALL(*input_injector_, InjectClipboardEvent(EqualsClipboardEvent(
                                       kMimeTypeTextUtf8, "a")));
-    EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(1, true)));
-    EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(1, false)));
-    EXPECT_CALL(*input_injector_, InjectMouseEvent(EqualsMouseEvent(100, 101)));
+    EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsKeyEvent(1, true)));
+    EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsKeyEvent(1, false)));
+    EXPECT_CALL(*input_injector_,
+                InjectMouseEvent(EqualsMouseMoveEvent(100, 101)));
 
     EXPECT_CALL(*input_injector_, InjectClipboardEvent(EqualsClipboardEvent(
                                       kMimeTypeTextUtf8, "c")));
-    EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(3, true)));
-    EXPECT_CALL(*input_injector_, InjectMouseEvent(EqualsMouseEvent(300, 301)));
-    EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(3, false)));
+    EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsKeyEvent(3, true)));
+    EXPECT_CALL(*input_injector_,
+                InjectMouseEvent(EqualsMouseMoveEvent(300, 301)));
+    EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsKeyEvent(3, false)));
   }
 
   ConnectClientSession();
@@ -491,12 +480,11 @@ TEST_F(ClientSessionTest, LocalInputTest) {
           // eventually (via dependency injection, not sleep!)
           InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
           InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
-  EXPECT_CALL(*input_injector_, InjectMouseEvent(EqualsMouseEvent(100, 101)))
-      .InSequence(s);
-  EXPECT_CALL(*input_injector_, InjectMouseEvent(EqualsMouseEvent(200, 201)))
-      .InSequence(s);
-  EXPECT_CALL(session_event_handler_, OnSessionClosed(_))
-      .InSequence(s);
+  EXPECT_CALL(*input_injector_,
+              InjectMouseEvent(EqualsMouseMoveEvent(100, 101))).InSequence(s);
+  EXPECT_CALL(*input_injector_,
+              InjectMouseEvent(EqualsMouseMoveEvent(200, 201))).InSequence(s);
+  EXPECT_CALL(session_event_handler_, OnSessionClosed(_)).InSequence(s);
 
   ConnectClientSession();
 }
@@ -519,8 +507,7 @@ TEST_F(ClientSessionTest, RestoreEventState) {
   Expectation authenticated =
       EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
           .WillOnce(Return(true));
-  EXPECT_CALL(*input_injector_, StartPtr(_))
-      .After(authenticated);
+  EXPECT_CALL(*input_injector_, StartPtr(_)).After(authenticated);
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
       .After(authenticated);
 
@@ -532,27 +519,25 @@ TEST_F(ClientSessionTest, RestoreEventState) {
       .InSequence(s)
       .After(authenticated)
       .WillOnce(DoAll(
-          InjectKeyEvent(connection_, key1),
-          InjectKeyEvent(connection_, key2),
+          InjectKeyEvent(connection_, key1), InjectKeyEvent(connection_, key2),
           InjectMouseEvent(connection_, mousedown),
           InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
           InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
-  EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(1, true)))
+  EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsKeyEvent(1, true)))
       .InSequence(s);
-  EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(2, true)))
+  EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsKeyEvent(2, true)))
       .InSequence(s);
   EXPECT_CALL(*input_injector_, InjectMouseEvent(EqualsMouseButtonEvent(
       protocol::MouseEvent::BUTTON_LEFT, true)))
       .InSequence(s);
-  EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(1, false)))
+  EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsKeyEvent(1, false)))
       .InSequence(s);
-  EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsUsbEvent(2, false)))
+  EXPECT_CALL(*input_injector_, InjectKeyEvent(EqualsKeyEvent(2, false)))
       .InSequence(s);
   EXPECT_CALL(*input_injector_, InjectMouseEvent(EqualsMouseButtonEvent(
       protocol::MouseEvent::BUTTON_LEFT, false)))
       .InSequence(s);
-  EXPECT_CALL(session_event_handler_, OnSessionClosed(_))
-      .InSequence(s);
+  EXPECT_CALL(session_event_handler_, OnSessionClosed(_)).InSequence(s);
 
   ConnectClientSession();
 }
@@ -563,12 +548,10 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   Expectation authenticated =
       EXPECT_CALL(session_event_handler_, OnSessionAuthenticated(_))
           .WillOnce(Return(true));
-  EXPECT_CALL(*input_injector_, StartPtr(_))
-      .After(authenticated);
+  EXPECT_CALL(*input_injector_, StartPtr(_)).After(authenticated);
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
       .After(authenticated);
-  EXPECT_CALL(session_event_handler_, OnSessionClosed(_))
-      .After(authenticated);
+  EXPECT_CALL(session_event_handler_, OnSessionClosed(_)).After(authenticated);
 
   Expectation connected = authenticated;
 
@@ -595,8 +578,8 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
         // received.
         connected =
             EXPECT_CALL(*input_injector_,
-                        InjectMouseEvent(EqualsMouseEvent(expected_event.x(),
-                                                          expected_event.y())))
+                        InjectMouseEvent(EqualsMouseMoveEvent(
+                            expected_event.x(), expected_event.y())))
                 .After(connected)
                 .WillOnce(InjectMouseEvent(connection_, injected_event));
       }
@@ -607,9 +590,8 @@ TEST_F(ClientSessionTest, ClampMouseEvents) {
   }
 
   // Shutdown the connection once the last event has been received.
-  EXPECT_CALL(*input_injector_,
-              InjectMouseEvent(EqualsMouseEvent(expected_event.x(),
-                                                expected_event.y())))
+  EXPECT_CALL(*input_injector_, InjectMouseEvent(EqualsMouseMoveEvent(
+                                    expected_event.x(), expected_event.y())))
       .After(connected)
       .WillOnce(DoAll(
           InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
@@ -632,9 +614,9 @@ TEST_F(ClientSessionTest, NoGnubbyAuth) {
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
       .After(authenticated)
       .WillOnce(DoAll(
-           DeliverClientMessage(client_session_.get(), message),
-           InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
-           InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
+          DeliverClientMessage(client_session_.get(), message),
+          InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
+          InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 
   ConnectClientSession();
@@ -657,11 +639,11 @@ TEST_F(ClientSessionTest, EnableGnubbyAuth) {
   EXPECT_CALL(session_event_handler_, OnSessionChannelsConnected(_))
       .After(authenticated)
       .WillOnce(DoAll(
-           SetGnubbyAuthHandlerForTesting(client_session_.get(),
-                                          gnubby_auth_handler),
-           DeliverClientMessage(client_session_.get(), message),
-           InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
-           InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
+          SetGnubbyAuthHandlerForTesting(client_session_.get(),
+                                         gnubby_auth_handler),
+          DeliverClientMessage(client_session_.get(), message),
+          InvokeWithoutArgs(this, &ClientSessionTest::DisconnectClientSession),
+          InvokeWithoutArgs(this, &ClientSessionTest::StopClientSession)));
   EXPECT_CALL(*gnubby_auth_handler, DeliverClientMessage(_));
   EXPECT_CALL(session_event_handler_, OnSessionClosed(_));
 

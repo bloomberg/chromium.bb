@@ -6,6 +6,7 @@
 
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
+#include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,9 +15,7 @@ using ::testing::_;
 namespace remoting {
 namespace protocol {
 
-MATCHER_P2(EqualsClipboardEvent, mime_type, data, "") {
-  return arg.mime_type() == mime_type && arg.data() == data;
-}
+using test::EqualsClipboardEvent;
 
 static ClipboardEvent MakeClipboardEvent(const std::string& mime_type,
                                          const std::string& data) {

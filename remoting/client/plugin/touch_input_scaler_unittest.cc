@@ -7,88 +7,23 @@
 #include <cmath>
 
 #include "remoting/protocol/protocol_mock_objects.h"
+#include "remoting/protocol/test_event_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
+using ::testing::AllOf;
+using ::testing::PrintToString;
+
 namespace remoting {
 
-using ::testing::_;
-using ::testing::PrintToString;
 using protocol::MockInputStub;
 using protocol::TouchEvent;
 using protocol::TouchEventPoint;
+using protocol::test::EqualsTouchPointCoordinates;
+using protocol::test::EqualsTouchPointRadii;
 
 namespace {
-
-// If the rounding error for the coordinates checked in TouchPoint* matcher are
-// within 1 pixel diff, it should be acceptable.
-const float kEpsilon = 1.0f;
-
-void LogNumTouchPointMismatchError(int expected_size, int actual_size) {
-  DVLOG(1) << "Expected number of touch points (" << expected_size
-           << ") does not match the actual size (" << actual_size << ").";
-}
-
-void LogPointMismatchError(const std::string& field_name,
-                           int point_index,
-                           float expected,
-                           float actual) {
-  DVLOG(1) << "Point " << point_index << ": expected " << field_name
-           << " to be " << expected << ", actual " << actual
-           << " (not within rounding error grace " << kEpsilon << ").";
-}
-
-MATCHER_P(TouchPointCoordinateEqual,
-          expected_event,
-          "Expect point coordinates equal.") {
-  if (arg.touch_points().size() != expected_event.touch_points().size()) {
-    LogNumTouchPointMismatchError(expected_event.touch_points().size(),
-                                  arg.touch_points().size());
-    return false;
-  }
-
-  for (int i = 0; i < expected_event.touch_points().size(); ++i) {
-    const TouchEventPoint& arg_point = arg.touch_points(i);
-    const TouchEventPoint& expected_point = expected_event.touch_points(i);
-    if (std::abs(expected_point.x() - arg_point.x()) >= kEpsilon) {
-      LogPointMismatchError("X", i, expected_point.x(), arg_point.x());
-      return false;
-    }
-
-    if (std::abs(expected_point.y() - arg_point.y()) >= kEpsilon) {
-      LogPointMismatchError("Y", i, expected_point.y(), arg_point.y());
-      return false;
-    }
-  }
-  return true;
-}
-
-MATCHER_P(TouchPointRadiiEqual, expected_event, "Expected point radii equal.") {
-  if (arg.touch_points().size() != expected_event.touch_points().size()) {
-    LogNumTouchPointMismatchError(expected_event.touch_points().size(),
-                                  arg.touch_points().size());
-    return false;
-  }
-
-  for (int i = 0; i < expected_event.touch_points().size(); ++i) {
-    const TouchEventPoint& arg_point = arg.touch_points(i);
-    const TouchEventPoint& expected_point = expected_event.touch_points(i);
-    if (std::abs(expected_point.radius_x() - arg_point.radius_x()) >=
-        kEpsilon) {
-      LogPointMismatchError("radius X", i, expected_point.radius_x(),
-                            arg_point.radius_x());
-      return false;
-    }
-
-    if (std::abs(expected_point.radius_y() - arg_point.radius_y()) >=
-        kEpsilon) {
-      LogPointMismatchError("radius Y", i, expected_point.radius_y(),
-                            arg_point.radius_y());
-      return false;
-    }
-  }
-  return true;
-}
 
 const float kDefaultRadius = 30.0f;
 const float kDefaultXCoord = 1.0f;
@@ -200,7 +135,7 @@ TEST_F(TouchInputScalerTest, NoClampingNoScaling) {
   point->set_y(15.0f);
 
   EXPECT_CALL(mock_stub_,
-              InjectTouchEvent(TouchPointCoordinateEqual(expected_out)));
+              InjectTouchEvent(EqualsTouchPointCoordinates(expected_out)));
   InjectTestTouchEvent();
 }
 
@@ -218,7 +153,7 @@ TEST_F(TouchInputScalerTest, ClampingNoScaling) {
   point->set_y(1.0f);
 
   EXPECT_CALL(mock_stub_,
-              InjectTouchEvent(TouchPointCoordinateEqual(expected_out)));
+              InjectTouchEvent(EqualsTouchPointCoordinates(expected_out)));
   InjectTestTouchEvent();
 }
 
@@ -253,7 +188,7 @@ TEST_F(TouchInputScalerTest, ClampingMultiplePointsNoScaling) {
   point->set_y(59.0f);
 
   EXPECT_CALL(mock_stub_,
-              InjectTouchEvent(TouchPointCoordinateEqual(expected_out)));
+              InjectTouchEvent(EqualsTouchPointCoordinates(expected_out)));
   InjectTestTouchEvent();
 }
 
@@ -275,7 +210,7 @@ TEST_F(TouchInputScalerTest, UpScalingNoClamping) {
   point->set_y(8.4f);
 
   EXPECT_CALL(mock_stub_,
-              InjectTouchEvent(TouchPointCoordinateEqual(expected_out)));
+              InjectTouchEvent(EqualsTouchPointCoordinates(expected_out)));
   InjectTestTouchEvent();
 }
 
@@ -291,7 +226,7 @@ TEST_F(TouchInputScalerTest, UpScalingWithClamping) {
   point->set_y(39.0f);
 
   EXPECT_CALL(mock_stub_,
-              InjectTouchEvent(TouchPointCoordinateEqual(expected_out)));
+              InjectTouchEvent(EqualsTouchPointCoordinates(expected_out)));
   InjectTestTouchEvent();
 }
 
@@ -313,7 +248,7 @@ TEST_F(TouchInputScalerTest, DownScalingNoClamping) {
   point->set_y(1.5f);
 
   EXPECT_CALL(mock_stub_,
-              InjectTouchEvent(TouchPointCoordinateEqual(expected_out)));
+              InjectTouchEvent(EqualsTouchPointCoordinates(expected_out)));
   InjectTestTouchEvent();
 }
 
@@ -344,7 +279,7 @@ TEST_F(TouchInputScalerTest, DownScalingWithClamping) {
   point->set_y(3.0f);
 
   EXPECT_CALL(mock_stub_,
-              InjectTouchEvent(TouchPointCoordinateEqual(expected_out)));
+              InjectTouchEvent(EqualsTouchPointCoordinates(expected_out)));
   InjectTestTouchEvent();
 }
 
@@ -359,7 +294,8 @@ TEST_F(TouchInputScalerTest, UpScaleRadii) {
   point->set_radius_x(2.0f);
   point->set_radius_y(4.0f);
 
-  EXPECT_CALL(mock_stub_, InjectTouchEvent(TouchPointRadiiEqual(expected_out)));
+  EXPECT_CALL(mock_stub_,
+              InjectTouchEvent(EqualsTouchPointRadii(expected_out)));
   InjectTestTouchEvent();
 }
 
@@ -374,7 +310,8 @@ TEST_F(TouchInputScalerTest, DownScaleRadii) {
   point->set_radius_x(2.5f);
   point->set_radius_y(2.0f);
 
-  EXPECT_CALL(mock_stub_, InjectTouchEvent(TouchPointRadiiEqual(expected_out)));
+  EXPECT_CALL(mock_stub_,
+              InjectTouchEvent(EqualsTouchPointRadii(expected_out)));
   InjectTestTouchEvent();
 }
 
@@ -400,9 +337,9 @@ TEST_F(TouchInputScalerTest, UpScaleCoordinatesAndRadii) {
   point->set_radius_x(16.0f);
   point->set_radius_y(6.0f);
 
-  EXPECT_CALL(mock_stub_, InjectTouchEvent(::testing::AllOf(
-                              TouchPointCoordinateEqual(expected_out),
-                              TouchPointRadiiEqual(expected_out))));
+  EXPECT_CALL(mock_stub_,
+              InjectTouchEvent(AllOf(EqualsTouchPointCoordinates(expected_out),
+                                     EqualsTouchPointRadii(expected_out))));
   InjectTestTouchEvent();
 }
 
@@ -428,9 +365,9 @@ TEST_F(TouchInputScalerTest, DownScaleCoordinatesAndRadii) {
   point->set_radius_x(2.666f);
   point->set_radius_y(1.0f);
 
-  EXPECT_CALL(mock_stub_, InjectTouchEvent(::testing::AllOf(
-                              TouchPointCoordinateEqual(expected_out),
-                              TouchPointRadiiEqual(expected_out))));
+  EXPECT_CALL(mock_stub_,
+              InjectTouchEvent(AllOf(EqualsTouchPointCoordinates(expected_out),
+                                     EqualsTouchPointRadii(expected_out))));
   InjectTestTouchEvent();
 }
 
