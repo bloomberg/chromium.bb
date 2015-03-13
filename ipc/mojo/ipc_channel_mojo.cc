@@ -191,8 +191,8 @@ void ChannelMojo::ChannelInfoDeleter::operator()(
 
 // static
 bool ChannelMojo::ShouldBeUsed() {
-  // TODO(morrita): Turn this on for a set of platforms.
-  return false;
+  // TODO(morrita): Remove this if it sticks.
+  return true;
 }
 
 // static
