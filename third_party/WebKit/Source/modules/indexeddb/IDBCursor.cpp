@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -275,13 +276,13 @@ void IDBCursor::close()
 ScriptValue IDBCursor::key(ScriptState* scriptState)
 {
     m_keyDirty = false;
-    return idbKeyToScriptValue(scriptState, m_key);
+    return ScriptValue::from(scriptState, m_key);
 }
 
 ScriptValue IDBCursor::primaryKey(ScriptState* scriptState)
 {
     m_primaryKeyDirty = false;
-    return idbKeyToScriptValue(scriptState, m_primaryKey);
+    return ScriptValue::from(scriptState, m_primaryKey);
 }
 
 ScriptValue IDBCursor::value(ScriptState* scriptState)
@@ -301,13 +302,13 @@ ScriptValue IDBCursor::value(ScriptState* scriptState)
     }
 
     m_valueDirty = false;
-    ScriptValue scriptValue = idbAnyToScriptValue(scriptState, value);
+    ScriptValue scriptValue = ScriptValue::from(scriptState, value);
     return scriptValue;
 }
 
 ScriptValue IDBCursor::source(ScriptState* scriptState) const
 {
-    return idbAnyToScriptValue(scriptState, m_source);
+    return ScriptValue::from(scriptState, m_source);
 }
 
 void IDBCursor::setValueReady(IDBKey* key, IDBKey* primaryKey, PassRefPtr<SharedBuffer> value, PassOwnPtr<IDBRequest::IDBBlobHolder> blobs)

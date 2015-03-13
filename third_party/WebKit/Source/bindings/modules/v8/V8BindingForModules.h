@@ -24,9 +24,6 @@ bool injectV8KeyIntoV8Value(v8::Isolate*, v8::Local<v8::Value> key, v8::Local<v8
 // For use by Source/modules/indexeddb:
 IDBKey* createIDBKeyFromScriptValueAndKeyPath(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
 bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
-ScriptValue idbAnyToScriptValue(ScriptState*, IDBAny*);
-ScriptValue idbKeyToScriptValue(ScriptState*, const IDBKey*);
-ScriptValue idbKeyPathToScriptValue(ScriptState*, const IDBKeyPath&);
 IDBKey* scriptValueToIDBKey(v8::Isolate*, const ScriptValue&);
 IDBKeyRange* scriptValueToIDBKeyRange(v8::Isolate*, const ScriptValue&);
 ScriptValue deserializeScriptValue(ScriptState*, SerializedScriptValue*, const Vector<blink::WebBlobInfo>*);
@@ -37,17 +34,17 @@ void assertPrimaryKeyValidOrInjectable(ScriptState*, PassRefPtr<SharedBuffer>, c
 
 template <>
 struct NativeValueTraits<SQLValue> {
-    static SQLValue nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
-    {
-        if (value.IsEmpty() || value->IsNull())
-            return SQLValue();
-        if (value->IsNumber())
-            return SQLValue(value->NumberValue());
-        V8StringResource<> stringValue(value);
-        if (!stringValue.prepare(exceptionState))
-            return SQLValue();
-        return SQLValue(stringValue);
-    }
+    static SQLValue nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
+
+template <>
+struct NativeValueTraits<IDBKey*> {
+    static IDBKey* nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
+
+template <>
+struct NativeValueTraits<IDBKeyRange*> {
+    static IDBKeyRange* nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
 };
 
 } // namespace blink

@@ -31,6 +31,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventQueue.h"
@@ -104,7 +105,7 @@ ScriptValue IDBRequest::result(ExceptionState& exceptionState)
     if (m_contextStopped || !executionContext())
         return ScriptValue();
     m_resultDirty = false;
-    ScriptValue value = idbAnyToScriptValue(m_scriptState.get(), m_result);
+    ScriptValue value = ScriptValue::from(m_scriptState.get(), m_result);
     return value;
 }
 
@@ -122,7 +123,7 @@ ScriptValue IDBRequest::source() const
     if (m_contextStopped || !executionContext())
         return ScriptValue();
 
-    return idbAnyToScriptValue(m_scriptState.get(), m_source);
+    return ScriptValue::from(m_scriptState.get(), m_source);
 }
 
 const String& IDBRequest::readyState() const

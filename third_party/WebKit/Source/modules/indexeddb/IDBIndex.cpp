@@ -27,6 +27,7 @@
 #include "modules/indexeddb/IDBIndex.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -67,7 +68,7 @@ DEFINE_TRACE(IDBIndex)
 
 ScriptValue IDBIndex::keyPath(ScriptState* scriptState) const
 {
-    return idbKeyPathToScriptValue(scriptState, m_metadata.keyPath);
+    return ScriptValue::from(scriptState, m_metadata.keyPath);
 }
 
 IDBRequest* IDBIndex::openCursor(ScriptState* scriptState, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)

@@ -10,6 +10,10 @@
 
 namespace blink {
 
+class IDBAny;
+class IDBKey;
+class IDBKeyPath;
+
 inline v8::Handle<v8::Value> toV8(const SQLValue& sqlValue, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (sqlValue.type()) {
@@ -23,6 +27,10 @@ inline v8::Handle<v8::Value> toV8(const SQLValue& sqlValue, v8::Handle<v8::Objec
     ASSERT_NOT_REACHED();
     return v8::Local<v8::Value>();
 }
+
+v8::Local<v8::Value> toV8(const IDBKeyPath&, v8::Local<v8::Object> creationContext, v8::Isolate*);
+v8::Local<v8::Value> toV8(const IDBKey*, v8::Local<v8::Object> creationContext, v8::Isolate*);
+v8::Local<v8::Value> toV8(const IDBAny*, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 } // namespace blink
 

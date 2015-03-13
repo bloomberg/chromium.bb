@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "bindings/modules/v8/ToV8ForModules.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include <gtest/gtest.h>
@@ -53,7 +54,7 @@ bool injectKey(ScriptState* scriptState, IDBKey* key, ScriptValue& value, const 
 {
     IDBKeyPath idbKeyPath(keyPath);
     EXPECT_TRUE(idbKeyPath.isValid());
-    ScriptValue keyValue = idbKeyToScriptValue(scriptState, key);
+    ScriptValue keyValue = ScriptValue::from(scriptState, key);
     return injectV8KeyIntoV8Value(scriptState->isolate(), keyValue.v8Value(), value.v8Value(), idbKeyPath);
 }
 

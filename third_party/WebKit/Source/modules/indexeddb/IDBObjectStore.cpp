@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
+#include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ExceptionCode.h"
@@ -72,7 +73,7 @@ DEFINE_TRACE(IDBObjectStore)
 
 ScriptValue IDBObjectStore::keyPath(ScriptState* scriptState) const
 {
-    return idbKeyPathToScriptValue(scriptState, m_metadata.keyPath);
+    return ScriptValue::from(scriptState, m_metadata.keyPath);
 }
 
 PassRefPtrWillBeRawPtr<DOMStringList> IDBObjectStore::indexNames() const

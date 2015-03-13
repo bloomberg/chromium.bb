@@ -27,6 +27,7 @@
 #include "modules/indexeddb/IDBKeyRange.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/modules/v8/ToV8ForModules.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/indexeddb/IDBDatabase.h"
@@ -67,12 +68,12 @@ DEFINE_TRACE(IDBKeyRange)
 
 ScriptValue IDBKeyRange::lowerValue(ScriptState* scriptState) const
 {
-    return idbKeyToScriptValue(scriptState, m_lower);
+    return ScriptValue::from(scriptState, m_lower);
 }
 
 ScriptValue IDBKeyRange::upperValue(ScriptState* scriptState) const
 {
-    return idbKeyToScriptValue(scriptState, m_upper);
+    return ScriptValue::from(scriptState, m_upper);
 }
 
 IDBKeyRange* IDBKeyRange::only(IDBKey* key, ExceptionState& exceptionState)
