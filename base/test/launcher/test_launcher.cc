@@ -383,6 +383,9 @@ void DoLaunchChildTestProcess(
   }
 #elif defined(OS_POSIX)
   options.new_process_group = true;
+#if defined(OS_LINUX)
+  options.kill_on_parent_death = true;
+#endif  // defined(OS_LINUX)
 
   FileHandleMappingVector fds_mapping;
   ScopedFD output_file_fd;

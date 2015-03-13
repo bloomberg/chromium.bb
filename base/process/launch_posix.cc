@@ -523,6 +523,13 @@ Process LaunchProcess(const std::vector<std::string>& argv,
         RAW_LOG(FATAL, "prctl(PR_SET_NO_NEW_PRIVS) failed");
       }
     }
+
+    if (options.kill_on_parent_death) {
+      if (prctl(PR_SET_PDEATHSIG, SIGKILL) != 0) {
+        RAW_LOG(ERROR, "prctl(PR_SET_PDEATHSIG) failed");
+        _exit(127);
+      }
+    }
 #endif
 
     if (current_directory != nullptr) {

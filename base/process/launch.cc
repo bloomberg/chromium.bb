@@ -27,6 +27,7 @@ LaunchOptions::LaunchOptions()
 #if defined(OS_LINUX)
       , clone_flags(0)
       , allow_new_privs(false)
+      , kill_on_parent_death(false)
 #endif  // OS_LINUX
 #if defined(OS_POSIX)
       , pre_exec_delegate(NULL)
