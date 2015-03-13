@@ -72,27 +72,7 @@ bool SVGFESpecularLightingElement::isSupportedAttribute(const QualifiedName& att
 
 void SVGFESpecularLightingElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
-    if (!isSupportedAttribute(name)) {
-        SVGFilterPrimitiveStandardAttributes::parseAttribute(name, value);
-        return;
-    }
-
-    SVGParsingError parseError = NoError;
-
-    if (name == SVGNames::inAttr)
-        m_in1->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::surfaceScaleAttr)
-        m_surfaceScale->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::specularConstantAttr)
-        m_specularConstant->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::specularExponentAttr)
-        m_specularExponent->setBaseValueAsString(value, parseError);
-    else if (name == SVGNames::kernelUnitLengthAttr)
-        m_kernelUnitLength->setBaseValueAsString(value, parseError);
-    else
-        ASSERT_NOT_REACHED();
-
-    reportAttributeParsingError(parseError, name, value);
+    parseAttributeNew(name, value);
 }
 
 bool SVGFESpecularLightingElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
