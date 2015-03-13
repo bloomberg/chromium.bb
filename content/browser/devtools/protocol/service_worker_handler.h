@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -21,9 +22,8 @@
 
 namespace content {
 
-class RenderFrameHost;
+class RenderFrameHostImpl;
 class ServiceWorkerContextWrapper;
-class ServiceWorkerDevToolsAgentHost;
 
 namespace devtools {
 namespace service_worker {
@@ -36,9 +36,9 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   ServiceWorkerHandler();
   ~ServiceWorkerHandler() override;
 
-  void SetRenderFrameHost(RenderFrameHost* render_frame_host);
+  void SetRenderFrameHost(RenderFrameHostImpl* render_frame_host);
   void SetClient(scoped_ptr<Client> client);
-  void SetURL(const GURL& url);
+  void UpdateHosts();
   void Detached();
 
   // Protocol 'service worker' domain implementation.
@@ -62,9 +62,8 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   void AgentHostClosed(DevToolsAgentHost* agent_host,
                        bool replaced_with_another_client) override;
 
-  void ReportWorkerCreated(DevToolsAgentHost* host, bool new_worker);
-
-  bool MatchesInspectedPage(ServiceWorkerDevToolsAgentHost* host);
+  void ReportWorkerCreated(ServiceWorkerDevToolsAgentHost* host);
+  void ReportWorkerTerminated(ServiceWorkerDevToolsAgentHost* host);
 
   void OnWorkerRegistrationUpdated(
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
@@ -74,12 +73,11 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
 
   scoped_refptr<ServiceWorkerContextWrapper> context_;
   scoped_ptr<Client> client_;
-  using AttachedHosts = std::map<
-      std::string, scoped_refptr<ServiceWorkerDevToolsAgentHost>>;
-  AttachedHosts attached_hosts_;
+  ServiceWorkerDevToolsAgentHost::Map attached_hosts_;
   bool enabled_;
-  GURL url_;
+  std::set<GURL> urls_;
   scoped_refptr<ContextObserver> context_observer_;
+  RenderFrameHostImpl* render_frame_host_;
 
   base::WeakPtrFactory<ServiceWorkerHandler> weak_factory_;
 

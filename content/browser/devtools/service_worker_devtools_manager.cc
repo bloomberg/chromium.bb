@@ -127,9 +127,9 @@ void ServiceWorkerDevToolsManager::WorkerDestroyed(int worker_process_id,
   AgentHostMap::iterator it = workers_.find(id);
   DCHECK(it != workers_.end());
   scoped_refptr<WorkerDevToolsAgentHost> agent_host(it->second);
-  FOR_EACH_OBSERVER(Observer, observer_list_, WorkerDestroyed(it->second));
   agent_host->WorkerDestroyed();
   DevToolsManager::GetInstance()->AgentHostChanged(agent_host);
+  FOR_EACH_OBSERVER(Observer, observer_list_, WorkerDestroyed(it->second));
 }
 
 void ServiceWorkerDevToolsManager::RemoveInspectedWorkerData(WorkerId id) {

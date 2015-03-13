@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_SERVICE_WORKER_DEVTOOLS_AGENT_HOST_H_
 #define CONTENT_BROWSER_DEVTOOLS_SERVICE_WORKER_DEVTOOLS_AGENT_HOST_H_
 
+#include <map>
+
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 
@@ -13,6 +15,8 @@ namespace content {
 class ServiceWorkerDevToolsAgentHost : public WorkerDevToolsAgentHost {
  public:
   using List = std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>;
+  using Map = std::map<std::string,
+                       scoped_refptr<ServiceWorkerDevToolsAgentHost>>;
   using ServiceWorkerIdentifier =
       ServiceWorkerDevToolsManager::ServiceWorkerIdentifier;
 
