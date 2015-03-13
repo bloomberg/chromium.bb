@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
 
 #include "base/hash.h"
+#include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/common/url_constants.h"
@@ -79,6 +80,12 @@ bool SignInInternalsUI::OverrideHandleWebUIMessage(
 
 void SignInInternalsUI::OnSigninStateChanged(
     const base::DictionaryValue* info) {
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 SignInInternalsUI::OnSigninStateChanged"));
+
   web_ui()->CallJavascriptFunction(
       "chrome.signin.onSigninInfoChanged.fire", *info);
 }

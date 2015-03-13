@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -213,6 +214,12 @@ OAuth2TokenService::Fetcher* OAuth2TokenService::Fetcher::CreateAndStart(
       client_secret,
       scopes,
       waiting_request);
+
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 OAuth2TokenService::Fetcher::CreateAndStart"));
 
   fetcher->Start();
   return fetcher;
@@ -461,6 +468,12 @@ OAuth2TokenService::StartRequestForClientWithContext(
     Consumer* consumer) {
   DCHECK(CalledOnValidThread());
 
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 OAuth2TokenService::StartRequestForClientWithContext 1"));
+
   scoped_ptr<RequestImpl> request(new RequestImpl(account_id, consumer));
   FOR_EACH_OBSERVER(DiagnosticsObserver, diagnostics_observer_list_,
                     OnAccessTokenRequested(account_id,
@@ -468,6 +481,12 @@ OAuth2TokenService::StartRequestForClientWithContext(
                                            scopes));
 
   if (!RefreshTokenIsAvailable(account_id)) {
+    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 OAuth2TokenService::StartRequestForClientWithContext 2"));
+
     GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
 
     FOR_EACH_OBSERVER(DiagnosticsObserver, diagnostics_observer_list_,
@@ -488,6 +507,12 @@ OAuth2TokenService::StartRequestForClientWithContext(
                                        account_id,
                                        scopes);
   if (HasCacheEntry(request_parameters)) {
+    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile3(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "422460 OAuth2TokenService::StartRequestForClientWithContext 3"));
+
     StartCacheLookupRequest(request.get(), request_parameters, consumer);
   } else {
     FetchOAuth2Token(request.get(),
@@ -506,6 +531,12 @@ void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,
                                           const std::string& client_id,
                                           const std::string& client_secret,
                                           const ScopeSet& scopes) {
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 OAuth2TokenService::FetchOAuth2Token"));
+
   // If there is already a pending fetcher for |scopes| and |account_id|,
   // simply register this |request| for those results rather than starting
   // a new fetcher.
@@ -757,6 +788,12 @@ void OAuth2TokenService::CancelFetchers(
 
 void OAuth2TokenService::FireRefreshTokenAvailable(
     const std::string& account_id) {
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 OAuth2TokenService::FireRefreshTokenAvailable"));
+
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnRefreshTokenAvailable(account_id));
 }
@@ -768,6 +805,12 @@ void OAuth2TokenService::FireRefreshTokenRevoked(
 }
 
 void OAuth2TokenService::FireRefreshTokensLoaded() {
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 OAuth2TokenService::FireRefreshTokensLoaded"));
+
   FOR_EACH_OBSERVER(Observer, observer_list_, OnRefreshTokensLoaded());
 }
 

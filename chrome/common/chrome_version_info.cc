@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_version_info.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -43,6 +44,12 @@ bool VersionInfo::IsOfficialBuild() const {
 }
 
 std::string VersionInfo::CreateVersionString() const {
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 VersionInfo::CreateVersionString"));
+
   std::string current_version;
   current_version += Version();
 #if !defined(GOOGLE_CHROME_BUILD)
