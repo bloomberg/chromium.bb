@@ -6,7 +6,7 @@
     ImplementedAs=DOMWindowStorage,
 ] partial interface Window {
     // https://html.spec.whatwg.org/#the-sessionstorage-attribute
-    [RuntimeEnabled=SessionStorage, LogActivity=GetterOnly, RaisesException=Getter] readonly attribute Storage sessionStorage;
+    [LogActivity=GetterOnly, RaisesException=Getter] readonly attribute Storage sessionStorage;
     // https://html.spec.whatwg.org/#the-localstorage-attribute
-    [RuntimeEnabled=SessionStorage, LogActivity=GetterOnly, RaisesException=Getter] readonly attribute Storage localStorage;
+    [LogActivity=GetterOnly, RaisesException=Getter] readonly attribute Storage localStorage;
 };
