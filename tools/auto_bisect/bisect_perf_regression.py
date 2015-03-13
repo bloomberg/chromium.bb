@@ -1978,6 +1978,8 @@ class BisectPerformanceMetrics(object):
     bad_position = source_control.GetCommitPosition(bad_revision, cwd)
     # Compare commit timestamp for repos that don't support commit position.
     if not (bad_position and good_position):
+      logging.info('Could not get commit positions for revisions %s and %s in '
+                   'depot %s', good_position, bad_position, target_depot)
       good_position = source_control.GetCommitTime(good_revision, cwd=cwd)
       bad_position = source_control.GetCommitTime(bad_revision, cwd=cwd)
 
@@ -2204,8 +2206,8 @@ class BisectPerformanceMetrics(object):
     # Check that they didn't accidentally swap good and bad revisions.
     if not self.CheckIfRevisionsInProperOrder(
         target_depot, good_revision, bad_revision):
-      return BisectResults(error='bad_revision < good_revision, did you swap '
-                                 'these by mistake?')
+      return BisectResults(error='Bad rev (%s) appears to be earlier than good '
+                                 'rev (%s).' % (good_revision, bad_revision))
 
     bad_revision, good_revision = self.NudgeRevisionsIfDEPSChange(
         bad_revision, good_revision, good_revision_in)
