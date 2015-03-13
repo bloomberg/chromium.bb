@@ -61,6 +61,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Overriden from views::View.
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
+  void ChildPreferredSizeChanged(View* child) override;
 
  protected:
   BrowserView* browser_view() const { return browser_view_; }

@@ -103,10 +103,9 @@ NewAvatarButton::NewAvatarButton(views::ButtonListener* listener,
       profiles::GetSigninErrorController(browser_->profile());
   if (error) {
     error->AddObserver(this);
-    // This calls UpdateAvatarButtonAndRelayoutParent().
-    OnErrorChanged();
+    OnErrorChanged();  // This calls Update().
   } else {
-    UpdateAvatarButtonAndRelayoutParent();
+    Update();
   }
   SchedulePaint();
 }
@@ -134,7 +133,7 @@ void NewAvatarButton::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 void NewAvatarButton::OnProfileAdded(const base::FilePath& profile_path) {
-  UpdateAvatarButtonAndRelayoutParent();
+  Update();
 }
 
 void NewAvatarButton::OnProfileWasRemoved(
@@ -143,20 +142,20 @@ void NewAvatarButton::OnProfileWasRemoved(
   // If deleting the active profile, don't bother updating the avatar
   // button, as the browser window is being closed anyway.
   if (browser_->profile()->GetPath() != profile_path)
-    UpdateAvatarButtonAndRelayoutParent();
+    Update();
 }
 
 void NewAvatarButton::OnProfileNameChanged(
       const base::FilePath& profile_path,
       const base::string16& old_profile_name) {
   if (browser_->profile()->GetPath() == profile_path)
-    UpdateAvatarButtonAndRelayoutParent();
+    Update();
 }
 
 void NewAvatarButton::OnProfileSupervisedUserIdChanged(
       const base::FilePath& profile_path) {
   if (browser_->profile()->GetPath() == profile_path)
-    UpdateAvatarButtonAndRelayoutParent();
+    Update();
 }
 
 void NewAvatarButton::OnErrorChanged() {
@@ -165,10 +164,10 @@ void NewAvatarButton::OnErrorChanged() {
       profiles::GetSigninErrorController(browser_->profile());
   has_auth_error_ = error && error->HasError();
 
-  UpdateAvatarButtonAndRelayoutParent();
+  Update();
 }
 
-void NewAvatarButton::UpdateAvatarButtonAndRelayoutParent() {
+void NewAvatarButton::Update() {
   const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
 
@@ -208,10 +207,5 @@ void NewAvatarButton::UpdateAvatarButtonAndRelayoutParent() {
   const int kDefaultImageTextSpacing = 5;
   SetImageLabelSpacing(use_generic_button ? 0 : kDefaultImageTextSpacing);
 
-  InvalidateLayout();
-
-  // Because the width of the button might have changed, the parent browser
-  // frame needs to recalculate the button bounds and redraw it.
-  if (parent())
-    parent()->Layout();
+  PreferredSizeChanged();
 }

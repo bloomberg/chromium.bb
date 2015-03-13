@@ -48,7 +48,7 @@ class NewAvatarButton : public views::LabelButton,
 
   // Called when the profile info cache has changed, which means we might
   // have to update the icon/text of the button.
-  void UpdateAvatarButtonAndRelayoutParent();
+  void Update();
 
   Browser* browser_;
 

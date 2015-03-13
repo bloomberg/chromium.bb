@@ -80,6 +80,15 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
     OnProfileAvatarChanged(base::FilePath());
 }
 
+void BrowserNonClientFrameView::ChildPreferredSizeChanged(View* child) {
+  // Only perform a re-layout if the avatar button has changed, since that
+  // can affect the size of the tabs.
+  if (child == new_avatar_button_) {
+    InvalidateLayout();
+    frame_->GetRootView()->Layout();
+  }
+}
+
 #if defined(ENABLE_SUPERVISED_USERS)
 void BrowserNonClientFrameView::OnThemeChanged() {
   if (supervised_user_avatar_label_)
