@@ -23,7 +23,6 @@ div  { (user agent stylesheet)
 Style Attribute  { ()
 /-- overloaded --/   font-weight: normal;
 
-
 - <html> [descendantUserAttributeCounters:[pseudoState=1]]
     + <head>…</head>
     - <body id="mainBody" class="main1 main2 mainpage" onload="runTest()" style="font-weight: normal; width: 85%; background-image: url(bar.png)"> [descendantUserAttributeCounters:[pseudoState=1]]
@@ -72,7 +71,6 @@ div  { (user agent stylesheet)
 Style Attribute  { ()
 /-- overloaded --/   font-weight: normal;
 
-
 - <html> [descendantUserAttributeCounters:[pseudoState=1]]
     + <head>…</head>
     - <body id="mainBody" class="main1 main2 mainpage" onload="runTest()" style="font-weight: normal; width: 85%; background-image: url(bar.png)"> [descendantUserAttributeCounters:[pseudoState=1]]
@@ -93,7 +91,6 @@ div  { (user agent stylesheet)
 [expanded] 
 Style Attribute  { ()
   font-weight: normal;
-
 
 - <html>
     + <head>…</head>

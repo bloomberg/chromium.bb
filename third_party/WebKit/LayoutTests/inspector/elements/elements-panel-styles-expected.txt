@@ -95,7 +95,6 @@ body  { (elements-panel-styles.css:1 -> elements-panel-styles.css:1:1)
 html  { (elements-panel-styles.css:61 -> elements-panel-styles.css:61:1)
 /-- overloaded --/   color: magenta !important;
 
-
 ======== Pseudo ::before element ========
 [expanded] 
 .foo::before  { (elements-panel-styles.css:57 -> elements-panel-styles.css:57:1)
@@ -110,7 +109,6 @@ html  { (elements-panel-styles.css:61 -> elements-panel-styles.css:61:1)
 /-- overloaded --/   color: blue;
   display: block !important;
 
-
 ======== Pseudo ::after element ========
 [expanded] 
 .foo::after  { (elements-panel-styles.css:48 -> elements-panel-styles.css:48:1)
@@ -121,6 +119,5 @@ html  { (elements-panel-styles.css:61 -> elements-panel-styles.css:61:1)
 .foo::after  { (elements-panel-styles.css:44 -> elements-panel-styles.css:44:1)
 /-- overloaded --/   content: "[after Foo]";
   color: green;
-
 
 

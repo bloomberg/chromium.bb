@@ -27,7 +27,6 @@ div  { (user agent stylesheet)
   display: block;
 
 
-
 Running: testSetStyleCSSText
 <div id="container" style="color: rgb(192, 255, 238);">…</div>
 [expanded] 
@@ -37,7 +36,6 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 
 Running: testSetViaParsedAttributes
@@ -64,7 +62,6 @@ div  { (user agent stylesheet)
   display: block;
 
 
-
 Running: testSetViaAncestorClass
 <div id="child"></div>
 [expanded] 
@@ -84,7 +81,6 @@ Style Attribute  { ()
   color: rgb(192, 255, 238);
 
 
-
 Running: testSetViaSiblingAttr
 <div id="childSibling"></div>
 [expanded] 
@@ -102,6 +98,5 @@ div  { (user agent stylesheet)
 [expanded] 
 Style Attribute  { ()
   color: rgb(192, 255, 238);
-
 
 

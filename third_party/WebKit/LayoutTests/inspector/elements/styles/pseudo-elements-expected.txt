@@ -23,18 +23,15 @@ element.style  { ()
 [$div$]  { (user agent stylesheet)
   display: block;
 
-
 ======== Pseudo ::before element ========
 [expanded] 
 [$#inspected:before$], .some-other-selector  { (pseudo-elements.html:4 -> pseudo-elements.html:4:1)
   content: "BEFORE";
 
-
 ======== Pseudo ::after element ========
 [expanded] 
 [$#inspected:after$]  { (pseudo-elements.html:8 -> pseudo-elements.html:8:1)
   content: "AFTER";
-
 
 
 Running: dumpBeforeStyles
@@ -43,12 +40,10 @@ Running: dumpBeforeStyles
   content: "BEFORE";
 
 
-
 Running: dumpAfterStyles
 [expanded] 
 [$#inspected:after$]  { (pseudo-elements.html:8 -> pseudo-elements.html:8:1)
   content: "AFTER";
-
 
 
 Running: removeAfter

@@ -12,6 +12,5 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 PASS: No crash
 

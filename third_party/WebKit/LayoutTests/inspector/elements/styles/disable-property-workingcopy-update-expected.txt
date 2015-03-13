@@ -32,7 +32,6 @@ div  { (user agent stylesheet)
   display: block;
 
 
-
 Running: togglePropertyOn
 
 Running: dumpEnabledText
@@ -52,6 +51,5 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 

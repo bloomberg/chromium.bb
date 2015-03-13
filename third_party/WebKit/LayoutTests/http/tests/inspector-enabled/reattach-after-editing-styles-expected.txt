@@ -13,7 +13,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 Dump styles after editing:
 [expanded] 
 element.style  { ()
@@ -28,7 +27,6 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 Opening front-end second time
 Dump styles after inspector was reopened:
@@ -45,6 +43,5 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 

@@ -10,7 +10,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 After pasting 'margin-left: 1px':
 [expanded] 
 element.style  { ()
@@ -20,7 +19,6 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 After pasting 'margin-top: 1px; color: red;':
 [expanded] 
@@ -34,7 +32,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 After pasting 'foo: bar; moo: zoo' over 'margin-top':
 [expanded] 
 element.style  { ()
@@ -47,6 +44,5 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 

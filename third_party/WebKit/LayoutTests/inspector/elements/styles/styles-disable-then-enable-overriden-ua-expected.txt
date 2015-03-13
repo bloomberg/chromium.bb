@@ -13,7 +13,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 After disable
 [expanded] 
 element.style  { ()
@@ -27,7 +26,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 After enable
 [expanded] 
 element.style  { ()
@@ -40,6 +38,5 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 

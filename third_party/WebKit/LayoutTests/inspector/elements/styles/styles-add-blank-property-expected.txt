@@ -10,7 +10,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 After insertion at index 0:
 [expanded] 
 element.style  { ()
@@ -20,7 +19,6 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 After appending and changing a 'compound' property:
 [expanded] 
@@ -34,7 +32,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 After insertion at index 2:
 [expanded] 
 element.style  { ()
@@ -47,6 +44,5 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 

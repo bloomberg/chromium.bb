@@ -5,16 +5,13 @@ Before disable
 element.style  { ()
   font-weight: bold;
 
-
 After disable
 [expanded] 
 element.style  { ()
 /-- overloaded --/ /-- disabled --/   /* font-weight: bold; */
 
-
 After delete
 [expanded] 
 element.style  { ()
-
 
 

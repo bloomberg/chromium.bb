@@ -19,7 +19,6 @@ text-decoration-style: solid;
 [expanded] 
 element.style  { ()
 
-
 ==== Computed style for ID2 ====
 background-color: rgb(0, 0, 255);
 display: block;
@@ -31,7 +30,6 @@ text-decoration-style: solid;
 [expanded] 
 element.style  { ()
 
-
 ==== Style for ID3 ====
 [expanded] 
 element.style  { ()
@@ -39,6 +37,5 @@ element.style  { ()
 [expanded] 
 button[Attributes Style]  { ()
   display: none;
-
 
 

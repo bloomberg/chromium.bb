@@ -15,7 +15,6 @@ foo, [$#inspected$], .bar, [$#inspected$]  { (inspector-stylesheet:1 -> inspecto
   display: block;
 
 
-
 Running: changeSelector
 [expanded] 
 element.style  { ()
@@ -26,6 +25,5 @@ element.style  { ()
 [expanded] 
 [$div$]  { (user agent stylesheet)
   display: block;
-
 
 

@@ -20,7 +20,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 === After valid media text modification ===
 [expanded] 
 element.style  { ()
@@ -40,7 +39,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 === After invalid media text modification ===
 [expanded] 
 element.style  { ()
@@ -59,6 +57,5 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 

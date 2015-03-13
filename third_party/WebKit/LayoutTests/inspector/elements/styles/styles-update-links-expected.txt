@@ -44,7 +44,6 @@ div  { (user agent stylesheet)
 
 
 
-
 #### AFTER PROPERTY INSERTION ####
 
 
@@ -85,7 +84,6 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 4 rule ranges are equal.
 4 rule ranges are equal.
@@ -140,7 +138,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 4 rule ranges are equal.
 4 rule ranges are equal.
 4 rule ranges are equal.
@@ -194,7 +191,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 4 rule ranges are equal.
 4 rule ranges are equal.
 4 rule ranges are equal.
@@ -219,12 +215,10 @@ element.style  { ()
 article, aside, footer, header, hgroup, main, nav, section  { (user agent stylesheet)
   display: block;
 
-
 ======== Pseudo ::before element ========
 [expanded] 
 #pseudo::before  { (styles-update-links.html:16 -> styles-update-links.html:16:1)
   color: blue;
-
 
 ======== Pseudo ::after element ========
 [expanded] 
@@ -236,7 +230,6 @@ article, aside, footer, header, hgroup, main, nav, section  { (user agent styles
 /-- overloaded --/   pseudo-property: "12";
 /-- overloaded --/   PROPERTY: INSERTED;
   color: red;
-
 
 0 rule ranges are equal.
 3 rule ranges are equal.

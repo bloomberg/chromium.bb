@@ -14,7 +14,7 @@ function test()
 
         function editSelector(next)
         {
-            var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][1];
+            var section = InspectorTest.firstMatchedStyleSection();
             section.startEditingSelector();
             section._selectorElement.textContent = "#inspected, .INSERTED-OTHER-SELECTOR";
             InspectorTest.waitForSelectorCommitted(next);

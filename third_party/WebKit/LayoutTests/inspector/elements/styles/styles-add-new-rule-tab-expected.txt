@@ -15,7 +15,6 @@ foo, [$div#inspected$], bar  { (inspector-stylesheet:1 -> inspector-stylesheet:1
 [$div$]  { (user agent stylesheet)
   display: block;
 
-
 After adding new rule (other):
 [expanded] 
 element.style  { ()
@@ -27,6 +26,5 @@ div#other  { (inspector-stylesheet:5 -> inspector-stylesheet:5:1)
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 

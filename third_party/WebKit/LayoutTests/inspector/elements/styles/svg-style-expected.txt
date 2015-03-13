@@ -14,4 +14,3 @@ rect  { (svg-style.xhtml:38 -> svg-style.xhtml:38:10)
   -webkit-transform-origin: 0px 0px 0px;
 
 
-

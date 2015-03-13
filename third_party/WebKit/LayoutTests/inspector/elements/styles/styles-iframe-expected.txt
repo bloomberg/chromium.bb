@@ -15,7 +15,6 @@ media="screen" (styles-iframe.html)
 div  { (user agent stylesheet)
   display: block;
 
-
 iframe style:
 [expanded] 
 element.style  { ()
@@ -29,6 +28,5 @@ body  { (styles-iframe-data.html:4 -> styles-iframe-data.html:4:3)
 body  { (user agent stylesheet)
   display: block;
   margin: 8px;
-
 
 

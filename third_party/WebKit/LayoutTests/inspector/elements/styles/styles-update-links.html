@@ -119,10 +119,9 @@ function test()
     function getMatchedRules()
     {
         var rules = [];
-        for (var pseudoId in WebInspector.panels.elements.sidebarPanes.styles.sections) {
-            var matchedStyleSections = WebInspector.panels.elements.sidebarPanes.styles.sections[pseudoId];
-            for (var i = 0; i < matchedStyleSections.length; ++i) {
-                var rule = matchedStyleSections[i].rule();
+        for (var block of WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks) {
+            for (var section of block.sections) {
+                var rule = section.rule();
                 if (rule)
                     rules.push(rule);
             }
@@ -155,7 +154,7 @@ function test()
 
         function testEditSelector(next)
         {
-            var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][3];
+            var section = WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks[0].sections[3];
             section.startEditingSelector();
             section._selectorElement.textContent = ".should-change, .INSERTED-OTHER-SELECTOR";
             InspectorTest.waitForSelectorCommitted(onSelectorEdited);

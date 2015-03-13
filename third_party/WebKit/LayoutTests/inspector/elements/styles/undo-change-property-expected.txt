@@ -12,7 +12,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 After changing property
 [expanded] 
 element.style  { ()
@@ -24,7 +23,6 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 After undo
 [expanded] 
@@ -38,7 +36,6 @@ element.style  { ()
 div  { (user agent stylesheet)
   display: block;
 
-
 After redo
 [expanded] 
 element.style  { ()
@@ -50,6 +47,5 @@ element.style  { ()
 [expanded] 
 div  { (user agent stylesheet)
   display: block;
-
 
 

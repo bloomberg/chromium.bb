@@ -5,15 +5,12 @@ Text
 element.style  { ()
   color: red;
 
-
 [expanded] 
 element.style  { ()
   color: blue;
 
-
 [expanded] 
 element.style  { ()
   background: red;
-
 
 

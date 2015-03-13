@@ -4,7 +4,7 @@ InspectorTest.preloadPanel("elements");
 
 InspectorTest.inlineStyleSection = function()
 {
-    return WebInspector.panels.elements.sidebarPanes.styles.sections[0][0];
+    return WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks[0].sections[0];
 }
 
 InspectorTest.computedStyleSidebarPane = function()
@@ -40,7 +40,7 @@ InspectorTest.findComputedPropertyWithName = function(name)
 
 InspectorTest.firstMatchedStyleSection = function()
 {
-    return WebInspector.panels.elements.sidebarPanes.styles.sections[0][1];
+    return WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks[0].sections[1];
 }
 
 InspectorTest.firstMediaTextElementInSection = function(section)
@@ -259,11 +259,9 @@ InspectorTest.filterMatchedStyles = function(text)
 
 InspectorTest.dumpRenderedMatchedStyles = function()
 {
-    var styleSections = WebInspector.panels.elements.sidebarPanes.styles.sections;
-    for (var pseudoId in styleSections) {
-        var sections = styleSections[pseudoId].slice();
-        for (var i = 0; i < sections.length; ++i) {
-            var section = sections[i];
+    var sectionBlocks = WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks;
+    for (var block of sectionBlocks) {
+        for (var section of block.sections) {
             // Skip sections which were filtered out.
             if (section.element.classList.contains("hidden"))
                 continue;
@@ -309,13 +307,11 @@ InspectorTest.dumpRenderedMatchedStyles = function()
 
 InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatched, omitLonghands, includeSelectorGroupMarks)
 {
-    var styleSections = WebInspector.panels.elements.sidebarPanes.styles.sections;
+    var sectionBlocks = WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks;
     if (!excludeComputed)
         InspectorTest.dumpComputedStyle();
-    for (var pseudoId in styleSections) {
-        var sections = styleSections[pseudoId].slice();
-        for (var i = 0; i < sections.length; ++i) {
-            var section = sections[i];
+    for (var block of sectionBlocks) {
+        for (var section of block.sections) {
             if (section.rule() && excludeMatched)
                 continue;
             if (section.element.previousSibling && section.element.previousSibling.className === "sidebar-separator") {
@@ -326,7 +322,6 @@ InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatch
             }
             printStyleSection(section, omitLonghands, includeSelectorGroupMarks);
         }
-        InspectorTest.addResult("");
     }
 }
 
@@ -469,11 +464,10 @@ InspectorTest.getElementStylePropertyTreeItem = function(propertyName)
 // FIXME: this returns the first tree item found (may fail for same-named properties in a style).
 InspectorTest.getMatchedStylePropertyTreeItem = function(propertyName)
 {
-    var sections = WebInspector.panels.elements.sidebarPanes.styles.sections;
-    for (var pseudoId in sections) {
-        var styleSections = sections[pseudoId];
-        for (var i = 0; i < styleSections.length; ++i) {
-            var treeItem = InspectorTest.getFirstPropertyTreeItemForSection(styleSections[i], propertyName);
+    var sectionBlocks = WebInspector.panels.elements.sidebarPanes.styles._sectionBlocks;
+    for (var block of sectionBlocks) {
+        for (var section of block.sections) {
+            var treeItem = InspectorTest.getFirstPropertyTreeItemForSection(section, propertyName);
             if (treeItem)
                 return treeItem;
         }
