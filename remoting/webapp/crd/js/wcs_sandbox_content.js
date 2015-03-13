@@ -155,10 +155,10 @@ remoting.WcsSandboxContent.prototype.sendXhr = function(xhr) {
   var message = {
     'command': 'sendXhr',
     'id': id,
-    'parameters': xhr.sandbox_ipc
+    'parameters': xhr.sandboxIpc
   };
   this.parentWindow_.postMessage(message, '*');
-  delete xhr.sandbox_ipc;
+  delete xhr.sandboxIpc;
   return id;
 };
 

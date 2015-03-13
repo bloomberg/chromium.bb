@@ -13,24 +13,24 @@
 var remoting = remoting || {};
 
 /**
- * @param {Array<string>} app_capabilities Array of application capabilities.
+ * @param {Array<string>} appCapabilities Array of application capabilities.
  * @constructor
  */
-remoting.Application = function(app_capabilities) {
+remoting.Application = function(appCapabilities) {
   /** @private {remoting.Application.Delegate} */
   this.delegate_ = null;
 
   /** @private {Array<string>} */
-  this.app_capabilities_ = [
+  this.appCapabilities_ = [
     remoting.ClientSession.Capability.SEND_INITIAL_RESOLUTION,
     remoting.ClientSession.Capability.RATE_LIMIT_RESIZE_REQUESTS,
     remoting.ClientSession.Capability.VIDEO_RECORDER
   ];
   // Append the app-specific capabilities.
-  this.app_capabilities_.push.apply(this.app_capabilities_, app_capabilities);
+  this.appCapabilities_.push.apply(this.appCapabilities_, appCapabilities);
 
   /** @private {remoting.SessionConnector} */
-  this.session_connector_ = null;
+  this.sessionConnector_ = null;
 
   /** @private {base.Disposable} */
   this.sessionConnectedHooks_ = null;
@@ -56,7 +56,7 @@ remoting.Application.prototype.getApplicationName = function() {
  *     by this application.
  */
 remoting.Application.prototype.getRequiredCapabilities_ = function() {
-  return this.app_capabilities_;
+  return this.appCapabilities_;
 };
 
 /**
@@ -153,7 +153,7 @@ remoting.Application.prototype.onDisconnected = function() {
  * @return {void} Nothing.
  */
 remoting.Application.prototype.onConnectionFailed = function(error) {
-  this.delegate_.handleConnectionFailed(this.session_connector_, error);
+  this.delegate_.handleConnectionFailed(this.sessionConnector_, error);
 };
 
 /**
@@ -206,8 +206,8 @@ remoting.Application.prototype.onError = function(errorTag) {
  */
 remoting.Application.prototype.getSessionConnector = function() {
   // TODO(garykac): Check if this can be initialized in the ctor.
-  if (!this.session_connector_) {
-    this.session_connector_ = remoting.SessionConnector.factory.createConnector(
+  if (!this.sessionConnector_) {
+    this.sessionConnector_ = remoting.SessionConnector.factory.createConnector(
         document.getElementById('client-container'),
         this.onConnected.bind(this),
         this.onError.bind(this),
@@ -216,7 +216,7 @@ remoting.Application.prototype.getSessionConnector = function() {
         this.getRequiredCapabilities_(),
         this.delegate_.getDefaultRemapKeys());
   }
-  return this.session_connector_;
+  return this.sessionConnector_;
 };
 
 /**

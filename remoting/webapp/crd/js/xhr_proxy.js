@@ -29,11 +29,11 @@ var remoting = remoting || {};
  */
 remoting.XMLHttpRequestProxy = function() {
   /** @type {{headers: Object}} */
-  this.sandbox_ipc = {
+  this.sandboxIpc = {
     headers: {}
   };
   /** @private {number} */
-  this.xhr_id_ = -1;
+  this.xhrId_ = -1;
 };
 
 remoting.XMLHttpRequestProxy.prototype.open = function(
@@ -41,27 +41,27 @@ remoting.XMLHttpRequestProxy.prototype.open = function(
   if (!async) {
     console.warn('Synchronous XHRs are not supported.');
   }
-  this.sandbox_ipc.method = method;
-  this.sandbox_ipc.url = url.toString();
-  this.sandbox_ipc.user = user;
-  this.sandbox_ipc.password = password;
+  this.sandboxIpc.method = method;
+  this.sandboxIpc.url = url.toString();
+  this.sandboxIpc.user = user;
+  this.sandboxIpc.password = password;
 };
 
 remoting.XMLHttpRequestProxy.prototype.send = function(data) {
   if (remoting.sandboxContent) {
-    this.sandbox_ipc.data = data;
-    this.xhr_id_ = remoting.sandboxContent.sendXhr(this);
+    this.sandboxIpc.data = data;
+    this.xhrId_ = remoting.sandboxContent.sendXhr(this);
   }
 };
 
 remoting.XMLHttpRequestProxy.prototype.setRequestHeader = function(
     header, value) {
-  this.sandbox_ipc.headers[header] = value;
+  this.sandboxIpc.headers[header] = value;
 };
 
 remoting.XMLHttpRequestProxy.prototype.abort = function() {
-  if (this.xhr_id_ != -1) {
-    remoting.sandboxContent.abortXhr(this.xhr_id_);
+  if (this.xhrId_ != -1) {
+    remoting.sandboxContent.abortXhr(this.xhrId_);
   }
 };
 
