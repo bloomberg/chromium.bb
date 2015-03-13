@@ -33,7 +33,8 @@ def _GetAllPossiblePageTestInstances():
   # Get all page test instances from measurement classes that are directly
   # constructable
   all_measurement_classes = discover.DiscoverClasses(
-      measurements_dir, top_level_dir, page_test.PageTest).values()
+      measurements_dir, top_level_dir, page_test.PageTest,
+      index_by_class_name=True).values()
   for measurement_class in all_measurement_classes:
     if classes.IsDirectlyConstructable(measurement_class):
       page_test_instances.append(measurement_class())

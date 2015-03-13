@@ -106,8 +106,9 @@ def _AddTracingResults(events, results):
 
 
 class _OilpanGCTimesBase(page_test.PageTest):
-  def __init__(self, action_name = ''):
-    super(_OilpanGCTimesBase, self).__init__(action_name)
+  def __init__(self):
+    super(_OilpanGCTimesBase, self).__init__(
+        action_name_to_run='RunPageInteractions')
     self._timeline_model = None
 
   def WillNavigateToPage(self, page, tab):
@@ -139,7 +140,7 @@ class _OilpanGCTimesBase(page_test.PageTest):
 
 class OilpanGCTimesForSmoothness(_OilpanGCTimesBase):
   def __init__(self):
-    super(OilpanGCTimesForSmoothness, self).__init__('RunPageInteractions')
+    super(OilpanGCTimesForSmoothness, self).__init__()
     self._interaction = None
 
   def WillRunActions(self, page, tab):
