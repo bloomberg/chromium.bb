@@ -31,6 +31,10 @@ RendererSchedulerImpl::RendererSchedulerImpl(
           task_queue_manager_->TaskRunnerForQueue(COMPOSITOR_TASK_QUEUE)),
       loading_task_runner_(
           task_queue_manager_->TaskRunnerForQueue(LOADING_TASK_QUEUE)),
+      delayed_update_policy_runner_(
+          base::Bind(&RendererSchedulerImpl::UpdatePolicy,
+                     base::Unretained(this)),
+          control_task_runner_),
       current_policy_(Policy::NORMAL),
       last_input_type_(blink::WebInputEvent::Undefined),
       input_stream_state_(InputStreamState::INACTIVE),
@@ -185,8 +189,7 @@ void RendererSchedulerImpl::UpdateForInputEvent(
   if (input_stream_state_ != new_input_stream_state) {
     // Update scheduler policy if we should start a new policy mode.
     input_stream_state_ = new_input_stream_state;
-    policy_may_need_update_.SetWhileLocked(true);
-    PostUpdatePolicyOnControlRunner(base::TimeDelta());
+    EnsureUrgentPolicyUpdatePostedOnMainThread(FROM_HERE);
   }
   last_input_receipt_time_on_compositor_ = Now();
   // Clear the last known input processing time so that we know an input event
@@ -200,6 +203,7 @@ void RendererSchedulerImpl::UpdateForInputEvent(
 
 void RendererSchedulerImpl::DidProcessInputEvent(
     base::TimeTicks begin_frame_time) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   base::AutoLock lock(incoming_signals_lock_);
   if (input_stream_state_ == InputStreamState::INACTIVE)
     return;
@@ -208,7 +212,7 @@ void RendererSchedulerImpl::DidProcessInputEvent(
       begin_frame_time < last_input_receipt_time_on_compositor_)
     return;
   last_input_process_time_on_main_ = Now();
-  policy_may_need_update_.SetWhileLocked(true);
+  UpdatePolicyLocked();
 }
 
 bool RendererSchedulerImpl::IsHighPriorityWorkAnticipated() {
@@ -268,25 +272,37 @@ void RendererSchedulerImpl::MaybeUpdatePolicy() {
   }
 }
 
-void RendererSchedulerImpl::PostUpdatePolicyOnControlRunner(
-    base::TimeDelta delay) {
-  control_task_runner_->PostDelayedTask(
-      FROM_HERE, update_policy_closure_, delay);
+void RendererSchedulerImpl::EnsureUrgentPolicyUpdatePostedOnMainThread(
+    const tracked_objects::Location& from_here) {
+  // TODO(scheduler-dev): Check that this method isn't called from the main
+  // thread.
+  incoming_signals_lock_.AssertAcquired();
+  if (!policy_may_need_update_.IsSet()) {
+    policy_may_need_update_.SetWhileLocked(true);
+    control_task_runner_->PostTask(from_here, update_policy_closure_);
+  }
 }
 
 void RendererSchedulerImpl::UpdatePolicy() {
+  base::AutoLock lock(incoming_signals_lock_);
+  UpdatePolicyLocked();
+}
+
+void RendererSchedulerImpl::UpdatePolicyLocked() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  incoming_signals_lock_.AssertAcquired();
   if (!task_queue_manager_)
     return;
 
-  base::AutoLock lock(incoming_signals_lock_);
-  base::TimeTicks now;
+  base::TimeTicks now = Now();
   policy_may_need_update_.SetWhileLocked(false);
 
   base::TimeDelta new_policy_duration;
-  Policy new_policy = ComputeNewPolicy(&new_policy_duration);
-  if (new_policy_duration > base::TimeDelta())
-    PostUpdatePolicyOnControlRunner(new_policy_duration);
+  Policy new_policy = ComputeNewPolicy(now, &new_policy_duration);
+  if (new_policy_duration > base::TimeDelta()) {
+    delayed_update_policy_runner_.SetDeadline(FROM_HERE, new_policy_duration,
+                                              now);
+  }
 
   if (new_policy == current_policy_)
     return;
@@ -326,6 +342,7 @@ void RendererSchedulerImpl::UpdatePolicy() {
 }
 
 RendererSchedulerImpl::Policy RendererSchedulerImpl::ComputeNewPolicy(
+    base::TimeTicks now,
     base::TimeDelta* new_policy_duration) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   incoming_signals_lock_.AssertAcquired();
@@ -356,7 +373,7 @@ RendererSchedulerImpl::Policy RendererSchedulerImpl::ComputeNewPolicy(
         std::max(last_input_receipt_time_on_compositor_,
                  last_input_process_time_on_main_) +
         new_priority_duration);
-    base::TimeDelta time_left_in_policy = new_priority_end - Now();
+    base::TimeDelta time_left_in_policy = new_priority_end - now;
 
     if (time_left_in_policy > base::TimeDelta()) {
       new_policy = input_priority_policy;

@@ -56,7 +56,14 @@ class RendererSchedulerImplTest : public testing::Test {
   }
   ~RendererSchedulerImplTest() override {}
 
-  void RunUntilIdle() { mock_task_runner_->RunUntilIdle(); }
+  void TearDown() override {
+    // Check that all tests stop posting tasks.
+    mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+    while (RunUntilIdle()) {
+    }
+  }
+
+  bool RunUntilIdle() { return mock_task_runner_->RunUntilIdle(); }
 
   void DoMainFrame() {
     scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
@@ -68,6 +75,16 @@ class RendererSchedulerImplTest : public testing::Test {
   void EnableIdleTasks() { DoMainFrame(); }
 
   Policy CurrentPolicy() { return scheduler_->current_policy_; }
+
+  void EnsureUrgentPolicyUpdatePostedOnMainThread() {
+    base::AutoLock lock(scheduler_->incoming_signals_lock_);
+    scheduler_->EnsureUrgentPolicyUpdatePostedOnMainThread(FROM_HERE);
+  }
+
+  void ScheduleDelayedPolicyUpdate(base::TimeDelta delay) {
+    scheduler_->delayed_update_policy_runner_.SetDeadline(FROM_HERE, delay,
+                                                          clock_->Now());
+  }
 
   // Helper for posting several tasks of specific types. |task_descriptor| is a
   // string with space delimited task identifiers. The first letter of each
@@ -845,6 +862,136 @@ TEST_F(RendererSchedulerImplTest, InputArrivesAfterBeginFrame) {
   clock_->AdvanceNow(2 * priority_escalation_after_input_duration());
   RunUntilIdle();
   EXPECT_EQ(Policy::NORMAL, CurrentPolicy());
+}
+
+class RendererSchedulerImplForTest : public RendererSchedulerImpl {
+ public:
+  RendererSchedulerImplForTest(
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
+      : RendererSchedulerImpl(main_task_runner), update_policy_count_(0) {}
+
+  void UpdatePolicyLocked() override {
+    update_policy_count_++;
+    RendererSchedulerImpl::UpdatePolicyLocked();
+  }
+
+  int update_policy_count_;
+};
+
+TEST_F(RendererSchedulerImplTest, OnlyOnePendingUrgentPolicyUpdatey) {
+  RendererSchedulerImplForTest* mock_scheduler =
+      new RendererSchedulerImplForTest(mock_task_runner_);
+  scheduler_.reset(mock_scheduler);
+
+  EnsureUrgentPolicyUpdatePostedOnMainThread();
+  EnsureUrgentPolicyUpdatePostedOnMainThread();
+  EnsureUrgentPolicyUpdatePostedOnMainThread();
+  EnsureUrgentPolicyUpdatePostedOnMainThread();
+
+  RunUntilIdle();
+
+  EXPECT_EQ(1, mock_scheduler->update_policy_count_);
+}
+
+TEST_F(RendererSchedulerImplTest, OnePendingDelayedAndOneUrgentUpdatePolicy) {
+  RendererSchedulerImplForTest* mock_scheduler =
+      new RendererSchedulerImplForTest(mock_task_runner_);
+  scheduler_.reset(mock_scheduler);
+  scheduler_->SetTimeSourceForTesting(clock_);
+  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  ScheduleDelayedPolicyUpdate(base::TimeDelta::FromMilliseconds(1));
+  EnsureUrgentPolicyUpdatePostedOnMainThread();
+
+  RunUntilIdle();
+
+  // We expect both the urgent and the delayed updates to run.
+  EXPECT_EQ(2, mock_scheduler->update_policy_count_);
+}
+
+TEST_F(RendererSchedulerImplTest, OneUrgentAndOnePendingDelayedUpdatePolicy) {
+  RendererSchedulerImplForTest* mock_scheduler =
+      new RendererSchedulerImplForTest(mock_task_runner_);
+  scheduler_.reset(mock_scheduler);
+  scheduler_->SetTimeSourceForTesting(clock_);
+  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  EnsureUrgentPolicyUpdatePostedOnMainThread();
+  ScheduleDelayedPolicyUpdate(base::TimeDelta::FromMilliseconds(1));
+
+  RunUntilIdle();
+
+  // We expect both the urgent and the delayed updates to run.
+  EXPECT_EQ(2, mock_scheduler->update_policy_count_);
+}
+
+TEST_F(RendererSchedulerImplTest, UpdatePolicyCountTriggeredByOneInputEvent) {
+  RendererSchedulerImplForTest* mock_scheduler =
+      new RendererSchedulerImplForTest(mock_task_runner_);
+  scheduler_.reset(mock_scheduler);
+  scheduler_->SetTimeSourceForTesting(clock_);
+  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchStart));
+
+  RunUntilIdle();
+
+  // We expect an urgent policy update followed by a delayed one 100ms later.
+  EXPECT_EQ(2, mock_scheduler->update_policy_count_);
+}
+
+TEST_F(RendererSchedulerImplTest, UpdatePolicyCountTriggeredByTwoInputEvents) {
+  RendererSchedulerImplForTest* mock_scheduler =
+      new RendererSchedulerImplForTest(mock_task_runner_);
+  scheduler_.reset(mock_scheduler);
+  scheduler_->SetTimeSourceForTesting(clock_);
+  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchStart));
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchMove));
+
+  RunUntilIdle();
+
+  // We expect an urgent policy update followed by a delayed one 100ms later.
+  EXPECT_EQ(2, mock_scheduler->update_policy_count_);
+}
+
+TEST_F(RendererSchedulerImplTest, EnsureUpdatePolicyNotTriggeredTooOften) {
+  RendererSchedulerImplForTest* mock_scheduler =
+      new RendererSchedulerImplForTest(mock_task_runner_);
+  scheduler_.reset(mock_scheduler);
+  scheduler_->SetTimeSourceForTesting(clock_);
+  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchStart));
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchMove));
+
+  // We expect the first call to IsHighPriorityWorkAnticipated to be called
+  // after recieving an input event (but before the UpdateTask was processed) to
+  // call UpdatePolicy.
+  EXPECT_EQ(0, mock_scheduler->update_policy_count_);
+  scheduler_->IsHighPriorityWorkAnticipated();
+  EXPECT_EQ(1, mock_scheduler->update_policy_count_);
+  // Subsequent calls should not call UpdatePolicy.
+  scheduler_->IsHighPriorityWorkAnticipated();
+  scheduler_->IsHighPriorityWorkAnticipated();
+  scheduler_->IsHighPriorityWorkAnticipated();
+  scheduler_->ShouldYieldForHighPriorityWork();
+  scheduler_->ShouldYieldForHighPriorityWork();
+  scheduler_->ShouldYieldForHighPriorityWork();
+  scheduler_->ShouldYieldForHighPriorityWork();
+
+  EXPECT_EQ(1, mock_scheduler->update_policy_count_);
+
+  RunUntilIdle();
+  // We expect both the urgent and the delayed updates to run in addition to the
+  // earlier updated cause by IsHighPriorityWorkAnticipated.
+  EXPECT_EQ(3, mock_scheduler->update_policy_count_);
 }
 
 }  // namespace content

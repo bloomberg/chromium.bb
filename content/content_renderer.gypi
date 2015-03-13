@@ -364,6 +364,8 @@
       'renderer/savable_resources.h',
       'renderer/scheduler/cancelable_closure_holder.cc',
       'renderer/scheduler/cancelable_closure_holder.h',
+      'renderer/scheduler/deadline_task_runner.cc',
+      'renderer/scheduler/deadline_task_runner.h',
       'renderer/scheduler/null_renderer_scheduler.cc',
       'renderer/scheduler/null_renderer_scheduler.h',
       'renderer/scheduler/renderer_scheduler.cc',
