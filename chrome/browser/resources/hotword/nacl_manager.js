@@ -508,6 +508,21 @@ NaClManager.prototype.handleStopped_ = function() {
 };
 
 /**
+ * Handle a TIMEOUT message from the plugin.
+ * The plugin sends this message when it thinks the stream is from a DSP and
+ * a hotword wasn't detected within a timeout period after arrival of the first
+ * audio samples.
+ * @private
+ */
+NaClManager.prototype.handleTimeout_ = function() {
+  if (this.recognizerState_ != ManagerState_.RUNNING) {
+    return;
+  }
+  this.recognizerState_ = ManagerState_.STOPPED;
+  this.dispatchEvent(new Event(hotword.constants.Event.TIMEOUT));
+};
+
+/**
  * Handle a SPEAKER_MODEL_SAVED message from the plugin.
  * The plugin sends this message after writing the model to a file.
  * @private
@@ -548,6 +563,9 @@ NaClManager.prototype.handlePluginMessage_ = function(msg) {
         break;
       case hotword.constants.NaClPlugin.STOPPED:
         this.handleStopped_();
+        break;
+      case hotword.constants.NaClPlugin.TIMEOUT:
+        this.handleTimeout_();
         break;
       case hotword.constants.NaClPlugin.SPEAKER_MODEL_SAVED:
         this.handleSpeakerModelSaved_();

@@ -103,6 +103,7 @@ var Event = {
   TRIGGER: 'trigger',
   SPEAKER_MODEL_SAVED: 'speaker model saved',
   ERROR: 'error',
+  TIMEOUT: 'timeout',
 };
 
 /**
@@ -125,7 +126,8 @@ var NaClPlugin = {
   READY_FOR_AUDIO: 'audio',
   STOPPED: 'stopped',
   HOTWORD_DETECTED: 'hotword',
-  MS_CONFIGURED: 'ms_configured'
+  MS_CONFIGURED: 'ms_configured',
+  TIMEOUT: 'timeout'
 };
 
 /**

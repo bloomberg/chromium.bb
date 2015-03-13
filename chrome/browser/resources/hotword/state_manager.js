@@ -308,6 +308,8 @@ cr.define('hotword', function() {
                                              this.onError_.bind(this));
         this.pluginManager_.addEventListener(hotword.constants.Event.TRIGGER,
                                              this.onTrigger_.bind(this));
+        this.pluginManager_.addEventListener(hotword.constants.Event.TIMEOUT,
+                                             this.onTimeout_.bind(this));
         this.pluginManager_.addEventListener(
             hotword.constants.Event.SPEAKER_MODEL_SAVED,
             this.onSpeakerModelSaved_.bind(this));
@@ -495,6 +497,20 @@ cr.define('hotword', function() {
       // only way to accomplish this is to shut everything down.
       if (this.isAlwaysOnEnabled())
         this.shutdownDetector_();
+    },
+
+    /**
+     * Handle hotword timeout.
+     * @private
+     */
+    onTimeout_: function() {
+      hotword.debug('Hotword timeout!');
+
+      // We get this event when the hotword detector thinks there's a false
+      // trigger. In this case, we need to shut down and restart the detector to
+      // re-arm the DSP.
+      this.shutdownDetector_();
+      this.updateStateFromStatus_();
     },
 
     /**
