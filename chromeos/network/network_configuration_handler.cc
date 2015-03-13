@@ -64,7 +64,7 @@ void LogConfigProperties(const std::string& desc,
   for (base::DictionaryValue::Iterator iter(properties); !iter.IsAtEnd();
        iter.Advance()) {
     std::string v = "******";
-    if (shill_property_util::IsLoggableShillProperty(iter.key()))
+    if (!shill_property_util::IsPassphraseKey(iter.key()))
       base::JSONWriter::Write(&iter.value(), &v);
     NET_LOG(USER) << desc << ": " << path + "." + iter.key() + "=" + v;
   }
