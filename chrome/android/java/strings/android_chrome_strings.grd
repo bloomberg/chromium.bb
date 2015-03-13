@@ -735,6 +735,17 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Setup in progress…
       </message>
 
+      <!-- Confirm Sync account change dialog. -->
+      <message name="IDS_CONFIRM_ACCOUNT_CHANGE_DIALOG_TITLE" desc="Confirm Account change dialog title. This Dialog warns the user that signing in to sync will merge all their browsing data with the new sync email account. This dialog is displayed when user signs out of sync and tries to sign in again with a different account. Dialog also contains a link which opens a new dialog to clear sync data. [CHAR-LIMIT=40].">
+        Confirm Google Account
+      </message>
+      <message name="IDS_CONFIRM_ACCOUNT_CHANGE_DIALOG_MESSAGE" desc="Message to display for google account change confirmation dialog.">
+        <ph name="ACCOUNT_EMAIL_LAST">%1$s<ex>user@example.com</ex></ph> was signed in. Signing in with <ph name="ACCOUNT_EMAIL_NEW">%2$s<ex>user@example.com</ex></ph> will merge synced data like bookmarks between accounts. To keep information separate, clear browsing data in <ph name="BEGIN_LINK">&lt;link&gt;</ph>settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_CONFIRM_ACCOUNT_CHANGE_DIALOG_SIGNIN" desc="The string used in the dialog for the button that means user has confirmed to sign in as a different user and merge information.  [CHAR-LIMIT=24]">
+        Sign in
+      </message>
+
       <!-- Legal information preferences -->
       <message name="IDS_LEGAL_INFORMATION_TITLE" desc="Title for legal information [CHAR-LIMIT=32]">
         Legal information
