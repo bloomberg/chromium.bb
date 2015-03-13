@@ -169,7 +169,7 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
 
 namespace {
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_WIN)
 TEST_F(GLRendererShaderPixelTest, AllShadersCompile) { TestShaders(); }
 #endif
 
