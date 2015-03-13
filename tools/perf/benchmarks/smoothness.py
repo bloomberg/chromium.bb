@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from benchmarks import silk_flags
+from benchmarks import webgl_expectations
 from measurements import smoothness
 import page_sets
 from telemetry import benchmark
@@ -53,6 +54,10 @@ class SmoothnessToughCanvasCases(benchmark.Benchmark):
 class SmoothnessToughWebGLCases(benchmark.Benchmark):
   test = smoothness.Smoothness
   page_set = page_sets.ToughWebglCasesPageSet
+
+  @classmethod
+  def CreateExpectations(cls):
+    return webgl_expectations.WebGLExpectations()
 
   @classmethod
   def Name(cls):
