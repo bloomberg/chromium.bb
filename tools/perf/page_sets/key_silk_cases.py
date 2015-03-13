@@ -713,6 +713,18 @@ class PolymerTopeka(KeySilkCasesPage):
         window.topeka_page_transitions === 6''')
     interaction.End()
 
+class Masonry(KeySilkCasesPage):
+
+  """ Why: Popular layout hack. """
+
+  def __init__(self, page_set, run_no_page_interactions):
+    super(Masonry, self).__init__(
+      url='file://key_silk_cases/masonry.html',
+      page_set=page_set, run_no_page_interactions=run_no_page_interactions)
+
+  def PerformPageInteractions(self, action_runner):
+    action_runner.WaitForJavaScriptCondition('window.done')
+
 
 class KeySilkCasesPageSet(page_set_module.PageSet):
 
@@ -757,6 +769,7 @@ class KeySilkCasesPageSet(page_set_module.PageSet):
     self.AddUserStory(UpdateHistoryState(self, run_no_page_interactions))
     self.AddUserStory(SilkFinance(self, run_no_page_interactions))
     self.AddUserStory(PolymerTopeka(self, run_no_page_interactions))
+    self.AddUserStory(Masonry(self, run_no_page_interactions))
 
     for page in self:
       assert (page.__class__.RunPageInteractions ==

@@ -1,0 +1,34 @@
+<script src="http://cdnjs.cloudflare.com/ajax/libs/masonry/3.2.2/masonry.pkgd.min.js"></script>
+<style>
+body {
+  display: none;
+  margin: 0;
+}
+.item {
+  min-width: 200px;
+  max-width: 23%;
+  border: 2px solid red;
+  margin: 1px;
+}
+</style>
+<div id=container>
+<div class=item>Lorem ipsum dolor sit amet, consectetur adipiscing elit, seddo eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim adminim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip exea commodo consequat. Duis aute irure dolor in reprehenderit in voluptatevelit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecatcupidatat non proident, sunt in culpa qui officia deserunt mollit anim id estlaborum.</div>
+</div>
+<script>
+var container = document.querySelector('#container');
+var item = container.children[0];
+for (var i = 0; i < 100; ++i) {
+  container.appendChild(item.cloneNode(true));
+}
+document.body.style.display = 'block';
+var mason = new Masonry(container, {
+  itemSelector: '.item',
+});
+requestAnimationFrame(function() {
+  mason.element.style.maxWidth = '450px';
+  mason.layout();
+  requestAnimationFrame(function() {
+    window.done = true;
+  });
+});
+</script>
