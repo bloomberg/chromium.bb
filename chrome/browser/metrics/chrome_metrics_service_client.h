@@ -68,6 +68,7 @@ class ChromeMetricsServiceClient
   void CollectFinalMetrics(const base::Closure& done_callback) override;
   scoped_ptr<metrics::MetricsLogUploader> CreateUploader(
       const base::Callback<void(int)>& on_upload_complete) override;
+  base::TimeDelta GetStandardUploadInterval() override;
   base::string16 GetRegistryBackupKey() override;
 
   metrics::MetricsService* metrics_service() { return metrics_service_.get(); }
@@ -170,6 +171,10 @@ class ChromeMetricsServiceClient
   // The MemoryGrowthTracker instance that tracks memory usage growth in
   // MemoryDetails.
   MemoryGrowthTracker memory_growth_tracker_;
+
+  // Callback to determine whether or not a cellular network is currently being
+  // used.
+  base::Callback<void(bool*)> cellular_callback_;
 
   base::WeakPtrFactory<ChromeMetricsServiceClient> weak_ptr_factory_;
 

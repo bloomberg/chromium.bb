@@ -31,6 +31,10 @@
 namespace chromecast {
 namespace metrics {
 
+namespace {
+const int kStandardUploadIntervalMinutes = 5;
+}  // namespace
+
 // static
 scoped_ptr<CastMetricsServiceClient> CastMetricsServiceClient::Create(
     base::TaskRunner* io_task_runner,
@@ -148,6 +152,10 @@ CastMetricsServiceClient::CreateUploader(
           uma_server_url,
           ::metrics::kDefaultMetricsMimeType,
           on_upload_complete));
+}
+
+base::TimeDelta CastMetricsServiceClient::GetStandardUploadInterval() {
+  return base::TimeDelta::FromMinutes(kStandardUploadIntervalMinutes);
 }
 
 void CastMetricsServiceClient::EnableMetricsService(bool enabled) {

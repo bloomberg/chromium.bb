@@ -62,6 +62,7 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   void CollectFinalMetrics(const base::Closure& done_callback) override;
   scoped_ptr< ::metrics::MetricsLogUploader> CreateUploader(
       const base::Callback<void(int)>& on_upload_complete) override;
+  base::TimeDelta GetStandardUploadInterval() override;
 
   // Starts/stops the metrics service.
   void EnableMetricsService(bool enabled);

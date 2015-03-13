@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "components/metrics/proto/system_profile.pb.h"
 
 namespace metrics {
@@ -65,6 +66,9 @@ class MetricsServiceClient {
   // MetricsLogUploader for details).
   virtual scoped_ptr<MetricsLogUploader> CreateUploader(
       const base::Callback<void(int)>& on_upload_complete) = 0;
+
+  // Returns the standard interval between upload attempts.
+  virtual base::TimeDelta GetStandardUploadInterval() = 0;
 
   // Returns the name of a key under HKEY_CURRENT_USER that can be used to store
   // backups of metrics data. Unused except on Windows.

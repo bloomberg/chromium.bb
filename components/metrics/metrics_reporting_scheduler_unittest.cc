@@ -22,8 +22,8 @@ class MetricsReportingSchedulerTest : public testing::Test {
                       base::Unretained(this));
   }
 
-  base::Callback<void(bool*)> GetConnectionCallback() {
-    return base::Bind(&MetricsReportingSchedulerTest::SetConnectionTypeCallback,
+  base::Callback<base::TimeDelta(void)> GetConnectionCallback() {
+    return base::Bind(&MetricsReportingSchedulerTest::GetStandardUploadInterval,
                       base::Unretained(this));
   }
 
@@ -34,8 +34,8 @@ class MetricsReportingSchedulerTest : public testing::Test {
     ++callback_call_count_;
   }
 
-  void SetConnectionTypeCallback(bool* is_cellular_out) {
-    *is_cellular_out = false;
+  base::TimeDelta GetStandardUploadInterval() {
+    return base::TimeDelta::FromMinutes(5);
   }
 
   int callback_call_count_;

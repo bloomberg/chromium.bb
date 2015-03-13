@@ -69,4 +69,8 @@ scoped_ptr<MetricsLogUploader> TestMetricsServiceClient::CreateUploader(
   return scoped_ptr<MetricsLogUploader>();
 }
 
+base::TimeDelta TestMetricsServiceClient::GetStandardUploadInterval() {
+  return base::TimeDelta::FromMinutes(5);
+}
+
 }  // namespace metrics

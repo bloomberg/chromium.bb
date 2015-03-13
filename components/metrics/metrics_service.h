@@ -243,10 +243,6 @@ class MetricsService : public base::HistogramFlattener {
   // Clears the stability metrics that are saved in local state.
   void ClearSavedStabilityMetrics();
 
-  // Sets the connection type callback used to pass to the scheduler.
-  void SetConnectionTypeCallback(
-      base::Callback<void(bool*)> is_cellular_callback);
-
  protected:
   // Exposed for testing.
   MetricsLogManager* log_manager() { return &log_manager_; }
@@ -479,9 +475,6 @@ class MetricsService : public base::HistogramFlattener {
   // Reduntant marker to check that we completed our shutdown, and set the
   // exited-cleanly bit in the prefs.
   static ShutdownCleanliness clean_shutdown_status_;
-
-  // Callback function used to get current network connection type.
-  base::Callback<void(bool*)> is_cellular_callback_;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest,
