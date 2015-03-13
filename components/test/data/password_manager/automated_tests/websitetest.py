@@ -305,7 +305,9 @@ class WebsiteTest:
     logging.info("\nWrong Login Test for %s \n" % self.name)
     try:
       correct_password = self.password
-      self.password = self.password + "1"
+      # Hardcoded random wrong password. Chosen by fair `pwgen` call.
+      # For details, see: http://xkcd.com/221/.
+      self.password = "ChieF2ae"
       self.LoginWhenNotAutofilled()
       self.password = correct_password
       self.Wait(2)
