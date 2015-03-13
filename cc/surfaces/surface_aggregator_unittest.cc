@@ -1083,8 +1083,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
   factory_.SubmitFrame(child_surface_id, child_frame.Pass(),
                        SurfaceFactory::DrawCallback());
 
-  test::Quad root_quads[] = {test::Quad::SurfaceQuad(child_surface_id, 1.f)};
-  test::Pass root_passes[] = {test::Pass(root_quads, arraysize(root_quads))};
+  RenderPassId pass_id(5, 10);
+  test::Quad first_quads[] = {test::Quad::SurfaceQuad(child_surface_id, 1.f)};
+  test::Quad root_quads[] = {test::Quad::RenderPassQuad(pass_id)};
+
+  test::Pass root_passes[] = {
+      test::Pass(first_quads, arraysize(first_quads), pass_id),
+      test::Pass(root_quads, arraysize(root_quads))};
 
   RenderPassList root_pass_list;
   AddPasses(&root_pass_list,
@@ -1096,6 +1101,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
       ->shared_quad_state_list.front()
       ->content_to_target_transform.Translate(0, 10);
   root_pass_list.at(0)->damage_rect = gfx::Rect(5, 5, 10, 10);
+  root_pass_list.at(1)->damage_rect = gfx::Rect(5, 5, 100, 100);
 
   scoped_ptr<DelegatedFrameData> root_frame_data(new DelegatedFrameData);
   root_pass_list.swap(root_frame_data->render_pass_list);
@@ -1116,11 +1122,11 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
 
   const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
 
-  ASSERT_EQ(1u, aggregated_pass_list.size());
+  ASSERT_EQ(2u, aggregated_pass_list.size());
 
   // Damage rect for first aggregation should contain entire root surface.
   EXPECT_TRUE(
-      aggregated_pass_list[0]->damage_rect.Contains(gfx::Rect(SurfaceSize())));
+      aggregated_pass_list[1]->damage_rect.Contains(gfx::Rect(SurfaceSize())));
 
   {
     AddPasses(&child_pass_list,
@@ -1154,12 +1160,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
 
     const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
 
-    ASSERT_EQ(1u, aggregated_pass_list.size());
+    ASSERT_EQ(2u, aggregated_pass_list.size());
 
     // Outer surface didn't change, so transformed inner damage rect should be
     // used.
     EXPECT_EQ(gfx::Rect(10, 20, 10, 10).ToString(),
-              aggregated_pass_list[0]->damage_rect.ToString());
+              aggregated_pass_list[1]->damage_rect.ToString());
   }
 
   {
@@ -1216,11 +1222,11 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateDamageRect) {
 
     const RenderPassList& aggregated_pass_list = frame_data->render_pass_list;
 
-    ASSERT_EQ(1u, aggregated_pass_list.size());
+    ASSERT_EQ(2u, aggregated_pass_list.size());
 
     // The root surface was enqueued without being aggregated once, so it should
     // be treated as completely damaged.
-    EXPECT_TRUE(aggregated_pass_list[0]->damage_rect.Contains(
+    EXPECT_TRUE(aggregated_pass_list[1]->damage_rect.Contains(
         gfx::Rect(SurfaceSize())));
   }
 
