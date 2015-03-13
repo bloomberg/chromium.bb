@@ -9,6 +9,8 @@
 #include "chrome/common/chrome_paths.h"
 #if defined(OS_WIN)
 #include "chrome/browser/crash_upload_list_win.h"
+#elif defined(OS_MACOSX)
+#include "chrome/browser/crash_upload_list_mac.h"
 #endif
 
 // static
@@ -22,6 +24,8 @@ CrashUploadList* CrashUploadList::Create(Delegate* delegate) {
       crash_dir_path.AppendASCII(kReporterLogFilename);
 #if defined(OS_WIN)
   return new CrashUploadListWin(delegate, upload_log_path);
+#elif defined(OS_MACOSX)
+  return new CrashUploadListMac(delegate, upload_log_path);
 #else
   return new CrashUploadList(delegate, upload_log_path);
 #endif

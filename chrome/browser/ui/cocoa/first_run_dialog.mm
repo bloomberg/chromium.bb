@@ -27,7 +27,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
-#import "components/crash/app/breakpad_mac.h"
 #endif
 
 @interface FirstRunDialogController (PrivateMethods)
@@ -99,14 +98,6 @@ bool ShowFirstRun(Profile* profile) {
     // record the decision and enable the crash reporter if appropriate.
     bool stats_enabled = [dialog.get() statsEnabled];
     GoogleUpdateSettings::SetCollectStatsConsent(stats_enabled);
-
-    // Breakpad is normally enabled very early in the startup process.  However,
-    // on the first run it may not have been enabled due to the missing opt-in
-    // from the user.  If the user agreed now, enable breakpad if necessary.
-    if (!breakpad::IsCrashReporterEnabled() && stats_enabled) {
-      breakpad::InitCrashReporter(std::string());
-      breakpad::InitCrashProcessInfo(std::string());
-    }
 
     // If selected set as default browser.
     BOOL make_default_browser = [dialog.get() makeDefaultBrowser];

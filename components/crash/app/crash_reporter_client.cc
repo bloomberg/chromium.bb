@@ -134,11 +134,6 @@ bool CrashReporterClient::ShouldEnableBreakpadMicrodumps() {
 }
 #endif
 
-#if defined(OS_MACOSX)
-void CrashReporterClient::InstallAdditionalFilters(BreakpadRef breakpad) {
-}
-#endif
-
 bool CrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {
   return false;

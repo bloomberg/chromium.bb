@@ -282,8 +282,6 @@ void InitCrashProcessInfo(const std::string& process_type_switch) {
     process_type = base::SysUTF8ToNSString(process_type_switch);
   }
 
-  GetCrashReporterClient()->InstallAdditionalFilters(gBreakpadRef);
-
   // Store process type in crash dump.
   SetCrashKeyValue(@"ptype", process_type);
 

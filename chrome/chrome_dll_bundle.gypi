@@ -80,6 +80,7 @@
     # dependency here. flash_player.gyp will copy the Flash bundle
     # into PRODUCT_DIR.
     '../third_party/adobe/flash/flash_player.gyp:flapper_binaries',
+    '../third_party/crashpad/crashpad/handler/handler.gyp:crashpad_handler',
     '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
     'chrome_resources.gyp:packed_extra_resources',
     'chrome_resources.gyp:packed_resources',
@@ -142,6 +143,12 @@
       'files': [
         '<(PRODUCT_DIR)/exif.so',
         '<(PRODUCT_DIR)/ffmpegsumo.so',
+      ],
+    },
+    {
+      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Helpers',
+      'files': [
+        '<(PRODUCT_DIR)/crashpad_handler',
       ],
     },
     {
@@ -229,21 +236,6 @@
         'mac_real_dsym': 1,
       },
     }],
-    ['mac_breakpad_compiled_in==1', {
-      'dependencies': [
-        '../breakpad/breakpad.gyp:breakpad',
-        '../components/components.gyp:policy',
-      ],
-      'copies': [
-        {
-          'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
-          'files': [
-            '<(PRODUCT_DIR)/crash_inspector',
-            '<(PRODUCT_DIR)/crash_report_sender.app'
-          ],
-        },
-      ],
-    }],  # mac_breakpad_compiled_in
     ['mac_keystone==1', {
       'mac_bundle_resources': [
         'browser/mac/keystone_promote_preflight.sh',

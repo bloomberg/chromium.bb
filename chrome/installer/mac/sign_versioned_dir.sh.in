@@ -41,6 +41,7 @@ versioned_dir="${app_path}/Contents/Versions/@VERSION@"
 # signed directly. See copy_framework_unversioned.sh.
 
 framework="${versioned_dir}/@MAC_PRODUCT_NAME@ Framework.framework"
+crashpad_handler="${framework}/Helpers/crashpad_handler"
 helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 helper_eh_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper EH.app"
 helper_np_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper NP.app"
@@ -49,6 +50,9 @@ requirement_suffix="\
 and certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\"\
 "
 
+codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
+    "${crashpad_handler}" \
+    -r="designated => identifier \"crashpad_handler\" \
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${framework}" \
     -r="designated => identifier \"com.google.Chrome.framework\" \
@@ -68,6 +72,7 @@ ${requirement_suffix}"
 
 # Verify everything. Don't use --deep on the framework because Keystone's
 # signature is in a transitional state (radar 18474911).
+codesign --verify --deep "${crashpad_handler}"
 codesign --verify "${framework}"
 codesign --verify --deep "${helper_app}"
 codesign --verify --deep "${helper_eh_app}"

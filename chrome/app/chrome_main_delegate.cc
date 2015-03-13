@@ -54,12 +54,11 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
-#include "base/mac/os_crash_dumps.h"
 #include "chrome/app/chrome_main_mac.h"
 #include "chrome/browser/mac/relauncher.h"
 #include "chrome/common/mac/cfbundle_blocker.h"
 #include "chrome/common/mac/objc_zombie.h"
-#include "components/crash/app/breakpad_mac.h"
+#include "components/crash/app/crashpad_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #endif
 
@@ -564,39 +563,11 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 void ChromeMainDelegate::InitMacCrashReporter(
     const base::CommandLine& command_line,
     const std::string& process_type) {
-  // TODO(mark): Right now, InitCrashReporter() needs to be called after
-  // CommandLine::Init() and chrome::RegisterPathProvider().  Ideally,
-  // Breakpad initialization could occur sooner, preferably even before the
-  // framework dylib is even loaded, to catch potential early crashes.
-  breakpad::InitCrashReporter(process_type);
-
-#if defined(NDEBUG)
-  bool is_debug_build = false;
-#else
-  bool is_debug_build = true;
-#endif
-
-  // Details on when we enable Apple's Crash reporter.
-  //
-  // Motivation:
-  //    In debug mode it takes Apple's crash reporter eons to generate a crash
-  // dump.
-  //
-  // What we do:
-  // * We only pass crashes for foreground processes to Apple's Crash
-  //    reporter. At the time of this writing, that means just the Browser
-  //    process.
-  // * If Breakpad is enabled, it will pass browser crashes to Crash Reporter
-  //    itself.
-  // * If Breakpad is disabled, we only turn on Crash Reporter for the
-  //    Browser process in release mode.
-  if (!command_line.HasSwitch(switches::kDisableBreakpad)) {
-    bool disable_apple_crash_reporter = is_debug_build ||
-        base::mac::IsBackgroundOnlyProcess();
-    if (!breakpad::IsCrashReporterEnabled() && disable_apple_crash_reporter) {
-      base::mac::DisableOSCrashDumps();
-    }
-  }
+  // TODO(mark): Right now, InitializeCrashpad() needs to be called after
+  // CommandLine::Init() and chrome::RegisterPathProvider().  Ideally, Crashpad
+  // initialization could occur sooner, preferably even before the framework
+  // dylib is even loaded, to catch potential early crashes.
+  crash_reporter::InitializeCrashpad(process_type);
 
   // Mac Chrome is packaged with a main app bundle and a helper app bundle.
   // The main app bundle should only be used for the browser process, so it
@@ -651,9 +622,6 @@ void ChromeMainDelegate::InitMacCrashReporter(
           process_type.empty())
         << "Main application forbids --type, saw " << process_type;
   }
-
-  if (breakpad::IsCrashReporterEnabled())
-    breakpad::InitCrashProcessInfo(process_type);
 }
 #endif  // defined(OS_MACOSX)
 

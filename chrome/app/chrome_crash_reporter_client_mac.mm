@@ -12,35 +12,12 @@
 
 #if !defined(DISABLE_NACL)
 #include "base/command_line.h"
-#import "breakpad/src/client/mac/Framework/Breakpad.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "native_client/src/trusted/service_runtime/osx/crash_filter.h"
 #endif
 
 namespace chrome {
-
-namespace {
-
-#if !defined(DISABLE_NACL)
-bool NaClBreakpadCrashFilter(int exception_type,
-                             int exception_code,
-                             mach_port_t crashing_thread,
-                             void* context) {
-  return !NaClMachThreadIsInUntrusted(crashing_thread);
-}
-#endif
-
-}  // namespace
-
-void ChromeCrashReporterClient::InstallAdditionalFilters(BreakpadRef breakpad) {
-#if !defined(DISABLE_NACL)
-  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessType) == switches::kNaClLoaderProcess) {
-    BreakpadSetFilterCallback(breakpad, NaClBreakpadCrashFilter, NULL);
-  }
-#endif
-}
 
 bool ChromeCrashReporterClient::ReportingIsEnforcedByPolicy(
     bool* breakpad_enabled) {

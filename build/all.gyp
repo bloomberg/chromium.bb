@@ -163,6 +163,7 @@
         ['OS=="mac"', {
           'dependencies': [
             '../sandbox/sandbox.gyp:*',
+            '../third_party/crashpad/crashpad/crashpad.gyp:*',
             '../third_party/ocmock/ocmock.gyp:*',
           ],
         }],

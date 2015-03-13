@@ -281,6 +281,7 @@ v8.log
 /third_party/chromite
 /third_party/cld_2/src
 /third_party/colorama/src
+/third_party/crashpad/crashpad
 /third_party/cros
 /third_party/cros_system_api
 /third_party/cygwin

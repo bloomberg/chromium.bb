@@ -79,8 +79,7 @@ SRC_NAMES=(
     "${SRC_APP_NAME}.app"
     "${SRC_APP_NAME} Framework.framework"
     "${SRC_APP_NAME} Helper.app"
-    "crash_inspector"
-    "crash_report_sender.app"
+    "crashpad_handler"
     "exif.so"
     "ffmpegsumo.so"
 )

@@ -231,7 +231,11 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!GetDefaultUserDataDirectory(&cur))
         return false;
 #endif
+#if defined(OS_MACOSX)
+      cur = cur.Append(FILE_PATH_LITERAL("Crashpad"));
+#else
       cur = cur.Append(FILE_PATH_LITERAL("Crash Reports"));
+#endif
       create_dir = true;
       break;
 #if defined(OS_WIN)

@@ -41,6 +41,7 @@ versioned_dir="${app_path}/Contents/Versions/@VERSION@"
 
 browser_app="${app_path}"
 framework="${versioned_dir}/@MAC_PRODUCT_NAME@ Framework.framework"
+crashpad_handler="${framework}/Helpers/crashpad_handler"
 helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 helper_eh_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper EH.app"
 helper_np_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper NP.app"
@@ -63,6 +64,7 @@ codesign --display -r- -vvvvvv "${browser_app}"
 # --deep on the framework because Keystone's signature is in a transitional
 # state (radar 18474911). Use --no-strict on the app because it uses custom
 # resource rules.
+codesign --verify --deep -vvvvvv "${crashpad_handler}"
 codesign --verify -vvvvvv "${framework}"
 codesign --verify --deep -vvvvvv "${helper_app}"
 codesign --verify --deep -vvvvvv "${helper_eh_app}"

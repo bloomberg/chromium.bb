@@ -47,9 +47,6 @@ class MockCrashReporterClient : public crash_reporter::CrashReporterClient {
   MOCK_METHOD0(GetCollectStatsConsent, bool());
   MOCK_METHOD1(ReportingIsEnforcedByPolicy, bool(bool* breakpad_enabled));
   MOCK_METHOD0(GetAndroidMinidumpDescriptor, int());
-#if defined(OS_MACOSX)
-  MOCK_METHOD1(InstallAdditionalFilters, void(BreakpadRef breakpad));
-#endif
   MOCK_METHOD1(EnableBreakpadForProcess, bool(const std::string& process_type));
 };
 

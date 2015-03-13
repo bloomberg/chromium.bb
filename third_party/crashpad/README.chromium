@@ -1,0 +1,14 @@
+Name: Crashpad
+Short Name: crashpad
+URL: https://crashpad.googlecode.com/
+Version: unknown
+Revision: see DEPS
+License: Apache 2.0
+License File: crashpad/LICENSE
+Security Critical: yes
+
+Description:
+Crashpad is a crash-reporting system. It's the successor to Breakpad.
+
+Local Modifications:
+None.

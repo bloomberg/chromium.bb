@@ -12,6 +12,10 @@
 #include "base/synchronization/lock.h"
 #include "chrome/common/chrome_paths.h"
 
+#if defined(OS_MACOSX)
+#include "components/crash/app/crashpad_mac.h"
+#endif
+
 namespace {
 
 base::LazyInstance<std::string>::Leaky g_posix_client_id =
@@ -58,6 +62,10 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
 
 // static
 bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
+#if defined(OS_MACOSX)
+  crash_reporter::SetUploadsEnabled(consented);
+#endif
+
   base::FilePath consent_dir;
   PathService::Get(chrome::DIR_USER_DATA, &consent_dir);
   if (!base::DirectoryExists(consent_dir))

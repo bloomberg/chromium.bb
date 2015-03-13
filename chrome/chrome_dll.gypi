@@ -278,6 +278,15 @@
               'xcode_settings': { 'OTHER_LDFLAGS': [ '-Wl,-ObjC' ], },
             }],
             ['OS=="mac"', {
+              'dependencies': [
+                '../components/components.gyp:crash_component',
+                '../components/components.gyp:policy',
+              ],
+              'sources': [
+                'app/chrome_crash_reporter_client.cc',
+                'app/chrome_crash_reporter_client.h',
+                'app/chrome_crash_reporter_client_mac.mm',
+              ],
               'xcode_settings': {
                 # Define the order of symbols within the framework.  This
                 # sets -order_file.
@@ -302,25 +311,6 @@
                   ],
                 },
               ],
-              'conditions': [
-                ['mac_breakpad_compiled_in==1', {
-                  'dependencies': [
-                    '../breakpad/breakpad.gyp:breakpad',
-                    '../components/components.gyp:crash_component',
-                    '../components/components.gyp:policy',
-                  ],
-                  'sources': [
-                    'app/chrome_crash_reporter_client.cc',
-                    'app/chrome_crash_reporter_client.h',
-                    'app/chrome_crash_reporter_client_mac.mm',
-                  ],
-                }, {  # else: mac_breakpad_compiled_in!=1
-                  # No Breakpad, put in the stubs.
-                  'dependencies': [
-                    '../components/components.gyp:breakpad_stubs',
-                  ],
-                }],  # mac_breakpad_compiled_in
-              ],  # conditions
             }],  # OS=="mac"
           ],  # conditions
         },  # target chrome_main_dll

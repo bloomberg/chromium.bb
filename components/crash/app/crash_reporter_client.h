@@ -141,11 +141,6 @@ class CrashReporterClient {
   virtual bool ShouldEnableBreakpadMicrodumps();
 #endif
 
-#if defined(OS_MACOSX)
-  // Install additional breakpad filter callbacks.
-  virtual void InstallAdditionalFilters(BreakpadRef breakpad);
-#endif
-
   // Returns true if breakpad should run in the given process type.
   virtual bool EnableBreakpadForProcess(const std::string& process_type);
 };

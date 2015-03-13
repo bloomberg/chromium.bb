@@ -294,6 +294,8 @@
       'browser/component_updater/swiftshader_component_installer.h',
       'browser/crash_upload_list.cc',
       'browser/crash_upload_list.h',
+      'browser/crash_upload_list_mac.cc',
+      'browser/crash_upload_list_mac.h',
       'browser/crash_upload_list_win.cc',
       'browser/crash_upload_list_win.h',
       'browser/custom_handlers/protocol_handler_registry.cc',
