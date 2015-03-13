@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script>
+
+description("Verify WebIDL interface attribute getter/setter function lengths");
+
+// http://heycam.github.io/webidl/#dfn-attribute-getter
+// "The attribute getter is a Function object..."
+// "The value of the Function object’s"length" property is the Number value 0."
+
+shouldBe("Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'title').get.length", "0");
+
+// http://heycam.github.io/webidl/#dfn-attribute-setter
+// "The attribute setter ... is a Function object..."
+// "The value of the Function object’s "length" property is the Number value 1."
+
+shouldBe("Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'title').set.length", "1");
+
+</script>

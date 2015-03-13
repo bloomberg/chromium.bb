@@ -64,20 +64,20 @@ void installAttributeInternal(v8::Isolate* isolate, v8::Handle<ObjectOrTemplate>
         attribute.attribute);
 }
 
-v8::Local<v8::FunctionTemplate> functionOrTemplate(v8::Isolate* isolate, v8::FunctionCallback callback, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Signature> signature, v8::Handle<v8::ObjectTemplate> prototypeTemplateForOverloadResolution)
+v8::Local<v8::FunctionTemplate> functionOrTemplate(v8::Isolate* isolate, v8::FunctionCallback callback, const WrapperTypeInfo* wrapperTypeInfo, v8::Local<v8::Signature> signature, int length, v8::Handle<v8::ObjectTemplate> prototypeTemplateForOverloadResolution)
 {
     v8::Local<v8::FunctionTemplate> functionTemplate;
     if (callback) {
-        functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(wrapperTypeInfo)), signature);
+        functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(wrapperTypeInfo)), signature, length);
         if (!functionTemplate.IsEmpty())
             functionTemplate->RemovePrototype();
     }
     return functionTemplate;
 }
 
-v8::Local<v8::Function> functionOrTemplate(v8::Isolate* isolate, v8::FunctionCallback callback, const WrapperTypeInfo*, v8::Local<v8::Signature>, v8::Handle<v8::Object> prototypeForOverloadResolution)
+v8::Local<v8::Function> functionOrTemplate(v8::Isolate* isolate, v8::FunctionCallback callback, const WrapperTypeInfo*, v8::Local<v8::Signature>, int length, v8::Handle<v8::Object> prototypeForOverloadResolution)
 {
-    return callback ? v8::Function::New(isolate, callback) : v8::Local<v8::Function>();
+    return callback ? v8::Function::New(isolate, callback, v8::Local<v8::Value>(), length) : v8::Local<v8::Function>();
 }
 
 template<class ObjectOrTemplate>
@@ -97,8 +97,8 @@ void installAccessorInternal(v8::Isolate* isolate, v8::Handle<ObjectOrTemplate> 
     }
     prototypeOrTemplate->SetAccessorProperty(
         v8AtomicString(isolate, accessor.name),
-        functionOrTemplate(isolate, getterCallback, accessor.data, signature, prototypeOrTemplate),
-        functionOrTemplate(isolate, setterCallback, accessor.data, signature, prototypeOrTemplate),
+        functionOrTemplate(isolate, getterCallback, accessor.data, signature, 0, prototypeOrTemplate),
+        functionOrTemplate(isolate, setterCallback, accessor.data, signature, 1, prototypeOrTemplate),
         accessor.attribute,
         accessor.settings);
 }
