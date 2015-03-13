@@ -26,8 +26,7 @@ void PageNotificationDelegate::NotificationDisplayed() {
   sender->Send(new PlatformNotificationMsg_DidShow(notification_id_));
 }
 
-// TODO(peter): Remove |by_user| since we're not using that anywhere.
-void PageNotificationDelegate::NotificationClosed(bool by_user) {
+void PageNotificationDelegate::NotificationClosed() {
   RenderProcessHost* sender = RenderProcessHost::FromID(render_process_id_);
   if (!sender)
     return;

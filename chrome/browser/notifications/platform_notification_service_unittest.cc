@@ -28,7 +28,7 @@ class MockDesktopNotificationDelegate
 
   // content::DesktopNotificationDelegate implementation.
   void NotificationDisplayed() override { displayed_ = true; }
-  void NotificationClosed(bool by_user) override {}
+  void NotificationClosed() override {}
   void NotificationClick() override { clicked_ = true; }
 
   bool displayed() const { return displayed_; }

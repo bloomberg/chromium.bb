@@ -180,7 +180,7 @@ void LayoutTestNotificationManager::Close(const std::string& title) {
   if (iterator == page_notifications_.end())
     return;
 
-  iterator->second->NotificationClosed(false);
+  iterator->second->NotificationClosed();
 }
 
 void LayoutTestNotificationManager::ReplaceNotificationIfNeeded(
@@ -199,7 +199,7 @@ void LayoutTestNotificationManager::ReplaceNotificationIfNeeded(
       DesktopNotificationDelegate* previous_delegate =
           page_notification_iter->second;
 
-      previous_delegate->NotificationClosed(false);
+      previous_delegate->NotificationClosed();
 
       page_notifications_.erase(page_notification_iter);
       delete previous_delegate;
