@@ -113,6 +113,9 @@ void KeywordExtensionsDelegateImpl::MaybeEndExtensionKeywordMode() {
     extensions::ExtensionOmniboxEventRouter::OnInputCancelled(
         profile_, current_keyword_extension_id_);
     current_keyword_extension_id_.clear();
+    // Ignore stray suggestions_ready events that arrive after
+    // OnInputCancelled().
+    IncrementInputId();
   }
 }
 
@@ -129,7 +132,7 @@ void KeywordExtensionsDelegateImpl::Observe(
       // we don't send the OnInputCancelled event, or handle any more stray
       // suggestions_ready events.
       current_keyword_extension_id_.clear();
-      current_input_id_ = 0;
+      IncrementInputId();
       return;
 
     case extensions::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED
