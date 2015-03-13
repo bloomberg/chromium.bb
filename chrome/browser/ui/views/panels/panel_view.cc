@@ -338,8 +338,10 @@ PanelView::~PanelView() {
 }
 
 void PanelView::ShowPanel() {
-  ShowPanelInactive();
-  ActivatePanel();
+  if (window_->IsVisible())
+    return;
+  window_->Show();
+  panel_->manager()->OnPanelAnimationEnded(panel_.get());
 }
 
 void PanelView::ShowPanelInactive() {
