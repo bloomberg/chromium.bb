@@ -224,6 +224,7 @@ public final class WarmupManager {
      */
     public void maybePrefetchDnsForUrlInBackground(Context context, String url) {
         ThreadUtils.assertOnUiThread();
+        DataReductionProxySettings.initialize(context);
         if (!DataReductionProxySettings.getInstance().isEnabledBeforeNativeLoad(context)) {
             prefetchDnsForUrlInBackground(url);
         }
