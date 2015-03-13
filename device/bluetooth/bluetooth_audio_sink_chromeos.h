@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/bluetooth_media_client.h"
 #include "chromeos/dbus/bluetooth_media_endpoint_service_provider.h"
@@ -30,7 +32,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
       public device::BluetoothAdapter::Observer,
       public BluetoothMediaClient::Observer,
       public BluetoothMediaTransportClient::Observer,
-      public BluetoothMediaEndpointServiceProvider::Delegate {
+      public BluetoothMediaEndpointServiceProvider::Delegate,
+      public base::MessageLoopForIO::Watcher {
  public:
   explicit BluetoothAudioSinkChromeOS(
       scoped_refptr<device::BluetoothAdapter> adapter);
@@ -46,6 +49,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   void RemoveObserver(BluetoothAudioSink::Observer* observer) override;
   device::BluetoothAudioSink::State GetState() const override;
   uint16_t GetVolume() const override;
+
+  // Registers a BluetoothAudioSink. User applications can use |options| to
+  // configure the audio sink. |callback| will be executed if the audio sink is
+  // successfully registered, otherwise |error_callback| will be called. Called
+  // by BluetoothAdapterChromeOS.
+  void Register(
+      const device::BluetoothAudioSink::Options& options,
+      const base::Closure& callback,
+      const device::BluetoothAudioSink::ErrorCallback& error_callback);
+
+  // Returns a pointer to the media endpoint object. This function should be
+  // used for testing purpose only.
+  BluetoothMediaEndpointServiceProvider* GetEndpointServiceProvider();
+
+ private:
+  ~BluetoothAudioSinkChromeOS() override;
 
   // device::BluetoothAdapter::Observer overrides.
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
@@ -70,21 +89,23 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   void ClearConfiguration(const dbus::ObjectPath& transport_path) override;
   void Released() override;
 
-  // Registers a BluetoothAudioSink. User applications can use |options| to
-  // configure the audio sink. |callback| will be executed if the audio sink is
-  // successfully registered, otherwise |error_callback| will be called. Called
-  // by BluetoothAdapterChromeOS.
-  void Register(
-      const device::BluetoothAudioSink::Options& options,
-      const base::Closure& callback,
-      const device::BluetoothAudioSink::ErrorCallback& error_callback);
+  // base::MessageLoopForIO::Watcher overrides.
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
-  // Returns a pointer to the media endpoint object. This function should be
-  // used for testing purpose only.
-  BluetoothMediaEndpointServiceProvider* GetEndpointServiceProvider();
+  // Acquires file descriptor via current transport object when the state change
+  // is triggered by MediaTransportPropertyChanged.
+  void AcquireFD();
 
- private:
-  ~BluetoothAudioSinkChromeOS() override;
+  // Watches if there is any available data from |fd_|.
+  void WatchFD();
+
+  // Stops watching |fd_| and resets |fd_|.
+  void StopWatchingFD();
+
+  // Reads from the file descriptor acquired via Media Transport object and
+  // notify |observer_| while the audio data is available.
+  void ReadFromFile();
 
   // Called when the state property of BluetoothMediaTransport has been updated.
   void StateChanged(device::BluetoothAudioSink::State state);
@@ -112,9 +133,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
       const std::string& error_name,
       const std::string& error_message);
 
-  // Reads from the file descriptor acquired via Media Transport object and
-  // notify |observer_| while the audio data is available.
-  void ReadFromFD();
+  // Called when the file descriptor, read MTU and write MTU are retrieved
+  // successfully using |transport_path_|.
+  void OnAcquireSucceeded(dbus::FileDescriptor* fd,
+                          const uint16_t read_mtu,
+                          const uint16_t write_mtu);
+
+  // Called when acquiring the file descriptor, read MTU and write MTU failed.
+  void OnAcquireFailed(const std::string& error_name,
+                       const std::string& error_message);
+
+  // Called when the file descriptor is released successfully.
+  void OnReleaseFDSucceeded();
+
+  // Called when it failed to release file descriptor.
+  void OnReleaseFDFailed(const std::string& error_name,
+                         const std::string& error_message);
 
   // Helper functions to clean up media, media transport and media endpoint.
   // Called when the |state_| changes to either STATE_INVALID or
@@ -132,13 +166,25 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   uint16_t volume_;
 
   // Read MTU of the file descriptor acquired via Media Transport object.
-  scoped_ptr<uint16_t> read_mtu_;
+  uint16_t read_mtu_;
 
   // Write MTU of the file descriptor acquired via Media Transport object.
-  scoped_ptr<uint16_t> write_mtu_;
+  uint16_t write_mtu_;
 
-  // File descriptor acquired via Media Transport object.
-  dbus::FileDescriptor fd_;
+  // Flag for logging the read failure in ReadFromFD.
+  bool read_has_failed_;
+
+  // The file which takes ownership of the file descriptor acquired via Media
+  // Transport object.
+  scoped_ptr<base::File> file_;
+
+  // To avoid reallocation of memory, data will be updated only when |read_mtu_|
+  // changes.
+  scoped_ptr<char[]> data_;
+
+  // File descriptor watcher for the file descriptor acquired via Media
+  // Transport object.
+  base::MessageLoopForIO::FileDescriptorWatcher fd_read_watcher_;
 
   // Object path of the media object being used.
   dbus::ObjectPath media_path_;

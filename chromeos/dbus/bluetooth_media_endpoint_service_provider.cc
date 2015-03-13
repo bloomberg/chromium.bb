@@ -113,7 +113,7 @@ class CHROMEOS_EXPORT BluetoothMediaEndpointServiceProviderImpl
   // Called by dbus:: when the remote device connects to the Media Endpoint.
   void SetConfiguration(dbus::MethodCall* method_call,
                         dbus::ExportedObject::ResponseSender response_sender) {
-    VLOG(1) << "SetConfiuration";
+    VLOG(1) << "SetConfiguration";
 
     DCHECK(OnOriginThread());
     DCHECK(delegate_);

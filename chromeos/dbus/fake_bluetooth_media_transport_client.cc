@@ -4,6 +4,9 @@
 
 #include "chromeos/dbus/fake_bluetooth_media_transport_client.h"
 
+#include <unistd.h>
+#include <sys/socket.h>
+
 #include <sstream>
 
 #include "base/bind.h"
@@ -13,6 +16,7 @@
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_media_client.h"
 #include "chromeos/dbus/fake_bluetooth_media_endpoint_service_provider.h"
+#include "dbus/file_descriptor.h"
 
 using dbus::ObjectPath;
 
@@ -21,6 +25,13 @@ namespace {
 // TODO(mcchou): Remove this constants once it is in cros_system_api.
 const char kBluetoothMediaTransportInterface[] = "org.bluez.MediaTransport1";
 const char kNotImplemented[] = "org.bluez.NotImplemented";
+const char kNotAuthorized[] = "org.bluez.NotAuthorized";
+const char kFailed[] = "org.bluez.Failed";
+const char kNotAvailable[] = "org.bluez.NotAvailable";
+
+const int kInvalidFd = -1;
+const uint16_t kReadMtu = 20;
+const uint16_t kWriteMtu = 25;
 
 ObjectPath GenerateTransportPath() {
   static unsigned int sequence_number = 0;
@@ -89,9 +100,7 @@ FakeBluetoothMediaTransportClient::FakeBluetoothMediaTransportClient() {
 }
 
 FakeBluetoothMediaTransportClient::~FakeBluetoothMediaTransportClient() {
-  for (auto& it : endpoint_to_transport_map_)
-    delete it.second;
-  endpoint_to_transport_map_.clear();
+  STLDeleteValues(&endpoint_to_transport_map_);
 }
 
 // DBusClient override.
@@ -109,27 +118,29 @@ void FakeBluetoothMediaTransportClient::RemoveObserver(
 }
 
 FakeBluetoothMediaTransportClient::Properties*
-    FakeBluetoothMediaTransportClient::GetProperties(
-        const ObjectPath& object_path) {
-  ObjectPath endpoint_path = GetEndpointPath(object_path);
-  if (!endpoint_path.IsValid() ||
-      !ContainsKey(endpoint_to_transport_map_, endpoint_path))
+FakeBluetoothMediaTransportClient::GetProperties(
+    const ObjectPath& object_path) {
+  const ObjectPath& endpoint_path = GetEndpointPath(object_path);
+  Transport* transport = GetTransport(endpoint_path);
+  if (!transport)
     return nullptr;
-  return endpoint_to_transport_map_[endpoint_path]->properties.get();
+  return transport->properties.get();
 }
 
 void FakeBluetoothMediaTransportClient::Acquire(
     const ObjectPath& object_path,
     const AcquireCallback& callback,
     const ErrorCallback& error_callback) {
-  error_callback.Run(kNotImplemented, "");
+  VLOG(1) << "Acquire - transport path: " << object_path.value();
+  AcquireInternal(false, object_path, callback, error_callback);
 }
 
 void FakeBluetoothMediaTransportClient::TryAcquire(
     const ObjectPath& object_path,
     const AcquireCallback& callback,
     const ErrorCallback& error_callback) {
-  error_callback.Run(kNotImplemented, "");
+  VLOG(1) << "TryAcquire - transport path: " << object_path.value();
+  AcquireInternal(true, object_path, callback, error_callback);
 }
 
 void FakeBluetoothMediaTransportClient::Release(
@@ -174,64 +185,142 @@ void FakeBluetoothMediaTransportClient::SetValid(
     return;
   }
 
-  if (!ContainsKey(endpoint_to_transport_map_, endpoint_path))
+  Transport* transport = GetTransport(endpoint_path);
+  if (!transport)
     return;
+  ObjectPath transport_path = transport->path;
 
   // Notifies observers about the state change of the transport.
   FOR_EACH_OBSERVER(BluetoothMediaTransportClient::Observer, observers_,
-                    MediaTransportRemoved(GetTransportPath(endpoint_path)));
+                    MediaTransportRemoved(transport_path));
 
-  endpoint->ClearConfiguration(GetTransportPath(endpoint_path));
-  transport_to_endpoint_map_.erase(GetTransportPath(endpoint_path));
-  delete endpoint_to_transport_map_[endpoint_path];
+  endpoint->ClearConfiguration(transport_path);
+  delete transport;
   endpoint_to_transport_map_.erase(endpoint_path);
+  transport_to_endpoint_map_.erase(transport_path);
 }
 
 void FakeBluetoothMediaTransportClient::SetState(
-    const dbus::ObjectPath& endpoint_path,
+    const ObjectPath& endpoint_path,
     const std::string& state) {
-  if (!ContainsKey(endpoint_to_transport_map_, endpoint_path))
+  VLOG(1) << "SetState - state: " << state;
+
+  Transport* transport = GetTransport(endpoint_path);
+  if (!transport)
     return;
 
-  endpoint_to_transport_map_[endpoint_path]
-      ->properties->state.ReplaceValue(state);
+  transport->properties->state.ReplaceValue(state);
   FOR_EACH_OBSERVER(BluetoothMediaTransportClient::Observer, observers_,
                     MediaTransportPropertyChanged(
-                        GetTransportPath(endpoint_path),
+                        transport->path,
                         BluetoothMediaTransportClient::kStateProperty));
 }
 
 void FakeBluetoothMediaTransportClient::SetVolume(
-    const dbus::ObjectPath& endpoint_path,
+    const ObjectPath& endpoint_path,
     const uint16_t& volume) {
-  if (!ContainsKey(endpoint_to_transport_map_, endpoint_path))
+  Transport* transport = GetTransport(endpoint_path);
+  if (!transport)
     return;
 
-  endpoint_to_transport_map_[endpoint_path]->properties->volume.ReplaceValue(
-      volume);
+  transport->properties->volume.ReplaceValue(volume);
   FOR_EACH_OBSERVER(BluetoothMediaTransportClient::Observer, observers_,
                     MediaTransportPropertyChanged(
-                        GetTransportPath(endpoint_path),
+                        transport->path,
                         BluetoothMediaTransportClient::kVolumeProperty));
+}
+
+void FakeBluetoothMediaTransportClient::WriteData(
+    const ObjectPath& endpoint_path, const std::vector<char>& bytes) {
+  VLOG(1) << "WriteData - write " << bytes.size() << " bytes";
+
+  Transport* transport = GetTransport(endpoint_path);
+
+  if (!transport || transport->properties->state.value() != "active") {
+    VLOG(1) << "WriteData - write operation rejected, since the state isn't "
+               "active for endpoint: " << endpoint_path.value();
+    return;
+  }
+
+  if (!transport->input_fd.get()) {
+    VLOG(1) << "WriteData - invalid input file descriptor";
+    return;
+  }
+
+  ssize_t written_len =
+      write(transport->input_fd->GetPlatformFile(), bytes.data(), bytes.size());
+  if (written_len < 0) {
+    VLOG(1) << "WriteData - failed to write to the socket";
+    return;
+  }
+
+  VLOG(1) << "WriteData - wrote " << written_len << " bytes to the socket";
 }
 
 ObjectPath FakeBluetoothMediaTransportClient::GetTransportPath(
     const ObjectPath& endpoint_path) {
-  if (ContainsKey(endpoint_to_transport_map_, endpoint_path))
-    return endpoint_to_transport_map_[endpoint_path]->path;
-  return ObjectPath("");
-}
-
-ObjectPath FakeBluetoothMediaTransportClient::GetEndpointPath(
-    const ObjectPath& transport_path) {
-  if (ContainsKey(transport_to_endpoint_map_, transport_path))
-    return transport_to_endpoint_map_[transport_path];
-  return ObjectPath("");
+  Transport* transport = GetTransport(endpoint_path);
+  return transport ? transport->path : ObjectPath("");
 }
 
 void FakeBluetoothMediaTransportClient::OnPropertyChanged(
     const std::string& property_name) {
   VLOG(1) << "Property " << property_name << " changed";
+}
+
+ObjectPath FakeBluetoothMediaTransportClient::GetEndpointPath(
+    const ObjectPath& transport_path) {
+  const auto& it = transport_to_endpoint_map_.find(transport_path);
+  return it != transport_to_endpoint_map_.end() ? it->second : ObjectPath("");
+}
+
+FakeBluetoothMediaTransportClient::Transport*
+FakeBluetoothMediaTransportClient::GetTransport(
+    const ObjectPath& endpoint_path) {
+  const auto& it = endpoint_to_transport_map_.find(endpoint_path);
+  return (it != endpoint_to_transport_map_.end()) ? it->second : nullptr;
+}
+
+FakeBluetoothMediaTransportClient::Transport*
+FakeBluetoothMediaTransportClient::GetTransportByPath(
+    const dbus::ObjectPath& transport_path) {
+  return GetTransport(GetEndpointPath(transport_path));
+}
+
+void FakeBluetoothMediaTransportClient::AcquireInternal(
+    bool try_flag,
+    const ObjectPath& object_path,
+    const AcquireCallback& callback,
+    const ErrorCallback& error_callback) {
+  const ObjectPath& endpoint_path = GetEndpointPath(object_path);
+  Transport* transport = GetTransport(endpoint_path);
+  if (!transport) {
+    error_callback.Run(kFailed, "");
+    return;
+  }
+
+  std::string state = transport->properties->state.value();
+  if (state == "active") {
+    error_callback.Run(kNotAuthorized, "");
+    return;
+  }
+  if (state != "pending") {
+    error_callback.Run(try_flag ? kNotAvailable : kFailed, "");
+    return;
+  }
+
+  int fds[2];
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0) {
+    transport->input_fd.reset();
+    error_callback.Run(kFailed, "");
+    return;
+  }
+  DCHECK((fds[0] > kInvalidFd) && (fds[1] > kInvalidFd));
+  transport->input_fd.reset(new base::File(fds[0]));
+
+  dbus::FileDescriptor out_fd(fds[1]);
+  callback.Run(&out_fd, kReadMtu, kWriteMtu);
+  SetState(endpoint_path, "active");
 }
 
 }  // namespace chromeos

@@ -73,9 +73,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSink
         BluetoothAudioSink* audio_sink,
         uint16_t volume) = 0;
 
-    // TODO(mcchou): Add method to monitor the availability of audio data during
-    // the streaming. This method should associate with BluetoothAudioSink
-    // specific IOBuffer wrapping fd, read_mtu and write_mtu.
+    // Called when there is audio data available. |audio_sink| indicates the
+    // object being changed. |data| is the pointer to the audio data and |size|
+    // is the number of bytes in |data|. This method provides the raw audio data
+    // which hasn't been processed, so RTP assembling and SBC decoding need to
+    // be handled in order to get PCM data.
+    virtual void BluetoothAudioSinkDataAvailable(BluetoothAudioSink* audio_sink,
+                                                 char* data,
+                                                 size_t size) = 0;
   };
 
   // The ErrorCallback is used for the methods that can fail in which case it

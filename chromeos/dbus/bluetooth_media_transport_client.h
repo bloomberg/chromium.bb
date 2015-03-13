@@ -98,7 +98,7 @@ class CHROMEOS_EXPORT BluetoothMediaTransportClient : public DBusClient {
 
   // The AcquireCallback is used by |Acquire| method of media tansport API tp
   // indicate the success of the method.
-  typedef base::Callback<void(const dbus::FileDescriptor& fd,
+  typedef base::Callback<void(dbus::FileDescriptor* fd,
                               const uint16_t read_mtu,
                               const uint16_t write_mtu)> AcquireCallback;
 

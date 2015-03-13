@@ -241,7 +241,16 @@ class BluetoothMediaTransportClientImpl
     if (reader.PopFileDescriptor(&fd) &&
         reader.PopUint16(&read_mtu) &&
         reader.PopUint16(&write_mtu)) {
-      callback.Run(fd, read_mtu, write_mtu);
+      fd.CheckValidity();
+      DCHECK(fd.is_valid());
+
+      VLOG(1) << "OnAcquireSuccess - fd: "<<  fd.value()
+              <<", read MTU: " << read_mtu
+              <<", write MTU: " << write_mtu;
+
+      // The ownership of the file descriptor is transferred to the user
+      // application.
+      callback.Run(&fd, read_mtu, write_mtu);
       return;
     }
 
