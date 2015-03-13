@@ -28,6 +28,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 
   void UtilityThreadStarted() override;
   bool OnMessageReceived(const IPC::Message& message) override;
+  void RegisterMojoServices(content::ServiceRegistry* registry) override;
 
   static void PreSandboxStartup();
 

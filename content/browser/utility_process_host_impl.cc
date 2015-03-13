@@ -9,12 +9,14 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/browser/browser_child_process_host_impl.h"
+#include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/utility_messages.h"
@@ -34,7 +36,8 @@ class UtilitySandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
  public:
   UtilitySandboxedProcessLauncherDelegate(const base::FilePath& exposed_dir,
-                                          bool launch_elevated, bool no_sandbox,
+                                          bool launch_elevated,
+                                          bool no_sandbox,
                                           const base::EnvironmentMap& env,
                                           ChildProcessHost* host)
       : exposed_dir_(exposed_dir),
@@ -50,9 +53,7 @@ class UtilitySandboxedProcessLauncherDelegate
   ~UtilitySandboxedProcessLauncherDelegate() override {}
 
 #if defined(OS_WIN)
-  bool ShouldLaunchElevated() override {
-    return launch_elevated_;
-  }
+  bool ShouldLaunchElevated() override { return launch_elevated_; }
   void PreSandbox(bool* disable_default_policy,
                   base::FilePath* exposed_dir) override {
     *exposed_dir = exposed_dir_;
@@ -112,6 +113,13 @@ UtilityProcessHostImpl::~UtilityProcessHostImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (is_batch_mode_)
     EndBatchMode();
+
+  // We could be destroyed as a result of Chrome shutdown. When that happens,
+  // the Mojo channel doesn't get the opportunity to shut down cleanly because
+  // it posts to the IO thread (the current thread) which is being destroyed.
+  // To guarantee proper shutdown of the Mojo channel, do it explicitly here.
+  if (mojo_application_host_)
+    mojo_application_host_->ShutdownOnIOThread();
 }
 
 bool UtilityProcessHostImpl::Send(IPC::Message* message) {
@@ -164,6 +172,22 @@ void UtilityProcessHostImpl::SetEnv(const base::EnvironmentMap& env) {
 }
 
 #endif  // OS_POSIX
+
+bool UtilityProcessHostImpl::StartMojoMode() {
+  CHECK(!mojo_application_host_);
+  mojo_application_host_.reset(new MojoApplicationHost);
+
+  bool mojo_result = mojo_application_host_->Init();
+  if (!mojo_result)
+    return false;
+
+  return StartProcess();
+}
+
+ServiceRegistry* UtilityProcessHostImpl::GetServiceRegistry() {
+  DCHECK(mojo_application_host_);
+  return mojo_application_host_->service_registry();
+}
 
 bool UtilityProcessHostImpl::StartProcess() {
   if (started_)
@@ -290,6 +314,18 @@ void UtilityProcessHostImpl::OnProcessCrashed(int exit_code) {
       FROM_HERE,
       base::Bind(&UtilityProcessHostClient::OnProcessCrashed, client_.get(),
             exit_code));
+}
+
+void UtilityProcessHostImpl::OnProcessLaunched() {
+  if (mojo_application_host_) {
+    base::ProcessHandle handle;
+    if (RenderProcessHost::run_renderer_in_process())
+      handle = base::GetCurrentProcessHandle();
+    else
+      handle = process_->GetData().handle;
+
+    mojo_application_host_->Activate(this, handle);
+  }
 }
 
 }  // namespace content

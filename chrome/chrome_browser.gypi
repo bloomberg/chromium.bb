@@ -1039,6 +1039,8 @@
       'browser/media_galleries/win/snapshot_file_details.h',
       'browser/net/firefox_proxy_settings.cc',
       'browser/net/firefox_proxy_settings.h',
+      'browser/net/utility_process_mojo_proxy_resolver_factory.cc',
+      'browser/net/utility_process_mojo_proxy_resolver_factory.h',
       'browser/pdf/pdf_extension_util.cc',
       'browser/pdf/pdf_extension_util.h',
       'browser/power/process_power_collector.cc',

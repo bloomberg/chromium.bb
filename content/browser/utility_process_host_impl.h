@@ -24,6 +24,7 @@ class Thread;
 
 namespace content {
 class BrowserChildProcessHostImpl;
+class MojoApplicationHost;
 
 typedef base::Thread* (*UtilityMainThreadFactoryFunction)(
     const std::string& id);
@@ -54,6 +55,8 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 #if defined(OS_POSIX)
   void SetEnv(const base::EnvironmentMap& env) override;
 #endif
+  bool StartMojoMode() override;
+  ServiceRegistry* GetServiceRegistry() override;
 
   void set_child_flags(int flags) { child_flags_ = flags; }
 
@@ -66,6 +69,7 @@ class CONTENT_EXPORT UtilityProcessHostImpl
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnProcessLaunchFailed() override;
   void OnProcessCrashed(int exit_code) override;
+  void OnProcessLaunched() override;
 
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<UtilityProcessHostClient> client_;
@@ -97,6 +101,10 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 
   // Used in single-process mode instead of process_.
   scoped_ptr<base::Thread> in_process_thread_;
+
+  // Browser-side Mojo endpoint which sets up a Mojo channel with the child
+  // process and contains the browser's ServiceRegistry.
+  scoped_ptr<MojoApplicationHost> mojo_application_host_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessHostImpl);
 };

@@ -15,6 +15,7 @@
 #include "chrome/utility/utility_message_handler.h"
 #include "content/public/child/image_decoder_utils.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_registry.h"
 #include "content/public/utility/utility_thread.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff.h"
@@ -27,6 +28,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/utility/profile_import_handler.h"
+#include "net/proxy/mojo_proxy_resolver_factory_impl.h"
 #endif
 
 #if defined(OS_WIN)
@@ -70,6 +72,17 @@ void FinishParseMediaMetadata(
   ReleaseProcessIfNeeded();
 }
 #endif
+
+#if !defined(OS_ANDROID)
+void CreateProxyResolverFactory(
+    mojo::InterfaceRequest<net::interfaces::ProxyResolverFactory> request) {
+  // MojoProxyResolverFactoryImpl is strongly bound to the Mojo message pipe it
+  // is connected to. When that message pipe is closed, either explicitly on the
+  // other end (in the browser process), or by a connection error, this object
+  // will be destroyed.
+  new net::MojoProxyResolverFactoryImpl(request.Pass());
+}
+#endif  // OS_ANDROID
 
 }  // namespace
 
@@ -158,6 +171,14 @@ bool ChromeContentUtilityClient::OnMessageReceived(
   }
 
   return handled;
+}
+
+void ChromeContentUtilityClient::RegisterMojoServices(
+    content::ServiceRegistry* registry) {
+#if !defined(OS_ANDROID)
+  registry->AddService<net::interfaces::ProxyResolverFactory>(
+      base::Bind(CreateProxyResolverFactory));
+#endif
 }
 
 // static

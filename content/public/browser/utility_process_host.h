@@ -17,6 +17,7 @@ class SequencedTaskRunner;
 }
 
 namespace content {
+class ServiceRegistry;
 class UtilityProcessHostClient;
 struct ChildProcessData;
 
@@ -27,6 +28,9 @@ struct ChildProcessData;
 // If you need multiple batches of work to be done in the process, use
 // StartBatchMode(), then multiple calls to StartFooBar(p), then finish with
 // EndBatchMode().
+// If you need to call Mojo services, use StartMojoMode() to start the child
+// process and GetServiceRegistry() to get the service registry to connect to
+// the child's Mojo services.
 //
 // Note: If your class keeps a ptr to an object of this type, grab a weak ptr to
 // avoid a use after free since this object is deleted synchronously but the
@@ -72,6 +76,13 @@ class UtilityProcessHost : public IPC::Sender,
 #if defined(OS_POSIX)
   virtual void SetEnv(const base::EnvironmentMap& env) = 0;
 #endif
+
+  // Starts the utility process in Mojo mode.
+  virtual bool StartMojoMode() = 0;
+
+  // Returns the ServiceRegistry for this process. Only valid to call this if
+  // the process was started with StartMojoMode().
+  virtual ServiceRegistry* GetServiceRegistry() = 0;
 };
 
 };  // namespace content

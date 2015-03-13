@@ -148,6 +148,9 @@
           ],
         }],
         ['OS!="android"', {
+          'dependencies': [
+            '../net/net.gyp:net_utility_services',
+          ],
           'sources': [
             '<@(chrome_utility_importer_sources)',
           ],

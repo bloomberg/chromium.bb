@@ -85,6 +85,7 @@ void UtilityThreadImpl::Init() {
     blink::initialize(blink_platform_impl_.get());
   }
   GetContentClient()->utility()->UtilityThreadStarted();
+  GetContentClient()->utility()->RegisterMojoServices(service_registry());
 }
 
 bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {

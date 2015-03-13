@@ -333,6 +333,7 @@ extern const char kUseSpdy[];
 extern const char kUserAgent[];
 extern const char kUserDataDir[];
 extern const char kV8PacMojoInProcess[];
+extern const char kV8PacMojoOutOfProcess[];
 extern const char kValidateCrx[];
 extern const char kVariationsServerURL[];
 extern const char kVersion[];

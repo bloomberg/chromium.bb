@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/proxy_service_factory.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
@@ -30,6 +32,7 @@
 #endif
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
+#include "chrome/browser/net/utility_process_mojo_proxy_resolver_factory.h"
 #include "net/proxy/proxy_service_mojo.h"
 #endif
 
@@ -134,7 +137,13 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
 #endif
 
 #if !defined(OS_ANDROID)
-    if (command_line.HasSwitch(switches::kV8PacMojoInProcess)) {
+    if (command_line.HasSwitch(switches::kV8PacMojoOutOfProcess)) {
+      proxy_service = net::CreateProxyServiceUsingMojoFactory(
+          UtilityProcessMojoProxyResolverFactory::GetInstance(),
+          proxy_config_service, new net::ProxyScriptFetcherImpl(context),
+          dhcp_proxy_script_fetcher, context->host_resolver(), net_log,
+          network_delegate);
+    } else if (command_line.HasSwitch(switches::kV8PacMojoInProcess)) {
       proxy_service = net::CreateProxyServiceUsingMojoInProcess(
           proxy_config_service, new net::ProxyScriptFetcherImpl(context),
           dhcp_proxy_script_fetcher, context->host_resolver(), net_log,
