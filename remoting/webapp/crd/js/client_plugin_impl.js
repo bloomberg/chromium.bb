@@ -27,21 +27,17 @@ remoting.ClientPluginMessage = function() {
 
 /**
  * @param {Element} container The container for the embed element.
- * @param {function(string, string):boolean} onExtensionMessage The handler for
- *     protocol extension messages. Returns true if a message is recognized;
- *     false otherwise.
  * @param {Array<string>} requiredCapabilities The set of capabilties that the
  *     session must support for this application.
  * @constructor
  * @implements {remoting.ClientPlugin}
  */
-remoting.ClientPluginImpl = function(container, onExtensionMessage,
+remoting.ClientPluginImpl = function(container,
                                      requiredCapabilities) {
   this.plugin_ = remoting.ClientPluginImpl.createPluginElement_();
   this.plugin_.id = 'session-client-plugin';
   container.appendChild(this.plugin_);
 
-  this.onExtensionMessage_ = onExtensionMessage;
   /** @private {Array<string>} */
   this.requiredCapabilities_ = requiredCapabilities;
 
@@ -157,21 +153,6 @@ remoting.ClientPluginImpl.prototype.setConnectionEventHandler =
 };
 
 /**
- * @param {function(string):void} handler
- */
-remoting.ClientPluginImpl.prototype.setGnubbyAuthHandler = function(handler) {
-  this.onGnubbyAuthHandler_ = handler;
-};
-
-/**
- * @param {function(string):void} handler
- */
-remoting.ClientPluginImpl.prototype.setCastExtensionHandler =
-    function(handler) {
-  this.onCastExtensionHandler_ = handler;
-};
-
-/**
  * @param {function(string, number, number):void} handler
  */
 remoting.ClientPluginImpl.prototype.setMouseCursorHandler = function(handler) {
@@ -256,6 +237,11 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
       /** @type {!Array<string>} */
       var capabilities = tokenize(getStringAttr(message.data, 'capabilities'));
       handler.onSetCapabilities(capabilities);
+
+    } else if (message.method == 'extensionMessage') {
+      var extMsgType = getStringAttr(message.data, 'type');
+      var extMsgData = getStringAttr(message.data, 'data');
+      handler.onExtensionMessage(extMsgType, extMsgData);
     }
   }
 
@@ -344,24 +330,6 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     var clientId = getStringAttr(message.data, 'clientId');
     var sharedSecret = getStringAttr(message.data, 'sharedSecret');
     this.onPairingComplete_(clientId, sharedSecret);
-
-  } else if (message.method == 'extensionMessage') {
-    var extMsgType = getStringAttr(message.data, 'type');
-    var extMsgData = getStringAttr(message.data, 'data');
-    switch (extMsgType) {
-      case 'gnubby-auth':
-        this.onGnubbyAuthHandler_(extMsgData);
-        break;
-      case 'test-echo-reply':
-        console.log('Got echo reply: ' + extMsgData);
-        break;
-      case 'cast_message':
-        this.onCastExtensionHandler_(extMsgData);
-        break;
-      default:
-        this.onExtensionMessage_(extMsgType, extMsgData);
-        break;
-    }
 
   } else if (message.method == 'unsetCursorShape') {
     this.updateMouseCursorImage_('', 0, 0);
@@ -804,13 +772,12 @@ remoting.DefaultClientPluginFactory = function() {};
 
 /**
  * @param {Element} container
- * @param {function(string, string):boolean} onExtensionMessage
  * @param {Array<string>} requiredCapabilities
  * @return {remoting.ClientPlugin}
  */
 remoting.DefaultClientPluginFactory.prototype.createPlugin =
-    function(container, onExtensionMessage, requiredCapabilities) {
-  return new remoting.ClientPluginImpl(container, onExtensionMessage,
+    function(container, requiredCapabilities) {
+  return new remoting.ClientPluginImpl(container,
                                        requiredCapabilities);
 };
 

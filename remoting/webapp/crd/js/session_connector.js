@@ -104,6 +104,12 @@ remoting.SessionConnector.prototype.getConnectionMode = function() {};
  */
 remoting.SessionConnector.prototype.getHostId = function() {};
 
+/**
+ * @param {remoting.ProtocolExtension} extension
+ */
+remoting.SessionConnector.prototype.registerProtocolExtension =
+    function(extension) {};
+
 
 /**
  * @interface
@@ -115,9 +121,9 @@ remoting.SessionConnectorFactory = function() {};
  * @param {function(remoting.ClientSession):void} onConnected Callback on
  *     success.
  * @param {function(!remoting.Error):void} onError Callback on error.
- * @param {function(string, string):boolean} onExtensionMessage The handler for
- *     protocol extension messages. Returns true if a message is recognized;
- *     false otherwise.
+ * @param {function(string, string):boolean} appProtocolExtensionHandler The
+ *     handler for the application's protocol extension messages. Returns true
+ *     if a message is recognized; false otherwise.
  * @param {function(!remoting.Error):void} onConnectionFailed Callback for when
  *     the connection fails.
  * @param {Array<string>} requiredCapabilities Connector capabilities
@@ -127,10 +133,7 @@ remoting.SessionConnectorFactory = function() {};
  * @return {remoting.SessionConnector}
  */
 remoting.SessionConnectorFactory.prototype.createConnector =
-    // TODO(garykac): Can onExtensionMessage be removed from here? It's only
-    // needed to pass to the ClientSession. Investigate why ClientSession
-    // needs this.
-    function(clientContainer, onConnected, onError, onExtensionMessage,
+    function(clientContainer, onConnected, onError, appProtocolExtensionHandler,
              onConnectionFailed, requiredCapabilities, defaultRemapKeys) {};
 
 /**

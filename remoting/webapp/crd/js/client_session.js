@@ -36,12 +36,17 @@ remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
  * @param {remoting.Host} host The host to connect to.
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
  * @param {remoting.DesktopConnectedView.Mode} mode The mode of this connection.
+ * @param {function(string, string):boolean} onExtensionMessage The handler for
+ *     protocol extension messages. Returns true if a message is recognized;
+ *     false otherwise.
+ *
  * @constructor
  * @extends {base.EventSourceImpl}
  * @implements {base.Disposable}
  * @implements {remoting.ClientPlugin.ConnectionEventHandler}
  */
-remoting.ClientSession = function(plugin, host, signalStrategy, mode) {
+remoting.ClientSession = function(plugin, host, signalStrategy, mode,
+                                  onExtensionMessage) {
   /** @private */
   this.state_ = remoting.ClientSession.State.CREATED;
 
@@ -74,19 +79,12 @@ remoting.ClientSession = function(plugin, host, signalStrategy, mode) {
    */
   this.logHostOfflineErrors_ = true;
 
-  /** @private {remoting.GnubbyAuthHandler} */
-  this.gnubbyAuthHandler_ = null;
-
-  /** @private {remoting.CastExtensionHandler} */
-  this.castExtensionHandler_ = null;
+  /** @private {function(string, string):boolean} */
+  this.onExtensionMessageHandler_ = onExtensionMessage;
 
   /** @private {remoting.ClientPlugin} */
   this.plugin_ = plugin;
   plugin.setConnectionEventHandler(this);
-  plugin.setGnubbyAuthHandler(
-      this.processGnubbyAuthMessage_.bind(this));
-  plugin.setCastExtensionHandler(
-      this.processCastExtensionMessage_.bind(this));
 
   this.defineEvents(Object.keys(remoting.ClientSession.Events));
 };
@@ -479,6 +477,14 @@ remoting.ClientSession.prototype.onSetCapabilities = function(capabilities) {
 };
 
 /**
+ * @param {string} type
+ * @param {string} data
+ */
+remoting.ClientSession.prototype.onExtensionMessage = function(type, data) {
+  this.onExtensionMessageHandler_(type, data);
+};
+
+/**
  * @param {remoting.ClientSession.State} newState The new state for the session.
  * @return {void} Nothing.
  * @private
@@ -503,10 +509,6 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
     state = remoting.ClientSession.State.CONNECTION_DROPPED;
   }
   this.logToServer.logClientSessionStateChange(state, this.error_);
-  if (this.state_ == remoting.ClientSession.State.CONNECTED) {
-    this.createGnubbyAuthHandler_();
-    this.createCastExtensionHandler_();
-  }
 
   this.raiseEvent(remoting.ClientSession.Events.stateChanged,
     new remoting.ClientSession.StateEvent(newState, oldState)
@@ -581,47 +583,6 @@ remoting.ClientSession.prototype.sendClientMessage = function(type, message) {
 };
 
 /**
- * Send a gnubby-auth extension message to the host.
- * @param {Object} data The gnubby-auth message data.
- */
-remoting.ClientSession.prototype.sendGnubbyAuthMessage = function(data) {
-  if (!this.plugin_)
-    return;
-  this.plugin_.sendClientMessage('gnubby-auth', JSON.stringify(data));
-};
-
-/**
- * Process a remote gnubby auth request.
- * @param {string} data Remote gnubby request data.
- * @private
- */
-remoting.ClientSession.prototype.processGnubbyAuthMessage_ = function(data) {
-  if (this.gnubbyAuthHandler_) {
-    try {
-      this.gnubbyAuthHandler_.onMessage(data);
-    } catch (/** @type {*} */ err) {
-      console.error('Failed to process gnubby message: ', err);
-    }
-  } else {
-    console.error('Received unexpected gnubby message');
-  }
-};
-
-/**
- * Create a gnubby auth handler and inform the host that gnubby auth is
- * supported.
- * @private
- */
-remoting.ClientSession.prototype.createGnubbyAuthHandler_ = function() {
-  if (remoting.desktopConnectedView.getMode() ==
-      remoting.DesktopConnectedView.Mode.ME2ME) {
-    this.gnubbyAuthHandler_ = new remoting.GnubbyAuthHandler(this);
-    // TODO(psj): Move to more generic capabilities mechanism.
-    this.sendGnubbyAuthMessage({'type': 'control', 'option': 'auth-v1'});
-  }
-};
-
-/**
  * Timer callback to send the access token to the host.
  * @private
  */
@@ -645,60 +606,6 @@ remoting.ClientSession.prototype.sendGoogleDriveAccessToken_ = function() {
       catch(remoting.Error.handler(sendError));
   window.setTimeout(this.sendGoogleDriveAccessToken_.bind(this),
                     remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS);
-};
-
-/**
- * Send a Cast extension message to the host.
- * @param {Object} data The cast message data.
- */
-remoting.ClientSession.prototype.sendCastExtensionMessage = function(data) {
-  if (!this.plugin_)
-    return;
-  this.plugin_.sendClientMessage('cast_message', JSON.stringify(data));
-};
-
-/**
- * Process a remote Cast extension message from the host.
- * @param {string} data Remote cast extension data message.
- * @private
- */
-remoting.ClientSession.prototype.processCastExtensionMessage_ = function(data) {
-  if (this.castExtensionHandler_) {
-    try {
-      this.castExtensionHandler_.onMessage(data);
-    } catch (/** @type {*} */ err) {
-      console.error('Failed to process cast message: ', err);
-    }
-  } else {
-    console.error('Received unexpected cast message');
-  }
-};
-
-/**
- * Create a CastExtensionHandler and inform the host that cast extension
- * is supported.
- * @private
- */
-remoting.ClientSession.prototype.createCastExtensionHandler_ = function() {
-  if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST) &&
-      remoting.desktopConnectedView.getMode() ==
-          remoting.DesktopConnectedView.Mode.ME2ME) {
-    this.castExtensionHandler_ = new remoting.CastExtensionHandler(this);
-  }
-};
-
-/**
- * Handles protocol extension messages.
- * @param {string} type Type of extension message.
- * @param {Object} message The parsed extension message data.
- * @return {boolean} True if the message was recognized, false otherwise.
- */
-remoting.ClientSession.prototype.handleExtensionMessage =
-    function(type, message) {
-  if (remoting.desktopConnectedView.handleExtensionMessage(type, message)) {
-    return true;
-  }
-  return false;
 };
 
 /**

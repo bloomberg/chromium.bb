@@ -15,12 +15,38 @@ var remoting = remoting || {};
 
 /**
  * @constructor
- * @param {!remoting.ClientSession} clientSession The client session to send
- *     gnubby-auth response messages to.
+ * @implements {remoting.ProtocolExtension}
  */
-remoting.GnubbyAuthHandler = function(clientSession) {
-  this.clientSession_ = clientSession;
+remoting.GnubbyAuthHandler = function() {
+  /** @private {?function(string,string)} */
+  this.sendMessageToHostCallback_ = null;
 };
+
+/** @return {string} */
+remoting.GnubbyAuthHandler.prototype.getType = function() {
+  return 'gnubby-auth';
+};
+
+/**
+ * @param {function(string,string)} sendMessageToHost Callback to send a message
+ *     to the host.
+ */
+remoting.GnubbyAuthHandler.prototype.start = function(sendMessageToHost) {
+  this.sendMessageToHostCallback_ = sendMessageToHost;
+
+  this.sendMessageToHost_({
+    'type': 'control',
+    'option': 'auth-v1'
+  });
+};
+
+/**
+ * @param {Object} data The data to send.
+ * @private
+ */
+remoting.GnubbyAuthHandler.prototype.sendMessageToHost_ = function(data) {
+  this.sendMessageToHostCallback_(this.getType(), JSON.stringify(data));
+}
 
 /**
  * Processes gnubby-auth messages.
@@ -48,14 +74,14 @@ remoting.GnubbyAuthHandler.prototype.onMessage = function(data) {
 remoting.GnubbyAuthHandler.prototype.callback_ =
     function(connectionId, response) {
   try {
-    this.clientSession_.sendGnubbyAuthMessage({
+    this.sendMessageToHost_({
       'type': 'data',
       'connectionId': connectionId,
       'data': getArrayAttr(response, 'data')
     });
   } catch (/** @type {*} */ err) {
     console.error('gnubby callback failed: ', err);
-    this.clientSession_.sendGnubbyAuthMessage({
+    this.sendMessageToHost_({
       'type': 'error',
       'connectionId': connectionId
     });

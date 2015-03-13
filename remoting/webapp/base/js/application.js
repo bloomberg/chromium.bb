@@ -52,19 +52,11 @@ remoting.Application.prototype.getApplicationName = function() {
 };
 
 /**
- * @return {Array<string>} A list of |ClientSession.Capability|s required
- *     by this application.
- */
-remoting.Application.prototype.getRequiredCapabilities_ = function() {
-  return this.appCapabilities_;
-};
-
-/**
  * @param {remoting.ClientSession.Capability} capability
  * @return {boolean}
  */
 remoting.Application.prototype.hasCapability = function(capability) {
-  var capabilities = remoting.app.getRequiredCapabilities_();
+  var capabilities = this.appCapabilities_;
   return capabilities.indexOf(capability) != -1;
 };
 
@@ -184,9 +176,10 @@ remoting.Application.prototype.onExtensionMessage = function(type, data) {
     return true;
   }
 
-  if (remoting.clientSession) {
-    return remoting.clientSession.handleExtensionMessage(type, message);
+  if (remoting.desktopConnectedView) {
+    return remoting.desktopConnectedView.handleExtensionMessage(type, message);
   }
+
   return false;
 };
 
@@ -213,7 +206,7 @@ remoting.Application.prototype.getSessionConnector = function() {
         this.onError.bind(this),
         this.onExtensionMessage.bind(this),
         this.onConnectionFailed.bind(this),
-        this.getRequiredCapabilities_(),
+        this.appCapabilities_,
         this.delegate_.getDefaultRemapKeys());
   }
   return this.sessionConnector_;
@@ -261,6 +254,7 @@ remoting.Application.prototype.updateStatistics_ = function() {
   remoting.stats.update(perfstats);
   remoting.clientSession.logStatistics(perfstats);
 };
+
 
 /**
  * @interface

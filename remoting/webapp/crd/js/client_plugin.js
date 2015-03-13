@@ -131,20 +131,6 @@ remoting.ClientPlugin.prototype.setConnectionEventHandler =
     function(handler) {};
 
 /**
- * @param {function(string):void} handler Callback for processing security key
- *     (Gnubby) protocol messages.
- */
-remoting.ClientPlugin.prototype.setGnubbyAuthHandler =
-    function(handler) {};
-
-/**
- * @param {function(string):void} handler Callback for processing Cast protocol
- *     messages.
- */
-remoting.ClientPlugin.prototype.setCastExtensionHandler =
-    function(handler) {};
-
-/**
  * @param {function(string, number, number):void} handler Callback for
  *     processing large mouse cursor images. The first parameter is a data:
  *     URL encoding the mouse cursor; the second and third parameters are
@@ -228,6 +214,13 @@ remoting.ClientPlugin.ConnectionEventHandler.prototype.onConnectionReady =
 remoting.ClientPlugin.ConnectionEventHandler.prototype.onSetCapabilities =
     function(capabilities) {};
 
+/**
+ * @param {string} type
+ * @param {string} data
+ */
+remoting.ClientPlugin.ConnectionEventHandler.prototype.onExtensionMessage =
+    function(type, data) {};
+
 
 /**
  * @interface
@@ -236,14 +229,11 @@ remoting.ClientPluginFactory = function() {};
 
 /**
  * @param {Element} container The container for the embed element.
- * @param {function(string, string):boolean} onExtensionMessage The handler for
- *     protocol extension messages. Returns true if a message is recognized;
- *     false otherwise.
  * @param {Array<string>} requiredCapabilities
  * @return {remoting.ClientPlugin} A new client plugin instance.
  */
 remoting.ClientPluginFactory.prototype.createPlugin =
-    function(container, onExtensionMessage, requiredCapabilities) {};
+    function(container, requiredCapabilities) {};
 
 /**
  * Preload the plugin to make instantiation faster when the user tries

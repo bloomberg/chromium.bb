@@ -31,9 +31,9 @@ remoting.desktopConnectedView = null;
  * @param {function(remoting.ClientSession):void} onConnected Callback on
  *     success.
  * @param {function(!remoting.Error):void} onError Callback on error.
- * @param {function(string, string):boolean} onExtensionMessage The handler for
- *     protocol extension messages. Returns true if a message is recognized;
- *     false otherwise.
+ * @param {function(string, string):boolean} appProtocolExtensionHandler The
+ *     handler for the application's protocol extension messages. Returns true
+ *     if a message is recognized; false otherwise.
  * @param {function(!remoting.Error):void} onConnectionFailed Callback for when
  *     the connection fails.
  * @param {Array<string>} requiredCapabilities Connector capabilities
@@ -44,7 +44,7 @@ remoting.desktopConnectedView = null;
  * @implements {remoting.SessionConnector}
  */
 remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
-                                         onExtensionMessage,
+                                         appProtocolExtensionHandler,
                                          onConnectionFailed,
                                          requiredCapabilities,
                                          defaultRemapKeys) {
@@ -58,7 +58,7 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
   this.onError_ = onError;
 
   /** @private {function(string, string):boolean} */
-  this.onExtensionMessage_ = onExtensionMessage;
+  this.appProtocolExtensionHandler_ = appProtocolExtensionHandler;
 
   /** @private {function(!remoting.Error):void} */
   this.onConnectionFailed_ = onConnectionFailed;
@@ -115,6 +115,9 @@ remoting.SessionConnectorImpl.prototype.resetConnection_ = function() {
 
   /** @private {remoting.CredentialsProvider} */
   this.credentialsProvider_ = null;
+
+  /** @private {Object<string,remoting.ProtocolExtension>} */
+  this.protocolExtensions_ = {};
 };
 
 /**
@@ -325,7 +328,7 @@ remoting.SessionConnectorImpl.prototype.createSession_ = function() {
       '.client-plugin-container');
 
   this.plugin_ = remoting.ClientPlugin.factory.createPlugin(
-      pluginContainer, this.onExtensionMessage_, this.requiredCapabilities_);
+      pluginContainer, this.requiredCapabilities_);
 
   var that = this;
   this.host_.options.load().then(function(){
@@ -352,7 +355,8 @@ remoting.SessionConnectorImpl.prototype.onPluginInitialized_ = function(
   }
 
   this.clientSession_ = new remoting.ClientSession(
-      this.plugin_, this.host_, this.signalStrategy_, this.connectionMode_);
+      this.plugin_, this.host_, this.signalStrategy_, this.connectionMode_,
+      this.onProtocolExtensionMessage_.bind(this));
   remoting.clientSession = this.clientSession_;
 
   this.connectedView_ = new remoting.DesktopConnectedView(
@@ -396,6 +400,59 @@ remoting.SessionConnectorImpl.prototype.removePlugin_ = function() {
 };
 
 /**
+ * @param {remoting.ProtocolExtension} extension
+ */
+remoting.SessionConnectorImpl.prototype.registerProtocolExtension =
+    function(extension) {
+  var type = extension.getType();
+  if (type in this.protocolExtensions_) {
+    console.error(
+        'Attempt to register multiple extensions with the same type: ', type);
+    return;
+  }
+  this.protocolExtensions_[type] = extension;
+};
+
+/** @private */
+remoting.SessionConnectorImpl.prototype.initProtocolExtensions_ = function() {
+  for (var type in this.protocolExtensions_) {
+    /** @type {remoting.ProtocolExtension} */
+    var extension = this.protocolExtensions_[type];
+    extension.start(this.plugin_.sendClientMessage.bind(this.plugin_));
+  }
+};
+
+/**
+ * Called when an extension message needs to be handled.
+ *
+ * @param {string} type The type of the extension message.
+ * @param {string} data The payload of the extension message.
+ * @return {boolean} Return true if the extension message was recognized.
+ * @private
+ */
+remoting.SessionConnectorImpl.prototype.onProtocolExtensionMessage_ =
+    function(type, data) {
+  if (type == 'test-echo-reply') {
+    console.log('Got echo reply: ' + data);
+    return true;
+  }
+  for (var type in this.protocolExtensions_) {
+    /** @type {remoting.ProtocolExtension} */
+    var extension = this.protocolExtensions_[type];
+    if (type == extension.getType()) {
+      try {
+        extension.onMessage(data);
+      } catch (/** @type {*} */ err) {
+        console.error('Failed to process protocol extension ', type,
+                      ' message: ', err);
+      }
+      return true;
+    }
+  }
+  return this.appProtocolExtensionHandler_(type, data);
+};
+
+/**
  * Handle a change in the state of the client session prior to successful
  * connection (after connection, this class no longer handles state change
  * events). Errors that occur while connecting either trigger a reconnect
@@ -422,6 +479,8 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
             new remoting.SmartReconnector(this, this.clientSession_);
       }
       this.onConnected_(this.clientSession_);
+      // Initialize any protocol extensions that may have been added by the app.
+      this.initProtocolExtensions_();
       break;
 
     case remoting.ClientSession.State.CREATED:
@@ -478,9 +537,9 @@ remoting.DefaultSessionConnectorFactory = function() {};
  * @param {function(remoting.ClientSession):void} onConnected Callback on
  *     success.
  * @param {function(!remoting.Error):void} onError Callback on error.
- * @param {function(string, string):boolean} onExtensionMessage The handler for
- *     protocol extension messages. Returns true if a message is recognized;
- *     false otherwise.
+ * @param {function(string, string):boolean} appProtocolExtensionHandler The
+ *     handler for the application's protocol extension messages. Returns true
+ *     if a message is recognized; false otherwise.
  * @param {function(!remoting.Error):void} onConnectionFailed Callback for when
  *     the connection fails.
  * @param {Array<string>} requiredCapabilities Connector capabilities
@@ -490,10 +549,12 @@ remoting.DefaultSessionConnectorFactory = function() {};
  * @return {remoting.SessionConnector}
  */
 remoting.DefaultSessionConnectorFactory.prototype.createConnector =
-    function(clientContainer, onConnected, onError, onExtensionMessage,
+    function(clientContainer, onConnected, onError,
+             appProtocolExtensionHandler,
              onConnectionFailed, requiredCapabilities, defaultRemapKeys) {
   return new remoting.SessionConnectorImpl(clientContainer, onConnected,
-                                           onError, onExtensionMessage,
+                                           onError,
+                                           appProtocolExtensionHandler,
                                            onConnectionFailed,
                                            requiredCapabilities,
                                            defaultRemapKeys);

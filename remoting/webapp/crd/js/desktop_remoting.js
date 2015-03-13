@@ -192,6 +192,17 @@ remoting.DesktopRemoting.prototype.handleConnected = function(clientSession) {
     remoting.toolbar.preview();
   }
 
+  if (remoting.desktopConnectedView.getMode() ==
+        remoting.DesktopConnectedView.Mode.ME2ME) {
+    var sessionConnector = remoting.app.getSessionConnector();
+    if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST)) {
+      sessionConnector.registerProtocolExtension(
+          new remoting.CastExtensionHandler());
+    }
+    sessionConnector.registerProtocolExtension(
+        new remoting.GnubbyAuthHandler());
+  }
+
   if (remoting.pairingRequested) {
     /**
      * @param {string} clientId

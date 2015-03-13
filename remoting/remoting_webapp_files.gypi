@@ -157,6 +157,7 @@
       'webapp/base/js/base.js',
       'webapp/base/js/ipc.js',
       'webapp/base/js/platform.js',
+      'webapp/base/js/protocol_extension.js',
       'webapp/crd/js/apps_v2_migration.js',
       'webapp/crd/js/error.js',
       'webapp/crd/js/event_handlers.js',

@@ -22,13 +22,9 @@ var remoting = remoting || {};
 
 /**
  * @constructor
- * @param {!remoting.ClientSession} clientSession The client session to send
- * cast extension messages to.
+ * @implements {remoting.ProtocolExtension}
  */
-remoting.CastExtensionHandler = function(clientSession) {
-  /** @private */
-  this.clientSession_ = clientSession;
-
+remoting.CastExtensionHandler = function() {
   /** @private {chrome.cast.Session} */
   this.session_ = null;
 
@@ -41,21 +37,30 @@ remoting.CastExtensionHandler = function(clientSession) {
   /** @private {Array<Object>} */
   this.messageQueue_ = [];
 
-  this.start_();
+  /** @private {?function(string,string)} */
+  this.sendMessageToHostCallback_ = null;
+};
+
+/** @return {string} */
+remoting.CastExtensionHandler.prototype.getType = function() {
+  return 'cast_message';
 };
 
 /**
  * The id of the script node.
- * @type {string}
- * @private
+ * @private {string}
  */
 remoting.CastExtensionHandler.prototype.SCRIPT_NODE_ID_ = 'cast-script-node';
 
 /**
  * Attempts to load the Google Cast Chrome Sender API libary.
- * @private
+ *
+ * @param {function(string,string)} sendMessageToHost Callback to send a message
+ *     to the host.
  */
-remoting.CastExtensionHandler.prototype.start_ = function() {
+remoting.CastExtensionHandler.prototype.start = function(sendMessageToHost) {
+  this.sendMessageToHostCallback_ = sendMessageToHost;
+
   var node = document.getElementById(this.SCRIPT_NODE_ID_);
   if (node) {
     console.error(
@@ -81,7 +86,6 @@ remoting.CastExtensionHandler.prototype.start_ = function() {
   }
   node.addEventListener('load', onLoad, false);
   node.addEventListener('error', onLoadError, false);
-
 };
 
 /**
@@ -101,14 +105,13 @@ remoting.CastExtensionHandler.prototype.onMessage = function(msgString) {
 };
 
 /**
- * Send cast-extension messages through the client session.
- * @param {Object} response The JSON response to be sent to the host. The
- * response object must contain the appropriate keys.
+ * Send cast-extension messages through the host via the plugin.
+ * @param {Object} data The JSON response to be sent to the host. The
+ *     response object must contain the appropriate keys.
  * @private
  */
-remoting.CastExtensionHandler.prototype.sendMessageToHost_ =
-    function(response) {
-  this.clientSession_.sendCastExtensionMessage(response);
+remoting.CastExtensionHandler.prototype.sendMessageToHost_ = function(data) {
+  this.sendMessageToHostCallback_(this.getType(), JSON.stringify(data));
 };
 
 /**
