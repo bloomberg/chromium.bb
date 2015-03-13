@@ -72,9 +72,6 @@ class GpuVideoDecodeAccelerator
 
   class MessageFilter;
 
-  // Return a set of VDA Create function pointers applicable to the current
-  // platform.
-  std::vector<CreateVDAFp> CreateVDAFps();
   scoped_ptr<media::VideoDecodeAccelerator> CreateDXVAVDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2VDA();
   scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2SliceVDA();
@@ -110,12 +107,12 @@ class GpuVideoDecodeAccelerator
                  scoped_refptr<gfx::GLImage> image);
 
   // Route ID to communicate with the host.
-  int32 host_route_id_;
+  const int32 host_route_id_;
 
   // Unowned pointer to the underlying GpuCommandBufferStub.  |this| is
   // registered as a DestuctionObserver of |stub_| and will self-delete when
   // |stub_| is destroyed.
-  GpuCommandBufferStub* stub_;
+  GpuCommandBufferStub* const stub_;
 
   // The underlying VideoDecodeAccelerator.
   scoped_ptr<media::VideoDecodeAccelerator> video_decode_accelerator_;
@@ -138,10 +135,10 @@ class GpuVideoDecodeAccelerator
   base::WaitableEvent filter_removed_;
 
   // GPU child message loop.
-  scoped_refptr<base::MessageLoopProxy> child_message_loop_;
+  const scoped_refptr<base::MessageLoopProxy> child_message_loop_;
 
   // GPU IO message loop.
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  const scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
   // Weak pointers will be invalidated on IO thread.
   base::WeakPtrFactory<Client> weak_factory_for_io_;

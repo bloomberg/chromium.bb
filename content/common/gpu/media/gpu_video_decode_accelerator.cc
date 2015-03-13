@@ -117,8 +117,8 @@ class GpuVideoDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
   ~MessageFilter() override {}
 
  private:
-  GpuVideoDecodeAccelerator* owner_;
-  int32 host_route_id_;
+  GpuVideoDecodeAccelerator* const owner_;
+  const int32 host_route_id_;
   // The sender to which this filter was added.
   IPC::Sender* sender_;
 };
@@ -131,11 +131,11 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
       stub_(stub),
       texture_target_(0),
       filter_removed_(true, false),
+      child_message_loop_(base::MessageLoopProxy::current()),
       io_message_loop_(io_message_loop),
       weak_factory_for_io_(this) {
   DCHECK(stub_);
   stub_->AddDestructionObserver(this);
-  child_message_loop_ = base::MessageLoopProxy::current();
   make_context_current_ =
       base::Bind(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
 }
@@ -235,8 +235,7 @@ void GpuVideoDecodeAccelerator::Initialize(
   DCHECK(!video_decode_accelerator_.get());
 
   if (!stub_->channel()->AddRoute(host_route_id_, this)) {
-    DLOG(ERROR) << "GpuVideoDecodeAccelerator::Initialize(): "
-                   "failed to add route";
+    DLOG(ERROR) << "Initialize(): failed to add route";
     SendCreateDecoderReply(init_done_msg, false);
   }
 
@@ -249,11 +248,19 @@ void GpuVideoDecodeAccelerator::Initialize(
   }
 #endif
 
-  std::vector<GpuVideoDecodeAccelerator::CreateVDAFp>
-      create_vda_fps = CreateVDAFps();
+  // Array of Create..VDA() function pointers, maybe applicable to the current
+  // platform. This list is ordered by priority of use.
+  const GpuVideoDecodeAccelerator::CreateVDAFp create_vda_fps[] = {
+      &GpuVideoDecodeAccelerator::CreateDXVAVDA,
+      &GpuVideoDecodeAccelerator::CreateV4L2VDA,
+      &GpuVideoDecodeAccelerator::CreateV4L2SliceVDA,
+      &GpuVideoDecodeAccelerator::CreateVaapiVDA,
+      &GpuVideoDecodeAccelerator::CreateVTVDA,
+      &GpuVideoDecodeAccelerator::CreateOzoneVDA,
+      &GpuVideoDecodeAccelerator::CreateAndroidVDA};
 
-  for (size_t i = 0; i < create_vda_fps.size(); ++i) {
-    video_decode_accelerator_ = (this->*create_vda_fps[i])();
+  for (const auto& create_vda_function : create_vda_fps) {
+    video_decode_accelerator_ = (this->*create_vda_function)();
     if (!video_decode_accelerator_ ||
         !video_decode_accelerator_->Initialize(profile, this))
       continue;
@@ -268,19 +275,6 @@ void GpuVideoDecodeAccelerator::Initialize(
   video_decode_accelerator_.reset();
   LOG(ERROR) << "HW video decode not available for profile " << profile;
   SendCreateDecoderReply(init_done_msg, false);
-}
-
-std::vector<GpuVideoDecodeAccelerator::CreateVDAFp>
-GpuVideoDecodeAccelerator::CreateVDAFps() {
-  std::vector<GpuVideoDecodeAccelerator::CreateVDAFp> create_vda_fps;
-  create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateDXVAVDA);
-  create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateV4L2VDA);
-  create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateV4L2SliceVDA);
-  create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateVaapiVDA);
-  create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateVTVDA);
-  create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateOzoneVDA);
-  create_vda_fps.push_back(&GpuVideoDecodeAccelerator::CreateAndroidVDA);
-  return create_vda_fps;
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
