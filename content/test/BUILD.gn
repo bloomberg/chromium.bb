@@ -448,6 +448,7 @@ if (!is_mac) {  # TODO(GYP) enable on Mac once it links.
       ":test_support",
       "//base/allocator",
       "//base/test:test_support",
+      "//content/browser/notifications:notification_proto",
       "//content/browser/service_worker:service_worker_proto",
       "//content/browser/speech/proto",
       "//content/public/browser",

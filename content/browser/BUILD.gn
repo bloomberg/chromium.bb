@@ -22,6 +22,7 @@ source_set("browser") {
     "//base",
     "//base:base_static",
     "//content:resources",
+    "//content/browser/notifications:notification_proto",
     "//content/browser/service_worker:service_worker_proto",
     "//content/browser/speech/proto",
     "//content/public/common:common_sources",
