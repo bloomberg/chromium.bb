@@ -174,6 +174,18 @@ class Yandex(WebsiteTest):
 
 # Disabled tests.
 
+# Fails due to test framework issue(?).
+class Aliexpress(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https://login.aliexpress.com/buyer.htm?return=http%3A%2F%2Fwww.aliexpress.com%2F")
+    self.WaitUntilDisplayed("iframe#alibaba-login-box")
+    frame = self.driver.find_element_by_css_selector("iframe#alibaba-login-box")
+    self.driver.switch_to_frame(frame)
+    self.FillUsernameInto("#fm-login-id")
+    self.FillPasswordInto("#fm-login-password")
+    self.Click("#fm-login-submit")
+
 
 # Bug not reproducible without test.
 class Amazon(WebsiteTest):
@@ -279,6 +291,18 @@ class Espn(WebsiteTest):
       self.Wait(1)
 
 
+# Fails due to test framework issue.
+class Flipkart(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("http://www.flipkart.com/")
+    self.Wait(2)
+    self.Click(".header-links .js-login")
+    self.FillUsernameInto("#login_email_id")
+    self.FillPasswordInto("#login_password")
+    self.Submit("#login_password")
+
+
 # Iframe, password saved but not autofilled.
 class Instagram(WebsiteTest):
 
@@ -359,6 +383,7 @@ def Tests(environment, tests_to_run=None):
   }
 
   disabled_tests = {
+    "aliexpress": Aliexpress("aliexpress"), # Fails due to test framework issue.
     "amazon": Amazon("amazon"), # Bug not reproducible without test.
     "ask": Ask("ask"), # Password not saved.
     "baidu": Baidu("baidu"), # Password not saved.
@@ -367,6 +392,7 @@ def Tests(environment, tests_to_run=None):
     "dailymotion": Dailymotion("dailymotion"), # Crashes.
     "ebay": Ebay("ebay"), # http://crbug.com/368690
     "espn": Espn("espn"), # Iframe, password saved but not autofileld.
+    "flipkart": Flipkart("flipkart"), # Fails due to test framework issue.
     "instagram": Instagram("instagram"), # Iframe, pw saved but not autofilled.
     "live": Live("live", username_not_auto=True),  # http://crbug.com/367768
     "163": One63("163"), # http://crbug.com/368690
