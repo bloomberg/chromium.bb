@@ -471,12 +471,15 @@ File::Error File::OSErrorToFileError(int saved_errno) {
     case EROFS:
     case EPERM:
       return FILE_ERROR_ACCESS_DENIED;
+    case EBUSY:
 #if !defined(OS_NACL)  // ETXTBSY not defined by NaCl.
     case ETXTBSY:
-      return FILE_ERROR_IN_USE;
 #endif
+      return FILE_ERROR_IN_USE;
     case EEXIST:
       return FILE_ERROR_EXISTS;
+    case EIO:
+      return FILE_ERROR_IO;
     case ENOENT:
       return FILE_ERROR_NOT_FOUND;
     case EMFILE:
