@@ -164,6 +164,16 @@ class Wikipedia(WebsiteTest):
     self.Submit("#wpPassword1")
 
 
+class Wordpress(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https://de.wordpress.com/wp-login.php")
+    self.FillUsernameInto("[name='log']")
+    self.FillPasswordInto("[name='pwd']")
+    self.Submit("[name='pwd']")
+
+
+
 class Yahoo(WebsiteTest):
 
   def Login(self):
@@ -389,6 +399,7 @@ def Tests(environment, tests_to_run=None):
     "twitter": Twitter("twitter"),
     "wikia": Wikia("wikia"),
     "wikipedia": Wikipedia("wikipedia", username_not_auto=True),
+    "wordpress": Wordpress("wordpress"),
     "yahoo": Yahoo("yahoo", username_not_auto=True),
     "yandex": Yandex("yandex")
   }
