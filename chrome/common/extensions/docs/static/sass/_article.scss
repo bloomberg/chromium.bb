@@ -346,3 +346,44 @@ $site-toc-width: 175px;
     display: none;
   }
 }
+
+
+dl.nice {
+
+  &:before,
+  &:after {
+      display: table;
+      content: " ";
+  }
+
+  &:after {
+      clear:both;
+  }
+
+  dt {
+    font-weight: bold;
+    float: left;
+    width: 160px;
+    clear: left;
+  }
+
+  dt.full-width {
+    width: 100%;
+  }
+
+  dd {
+      margin: 0 0 15px 180px;
+  }
+}
+
+@media(max-width:580px) {
+  dl.nice {
+    dt {
+        width: 100%;
+    }
+    dd {
+        width: 100%;
+        margin-left: 0;
+    }
+  }
+}
