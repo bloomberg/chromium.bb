@@ -123,12 +123,8 @@ public:
 
     const SimpleFontData* primaryFont() const;
     const FontData* fontDataAt(unsigned) const;
-    inline GlyphData glyphDataForCharacter(UChar32& c, bool mirror, bool spaceNormalize = false, FontDataVariant variant = AutoVariant) const
-    {
-        return glyphDataAndPageForCharacter(c, mirror, spaceNormalize, variant).first;
-    }
 
-    std::pair<GlyphData, GlyphPage*> glyphDataAndPageForCharacter(UChar32&, bool mirror, bool normalizeSpace = false, FontDataVariant = AutoVariant) const;
+    GlyphData glyphDataForCharacter(UChar32&, bool mirror, bool normalizeSpace = false, FontDataVariant = AutoVariant) const;
     bool primaryFontHasGlyphForCharacter(UChar32) const;
 
     CodePath codePath(const TextRunPaintInfo&) const;
@@ -164,8 +160,6 @@ private:
 
 public:
     FontSelector* fontSelector() const;
-
-    FontFallbackList* fontList() const { return m_fontFallbackList.get(); }
 
     void willUseFontData(UChar32) const;
 
