@@ -1,0 +1,27 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  display: block;
+}
+
+core-menu {
+  margin: 0;
+  padding-top: 20px;
+}
+
+paper-item {
+  -webkit-padding-start: 40px;
+  font-size: 15px;
+  margin-bottom: 5px;
+  min-height: 45px;
+}
+
+paper-item.core-selected {
+  background-color: rgb(38, 166, 154);
+}
+
+paper-item core-icon {
+  -webkit-margin-end: 10px;
+}

@@ -1,0 +1,19 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://md-settings/settings_menu/settings_menu.html">
+
+<polymer-element name="cr-settings-drawer" layout vertical>
+  <template>
+    <link rel="stylesheet" href="settings_drawer.css">
+    <!-- TODO(michaelpg): Create a new user card component. -->
+    <div id="user-card" class="medium" layout horizontal center>
+      <img src="{{user.iconUrl}}">
+      <div flex>
+        <div class="name">{{user.name}}</div>
+        <div class="email">{{user.email}}</div>
+      </div>
+    </div>
+    <cr-settings-menu flex selectedId="{{selectedId}}" pages="{{pages}}">
+    </cr-settings-menu>
+  </template>
+  <script src="settings_drawer.js"></script>
+</polymer-element>

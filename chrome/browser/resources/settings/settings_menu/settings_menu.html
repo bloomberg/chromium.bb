@@ -1,0 +1,17 @@
+<link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
+<link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
+
+<polymer-element name="cr-settings-menu">
+  <template>
+    <link rel="stylesheet" href="settings_menu.css">
+    <core-menu selected="{{selectedId}}" valueattr="data-id">
+      <template repeat="{{pages}}">
+        <paper-item data-id="{{PAGE_ID}}">
+          <core-icon icon="{{icon}}"></core-icon>
+          {{pageTitle}}
+        </paper-item>
+      </template>
+    </core-menu>
+  </template>
+  <script src="settings_menu.js"></script>
+</polymer-element>

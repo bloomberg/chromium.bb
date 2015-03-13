@@ -1,0 +1,20 @@
+<link rel="import" href="chrome://resources/polymer/core-drawer-panel/core-drawer-panel.html">
+<link rel="import" href="chrome://resources/polymer/core-icon-button/core-icon-button.html">
+<link rel="import" href="chrome://md-settings/settings_drawer/settings_drawer.html">
+<link rel="import" href="chrome://md-settings/settings_main/settings_main.html">
+
+<polymer-element name="cr-settings-ui">
+  <template>
+    <link rel="stylesheet" href="settings_ui.css">
+    <core-drawer-panel drawerWidth="280px">
+      <cr-settings-drawer drawer id="drawer" pages="{{pages}}"
+          selectedId="{{selectedPageId}}">
+      </cr-settings-drawer>
+      <cr-settings-main main pages="{{pages}}" prefs="{{prefs}}"
+          selectedPageId="{{selectedPageId}}">
+        <core-icon-button icon="menu" core-drawer-toggle></core-icon-button>
+      </cr-settings-main>
+    </core-drawer-panel>
+  </template>
+  <script src="settings_ui.js"></script>
+</polymer-element>

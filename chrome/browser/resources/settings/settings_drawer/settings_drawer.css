@@ -1,0 +1,31 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  background-color: rgb(38, 50, 56);
+  color: white;
+  display: block;
+  overflow: auto;
+}
+
+#user-card {
+  -webkit-padding-start: 40px;
+  background-color: rgb(28, 37, 42);
+  color: white;
+  height: 95px;
+}
+
+#user-card img {
+  -webkit-margin-end: 15px;
+  height: 50px;
+  width: 50px;
+}
+
+#user-card .name {
+  font-size: 18px;
+}
+
+#user-card .email {
+  font-size: 14px;
+}

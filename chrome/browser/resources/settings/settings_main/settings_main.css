@@ -1,0 +1,25 @@
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:host {
+  background-color: rgb(219, 222, 224);
+  color: black;
+  display: block;
+}
+
+#outer {
+  box-sizing: border-box;
+  height: 100%;
+  overflow: auto;
+  padding-top: 5px;
+}
+
+paper-shadow {
+  background-color: white;
+  margin: 0 20px;
+}
+
+::content core-icon-button {
+  position: absolute;
+}

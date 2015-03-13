@@ -1,0 +1,20 @@
+<link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/core-animated-pages/core-animated-pages.html">
+<link rel="import" href="chrome://resources/polymer/core-transition/core-transition.html">
+<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
+
+<polymer-element name="cr-settings-main">
+  <template>
+    <link rel="stylesheet" href="settings_main.css">
+    <div id="outer">
+      <paper-shadow>
+        <content select="core-icon-button"></content>
+        <core-animated-pages id="pageContainer" selected="{{selectedPageId}}"
+            valueattr="PAGE_ID" transitions="cross-fade">
+          <cr-settings-a11y-page prefs="{{prefs}}"></cr-settings-a11y-page>
+        </core-animated-pages>
+      </paper-shadow>
+    </div>
+  </template>
+  <script src="settings_main.js"></script>
+</polymer-element>
