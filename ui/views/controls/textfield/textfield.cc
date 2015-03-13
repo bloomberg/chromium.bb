@@ -39,7 +39,6 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
-#include "ui/gfx/win/direct_write.h"
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -241,12 +240,6 @@ int GetViewsCommand(const ui::TextEditCommandAuraLinux& command, bool rtl) {
 // static
 const char Textfield::kViewClassName[] = "Textfield";
 const int Textfield::kTextPadding = 3;
-
-#if defined(OS_WIN)
-// On Windows with DirectWrite the font metrics are 1-2 px larger than their
-// GDI counterparts. We increase the text padding to account for that.
-const int kTextPaddingDirectWrite = 4;
-#endif
 
 // static
 size_t Textfield::GetCaretBlinkMs() {
@@ -562,19 +555,7 @@ bool Textfield::HasTextBeingDragged() {
 
 gfx::Insets Textfield::GetInsets() const {
   gfx::Insets insets = View::GetInsets();
-  gfx::Insets text_padding(kTextPadding, kTextPadding, kTextPadding,
-                           kTextPadding);
-#if defined(OS_WIN)
-  // On Windows with DirectWrite the font metrics are 1-2 px larger than their
-  // GDI counterparts. We increase the text padding to account for that.
-  if (gfx::win::IsDirectWriteEnabled()) {
-    text_padding = gfx::Insets(kTextPaddingDirectWrite,
-                               kTextPaddingDirectWrite,
-                               kTextPaddingDirectWrite,
-                               kTextPaddingDirectWrite);
-  }
-#endif
-  insets += text_padding;
+  insets += gfx::Insets(kTextPadding, kTextPadding, kTextPadding, kTextPadding);
   return insets;
 }
 
