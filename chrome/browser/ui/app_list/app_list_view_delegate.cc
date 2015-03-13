@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/user_metrics.h"
+#include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "chrome/browser/apps/scoped_keep_alive.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -133,6 +135,15 @@ void GetCustomLauncherPageUrls(content::BrowserContext* browser_context,
       LOG(ERROR) << "Invalid custom launcher page URL: "
                  << custom_launcher_page_url.possibly_invalid_spec();
     }
+  }
+
+  // Prevent launcher pages from loading unless the pref is enabled.
+  // (Command-line specified pages are exempt from this rule).
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state &&
+      local_state->HasPrefPath(prefs::kGoogleNowLauncherEnabled) &&
+      !local_state->GetBoolean(prefs::kGoogleNowLauncherEnabled)) {
+    return;
   }
 
   // Search the list of installed extensions for ones with 'launcher_page'.
