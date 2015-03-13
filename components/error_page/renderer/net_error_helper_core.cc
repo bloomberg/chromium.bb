@@ -588,6 +588,11 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
     chrome_common_net::RecordEvent(
         chrome_common_net::NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_SHOWN);
   }
+  if (committed_error_page_info_->reload_button_in_page &&
+      committed_error_page_info_->show_saved_copy_button_in_page) {
+    chrome_common_net::RecordEvent(
+        chrome_common_net::NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN);
+  }
 
   delegate_->EnablePageHelperFunctions();
 
@@ -894,6 +899,10 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
     case RELOAD_BUTTON:
       chrome_common_net::RecordEvent(
           chrome_common_net::NETWORK_ERROR_PAGE_RELOAD_BUTTON_CLICKED);
+      if (committed_error_page_info_->show_saved_copy_button_in_page) {
+        chrome_common_net::RecordEvent(
+            chrome_common_net::NETWORK_ERROR_PAGE_BOTH_BUTTONS_RELOAD_CLICKED);
+      }
       navigation_from_button_ = RELOAD_BUTTON;
       Reload();
       return;
@@ -901,6 +910,10 @@ void NetErrorHelperCore::ExecuteButtonPress(Button button) {
       chrome_common_net::RecordEvent(
           chrome_common_net::NETWORK_ERROR_PAGE_SHOW_SAVED_COPY_BUTTON_CLICKED);
       navigation_from_button_ = SHOW_SAVED_COPY_BUTTON;
+      if (committed_error_page_info_->reload_button_in_page) {
+        chrome_common_net::RecordEvent(chrome_common_net::
+            NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN_SAVED_COPY_CLICKED);
+      }
       delegate_->LoadPageFromCache(
           committed_error_page_info_->error.unreachableURL);
       return;

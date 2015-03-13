@@ -26,6 +26,11 @@ enum NetworkErrorPageEvent {
 
   NETWORK_ERROR_PAGE_BROWSER_INITIATED_RELOAD,   // Reload from browser.
 
+  // Keep track of which button the user chooses when both are shown.
+  NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN,
+  NETWORK_ERROR_PAGE_BOTH_BUTTONS_RELOAD_CLICKED,
+  NETWORK_ERROR_PAGE_BOTH_BUTTONS_SHOWN_SAVED_COPY_CLICKED,
+
   NETWORK_ERROR_PAGE_EVENT_MAX,
 };
 

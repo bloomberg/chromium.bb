@@ -54399,6 +54399,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="6" label="Show Saved Copy Button Click Load Error"/>
   <int value="7" label="More Button Clicked"/>
   <int value="8" label="Browser Initiated Reload"/>
+  <int value="9" label="Both Buttons Shown"/>
+  <int value="10" label="Both Buttons Shown, Show Saved Copy Clicked"/>
+  <int value="11" label="Both Buttons Shown, Reload Clicked"/>
 </enum>
 
 <enum name="NetPreconnectUtilization" type="int">
