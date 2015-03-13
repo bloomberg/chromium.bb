@@ -358,6 +358,30 @@ class Subprocess42Test(unittest.TestCase):
     # No None is returned, since it's not using soft_timeout.
     self.assertEqual(False, got_none)
 
+  def test_yield_any_hard_timeout_callable(self):
+    # Kill the process due to hard_timeout.
+    proc = get_output_sleep_proc(True, True, 10)
+    got_none = False
+    actual = ''
+    called = []
+    def hard_timeout():
+      called.append(1)
+      return 1
+    for p, data in proc.yield_any(hard_timeout=hard_timeout):
+      if not data:
+        got_none = True
+        continue
+      self.assertEqual('stdout', p)
+      actual += data
+    if sys.platform == 'win32':
+      self.assertEqual(1, proc.returncode)
+    else:
+      self.assertEqual(-9, proc.returncode)
+    self.assertEqual('A\n', actual)
+    # No None is returned, since it's not using soft_timeout.
+    self.assertEqual(False, got_none)
+    self.assertTrue(called)
+
   def test_yield_any_soft_timeout_0(self):
     # rec_any() is expected to timeout and return None with no data pending at
     # least once, due to the sleep of 'duration' and the use of timeout=0.
@@ -378,6 +402,38 @@ class Subprocess42Test(unittest.TestCase):
         self.assertEqual(0, proc.returncode)
         self.assertEqual([], expected)
         self.assertEqual(True, got_none)
+        break
+      except AssertionError:
+        if duration != 2:
+          print('Sleeping rocks. Trying slower.')
+          continue
+        raise
+
+  def test_yield_any_soft_timeout_0_called(self):
+    # rec_any() is expected to timeout and return None with no data pending at
+    # least once, due to the sleep of 'duration' and the use of timeout=0.
+    for duration in (0.05, 0.1, 0.5, 2):
+      try:
+        proc = get_output_sleep_proc(True, True, duration)
+        expected = [
+          'A\n',
+          'B\n',
+        ]
+        got_none = False
+        called = []
+        def soft_timeout():
+          called.append(0)
+          return 0
+        for p, data in proc.yield_any(soft_timeout=soft_timeout):
+          if not p:
+            got_none = True
+            continue
+          self.assertEqual('stdout', p)
+          self.assertEqual(expected.pop(0), data)
+        self.assertEqual(0, proc.returncode)
+        self.assertEqual([], expected)
+        self.assertEqual(True, got_none)
+        self.assertTrue(called)
         break
       except AssertionError:
         if duration != 2:

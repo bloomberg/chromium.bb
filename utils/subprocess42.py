@@ -218,43 +218,55 @@ class Popen(subprocess.Popen):
     Yielded values are in the form (pipename, data).
 
     Arguments:
-    - maxsize: See recv_any().
+    - maxsize: See recv_any(). Can be a callable function.
     - hard_timeout: If None, the process is never killed. If set, the process is
-          killed after |hard_timeout| seconds.
+          killed after |hard_timeout| seconds. Can be a callable function.
     - soft_timeout: If None, the call is blocking. If set, yields None, None
           if no data is available within |soft_timeout| seconds. It resets
-          itself after each yield.
+          itself after each yield. Can be a callable function.
     """
     if hard_timeout is not None:
       # hard_timeout=0 means the process is not even given a little chance to
       # execute and will be immediately killed.
-      assert isinstance(hard_timeout, (int, float)) and hard_timeout > 0., (
-          hard_timeout)
+      if isinstance(hard_timeout, (int, float)):
+        assert hard_timeout > 0., hard_timeout
+        old_hard_timeout = hard_timeout
+        hard_timeout = lambda: old_hard_timeout
     if soft_timeout is not None:
       # soft_timeout=0 effectively means that the pipe is continuously polled.
-      assert isinstance(soft_timeout, (int, float)) and soft_timeout >= 0, (
-          soft_timeout)
+      if isinstance(soft_timeout, (int, float)):
+        assert soft_timeout >= 0, soft_timeout
+        old_soft_timeout = soft_timeout
+        soft_timeout = lambda: old_soft_timeout
+      else:
+        assert callable(soft_timeout), soft_timeout
 
     last_yield = time.time()
     while self.poll() is None:
+      ms = maxsize
+      if callable(maxsize):
+        ms = maxsize()
       t, data = self.recv_any(
-          maxsize=maxsize,
+          maxsize=ms,
           timeout=self._calc_timeout(hard_timeout, soft_timeout, last_yield))
       if data or soft_timeout is not None:
         yield t, data
         last_yield = time.time()
 
-      if hard_timeout and self.duration() >= hard_timeout:
+      if hard_timeout and self.duration() >= hard_timeout():
         break
 
     if self.poll() is None and hard_timeout:
-      logging.debug('Kill %s %s', self.duration(), hard_timeout)
+      logging.debug('Kill %s %s', self.duration(), hard_timeout())
       self.kill()
     self.wait()
 
     # Read all remaining output in the pipes.
     while True:
-      t, data = self.recv_any(maxsize=maxsize)
+      ms = maxsize
+      if callable(maxsize):
+        ms = maxsize()
+      t, data = self.recv_any(maxsize=ms)
       if not data:
         break
       yield t, data
@@ -268,10 +280,11 @@ class Popen(subprocess.Popen):
     difference.
     """
     hard_remaining = (
-        max(hard_timeout - self.duration(), 0) if hard_timeout else None)
+        None if hard_timeout is None
+        else max(hard_timeout() - self.duration(), 0))
     soft_remaining = (
-        max(soft_timeout - (time.time() - last_yield), 0)
-        if soft_timeout is not None else None)
+        None if soft_timeout is None
+        else max(soft_timeout() - (time.time() - last_yield), 0))
     if hard_remaining is None:
       return soft_remaining
     if soft_remaining is None:
