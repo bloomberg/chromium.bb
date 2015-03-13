@@ -173,7 +173,7 @@ function exposureImage(testVolumeName, volumeType) {
             return pending(
                 '%s is not updated. ' +
                     'First last modified: %s, Second last modified: %s.',
-                entry.name,
+                url,
                 origMetadata.modificationTime.toString(),
                 metadata.modificationTime.toString());
           }
