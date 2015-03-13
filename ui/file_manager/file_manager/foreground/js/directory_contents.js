@@ -861,21 +861,6 @@ DirectoryContents.prototype.cancelScan = function() {
  */
 DirectoryContents.prototype.onScanFinished_ = function() {
   this.scanner_ = null;
-
-  this.processNewEntriesQueue_.run(function(callback) {
-    // TODO(yoshiki): Here we should fire the update event of changed
-    // items. Currently we have a method this.fileList_.updateIndex() to
-    // fire an event, but this method takes only 1 argument and invokes sort
-    // one by one. It is obviously time wasting. Instead, we call sort
-    // directory.
-    // In future, we should implement a good method like updateIndexes and
-    // use it here.
-    var status = this.fileList_.sortStatus;
-    if (status)
-      this.fileList_.sort(status.field, status.direction);
-
-    callback();
-  }.bind(this));
 };
 
 /**
