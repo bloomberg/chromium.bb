@@ -1195,7 +1195,7 @@ void Position::getInlineBoxAndOffset(EAffinity affinity, TextDirection primaryDi
             }
             caretOffset = inlineBox->caretLeftmostOffset();
         }
-    } else if (m_anchorNode->selfOrAncestorHasDirAutoAttribute()) {
+    } else if (renderer && renderer->style()->unicodeBidi() == Plaintext) {
         if (inlineBox->bidiLevel() < level)
             caretOffset = inlineBox->caretLeftmostOffset();
         else

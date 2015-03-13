@@ -675,26 +675,6 @@ static inline bool elementAffectsDirectionality(const Node* node)
     return node->isHTMLElement() && (isHTMLBDIElement(toHTMLElement(*node)) || toHTMLElement(*node).hasAttribute(dirAttr));
 }
 
-static void setHasDirAutoFlagRecursively(Node* firstNode, bool flag, Node* lastNode = 0)
-{
-    firstNode->setSelfOrAncestorHasDirAutoAttribute(flag);
-
-    Node* node = firstNode->firstChild();
-
-    while (node) {
-        if (elementAffectsDirectionality(node)) {
-            if (node == lastNode)
-                return;
-            node = NodeTraversal::nextSkippingChildren(*node, firstNode);
-            continue;
-        }
-        node->setSelfOrAncestorHasDirAutoAttribute(flag);
-        if (node == lastNode)
-            return;
-        node = NodeTraversal::next(*node, firstNode);
-    }
-}
-
 void HTMLElement::childrenChanged(const ChildrenChange& change)
 {
     Element::childrenChanged(change);
@@ -703,18 +683,17 @@ void HTMLElement::childrenChanged(const ChildrenChange& change)
 
 bool HTMLElement::hasDirectionAuto() const
 {
+    // <bdi> defaults to dir="auto"
+    // https://html.spec.whatwg.org/multipage/semantics.html#the-bdi-element
     const AtomicString& direction = fastGetAttribute(dirAttr);
     return (isHTMLBDIElement(*this) && direction == nullAtom) || equalIgnoringCase(direction, "auto");
 }
 
 TextDirection HTMLElement::directionalityIfhasDirAutoAttribute(bool& isAuto) const
 {
-    if (!(selfOrAncestorHasDirAutoAttribute() && hasDirectionAuto())) {
-        isAuto = false;
+    isAuto = hasDirectionAuto();
+    if (!isAuto)
         return LTR;
-    }
-
-    isAuto = true;
     return directionality();
 }
 
@@ -763,11 +742,17 @@ TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) c
     return LTR;
 }
 
+bool HTMLElement::selfOrAncestorHasDirAutoAttribute() const
+{
+    return layoutObject() && layoutObject()->style() && layoutObject()->style()->selfOrAncestorHasDirAutoAttribute();
+}
+
 void HTMLElement::dirAttributeChanged(const AtomicString& value)
 {
+    // If an ancestor has dir=auto, and this node has the first character,
+    // changes to dir attribute may affect the ancestor.
     Element* parent = parentElement();
-
-    if (parent && parent->isHTMLElement() && parent->selfOrAncestorHasDirAutoAttribute())
+    if (parent && parent->isHTMLElement() && toHTMLElement(parent)->selfOrAncestorHasDirAutoAttribute())
         toHTMLElement(parent)->adjustDirectionalityIfNeededAfterChildAttributeChanged(this);
 
     if (equalIgnoringCase(value, "auto"))
@@ -777,9 +762,7 @@ void HTMLElement::dirAttributeChanged(const AtomicString& value)
 void HTMLElement::adjustDirectionalityIfNeededAfterChildAttributeChanged(Element* child)
 {
     ASSERT(selfOrAncestorHasDirAutoAttribute());
-    Node* strongDirectionalityTextNode;
-    TextDirection textDirection = directionality(&strongDirectionalityTextNode);
-    setHasDirAutoFlagRecursively(child, false);
+    TextDirection textDirection = directionality();
     if (layoutObject() && layoutObject()->style() && layoutObject()->style()->direction() != textDirection) {
         Element* elementToAdjust = this;
         for (; elementToAdjust; elementToAdjust = elementToAdjust->parentElement()) {
@@ -793,11 +776,7 @@ void HTMLElement::adjustDirectionalityIfNeededAfterChildAttributeChanged(Element
 
 void HTMLElement::calculateAndAdjustDirectionality()
 {
-    Node* strongDirectionalityTextNode;
-    TextDirection textDirection = directionality(&strongDirectionalityTextNode);
-    setHasDirAutoFlagRecursively(this, hasDirectionAuto(), strongDirectionalityTextNode);
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
-        setHasDirAutoFlagRecursively(root, hasDirectionAuto());
+    TextDirection textDirection = directionality();
     if (layoutObject() && layoutObject()->style() && layoutObject()->style()->direction() != textDirection)
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
 }
@@ -806,12 +785,6 @@ void HTMLElement::adjustDirectionalityIfNeededAfterChildrenChanged(const Childre
 {
     if (!selfOrAncestorHasDirAutoAttribute())
         return;
-
-    Node* oldMarkedNode = change.siblingBeforeChange ? NodeTraversal::nextSkippingChildren(*change.siblingBeforeChange) : 0;
-    while (oldMarkedNode && elementAffectsDirectionality(oldMarkedNode))
-        oldMarkedNode = NodeTraversal::nextSkippingChildren(*oldMarkedNode, this);
-    if (oldMarkedNode)
-        setHasDirAutoFlagRecursively(oldMarkedNode, false);
 
     for (Element* elementToAdjust = this; elementToAdjust; elementToAdjust = elementToAdjust->parentElement()) {
         if (elementAffectsDirectionality(elementToAdjust)) {

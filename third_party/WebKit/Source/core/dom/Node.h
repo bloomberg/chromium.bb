@@ -308,9 +308,6 @@ public:
     // Returns the parent node, but nullptr if the parent node is a ShadowRoot.
     ContainerNode* nonShadowBoundaryParentNode() const;
 
-    bool selfOrAncestorHasDirAutoAttribute() const { return getFlag(SelfOrAncestorHasDirAutoFlag); }
-    void setSelfOrAncestorHasDirAutoAttribute(bool flag) { setFlag(flag, SelfOrAncestorHasDirAutoFlag); }
-
     // Returns the enclosing event parent Element (or self) that, when clicked, would trigger a navigation.
     Element* enclosingLinkEventParentOrSelf();
 
@@ -723,9 +720,6 @@ private:
         HasSyntheticAttrChildNodesFlag = 1 << 26,
         HasEventTargetDataFlag = 1 << 27,
         AlreadySpellCheckedFlag = 1 << 28,
-
-        // HTML dir=auto.
-        SelfOrAncestorHasDirAutoFlag = 1 << 29,
 
         DefaultNodeFlags = IsFinishedParsingChildrenFlag | ChildNeedsStyleRecalcFlag | NeedsReattachStyleChange
     };

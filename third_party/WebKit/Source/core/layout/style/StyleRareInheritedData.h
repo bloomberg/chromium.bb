@@ -133,6 +133,8 @@ public:
     // expressed by 'will-change: contents' includes descendants.
     unsigned m_subtreeWillChangeContents : 1;
 
+    unsigned m_selfOrAncestorHasDirAutoAttribute : 1;
+
     AtomicString hyphenationString;
     short hyphenationLimitBefore;
     short hyphenationLimitAfter;

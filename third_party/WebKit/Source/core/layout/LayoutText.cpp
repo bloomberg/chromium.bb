@@ -691,8 +691,8 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
         break;
     }
 
-    // for dir=auto, use inlineBoxBidiLevel() to test the correct direction for the cursor.
-    if (rightAligned && (node() && node()->selfOrAncestorHasDirAutoAttribute())) {
+    // for unicode-bidi: plaintext, use inlineBoxBidiLevel() to test the correct direction for the cursor.
+    if (rightAligned && style()->unicodeBidi() == Plaintext) {
         if (inlineBox->bidiLevel()%2 != 1)
             rightAligned = false;
     }

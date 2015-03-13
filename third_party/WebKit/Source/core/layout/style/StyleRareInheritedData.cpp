@@ -88,6 +88,7 @@ StyleRareInheritedData::StyleRareInheritedData()
     , m_textUnderlinePosition(LayoutStyle::initialTextUnderlinePosition())
     , m_rubyPosition(LayoutStyle::initialRubyPosition())
     , m_subtreeWillChangeContents(false)
+    , m_selfOrAncestorHasDirAutoAttribute(false)
     , hyphenationLimitBefore(-1)
     , hyphenationLimitAfter(-1)
     , hyphenationLimitLines(-1)
@@ -141,6 +142,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , m_textUnderlinePosition(o.m_textUnderlinePosition)
     , m_rubyPosition(o.m_rubyPosition)
     , m_subtreeWillChangeContents(o.m_subtreeWillChangeContents)
+    , m_selfOrAncestorHasDirAutoAttribute(o.m_selfOrAncestorHasDirAutoAttribute)
     , hyphenationString(o.hyphenationString)
     , hyphenationLimitBefore(o.hyphenationLimitBefore)
     , hyphenationLimitAfter(o.hyphenationLimitAfter)
@@ -202,6 +204,7 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_textIndentType == o.m_textIndentType
         && m_lineBoxContain == o.m_lineBoxContain
         && m_subtreeWillChangeContents == o.m_subtreeWillChangeContents
+        && m_selfOrAncestorHasDirAutoAttribute == o.m_selfOrAncestorHasDirAutoAttribute
         && hyphenationString == o.hyphenationString
         && locale == o.locale
         && textEmphasisCustomMark == o.textEmphasisCustomMark

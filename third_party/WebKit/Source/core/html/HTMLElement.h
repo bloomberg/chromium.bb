@@ -129,6 +129,7 @@ private:
 
     PassRefPtrWillBeRawPtr<DocumentFragment> textToFragment(const String&, ExceptionState&);
 
+    bool selfOrAncestorHasDirAutoAttribute() const;
     void dirAttributeChanged(const AtomicString&);
     void adjustDirectionalityIfNeededAfterChildAttributeChanged(Element* child);
     void adjustDirectionalityIfNeededAfterChildrenChanged(const ChildrenChange&);

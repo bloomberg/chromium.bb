@@ -582,6 +582,7 @@ public:
 
     TextDirection direction() const { return static_cast<TextDirection>(inherited_flags._direction); }
     bool isLeftToRightDirection() const { return direction() == LTR; }
+    bool selfOrAncestorHasDirAutoAttribute() const { return rareInheritedData->m_selfOrAncestorHasDirAutoAttribute; }
 
     const Length& specifiedLineHeight() const;
     Length lineHeight() const;
@@ -1097,6 +1098,7 @@ public:
     void setTextUnderlinePosition(TextUnderlinePosition v) { SET_VAR(rareInheritedData, m_textUnderlinePosition, v); }
     void setTextDecorationStyle(TextDecorationStyle v) { SET_VAR(rareNonInheritedData, m_textDecorationStyle, v); }
     void setDirection(TextDirection v) { inherited_flags._direction = v; }
+    void setSelfOrAncestorHasDirAutoAttribute(bool v) { SET_VAR(rareInheritedData, m_selfOrAncestorHasDirAutoAttribute, v); }
     void setLineHeight(const Length& specifiedLineHeight);
     bool setZoom(float);
     bool setEffectiveZoom(float);

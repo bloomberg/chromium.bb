@@ -33,8 +33,6 @@ private:
     inline explicit HTMLBDIElement(Document& document)
         : HTMLElement(HTMLNames::bdiTag, document)
     {
-        // FIXME: Rename setSelfOrAncestorHasDirAutoAttribute to reflect the fact bdi also uses this flag.
-        setSelfOrAncestorHasDirAutoAttribute(true);
     }
 };
 

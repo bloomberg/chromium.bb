@@ -151,6 +151,9 @@ public:
             m_fontBuilder.didChangeTextOrientation();
     }
 
+    void setHasDirAutoAttribute(bool value) { m_hasDirAutoAttribute = value; }
+    bool hasDirAutoAttribute() const { return m_hasDirAutoAttribute; }
+
 private:
     ElementResolveContext m_elementContext;
     RawPtrWillBeMember<Document> m_document;
@@ -168,6 +171,7 @@ private:
 
     bool m_applyPropertyToRegularStyle;
     bool m_applyPropertyToVisitedLinkStyle;
+    bool m_hasDirAutoAttribute;
 
     FontBuilder m_fontBuilder;
 

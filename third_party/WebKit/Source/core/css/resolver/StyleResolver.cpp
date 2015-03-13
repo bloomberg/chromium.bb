@@ -452,8 +452,10 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
         if (state.element()->isHTMLElement()) {
             bool isAuto;
             TextDirection textDirection = toHTMLElement(state.element())->directionalityIfhasDirAutoAttribute(isAuto);
-            if (isAuto)
+            if (isAuto) {
+                state.setHasDirAutoAttribute(true);
                 collector.matchedResult().addMatchedProperties(textDirection == LTR ? leftToRightDeclaration() : rightToLeftDeclaration());
+            }
         }
     }
 
@@ -618,6 +620,9 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, LayoutS
             state.style()->setTextAutosizingMultiplier(element->layoutStyle()->textAutosizingMultiplier());
             state.style()->setUnique();
         }
+
+        if (state.hasDirAutoAttribute())
+            state.style()->setSelfOrAncestorHasDirAutoAttribute(true);
 
         applyMatchedProperties(state, collector.matchedResult());
         applyCallbackSelectors(state);

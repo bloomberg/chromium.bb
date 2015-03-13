@@ -36,6 +36,7 @@ StyleResolverState::StyleResolverState(Document& document, const ElementResolveC
     , m_parentStyle(parentStyle)
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
+    , m_hasDirAutoAttribute(false)
     , m_fontBuilder(document)
 {
     if (!m_parentStyle)
