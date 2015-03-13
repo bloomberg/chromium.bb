@@ -78,4 +78,93 @@ remoting.HostNeedsUpdateDialog.prototype.onCancel_ = function() {
   this.cleanup_();
 };
 
+/**
+ * @param {HTMLElement} rootElement
+ * @param {remoting.Host} host
+ * @constructor
+ */
+remoting.PinDialog = function(rootElement, host) {
+  /** @private */
+  this.rootElement_ = rootElement;
+  /** @private {base.Deferred} */
+  this.deferred_ = null;
+  /** @private {base.Disposables} */
+  this.eventHooks_ = null;
+  /** @private */
+  this.pairingCheckbox_ = rootElement.querySelector('.pairing-checkbox');
+  /** @private */
+  this.pinInput_ = rootElement.querySelector('.pin-inputField');
+  /** @private */
+  this.host_ = host;
+};
+
+/**
+ * @param {boolean} supportsPairing
+ * @return {Promise<string>}  Promise that resolves with the PIN or rejects with
+ *    |remoting.Error.CANCELLED| if the user cancels the connection.
+ */
+remoting.PinDialog.prototype.show = function(supportsPairing) {
+  var cancel = this.rootElement_.querySelector('.cancel-button');
+  var form = this.rootElement_.querySelector('form');
+  var onCancel = this.createClickHandler_(this.onCancel_.bind(this));
+  var onConnect = this.createClickHandler_(this.onConnect_.bind(this));
+
+  this.eventHooks_ = new base.Disposables(
+    new base.DomEventHook(form, 'submit', onConnect, false),
+    new base.DomEventHook(cancel, 'click', onCancel, false));
+
+  // Reset the UI.
+  this.pairingCheckbox_.checked = false;
+  this.rootElement_.querySelector('.pairing-section').hidden = !supportsPairing;
+  var message = this.rootElement_.querySelector('.pin-message');
+  l10n.localizeElement(message, this.host_.hostName);
+  this.pinInput_.value = '';
+
+  base.debug.assert(this.deferred_ === null);
+  this.deferred_ = new base.Deferred();
+
+  remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
+
+  return this.deferred_.promise();
+};
+
+/** @return {boolean} */
+remoting.PinDialog.prototype.pairingRequested = function() {
+  return this.pairingCheckbox_.checked;
+};
+
+/**
+ * @param {function():void} handler
+ * @return {Function}
+ * @private
+ */
+remoting.PinDialog.prototype.createClickHandler_ = function(handler) {
+  var that = this;
+  return function (/** Event */ e) {
+    // Prevents form submission from reloading the v1 app.
+    e.preventDefault();
+
+    // Set the focus away from the password field. This has to be done
+    // before the password field gets hidden, to work around a Blink
+    // clipboard-handling bug - http://crbug.com/281523.
+    that.rootElement_.querySelector('.connect-button').focus();
+    handler();
+    base.dispose(that.eventHooks_);
+    that.eventHooks_ = null;
+    that.deferred_ = null;
+  };
+};
+
+/** @private */
+remoting.PinDialog.prototype.onConnect_ = function() {
+  this.deferred_.resolve(this.pinInput_.value);
+  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+};
+
+/** @private */
+remoting.PinDialog.prototype.onCancel_ = function() {
+  this.deferred_.reject(remoting.Error.CANCELLED);
+  remoting.setMode(remoting.AppMode.HOME);
+};
+
 })();

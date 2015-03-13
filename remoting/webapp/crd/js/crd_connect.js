@@ -84,53 +84,13 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
    * @param {function(string):void} onPinFetched
    */
   var requestPin = function(supportsPairing, onPinFetched) {
-    /** @type {Element} */
-    var pinForm = document.getElementById('pin-form');
-    /** @type {Element} */
-    var pinCancel = document.getElementById('cancel-pin-entry-button');
-    /** @type {Element} */
-    var rememberPin = document.getElementById('remember-pin');
-    /** @type {Element} */
-    var rememberPinCheckbox = document.getElementById('remember-pin-checkbox');
-    /**
-     * Event handler for both the 'submit' and 'cancel' actions. Using
-     * a single handler for both greatly simplifies the task of making
-     * them one-shot. If separate handlers were used, each would have
-     * to unregister both itself and the other.
-     *
-     * @param {Event} event The click or submit event.
-     */
-    var onSubmitOrCancel = function(event) {
-      pinForm.removeEventListener('submit', onSubmitOrCancel, false);
-      pinCancel.removeEventListener('click', onSubmitOrCancel, false);
-      var pinField = document.getElementById('pin-entry');
-      var pin = pinField.value;
-      pinField.value = '';
-      if (event.target == pinForm) {
-        event.preventDefault();
-
-        // Set the focus away from the password field. This has to be done
-        // before the password field gets hidden, to work around a Blink
-        // clipboard-handling bug - http://crbug.com/281523.
-        document.getElementById('pin-connect-button').focus();
-
-        remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
-        onPinFetched(pin);
-        if (rememberPinCheckbox.checked) {
-          /** @type {boolean} */
-          remoting.pairingRequested = true;
-        }
-      } else {
-        remoting.setMode(remoting.AppMode.HOME);
-      }
-    };
-    pinForm.addEventListener('submit', onSubmitOrCancel, false);
-    pinCancel.addEventListener('click', onSubmitOrCancel, false);
-    rememberPin.hidden = !supportsPairing;
-    rememberPinCheckbox.checked = false;
-    var message = document.getElementById('pin-message');
-    l10n.localizeElement(message, host.hostName);
-    remoting.setMode(remoting.AppMode.CLIENT_PIN_PROMPT);
+    var pinDialog =
+        new remoting.PinDialog(document.getElementById('pin-dialog'), host);
+    pinDialog.show(supportsPairing).then(function(/** string */ pin) {
+      onPinFetched(pin);
+      /** @type {boolean} */
+      remoting.pairingRequested = pinDialog.pairingRequested();
+    });
   };
 
   /** @param {Object} settings */

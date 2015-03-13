@@ -302,7 +302,7 @@ remoting.DesktopRemoting.prototype.handleExtensionMessage = function(
  * @return {void} Nothing.
  */
 remoting.DesktopRemoting.prototype.handleError = function(error) {
-  console.error('Connection failed:', error.tag);
+  console.error('Connection failed:' + error.tag);
   remoting.accessCode = '';
 
   if (error.tag === remoting.Error.Tag.AUTHENTICATION_FAILED) {

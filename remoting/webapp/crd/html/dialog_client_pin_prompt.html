@@ -3,12 +3,12 @@ Copyright (c) 2014 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
-<div data-ui-mode="home.client.pin-prompt">
-  <div id="pin-message"
-       i18n-content="PIN_MESSAGE"
-       class="message"></div>
+<div data-ui-mode="home.client.pin-prompt" id="pin-dialog">
+  <div i18n-content="PIN_MESSAGE"
+       class="pin-message message"></div>
 
-  <form id="pin-form" action="">
+  <!-- using a form so that the PIN can be submitted on ENTER -->
+  <form id="pin-form">
     <table class="centered">
       <tr>
         <td>
@@ -19,13 +19,14 @@ found in the LICENSE file.
         <td>
           <input id="pin-entry"
                  type="password"
+                 class="pin-inputField"
                  autofocus="autofocus"
                  autocomplete="off"/>
           <button id="pin-connect-button"
-                  type="submit"
+                  class="connect-button"
                   i18n-content="CONNECT_BUTTON">
           </button>
-          <button id="cancel-pin-entry-button"
+          <button class="cancel-button"
                   type="button"
                   i18n-content="CANCEL">
           </button>
@@ -36,8 +37,10 @@ found in the LICENSE file.
           <!-- Empty cell to align the checkbox and PIN entry. -->
         </td>
         <td>
-          <label id="remember-pin" class="checkbox-label">
-            <input id="remember-pin-checkbox" type="checkbox">
+          <label id="remember-pin" class="pairing-section checkbox-label">
+            <input id="remember-pin-checkbox"
+                   class="pairing-checkbox"
+                   type="checkbox">
             <span i18n-content="REMEMBER_PIN"></span>
           </label>
         </td>

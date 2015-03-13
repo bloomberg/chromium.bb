@@ -25,7 +25,7 @@ browserTest.Cancel_PIN.prototype.run = function(data) {
 
   var AppMode = remoting.AppMode;
   browserTest.connectMe2Me().then(function() {
-    browserTest.clickOnControl('cancel-pin-entry-button');
+    browserTest.clickOnControl('#pin-dialog .cancel-button');
     return browserTest.onUIMode(AppMode.HOME);
   }).then(function() {
     return browserTest.connectMe2Me()
