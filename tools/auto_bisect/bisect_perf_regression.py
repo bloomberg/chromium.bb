@@ -1259,7 +1259,8 @@ class BisectPerformanceMetrics(object):
 
   def RunPerformanceTestAndParseResults(
       self, command_to_run, metric, reset_on_first_run=False,
-      upload_on_last_run=False, results_label=None, test_run_multiplier=1):
+      upload_on_last_run=False, results_label=None, test_run_multiplier=1,
+      allow_flakes=True):
     """Runs a performance test on the current revision and parses the results.
 
     Args:
@@ -1274,6 +1275,7 @@ class BisectPerformanceMetrics(object):
           are all ignored if the test is not a Telemetry test.
       test_run_multiplier: Factor by which to multiply the number of test runs
           and the timeout period specified in self.opts.
+      allow_flakes: Report success even if some tests fail to run.
 
     Returns:
       (values dict, 0) if --debug_ignore_perf_test was passed.
@@ -1316,6 +1318,7 @@ class BisectPerformanceMetrics(object):
     metric_values = []
     output_of_all_runs = ''
     repeat_count = self.opts.repeat_test_count * test_run_multiplier
+    return_codes = []
     for i in xrange(repeat_count):
       # Can ignore the return code since if the tests fail, it won't return 0.
       current_args = copy.copy(args)
@@ -1329,6 +1332,7 @@ class BisectPerformanceMetrics(object):
       try:
         output, return_code = bisect_utils.RunProcessAndRetrieveOutput(
             current_args, cwd=self.src_cwd)
+        return_codes.append(return_code)
       except OSError, e:
         if e.errno == errno.ENOENT:
           err_text = ('Something went wrong running the performance test. '
@@ -1406,7 +1410,15 @@ class BisectPerformanceMetrics(object):
       print 'Results of performance test: %12f %12f' % (
           truncated_mean, standard_err)
       print
-    return (values, success_code, output_of_all_runs)
+
+    overall_success = success_code
+    if not allow_flakes and not self._IsBisectModeReturnCode():
+      overall_success = (
+          success_code
+          if (all(current_value == 0 for current_value in return_codes))
+              else failure_code)
+
+    return (values, overall_success, output_of_all_runs)
 
   def PerformPreBuildCleanup(self):
     """Performs cleanup between runs."""

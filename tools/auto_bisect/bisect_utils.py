@@ -191,6 +191,13 @@ def OutputAnnotationStepWarning():
   print
 
 
+def OutputAnnotationStepFailure():
+  """Outputs appropriate annotation to signal a warning."""
+  print
+  print '@@@STEP_FAILURE@@@'
+  print
+
+
 def OutputAnnotationStepLink(label, url):
   """Outputs appropriate annotation to print a link.
 

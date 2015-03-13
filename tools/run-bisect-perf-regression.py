@@ -376,7 +376,8 @@ def _RunCommandStepForPerformanceTest(bisect_instance,
       opts.metric,
       reset_on_first_run=reset_on_first_run,
       upload_on_last_run=upload_on_last_run,
-      results_label=results_label)
+      results_label=results_label,
+      allow_flakes=False)
 
   if results[1]:
     raise RuntimeError('Patched version failed to run performance test.')
@@ -459,6 +460,7 @@ def _SetupAndRunPerformanceTest(config, path_to_goma):
       _RunPerformanceTest(config)
     return 0
   except RuntimeError, e:
+    bisect_utils.OutputAnnotationStepFailure()
     bisect_utils.OutputAnnotationStepClosed()
     _OutputFailedResults('Error: %s' % e.message)
     return 1
