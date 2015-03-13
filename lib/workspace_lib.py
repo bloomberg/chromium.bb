@@ -32,6 +32,7 @@ from chromite.lib import osutils
 # The presence of this file signifies the root of a workspace.
 WORKSPACE_CONFIG = 'workspace-config.json'
 WORKSPACE_LOCAL_CONFIG = '.local.json'
+WORKSPACE_CHROOT_DIR = '.chroot'
 
 
 def WorkspacePath(workspace_reference_dir=None):
@@ -61,50 +62,66 @@ def WorkspacePath(workspace_reference_dir=None):
   return os.path.dirname(workspace_config) if workspace_config else None
 
 
-def GetActiveSdkVersion(workspace_root):
+def ChrootPath(workspace_path):
+  """Returns the path to the chroot associated with the given workspace.
+
+  Each workspace should have it's own associated chroot. This method gives
+  the path to that chroot.
+
+  Args:
+    workspace_path: Root directory of the workspace (WorkspacePath()).
+
+  Returns:
+    Path to where the chroot is, or where it should be created.
+  """
+  # TODO(dgarrett): Check local config for alternate locations.
+  return os.path.join(workspace_path, WORKSPACE_CHROOT_DIR)
+
+
+def GetActiveSdkVersion(workspace_path):
   """Find which SDK version a workspace is associated with.
 
   This SDK may or may not exist in the bootstrap cache. There may be no
   SDK version associated with a workspace.
 
   Args:
-    workspace_root: Root directory of the workspace (WorkspacePath()).
+    workspace_path: Root directory of the workspace (WorkspacePath()).
 
   Returns:
     version string or None.
   """
   # Config should always return a dictionary.
-  config = _ReadLocalConfig(workspace_root)
+  config = _ReadLocalConfig(workspace_path)
 
   # If version is present, use it, else return None.
   return config.get('version')
 
 
-def SetActiveSdkVersion(workspace_root, version):
+def SetActiveSdkVersion(workspace_path, version):
   """Set which SDK version a workspace is associated with.
 
   This method is NOT atomic.
 
   Args:
-    workspace_root: Root directory of the workspace (WorkspacePath()).
+    workspace_path: Root directory of the workspace (WorkspacePath()).
     version: Version string of the SDK. (Eg. 1.2.3)
   """
   # Read the config, update its version, and write it.
-  config = _ReadLocalConfig(workspace_root)
+  config = _ReadLocalConfig(workspace_path)
   config['version'] = version
-  _WriteLocalConfig(workspace_root, config)
+  _WriteLocalConfig(workspace_path, config)
 
 
-def _ReadLocalConfig(workspace_root):
+def _ReadLocalConfig(workspace_path):
   """Read a local config for a workspace.
 
   Args:
-    workspace_root: Root directory of the workspace (WorkspacePath()).
+    workspace_path: Root directory of the workspace (WorkspacePath()).
 
   Returns:
     Local workspace config as a Python dictionary.
   """
-  config_file = os.path.join(workspace_root, WORKSPACE_LOCAL_CONFIG)
+  config_file = os.path.join(workspace_path, WORKSPACE_LOCAL_CONFIG)
 
   # If the file doesn't exist, it's an empty dictionary.
   if not os.path.exists(config_file):
@@ -114,14 +131,14 @@ def _ReadLocalConfig(workspace_root):
     return json.load(config_fp)
 
 
-def _WriteLocalConfig(workspace_root, config):
+def _WriteLocalConfig(workspace_path, config):
   """Save out a new local config for a workspace.
 
   Args:
-    workspace_root: Root directory of the workspace (WorkspacePath()).
+    workspace_path: Root directory of the workspace (WorkspacePath()).
     config: New local workspace config contents as a Python dictionary.
   """
-  config_file = os.path.join(workspace_root, WORKSPACE_LOCAL_CONFIG)
+  config_file = os.path.join(workspace_path, WORKSPACE_LOCAL_CONFIG)
 
   # Overwrite the config file, with the new dictionary.
   with open(config_file, 'w') as config_fp:

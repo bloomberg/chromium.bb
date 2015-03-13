@@ -151,7 +151,7 @@ To debug a process by its pid:
     """Run cros debug."""
     self.options.Freeze()
     self._ReadOptions()
-    self.RunInsideChroot(auto_detect_brick=True)
+    commandline.RunInsideChroot(self, auto_detect_brick=True)
     try:
       with remote_access.ChromiumOSDeviceHandler(
           self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,

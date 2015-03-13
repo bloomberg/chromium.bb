@@ -79,27 +79,6 @@ class CrosCommand(object):
     """Add arguments for this command to the parser."""
     parser.set_defaults(cros_class=cls)
 
-  def RunInsideChroot(self, auto_detect_brick=False):
-    """Run this command inside the chroot.
-
-    If cwd is in a brick, and --board/--host is not explicitly set, set
-    --brick explicitly as we might not be able to detect the curr_brick_locator
-    inside the chroot (cwd will have changed).
-
-    Args:
-      auto_detect_brick: If true, sets --brick explicitly.
-    """
-    if cros_build_lib.IsInsideChroot():
-      return
-
-    target_arg = next((getattr(self.options, arg, None)
-                       for arg in ('board', 'brick', 'host')), None)
-    extra_args = None
-    if auto_detect_brick and not target_arg and self.curr_brick_locator:
-      extra_args = ['--brick', self.curr_brick_locator]
-
-    raise commandline.ChrootRequiredError(extra_args=extra_args)
-
   def Run(self):
     """The command to run."""
     raise NotImplementedError()

@@ -30,6 +30,7 @@ from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import terminal
+from chromite.lib import workspace_lib
 
 
 CHECKOUT_TYPE_UNKNOWN = 'unknown'
@@ -51,25 +52,23 @@ class ChrootRequiredError(Exception):
   """Raised when a command must be run in the chroot
 
   This exception is intended to be caught by code which will restart execution
-  in the chroot. If none of the arguments passed to the script need to be
-  adjusted when that happens, it can be constructed with no parameters. If
-  something does need to be adjusted, for instance an argument that's a path,
-  the command can construct a custom command line and pass it into this
-  exception which will be used instead.
+  in the chroot. Throwing this exception allows contexts to be exited and
+  general cleanup to happen before we exec an external binary.
 
-  When customizing the command line, argv[0] will have to be fixed up manually
-  like any other element of argv.
+  The command to run inside the chroot, and (optionally) special cros_sdk
+  arguments are attached to the exception. Any adjustments to the arguments
+  should be done before raising the exception.
   """
+  def __init__(self, cmd, chroot_args=None):
+    """Constructor for ChrootRequiredError.
 
-  def __init__(self, new_argv=None, extra_args=None, *args, **kwargs):
-    Exception.__init__(self, *args, **kwargs)
-    if new_argv is None:
-      new_argv = sys.argv[:]
-      new_argv = [git.ReinterpretPathForChroot(new_argv[0])] + new_argv[1:]
-
-    if extra_args:
-      new_argv += extra_args
-    self.new_argv = new_argv
+    Args:
+      cmd: Command line to run inside the chroot as a list of strings.
+      chroot_args: Arguments to pass directly to cros_sdk.
+    """
+    super(ChrootRequiredError, self).__init__(self)
+    self.cmd = cmd
+    self.chroot_args = chroot_args
 
 
 def DetermineCheckout(cwd):
@@ -740,10 +739,56 @@ def _DefaultHandler(signum, _frame):
       signum, 'Received signal %i; shutting down' % (signum,))
 
 
-def _RestartInChroot(argv):
-  """Rerun the current command inside the chroot"""
-  return cros_build_lib.RunCommand(argv, enter_chroot=True, error_code_ok=True,
+def _RestartInChroot(cmd, chroot_args):
+  """Rerun inside the chroot.
+
+  Args:
+    cmd: Command line to run inside the chroot as a list of strings.
+    chroot_args: Arguments to pass directly to cros_sdk (or None).
+  """
+  return cros_build_lib.RunCommand(cmd, error_code_ok=True,
+                                   enter_chroot=True, chroot_args=chroot_args,
                                    cwd=constants.SOURCE_ROOT).returncode
+
+
+def RunInsideChroot(command, auto_detect_brick=False,
+                    auto_detect_workspace=True):
+  """Restart the current command inside the chroot.
+
+  This method is only valid for any code that is run via ScriptWrapperMain.
+  It allows proper cleanup of the local context by raising an exception handled
+  in ScriptWrapperMain.
+
+  If cwd is in a brick, and --board/--host is not explicitly set, set
+  --brick explicitly as we might not be able to detect the curr_brick_locator
+  inside the chroot (cwd will have changed).
+
+  Args:
+    command: An instance of CrosCommand to be restarted inside the chroot.
+    auto_detect_brick: If true, sets --brick explicitly.
+    auto_detect_workspace: If true, sets up workspace automatically.
+  """
+  if cros_build_lib.IsInsideChroot():
+    return
+
+  # Produce the command line to execute inside the chroot.
+  argv = sys.argv[:]
+  argv[0] = git.ReinterpretPathForChroot(argv[0])
+
+  target_arg = next((getattr(command.options, arg, None)
+                     for arg in ('board', 'brick', 'host')), None)
+  if auto_detect_brick and not target_arg and command.curr_brick_locator:
+    argv += ['--brick', command.curr_brick_locator]
+
+  # Enter the chroot for the workspace, if we are in a workspace.
+  chroot_args = None
+  if auto_detect_workspace:
+    workspace_path = workspace_lib.WorkspacePath()
+    if workspace_path:
+      chroot_args = ['--chroot', workspace_lib.ChrootPath(workspace_path),
+                     '--workspace', workspace_path]
+
+  raise ChrootRequiredError(argv, chroot_args)
 
 
 def ScriptWrapperMain(find_target_func, argv=None,
@@ -803,7 +848,7 @@ def ScriptWrapperMain(find_target_func, argv=None,
     # in question to not use sys.exit, and make this into a flagged error.
     raise
   except ChrootRequiredError as e:
-    ret = _RestartInChroot(e.new_argv)
+    ret = _RestartInChroot(e.cmd, e.chroot_args)
   except Exception as e:
     sys.stdout.flush()
     print('%s: Unhandled exception:' % (name,), file=sys.stderr)

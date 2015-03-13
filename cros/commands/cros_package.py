@@ -17,6 +17,7 @@ import os
 
 from chromite import cros
 from chromite.lib import brick_lib
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -164,7 +165,7 @@ To enable building a package from latest or stable ebuilds:
   def Run(self):
     """Dispatch the call to the right handler."""
     self._ReadOptions()
-    self.RunInsideChroot(auto_detect_brick=True)
+    commandline.RunInsideChroot(self, auto_detect_brick=True)
     if self.options.create_source:
       self._CreateSource()
     if self.options.enable:

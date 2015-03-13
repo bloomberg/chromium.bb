@@ -937,7 +937,7 @@ For more information of cros build usage:
   def Run(self):
     """Run cros deploy."""
     self._ReadOptions()
-    self.RunInsideChroot(auto_detect_brick=True)
+    commandline.RunInsideChroot(self, auto_detect_brick=True)
     try:
       device_connected = False
 

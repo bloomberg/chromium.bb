@@ -11,6 +11,8 @@ import argparse
 from chromite.lib import cros_test_lib
 from chromite import cros
 
+# pylint:disable=protected-access
+
 _COMMAND_NAME = 'superAwesomeCommandOfFunness'
 
 
@@ -21,7 +23,6 @@ class TestCommand(cros.CrosCommand):
     print('Just testing')
 
 
-# pylint: disable=W0212
 class CommandTest(cros_test_lib.TestCase):
   """This test class tests that Commands method."""
 

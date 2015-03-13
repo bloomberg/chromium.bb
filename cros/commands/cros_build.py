@@ -11,6 +11,7 @@ import logging
 
 from chromite.cbuildbot import constants
 from chromite.lib import brick_lib
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import parallel
 from chromite import cros
@@ -220,7 +221,7 @@ To just build a single package:
         cros_build_lib.Die('--brick should not be used with board names. Use '
                            '--board=%s instead.' % self.brick.config['name'])
 
-    self.RunInsideChroot(auto_detect_brick=True)
+    commandline.RunInsideChroot(self, auto_detect_brick=True)
 
     self.build_pkgs = self.options.packages or (self.brick and
                                                 self.brick.MainPackages())

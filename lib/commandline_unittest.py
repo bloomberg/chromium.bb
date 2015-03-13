@@ -11,15 +11,19 @@ import signal
 import os
 import sys
 
+from chromite.cbuildbot import constants
 from chromite.lib import commandline
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import partial_mock
+from chromite.lib import workspace_lib
+from chromite import cros
 
-from chromite.cbuildbot import constants
+# pylint: disable=protected-access
 
-# pylint: disable=W0212
 class TestShutDownException(cros_test_lib.TestCase):
   """Test that ShutDownException can be pickled."""
 
@@ -450,47 +454,102 @@ class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
 
   def setUp(self):
     self.PatchObject(sys, 'exit')
+    self.lastTargetFound = None
 
-  # pylint: disable=W0613
-  @staticmethod
-  def _DummyChrootTarget(args):
-    raise commandline.ChrootRequiredError()
+  SYS_ARGV = ['/cmd', '/cmd', 'arg1', 'arg2']
+  CMD_ARGS = ['/cmd', 'arg1', 'arg2']
+  CHROOT_ARGS = ['--workspace', '/work']
 
-  DUMMY_CHROOT_TARGET_ARGS = ['cmd', 'arg1', 'arg2']
-
-  DUMMY_EXTRA_ARGS = ['extra', 'arg']
-
-  @staticmethod
-  def _DummyChrootTargetArgs(args):
-    args = ScriptWrapperMainTest.DUMMY_CHROOT_TARGET_ARGS
-    raise commandline.ChrootRequiredError(args)
-
-  @staticmethod
-  def _DummyChrootTargetExtraArgs(args):
-    extra_args = ScriptWrapperMainTest.DUMMY_EXTRA_ARGS
-    raise commandline.ChrootRequiredError(extra_args=extra_args)
-
-  def testRestartInChroot(self):
+  def testRestartInChrootPreserveArgs(self):
+    """Verify args to ScriptWrapperMain are passed through to chroot.."""
+    # Setup Mocks/Fakes
     rc = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     rc.SetDefaultCmdResult()
 
-    ret = lambda x: ScriptWrapperMainTest._DummyChrootTarget
-    commandline.ScriptWrapperMain(ret)
+    def findTarget(target):
+      """ScriptWrapperMain needs a function to find a function to run."""
+      def raiseChrootRequiredError(args):
+        raise commandline.ChrootRequiredError(args)
+
+      self.lastTargetFound = target
+      return raiseChrootRequiredError
+
+    # Run Test
+    commandline.ScriptWrapperMain(findTarget, self.SYS_ARGV)
+
+    # Verify Results
     rc.assertCommandContains(enter_chroot=True)
-    rc.assertCommandContains(self.DUMMY_CHROOT_TARGET_ARGS, expected=False)
+    rc.assertCommandContains(self.CMD_ARGS)
+    self.assertEqual('/cmd', self.lastTargetFound)
 
-  def testRestartInChrootArgs(self):
+  def testRestartInChrootWithChrootArgs(self):
+    """Verify args and chroot args from execption are used."""
+    # Setup Mocks/Fakes
     rc = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
     rc.SetDefaultCmdResult()
 
-    ret = lambda x: ScriptWrapperMainTest._DummyChrootTargetArgs
-    commandline.ScriptWrapperMain(ret)
-    rc.assertCommandContains(self.DUMMY_CHROOT_TARGET_ARGS, enter_chroot=True)
+    def findTarget(_):
+      """ScriptWrapperMain needs a function to find a function to run."""
+      def raiseChrootRequiredError(_args):
+        raise commandline.ChrootRequiredError(self.CMD_ARGS, self.CHROOT_ARGS)
 
-  def testRestartInChrootExtraArgs(self):
-    rc = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
-    rc.SetDefaultCmdResult()
+      return raiseChrootRequiredError
 
-    ret = lambda x: ScriptWrapperMainTest._DummyChrootTargetExtraArgs
-    commandline.ScriptWrapperMain(ret)
-    rc.assertCommandContains(self.DUMMY_EXTRA_ARGS, enter_chroot=True)
+    # Run Test
+    commandline.ScriptWrapperMain(findTarget, ['unrelated'])
+
+    # Verify Results
+    rc.assertCommandContains(enter_chroot=True)
+    rc.assertCommandContains(self.CMD_ARGS)
+    rc.assertCommandContains(chroot_args=self.CHROOT_ARGS)
+
+
+class CommandTestRunInsideChroot(cros_test_lib.MockTestCase):
+  """Test CrosCommand.RunInsideChroot"""
+
+  def setUp(self):
+    self.origArgv = sys.argv
+    sys.argv = ['/cmd', 'arg1', 'arg2']
+
+    self.mockReinterpret = self.PatchObject(
+        git, 'ReinterpretPathForChroot', return_value='/inside/cmd')
+
+    # Return values for these two should be set by each test.
+    self.mockInsideChroot = self.PatchObject(cros_build_lib, 'IsInsideChroot')
+    self.mockWorkspacePath = self.PatchObject(workspace_lib, 'WorkspacePath')
+
+  def teardown(self):
+    sys.argv = self.origArgv
+
+  def _verifyRunInsideChroot(self, expectedCmd, expectedChrootArgs):
+    """Run RunInsideChroot, and verify it raises with expected values."""
+    cmd = cros.CrosCommand('options')
+    with self.assertRaises(commandline.ChrootRequiredError) as cm:
+      commandline.RunInsideChroot(cmd)
+
+    self.assertEqual(expectedCmd, cm.exception.cmd)
+    self.assertEqual(expectedChrootArgs, cm.exception.chroot_args)
+
+  def testRunInsideChrootNoWorkspace(self):
+    """Test we can restart inside the chroot, with no workspace."""
+    self.mockInsideChroot.return_value = False
+    self.mockWorkspacePath.return_value = None
+
+    self._verifyRunInsideChroot(['/inside/cmd', 'arg1', 'arg2'], None)
+
+  def testRunInsideChrootWithWorkspace(self):
+    """Test we can restart inside the chroot, with a workspace."""
+    self.mockInsideChroot.return_value = False
+    self.mockWorkspacePath.return_value = '/work'
+
+    self._verifyRunInsideChroot(
+        ['/inside/cmd', 'arg1', 'arg2'],
+        ['--chroot', '/work/.chroot', '--workspace', '/work'])
+
+  def testRunInsideChrootAlreadyInside(self):
+    """Test we don't restart inside the chroot if we are already there."""
+    self.mockInsideChroot.return_value = True
+
+    # Since we are in the chroot, it should return, doing nothing.
+    cmd = cros.CrosCommand('options')
+    commandline.RunInsideChroot(cmd)
