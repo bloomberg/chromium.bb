@@ -30,6 +30,10 @@ class SingleThreadIdleTaskRunner
   virtual void PostIdleTask(const tracked_objects::Location& from_here,
                             const IdleTask& idle_task);
 
+  virtual void PostNonNestableIdleTask(
+      const tracked_objects::Location& from_here,
+      const IdleTask& idle_task);
+
   virtual void PostIdleTaskAfterWakeup(
       const tracked_objects::Location& from_here,
       const IdleTask& idle_task);

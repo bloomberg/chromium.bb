@@ -7,6 +7,8 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "cc/test/test_now_source.h"
+#include "content/renderer/scheduler/nestable_task_runner_for_test.h"
+#include "content/renderer/scheduler/renderer_scheduler_message_loop_delegate.h"
 #include "content/renderer/scheduler/task_queue_selector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -56,8 +58,9 @@ class TaskQueueManagerTest : public testing::Test {
   void Initialize(size_t num_queues) {
     test_task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner());
     selector_ = make_scoped_ptr(new SelectorForTest);
-    manager_ = make_scoped_ptr(
-        new TaskQueueManager(num_queues, test_task_runner_, selector_.get()));
+    manager_ = make_scoped_ptr(new TaskQueueManager(
+        num_queues, NestableTaskRunnerForTest::Create(test_task_runner_.get()),
+        selector_.get()));
     EXPECT_EQ(num_queues, selector_->work_queues().size());
   }
 
@@ -65,7 +68,9 @@ class TaskQueueManagerTest : public testing::Test {
     message_loop_.reset(new base::MessageLoop());
     selector_ = make_scoped_ptr(new SelectorForTest);
     manager_ = make_scoped_ptr(new TaskQueueManager(
-        num_queues, message_loop_->task_runner(), selector_.get()));
+        num_queues,
+        RendererSchedulerMessageLoopDelegate::Create(message_loop_.get()),
+        selector_.get()));
     EXPECT_EQ(num_queues, selector_->work_queues().size());
   }
 

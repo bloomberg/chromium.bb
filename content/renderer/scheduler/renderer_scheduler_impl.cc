@@ -9,13 +9,14 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/begin_frame_args.h"
+#include "content/renderer/scheduler/nestable_single_thread_task_runner.h"
 #include "content/renderer/scheduler/renderer_task_queue_selector.h"
 #include "ui/gfx/frame_time.h"
 
 namespace content {
 
 RendererSchedulerImpl::RendererSchedulerImpl(
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
+    scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner)
     : renderer_task_queue_selector_(new RendererTaskQueueSelector()),
       task_queue_manager_(
           new TaskQueueManager(TASK_QUEUE_COUNT,

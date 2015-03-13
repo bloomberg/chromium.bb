@@ -32,6 +32,7 @@ namespace internal {
 class TaskQueue;
 }
 class TaskQueueSelector;
+class NestableSingleThreadTaskRunner;
 
 // The task queue manager provides N task queues and a selector interface for
 // choosing which task queue to service next. Each task queue consists of two
@@ -68,9 +69,10 @@ class CONTENT_EXPORT TaskQueueManager {
   // |main_task_runner| identifies the thread on which where the tasks are
   // eventually run. |selector| is used to choose which task queue to service.
   // It should outlive this class.
-  TaskQueueManager(size_t task_queue_count,
-                   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-                   TaskQueueSelector* selector);
+  TaskQueueManager(
+      size_t task_queue_count,
+      scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
+      TaskQueueSelector* selector);
   ~TaskQueueManager();
 
   // Returns the task runner which targets the queue selected by |queue_index|.
@@ -169,7 +171,7 @@ class CONTENT_EXPORT TaskQueueManager {
   base::debug::TaskAnnotator task_annotator_;
 
   base::ThreadChecker main_thread_checker_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner_;
   TaskQueueSelector* selector_;
 
   base::WeakPtr<TaskQueueManager> task_queue_manager_weak_ptr_;

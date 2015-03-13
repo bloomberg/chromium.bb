@@ -45,6 +45,18 @@ void WebSchedulerImpl::postIdleTask(const blink::WebTraceLocation& web_location,
       base::Bind(&WebSchedulerImpl::runIdleTask, base::Passed(&scoped_task)));
 }
 
+void WebSchedulerImpl::postNonNestableIdleTask(
+    const blink::WebTraceLocation& web_location,
+    blink::WebScheduler::IdleTask* task) {
+  DCHECK(idle_task_runner_);
+  scoped_ptr<blink::WebScheduler::IdleTask> scoped_task(task);
+  tracked_objects::Location location(web_location.functionName(),
+                                     web_location.fileName(), -1, nullptr);
+  idle_task_runner_->PostNonNestableIdleTask(
+      location,
+      base::Bind(&WebSchedulerImpl::runIdleTask, base::Passed(&scoped_task)));
+}
+
 void WebSchedulerImpl::postIdleTaskAfterWakeup(
     const blink::WebTraceLocation& web_location,
     blink::WebScheduler::IdleTask* task) {

@@ -10,6 +10,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/test/test_now_source.h"
+#include "content/renderer/scheduler/nestable_single_thread_task_runner.h"
 #include "content/renderer/scheduler/task_queue_selector.h"
 
 namespace {
@@ -341,7 +342,7 @@ void TaskQueue::TaskAsValueInto(const base::PendingTask& task,
 
 TaskQueueManager::TaskQueueManager(
     size_t task_queue_count,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner,
     TaskQueueSelector* selector)
     : main_task_runner_(main_task_runner),
       selector_(selector),
@@ -495,7 +496,7 @@ void TaskQueueManager::ProcessTaskFromWorkQueue(
   DCHECK(main_thread_checker_.CalledOnValidThread());
   internal::TaskQueue* queue = Queue(queue_index);
   base::PendingTask pending_task = queue->TakeTaskFromWorkQueue();
-  if (!pending_task.nestable) {
+  if (!pending_task.nestable && main_task_runner_->IsNested()) {
     // Defer non-nestable work to the main task runner.  NOTE these tasks can be
     // arbitrarily delayed so the additional delay should not be a problem.
     main_task_runner_->PostNonNestableTask(pending_task.posted_from,

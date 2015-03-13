@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "content/renderer/scheduler/renderer_scheduler_impl.h"
+#include "content/renderer/scheduler/renderer_scheduler_message_loop_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
@@ -30,7 +31,8 @@ class MockTaskObserver : public blink::WebThread::TaskObserver {
 class WebThreadImplForSchedulerTest : public testing::Test {
  public:
   WebThreadImplForSchedulerTest()
-      : scheduler_(message_loop_.task_runner()),
+      : scheduler_(
+            RendererSchedulerMessageLoopDelegate::Create(&message_loop_)),
         default_task_runner_(scheduler_.DefaultTaskRunner()),
         thread_(&scheduler_) {}
 

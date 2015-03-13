@@ -29,6 +29,8 @@ class CONTENT_EXPORT WebSchedulerImpl : public blink::WebScheduler {
   virtual bool shouldYieldForHighPriorityWork();
   virtual void postIdleTask(const blink::WebTraceLocation& location,
                             blink::WebScheduler::IdleTask* task);
+  virtual void postNonNestableIdleTask(const blink::WebTraceLocation& location,
+                                       blink::WebScheduler::IdleTask* task);
   virtual void postIdleTaskAfterWakeup(const blink::WebTraceLocation& location,
                                        blink::WebScheduler::IdleTask* task);
   virtual void postLoadingTask(const blink::WebTraceLocation& location,

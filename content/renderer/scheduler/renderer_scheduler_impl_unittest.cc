@@ -7,6 +7,8 @@
 #include "base/callback.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/ordered_simple_task_runner.h"
+#include "content/renderer/scheduler/nestable_task_runner_for_test.h"
+#include "content/renderer/scheduler/renderer_scheduler_message_loop_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +49,22 @@ class RendererSchedulerImplTest : public testing::Test {
   RendererSchedulerImplTest()
       : clock_(cc::TestNowSource::Create(5000)),
         mock_task_runner_(new cc::OrderedSimpleTaskRunner(clock_, false)),
-        scheduler_(new RendererSchedulerImpl(mock_task_runner_)),
+        nestable_task_runner_(
+            NestableTaskRunnerForTest::Create(mock_task_runner_)),
+        scheduler_(new RendererSchedulerImpl(nestable_task_runner_)),
+        default_task_runner_(scheduler_->DefaultTaskRunner()),
+        compositor_task_runner_(scheduler_->CompositorTaskRunner()),
+        loading_task_runner_(scheduler_->LoadingTaskRunner()),
+        idle_task_runner_(scheduler_->IdleTaskRunner()) {
+    scheduler_->SetTimeSourceForTesting(clock_);
+  }
+
+  RendererSchedulerImplTest(base::MessageLoop* message_loop)
+      : clock_(cc::TestNowSource::Create(5000)),
+        message_loop_(message_loop),
+        nestable_task_runner_(
+            RendererSchedulerMessageLoopDelegate::Create(message_loop)),
+        scheduler_(new RendererSchedulerImpl(nestable_task_runner_)),
         default_task_runner_(scheduler_->DefaultTaskRunner()),
         compositor_task_runner_(scheduler_->CompositorTaskRunner()),
         loading_task_runner_(scheduler_->LoadingTaskRunner()),
@@ -57,13 +74,25 @@ class RendererSchedulerImplTest : public testing::Test {
   ~RendererSchedulerImplTest() override {}
 
   void TearDown() override {
-    // Check that all tests stop posting tasks.
-    mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
-    while (RunUntilIdle()) {
+    DCHECK(!mock_task_runner_.get() || !message_loop_.get());
+    if (mock_task_runner_.get()) {
+      // Check that all tests stop posting tasks.
+      mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+      while (mock_task_runner_->RunUntilIdle()) {
+      }
+    } else {
+      message_loop_->RunUntilIdle();
     }
   }
 
-  bool RunUntilIdle() { return mock_task_runner_->RunUntilIdle(); }
+  void RunUntilIdle() {
+    // Only one of mock_task_runner_ or message_loop_ should be set.
+    DCHECK(!mock_task_runner_.get() || !message_loop_.get());
+    if (mock_task_runner_.get())
+      mock_task_runner_->RunUntilIdle();
+    else
+      message_loop_->RunUntilIdle();
+  }
 
   void DoMainFrame() {
     scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
@@ -130,8 +159,11 @@ class RendererSchedulerImplTest : public testing::Test {
   }
 
   scoped_refptr<cc::TestNowSource> clock_;
+  // Only one of mock_task_runner_ or message_loop_ will be set.
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
+  scoped_ptr<base::MessageLoop> message_loop_;
 
+  scoped_refptr<NestableSingleThreadTaskRunner> nestable_task_runner_;
   scoped_ptr<RendererSchedulerImpl> scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
@@ -867,7 +899,7 @@ TEST_F(RendererSchedulerImplTest, InputArrivesAfterBeginFrame) {
 class RendererSchedulerImplForTest : public RendererSchedulerImpl {
  public:
   RendererSchedulerImplForTest(
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
+      scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner)
       : RendererSchedulerImpl(main_task_runner), update_policy_count_(0) {}
 
   void UpdatePolicyLocked() override {
@@ -880,7 +912,7 @@ class RendererSchedulerImplForTest : public RendererSchedulerImpl {
 
 TEST_F(RendererSchedulerImplTest, OnlyOnePendingUrgentPolicyUpdatey) {
   RendererSchedulerImplForTest* mock_scheduler =
-      new RendererSchedulerImplForTest(mock_task_runner_);
+      new RendererSchedulerImplForTest(nestable_task_runner_);
   scheduler_.reset(mock_scheduler);
 
   EnsureUrgentPolicyUpdatePostedOnMainThread();
@@ -895,7 +927,7 @@ TEST_F(RendererSchedulerImplTest, OnlyOnePendingUrgentPolicyUpdatey) {
 
 TEST_F(RendererSchedulerImplTest, OnePendingDelayedAndOneUrgentUpdatePolicy) {
   RendererSchedulerImplForTest* mock_scheduler =
-      new RendererSchedulerImplForTest(mock_task_runner_);
+      new RendererSchedulerImplForTest(nestable_task_runner_);
   scheduler_.reset(mock_scheduler);
   scheduler_->SetTimeSourceForTesting(clock_);
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
@@ -911,7 +943,7 @@ TEST_F(RendererSchedulerImplTest, OnePendingDelayedAndOneUrgentUpdatePolicy) {
 
 TEST_F(RendererSchedulerImplTest, OneUrgentAndOnePendingDelayedUpdatePolicy) {
   RendererSchedulerImplForTest* mock_scheduler =
-      new RendererSchedulerImplForTest(mock_task_runner_);
+      new RendererSchedulerImplForTest(nestable_task_runner_);
   scheduler_.reset(mock_scheduler);
   scheduler_->SetTimeSourceForTesting(clock_);
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
@@ -927,7 +959,7 @@ TEST_F(RendererSchedulerImplTest, OneUrgentAndOnePendingDelayedUpdatePolicy) {
 
 TEST_F(RendererSchedulerImplTest, UpdatePolicyCountTriggeredByOneInputEvent) {
   RendererSchedulerImplForTest* mock_scheduler =
-      new RendererSchedulerImplForTest(mock_task_runner_);
+      new RendererSchedulerImplForTest(nestable_task_runner_);
   scheduler_.reset(mock_scheduler);
   scheduler_->SetTimeSourceForTesting(clock_);
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
@@ -943,7 +975,7 @@ TEST_F(RendererSchedulerImplTest, UpdatePolicyCountTriggeredByOneInputEvent) {
 
 TEST_F(RendererSchedulerImplTest, UpdatePolicyCountTriggeredByTwoInputEvents) {
   RendererSchedulerImplForTest* mock_scheduler =
-      new RendererSchedulerImplForTest(mock_task_runner_);
+      new RendererSchedulerImplForTest(nestable_task_runner_);
   scheduler_.reset(mock_scheduler);
   scheduler_->SetTimeSourceForTesting(clock_);
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
@@ -961,7 +993,7 @@ TEST_F(RendererSchedulerImplTest, UpdatePolicyCountTriggeredByTwoInputEvents) {
 
 TEST_F(RendererSchedulerImplTest, EnsureUpdatePolicyNotTriggeredTooOften) {
   RendererSchedulerImplForTest* mock_scheduler =
-      new RendererSchedulerImplForTest(mock_task_runner_);
+      new RendererSchedulerImplForTest(nestable_task_runner_);
   scheduler_.reset(mock_scheduler);
   scheduler_->SetTimeSourceForTesting(clock_);
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
@@ -992,6 +1024,66 @@ TEST_F(RendererSchedulerImplTest, EnsureUpdatePolicyNotTriggeredTooOften) {
   // We expect both the urgent and the delayed updates to run in addition to the
   // earlier updated cause by IsHighPriorityWorkAnticipated.
   EXPECT_EQ(3, mock_scheduler->update_policy_count_);
+}
+
+class RendererSchedulerImplWithMessageLoopTest
+    : public RendererSchedulerImplTest {
+ public:
+  RendererSchedulerImplWithMessageLoopTest()
+      : RendererSchedulerImplTest(new base::MessageLoop()) {}
+  ~RendererSchedulerImplWithMessageLoopTest() override {}
+
+  void PostFromNestedRunloop(std::vector<
+      std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>* tasks) {
+    base::MessageLoop::ScopedNestableTaskAllower allow(message_loop_.get());
+    for (std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>& pair : *tasks) {
+      if (pair.second) {
+        idle_task_runner_->PostIdleTask(FROM_HERE, pair.first);
+      } else {
+        idle_task_runner_->PostNonNestableIdleTask(FROM_HERE, pair.first);
+      }
+    }
+    EnableIdleTasks();
+    message_loop_->RunUntilIdle();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RendererSchedulerImplWithMessageLoopTest);
+};
+
+TEST_F(RendererSchedulerImplWithMessageLoopTest,
+       NonNestableIdleTaskDoesntExecuteInNestedLoop) {
+  std::vector<std::string> order;
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("1")));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("2")));
+
+  std::vector<std::pair<SingleThreadIdleTaskRunner::IdleTask, bool>>
+      tasks_to_post_from_nested_loop;
+  tasks_to_post_from_nested_loop.push_back(std::make_pair(
+      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("3")),
+      false));
+  tasks_to_post_from_nested_loop.push_back(std::make_pair(
+      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("4")), true));
+  tasks_to_post_from_nested_loop.push_back(std::make_pair(
+      base::Bind(&AppendToVectorIdleTestTask, &order, std::string("5")), true));
+
+  default_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &RendererSchedulerImplWithMessageLoopTest::PostFromNestedRunloop,
+          base::Unretained(this),
+          base::Unretained(&tasks_to_post_from_nested_loop)));
+
+  EnableIdleTasks();
+  RunUntilIdle();
+  // Note we expect task 3 to run last because it's non-nestable.
+  EXPECT_THAT(order, testing::ElementsAre(std::string("1"), std::string("2"),
+                                          std::string("4"), std::string("5"),
+                                          std::string("3")));
 }
 
 }  // namespace content

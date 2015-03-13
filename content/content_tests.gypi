@@ -666,6 +666,8 @@
       'renderer/render_thread_impl_unittest.cc',
       'renderer/render_widget_unittest.cc',
       'renderer/scheduler/deadline_task_runner_unittest.cc',
+      'renderer/scheduler/nestable_task_runner_for_test.cc',
+      'renderer/scheduler/nestable_task_runner_for_test.h',
       'renderer/scheduler/renderer_scheduler_impl_unittest.cc',
       'renderer/scheduler/renderer_task_queue_selector_unittest.cc',
       'renderer/scheduler/resource_dispatch_throttler_unittest.cc',

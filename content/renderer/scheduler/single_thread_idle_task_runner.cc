@@ -37,6 +37,14 @@ void SingleThreadIdleTaskRunner::PostIdleTask(
       base::Bind(&SingleThreadIdleTaskRunner::RunTask, this, idle_task));
 }
 
+void SingleThreadIdleTaskRunner::PostNonNestableIdleTask(
+    const tracked_objects::Location& from_here,
+    const IdleTask& idle_task) {
+  idle_priority_task_runner_->PostNonNestableTask(
+      from_here,
+      base::Bind(&SingleThreadIdleTaskRunner::RunTask, this, idle_task));
+}
+
 void SingleThreadIdleTaskRunner::PostIdleTaskAfterWakeup(
     const tracked_objects::Location& from_here,
     const IdleTask& idle_task) {

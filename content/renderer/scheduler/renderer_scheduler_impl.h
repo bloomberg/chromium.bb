@@ -24,11 +24,12 @@ class ConvertableToTraceFormat;
 namespace content {
 
 class RendererTaskQueueSelector;
+class NestableSingleThreadTaskRunner;
 
 class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
  public:
   RendererSchedulerImpl(
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
+      scoped_refptr<NestableSingleThreadTaskRunner> main_task_runner);
   ~RendererSchedulerImpl() override;
 
   // RendererScheduler implementation:
