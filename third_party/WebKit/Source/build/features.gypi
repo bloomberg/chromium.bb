@@ -79,6 +79,7 @@
       ['enable_oilpan==1', {
         'feature_defines': [
           'ENABLE_OILPAN=1',
+          'ENABLE_INLINED_TRACE=1',
         ],
       }],
       ['blink_gc_profiling==1', {
