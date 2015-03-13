@@ -590,35 +590,26 @@ bool ExtensionTabUtil::OpenOptionsPage(const Extension* extension,
     browser = displayer->browser();
   }
 
-  if (!OptionsPageInfo::ShouldOpenInTab(extension)) {
-    // If we should embed the options page for this extension, open
-    // chrome://extensions in a new tab and show the extension options in an
-    // embedded popup.
-    chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
-        browser, GURL(chrome::kChromeUIExtensionsURL)));
-    params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
-
+  GURL url_to_navigate;
+  if (OptionsPageInfo::ShouldOpenInTab(extension)) {
+    // Options page tab is simply e.g. chrome-extension://.../options.html.
+    url_to_navigate = OptionsPageInfo::GetOptionsPage(extension);
+  } else {
+    // Options page tab is Extension settings pointed at that Extension's ID,
+    // e.g. chrome://extensions?options=...
+    url_to_navigate = GURL(chrome::kChromeUIExtensionsURL);
     GURL::Replacements replacements;
     std::string query =
         base::StringPrintf("options=%s", extension->id().c_str());
     replacements.SetQueryStr(query);
-    params.url = params.url.ReplaceComponents(replacements);
-
-    chrome::ShowSingletonTabOverwritingNTP(browser, params);
-  } else {
-    // Otherwise open a new tab with the extension's options page
-    content::OpenURLParams params(OptionsPageInfo::GetOptionsPage(extension),
-                                  content::Referrer(),
-                                  SINGLETON_TAB,
-                                  ui::PAGE_TRANSITION_LINK,
-                                  false);
-    browser->OpenURL(params);
-    browser->window()->Show();
-    WebContents* web_contents =
-        browser->tab_strip_model()->GetActiveWebContents();
-    web_contents->GetDelegate()->ActivateContents(web_contents);
+    url_to_navigate = url_to_navigate.ReplaceComponents(replacements);
   }
 
+  chrome::NavigateParams params(
+      chrome::GetSingletonTabNavigateParams(browser, url_to_navigate));
+  params.path_behavior = chrome::NavigateParams::IGNORE_AND_NAVIGATE;
+  params.url = url_to_navigate;
+  chrome::ShowSingletonTabOverwritingNTP(browser, params);
   return true;
 }
 
