@@ -348,7 +348,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.remote_fonts_enabled =
       !command_line.HasSwitch(switches::kDisableRemoteFonts);
   prefs.application_cache_enabled = true;
-
+  prefs.xss_auditor_enabled =
+      !command_line.HasSwitch(switches::kDisableXSSAuditor);
   prefs.local_storage_enabled =
       !command_line.HasSwitch(switches::kDisableLocalStorage);
   prefs.databases_enabled =
