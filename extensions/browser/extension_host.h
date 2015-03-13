@@ -59,7 +59,7 @@ class ExtensionHost : public DeferredStartRenderHost,
   content::WebContents* host_contents() const { return host_contents_.get(); }
   content::RenderViewHost* render_view_host() const;
   content::RenderProcessHost* render_process_host() const;
-  bool did_stop_loading() const { return did_stop_loading_; }
+  bool has_loaded_once() const { return has_loaded_once_; }
   bool document_element_available() const {
     return document_element_available_;
   }
@@ -131,8 +131,8 @@ class ExtensionHost : public DeferredStartRenderHost,
                            UnloadedExtensionInfo::Reason reason) override;
 
  protected:
-  // Called after the extension page finishes loading but before the
-  // EXTENSION_HOST_DID_STOP_LOADING notification is sent.
+  // Called each time this ExtensionHost completes a load finishes loading,
+  // before any stop-loading notifications or observer methods are called.
   virtual void OnDidStopLoading();
 
   // Navigates to the initial page.
@@ -155,6 +155,9 @@ class ExtensionHost : public DeferredStartRenderHost,
   void OnIncrementLazyKeepaliveCount();
   void OnDecrementLazyKeepaliveCount();
 
+  // Records UMA for load events.
+  void RecordStopLoadingUMA();
+
   // Delegate for functionality that cannot exist in the extensions module.
   scoped_ptr<ExtensionHostDelegate> delegate_;
 
@@ -175,8 +178,10 @@ class ExtensionHost : public DeferredStartRenderHost,
   // host, so we can send messages to it before it finishes loading.
   content::RenderViewHost* render_view_host_;
 
-  // Whether the RenderWidget has reported that it has stopped loading.
-  bool did_stop_loading_;
+  // Whether the ExtensionHost has finished loading some content at least once.
+  // There may be subsequent loads - such as reloads and navigations - and this
+  // will not affect its value (it will remain true).
+  bool has_loaded_once_;
 
   // True if the main frame has finished parsing.
   bool document_element_available_;

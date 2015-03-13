@@ -58,7 +58,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       extension_id_(extension->id()),
       browser_context_(site_instance->GetBrowserContext()),
       render_view_host_(nullptr),
-      did_stop_loading_(false),
+      has_loaded_once_(false),
       document_element_available_(false),
       initial_url_(url),
       extension_function_dispatcher_(browser_context_, this),
@@ -92,6 +92,7 @@ ExtensionHost::~ExtensionHost() {
     UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageActiveTime2",
                              load_start_->Elapsed());
   }
+
   content::NotificationService::current()->Notify(
       extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
       content::Source<BrowserContext>(browser_context_),
@@ -101,11 +102,16 @@ ExtensionHost::~ExtensionHost() {
   FOR_EACH_OBSERVER(DeferredStartRenderHostObserver,
                     deferred_start_render_host_observer_list_,
                     OnDeferredStartRenderHostDestroyed(this));
+
+  // Remove ourselves from the queue as late as possible (before effectively
+  // destroying self, but after everything else) so that queues that are
+  // monitoring lifetime get a chance to see stop-loading events.
   delegate_->GetExtensionHostQueue()->Remove(this);
-  // Immediately stop observing |host_contents_| because its destruction events
-  // (like DidStopLoading, it turns out) can call back into ExtensionHost
-  // re-entrantly, when anything declared after |host_contents_| has already
-  // been destroyed.
+
+  // Deliberately stop observing |host_contents_| because its destruction
+  // events (like DidStopLoading, it turns out) can call back into
+  // ExtensionHost re-entrantly, when anything declared after |host_contents_|
+  // has already been destroyed.
   content::WebContentsObserver::Observe(nullptr);
 }
 
@@ -219,7 +225,7 @@ void ExtensionHost::LoadInitialURL() {
 }
 
 bool ExtensionHost::IsBackgroundPage() const {
-  DCHECK(extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+  DCHECK_EQ(extension_host_type_, VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   return true;
 }
 
@@ -268,35 +274,23 @@ void ExtensionHost::DidStartLoading(content::RenderViewHost* render_view_host) {
 }
 
 void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
-  bool notify = !did_stop_loading_;
-  did_stop_loading_ = true;
+  // Only record UMA for the first load. Subsequent loads will likely behave
+  // quite different, and it's first load we're most interested in.
+  if (!has_loaded_once_)
+    RecordStopLoadingUMA();
+  has_loaded_once_ = true;
   OnDidStopLoading();
-  if (notify) {
-    CHECK(load_start_.get());
-    if (extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-      if (extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_)) {
-        UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.EventPageLoadTime2",
-                                   load_start_->Elapsed());
-      } else {
-        UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.BackgroundPageLoadTime2",
-                                   load_start_->Elapsed());
-      }
-    } else if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) {
-      UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.PopupLoadTime2",
-                                 load_start_->Elapsed());
-    }
-    content::NotificationService::current()->Notify(
-        extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-        content::Source<BrowserContext>(browser_context_),
-        content::Details<ExtensionHost>(this));
-    FOR_EACH_OBSERVER(DeferredStartRenderHostObserver,
-                      deferred_start_render_host_observer_list_,
-                      OnDeferredStartRenderHostDidStopLoading(this));
-  }
+  content::NotificationService::current()->Notify(
+      extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+      content::Source<BrowserContext>(browser_context_),
+      content::Details<ExtensionHost>(this));
+  FOR_EACH_OBSERVER(DeferredStartRenderHostObserver,
+                    deferred_start_render_host_observer_list_,
+                    OnDeferredStartRenderHostDidStopLoading(this));
 }
 
 void ExtensionHost::OnDidStopLoading() {
-  DCHECK(extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+  DCHECK_EQ(extension_host_type_, VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   // Nothing to do for background pages.
 }
 
@@ -459,6 +453,22 @@ bool ExtensionHost::CheckMediaAccessPermission(
 bool ExtensionHost::IsNeverVisible(content::WebContents* web_contents) {
   ViewType view_type = extensions::GetViewType(web_contents);
   return view_type == extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
+}
+
+void ExtensionHost::RecordStopLoadingUMA() {
+  CHECK(load_start_.get());
+  if (extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+    if (extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_)) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.EventPageLoadTime2",
+                                 load_start_->Elapsed());
+    } else {
+      UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.BackgroundPageLoadTime2",
+                                 load_start_->Elapsed());
+    }
+  } else if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("Extensions.PopupLoadTime2",
+                               load_start_->Elapsed());
+  }
 }
 
 }  // namespace extensions

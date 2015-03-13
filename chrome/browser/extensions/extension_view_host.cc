@@ -99,7 +99,6 @@ void ExtensionViewHost::UnhandledKeyboardEvent(
 // ExtensionHost overrides:
 
 void ExtensionViewHost::OnDidStopLoading() {
-  DCHECK(did_stop_loading());
   view_->DidStopLoading();
 }
 

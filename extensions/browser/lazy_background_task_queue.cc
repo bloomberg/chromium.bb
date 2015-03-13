@@ -49,7 +49,7 @@ bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
     ProcessManager* pm = ProcessManager::Get(browser_context);
     ExtensionHost* background_host =
         pm->GetBackgroundHostForExtension(extension->id());
-    if (!background_host || !background_host->did_stop_loading())
+    if (!background_host || !background_host->has_loaded_once())
       return true;
     if (pm->IsBackgroundHostClosing(extension->id()))
       pm->CancelSuspend(extension);
@@ -142,7 +142,7 @@ void LazyBackgroundTaskQueue::Observe(
       ExtensionHost* host =
           content::Details<ExtensionHost>(details).ptr();
       if (host->extension_host_type() == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-        CHECK(host->did_stop_loading());
+        CHECK(host->has_loaded_once());
         ProcessPendingTasks(host, host->browser_context(), host->extension());
       }
       break;

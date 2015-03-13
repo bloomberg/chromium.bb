@@ -16,12 +16,25 @@ namespace extensions {
 namespace {
 
 class StubDeferredStartRenderHost : public DeferredStartRenderHost {
+ public:
+  // Returns true if this host is being observed by |observer|.
+  bool IsObservedBy(DeferredStartRenderHostObserver* observer) {
+    return observers_.count(observer) > 0;
+  }
+
  private:
+  // DeferredStartRenderHost:
   void AddDeferredStartRenderHostObserver(
-      DeferredStartRenderHostObserver* observer) override {}
+      DeferredStartRenderHostObserver* observer) override {
+    observers_.insert(observer);
+  }
   void RemoveDeferredStartRenderHostObserver(
-      DeferredStartRenderHostObserver* observer) override {}
+      DeferredStartRenderHostObserver* observer) override {
+    observers_.erase(observer);
+  }
   void CreateRenderViewNow() override {}
+
+  std::set<DeferredStartRenderHostObserver*> observers_;
 };
 
 const size_t g_invalid_size_t = std::numeric_limits<size_t>::max();
@@ -35,7 +48,7 @@ class LoadMonitoringExtensionHostQueueTest : public ExtensionsTest {
         // Arbitrary choice of an invalid size_t.
         num_queued_(g_invalid_size_t),
         num_loaded_(g_invalid_size_t),
-        max_in_queue_(g_invalid_size_t),
+        max_awaiting_loading_(g_invalid_size_t),
         max_active_loading_(g_invalid_size_t) {}
 
   void SetUp() override {
@@ -50,7 +63,7 @@ class LoadMonitoringExtensionHostQueueTest : public ExtensionsTest {
  protected:
   // Creates a new DeferredStartRenderHost. Ownership is held by this class,
   // not passed to caller.
-  DeferredStartRenderHost* CreateHost() {
+  StubDeferredStartRenderHost* CreateHost() {
     StubDeferredStartRenderHost* stub = new StubDeferredStartRenderHost();
     stubs_.push_back(stub);
     return stub;
@@ -60,25 +73,26 @@ class LoadMonitoringExtensionHostQueueTest : public ExtensionsTest {
   LoadMonitoringExtensionHostQueue* queue() { return queue_.get(); }
 
   // Returns true if the queue has finished monitoring.
-  bool finished() { return finished_; }
+  bool finished() const { return finished_; }
 
   // These are available after the queue has finished (in which case finished()
   // will return true).
   size_t num_queued() { return num_queued_; }
   size_t num_loaded() { return num_loaded_; }
-  size_t max_in_queue() { return max_in_queue_; }
+  size_t max_awaiting_loading() { return max_awaiting_loading_; }
   size_t max_active_loading() { return max_active_loading_; }
 
  private:
   // Callback when queue has finished monitoring.
   void Finished(size_t num_queued,
                 size_t num_loaded,
-                size_t max_in_queue,
+                size_t max_awaiting_loading,
                 size_t max_active_loading) {
+    CHECK(!finished_);
     finished_ = true;
     num_queued_ = num_queued;
     num_loaded_ = num_loaded;
-    max_in_queue_ = max_in_queue;
+    max_awaiting_loading_ = max_awaiting_loading;
     max_active_loading_ = max_active_loading;
   }
 
@@ -90,7 +104,7 @@ class LoadMonitoringExtensionHostQueueTest : public ExtensionsTest {
   bool finished_;
   size_t num_queued_;
   size_t num_loaded_;
-  size_t max_in_queue_;
+  size_t max_awaiting_loading_;
   size_t max_active_loading_;
 };
 
@@ -109,7 +123,7 @@ TEST_F(LoadMonitoringExtensionHostQueueTest, NoHosts) {
   ASSERT_TRUE(finished());
   EXPECT_EQ(0u, num_queued());
   EXPECT_EQ(0u, num_loaded());
-  EXPECT_EQ(0u, max_in_queue());
+  EXPECT_EQ(0u, max_awaiting_loading());
   EXPECT_EQ(0u, max_active_loading());
 }
 
@@ -121,7 +135,7 @@ TEST_F(LoadMonitoringExtensionHostQueueTest, AddOneHost) {
   ASSERT_TRUE(finished());
   EXPECT_EQ(1u, num_queued());
   EXPECT_EQ(0u, num_loaded());
-  EXPECT_EQ(1u, max_in_queue());
+  EXPECT_EQ(1u, max_awaiting_loading());
   EXPECT_EQ(0u, max_active_loading());
 }
 
@@ -136,7 +150,7 @@ TEST_F(LoadMonitoringExtensionHostQueueTest, AddAndRemoveOneHost) {
   ASSERT_TRUE(finished());
   EXPECT_EQ(1u, num_queued());
   EXPECT_EQ(0u, num_loaded());
-  EXPECT_EQ(1u, max_in_queue());
+  EXPECT_EQ(1u, max_awaiting_loading());
   EXPECT_EQ(0u, max_active_loading());
 }
 
@@ -150,12 +164,8 @@ TEST_F(LoadMonitoringExtensionHostQueueTest, AddAndStartOneHost) {
   ASSERT_TRUE(finished());
   EXPECT_EQ(1u, num_queued());
   EXPECT_EQ(0u, num_loaded());
-  EXPECT_EQ(1u, max_in_queue());
+  EXPECT_EQ(1u, max_awaiting_loading());
   EXPECT_EQ(1u, max_active_loading());
-
-  // Sanity check: stopping/destroying at this point doesn't crash.
-  queue()->OnDeferredStartRenderHostDidStopLoading(host);
-  queue()->OnDeferredStartRenderHostDestroyed(host);
 }
 
 // Tests adding and destroying a single host without starting it.
@@ -168,12 +178,8 @@ TEST_F(LoadMonitoringExtensionHostQueueTest, AddAndDestroyOneHost) {
   ASSERT_TRUE(finished());
   EXPECT_EQ(1u, num_queued());
   EXPECT_EQ(0u, num_loaded());
-  EXPECT_EQ(1u, max_in_queue());
+  EXPECT_EQ(1u, max_awaiting_loading());
   EXPECT_EQ(0u, max_active_loading());
-
-  // Sanity check: stopping/destroying at this point doesn't crash.
-  queue()->OnDeferredStartRenderHostDidStopLoading(host);
-  queue()->OnDeferredStartRenderHostDestroyed(host);
 }
 
 // Tests adding, starting, and stopping a single host.
@@ -187,11 +193,28 @@ TEST_F(LoadMonitoringExtensionHostQueueTest, AddAndStartAndStopOneHost) {
   ASSERT_TRUE(finished());
   EXPECT_EQ(1u, num_queued());
   EXPECT_EQ(1u, num_loaded());
-  EXPECT_EQ(1u, max_in_queue());
+  EXPECT_EQ(1u, max_awaiting_loading());
   EXPECT_EQ(1u, max_active_loading());
+}
 
-  // Sanity check: destroying at this point doesn't crash.
-  queue()->OnDeferredStartRenderHostDestroyed(host);
+// Tests adding, starting, and stopping a single host - twice.
+TEST_F(LoadMonitoringExtensionHostQueueTest, AddAndStartAndStopOneHostTwice) {
+  DeferredStartRenderHost* host = CreateHost();
+  queue()->Add(host);
+  queue()->OnDeferredStartRenderHostDidStartLoading(host);
+  queue()->OnDeferredStartRenderHostDidStopLoading(host);
+
+  // Re-starting loading should also be recorded fine (e.g. navigations could
+  // trigger this).
+  queue()->OnDeferredStartRenderHostDidStartLoading(host);
+  queue()->OnDeferredStartRenderHostDidStopLoading(host);
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(finished());
+  EXPECT_EQ(1u, num_queued());
+  EXPECT_EQ(2u, num_loaded());  // 2 loaded this time, because we ran twice
+  EXPECT_EQ(1u, max_awaiting_loading());
+  EXPECT_EQ(1u, max_active_loading());
 }
 
 // Tests adding, starting, and destroying (i.e. an implicit stop) a single host.
@@ -205,7 +228,7 @@ TEST_F(LoadMonitoringExtensionHostQueueTest, AddAndStartAndDestroyOneHost) {
   ASSERT_TRUE(finished());
   EXPECT_EQ(1u, num_queued());
   EXPECT_EQ(1u, num_loaded());
-  EXPECT_EQ(1u, max_in_queue());
+  EXPECT_EQ(1u, max_awaiting_loading());
   EXPECT_EQ(1u, max_active_loading());
 }
 
@@ -220,7 +243,7 @@ TEST_F(LoadMonitoringExtensionHostQueueTest, AddAndStartAndRemoveOneHost) {
   ASSERT_TRUE(finished());
   EXPECT_EQ(1u, num_queued());
   EXPECT_EQ(0u, num_loaded());
-  EXPECT_EQ(1u, max_in_queue());
+  EXPECT_EQ(1u, max_awaiting_loading());
   EXPECT_EQ(1u, max_active_loading());
 }
 
@@ -258,11 +281,10 @@ TEST_F(LoadMonitoringExtensionHostQueueTest, Sequence) {
   ASSERT_TRUE(finished());
   EXPECT_EQ(6u, num_queued());
   EXPECT_EQ(2u, num_loaded());
-  EXPECT_EQ(4u, max_in_queue());
+  EXPECT_EQ(4u, max_awaiting_loading());
   EXPECT_EQ(3u, max_active_loading());
 
-  // Sanity check: complete a realistic sequence by stopping and/or destroying
-  // all of the hosts. It shouldn't crash.
+  // Complete a realistic sequence by stopping and/or destroying all hosts.
   queue()->OnDeferredStartRenderHostDestroyed(host1);
   queue()->OnDeferredStartRenderHostDidStopLoading(host2);
   queue()->OnDeferredStartRenderHostDestroyed(host2);
@@ -271,6 +293,60 @@ TEST_F(LoadMonitoringExtensionHostQueueTest, Sequence) {
   queue()->OnDeferredStartRenderHostDestroyed(host4);
   queue()->OnDeferredStartRenderHostDestroyed(host5);  // never stopped
   queue()->OnDeferredStartRenderHostDestroyed(host6);  // never started/stopped
+}
+
+// Tests that the queue is observing Hosts from adding them through to being
+// removed - that the load sequence itself is irrelevant.
+//
+// This is an unfortunate implementation-style test, but it used to be a bug
+// and difficult to catch outside of a proper test framework - one in which we
+// don't have to trigger events by hand.
+TEST_F(LoadMonitoringExtensionHostQueueTest, ObserverLifetime) {
+  StubDeferredStartRenderHost* host1 = CreateHost();
+  StubDeferredStartRenderHost* host2 = CreateHost();
+  StubDeferredStartRenderHost* host3 = CreateHost();
+  StubDeferredStartRenderHost* host4 = CreateHost();
+
+  EXPECT_FALSE(host1->IsObservedBy(queue()));
+  EXPECT_FALSE(host2->IsObservedBy(queue()));
+  EXPECT_FALSE(host3->IsObservedBy(queue()));
+  EXPECT_FALSE(host4->IsObservedBy(queue()));
+
+  queue()->Add(host1);
+  queue()->Add(host2);
+  queue()->Add(host3);
+  queue()->Add(host4);
+
+  EXPECT_TRUE(host1->IsObservedBy(queue()));
+  EXPECT_TRUE(host2->IsObservedBy(queue()));
+  EXPECT_TRUE(host3->IsObservedBy(queue()));
+  EXPECT_TRUE(host4->IsObservedBy(queue()));
+
+  queue()->OnDeferredStartRenderHostDidStartLoading(host1);
+  queue()->OnDeferredStartRenderHostDidStartLoading(host2);
+  queue()->OnDeferredStartRenderHostDidStartLoading(host3);
+  // host4 will test that we Remove before Starting - so don't start.
+
+  EXPECT_TRUE(host1->IsObservedBy(queue()));
+  EXPECT_TRUE(host2->IsObservedBy(queue()));
+  EXPECT_TRUE(host3->IsObservedBy(queue()));
+  EXPECT_TRUE(host4->IsObservedBy(queue()));
+
+  queue()->OnDeferredStartRenderHostDidStopLoading(host1);
+  queue()->OnDeferredStartRenderHostDestroyed(host2);
+
+  EXPECT_TRUE(host1->IsObservedBy(queue()));
+  EXPECT_TRUE(host2->IsObservedBy(queue()));
+
+  queue()->Remove(host1);
+  queue()->Remove(host2);
+  queue()->Remove(host3);
+  queue()->Remove(host4);
+
+  EXPECT_FALSE(host1->IsObservedBy(queue()));
+  EXPECT_FALSE(host2->IsObservedBy(queue()));
+  EXPECT_FALSE(host3->IsObservedBy(queue()));
+  EXPECT_FALSE(host4->IsObservedBy(queue()));
 }
 
 }  // namespace extensions

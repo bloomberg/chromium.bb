@@ -181,7 +181,7 @@ ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.
-  if (host->did_stop_loading())
+  if (host->has_loaded_once())
     popup->ShowBubble();
 
   return popup;

@@ -167,7 +167,7 @@ void ExtensionViewViews::ShowIfCompletelyLoaded() {
 
   // We wait to show the ExtensionViewViews until it has loaded, and the view
   // has actually been created. These can happen in different orders.
-  if (host_->did_stop_loading()) {
+  if (host_->has_loaded_once()) {
     SetVisible(true);
     ResizeDueToAutoResize(pending_preferred_size_);
   }

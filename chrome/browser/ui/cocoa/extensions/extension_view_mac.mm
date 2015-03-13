@@ -93,7 +93,7 @@ content::RenderViewHost* ExtensionViewMac::render_view_host() const {
 void ExtensionViewMac::ShowIfCompletelyLoaded() {
   // We wait to show the ExtensionView until it has loaded, and the view has
   // actually been created. These can happen in different orders.
-  if (extension_host_->did_stop_loading()) {
+  if (extension_host_->has_loaded_once()) {
     [GetNativeView() setHidden:NO];
     if (container_)
       container_->OnExtensionViewDidShow(this);
