@@ -61,7 +61,7 @@ int GetNumObjects(const char* constructor)
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
     v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
-    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(v8::String::NewFromUtf8(isolate, ""));
+    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot();
     if (!snapshot)
         return -1;
     int count = 0;
