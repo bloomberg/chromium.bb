@@ -199,6 +199,9 @@ function FileTransferController(doc,
   this.attachFileListDropTarget_(listContainer.grid);
   this.attachTreeDropTarget_(directoryTree);
   this.attachCopyPasteHandlers_();
+
+  // Allow to drag external files to the browser window.
+  chrome.fileManagerPrivate.enableExternalFileScheme();
 }
 
 /**

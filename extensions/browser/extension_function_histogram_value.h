@@ -1038,6 +1038,7 @@ enum HistogramValue {
   FILEMANAGERPRIVATE_GRANTACCESS,
   DEVELOPERPRIVATE_GETEXTENSIONSINFO,
   DEVELOPERPRIVATE_GETEXTENSIONINFO,
+  FILEMANAGERPRIVATE_ENABLEEXTERNALFILESCHEME,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

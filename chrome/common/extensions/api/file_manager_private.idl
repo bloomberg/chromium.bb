@@ -659,6 +659,10 @@ interface Functions {
   static void requestFileSystem(DOMString volumeId,
                                 RequestFileSystemCallback callback);
 
+  // Enables the extenal file scheme necessary to initiate drags to the browser
+  // window for files on the external backend.
+  static void enableExternalFileScheme();
+
   // Requests granting R/W permissions for the passed entries. It's a best
   // effort operation. Some files may not be granted access if the url is
   // invalid or not backed by the external file system.

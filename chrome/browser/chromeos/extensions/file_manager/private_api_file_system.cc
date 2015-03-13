@@ -273,11 +273,6 @@ bool FileManagerPrivateRequestFileSystemFunction::
   ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
       child_id, mount_path);
 
-  // Grant permission to request externalfile scheme. The permission is needed
-  // to start drag for external file URL.
-  ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-      child_id, content::kExternalFileScheme);
-
   return true;
 }
 
@@ -358,6 +353,13 @@ void FileManagerPrivateRequestFileSystemFunction::OnEntryDefinition(
   dict->SetString("root_url", entry_definition.file_system_root_url);
   dict->SetInteger("error", drive::FILE_ERROR_OK);
   SendResponse(true);
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateEnableExternalFileSchemeFunction::Run() {
+  ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+      render_view_host()->GetProcess()->GetID(), content::kExternalFileScheme);
+  return RespondNow(NoArguments());
 }
 
 FileManagerPrivateGrantAccessFunction::FileManagerPrivateGrantAccessFunction()

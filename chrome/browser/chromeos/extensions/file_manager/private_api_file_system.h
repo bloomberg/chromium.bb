@@ -80,6 +80,21 @@ class FileManagerPrivateRequestFileSystemFunction
       const file_manager::util::EntryDefinition& entry_definition);
 };
 
+// Grant permission to request externalfile scheme. The permission is needed to
+// start drag for external file URL.
+class FileManagerPrivateEnableExternalFileSchemeFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.enableExternalFileScheme",
+                             FILEMANAGERPRIVATE_ENABLEEXTERNALFILESCHEME);
+
+ protected:
+  ~FileManagerPrivateEnableExternalFileSchemeFunction() override {}
+
+ private:
+  ExtensionFunction::ResponseAction Run() override;
+};
+
 // Grants R/W permissions to profile-specific directories (Drive, Downloads)
 // from other profiles.
 class FileManagerPrivateGrantAccessFunction : public UIThreadExtensionFunction {

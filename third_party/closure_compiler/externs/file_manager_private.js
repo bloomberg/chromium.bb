@@ -281,6 +281,12 @@ chrome.fileManagerPrivate.removeFileWatch = function(fileUrl, callback) {};
 chrome.fileManagerPrivate.requestFileSystem = function(volumeId, callback) {};
 
 /**
+ * Enables the extenal file scheme necessary to initiate drags to the browser
+ * window for files on the external backend.
+ */
+chrome.fileManagerPrivate.enableExternalFileScheme = function() {};
+
+/**
  * Requests R/W access to the specified entries as |entryUrls|. Note, that only
  * files backed by external file system backend will be granted the access.
  * @param {!Array<string>} entryUrls
