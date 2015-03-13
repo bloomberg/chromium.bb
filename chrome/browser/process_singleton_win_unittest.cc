@@ -67,7 +67,7 @@ class ScopedVisibleWindow {
         0,     // window_extra
         NULL,  // cursor
         NULL,  // background
-        L"",   // menu_name
+        NULL,  // menu_name
         NULL,  // large_icon
         NULL,  // small_icon
         &wnd_cls);
