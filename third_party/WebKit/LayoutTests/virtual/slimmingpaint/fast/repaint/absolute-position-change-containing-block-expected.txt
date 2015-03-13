@@ -7,12 +7,16 @@
       "drawsContent": true,
       "repaintRects": [
         [108, 5100, 100, 100],
+        [108, 5100, 100, 100],
         [100, 100, 100, 100],
+        [8, 5000, 100, 100],
         [8, 5000, 100, 100],
         [8, 8, 784, 2000],
         [8, 8, 100, 100]
       ],
       "paintInvalidationClients": [
+        "LayoutBlockFlow (positioned) DIV id='container' class='fixed blue'",
+        "LayoutBlockFlow (positioned) DIV class='absolute green'",
         "LayoutBlockFlow BODY",
         "LayoutBlockFlow DIV id='container' class='fixed blue'",
         "LayoutBlockFlow (positioned) DIV class='absolute green'"

@@ -11,12 +11,14 @@
         [248, 48, 60, 60],
         [188, 28, 20, 80],
         [148, 48, 60, 60],
+        [148, 48, 60, 60],
         [128, 88, 80, 20],
         [88, 28, 20, 80],
         [48, 48, 60, 60],
         [28, 88, 80, 20]
       ],
       "paintInvalidationClients": [
+        "LayoutBlockFlow (floating) DIV id='second'",
         "LayoutBlockFlow (floating) DIV",
         "LayoutBlockFlow (floating) DIV id='first'",
         "LayoutBlockFlow (floating) DIV",
