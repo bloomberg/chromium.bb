@@ -104,7 +104,7 @@ class IPCTestBase : public base::MultiProcessTest {
   scoped_refptr<base::SequencedTaskRunner> task_runner();
 
   virtual scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
-      const IPC::ChannelHandle& handle, base::TaskRunner* runner);
+      const IPC::ChannelHandle& handle, base::SequencedTaskRunner* runner);
 
   virtual bool DidStartClient();
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/lazy_instance.h"
+#include "base/run_loop.h"
 #include "ipc/ipc_perftest_support.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "ipc/mojo/ipc_channel_mojo_host.h"
@@ -29,10 +30,16 @@ public:
 
   MojoChannelPerfTest();
 
+  void TearDown() override {
+    ipc_support_.reset();
+    IPC::test::IPCChannelPerfTestBase::TearDown();
+  }
+
   scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
-      base::TaskRunner* runner) override {
-    host_.reset(new IPC::ChannelMojoHost(task_runner()));
+      base::SequencedTaskRunner* runner) override {
+    ipc_support_.reset(new IPC::ScopedIPCSupport(runner));
+    host_.reset(new IPC::ChannelMojoHost(runner));
     return IPC::ChannelMojo::CreateServerFactory(host_->channel_delegate(),
                                                  handle);
   }
@@ -44,27 +51,28 @@ public:
     return ok;
   }
 
-  void set_io_thread_task_runner(base::TaskRunner* runner) {
-    io_thread_task_runner_ = runner;
-  }
-
  private:
-  base::TaskRunner* io_thread_task_runner_;
+  scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
   scoped_ptr<IPC::ChannelMojoHost> host_;
 };
 
-MojoChannelPerfTest::MojoChannelPerfTest()
-    : io_thread_task_runner_() {
+MojoChannelPerfTest::MojoChannelPerfTest() {
   g_mojo_initializer.Get();
 }
 
 
 TEST_F(MojoChannelPerfTest, ChannelPingPong) {
   RunTestChannelPingPong(GetDefaultTestParams());
+
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 }
 
 TEST_F(MojoChannelPerfTest, ChannelProxyPingPong) {
   RunTestChannelProxyPingPong(GetDefaultTestParams());
+
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 }
 
 class MojoTestClient : public IPC::test::PingPongTestClient {
@@ -74,6 +82,9 @@ class MojoTestClient : public IPC::test::PingPongTestClient {
   MojoTestClient();
 
   scoped_ptr<IPC::Channel> CreateChannel(IPC::Listener* listener) override;
+
+ private:
+  scoped_ptr<IPC::ScopedIPCSupport> ipc_support_;
 };
 
 MojoTestClient::MojoTestClient() {
@@ -82,6 +93,7 @@ MojoTestClient::MojoTestClient() {
 
 scoped_ptr<IPC::Channel> MojoTestClient::CreateChannel(
     IPC::Listener* listener) {
+  ipc_support_.reset(new IPC::ScopedIPCSupport(task_runner()));
   return scoped_ptr<IPC::Channel>(
       IPC::ChannelMojo::Create(NULL,
                                IPCTestBase::GetChannelName("PerformanceClient"),
@@ -91,7 +103,12 @@ scoped_ptr<IPC::Channel> MojoTestClient::CreateChannel(
 
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(PerformanceClient) {
   MojoTestClient client;
-  return client.RunMain();
+  int rv = client.RunMain();
+
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
+  return rv;
 }
 
 }  // namespace
