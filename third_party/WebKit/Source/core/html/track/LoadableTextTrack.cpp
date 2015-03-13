@@ -27,18 +27,14 @@
 #include "core/html/track/LoadableTextTrack.h"
 
 #include "core/dom/ElementTraversal.h"
-#include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLTrackElement.h"
 #include "core/html/track/vtt/VTTRegionList.h"
 
 namespace blink {
 
-using namespace HTMLNames;
-
 LoadableTextTrack::LoadableTextTrack(HTMLTrackElement* track)
     : TextTrack(emptyAtom, emptyAtom, emptyAtom, emptyAtom, TrackElement)
     , m_trackElement(track)
-    , m_loadTimer(this, &LoadableTextTrack::loadTimerFired)
 {
 }
 
@@ -59,7 +55,7 @@ void LoadableTextTrack::clearTrackElement()
 bool LoadableTextTrack::isDefault() const
 {
     ASSERT(m_trackElement);
-    return m_trackElement->fastHasAttribute(defaultAttr);
+    return m_trackElement->fastHasAttribute(HTMLNames::defaultAttr);
 }
 
 void LoadableTextTrack::setMode(const AtomicString& mode)
@@ -74,80 +70,8 @@ void LoadableTextTrack::setMode(const AtomicString& mode)
         m_trackElement->scheduleLoad();
 }
 
-void LoadableTextTrack::scheduleLoad(const KURL& url)
+void LoadableTextTrack::addRegions(const WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>& newRegions)
 {
-    if (url == m_url) {
-        // If loading of the resource from this URL is in progress, return early.
-        ASSERT(m_loader && m_trackElement);
-        if (m_loader->loadState() < TextTrackLoader::Finished)
-            return;
-
-        // The track element might have changed its state to HTMLTrackElement::Loading
-        // waiting for a call to didCompleteLoad to continue.
-        cueLoadingCompleted(m_loader.get(), m_loader->loadState() == TextTrackLoader::Failed);
-        return;
-    }
-
-    // 4.8.10.12.3 Sourcing out-of-band text tracks (continued)
-
-    // 2. Let URL be the track URL of the track element.
-    m_url = url;
-
-    // 3. Asynchronously run the remaining steps, while continuing with whatever task
-    // was responsible for creating the text track or changing the text track mode.
-    if (!m_loadTimer.isActive())
-        m_loadTimer.startOneShot(0, FROM_HERE);
-}
-
-void LoadableTextTrack::loadTimerFired(Timer<LoadableTextTrack>*)
-{
-    if (m_loader)
-        m_loader->cancelLoad();
-
-#if !ENABLE(OILPAN)
-    if (!m_trackElement)
-        return;
-#endif
-
-    // 4.8.10.12.3 Sourcing out-of-band text tracks (continued)
-
-    // 4. Download: If URL is not the empty string, perform a potentially CORS-enabled fetch of URL, with the
-    // mode being the state of the media element's crossorigin content attribute, the origin being the
-    // origin of the media element's Document, and the default origin behaviour set to fail.
-    m_loader = TextTrackLoader::create(*this, m_trackElement->document());
-    if (!m_loader->load(m_url, m_trackElement->mediaElementCrossOriginAttribute()))
-        m_trackElement->didCompleteLoad(HTMLTrackElement::Failure);
-}
-
-void LoadableTextTrack::newCuesAvailable(TextTrackLoader* loader)
-{
-    ASSERT_UNUSED(loader, m_loader == loader);
-
-    WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>> newCues;
-    m_loader->getNewCues(newCues);
-
-    addListOfCues(newCues);
-}
-
-void LoadableTextTrack::cueLoadingCompleted(TextTrackLoader* loader, bool loadingFailed)
-{
-    ASSERT_UNUSED(loader, m_loader == loader);
-
-#if !ENABLE(OILPAN)
-    if (!m_trackElement)
-        return;
-#endif
-
-    m_trackElement->didCompleteLoad(loadingFailed ? HTMLTrackElement::Failure : HTMLTrackElement::Success);
-}
-
-void LoadableTextTrack::newRegionsAvailable(TextTrackLoader* loader)
-{
-    ASSERT_UNUSED(loader, m_loader == loader);
-
-    WillBeHeapVector<RefPtrWillBeMember<VTTRegion>> newRegions;
-    m_loader->getNewRegions(newRegions);
-
     for (size_t i = 0; i < newRegions.size(); ++i) {
         newRegions[i]->setTrack(this);
         regions()->add(newRegions[i]);
@@ -175,7 +99,6 @@ size_t LoadableTextTrack::trackElementIndex()
 DEFINE_TRACE(LoadableTextTrack)
 {
     visitor->trace(m_trackElement);
-    visitor->trace(m_loader);
     TextTrack::trace(visitor);
 }
 

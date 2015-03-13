@@ -26,12 +26,12 @@
 #include "config.h"
 #include "core/html/HTMLTrackElement.h"
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/track/LoadableTextTrack.h"
 #include "platform/Logging.h"
 
 namespace blink {
@@ -156,31 +156,65 @@ void HTMLTrackElement::scheduleLoad()
     if (!mediaElement())
         return;
 
-    // 4. Run the remainder of these steps asynchronously, allowing whatever caused these steps to run to continue.
+    // 4. Run the remainder of these steps in parallel, allowing whatever caused these steps to run to continue.
     m_loadTimer.startOneShot(0, FROM_HERE);
+
+    // 5. Top: Await a stable state. The synchronous section consists of the following steps. (The steps in the
+    // synchronous section are marked with [X])
+    // FIXME: We use a timer to approximate a "stable state" - i.e. this is not 100% per spec.
 }
 
 void HTMLTrackElement::loadTimerFired(Timer<HTMLTrackElement>*)
 {
-    if (!fastHasAttribute(srcAttr))
-        return;
-
     WTF_LOG(Media, "HTMLTrackElement::loadTimerFired");
 
-    // 6. Set the text track readiness state to loading.
-    setReadyState(HTMLTrackElement::LOADING);
+    // 6. [X] Set the text track readiness state to loading.
+    setReadyState(LOADING);
 
-    // 7. Let URL be the track URL of the track element.
+    // 7. [X] Let URL be the track URL of the track element.
     KURL url = getNonEmptyURLAttribute(srcAttr);
 
-    // 8. If the track element's parent is a media element then let CORS mode be the state of the parent media
+    // 8. [X] If the track element's parent is a media element then let CORS mode be the state of the parent media
     // element's crossorigin content attribute. Otherwise, let CORS mode be No CORS.
+    const AtomicString& corsMode = mediaElementCrossOriginAttribute();
+
+    // 9. End the synchronous section, continuing the remaining steps in parallel.
+
+    // 10. If URL is not the empty string, perform a potentially CORS-enabled fetch of URL, with the mode being CORS
+    // mode, the origin being the origin of the track element's node document, and the default origin behaviour set to
+    // fail.
     if (!canLoadUrl(url)) {
-        didCompleteLoad(HTMLTrackElement::Failure);
+        didCompleteLoad(Failure);
         return;
     }
 
-    ensureTrack()->scheduleLoad(url);
+    if (url == m_url) {
+        ASSERT(m_loader);
+        switch (m_loader->loadState()) {
+        case TextTrackLoader::Idle:
+        case TextTrackLoader::Loading:
+            // If loading of the resource from this URL is in progress, return early.
+            break;
+        case TextTrackLoader::Finished:
+            didCompleteLoad(Success);
+            break;
+        case TextTrackLoader::Failed:
+            didCompleteLoad(Failure);
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+        return;
+    }
+
+    m_url = url;
+
+    if (m_loader)
+        m_loader->cancelLoad();
+
+    m_loader = TextTrackLoader::create(*this, document());
+    if (!m_loader->load(m_url, corsMode))
+        didCompleteLoad(Failure);
 }
 
 bool HTMLTrackElement::canLoadUrl(const KURL& url)
@@ -189,11 +223,6 @@ bool HTMLTrackElement::canLoadUrl(const KURL& url)
     if (!parent)
         return false;
 
-    // 4.8.10.12.3 Sourcing out-of-band text tracks
-
-    // 4. Download: If URL is not the empty string, perform a potentially CORS-enabled fetch of URL, with the
-    // mode being the state of the media element's crossorigin content attribute, the origin being the
-    // origin of the media element's Document, and the default origin behaviour set to fail.
     if (url.isEmpty())
         return false;
 
@@ -207,30 +236,62 @@ bool HTMLTrackElement::canLoadUrl(const KURL& url)
 
 void HTMLTrackElement::didCompleteLoad(LoadStatus status)
 {
-    // 4.8.10.12.3 Sourcing out-of-band text tracks (continued)
+    // 10. ... (continued)
 
-    // 4. Download: ...
-    // If the fetching algorithm fails for any reason (network error, the server returns an error
-    // code, a cross-origin check fails, etc), or if URL is the empty string or has the wrong origin
-    // as determined by the condition at the start of this step, or if the fetched resource is not in
-    // a supported format, then queue a task to first change the text track readiness state to failed
-    // to load and then fire a simple event named error at the track element; and then, once that task
-    // is queued, move on to the step below labeled monitoring.
-
+    // If the fetching algorithm fails for any reason (network error, the server returns an error code, a cross-origin
+    // check fails, etc), or if URL is the empty string, then queue a task to first change the text track readiness
+    // state to failed to load and then fire a simple event named error at the track element. This task must use the DOM
+    // manipulation task source.
+    //
+    // (Note: We don't "queue a task" here because this method will only be called from a timer - m_loadTimer or
+    // TextTrackLoader::m_cueLoadTimer - which should be a reasonable, and hopefully non-observable, approximation of
+    // the spec text. I.e we could consider this to be run from the "networking task source".)
+    //
+    // If the fetching algorithm does not fail, but the type of the resource is not a supported text track format, or
+    // the file was not successfully processed (e.g. the format in question is an XML format and the file contained a
+    // well-formedness error that the XML specification requires be detected and reported to the application), then the
+    // task that is queued by the networking task source in which the aforementioned problem is found must change the
+    // text track readiness state to failed to load and fire a simple event named error at the track element.
     if (status == Failure) {
-        setReadyState(HTMLTrackElement::TRACK_ERROR);
-        dispatchEvent(Event::create(EventTypeNames::error), IGNORE_EXCEPTION);
+        setReadyState(TRACK_ERROR);
+        dispatchEvent(Event::create(EventTypeNames::error));
         return;
     }
 
-    // If the fetching algorithm does not fail, then the final task that is queued by the networking
-    // task source must run the following steps:
-    //     1. Change the text track readiness state to loaded.
-    setReadyState(HTMLTrackElement::LOADED);
+    // If the fetching algorithm does not fail, and the file was successfully processed, then the final task that is
+    // queued by the networking task source, after it has finished parsing the data, must change the text track
+    // readiness state to loaded, and fire a simple event named load at the track element.
+    setReadyState(LOADED);
+    dispatchEvent(Event::create(EventTypeNames::load));
+}
 
-    //     2. If the file was successfully processed, fire a simple event named load at the
-    //        track element.
-    dispatchEvent(Event::create(EventTypeNames::load), IGNORE_EXCEPTION);
+void HTMLTrackElement::newCuesAvailable(TextTrackLoader* loader)
+{
+    ASSERT_UNUSED(loader, m_loader == loader);
+    ASSERT(m_track);
+
+    WillBeHeapVector<RefPtrWillBeMember<TextTrackCue>> newCues;
+    m_loader->getNewCues(newCues);
+
+    m_track->addListOfCues(newCues);
+}
+
+void HTMLTrackElement::newRegionsAvailable(TextTrackLoader* loader)
+{
+    ASSERT_UNUSED(loader, m_loader == loader);
+    ASSERT(m_track);
+
+    WillBeHeapVector<RefPtrWillBeMember<VTTRegion>> newRegions;
+    m_loader->getNewRegions(newRegions);
+
+    m_track->addRegions(newRegions);
+}
+
+void HTMLTrackElement::cueLoadingCompleted(TextTrackLoader* loader, bool loadingFailed)
+{
+    ASSERT_UNUSED(loader, m_loader == loader);
+
+    didCompleteLoad(loadingFailed ? Failure : Success);
 }
 
 // NOTE: The values in the TextTrack::ReadinessState enum must stay in sync with those in HTMLTrackElement::ReadyState.
@@ -270,6 +331,7 @@ HTMLMediaElement* HTMLTrackElement::mediaElement() const
 DEFINE_TRACE(HTMLTrackElement)
 {
     visitor->trace(m_track);
+    visitor->trace(m_loader);
     HTMLElement::trace(visitor);
 }
 

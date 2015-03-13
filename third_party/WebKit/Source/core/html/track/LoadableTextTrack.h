@@ -27,16 +27,14 @@
 #define LoadableTextTrack_h
 
 #include "core/html/track/TextTrack.h"
-#include "core/loader/TextTrackLoader.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
 class HTMLTrackElement;
-class LoadableTextTrack;
 
-class LoadableTextTrack final : public TextTrack, private TextTrackLoaderClient {
+class LoadableTextTrack final : public TextTrack {
 public:
     static PassRefPtrWillBeRawPtr<LoadableTextTrack> create(HTMLTrackElement* track)
     {
@@ -44,10 +42,11 @@ public:
     }
     virtual ~LoadableTextTrack();
 
-    void scheduleLoad(const KURL&);
-
     // TextTrack method.
     virtual void setMode(const AtomicString&) override;
+
+    void addRegions(const WillBeHeapVector<RefPtrWillBeMember<VTTRegion>>&);
+    using TextTrack::addListOfCues;
 
     size_t trackElementIndex();
     HTMLTrackElement* trackElement() { return m_trackElement; }
@@ -60,20 +59,11 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    // TextTrackLoaderClient
-    virtual void newCuesAvailable(TextTrackLoader*) override;
-    virtual void cueLoadingCompleted(TextTrackLoader*, bool loadingFailed) override;
-    virtual void newRegionsAvailable(TextTrackLoader*) override;
-
     explicit LoadableTextTrack(HTMLTrackElement*);
 
-    void loadTimerFired(Timer<LoadableTextTrack>*);
-
     RawPtrWillBeMember<HTMLTrackElement> m_trackElement;
-    Timer<LoadableTextTrack> m_loadTimer;
-    OwnPtrWillBeMember<TextTrackLoader> m_loader;
-    KURL m_url;
 };
+
 } // namespace blink
 
-#endif
+#endif // LoadableTextTrack_h
