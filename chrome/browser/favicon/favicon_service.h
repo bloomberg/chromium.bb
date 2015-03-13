@@ -18,7 +18,6 @@
 
 class FaviconClient;
 class GURL;
-class Profile;
 
 namespace history {
 class HistoryService;
@@ -29,9 +28,9 @@ class HistoryService;
 // case of an error.
 class FaviconService : public KeyedService {
  public:
-  // TODO(jif): Remove usage of Profile. http://crbug.com/378208.
   // The FaviconClient must outlive the constructed FaviconService.
-  FaviconService(Profile* profile, FaviconClient* favicon_client);
+  FaviconService(FaviconClient* favicon_client,
+                 history::HistoryService* history_service);
 
   ~FaviconService() override;
 
@@ -215,10 +214,6 @@ class FaviconService : public KeyedService {
 
  private:
   typedef uint32 MissingFaviconURLHash;
-  base::hash_set<MissingFaviconURLHash> missing_favicon_urls_;
-  history::HistoryService* history_service_;
-  Profile* profile_;
-  FaviconClient* favicon_client_;
 
   // Helper function for GetFaviconImageForPageURL(), GetRawFaviconForPageURL()
   // and GetFaviconForPageURL().
@@ -248,6 +243,10 @@ class FaviconService : public KeyedService {
       int desired_size_in_pixel,
       const std::vector<favicon_base::FaviconRawBitmapResult>&
           favicon_bitmap_results);
+
+  base::hash_set<MissingFaviconURLHash> missing_favicon_urls_;
+  history::HistoryService* history_service_;
+  FaviconClient* favicon_client_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconService);
 };

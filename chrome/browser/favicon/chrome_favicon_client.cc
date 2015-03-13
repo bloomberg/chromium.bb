@@ -4,18 +4,58 @@
 
 #include "chrome/browser/favicon/chrome_favicon_client.h"
 
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "extensions/common/constants.h"
+#include "url/gurl.h"
 
-using bookmarks::BookmarkModel;
+namespace {
 
-ChromeFaviconClient::ChromeFaviconClient(Profile* profile) : profile_(profile) {
+void RunFaviconCallbackIfNotCanceled(
+    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled_cb,
+    const favicon_base::FaviconResultsCallback& original_callback,
+    const std::vector<favicon_base::FaviconRawBitmapResult>& results) {
+  if (!is_canceled_cb.Run()) {
+    original_callback.Run(results);
+  }
+}
+
+}  // namespace
+
+ChromeFaviconClient::ChromeFaviconClient(
+    Profile* profile,
+    bookmarks::BookmarkModel* bookmark_model)
+    : profile_(profile), bookmark_model_(bookmark_model) {
 }
 
 ChromeFaviconClient::~ChromeFaviconClient() {
 }
 
 bool ChromeFaviconClient::IsBookmarked(const GURL& url) {
-  BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
-  return bookmark_model && bookmark_model->IsBookmarked(url);
+  return bookmark_model_ && bookmark_model_->IsBookmarked(url);
+}
+
+bool ChromeFaviconClient::IsNativeApplicationURL(const GURL& url) {
+  return url.SchemeIs(content::kChromeUIScheme) ||
+         url.SchemeIs(extensions::kExtensionScheme);
+}
+
+base::CancelableTaskTracker::TaskId
+ChromeFaviconClient::GetFaviconForNativeApplicationURL(
+    const GURL& url,
+    const std::vector<int>& desired_sizes_in_pixel,
+    const favicon_base::FaviconResultsCallback& callback,
+    base::CancelableTaskTracker* tracker) {
+  DCHECK(tracker);
+  DCHECK(IsNativeApplicationURL(url));
+  base::CancelableTaskTracker::IsCanceledCallback is_canceled_cb;
+  base::CancelableTaskTracker::TaskId task_id =
+      tracker->NewTrackedTaskId(&is_canceled_cb);
+  if (task_id != base::CancelableTaskTracker::kBadTaskId) {
+    ChromeWebUIControllerFactory::GetInstance()->GetFaviconForURL(
+        profile_, url, desired_sizes_in_pixel,
+        base::Bind(&RunFaviconCallbackIfNotCanceled, is_canceled_cb, callback));
+  }
+  return task_id;
 }

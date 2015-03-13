@@ -213,10 +213,11 @@ KeyedService* CreateTestDesktopNotificationService(
 }
 #endif
 
-KeyedService* BuildFaviconService(content::BrowserContext* profile) {
-  FaviconClient* favicon_client =
-      ChromeFaviconClientFactory::GetForProfile(static_cast<Profile*>(profile));
-  return new FaviconService(static_cast<Profile*>(profile), favicon_client);
+KeyedService* BuildFaviconService(content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  return new FaviconService(ChromeFaviconClientFactory::GetForProfile(profile),
+                            HistoryServiceFactory::GetForProfile(
+                                profile, ServiceAccessType::EXPLICIT_ACCESS));
 }
 
 KeyedService* BuildHistoryService(content::BrowserContext* context) {

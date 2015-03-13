@@ -7,15 +7,12 @@
 #include <cmath>
 
 #include "base/hash.h"
-#include "base/message_loop/message_loop_proxy.h"
-#include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "chrome/common/url_constants.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
+#include "components/favicon/core/browser/favicon_client.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
-#include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_service.h"
-#include "extensions/common/constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/favicon_size.h"
@@ -26,41 +23,16 @@ using base::Bind;
 
 namespace {
 
-void CancelOrRunFaviconResultsCallback(
-    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-    const favicon_base::FaviconResultsCallback& callback,
-    const std::vector<favicon_base::FaviconRawBitmapResult>& results) {
-  if (is_canceled.Run())
-    return;
-  callback.Run(results);
-}
-
 // Helper to run callback with empty results if we cannot get the history
 // service.
 base::CancelableTaskTracker::TaskId RunWithEmptyResultAsync(
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
+  scoped_refptr<base::SingleThreadTaskRunner> thread_runner(
+      base::ThreadTaskRunnerHandle::Get());
   return tracker->PostTask(
-      base::MessageLoopProxy::current().get(),
-      FROM_HERE,
+      thread_runner.get(), FROM_HERE,
       Bind(callback, std::vector<favicon_base::FaviconRawBitmapResult>()));
-}
-
-// Return the TaskId to retreive the favicon from chrome specific URL.
-base::CancelableTaskTracker::TaskId GetFaviconForChromeURL(
-    Profile* profile,
-    const GURL& page_url,
-    const std::vector<int>& desired_sizes_in_pixel,
-    const favicon_base::FaviconResultsCallback& callback,
-    base::CancelableTaskTracker* tracker) {
-  base::CancelableTaskTracker::IsCanceledCallback is_canceled_cb;
-  base::CancelableTaskTracker::TaskId id =
-      tracker->NewTrackedTaskId(&is_canceled_cb);
-  favicon_base::FaviconResultsCallback cancelable_cb =
-      Bind(&CancelOrRunFaviconResultsCallback, is_canceled_cb, callback);
-  ChromeWebUIControllerFactory::GetInstance()->GetFaviconForURL(
-      profile, page_url, desired_sizes_in_pixel, cancelable_cb);
-  return id;
 }
 
 // Returns a vector of pixel edge sizes from |size_in_dip| and
@@ -76,12 +48,12 @@ std::vector<int> GetPixelSizesForFaviconScales(int size_in_dip) {
 
 }  // namespace
 
-FaviconService::FaviconService(Profile* profile, FaviconClient* favicon_client)
-    : history_service_(HistoryServiceFactory::GetForProfile(
-          profile,
-          ServiceAccessType::EXPLICIT_ACCESS)),
-      profile_(profile),
-      favicon_client_(favicon_client) {
+FaviconService::FaviconService(FaviconClient* favicon_client,
+                               history::HistoryService* history_service)
+    : history_service_(history_service), favicon_client_(favicon_client) {
+}
+
+FaviconService::~FaviconService() {
 }
 
 // static
@@ -200,15 +172,11 @@ FaviconService::GetLargestRawFaviconForPageURL(
            base::Unretained(this),
            callback,
            0);
-  if (page_url.SchemeIs(content::kChromeUIScheme) ||
-      page_url.SchemeIs(extensions::kExtensionScheme)) {
+  if (favicon_client_ && favicon_client_->IsNativeApplicationURL(page_url)) {
     std::vector<int> desired_sizes_in_pixel;
     desired_sizes_in_pixel.push_back(0);
-    return GetFaviconForChromeURL(profile_,
-                                  page_url,
-                                  desired_sizes_in_pixel,
-                                  favicon_results_callback,
-                                  tracker);
+    return favicon_client_->GetFaviconForNativeApplicationURL(
+        page_url, desired_sizes_in_pixel, favicon_results_callback, tracker);
   }
   if (history_service_) {
     return history_service_->GetLargestFaviconForURL(page_url, icon_types,
@@ -338,18 +306,15 @@ void FaviconService::ClearUnableToDownloadFavicons() {
   missing_favicon_urls_.clear();
 }
 
-FaviconService::~FaviconService() {}
-
 base::CancelableTaskTracker::TaskId FaviconService::GetFaviconForPageURLImpl(
     const GURL& page_url,
     int icon_types,
     const std::vector<int>& desired_sizes_in_pixel,
     const favicon_base::FaviconResultsCallback& callback,
     base::CancelableTaskTracker* tracker) {
-  if (page_url.SchemeIs(content::kChromeUIScheme) ||
-      page_url.SchemeIs(extensions::kExtensionScheme)) {
-    return GetFaviconForChromeURL(
-        profile_, page_url, desired_sizes_in_pixel, callback, tracker);
+  if (favicon_client_ && favicon_client_->IsNativeApplicationURL(page_url)) {
+    return favicon_client_->GetFaviconForNativeApplicationURL(
+        page_url, desired_sizes_in_pixel, callback, tracker);
   }
   if (history_service_) {
     return history_service_->GetFaviconsForURL(page_url,

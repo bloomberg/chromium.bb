@@ -178,7 +178,17 @@ class TestFaviconClient : public FaviconClient {
  public:
   ~TestFaviconClient() override {}
 
+ private:
+  // FaviconClient implementation.
   bool IsBookmarked(const GURL& url) override { return false; }
+  bool IsNativeApplicationURL(const GURL& url) override { return false; }
+  base::CancelableTaskTracker::TaskId GetFaviconForNativeApplicationURL(
+      const GURL& url,
+      const std::vector<int>& desired_sizes_in_pixel,
+      const favicon_base::FaviconResultsCallback& callback,
+      base::CancelableTaskTracker* tracker) override {
+    return base::CancelableTaskTracker::kBadTaskId;
+  }
 };
 
 class TestFaviconDriver : public FaviconDriver {
@@ -1483,14 +1493,15 @@ TEST_F(FaviconHandlerTest, TestKeepDownloadedLargestFavicon) {
             handler1.history_handler()->size_);
 }
 
-static KeyedService* BuildFaviconService(content::BrowserContext* profile) {
-  FaviconClient* favicon_client =
-      ChromeFaviconClientFactory::GetForProfile(static_cast<Profile*>(profile));
-  return new FaviconService(static_cast<Profile*>(profile), favicon_client);
+static KeyedService* BuildFaviconService(content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  return new FaviconService(ChromeFaviconClientFactory::GetForProfile(profile),
+                            HistoryServiceFactory::GetForProfile(
+                                profile, ServiceAccessType::EXPLICIT_ACCESS));
 }
 
-static KeyedService* BuildHistoryService(content::BrowserContext* profile) {
-  return NULL;
+static KeyedService* BuildHistoryService(content::BrowserContext* context) {
+  return nullptr;
 }
 
 // Test that Favicon is not requested repeatedly during the same session if
