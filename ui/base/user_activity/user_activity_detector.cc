@@ -8,8 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "ui/base/user_activity/user_activity_observer.h"
-#include "ui/events/event_utils.h"
-#include "ui/events/platform/platform_event_source.h"
+#include "ui/events/event.h"
 
 namespace ui {
 
@@ -49,24 +48,9 @@ const int UserActivityDetector::kDisplayPowerChangeIgnoreMouseMs = 1000;
 UserActivityDetector::UserActivityDetector() {
   CHECK(!g_instance);
   g_instance = this;
-
-  ui::PlatformEventSource* platform_event_source =
-      ui::PlatformEventSource::GetInstance();
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-  CHECK(platform_event_source);
-#endif
-  if (platform_event_source)
-    platform_event_source->AddPlatformEventObserver(this);
 }
 
 UserActivityDetector::~UserActivityDetector() {
-  ui::PlatformEventSource* platform_event_source =
-      ui::PlatformEventSource::GetInstance();
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-  CHECK(platform_event_source);
-#endif
-  if (platform_event_source)
-    platform_event_source->RemovePlatformEventObserver(this);
   g_instance = nullptr;
 }
 
@@ -93,29 +77,34 @@ void UserActivityDetector::OnDisplayPowerChanging() {
       base::TimeDelta::FromMilliseconds(kDisplayPowerChangeIgnoreMouseMs);
 }
 
-void UserActivityDetector::WillProcessEvent(
-    const PlatformEvent& platform_event) {
-  scoped_ptr<ui::Event> event(ui::EventFromNative(platform_event));
-  ProcessReceivedEvent(event.get());
+void UserActivityDetector::OnKeyEvent(ui::KeyEvent* event) {
+  HandleActivity(event);
+}
+
+void UserActivityDetector::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
+    return;
+  if (!honor_mouse_events_time_.is_null() &&
+      GetCurrentTime() < honor_mouse_events_time_)
+    return;
+
+  HandleActivity(event);
+}
+
+void UserActivityDetector::OnScrollEvent(ui::ScrollEvent* event) {
+  HandleActivity(event);
+}
+
+void UserActivityDetector::OnTouchEvent(ui::TouchEvent* event) {
+  HandleActivity(event);
+}
+
+void UserActivityDetector::OnGestureEvent(ui::GestureEvent* event) {
+  HandleActivity(event);
 }
 
 base::TimeTicks UserActivityDetector::GetCurrentTime() const {
   return !now_for_test_.is_null() ? now_for_test_ : base::TimeTicks::Now();
-}
-
-void UserActivityDetector::ProcessReceivedEvent(const ui::Event* event) {
-  if (!event)
-    return;
-
-  if (event->IsMouseEvent() || event->IsMouseWheelEvent()) {
-    if (event->flags() & ui::EF_IS_SYNTHESIZED)
-      return;
-    if (!honor_mouse_events_time_.is_null()
-        && GetCurrentTime() < honor_mouse_events_time_)
-      return;
-  }
-
-  HandleActivity(event);
 }
 
 void UserActivityDetector::HandleActivity(const ui::Event* event) {
