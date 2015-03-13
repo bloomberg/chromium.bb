@@ -773,6 +773,40 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
     EXPECT_EQ(0, DownloadService::NonMaliciousDownloadCountAllProfiles());
 }
 
+// Test shutdown with a download in progress in an off-the-record profile.
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
+                       TestWithOffTheRecordDownloads) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  Profile* otr_profile = browser()->profile()->GetOffTheRecordProfile();
+  SetDownloadPathForProfile(otr_profile);
+  Browser* otr_browser = CreateBrowser(otr_profile);
+  {
+    RepeatedNotificationObserver close_observer(
+        chrome::NOTIFICATION_BROWSER_CLOSED, 1);
+    browser()->window()->Close();
+    close_observer.Wait();
+  }
+  ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(otr_browser));
+  content::TestNavigationObserver navigation_observer(
+      otr_browser->tab_strip_model()->GetActiveWebContents(), 1);
+  TestBrowserCloseManager::AttemptClose(
+      TestBrowserCloseManager::USER_CHOICE_USER_CANCELS_CLOSE);
+  EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
+  navigation_observer.Wait();
+  EXPECT_EQ(GURL(chrome::kChromeUIDownloadsURL),
+            otr_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  RepeatedNotificationObserver close_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
+
+  TestBrowserCloseManager::AttemptClose(
+      TestBrowserCloseManager::USER_CHOICE_USER_ALLOWS_CLOSE);
+  close_observer.Wait();
+  EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
+  EXPECT_TRUE(chrome::BrowserIterator().done());
+  EXPECT_EQ(0, DownloadService::NonMaliciousDownloadCountAllProfiles());
+}
+
 // Test shutdown with a download in progress from one profile, where the only
 // open windows are for another profile.
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,

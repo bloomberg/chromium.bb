@@ -19,6 +19,22 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 
+namespace {
+
+// Navigates a browser window for |profile|, creating one if necessary, to the
+// downloads page if there are downloads in progress for |profile|.
+void ShowInProgressDownloads(Profile* profile) {
+  DownloadService* download_service =
+      DownloadServiceFactory::GetForBrowserContext(profile);
+  if (download_service->NonMaliciousDownloadCount() > 0) {
+    chrome::ScopedTabbedBrowserDisplayer displayer(profile,
+                                                   chrome::GetActiveDesktop());
+    chrome::ShowDownloads(displayer.browser());
+  }
+}
+
+}  // namespace
+
 BrowserCloseManager::BrowserCloseManager() : current_browser_(NULL) {}
 
 BrowserCloseManager::~BrowserCloseManager() {}
@@ -105,16 +121,10 @@ void BrowserCloseManager::OnReportDownloadsCancellable(bool proceed) {
   // Open the downloads page for each profile with downloads in progress.
   std::vector<Profile*> profiles(
       g_browser_process->profile_manager()->GetLoadedProfiles());
-  for (std::vector<Profile*>::iterator it = profiles.begin();
-       it != profiles.end();
-       ++it) {
-    DownloadService* download_service =
-        DownloadServiceFactory::GetForBrowserContext(*it);
-    if (download_service->NonMaliciousDownloadCount() > 0) {
-      chrome::ScopedTabbedBrowserDisplayer displayer(
-          *it, chrome::GetActiveDesktop());
-      chrome::ShowDownloads(displayer.browser());
-    }
+  for (Profile* profile : profiles) {
+    ShowInProgressDownloads(profile);
+    if (profile->HasOffTheRecordProfile())
+      ShowInProgressDownloads(profile->GetOffTheRecordProfile());
   }
 }
 
