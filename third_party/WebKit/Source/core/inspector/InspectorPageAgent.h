@@ -213,7 +213,7 @@ private:
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
     Client* m_client;
     InspectorFrontend::Page* m_frontend;
-    InspectorOverlay* m_overlay;
+    RawPtrWillBeMember<InspectorOverlay> m_overlay;
     long m_lastScriptIdentifier;
     String m_pendingScriptToEvaluateOnLoadOnce;
     String m_scriptToEvaluateOnLoadOnce;

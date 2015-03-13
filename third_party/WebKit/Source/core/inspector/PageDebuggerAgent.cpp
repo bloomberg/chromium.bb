@@ -67,6 +67,7 @@ DEFINE_TRACE(PageDebuggerAgent)
 {
     visitor->trace(m_pageScriptDebugServer);
     visitor->trace(m_pageAgent);
+    visitor->trace(m_overlay);
     InspectorDebuggerAgent::trace(visitor);
 }
 
@@ -151,4 +152,3 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 }
 
 } // namespace blink
-

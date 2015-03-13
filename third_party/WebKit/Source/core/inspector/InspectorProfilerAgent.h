@@ -91,7 +91,7 @@ private:
     typedef HashMap<String, double> ProfileNameIdleTimeMap;
     ProfileNameIdleTimeMap* m_profileNameIdleTimeMap;
     double m_idleStartTime;
-    InspectorOverlay* m_overlay;
+    RawPtrWillBeMember<InspectorOverlay> m_overlay;
 
     void idleStarted();
     void idleFinished();

@@ -2356,6 +2356,7 @@ DEFINE_TRACE(InspectorDOMAgent)
     visitor->trace(m_domListener);
     visitor->trace(m_pageAgent);
     visitor->trace(m_injectedScriptManager);
+    visitor->trace(m_overlay);
 #if ENABLE(OILPAN)
     visitor->trace(m_documentNodeToIdMap);
     visitor->trace(m_danglingNodeToIdMaps);

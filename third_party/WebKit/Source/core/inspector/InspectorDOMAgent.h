@@ -260,7 +260,7 @@ private:
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
-    InspectorOverlay* m_overlay;
+    RawPtrWillBeMember<InspectorOverlay> m_overlay;
     InspectorFrontend::DOM* m_frontend;
     RawPtrWillBeMember<DOMListener> m_domListener;
     OwnPtrWillBeMember<NodeToIdMap> m_documentNodeToIdMap;

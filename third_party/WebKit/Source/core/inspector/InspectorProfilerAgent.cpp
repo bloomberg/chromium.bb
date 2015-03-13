@@ -297,8 +297,8 @@ void InspectorProfilerAgent::didLeaveNestedRunLoop()
 DEFINE_TRACE(InspectorProfilerAgent)
 {
     visitor->trace(m_injectedScriptManager);
+    visitor->trace(m_overlay);
     InspectorBaseAgent::trace(visitor);
 }
 
 } // namespace blink
-

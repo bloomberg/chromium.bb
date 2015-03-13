@@ -1375,9 +1375,9 @@ DEFINE_TRACE(InspectorPageAgent)
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_debuggerAgent);
     visitor->trace(m_cssAgent);
+    visitor->trace(m_overlay);
     visitor->trace(m_inspectorResourceContentLoader);
     InspectorBaseAgent::trace(visitor);
 }
 
 } // namespace blink
-

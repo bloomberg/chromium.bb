@@ -76,7 +76,7 @@ private:
     PageDebuggerAgent(PageScriptDebugServer*, InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
     RawPtrWillBeMember<PageScriptDebugServer> m_pageScriptDebugServer;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
-    InspectorOverlay* m_overlay;
+    RawPtrWillBeMember<InspectorOverlay> m_overlay;
 };
 
 } // namespace blink
