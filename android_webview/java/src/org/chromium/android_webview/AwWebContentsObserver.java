@@ -4,13 +4,13 @@
 
 package org.chromium.android_webview;
 
-import java.lang.ref.WeakReference;
-
 import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.NetError;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Routes notifications from WebContents to AwContentsClient and other listeners.
