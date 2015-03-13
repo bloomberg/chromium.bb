@@ -52,6 +52,9 @@ DeviceOrientationController& DeviceOrientationController::from(Document& documen
 
 void DeviceOrientationController::didAddEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
+    if (eventType != eventTypeName())
+        return;
+
     if (document().frame()) {
         String errorMessage;
         if (document().securityOrigin()->canAccessFeatureRequiringSecureOrigin(errorMessage)) {
