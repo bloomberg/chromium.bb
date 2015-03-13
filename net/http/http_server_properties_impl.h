@@ -99,6 +99,8 @@ class NET_EXPORT HttpServerPropertiesImpl
                             AlternateProtocol alternate_protocol,
                             double probability) override;
   void SetBrokenAlternateProtocol(const HostPortPair& server) override;
+  bool IsAlternativeServiceBroken(
+      const AlternativeService& alternative_service) override;
   bool WasAlternateProtocolRecentlyBroken(const HostPortPair& server) override;
   void ConfirmAlternateProtocol(const HostPortPair& server) override;
   void ClearAlternateProtocol(const HostPortPair& server) override;
@@ -122,6 +124,8 @@ class NET_EXPORT HttpServerPropertiesImpl
   const ServerNetworkStatsMap& server_network_stats_map() const override;
 
  private:
+  friend class HttpServerPropertiesImplPeer;
+
   // |spdy_servers_map_| has flattened representation of servers (host, port)
   // that either support or not support SPDY protocol.
   typedef base::MRUCache<std::string, bool> SpdyServerHostPortMap;

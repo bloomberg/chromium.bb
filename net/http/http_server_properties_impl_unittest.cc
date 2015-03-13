@@ -23,6 +23,23 @@ namespace net {
 
 const int kMaxSupportsSpdyServerHosts = 500;
 
+class HttpServerPropertiesImplPeer {
+ public:
+  static void AddBrokenAlternativeServiceWithExpirationTime(
+      HttpServerPropertiesImpl& impl,
+      AlternativeService alternative_service,
+      base::TimeTicks when) {
+    impl.broken_alternative_services_.insert(
+        std::make_pair(alternative_service, when));
+    ++impl.recently_broken_alternative_services_[alternative_service];
+  }
+
+  static void ExpireBrokenAlternateProtocolMappings(
+      HttpServerPropertiesImpl& impl) {
+    impl.ExpireBrokenAlternateProtocolMappings();
+  }
+};
+
 namespace {
 
 class HttpServerPropertiesImplTest : public testing::Test {
@@ -290,9 +307,9 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   EXPECT_EQ(NPN_SPDY_3, it->second.protocol);
 
   ASSERT_TRUE(HasAlternateProtocol(test_host_port_pair1));
-  ASSERT_TRUE(HasAlternateProtocol(test_host_port_pair2));
-  alternate = impl_.GetAlternateProtocol(test_host_port_pair1);
-  EXPECT_TRUE(alternate.is_broken);
+  const AlternativeService alternative_service(
+      NPN_SPDY_3, test_host_port_pair1.host(), 443);
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
   alternate = impl_.GetAlternateProtocol(test_host_port_pair2);
   EXPECT_EQ(123, alternate.port);
   EXPECT_EQ(NPN_SPDY_3, alternate.protocol);
@@ -326,13 +343,15 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_3, 1.0);
   impl_.SetBrokenAlternateProtocol(test_host_port_pair);
   ASSERT_TRUE(HasAlternateProtocol(test_host_port_pair));
-  AlternateProtocolInfo alternate =
-      impl_.GetAlternateProtocol(test_host_port_pair);
-  EXPECT_TRUE(alternate.is_broken);
+  const AlternativeService alternative_service(NPN_SPDY_3,
+                                               test_host_port_pair.host(), 443);
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
 
   impl_.SetAlternateProtocol(test_host_port_pair, 1234, NPN_SPDY_3, 1.0);
-  alternate = impl_.GetAlternateProtocol(test_host_port_pair);
-  EXPECT_TRUE(alternate.is_broken) << "Second attempt should be ignored.";
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
+  const AlternateProtocolInfo alternate =
+      impl_.GetAlternateProtocol(test_host_port_pair);
+  EXPECT_EQ(1234, alternate.port);
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
@@ -340,11 +359,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
   impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_3, 1.0);
   impl_.SetBrokenAlternateProtocol(test_host_port_pair);
   ASSERT_TRUE(HasAlternateProtocol(test_host_port_pair));
-  AlternateProtocolInfo alternate =
-      impl_.GetAlternateProtocol(test_host_port_pair);
-  EXPECT_TRUE(alternate.is_broken);
+  const AlternativeService alternative_service(NPN_SPDY_3,
+                                               test_host_port_pair.host(), 443);
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
   impl_.ClearAlternateProtocol(test_host_port_pair);
-  EXPECT_FALSE(HasAlternateProtocol(test_host_port_pair));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, Forced) {
@@ -458,22 +477,6 @@ TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken) {
   EXPECT_FALSE(HasAlternateProtocol(test_host_port_pair));
 }
 
-TEST_F(AlternateProtocolServerPropertiesTest, CanonicalBroken2) {
-  HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
-  HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
-
-  AlternateProtocolInfo canonical_protocol(1234, QUIC, 1);
-
-  impl_.SetAlternateProtocol(canonical_port_pair, canonical_protocol.port,
-                             canonical_protocol.protocol,
-                             canonical_protocol.probability);
-
-  impl_.SetBrokenAlternateProtocol(test_host_port_pair);
-  AlternateProtocolInfo alternate =
-      impl_.GetAlternateProtocol(test_host_port_pair);
-  EXPECT_TRUE(alternate.is_broken);
-}
-
 TEST_F(AlternateProtocolServerPropertiesTest, ClearWithCanonical) {
   HostPortPair test_host_port_pair("foo.c.youtube.com", 80);
   HostPortPair canonical_port_pair("bar.c.youtube.com", 80);
@@ -486,6 +489,28 @@ TEST_F(AlternateProtocolServerPropertiesTest, ClearWithCanonical) {
 
   impl_.Clear();
   EXPECT_FALSE(HasAlternateProtocol(test_host_port_pair));
+}
+
+TEST_F(AlternateProtocolServerPropertiesTest,
+       ExpireBrokenAlternateProtocolMappings) {
+  HostPortPair host_port_pair("foo", 443);
+  AlternativeService alternative_service(QUIC, "foo", 443);
+  impl_.SetAlternateProtocol(host_port_pair, 443, QUIC, 1.0);
+  EXPECT_TRUE(HasAlternateProtocol(host_port_pair));
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_FALSE(impl_.WasAlternateProtocolRecentlyBroken(host_port_pair));
+
+  base::TimeTicks past =
+      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(42);
+  HttpServerPropertiesImplPeer::AddBrokenAlternativeServiceWithExpirationTime(
+      impl_, alternative_service, past);
+  EXPECT_TRUE(impl_.IsAlternativeServiceBroken(alternative_service));
+  EXPECT_TRUE(impl_.WasAlternateProtocolRecentlyBroken(host_port_pair));
+
+  HttpServerPropertiesImplPeer::ExpireBrokenAlternateProtocolMappings(impl_);
+  EXPECT_FALSE(impl_.IsAlternativeServiceBroken(alternative_service));
+  // TODO(bnc): Test WasAlternateProtocolRecentlyBroken once it's changed to
+  // take AlternativeService as argument.
 }
 
 typedef HttpServerPropertiesImplTest SpdySettingsServerPropertiesTest;

@@ -119,27 +119,12 @@ struct NET_EXPORT AlternativeService {
 
 struct NET_EXPORT AlternateProtocolInfo {
   AlternateProtocolInfo()
-      : port(0),
-        protocol(UNINITIALIZED_ALTERNATE_PROTOCOL),
-        probability(0),
-        is_broken(false) {}
+      : port(0), protocol(UNINITIALIZED_ALTERNATE_PROTOCOL), probability(0) {}
 
   AlternateProtocolInfo(uint16 port,
                         AlternateProtocol protocol,
                         double probability)
-      : port(port),
-        protocol(protocol),
-        probability(probability),
-        is_broken(false) {}
-
-  AlternateProtocolInfo(uint16 port,
-                        AlternateProtocol protocol,
-                        double probability,
-                        bool is_broken)
-      : port(port),
-        protocol(protocol),
-        probability(probability),
-        is_broken(is_broken) {}
+      : port(port), protocol(protocol), probability(probability) {}
 
   bool Equals(const AlternateProtocolInfo& other) const {
     return port == other.port &&
@@ -152,7 +137,6 @@ struct NET_EXPORT AlternateProtocolInfo {
   uint16 port;
   AlternateProtocol protocol;
   double probability;
-  bool is_broken;
 };
 
 struct NET_EXPORT SupportsQuic {
@@ -235,6 +219,10 @@ class NET_EXPORT HttpServerProperties {
 
   // Sets the Alternate-Protocol for |server| to be BROKEN.
   virtual void SetBrokenAlternateProtocol(const HostPortPair& server) = 0;
+
+  // Returns true iff |alternative_service| is currently broken.
+  virtual bool IsAlternativeServiceBroken(
+      const AlternativeService& alternative_service) = 0;
 
   // Returns true if Alternate-Protocol for |server| was recently BROKEN.
   virtual bool WasAlternateProtocolRecentlyBroken(
