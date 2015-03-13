@@ -164,14 +164,8 @@ bool TargetGenerator::FillPublic() {
 
 bool TargetGenerator::FillInputs() {
   const Value* value = scope_->GetValue(variables::kInputs, true);
- if (!value) {
-    // Older versions used "source_prereqs". Allow use of this variable until
-    // all callers are updated.
-    // TODO(brettw) remove this eventually.
-    value = scope_->GetValue("source_prereqs", true);
-    if (!value)
-      return true;
-  }
+ if (!value)
+   return true;
 
   Target::FileList dest_inputs;
   if (!ExtractListOfRelativeFiles(scope_->settings()->build_settings(), *value,
