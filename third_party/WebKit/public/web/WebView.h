@@ -58,6 +58,7 @@ class WebSpellCheckClient;
 class WebString;
 class WebViewClient;
 struct WebActiveWheelFlingParameters;
+struct WebDeviceEmulationParams;
 struct WebMediaPlayerAction;
 struct WebPluginAction;
 struct WebPoint;
@@ -376,6 +377,12 @@ public:
     // Set offset and scale on the root composited layer. This is used
     // to implement device metrics emulation.
     virtual void setRootLayerTransform(const WebSize& offset, float scale) = 0;
+
+    // Enables device emulation as specified in params.
+    virtual void enableDeviceEmulation(const WebDeviceEmulationParams&) = 0;
+
+    // Cancel emulation started via |enableDeviceEmulation| call.
+    virtual void disableDeviceEmulation() = 0;
 
     // The embedder may optionally engage a WebDevToolsAgent.  This may only
     // be set once per WebView.

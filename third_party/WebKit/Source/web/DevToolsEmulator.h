@@ -12,6 +12,8 @@ namespace blink {
 class WebDevToolsAgentImpl;
 class WebViewImpl;
 
+struct WebDeviceEmulationParams;
+
 class DevToolsEmulator final {
 public:
     explicit DevToolsEmulator(WebViewImpl*);
@@ -26,14 +28,22 @@ public:
     void setPreferCompositingToLCDTextEnabled(bool);
     void setUseMobileViewportStyle(bool);
 
-    // Device emulation.
+    // FIXME(dgozman): remove this after reversing emulation flow.
     void setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY);
     void clearDeviceMetricsOverride();
+
+    // Device emulation.
+    void enableDeviceEmulation(const WebDeviceEmulationParams&);
+    void disableDeviceEmulation();
     bool deviceEmulationEnabled() { return m_deviceMetricsEnabled; }
 
 private:
     void enableMobileEmulation();
     void disableMobileEmulation();
+
+    // FIXME(dgozman): remove this after reversing emulation flow.
+    void enableDeviceEmulationInner(const WebDeviceEmulationParams&);
+    void disableDeviceEmulationInner();
 
     WebViewImpl* m_webViewImpl;
     WebDevToolsAgentImpl* m_devToolsAgent;
@@ -47,6 +57,9 @@ private:
     float m_embedderDeviceScaleAdjustment;
     bool m_embedderPreferCompositingToLCDTextEnabled;
     bool m_embedderUseMobileViewport;
+
+    // FIXME(dgozman): remove this after reversing emulation flow.
+    bool m_ignoreSetOverrides;
 };
 
 } // namespace blink

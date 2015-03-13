@@ -260,6 +260,8 @@ public:
     virtual unsigned long createUniqueIdentifierForRequest() override;
     virtual void setCompositorDeviceScaleFactorOverride(float) override;
     virtual void setRootLayerTransform(const WebSize& offset, float scale) override;
+    void enableDeviceEmulation(const WebDeviceEmulationParams&) override;
+    void disableDeviceEmulation() override;
     virtual WebDevToolsAgent* devToolsAgent() override;
     virtual WebAXObject accessibilityObject() override;
     virtual void setSelectionColors(unsigned activeBackgroundColor,

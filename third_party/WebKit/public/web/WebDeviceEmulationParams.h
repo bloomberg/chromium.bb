@@ -5,9 +5,9 @@
 #ifndef WebDeviceEmulationParams_h
 #define WebDeviceEmulationParams_h
 
-#include "public/platform/WebFloatPoint.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebSize.h"
+#include "../platform/WebFloatPoint.h"
+#include "../platform/WebRect.h"
+#include "../platform/WebSize.h"
 
 namespace blink {
 
@@ -17,7 +17,8 @@ struct WebDeviceEmulationParams {
     // For desktop, screen size and view position are preserved.
     enum ScreenPosition {
         Desktop,
-        Mobile
+        Mobile,
+        ScreenPositionLast = Mobile
     };
 
     ScreenPosition screenPosition;
@@ -43,6 +44,16 @@ struct WebDeviceEmulationParams {
         , fitToView(false)
         , scale(1) { }
 };
+
+inline bool operator==(const WebDeviceEmulationParams& a, const WebDeviceEmulationParams& b)
+{
+    return a.screenPosition == b.screenPosition && a.deviceScaleFactor == b.deviceScaleFactor && a.viewSize == b.viewSize && a.fitToView == b.fitToView && a.offset == b.offset && a.scale == b.scale;
+}
+
+inline bool operator!=(const WebDeviceEmulationParams& a, const WebDeviceEmulationParams& b)
+{
+    return !(a == b);
+}
 
 } // namespace blink
 

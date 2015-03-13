@@ -3842,6 +3842,16 @@ void WebViewImpl::setRootLayerTransform(const WebSize& rootLayerOffset, float ro
     updateRootLayerTransform();
 }
 
+void WebViewImpl::enableDeviceEmulation(const WebDeviceEmulationParams& params)
+{
+    m_devToolsEmulator->enableDeviceEmulation(params);
+}
+
+void WebViewImpl::disableDeviceEmulation()
+{
+    m_devToolsEmulator->disableDeviceEmulation();
+}
+
 WebDevToolsAgent* WebViewImpl::devToolsAgent()
 {
     return m_devToolsAgent.get();
