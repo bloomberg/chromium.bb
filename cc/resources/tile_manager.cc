@@ -148,6 +148,10 @@ class ImageDecodeTaskImpl : public ImageDecodeTask {
     // This will cause the image referred to by pixel ref to be decoded.
     pixel_ref_->lockPixels();
     pixel_ref_->unlockPixels();
+
+    // Release the reference after decoding image to ensure that it is not
+    // kept alive unless needed.
+    pixel_ref_.clear();
   }
 
   // Overridden from TileTask:
