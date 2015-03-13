@@ -758,12 +758,9 @@ component("base") {
     configs += linux_configs
     all_dependent_configs = linux_configs
 
-    defines += [ "USE_SYMBOLIZE" ]
-
     # These dependencies are not required on Android, and in the case
     # of xdg_mime must be excluded due to licensing restrictions.
     deps += [
-      "//base/third_party/symbolize",
       "//base/third_party/xdg_mime",
       "//base/third_party/xdg_user_dirs",
     ]
@@ -1341,7 +1338,6 @@ test("base_unittests") {
   if (is_linux) {
     sources -= [ "file_version_info_unittest.cc" ]
     sources += [ "nix/xdg_util_unittest.cc" ]
-    defines += [ "USE_SYMBOLIZE" ]
     if (use_glib) {
       configs += [ "//build/config/linux:glib" ]
     }

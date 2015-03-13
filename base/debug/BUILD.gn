@@ -63,6 +63,7 @@ source_set("debug") {
   ]
 
   if (is_linux) {
+    defines += [ "USE_SYMBOLIZE" ]
     deps += [ "//base/third_party/symbolize" ]
   }
 
