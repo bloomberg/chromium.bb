@@ -639,11 +639,17 @@ bool RenderProcessHostImpl::Init() {
     // in-process plugins.
     options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
 #endif
+
+    // As for execution sequence, this callback should have no any dependency
+    // on starting in-process-render-thread.
+    // So put it here to trigger ChannelMojo initialization earlier to enable
+    // in-process-render-thread using ChannelMojo there.
+    OnProcessLaunched();  // Fake a callback that the process is ready.
+
     in_process_renderer_->StartWithOptions(options);
 
     g_in_process_thread = in_process_renderer_->message_loop();
 
-    OnProcessLaunched();  // Fake a callback that the process is ready.
   } else {
     // Build command line for renderer.  We call AppendRendererCommandLine()
     // first so the process type argument will appear first.
