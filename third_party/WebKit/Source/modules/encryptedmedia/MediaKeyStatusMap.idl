@@ -7,7 +7,9 @@
 enum MediaKeyStatus {
     "usable",
     "expired",
+    "output-downscaled",
     "output-not-allowed",
+    "status-pending",
     "internal-error"
 };
 
