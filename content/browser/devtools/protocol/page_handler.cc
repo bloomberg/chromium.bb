@@ -353,6 +353,17 @@ Response PageHandler::CanEmulate(bool* result) {
   return Response::OK();
 }
 
+Response PageHandler::SetDeviceMetricsOverride(
+    int width, int height, double device_scale_factor, bool mobile,
+    bool fit_window, const double* optional_scale,
+    const double* optional_offset_x, const double* optional_offset_y) {
+  return Response::FallThrough();
+}
+
+Response PageHandler::ClearDeviceMetricsOverride() {
+  return Response::FallThrough();
+}
+
 Response PageHandler::StartScreencast(const std::string* format,
                                       const int* quality,
                                       const int* max_width,

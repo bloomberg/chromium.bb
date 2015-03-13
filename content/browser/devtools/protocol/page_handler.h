@@ -66,8 +66,18 @@ class PageHandler {
 
   Response CaptureScreenshot(DevToolsCommandId command_id);
 
-  Response CanScreencast(bool* result);
   Response CanEmulate(bool* result);
+  Response SetDeviceMetricsOverride(int width,
+                                    int height,
+                                    double device_scale_factor,
+                                    bool mobile,
+                                    bool fit_window,
+                                    const double* optional_scale,
+                                    const double* optional_offset_x,
+                                    const double* optional_offset_y);
+  Response ClearDeviceMetricsOverride();
+
+  Response CanScreencast(bool* result);
 
   Response StartScreencast(const std::string* format,
                            const int* quality,
