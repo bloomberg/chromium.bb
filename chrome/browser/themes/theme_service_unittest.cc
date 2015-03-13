@@ -19,6 +19,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,14 +51,10 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
 
     scoped_refptr<extensions::UnpackedInstaller> installer(
         extensions::UnpackedInstaller::Create(service_));
-    content::WindowedNotificationObserver observer(
-        extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-        content::Source<Profile>(profile_.get()));
+    extensions::TestExtensionRegistryObserver observer(
+        ExtensionRegistry::Get(profile()));
     installer->Load(temp_dir);
-    observer.Wait();
-
-    std::string extension_id =
-        content::Details<extensions::Extension>(observer.details())->id();
+    std::string extension_id = observer.WaitForExtensionLoaded()->id();
 
     // Let the ThemeService finish creating the theme pack.
     base::MessageLoop::current()->RunUntilIdle();
@@ -67,20 +64,23 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
 
   // Update the theme with |extension_id|.
   void UpdateUnpackedTheme(const std::string& extension_id) {
-    int updated_notification =
-        service_->IsExtensionEnabled(extension_id)
-            ? extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED
-            : extensions::NOTIFICATION_EXTENSION_UPDATE_DISABLED;
-
     const base::FilePath& path =
         service_->GetInstalledExtension(extension_id)->path();
 
     scoped_refptr<extensions::UnpackedInstaller> installer(
         extensions::UnpackedInstaller::Create(service_));
-    content::WindowedNotificationObserver observer(updated_notification,
-        content::Source<Profile>(profile_.get()));
-    installer->Load(path);
-    observer.Wait();
+    if (service_->IsExtensionEnabled(extension_id)) {
+      extensions::TestExtensionRegistryObserver observer(
+          ExtensionRegistry::Get(profile()));
+      installer->Load(path);
+      observer.WaitForExtensionLoaded();
+    } else {
+      content::WindowedNotificationObserver observer(
+          extensions::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
+          content::Source<Profile>(profile_.get()));
+      installer->Load(path);
+      observer.Wait();
+    }
 
     // Let the ThemeService finish creating the theme pack.
     base::MessageLoop::current()->RunUntilIdle();

@@ -13,6 +13,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_factory.h"
 
 #if defined(USE_AURA) && defined(USE_X11) && !defined(OS_CHROMEOS)
 #include "chrome/browser/themes/theme_service_aurax11.h"
@@ -43,8 +44,10 @@ ThemeServiceFactory* ThemeServiceFactory::GetInstance() {
 
 ThemeServiceFactory::ThemeServiceFactory()
     : BrowserContextKeyedServiceFactory(
-        "ThemeService",
-        BrowserContextDependencyManager::GetInstance()) {}
+          "ThemeService",
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
+}
 
 ThemeServiceFactory::~ThemeServiceFactory() {}
 
