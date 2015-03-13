@@ -869,6 +869,15 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface WorkerGlobalScope
 [Worker]     attribute PERSISTENT
 [Worker]     attribute TEMPORARY
+[Worker]     getter console
+[Worker]     getter crypto
+[Worker]     getter indexedDB
+[Worker]     getter location
+[Worker]     getter navigator
+[Worker]     getter onerror
+[Worker]     getter performance
+[Worker]     getter self
+[Worker]     getter webkitIndexedDB
 [Worker]     method atob
 [Worker]     method btoa
 [Worker]     method clearInterval
@@ -884,6 +893,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method webkitRequestFileSystemSync
 [Worker]     method webkitResolveLocalFileSystemSyncURL
 [Worker]     method webkitResolveLocalFileSystemURL
+[Worker]     setter console
+[Worker]     setter location
+[Worker]     setter navigator
+[Worker]     setter onerror
+[Worker]     setter self
 [Worker] interface WorkerLocation
 [Worker]     getter hash
 [Worker]     getter host

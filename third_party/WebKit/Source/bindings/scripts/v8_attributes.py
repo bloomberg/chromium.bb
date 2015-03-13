@@ -491,7 +491,6 @@ def is_expose_js_accessors(interface, attribute):
             has_custom_getter(attribute) or
             has_custom_setter(attribute) or
             interface.name == 'Window' or
-            interface.name == 'WorkerGlobalScope' or
             v8_utilities.indexed_property_getter(interface) or
             v8_utilities.indexed_property_setter(interface) or
             v8_utilities.indexed_property_deleter(interface) or
