@@ -15,7 +15,6 @@ import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
-import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
 public class ClientOnReceivedHttpErrorTest extends AwTestBase {
 
-    private TestAwContentsClient mContentsClient;
+    private VerifyOnReceivedHttpErrorCallClient mContentsClient;
     private AwTestContainerView mTestContainerView;
     private AwContents mAwContents;
     private TestWebServer mWebServer;
@@ -36,17 +35,47 @@ public class ClientOnReceivedHttpErrorTest extends AwTestBase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        mContentsClient = new TestAwContentsClient();
+        mContentsClient = new VerifyOnReceivedHttpErrorCallClient();
         mTestContainerView = createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = mTestContainerView.getAwContents();
         mWebServer = TestWebServer.start();
     }
 
-    private void setTestAwContentsClient(TestAwContentsClient contentsClient) throws Exception {
-        mContentsClient = contentsClient;
-        final AwTestContainerView testContainerView =
-                createAwTestContainerViewOnMainSync(mContentsClient);
-        mAwContents = testContainerView.getAwContents();
+    private void useDefaultTestAwContentsClient() throws Exception {
+        mContentsClient.enableBypass();
+    }
+
+    private static class VerifyOnReceivedHttpErrorCallClient extends TestAwContentsClient {
+        private boolean mBypass = false;
+        private boolean mIsOnPageFinishedCalled = false;
+        private boolean mIsOnReceivedHttpErrorCalled = false;
+
+        void enableBypass() {
+            mBypass = true;
+        }
+
+        @Override
+        public void onPageFinished(String url) {
+            if (!mBypass) {
+                assertEquals(
+                        "onPageFinished called twice for " + url, false, mIsOnPageFinishedCalled);
+                mIsOnPageFinishedCalled = true;
+                assertEquals("onReceivedHttpError not called before onPageFinished for " + url,
+                        true, mIsOnReceivedHttpErrorCalled);
+            }
+            super.onPageFinished(url);
+        }
+
+        @Override
+        public void onReceivedHttpError(
+                AwWebResourceRequest request, AwWebResourceResponse response) {
+            if (!mBypass) {
+                assertEquals("onReceivedHttpError called twice for " + request.url, false,
+                        mIsOnReceivedHttpErrorCalled);
+                mIsOnReceivedHttpErrorCalled = true;
+            }
+            super.onReceivedHttpError(request, response);
+        }
     }
 
     @Override
@@ -57,10 +86,7 @@ public class ClientOnReceivedHttpErrorTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testOnReceivedHttpErrorForMainResource() throws Throwable {
-        TestAwContentsClient.OnReceivedHttpErrorHelper onReceivedHttpErrorHelper =
-                mContentsClient.getOnReceivedHttpErrorHelper();
-
+    public void testForMainResource() throws Throwable {
         List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
         headers.add(Pair.create("Content-Type", "text/html; charset=utf-8"));
         headers.add(Pair.create("Coalesce", ""));
@@ -68,13 +94,10 @@ public class ClientOnReceivedHttpErrorTest extends AwTestBase {
         headers.add(Pair.create("Coalesce", ""));
         headers.add(Pair.create("Coalesce", "a"));
         final String url = mWebServer.setResponseWithNotFoundStatus("/404.html", headers);
-        int onReceivedHttpErrorCallCount = onReceivedHttpErrorHelper.getCallCount();
-        loadUrlAsync(mAwContents, url);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
-        onReceivedHttpErrorHelper.waitForCallback(onReceivedHttpErrorCallCount,
-                1 /* numberOfCallsToWaitFor */,
-                WAIT_TIMEOUT_MS,
-                TimeUnit.MILLISECONDS);
+        TestAwContentsClient.OnReceivedHttpErrorHelper onReceivedHttpErrorHelper =
+                mContentsClient.getOnReceivedHttpErrorHelper();
         AwWebResourceRequest request = onReceivedHttpErrorHelper.getRequest();
         assertNotNull(request);
         assertEquals(url, request.url);
@@ -97,7 +120,8 @@ public class ClientOnReceivedHttpErrorTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testOnReceivedHttpErrorForUserGesture() throws Throwable {
+    public void testForUserGesture() throws Throwable {
+        useDefaultTestAwContentsClient();
         List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
         headers.add(Pair.create("Content-Type", "text/html; charset=utf-8"));
         final String badUrl = mWebServer.setResponseWithNotFoundStatus("/404.html", headers);
@@ -109,8 +133,8 @@ public class ClientOnReceivedHttpErrorTest extends AwTestBase {
 
         TestAwContentsClient.OnReceivedHttpErrorHelper onReceivedHttpErrorHelper =
                 mContentsClient.getOnReceivedHttpErrorHelper();
-        AwTestTouchUtils.simulateTouchCenterOfView(mTestContainerView);
         int onReceivedHttpErrorCallCount = onReceivedHttpErrorHelper.getCallCount();
+        AwTestTouchUtils.simulateTouchCenterOfView(mTestContainerView);
         onReceivedHttpErrorHelper.waitForCallback(onReceivedHttpErrorCallCount,
                 1 /* numberOfCallsToWaitFor */,
                 WAIT_TIMEOUT_MS,
@@ -135,43 +159,17 @@ public class ClientOnReceivedHttpErrorTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testOnReceivedHttpErrorForSubresource() throws Throwable {
-        class LocalTestClient extends TestAwContentsClient {
-            private boolean mIsOnReceivedHttpErrorCalled = false;
-            private boolean mIsOnPageFinishedCalled = false;
-
-            @Override
-            public void onReceivedHttpError(AwWebResourceRequest request,
-                    AwWebResourceResponse response) {
-                assertEquals("onReceivedHttpError called twice for " + request.url,
-                        false, mIsOnReceivedHttpErrorCalled);
-                mIsOnReceivedHttpErrorCalled = true;
-                super.onReceivedHttpError(request, response);
-            }
-
-            @Override
-            public void onPageFinished(String url) {
-                mIsOnPageFinishedCalled = true;
-                super.onPageFinished(url);
-            }
-        }
-        LocalTestClient testContentsClient = new LocalTestClient();
-        setTestAwContentsClient(testContentsClient);
-
-        TestAwContentsClient.OnReceivedHttpErrorHelper onReceivedHttpErrorHelper =
-                mContentsClient.getOnReceivedHttpErrorHelper();
-        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mContentsClient.getOnPageFinishedHelper();
-
+    public void testForSubresource() throws Throwable {
         List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
         headers.add(Pair.create("Content-Type", "text/html; charset=utf-8"));
         final String imageUrl = mWebServer.setResponseWithNotFoundStatus("/404.png", headers);
         final String pageHtml = CommonResources.makeHtmlPageFrom(
                 "", "<img src='" + imageUrl + "' class='img.big' />");
         final String pageUrl = mWebServer.setResponse("/page.html", pageHtml, null);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
-        loadUrlSync(mAwContents, onPageFinishedHelper, pageUrl);
-
+        TestAwContentsClient.OnReceivedHttpErrorHelper onReceivedHttpErrorHelper =
+                mContentsClient.getOnReceivedHttpErrorHelper();
         AwWebResourceRequest request = onReceivedHttpErrorHelper.getRequest();
         assertNotNull(request);
         assertEquals(imageUrl, request.url);
@@ -192,17 +190,14 @@ public class ClientOnReceivedHttpErrorTest extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testOnReceivedHttpErrorNotCalledIfNoHttpError() throws Throwable {
-        TestAwContentsClient.OnReceivedHttpErrorHelper onReceivedHttpErrorHelper =
-                mContentsClient.getOnReceivedHttpErrorHelper();
-        TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                mContentsClient.getOnPageFinishedHelper();
-
+    public void testNotCalledIfNoHttpError() throws Throwable {
+        useDefaultTestAwContentsClient();
         final String goodUrl = mWebServer.setResponse("/1.html", CommonResources.ABOUT_HTML, null);
         final String badUrl = mWebServer.setResponseWithNotFoundStatus("/404.html");
-
+        TestAwContentsClient.OnReceivedHttpErrorHelper onReceivedHttpErrorHelper =
+                mContentsClient.getOnReceivedHttpErrorHelper();
         final int onReceivedHttpErrorCallCount = onReceivedHttpErrorHelper.getCallCount();
-        loadUrlSync(mAwContents, onPageFinishedHelper, goodUrl);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), goodUrl);
 
         // Instead of waiting for OnReceivedHttpError not to be called, we schedule
         // a load that will result in a error, and check that we have only got one callback,
@@ -214,5 +209,34 @@ public class ClientOnReceivedHttpErrorTest extends AwTestBase {
                 TimeUnit.MILLISECONDS);
         assertEquals(onReceivedHttpErrorCallCount + 1, onReceivedHttpErrorHelper.getCallCount());
         assertEquals(badUrl, onReceivedHttpErrorHelper.getRequest().url);
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testAfterRedirect() throws Throwable {
+        List<Pair<String, String>> headers = new ArrayList<Pair<String, String>>();
+        headers.add(Pair.create("Content-Type", "text/html; charset=utf-8"));
+        final String secondUrl = mWebServer.setResponseWithNotFoundStatus("/404.html", headers);
+        final String firstUrl = mWebServer.setRedirect("/302.html", secondUrl);
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), firstUrl);
+
+        TestAwContentsClient.OnReceivedHttpErrorHelper onReceivedHttpErrorHelper =
+                mContentsClient.getOnReceivedHttpErrorHelper();
+        AwWebResourceRequest request = onReceivedHttpErrorHelper.getRequest();
+        assertNotNull(request);
+        assertEquals(secondUrl, request.url);
+        assertEquals("GET", request.method);
+        assertNotNull(request.requestHeaders);
+        assertFalse(request.requestHeaders.isEmpty());
+        assertTrue(request.isMainFrame);
+        assertFalse(request.hasUserGesture);
+        AwWebResourceResponse response = onReceivedHttpErrorHelper.getResponse();
+        assertEquals(404, response.getStatusCode());
+        assertEquals("Not Found", response.getReasonPhrase());
+        assertEquals("text/html", response.getMimeType());
+        assertEquals("utf-8", response.getCharset());
+        assertNotNull(response.getResponseHeaders());
+        assertTrue(response.getResponseHeaders().containsKey("Content-Type"));
+        assertEquals("text/html; charset=utf-8", response.getResponseHeaders().get("Content-Type"));
     }
 }
