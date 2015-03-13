@@ -26,10 +26,11 @@ public interface DocumentTabModel extends TabModel {
         public boolean isCoveredByChildActivity;
         public String initialUrl;
         public String currentUrl;
-        public TabState tabState;
         public boolean isTabStateReady;
         public boolean isDirty;
         public Tab placeholderTab;
+
+        private TabState mTabState;
 
         public Entry(int tabId) {
             this.tabId = tabId;
@@ -42,8 +43,21 @@ public interface DocumentTabModel extends TabModel {
 
         public Entry(int tabId, TabState tabState) {
             this.tabId = tabId;
-            this.tabState = tabState;
+            this.mTabState = tabState;
             this.isTabStateReady = true;
+        }
+
+        /**
+         * Caches the TabState if the TabState has a serialized WebContentsState. Otherwise clears
+         * the cached TabState to prevent crashes from a partial restoration.
+         */
+        public void setTabState(TabState tabState) {
+            mTabState = (tabState == null || tabState.contentsState == null) ? null : tabState;
+        }
+
+        /** @return TabState that was cached for the Entry. */
+        public TabState getTabState() {
+            return mTabState;
         }
     }
 

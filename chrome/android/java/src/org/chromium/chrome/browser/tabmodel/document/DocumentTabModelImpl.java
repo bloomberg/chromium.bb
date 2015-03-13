@@ -274,7 +274,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         }
 
         // Create a frozen Tab if we are capable, or if the previous Tab is just a placeholder.
-        if (entry.tabState != null && isNativeInitialized()
+        if (entry.getTabState() != null && isNativeInitialized()
                 && (entry.placeholderTab == null || !entry.placeholderTab.isInitialized())) {
             entry.placeholderTab = mTabDelegate.createFrozenTab(entry);
             entry.placeholderTab.initializeNative();
@@ -377,7 +377,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     @Override
     public TabState getTabStateForDocument(int tabId) {
         Entry entry = mEntryMap.get(tabId);
-        return entry == null ? null : entry.tabState;
+        return entry == null ? null : entry.getTabState();
     }
 
     @Override
@@ -417,9 +417,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
             }
 
             Entry entry = mEntryMap.get(tabId);
-            if (!isIncognito() && entry.tabState != null
-                    && entry.tabState.contentsState != null) {
-                entry.tabState.contentsState.createHistoricalTab();
+            if (!isIncognito() && entry.getTabState() != null) {
+                entry.getTabState().contentsState.createHistoricalTab();
             }
             removed.add(tabId);
         }
@@ -446,7 +445,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
                 && TextUtils.equals(currentEntry.currentUrl, currentUrl)
                 && currentEntry.canGoBack == canGoBack
                 && currentEntry.isCoveredByChildActivity == isCoveredByChildActivity
-                && currentEntry.tabState == state
+                && currentEntry.getTabState() == state
                 && !tab.isTabStateDirty()) {
             return;
         }
@@ -459,7 +458,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         currentEntry.currentUrl = currentUrl;
         currentEntry.canGoBack = canGoBack;
         currentEntry.isCoveredByChildActivity = isCoveredByChildActivity;
-        currentEntry.tabState = state;
+        currentEntry.setTabState(state);
 
         // TODO(dfalcantara): This is different from how the normal Tab determines when to save its
         // state, but this can't be fixed because we cann't hold onto Tabs in this class.
@@ -547,7 +546,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         if (mPrioritizedTabId != Tab.INVALID_TAB_ID) {
             Entry entry = mEntryMap.get(mPrioritizedTabId);
             if (entry != null) {
-                entry.tabState = mStorageDelegate.restoreTabState(mPrioritizedTabId, isIncognito());
+                entry.setTabState(
+                        mStorageDelegate.restoreTabState(mPrioritizedTabId, isIncognito()));
                 entry.isTabStateReady = true;
             }
         }
@@ -571,7 +571,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
             public Void doInBackground(Void... params) {
                 for (Entry entry : mEntries) {
                     if (mPrioritizedTabId == entry.tabId) continue;
-                    entry.tabState = mStorageDelegate.restoreTabState(entry.tabId, isIncognito());
+                    entry.setTabState(
+                            mStorageDelegate.restoreTabState(entry.tabId, isIncognito()));
                     entry.isTabStateReady = true;
                 }
 
@@ -584,7 +585,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
                     Entry entry = mEntryMap.get(pair.tabId);
                     if (entry == null) continue;
 
-                    if (entry.tabState == null) entry.tabState = pair.tabState;
+                    if (entry.getTabState() == null) entry.setTabState(pair.getTabState());
                     entry.isTabStateReady = true;
                 }
 
@@ -606,15 +607,15 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
 
                 for (int i = 0; i < mEntryMap.size(); i++) {
                     Entry entry = mEntryMap.valueAt(i);
-                    if (entry.tabState == null) continue;
-                    mCachedEntries.add(new Entry(entry.tabId, entry.tabState));
+                    if (entry.getTabState() == null) continue;
+                    mCachedEntries.add(new Entry(entry.tabId, entry.getTabState()));
                 }
             }
 
             @Override
             public Void doInBackground(Void... params) {
                 for (Entry entry : mCachedEntries) {
-                    TabState tabState = entry.tabState;
+                    TabState tabState = entry.getTabState();
                     updateEntryInfoFromTabState(entry, tabState);
                 }
                 return null;
@@ -684,8 +685,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
             @Override
             public void onPostExecute(Void result) {
                 for (Entry entry : mEntries) {
-                    if (entry.tabState == null || entry.tabState.contentsState == null) continue;
-                    entry.tabState.contentsState.createHistoricalTab();
+                    if (entry.getTabState() == null) continue;
+                    entry.getTabState().contentsState.createHistoricalTab();
                 }
                 mHistoricalTabs.clear();
                 setCurrentState(STATE_DETERMINE_HISTORICAL_TABS_END);
@@ -781,8 +782,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
             protected void onPreExecute() {
                 for (int i = 0; i < mEntryMap.size(); i++) {
                     Entry entry = mEntryMap.valueAt(i);
-                    if (!entry.isDirty || entry.tabState == null) continue;
-                    mStatesToWrite.put(entry.tabId, entry.tabState);
+                    if (!entry.isDirty || entry.getTabState() == null) continue;
+                    mStatesToWrite.put(entry.tabId, entry.getTabState());
                 }
             }
 
