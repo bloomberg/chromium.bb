@@ -1,0 +1,48 @@
+{
+   "actionButtonHidden": false,
+   "dependentExtensions": [  ],
+   "description": "",
+   "disableReasons": {
+      "corruptInstall": false,
+      "suspiciousInstall": false,
+      "updateRequired": false
+   },
+   "errorCollection": {
+      "isActive": false,
+      "isEnabled": false
+   },
+   "fileAccess": {
+      "isActive": false,
+      "isEnabled": false
+   },
+   "homePage": {
+      "specified": false,
+      "url": ""
+   },
+   "iconUrl": "chrome://extension-icon/bjafgdebaacbbbecmhlhpofkepfkgcpa/48/1",
+   "id": "bjafgdebaacbbbecmhlhpofkepfkgcpa",
+   "incognitoAccess": {
+      "isActive": false,
+      "isEnabled": true
+   },
+   "installWarnings": [  ],
+   "installedByCustodian": false,
+   "location": "UNKNOWN",
+   "locationText": "Not from Chrome Web Store.",
+   "manifestErrors": [  ],
+   "mustRemainInstalled": false,
+   "name": "My extension 3",
+   "offlineEnabled": false,
+   "runOnAllUrls": {
+      "isActive": true,
+      "isEnabled": false
+   },
+   "runtimeErrors": [  ],
+   "runtimeWarnings": [  ],
+   "state": "ENABLED",
+   "type": "EXTENSION",
+   "updateUrl": "",
+   "userMayModify": true,
+   "version": "1.0",
+   "views": [  ]
+}

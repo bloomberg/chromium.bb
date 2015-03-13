@@ -23,7 +23,7 @@
  * chrome/browser/ui/webui/extensions/extension_settings_handler.cc:
  *     ExtensionSettingsHandler::HandleRequestExtensionsData()
  * @typedef {{developerMode: boolean,
- *            extensions: Array,
+ *            enableAppInfoDialog: boolean,
  *            incognitoAvailable: boolean,
  *            loadUnpackedDisabled: boolean,
  *            profileIsSupervised: boolean,
@@ -308,20 +308,6 @@ cr.define('extensions', function() {
     }, 0);
 
     webuiResponded = true;
-
-    if (extensionsData.extensions.length > 0) {
-      // Enforce order specified in the data or (if equal) then sort by
-      // extension name (case-insensitive) followed by their ID (in the case
-      // where extensions have the same name).
-      extensionsData.extensions.sort(function(a, b) {
-        function compare(x, y) {
-          return x < y ? -1 : (x > y ? 1 : 0);
-        }
-        return compare(a.order, b.order) ||
-               compare(a.name.toLowerCase(), b.name.toLowerCase()) ||
-               compare(a.id, b.id);
-      });
-    }
 
     var supervised = extensionsData.profileIsSupervised;
 

@@ -2,35 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * The type of the stack trace object. The definition is based on
- * extensions/browser/extension_error.cc:RuntimeError::ToValue().
- * @typedef {{columnNumber: number,
- *            functionName: string,
- *            lineNumber: number,
- *            url: string}}
- */
-var StackTrace;
-
-/**
- * The type of the extension error trace object. The definition is based on
- * extensions/browser/extension_error.cc:RuntimeError::ToValue().
- * @typedef {{canInspect: (boolean|undefined),
- *            contextUrl: (string|undefined),
- *            extensionId: string,
- *            fromIncognito: boolean,
- *            level: number,
- *            manifestKey: string,
- *            manifestSpecific: string,
- *            message: string,
- *            renderProcessId: (number|undefined),
- *            renderViewId: (number|undefined),
- *            source: string,
- *            stackTrace: (Array<StackTrace>|undefined),
- *            type: number}}
- */
-var RuntimeError;
-
 cr.define('extensions', function() {
   'use strict';
 
@@ -96,7 +67,7 @@ cr.define('extensions', function() {
 
     /**
      * The underlying error whose details are being displayed.
-     * @type {?RuntimeError}
+     * @type {?(RuntimeError|ManifestError)}
      * @private
      */
     error_: null,
@@ -140,8 +111,8 @@ cr.define('extensions', function() {
 
     /**
      * Sets the error for the content.
-     * @param {RuntimeError} error The error whose content should
-     *     be displayed.
+     * @param {(RuntimeError|ManifestError)} error The error whose content
+     *     should be displayed.
      * @param {string} extensionUrl The URL associated with this extension.
      */
     setError: function(error, extensionUrl) {
@@ -333,7 +304,7 @@ cr.define('extensions', function() {
   ExtensionErrorOverlay.prototype = {
     /**
      * The underlying error whose details are being displayed.
-     * @type {?RuntimeError}
+     * @type {?(RuntimeError|ManifestError)}
      * @private
      */
     error_: null,
@@ -427,7 +398,8 @@ cr.define('extensions', function() {
      * overlay, and, if possible, will populate the code section of the overlay
      * with the relevant file, load the stack trace, and generate links for
      * opening devtools (the latter two only happen for runtime errors).
-     * @param {RuntimeError} error The error to show in the overlay.
+     * @param {(RuntimeError|ManifestError)} error The error to show in the
+     *     overlay.
      * @param {string} extensionUrl The URL of the extension, in the form
      *     "chrome-extension://<extension_id>".
      */

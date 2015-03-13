@@ -5,9 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_SETTINGS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_EXTENSIONS_EXTENSION_SETTINGS_HANDLER_H_
 
-#include <set>
 #include <string>
-#include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
@@ -21,16 +19,14 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/warning_service.h"
-#include "url/gurl.h"
 
 class ExtensionService;
+class GURL;
 
 namespace base {
-class DictionaryValue;
 class FilePath;
 class ListValue;
 }
@@ -45,8 +41,8 @@ class PrefRegistrySyncable;
 
 namespace extensions {
 class Extension;
+class ExtensionPrefs;
 class ExtensionRegistry;
-class ManagementPolicy;
 
 // Extension Settings UI handler.
 class ExtensionSettingsHandler
@@ -66,18 +62,9 @@ class ExtensionSettingsHandler
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Extension Detail JSON Struct for page. |pages| is injected for unit
-  // testing.
-  // Note: |warning_service| can be NULL in unit tests.
-  base::DictionaryValue* CreateExtensionDetailValue(
-      const Extension* extension,
-      const InspectableViewsFinder::ViewList& pages,
-      const WarningService* warning_service);
-
   void GetLocalizedValues(content::WebUIDataSource* source);
 
  private:
-  friend class ExtensionUITest;
   friend class BrokerDelegate;
 
   // content::WebContentsObserver implementation.
@@ -85,10 +72,6 @@ class ExtensionSettingsHandler
   void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
-
-  // Allows injection for testing by friend classes.
-  ExtensionSettingsHandler(ExtensionService* service,
-                           ManagementPolicy* policy);
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
@@ -143,9 +126,6 @@ class ExtensionSettingsHandler
   // Callback for "repair" message.
   void HandleRepairMessage(const base::ListValue* args);
 
-  // Callback for "enableIncognito" message.
-  void HandleEnableIncognitoMessage(const base::ListValue* args);
-
   // Callback for "enableErrorCollection" message.
   void HandleEnableErrorCollectionMessage(const base::ListValue* args);
 
@@ -170,9 +150,6 @@ class ExtensionSettingsHandler
   // Callback for the "showPath" message.
   void HandleShowPath(const base::ListValue* args);
 
-  // Utility for calling JavaScript window.alert in the page.
-  void ShowAlert(const std::string& message);
-
   // Utility for callbacks that get an extension ID as the sole argument.
   // Returns NULL if the extension isn't active.
   const Extension* GetActiveExtension(const base::ListValue* args);
@@ -188,20 +165,8 @@ class ExtensionSettingsHandler
                            const std::string& error,
                            webstore_install::Result result);
 
-  // Handles the load retry notification sent from
-  // ExtensionService::ReportExtensionLoadError. Attempts to retry loading
-  // extension from |path| if retry is true, otherwise removes |path| from the
-  // vector of currently loading extensions.
-  //
-  // Does nothing if |path| is not a currently loading extension this object is
-  // tracking.
-  void HandleLoadRetryMessage(bool retry, const base::FilePath& path);
-
   // Our model.  Outlives us since it's owned by our containing profile.
   ExtensionService* extension_service_;
-
-  // A convenience member, filled once the extension_service_ is known.
-  ManagementPolicy* management_policy_;
 
   // The id of the extension we are prompting the user about.
   std::string extension_id_prompting_;

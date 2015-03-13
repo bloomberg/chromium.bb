@@ -70,8 +70,8 @@ ErrorConsole::~ErrorConsole() {
 }
 
 // static
-ErrorConsole* ErrorConsole::Get(Profile* profile) {
-  return ExtensionSystem::Get(profile)->error_console();
+ErrorConsole* ErrorConsole::Get(content::BrowserContext* browser_context) {
+  return ExtensionSystem::Get(browser_context)->error_console();
 }
 
 void ErrorConsole::SetReportingForExtension(const std::string& extension_id,

@@ -412,12 +412,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
 
 // Test developerPrivate.getExtensionsInfo.
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
-  // Enable error console for testing.
   ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
-  FeatureSwitch::ScopedOverride error_console_override(
-      FeatureSwitch::error_console(), true);
-  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
-
   const char kName[] = "extension name";
   const char kVersion[] = "1.0.0.1";
   std::string id = crx_file::id_util::GenerateId(kName);
@@ -425,40 +420,18 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
   manifest.Set("name", kName)
           .Set("version", kVersion)
           .Set("manifest_version", 2)
-          .Set("description", "an extension")
-          .Set("permissions", ListBuilder().Append("file://*/*"));
+          .Set("description", "an extension");
   scoped_refptr<const Extension> extension =
       ExtensionBuilder().SetManifest(manifest)
-                        .SetLocation(Manifest::UNPACKED)
-                        .SetPath(data_dir())
+                        .SetLocation(Manifest::INTERNAL)
                         .SetID(id)
                         .Build();
   service()->AddExtension(extension.get());
-  ErrorConsole* error_console = ErrorConsole::Get(profile());
-  error_console->ReportError(
-      make_scoped_ptr(new RuntimeError(
-          extension->id(),
-          false,
-          base::UTF8ToUTF16("source"),
-          base::UTF8ToUTF16("message"),
-          StackTrace(1, StackFrame(1,
-                                   1,
-                                   base::UTF8ToUTF16("source"),
-                                   base::UTF8ToUTF16("function"))),
-          GURL("url"),
-          logging::LOG_ERROR,
-          1,
-          1)));
-  error_console->ReportError(
-      make_scoped_ptr(new ManifestError(extension->id(),
-                                        base::UTF8ToUTF16("message"),
-                                        base::UTF8ToUTF16("key"),
-                                        base::string16())));
 
-  // It's not feasible to validate every field here, because that would be
-  // a duplication of the logic in the method itself. Instead, test a handful
-  // of fields, and, more importantly, check that we return something reasonable
-  // (which is done through the serialization/deserialization that happens).
+  // The test here isn't so much about the generated value (that's tested in
+  // ExtensionInfoGenerator's unittest), but rather just to make sure we can
+  // serialize/deserialize the result - which implicity tests that everything
+  // has a sane value.
   scoped_refptr<UIThreadExtensionFunction> function(
       new api::DeveloperPrivateGetExtensionsInfoFunction());
   EXPECT_TRUE(RunFunction(function, base::ListValue())) << function->GetError();
@@ -472,27 +445,6 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
   scoped_ptr<api::developer_private::ExtensionInfo> info =
       api::developer_private::ExtensionInfo::FromValue(*value);
   ASSERT_TRUE(info);
-  EXPECT_EQ(kName, info->name);
-  EXPECT_EQ(id, info->id);
-  EXPECT_EQ(kVersion, info->version);
-  EXPECT_EQ(api::developer_private::EXTENSION_STATE_ENABLED, info->state);
-  EXPECT_EQ(api::developer_private::EXTENSION_TYPE_EXTENSION, info->type);
-  EXPECT_TRUE(info->file_access.is_enabled);
-  EXPECT_FALSE(info->file_access.is_active);
-  EXPECT_TRUE(info->incognito_access.is_enabled);
-  EXPECT_FALSE(info->incognito_access.is_active);
-  ASSERT_EQ(1u, info->runtime_errors.size());
-  const api::developer_private::RuntimeError& runtime_error =
-      *info->runtime_errors[0];
-  EXPECT_EQ(extension->id(), runtime_error.extension_id);
-  EXPECT_EQ(api::developer_private::ERROR_TYPE_RUNTIME, runtime_error.type);
-  EXPECT_EQ(api::developer_private::ERROR_LEVEL_ERROR,
-            runtime_error.severity);
-  EXPECT_EQ(1u, runtime_error.stack_trace.size());
-  ASSERT_EQ(1u, info->manifest_errors.size());
-  const api::developer_private::ManifestError& manifest_error =
-      *info->manifest_errors[0];
-  EXPECT_EQ(extension->id(), manifest_error.extension_id);
 
   // As a sanity check, also run the GetItemsInfo and make sure it returns a
   // sane value.

@@ -28,7 +28,8 @@ cr.define('extensions', function() {
   /**
    * Creates a new ExtensionError HTMLElement; this is used to show a
    * notification to the user when an error is caused by an extension.
-   * @param {RuntimeError} error The error the element should represent.
+   * @param {(RuntimeError|ManifestError)} error The error the element should
+   *     represent.
    * @param {Element} boundary The boundary for the focus grid.
    * @constructor
    * @extends {cr.ui.FocusRow}
@@ -49,7 +50,8 @@ cr.define('extensions', function() {
     },
 
     /**
-     * @param {RuntimeError} error The error the element should represent
+     * @param {(RuntimeError|ManifestError)} error The error the element should
+     *     represent
      * @param {Element} boundary The boundary for the FocusGrid.
      * @override
      */
@@ -57,12 +59,24 @@ cr.define('extensions', function() {
       cr.ui.FocusRow.prototype.decorate.call(this, boundary);
 
       // Add an additional class for the severity level.
-      if (error.level == 0)
-        this.classList.add('extension-error-severity-info');
-      else if (error.level == 1)
+      if (error.type == chrome.developerPrivate.ErrorType.RUNTIME) {
+        switch (error.severity) {
+          case chrome.developerPrivate.ErrorLevel.LOG:
+            this.classList.add('extension-error-severity-info');
+            break;
+          case chrome.developerPrivate.ErrorLevel.WARN:
+            this.classList.add('extension-error-severity-warning');
+            break;
+          case chrome.developerPrivate.ErrorLevel.ERROR:
+            this.classList.add('extension-error-severity-fatal');
+            break;
+          default:
+            assertNotReached();
+        }
+      } else {
+        // We classify manifest errors as "warnings".
         this.classList.add('extension-error-severity-warning');
-      else
-        this.classList.add('extension-error-severity-fatal');
+      }
 
       var iconNode = document.createElement('img');
       iconNode.className = 'extension-error-icon';
@@ -100,8 +114,8 @@ cr.define('extensions', function() {
 
   /**
    * A variable length list of runtime or manifest errors for a given extension.
-   * @param {Array<Object>} errors The list of extension errors with which
-   *     to populate the list.
+   * @param {Array<(RuntimeError|ManifestError)>} errors The list of extension
+   *     errors with which to populate the list.
    * @constructor
    * @extends {HTMLDivElement}
    */

@@ -550,6 +550,10 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, UpdateExtensionsPage) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       base::Bind(&content::FrameHasSourceUrl,
                  GURL(chrome::kChromeUIExtensionsFrameURL)));
+
+  // We do the first ExecuteScript to serve as a "Run All Pending" hack.
+  EXPECT_TRUE(content::ExecuteScript(frame, "1 == 1;"));
+
   bool is_inactive;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       frame,

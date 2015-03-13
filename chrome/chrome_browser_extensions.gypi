@@ -198,6 +198,8 @@
       'browser/extensions/api/developer_private/developer_private_mangle.h',
       'browser/extensions/api/developer_private/entry_picker.cc',
       'browser/extensions/api/developer_private/entry_picker.h',
+      'browser/extensions/api/developer_private/extension_info_generator.cc',
+      'browser/extensions/api/developer_private/extension_info_generator.h',
       'browser/extensions/api/developer_private/inspectable_views_finder.cc',
       'browser/extensions/api/developer_private/inspectable_views_finder.h',
       'browser/extensions/api/dial/dial_api.cc',

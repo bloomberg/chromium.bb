@@ -4,68 +4,6 @@
 
 <include src="extension_error.js">
 
-/**
- * The type of the extension data object. The definition is based on
- * chrome/browser/ui/webui/extensions/extension_basic_info.cc
- * and
- * chrome/browser/ui/webui/extensions/extension_settings_handler.cc
- *     ExtensionSettingsHandler::CreateExtensionDetailValue()
- * @typedef {{allow_reload: boolean,
- *            allowAllUrls: boolean,
- *            allowFileAccess: boolean,
- *            blacklistText: string,
- *            corruptInstall: boolean,
- *            dependentExtensions: Array,
- *            description: string,
- *            detailsUrl: string,
- *            enableExtensionInfoDialog: boolean,
- *            enable_show_button: boolean,
- *            enabled: boolean,
- *            enabledIncognito: boolean,
- *            errorCollectionEnabled: (boolean|undefined),
- *            hasPopupAction: boolean,
- *            homepageProvided: boolean,
- *            homepageUrl: string,
- *            icon: string,
- *            id: string,
- *            incognitoCanBeEnabled: boolean,
- *            installedByCustodian: boolean,
- *            installWarnings: (Array|undefined),
- *            is_hosted_app: boolean,
- *            is_platform_app: boolean,
- *            isFromStore: boolean,
- *            isUnpacked: boolean,
- *            kioskEnabled: boolean,
- *            kioskOnly: boolean,
- *            locationText: string,
- *            managedInstall: boolean,
- *            manifestErrors: (Array<RuntimeError>|undefined),
- *            name: string,
- *            offlineEnabled: boolean,
- *            optionsOpenInTab: boolean,
- *            optionsPageHref: string,
- *            optionsUrl: string,
- *            order: number,
- *            packagedApp: boolean,
- *            path: (string|undefined),
- *            policyText: (string|undefined),
- *            prettifiedPath: (string|undefined),
- *            recommendedInstall: boolean,
- *            runtimeErrors: (Array<RuntimeError>|undefined),
- *            showAllUrls: boolean,
- *            suspiciousInstall: boolean,
- *            terminated: boolean,
- *            updateRequiredByPolicy: boolean,
- *            version: string,
- *            views: Array<{renderViewId: number, renderProcessId: number,
- *                url: string, incognito: boolean,
- *                type: chrome.developerPrivate.ViewType}>,
- *            wantsErrorCollection: boolean,
- *            wantsFileAccess: boolean,
- *            warnings: (Array|undefined)}}
- */
-var ExtensionData;
-
 ///////////////////////////////////////////////////////////////////////////////
 // ExtensionFocusRow:
 
@@ -246,7 +184,26 @@ cr.define('extensions', function() {
     butterbarShown_: false,
 
     decorate: function() {
-      this.showExtensionNodes_();
+      chrome.developerPrivate.getExtensionsInfo(
+          {includeDisabled: true, includeTerminated: true},
+          function(extensions) {
+        // Sort in order of unpacked vs. packed, followed by name, followed by
+        // id.
+        extensions.sort(function(a, b) {
+          function compare(x, y) {
+            return x < y ? -1 : (x > y ? 1 : 0);
+          }
+          function compareLocation(x, y) {
+            return x.location == chrome.developerPrivate.Location.UNPACKED ?
+                -1 : (x.location == y.location ? 0 : 1);
+          }
+          return compareLocation(a, b) ||
+                 compare(a.name.toLowerCase(), b.name.toLowerCase()) ||
+                 compare(a.id, b.id);
+        });
+        this.extensions_ = extensions;
+        this.showExtensionNodes_();
+      }.bind(this));
     },
 
     getIdQueryParam_: function() {
@@ -269,8 +226,8 @@ cr.define('extensions', function() {
       var seenIds = [];
 
       // Iterate over the extension data and add each item to the list.
-      this.data_.extensions.forEach(function(extension, i) {
-        var nextExt = this.data_.extensions[i + 1];
+      this.extensions_.forEach(function(extension, i) {
+        var nextExt = this.extensions_[i + 1];
         var node = $(extension.id);
         seenIds.push(extension.id);
 
@@ -307,7 +264,7 @@ cr.define('extensions', function() {
       if (idToOpenOptions && $(idToOpenOptions))
         this.showEmbeddedExtensionOptions_(idToOpenOptions, true);
 
-      var noExtensions = this.data_.extensions.length == 0;
+      var noExtensions = this.extensions_.length == 0;
       this.classList.toggle('empty-extension-list', noExtensions);
     },
 
@@ -338,7 +295,7 @@ cr.define('extensions', function() {
     /**
      * Synthesizes and initializes an HTML element for the extension metadata
      * given in |extension|.
-     * @param {!ExtensionData} extension A dictionary of extension metadata.
+     * @param {!ExtensionInfo} extension A dictionary of extension metadata.
      * @param {?Element} nextNode |node| should be inserted before |nextNode|.
      *     |node| will be appended to the end if |nextNode| is null.
      * @private
@@ -363,7 +320,9 @@ cr.define('extensions', function() {
         var butterBar = row.querySelector('.butter-bar');
         var checked = e.target.checked;
         if (!this.butterbarShown_) {
-          butterBar.hidden = !checked || extension.is_hosted_app;
+          butterBar.hidden = !checked ||
+              extension.type ==
+                  chrome.developerPrivate.ExtensionType.HOSTED_APP;
           this.butterbarShown_ = !butterBar.hidden;
         } else {
           butterBar.hidden = true;
@@ -399,7 +358,8 @@ cr.define('extensions', function() {
       // Set an href to get the correct mouse-over appearance (link,
       // footer) - but the actual link opening is done through chrome.send
       // with a preventDefault().
-      row.querySelector('.options-link').href = extension.optionsPageHref;
+      row.querySelector('.options-link').href =
+          extension.optionsPage ? extension.optionsPage.url : '';
       row.setupColumn('.options-link', 'options', 'click', function(e) {
         chrome.send('extensionSettingsOptions', [extension.id]);
         e.preventDefault();
@@ -461,7 +421,7 @@ cr.define('extensions', function() {
       var trashTemplate = $('template-collection').querySelector('.trash');
       var trash = trashTemplate.cloneNode(true);
       trash.title = loadTimeData.getString('extensionUninstall');
-      trash.hidden = extension.managedInstall;
+      trash.hidden = !extension.userMayModify;
       trash.setAttribute('column-type', 'trash');
       trash.addEventListener('click', function(e) {
         trash.classList.add('open');
@@ -506,13 +466,13 @@ cr.define('extensions', function() {
 
     /**
      * Updates an HTML element for the extension metadata given in |extension|.
-     * @param {!ExtensionData} extension A dictionary of extension metadata.
+     * @param {!ExtensionInfo} extension A dictionary of extension metadata.
      * @param {!ExtensionFocusRow} row The node that is being updated.
      * @private
      */
     updateNode_: function(extension, row) {
-      var isActive = extension.enabled && !extension.terminated;
-
+      var isActive =
+          extension.state == chrome.developerPrivate.ExtensionState.ENABLED;
       row.classList.toggle('inactive-extension', !isActive);
 
       // Hack to keep the closure compiler happy about |remove|.
@@ -521,15 +481,15 @@ cr.define('extensions', function() {
       node.classList.remove('policy-controlled', 'may-not-modify',
                             'may-not-remove');
       var classes = [];
-      if (extension.managedInstall) {
+      if (!extension.userMayModify) {
         classes.push('policy-controlled', 'may-not-modify');
       } else if (extension.dependentExtensions.length > 0) {
         classes.push('may-not-remove', 'may-not-modify');
-      } else if (extension.recommendedInstall) {
+      } else if (extension.mustRemainInstalled) {
         classes.push('may-not-remove');
-      } else if (extension.suspiciousInstall ||
-                 extension.corruptInstall ||
-                 extension.updateRequiredByPolicy) {
+      } else if (extension.disableReasons.suspiciousInstall ||
+                 extension.disableReasons.corruptInstall ||
+                 extension.disableReasons.updateRequired) {
         classes.push('may-not-modify');
       }
       row.classList.add.apply(row.classList, classes);
@@ -546,66 +506,71 @@ cr.define('extensions', function() {
             'url(' + extension.icon + '?' +
             extensionReloadedTimestamp[extension.id] + ')';
       } else {
-        item.style.backgroundImage = 'url(' + extension.icon + ')';
+        item.style.backgroundImage = 'url(' + extension.iconUrl + ')';
       }
 
       this.setText_(row, '.extension-title', extension.name);
       this.setText_(row, '.extension-version', extension.version);
-      this.setText_(row, '.location-text', extension.locationText);
-      this.setText_(row, '.blacklist-text', extension.blacklistText);
+      this.setText_(row, '.location-text', extension.locationText || '');
+      this.setText_(row, '.blacklist-text', extension.blacklistText || '');
       this.setText_(row, '.extension-description', extension.description);
 
       // The 'Show Browser Action' button.
       this.updateVisibility_(row, '.show-button',
-                             isActive && extension.enable_show_button);
+                             isActive && extension.actionButtonHidden);
 
       // The 'allow in incognito' checkbox.
       this.updateVisibility_(row, '.incognito-control',
                              isActive && this.data_.incognitoAvailable,
                              function(item) {
         var incognito = item.querySelector('input');
-        incognito.disabled = !extension.incognitoCanBeEnabled;
-        incognito.checked = extension.enabledIncognito;
+        incognito.disabled = !extension.incognitoAccess.isEnabled;
+        incognito.checked = extension.incognitoAccess.isActive;
       });
 
       // Hide butterBar if incognito is not enabled for the extension.
       var butterBar = row.querySelector('.butter-bar');
-      butterBar.hidden = butterBar.hidden || !extension.enabledIncognito;
+      butterBar.hidden =
+          butterBar.hidden || !extension.incognitoAccess.isEnabled;
 
       // The 'collect errors' checkbox. This should only be visible if the
       // error console is enabled - we can detect this by the existence of the
       // |errorCollectionEnabled| property.
-      this.updateVisibility_(row, '.error-collection-control',
-                             isActive && extension.wantsErrorCollection,
-                             function(item) {
-        item.querySelector('input').checked = extension.errorCollectionEnabled;
+      this.updateVisibility_(
+          row, '.error-collection-control',
+          isActive && extension.errorCollection.isEnabled,
+          function(item) {
+        item.querySelector('input').checked =
+            extension.errorCollection.isActive;
       });
 
       // The 'allow on all urls' checkbox. This should only be visible if
       // active script restrictions are enabled. If they are not enabled, no
       // extensions should want all urls.
-      this.updateVisibility_(row, '.all-urls-control',
-                             isActive && extension.showAllUrls, function(item) {
-        item.querySelector('input').checked = extension.allowAllUrls;
+      this.updateVisibility_(
+          row, '.all-urls-control',
+          isActive && extension.runOnAllUrls.isEnabled,
+          function(item) {
+        item.querySelector('input').checked = extension.runOnAllUrls.isActive;
       });
 
       // The 'allow file:// access' checkbox.
       this.updateVisibility_(row, '.file-access-control',
-                             isActive && extension.wantsFileAccess,
+                             isActive && extension.fileAccess.isEnabled,
                              function(item) {
-        item.querySelector('input').checked = extension.allowFileAccess;
+        item.querySelector('input').checked = extension.fileAccess.isActive;
       });
 
       // The 'Options' button or link, depending on its behaviour.
-      var optionsEnabled = extension.enabled && !!extension.optionsUrl;
+      var optionsEnabled = isActive && !!extension.optionsPage;
       this.updateVisibility_(row, '.options-link', optionsEnabled &&
-                             extension.optionsOpenInTab);
+                             extension.optionsPage.openInTab);
       this.updateVisibility_(row, '.options-button', optionsEnabled &&
-                             !extension.optionsOpenInTab);
+                             !extension.optionsPage.openInTab);
 
       // The 'View in Web Store/View Web Site' link.
       var siteLinkEnabled = !!extension.homepageUrl &&
-                            !extension.enableExtensionInfoDialog;
+                            !this.data_.enableAppInfoDialog;
       this.updateVisibility_(row, '.site-link', siteLinkEnabled,
                              function(item) {
         item.href = extension.homepageUrl;
@@ -614,40 +579,48 @@ cr.define('extensions', function() {
                                          'extensionSettingsVisitWebStore');
       });
 
+      var isUnpacked =
+          extension.location == chrome.developerPrivate.Location.UNPACKED;
       // The 'Reload' link.
-      this.updateVisibility_(row, '.reload-link', extension.allow_reload);
+      this.updateVisibility_(row, '.reload-link', isUnpacked);
 
       // The 'Launch' link.
-      this.updateVisibility_(row, '.launch-link', extension.allow_reload &&
-                             extension.is_platform_app);
+      this.updateVisibility_(
+          row, '.launch-link',
+          isUnpacked && extension.type ==
+                            chrome.developerPrivate.ExtensionType.PLATFORM_APP);
 
       // The 'Reload' terminated link.
-      var isTerminated = extension.terminated;
+      var isTerminated =
+          extension.state == chrome.developerPrivate.ExtensionState.TERMINATED;
       this.updateVisibility_(row, '.terminated-reload-link', isTerminated);
 
       // The 'Repair' corrupted link.
-      var canRepair = !isTerminated && extension.corruptInstall &&
-                      extension.isFromStore;
+      var canRepair = !isTerminated &&
+                      extension.disableReasons.corruptInstall &&
+                      extension.location ==
+                          chrome.developerPrivate.Location.FROM_STORE;
       this.updateVisibility_(row, '.corrupted-repair-button', canRepair);
 
       // The 'Enabled' checkbox.
       var isOK = !isTerminated && !canRepair;
       this.updateVisibility_(row, '.enable-checkbox', isOK, function(item) {
-        var enableCheckboxDisabled = extension.managedInstall ||
-                                     extension.suspiciousInstall ||
-                                     extension.corruptInstall ||
-                                     extension.updateRequiredByPolicy ||
-                                     extension.installedByCustodian ||
-                                     extension.dependentExtensions.length > 0;
+        var enableCheckboxDisabled =
+            !extension.userMayModify ||
+            extension.disableReasons.suspiciousInstall ||
+            extension.disableReasons.corruptInstall ||
+            extension.disableReasons.updateRequired ||
+            extension.installedByCustodian ||
+            extension.dependentExtensions.length > 0;
         item.querySelector('input').disabled = enableCheckboxDisabled;
-        item.querySelector('input').checked = extension.enabled;
+        item.querySelector('input').checked = isActive;
       });
 
       // Button for extensions controlled by policy.
       var controlNode = row.querySelector('.enable-controls');
       var indicator =
           controlNode.querySelector('.controlled-extension-indicator');
-      var needsIndicator = isOK && extension.managedInstall;
+      var needsIndicator = isOK && !extension.userMayModify;
 
       if (needsIndicator && !indicator) {
         indicator = new cr.ui.ControlledIndicator();
@@ -670,7 +643,7 @@ cr.define('extensions', function() {
       idLabel.textContent = ' ' + extension.id;
 
       // Then the path, if provided by unpacked extension.
-      this.updateVisibility_(row, '.load-path', extension.isUnpacked,
+      this.updateVisibility_(row, '.load-path', isUnpacked,
                              function(item) {
         item.querySelector('a:first-of-type').textContent =
             ' ' + extension.prettifiedPath;
@@ -679,23 +652,24 @@ cr.define('extensions', function() {
       // Then the 'managed, cannot uninstall/disable' message.
       // We would like to hide managed installed message since this
       // extension is disabled.
-      var isRequired = extension.managedInstall || extension.recommendedInstall;
+      var isRequired =
+          !extension.userMayModify || extension.mustRemainInstalled;
       this.updateVisibility_(row, '.managed-message', isRequired &&
-                             !extension.updateRequiredByPolicy);
+                             !extension.disableReasons.updateRequired);
 
       // Then the 'This isn't from the webstore, looks suspicious' message.
       this.updateVisibility_(row, '.suspicious-install-message', !isRequired &&
-                             extension.suspiciousInstall);
+                             extension.disableReasons.suspiciousInstall);
 
       // Then the 'This is a corrupt extension' message.
       this.updateVisibility_(row, '.corrupt-install-message', !isRequired &&
-                             extension.corruptInstall);
+                             extension.disableReasons.corruptInstall);
 
       // Then the 'An update required by enterprise policy' message. Note that
       // a force-installed extension might be disabled due to being outdated
       // as well.
       this.updateVisibility_(row, '.update-required-message',
-                             extension.updateRequiredByPolicy);
+                             extension.disableReasons.updateRequired);
 
       // The 'following extensions depend on this extension' list.
       var hasDependents = extension.dependentExtensions.length > 0;
@@ -771,11 +745,12 @@ cr.define('extensions', function() {
       });
 
       // The extension warnings (describing runtime issues).
-      this.updateVisibility_(row, '.extension-warnings', !!extension.warnings,
+      this.updateVisibility_(row, '.extension-warnings',
+                             extension.runtimeWarnings.length > 0,
                              function(item) {
         var warningList = item.querySelector('ul');
         warningList.textContent = '';
-        extension.warnings.forEach(function(warning) {
+        extension.runtimeWarnings.forEach(function(warning) {
           var li = document.createElement('li');
           warningList.appendChild(li).innerText = warning;
         });
@@ -792,13 +767,14 @@ cr.define('extensions', function() {
 
       // Install warnings.
       this.updateVisibility_(row, '.install-warnings',
-                             !!extension.installWarnings, function(item) {
+                             extension.installWarnings.length > 0,
+                             function(item) {
         var installWarningList = item.querySelector('ul');
         installWarningList.textContent = '';
         if (extension.installWarnings) {
           extension.installWarnings.forEach(function(warning) {
             var li = document.createElement('li');
-            li.innerText = warning.message;
+            li.innerText = warning;
             installWarningList.appendChild(li);
           });
         }
@@ -890,8 +866,10 @@ cr.define('extensions', function() {
         return;
 
       // Get the extension from the given id.
-      var extension = this.data_.extensions.filter(function(extension) {
-        return extension.enabled && extension.id == extensionId;
+      var extension = this.extensions_.filter(function(extension) {
+        return extension.state ==
+                   chrome.developerPrivate.ExtensionState.ENABLED &&
+               extension.id == extensionId;
       })[0];
 
       if (!extension)
