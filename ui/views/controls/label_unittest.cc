@@ -256,6 +256,24 @@ TEST_F(LabelTest, Accessibility) {
   EXPECT_TRUE(state.HasStateFlag(ui::AX_STATE_READ_ONLY));
 }
 
+TEST_F(LabelTest, TextChangeWithoutLayout) {
+  Label label;
+  label.SetText(ASCIIToUTF16("Example"));
+  label.SetBounds(0, 0, 200, 200);
+
+  gfx::Canvas canvas(gfx::Size(200, 200), 1.0f, true);
+  label.Paint(&canvas, CullSet());
+  EXPECT_EQ(1u, label.lines_.size());
+  EXPECT_EQ(ASCIIToUTF16("Example"), label.lines_[0]->GetDisplayText());
+
+  label.SetText(ASCIIToUTF16("Altered"));
+  // The altered text should be painted even though Layout() or SetBounds() are
+  // not called.
+  label.Paint(&canvas, CullSet());
+  EXPECT_EQ(1u, label.lines_.size());
+  EXPECT_EQ(ASCIIToUTF16("Altered"), label.lines_[0]->GetDisplayText());
+}
+
 TEST_F(LabelTest, EmptyLabelSizing) {
   Label label;
   const gfx::Size expected_size(0, gfx::FontList().GetHeight());

@@ -149,6 +149,7 @@ class VIEWS_EXPORT Label : public View {
  private:
   FRIEND_TEST_ALL_PREFIXES(LabelTest, ResetRenderTextData);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, MultilineSupportedRenderText);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, TextChangeWithoutLayout);
 
   void Init(const base::string16& text, const gfx::FontList& font_list);
 

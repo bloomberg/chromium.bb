@@ -406,6 +406,7 @@ void Label::ResetLayout() {
   InvalidateLayout();
   PreferredSizeChanged();
   SchedulePaint();
+  lines_.clear();
 }
 
 scoped_ptr<gfx::RenderText> Label::CreateRenderText(
