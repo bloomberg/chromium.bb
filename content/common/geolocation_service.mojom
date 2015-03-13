@@ -15,6 +15,6 @@ interface GeolocationService {
   // Position is reported once it changes or immediately (to report the initial
   // position) if this is the first call to QueryNextPosition on this instance.
   // Position updates may be throttled by the service. Overlapping calls to
-  // this method are supported.
+  // this method are prohibited and will be treated as a connection error.
   QueryNextPosition() => (MojoGeoposition geoposition);
 };

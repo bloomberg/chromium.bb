@@ -108,7 +108,13 @@ void GeolocationServiceImpl::SetHighAccuracy(bool high_accuracy) {
 
 void GeolocationServiceImpl::QueryNextPosition(
     const PositionCallback& callback) {
-  position_callbacks_.push_back(callback);
+  if (!position_callback_.is_null()) {
+    DVLOG(1) << "Overlapped call to QueryNextPosition!";
+    OnConnectionError();  // Simulate a connection error.
+    return;
+  }
+
+  position_callback_ = callback;
 
   if (has_position_to_report_)
     ReportCurrentPosition();
@@ -161,14 +167,13 @@ void GeolocationServiceImpl::OnLocationUpdate(const Geoposition& position) {
 
   has_position_to_report_ = true;
 
-  if (!position_callbacks_.empty())
+  if (!position_callback_.is_null())
     ReportCurrentPosition();
 }
 
 void GeolocationServiceImpl::ReportCurrentPosition() {
-  for (const auto& callback : position_callbacks_)
-    callback.Run(current_position_.Clone());
-  position_callbacks_.clear();
+  position_callback_.Run(current_position_.Clone());
+  position_callback_.reset();
   has_position_to_report_ = false;
 }
 

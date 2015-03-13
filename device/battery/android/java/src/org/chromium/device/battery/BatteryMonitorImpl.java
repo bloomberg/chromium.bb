@@ -4,28 +4,29 @@
 
 package org.chromium.device.battery;
 
+import android.util.Log;
+
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojom.device.BatteryMonitor;
 import org.chromium.mojom.device.BatteryStatus;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Android implementation of the battery monitor service defined in
  * device/battery/battery_monitor.mojom.
  */
 public class BatteryMonitorImpl implements BatteryMonitor {
+
+    private static final String TAG = "BatteryMonitorImpl";
+
     // Factory that created this instance and notifies it about battery status changes.
     private final BatteryMonitorFactory mFactory;
-    private final List<QueryNextStatusResponse> mCallbacks;
+    private QueryNextStatusResponse mCallback;
     private BatteryStatus mStatus;
     private boolean mHasStatusToReport;
     private boolean mSubscribed;
 
     public BatteryMonitorImpl(BatteryMonitorFactory batteryMonitorFactory) {
         mFactory = batteryMonitorFactory;
-        mCallbacks = new ArrayList<QueryNextStatusResponse>();
         mHasStatusToReport = false;
         mSubscribed = true;
     }
@@ -49,7 +50,13 @@ public class BatteryMonitorImpl implements BatteryMonitor {
 
     @Override
     public void queryNextStatus(QueryNextStatusResponse callback) {
-        mCallbacks.add(callback);
+        if (mCallback != null) {
+            Log.e(TAG, "Overlapped call to queryNextStatus!");
+            unsubscribe();
+            return;
+        }
+
+        mCallback = callback;
 
         if (mHasStatusToReport) {
             reportStatus();
@@ -60,16 +67,14 @@ public class BatteryMonitorImpl implements BatteryMonitor {
         mStatus = batteryStatus;
         mHasStatusToReport = true;
 
-        if (!mCallbacks.isEmpty()) {
+        if (mCallback != null) {
             reportStatus();
         }
     }
 
     void reportStatus() {
-        for (QueryNextStatusResponse callback : mCallbacks) {
-            callback.call(mStatus);
-        }
-        mCallbacks.clear();
+        mCallback.call(mStatus);
+        mCallback = null;
         mHasStatusToReport = false;
     }
 }

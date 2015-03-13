@@ -5,6 +5,7 @@
 #include "device/battery/battery_monitor_impl.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 
 namespace device {
 
@@ -29,7 +30,12 @@ BatteryMonitorImpl::~BatteryMonitorImpl() {
 
 void BatteryMonitorImpl::QueryNextStatus(
     const BatteryStatusCallback& callback) {
-  callbacks_.push_back(callback);
+  if (!callback_.is_null()) {
+    DVLOG(1) << "Overlapped call to QueryNextStatus!";
+    delete this;
+    return;
+  }
+  callback_ = callback;
 
   if (status_to_report_)
     ReportStatus();
@@ -42,14 +48,13 @@ void BatteryMonitorImpl::DidChange(const BatteryStatus& battery_status) {
   status_ = battery_status;
   status_to_report_ = true;
 
-  if (!callbacks_.empty())
+  if (!callback_.is_null())
     ReportStatus();
 }
 
 void BatteryMonitorImpl::ReportStatus() {
-  for (const auto& callback : callbacks_)
-    callback.Run(status_.Clone());
-  callbacks_.clear();
+  callback_.Run(status_.Clone());
+  callback_.reset();
 
   status_to_report_ = false;
 }

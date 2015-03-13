@@ -57,8 +57,8 @@ class GeolocationServiceImpl : public mojo::InterfaceImpl<GeolocationService> {
   // position updates.
   base::Closure update_callback_;
 
-  // The queue of callbacks passed to QueryNextPosition.
-  std::vector<PositionCallback> position_callbacks_;
+  // The callback passed to QueryNextPosition.
+  PositionCallback position_callback_;
 
   // Valid iff SetOverride() has been called and ClearOverride() has not
   // subsequently been called.

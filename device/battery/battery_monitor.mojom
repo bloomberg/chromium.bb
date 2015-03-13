@@ -10,6 +10,6 @@ interface BatteryMonitor {
   // Battery status is reported once it changes or immediately if this is the
   // first call to QueryNextStatus on this instance. QueryNextStatus calls may
   // be throttled by the service. Overlapping calls to QueryNextStatus are
-  // supported.
+  // prohibited and will be treated as a connection error.
   QueryNextStatus() => (BatteryStatus status);
 };
