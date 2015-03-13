@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
@@ -835,6 +836,12 @@ void RenderWidgetCompositor::RequestNewOutputSurface() {
   // the CreateOutputSurface task.
   if (widget_->host_closing())
     return;
+
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/466870
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466870 RenderWidgetCompositor::RequestNewOutputSurface"));
 
   bool fallback =
       num_failed_recreate_attempts_ >= OUTPUT_SURFACE_RETRIES_BEFORE_FALLBACK;
