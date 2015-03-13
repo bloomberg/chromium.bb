@@ -56,12 +56,14 @@ const char* const kPublicSessionWhitelist[] = {
     "ekgadegabdkcbkodfbgidncffijbghhl",  // Duolingo demo
     "iddohohhpmajlkbejjjcfednjnhlnenk",  // Evernote demo
     "bjdhhokmhgelphffoafoejjmlfblpdha",  // Gmail demo
+    "nldmakcnfaflagmohifhcihkfgcbmhph",  // Gmail offline demo
     "mdhnphfgagkpdhndljccoackjjhghlif",  // Google Drive demo
     "dondgdlndnpianbklfnehgdhkickdjck",  // Google Keep demo
     "amfoiggnkefambnaaphodjdmdooiinna",  // Google Play Movie and TV demo
     "fgjnkhlabjcaajddbaenilcmpcidahll",  // Google+ demo
     "ifpkhncdnjfipfjlhfidljjffdgklanh",  // Google+ Photos demo
     "cgmlfbhkckbedohgdepgbkflommbfkep",  // Hangouts.app demo
+    "ndlgnmfmgpdecjgehbcejboifbbmlkhp",  // Hash demo
     "edhhaiphkklkcfcbnlbpbiepchnkgkpn",  // Helper.extension demo
     "jckncghadoodfbbbmbpldacojkooophh",  // Journal demo
     "diehajhcjifpahdplfdkhiboknagmfii",  // Kindle demo
@@ -80,10 +82,12 @@ const char* const kPublicSessionWhitelist[] = {
     "aleodiobpjillgfjdkblghiiaegggmcm",  // Quickoffice demo
     "nifkmgcdokhkjghdlgflonppnefddien",  // Sheets demo
     "hdmobeajeoanbanmdlabnbnlopepchip",  // Slides demo
+    "ikmidginfdcbojdbmejkeakncgdbmonc",  // Soundtrap demo
     "dgohlccohkojjgkkfholmobjjoledflp",  // Spotify demo
     "dhmdaeekeihmajjnmichlhiffffdbpde",  // Store.app demo
     "onklhlmbpfnmgmelakhgehkfdmkpmekd",  // Todoist demo
     "jeabmjjifhfcejonjjhccaeigpnnjaak",  // TweetDeck demo
+    "gnckahkflocidcgjbeheneogeflpjien",  // Vine demo
     "pdckcbpciaaicoomipamcabpdadhofgh",  // Weatherbug demo
     "biliocemfcghhioihldfdmkkhnofcgmb",  // Webcam Toy demo
     "bhfoghflalnnjfcfkaelngenjgjjhapk",  // Wevideo demo
