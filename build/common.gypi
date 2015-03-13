@@ -1518,7 +1518,7 @@
         'dont_embed_build_metadata%': 0,
       }],
       # Enable the Syzygy optimization step for the official builds.
-      ['OS=="win" and buildtype=="Official" and syzyasan!=1', {
+      ['OS=="win" and buildtype=="Official" and syzyasan!=1 and clang!=1', {
         'syzygy_optimize%': 1,
       }, {
         'syzygy_optimize%': 0,
