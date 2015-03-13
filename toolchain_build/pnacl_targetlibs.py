@@ -704,8 +704,7 @@ def TranslatorLibs(arch, is_canonical):
                   ['SRC_DIR=' + command.path.join('%(abs_compiler_rt_src)s',
                                                   'lib', 'builtins'),
                    'ARCH=' + arch,
-                   'CFLAGS=-arch ' + arch + ' -DPNACL_' +
-                    arch.replace('-', '_') + ' --pnacl-allow-translate -O3 ' +
+                   'CFLAGS=-arch ' + arch + ' --pnacl-allow-translate -O3 ' +
                    NewlibIsystemCflags('le32')]),
               command.Copy('libgcc.a', os.path.join('%(output)s', 'libgcc.a')),
           ],

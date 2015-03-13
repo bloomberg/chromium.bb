@@ -33,7 +33,8 @@ if env.Bit('bitcode'):
 cpp11_envs = {}
 for lib in cpp11_libs:
   cpp11_envs[lib] = env.Clone()
-  cpp11_envs[lib].Append(CCFLAGS=['-std=c++11', '-stdlib=' + lib])
+  # TODO(jfb): Change this to -std=c++11 when it's properly supported.
+  cpp11_envs[lib].Append(CCFLAGS=['-std=gnu++11', '-stdlib=' + lib])
   cpp11_envs[lib].Append(LINKFLAGS=['-stdlib=' + lib])
   if lib == 'libstdc++':
     # c++ is added to NONIRT_LIBS for clang to ensure that its dependence on
@@ -109,6 +110,8 @@ if env.Bit('bitcode') or env.Bit('nacl_clang'):
 if env.Bit('bitcode') or env.Bit('nacl_clang'):
   AddIntrinsicTest(env, 'llvm_bitmanip_intrinsics.c', '0',
                    golden_file=env.File('llvm_bitmanip_intrinsics.stdout'))
+  AddIntrinsicTest(cpp11_envs['libc++'], 'overflow.cc', '0',
+                   golden_file=env.File('overflow.stdout'))
   # The test depends on the llvm.fabs intrinsic which was only allowed
   # with feature version 12.
   if env['TOOLCHAIN_FEATURE_VERSION'] >= 12:
