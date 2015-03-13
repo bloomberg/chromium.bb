@@ -13,6 +13,7 @@
       'dependencies': [
         'alt',
         'caretbrowsing',
+        'colorenhancer',
         'highcontrast',
         'longdesc',
       ]
@@ -93,6 +94,41 @@
           'variables': {
             'grit_grd_file': 'strings/accessibility_extensions_strings.grd',
             'grit_out_dir': '<(dest_dir)/caretbrowsing',
+            # We don't generate any RC files, so no resource_ds file is needed.
+            'grit_resource_ids': '',
+          },
+          'includes': [ '../../../build/grit_action.gypi' ],
+        },
+      ],
+    },
+    {
+      'target_name': 'colorenhancer',
+      'type': 'none',
+      'copies': [
+        {
+          'destination': '<(dest_dir)/colorenhancer',
+          'files': [
+            'colorenhancer/res/cvd-128.png',
+            'colorenhancer/res/cvd-16.png',
+            'colorenhancer/res/cvd-19.png',
+            'colorenhancer/res/cvd-38.png',
+            'colorenhancer/res/cvd-48.png',
+            'colorenhancer/res/cvd.css',
+            'colorenhancer/manifest.json',
+            'colorenhancer/src/background.js',
+            'colorenhancer/src/common.js',
+            'colorenhancer/src/cvd.js',
+            'colorenhancer/src/popup.html',
+            'colorenhancer/src/popup.js',
+          ]
+        }
+      ],
+      'actions': [
+        {
+          'action_name': 'colorenhancer_strings',
+          'variables': {
+            'grit_grd_file': 'strings/accessibility_extensions_strings.grd',
+            'grit_out_dir': '<(dest_dir)/colorenhancer',
             # We don't generate any RC files, so no resource_ds file is needed.
             'grit_resource_ids': '',
           },

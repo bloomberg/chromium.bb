@@ -259,6 +259,36 @@
         When Caret Browsing is enabled:
       </message>
 
+      <!-- Color Enhancer extension -->
+
+      <message desc="The title of the application, displayed in the web store." name="IDS_COLOR_ENHANCER_APPNAME">
+        Color Vision Enhancer
+      </message>
+      <message desc="The description of the application, displayed in the web store." name="IDS_COLOR_ENHANCER_APPDESC">
+        A customizable color filter applied to webpages to improve color perception.
+      </message>
+      <message desc="Title for a slider that determines how much to rotate the color space." name="IDS_COLOR_ENHANCER_ADJUSTMENT_FACTOR">
+        Adjustment Factor
+      </message>
+      <message desc="Title for a slider that determines by how much the color should be filtered." name="IDS_COLOR_ENHANCER_DEGREE">
+        Degree
+      </message>
+      <message desc="Title for a dropdown selecting between colors to enhance." name="IDS_COLOR_ENHANCER_TYPE_CHOICE">
+        Improve perception for:
+      </message>
+      <message desc="Choice to enhancing the red color." name="IDS_COLOR_ENHANCER_TYPE_RED">
+        Red
+      </message>
+      <message desc="Choice to enhancing the green color." name="IDS_COLOR_ENHANCER_TYPE_GREEN">
+        Green
+      </message>
+      <message desc="Choice to enhancing the blue color." name="IDS_COLOR_ENHANCER_TYPE_BLUE">
+        Blue
+      </message>
+      <message desc="Title for button that will apply these settings to all currently open websites." name="IDS_COLOR_ENHANCER_RESET">
+        Reset all sites
+      </message>
+
     </messages>
   </release>
 </grit>

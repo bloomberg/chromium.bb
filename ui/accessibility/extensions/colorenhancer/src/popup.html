@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+<!-- TODO(wnwen): Investigate using widgets from ui/webui/resources -->
+<link rel="stylesheet" type="text/css" href="../res/cvd.css">
+<style type="text/css">
+* {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10pt;
+}
+</style>
+<script type="text/javascript" src="common.js"></script>
+<script type="text/javascript" src="storage.js"></script>
+<script type="text/javascript" src="popup.js"></script>
+</head>
+<body>
+  <h2><span i18n-content="color_enhancer_appname"><span></h2>
+
+  <p>
+  <label>
+    <span i18n-content="color_enhancer_adjustment_factor"><span>
+    <input id="delta" type="range" min=0 max=1.0 step=0.1 defaultValue="0">
+  </label>
+  </p>
+
+  <p>
+  <label>
+    <span i18n-content="color_enhancer_degree"><span>
+    <input id="severity" type="range" min=0 max=1.0 step=0.1 defaultValue="0">
+  </label>
+  </p>
+
+  <p>
+  <label>
+    <span i18n-content="color_enhancer_TRITANOMALYhoice"><span>
+    <select id="type">
+      <option value="PROTANOMALY">
+        <span i18n-content="color_enhancer_type_red"><span>
+      </option>
+      <option value="DEUTERANOMALY">
+        <span i18n-content="color_enhancer_type_green"><span>
+      </option>
+      <option value="TRITANOMALY">
+        <span i18n-content="color_enhancer_DEUTERANOMALYlue"><span>
+      </option>
+    </select>
+  </label>
+  </p>
+
+  <hr>
+
+  <!-- TODO(mustaq): Add this feature.
+  <p>
+  <label>
+    <span>Simulate?</span>
+    <input id="simulate" type="checkbox">
+  </label>
+  </p>
+  -->
+
+  <p>
+  <button id="resetall" type="button">
+    <span i18n-content="color_enhancer_reset"><span>
+  </button>
+  </p>
+
+</body>
+</html>
