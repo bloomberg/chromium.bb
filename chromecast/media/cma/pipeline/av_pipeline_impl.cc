@@ -45,8 +45,10 @@ AvPipelineImpl::AvPipelineImpl(
       enable_time_update_(false),
       pending_time_update_task_(false),
       media_keys_(NULL),
-      media_keys_callback_id_(kNoCallbackId) {
+      media_keys_callback_id_(kNoCallbackId),
+      weak_factory_(this) {
   DCHECK(media_component_device);
+  weak_this_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
 }
 
@@ -71,7 +73,7 @@ void AvPipelineImpl::SetCodedFrameProvider(
           frame_provider.Pass(),
           max_buffer_size,
           max_frame_size,
-          base::Bind(&AvPipelineImpl::OnFrameBuffered, this)));
+          base::Bind(&AvPipelineImpl::OnFrameBuffered, weak_this_)));
 }
 
 void AvPipelineImpl::SetClient(const AvPipelineClient& client) {
@@ -85,7 +87,7 @@ bool AvPipelineImpl::Initialize() {
   DCHECK_EQ(state_, kUninitialized);
 
   MediaComponentDevice::Client client;
-  client.eos_cb = base::Bind(&AvPipelineImpl::OnEos, this);
+  client.eos_cb = base::Bind(&AvPipelineImpl::OnEos, weak_this_);
   media_component_device_->SetClient(client);
   if (!media_component_device_->SetState(MediaComponentDevice::kStateIdle))
     return false;
@@ -133,7 +135,7 @@ bool AvPipelineImpl::StartPlayingFrom(
   enable_feeding_ = true;
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, this));
+      base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, weak_this_));
 
   return true;
 }
@@ -196,11 +198,13 @@ void AvPipelineImpl::SetCdm(BrowserCdmCast* media_keys) {
     media_keys_ = media_keys;
     media_keys_callback_id_ = media_keys_->RegisterPlayer(
         ::media::BindToCurrentLoop(
-            base::Bind(&AvPipelineImpl::OnCdmStateChanged, this)),
+            base::Bind(&AvPipelineImpl::OnCdmStateChanged, weak_this_)),
         // Note: this callback gets invoked in ~BrowserCdmCast. Posting
         // OnCdmDestroyed to the media thread results in a race condition
         // with media_keys_ accesses. This callback must run synchronously,
         // otherwise media_keys_ access might occur after it is deleted.
+        // It cannot use the weak-ptr reference, since it's invoked on the UI
+        // thread.
         base::Bind(&AvPipelineImpl::OnCdmDestroyed, this));
   }
 }
@@ -225,7 +229,7 @@ void AvPipelineImpl::FetchBufferIfNeeded() {
 
   pending_read_ = true;
   frame_provider_->Read(
-      base::Bind(&AvPipelineImpl::OnNewFrame, this));
+      base::Bind(&AvPipelineImpl::OnNewFrame, weak_this_));
 }
 
 void AvPipelineImpl::OnNewFrame(
@@ -243,7 +247,7 @@ void AvPipelineImpl::OnNewFrame(
 
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, this));
+      base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, weak_this_));
 }
 
 void AvPipelineImpl::ProcessPendingBuffer() {
@@ -254,7 +258,7 @@ void AvPipelineImpl::ProcessPendingBuffer() {
   if (!pending_buffer_.get() && !pending_read_) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
-        base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, this));
+        base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, weak_this_));
     return;
   }
 
@@ -308,7 +312,7 @@ void AvPipelineImpl::ProcessPendingBuffer() {
   MediaComponentDevice::FrameStatus status = media_component_device_->PushFrame(
       decrypt_context,
       pending_buffer_,
-      base::Bind(&AvPipelineImpl::OnFramePushed, this));
+      base::Bind(&AvPipelineImpl::OnFramePushed, weak_this_));
   pending_buffer_ = scoped_refptr<DecoderBufferBase>();
 
   pending_push_ = (status == MediaComponentDevice::kFramePending);
@@ -327,7 +331,7 @@ void AvPipelineImpl::OnFramePushed(MediaComponentDevice::FrameStatus status) {
   }
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(&AvPipelineImpl::ProcessPendingBuffer, this));
+      base::Bind(&AvPipelineImpl::ProcessPendingBuffer, weak_this_));
 }
 
 void AvPipelineImpl::OnCdmStateChanged() {

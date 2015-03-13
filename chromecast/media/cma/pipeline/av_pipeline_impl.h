@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cma/backend/media_component_device.h"
@@ -166,6 +167,9 @@ class AvPipelineImpl : public base::RefCountedThreadSafe<AvPipelineImpl> {
   base::Lock media_keys_lock_;
   BrowserCdmCast* media_keys_;
   int media_keys_callback_id_;
+
+  base::WeakPtr<AvPipelineImpl> weak_this_;
+  base::WeakPtrFactory<AvPipelineImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AvPipelineImpl);
 };
