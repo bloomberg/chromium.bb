@@ -116,10 +116,9 @@ MockTabletEventConverterEvdev::MockTabletEventConverterEvdev(
   if (pipe(fds))
     PLOG(FATAL) << "failed pipe";
 
-  DCHECK(SetNonBlocking(fds[0]) == 0)
-      << "SetNonBlocking for pipe fd[0] failed, errno: " << errno;
-  DCHECK(SetNonBlocking(fds[1]) == 0)
-      << "SetNonBlocking for pipe fd[0] failed, errno: " << errno;
+  EXPECT_FALSE(SetNonBlocking(fds[0]) || SetNonBlocking(fds[1]))
+    << "failed to set non-blocking: " << strerror(errno);
+
   read_pipe_ = fds[0];
   write_pipe_ = fds[1];
 }
