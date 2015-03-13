@@ -467,7 +467,22 @@ CSSParserToken CSSTokenizer::consumeIdentLikeToken()
 // http://dev.w3.org/csswg/css-syntax/#consume-a-string-token
 CSSParserToken CSSTokenizer::consumeStringTokenUntil(UChar endingCodePoint)
 {
-    // FIXME: Should we avoid allocations like consumeName?
+    // Strings without escapes get handled without allocations
+    for (unsigned size = 0; ; size++) {
+        UChar cc = m_input.peek(size);
+        if (cc == endingCodePoint || cc == kEndOfFileMarker) {
+            unsigned startOffset = m_input.offset();
+            m_input.advance(size + (cc == endingCodePoint));
+            return CSSParserToken(StringToken, m_input.rangeAsCSSParserString(startOffset, size));
+        }
+        if (isNewLine(cc)) {
+            m_input.advance(size);
+            return CSSParserToken(BadStringToken);
+        }
+        if (cc == '\\')
+            break;
+    }
+
     StringBuilder output;
     while (true) {
         UChar cc = consume();
@@ -535,8 +550,20 @@ static bool isNonPrintableCodePoint(UChar cc)
 // http://dev.w3.org/csswg/css-syntax/#consume-url-token
 CSSParserToken CSSTokenizer::consumeUrlToken()
 {
-    // FIXME: Should we avoid allocations like consumeName?
     consumeUntilNonWhitespace();
+
+    // URL tokens without escapes get handled without allocations
+    for (unsigned size = 0; ; size++) {
+        UChar cc = m_input.peek(size);
+        if (cc == ')' || cc == kEndOfFileMarker) {
+            unsigned startOffset = m_input.offset();
+            m_input.advance(size + (cc == ')'));
+            return CSSParserToken(UrlToken, m_input.rangeAsCSSParserString(startOffset, size));
+        }
+        if (cc == '\\' || cc == '"' || cc == '\'' || cc == '(' || isNonPrintableCodePoint(cc) || isHTMLSpace(cc))
+            break;
+    }
+
     StringBuilder result;
     while (true) {
         UChar cc = consume();
