@@ -137,6 +137,9 @@ source_set("lib") {
                         ".",
                         "//chrome")
 
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
   # Also compile the generated version files.
   sources += get_target_outputs(":embed_version_in_cpp")
 
