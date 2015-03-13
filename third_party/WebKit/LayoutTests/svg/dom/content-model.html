@@ -27,24 +27,17 @@
         for (var attr in SvgTags[tag].needAttr)
           node.setAttribute(attr, SvgTags[tag].needAttr[attr]);
 
-        var requiredChildren = SvgTags[tag].needChld;
-        if (requiredChildren) {
-          for (var i = 0; i < requiredChildren.length; i++)
-            createValidNode(requiredChildren[i], node, false);
-        }
+        var requiredChildren = SvgTags[tag].needChild || [];
+        for (var childTag of requiredChildren)
+          createValidNode(childTag, node, false);
 
         return node;
       }
 
       function expandClasses(tags) {
         var expandedTags = [];
-        for (var i = 0; i < tags.length; i++) {
-          if (SvgTagClasses[tags[i]])
-              expandedTags = expandedTags.concat(SvgTagClasses[tags[i]]);
-          else
-            expandedTags.push(tags[i]);
-        }
-
+        for (var tag of tags)
+          Array.prototype.push.apply(expandedTags, SvgTagClasses[tag] || [tag]);
         return expandedTags;
       }
 
@@ -105,8 +98,8 @@
       description('This test validates renderer instantiation against the SVG content model.');
 
       validateTag('filter', [
-        // http://www.w3.org/TR/SVG/filters.html#FilterElement
-        'CLASS_DESCRIPTIVE', 'CLASS_FILTER_PRIMITIVE', 'animate', 'feDropShadow', 'set'
+        // http://dev.w3.org/fxtf/filters/#FilterElement
+        'CLASS_DESCRIPTIVE', 'CLASS_FILTER_PRIMITIVE', 'animate', 'set'
       ]);
     </script>
   </body>
