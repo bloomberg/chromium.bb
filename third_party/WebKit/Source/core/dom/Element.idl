@@ -96,12 +96,12 @@
     readonly attribute long clientWidth;
     readonly attribute long clientHeight;
     // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlelement-interface
-    // FIXME: offset* should be on HTMLElement.
-    [ImplementedAs=offsetParentForBindings, PerWorldBindings] readonly attribute Element? offsetParent;
-    readonly attribute long offsetTop;
-    readonly attribute long offsetLeft;
-    readonly attribute long offsetWidth;
-    readonly attribute long offsetHeight;
+    // FIXME: offset* should only be on HTMLElement.
+    [MeasureAs=ElementOffsetParent, ImplementedAs=offsetParentForBindings, PerWorldBindings] readonly attribute Element? offsetParent;
+    [MeasureAs=ElementOffsetTop] readonly attribute long offsetTop;
+    [MeasureAs=ElementOffsetLeft] readonly attribute long offsetLeft;
+    [MeasureAs=ElementOffsetWidth] readonly attribute long offsetWidth;
+    [MeasureAs=ElementOffsetHeight] readonly attribute long offsetHeight;
 
     // CSS Object Model (CSSOM)
     // http://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface

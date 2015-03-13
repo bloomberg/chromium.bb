@@ -43,6 +43,14 @@ interface HTMLElement : Element {
     [CustomElementCallbacks, RaisesException=Setter] attribute DOMString contentEditable;
     readonly attribute boolean isContentEditable;
 
+    // CSSOM View Module
+    // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlelement-interface
+    [ImplementedAs=offsetParentForBindings, PerWorldBindings] readonly attribute Element? offsetParent;
+    readonly attribute long offsetTop;
+    readonly attribute long offsetLeft;
+    readonly attribute long offsetWidth;
+    readonly attribute long offsetHeight;
+
     // Input Method Editor API
     // https://dvcs.w3.org/hg/ime-api/raw-file/default/Overview.html#the-inputmethodcontext-property
     [RuntimeEnabled=IMEAPI] readonly attribute InputMethodContext? inputMethodContext;

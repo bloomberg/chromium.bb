@@ -1762,6 +1762,11 @@ interface HTMLElement
     getter inputMethodContext
     getter isContentEditable
     getter lang
+    getter offsetHeight
+    getter offsetLeft
+    getter offsetParent
+    getter offsetTop
+    getter offsetWidth
     getter onabort
     getter onautocomplete
     getter onautocompleteerror

@@ -636,6 +636,11 @@ public:
         V8AnimationPlayer_Cancel_Method = 699,
         V8AnimationPlayer_Onfinish_AttributeGetter = 700,
         V8AnimationPlayer_Onfinish_AttributeSetter = 701,
+        ElementOffsetParent = 702,
+        ElementOffsetTop = 703,
+        ElementOffsetLeft = 704,
+        ElementOffsetWidth = 705,
+        ElementOffsetHeight = 706,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
