@@ -2193,6 +2193,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableTimeZoneTrackingOption)
   },
+  {
+    "disable-webview-signin-flow",
+    IDS_FLAGS_DISABLE_WEBVIEW_SIGNIN_FLOW_NAME,
+    IDS_FLAGS_DISABLE_WEBVIEW_SIGNIN_FLOW_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableWebviewSigninFlow)
+  },
 #endif  // defined(OS_CHROMEOS)
   {
     "enable-data-reduction-proxy-lo-fi",

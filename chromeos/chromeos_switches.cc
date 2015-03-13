@@ -329,6 +329,9 @@ const char kEnableCaptivePortalBypassProxyOption[] =
 const char kDisableTimeZoneTrackingOption[] =
     "disable-timezone-tracking-option";
 
+// Disable new GAIA sign-in flow.
+const char kDisableWebviewSigninFlow[] = "disable-webview-signin-flow";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }

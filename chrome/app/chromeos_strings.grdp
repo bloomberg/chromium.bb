@@ -6083,6 +6083,12 @@ All users must sign out to continue.
   <message name="IDS_FLAGS_DISABLE_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Description for the flag to disable user setting to automatically update timezone by user geolocation.">
     If set, automatic timezone update by the current geolocation is turned off.
   </message>
+  <message name="IDS_FLAGS_DISABLE_WEBVIEW_SIGNIN_FLOW_NAME" desc="Title for the flag to disable the new WebView-based sign-in flow.">
+    Disable WebView-based sign-in flow
+  </message>
+  <message name="IDS_FLAGS_DISABLE_WEBVIEW_SIGNIN_FLOW_DESCRIPTION" desc="Description for the flag to disable the new WebView-based sign-in flow.">
+    If set, sign-in will be performed using the old GAIA flow instead of the new WebView-based one.
+  </message>
   <message name="IDS_OPTIONS_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Label for checkbox to allow automatic timezone update by user geolocation.">
     Set time zone automatically using your location
   </message>
