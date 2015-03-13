@@ -68,6 +68,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   typedef IDMap<ServiceWorkerProviderHost, IDMapOwnPointer> ProviderMap;
   typedef IDMap<ProviderMap, IDMapOwnPointer> ProcessToProviderMap;
 
+  using ProviderByClientUUIDMap =
+      std::map<std::string, ServiceWorkerProviderHost*>;
+
   // Directory for ServiceWorkerStorage and ServiceWorkerCacheManager.
   static const base::FilePath::CharType kServiceWorkerDirectory[];
 
@@ -145,6 +148,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void RemoveProviderHost(int process_id, int provider_id);
   void RemoveAllProviderHostsForProcess(int process_id);
   scoped_ptr<ProviderHostIterator> GetProviderHostIterator();
+
+  // Maintains a map from Client UUID to ProviderHost.
+  // (Note: instead of maintaining 2 maps we might be able to uniformly use
+  // UUID instead of process_id+provider_id elsewhere. For now I'm leaving
+  // these as provider_id is deeply wired everywhere)
+  void RegisterClientIDForProviderHost(
+      const std::string& client_uuid,
+      ServiceWorkerProviderHost* provider_host);
+  void UnregisterClientIDForProviderHost(const std::string& client_uuid);
 
   // A child process of |source_process_id| may be used to run the created
   // worker for initial installation.
@@ -231,6 +243,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // Bind() to hold a reference to |wrapper_| until |this| is fully destroyed.
   ServiceWorkerContextWrapper* wrapper_;
   scoped_ptr<ProcessToProviderMap> providers_;
+  scoped_ptr<ProviderByClientUUIDMap> provider_by_uuid_;
   scoped_ptr<ServiceWorkerStorage> storage_;
   scoped_ptr<ServiceWorkerCacheStorageManager> cache_manager_;
   scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;

@@ -312,8 +312,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   friend class ServiceWorkerVersionBrowserTest;
 
   typedef ServiceWorkerVersion self;
-  typedef std::map<ServiceWorkerProviderHost*, int> ControlleeMap;
-  typedef IDMap<ServiceWorkerProviderHost> ControlleeByIDMap;
 
   enum PingState { NOT_PINGING, PINGING, PING_TIMED_OUT };
 
@@ -371,7 +369,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                      int render_process_id,
                      int render_frame_id);
   void OnOpenWindowFinished(int request_id,
-                            int client_id,
+                            const std::string& client_uuid,
                             const ServiceWorkerClientInfo& client_info);
 
   void OnSetCachedMetadata(const GURL& url, const std::vector<char>& data);
@@ -379,17 +377,17 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnClearCachedMetadata(const GURL& url);
   void OnClearCachedMetadataFinished(int64 callback_id, int result);
 
-  void OnPostMessageToDocument(
-      int client_id,
+  void OnPostMessageToClient(
+      const std::string& client_uuid,
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports);
-  void OnFocusClient(int request_id, int client_id);
+  void OnFocusClient(int request_id, const std::string& client_uuid);
   void OnSkipWaiting(int request_id);
   void OnClaimClients(int request_id);
   void OnPongFromWorker();
 
   void OnFocusClientFinished(int request_id,
-                             int client_id,
+                             const std::string& client_uuid,
                              const ServiceWorkerClientInfo& client);
 
   void DidSkipWaiting(int request_id);
@@ -449,8 +447,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   std::set<const ServiceWorkerURLRequestJob*> streaming_url_request_jobs_;
 
-  ControlleeMap controllee_map_;
-  ControlleeByIDMap controllee_by_id_;
+  std::map<std::string, ServiceWorkerProviderHost*> controllee_map_;
   // Will be null while shutting down.
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ObserverList<Listener> listeners_;

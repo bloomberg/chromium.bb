@@ -10,8 +10,7 @@
 namespace content {
 
 ServiceWorkerClientInfo::ServiceWorkerClientInfo()
-  : client_id(kInvalidServiceWorkerClientId),
-    page_visibility_state(blink::WebPageVisibilityStateLast),
+  : page_visibility_state(blink::WebPageVisibilityStateLast),
     is_focused(false),
     frame_type(REQUEST_CONTEXT_FRAME_TYPE_LAST),
     client_type(blink::WebServiceWorkerClientTypeLast) {
@@ -23,8 +22,7 @@ ServiceWorkerClientInfo::ServiceWorkerClientInfo(
     const GURL& url,
     RequestContextFrameType frame_type,
     blink::WebServiceWorkerClientType client_type)
-    : client_id(kInvalidServiceWorkerClientId),
-      page_visibility_state(page_visibility_state),
+    : page_visibility_state(page_visibility_state),
       is_focused(is_focused),
       url(url),
       frame_type(frame_type),
@@ -40,7 +38,7 @@ bool ServiceWorkerClientInfo::IsEmpty() const {
 }
 
 bool ServiceWorkerClientInfo::IsValid() const {
-  return !IsEmpty() && client_id != kInvalidServiceWorkerClientId;
+  return !IsEmpty() && !client_uuid.empty();
 }
 
 }  // namespace content

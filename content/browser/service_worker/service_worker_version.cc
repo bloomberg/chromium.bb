@@ -260,8 +260,8 @@ base::TimeDelta GetTickDuration(const base::TimeTicks& time) {
 }
 
 void OnGetClientsFromUI(
-    // The tuple contains process_id, frame_id, client_id.
-    const std::vector<Tuple<int,int,int>>& clients_info,
+    // The tuple contains process_id, frame_id, client_uuid.
+    const std::vector<Tuple<int,int,std::string>>& clients_info,
     const GURL& script_url,
     const GetClientsCallback& callback) {
   std::vector<ServiceWorkerClientInfo> clients;
@@ -283,7 +283,7 @@ void OnGetClientsFromUI(
     if (info.url.GetOrigin() != script_url.GetOrigin())
       return;
 
-    info.client_id = get<2>(it);
+    info.client_uuid = get<2>(it);
     clients.push_back(info);
   }
 
@@ -727,21 +727,19 @@ void ServiceWorkerVersion::DispatchCrossOriginMessageEvent(
 
 void ServiceWorkerVersion::AddControllee(
     ServiceWorkerProviderHost* provider_host) {
-  DCHECK(!ContainsKey(controllee_map_, provider_host));
-  int controllee_id = controllee_by_id_.Add(provider_host);
-  // IDMap<>'s last index is kInvalidServiceWorkerClientId.
-  CHECK(controllee_id != kInvalidServiceWorkerClientId);
-  controllee_map_[provider_host] = controllee_id;
+  const std::string& uuid = provider_host->client_uuid();
+  CHECK(!provider_host->client_uuid().empty());
+  DCHECK(!ContainsKey(controllee_map_, uuid));
+  controllee_map_[uuid] = provider_host;
   // Keep the worker alive a bit longer right after a new controllee is added.
   RestartTick(&idle_time_);
 }
 
 void ServiceWorkerVersion::RemoveControllee(
     ServiceWorkerProviderHost* provider_host) {
-  ControlleeMap::iterator found = controllee_map_.find(provider_host);
-  DCHECK(found != controllee_map_.end());
-  controllee_by_id_.Remove(found->second);
-  controllee_map_.erase(found);
+  const std::string& uuid = provider_host->client_uuid();
+  DCHECK(ContainsKey(controllee_map_, uuid));
+  controllee_map_.erase(uuid);
   if (HasControllee())
     return;
   FOR_EACH_OBSERVER(Listener, listeners_, OnNoControllees(this));
@@ -948,8 +946,8 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnSetCachedMetadata)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ClearCachedMetadata,
                         OnClearCachedMetadata)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToDocument,
-                        OnPostMessageToDocument)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToClient,
+                        OnPostMessageToClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_FocusClient,
                         OnFocusClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SkipWaiting,
@@ -1000,7 +998,7 @@ void ServiceWorkerVersion::OnGetClients(
     int request_id,
     const ServiceWorkerClientQueryOptions& /* options */) {
   // TODO(kinuko): Handle ClientQueryOptions. (crbug.com/455241, 460415 etc)
-  if (controllee_by_id_.IsEmpty()) {
+  if (controllee_map_.empty()) {
     if (running_status() == RUNNING) {
       embedded_worker_->SendMessage(
           ServiceWorkerMsg_DidGetClients(request_id,
@@ -1012,14 +1010,13 @@ void ServiceWorkerVersion::OnGetClients(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerVersion::OnGetClients");
 
-  std::vector<Tuple<int,int,int>> clients_info;
-  for (ControlleeByIDMap::iterator it(&controllee_by_id_); !it.IsAtEnd();
-       it.Advance()) {
-    int process_id = it.GetCurrentValue()->process_id();
-    int frame_id = it.GetCurrentValue()->frame_id();
-    int client_id = it.GetCurrentKey();
+  std::vector<Tuple<int,int,std::string>> clients_info;
+  for (auto& controllee : controllee_map_) {
+    int process_id = controllee.second->process_id();
+    int frame_id = controllee.second->frame_id();
+    const std::string& client_uuid = controllee.first;
 
-    clients_info.push_back(MakeTuple(process_id, frame_id, client_id));
+    clients_info.push_back(MakeTuple(process_id, frame_id, client_uuid));
   }
 
   BrowserThread::PostTask(
@@ -1240,27 +1237,27 @@ void ServiceWorkerVersion::DidOpenWindow(int request_id,
   }
 
   for (const auto& it : controllee_map_) {
-    const ServiceWorkerProviderHost* provider_host = it.first;
+    const ServiceWorkerProviderHost* provider_host = it.second;
     if (provider_host->process_id() != render_process_id ||
         provider_host->frame_id() != render_frame_id) {
       continue;
     }
 
-    // it.second is the client_id associated with the provider_host.
+    // it.second is the client_uuid associated with the provider_host.
     provider_host->GetClientInfo(
         base::Bind(&ServiceWorkerVersion::OnOpenWindowFinished,
-                   weak_factory_.GetWeakPtr(), request_id, it.second));
+                   weak_factory_.GetWeakPtr(), request_id, it.first));
     return;
   }
 
   // If here, it means that no provider_host was found, in which case, the
   // renderer should still be informed that the window was opened.
-  OnOpenWindowFinished(request_id, 0, ServiceWorkerClientInfo());
+  OnOpenWindowFinished(request_id, std::string(), ServiceWorkerClientInfo());
 }
 
 void ServiceWorkerVersion::OnOpenWindowFinished(
     int request_id,
-    int client_id,
+    const std::string& client_uuid,
     const ServiceWorkerClientInfo& client_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -1273,7 +1270,7 @@ void ServiceWorkerVersion::OnOpenWindowFinished(
   // controlled but the action still succeeded. The renderer process is
   // expecting an empty client in such case.
   if (!client.IsEmpty())
-    client.client_id = client_id;
+    client.client_uuid = client_uuid;
 
   embedded_worker_->SendMessage(ServiceWorkerMsg_OpenWindowResponse(
       request_id, client));
@@ -1316,44 +1313,53 @@ void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64 callback_id,
   FOR_EACH_OBSERVER(Listener, listeners_, OnCachedMetadataUpdated(this));
 }
 
-void ServiceWorkerVersion::OnPostMessageToDocument(
-    int client_id,
+void ServiceWorkerVersion::OnPostMessageToClient(
+    const std::string& client_uuid,
     const base::string16& message,
     const std::vector<TransferredMessagePort>& sent_message_ports) {
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerVersion::OnPostMessageToDocument",
-               "Client id", client_id);
-  ServiceWorkerProviderHost* provider_host =
-      controllee_by_id_.Lookup(client_id);
-  if (!provider_host) {
+               "Client id", client_uuid);
+  auto it = controllee_map_.find(client_uuid);
+  if (it == controllee_map_.end()) {
     // The client may already have been closed, just ignore.
     return;
   }
-  provider_host->PostMessage(message, sent_message_ports);
+  if (it->second->document_url().GetOrigin() != script_url_.GetOrigin()) {
+    // The client does not belong to the same origin as this ServiceWorker,
+    // possibly due to timing issue or bad message.
+    return;
+  }
+  it->second->PostMessage(message, sent_message_ports);
 }
 
-void ServiceWorkerVersion::OnFocusClient(int request_id, int client_id) {
+void ServiceWorkerVersion::OnFocusClient(int request_id,
+                                         const std::string& client_uuid) {
   TRACE_EVENT2("ServiceWorker",
                "ServiceWorkerVersion::OnFocusClient",
                "Request id", request_id,
-               "Client id", client_id);
-  ServiceWorkerProviderHost* provider_host =
-      controllee_by_id_.Lookup(client_id);
-  if (!provider_host) {
+               "Client id", client_uuid);
+  auto it = controllee_map_.find(client_uuid);
+  if (it == controllee_map_.end()) {
     // The client may already have been closed, just ignore.
     return;
   }
+  if (it->second->document_url().GetOrigin() != script_url_.GetOrigin()) {
+    // The client does not belong to the same origin as this ServiceWorker,
+    // possibly due to timing issue or bad message.
+    return;
+  }
 
-  provider_host->Focus(
+  it->second->Focus(
       base::Bind(&ServiceWorkerVersion::OnFocusClientFinished,
                  weak_factory_.GetWeakPtr(),
                  request_id,
-                 client_id));
+                 client_uuid));
 }
 
 void ServiceWorkerVersion::OnFocusClientFinished(
     int request_id,
-    int cliend_id,
+    const std::string& cliend_uuid,
     const ServiceWorkerClientInfo& client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -1361,7 +1367,7 @@ void ServiceWorkerVersion::OnFocusClientFinished(
     return;
 
   ServiceWorkerClientInfo client_info(client);
-  client_info.client_id = cliend_id;
+  client_info.client_uuid = cliend_uuid;
 
   embedded_worker_->SendMessage(ServiceWorkerMsg_FocusClientResponse(
       request_id, client_info));

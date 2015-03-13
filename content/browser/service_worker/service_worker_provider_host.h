@@ -34,10 +34,11 @@ class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
 
 // This class is the browser-process representation of a service worker
-// provider. There is a provider per document and the lifetime of this
-// object is tied to the lifetime of its document in the renderer process.
+// provider. There is a provider per document or a worker and the lifetime
+// of this object is tied to the lifetime of its document or the worker
+// in the renderer process.
 // This class holds service worker state that is scoped to an individual
-// document.
+// document or a worker.
 //
 // Note this class can also host a running service worker, in which
 // case it will observe resource loads made directly by the service worker.
@@ -63,6 +64,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                             ServiceWorkerDispatcherHost* dispatcher_host);
   virtual ~ServiceWorkerProviderHost();
 
+  const std::string& client_uuid() const { return client_uuid_; }
   int process_id() const { return render_process_id_; }
   int provider_id() const { return provider_id_; }
   int frame_id() const { return render_frame_id_; }
@@ -253,6 +255,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool IsReadyToSendMessages() const;
   void Send(IPC::Message* message) const;
 
+  std::string client_uuid_;
   int render_process_id_;
   int render_frame_id_;
   int render_thread_id_;

@@ -111,7 +111,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerVersionAttributes)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerClientInfo)
-  IPC_STRUCT_TRAITS_MEMBER(client_id)
+  IPC_STRUCT_TRAITS_MEMBER(client_uuid)
   IPC_STRUCT_TRAITS_MEMBER(page_visibility_state)
   IPC_STRUCT_TRAITS_MEMBER(is_focused)
   IPC_STRUCT_TRAITS_MEMBER(url)
@@ -243,10 +243,10 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GetClients,
                     int /* request_id */,
                     content::ServiceWorkerClientQueryOptions)
 
-// Sends a 'message' event to a client document (renderer->browser).
+// Sends a 'message' event to a client (renderer->browser).
 IPC_MESSAGE_ROUTED3(
-    ServiceWorkerHostMsg_PostMessageToDocument,
-    int /* client_id */,
+    ServiceWorkerHostMsg_PostMessageToClient,
+    std::string /* uuid */,
     base::string16 /* message */,
     std::vector<content::TransferredMessagePort> /* sent_message_ports */)
 
@@ -268,7 +268,7 @@ IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_OpenWindow,
 // Ask the browser to focus a client (renderer->browser).
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_FocusClient,
                     int /* request_id */,
-                    int /* client_id */)
+                    std::string /* uuid */)
 
 // Asks the browser to force this worker to become activated.
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SkipWaiting,

@@ -80,15 +80,15 @@ class ServiceWorkerScriptContext {
                   blink::WebServiceWorkerClientCallbacks* callbacks);
   void SetCachedMetadata(const GURL& url, const char* data, size_t size);
   void ClearCachedMetadata(const GURL& url);
-  void PostMessageToDocument(
-      int client_id,
+  void PostMessageToClient(
+      const base::string16& uuid,
       const base::string16& message,
       scoped_ptr<blink::WebMessagePortChannelArray> channels);
   void PostCrossOriginMessageToClient(
       const blink::WebCrossOriginServiceWorkerClient& client,
       const base::string16& message,
       scoped_ptr<blink::WebMessagePortChannelArray> channels);
-  void FocusClient(int client_id,
+  void FocusClient(const base::string16& uuid,
                    blink::WebServiceWorkerClientCallbacks* callback);
   void SkipWaiting(blink::WebServiceWorkerSkipWaitingCallbacks* callbacks);
   void ClaimClients(blink::WebServiceWorkerClientsClaimCallbacks* callbacks);

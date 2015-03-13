@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/child/notifications/notification_data_conversions.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
@@ -30,14 +31,14 @@ namespace content {
 
 namespace {
 
-void SendPostMessageToDocumentOnMainThread(
+void SendPostMessageToClientOnMainThread(
     ThreadSafeSender* sender,
     int routing_id,
-    int client_id,
+    const std::string& uuid,
     const base::string16& message,
     scoped_ptr<blink::WebMessagePortChannelArray> channels) {
-  sender->Send(new ServiceWorkerHostMsg_PostMessageToDocument(
-      routing_id, client_id, message,
+  sender->Send(new ServiceWorkerHostMsg_PostMessageToClient(
+      routing_id, uuid, message,
       WebMessagePortChannelImpl::ExtractMessagePortIDs(channels.release())));
 }
 
@@ -81,7 +82,7 @@ ToWebServiceWorkerClientInfo(const ServiceWorkerClientInfo& client_info) {
 
   blink::WebServiceWorkerClientInfo web_client_info;
 
-  web_client_info.clientID = client_info.client_id;
+  web_client_info.uuid = base::UTF8ToUTF16(client_info.client_uuid);
   web_client_info.pageVisibilityState = client_info.page_visibility_state;
   web_client_info.isFocused = client_info.is_focused;
   web_client_info.url = client_info.url;
@@ -253,8 +254,8 @@ void ServiceWorkerScriptContext::ClearCachedMetadata(const GURL& url) {
   Send(new ServiceWorkerHostMsg_ClearCachedMetadata(GetRoutingID(), url));
 }
 
-void ServiceWorkerScriptContext::PostMessageToDocument(
-    int client_id,
+void ServiceWorkerScriptContext::PostMessageToClient(
+    const base::string16& uuid,
     const base::string16& message,
     scoped_ptr<blink::WebMessagePortChannelArray> channels) {
   // This may send channels for MessagePorts, and all internal book-keeping
@@ -263,9 +264,11 @@ void ServiceWorkerScriptContext::PostMessageToDocument(
   // to overtake those messages.
   embedded_context_->main_thread_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&SendPostMessageToDocumentOnMainThread,
+      base::Bind(&SendPostMessageToClientOnMainThread,
                  make_scoped_refptr(embedded_context_->thread_safe_sender()),
-                 GetRoutingID(), client_id, message, base::Passed(&channels)));
+                 GetRoutingID(),
+                 base::UTF16ToUTF8(uuid),
+                 message, base::Passed(&channels)));
 }
 
 void ServiceWorkerScriptContext::PostCrossOriginMessageToClient(
@@ -284,11 +287,12 @@ void ServiceWorkerScriptContext::PostCrossOriginMessageToClient(
 }
 
 void ServiceWorkerScriptContext::FocusClient(
-    int client_id, blink::WebServiceWorkerClientCallbacks* callback) {
+    const base::string16& uuid,
+    blink::WebServiceWorkerClientCallbacks* callback) {
   DCHECK(callback);
   int request_id = pending_client_callbacks_.Add(callback);
-  Send(new ServiceWorkerHostMsg_FocusClient(
-      GetRoutingID(), request_id, client_id));
+  Send(new ServiceWorkerHostMsg_FocusClient(GetRoutingID(), request_id,
+                                            base::UTF16ToUTF8(uuid)));
 }
 
 void ServiceWorkerScriptContext::ClaimClients(

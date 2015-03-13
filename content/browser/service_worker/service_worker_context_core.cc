@@ -116,6 +116,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
       providers_(new ProcessToProviderMap),
+      provider_by_uuid_(new ProviderByClientUUIDMap),
       cache_manager_(ServiceWorkerCacheStorageManager::Create(
           path,
           cache_task_runner.get(),
@@ -141,7 +142,9 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
       providers_(old_context->providers_.release()),
-      cache_manager_(old_context->cache_manager_.release()),
+      provider_by_uuid_(old_context->provider_by_uuid_.release()),
+      cache_manager_(ServiceWorkerCacheStorageManager::Create(
+          old_context->cache_manager())),
       next_handle_id_(old_context->next_handle_id_),
       next_registration_handle_id_(old_context->next_registration_handle_id_),
       observer_list_(old_context->observer_list_),
@@ -199,6 +202,19 @@ void ServiceWorkerContextCore::RemoveAllProviderHostsForProcess(
 scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator>
 ServiceWorkerContextCore::GetProviderHostIterator() {
   return make_scoped_ptr(new ProviderHostIterator(providers_.get()));
+}
+
+void ServiceWorkerContextCore::RegisterClientIDForProviderHost(
+    const std::string& client_uuid,
+    ServiceWorkerProviderHost* provider_host) {
+  DCHECK(!ContainsKey(*provider_by_uuid_, client_uuid));
+  (*provider_by_uuid_)[client_uuid] = provider_host;
+}
+
+void ServiceWorkerContextCore::UnregisterClientIDForProviderHost(
+    const std::string& client_uuid) {
+  DCHECK(ContainsKey(*provider_by_uuid_, client_uuid));
+  provider_by_uuid_->erase(client_uuid);
 }
 
 void ServiceWorkerContextCore::RegisterServiceWorker(

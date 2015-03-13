@@ -115,14 +115,14 @@ class EmbeddedWorkerContextClient
   virtual blink::WebServiceWorkerProvider* createServiceWorkerProvider();
 
   virtual void postMessageToClient(
-      int client_id,
+      const blink::WebString& uuid,
       const blink::WebString& message,
       blink::WebMessagePortChannelArray* channels);
   virtual void postMessageToCrossOriginClient(
       const blink::WebCrossOriginServiceWorkerClient& client,
       const blink::WebString& message,
       blink::WebMessagePortChannelArray* channels);
-  virtual void focus(int client_id,
+  virtual void focus(const blink::WebString& uuid,
                      blink::WebServiceWorkerClientCallbacks*);
   virtual void skipWaiting(
       blink::WebServiceWorkerSkipWaitingCallbacks* callbacks);

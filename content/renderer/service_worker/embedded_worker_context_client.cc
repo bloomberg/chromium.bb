@@ -390,12 +390,12 @@ EmbeddedWorkerContextClient::createServiceWorkerProvider() {
 }
 
 void EmbeddedWorkerContextClient::postMessageToClient(
-    int client_id,
+    const blink::WebString& uuid,
     const blink::WebString& message,
     blink::WebMessagePortChannelArray* channels) {
   DCHECK(script_context_);
-  script_context_->PostMessageToDocument(client_id, message,
-                                         make_scoped_ptr(channels));
+  script_context_->PostMessageToClient(
+      uuid, message, make_scoped_ptr(channels));
 }
 
 void EmbeddedWorkerContextClient::postMessageToCrossOriginClient(
@@ -408,9 +408,10 @@ void EmbeddedWorkerContextClient::postMessageToCrossOriginClient(
 }
 
 void EmbeddedWorkerContextClient::focus(
-    int client_id, blink::WebServiceWorkerClientCallbacks* callback) {
+    const blink::WebString& uuid,
+    blink::WebServiceWorkerClientCallbacks* callback) {
   DCHECK(script_context_);
-  script_context_->FocusClient(client_id, callback);
+  script_context_->FocusClient(uuid, callback);
 }
 
 void EmbeddedWorkerContextClient::skipWaiting(

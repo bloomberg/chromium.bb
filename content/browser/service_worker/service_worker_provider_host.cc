@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_provider_host.h"
 
+#include "base/guid.h"
 #include "base/stl_util.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -74,7 +75,8 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     ServiceWorkerProviderType provider_type,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerDispatcherHost* dispatcher_host)
-    : render_process_id_(render_process_id),
+    : client_uuid_(base::GenerateGUID()),
+      render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
       render_thread_id_(kDocumentMainThreadId),
       provider_id_(provider_id),
@@ -89,6 +91,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     // Actual thread id is set when the service worker context gets started.
     render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
   }
+  context_->RegisterClientIDForProviderHost(client_uuid_, this);
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
