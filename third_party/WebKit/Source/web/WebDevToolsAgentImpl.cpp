@@ -318,8 +318,10 @@ void WebDevToolsAgentImpl::dispose()
     ClientMessageLoopAdapter::inspectedViewClosed(m_webViewImpl);
     m_webViewImpl->settingsImpl()->setWebDevToolsAgentImpl(nullptr);
     m_webViewImpl->devToolsEmulator()->setDevToolsAgent(nullptr);
-    if (m_attached)
-        Platform::current()->currentThread()->removeTaskObserver(this);
+    if (m_attached) {
+        ASSERT(isMainThread());
+        Platform::current()->mainThread()->removeTaskObserver(this);
+    }
 #if ENABLE(ASSERT)
     ASSERT(!m_hasBeenDisposed);
     m_hasBeenDisposed = true;
@@ -400,6 +402,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
 void WebDevToolsAgentImpl::attach(const WebString& hostId)
 {
+    ASSERT(isMainThread());
     if (m_attached)
         return;
 
@@ -420,7 +423,7 @@ void WebDevToolsAgentImpl::attach(const WebString& hostId)
     m_inspectorBackendDispatcher = InspectorBackendDispatcher::create(this);
     m_agents.registerInDispatcher(m_inspectorBackendDispatcher.get());
 
-    Platform::current()->currentThread()->addTaskObserver(this);
+    Platform::current()->mainThread()->addTaskObserver(this);
 }
 
 void WebDevToolsAgentImpl::reattach(const WebString& hostId, const WebString& savedState)
@@ -435,10 +438,11 @@ void WebDevToolsAgentImpl::reattach(const WebString& hostId, const WebString& sa
 
 void WebDevToolsAgentImpl::detach()
 {
+    ASSERT(isMainThread());
     if (!m_attached)
         return;
 
-    Platform::current()->currentThread()->removeTaskObserver(this);
+    Platform::current()->mainThread()->removeTaskObserver(this);
 
     m_inspectorBackendDispatcher->clearFrontend();
     m_inspectorBackendDispatcher.clear();

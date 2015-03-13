@@ -81,9 +81,9 @@ public:
     {
         Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
         if (m_client->isLoading())
-            Platform::current()->currentThread()->postTask(FROM_HERE, new ServeAsyncRequestsTask(m_client));
+            Platform::current()->mainThread()->postTask(FROM_HERE, new ServeAsyncRequestsTask(m_client));
         else
-            Platform::current()->currentThread()->exitRunLoop();
+            Platform::current()->mainThread()->exitRunLoop();
     }
 
 private:
@@ -92,8 +92,8 @@ private:
 
 void pumpPendingRequests(WebFrame* frame)
 {
-    Platform::current()->currentThread()->postTask(FROM_HERE, new ServeAsyncRequestsTask(testClientForFrame(frame)));
-    Platform::current()->currentThread()->enterRunLoop();
+    Platform::current()->mainThread()->postTask(FROM_HERE, new ServeAsyncRequestsTask(testClientForFrame(frame)));
+    Platform::current()->mainThread()->enterRunLoop();
 }
 
 class LoadTask : public WebThread::Task {
@@ -194,31 +194,31 @@ void loadFrame(WebFrame* frame, const std::string& url)
     urlRequest.initialize();
     urlRequest.setURL(URLTestHelpers::toKURL(url));
 
-    Platform::current()->currentThread()->postTask(FROM_HERE, new LoadTask(frame, urlRequest));
+    Platform::current()->mainThread()->postTask(FROM_HERE, new LoadTask(frame, urlRequest));
     pumpPendingRequests(frame);
 }
 
 void loadHTMLString(WebFrame* frame, const std::string& html, const WebURL& baseURL)
 {
-    Platform::current()->currentThread()->postTask(FROM_HERE, new LoadHTMLStringTask(frame, html, baseURL));
+    Platform::current()->mainThread()->postTask(FROM_HERE, new LoadHTMLStringTask(frame, html, baseURL));
     pumpPendingRequests(frame);
 }
 
 void loadHistoryItem(WebFrame* frame, const WebHistoryItem& item, WebHistoryLoadType loadType, WebURLRequest::CachePolicy cachePolicy)
 {
-    Platform::current()->currentThread()->postTask(FROM_HERE, new LoadHistoryItemTask(frame, item, loadType, cachePolicy));
+    Platform::current()->mainThread()->postTask(FROM_HERE, new LoadHistoryItemTask(frame, item, loadType, cachePolicy));
     pumpPendingRequests(frame);
 }
 
 void reloadFrame(WebFrame* frame)
 {
-    Platform::current()->currentThread()->postTask(FROM_HERE, new ReloadTask(frame, false));
+    Platform::current()->mainThread()->postTask(FROM_HERE, new ReloadTask(frame, false));
     pumpPendingRequests(frame);
 }
 
 void reloadFrameIgnoringCache(WebFrame* frame)
 {
-    Platform::current()->currentThread()->postTask(FROM_HERE, new ReloadTask(frame, true));
+    Platform::current()->mainThread()->postTask(FROM_HERE, new ReloadTask(frame, true));
     pumpPendingRequests(frame);
 }
 

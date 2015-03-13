@@ -257,8 +257,8 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, co
     };
 
 
-    blink::Platform::current()->currentThread()->postTask(FROM_HERE, new Task1(cachedLiveResource, cachedDeadResource));
-    blink::Platform::current()->currentThread()->postTask(FROM_HERE, new Task2(cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
+    blink::Platform::current()->mainThread()->postTask(FROM_HERE, new Task1(cachedLiveResource, cachedDeadResource));
+    blink::Platform::current()->mainThread()->postTask(FROM_HERE, new Task2(cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
     testing::runPendingTasks();
     cachedLiveResource->removeClient(&client);
 }
