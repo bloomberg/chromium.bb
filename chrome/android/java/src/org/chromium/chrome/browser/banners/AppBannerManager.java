@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.banners;
 import android.content.Context;
 import android.text.TextUtils;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.BookmarkUtils;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.content_public.browser.WebContents;
@@ -47,7 +49,10 @@ public class AppBannerManager extends EmptyTabObserver {
      * @return True if banners are enabled, false otherwise.
      */
     public static boolean isEnabled() {
-        if (sIsEnabled == null) sIsEnabled = nativeIsEnabled();
+        if (sIsEnabled == null) {
+            Context context = ApplicationStatus.getApplicationContext();
+            sIsEnabled = nativeIsEnabled() && BookmarkUtils.isAddToHomeIntentSupported(context);
+        }
         return sIsEnabled;
     }
 
