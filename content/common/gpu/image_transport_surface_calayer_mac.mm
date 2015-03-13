@@ -22,6 +22,7 @@ const size_t kCanDrawFalsesBeforeSwitchFromAsync = 4;
 
 @interface ImageTransportLayer : CAOpenGLLayer {
   content::CALayerStorageProvider* storageProvider_;
+  base::Closure didDrawCallback_;
 }
 - (id)initWithStorageProvider:(content::CALayerStorageProvider*)storageProvider;
 - (void)resetStorageProvider;
@@ -52,12 +53,8 @@ const size_t kCanDrawFalsesBeforeSwitchFromAsync = 4;
 - (CGLContextObj)copyCGLContextForPixelFormat:(CGLPixelFormatObj)pixelFormat {
   if (!storageProvider_)
     return NULL;
-  CGLContextObj context = NULL;
-  CGLError error = CGLCreateContext(
-      pixelFormat, storageProvider_->LayerShareGroupContext(), &context);
-  if (error != kCGLNoError)
-    LOG(ERROR) << "CGLCreateContext failed with CGL error: " << error;
-  return context;
+  didDrawCallback_ = storageProvider_->LayerShareGroupContextDirtiedCallback();
+  return CGLRetainContext(storageProvider_->LayerShareGroupContext());
 }
 
 - (BOOL)canDrawInCGLContext:(CGLContextObj)glContext
@@ -87,6 +84,10 @@ const size_t kCanDrawFalsesBeforeSwitchFromAsync = 4;
               pixelFormat:pixelFormat
              forLayerTime:timeInterval
               displayTime:timeStamp];
+
+
+  DCHECK(!didDrawCallback_.is_null());
+  didDrawCallback_.Run();
 }
 
 @end
@@ -117,8 +118,8 @@ gfx::Size CALayerStorageProvider::GetRoundedSize(gfx::Size size) {
 }
 
 bool CALayerStorageProvider::AllocateColorBufferStorage(
-    CGLContextObj context, GLuint texture,
-    gfx::Size pixel_size, float scale_factor) {
+    CGLContextObj context, const base::Closure& context_dirtied_callback,
+    GLuint texture, gfx::Size pixel_size, float scale_factor) {
   // Allocate an ordinary OpenGL texture to back the FBO.
   GLenum error;
   while ((error = glGetError()) != GL_NO_ERROR) {
@@ -148,6 +149,7 @@ bool CALayerStorageProvider::AllocateColorBufferStorage(
   // Set the parameters that will be used to allocate the CALayer to draw the
   // texture into.
   share_group_context_.reset(CGLRetainContext(context));
+  share_group_context_dirtied_callback_ = context_dirtied_callback;
   fbo_texture_ = texture;
   fbo_pixel_size_ = pixel_size;
   fbo_scale_factor_ = scale_factor;
@@ -161,6 +163,7 @@ void CALayerStorageProvider::FreeColorBufferStorage() {
   layer_.reset();
 
   share_group_context_.reset();
+  share_group_context_dirtied_callback_ = base::Closure();
   fbo_texture_ = 0;
   fbo_pixel_size_ = gfx::Size();
   can_draw_returned_false_count_ = 0;
@@ -285,6 +288,10 @@ CGLContextObj CALayerStorageProvider::LayerShareGroupContext() {
   return share_group_context_;
 }
 
+base::Closure CALayerStorageProvider::LayerShareGroupContextDirtiedCallback() {
+  return share_group_context_dirtied_callback_;
+}
+
 bool CALayerStorageProvider::LayerCanDraw() {
   if (has_pending_draw_) {
     can_draw_returned_false_count_ = 0;
@@ -317,7 +324,13 @@ void CALayerStorageProvider::LayerDoDraw() {
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  // Draw a fullscreen quad.
+  // Reset drawing state and draw a fullscreen quad.
+  glUseProgram(0);
+  glDisable(GL_BLEND);
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_STENCIL_TEST);
+  glDisable(GL_SCISSOR_TEST);
   glColor4f(1, 1, 1, 1);
   glEnable(GL_TEXTURE_RECTANGLE_ARB);
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, fbo_texture_);

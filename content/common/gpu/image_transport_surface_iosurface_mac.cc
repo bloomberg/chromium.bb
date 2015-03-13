@@ -54,8 +54,8 @@ gfx::Size IOSurfaceStorageProvider::GetRoundedSize(gfx::Size size) {
 }
 
 bool IOSurfaceStorageProvider::AllocateColorBufferStorage(
-    CGLContextObj context, GLuint texture,
-    gfx::Size pixel_size, float scale_factor) {
+    CGLContextObj context, const base::Closure& context_dirtied_callback,
+    GLuint texture, gfx::Size pixel_size, float scale_factor) {
   // Allocate a new IOSurface, which is the GPU resource that can be
   // shared across processes.
   base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;

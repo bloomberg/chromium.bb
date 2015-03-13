@@ -24,10 +24,9 @@ class IOSurfaceStorageProvider
 
   // ImageTransportSurfaceFBO::StorageProvider implementation:
   gfx::Size GetRoundedSize(gfx::Size size) override;
-  bool AllocateColorBufferStorage(CGLContextObj context,
-                                  GLuint texture,
-                                  gfx::Size pixel_size,
-                                  float scale_factor) override;
+  bool AllocateColorBufferStorage(
+      CGLContextObj context, const base::Closure& context_dirtied_callback,
+      GLuint texture, gfx::Size pixel_size, float scale_factor) override;
   void FreeColorBufferStorage() override;
   void SwapBuffers(const gfx::Size& size, float scale_factor) override;
   void WillWriteToBackbuffer() override;

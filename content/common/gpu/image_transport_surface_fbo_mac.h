@@ -34,8 +34,8 @@ class ImageTransportSurfaceFBO
     // Allocate the storage for the color buffer. The specified context is
     // current, and there is a texture bound to GL_TEXTURE_RECTANGLE_ARB.
     virtual bool AllocateColorBufferStorage(
-        CGLContextObj context, GLuint texture,
-        gfx::Size size, float scale_factor) = 0;
+        CGLContextObj context, const base::Closure& context_dirtied_callback,
+        GLuint texture, gfx::Size size, float scale_factor) = 0;
 
     // Free the storage allocated in the AllocateColorBufferStorage call. The
     // GL texture that was bound has already been deleted by the caller.

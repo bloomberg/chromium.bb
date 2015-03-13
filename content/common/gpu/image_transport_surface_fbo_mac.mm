@@ -62,6 +62,10 @@ bool ImageTransportSurfaceFBO::DeferDraws() {
   storage_provider_->WillWriteToBackbuffer();
   // We should not have a pending send when we are drawing the next frame.
   DCHECK(!is_swap_buffers_send_pending_);
+
+  // The call to WillWriteToBackbuffer could potentially force a draw. Ensure
+  // that any changes made to the context's state are restored.
+  context_->RestoreStateIfDirtiedExternally();
   return false;
 }
 
@@ -159,6 +163,10 @@ bool ImageTransportSurfaceFBO::SwapBuffers() {
   // It is the responsibility of the storage provider to send the swap IPC.
   is_swap_buffers_send_pending_ = true;
   storage_provider_->SwapBuffers(pixel_size_, scale_factor_);
+
+  // The call to swapBuffers could potentially result in an immediate draw.
+  // Ensure that any changes made to the context's state are restored.
+  context_->RestoreStateIfDirtiedExternally();
   return true;
 }
 
@@ -346,8 +354,10 @@ void ImageTransportSurfaceFBO::AllocateOrResizeFramebuffer(
   }
 
   bool allocated_color_buffer = storage_provider_->AllocateColorBufferStorage(
-      static_cast<CGLContextObj>(context_->GetHandle()), texture_id_,
-      rounded_pixel_size_, scale_factor_);
+      static_cast<CGLContextObj>(
+          context_->GetHandle()),
+          context_->GetStateWasDirtiedExternallyCallback(),
+          texture_id_, rounded_pixel_size_, scale_factor_);
   if (!allocated_color_buffer) {
     DLOG(ERROR) << "Failed to allocate color buffer storage.";
     DestroyFramebuffer();

@@ -26,10 +26,9 @@ class CALayerStorageProvider
 
   // ImageTransportSurfaceFBO::StorageProvider implementation:
   gfx::Size GetRoundedSize(gfx::Size size) override;
-  bool AllocateColorBufferStorage(CGLContextObj context,
-                                  GLuint texture,
-                                  gfx::Size pixel_size,
-                                  float scale_factor) override;
+  bool AllocateColorBufferStorage(
+      CGLContextObj context, const base::Closure& context_dirtied_callback,
+      GLuint texture, gfx::Size pixel_size, float scale_factor) override;
   void FreeColorBufferStorage() override;
   void SwapBuffers(const gfx::Size& size, float scale_factor) override;
   void WillWriteToBackbuffer() override;
@@ -38,6 +37,7 @@ class CALayerStorageProvider
 
   // Interface to ImageTransportLayer:
   CGLContextObj LayerShareGroupContext();
+  base::Closure LayerShareGroupContextDirtiedCallback();
   bool LayerCanDraw();
   void LayerDoDraw();
   void LayerResetStorageProvider();
@@ -73,6 +73,7 @@ class CALayerStorageProvider
   // The texture with the pixels to draw, and the share group it is allocated
   // in.
   base::ScopedTypeRef<CGLContextObj> share_group_context_;
+  base::Closure share_group_context_dirtied_callback_;
   GLuint fbo_texture_;
   gfx::Size fbo_pixel_size_;
   float fbo_scale_factor_;
