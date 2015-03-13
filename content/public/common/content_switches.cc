@@ -888,6 +888,9 @@ const char kDisableWebRtcHWEncoding[]       = "disable-webrtc-hw-encoding";
 // Enables H264 HW encode acceleration for WebRTC.
 const char kEnableWebRtcHWH264Encoding[]    = "enable-webrtc-hw-h264-encoding";
 
+// Enables Origin header in Stun messages for WebRTC.
+const char kEnableWebRtcStunOrigin[]        = "enable-webrtc-stun-origin";
+
 // Override the maximum framerate as can be specified in calls to getUserMedia.
 // This flag expects a value.  Example: --max-gum-fps=17.5
 const char kWebRtcMaxCaptureFramerate[]     = "max-gum-fps";

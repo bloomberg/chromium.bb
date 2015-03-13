@@ -4,6 +4,9 @@
 
 #include "content/renderer/p2p/port_allocator.h"
 
+#include "base/command_line.h"
+#include "content/public/common/content_switches.h"
+
 namespace content {
 
 P2PPortAllocator::Config::Config()
@@ -24,10 +27,13 @@ P2PPortAllocator::P2PPortAllocator(
     P2PSocketDispatcher* socket_dispatcher,
     rtc::NetworkManager* network_manager,
     rtc::PacketSocketFactory* socket_factory,
-    const Config& config)
+    const Config& config,
+    const GURL& origin)
     : cricket::BasicPortAllocator(network_manager, socket_factory),
       socket_dispatcher_(socket_dispatcher),
-      config_(config) {
+      config_(config),
+      origin_(origin)
+  {
   uint32 flags = 0;
   if (config_.disable_tcp_transport)
     flags |= cricket::PORTALLOCATOR_DISABLE_TCP;
@@ -35,6 +41,12 @@ P2PPortAllocator::P2PPortAllocator(
     flags |= cricket::PORTALLOCATOR_DISABLE_ADAPTER_ENUMERATION;
   set_flags(flags);
   set_allow_tcp_listen(false);
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  bool enable_webrtc_stun_origin =
+      cmd_line->HasSwitch(switches::kEnableWebRtcStunOrigin);
+  if (enable_webrtc_stun_origin) {
+    set_origin(origin.spec());
+  }
 }
 
 P2PPortAllocator::~P2PPortAllocator() {

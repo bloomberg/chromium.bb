@@ -52591,6 +52591,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1490298774" label="enable-captive-portal-bypass-proxy-option"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
   <int value="-1460462432" label="disable-media-source"/>
+  <int value="-1433719718" label="enable-webrtc-stun-origin"/>
   <int value="-1433087548" label="enable-app-install-alerts"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
   <int value="-1411003295" label="disable-encrypted-media"/>

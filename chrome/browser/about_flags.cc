@@ -552,6 +552,13 @@ const Experiment kExperiments[] = {
     kOsAndroid | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kDisableWebRtcHWEncoding)
   },
+  {
+    "enable-webrtc-stun-origin",
+    IDS_FLAGS_ENABLE_WEBRTC_STUN_ORIGIN_NAME,
+    IDS_FLAGS_ENABLE_WEBRTC_STUN_ORIGIN_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableWebRtcStunOrigin)
+  },
 #endif
 #if defined(OS_ANDROID)
   {

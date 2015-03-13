@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_P2P_PORT_ALLOCATOR_H_
 
 #include "third_party/webrtc/p2p/client/basicportallocator.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -44,7 +45,8 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
   P2PPortAllocator(P2PSocketDispatcher* socket_dispatcher,
                    rtc::NetworkManager* network_manager,
                    rtc::PacketSocketFactory* socket_factory,
-                   const Config& config);
+                   const Config& config,
+                   const GURL& origin);
   ~P2PPortAllocator() override;
 
   cricket::PortAllocatorSession* CreateSessionInternal(
@@ -58,6 +60,7 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
 
   P2PSocketDispatcher* socket_dispatcher_;
   Config config_;
+  GURL origin_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PPortAllocator);
 };

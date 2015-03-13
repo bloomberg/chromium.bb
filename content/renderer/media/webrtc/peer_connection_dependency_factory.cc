@@ -119,10 +119,12 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
   P2PPortAllocatorFactory(P2PSocketDispatcher* socket_dispatcher,
                           rtc::NetworkManager* network_manager,
                           rtc::PacketSocketFactory* socket_factory,
+                          const GURL& origin,
                           bool enable_multiple_routes)
       : socket_dispatcher_(socket_dispatcher),
         network_manager_(network_manager),
         socket_factory_(socket_factory),
+        origin_(origin),
         enable_multiple_routes_(enable_multiple_routes) {}
 
   cricket::PortAllocator* CreatePortAllocator(
@@ -152,7 +154,8 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
     config.enable_multiple_routes = enable_multiple_routes_;
 
     return new P2PPortAllocator(
-        socket_dispatcher_.get(), network_manager_, socket_factory_, config);
+        socket_dispatcher_.get(), network_manager_,
+        socket_factory_, config, origin_);
   }
 
  protected:
@@ -164,7 +167,9 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
   // PeerConnectionDependencyFactory.
   rtc::NetworkManager* network_manager_;
   rtc::PacketSocketFactory* socket_factory_;
-
+  // The origin URL of the WebFrame that created the
+  // P2PPortAllocatorFactory.
+  GURL origin_;
   // When false, only 'any' address (all 0s) will be bound for address
   // discovery.
   bool enable_multiple_routes_;
@@ -415,6 +420,7 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   scoped_refptr<P2PPortAllocatorFactory> pa_factory =
       new rtc::RefCountedObject<P2PPortAllocatorFactory>(
           p2p_socket_dispatcher_.get(), network_manager_, socket_factory_.get(),
+          GURL(web_frame->document().url().spec()).GetOrigin(),
           enable_multiple_routes);
 
   PeerConnectionIdentityService* identity_service =
