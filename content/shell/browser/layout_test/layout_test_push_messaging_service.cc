@@ -4,6 +4,7 @@
 
 #include "content/shell/browser/layout_test/layout_test_push_messaging_service.h"
 
+#include "base/callback.h"
 #include "base/logging.h"
 
 namespace content {

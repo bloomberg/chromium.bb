@@ -4,6 +4,7 @@
 
 #include "content/public/browser/push_messaging_service.h"
 
+#include "base/callback.h"
 #include "content/browser/push_messaging/push_messaging_message_filter.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_context.h"
@@ -37,6 +38,12 @@ void CallResultCallbackFromIO(
                           base::Bind(callback, success));
 }
 
+void CallClosureFromIO(const base::Closure& callback,
+                       ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
+}
+
 void GetUserDataOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_wrapper,
     int64 service_worker_registration_id,
@@ -60,18 +67,16 @@ void SetNotificationsShownOnIO(
       base::Bind(&CallResultCallbackFromIO, callback));
 }
 
-void OnClearPushRegistrationServiceWorkerKey(ServiceWorkerStatusCode status) {
-}
-
 void ClearPushRegistrationIDOnIO(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-    int64 service_worker_registration_id) {
+    int64 service_worker_registration_id,
+    const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   service_worker_context->context()->storage()->ClearUserData(
       service_worker_registration_id,
       kPushRegistrationIdServiceWorkerKey,
-      base::Bind(&OnClearPushRegistrationServiceWorkerKey));
+      base::Bind(&CallClosureFromIO, callback));
 }
 
 scoped_refptr<ServiceWorkerContextWrapper> GetServiceWorkerContext(
@@ -140,14 +145,16 @@ void PushMessagingService::GetSenderId(BrowserContext* browser_context,
 void PushMessagingService::ClearPushRegistrationID(
     BrowserContext* browser_context,
     const GURL& origin,
-    int64 service_worker_registration_id) {
+    int64 service_worker_registration_id,
+    const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&ClearPushRegistrationIDOnIO,
                  GetServiceWorkerContext(browser_context, origin),
-                 service_worker_registration_id));
+                 service_worker_registration_id,
+                 callback));
 }
 
 }  // namespace content

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "content/public/common/push_messaging_status.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h"
@@ -99,7 +99,8 @@ class CONTENT_EXPORT PushMessagingService {
   // |service_worker_registration_id| for the given |origin|.
   static void ClearPushRegistrationID(BrowserContext* browser_context,
                                       const GURL& origin,
-                                      int64 service_worker_registration_id);
+                                      int64 service_worker_registration_id,
+                                      const base::Closure& callback);
 };
 
 }  // namespace content

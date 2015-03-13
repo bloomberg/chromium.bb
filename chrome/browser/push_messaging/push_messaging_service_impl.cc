@@ -7,7 +7,9 @@
 #include <bitset>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -81,6 +83,11 @@ blink::WebPushPermissionStatus ToPushPermission(ContentSetting setting) {
       NOTREACHED();
       return blink::WebPushPermissionStatusDenied;
   }
+}
+
+void UnregisterCallbackToClosure(
+    const base::Closure& closure, content::PushUnregistrationStatus status) {
+  closure.Run();
 }
 
 }  // namespace
@@ -324,7 +331,7 @@ void PushMessagingServiceImpl::RequireUserVisibleUX(
         content::BrowserContext::GetStoragePartitionForSite(
             profile_, requesting_origin)->GetServiceWorkerContext();
 
-    PushMessagingService::GetNotificationsShownByLastFewPushes(
+    GetNotificationsShownByLastFewPushes(
         service_worker_context, service_worker_registration_id,
         base::Bind(&PushMessagingServiceImpl::DidGetNotificationsShown,
                    weak_factory_.GetWeakPtr(),
@@ -362,7 +369,7 @@ void PushMessagingServiceImpl::DidGetNotificationsShown(
   missed_notifications[0] = needed_but_not_shown;
   std::string updated_data(missed_notifications.
       to_string<char, std::string::traits_type, std::string::allocator_type>());
-  PushMessagingService::SetNotificationsShownByLastFewPushes(
+  SetNotificationsShownByLastFewPushes(
       service_worker_context, service_worker_registration_id,
       requesting_origin, updated_data,
       base::Bind(&IgnoreResult));  // This is a heuristic; ignore failure.
@@ -692,35 +699,56 @@ void PushMessagingServiceImpl::OnContentSettingChanged(
     return;
   }
 
-  for (const auto& id : PushMessagingApplicationId::GetAll(profile_)) {
+  std::vector<PushMessagingApplicationId> all_app_ids =
+      PushMessagingApplicationId::GetAll(profile_);
+
+  base::Closure barrier_closure = base::BarrierClosure(
+      all_app_ids.size(),
+      content_setting_changed_callback_for_testing_.is_null()
+          ? base::Bind(&base::DoNothing)
+          : content_setting_changed_callback_for_testing_);
+
+  for (const auto& id : all_app_ids) {
     // If |primary_pattern| is not valid, we should always check for a
     // permission change because it can happen for example when the entire
     // Push or Notifications permissions are cleared.
     // Otherwise, the permission should be checked if the pattern matches the
     // origin.
-    if (primary_pattern.IsValid() && !primary_pattern.Matches(id.origin()))
+    if (primary_pattern.IsValid() && !primary_pattern.Matches(id.origin())) {
+      barrier_closure.Run();
       continue;
+    }
 
-    if (HasPermission(id.origin()))
+    if (HasPermission(id.origin())) {
+      barrier_closure.Run();
       continue;
+    }
 
-    PushMessagingService::GetSenderId(
+    GetSenderId(
         profile_, id.origin(), id.service_worker_registration_id(),
         base::Bind(
             &PushMessagingServiceImpl::UnregisterBecausePermissionRevoked,
-            weak_factory_.GetWeakPtr(), id));
+            weak_factory_.GetWeakPtr(), id, barrier_closure));
   }
 }
 
 void PushMessagingServiceImpl::UnregisterBecausePermissionRevoked(
-    const PushMessagingApplicationId& id,
+    const PushMessagingApplicationId& id, const base::Closure& closure,
     const std::string& sender_id, bool success, bool not_found) {
+  base::Closure barrier_closure = base::BarrierClosure(2, closure);
+
   // Unregister the PushMessagingApplicationId with the push service.
-  Unregister(id.app_id_guid(), sender_id, UnregisterCallback());
+  Unregister(id.app_id_guid(), sender_id,
+             base::Bind(&UnregisterCallbackToClosure, barrier_closure));
 
   // Clear the associated service worker push registration id.
-  PushMessagingService::ClearPushRegistrationID(
-      profile_, id.origin(), id.service_worker_registration_id());
+  ClearPushRegistrationID(profile_, id.origin(),
+                          id.service_worker_registration_id(), barrier_closure);
+}
+
+void PushMessagingServiceImpl::SetContentSettingChangedCallbackForTesting(
+      const base::Closure& callback) {
+  content_setting_changed_callback_for_testing_ = callback;
 }
 
 // KeyedService methods -------------------------------------------------------

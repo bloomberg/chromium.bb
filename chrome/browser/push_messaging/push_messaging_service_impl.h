@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_SERVICE_IMPL_H_
 #define CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_SERVICE_IMPL_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -87,6 +88,9 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // KeyedService implementation.
   void Shutdown() override;
 
+  void SetContentSettingChangedCallbackForTesting(
+      const base::Closure& callback);
+
  private:
   // A registration is pending until it has succeeded or failed.
   void IncreasePushRegistrationCount(int add, bool is_pending);
@@ -147,6 +151,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   // OnContentSettingChanged methods -------------------------------------------
 
   void UnregisterBecausePermissionRevoked(const PushMessagingApplicationId& id,
+                                          const base::Closure& closure,
                                           const std::string& sender_id,
                                           bool success, bool not_found);
 
@@ -161,6 +166,8 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   int push_registration_count_;
   int pending_push_registration_count_;
+
+  base::Closure content_setting_changed_callback_for_testing_;
 
   base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;
 

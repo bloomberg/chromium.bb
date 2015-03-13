@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
@@ -33,6 +34,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "ui/base/window_open_disposition.h"
 
 #if defined(OS_ANDROID)
@@ -89,22 +91,16 @@ class InfoBarResponder : public infobars::InfoBarManager::Observer {
 // FakeGCMProfileService::UnregisterCallback.
 class UnregistrationCallback {
  public:
-  UnregistrationCallback() : done_(false), waiting_(false) {}
+  UnregistrationCallback()
+      : message_loop_runner_(new content::MessageLoopRunner) {}
 
   void Run(const std::string& app_id) {
     app_id_ = app_id;
-    done_ = true;
-    if (waiting_)
-      base::MessageLoop::current()->Quit();
+    message_loop_runner_->Quit();
   }
 
   void WaitUntilSatisfied() {
-    if (done_)
-      return;
-
-    waiting_ = true;
-    while (!done_)
-      content::RunMessageLoop();
+    message_loop_runner_->Run();
   }
 
   const std::string& app_id() {
@@ -112,36 +108,8 @@ class UnregistrationCallback {
   }
 
  private:
-  bool done_;
-  bool waiting_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   std::string app_id_;
-};
-
-// Class to instantiate on the stack that is meant to be used with
-// StubNotificationUIManager::SetNotificationAddedCallback. Mind that Run()
-// might be invoked prior to WaitUntilSatisfied() being called.
-class NotificationAddedCallback {
- public:
-  NotificationAddedCallback() : done_(false), waiting_(false) {}
-
-  void Run() {
-    done_ = true;
-    if (waiting_)
-      base::MessageLoop::current()->Quit();
-  }
-
-  void WaitUntilSatisfied() {
-    if (done_)
-      return;
-
-    waiting_ = true;
-    while (!done_)
-      content::RunMessageLoop();
-  }
-
- private:
-  bool done_;
-  bool waiting_;
 };
 
 // The Push API depends on Web Notifications, which is only available on Android
@@ -639,9 +607,10 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);
 
-  NotificationAddedCallback callback;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+      new content::MessageLoopRunner;
   notification_manager()->SetNotificationAddedCallback(
-      base::Bind(&NotificationAddedCallback::Run, base::Unretained(&callback)));
+      message_loop_runner->QuitClosure());
 
   gcm::GCMClient::IncomingMessage message;
   message.sender_id = "1234567890";
@@ -650,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("immediate:shownotification-without-waituntil", script_result);
 
-  callback.WaitUntilSatisfied();
+  message_loop_runner->Run();
 
   ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
   EXPECT_EQ("push_test_tag",
@@ -786,8 +755,15 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);
 
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+      new content::MessageLoopRunner;
+  push_service()->SetContentSettingChangedCallbackForTesting(
+      message_loop_runner->QuitClosure());
+
   browser()->profile()->GetHostContentSettingsMap()->
       ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+
+  message_loop_runner->Run();
 
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - default", script_result);
@@ -808,6 +784,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);
 
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+      new content::MessageLoopRunner;
+  push_service()->SetContentSettingChangedCallbackForTesting(
+      message_loop_runner->QuitClosure());
+
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
   browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
@@ -815,6 +796,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
       std::string(),
       CONTENT_SETTING_DEFAULT);
+
+  message_loop_runner->Run();
 
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - default", script_result);
@@ -835,6 +818,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);
 
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+      new content::MessageLoopRunner;
+  push_service()->SetContentSettingChangedCallbackForTesting(
+      message_loop_runner->QuitClosure());
+
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
   browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
@@ -842,6 +830,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
       std::string(),
       CONTENT_SETTING_BLOCK);
+
+  message_loop_runner->Run();
 
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - denied", script_result);
@@ -862,8 +852,15 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);
 
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+      new content::MessageLoopRunner;
+  push_service()->SetContentSettingChangedCallbackForTesting(
+      message_loop_runner->QuitClosure());
+
   browser()->profile()->GetHostContentSettingsMap()->
       ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+
+  message_loop_runner->Run();
 
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - default", script_result);
@@ -884,6 +881,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);
 
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+      new content::MessageLoopRunner;
+  push_service()->SetContentSettingChangedCallbackForTesting(
+      message_loop_runner->QuitClosure());
+
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
   browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
@@ -891,6 +893,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       std::string(),
       CONTENT_SETTING_DEFAULT);
+
+  message_loop_runner->Run();
 
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - default", script_result);
@@ -911,6 +915,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);
 
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+      new content::MessageLoopRunner;
+  push_service()->SetContentSettingChangedCallbackForTesting(
+      message_loop_runner->QuitClosure());
+
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
   browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
@@ -918,6 +927,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
       std::string(),
       CONTENT_SETTING_BLOCK);
+
+  message_loop_runner->Run();
 
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - denied", script_result);
@@ -938,6 +949,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);
 
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+      new content::MessageLoopRunner;
+  push_service()->SetContentSettingChangedCallbackForTesting(
+      base::BarrierClosure(2, message_loop_runner->QuitClosure()));
+
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
   browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(origin),
@@ -951,6 +967,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
       std::string(),
       CONTENT_SETTING_ALLOW);
+
+  message_loop_runner->Run();
 
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);
@@ -975,6 +993,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("hasPermission()", &script_result));
   EXPECT_EQ("permission status - granted", script_result);
 
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+      new content::MessageLoopRunner;
+  push_service()->SetContentSettingChangedCallbackForTesting(
+      base::BarrierClosure(4, message_loop_runner->QuitClosure()));
+
   GURL origin = https_server()->GetURL(std::string()).GetOrigin();
   browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::Wildcard(),
@@ -1000,6 +1023,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
       CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
       std::string(),
       CONTENT_SETTING_DEFAULT);
+
+  message_loop_runner->Run();
 
   // The two first rules should give |origin| the permission to use Push even
   // if the rules it used to have have been reset.
