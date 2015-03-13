@@ -77,8 +77,7 @@ class TestInstallPackageScanner(cros_test_lib.MockTestCase):
     """Patch imported modules."""
     self.PatchObject(cros_build_lib, 'GetChoice', return_value=0)
     self.device = ChromiumOSDeviceHandlerFake()
-    self.scanner = cros_deploy.InstallPackageScanner(self._BOARD,
-                                                     self._BUILD_ROOT)
+    self.scanner = cros_deploy.InstallPackageScanner(self._BUILD_ROOT)
 
   def SetupVartree(self, vartree_pkgs):
     self.device.agent.remote_sh_output = json.dumps(vartree_pkgs)

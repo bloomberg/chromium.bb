@@ -50,17 +50,28 @@ To just build a single package:
     if options.chroot_update and not options.deps:
       cros_build_lib.Debug('Skipping chroot update due to --nodeps')
     self.build_pkgs = None
-    self.host = self.options.host
-    self.board = (self.options.board or self.curr_brick_name or
-                  cros_build_lib.GetDefaultBoard())
-    self.brick = brick_lib.FindBrickByName(self.board)
+    self.host = False
+    self.board = None
+    self.brick = None
+
+    if self.options.host:
+      self.host = True
+    elif self.options.board:
+      self.board = self.options.board
+    elif self.options.brick or self.curr_brick_locator:
+      self.brick = brick_lib.Brick(self.options.brick
+                                   or self.curr_brick_locator)
+      self.board = self.brick.FriendlyName()
+    else:
+      # If nothing is explicitly set, use the default board.
+      self.board = cros_build_lib.GetDefaultBoard()
 
   @classmethod
   def AddParser(cls, parser):
     super(cls, BuildCommand).AddParser(parser)
     board = parser.add_mutually_exclusive_group()
-    board.add_argument('--board', '--brick',
-                       help='The board or brick to build packages for')
+    board.add_argument('--board', help='The board to build packages for.')
+    board.add_argument('--brick', help='The brick to build packages for.')
     board.add_argument('--host', help='Build packages for the chroot itself',
                        default=False, action='store_true')
     parser.add_argument('--no-binary', help="Don't use binary packages",
@@ -120,16 +131,19 @@ To just build a single package:
       cmd = ['emerge'] if board is None else ['emerge-%s' % board]
     return cmd
 
-  def _Emerge(self, packages, board=None):
+  def _Emerge(self, packages, host=False):
     """Emerge the specified packages to the specified board.
 
     Args:
       packages: Packages to emerge.
-      board: Board to emerge to. If None, emerge to host.
+      host: If True, emerge to host.
     """
-    modified_packages = list(workon.ListModifiedWorkonPackages(board, None,
-                                                               board is None))
-    cmd = self._GetEmergeCommand(board) + [
+    brick, board_name = (None, None) if host else (self.brick, self.board)
+
+    modified_packages = list(workon.ListModifiedWorkonPackages(
+        None if brick else board_name, brick, host))
+
+    cmd = self._GetEmergeCommand(board_name) + [
         '-uNv',
         '--reinstall-atoms=%s' % ' '.join(modified_packages),
         '--usepkg-exclude=%s' % ' '.join(modified_packages),
@@ -137,7 +151,7 @@ To just build a single package:
     cmd.append('--deep' if self.options.deps else '--nodeps')
     if self.options.binary:
       cmd += ['-g', '--with-bdeps=y']
-      if board is None:
+      if host:
         # Only update toolchains in the chroot when binpkgs are available. The
         # toolchain rollout process only takes place when the chromiumos sdk
         # builder finishes a successful build and pushes out binpkgs.
@@ -162,7 +176,7 @@ To just build a single package:
       cros_build_lib.SudoRunCommand(cmd, debug_level=logging.DEBUG)
 
       # Update the host before updating the board.
-      self._Emerge(list(_HOST_PKGS))
+      self._Emerge(list(_HOST_PKGS), host=True)
 
       # Automatically discard all CONFIG_PROTECT'ed files. Those that are
       # protected should not be overwritten until the variable is changed.
@@ -174,30 +188,37 @@ To just build a single package:
   def _Build(self):
     """Update the chroot, then merge the requested packages."""
     self._UpdateChroot()
-    self._Emerge(self.build_pkgs, None if self.host else self.board)
+    self._Emerge(self.build_pkgs, host=self.host)
 
   def _SetupBoardIfNeeded(self):
     """Create the board if it's missing."""
     if not self.host:
-      self.brick.GeneratePortageConfig()
-
-      self._UpdateChroot()
       cmd = [os.path.join(constants.CROSUTILS_DIR, 'setup_board'),
              '--skip_toolchain_update', '--skip_chroot_upgrade']
-      cmd.append('--board=%s' % self.board)
+
+      if self.brick:
+        self.brick.GeneratePortageConfig()
+        cmd.append('--brick=%s' % self.brick.brick_locator)
+      else:
+        cmd.append('--board=%s' % self.board)
+
       if not self.options.binary:
         cmd.append('--nousepkg')
+
+      self._UpdateChroot()
       cros_build_lib.RunCommand(cmd)
 
   def Run(self):
     """Run cros build."""
     if not self.host:
-      if not self.board:
+      if not (self.board or self.brick):
         cros_build_lib.Die('You did not specify a board/brick to build for. '
                            'You need to be in a brick directory or set '
-                           '--board/--brick')
-      if not self.brick:
-        cros_build_lib.Die('Could not find brick for %s' % self.board)
+                           '--board/--brick/--host')
+
+      if self.brick and self.brick.legacy:
+        cros_build_lib.Die('--brick should not be used with board names. Use '
+                           '--board=%s instead.' % self.brick.config['name'])
 
     self.RunInsideChroot(auto_detect_brick=True)
 

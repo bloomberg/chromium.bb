@@ -257,9 +257,9 @@ class RemoteDeviceUpdater(object):
 
   def __init__(self, ssh_hostname, ssh_port, image, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
-               board=None, src_image_to_delta=None, wipe=True, debug=False,
-               yes=False, force=False, ping=True, disable_verification=False,
-               sdk_version=None):
+               board=None, brick=None, src_image_to_delta=None, wipe=True,
+               debug=False, yes=False, force=False, ping=True,
+               disable_verification=False, sdk_version=None):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
       cros_build_lib.Die('No update operation to perform. Use -h to see usage.')
@@ -269,6 +269,7 @@ class RemoteDeviceUpdater(object):
     self.ssh_port = ssh_port
     self.image = image
     self.board = board
+    self.brick = brick
     self.src_image_to_delta = src_image_to_delta
     self.do_stateful_update = stateful_update
     self.do_rootfs_update = rootfs_update
@@ -537,6 +538,8 @@ class RemoteDeviceUpdater(object):
                 self.board)
             self.board = None
 
+          self.brick = None
+
         self.board = cros_build_lib.GetBoard(device_board=device.board,
                                              override_board=self.board,
                                              force=self.yes)
@@ -544,13 +547,16 @@ class RemoteDeviceUpdater(object):
           cros_build_lib.Die('No board identified')
         logging.info('Board is %s', self.board)
 
-        # Make sure that a brick is found and compatible with the device.
-        brick = brick_lib.FindBrickByName(self.board)
-        if not brick:
-          cros_build_lib.Die('Could not find brick for board')
-        if not (self.force or brick.Inherits(device.board)):
-          cros_build_lib.Die('Device (%s) is incompatible with board',
-                             device.board)
+        if not self.force:
+          # If a brick was specified, it must be compatible with the device.
+          if self.brick:
+            if not self.brick.Inherits(device.board):
+              cros_build_lib.Die('Device (%s) is incompatible with brick %s',
+                                 device.board, self.brick.brick_locator)
+          elif self.board != device.board:
+            # If a board was specified, it must be compatible with the device..
+            cros_build_lib.Die('Device (%s) is incompatible with board %s',
+                               device.board, self.board)
 
         payload_dir = self.tempdir
         if os.path.isdir(self.image):
@@ -731,9 +737,10 @@ Examples:
 
     update = parser.add_argument_group('Advanced device update options')
     update.add_argument(
-        '--board', '--brick', help='The board to use. By default it is '
+        '--board', help='The board to use. By default it is '
         'automatically detected. You can override the detected board with '
         'this option')
+    update.add_argument('--brick', help='The brick to use.')
     update.add_argument(
         '--yes', default=False, action='store_true',
         help='Answer yes to any prompt. Use with caution.')
@@ -822,7 +829,13 @@ Examples:
       image = 'project_sdk'
 
     try:
-      board = self.options.board or self.curr_brick_name
+      brick_locator = self.options.brick or self.curr_brick_locator
+      brick = brick_lib.Brick(brick_locator) if brick_locator else None
+      if brick:
+        board = brick.FriendlyName()
+      else:
+        board = self.options.board
+
       if device.scheme == commandline.DEVICE_SCHEME_SSH:
         logging.info('Preparing to update the remote device %s',
                      device.hostname)
@@ -831,6 +844,7 @@ Examples:
             device.port,
             image,
             board=board,
+            brick=brick,
             src_image_to_delta=self.options.src_image_to_delta,
             rootfs_update=self.options.rootfs_update,
             stateful_update=self.options.stateful_update,

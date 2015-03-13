@@ -72,7 +72,7 @@ class CrosCommand(object):
   def __init__(self, options):
     self.options = options
     brick = brick_lib.FindBrickInPath()
-    self.curr_brick_name = brick.config.get('name') if brick else None
+    self.curr_brick_locator = brick.brick_locator if brick else None
 
   @classmethod
   def AddParser(cls, parser):
@@ -83,7 +83,7 @@ class CrosCommand(object):
     """Run this command inside the chroot.
 
     If cwd is in a brick, and --board/--host is not explicitly set, set
-    --brick explicitly as we might not be able to detect the curr_brick_name
+    --brick explicitly as we might not be able to detect the curr_brick_locator
     inside the chroot (cwd will have changed).
 
     Args:
@@ -95,8 +95,8 @@ class CrosCommand(object):
     target_arg = next((getattr(self.options, arg, None)
                        for arg in ('board', 'brick', 'host')), None)
     extra_args = None
-    if auto_detect_brick and not target_arg and self.curr_brick_name:
-      extra_args = ['--brick', self.curr_brick_name]
+    if auto_detect_brick and not target_arg and self.curr_brick_locator:
+      extra_args = ['--brick', self.curr_brick_locator]
 
     raise commandline.ChrootRequiredError(extra_args=extra_args)
 

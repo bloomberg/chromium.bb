@@ -35,7 +35,7 @@ class InstallPackageScanner(object):
   packages only), or it will be updated if its sysroot version and build time
   are different from the target. Common usage:
 
-    pkg_scanner = InstallPackageScanner(board, sysroot)
+    pkg_scanner = InstallPackageScanner(sysroot)
     pkgs = pkg_scanner.Run(...)
   """
 
@@ -73,8 +73,7 @@ for cpv in vartree.dbapi.cpv_all():
 print(json.dumps(pkg_info))
 """
 
-  def __init__(self, board, sysroot):
-    self.board = board
+  def __init__(self, sysroot):
     self.sysroot = sysroot
     # Members containing the sysroot (binpkg) and target (installed) package DB.
     self.target_db = None
@@ -724,6 +723,7 @@ For more information of cros build usage:
     self.root = None
     self.ping = True
     self.board = None
+    self.brick = None
     self.sysroot = None
 
   @classmethod
@@ -740,10 +740,15 @@ For more information of cros build usage:
         'Use @installed to update all installed packages (requires --update). '
         'If no packages listed, uses the current brick main package.',
         nargs='*')
-    parser.add_argument(
-        '--board', '--brick', help='The board to use. By default it is '
-        'automatically detected. You can override the detected board with '
-        'this option.')
+    target = parser.add_mutually_exclusive_group()
+    target.add_argument(
+        '--board',
+        help='The board to use. By default it is automatically detected. You '
+        'can override the detected board with this option.')
+    target.add_argument(
+        '--brick',
+        help='The brick to use. Will be detected from CWD if possible and take '
+        'precedence over the detected board.')
     parser.add_argument(
         '--no-strip', dest='strip', action='store_false', default=True,
         help='Do not run strip_package to filter out preset paths in the '
@@ -901,7 +906,14 @@ For more information of cros build usage:
     self.clean_binpkg = self.options.clean_binpkg
     self.root = self.options.root
     self.ping = self.options.ping
-    self.board = self.options.board or self.curr_brick_name
+
+    brick_locator = self.options.brick or self.curr_brick_locator
+    if brick_locator:
+      self.brick = brick_lib.Brick(brick_locator)
+      self.board = self.brick.FriendlyName()
+    else:
+      self.board = self.options.board
+
     self.ssh_hostname = self.options.device.hostname
     self.ssh_username = self.options.device.username
     self.ssh_port = self.options.device.port
@@ -939,16 +951,17 @@ For more information of cros build usage:
                                              override_board=self.board)
         logging.info('Board is %s', self.board)
 
-        # Make sure that a brick is found and compatible with the device.
-        brick = brick_lib.FindBrickByName(self.board)
-        if not brick:
-          cros_build_lib.Die('Could not find brick for board')
-        if not (self.options.force or brick.Inherits(device.board)):
-          cros_build_lib.Die('Device (%s) is incompatible with board',
-                             device.board)
-
-        # If this is an official SDK, check that the target is compatible.
         if not self.options.force:
+          # If a brick is specified, it must be compatible with the device.
+          if self.brick:
+            if not self.brick.Inherits(device.board):
+              cros_build_lib.Die('Device (%s) is incompatible with brick',
+                                 device.board)
+          elif self.board != device.board:
+            cros_build_lib.Die('Device (%s) is incompatible with board',
+                               device.board)
+
+          # If this is an official SDK, check that the target is compatible.
           sdk_version = project_sdk.FindVersion()
           if sdk_version and device.sdk_version != sdk_version:
             cros_build_lib.Die('Device SDK version (%s) is incompatible with '
@@ -958,7 +971,8 @@ For more information of cros build usage:
         self.sysroot = cros_build_lib.GetSysroot(board=self.board)
 
         # If no packages were listed, find the brick's main packages.
-        deploy_pkgs = self.options.packages or (brick and brick.MainPackages())
+        deploy_pkgs = (self.options.packages or
+                       (self.brick and self.brick.MainPackages()))
         if not deploy_pkgs:
           cros_build_lib.Die('No packages found, nothing to deploy.')
 
@@ -972,7 +986,7 @@ For more information of cros build usage:
             cros_build_lib.Die('Cannot remount rootfs as read-write. Exiting.')
 
         # Obtain list of packages to upgrade/remove.
-        pkg_scanner = InstallPackageScanner(self.board, self.sysroot)
+        pkg_scanner = InstallPackageScanner(self.sysroot)
         pkgs, listed, num_updates = pkg_scanner.Run(
             device, self.root, deploy_pkgs, self.options.update,
             self.options.deep, self.options.deep_rev)
