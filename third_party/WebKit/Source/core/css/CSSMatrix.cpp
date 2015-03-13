@@ -57,6 +57,13 @@ CSSMatrix::CSSMatrix(const String& s, ExceptionState& exceptionState)
     setMatrixValue(s, exceptionState);
 }
 
+static inline PassRefPtr<LayoutStyle> createInitialStyle()
+{
+    RefPtr<LayoutStyle> initialStyle = LayoutStyle::create();
+    initialStyle->font().update(nullptr);
+    return initialStyle;
+}
+
 void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionState)
 {
     if (string.isEmpty())
@@ -68,8 +75,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
         if (value->isPrimitiveValue() && (toCSSPrimitiveValue(value.get()))->getValueID() == CSSValueNone)
             return;
 
-        // FIXME: This has a null pointer crash if we use ex units (crbug.com/414145)
-        DEFINE_STATIC_REF(LayoutStyle, initialStyle, LayoutStyle::create());
+        DEFINE_STATIC_REF(LayoutStyle, initialStyle, createInitialStyle());
         TransformOperations operations;
         if (!TransformBuilder::createTransformOperations(value.get(), CSSToLengthConversionData(initialStyle, initialStyle, nullptr, 1.0f), operations)) {
             exceptionState.throwDOMException(SyntaxError, "Failed to interpret '" + string + "' as a transformation operation.");
