@@ -23,8 +23,8 @@
 #ifndef StyleResourceLoader_h
 #define StyleResourceLoader_h
 
-#include "wtf/OwnPtr.h"
-#include "wtf/PassRefPtr.h"
+#include "platform/heap/Handle.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
@@ -39,12 +39,15 @@ class StylePendingImage;
 // Manages loading of resources, requested by the stylesheets.
 // Expects the same lifetime as StyleResolver, because
 // it expects Document to never change.
-class StyleResourceLoader {
-WTF_MAKE_NONCOPYABLE(StyleResourceLoader);
+class StyleResourceLoader final {
+    WTF_MAKE_NONCOPYABLE(StyleResourceLoader);
+    DISALLOW_ALLOCATION();
 public:
     explicit StyleResourceLoader(Document*);
 
     void loadPendingResources(LayoutStyle*, ElementStyleResources&);
+
+    DECLARE_TRACE();
 
 private:
     void loadPendingSVGDocuments(LayoutStyle*, ElementStyleResources&);
@@ -53,7 +56,7 @@ private:
     void loadPendingImages(LayoutStyle*, ElementStyleResources&);
     void loadPendingShapeImage(LayoutStyle*, ShapeValue*, float deviceScaleFactor);
 
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
 };
 
 } // namespace blink

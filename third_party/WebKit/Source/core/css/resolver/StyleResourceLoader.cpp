@@ -46,6 +46,11 @@ StyleResourceLoader::StyleResourceLoader(Document* document)
 {
 }
 
+DEFINE_TRACE(StyleResourceLoader)
+{
+    visitor->trace(m_document);
+}
+
 void StyleResourceLoader::loadPendingSVGDocuments(LayoutStyle* layoutStyle, ElementStyleResources& elementStyleResources)
 {
     if (!layoutStyle->hasFilter() || elementStyleResources.pendingSVGDocuments().isEmpty())
