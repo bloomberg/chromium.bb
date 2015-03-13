@@ -53,6 +53,7 @@ and certificate leaf = H\"85cee8254216185620ddc8851c7a9fc4dfe120ef\"\
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${crashpad_handler}" \
     -r="designated => identifier \"crashpad_handler\" \
+${requirement_suffix}"
 codesign --sign "${codesign_id}" --keychain "${codesign_keychain}" \
     "${framework}" \
     -r="designated => identifier \"com.google.Chrome.framework\" \
