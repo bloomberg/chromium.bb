@@ -772,15 +772,23 @@ void NetworkStateHandler::DefaultNetworkServiceChanged(
     if (!network) {
       // If NetworkState is not available yet, do not notify observers here,
       // they will be notified when the state is received.
-      NET_LOG_DEBUG("Default NetworkState not available",
-                    default_network_path_);
+      NET_LOG(EVENT) << "Default NetworkState not available: "
+                     << default_network_path_;
       return;
     }
   }
   if (network && !network->IsConnectedState()) {
-    NET_LOG_ERROR(
-        "DefaultNetwork is not connected: " + network->connection_state(),
-        network->path());
+    if (network->IsConnectingState()) {
+      NET_LOG(EVENT) << "DefaultNetwork is connecting: " << GetLogName(network)
+                     << ": " << network->connection_state();
+    } else {
+      NET_LOG(ERROR) << "DefaultNetwork in unexpected state: "
+                     << GetLogName(network) << ": "
+                     << network->connection_state();
+    }
+    // Do not notify observers here, the notification will occur when the
+    // connection state changes.
+    return;
   }
   NotifyDefaultNetworkChanged(network);
 }
@@ -867,23 +875,33 @@ void NetworkStateHandler::OnNetworkConnectionStateChanged(
     NetworkState* network) {
   SCOPED_NET_LOG_IF_SLOW();
   DCHECK(network);
-  std::string event = "NetworkConnectionStateChanged";
+  bool notify_default = false;
   if (network->path() == default_network_path_) {
-    event = "Default" + event;
-    if (!network->IsConnectedState()) {
-      NET_LOG_EVENT(
-          "DefaultNetwork is not connected: " + network->connection_state(),
-          network->path());
+    if (network->IsConnectedState()) {
+      notify_default = true;
+    } else if (network->IsConnectingState()) {
+      // Wait until the network is actually connected to notify that the default
+      // network changed.
+      NET_LOG(EVENT) << "Default network is not connected: "
+                     << GetLogName(network)
+                     << "State: " << network->connection_state();
+    } else {
+      NET_LOG(ERROR) << "Default network in unexpected state: "
+                     << GetLogName(network)
+                     << "State: " << network->connection_state();
       default_network_path_.clear();
       SortNetworkList();
       NotifyDefaultNetworkChanged(nullptr);
     }
   }
-  NET_LOG_EVENT("NOTIFY:" + event + ": " + network->connection_state(),
-                GetLogName(network));
+  std::string desc = "NetworkConnectionStateChanged";
+  if (notify_default)
+    desc = "Default" + desc;
+  NET_LOG(EVENT) << "NOTIFY: " << desc << ": " << GetLogName(network) << ": "
+                 << network->connection_state();
   FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                     NetworkConnectionStateChanged(network));
-  if (network->path() == default_network_path_)
+  if (notify_default)
     NotifyDefaultNetworkChanged(network);
 }
 
