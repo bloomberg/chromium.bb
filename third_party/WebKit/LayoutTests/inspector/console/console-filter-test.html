@@ -54,7 +54,7 @@ function test()
             var indent = "";
             for (var j = 0; j < viewMessage.nestingLevel(); ++j)
                 indent += "  ";
-            InspectorTest.addResult(indent + delimeter + viewMessage.toMessageElement().deepTextContent());
+            InspectorTest.addResult(indent + delimeter + viewMessage.toMessageElement().textContent);
         }
     }
 
