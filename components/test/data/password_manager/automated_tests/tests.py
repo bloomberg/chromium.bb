@@ -37,6 +37,15 @@ class Alexa(WebsiteTest):
     self.Submit("#pwd")
 
 
+class Dropbox(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https://www.dropbox.com/login")
+    self.FillUsernameInto(".text-input-input[name='login_email']")
+    self.FillPasswordInto(".text-input-input[name='login_password']")
+    self.Submit(".text-input-input[name='login_password']")
+
+
 class Facebook(WebsiteTest):
 
   def Login(self):
@@ -385,6 +394,7 @@ def Tests(environment, tests_to_run=None):
 
   working_tests = {
     "alexa": Alexa("alexa"),
+    "dropbox": Dropbox("dropbox"),
     "facebook": Facebook("facebook"),
     "google": Google("google"),
     "imgur": Imgur("imgur"),
