@@ -62,6 +62,7 @@
     testConfig.loadQueryParams();
     // Update document with test configuration values.
     var emeApp = new EMEApp(testConfig);
+    var player;
 
     function onTimeUpdate(e) {
       var video = e.target;
@@ -84,8 +85,28 @@
       video.removeEventListener('timeupdate', onTimeUpdate);
     }
 
-    function play(video) {
+    function onFirstPlayEnded(e) {
+      Utils.timeLog('First play ended.');
+      var video = e.target;
+      video.removeEventListener('ended', onFirstPlayEnded);
+      video.removeEventListener('abort', Utils.failTest);
+
+      // Reset src (to same video again).
+      PlayerUtils.setVideoSource(player);
+
+      // Play the video a second time.
+      Utils.timeLog('Playing second time.');
+      play(video, false);
+    }
+
+    function play(video, playTwice) {
       Utils.resetTitleChange();
+      if (playTwice) {
+        // Wait for the first play to complete.
+        video.addEventListener('ended', onFirstPlayEnded);
+        video.play();
+        return;
+      }
       // Ended should not fire before onTimeUpdate.
       video.addEventListener('ended', Utils.failTest);
       video.addEventListener('timeupdate', onTimeUpdate);
@@ -104,8 +125,12 @@
 
     function start() {
       emeApp.createPlayer()
-          .then(function(player) { play(player.video); })
-          .catch(function(error) { Utils.failTest('Unable to play video.'); });
+          .then(function(p) {
+              player = p;
+              play(player.video, testConfig.playTwice);
+          }).catch(function(error) {
+              Utils.failTest('Unable to play video.');
+          });
     }
 
     start();

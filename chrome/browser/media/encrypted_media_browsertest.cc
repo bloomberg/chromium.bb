@@ -85,6 +85,9 @@ enum EmeVersion {
   UNPREFIXED
 };
 
+// Whether the video should be played once or twice.
+enum class PlayTwice { NO, YES };
+
 // MSE is available on all desktop platforms and on Android 4.1 and later.
 static bool IsMSESupported() {
 #if defined(OS_ANDROID)
@@ -144,6 +147,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
                              EmeVersion eme_version,
                              const std::string& session_to_load,
                              bool force_invalid_response,
+                             PlayTwice play_twice,
                              const std::string& expected_title) {
     if (src_type == MSE && !IsMSESupported()) {
       DVLOG(0) << "Skipping test - MSE not supported.";
@@ -161,6 +165,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       query_params.push_back(std::make_pair("forceInvalidResponse", "1"));
     if (!session_to_load.empty())
       query_params.push_back(std::make_pair("sessionToLoad", session_to_load));
+    if (play_twice == PlayTwice::YES)
+      query_params.push_back(std::make_pair("playTwice", "1"));
     RunEncryptedMediaTestPage(html_page, key_system, query_params,
                               expected_title);
   }
@@ -174,15 +180,9 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     if (!IsPlayBackPossible(key_system))
       expected_title = kEmeKeyError;
 
-    RunEncryptedMediaTest(kDefaultEmePlayer,
-                          media_file,
-                          media_type,
-                          key_system,
-                          src_type,
-                          eme_version,
-                          kNoSessionToLoad,
-                          false,
-                          expected_title);
+    RunEncryptedMediaTest(kDefaultEmePlayer, media_file, media_type, key_system,
+                          src_type, eme_version, kNoSessionToLoad, false,
+                          PlayTwice::NO, expected_title);
     // Check KeyMessage received for all key systems.
     bool receivedKeyMessage = false;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -317,16 +317,17 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase {
                             const std::string& expected_title) {
     // Since we do not test playback, arbitrarily choose a test file and source
     // type.
-    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
-                          kWebMAudioOnly, key_system, SRC, UNPREFIXED,
-                          kNoSessionToLoad, false, expected_title);
+    RunEncryptedMediaTest(
+        kDefaultEmePlayer, "bear-a_enc-a.webm", kWebMAudioOnly, key_system, SRC,
+        UNPREFIXED, kNoSessionToLoad, false, PlayTwice::NO, expected_title);
   }
 
   void TestPlaybackCase(const std::string& session_to_load,
                         const std::string& expected_title) {
     RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-v_enc-v.webm",
                           kWebMVideoOnly, kExternalClearKeyKeySystem, SRC,
-                          UNPREFIXED, session_to_load, false, expected_title);
+                          UNPREFIXED, session_to_load, false, PlayTwice::NO,
+                          expected_title);
   }
 
  protected:
@@ -346,16 +347,17 @@ class ECKPrefixedEncryptedMediaTest : public EncryptedMediaTestBase {
                             const std::string& expected_title) {
     // Since we do not test playback, arbitrarily choose a test file and source
     // type.
-    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm",
-                          kWebMAudioOnly, key_system, SRC, PREFIXED,
-                          kNoSessionToLoad, false, expected_title);
+    RunEncryptedMediaTest(
+        kDefaultEmePlayer, "bear-a_enc-a.webm", kWebMAudioOnly, key_system, SRC,
+        PREFIXED, kNoSessionToLoad, false, PlayTwice::NO, expected_title);
   }
 
   void TestPlaybackCase(const std::string& session_to_load,
                         const std::string& expected_title) {
     RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-v_enc-v.webm",
                           kWebMVideoOnly, kExternalClearKeyKeySystem, SRC,
-                          PREFIXED, session_to_load, false, expected_title);
+                          PREFIXED, session_to_load, false, PlayTwice::NO,
+                          expected_title);
   }
 
  protected:
@@ -412,28 +414,26 @@ class EncryptedMediaTest
                                 CurrentEmeVersion());
   }
 
+  void TestMultiplePlayback(const std::string& encrypted_media,
+                            const std::string& media_type) {
+    RunEncryptedMediaTest(kDefaultEmePlayer, encrypted_media, media_type,
+                          CurrentKeySystem(), CurrentSourceType(),
+                          CurrentEmeVersion(), kNoSessionToLoad, false,
+                          PlayTwice::YES, kEnded);
+  }
+
   void RunInvalidResponseTest() {
-    RunEncryptedMediaTest(kDefaultEmePlayer,
-                          "bear-320x240-av_enc-av.webm",
-                          kWebMAudioVideo,
-                          CurrentKeySystem(),
-                          CurrentSourceType(),
-                          CurrentEmeVersion(),
-                          kNoSessionToLoad,
-                          true,
-                          kEmeKeyError);
+    RunEncryptedMediaTest(kDefaultEmePlayer, "bear-320x240-av_enc-av.webm",
+                          kWebMAudioVideo, CurrentKeySystem(),
+                          CurrentSourceType(), CurrentEmeVersion(),
+                          kNoSessionToLoad, true, PlayTwice::NO, kEmeKeyError);
   }
 
   void TestFrameSizeChange() {
-    RunEncryptedMediaTest("encrypted_frame_size_change.html",
-                          "frame_size_change-av_enc-v.webm",
-                          kWebMAudioVideo,
-                          CurrentKeySystem(),
-                          CurrentSourceType(),
-                          CurrentEmeVersion(),
-                          kNoSessionToLoad,
-                          false,
-                          kEnded);
+    RunEncryptedMediaTest(
+        "encrypted_frame_size_change.html", "frame_size_change-av_enc-v.webm",
+        kWebMAudioVideo, CurrentKeySystem(), CurrentSourceType(),
+        CurrentEmeVersion(), kNoSessionToLoad, false, PlayTwice::NO, kEnded);
   }
 
   void TestConfigChange() {
@@ -574,6 +574,10 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
   TestSimplePlayback("bear-320x240-opus-av_enc-v.webm", kWebMAudioVideo);
 }
 
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Multiple_VideoAudio_WebM) {
+  TestMultiplePlayback("bear-320x240-av_enc-av.webm", kWebMAudioVideo);
+}
+
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, InvalidResponseKeyError) {
   RunInvalidResponseTest();
 }
@@ -627,29 +631,17 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // The parent key system cannot be used in generateKeyRequest.
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException_Prefixed) {
-  RunEncryptedMediaTest(kDefaultEmePlayer,
-                        "bear-a_enc-a.webm",
-                        kWebMAudioOnly,
-                        "com.widevine",
-                        MSE,
-                        PREFIXED,
-                        kNoSessionToLoad,
-                        false,
-                        kEmeNotSupportedError);
+  RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm", kWebMAudioOnly,
+                        "com.widevine", MSE, PREFIXED, kNoSessionToLoad, false,
+                        PlayTwice::NO, kEmeNotSupportedError);
 }
 
 // TODO(jrummell): http://crbug.com/349181
 // The parent key system cannot be used when creating MediaKeys.
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
-  RunEncryptedMediaTest(kDefaultEmePlayer,
-                        "bear-a_enc-a.webm",
-                        kWebMAudioOnly,
-                        "com.widevine",
-                        MSE,
-                        UNPREFIXED,
-                        kNoSessionToLoad,
-                        false,
-                        kEmeNotSupportedError);
+  RunEncryptedMediaTest(kDefaultEmePlayer, "bear-a_enc-a.webm", kWebMAudioOnly,
+                        "com.widevine", MSE, UNPREFIXED, kNoSessionToLoad,
+                        false, PlayTwice::NO, kEmeNotSupportedError);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 

@@ -70,6 +70,7 @@ var KEYSYSTEM_ELEMENT_ID = 'keySystemList';
 var MEDIA_TYPE_ELEMENT_ID = 'mediaTypeList';
 var USE_MSE_ELEMENT_ID = 'useMSE';
 var USE_PREFIXED_EME_ID = 'usePrefixedEME';
+var USE_PLAY_TWICE_ELEMENT_ID = 'playTwice';
 
 // These variables get updated every second, so better to have global pointers.
 var decodedFPSElement = document.getElementById('decodedFPS');
