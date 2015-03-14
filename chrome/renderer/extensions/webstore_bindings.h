@@ -9,10 +9,7 @@
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "chrome/renderer/extensions/chrome_v8_extension_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
-
-namespace blink {
-class WebLocalFrame;
-}
+#include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace extensions {
 
@@ -45,10 +42,8 @@ class WebstoreBindings : public ObjectBackedNativeHandler,
   // parameter will be populated with the ID. On failure, false will be returned
   // and |error| will be populated with the error.
   static bool GetWebstoreItemIdFromFrame(
-      blink::WebLocalFrame* frame,
-      const std::string& preferred_store_link_url,
-      std::string* webstore_item_id,
-      std::string* error);
+      blink::WebFrame* frame, const std::string& preferred_store_link_url,
+      std::string* webstore_item_id, std::string* error);
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreBindings);
 };
