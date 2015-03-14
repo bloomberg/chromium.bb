@@ -2203,6 +2203,12 @@ void Browser::ProcessPendingUIUpdates() {
 
   chrome_updater_factory_.InvalidateWeakPtrs();
 
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "467185 Browser::ProcessPendingUIUpdates1"));
+
   for (UpdateMap::const_iterator i = scheduled_updates_.begin();
        i != scheduled_updates_.end(); ++i) {
     // Do not dereference |contents|, it may be out-of-date!
@@ -2210,6 +2216,12 @@ void Browser::ProcessPendingUIUpdates() {
     unsigned flags = i->second;
 
     if (contents == tab_strip_model_->GetActiveWebContents()) {
+      // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185
+      // is fixed.
+      tracked_objects::ScopedTracker tracking_profile2(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "467185 Browser::ProcessPendingUIUpdates2"));
+
       // Updates that only matter when the tab is selected go here.
 
       // Updating the URL happens synchronously in ScheduleUIUpdate.
@@ -2227,6 +2239,11 @@ void Browser::ProcessPendingUIUpdates() {
     // Updates that don't depend upon the selected state go here.
     if (flags &
         (content::INVALIDATE_TYPE_TAB | content::INVALIDATE_TYPE_TITLE)) {
+      // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185
+      // is fixed.
+      tracked_objects::ScopedTracker tracking_profile3(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "467185 Browser::ProcessPendingUIUpdates3"));
       tab_strip_model_->UpdateWebContentsStateAt(
           tab_strip_model_->GetIndexOfWebContents(contents),
           TabStripModelObserver::ALL);
@@ -2234,8 +2251,14 @@ void Browser::ProcessPendingUIUpdates() {
 
     // Update the bookmark bar. It may happen that the tab is crashed, and if
     // so, the bookmark bar should be hidden.
-    if (flags & content::INVALIDATE_TYPE_TAB)
+    if (flags & content::INVALIDATE_TYPE_TAB) {
+      // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185
+      // is fixed.
+      tracked_objects::ScopedTracker tracking_profile4(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "467185 Browser::ProcessPendingUIUpdates4"));
       UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
+    }
 
     // We don't need to process INVALIDATE_STATE, since that's not visible.
   }
