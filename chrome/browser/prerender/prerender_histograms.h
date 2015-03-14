@@ -99,18 +99,6 @@ class PrerenderHistograms {
   void RecordTimeSinceLastRecentVisit(Origin origin,
                                       base::TimeDelta time) const;
 
-  // Record a prerender cookie status bitmap. Must be in the range
-  // [0, PrerenderContents::kNumCookieStatuses).
-  void RecordCookieStatus(Origin origin,
-                          uint8 experiment_id,
-                          int cookie_status) const;
-
-  // Record a prerender cookie send type. Must be in the range
-  // [0, PrerenderContents::kNumCookieSendTypes).
-  void RecordCookieSendType(Origin origin,
-                            uint8 experiment_id,
-                            int cookie_send_type) const;
-
   void RecordPrerenderPageVisitedStatus(Origin origin,
                                         uint8 experiment_id,
                                         bool visited_before) const;

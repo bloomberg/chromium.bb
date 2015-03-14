@@ -27911,6 +27911,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.CookieSendType" enum="PrerenderCookieSendType">
+  <obsolete>
+    Deprecated March 13 2015.
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>
     Enumeration of what types of cookies were sent for a prerender.
@@ -27918,6 +27921,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Prerender.CookieStatus" enum="PrerenderCookieStatus">
+  <obsolete>
+    Deprecated March 13 2015.
+  </obsolete>
   <owner>tburkard@chromium.org</owner>
   <summary>Enumeration of what cookie actions a prerender caused.</summary>
 </histogram>

@@ -398,29 +398,6 @@ void PrerenderHistograms::RecordFinalStatus(
   }
 }
 
-void PrerenderHistograms::RecordCookieStatus(Origin origin,
-                                             uint8 experiment_id,
-                                             int cookie_status) const {
-  DCHECK_GE(cookie_status, 0);
-  DCHECK_LT(cookie_status, PrerenderContents::kNumCookieStatuses);
-  PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
-      "CookieStatus", origin, experiment_id,
-      UMA_HISTOGRAM_ENUMERATION(name, cookie_status,
-                                PrerenderContents::kNumCookieStatuses));
-}
-
-void PrerenderHistograms::RecordCookieSendType(
-    Origin origin,
-    uint8 experiment_id,
-    int cookie_send_type) const {
-  DCHECK_GE(cookie_send_type, 0);
-  DCHECK_LT(cookie_send_type, PrerenderContents::kNumCookieSendTypes);
-  PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
-      "CookieSendType", origin, experiment_id,
-      UMA_HISTOGRAM_ENUMERATION(name, cookie_send_type,
-                                PrerenderContents::kNumCookieSendTypes));
-}
-
 void PrerenderHistograms::RecordPrerenderPageVisitedStatus(
     Origin origin,
     uint8 experiment_id,

@@ -29,7 +29,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
-#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "url/gurl.h"
 
@@ -258,16 +257,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       PrerenderContents::MatchCompleteStatus mc_status,
       FinalStatus final_status) const;
 
-  // Record a cookie status histogram (see prerender_histograms.h).
-  void RecordCookieStatus(Origin origin,
-                          uint8 experiment_id,
-                          int cookie_status) const;
-
-  // Record a cookie send type histogram (see prerender_histograms.h).
-  void RecordCookieSendType(Origin origin,
-                            uint8 experiment_id,
-                            int cookie_send_type) const;
-
   // content::NotificationObserver
   void Observe(int type,
                const content::NotificationSource& source,
@@ -317,17 +306,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   PrerenderLocalPredictor* local_predictor() {
     return local_predictor_.get();
   }
-
-  // Notification that a cookie event happened on a render frame. Will record a
-  // cookie event for a given render frame, if it is being prerendered.
-  // If cookies were sent, all cookies must be supplied in |cookie_list|.
-  static void RecordCookieEvent(int process_id,
-                                int frame_id,
-                                const GURL& url,
-                                const GURL& frame_url,
-                                bool is_for_blocking_resource,
-                                PrerenderContents::CookieEvent event,
-                                const net::CookieList* cookie_list);
 
   // Notification that a prerender has completed and its bytes should be
   // recorded.

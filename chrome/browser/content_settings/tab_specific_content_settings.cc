@@ -21,8 +21,8 @@
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
-#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -155,8 +155,7 @@ void TabSpecificContentSettings::CookiesRead(int render_process_id,
                                              const GURL& url,
                                              const GURL& frame_url,
                                              const net::CookieList& cookie_list,
-                                             bool blocked_by_policy,
-                                             bool is_for_blocking_resource) {
+                                             bool blocked_by_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabSpecificContentSettings* settings =
       GetForFrame(render_process_id, render_frame_id);
@@ -164,14 +163,6 @@ void TabSpecificContentSettings::CookiesRead(int render_process_id,
     settings->OnCookiesRead(url, frame_url, cookie_list,
                             blocked_by_policy);
   }
-  prerender::PrerenderManager::RecordCookieEvent(
-      render_process_id,
-      render_frame_id,
-      url,
-      frame_url,
-      is_for_blocking_resource,
-      prerender::PrerenderContents::COOKIE_EVENT_SEND,
-      &cookie_list);
 }
 
 // static
@@ -189,14 +180,6 @@ void TabSpecificContentSettings::CookieChanged(
   if (settings)
     settings->OnCookieChanged(url, frame_url, cookie_line, options,
                               blocked_by_policy);
-  prerender::PrerenderManager::RecordCookieEvent(
-      render_process_id,
-      render_frame_id,
-      url,
-      frame_url,
-      false /*is_critical_request*/,
-      prerender::PrerenderContents::COOKIE_EVENT_CHANGE,
-      NULL);
 }
 
 // static
