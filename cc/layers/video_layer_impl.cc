@@ -229,20 +229,14 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
         color_space = YUVVideoDrawQuad::REC_709;
       }
 
-      gfx::Size min_tex_size = coded_size;
-      for (size_t plane = 0; plane < 3u; ++plane) {
-        min_tex_size.SetToMin(
-            media::VideoFrame::PlaneSize(frame_->format(), plane, coded_size));
-      }
-
       gfx::RectF tex_coord_rect(
           tex_x_offset, tex_y_offset, tex_width_scale, tex_height_scale);
       YUVVideoDrawQuad* yuv_video_quad =
           render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
       yuv_video_quad->SetNew(
           shared_quad_state, quad_rect, opaque_rect, visible_quad_rect,
-          tex_coord_rect, min_tex_size, frame_resources_[0],
-          frame_resources_[1], frame_resources_[2],
+          tex_coord_rect, coded_size, frame_resources_[0], frame_resources_[1],
+          frame_resources_[2],
           frame_resources_.size() > 3 ? frame_resources_[3] : 0, color_space);
       break;
     }

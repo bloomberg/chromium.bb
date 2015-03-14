@@ -23,7 +23,7 @@ void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                               const gfx::Rect& opaque_rect,
                               const gfx::Rect& visible_rect,
                               const gfx::RectF& tex_coord_rect,
-                              const gfx::Size& min_tex_size,
+                              const gfx::Size& tex_size,
                               unsigned y_plane_resource_id,
                               unsigned u_plane_resource_id,
                               unsigned v_plane_resource_id,
@@ -33,7 +33,7 @@ void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->tex_coord_rect = tex_coord_rect;
-  this->min_tex_size = min_tex_size;
+  this->tex_size = tex_size;
   this->y_plane_resource_id = y_plane_resource_id;
   this->u_plane_resource_id = u_plane_resource_id;
   this->v_plane_resource_id = v_plane_resource_id;
@@ -47,7 +47,7 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               const gfx::Rect& visible_rect,
                               bool needs_blending,
                               const gfx::RectF& tex_coord_rect,
-                              const gfx::Size& min_tex_size,
+                              const gfx::Size& tex_size,
                               unsigned y_plane_resource_id,
                               unsigned u_plane_resource_id,
                               unsigned v_plane_resource_id,
@@ -56,7 +56,7 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->tex_coord_rect = tex_coord_rect;
-  this->min_tex_size = min_tex_size;
+  this->tex_size = tex_size;
   this->y_plane_resource_id = y_plane_resource_id;
   this->u_plane_resource_id = u_plane_resource_id;
   this->v_plane_resource_id = v_plane_resource_id;
@@ -82,7 +82,7 @@ const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(
 void YUVVideoDrawQuad::ExtendValue(
     base::trace_event::TracedValue* value) const {
   MathUtil::AddToTracedValue("tex_coord_rect", tex_coord_rect, value);
-  MathUtil::AddToTracedValue("min_tex_size", min_tex_size, value);
+  MathUtil::AddToTracedValue("tex_size", tex_size, value);
   value->SetInteger("y_plane_resource_id", y_plane_resource_id);
   value->SetInteger("u_plane_resource_id", u_plane_resource_id);
   value->SetInteger("v_plane_resource_id", v_plane_resource_id);

@@ -246,18 +246,11 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
             resources.release_callbacks[media::VideoFrame::kAPlane]));
   }
 
-  gfx::Size min_tex_size = video_frame->coded_size();
-  for (size_t plane = 0;
-       plane < media::VideoFrame::NumPlanes(video_frame->format()); ++plane) {
-    min_tex_size.SetToMin(media::VideoFrame::PlaneSize(
-        video_frame->format(), plane, video_frame->coded_size()));
-  }
-
   YUVVideoDrawQuad* yuv_quad =
       render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
   yuv_quad->SetNew(shared_state, rect, opaque_rect, rect, tex_coord_rect,
-                   min_tex_size, y_resource, u_resource, v_resource, a_resource,
-                   color_space);
+                   video_frame->coded_size(), y_resource, u_resource,
+                   v_resource, a_resource, color_space);
 }
 
 void CreateTestYUVVideoDrawQuad_Striped(
@@ -939,8 +932,8 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
     // the final image.  Bleeding will appear on all four sides of the video
     // if the tex coords are not clamped.
     CreateTestYUVVideoDrawQuad_TwoColor(
-        shared_state, format, false, tex_coord_rect, background_size, 128, 128,
-        128, green_rect, 149, 43, 21, pass.get(), video_resource_updater_.get(),
+        shared_state, format, false, tex_coord_rect, background_size, 0, 0, 0,
+        green_rect, 149, 43, 21, pass.get(), video_resource_updater_.get(),
         resource_provider_.get());
     pass_list->push_back(pass.Pass());
   }
