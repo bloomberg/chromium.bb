@@ -56,6 +56,7 @@
     readonly attribute DOMString tag;
     readonly attribute DOMString icon;
     readonly attribute boolean silent;
+    [RuntimeEnabled=NotificationExperimental, CallWith=ScriptState] readonly attribute any data;
 
     [MeasureAs=NotificationClosed] void close();
 };

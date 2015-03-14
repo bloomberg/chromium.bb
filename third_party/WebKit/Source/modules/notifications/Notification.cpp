@@ -31,7 +31,11 @@
 #include "config.h"
 #include "modules/notifications/Notification.h"
 
+#include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
@@ -72,6 +76,13 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
         return nullptr;
     }
 
+    RefPtr<SerializedScriptValue> data;
+    if (options.hasData()) {
+        data = SerializedScriptValueFactory::instance().create(options.data(), nullptr, exceptionState, options.data().isolate());
+        if (exceptionState.hadException())
+            return nullptr;
+    }
+
     Notification* notification = new Notification(title, context);
 
     notification->setBody(options.body());
@@ -79,6 +90,7 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
     notification->setLang(options.lang());
     notification->setDir(options.dir());
     notification->setSilent(options.silent());
+    notification->setSerializedData(data.release());
     if (options.hasIcon()) {
         KURL iconUrl = options.icon().isEmpty() ? KURL() : context->completeURL(options.icon());
         if (!iconUrl.isEmpty() && iconUrl.isValid())
@@ -270,6 +282,14 @@ void Notification::stop()
 bool Notification::hasPendingActivity() const
 {
     return m_state == NotificationStateShowing || m_asyncRunner.isActive();
+}
+
+ScriptValue Notification::data(ScriptState* scriptState) const
+{
+    if (!m_serializedData)
+        return ScriptValue::createNull(scriptState);
+
+    return ScriptValue(scriptState, m_serializedData->deserialize(scriptState->isolate()));
 }
 
 DEFINE_TRACE(Notification)

@@ -17,4 +17,5 @@ dictionary NotificationOptions {
     DOMString tag = "";
     DOMString icon;
     boolean silent = false;
+    [RuntimeEnabled=NotificationExperimental] any data = null;
 };

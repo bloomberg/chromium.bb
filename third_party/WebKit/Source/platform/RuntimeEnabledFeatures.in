@@ -95,6 +95,7 @@ NetworkInformation status=stable
 // CSS parser based on the css-syntax spec. crbug.com/330389
 NewCSSParser
 NotificationConstructor status=stable
+NotificationExperimental status=test
 Notifications status=stable
 OrientationEvent
 // The overflowchanged event is being removed. crbug.com/460822

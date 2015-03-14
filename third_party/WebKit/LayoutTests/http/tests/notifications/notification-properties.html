@@ -20,7 +20,8 @@
                 body: "Hallo, wereld!",
                 tag: "notification",
                 icon: "http://localhost/my_icon.png",
-                silent: true
+                silent: true,
+                data: "my data"
             };
 
             var notification = new Notification("My Notification", options);
@@ -32,6 +33,7 @@
             assert_equals(notification.tag, options.tag);
             assert_equals(notification.icon, options.icon);
             assert_true(notification.silent);
+            assert_equals(notification.data, options.data);
 
             var emptyNotification = new Notification("My Notification");
 
@@ -42,6 +44,7 @@
             assert_equals(emptyNotification.tag, "");
             assert_equals(emptyNotification.icon, "");
             assert_false(emptyNotification.silent);
+            assert_equals(emptyNotification.data, null);
 
             var invalidIconNotification = new Notification("My Notification", {
                 icon: "http://test:test/"
