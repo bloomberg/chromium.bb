@@ -48,6 +48,11 @@ namespace cast.streaming.rtpStream {
     // The maximum frame rate.
     double? maxFrameRate;
 
+    // TODO(miu): DEPRECATED.  These fields are ignored, and will be removed
+    // starting with Chrome 44.  http://crbug.com/466357
+    long? width;
+    long? height;
+
     // 32 bytes hex-encoded AES key.
     DOMString? aesKey;
 
