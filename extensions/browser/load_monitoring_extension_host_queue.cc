@@ -27,7 +27,7 @@ LoadMonitoringExtensionHostQueue::LoadMonitoringExtensionHostQueue(
       started_(false),
       num_queued_(0u),
       num_loaded_(0u),
-      max_awaiting_loading_(0u),
+      max_in_queue_(0u),
       max_active_loading_(0u),
       weak_ptr_factory_(this) {
 }
@@ -56,17 +56,16 @@ void LoadMonitoringExtensionHostQueue::StartMonitoring() {
 void LoadMonitoringExtensionHostQueue::Add(DeferredStartRenderHost* host) {
   StartMonitoring();
   delegate_->Add(host);
-  host->AddDeferredStartRenderHostObserver(this);
-  if (awaiting_loading_.insert(host).second) {
+  if (in_queue_.insert(host).second) {
     ++num_queued_;
-    max_awaiting_loading_ =
-        std::max(max_awaiting_loading_, awaiting_loading_.size());
+    max_in_queue_ = std::max(max_in_queue_, in_queue_.size());
+    host->AddDeferredStartRenderHostObserver(this);
   }
 }
 
 void LoadMonitoringExtensionHostQueue::Remove(DeferredStartRenderHost* host) {
   delegate_->Remove(host);
-  host->RemoveDeferredStartRenderHostObserver(this);
+  RemoveFromQueue(host);
 }
 
 void LoadMonitoringExtensionHostQueue::OnDeferredStartRenderHostDidStartLoading(
@@ -86,16 +85,30 @@ void LoadMonitoringExtensionHostQueue::OnDeferredStartRenderHostDestroyed(
 
 void LoadMonitoringExtensionHostQueue::StartMonitoringHost(
     const DeferredStartRenderHost* host) {
-  awaiting_loading_.erase(host);
   if (active_loading_.insert(host).second) {
     max_active_loading_ = std::max(max_active_loading_, active_loading_.size());
   }
+  RemoveFromQueue(host);
 }
 
 void LoadMonitoringExtensionHostQueue::FinishMonitoringHost(
     const DeferredStartRenderHost* host) {
   if (active_loading_.erase(host)) {
     ++num_loaded_;
+  }
+}
+
+void LoadMonitoringExtensionHostQueue::RemoveFromQueue(
+    const DeferredStartRenderHost* const_host) {
+  // This odd code is needed because StartMonitoringHost() gives us a const
+  // host, but we need a non-const one for
+  // RemoveDeferredStartRenderHostObserver().
+  for (DeferredStartRenderHost* host : in_queue_) {
+    if (host == const_host) {
+      host->RemoveDeferredStartRenderHostObserver(this);
+      in_queue_.erase(host);  // uhoh, iterator invalidated!
+      break;
+    }
   }
 }
 
@@ -106,12 +119,12 @@ void LoadMonitoringExtensionHostQueue::FinishMonitoring() {
   UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionHostMonitoring.NumLoaded",
                            num_loaded_);
   UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionHostMonitoring.MaxInQueue",
-                           max_awaiting_loading_);
+                           max_in_queue_);
   UMA_HISTOGRAM_COUNTS_100(
       "Extensions.ExtensionHostMonitoring.MaxActiveLoading",
       max_active_loading_);
   if (!finished_callback_.is_null()) {
-    finished_callback_.Run(num_queued_, num_loaded_, max_awaiting_loading_,
+    finished_callback_.Run(num_queued_, num_loaded_, max_in_queue_,
                            max_active_loading_);
   }
 }

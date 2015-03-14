@@ -381,7 +381,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   // When we update the size, the window will become visible. Stay hidden until
   // the host is loaded.
   pendingSize_ = newSize;
-  if (!host_ || !host_->has_loaded_once())
+  if (!host_ || !host_->did_stop_loading())
     return;
 
   // No need to use CA here, our caller calls us repeatedly to animate the
