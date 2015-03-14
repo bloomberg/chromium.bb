@@ -52,8 +52,8 @@ private:
     void removeObserver(const AtomicString& id, IdTargetObserver*);
     void notifyObserversInternal(const AtomicString& id);
 
-    typedef WillBeHeapHashSet<RawPtrWillBeMember<IdTargetObserver> > ObserverSet;
-    typedef WillBeHeapHashMap<StringImpl*, OwnPtrWillBeMember<ObserverSet> > IdToObserverSetMap;
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<IdTargetObserver>> ObserverSet;
+    typedef WillBeHeapHashMap<StringImpl*, OwnPtrWillBeMember<ObserverSet>> IdToObserverSetMap;
     IdToObserverSetMap m_registry;
     RawPtrWillBeMember<ObserverSet> m_notifyingObserversInSet;
 };

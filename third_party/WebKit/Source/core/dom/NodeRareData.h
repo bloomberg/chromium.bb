@@ -35,8 +35,8 @@ class NodeMutationObserverData final : public NoBaseWillBeGarbageCollected<NodeM
     WTF_MAKE_NONCOPYABLE(NodeMutationObserverData);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration> > registry;
-    WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration> > transientRegistry;
+    WillBeHeapVector<OwnPtrWillBeMember<MutationObserverRegistration>> registry;
+    WillBeHeapHashSet<RawPtrWillBeMember<MutationObserverRegistration>> transientRegistry;
 
     static PassOwnPtrWillBeRawPtr<NodeMutationObserverData> create()
     {

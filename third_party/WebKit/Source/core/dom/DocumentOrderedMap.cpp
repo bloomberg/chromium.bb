@@ -136,11 +136,11 @@ Element* DocumentOrderedMap::getElementById(const AtomicString& key, const TreeS
     return get<keyMatchesId>(key, scope);
 }
 
-const WillBeHeapVector<RawPtrWillBeMember<Element> >& DocumentOrderedMap::getAllElementsById(const AtomicString& key, const TreeScope* scope) const
+const WillBeHeapVector<RawPtrWillBeMember<Element>>& DocumentOrderedMap::getAllElementsById(const AtomicString& key, const TreeScope* scope) const
 {
     ASSERT(key);
     ASSERT(scope);
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapVector<RawPtrWillBeMember<Element> > >, emptyVector, (adoptPtrWillBeNoop(new WillBeHeapVector<RawPtrWillBeMember<Element> >())));
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<WillBeHeapVector<RawPtrWillBeMember<Element>>>, emptyVector, (adoptPtrWillBeNoop(new WillBeHeapVector<RawPtrWillBeMember<Element>>())));
 
     Map::iterator it = m_map.find(key);
     if (it == m_map.end())

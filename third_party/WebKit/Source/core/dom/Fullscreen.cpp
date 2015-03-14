@@ -329,7 +329,7 @@ void Fullscreen::exitFullscreen()
     // 3. Let descendants be all the doc's descendant browsing context's documents with a non-empty fullscreen
     // element stack (if any), ordered so that the child of the doc is last and the document furthest
     // away from the doc is first.
-    WillBeHeapDeque<RefPtrWillBeMember<Document> > descendants;
+    WillBeHeapDeque<RefPtrWillBeMember<Document>> descendants;
     for (Frame* descendant = document()->frame() ? document()->frame()->tree().traverseNext() : 0; descendant; descendant = descendant->tree().traverseNext()) {
         if (!descendant->isLocalFrame())
             continue;
@@ -544,7 +544,7 @@ void Fullscreen::eventQueueTimerFired(Timer<Fullscreen>*)
     // document will be detached and GC'd. We protect it here to make sure we
     // can finish the function successfully.
     RefPtrWillBeRawPtr<Document> protectDocument(document());
-    WillBeHeapDeque<RefPtrWillBeMember<Event> > eventQueue;
+    WillBeHeapDeque<RefPtrWillBeMember<Event>> eventQueue;
     m_eventQueue.swap(eventQueue);
 
     while (!eventQueue.isEmpty()) {

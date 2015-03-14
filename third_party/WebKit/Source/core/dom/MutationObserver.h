@@ -94,7 +94,7 @@ public:
     void enqueueMutationRecord(PassRefPtrWillBeRawPtr<MutationRecord>);
     void setHasTransientRegistration();
 
-    WillBeHeapHashSet<RawPtrWillBeMember<Node> > getObservedNodes() const;
+    WillBeHeapHashSet<RawPtrWillBeMember<Node>> getObservedNodes() const;
 
     DECLARE_TRACE();
 

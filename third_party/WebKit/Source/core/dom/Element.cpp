@@ -130,7 +130,7 @@ namespace blink {
 using namespace HTMLNames;
 using namespace XMLNames;
 
-typedef WillBeHeapVector<RefPtrWillBeMember<Attr> > AttrNodeList;
+typedef WillBeHeapVector<RefPtrWillBeMember<Attr>> AttrNodeList;
 
 static Attr* findAttrNodeInList(const AttrNodeList& attrNodeList, const QualifiedName& name)
 {
@@ -1903,7 +1903,7 @@ WillBeHeapVector<RefPtrWillBeMember<Attr>>* Element::attrNodeList()
     return hasRareData() ? elementRareData()->attrNodeList() : nullptr;
 }
 
-WillBeHeapVector<RefPtrWillBeMember<Attr> >& Element::ensureAttrNodeList()
+WillBeHeapVector<RefPtrWillBeMember<Attr>>& Element::ensureAttrNodeList()
 {
     setHasSyntheticAttrChildNodes(true);
     return ensureElementRareData().ensureAttrNodeList();
@@ -2587,13 +2587,13 @@ void Element::normalizeAttributes()
 {
     if (!hasAttributes())
         return;
-    WillBeHeapVector<RefPtrWillBeMember<Attr> >* attrNodes = attrNodeList();
+    WillBeHeapVector<RefPtrWillBeMember<Attr>>* attrNodes = attrNodeList();
     if (!attrNodes)
         return;
     // Copy the Attr Vector because Node::normalize() can fire synchronous JS
     // events (e.g. DOMSubtreeModified) and a JS listener could add / remove
     // attributes while we are iterating.
-    WillBeHeapVector<RefPtrWillBeMember<Attr> > attrNodesCopy(*attrNodes);
+    WillBeHeapVector<RefPtrWillBeMember<Attr>> attrNodesCopy(*attrNodes);
     for (size_t i = 0; i < attrNodesCopy.size(); ++i)
         attrNodesCopy[i]->normalize();
 }

@@ -61,7 +61,7 @@ public:
 
     void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
     void enqueuePerFrameEvent(PassRefPtrWillBeRawPtr<Event>);
-    void enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >&);
+    void enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener>>&);
 
     void suspend();
     void resume();
@@ -76,16 +76,16 @@ private:
     void executeCallbacks(double monotonicTimeNow);
     void callMediaQueryListListeners();
 
-    typedef PersistentHeapVectorWillBeHeapVector<Member<RequestAnimationFrameCallback> > CallbackList;
+    typedef PersistentHeapVectorWillBeHeapVector<Member<RequestAnimationFrameCallback>> CallbackList;
     CallbackList m_callbacks;
     CallbackList m_callbacksToInvoke; // only non-empty while inside executeCallbacks
 
     RawPtrWillBeMember<Document> m_document;
     CallbackId m_nextCallbackId;
     int m_suspendCount;
-    WillBeHeapVector<RefPtrWillBeMember<Event> > m_eventQueue;
-    WillBeHeapListHashSet<std::pair<RawPtrWillBeMember<const EventTarget>, const StringImpl*> > m_perFrameEvents;
-    typedef WillBeHeapListHashSet<RefPtrWillBeMember<MediaQueryListListener> > MediaQueryListListeners;
+    WillBeHeapVector<RefPtrWillBeMember<Event>> m_eventQueue;
+    WillBeHeapListHashSet<std::pair<RawPtrWillBeMember<const EventTarget>, const StringImpl*>> m_perFrameEvents;
+    typedef WillBeHeapListHashSet<RefPtrWillBeMember<MediaQueryListListener>> MediaQueryListListeners;
     MediaQueryListListeners m_mediaQueryListListeners;
 };
 

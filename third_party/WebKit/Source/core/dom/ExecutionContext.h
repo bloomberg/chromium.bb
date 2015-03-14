@@ -151,7 +151,7 @@ private:
 
     bool m_inDispatchErrorEvent;
     class PendingException;
-    OwnPtrWillBeMember<WillBeHeapVector<OwnPtrWillBeMember<PendingException> > > m_pendingExceptions;
+    OwnPtrWillBeMember<WillBeHeapVector<OwnPtrWillBeMember<PendingException>>> m_pendingExceptions;
 
     bool m_activeDOMObjectsAreSuspended;
     bool m_activeDOMObjectsAreStopped;

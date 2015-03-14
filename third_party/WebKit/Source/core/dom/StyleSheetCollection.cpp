@@ -43,14 +43,14 @@ void StyleSheetCollection::swap(StyleSheetCollection& other)
     m_activeAuthorStyleSheets.swap(other.m_activeAuthorStyleSheets);
 }
 
-void StyleSheetCollection::swapSheetsForSheetList(WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& sheets)
+void StyleSheetCollection::swapSheetsForSheetList(WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>& sheets)
 {
     // Only called for collection of HTML Imports that never has active sheets.
     ASSERT(m_activeAuthorStyleSheets.isEmpty());
     m_styleSheetsForStyleSheetList.swap(sheets);
 }
 
-void StyleSheetCollection::appendActiveStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& sheets)
+void StyleSheetCollection::appendActiveStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& sheets)
 {
     m_activeAuthorStyleSheets.appendVector(sheets);
 }

@@ -44,7 +44,7 @@ class MutationCallback : public NoBaseWillBeGarbageCollectedFinalized<MutationCa
 public:
     virtual ~MutationCallback() { }
 
-    virtual void call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord> >&, MutationObserver*) = 0;
+    virtual void call(const WillBeHeapVector<RefPtrWillBeMember<MutationRecord>>&, MutationObserver*) = 0;
     virtual ExecutionContext* executionContext() const = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }

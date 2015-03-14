@@ -93,7 +93,7 @@ public:
     // on object destruction is replaced by the garbage collector
     // clearing out their weak reference.
     typedef WillBeHeapHashMap<std::pair<unsigned char, StringImpl*>, RawPtrWillBeWeakMember<LiveNodeListBase>, NodeListAtomicCacheMapEntryHash> NodeListAtomicNameCacheMap;
-    typedef WillBeHeapHashMap<QualifiedName, RawPtrWillBeWeakMember<TagCollection> > TagCollectionCacheNS;
+    typedef WillBeHeapHashMap<QualifiedName, RawPtrWillBeWeakMember<TagCollection>> TagCollectionCacheNS;
 
     template<typename T>
     PassRefPtrWillBeRawPtr<T> addCache(ContainerNode& node, CollectionType collectionType, const AtomicString& name)

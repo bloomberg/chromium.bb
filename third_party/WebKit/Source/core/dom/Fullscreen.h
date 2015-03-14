@@ -106,7 +106,7 @@ private:
     void eventQueueTimerFired(Timer<Fullscreen>*);
 
     RefPtrWillBeMember<Element> m_fullScreenElement;
-    WillBeHeapVector<std::pair<RefPtrWillBeMember<Element>, RequestType> > m_fullScreenElementStack;
+    WillBeHeapVector<std::pair<RefPtrWillBeMember<Element>, RequestType>> m_fullScreenElementStack;
     LayoutFullScreen* m_fullScreenRenderer;
     Timer<Fullscreen> m_eventQueueTimer;
     WillBeHeapDeque<RefPtrWillBeMember<Event>> m_eventQueue;

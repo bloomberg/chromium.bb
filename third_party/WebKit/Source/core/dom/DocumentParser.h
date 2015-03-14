@@ -121,7 +121,7 @@ private:
     // m_document will be 0 after the parser is stopped.
     RawPtrWillBeMember<Document> m_document;
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<DocumentParserClient> > m_clients;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<DocumentParserClient>> m_clients;
 };
 
 } // namespace blink

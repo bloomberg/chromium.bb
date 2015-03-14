@@ -48,22 +48,22 @@ public:
 
     StyleSheetCollection();
 
-    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeAuthorStyleSheets() { return m_activeAuthorStyleSheets; }
-    WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& styleSheetsForStyleSheetList() { return m_styleSheetsForStyleSheetList; }
-    const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeAuthorStyleSheets() const { return m_activeAuthorStyleSheets; }
-    const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& styleSheetsForStyleSheetList() const { return m_styleSheetsForStyleSheetList; }
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& activeAuthorStyleSheets() { return m_activeAuthorStyleSheets; }
+    WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>& styleSheetsForStyleSheetList() { return m_styleSheetsForStyleSheetList; }
+    const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>& activeAuthorStyleSheets() const { return m_activeAuthorStyleSheets; }
+    const WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>& styleSheetsForStyleSheetList() const { return m_styleSheetsForStyleSheetList; }
 
     void swap(StyleSheetCollection&);
-    void swapSheetsForSheetList(WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >&);
-    void appendActiveStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >&);
+    void swapSheetsForSheetList(WillBeHeapVector<RefPtrWillBeMember<StyleSheet>>&);
+    void appendActiveStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>>&);
     void appendActiveStyleSheet(CSSStyleSheet*);
     void appendSheetForList(StyleSheet*);
 
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > m_styleSheetsForStyleSheetList;
-    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > m_activeAuthorStyleSheets;
+    WillBeHeapVector<RefPtrWillBeMember<StyleSheet>> m_styleSheetsForStyleSheetList;
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet>> m_activeAuthorStyleSheets;
 };
 
 } // namespace blink

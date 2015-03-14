@@ -131,7 +131,7 @@ bool MutationObserverRegistration::shouldReceiveMutationFrom(Node& node, Mutatio
     return m_attributeFilter.contains(attributeName->localName());
 }
 
-void MutationObserverRegistration::addRegistrationNodesToSet(WillBeHeapHashSet<RawPtrWillBeMember<Node> >& nodes) const
+void MutationObserverRegistration::addRegistrationNodesToSet(WillBeHeapHashSet<RawPtrWillBeMember<Node>>& nodes) const
 {
     ASSERT(m_registrationNode);
     nodes.add(m_registrationNode.get());

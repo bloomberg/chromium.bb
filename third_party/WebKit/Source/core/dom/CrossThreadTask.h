@@ -50,13 +50,13 @@ template<typename T> struct CrossThreadTaskTraits {
 template<typename T> struct CrossThreadTaskTraits<T*> {
     typedef T* ParamType;
 };
-template<typename T> struct CrossThreadTaskTraits<PassRefPtr<T> > {
+template<typename T> struct CrossThreadTaskTraits<PassRefPtr<T>> {
     typedef PassRefPtr<T> ParamType;
 };
-template<typename T> struct CrossThreadTaskTraits<PassOwnPtr<T> > {
+template<typename T> struct CrossThreadTaskTraits<PassOwnPtr<T>> {
     typedef PassOwnPtr<T> ParamType;
 };
-template<typename T> struct CrossThreadTaskTraits<RawPtr<T> > {
+template<typename T> struct CrossThreadTaskTraits<RawPtr<T>> {
     typedef RawPtr<T> ParamType;
 };
 

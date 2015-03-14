@@ -65,7 +65,7 @@ private:
     ExecutionContext* m_context;
     WeakPtrFactory<MainThreadTaskRunner> m_weakFactory;
     Timer<MainThreadTaskRunner> m_pendingTasksTimer;
-    Vector<OwnPtr<ExecutionContextTask> > m_pendingTasks;
+    Vector<OwnPtr<ExecutionContextTask>> m_pendingTasks;
     bool m_suspended;
 };
 

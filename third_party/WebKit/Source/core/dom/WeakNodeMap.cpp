@@ -24,7 +24,7 @@ public:
 
 private:
     typedef Vector<WeakNodeMap*, 1> MapList;
-    typedef HashMap<Node*, OwnPtr<MapList> > NodeToMapList;
+    typedef HashMap<Node*, OwnPtr<MapList>> NodeToMapList;
     NodeToMapList m_nodeToMapList;
 };
 

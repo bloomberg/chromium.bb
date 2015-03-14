@@ -53,7 +53,7 @@ public:
     bool containsMultiple(const AtomicString&) const;
     // concrete instantiations of the get<>() method template
     Element* getElementById(const AtomicString&, const TreeScope*) const;
-    const WillBeHeapVector<RawPtrWillBeMember<Element> >& getAllElementsById(const AtomicString&, const TreeScope*) const;
+    const WillBeHeapVector<RawPtrWillBeMember<Element>>& getAllElementsById(const AtomicString&, const TreeScope*) const;
     Element* getElementByMapName(const AtomicString&, const TreeScope*) const;
     Element* getElementByLowercasedMapName(const AtomicString&, const TreeScope*) const;
     Element* getElementByLabelForAttribute(const AtomicString&, const TreeScope*) const;
@@ -76,7 +76,7 @@ private:
 
         RawPtrWillBeMember<Element> element;
         unsigned count;
-        WillBeHeapVector<RawPtrWillBeMember<Element> > orderedList;
+        WillBeHeapVector<RawPtrWillBeMember<Element>> orderedList;
     };
 
     using Map = WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<MapEntry>>;

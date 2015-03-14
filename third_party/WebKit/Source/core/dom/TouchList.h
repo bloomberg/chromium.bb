@@ -42,7 +42,7 @@ public:
         return adoptRefWillBeNoop(new TouchList);
     }
 
-    static PassRefPtrWillBeRawPtr<TouchList> adopt(WillBeHeapVector<RefPtrWillBeMember<Touch> >& touches)
+    static PassRefPtrWillBeRawPtr<TouchList> adopt(WillBeHeapVector<RefPtrWillBeMember<Touch>>& touches)
     {
         return adoptRefWillBeNoop(new TouchList(touches));
     }
@@ -59,12 +59,12 @@ public:
 private:
     TouchList() { }
 
-    TouchList(WillBeHeapVector<RefPtrWillBeMember<Touch> >& touches)
+    TouchList(WillBeHeapVector<RefPtrWillBeMember<Touch>>& touches)
     {
         m_values.swap(touches);
     }
 
-    WillBeHeapVector<RefPtrWillBeMember<Touch> > m_values;
+    WillBeHeapVector<RefPtrWillBeMember<Touch>> m_values;
 };
 
 } // namespace blink

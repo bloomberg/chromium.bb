@@ -43,7 +43,7 @@ class Node;
 template <typename NodeType>
 class StaticNodeTypeList final : public NodeList {
 public:
-    static PassRefPtrWillBeRawPtr<StaticNodeTypeList> adopt(WillBeHeapVector<RefPtrWillBeMember<NodeType> >& nodes);
+    static PassRefPtrWillBeRawPtr<StaticNodeTypeList> adopt(WillBeHeapVector<RefPtrWillBeMember<NodeType>>& nodes);
 
     static PassRefPtrWillBeRawPtr<StaticNodeTypeList> createEmpty()
     {
@@ -63,16 +63,16 @@ private:
         return m_nodes.capacity() * sizeof(RefPtrWillBeMember<NodeType>);
     }
 
-    WillBeHeapVector<RefPtrWillBeMember<NodeType> > m_nodes;
+    WillBeHeapVector<RefPtrWillBeMember<NodeType>> m_nodes;
 };
 
 typedef StaticNodeTypeList<Node> StaticNodeList;
 typedef StaticNodeTypeList<Element> StaticElementList;
 
 template <typename NodeType>
-PassRefPtrWillBeRawPtr<StaticNodeTypeList<NodeType> > StaticNodeTypeList<NodeType>::adopt(WillBeHeapVector<RefPtrWillBeMember<NodeType> >& nodes)
+PassRefPtrWillBeRawPtr<StaticNodeTypeList<NodeType>> StaticNodeTypeList<NodeType>::adopt(WillBeHeapVector<RefPtrWillBeMember<NodeType>>& nodes)
 {
-    RefPtrWillBeRawPtr<StaticNodeTypeList<NodeType> > nodeList = adoptRefWillBeNoop(new StaticNodeTypeList<NodeType>);
+    RefPtrWillBeRawPtr<StaticNodeTypeList<NodeType>> nodeList = adoptRefWillBeNoop(new StaticNodeTypeList<NodeType>);
     nodeList->m_nodes.swap(nodes);
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(nodeList->AllocationSize());
     return nodeList.release();

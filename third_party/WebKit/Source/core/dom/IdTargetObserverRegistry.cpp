@@ -77,7 +77,7 @@ void IdTargetObserverRegistry::notifyObserversInternal(const AtomicString& id)
     if (!m_notifyingObserversInSet)
         return;
 
-    WillBeHeapVector<RawPtrWillBeMember<IdTargetObserver> > copy;
+    WillBeHeapVector<RawPtrWillBeMember<IdTargetObserver>> copy;
     copyToVector(*m_notifyingObserversInSet, copy);
     for (const auto& observer : copy) {
         if (m_notifyingObserversInSet->contains(observer))

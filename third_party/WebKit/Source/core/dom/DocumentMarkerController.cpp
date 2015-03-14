@@ -511,7 +511,7 @@ void DocumentMarkerController::removeMarkers(const MarkerRemoverPredicate& shoul
         for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
             OwnPtrWillBeMember<MarkerList>& list = (*markers)[markerListIndex];
 
-            WillBeHeapVector<RawPtrWillBeMember<RenderedDocumentMarker> > markersToBeRemoved;
+            WillBeHeapVector<RawPtrWillBeMember<RenderedDocumentMarker>> markersToBeRemoved;
             for (size_t j = 0; list.get() && j < list->size(); ++j) {
                 if (i->key->isTextNode() && shouldRemoveMarker(*list->at(j).get(), static_cast<const Text&>(*i->key)))
                     markersToBeRemoved.append(list->at(j).get());

@@ -59,7 +59,7 @@ public:
     MutationRecordDeliveryOptions deliveryOptions() const { return m_options & (MutationObserver::AttributeOldValue | MutationObserver::CharacterDataOldValue); }
     MutationObserverOptions mutationTypes() const { return m_options & MutationObserver::AllMutationTypes; }
 
-    void addRegistrationNodesToSet(WillBeHeapHashSet<RawPtrWillBeMember<Node> >&) const;
+    void addRegistrationNodesToSet(WillBeHeapHashSet<RawPtrWillBeMember<Node>>&) const;
 
     DECLARE_TRACE();
 
@@ -71,7 +71,7 @@ private:
     RefPtrWillBeMember<MutationObserver> m_observer;
     RawPtrWillBeWeakMember<Node> m_registrationNode;
     RefPtrWillBeMember<Node> m_registrationNodeKeepAlive;
-    typedef WillBeHeapHashSet<RefPtrWillBeMember<Node> > NodeHashSet;
+    typedef WillBeHeapHashSet<RefPtrWillBeMember<Node>> NodeHashSet;
     OwnPtrWillBeMember<NodeHashSet> m_transientRegistrationNodes;
 
     MutationObserverOptions m_options;

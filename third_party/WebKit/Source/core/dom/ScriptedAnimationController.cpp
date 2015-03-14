@@ -122,12 +122,12 @@ void ScriptedAnimationController::cancelCallback(CallbackId id)
 
 void ScriptedAnimationController::dispatchEvents(const AtomicString& eventInterfaceFilter)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Event> > events;
+    WillBeHeapVector<RefPtrWillBeMember<Event>> events;
     if (eventInterfaceFilter.isEmpty()) {
         events.swap(m_eventQueue);
         m_perFrameEvents.clear();
     } else {
-        WillBeHeapVector<RefPtrWillBeMember<Event> > remaining;
+        WillBeHeapVector<RefPtrWillBeMember<Event>> remaining;
         for (auto& event : m_eventQueue) {
             if (event && event->interfaceName() == eventInterfaceFilter) {
                 m_perFrameEvents.remove(eventTargetKey(event.get()));
@@ -226,7 +226,7 @@ void ScriptedAnimationController::enqueuePerFrameEvent(PassRefPtrWillBeRawPtr<Ev
     enqueueEvent(event);
 }
 
-void ScriptedAnimationController::enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener> >& listeners)
+void ScriptedAnimationController::enqueueMediaQueryChangeListeners(WillBeHeapVector<RefPtrWillBeMember<MediaQueryListListener>>& listeners)
 {
     for (size_t i = 0; i < listeners.size(); ++i) {
         m_mediaQueryListListeners.add(listeners[i]);

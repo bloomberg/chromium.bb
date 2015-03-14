@@ -76,8 +76,8 @@ private:
 
     RefPtrWillBeMember<Node> m_target;
 
-    WillBeHeapVector<RefPtrWillBeMember<Node> > m_removedNodes;
-    WillBeHeapVector<RefPtrWillBeMember<Node> > m_addedNodes;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> m_removedNodes;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> m_addedNodes;
     RefPtrWillBeMember<Node> m_previousSibling;
     RefPtrWillBeMember<Node> m_nextSibling;
     RawPtrWillBeMember<Node> m_lastAdded;

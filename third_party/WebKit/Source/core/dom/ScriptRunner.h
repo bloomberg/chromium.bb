@@ -77,7 +77,7 @@ private:
     WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_scriptsToExecuteInOrder;
     // http://www.whatwg.org/specs/web-apps/current-work/#set-of-scripts-that-will-execute-as-soon-as-possible
     WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> m_scriptsToExecuteSoon;
-    WillBeHeapHashSet<RawPtrWillBeMember<ScriptLoader> > m_pendingAsyncScripts;
+    WillBeHeapHashSet<RawPtrWillBeMember<ScriptLoader>> m_pendingAsyncScripts;
     CancellableTaskFactory m_executeScriptsTaskFactory;
 };
 

@@ -60,7 +60,7 @@ private:
     ClientRectList();
     explicit ClientRectList(const Vector<FloatQuad>&);
 
-    WillBeHeapVector<RefPtrWillBeMember<ClientRect> > m_list;
+    WillBeHeapVector<RefPtrWillBeMember<ClientRect>> m_list;
 };
 
 } // namespace blink

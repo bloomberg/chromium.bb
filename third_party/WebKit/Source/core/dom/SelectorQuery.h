@@ -107,7 +107,7 @@ public:
     void invalidate();
 
 private:
-    HashMap<AtomicString, OwnPtr<SelectorQuery> > m_entries;
+    HashMap<AtomicString, OwnPtr<SelectorQuery>> m_entries;
 };
 
 }
