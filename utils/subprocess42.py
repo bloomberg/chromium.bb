@@ -355,9 +355,14 @@ class Popen(subprocess.Popen):
 
     On Posix, always send SIGTERM.
     """
-    if subprocess.mswindows and self.detached:
-      return self.send_signal(signal.CTRL_BREAK_EVENT)
-    super(Popen, self).terminate()
+    try:
+      if subprocess.mswindows and self.detached:
+        return self.send_signal(signal.CTRL_BREAK_EVENT)
+      super(Popen, self).terminate()
+    except OSError:
+      # The function will throw if the process terminated in-between. Swallow
+      # this.
+      pass
 
   def kill(self):
     """Kills the process and its children if possible.
