@@ -70,6 +70,8 @@
         'gpu/drm_window.h',
         'gpu/drm_window_manager.cc',
         'gpu/drm_window_manager.h',
+        'gpu/gpu_lock.cc',
+        'gpu/gpu_lock.h',
         'gpu/hardware_display_controller.cc',
         'gpu/hardware_display_controller.h',
         'gpu/hardware_display_plane.cc',
