@@ -14,19 +14,18 @@
 
 namespace {
 
-struct SourceVideoResolution {
+// Resolutions used if the source doesn't support capability enumeration.
+struct {
   int width;
   int height;
-};
+} const kVideoResolutions[] = {{1920, 1080},
+                               {1280, 720},
+                               {960, 720},
+                               {640, 480},
+                               {640, 360},
+                               {320, 240},
+                               {320, 180}};
 
-// Resolutions used if the source doesn't support capability enumeration.
-const SourceVideoResolution kVideoResolutions[] = {{1920, 1080},
-                                                   {1280, 720},
-                                                   {960, 720},
-                                                   {640, 480},
-                                                   {640, 360},
-                                                   {320, 240},
-                                                   {320, 180}};
 // Frame rates for sources with no support for capability enumeration.
 const int kVideoFrameRates[] = {30, 60};
 
@@ -88,7 +87,7 @@ void VideoCapturerDelegate::GetCurrentSupportedFormats(
   // NULL in unit test.
   if (!RenderThreadImpl::current())
     return;
-  VideoCaptureImplManager* manager =
+  VideoCaptureImplManager* const manager =
       RenderThreadImpl::current()->video_capture_impl_manager();
   if (!manager)
     return;
@@ -114,7 +113,7 @@ void VideoCapturerDelegate::StartCapture(
   // NULL in unit test.
   if (!RenderThreadImpl::current())
     return;
-  VideoCaptureImplManager* manager =
+  VideoCaptureImplManager* const manager =
       RenderThreadImpl::current()->video_capture_impl_manager();
   if (!manager)
     return;
@@ -128,10 +127,10 @@ void VideoCapturerDelegate::StartCapture(
   stop_capture_cb_ =
       manager->StartCapture(
           session_id_,
-          params,
-          media::BindToCurrentLoop(base::Bind(
-              &VideoCapturerDelegate::OnStateUpdateOnRenderThread,
-              weak_factory_.GetWeakPtr())),
+    params,
+    media::BindToCurrentLoop(base::Bind(
+              &VideoCapturerDelegate::OnStateUpdate,
+        weak_factory_.GetWeakPtr())),
           new_frame_callback);
 }
 
@@ -146,10 +145,10 @@ void VideoCapturerDelegate::StopCapture() {
   source_formats_callback_.Reset();
 }
 
-void VideoCapturerDelegate::OnStateUpdateOnRenderThread(
+void VideoCapturerDelegate::OnStateUpdate(
     VideoCaptureState state) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(3) << "OnStateUpdateOnRenderThread state = " << state;
+  DVLOG(3) << "OnStateUpdate state = " << state;
   if (state == VIDEO_CAPTURE_STATE_STARTED && !running_callback_.is_null()) {
     running_callback_.Run(true);
     return;
@@ -178,7 +177,7 @@ void VideoCapturerDelegate::OnDeviceFormatsInUseReceived(
   // NULL in unit test.
   if (!RenderThreadImpl::current())
     return;
-  VideoCaptureImplManager* manager =
+  VideoCaptureImplManager* const manager =
       RenderThreadImpl::current()->video_capture_impl_manager();
   if (!manager)
     return;
@@ -206,11 +205,12 @@ void VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated(
     // The capture device doesn't seem to support capability enumeration,
     // compose a fallback list of capabilities.
     media::VideoCaptureFormats default_formats;
-    for (size_t i = 0; i < arraysize(kVideoResolutions); ++i) {
-      for (size_t j = 0; j < arraysize(kVideoFrameRates); ++j) {
+    for (const auto& resolution : kVideoResolutions) {
+      for (const auto frame_rate : kVideoFrameRates) {
         default_formats.push_back(media::VideoCaptureFormat(
-            gfx::Size(kVideoResolutions[i].width, kVideoResolutions[i].height),
-            kVideoFrameRates[j], media::PIXEL_FORMAT_I420));
+            gfx::Size(resolution.width, resolution.height),
+            frame_rate,
+            media::PIXEL_FORMAT_I420));
       }
     }
     base::ResetAndReturn(&source_formats_callback_).Run(default_formats);
@@ -224,12 +224,12 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
   SetStopCallback(stop_callback);
 }
 
+MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
+}
+
 void MediaStreamVideoCapturerSource::SetDeviceInfo(
     const StreamDeviceInfo& device_info) {
   MediaStreamVideoSource::SetDeviceInfo(device_info);
-}
-
-MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
 }
 
 void MediaStreamVideoCapturerSource::GetCurrentSupportedFormats(
@@ -264,12 +264,12 @@ void MediaStreamVideoCapturerSource::StartSourceImpl(
                  base::Unretained(this)));
 }
 
-void MediaStreamVideoCapturerSource::OnStarted(bool result) {
-  OnStartDone(result ? MEDIA_DEVICE_OK : MEDIA_DEVICE_TRACK_START_FAILURE);
-}
-
 void MediaStreamVideoCapturerSource::StopSourceImpl() {
   delegate_->StopCapture();
+}
+
+void MediaStreamVideoCapturerSource::OnStarted(bool result) {
+  OnStartDone(result ? MEDIA_DEVICE_OK : MEDIA_DEVICE_TRACK_START_FAILURE);
 }
 
 }  // namespace content

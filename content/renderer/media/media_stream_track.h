@@ -14,7 +14,6 @@
 
 namespace webrtc {
 class AudioTrackInterface;
-class MediaStreamTrackInterface;
 }  // namespace webrtc
 
 namespace content {
@@ -28,8 +27,7 @@ class CONTENT_EXPORT MediaStreamTrack
   explicit MediaStreamTrack(bool is_local_track);
   virtual ~MediaStreamTrack();
 
-  static MediaStreamTrack* GetTrack(
-      const blink::WebMediaStreamTrack& track);
+  static MediaStreamTrack* GetTrack(const blink::WebMediaStreamTrack& track);
 
   virtual void SetEnabled(bool enabled) = 0;
 
@@ -43,7 +41,8 @@ class CONTENT_EXPORT MediaStreamTrack
  protected:
   const bool is_local_track_;
 
-  base::ThreadChecker thread_checker_;
+  // Used to DCHECK that we are called on Render main Thread.
+  base::ThreadChecker main_render_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamTrack);
 };

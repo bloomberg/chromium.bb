@@ -38,8 +38,7 @@ const double kMaxTimeInMsBetweenFrames = 1000;
 // Empty method used for keeping a reference to the original media::VideoFrame
 // in VideoFrameResolutionAdapter::DeliverFrame if cropping is needed.
 // The reference to |frame| is kept in the closure that calls this method.
-void ReleaseOriginalFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
+void ReleaseOriginalFrame(const scoped_refptr<media::VideoFrame>& frame) {
 }
 
 void ResetCallbackOnMainRenderThread(
@@ -102,18 +101,18 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
 
   // The task runner where we will release VideoCaptureDeliverFrameCB
   // registered in AddCallback.
-  scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner_;
 
-  gfx::Size max_frame_size_;
-  double min_aspect_ratio_;
-  double max_aspect_ratio_;
+  const gfx::Size max_frame_size_;
+  const double min_aspect_ratio_;
+  const double max_aspect_ratio_;
 
   double frame_rate_;
   base::TimeDelta last_time_stamp_;
   double max_frame_rate_;
   double keep_frame_counter_;
 
-  typedef std::pair<const void*, VideoCaptureDeliverFrameCB>
+  typedef std::pair<const MediaStreamVideoTrack*, VideoCaptureDeliverFrameCB>
       VideoIdCallbackPair;
   std::vector<VideoIdCallbackPair> callbacks_;
 
@@ -168,6 +167,34 @@ VideoFrameResolutionAdapter::~VideoFrameResolutionAdapter() {
   DCHECK(callbacks_.empty());
 }
 
+void VideoTrackAdapter::VideoFrameResolutionAdapter::AddCallback(
+    const MediaStreamVideoTrack* track,
+    const VideoCaptureDeliverFrameCB& callback) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  callbacks_.push_back(std::make_pair(track, callback));
+}
+
+void VideoTrackAdapter::VideoFrameResolutionAdapter::RemoveCallback(
+    const MediaStreamVideoTrack* track) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  std::vector<VideoIdCallbackPair>::iterator it = callbacks_.begin();
+  for (; it != callbacks_.end(); ++it) {
+    if (it->first == track) {
+      // Make sure the VideoCaptureDeliverFrameCB is released on the main
+      // render thread since it was added on the main render thread in
+      // VideoTrackAdapter::AddTrack.
+      scoped_ptr<VideoCaptureDeliverFrameCB> callback(
+          new VideoCaptureDeliverFrameCB(it->second));
+      callbacks_.erase(it);
+      renderer_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&ResetCallbackOnMainRenderThread,
+                                base::Passed(&callback)));
+
+      return;
+    }
+  }
+}
+
 void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     const scoped_refptr<media::VideoFrame>& frame,
     const base::TimeTicks& estimated_capture_time) {
@@ -178,6 +205,7 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
                                     &frame_rate)) {
     frame_rate = MediaStreamVideoSource::kUnknownFrameRate;
   }
+
   if (MaybeDropFrame(frame, frame_rate))
     return;
 
@@ -204,14 +232,11 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     int desired_height = std::min(max_frame_size_.height(),
                                   frame->natural_size().height());
 
-    double resulting_ratio =
+    const double resulting_ratio =
         static_cast<double>(desired_width) / desired_height;
-    double requested_ratio = resulting_ratio;
-
-    if (requested_ratio > max_aspect_ratio_)
-      requested_ratio = max_aspect_ratio_;
-    else if (requested_ratio < min_aspect_ratio_)
-      requested_ratio = min_aspect_ratio_;
+    // Make sure |min_aspect_ratio_| < |requested_ratio| < |max_aspect_ratio_|.
+    const double requested_ratio = std::max(
+        std::min(resulting_ratio, max_aspect_ratio_), min_aspect_ratio_);
 
     if (resulting_ratio < requested_ratio) {
       desired_height = static_cast<int>((desired_height * resulting_ratio) /
@@ -225,13 +250,13 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
       desired_width = (desired_width + 1) & ~1;
     }
 
-    gfx::Size desired_size(desired_width, desired_height);
+    const gfx::Size desired_size(desired_width, desired_height);
 
     // Get the largest centered rectangle with the same aspect ratio of
     // |desired_size| that fits entirely inside of |frame->visible_rect()|.
     // This will be the rect we need to crop the original frame to.
     // From this rect, the original frame can be scaled down to |desired_size|.
-    gfx::Rect region_in_frame =
+    const gfx::Rect region_in_frame =
         media::ComputeLetterboxRegion(frame->visible_rect(), desired_size);
 
     video_frame = media::VideoFrame::WrapVideoFrame(
@@ -247,6 +272,31 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
              << video_frame->visible_rect().ToString();
   }
   DoDeliverFrame(video_frame, estimated_capture_time);
+}
+
+bool VideoTrackAdapter::VideoFrameResolutionAdapter::ConstraintsMatch(
+    const gfx::Size& max_size,
+    double min_aspect_ratio,
+    double max_aspect_ratio,
+    double max_frame_rate) const {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  return max_frame_size_ == max_size &&
+      min_aspect_ratio_ == min_aspect_ratio &&
+      max_aspect_ratio_ == max_aspect_ratio &&
+      max_frame_rate_ == max_frame_rate;
+}
+
+bool VideoTrackAdapter::VideoFrameResolutionAdapter::IsEmpty() const {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  return callbacks_.empty();
+}
+
+void VideoTrackAdapter::VideoFrameResolutionAdapter::DoDeliverFrame(
+    const scoped_refptr<media::VideoFrame>& frame,
+    const base::TimeTicks& estimated_capture_time) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  for (const auto& callback : callbacks_)
+    callback.second.Run(frame, estimated_capture_time);
 }
 
 bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
@@ -305,59 +355,6 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
   }
   DVLOG(3) << "Drop frame. Input frame_rate_ " << frame_rate_ << ".";
   return true;
-}
-
-void VideoTrackAdapter::VideoFrameResolutionAdapter::DoDeliverFrame(
-    const scoped_refptr<media::VideoFrame>& frame,
-    const base::TimeTicks& estimated_capture_time) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  for (const auto& callback : callbacks_)
-    callback.second.Run(frame, estimated_capture_time);
-}
-
-void VideoTrackAdapter::VideoFrameResolutionAdapter::AddCallback(
-    const MediaStreamVideoTrack* track,
-    const VideoCaptureDeliverFrameCB& callback) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  callbacks_.push_back(std::make_pair(track, callback));
-}
-
-void VideoTrackAdapter::VideoFrameResolutionAdapter::RemoveCallback(
-    const MediaStreamVideoTrack* track) {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  std::vector<VideoIdCallbackPair>::iterator it = callbacks_.begin();
-  for (; it != callbacks_.end(); ++it) {
-    if (it->first == track) {
-      // Make sure the VideoCaptureDeliverFrameCB is released on the main
-      // render thread since it was added on the main render thread in
-      // VideoTrackAdapter::AddTrack.
-      scoped_ptr<VideoCaptureDeliverFrameCB> callback(
-          new VideoCaptureDeliverFrameCB(it->second));
-      callbacks_.erase(it);
-      renderer_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&ResetCallbackOnMainRenderThread,
-                                base::Passed(&callback)));
-
-      return;
-    }
-  }
-}
-
-bool VideoTrackAdapter::VideoFrameResolutionAdapter::ConstraintsMatch(
-    const gfx::Size& max_size,
-    double min_aspect_ratio,
-    double max_aspect_ratio,
-    double max_frame_rate) const {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  return max_frame_size_ == max_size &&
-      min_aspect_ratio_ == min_aspect_ratio &&
-      max_aspect_ratio_ == max_aspect_ratio &&
-      max_frame_rate_ == max_frame_rate;
-}
-
-bool VideoTrackAdapter::VideoFrameResolutionAdapter::IsEmpty() const {
-  DCHECK(io_thread_checker_.CalledOnValidThread());
-  return callbacks_.empty();
 }
 
 VideoTrackAdapter::VideoTrackAdapter(
@@ -439,6 +436,13 @@ void VideoTrackAdapter::StartFrameMonitoring(
                  this, bound_on_muted_callback, source_frame_rate));
 }
 
+void VideoTrackAdapter::StopFrameMonitoring() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  io_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoTrackAdapter::StopFrameMonitoringOnIO, this));
+}
+
 void VideoTrackAdapter::StartFrameMonitoringOnIO(
     const OnMutedCallback& on_muted_callback,
     double source_frame_rate) {
@@ -458,13 +462,6 @@ void VideoTrackAdapter::StartFrameMonitoringOnIO(
                   on_muted_callback, frame_counter_),
        base::TimeDelta::FromSecondsD(kFirstFrameTimeoutInFrameIntervals /
                                      source_frame_rate_));
-}
-
-void VideoTrackAdapter::StopFrameMonitoring() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  io_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoTrackAdapter::StopFrameMonitoringOnIO, this));
 }
 
 void VideoTrackAdapter::StopFrameMonitoringOnIO() {

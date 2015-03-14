@@ -59,10 +59,6 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
     return constraints_;
   }
 
- protected:
-  // Used to DCHECK that we are called on the correct thread.
-  base::ThreadChecker thread_checker_;
-
  private:
   // MediaStreamVideoSink is a friend to allow it to call AddSink() and
   // RemoveSink().
@@ -86,9 +82,9 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   // |FrameDeliverer| is an internal helper object used for delivering video
   // frames on the IO-thread using callbacks to all registered tracks.
   class FrameDeliverer;
-  scoped_refptr<FrameDeliverer> frame_deliverer_;
+  const scoped_refptr<FrameDeliverer> frame_deliverer_;
 
-  blink::WebMediaConstraints constraints_;
+  const blink::WebMediaConstraints constraints_;
 
   // Weak ref to the source this tracks is connected to.  |source_| is owned
   // by the blink::WebMediaStreamSource and is guaranteed to outlive the

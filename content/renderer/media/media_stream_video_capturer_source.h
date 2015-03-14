@@ -46,18 +46,18 @@ class CONTENT_EXPORT VideoCapturerDelegate : public media::VideoCapturerSource {
   FRIEND_TEST_ALL_PREFIXES(MediaStreamVideoCapturerSourceTest, Ended);
   friend class MockVideoCapturerDelegate;
 
-  void OnStateUpdateOnRenderThread(VideoCaptureState state);
+  void OnStateUpdate(VideoCaptureState state);
   void OnDeviceFormatsInUseReceived(const media::VideoCaptureFormats& formats);
   void OnDeviceSupportedFormatsEnumerated(
       const media::VideoCaptureFormats& formats);
 
   // The id identifies which video capture device is used for this video
   // capture session.
-  media::VideoCaptureSessionId session_id_;
+  const media::VideoCaptureSessionId session_id_;
   base::Closure release_device_cb_;
   base::Closure stop_capture_cb_;
 
-  bool is_screen_cast_;
+  const bool is_screen_cast_;
 
   // |running_callback| is provided to this class in StartCapture and must be
   // valid until StopCapture is called.
@@ -83,7 +83,6 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
   MediaStreamVideoCapturerSource(
       const SourceStoppedCallback& stop_callback,
       scoped_ptr<media::VideoCapturerSource> delegate);
-
   virtual ~MediaStreamVideoCapturerSource();
 
   void SetDeviceInfo(const StreamDeviceInfo& device_info);
@@ -105,7 +104,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
  private:
   void OnStarted(bool result);
   // The delegate that provides video frames.
-  scoped_ptr<media::VideoCapturerSource> delegate_;
+  const scoped_ptr<media::VideoCapturerSource> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoCapturerSource);
 };

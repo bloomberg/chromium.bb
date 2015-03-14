@@ -189,7 +189,7 @@ void WebRtcLocalAudioTrack::Start() {
 }
 
 void WebRtcLocalAudioTrack::SetEnabled(bool enabled) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
   if (adapter_.get())
     adapter_->set_enabled(enabled);
 }
@@ -232,7 +232,7 @@ void WebRtcLocalAudioTrack::Stop() {
 }
 
 webrtc::AudioTrackInterface* WebRtcLocalAudioTrack::GetAudioAdapter() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
   return adapter_.get();
 }
 

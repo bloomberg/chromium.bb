@@ -20,13 +20,14 @@ class MessageLoopProxy;
 
 namespace content {
 
-// RTCVideoRenderer is a VideoFrameProvider designed for rendering
-// Video MediaStreamTracks,
-// http://dev.w3.org/2011/webrtc/editor/getusermedia.html#mediastreamtrack
-// RTCVideoRenderer implements VideoTrackSink in order to render
-// video frames provided from a VideoTrack.
-// RTCVideoRenderer register itself as a sink to the VideoTrack when the
-// VideoFrameProvider is started and deregisters itself when it is stopped.
+// RTCVideoRenderer is a VideoFrameProvider designed for rendering Video
+// MediaStreamTracks [1], RTCVideoRenderer implements MediaStreamVideoSink in
+// order to render video frames provided from a MediaStreamVideoTrack, to which
+// it AddToVideoTrack()s itself when the VideoFrameProvider is Start()ed
+// and RemoveFromVideoTrack()s itself when the latter is Stop()ed.
+//
+// [1] http://dev.w3.org/2011/webrtc/editor/getusermedia.html#mediastreamtrack
+//
 // TODO(wuchengli): Add unit test. See the link below for reference.
 // http://src.chromium.org/viewvc/chrome/trunk/src/content/renderer/media/rtc_vi
 // deo_decoder_unittest.cc?revision=180591&view=markup
@@ -57,18 +58,18 @@ class CONTENT_EXPORT RTCVideoRenderer
   void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
                     const base::TimeTicks& estimated_capture_time);
 
-  // VideoTrackSink implementation. Called on the main thread.
+  // MediaStreamVideoSink implementation. Called on the main thread.
   void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) override;
 
   void RenderSignalingFrame();
 
-  base::Closure error_cb_;
-  RepaintCB repaint_cb_;
-  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+  const base::Closure error_cb_;
+  const RepaintCB repaint_cb_;
+  const scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   State state_;
   gfx::Size frame_size_;
-  blink::WebMediaStreamTrack video_track_;
+  const blink::WebMediaStreamTrack video_track_;
   base::WeakPtrFactory<RTCVideoRenderer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoRenderer);

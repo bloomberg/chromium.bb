@@ -155,13 +155,13 @@ TEST_F(MediaStreamVideoCapturerSourceTest, Ended) {
   blink::WebMediaStreamTrack track = StartSource();
   message_loop_.RunUntilIdle();
 
-  delegate_ptr->OnStateUpdateOnRenderThread(VIDEO_CAPTURE_STATE_STARTED);
+  delegate_ptr->OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
             webkit_source_.readyState());
 
   EXPECT_FALSE(source_stopped_);
-  delegate_ptr->OnStateUpdateOnRenderThread(VIDEO_CAPTURE_STATE_ERROR);
+  delegate_ptr->OnStateUpdate(VIDEO_CAPTURE_STATE_ERROR);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
             webkit_source_.readyState());

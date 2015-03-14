@@ -170,7 +170,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   media::VideoCaptureFormats supported_formats_;
 
   // |track_adapter_| delivers video frames to the tracks on the IO-thread.
-  scoped_refptr<VideoTrackAdapter> track_adapter_;
+  const scoped_refptr<VideoTrackAdapter> track_adapter_;
 
   // Tracks that currently are connected to this source.
   std::vector<MediaStreamVideoTrack*> tracks_;

@@ -13,11 +13,6 @@
 #include "content/public/renderer/media_stream_sink.h"
 #include "media/base/video_capturer_source.h"
 
-namespace media {
-class VideoCaptureFormat;
-class VideoFrame;
-}
-
 namespace blink {
 class WebMediaStreamTrack;
 }

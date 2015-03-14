@@ -90,11 +90,11 @@ class VideoTrackAdapter
   // |thread_checker_| is bound to the main render thread.
   base::ThreadChecker thread_checker_;
 
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  const scoped_refptr<base::MessageLoopProxy> io_message_loop_;
 
   // |renderer_task_runner_| is used to ensure that
   // VideoCaptureDeliverFrameCB is released on the main render thread.
-  scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> renderer_task_runner_;
 
   // VideoFrameResolutionAdapter is an inner class that is created on the main
   // render thread but operates on the IO-thread. It does the resolution

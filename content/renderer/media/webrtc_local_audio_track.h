@@ -108,8 +108,6 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // has changed.
   SinkList sinks_;
 
-  // Used to DCHECK that some methods are called on the main render thread.
-  base::ThreadChecker main_render_thread_checker_;
   // Tests that methods are called on libjingle's signaling thread.
   base::ThreadChecker signal_thread_checker_;
 
