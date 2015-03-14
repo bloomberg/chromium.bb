@@ -113,6 +113,11 @@ public class NullContentsClient extends AwContentsClient {
     }
 
     @Override
+    public void showFileChooser(ValueCallback<String[]> uploadFilePathsCallback,
+            FileChooserParamsImpl fileChooserParams) {
+    }
+
+    @Override
     public void onGeolocationPermissionsShowPrompt(String origin,
             GeolocationPermissions.Callback callback) {
     }

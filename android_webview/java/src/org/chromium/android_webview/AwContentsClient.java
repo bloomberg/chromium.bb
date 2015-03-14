@@ -7,7 +7,6 @@ package org.chromium.android_webview;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Picture;
 import android.net.Uri;
@@ -130,11 +129,10 @@ public abstract class AwContentsClient {
 
     public abstract void onReceivedSslError(ValueCallback<Boolean> callback, SslError error);
 
-    // TODO(sgurun): Make abstract once this has rolled in downstream.
-    public void onReceivedClientCertRequest(
+    public abstract void onReceivedClientCertRequest(
             final AwContentsClientBridge.ClientCertificateRequestCallback callback,
             final String[] keyTypes, final Principal[] principals, final String host,
-            final int port) { }
+            final int port);
 
     public abstract void onReceivedLoginRequest(String realm, String account, String args);
 
@@ -225,21 +223,17 @@ public abstract class AwContentsClient {
         }
     }
 
-    // TODO(joth): Make abstract once this has rolled in downstream.
-    public /*abstract*/ void showFileChooser(ValueCallback<String[]> uploadFilePathsCallback,
-            FileChooserParamsImpl fileChooserParams) { }
+    public abstract void showFileChooser(ValueCallback<String[]> uploadFilePathsCallback,
+            FileChooserParamsImpl fileChooserParams);
 
     public abstract void onGeolocationPermissionsShowPrompt(String origin,
             GeolocationPermissions.Callback callback);
 
     public abstract void onGeolocationPermissionsHidePrompt();
 
-    // TODO(michaelbai): Change the abstract once merged
-    public /*abstract*/ void onPermissionRequest(AwPermissionRequest awPermissionRequest) {}
+    public abstract void onPermissionRequest(AwPermissionRequest awPermissionRequest);
 
-    // TODO(michaelbai): Change the abstract once merged
-    public /*abstract*/ void onPermissionRequestCanceled(
-            AwPermissionRequest awPermissionRequest) {}
+    public abstract void onPermissionRequestCanceled(AwPermissionRequest awPermissionRequest);
 
     public abstract void onScaleChangedScaled(float oldScale, float newScale);
 
@@ -304,17 +298,7 @@ public abstract class AwContentsClient {
     public abstract void onReceivedHttpError(AwWebResourceRequest request,
             AwWebResourceResponse response);
 
-    // TODO (michaelbai): Remove this method once the same method remove from
-    // WebViewContentsClientAdapter.
-    public void onShowCustomView(View view, int requestedOrientation,
-            WebChromeClient.CustomViewCallback callback) {
-    }
-
-    // TODO (michaelbai): This method should be abstract, having empty body here
-    // makes the merge to the Android easy.
-    public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
-        onShowCustomView(view, ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED, callback);
-    }
+    public abstract void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback);
 
     public abstract void onHideCustomView();
 
