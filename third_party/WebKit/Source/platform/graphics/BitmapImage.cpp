@@ -146,8 +146,9 @@ void BitmapImage::destroyDecodedDataIfNecessary()
     for (size_t i = 0; i < m_frames.size(); ++i)
         allFrameBytes += m_frames[i].m_frameBytes;
 
-    if (allFrameBytes > cLargeAnimationCutoff)
+    if (allFrameBytes > cLargeAnimationCutoff) {
         destroyDecodedData(false);
+    }
 }
 
 void BitmapImage::destroyMetadataAndNotify(size_t frameBytesCleared)
@@ -309,13 +310,6 @@ void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const Fl
         observer->didDraw(this);
 
     startAnimation();
-}
-
-void BitmapImage::resetDecoder()
-{
-    ASSERT(isMainThread());
-
-    m_source.resetDecoder();
 }
 
 size_t BitmapImage::frameCount()
@@ -603,7 +597,7 @@ bool BitmapImage::internalAdvanceAnimation(bool skippingFrames)
         // repetition count before, we should have decoded the whole image by
         // now, so it should now be available.
         // Note that we don't need to special-case cAnimationLoopOnce here
-        // because it is 0 (see comments on its declaration in ImageSource.h).
+        // because it is 0 (see comments on its declaration in ImageAnimation.h).
         if ((repetitionCount(true) != cAnimationLoopInfinite && m_repetitionsComplete > m_repetitionCount)
             || (m_animationPolicy == ImageAnimationPolicyAnimateOnce && m_repetitionsComplete > 0)) {
             m_animationFinished = true;

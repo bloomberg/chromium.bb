@@ -73,7 +73,6 @@ public:
     void setCurrentFrame(size_t frame) { m_image->m_currentFrame = frame; }
     size_t frameDecodedSize(size_t frame) { return m_image->m_frames[frame].m_frameBytes; }
     size_t decodedFramesCount() const { return m_image->m_frames.size(); }
-    void resetDecoder() { return m_image->resetDecoder(); }
 
     void loadImage(const char* fileName)
     {
@@ -188,6 +187,14 @@ TEST_F(BitmapImageTest, isAllDataReceived)
 
 #if USE(QCMSLIB)
 
+TEST_F(BitmapImageTest, noColorProfile)
+{
+    loadImage("/LayoutTests/fast/images/resources/green.jpg");
+    EXPECT_EQ(1u, decodedFramesCount());
+    EXPECT_EQ(1024u, decodedSize());
+    EXPECT_FALSE(m_image->hasColorProfile());
+}
+
 TEST_F(BitmapImageTest, jpegHasColorProfile)
 {
     loadImage("/LayoutTests/fast/images/resources/icc-v2-gbr.jpg");
@@ -195,13 +202,7 @@ TEST_F(BitmapImageTest, jpegHasColorProfile)
     EXPECT_EQ(227700u, decodedSize());
     EXPECT_TRUE(m_image->hasColorProfile());
 
-    resetDecoder();
     destroyDecodedData(true);
-
-    loadImage("/LayoutTests/fast/images/resources/green.jpg");
-    EXPECT_EQ(1u, decodedFramesCount());
-    EXPECT_EQ(1024u, decodedSize());
-    EXPECT_FALSE(m_image->hasColorProfile());
 }
 
 TEST_F(BitmapImageTest, pngHasColorProfile)
@@ -211,13 +212,7 @@ TEST_F(BitmapImageTest, pngHasColorProfile)
     EXPECT_EQ(65536u, decodedSize());
     EXPECT_TRUE(m_image->hasColorProfile());
 
-    resetDecoder();
     destroyDecodedData(true);
-
-    loadImage("/LayoutTests/fast/images/resources/green.jpg");
-    EXPECT_EQ(1u, decodedFramesCount());
-    EXPECT_EQ(1024u, decodedSize());
-    EXPECT_FALSE(m_image->hasColorProfile());
 }
 
 TEST_F(BitmapImageTest, webpHasColorProfile)
@@ -228,12 +223,6 @@ TEST_F(BitmapImageTest, webpHasColorProfile)
     EXPECT_TRUE(m_image->hasColorProfile());
 
     destroyDecodedData(true);
-    resetDecoder();
-
-    loadImage("/LayoutTests/fast/images/resources/test.webp");
-    EXPECT_EQ(1u, decodedFramesCount());
-    EXPECT_EQ(65536u, decodedSize());
-    EXPECT_FALSE(m_image->hasColorProfile());
 }
 
 TEST_F(BitmapImageTest, icoHasWrongFrameDimensions)

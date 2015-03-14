@@ -675,6 +675,7 @@
       'graphics/skia/SkiaUtils.h',
       'image-decoders/FastSharedBufferReader.cpp',
       'image-decoders/FastSharedBufferReader.h',
+      'image-decoders/ImageAnimation.h',
       'image-decoders/ImageDecoder.cpp',
       'image-decoders/ImageDecoder.h',
       'image-decoders/ImageFrame.cpp',

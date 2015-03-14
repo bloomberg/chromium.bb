@@ -144,7 +144,6 @@ public:
     void setAlphaBlendSource(AlphaBlendSource alphaBlendSource) { m_alphaBlendSource = alphaBlendSource; }
     void setPremultiplyAlpha(bool premultiplyAlpha) { m_premultiplyAlpha = premultiplyAlpha; }
     void setMemoryAllocator(SkBitmap::Allocator* allocator) { m_allocator = allocator; }
-    void setSkBitmap(const SkBitmap& bitmap) { m_bitmap = bitmap; }
     // The pixelsChanged flag needs to be set when the raw pixel data was directly modified
     // (e.g. through a pointer or setRGBA). The flag is usually set after a batch of changes was made.
     void setPixelsChanged(bool pixelsChanged) { m_pixelsChanged = pixelsChanged; }

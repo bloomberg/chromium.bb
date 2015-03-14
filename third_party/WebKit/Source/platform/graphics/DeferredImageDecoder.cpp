@@ -45,9 +45,7 @@ bool DeferredImageDecoder::s_enabled = false;
 DeferredImageDecoder::DeferredImageDecoder(PassOwnPtr<ImageDecoder> actualDecoder)
     : m_allDataReceived(false)
     , m_lastDataSize(0)
-    , m_dataChanged(false)
     , m_actualDecoder(actualDecoder)
-    , m_orientation(DefaultImageOrientation)
     , m_repetitionCount(cAnimationNone)
     , m_hasColorProfile(false)
 {
@@ -90,26 +88,35 @@ String DeferredImageDecoder::filenameExtension() const
     return m_actualDecoder ? m_actualDecoder->filenameExtension() : m_filenameExtension;
 }
 
-ImageFrame* DeferredImageDecoder::frameBufferAtIndex(size_t index)
+PassRefPtr<NativeImageSkia> DeferredImageDecoder::createFrameAtIndex(size_t index)
 {
     prepareLazyDecodedFrames();
-    if (index < m_lazyDecodedFrames.size()) {
+    if (index < m_frameData.size()) {
         // ImageFrameGenerator has the latest known alpha state. There will
         // be a performance boost if this frame is opaque.
-        m_lazyDecodedFrames[index]->setHasAlpha(m_frameGenerator->hasAlpha(index));
-        return m_lazyDecodedFrames[index].get();
+        SkBitmap bitmap = createBitmap(index);
+        if (m_frameGenerator->hasAlpha(index)) {
+            m_frameData[index].m_hasAlpha = true;
+            bitmap.setAlphaType(kPremul_SkAlphaType);
+        } else {
+            m_frameData[index].m_hasAlpha = false;
+            bitmap.setAlphaType(kOpaque_SkAlphaType);
+        }
+        m_frameData[index].m_frameBytes = m_size.area() *  sizeof(ImageFrame::PixelData);
+        return NativeImageSkia::create(bitmap);
     }
-    if (m_actualDecoder)
-        return m_actualDecoder->frameBufferAtIndex(index);
-    return 0;
+    if (m_actualDecoder) {
+        ImageFrame* buffer = m_actualDecoder->frameBufferAtIndex(index);
+        if (!buffer || buffer->status() == ImageFrame::FrameEmpty)
+            return nullptr;
+        return buffer->asNewNativeImage();
+    }
+    return nullptr;
 }
 
 void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)
 {
     if (m_actualDecoder) {
-        const bool firstData = !m_data;
-        const bool moreData = data.size() > m_lastDataSize;
-        m_dataChanged = firstData || moreData;
         m_data = RefPtr<SharedBuffer>(data);
         m_lastDataSize = data.size();
         m_allDataReceived = allDataReceived;
@@ -147,7 +154,7 @@ IntSize DeferredImageDecoder::frameSizeAtIndex(size_t index) const
 
 size_t DeferredImageDecoder::frameCount()
 {
-    return m_actualDecoder ? m_actualDecoder->frameCount() : m_lazyDecodedFrames.size();
+    return m_actualDecoder ? m_actualDecoder->frameCount() : m_frameData.size();
 }
 
 int DeferredImageDecoder::repetitionCount() const
@@ -157,9 +164,16 @@ int DeferredImageDecoder::repetitionCount() const
 
 size_t DeferredImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame)
 {
-    // If image decoding is deferred then frame buffer cache is managed by
-    // the compositor and this call is ignored.
-    return m_actualDecoder ? m_actualDecoder->clearCacheExceptFrame(clearExceptFrame) : 0;
+    if (m_actualDecoder)
+        return m_actualDecoder->clearCacheExceptFrame(clearExceptFrame);
+    size_t frameBytesCleared = 0;
+    for (size_t i = 0; i < m_frameData.size(); ++i) {
+        if (i != clearExceptFrame) {
+            frameBytesCleared += m_frameData[i].m_frameBytes;
+            m_frameData[i].m_frameBytes = 0;
+        }
+    }
+    return frameBytesCleared;
 }
 
 bool DeferredImageDecoder::frameHasAlphaAtIndex(size_t index) const
@@ -175,8 +189,8 @@ bool DeferredImageDecoder::frameIsCompleteAtIndex(size_t index) const
 {
     if (m_actualDecoder)
         return m_actualDecoder->frameIsCompleteAtIndex(index);
-    if (index < m_lazyDecodedFrames.size())
-        return m_lazyDecodedFrames[index]->status() == ImageFrame::FrameComplete;
+    if (index < m_frameData.size())
+        return m_frameData[index].m_isComplete;
     return false;
 }
 
@@ -184,21 +198,27 @@ float DeferredImageDecoder::frameDurationAtIndex(size_t index) const
 {
     if (m_actualDecoder)
         return m_actualDecoder->frameDurationAtIndex(index);
-    if (index < m_lazyDecodedFrames.size())
-        return m_lazyDecodedFrames[index]->duration();
+    if (index < m_frameData.size())
+        return m_frameData[index].m_duration;
     return 0;
 }
 
 unsigned DeferredImageDecoder::frameBytesAtIndex(size_t index) const
 {
-    // If frame decoding is deferred then it is not managed by MemoryCache
-    // so return 0 here.
-    return m_frameGenerator ? 0 : m_actualDecoder->frameBytesAtIndex(index);
+    if (m_actualDecoder)
+        return m_actualDecoder->frameBytesAtIndex(index);
+    if (index < m_frameData.size())
+        return m_frameData[index].m_frameBytes;
+    return 0;
 }
 
-ImageOrientation DeferredImageDecoder::orientation() const
+ImageOrientation DeferredImageDecoder::orientationAtIndex(size_t index) const
 {
-    return m_actualDecoder ? m_actualDecoder->orientation() : m_orientation;
+    if (m_actualDecoder)
+        return m_actualDecoder->orientation();
+    if (index < m_frameData.size())
+        return m_frameData[index].m_orientation;
+    return DefaultImageOrientation;
 }
 
 void DeferredImageDecoder::activateLazyDecoding()
@@ -206,7 +226,6 @@ void DeferredImageDecoder::activateLazyDecoding()
     if (m_frameGenerator)
         return;
     m_size = m_actualDecoder->size();
-    m_orientation = m_actualDecoder->orientation();
     m_filenameExtension = m_actualDecoder->filenameExtension();
     m_hasColorProfile = m_actualDecoder->hasColorProfile();
     const bool isSingleFrame = m_actualDecoder->repetitionCount() == cAnimationNone || (m_allDataReceived && m_actualDecoder->frameCount() == 1u);
@@ -223,33 +242,26 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
 
     activateLazyDecoding();
 
-    const size_t previousSize = m_lazyDecodedFrames.size();
-    m_lazyDecodedFrames.resize(m_actualDecoder->frameCount());
+    const size_t previousSize = m_frameData.size();
+    m_frameData.resize(m_actualDecoder->frameCount());
 
     // We have encountered a broken image file. Simply bail.
-    if (m_lazyDecodedFrames.size() < previousSize)
+    if (m_frameData.size() < previousSize)
         return;
 
-    for (size_t i = previousSize; i < m_lazyDecodedFrames.size(); ++i) {
+    for (size_t i = previousSize; i < m_frameData.size(); ++i) {
         OwnPtr<ImageFrame> frame(adoptPtr(new ImageFrame()));
-        frame->setSkBitmap(createBitmap(i));
-        frame->setDuration(m_actualDecoder->frameDurationAtIndex(i));
-        frame->setStatus(m_actualDecoder->frameIsCompleteAtIndex(i) ? ImageFrame::FrameComplete : ImageFrame::FramePartial);
-        m_lazyDecodedFrames[i] = frame.release();
+        m_frameData[i].m_haveMetadata = true;
+        m_frameData[i].m_duration = m_actualDecoder->frameDurationAtIndex(i);
+        m_frameData[i].m_orientation = m_actualDecoder->orientation();
+        m_frameData[i].m_isComplete = m_actualDecoder->frameIsCompleteAtIndex(i);
     }
 
     // The last lazy decoded frame created from previous call might be
     // incomplete so update its state.
     if (previousSize) {
         const size_t lastFrame = previousSize - 1;
-        m_lazyDecodedFrames[lastFrame]->setStatus(m_actualDecoder->frameIsCompleteAtIndex(lastFrame) ? ImageFrame::FrameComplete : ImageFrame::FramePartial);
-
-        // If data has changed then create a new bitmap. This forces
-        // Skia to decode again.
-        if (m_dataChanged) {
-            m_dataChanged = false;
-            m_lazyDecodedFrames[lastFrame]->setSkBitmap(createBitmap(lastFrame));
-        }
+        m_frameData[lastFrame].m_isComplete = m_actualDecoder->frameIsCompleteAtIndex(lastFrame);
     }
 
     if (m_allDataReceived) {
@@ -262,7 +274,7 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
 // Creates a SkBitmap that is backed by SkDiscardablePixelRef.
 SkBitmap DeferredImageDecoder::createBitmap(size_t index)
 {
-    IntSize decodedSize = m_actualDecoder->decodedSize();
+    SkISize decodedSize = m_frameGenerator->getFullSize();
     ASSERT(decodedSize.width() > 0);
     ASSERT(decodedSize.height() > 0);
 

@@ -48,16 +48,6 @@ size_t ImageSource::clearCacheExceptFrame(size_t clearExceptFrame)
     return m_decoder ? m_decoder->clearCacheExceptFrame(clearExceptFrame) : 0;
 }
 
-bool ImageSource::initialized() const
-{
-    return m_decoder;
-}
-
-void ImageSource::resetDecoder()
-{
-    m_decoder.clear();
-}
-
 void ImageSource::setData(SharedBuffer& data, bool allDataReceived)
 {
     // Create a decoder by sniffing the encoded data. If insufficient data bytes are available to
@@ -95,7 +85,7 @@ IntSize ImageSource::frameSizeAtIndex(size_t index, RespectImageOrientationEnum 
         return IntSize();
 
     IntSize size = m_decoder->frameSizeAtIndex(index);
-    if ((shouldRespectOrientation == RespectImageOrientation) && m_decoder->orientation().usesWidthAsHeight())
+    if ((shouldRespectOrientation == RespectImageOrientation) && m_decoder->orientationAtIndex(index).usesWidthAsHeight())
         return IntSize(size.height(), size.width());
 
     return size;
@@ -113,26 +103,15 @@ int ImageSource::repetitionCount()
 
 size_t ImageSource::frameCount() const
 {
-    return m_decoder ? m_decoder->frameCount() : 0;
+    int count = m_decoder ? m_decoder->frameCount() : 0;
+    return count;
 }
 
 PassRefPtr<NativeImageSkia> ImageSource::createFrameAtIndex(size_t index)
 {
     if (!m_decoder)
         return nullptr;
-
-    ImageFrame* buffer = m_decoder->frameBufferAtIndex(index);
-    if (!buffer || buffer->status() == ImageFrame::FrameEmpty)
-        return nullptr;
-
-    // Zero-height images can cause problems for some ports.  If we have an
-    // empty image dimension, just bail.
-    if (size().isEmpty())
-        return nullptr;
-
-    // Return the buffer contents as a native image.  For some ports, the data
-    // is already in a native container, and this just increments its refcount.
-    return buffer->asNewNativeImage();
+    return m_decoder->createFrameAtIndex(index);
 }
 
 float ImageSource::frameDurationAtIndex(size_t index) const
@@ -150,9 +129,9 @@ float ImageSource::frameDurationAtIndex(size_t index) const
     return duration;
 }
 
-ImageOrientation ImageSource::orientationAtIndex(size_t) const
+ImageOrientation ImageSource::orientationAtIndex(size_t index) const
 {
-    return m_decoder ? m_decoder->orientation() : DefaultImageOrientation;
+    return m_decoder ? m_decoder->orientationAtIndex(index) : DefaultImageOrientation;
 }
 
 bool ImageSource::frameHasAlphaAtIndex(size_t index) const

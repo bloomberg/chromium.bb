@@ -35,6 +35,7 @@
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/ImageSource.h"
+#include "platform/image-decoders/ImageAnimation.h"
 #include "wtf/Forward.h"
 
 namespace blink {
@@ -72,7 +73,6 @@ public:
 
     bool isAllDataReceived() const { return m_allDataReceived; }
     bool hasColorProfile() const;
-    void resetDecoder();
 
     // It may look unusual that there's no start animation call as public API.
     // This because we start and stop animating lazily. Animation starts when

@@ -41,24 +41,9 @@ class IntSize;
 class NativeImageSkia;
 class SharedBuffer;
 
-// GIF and WebP support animation. The explanation below is in terms of GIF,
-// but the same constants are used for WebP, too.
-// GIFs have an optional 16-bit unsigned loop count that describes how an
-// animated GIF should be cycled.  If the loop count is absent, the animation
-// cycles once; if it is 0, the animation cycles infinitely; otherwise the
-// animation plays n + 1 cycles (where n is the specified loop count).  If the
-// GIF decoder defaults to cAnimationLoopOnce in the absence of any loop count
-// and translates an explicit "0" loop count to cAnimationLoopInfinite, then we
-// get a couple of nice side effects:
-//   * By making cAnimationLoopOnce be 0, we allow the animation cycling code in
-//     BitmapImage.cpp to avoid special-casing it, and simply treat all
-//     non-negative loop counts identically.
-//   * By making the other two constants negative, we avoid conflicts with any
-//     real loop count values.
-const int cAnimationLoopOnce = 0;
-const int cAnimationLoopInfinite = -1;
-const int cAnimationNone = -2;
-
+// This is a helper class used by BitmapImage only. If you need an image
+// decoder then you should look into
+// Source/platform/image-decoders/ImageDecoder.h.
 class PLATFORM_EXPORT ImageSource {
     WTF_MAKE_NONCOPYABLE(ImageSource);
 public:
@@ -95,9 +80,6 @@ public:
     // Returns the number of bytes of frame data actually cleared.
     size_t clearCacheExceptFrame(size_t);
 
-    bool initialized() const;
-    void resetDecoder();
-
     void setData(SharedBuffer& data, bool allDataReceived);
     String filenameExtension() const;
 
@@ -107,10 +89,6 @@ public:
     IntSize frameSizeAtIndex(size_t, RespectImageOrientationEnum = DoNotRespectImageOrientation) const;
 
     bool getHotSpot(IntPoint&) const;
-
-    // Returns one of the cAnimationXXX constants at the top of the file, or
-    // a loop count. In the latter case, the actual number of times the animation
-    // cycles is one more than the loop count. See comment atop the file.
     int repetitionCount();
 
     size_t frameCount() const;

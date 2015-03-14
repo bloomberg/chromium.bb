@@ -219,12 +219,6 @@ TEST(ImageResourceTest, UpdateBitmapImages)
     HashSet<ImageResource*> bitmapImages;
     ASSERT_TRUE(cachedImage->image()->isBitmapImage());
     bitmapImages.add(cachedImage.get());
-
-    // Updating bitmap resources produces image changed callbacks on their clients.
-    ImageResource::updateBitmapImages(bitmapImages);
-    ASSERT_EQ(client.imageChangedCount(), 2);
-    ImageResource::updateBitmapImages(bitmapImages, true);
-    ASSERT_EQ(client.imageChangedCount(), 3);
 }
 
 } // namespace

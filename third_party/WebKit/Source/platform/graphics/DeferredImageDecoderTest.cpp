@@ -152,7 +152,7 @@ protected:
 TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
 {
     m_lazyDecoder->setData(*m_data, true);
-    RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
+    RefPtr<NativeImageSkia> image = m_lazyDecoder->createFrameAtIndex(0);
     EXPECT_EQ(1, image->bitmap().width());
     EXPECT_EQ(1, image->bitmap().height());
     EXPECT_FALSE(image->bitmap().isNull());
@@ -180,7 +180,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
 
     // Received only half the file.
     m_lazyDecoder->setData(*partialData, false);
-    RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
+    RefPtr<NativeImageSkia> image = m_lazyDecoder->createFrameAtIndex(0);
     SkPictureRecorder recorder;
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
@@ -189,7 +189,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
 
     // Fully received the file and draw the SkPicture again.
     m_lazyDecoder->setData(*m_data, true);
-    image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
+    image = m_lazyDecoder->createFrameAtIndex(0);
     tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawBitmap(image->bitmap(), 0, 0);
     picture = adoptRef(recorder.endRecording());
@@ -210,7 +210,7 @@ static void rasterizeMain(SkCanvas* canvas, SkPicture* picture)
 TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
 {
     m_lazyDecoder->setData(*m_data, true);
-    RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
+    RefPtr<NativeImageSkia> image = m_lazyDecoder->createFrameAtIndex(0);
     EXPECT_EQ(1, image->bitmap().width());
     EXPECT_EQ(1, image->bitmap().height());
     EXPECT_FALSE(image->bitmap().isNull());
@@ -240,9 +240,8 @@ TEST_F(DeferredImageDecoderTest, singleFrameImageLoading)
     m_status = ImageFrame::FramePartial;
     m_lazyDecoder->setData(*m_data, false);
     EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
-    ImageFrame* frame = m_lazyDecoder->frameBufferAtIndex(0);
-    unsigned firstId = frame->getSkBitmap().getGenerationID();
-    EXPECT_EQ(ImageFrame::FramePartial, frame->status());
+    unsigned firstId = m_lazyDecoder->createFrameAtIndex(0)->bitmap().getGenerationID();
+    EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
     EXPECT_TRUE(m_actualDecoder);
 
     m_status = ImageFrame::FrameComplete;
@@ -250,13 +249,9 @@ TEST_F(DeferredImageDecoderTest, singleFrameImageLoading)
     m_lazyDecoder->setData(*m_data, true);
     EXPECT_FALSE(m_actualDecoder);
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
-    frame = m_lazyDecoder->frameBufferAtIndex(0);
-    unsigned secondId = frame->getSkBitmap().getGenerationID();
-    EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+    unsigned secondId = m_lazyDecoder->createFrameAtIndex(0)->bitmap().getGenerationID();
     EXPECT_FALSE(m_frameBufferRequestCount);
     EXPECT_NE(firstId, secondId);
-
-    EXPECT_EQ(secondId, m_lazyDecoder->frameBufferAtIndex(0)->getSkBitmap().getGenerationID());
 }
 
 TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
@@ -266,10 +261,8 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
     m_frameDuration = 10;
     m_status = ImageFrame::FramePartial;
     m_lazyDecoder->setData(*m_data, false);
-    EXPECT_EQ(ImageFrame::FramePartial, m_lazyDecoder->frameBufferAtIndex(0)->status());
-    unsigned firstId = m_lazyDecoder->frameBufferAtIndex(0)->getSkBitmap().getGenerationID();
+    unsigned firstId = m_lazyDecoder->createFrameAtIndex(0)->bitmap().getGenerationID();
     EXPECT_FALSE(m_lazyDecoder->frameIsCompleteAtIndex(0));
-    EXPECT_EQ(10.0f, m_lazyDecoder->frameBufferAtIndex(0)->duration());
     EXPECT_EQ(10.0f, m_lazyDecoder->frameDurationAtIndex(0));
 
     m_frameCount = 2;
@@ -277,15 +270,11 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
     m_status = ImageFrame::FrameComplete;
     m_data->append(" ", 1);
     m_lazyDecoder->setData(*m_data, false);
-    EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(0)->status());
-    EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(1)->status());
-    unsigned secondId = m_lazyDecoder->frameBufferAtIndex(0)->getSkBitmap().getGenerationID();
+    unsigned secondId = m_lazyDecoder->createFrameAtIndex(0)->bitmap().getGenerationID();
     EXPECT_NE(firstId, secondId);
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(1));
     EXPECT_EQ(20.0f, m_lazyDecoder->frameDurationAtIndex(1));
-    EXPECT_EQ(10.0f, m_lazyDecoder->frameBufferAtIndex(0)->duration());
-    EXPECT_EQ(20.0f, m_lazyDecoder->frameBufferAtIndex(1)->duration());
     EXPECT_TRUE(m_actualDecoder);
 
     m_frameCount = 3;
@@ -293,19 +282,12 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
     m_status = ImageFrame::FrameComplete;
     m_lazyDecoder->setData(*m_data, true);
     EXPECT_FALSE(m_actualDecoder);
-    EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(0)->status());
-    EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(1)->status());
-    EXPECT_EQ(ImageFrame::FrameComplete, m_lazyDecoder->frameBufferAtIndex(2)->status());
-    EXPECT_EQ(secondId, m_lazyDecoder->frameBufferAtIndex(0)->getSkBitmap().getGenerationID());
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(1));
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(2));
     EXPECT_EQ(10.0f, m_lazyDecoder->frameDurationAtIndex(0));
     EXPECT_EQ(20.0f, m_lazyDecoder->frameDurationAtIndex(1));
     EXPECT_EQ(30.0f, m_lazyDecoder->frameDurationAtIndex(2));
-    EXPECT_EQ(10.0f, m_lazyDecoder->frameBufferAtIndex(0)->duration());
-    EXPECT_EQ(20.0f, m_lazyDecoder->frameBufferAtIndex(1)->duration());
-    EXPECT_EQ(30.0f, m_lazyDecoder->frameBufferAtIndex(2)->duration());
     EXPECT_EQ(10, m_lazyDecoder->repetitionCount());
 }
 
@@ -313,7 +295,7 @@ TEST_F(DeferredImageDecoderTest, decodedSize)
 {
     m_decodedSize = IntSize(22, 33);
     m_lazyDecoder->setData(*m_data, true);
-    RefPtr<NativeImageSkia> image = m_lazyDecoder->frameBufferAtIndex(0)->asNewNativeImage();
+    RefPtr<NativeImageSkia> image = m_lazyDecoder->createFrameAtIndex(0);
     EXPECT_EQ(m_decodedSize.width(), image->bitmap().width());
     EXPECT_EQ(m_decodedSize.height(), image->bitmap().height());
     EXPECT_FALSE(image->bitmap().isNull());

@@ -32,6 +32,7 @@
 #include "platform/PlatformScreen.h"
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/ImageSource.h"
+#include "platform/image-decoders/ImageAnimation.h"
 #include "platform/image-decoders/ImageFrame.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"

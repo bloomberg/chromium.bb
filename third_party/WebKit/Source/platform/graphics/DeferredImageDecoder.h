@@ -30,6 +30,7 @@
 #include "SkPixelRef.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/FrameData.h"
 #include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/graphics/ImageSource.h"
 #include "platform/image-decoders/ImageDecoder.h"
@@ -57,7 +58,7 @@ public:
 
     String filenameExtension() const;
 
-    ImageFrame* frameBufferAtIndex(size_t index);
+    PassRefPtr<NativeImageSkia> createFrameAtIndex(size_t);
 
     void setData(SharedBuffer& data, bool allDataReceived);
 
@@ -72,7 +73,7 @@ public:
     bool frameIsCompleteAtIndex(size_t) const;
     float frameDurationAtIndex(size_t) const;
     unsigned frameBytesAtIndex(size_t index) const;
-    ImageOrientation orientation() const;
+    ImageOrientation orientationAtIndex(size_t index) const;
     bool hotSpot(IntPoint&) const;
 
     // For testing.
@@ -87,7 +88,6 @@ private:
     RefPtr<SharedBuffer> m_data;
     bool m_allDataReceived;
     unsigned m_lastDataSize;
-    bool m_dataChanged;
     OwnPtr<ImageDecoder> m_actualDecoder;
 
     String m_filenameExtension;
@@ -96,7 +96,8 @@ private:
     int m_repetitionCount;
     bool m_hasColorProfile;
 
-    Vector<OwnPtr<ImageFrame>> m_lazyDecodedFrames;
+    // Carries only frame state and other information. Does not carry bitmap.
+    Vector<FrameData> m_frameData;
     RefPtr<ImageFrameGenerator> m_frameGenerator;
 
     static bool s_enabled;
