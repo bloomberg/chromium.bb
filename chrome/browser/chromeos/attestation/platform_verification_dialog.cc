@@ -40,7 +40,7 @@ const int kDialogMaxWidthInPixel = 400;
 views::Widget* PlatformVerificationDialog::ShowDialog(
     content::WebContents* web_contents,
     const GURL& requesting_origin,
-    const PlatformVerificationFlow::Delegate::ConsentCallback& callback) {
+    const ConsentCallback& callback) {
   // In the case of an extension or hosted app, the origin of the request is
   // best described by the extension / app name.
   const extensions::Extension* extension =
@@ -74,7 +74,7 @@ PlatformVerificationDialog::~PlatformVerificationDialog() {
 PlatformVerificationDialog::PlatformVerificationDialog(
     content::WebContents* web_contents,
     const base::string16& domain,
-    const PlatformVerificationFlow::Delegate::ConsentCallback& callback)
+    const ConsentCallback& callback)
     : content::WebContentsObserver(web_contents),
       domain_(domain),
       callback_(callback) {
@@ -93,19 +93,23 @@ PlatformVerificationDialog::PlatformVerificationDialog(
 }
 
 bool PlatformVerificationDialog::Cancel() {
-  callback_.Run(PlatformVerificationFlow::CONSENT_RESPONSE_DENY);
+  // This method is called when user clicked "Disable on <origin>" button or
+  // when user pressed the "Esc" key. See http://crbug.com/467155
+  callback_.Run(CONSENT_RESPONSE_DENY);
   return true;
 }
 
 bool PlatformVerificationDialog::Accept() {
-  callback_.Run(PlatformVerificationFlow::CONSENT_RESPONSE_ALLOW);
+  // This method is called when user clicked "OK, I got it" button.
+  callback_.Run(CONSENT_RESPONSE_ALLOW);
   return true;
 }
 
 bool PlatformVerificationDialog::Close() {
-  // This method is called when the tab is closed and in that case the decision
-  // hasn't been made yet.
-  callback_.Run(PlatformVerificationFlow::CONSENT_RESPONSE_NONE);
+  // This method is called when user clicked "x" to dismiss the dialog, the
+  // permission request is canceled, or when the tab containing this dialog is
+  // closed.
+  callback_.Run(CONSENT_RESPONSE_NONE);
   return true;
 }
 

@@ -15,9 +15,6 @@
 #include "base/timer/timer.h"
 #include "url/gurl.h"
 
-class HostContentSettingsMap;
-class PrefService;
-
 namespace content {
 class WebContents;
 }
@@ -28,10 +25,6 @@ class AsyncMethodCaller;
 
 namespace user_manager {
 class User;
-}
-
-namespace user_prefs {
-class PrefRegistrySyncable;
 }
 
 namespace chromeos {
@@ -63,6 +56,7 @@ class PlatformVerificationFlowTest;
 class PlatformVerificationFlow
     : public base::RefCountedThreadSafe<PlatformVerificationFlow> {
  public:
+  // These values are reported to UMA. DO NOT CHANGE THE EXISTING VALUES!
   enum Result {
     SUCCESS,                // The operation succeeded.
     INTERNAL_ERROR,         // The operation failed unexpectedly.
@@ -74,33 +68,11 @@ class PlatformVerificationFlow
     TIMEOUT,                // The operation timed out.
   };
 
-  enum ConsentResponse {
-    CONSENT_RESPONSE_NONE,
-    CONSENT_RESPONSE_ALLOW,
-    CONSENT_RESPONSE_DENY,
-  };
-
   // An interface which allows settings and UI to be abstracted for testing
   // purposes.  For normal operation the default implementation should be used.
   class Delegate {
    public:
     virtual ~Delegate() {}
-
-    // This callback will be called when a user has given a |response| to a
-    // consent request of the specified |type|.
-    typedef base::Callback<void(ConsentResponse response)> ConsentCallback;
-
-    // Invokes consent UI within the context of |web_contents| and calls
-    // |callback| when the user responds.
-    // |requesting_origin| or the extension/app name will be shown on the prompt
-    // if the request comes from a web page or an extension/app, respectively.
-    virtual void ShowConsentPrompt(content::WebContents* web_contents,
-                                   const GURL& requesting_origin,
-                                   const ConsentCallback& callback) = 0;
-
-    // Gets prefs associated with the given |web_contents|.  If no prefs are
-    // associated with |web_contents| then NULL is returned.
-    virtual PrefService* GetPrefs(content::WebContents* web_contents) = 0;
 
     // Gets the URL associated with the given |web_contents|.
     virtual const GURL& GetURL(content::WebContents* web_contents) = 0;
@@ -110,9 +82,8 @@ class PlatformVerificationFlow
     virtual const user_manager::User* GetUser(
         content::WebContents* web_contents) = 0;
 
-    // Gets the content settings map associated with the given |web_contents|.
-    virtual HostContentSettingsMap* GetContentSettings(
-        content::WebContents* web_contents) = 0;
+    // Checks whether attestation is permitted by user.
+    virtual bool IsPermittedByUser(content::WebContents* web_contents) = 0;
 
     // Returns true iff |web_contents| belongs to a guest or incognito session.
     virtual bool IsGuestOrIncognito(content::WebContents* web_contents) = 0;
@@ -158,8 +129,6 @@ class PlatformVerificationFlow
                             const std::string& challenge,
                             const ChallengeCallback& callback);
 
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* prefs);
-
   void set_timeout_delay(const base::TimeDelta& timeout_delay) {
     timeout_delay_ = timeout_delay;
   }
@@ -185,28 +154,11 @@ class PlatformVerificationFlow
 
   ~PlatformVerificationFlow();
 
-  // Checks whether the device has already been enrolled for attestation. The
-  // arguments to ChallengePlatformKey are in |context| and
-  // |attestation_prepared| specifies whether attestation has been prepared on
-  // this device.
-  void CheckEnrollment(const ChallengeContext& context,
-                       bool attestation_prepared);
-
-  // Checks whether we need to prompt the user for consent before proceeding and
-  // invokes the consent UI if so.  The arguments to ChallengePlatformKey are
-  // in |context| and |attestation_enrolled| specifies whether attestation has
-  // been enrolled for this device.
-  void CheckConsent(const ChallengeContext& context,
-                    bool attestation_enrolled);
-
-  // A callback called when the user has given their consent response.  The
-  // arguments to ChallengePlatformKey are in |context|.  |consent_required| and
-  // |consent_response| indicate whether consent was required and user response,
-  // respectively.  If the response indicates that the operation should proceed,
-  // this method invokes a certificate request.
-  void OnConsentResponse(const ChallengeContext& context,
-                         bool consent_required,
-                         ConsentResponse consent_response);
+  // Callback for attestation preparation. The arguments to ChallengePlatformKey
+  // are in |context|, and |attestation_prepared| specifies whether attestation
+  // has been prepared on this device.
+  void OnAttestationPrepared(const ChallengeContext& context,
+                             bool attestation_prepared);
 
   // Initiates the flow to get a platform key certificate.  The arguments to
   // ChallengePlatformKey are in |context|.  |user_id| identifies the user for
@@ -248,27 +200,8 @@ class PlatformVerificationFlow
                         bool operation_success,
                         const std::string& response_data);
 
-  // Checks whether policy or profile settings associated with |web_contents|
-  // have attestation for content protection explicitly disabled.
-  bool IsAttestationEnabled(content::WebContents* web_contents);
-
-  // Updates user settings for the profile associated with |web_contents| based
-  // on the |consent_response| to the request of type |consent_type|.
-  bool UpdateSettings(content::WebContents* web_contents,
-                      ConsentResponse consent_response);
-
-  // Finds the origin-specific consent pref in |content_settings| for |url|.  If
-  // a pref exists for the origin, returns true and sets |pref_value| if it is
-  // not NULL.
-  bool GetOriginPref(HostContentSettingsMap* content_settings,
-                     const GURL& url,
-                     bool* pref_value);
-
-  // Records the origin-specific consent pref in |content_settings| for |url|.
-  // The pref will be set to |allow_origin|.
-  void RecordOriginConsent(HostContentSettingsMap* content_settings,
-                           const GURL& url,
-                           bool allow_origin);
+  // Checks whether attestation for content protection is allowed by policy.
+  bool IsAttestationAllowedByPolicy();
 
   // Returns true iff |certificate| is an expired X.509 certificate.
   bool IsExpired(const std::string& certificate);

@@ -29,7 +29,8 @@ ProxyDecryptor::ProxyDecryptor(MediaPermission* media_permission,
                                const KeyAddedCB& key_added_cb,
                                const KeyErrorCB& key_error_cb,
                                const KeyMessageCB& key_message_cb)
-    : key_added_cb_(key_added_cb),
+    : media_permission_(media_permission),
+      key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb),
       is_clear_key_(false),
@@ -58,6 +59,9 @@ bool ProxyDecryptor::InitializeCDM(CdmFactory* cdm_factory,
   media_keys_ = CreateMediaKeys(cdm_factory, key_system, security_origin);
   if (!media_keys_)
     return false;
+
+  key_system_ = key_system;
+  security_origin_ = security_origin;
 
   is_clear_key_ =
       IsClearKey(key_system) || IsExternalClearKey(key_system);
@@ -103,10 +107,10 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
           base::Bind(&ProxyDecryptor::OnSessionError,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::string())));  // No session id until created.
-  uint8* init_data_vector_data =
-      (init_data_vector.size() > 0) ? &init_data_vector[0] : nullptr;
 
   if (session_creation_type == LoadSession) {
+    uint8* init_data_vector_data =
+        (init_data_vector.size() > 0) ? &init_data_vector[0] : nullptr;
     media_keys_->LoadSession(
         MediaKeys::PERSISTENT_LICENSE_SESSION,
         std::string(reinterpret_cast<const char*>(init_data_vector_data),
@@ -120,10 +124,49 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
           ? MediaKeys::PERSISTENT_LICENSE_SESSION
           : MediaKeys::TEMPORARY_SESSION;
 
-  media_keys_->CreateSessionAndGenerateRequest(
-      session_type, init_data_type, init_data_vector_data,
-      init_data_vector.size(), promise.Pass());
+  // No permission required when AesDecryptor is used or when the key system is
+  // external clear key.
+  DCHECK(!key_system_.empty());
+  if (CanUseAesDecryptor(key_system_) || IsExternalClearKey(key_system_)) {
+    OnPermissionStatus(session_type, init_data_type, init_data_vector,
+                       promise.Pass(), true /* granted */);
+    return true;
+  }
+
+#if defined(OS_CHROMEOS)
+  media_permission_->RequestPermission(
+      MediaPermission::PROTECTED_MEDIA_IDENTIFIER, security_origin_,
+      base::Bind(&ProxyDecryptor::OnPermissionStatus,
+                 weak_ptr_factory_.GetWeakPtr(), session_type, init_data_type,
+                 init_data_vector, base::Passed(&promise)));
+#else
+  // TODO(xhwang): Fix the Android path by requesting permission for key systems
+  // that don't use AesDecryptor in M43.
+  OnPermissionStatus(session_type, init_data_type, init_data_vector,
+                     promise.Pass(), true /* granted */);
+#endif
+
   return true;
+}
+
+void ProxyDecryptor::OnPermissionStatus(
+    MediaKeys::SessionType session_type,
+    const std::string& init_data_type,
+    const std::vector<uint8>& init_data,
+    scoped_ptr<NewSessionCdmPromise> promise,
+    bool granted) {
+  // ProxyDecryptor is only used by Prefixed EME, where RequestPermission() is
+  // only for triggering the permission UI. Later CheckPermission() will be
+  // called (e.g. in PlatformVerificationFlow) and the permission status will be
+  // evaluated there.
+  DVLOG_IF(1, !granted) << "Permission request rejected.";
+
+  const uint8* init_data_vector_data =
+      (init_data.size() > 0) ? &init_data[0] : nullptr;
+
+  media_keys_->CreateSessionAndGenerateRequest(
+      session_type, init_data_type, init_data_vector_data, init_data.size(),
+      promise.Pass());
 }
 
 void ProxyDecryptor::AddKey(const uint8* key,

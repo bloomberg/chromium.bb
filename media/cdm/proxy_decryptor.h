@@ -15,8 +15,7 @@
 #include "media/base/decryptor.h"
 #include "media/base/media_export.h"
 #include "media/base/media_keys.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace media {
 
@@ -89,6 +88,13 @@ class MEDIA_EXPORT ProxyDecryptor {
                       uint32 system_code,
                       const std::string& error_message);
 
+  // Callback for permission request.
+  void OnPermissionStatus(MediaKeys::SessionType session_type,
+                          const std::string& init_data_type,
+                          const std::vector<uint8>& init_data,
+                          scoped_ptr<NewSessionCdmPromise> promise,
+                          bool granted);
+
   enum SessionCreationType {
     TemporarySession,
     PersistentSession,
@@ -102,10 +108,15 @@ class MEDIA_EXPORT ProxyDecryptor {
   // The real MediaKeys that manages key operations for the ProxyDecryptor.
   scoped_ptr<MediaKeys> media_keys_;
 
+  MediaPermission* media_permission_;
+
   // Callbacks for firing key events.
   KeyAddedCB key_added_cb_;
   KeyErrorCB key_error_cb_;
   KeyMessageCB key_message_cb_;
+
+  std::string key_system_;
+  GURL security_origin_;
 
   // Keep track of both persistent and non-persistent sessions.
   base::hash_map<std::string, bool> active_sessions_;

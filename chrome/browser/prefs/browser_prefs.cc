@@ -157,7 +157,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
@@ -186,6 +185,7 @@
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
+#include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_mode_detector.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
@@ -485,8 +485,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(OS_CHROMEOS)
-  chromeos::attestation::PlatformVerificationFlow::RegisterProfilePrefs(
-      registry);
   chromeos::first_run::RegisterProfilePrefs(registry);
   chromeos::file_system_provider::RegisterProfilePrefs(registry);
   chromeos::MultiProfileUserController::RegisterProfilePrefs(registry);
@@ -498,6 +496,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   extensions::EnterprisePlatformKeysPrivateChallengeUserKeyFunction::
       RegisterProfilePrefs(registry);
   FlagsUI::RegisterProfilePrefs(registry);
+  ProtectedMediaIdentifierPermissionContext::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_WIN)
