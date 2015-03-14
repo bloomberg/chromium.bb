@@ -174,6 +174,13 @@ SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
                                       info.fInfo.isOpaque());
 }
 
+SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& info,
+                                                   const SkPaint*) {
+  SkASSERT(info.fInfo.colorType() == kN32_SkColorType);
+  return BitmapPlatformDevice::Create(info.fInfo.width(), info.fInfo.height(),
+                                      info.fInfo.isOpaque());
+}
+
 cairo_t* BitmapPlatformDevice::BeginPlatformPaint() {
   LoadConfig();
   cairo_surface_t* surface = cairo_get_target(cairo_);

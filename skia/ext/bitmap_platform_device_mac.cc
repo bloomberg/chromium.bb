@@ -280,6 +280,14 @@ SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
   return Create(NULL, info.width(), info.height(), info.isOpaque(), do_clear);
 }
 
+SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& cinfo,
+                                                   const SkPaint*) {
+  const SkImageInfo& info = cinfo.fInfo;
+  const bool do_clear = !info.isOpaque();
+  SkASSERT(info.colorType() == kN32_SkColorType);
+  return Create(NULL, info.width(), info.height(), info.isOpaque(), do_clear);
+}
+
 // PlatformCanvas impl
 
 SkCanvas* CreatePlatformCanvas(CGContextRef ctx, int width, int height,

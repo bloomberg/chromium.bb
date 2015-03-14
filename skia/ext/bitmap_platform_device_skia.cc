@@ -49,6 +49,13 @@ SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
                                       info.fInfo.isOpaque());
 }
 
+SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& info,
+                                                   const SkPaint*) {
+  SkASSERT(info.fInfo.colorType() == kN32_SkColorType);
+  return BitmapPlatformDevice::Create(info.fInfo.width(), info.fInfo.height(),
+                                      info.fInfo.isOpaque());
+}
+
 PlatformSurface BitmapPlatformDevice::BeginPlatformPaint() {
   // TODO(zhenghao): What should we return? The ptr to the address of the
   // pixels? Maybe this won't be called at all.
