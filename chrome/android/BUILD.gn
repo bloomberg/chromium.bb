@@ -320,6 +320,19 @@ jinja_template("chrome_shell_manifest") {
   output = chrome_shell_manifest
 }
 
+# TODO(cjhopman): This should actually be done as a build step instead of at gn
+# time.
+_version_py_path = "//build/util/version.py"
+_chrome_version_path = "//chrome/VERSION"
+_version_full = exec_script(_version_py_path,
+                            [
+                              "-f",
+                              rebase_path(_chrome_version_path, root_build_dir),
+                              "-t \"@MAJOR@.@MINOR@.@BUILD@.@PATCH@\"",
+                            ],
+                            "value",
+                            [ _chrome_version_path ])
+
 # GYP: //chrome/chrome_shell.gypi:chrome_shell_apk
 android_apk("chrome_shell_apk") {
   testonly = true
@@ -333,6 +346,7 @@ android_apk("chrome_shell_apk") {
   apk_name = "ChromeShell"
   android_manifest = chrome_shell_manifest
   native_libs = [ "libchrome_shell.so" ]
+  native_lib_version_name = _version_full
   asset_location = chrome_shell_assets_dir
 
   #TODO(GYP):

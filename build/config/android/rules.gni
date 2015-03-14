@@ -1216,6 +1216,11 @@ template("android_apk") {
         invoker.enable_relocation_packing) {
       _enable_relocation_packing = true
     }
+
+    _native_lib_version_name = ""
+    if (defined(invoker.native_lib_version_name)) {
+      _native_lib_version_name = invoker.native_lib_version_name
+    }
   }
 
   _rebased_build_config = rebase_path(_build_config, root_build_dir)
@@ -1251,8 +1256,6 @@ template("android_apk") {
     if (defined(invoker.enable_chromium_linker_tests)) {
       _enable_chromium_linker_tests = invoker.enable_chromium_linker_tests
     }
-
-    _native_lib_version_name = ""
 
     java_cpp_template("${_template_name}__native_libraries_java") {
       package_name = "org/chromium/base/library_loader"
