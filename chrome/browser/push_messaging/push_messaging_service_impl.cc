@@ -646,8 +646,12 @@ void PushMessagingServiceImpl::Unregister(
                  was_registered, callback);
 #if defined(OS_ANDROID)
   // On Android the backend is different, and requires the original sender_id.
-  GetGCMDriver()->UnregisterWithSenderId(app_id_guid, sender_id,
-                                         unregister_callback);
+  // UnregisterBecausePermissionRevoked sometimes calls us with an empty one.
+  if (sender_id.empty())
+    unregister_callback.Run(gcm::GCMClient::INVALID_PARAMETER);
+  else
+    GetGCMDriver()->UnregisterWithSenderId(app_id_guid, sender_id,
+                                           unregister_callback);
 #else
   GetGCMDriver()->Unregister(app_id_guid, unregister_callback);
 #endif
@@ -738,6 +742,12 @@ void PushMessagingServiceImpl::UnregisterBecausePermissionRevoked(
   base::Closure barrier_closure = base::BarrierClosure(2, closure);
 
   // Unregister the PushMessagingApplicationId with the push service.
+  // It's possible for GetSenderId to have failed and sender_id to be empty, if
+  // cookies (and the SW database) for an origin got cleared before permissions
+  // are cleared for the origin. In that case Unregister will just delete the
+  // application ID to block future messages.
+  // TODO(johnme): Auto-unregister before SW DB is cleared
+  // (https://crbug.com/402458).
   Unregister(id.app_id_guid(), sender_id,
              base::Bind(&UnregisterCallbackToClosure, barrier_closure));
 

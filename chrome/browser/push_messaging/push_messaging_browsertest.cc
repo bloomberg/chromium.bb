@@ -9,7 +9,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -1036,4 +1040,45 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   ASSERT_TRUE(RunScript("hasRegistration()", &script_result));
   EXPECT_EQ("true - registered", script_result);
+}
+
+// Checks that automatically unsubscribing due to a revoked permission is
+// handled well if the sender ID needed to unregister was already deleted.
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       ResetPushPermissionAfterClearingSiteData) {
+  std::string script_result;
+
+  TryToRegisterSuccessfully("1-0" /* expected_push_registration_id */);
+
+  PushMessagingApplicationId app_id = GetServiceWorkerAppId(0LL);
+  EXPECT_EQ(app_id.app_id_guid(), gcm_service()->last_registered_app_id());
+  PushMessagingApplicationId stored_app_id = PushMessagingApplicationId::Get(
+      browser()->profile(), app_id.app_id_guid());
+  EXPECT_TRUE(stored_app_id.IsValid());
+
+  // Simulate a user clearing site data (including Service Workers, crucially).
+  BrowsingDataRemover* remover =
+      BrowsingDataRemover::CreateForUnboundedRange(browser()->profile());
+  BrowsingDataRemoverCompletionObserver observer(remover);
+  remover->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
+                  BrowsingDataHelper::UNPROTECTED_WEB);
+  observer.BlockUntilCompletion();
+  // BrowsingDataRemover deletes itself.
+
+  base::RunLoop run_loop;
+  push_service()->SetContentSettingChangedCallbackForTesting(
+      run_loop.QuitClosure());
+
+  // This shouldn't (asynchronously) cause a DCHECK.
+  // TODO(johnme): Get this test running on Android, which has a different
+  // codepath due to sender_id being required for unregistering there.
+  browser()->profile()->GetHostContentSettingsMap()->
+      ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_PUSH_MESSAGING);
+
+  run_loop.Run();
+
+  // app_id should no longer be stored in prefs
+  PushMessagingApplicationId stored_app_id2 = PushMessagingApplicationId::Get(
+      browser()->profile(), app_id.app_id_guid());
+  EXPECT_FALSE(stored_app_id2.IsValid());
 }
