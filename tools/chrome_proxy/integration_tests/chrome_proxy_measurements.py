@@ -17,6 +17,7 @@ class ChromeProxyLatency(page_test.PageTest):
 
   def __init__(self, *args, **kwargs):
     super(ChromeProxyLatency, self).__init__(*args, **kwargs)
+    self._metrics = metrics.ChromeProxyMetric()
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-spdy-proxy-auth')
@@ -27,7 +28,7 @@ class ChromeProxyLatency(page_test.PageTest):
   def ValidateAndMeasurePage(self, page, tab, results):
     # Wait for the load event.
     tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
-    loading.LoadingMetric().AddResults(tab, results)
+    self._metrics.AddResultsForLatency(tab, results)
 
 
 class ChromeProxyDataSaving(page_test.PageTest):

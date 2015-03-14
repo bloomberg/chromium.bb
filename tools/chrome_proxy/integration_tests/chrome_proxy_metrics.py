@@ -144,6 +144,75 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'checked_via_header', 'count', via_count))
 
+  def AddResultsForLatency(self, tab, results):
+    # TODO(bustamante): This is a hack to workaround crbug.com/467174,
+    #   once fixed just pull down window.performance.timing object and
+    #   reference that everywhere.
+    load_event_start = tab.EvaluateJavaScript(
+        'window.performance.timing.loadEventStart')
+    navigation_start = tab.EvaluateJavaScript(
+        'window.performance.timing.navigationStart')
+    dom_content_loaded_event_start = tab.EvaluateJavaScript(
+        'window.performance.timing.domContentLoadedEventStart')
+    fetch_start = tab.EvaluateJavaScript(
+        'window.performance.timing.fetchStart')
+    request_start = tab.EvaluateJavaScript(
+        'window.performance.timing.requestStart')
+    domain_lookup_end = tab.EvaluateJavaScript(
+        'window.performance.timing.domainLookupEnd')
+    domain_lookup_start = tab.EvaluateJavaScript(
+        'window.performance.timing.domainLookupStart')
+    connect_end = tab.EvaluateJavaScript(
+        'window.performance.timing.connectEnd')
+    connect_start = tab.EvaluateJavaScript(
+        'window.performance.timing.connectStart')
+    response_end = tab.EvaluateJavaScript(
+        'window.performance.timing.responseEnd')
+    response_start = tab.EvaluateJavaScript(
+        'window.performance.timing.responseStart')
+
+    # NavigationStart relative markers in milliseconds.
+    load_start = (float(load_event_start) - navigation_start)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'load_start', 'ms', load_start))
+
+    dom_content_loaded_start = (
+      float(dom_content_loaded_event_start) - navigation_start)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'dom_content_loaded_start', 'ms',
+        dom_content_loaded_start))
+
+    fetch_start = (float(fetch_start) - navigation_start)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'fetch_start', 'ms', fetch_start,
+        important=False))
+
+    request_start = (float(request_start) - navigation_start)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'request_start', 'ms', request_start,
+        important=False))
+
+    # Phase measurements in milliseconds.
+    domain_lookup_duration = (float(domain_lookup_end) - domain_lookup_start)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'domain_lookup_duration', 'ms',
+        domain_lookup_duration, important=False))
+
+    connect_duration = (float(connect_end) - connect_start)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'connect_duration', 'ms', connect_duration,
+        important=False))
+
+    request_duration = (float(response_start) - request_start)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'request_duration', 'ms', request_duration,
+        important=False))
+
+    response_duration = (float(response_end) - response_start)
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'response_duration', 'ms', response_duration,
+        important=False))
+
   def AddResultsForClientVersion(self, tab, results):
     via_count = 0
     for resp in self.IterResponses(tab):
