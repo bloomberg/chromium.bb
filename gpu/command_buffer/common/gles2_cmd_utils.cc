@@ -711,6 +711,16 @@ uint32 GLES2Util::GetChannelsForFormat(int format) {
     case GL_RGB16F_EXT:
     case GL_RGB32F_EXT:
     case GL_SRGB_EXT:
+    case GL_SRGB8:
+    case GL_RGB8_SNORM:
+    case GL_R11F_G11F_B10F:
+    case GL_RGB9_E5:
+    case GL_RGB8UI:
+    case GL_RGB8I:
+    case GL_RGB16UI:
+    case GL_RGB16I:
+    case GL_RGB32UI:
+    case GL_RGB32I:
       return kRGB;
     case GL_BGRA_EXT:
     case GL_BGRA8_EXT:
@@ -722,20 +732,51 @@ uint32 GLES2Util::GetChannelsForFormat(int format) {
     case GL_RGB5_A1:
     case GL_SRGB_ALPHA_EXT:
     case GL_SRGB8_ALPHA8_EXT:
+    case GL_RGBA8_SNORM:
+    case GL_RGB10_A2:
+    case GL_RGBA8UI:
+    case GL_RGBA8I:
+    case GL_RGB10_A2UI:
+    case GL_RGBA16UI:
+    case GL_RGBA16I:
+    case GL_RGBA32UI:
+    case GL_RGBA32I:
       return kRGBA;
     case GL_DEPTH_COMPONENT32_OES:
     case GL_DEPTH_COMPONENT24_OES:
     case GL_DEPTH_COMPONENT16:
     case GL_DEPTH_COMPONENT:
+    case GL_DEPTH_COMPONENT32F:
       return kDepth;
     case GL_STENCIL_INDEX8:
       return kStencil;
     case GL_DEPTH_STENCIL_OES:
     case GL_DEPTH24_STENCIL8_OES:
+    case GL_DEPTH32F_STENCIL8:
       return kDepth | kStencil;
     case GL_RED_EXT:
+    case GL_R8:
+    case GL_R8_SNORM:
+    case GL_R16F:
+    case GL_R32F:
+    case GL_R8UI:
+    case GL_R8I:
+    case GL_R16UI:
+    case GL_R16I:
+    case GL_R32UI:
+    case GL_R32I:
       return kRed;
     case GL_RG_EXT:
+    case GL_RG8:
+    case GL_RG8_SNORM:
+    case GL_RG16F:
+    case GL_RG32F:
+    case GL_RG8UI:
+    case GL_RG8I:
+    case GL_RG16UI:
+    case GL_RG16I:
+    case GL_RG32UI:
+    case GL_RG32I:
       return kRed | kGreen;
     default:
       return 0x0000;

@@ -37,6 +37,17 @@ class ValueValidator {
     }
   }
 
+  void RemoveValues(const T* invalid_values, int num_values) {
+    for (int ii = 0; ii < num_values; ++ii) {
+      auto iter = std::find(
+          valid_values_.begin(), valid_values_.end(), invalid_values[ii]);
+      if (iter != valid_values_.end()) {
+        valid_values_.erase(iter);
+        DCHECK(!IsValid(invalid_values[ii]));
+      }
+    }
+  }
+
   bool IsValid(const T value) const {
     return std::find(valid_values_.begin(), valid_values_.end(), value) !=
            valid_values_.end();
@@ -53,7 +64,7 @@ class ValueValidator {
 struct Validators {
   Validators();
 
-  void AddES3Values();
+  void UpdateValuesES3();
 
 #include "gpu/command_buffer/service/gles2_cmd_validation_autogen.h"
 };

@@ -133,7 +133,7 @@ GL_APICALL void         GL_APIENTRY glPauseTransformFeedback (void);
 GL_APICALL void         GL_APIENTRY glPixelStorei (GLenumPixelStore pname, GLintPixelStoreAlignment param);
 GL_APICALL void         GL_APIENTRY glPolygonOffset (GLfloat factor, GLfloat units);
 GL_APICALL void         GL_APIENTRY glReadBuffer (GLenum src);
-GL_APICALL void         GL_APIENTRY glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenumReadPixelFormat format, GLenumPixelType type, void* pixels);
+GL_APICALL void         GL_APIENTRY glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenumReadPixelFormat format, GLenumReadPixelType type, void* pixels);
 GL_APICALL void         GL_APIENTRY glReleaseShaderCompiler (void);
 GL_APICALL void         GL_APIENTRY glRenderbufferStorage (GLenumRenderBufferTarget target, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
 GL_APICALL void         GL_APIENTRY glResumeTransformFeedback (void);

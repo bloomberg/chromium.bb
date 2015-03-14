@@ -547,6 +547,8 @@ _STATES = {
 # valid_es3: The list of values that are valid in OpenGL ES 3, but not ES 2.
 # invalid: Examples of invalid values for the type. At least these values
 #          should be tested to be invalid.
+# deprecated_es3: The list of values that are valid in OpenGL ES 2, but
+#                 deprecated in ES 3.
 # is_complete: The list of valid values of type are final and will not be
 #              modified during runtime.
 _NAMED_TYPE_INFO = {
@@ -775,6 +777,10 @@ _NAMED_TYPE_INFO = {
     'valid': [
       'GL_TEXTURE_2D',
       'GL_TEXTURE_CUBE_MAP',
+    ],
+    'valid_es3': [
+      'GL_TEXTURE_3D',
+      'GL_TEXTURE_2D_ARRAY',
     ],
     'invalid': [
       'GL_TEXTURE_1D',
@@ -1223,9 +1229,22 @@ _NAMED_TYPE_INFO = {
       'GL_UNSIGNED_SHORT_4_4_4_4',
       'GL_UNSIGNED_SHORT_5_5_5_1',
     ],
-    'invalid': [
+    'valid_es3': [
+      'GL_BYTE',
+      'GL_UNSIGNED_SHORT',
       'GL_SHORT',
+      'GL_UNSIGNED_INT',
       'GL_INT',
+      'GL_HALF_FLOAT',
+      'GL_FLOAT',
+      'GL_UNSIGNED_INT_2_10_10_10_REV',
+      'GL_UNSIGNED_INT_10F_11F_11F_REV',
+      'GL_UNSIGNED_INT_5_9_9_9_REV',
+      'GL_UNSIGNED_INT_24_8',
+      'GL_FLOAT_32_UNSIGNED_INT_24_8_REV',
+    ],
+    'invalid': [
+      'GL_UNSIGNED_BYTE_3_3_2',
     ],
   },
   'ReadPixelType': {
@@ -1278,6 +1297,16 @@ _NAMED_TYPE_INFO = {
       'GL_RGB',
       'GL_RGBA',
     ],
+    'valid_es3': [
+      'GL_RED',
+      'GL_RED_INTEGER',
+      'GL_RG',
+      'GL_RG_INTEGER',
+      'GL_RGB_INTEGER',
+      'GL_RGBA_INTEGER',
+      'GL_DEPTH_COMPONENT',
+      'GL_DEPTH_STENCIL',
+    ],
     'invalid': [
       'GL_BGRA',
       'GL_BGR',
@@ -1291,6 +1320,64 @@ _NAMED_TYPE_INFO = {
       'GL_LUMINANCE_ALPHA',
       'GL_RGB',
       'GL_RGBA',
+    ],
+    'valid_es3': [
+      'GL_R8',
+      'GL_R8_SNORM',
+      'GL_R16F',
+      'GL_R32F',
+      'GL_R8UI',
+      'GL_R8I',
+      'GL_R16UI',
+      'GL_R16I',
+      'GL_R32UI',
+      'GL_R32I',
+      'GL_RG8',
+      'GL_RG8_SNORM',
+      'GL_RG16F',
+      'GL_RG32F',
+      'GL_RG8UI',
+      'GL_RG8I',
+      'GL_RG16UI',
+      'GL_RG16I',
+      'GL_RG32UI',
+      'GL_RG32I',
+      'GL_RGB8',
+      'GL_SRGB8',
+      'GL_RGB565',
+      'GL_RGB8_SNORM',
+      'GL_R11F_G11F_B10F',
+      'GL_RGB9_E5',
+      'GL_RGB16F',
+      'GL_RGB32F',
+      'GL_RGB8UI',
+      'GL_RGB8I',
+      'GL_RGB16UI',
+      'GL_RGB16I',
+      'GL_RGB32UI',
+      'GL_RGB32I',
+      'GL_RGBA8',
+      'GL_SRGB8_ALPHA8',
+      'GL_RGBA8_SNORM',
+      'GL_RGB5_A1',
+      'GL_RGBA4',
+      'GL_RGB10_A2',
+      'GL_RGBA16F',
+      'GL_RGBA32F',
+      'GL_RGBA8UI',
+      'GL_RGBA8I',
+      'GL_RGB10_A2UI',
+      'GL_RGBA16UI',
+      'GL_RGBA16I',
+      'GL_RGBA32UI',
+      'GL_RGBA32I',
+      # The DEPTH/STENCIL formats are not supported in CopyTexImage2D.
+      # We will reject them dynamically in GPU command buffer.
+      'GL_DEPTH_COMPONENT16',
+      'GL_DEPTH_COMPONENT24',
+      'GL_DEPTH_COMPONENT32F',
+      'GL_DEPTH24_STENCIL8',
+      'GL_DEPTH32F_STENCIL8',
     ],
     'invalid': [
       'GL_BGRA',
@@ -1308,6 +1395,78 @@ _NAMED_TYPE_INFO = {
       'GL_LUMINANCE8_ALPHA8_EXT',
       'GL_RGB8_OES',
       'GL_RGBA8_OES',
+    ],
+    'valid_es3': [
+      'GL_R8',
+      'GL_R8_SNORM',
+      'GL_R16F',
+      'GL_R32F',
+      'GL_R8UI',
+      'GL_R8I',
+      'GL_R16UI',
+      'GL_R16I',
+      'GL_R32UI',
+      'GL_R32I',
+      'GL_RG8',
+      'GL_RG8_SNORM',
+      'GL_RG16F',
+      'GL_RG32F',
+      'GL_RG8UI',
+      'GL_RG8I',
+      'GL_RG16UI',
+      'GL_RG16I',
+      'GL_RG32UI',
+      'GL_RG32I',
+      'GL_SRGB8',
+      'GL_RGB8_SNORM',
+      'GL_R11F_G11F_B10F',
+      'GL_RGB9_E5',
+      'GL_RGB16F',
+      'GL_RGB32F',
+      'GL_RGB8UI',
+      'GL_RGB8I',
+      'GL_RGB16UI',
+      'GL_RGB16I',
+      'GL_RGB32UI',
+      'GL_RGB32I',
+      'GL_SRGB8_ALPHA8',
+      'GL_RGBA8_SNORM',
+      'GL_RGB10_A2',
+      'GL_RGBA16F',
+      'GL_RGBA32F',
+      'GL_RGBA8UI',
+      'GL_RGBA8I',
+      'GL_RGB10_A2UI',
+      'GL_RGBA16UI',
+      'GL_RGBA16I',
+      'GL_RGBA32UI',
+      'GL_RGBA32I',
+      'GL_DEPTH_COMPONENT16',
+      'GL_DEPTH_COMPONENT24',
+      'GL_DEPTH_COMPONENT32F',
+      'GL_DEPTH24_STENCIL8',
+      'GL_DEPTH32F_STENCIL8',
+      'GL_COMPRESSED_R11_EAC',
+      'GL_COMPRESSED_SIGNED_R11_EAC',
+      'GL_COMPRESSED_RG11_EAC',
+      'GL_COMPRESSED_SIGNED_RG11_EAC',
+      'GL_COMPRESSED_RGB8_ETC2',
+      'GL_COMPRESSED_SRGB8_ETC2',
+      'GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2',
+      'GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2',
+      'GL_COMPRESSED_RGBA8_ETC2_EAC',
+      'GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC',
+    ],
+    'deprecated_es3': [
+      'GL_ALPHA8_EXT',
+      'GL_LUMINANCE8_EXT',
+      'GL_LUMINANCE8_ALPHA8_EXT',
+      'GL_ALPHA16F_EXT',
+      'GL_LUMINANCE16F_EXT',
+      'GL_LUMINANCE_ALPHA16F_EXT',
+      'GL_ALPHA32F_EXT',
+      'GL_LUMINANCE32F_EXT',
+      'GL_LUMINANCE_ALPHA32F_EXT',
     ],
   },
   'ImageInternalFormat': {
@@ -7553,6 +7712,10 @@ class NamedType(object):
       self.valid_es3 = info['valid_es3']
     else:
       self.valid_es3 = []
+    if 'deprecated_es3' in info:
+      self.deprecated_es3 = info['deprecated_es3']
+    else:
+      self.deprecated_es3 = []
 
   def GetType(self):
     return self.info['type']
@@ -7565,6 +7728,9 @@ class NamedType(object):
 
   def GetValidValuesES3(self):
     return self.valid_es3
+
+  def GetDeprecatedValuesES3(self):
+    return self.deprecated_es3
 
   def IsConstant(self):
     if not 'is_complete' in self.info:
@@ -9872,6 +10038,13 @@ extern const NameToFunc g_gles2_function_table[] = {
           file.Write("  %s,\n" % value)
         file.Write("};\n")
         file.Write("\n")
+      if named_type.GetDeprecatedValuesES3():
+        file.Write("static const %s deprecated_%s_table_es3[] = {\n" %
+                   (named_type.GetType(), ToUnderscore(name)))
+        for value in named_type.GetDeprecatedValuesES3():
+          file.Write("  %s,\n" % value)
+        file.Write("};\n")
+        file.Write("\n")
     file.Write("Validators::Validators()")
     pre = '    : '
     for count, name in enumerate(names):
@@ -9891,9 +10064,16 @@ extern const NameToFunc g_gles2_function_table[] = {
     file.Write(" {\n");
     file.Write("}\n\n");
 
-    file.Write("void Validators::AddES3Values() {\n")
+    file.Write("void Validators::UpdateValuesES3() {\n")
     for name in names:
       named_type = NamedType(_NAMED_TYPE_INFO[name])
+      if named_type.GetDeprecatedValuesES3():
+        code = """  %(name)s.RemoveValues(
+      deprecated_%(name)s_table_es3, arraysize(deprecated_%(name)s_table_es3));
+"""
+        file.Write(code % {
+          'name': ToUnderscore(name),
+        })
       if named_type.GetValidValuesES3():
         code = """  %(name)s.AddValues(
       valid_%(name)s_table_es3, arraysize(valid_%(name)s_table_es3));

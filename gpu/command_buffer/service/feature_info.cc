@@ -1070,7 +1070,7 @@ bool FeatureInfo::IsES3Capable() const {
 
 void FeatureInfo::EnableES3Validators() {
   DCHECK(IsES3Capable());
-  validators_.AddES3Values();
+  validators_.UpdateValuesES3();
 }
 
 void FeatureInfo::AddExtensionString(const char* s) {
