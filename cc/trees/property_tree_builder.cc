@@ -173,6 +173,8 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
     gfx::Vector2dF local_offset = layer->position().OffsetFromOrigin() +
                                   layer->transform().To2dTranslation();
     layer->set_offset_to_transform_parent(parent_offset + local_offset);
+    layer->set_should_flatten_transform_from_property_tree(
+        data_from_ancestor.should_flatten);
     layer->set_transform_tree_index(transform_parent->transform_tree_index());
     return;
   }
@@ -188,8 +190,10 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
 
   node->data.scrolls = is_scrollable;
   node->data.flattens_inherited_transform = data_for_children->should_flatten;
-  node->data.flattens_local_transform = layer->should_flatten_transform();
-  data_for_children->should_flatten = false;
+
+  // Surfaces inherently flatten transforms.
+  data_for_children->should_flatten =
+      layer->should_flatten_transform() || has_surface;
   node->data.target_id =
       data_from_ancestor.render_target->transform_tree_index();
   node->data.content_target_id =
@@ -233,6 +237,9 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
   data_from_ancestor.transform_tree->UpdateTransforms(node->id);
 
   layer->set_offset_to_transform_parent(gfx::Vector2dF());
+
+  // Flattening (if needed) will be handled by |node|.
+  layer->set_should_flatten_transform_from_property_tree(false);
 }
 
 void AddOpacityNodeIfNeeded(const DataForRecursion& data_from_ancestor,

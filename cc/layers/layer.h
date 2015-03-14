@@ -508,6 +508,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
       const TransformTree& tree) const;
   float DrawOpacityFromPropertyTrees(const OpacityTree& tree) const;
 
+  void set_should_flatten_transform_from_property_tree(bool should_flatten) {
+    should_flatten_transform_from_property_tree_ = should_flatten;
+  }
+
   // TODO(vollick): These values are temporary and will be removed as soon as
   // render surface determinations are moved out of CDP. They only exist because
   // certain logic depends on whether or not a layer would render to a separate
@@ -658,6 +662,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   int opacity_tree_index_;
   int clip_tree_index_;
   gfx::Vector2dF offset_to_transform_parent_;
+  bool should_flatten_transform_from_property_tree_ : 1;
   bool should_scroll_on_main_thread_ : 1;
   bool have_wheel_event_handlers_ : 1;
   bool have_scroll_event_handlers_ : 1;

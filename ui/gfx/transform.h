@@ -186,6 +186,9 @@ class GFX_EXPORT Transform {
   //
   void FlattenTo2d();
 
+  // Returns true if the 3rd row and 3rd column are both (0, 0, 1, 0).
+  bool IsFlat() const;
+
   // Returns the x and y translation components of the matrix.
   Vector2dF To2dTranslation() const;
 

@@ -52,6 +52,7 @@ Layer::Layer()
       transform_tree_index_(-1),
       opacity_tree_index_(-1),
       clip_tree_index_(-1),
+      should_flatten_transform_from_property_tree_(false),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
       have_scroll_event_handlers_(false),
@@ -1294,6 +1295,8 @@ gfx::Transform Layer::screen_space_transform_from_property_trees(
   if (transform_tree_index() >= 0) {
     gfx::Transform ssxform = tree.Node(transform_tree_index())->data.to_screen;
     xform.ConcatTransform(ssxform);
+    if (should_flatten_transform_from_property_tree_)
+      xform.FlattenTo2d();
   }
   xform.Scale(1.0 / contents_scale_x(), 1.0 / contents_scale_y());
   return xform;
@@ -1313,6 +1316,8 @@ gfx::Transform Layer::draw_transform_from_property_trees(
     // If you're not the root, or you don't own a surface, you need to apply
     // your local offset.
     xform = node->data.to_target;
+    if (should_flatten_transform_from_property_tree_)
+      xform.FlattenTo2d();
     xform.Translate(offset_to_transform_parent().x(),
                     offset_to_transform_parent().y());
   } else {

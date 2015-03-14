@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <set>
+#include <vector>
 
 #include "base/logging.h"
 #include "cc/base/math_util.h"
@@ -44,7 +45,7 @@ TransformNodeData::TransformNodeData()
       is_animated(false),
       to_screen_is_animated(false),
       flattens_inherited_transform(false),
-      flattens_local_transform(false),
+      node_and_ancestors_are_flat(true),
       scrolls(false),
       needs_sublayer_scale(false),
       layer_scale_factor(1.0f) {
@@ -135,7 +136,18 @@ bool TransformTree::CombineTransformsBetween(int source_id,
                                              gfx::Transform* transform) const {
   const TransformNode* current = Node(source_id);
   const TransformNode* dest = Node(dest_id);
-  if (!dest || dest->data.ancestors_are_invertible) {
+  // Combine transforms to and from the screen when possible. Since flattening
+  // is a non-linear operation, we cannot use this approach when there is
+  // non-trivial flattening between the source and destination nodes. For
+  // example, consider the tree R->A->B->C, where B flattens its inherited
+  // transform, and A has a non-flat transform. Suppose C is the source and A is
+  // the destination. The expected result is C * B. But C's to_screen
+  // transform is C * B * flattened(A * R), and A's from_screen transform is
+  // R^{-1} * A^{-1}. If at least one of A and R isn't flat, the inverse of
+  // flattened(A * R) won't be R^{-1} * A{-1}, so multiplying C's to_screen and
+  // A's from_screen will not produce the correct result.
+  if (!dest || (dest->data.ancestors_are_invertible &&
+                current->data.node_and_ancestors_are_flat)) {
     transform->ConcatTransform(current->data.to_screen);
     if (dest)
       transform->ConcatTransform(dest->data.from_screen);
@@ -143,12 +155,43 @@ bool TransformTree::CombineTransformsBetween(int source_id,
   }
 
   bool all_are_invertible = true;
+
+  // Flattening is defined in a way that requires it to be applied while
+  // traversing downward in the tree. We first identify nodes that are on the
+  // path from the source to the destination (this is traversing upward), and
+  // then we visit these nodes in reverse order, flattening as needed. We
+  // early-out if we get to a node whose target node is the destination, since
+  // we can then re-use the target space transform stored at that node.
+  std::vector<int> source_to_destination;
+  source_to_destination.push_back(current->id);
+  current = parent(current);
   for (; current && current->id > dest_id; current = parent(current)) {
-    transform->ConcatTransform(current->data.to_parent);
-    if (!current->data.is_invertible)
+    if (current->data.target_id == dest_id &&
+        current->data.content_target_id == dest_id)
+      break;
+    source_to_destination.push_back(current->id);
+  }
+
+  gfx::Transform combined_transform;
+  if (current->id > dest_id) {
+    combined_transform = current->data.to_target;
+    // The stored target space transform has sublayer scale baked in, but we
+    // need the unscaled transform.
+    combined_transform.Scale(1.0f / dest->data.sublayer_scale.x(),
+                             1.0f / dest->data.sublayer_scale.y());
+  }
+
+  for (int i = source_to_destination.size() - 1; i >= 0; i--) {
+    const TransformNode* node = Node(source_to_destination[i]);
+    if (node->data.flattens_inherited_transform)
+      combined_transform.FlattenTo2d();
+    combined_transform.PreconcatTransform(node->data.to_parent);
+
+    if (!node->data.is_invertible)
       all_are_invertible = false;
   }
 
+  transform->ConcatTransform(combined_transform);
   return all_are_invertible;
 }
 
@@ -157,20 +200,27 @@ bool TransformTree::CombineInversesBetween(int source_id,
                                            gfx::Transform* transform) const {
   const TransformNode* current = Node(dest_id);
   const TransformNode* dest = Node(source_id);
-  if (current->data.ancestors_are_invertible) {
+  // Just as in CombineTransformsBetween, we can use screen space transforms in
+  // this computation only when there isn't any non-trivial flattening
+  // involved.
+  if (current->data.ancestors_are_invertible &&
+      current->data.node_and_ancestors_are_flat) {
     transform->PreconcatTransform(current->data.from_screen);
     if (dest)
       transform->PreconcatTransform(dest->data.to_screen);
     return true;
   }
 
-  bool all_are_invertible = true;
-  for (; current && current->id > source_id; current = parent(current)) {
-    transform->PreconcatTransform(current->data.from_parent);
-    if (!current->data.is_invertible)
-      all_are_invertible = false;
-  }
-
+  // Inverting a flattening is not equivalent to flattening an inverse. This
+  // means we cannot, for example, use the inverse of each node's to_parent
+  // transform, flattening where needed. Instead, we must compute the transform
+  // from the destination to the source, with flattening, and then invert the
+  // result.
+  gfx::Transform dest_to_source;
+  CombineTransformsBetween(dest_id, source_id, &dest_to_source);
+  gfx::Transform source_to_dest;
+  bool all_are_invertible = dest_to_source.GetInverse(&source_to_dest);
+  transform->PreconcatTransform(source_to_dest);
   return all_are_invertible;
 }
 
@@ -191,28 +241,17 @@ void TransformTree::UpdateScreenSpaceTransform(TransformNode* node,
     node->data.to_screen = node->data.to_parent;
     node->data.ancestors_are_invertible = true;
     node->data.to_screen_is_animated = false;
-  } else if (parent_node->data.flattens_local_transform ||
-             node->data.flattens_inherited_transform) {
-    // Flattening is tricky. Once a layer is drawn into its render target, it
-    // cannot escape, so we only need to consider transforms between the layer
-    // and its target when flattening (i.e., its draw transform). To compute the
-    // screen space transform when flattening is involved we combine three
-    // transforms, A * B * C, where A is the screen space transform of the
-    // target, B is the flattened draw transform of the layer's parent, and C is
-    // the local transform.
-    node->data.to_screen = target_node->data.to_screen;
-    gfx::Transform flattened;
-    ComputeTransform(parent_node->id, target_node->id, &flattened);
-    flattened.FlattenTo2d();
-    node->data.to_screen.PreconcatTransform(flattened);
-    node->data.to_screen.PreconcatTransform(node->data.to_parent);
-    node->data.ancestors_are_invertible =
-        parent_node->data.ancestors_are_invertible;
+    node->data.node_and_ancestors_are_flat = node->data.to_parent.IsFlat();
   } else {
     node->data.to_screen = parent_node->data.to_screen;
+    if (node->data.flattens_inherited_transform)
+      node->data.to_screen.FlattenTo2d();
     node->data.to_screen.PreconcatTransform(node->data.to_parent);
     node->data.ancestors_are_invertible =
         parent_node->data.ancestors_are_invertible;
+    node->data.node_and_ancestors_are_flat =
+        parent_node->data.node_and_ancestors_are_flat &&
+        node->data.to_parent.IsFlat();
   }
 
   if (!node->data.to_screen.GetInverse(&node->data.from_screen))
@@ -287,7 +326,6 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
   // Now that we have our scroll delta, we must apply it to each of our
   // combined, to/from matrices.
   node->data.to_parent.PreconcatTransform(delta);
-  node->data.from_parent.ConcatTransform(inverse_delta);
   node->data.to_target.PreconcatTransform(delta);
   node->data.from_target.ConcatTransform(inverse_delta);
   node->data.to_screen.PreconcatTransform(delta);

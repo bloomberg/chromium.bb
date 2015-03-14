@@ -1006,6 +1006,8 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
   scoped_refptr<Layer> child = Layer::Create();
   scoped_refptr<LayerWithForcedDrawsContent> grand_child =
       make_scoped_refptr(new LayerWithForcedDrawsContent());
+  scoped_refptr<LayerWithForcedDrawsContent> great_grand_child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
 
   gfx::Transform rotation_about_y_axis;
   rotation_about_y_axis.RotateAboutYAxis(30.0);
@@ -1032,9 +1034,13 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
                                gfx::Size(10, 10),
                                true,
                                false);
+  SetLayerPropertiesForTesting(great_grand_child.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(10, 10),
+                               true, false);
 
   root->AddChild(child);
   child->AddChild(grand_child);
+  grand_child->AddChild(great_grand_child);
   child->SetForceRenderSurface(true);
 
   scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
@@ -1044,6 +1050,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
   ASSERT_TRUE(root->should_flatten_transform());
   ASSERT_TRUE(child->should_flatten_transform());
   ASSERT_TRUE(grand_child->should_flatten_transform());
+  ASSERT_TRUE(great_grand_child->should_flatten_transform());
 
   gfx::Transform expected_child_draw_transform = rotation_about_y_axis;
   gfx::Transform expected_child_screen_space_transform = rotation_about_y_axis;
@@ -1053,6 +1060,10 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
   flattened_rotation_about_y.FlattenTo2d();
   gfx::Transform expected_grand_child_screen_space_transform =
       flattened_rotation_about_y * rotation_about_y_axis;
+  gfx::Transform expected_great_grand_child_draw_transform =
+      flattened_rotation_about_y;
+  gfx::Transform expected_great_grand_child_screen_space_transform =
+      flattened_rotation_about_y * flattened_rotation_about_y;
 
   ExecuteCalculateDrawProperties(root.get());
 
@@ -1070,6 +1081,11 @@ TEST_F(LayerTreeHostCommonTest, TransformsForFlatteningLayer) {
                                   grand_child->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(expected_grand_child_screen_space_transform,
                                   grand_child->screen_space_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_great_grand_child_draw_transform,
+                                  great_grand_child->draw_transform());
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      expected_great_grand_child_screen_space_transform,
+      great_grand_child->screen_space_transform());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForDegenerateIntermediateLayer) {

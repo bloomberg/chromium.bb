@@ -47,7 +47,6 @@ struct CC_EXPORT TransformNodeData {
   gfx::Transform post_local;
 
   gfx::Transform to_parent;
-  gfx::Transform from_parent;
 
   gfx::Transform to_target;
   gfx::Transform from_target;
@@ -69,13 +68,14 @@ struct CC_EXPORT TransformNodeData {
   bool is_animated;
   bool to_screen_is_animated;
 
-  // We don't necessarily create a transform node to apply flattening. If we've
-  // skipped flattening for an ancestor, we must flatten the transform we
-  // inherit, but we don't necessarily need to flatten our local transform. We
-  // must therefore use two values to describe the flattening required for the
-  // local and inherited transforms.
+  // Flattening, when needed, is only applied to a node's inherited transform,
+  // never to its local transform.
   bool flattens_inherited_transform;
-  bool flattens_local_transform;
+
+  // This is true if the to_parent transform at every node on the path to the
+  // root is flat.
+  bool node_and_ancestors_are_flat;
+
   bool scrolls;
 
   bool needs_sublayer_scale;
@@ -89,7 +89,7 @@ struct CC_EXPORT TransformNodeData {
 
   void set_to_parent(const gfx::Transform& transform) {
     to_parent = transform;
-    is_invertible = to_parent.GetInverse(&from_parent);
+    is_invertible = to_parent.IsInvertible();
   }
 };
 

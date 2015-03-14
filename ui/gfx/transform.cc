@@ -394,6 +394,13 @@ void Transform::FlattenTo2d() {
   matrix_.set(2, 3, 0.0);
 }
 
+bool Transform::IsFlat() const {
+  return matrix_.get(2, 0) == 0.0 && matrix_.get(2, 1) == 0.0 &&
+         matrix_.get(0, 2) == 0.0 && matrix_.get(1, 2) == 0.0 &&
+         matrix_.get(2, 2) == 1.0 && matrix_.get(3, 2) == 0.0 &&
+         matrix_.get(2, 3) == 0.0;
+}
+
 Vector2dF Transform::To2dTranslation() const {
   return gfx::Vector2dF(SkMScalarToFloat(matrix_.get(0, 3)),
                         SkMScalarToFloat(matrix_.get(1, 3)));
