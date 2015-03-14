@@ -174,12 +174,6 @@ SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
                                       info.fInfo.isOpaque());
 }
 
-SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& cinfo,
-                                                   const SkPaint*) {
-  // until skia lands its new virtual for this method
-  return onCreateCompatibleDevice(cinfo);
-}
-
 cairo_t* BitmapPlatformDevice::BeginPlatformPaint() {
   LoadConfig();
   cairo_surface_t* surface = cairo_get_target(cairo_);

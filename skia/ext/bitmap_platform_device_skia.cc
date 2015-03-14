@@ -49,12 +49,6 @@ SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
                                       info.fInfo.isOpaque());
 }
 
-SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& cinfo,
-                                                   const SkPaint*) {
-  // until skia lands its new virtual for this method
-  return onCreateCompatibleDevice(cinfo);
-}
-
 PlatformSurface BitmapPlatformDevice::BeginPlatformPaint() {
   // TODO(zhenghao): What should we return? The ptr to the address of the
   // pixels? Maybe this won't be called at all.

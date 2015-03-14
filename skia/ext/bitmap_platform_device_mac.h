@@ -58,7 +58,6 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
                        const SkBitmap& bitmap);
 
   SkBaseDevice* onCreateCompatibleDevice(const CreateInfo& info) override;
-  virtual SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*);
 
  private:
   void ReleaseBitmapContext();
