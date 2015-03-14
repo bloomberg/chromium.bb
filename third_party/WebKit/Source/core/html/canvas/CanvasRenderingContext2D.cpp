@@ -918,8 +918,8 @@ void CanvasRenderingContext2D::fillInternal(const Path& path, const String& wind
     if (!state().isTransformInvertible()) {
         return;
     }
-    FloatRect clipBounds;
-    if (!c->getTransformedClipBounds(&clipBounds)) {
+    SkIRect clipBounds;
+    if (!drawingCanvas()->getClipDeviceBounds(&clipBounds)) {
         return;
     }
 
@@ -942,7 +942,7 @@ void CanvasRenderingContext2D::fillInternal(const Path& path, const String& wind
         applyShadow(DrawShadowAndForeground);
         didDraw(clipBounds);
     } else {
-        FloatRect dirtyRect;
+        SkIRect dirtyRect;
         if (computeDirtyRect(path.boundingRect(), clipBounds, &dirtyRect)) {
             c->fillPath(path);
             didDraw(dirtyRect);
@@ -980,8 +980,8 @@ void CanvasRenderingContext2D::strokeInternal(const Path& path)
     if (!state().isTransformInvertible()) {
         return;
     }
-    FloatRect clipBounds;
-    if (!c->getTransformedClipBounds(&clipBounds))
+    SkIRect clipBounds;
+    if (!drawingCanvas()->getClipDeviceBounds(&clipBounds))
         return;
 
     // If gradient size is zero, then paint nothing.
@@ -1002,7 +1002,7 @@ void CanvasRenderingContext2D::strokeInternal(const Path& path)
     } else {
         FloatRect bounds = path.boundingRect();
         inflateStrokeRect(bounds);
-        FloatRect dirtyRect;
+        SkIRect dirtyRect;
         if (computeDirtyRect(bounds, clipBounds, &dirtyRect)) {
             c->strokePath(path);
             didDraw(dirtyRect);
@@ -1096,7 +1096,7 @@ bool CanvasRenderingContext2D::isPointInStroke(Path2D* domPath, const float x, c
 
 bool CanvasRenderingContext2D::isPointInStrokeInternal(const Path& path, const float x, const float y)
 {
-    GraphicsContext* c = drawingContext();
+    SkCanvas* c = drawingCanvas();
     if (!c)
         return false;
     if (!state().isTransformInvertible())
@@ -1158,25 +1158,34 @@ void CanvasRenderingContext2D::clearRect(float x, float y, float width, float he
     if (!validateRectForCanvas(x, y, width, height))
         return;
 
-    GraphicsContext* c = drawingContext();
+    SkCanvas* c = drawingCanvas();
     if (!c)
         return;
     if (!state().isTransformInvertible())
         return;
 
-    c->clearShadow();
-    c->setAlphaAsFloat(1);
-    c->setCompositeOperation(SkXfermode::kClear_Mode);
+    SkIRect clipBounds;
+    if (!c->getClipDeviceBounds(&clipBounds))
+        return;
 
-    // call to didDraw is taken care of in fillRect
-    fillRect(x, y, width, height);
+    SkPaint clearPaint;
+    clearPaint.setXfermodeMode(SkXfermode::kClear_Mode);
+    clearPaint.setStyle(SkPaint::kFill_Style);
+    FloatRect rect(x, y, width, height);
 
-    applyShadow(DrawShadowAndForeground);
-    c->setAlphaAsFloat(state().globalAlpha());
-    c->setCompositeOperation(state().globalComposite());
+    if (rectContainsTransformedRect(rect, clipBounds)) {
+        checkOverdraw(rect, &clearPaint, NoImage, ClipFill);
+        drawingCanvas()->drawRect(rect, clearPaint);
+        didDraw(clipBounds);
+    } else {
+        SkIRect dirtyRect;
+        if (computeDirtyRect(rect, clipBounds, &dirtyRect)) {
+            c->drawRect(rect, clearPaint);
+            didDraw(dirtyRect);
+        }
+    }
 
     if (m_hitRegionManager) {
-        FloatRect rect(x, y, width, height);
         m_hitRegionManager->removeHitRegionsInRect(rect, state().transform());
     }
 }
@@ -1202,8 +1211,8 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
         return;
     if (!state().isTransformInvertible())
         return;
-    FloatRect clipBounds;
-    if (!c->getTransformedClipBounds(&clipBounds))
+    SkIRect clipBounds;
+    if (!drawingCanvas()->getClipDeviceBounds(&clipBounds))
         return;
 
     // from the HTML5 Canvas spec:
@@ -1228,7 +1237,7 @@ void CanvasRenderingContext2D::fillRect(float x, float y, float width, float hei
         applyShadow(DrawShadowAndForeground);
         didDraw(clipBounds);
     } else {
-        FloatRect dirtyRect;
+        SkIRect dirtyRect;
         if (computeDirtyRect(rect, clipBounds, &dirtyRect)) {
             c->fillRect(rect);
             didDraw(dirtyRect);
@@ -1249,8 +1258,8 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
         return;
     if (!state().isTransformInvertible())
         return;
-    FloatRect clipBounds;
-    if (!c->getTransformedClipBounds(&clipBounds))
+    SkIRect clipBounds;
+    if (!drawingCanvas()->getClipDeviceBounds(&clipBounds))
         return;
 
     // If gradient size is zero, then paint nothing.
@@ -1271,7 +1280,7 @@ void CanvasRenderingContext2D::strokeRect(float x, float y, float width, float h
     } else {
         FloatRect boundingRect = rect;
         boundingRect.inflate(state().lineWidth() / 2);
-        FloatRect dirtyRect;
+        SkIRect dirtyRect;
         if (computeDirtyRect(boundingRect, clipBounds, &dirtyRect)) {
             c->strokeRect(rect);
             didDraw(dirtyRect);
@@ -1411,8 +1420,8 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
         || !dw || !dh || !sw || !sh)
         return;
 
-    FloatRect clipBounds;
-    if (!c->getTransformedClipBounds(&clipBounds))
+    SkIRect clipBounds;
+    if (!drawingCanvas()->getClipDeviceBounds(&clipBounds))
         return;
 
     FloatRect srcRect = normalizeRect(FloatRect(sx, sy, sw, sh));
@@ -1448,7 +1457,7 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
         drawImageOnContext(drawingCanvas(), c, imageSource, image.get(), srcRect, dstRect);
         didDraw(clipBounds);
     } else {
-        FloatRect dirtyRect;
+        SkIRect dirtyRect;
         if (computeDirtyRect(dstRect, clipBounds, &dirtyRect)) {
             drawImageOnContext(drawingCanvas(), c, imageSource, image.get(), srcRect, dstRect);
             didDraw(dirtyRect);
@@ -1483,10 +1492,10 @@ void CanvasRenderingContext2D::clearCanvas()
     drawingCanvas()->clear(m_hasAlpha ? SK_ColorTRANSPARENT : SK_ColorBLACK);
 }
 
-bool CanvasRenderingContext2D::rectContainsTransformedRect(const FloatRect& rect, const FloatRect& transformedRect) const
+bool CanvasRenderingContext2D::rectContainsTransformedRect(const FloatRect& rect, const SkIRect& transformedRect) const
 {
     FloatQuad quad(rect);
-    FloatQuad transformedQuad(transformedRect);
+    FloatQuad transformedQuad(FloatRect(transformedRect.x(), transformedRect.y(), transformedRect.width(), transformedRect.height()));
     return state().transform().mapQuad(quad).containsQuad(transformedQuad);
 }
 
@@ -1570,15 +1579,15 @@ PassRefPtrWillBeRawPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(co
     return CanvasPattern::create(imageForRendering.release(), repeatMode, originClean);
 }
 
-bool CanvasRenderingContext2D::computeDirtyRect(const FloatRect& localRect, FloatRect* dirtyRect)
+bool CanvasRenderingContext2D::computeDirtyRect(const FloatRect& localRect, SkIRect* dirtyRect)
 {
-    FloatRect clipBounds;
-    if (!drawingContext()->getTransformedClipBounds(&clipBounds))
+    SkIRect clipBounds;
+    if (!drawingCanvas()->getClipDeviceBounds(&clipBounds))
         return false;
     return computeDirtyRect(localRect, clipBounds, dirtyRect);
 }
 
-bool CanvasRenderingContext2D::computeDirtyRect(const FloatRect& localRect, const FloatRect& transformedClipBounds, FloatRect* dirtyRect)
+bool CanvasRenderingContext2D::computeDirtyRect(const FloatRect& localRect, const SkIRect& transformedClipBounds, SkIRect* dirtyRect)
 {
     FloatRect canvasRect = state().transform().mapRect(localRect);
 
@@ -1589,17 +1598,18 @@ bool CanvasRenderingContext2D::computeDirtyRect(const FloatRect& localRect, cons
         canvasRect.unite(shadowRect);
     }
 
-    canvasRect.intersect(transformedClipBounds);
-    if (canvasRect.isEmpty())
+    SkIRect canvasIRect;
+    WebCoreFloatRectToSKRect(canvasRect).roundOut(&canvasIRect);
+    if (!canvasIRect.intersect(transformedClipBounds))
         return false;
 
     if (dirtyRect)
-        *dirtyRect = canvasRect;
+        *dirtyRect = canvasIRect;
 
     return true;
 }
 
-void CanvasRenderingContext2D::didDraw(const FloatRect& dirtyRect)
+void CanvasRenderingContext2D::didDraw(const SkIRect& dirtyRect)
 {
     if (dirtyRect.isEmpty())
         return;
@@ -1610,7 +1620,7 @@ void CanvasRenderingContext2D::didDraw(const FloatRect& dirtyRect)
             buffer->setHasExpensiveOp();
     }
 
-    canvas()->didDraw(dirtyRect);
+    canvas()->didDraw(SkRect::MakeFromIRect(dirtyRect));
 }
 
 SkCanvas* CanvasRenderingContext2D::drawingCanvas() const
@@ -2076,8 +2086,8 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
         location = FloatPoint();
     }
 
-    FloatRect clipBounds;
-    if (!c->getTransformedClipBounds(&clipBounds)) {
+    SkIRect clipBounds;
+    if (!drawingCanvas()->getClipDeviceBounds(&clipBounds)) {
         return;
     }
 
@@ -2091,7 +2101,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
         applyShadow(DrawShadowAndForeground);
         didDraw(clipBounds);
     } else {
-        FloatRect dirtyRect;
+        SkIRect dirtyRect;
         if (computeDirtyRect(textRunPaintInfo.bounds, clipBounds, &dirtyRect)) {
             c->drawBidiText(font, textRunPaintInfo, location, Font::UseFallbackIfFontNotReady);
             didDraw(dirtyRect);
@@ -2238,7 +2248,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     StrokeData strokeData;
     strokeData.setThickness(focusRingWidth);
 
-    FloatRect dirtyRect;
+    SkIRect dirtyRect;
     if (!computeDirtyRect(path.strokeBoundingRect(strokeData), &dirtyRect))
         return;
 
@@ -2282,11 +2292,10 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options, Exc
 
     Path hitRegionPath = options.hasPath() ? options.path()->path() : m_path;
 
-    FloatRect clipBounds;
-    GraphicsContext* context = drawingContext();
+    SkCanvas* c = drawingCanvas();
 
-    if (hitRegionPath.isEmpty() || !context || !state().isTransformInvertible()
-        || !context->getTransformedClipBounds(&clipBounds)) {
+    if (hitRegionPath.isEmpty() || !c || !state().isTransformInvertible()
+        || !c->getClipDeviceBounds(0)) {
         exceptionState.throwDOMException(NotSupportedError, "The specified path has no pixels.");
         return;
     }

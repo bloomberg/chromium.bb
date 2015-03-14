@@ -229,9 +229,9 @@ private:
     void dispatchContextRestoredEvent(Timer<CanvasRenderingContext2D>*);
     void tryRestoreContextEvent(Timer<CanvasRenderingContext2D>*);
 
-    bool computeDirtyRect(const FloatRect& localBounds, FloatRect*);
-    bool computeDirtyRect(const FloatRect& localBounds, const FloatRect& transformedClipBounds, FloatRect*);
-    void didDraw(const FloatRect&);
+    bool computeDirtyRect(const FloatRect& localBounds, SkIRect*);
+    bool computeDirtyRect(const FloatRect& localBounds, const SkIRect& transformedClipBounds, SkIRect*);
+    void didDraw(const SkIRect&);
 
     GraphicsContext* drawingContext() const; // Deprecated: use drawingCanvas
     SkCanvas* drawingCanvas() const;
@@ -257,7 +257,7 @@ private:
     int getFontBaseline(const FontMetrics&) const;
 
     void clearCanvas();
-    bool rectContainsTransformedRect(const FloatRect&, const FloatRect&) const;
+    bool rectContainsTransformedRect(const FloatRect&, const SkIRect&) const;
 
     void inflateStrokeRect(FloatRect&) const;
 

@@ -140,7 +140,6 @@ public:
 
     SkDrawLooper* drawLooper() const { return immutableState()->drawLooper(); }
 
-    bool getTransformedClipBounds(FloatRect* bounds) const;
     SkMatrix getTotalMatrix() const;
 
     void setShouldAntialias(bool antialias) { mutableState()->setShouldAntialias(antialias); }

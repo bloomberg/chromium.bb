@@ -369,19 +369,6 @@ bool GraphicsContext::hasShadow() const
     return !!immutableState()->drawLooper() || !!immutableState()->dropShadowImageFilter();
 }
 
-bool GraphicsContext::getTransformedClipBounds(FloatRect* bounds) const
-{
-    if (contextDisabled())
-        return false;
-    ASSERT(m_canvas);
-    SkIRect skIBounds;
-    if (!m_canvas->getClipDeviceBounds(&skIBounds))
-        return false;
-    SkRect skBounds = SkRect::Make(skIBounds);
-    *bounds = FloatRect(skBounds);
-    return true;
-}
-
 SkMatrix GraphicsContext::getTotalMatrix() const
 {
     // FIXME: this is a hack to avoid changing all call sites of getTotalMatrix() to not use this method.
