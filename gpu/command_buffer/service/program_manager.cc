@@ -211,7 +211,8 @@ Program::Program(ProgramManager* manager, GLuint service_id)
       valid_(false),
       link_status_(false),
       uniforms_cleared_(false),
-      num_uniforms_(0) {
+      num_uniforms_(0),
+      transform_feedback_buffer_mode_(GL_NONE) {
   manager_->StartTracking(this);
 }
 
@@ -532,7 +533,9 @@ bool Program::Link(ShaderManager* manager,
     ProgramCache::LinkedProgramStatus status = cache->GetLinkedProgramStatus(
         attached_shaders_[0]->last_compiled_signature(),
         attached_shaders_[1]->last_compiled_signature(),
-        &bind_attrib_location_map_);
+        &bind_attrib_location_map_,
+        transform_feedback_varyings_,
+        transform_feedback_buffer_mode_);
 
     if (status == ProgramCache::LINK_SUCCEEDED) {
       ProgramCache::ProgramLoadResult success =
@@ -540,6 +543,8 @@ bool Program::Link(ShaderManager* manager,
                                    attached_shaders_[0].get(),
                                    attached_shaders_[1].get(),
                                    &bind_attrib_location_map_,
+                                   transform_feedback_varyings_,
+                                   transform_feedback_buffer_mode_,
                                    shader_callback);
       link = success != ProgramCache::PROGRAM_LOAD_SUCCESS;
       UMA_HISTOGRAM_BOOLEAN("GPU.ProgramCache.LoadBinarySuccess", !link);
@@ -608,6 +613,8 @@ bool Program::Link(ShaderManager* manager,
                                  attached_shaders_[0].get(),
                                  attached_shaders_[1].get(),
                                  &bind_attrib_location_map_,
+                                 transform_feedback_varyings_,
+                                 transform_feedback_buffer_mode_,
                                  shader_callback);
       }
       UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -1601,6 +1608,16 @@ bool Program::GetUniformsES3(CommonDecoder::Bucket* bucket) const {
     }
   }
   return true;
+}
+
+void Program::TransformFeedbackVaryings(GLsizei count,
+                                        const char* const* varyings,
+                                        GLenum buffer_mode) {
+  transform_feedback_varyings_.clear();
+  for (GLsizei i = 0; i < count; ++i) {
+    transform_feedback_varyings_.push_back(std::string(varyings[i]));
+  }
+  transform_feedback_buffer_mode_ = buffer_mode;
 }
 
 Program::~Program() {

@@ -239,9 +239,20 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // varying registers.
   bool CheckVaryingsPacking(VaryingsPackingOption option) const;
 
+  void TransformFeedbackVaryings(GLsizei count, const char* const* varyings,
+      GLenum buffer_mode);
+
   // Visible for testing
   const LocationMap& bind_attrib_location_map() const {
     return bind_attrib_location_map_;
+  }
+
+  const std::vector<std::string>& transform_feedback_varyings() const {
+    return transform_feedback_varyings_;
+  }
+
+  GLenum transform_feedback_buffer_mode() const {
+    return transform_feedback_buffer_mode_;
   }
 
  private:
@@ -373,6 +384,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
 
   // uniform-location binding map from glBindUniformLocationCHROMIUM() calls.
   LocationMap bind_uniform_location_map_;
+
+  std::vector<std::string> transform_feedback_varyings_;
+
+  GLenum transform_feedback_buffer_mode_;
 };
 
 // Tracks the Programs.

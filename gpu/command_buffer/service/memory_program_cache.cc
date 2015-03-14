@@ -174,6 +174,8 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
     Shader* shader_a,
     Shader* shader_b,
     const LocationMap* bind_attrib_location_map,
+    const std::vector<std::string>& transform_feedback_varyings,
+    GLenum transform_feedback_buffer_mode,
     const ShaderCacheCallback& shader_callback) {
   char a_sha[kHashLength];
   char b_sha[kHashLength];
@@ -188,6 +190,8 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
   ComputeProgramHash(a_sha,
                      b_sha,
                      bind_attrib_location_map,
+                     transform_feedback_varyings,
+                     transform_feedback_buffer_mode,
                      sha);
   const std::string sha_string(sha, kHashLength);
 
@@ -234,6 +238,8 @@ void MemoryProgramCache::SaveLinkedProgram(
     const Shader* shader_a,
     const Shader* shader_b,
     const LocationMap* bind_attrib_location_map,
+    const std::vector<std::string>& transform_feedback_varyings,
+    GLenum transform_feedback_buffer_mode,
     const ShaderCacheCallback& shader_callback) {
   GLenum format;
   GLsizei length = 0;
@@ -262,6 +268,8 @@ void MemoryProgramCache::SaveLinkedProgram(
   ComputeProgramHash(a_sha,
                      b_sha,
                      bind_attrib_location_map,
+                     transform_feedback_varyings,
+                     transform_feedback_buffer_mode,
                      sha);
   const std::string sha_string(sha, sizeof(sha));
 

@@ -30,12 +30,17 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
       Shader* shader_a,
       Shader* shader_b,
       const LocationMap* bind_attrib_location_map,
+      const std::vector<std::string>& transform_feedback_varyings,
+      GLenum transform_feedback_buffer_mode,
       const ShaderCacheCallback& shader_callback) override;
-  void SaveLinkedProgram(GLuint program,
-                         const Shader* shader_a,
-                         const Shader* shader_b,
-                         const LocationMap* bind_attrib_location_map,
-                         const ShaderCacheCallback& shader_callback) override;
+  void SaveLinkedProgram(
+      GLuint program,
+      const Shader* shader_a,
+      const Shader* shader_b,
+      const LocationMap* bind_attrib_location_map,
+      const std::vector<std::string>& transform_feedback_varyings,
+      GLenum transform_feedback_buffer_mode,
+      const ShaderCacheCallback& shader_callback) override;
 
   void LoadProgram(const std::string& program) override;
 

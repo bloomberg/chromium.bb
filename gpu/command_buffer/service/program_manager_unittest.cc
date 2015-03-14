@@ -1959,7 +1959,9 @@ class ProgramManagerWithCacheTest : public GpuServiceTest {
     cache_->LinkedProgramCacheSuccess(
         vertex_shader_->source(),
         fragment_shader_->source(),
-        &program_->bind_attrib_location_map());
+        &program_->bind_attrib_location_map(),
+        program_->transform_feedback_varyings(),
+        program_->transform_feedback_buffer_mode());
   }
 
   void SetExpectationsForProgramCached() {
@@ -1977,6 +1979,8 @@ class ProgramManagerWithCacheTest : public GpuServiceTest {
         vertex_shader,
         fragment_shader,
         &program->bind_attrib_location_map(),
+        program_->transform_feedback_varyings(),
+        program_->transform_feedback_buffer_mode(),
         _)).Times(1);
   }
 
@@ -1995,6 +1999,8 @@ class ProgramManagerWithCacheTest : public GpuServiceTest {
         vertex_shader,
         fragment_shader,
         &program->bind_attrib_location_map(),
+        program_->transform_feedback_varyings(),
+        program_->transform_feedback_buffer_mode(),
         _)).Times(0);
   }
 
@@ -2017,6 +2023,8 @@ class ProgramManagerWithCacheTest : public GpuServiceTest {
                                   vertex_shader,
                                   fragment_shader,
                                   &program->bind_attrib_location_map(),
+                                  program_->transform_feedback_varyings(),
+                                  program_->transform_feedback_buffer_mode(),
                                   _))
         .WillOnce(Return(result));
   }

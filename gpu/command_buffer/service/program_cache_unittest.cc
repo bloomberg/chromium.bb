@@ -20,14 +20,19 @@ class NoBackendProgramCache : public ProgramCache {
       Shader* /* shader_a */,
       Shader* /* shader_b */,
       const LocationMap* /* bind_attrib_location_map */,
+      const std::vector<std::string>& /* transform_feedback_varyings */,
+      GLenum /* transform_feedback_buffer_mode */,
       const ShaderCacheCallback& /* callback */) override {
     return PROGRAM_LOAD_SUCCESS;
   }
-  void SaveLinkedProgram(GLuint /* program */,
-                         const Shader* /* shader_a */,
-                         const Shader* /* shader_b */,
-                         const LocationMap* /* bind_attrib_location_map */,
-                         const ShaderCacheCallback& /* callback */) override {}
+  void SaveLinkedProgram(
+      GLuint /* program */,
+      const Shader* /* shader_a */,
+      const Shader* /* shader_b */,
+      const LocationMap* /* bind_attrib_location_map */,
+      const std::vector<std::string>& /* transform_feedback_varyings */,
+      GLenum /* transform_feedback_buffer_mode */,
+      const ShaderCacheCallback& /* callback */) override {}
 
   void LoadProgram(const std::string& /* program */) override {}
 
@@ -35,7 +40,9 @@ class NoBackendProgramCache : public ProgramCache {
 
   void SaySuccessfullyCached(const std::string& shader1,
                              const std::string& shader2,
-                             std::map<std::string, GLint>* attrib_map) {
+                             std::map<std::string, GLint>* attrib_map,
+                             const std::vector<std::string>& varyings,
+                             GLenum buffer_mode) {
     char a_sha[kHashLength];
     char b_sha[kHashLength];
     ComputeShaderHash(shader1, a_sha);
@@ -45,6 +52,8 @@ class NoBackendProgramCache : public ProgramCache {
     ComputeProgramHash(a_sha,
                        b_sha,
                        attrib_map,
+                       varyings,
+                       buffer_mode,
                        sha);
     const std::string shaString(sha, kHashLength);
 
@@ -56,13 +65,18 @@ class NoBackendProgramCache : public ProgramCache {
     ProgramCache::ComputeShaderHash(shader, result);
   }
 
-  void ComputeProgramHash(const char* hashed_shader_0,
-                          const char* hashed_shader_1,
-                          const LocationMap* bind_attrib_location_map,
-                          char* result) const {
+  void ComputeProgramHash(
+      const char* hashed_shader_0,
+      const char* hashed_shader_1,
+      const LocationMap* bind_attrib_location_map,
+      const std::vector<std::string>& transform_feedback_varyings,
+      GLenum transform_feedback_buffer_mode,
+      char* result) const {
     ProgramCache::ComputeProgramHash(hashed_shader_0,
                                      hashed_shader_1,
                                      bind_attrib_location_map,
+                                     transform_feedback_varyings,
+                                     transform_feedback_buffer_mode,
                                      result);
   }
 
@@ -78,6 +92,7 @@ class ProgramCacheTest : public testing::Test {
 
  protected:
   scoped_ptr<NoBackendProgramCache> cache_;
+  std::vector<std::string> varyings_;
 };
 
 TEST_F(ProgramCacheTest, LinkStatusSave) {
@@ -88,8 +103,8 @@ TEST_F(ProgramCacheTest, LinkStatusSave) {
     std::string shader_b = shader2;
     EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
               cache_->GetLinkedProgramStatus(
-                  shader_a, shader_b, NULL));
-    cache_->SaySuccessfullyCached(shader_a, shader_b, NULL);
+                  shader_a, shader_b, NULL, varyings_, GL_NONE));
+    cache_->SaySuccessfullyCached(shader_a, shader_b, NULL, varyings_, GL_NONE);
 
     shader_a.clear();
     shader_b.clear();
@@ -97,33 +112,35 @@ TEST_F(ProgramCacheTest, LinkStatusSave) {
   // make sure it was copied
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED,
             cache_->GetLinkedProgramStatus(
-                shader1, shader2, NULL));
+                shader1, shader2, NULL, varyings_, GL_NONE));
 }
 
 TEST_F(ProgramCacheTest, LinkUnknownOnFragmentSourceChange) {
   const std::string shader1 = "abcd1234";
   std::string shader2 = "abcda sda b1~#4 bbbbb1234";
-  cache_->SaySuccessfullyCached(shader1, shader2, NULL);
+  cache_->SaySuccessfullyCached(shader1, shader2, NULL, varyings_, GL_NONE);
 
   shader2 = "different!";
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
-            cache_->GetLinkedProgramStatus(shader1, shader2, NULL));
+            cache_->GetLinkedProgramStatus(shader1, shader2, NULL,
+            varyings_, GL_NONE));
 }
 
 TEST_F(ProgramCacheTest, LinkUnknownOnVertexSourceChange) {
   std::string shader1 = "abcd1234";
   const std::string shader2 = "abcda sda b1~#4 bbbbb1234";
-  cache_->SaySuccessfullyCached(shader1, shader2, NULL);
+  cache_->SaySuccessfullyCached(shader1, shader2, NULL, varyings_, GL_NONE);
 
   shader1 = "different!";
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
-            cache_->GetLinkedProgramStatus(shader1, shader2, NULL));
+            cache_->GetLinkedProgramStatus(shader1, shader2, NULL,
+            varyings_, GL_NONE));
 }
 
 TEST_F(ProgramCacheTest, StatusEviction) {
   const std::string shader1 = "abcd1234";
   const std::string shader2 = "abcda sda b1~#4 bbbbb1234";
-  cache_->SaySuccessfullyCached(shader1, shader2, NULL);
+  cache_->SaySuccessfullyCached(shader1, shader2, NULL, varyings_, GL_NONE);
   char a_sha[ProgramCache::kHashLength];
   char b_sha[ProgramCache::kHashLength];
   cache_->ComputeShaderHash(shader1, a_sha);
@@ -133,18 +150,21 @@ TEST_F(ProgramCacheTest, StatusEviction) {
   cache_->ComputeProgramHash(a_sha,
                              b_sha,
                              NULL,
+                             varyings_,
+                             GL_NONE,
                              sha);
   cache_->Evict(std::string(sha, ProgramCache::kHashLength));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
-            cache_->GetLinkedProgramStatus(shader1, shader2, NULL));
+            cache_->GetLinkedProgramStatus(shader1, shader2, NULL,
+            varyings_, GL_NONE));
 }
 
 TEST_F(ProgramCacheTest, EvictionWithReusedShader) {
   const std::string shader1 = "abcd1234";
   const std::string shader2 = "abcda sda b1~#4 bbbbb1234";
   const std::string shader3 = "asbjbbjj239a";
-  cache_->SaySuccessfullyCached(shader1, shader2, NULL);
-  cache_->SaySuccessfullyCached(shader1, shader3, NULL);
+  cache_->SaySuccessfullyCached(shader1, shader2, NULL, varyings_, GL_NONE);
+  cache_->SaySuccessfullyCached(shader1, shader3, NULL, varyings_, GL_NONE);
 
   char a_sha[ProgramCache::kHashLength];
   char b_sha[ProgramCache::kHashLength];
@@ -157,36 +177,63 @@ TEST_F(ProgramCacheTest, EvictionWithReusedShader) {
   cache_->ComputeProgramHash(a_sha,
                              b_sha,
                              NULL,
+                             varyings_,
+                             GL_NONE,
                              sha);
   cache_->Evict(std::string(sha, ProgramCache::kHashLength));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
-            cache_->GetLinkedProgramStatus(shader1, shader2, NULL));
+            cache_->GetLinkedProgramStatus(shader1, shader2, NULL,
+            varyings_, GL_NONE));
   EXPECT_EQ(ProgramCache::LINK_SUCCEEDED,
-            cache_->GetLinkedProgramStatus(shader1, shader3, NULL));
+            cache_->GetLinkedProgramStatus(shader1, shader3, NULL,
+            varyings_, GL_NONE));
 
 
   cache_->ComputeProgramHash(a_sha,
                              c_sha,
                              NULL,
+                             varyings_,
+                             GL_NONE,
                              sha);
   cache_->Evict(std::string(sha, ProgramCache::kHashLength));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
-            cache_->GetLinkedProgramStatus(shader1, shader2, NULL));
+            cache_->GetLinkedProgramStatus(shader1, shader2, NULL,
+            varyings_, GL_NONE));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
-            cache_->GetLinkedProgramStatus(shader1, shader3, NULL));
+            cache_->GetLinkedProgramStatus(shader1, shader3, NULL,
+            varyings_, GL_NONE));
 }
 
 TEST_F(ProgramCacheTest, StatusClear) {
   const std::string shader1 = "abcd1234";
   const std::string shader2 = "abcda sda b1~#4 bbbbb1234";
   const std::string shader3 = "asbjbbjj239a";
-  cache_->SaySuccessfullyCached(shader1, shader2, NULL);
-  cache_->SaySuccessfullyCached(shader1, shader3, NULL);
+  cache_->SaySuccessfullyCached(shader1, shader2, NULL, varyings_, GL_NONE);
+  cache_->SaySuccessfullyCached(shader1, shader3, NULL, varyings_, GL_NONE);
   cache_->Clear();
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
-            cache_->GetLinkedProgramStatus(shader1, shader2, NULL));
+            cache_->GetLinkedProgramStatus(shader1, shader2, NULL,
+            varyings_, GL_NONE));
   EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
-            cache_->GetLinkedProgramStatus(shader1, shader3, NULL));
+            cache_->GetLinkedProgramStatus(shader1, shader3, NULL,
+            varyings_, GL_NONE));
+}
+
+TEST_F(ProgramCacheTest, LinkUnknownOnTransformFeedbackChange) {
+  const std::string shader1 = "abcd1234";
+  std::string shader2 = "abcda sda b1~#4 bbbbb1234";
+  varyings_.push_back("a");
+  cache_->SaySuccessfullyCached(shader1, shader2, NULL, varyings_,
+                                GL_INTERLEAVED_ATTRIBS);
+
+  EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
+            cache_->GetLinkedProgramStatus(shader1, shader2, NULL,
+            varyings_, GL_SEPARATE_ATTRIBS));
+
+  varyings_.push_back("b");
+  EXPECT_EQ(ProgramCache::LINK_UNKNOWN,
+            cache_->GetLinkedProgramStatus(shader1, shader2, NULL,
+            varyings_, GL_INTERLEAVED_ATTRIBS));
 }
 
 }  // namespace gles2

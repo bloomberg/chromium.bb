@@ -42,7 +42,9 @@ class GPU_EXPORT ProgramCache {
   LinkedProgramStatus GetLinkedProgramStatus(
       const std::string& shader_signature_a,
       const std::string& shader_signature_b,
-      const LocationMap* bind_attrib_location_map) const;
+      const LocationMap* bind_attrib_location_map,
+      const std::vector<std::string>& transform_feedback_varyings,
+      GLenum transform_feedback_buffer_mode) const;
 
   // Loads the linked program from the cache.  If the program is not found or
   // there was an error, PROGRAM_LOAD_FAILURE should be returned.
@@ -51,6 +53,8 @@ class GPU_EXPORT ProgramCache {
       Shader* shader_a,
       Shader* shader_b,
       const LocationMap* bind_attrib_location_map,
+      const std::vector<std::string>& transform_feedback_varyings,
+      GLenum transform_feedback_buffer_mode,
       const ShaderCacheCallback& shader_callback) = 0;
 
   // Saves the program into the cache.  If successful, the implementation should
@@ -60,6 +64,8 @@ class GPU_EXPORT ProgramCache {
       const Shader* shader_a,
       const Shader* shader_b,
       const LocationMap* bind_attrib_location_map,
+      const std::vector<std::string>& transform_feedback_varyings,
+      GLenum transform_feedback_buffer_mode,
       const ShaderCacheCallback& shader_callback) = 0;
 
   virtual void LoadProgram(const std::string& program) = 0;
@@ -69,8 +75,10 @@ class GPU_EXPORT ProgramCache {
 
   // Only for testing
   void LinkedProgramCacheSuccess(const std::string& shader_signature_a,
-                                 const std::string& shader_signature_b,
-                                 const LocationMap* bind_attrib_location_map);
+       const std::string& shader_signature_b,
+       const LocationMap* bind_attrib_location_map,
+       const std::vector<std::string>& transform_feedback_varyings,
+       GLenum transform_feedback_buffer_mode);
 
  protected:
   // called by implementing class after a shader was successfully cached
@@ -86,6 +94,8 @@ class GPU_EXPORT ProgramCache {
       const char* hashed_shader_0,
       const char* hashed_shader_1,
       const LocationMap* bind_attrib_location_map,
+      const std::vector<std::string>& transform_feedback_varyings,
+      GLenum transform_feedback_buffer_mode,
       char* result) const;
 
   void Evict(const std::string& program_hash);

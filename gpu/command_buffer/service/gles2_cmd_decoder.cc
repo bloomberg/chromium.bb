@@ -7116,6 +7116,7 @@ void GLES2DecoderImpl::DoTransformFeedbackVaryings(
   if (!program) {
     return;
   }
+  program->TransformFeedbackVaryings(count, varyings, buffer_mode);
   glTransformFeedbackVaryings(
       program->service_id(), count, varyings, buffer_mode);
 }
