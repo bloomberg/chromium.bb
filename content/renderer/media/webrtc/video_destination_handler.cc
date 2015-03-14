@@ -148,24 +148,16 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
       frame_pool_.CreateFrame(media::VideoFrame::YV12, frame_size,
                               gfx::Rect(frame_size), frame_size, timestamp);
 
-  // TODO(magjed): Chrome OS is not ready for switching from BGRA to ARGB.
-  // Remove this once http://crbug/434007 is fixed. We have a corresponding
-  // problem when we send frames to the effects plugin in PepperVideoSourceHost.
-#if defined(OS_CHROMEOS)
-  auto libyuv_xxxx_to_i420 = &libyuv::BGRAToI420;
-#else
-  auto libyuv_xxxx_to_i420 = &libyuv::ARGBToI420;
-#endif
-  libyuv_xxxx_to_i420(src_data,
-                      src_stride,
-                      new_frame->data(media::VideoFrame::kYPlane),
-                      new_frame->stride(media::VideoFrame::kYPlane),
-                      new_frame->data(media::VideoFrame::kUPlane),
-                      new_frame->stride(media::VideoFrame::kUPlane),
-                      new_frame->data(media::VideoFrame::kVPlane),
-                      new_frame->stride(media::VideoFrame::kVPlane),
-                      width,
-                      height);
+  libyuv::ARGBToI420(src_data,
+                     src_stride,
+                     new_frame->data(media::VideoFrame::kYPlane),
+                     new_frame->stride(media::VideoFrame::kYPlane),
+                     new_frame->data(media::VideoFrame::kUPlane),
+                     new_frame->stride(media::VideoFrame::kUPlane),
+                     new_frame->data(media::VideoFrame::kVPlane),
+                     new_frame->stride(media::VideoFrame::kVPlane),
+                     width,
+                     height);
 
   delegate_->DeliverFrame(new_frame);
 }
