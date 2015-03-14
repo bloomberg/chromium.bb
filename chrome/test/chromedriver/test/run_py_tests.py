@@ -156,6 +156,8 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testChromeDriverSendLargeData',
         'PerformanceLoggerTest.testPerformanceLogger',
         'ChromeDriverTest.testShadowDom*',
+        # WebView doesn't support emulating network conditions.
+        'ChromeDriverTest.testEmulateNetworkConditionsOffline',
     ]
 )
 
@@ -804,31 +806,6 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self._driver.SetNetworkConditions(5, 2048, 2048, offline=True)
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     self.assertIn('is not available', self._driver.GetTitle())
-
-  def testEmulateNetworkConditionsSpeed(self):
-    # Warm up the browser.
-    self._http_server.SetDataForPath(
-        '/', "<html><body>blank</body></html>")
-    self._driver.Load(self._http_server.GetUrl() + '/')
-
-    # DSL: 2Mbps throughput, 5ms RTT
-    latency = 5
-    throughput_kbps = 2048
-    throughput = throughput_kbps * 1024
-    self._driver.SetNetworkConditions(latency, throughput, throughput)
-
-    _32_bytes = " 0 1 2 3 4 5 6 7 8 9 A B C D E F"
-    _1_megabyte = _32_bytes * 32768
-    self._http_server.SetDataForPath(
-        '/1MB',
-        "<html><body>%s</body></html>" % _1_megabyte)
-    start = time.time()
-    self._driver.Load(self._http_server.GetUrl() + '/1MB')
-    finish = time.time()
-    duration = finish - start
-    actual_throughput_kbps = 1024 / duration
-    self.assertLessEqual(actual_throughput_kbps, throughput_kbps * 1.5)
-    self.assertGreaterEqual(actual_throughput_kbps, throughput_kbps / 1.5)
 
   def testShadowDomFindElementWithSlashDeep(self):
     """Checks that chromedriver can find elements in a shadow DOM using /deep/
