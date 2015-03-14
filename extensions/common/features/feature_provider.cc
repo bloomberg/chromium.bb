@@ -7,9 +7,14 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/switches.h"
 
 namespace extensions {
 
@@ -27,6 +32,9 @@ class Static {
   friend struct base::DefaultLazyInstanceTraits<Static>;
 
   Static() {
+    TRACE_EVENT0("startup", "extensions::FeatureProvider::Static");
+    base::Time begin_time = base::Time::Now();
+
     ExtensionsClient* client = ExtensionsClient::Get();
     feature_providers_["api"] =
         make_linked_ptr(client->CreateFeatureProvider("api").release());
@@ -36,6 +44,20 @@ class Static {
         make_linked_ptr(client->CreateFeatureProvider("permission").release());
     feature_providers_["behavior"] =
         make_linked_ptr(client->CreateFeatureProvider("behavior").release());
+
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    std::string process_type =
+        command_line->GetSwitchValueASCII(::switches::kProcessType);
+
+    // Measure time only for browser process. This method gets called by the
+    // browser process on startup, as well as on renderer and extension
+    // processes throughout the execution of the browser. We are more
+    // interested in how long this takes as a startup cost, so we are
+    // just measuring the time in the browser process.
+    if (process_type == std::string()) {
+      UMA_HISTOGRAM_TIMES("Extensions.FeatureProviderStaticInitTime",
+                          base::Time::Now() - begin_time);
+    }
   }
 
   typedef std::map<std::string, linked_ptr<FeatureProvider> >

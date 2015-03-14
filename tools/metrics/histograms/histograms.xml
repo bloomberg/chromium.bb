@@ -8876,6 +8876,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.FeatureProviderStaticInitTime" units="milliseconds">
+  <owner>rkaplow@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during
+    extensions::FeatureProvider::Static. Only measured while in the browser
+    process.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.FileAccessAllowed">
   <owner>kalman@chromium.org</owner>
   <summary>
