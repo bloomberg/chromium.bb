@@ -2339,8 +2339,12 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     }
 
     bool success = write_status == FileWriterDelegate::SUCCESS_COMPLETED;
-
-    if (success && !last_modified_.is_null()) {
+    if (success && !bytes_written_) {
+      // LocalFileStreamWriter only creates a file if data is actually written.
+      // If none was then create one now.
+      task_runner_->PostTask(
+          FROM_HERE, base::Bind(&LocalWriteClosure::CreateEmptyFile, this));
+    } else if (success && !last_modified_.is_null()) {
       task_runner_->PostTask(
           FROM_HERE, base::Bind(&LocalWriteClosure::UpdateTimeStamp, this));
     } else {
@@ -2401,6 +2405,20 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
       // TODO(ericu): Complain quietly; timestamp's probably not vital.
     }
     chained_blob_writer_->ReportWriteCompletion(true, bytes_written_);
+  }
+
+  // Create an empty file.
+  void CreateEmptyFile() {
+    DCHECK(task_runner_->RunsTasksOnCurrentThread());
+    base::File file(file_path_,
+                    base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+    bool success = file.created();
+    if (success && !last_modified_.is_null() &&
+        !file.SetTimes(last_modified_, last_modified_)) {
+      // TODO(cmumford): Complain quietly; timestamp's probably not vital.
+    }
+    file.Close();
+    chained_blob_writer_->ReportWriteCompletion(success, bytes_written_);
   }
 
   scoped_refptr<IndexedDBBackingStore::Transaction::ChainedBlobWriter>

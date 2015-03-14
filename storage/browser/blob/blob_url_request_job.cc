@@ -345,7 +345,7 @@ bool BlobURLRequestJob::ReadItem() {
   // If nothing to read for current item, advance to next item.
   if (bytes_to_read == 0) {
     AdvanceItem();
-    return ReadItem();
+    return true;
   }
 
   // Do the reading.

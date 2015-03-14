@@ -313,7 +313,6 @@ bool BlobStorageContext::AppendAllocatedBlobItem(
   const DataElement& data_element = blob_item->data_element();
   uint64 length = data_element.length();
   uint64 offset = data_element.offset();
-  DCHECK_GT(length, 0u);
   UMA_HISTOGRAM_COUNTS("Storage.Blob.StorageSizeBeforeAppend",
                        memory_usage_ / 1024);
   switch (data_element.type()) {

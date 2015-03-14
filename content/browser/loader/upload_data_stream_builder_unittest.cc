@@ -5,6 +5,7 @@
 #include "content/browser/loader/upload_data_stream_builder.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -13,6 +14,9 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "content/common/resource_request_body.h"
+#include "net/base/io_buffer.h"
+#include "net/base/net_errors.h"
+#include "net/base/test_completion_callback.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
@@ -310,4 +314,70 @@ TEST(UploadDataStreamBuilderTest, ResolveBlobAndCreateUploadDataStream) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST(UploadDataStreamBuilderTest,
+     WriteUploadDataStreamWithEmptyFileBackedBlob) {
+  base::MessageLoopForIO message_loop;
+  {
+    base::FilePath test_blob_path;
+    ASSERT_TRUE(base::CreateTemporaryFile(&test_blob_path));
+
+    const uint64_t kZeroLength = 0;
+    base::Time blob_time;
+    base::Time::FromString("Tue, 15 Nov 1994, 12:45:26 GMT", &blob_time);
+    ASSERT_TRUE(base::TouchFile(test_blob_path, blob_time, blob_time));
+
+    BlobStorageContext blob_storage_context;
+
+    // A blob created from an empty file added several times.
+    const std::string blob_id("id-0");
+    scoped_ptr<BlobDataBuilder> blob_data_builder(new BlobDataBuilder(blob_id));
+    blob_data_builder->AppendFile(test_blob_path, 0, kZeroLength, blob_time);
+    scoped_ptr<BlobDataHandle> handle =
+        blob_storage_context.AddFinishedBlob(blob_data_builder.get());
+
+    ResourceRequestBody::Element blob_element;
+    blob_element.SetToFilePathRange(test_blob_path, 0, kZeroLength, blob_time);
+
+    scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+    scoped_ptr<net::UploadDataStream> upload(UploadDataStreamBuilder::Build(
+        request_body.get(), &blob_storage_context, NULL,
+        base::MessageLoopProxy::current().get()));
+
+    request_body = new ResourceRequestBody();
+    request_body->AppendBlob(blob_id);
+    request_body->AppendBlob(blob_id);
+    request_body->AppendBlob(blob_id);
+
+    upload = UploadDataStreamBuilder::Build(
+        request_body.get(), &blob_storage_context, NULL,
+        base::MessageLoopProxy::current().get());
+    ASSERT_TRUE(upload->GetElementReaders());
+    const auto& readers = *upload->GetElementReaders();
+    ASSERT_EQ(3U, readers.size());
+    EXPECT_TRUE(AreElementsEqual(*readers[0], blob_element));
+    EXPECT_TRUE(AreElementsEqual(*readers[1], blob_element));
+    EXPECT_TRUE(AreElementsEqual(*readers[2], blob_element));
+
+    net::TestCompletionCallback init_callback;
+    ASSERT_EQ(net::ERR_IO_PENDING, upload->Init(init_callback.callback()));
+    EXPECT_EQ(net::OK, init_callback.WaitForResult());
+
+    EXPECT_EQ(kZeroLength, upload->size());
+
+    // Purposely (try to) read more than what is in the stream. If we try to
+    // read zero bytes then UploadDataStream::Read will fail a DCHECK.
+    int kBufferLength = kZeroLength + 1;
+    scoped_ptr<char[]> buffer(new char[kBufferLength]);
+    scoped_refptr<net::IOBuffer> io_buffer =
+        new net::WrappedIOBuffer(buffer.get());
+    net::TestCompletionCallback read_callback;
+    int result =
+        upload->Read(io_buffer.get(), kBufferLength, read_callback.callback());
+    EXPECT_EQ(static_cast<int>(kZeroLength), read_callback.GetResult(result));
+
+    base::DeleteFile(test_blob_path, false);
+  }
+  // Clean up for ASAN.
+  base::RunLoop().RunUntilIdle();
+}
 }  // namespace content

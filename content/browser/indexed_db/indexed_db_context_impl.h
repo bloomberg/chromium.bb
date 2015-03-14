@@ -101,6 +101,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
     return set->find(origin_url) != set->end();
   }
   size_t GetConnectionCount(const GURL& origin_url);
+  int GetOriginBlobFileCount(const GURL& origin_url);
 
   // For unit tests allow to override the |data_path_|.
   void set_data_path_for_testing(const base::FilePath& data_path) {

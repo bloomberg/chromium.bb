@@ -15,7 +15,8 @@ BlobDataBuilder::~BlobDataBuilder() {
 }
 
 void BlobDataBuilder::AppendData(const char* data, size_t length) {
-  DCHECK(length > 0);
+  if (!length)
+    return;
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToBytes(data, length);
   items_.push_back(new BlobDataItem(element.Pass()));
@@ -25,7 +26,6 @@ void BlobDataBuilder::AppendFile(const base::FilePath& file_path,
                                  uint64_t offset,
                                  uint64_t length,
                                  const base::Time& expected_modification_time) {
-  DCHECK(length > 0);
   scoped_ptr<DataElement> element(new DataElement());
   element->SetToFilePathRange(file_path, offset, length,
                               expected_modification_time);

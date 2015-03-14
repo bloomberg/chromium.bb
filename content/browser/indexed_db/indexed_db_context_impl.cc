@@ -273,6 +273,19 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
   return list.release();
 }
 
+int IndexedDBContextImpl::GetOriginBlobFileCount(const GURL& origin_url) {
+  DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
+  int count = 0;
+  base::FileEnumerator file_enumerator(
+      GetBlobPath(storage::GetIdentifierFromOrigin(origin_url)), true,
+      base::FileEnumerator::FILES);
+  for (base::FilePath file_path = file_enumerator.Next(); !file_path.empty();
+       file_path = file_enumerator.Next()) {
+    count++;
+  }
+  return count;
+}
+
 int64 IndexedDBContextImpl::GetOriginDiskUsage(const GURL& origin_url) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   if (data_path_.empty() || !IsInOriginSet(origin_url))
