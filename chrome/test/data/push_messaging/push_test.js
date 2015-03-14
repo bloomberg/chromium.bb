@@ -92,23 +92,8 @@ function removeManifest() {
   }
 }
 
-// TODO(xiang): Remove this function after "ready" CL landed.
-function getReadyRegistration() {
-  return navigator.serviceWorker.getRegistration().then(function(r) {
-    if (r.active)
-      return r;
-    var worker = r.waiting ? r.waiting : r.installing;
-    return new Promise(function(resolve) {
-      worker.onstatechange = function() {
-        if (worker.state === 'activating')
-          resolve(r);
-      };
-    });
-  });
-}
-
 function registerPush() {
-  getReadyRegistration().then(function(swRegistration) {
+  navigator.serviceWorker.ready.then(function(swRegistration) {
     var registerMethodName =
         swRegistration.pushManager.register ? 'register' : 'subscribe';
     return swRegistration.pushManager[registerMethodName]()
@@ -121,7 +106,7 @@ function registerPush() {
 }
 
 function hasPermission() {
-  getReadyRegistration().then(function(swRegistration) {
+  navigator.serviceWorker.ready.then(function(swRegistration) {
     return swRegistration.pushManager.hasPermission()
         .then(function(permission) {
           sendResultToTest('permission status - ' + permission);
@@ -153,7 +138,7 @@ function unregister() {
 }
 
 function hasRegistration() {
-  getReadyRegistration().then(function(swRegistration) {
+  navigator.serviceWorker.ready.then(function(swRegistration) {
     return swRegistration.pushManager.getSubscription();
   }).then(function(subscription) {
     sendResultToTest(subscription ? 'true - registered'
