@@ -17,7 +17,7 @@
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/webdata/common/web_data_service_backend.h"
+#include "components/webdata/common/web_database_backend.h"
 
 using base::Bind;
 using base::Time;
@@ -25,7 +25,7 @@ using base::Time;
 namespace autofill {
 
 AutofillWebDataBackendImpl::AutofillWebDataBackendImpl(
-    scoped_refptr<WebDataServiceBackend> web_database_backend,
+    scoped_refptr<WebDatabaseBackend> web_database_backend,
     scoped_refptr<base::MessageLoopProxy> ui_thread,
     scoped_refptr<base::MessageLoopProxy> db_thread,
     const base::Closure& on_changed_callback)

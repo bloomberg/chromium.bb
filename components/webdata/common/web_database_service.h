@@ -23,7 +23,7 @@
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/common/webdata_export.h"
 
-class WebDataServiceBackend;
+class WebDatabaseBackend;
 class WebDataRequestManager;
 
 namespace content {
@@ -77,8 +77,8 @@ class WEBDATA_EXPORT WebDatabaseService
   // TODO(caitkp): remove this method once SyncServices no longer depend on it.
   virtual WebDatabase* GetDatabaseOnDB() const;
 
-  // Returns a pointer to the WebDataServiceBackend.
-  scoped_refptr<WebDataServiceBackend> GetBackend() const;
+  // Returns a pointer to the WebDatabaseBackend.
+  scoped_refptr<WebDatabaseBackend> GetBackend() const;
 
   // Schedule an update/write task on the DB thread.
   virtual void ScheduleDBTask(
@@ -129,7 +129,7 @@ class WEBDATA_EXPORT WebDatabaseService
 
   // The primary owner is |WebDatabaseService| but is refcounted because
   // PostTask on DB thread may outlive us.
-  scoped_refptr<WebDataServiceBackend> wds_backend_;
+  scoped_refptr<WebDatabaseBackend> web_db_backend_;
 
   // Callbacks to be called once the DB has loaded.
   LoadedCallbacks loaded_callbacks_;

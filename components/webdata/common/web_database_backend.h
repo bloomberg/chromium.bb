@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_BACKEND_H_
-#define COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_BACKEND_H_
+#ifndef COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_BACKEND_H_
+#define COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_BACKEND_H_
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -25,14 +25,12 @@ namespace tracked_objects {
 class Location;
 }
 
-// WebDataServiceBackend handles all database tasks posted by
+// WebDatabaseBackend handles all database tasks posted by
 // WebDatabaseService. It is refcounted to allow asynchronous destruction on the
 // DB thread.
 
-// TODO(caitkp): Rename this class to WebDatabaseBackend.
-
-class WEBDATA_EXPORT WebDataServiceBackend
-    : public base::RefCountedDeleteOnMessageLoop<WebDataServiceBackend> {
+class WEBDATA_EXPORT WebDatabaseBackend
+    : public base::RefCountedDeleteOnMessageLoop<WebDatabaseBackend> {
  public:
   class Delegate {
    public:
@@ -42,9 +40,9 @@ class WEBDATA_EXPORT WebDataServiceBackend
     virtual void DBLoaded(sql::InitStatus status) = 0;
   };
 
-  WebDataServiceBackend(const base::FilePath& path,
-                        Delegate* delegate,
-                        const scoped_refptr<base::MessageLoopProxy>& db_thread);
+  WebDatabaseBackend(const base::FilePath& path,
+                     Delegate* delegate,
+                     const scoped_refptr<base::MessageLoopProxy>& db_thread);
 
   // Must call only before InitDatabaseWithCallback.
   void AddTable(scoped_ptr<WebDatabaseTable> table);
@@ -66,12 +64,10 @@ class WEBDATA_EXPORT WebDataServiceBackend
   // are used in cases where the request is being made from the UI thread and an
   // asyncronous callback is required to notify the client of |request|'s
   // completion.
-  void DBWriteTaskWrapper(
-      const WebDatabaseService::WriteTask& task,
-      scoped_ptr<WebDataRequest> request);
-  void DBReadTaskWrapper(
-      const WebDatabaseService::ReadTask& task,
-      scoped_ptr<WebDataRequest> request);
+  void DBWriteTaskWrapper(const WebDatabaseService::WriteTask& task,
+                          scoped_ptr<WebDataRequest> request);
+  void DBReadTaskWrapper(const WebDatabaseService::ReadTask& task,
+                         scoped_ptr<WebDataRequest> request);
 
   // Task runners to run database tasks.
   void ExecuteWriteTask(const WebDatabaseService::WriteTask& task);
@@ -85,10 +81,10 @@ class WEBDATA_EXPORT WebDataServiceBackend
   WebDatabase* database() { return db_.get(); }
 
  protected:
-  friend class base::RefCountedDeleteOnMessageLoop<WebDataServiceBackend>;
-  friend class base::DeleteHelper<WebDataServiceBackend>;
+  friend class base::RefCountedDeleteOnMessageLoop<WebDatabaseBackend>;
+  friend class base::DeleteHelper<WebDatabaseBackend>;
 
-  virtual ~WebDataServiceBackend();
+  virtual ~WebDatabaseBackend();
 
  private:
   // Commit the current transaction.
@@ -123,7 +119,7 @@ class WEBDATA_EXPORT WebDataServiceBackend
   // Delegate. See the class definition above for more information.
   scoped_ptr<Delegate> delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebDataServiceBackend);
+  DISALLOW_COPY_AND_ASSIGN(WebDatabaseBackend);
 };
 
-#endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATA_SERVICE_BACKEND_H_
+#endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATABASE_BACKEND_H_

@@ -22,7 +22,7 @@ namespace base {
 class MessageLoopProxy;
 }
 
-class WebDataServiceBackend;
+class WebDatabaseBackend;
 
 namespace autofill {
 
@@ -47,7 +47,7 @@ class AutofillWebDataBackendImpl
   // thread of changes initiated by Sync (this callback may be called multiple
   // times).
   AutofillWebDataBackendImpl(
-      scoped_refptr<WebDataServiceBackend> web_database_backend,
+      scoped_refptr<WebDatabaseBackend> web_database_backend,
       scoped_refptr<base::MessageLoopProxy> ui_thread,
       scoped_refptr<base::MessageLoopProxy> db_thread,
       const base::Closure& on_changed_callback);
@@ -201,9 +201,9 @@ class AutofillWebDataBackendImpl
 
   ObserverList<AutofillWebDataServiceObserverOnDBThread> db_observer_list_;
 
-  // WebDataServiceBackend allows direct access to DB.
+  // WebDatabaseBackend allows direct access to DB.
   // TODO(caitkp): Make it so nobody but us needs direct DB access anymore.
-  scoped_refptr<WebDataServiceBackend> web_database_backend_;
+  scoped_refptr<WebDatabaseBackend> web_database_backend_;
 
   base::Closure on_changed_callback_;
 

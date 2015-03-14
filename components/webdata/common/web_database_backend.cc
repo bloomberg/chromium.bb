@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/webdata/common/web_data_service_backend.h"
+#include "components/webdata/common/web_database_backend.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -13,11 +13,11 @@
 using base::Bind;
 using base::FilePath;
 
-WebDataServiceBackend::WebDataServiceBackend(
+WebDatabaseBackend::WebDatabaseBackend(
     const FilePath& path,
     Delegate* delegate,
     const scoped_refptr<base::MessageLoopProxy>& db_thread)
-    : base::RefCountedDeleteOnMessageLoop<WebDataServiceBackend>(db_thread),
+    : base::RefCountedDeleteOnMessageLoop<WebDatabaseBackend>(db_thread),
       db_path_(path),
       request_manager_(new WebDataRequestManager()),
       init_status_(sql::INIT_FAILURE),
@@ -25,19 +25,19 @@ WebDataServiceBackend::WebDataServiceBackend(
       delegate_(delegate) {
 }
 
-void WebDataServiceBackend::AddTable(scoped_ptr<WebDatabaseTable> table) {
+void WebDatabaseBackend::AddTable(scoped_ptr<WebDatabaseTable> table) {
   DCHECK(!db_.get());
   tables_.push_back(table.release());
 }
 
-void WebDataServiceBackend::InitDatabase() {
+void WebDatabaseBackend::InitDatabase() {
   LoadDatabaseIfNecessary();
   if (delegate_) {
     delegate_->DBLoaded(init_status_);
   }
 }
 
-sql::InitStatus WebDataServiceBackend::LoadDatabaseIfNecessary() {
+sql::InitStatus WebDatabaseBackend::LoadDatabaseIfNecessary() {
   if (init_complete_ || db_path_.empty()) {
     return init_status_;
   }
@@ -60,7 +60,7 @@ sql::InitStatus WebDataServiceBackend::LoadDatabaseIfNecessary() {
   return init_status_;
 }
 
-void WebDataServiceBackend::ShutdownDatabase() {
+void WebDatabaseBackend::ShutdownDatabase() {
   if (db_ && init_status_ == sql::INIT_OK)
     db_->CommitTransaction();
   db_.reset(NULL);
@@ -68,7 +68,7 @@ void WebDataServiceBackend::ShutdownDatabase() {
   init_status_ = sql::INIT_FAILURE;
 }
 
-void WebDataServiceBackend::DBWriteTaskWrapper(
+void WebDatabaseBackend::DBWriteTaskWrapper(
     const WebDatabaseService::WriteTask& task,
     scoped_ptr<WebDataRequest> request) {
   if (request->IsCancelled())
@@ -78,7 +78,7 @@ void WebDataServiceBackend::DBWriteTaskWrapper(
   request_manager_->RequestCompleted(request.Pass());
 }
 
-void WebDataServiceBackend::ExecuteWriteTask(
+void WebDatabaseBackend::ExecuteWriteTask(
     const WebDatabaseService::WriteTask& task) {
   LoadDatabaseIfNecessary();
   if (db_ && init_status_ == sql::INIT_OK) {
@@ -88,7 +88,7 @@ void WebDataServiceBackend::ExecuteWriteTask(
   }
 }
 
-void WebDataServiceBackend::DBReadTaskWrapper(
+void WebDatabaseBackend::DBReadTaskWrapper(
     const WebDatabaseService::ReadTask& task,
     scoped_ptr<WebDataRequest> request) {
   if (request->IsCancelled())
@@ -98,7 +98,7 @@ void WebDataServiceBackend::DBReadTaskWrapper(
   request_manager_->RequestCompleted(request.Pass());
 }
 
-scoped_ptr<WDTypedResult> WebDataServiceBackend::ExecuteReadTask(
+scoped_ptr<WDTypedResult> WebDatabaseBackend::ExecuteReadTask(
     const WebDatabaseService::ReadTask& task) {
   LoadDatabaseIfNecessary();
   if (db_ && init_status_ == sql::INIT_OK) {
@@ -107,11 +107,11 @@ scoped_ptr<WDTypedResult> WebDataServiceBackend::ExecuteReadTask(
   return scoped_ptr<WDTypedResult>();
 }
 
-WebDataServiceBackend::~WebDataServiceBackend() {
+WebDatabaseBackend::~WebDatabaseBackend() {
   ShutdownDatabase();
 }
 
-void WebDataServiceBackend::Commit() {
+void WebDatabaseBackend::Commit() {
   DCHECK(db_);
   DCHECK_EQ(sql::INIT_OK, init_status_);
   db_->CommitTransaction();
