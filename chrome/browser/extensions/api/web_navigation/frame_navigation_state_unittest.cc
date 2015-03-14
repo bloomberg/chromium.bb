@@ -31,7 +31,7 @@ TEST_F(FrameNavigationStateTest, TrackFrame) {
   // Create a main frame.
   EXPECT_FALSE(navigation_state_.CanSendEvents(main_rfh()));
   EXPECT_FALSE(navigation_state_.IsValidFrame(main_rfh()));
-  navigation_state_.TrackFrame(main_rfh(), url1, false, false);
+  navigation_state_.StartTrackingNavigation(main_rfh(), url1, false, false);
   navigation_state_.SetNavigationCommitted(main_rfh());
   EXPECT_TRUE(navigation_state_.CanSendEvents(main_rfh()));
   EXPECT_TRUE(navigation_state_.IsValidFrame(main_rfh()));
@@ -41,7 +41,7 @@ TEST_F(FrameNavigationStateTest, TrackFrame) {
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("child");
   EXPECT_FALSE(navigation_state_.CanSendEvents(sub_frame));
   EXPECT_FALSE(navigation_state_.IsValidFrame(sub_frame));
-  navigation_state_.TrackFrame(sub_frame, url2, false, false);
+  navigation_state_.StartTrackingNavigation(sub_frame, url2, false, false);
   navigation_state_.SetNavigationCommitted(sub_frame);
   EXPECT_TRUE(navigation_state_.CanSendEvents(sub_frame));
   EXPECT_TRUE(navigation_state_.IsValidFrame(sub_frame));
@@ -49,14 +49,15 @@ TEST_F(FrameNavigationStateTest, TrackFrame) {
   // Check frame state.
   EXPECT_EQ(url1, navigation_state_.GetUrl(main_rfh()));
   EXPECT_EQ(url2, navigation_state_.GetUrl(sub_frame));
-  EXPECT_EQ(main_rfh(), navigation_state_.GetLastCommittedMainFrameHost());
 
   // Drop the frames.
-  navigation_state_.StopTrackingFramesInRVH(rvh(), NULL);
-  EXPECT_FALSE(navigation_state_.CanSendEvents(main_rfh()));
-  EXPECT_FALSE(navigation_state_.IsValidFrame(main_rfh()));
+  navigation_state_.FrameHostDeleted(sub_frame);
   EXPECT_FALSE(navigation_state_.CanSendEvents(sub_frame));
   EXPECT_FALSE(navigation_state_.IsValidFrame(sub_frame));
+
+  navigation_state_.FrameHostDeleted(main_rfh());
+  EXPECT_FALSE(navigation_state_.CanSendEvents(main_rfh()));
+  EXPECT_FALSE(navigation_state_.IsValidFrame(main_rfh()));
 }
 
 // Test that no events can be sent for a frame after an error occurred, but
@@ -64,7 +65,7 @@ TEST_F(FrameNavigationStateTest, TrackFrame) {
 TEST_F(FrameNavigationStateTest, ErrorState) {
   const GURL url("http://www.google.com/");
 
-  navigation_state_.TrackFrame(main_rfh(), url, false, false);
+  navigation_state_.StartTrackingNavigation(main_rfh(), url, false, false);
   EXPECT_TRUE(navigation_state_.CanSendEvents(main_rfh()));
   EXPECT_FALSE(navigation_state_.GetErrorOccurredInFrame(main_rfh()));
 
@@ -74,12 +75,12 @@ TEST_F(FrameNavigationStateTest, ErrorState) {
   EXPECT_TRUE(navigation_state_.GetErrorOccurredInFrame(main_rfh()));
 
   // Navigations to a network error page should be ignored.
-  navigation_state_.TrackFrame(main_rfh(), GURL(), true, false);
+  navigation_state_.StartTrackingNavigation(main_rfh(), GURL(), true, false);
   EXPECT_FALSE(navigation_state_.CanSendEvents(main_rfh()));
   EXPECT_TRUE(navigation_state_.GetErrorOccurredInFrame(main_rfh()));
 
   // However, when the frame navigates again, it should send events again.
-  navigation_state_.TrackFrame(main_rfh(), url, false, false);
+  navigation_state_.StartTrackingNavigation(main_rfh(), url, false, false);
   EXPECT_TRUE(navigation_state_.CanSendEvents(main_rfh()));
   EXPECT_FALSE(navigation_state_.GetErrorOccurredInFrame(main_rfh()));
 }
@@ -91,8 +92,8 @@ TEST_F(FrameNavigationStateTest, ErrorStateFrame) {
 
   content::RenderFrameHost* sub_frame =
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("child");
-  navigation_state_.TrackFrame(main_rfh(), url, false, false);
-  navigation_state_.TrackFrame(sub_frame, url, false, false);
+  navigation_state_.StartTrackingNavigation(main_rfh(), url, false, false);
+  navigation_state_.StartTrackingNavigation(sub_frame, url, false, false);
   EXPECT_TRUE(navigation_state_.CanSendEvents(main_rfh()));
   EXPECT_TRUE(navigation_state_.CanSendEvents(sub_frame));
 
@@ -102,12 +103,12 @@ TEST_F(FrameNavigationStateTest, ErrorStateFrame) {
   EXPECT_FALSE(navigation_state_.CanSendEvents(sub_frame));
 
   // Navigations to a network error page should be ignored.
-  navigation_state_.TrackFrame(sub_frame, GURL(), true, false);
+  navigation_state_.StartTrackingNavigation(sub_frame, GURL(), true, false);
   EXPECT_TRUE(navigation_state_.CanSendEvents(main_rfh()));
   EXPECT_FALSE(navigation_state_.CanSendEvents(sub_frame));
 
   // However, when the frame navigates again, it should send events again.
-  navigation_state_.TrackFrame(sub_frame, url, false, false);
+  navigation_state_.StartTrackingNavigation(sub_frame, url, false, false);
   EXPECT_TRUE(navigation_state_.CanSendEvents(main_rfh()));
   EXPECT_TRUE(navigation_state_.CanSendEvents(sub_frame));
 }
@@ -116,7 +117,7 @@ TEST_F(FrameNavigationStateTest, ErrorStateFrame) {
 TEST_F(FrameNavigationStateTest, WebSafeScheme) {
   const GURL url("unsafe://www.google.com/");
 
-  navigation_state_.TrackFrame(main_rfh(), url, false, false);
+  navigation_state_.StartTrackingNavigation(main_rfh(), url, false, false);
   EXPECT_FALSE(navigation_state_.CanSendEvents(main_rfh()));
 }
 
@@ -128,8 +129,8 @@ TEST_F(FrameNavigationStateTest, SrcDoc) {
 
   content::RenderFrameHost* sub_frame =
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("child");
-  navigation_state_.TrackFrame(main_rfh(), url, false, false);
-  navigation_state_.TrackFrame(sub_frame, blank, false, true);
+  navigation_state_.StartTrackingNavigation(main_rfh(), url, false, false);
+  navigation_state_.StartTrackingNavigation(sub_frame, blank, false, true);
   EXPECT_TRUE(navigation_state_.CanSendEvents(main_rfh()));
   EXPECT_TRUE(navigation_state_.CanSendEvents(sub_frame));
 
@@ -147,7 +148,7 @@ TEST_F(FrameNavigationStateTest, DetachFrame) {
   // Create a main frame.
   EXPECT_FALSE(navigation_state_.CanSendEvents(main_rfh()));
   EXPECT_FALSE(navigation_state_.IsValidFrame(main_rfh()));
-  navigation_state_.TrackFrame(main_rfh(), url1, false, false);
+  navigation_state_.StartTrackingNavigation(main_rfh(), url1, false, false);
   navigation_state_.SetNavigationCommitted(main_rfh());
   EXPECT_TRUE(navigation_state_.CanSendEvents(main_rfh()));
   EXPECT_TRUE(navigation_state_.IsValidFrame(main_rfh()));
@@ -157,7 +158,7 @@ TEST_F(FrameNavigationStateTest, DetachFrame) {
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("child");
   EXPECT_FALSE(navigation_state_.CanSendEvents(sub_frame));
   EXPECT_FALSE(navigation_state_.IsValidFrame(sub_frame));
-  navigation_state_.TrackFrame(sub_frame, url2, false, false);
+  navigation_state_.StartTrackingNavigation(sub_frame, url2, false, false);
   navigation_state_.SetNavigationCommitted(sub_frame);
   EXPECT_TRUE(navigation_state_.CanSendEvents(sub_frame));
   EXPECT_TRUE(navigation_state_.IsValidFrame(sub_frame));
@@ -165,12 +166,10 @@ TEST_F(FrameNavigationStateTest, DetachFrame) {
   // Check frame state.
   EXPECT_EQ(url1, navigation_state_.GetUrl(main_rfh()));
   EXPECT_EQ(url2, navigation_state_.GetUrl(sub_frame));
-  EXPECT_EQ(main_rfh(), navigation_state_.GetLastCommittedMainFrameHost());
 
   // Drop one frame.
-  navigation_state_.FrameDetached(sub_frame);
+  navigation_state_.FrameHostDeleted(sub_frame);
   EXPECT_EQ(url1, navigation_state_.GetUrl(main_rfh()));
-  EXPECT_EQ(main_rfh(), navigation_state_.GetLastCommittedMainFrameHost());
   EXPECT_FALSE(navigation_state_.CanSendEvents(sub_frame));
   EXPECT_FALSE(navigation_state_.IsValidFrame(sub_frame));
 }

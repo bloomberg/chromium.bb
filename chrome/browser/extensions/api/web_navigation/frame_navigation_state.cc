@@ -32,7 +32,7 @@ FrameNavigationState::FrameState::FrameState() {}
 // static
 bool FrameNavigationState::allow_extension_scheme_ = false;
 
-FrameNavigationState::FrameNavigationState() : main_frame_host_(NULL) {
+FrameNavigationState::FrameNavigationState() {
 }
 
 FrameNavigationState::~FrameNavigationState() {}
@@ -60,10 +60,11 @@ bool FrameNavigationState::IsValidUrl(const GURL& url) const {
   return allow_extension_scheme_ && url.scheme() == kExtensionScheme;
 }
 
-void FrameNavigationState::TrackFrame(content::RenderFrameHost* frame_host,
-                                      const GURL& url,
-                                      bool is_error_page,
-                                      bool is_iframe_srcdoc) {
+void FrameNavigationState::StartTrackingNavigation(
+    content::RenderFrameHost* frame_host,
+    const GURL& url,
+    bool is_error_page,
+    bool is_iframe_srcdoc) {
   FrameState& frame_state = frame_host_state_map_[frame_host];
   frame_state.error_occurred = is_error_page;
   frame_state.url = url;
@@ -73,31 +74,17 @@ void FrameNavigationState::TrackFrame(content::RenderFrameHost* frame_host,
   frame_state.is_committed = false;
   frame_state.is_server_redirected = false;
   frame_state.is_parsing = true;
+}
+
+void FrameNavigationState::FrameHostCreated(
+    content::RenderFrameHost* frame_host) {
   frame_hosts_.insert(frame_host);
 }
 
-void FrameNavigationState::FrameDetached(content::RenderFrameHost* frame_host) {
-  if (frame_host == main_frame_host_)
-    main_frame_host_ = NULL;
+void FrameNavigationState::FrameHostDeleted(
+    content::RenderFrameHost* frame_host) {
   frame_host_state_map_.erase(frame_host);
   frame_hosts_.erase(frame_host);
-}
-
-void FrameNavigationState::StopTrackingFramesInRVH(
-    content::RenderViewHost* render_view_host,
-    content::RenderFrameHost* frame_host_to_skip) {
-  for (std::set<content::RenderFrameHost*>::iterator it = frame_hosts_.begin();
-       it != frame_hosts_.end();) {
-    if ((*it)->GetRenderViewHost() != render_view_host ||
-        *it == frame_host_to_skip) {
-      ++it;
-      continue;
-    }
-    if (*it == main_frame_host_)
-      main_frame_host_ = NULL;
-    frame_host_state_map_.erase(*it);
-    frame_hosts_.erase(it++);
-  }
 }
 
 void FrameNavigationState::UpdateFrame(content::RenderFrameHost* frame_host,
@@ -125,11 +112,6 @@ GURL FrameNavigationState::GetUrl(content::RenderFrameHost* frame_host) const {
   if (it->second.is_iframe_srcdoc)
     return GURL(content::kAboutSrcDocURL);
   return it->second.url;
-}
-
-content::RenderFrameHost* FrameNavigationState::GetLastCommittedMainFrameHost()
-    const {
-  return main_frame_host_;
 }
 
 void FrameNavigationState::SetErrorOccurredInFrame(
@@ -194,8 +176,6 @@ void FrameNavigationState::SetNavigationCommitted(
     return;
   }
   it->second.is_committed = true;
-  if (!frame_host->GetParent())
-    main_frame_host_ = frame_host;
 }
 
 bool FrameNavigationState::GetNavigationCommitted(

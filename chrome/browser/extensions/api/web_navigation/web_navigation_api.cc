@@ -22,7 +22,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -239,10 +238,9 @@ void WebNavigationEventRouter::TabDestroyed(content::WebContents* tab) {
 
 WebNavigationTabObserver::WebNavigationTabObserver(
     content::WebContents* web_contents)
-    : WebContentsObserver(web_contents),
-      render_view_host_(NULL),
-      pending_render_view_host_(NULL) {
+    : WebContentsObserver(web_contents) {
   g_tab_observer.Get().insert(TabObserverMap::value_type(web_contents, this));
+  navigation_state_.FrameHostCreated(web_contents->GetMainFrame());
 }
 
 WebNavigationTabObserver::~WebNavigationTabObserver() {}
@@ -263,23 +261,24 @@ void WebNavigationTabObserver::RenderFrameDeleted(
         render_frame_host,
         navigation_state_.GetUrl(render_frame_host),
         net::ERR_ABORTED);
+    navigation_state_.SetErrorOccurredInFrame(render_frame_host);
   }
-  navigation_state_.FrameDetached(render_frame_host);
 }
 
-void WebNavigationTabObserver::AboutToNavigateRenderFrame(
+void WebNavigationTabObserver::FrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  navigation_state_.FrameHostDeleted(render_frame_host);
+}
+
+void WebNavigationTabObserver::RenderFrameHostChanged(
     content::RenderFrameHost* old_host,
     content::RenderFrameHost* new_host) {
-  content::RenderViewHost* render_view_host =
-      new_host->GetRenderViewHost();
-  if (!render_view_host_) {
-    render_view_host_ = render_view_host;
-  } else if (render_view_host != render_view_host_) {
-    if (pending_render_view_host_) {
-      SendErrorEvents(web_contents(), pending_render_view_host_, NULL);
-    }
-    pending_render_view_host_ = render_view_host;
+  if (old_host) {
+    RenderFrameDeleted(old_host);
+    navigation_state_.FrameHostDeleted(old_host);
   }
+
+  navigation_state_.FrameHostCreated(new_host);
 }
 
 void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
@@ -287,20 +286,12 @@ void WebNavigationTabObserver::DidStartProvisionalLoadForFrame(
     const GURL& validated_url,
     bool is_error_page,
     bool is_iframe_srcdoc) {
-  content::RenderViewHost* render_view_host =
-      render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DidStartProvisionalLoad("
-           << "render_view_host=" << render_view_host
+           << "render_frame_host=" << render_frame_host
            << ", frame_num=" << render_frame_host->GetRoutingID()
            << ", url=" << validated_url << ")";
-  if (!render_view_host_)
-    render_view_host_ = render_view_host;
-  if (render_view_host != render_view_host_ &&
-      render_view_host != pending_render_view_host_)
-    return;
-
-  navigation_state_.TrackFrame(
-      render_frame_host, validated_url, is_error_page, is_iframe_srcdoc);
+  navigation_state_.StartTrackingNavigation(render_frame_host, validated_url,
+                                            is_error_page, is_iframe_srcdoc);
 
   if (!navigation_state_.CanSendEvents(render_frame_host))
     return;
@@ -315,37 +306,14 @@ void WebNavigationTabObserver::DidCommitProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& url,
     ui::PageTransition transition_type) {
-  content::RenderViewHost* render_view_host =
-      render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DidCommitProvisionalLoad("
-           << "render_view_host=" << render_view_host
+           << "render_frame_host=" << render_frame_host
            << ", frame_num=" << render_frame_host->GetRoutingID()
            << ", url=" << url << ")";
-  if (render_view_host != render_view_host_ &&
-      render_view_host != pending_render_view_host_)
-    return;
-
   bool is_reference_fragment_navigation =
       IsReferenceFragmentNavigation(render_frame_host, url);
   bool is_history_state_modification =
       navigation_state_.GetNavigationCommitted(render_frame_host);
-
-  if (!render_frame_host->GetParent() &&
-      render_view_host_ == render_view_host) {
-    // Changing the reference fragment or the history state using
-    // history.pushState or history.replaceState does not cancel on-going
-    // iframe navigations.
-    if (!is_reference_fragment_navigation && !is_history_state_modification)
-      SendErrorEvents(web_contents(), render_view_host_, render_frame_host);
-    if (pending_render_view_host_) {
-      SendErrorEvents(web_contents(), pending_render_view_host_, NULL);
-      pending_render_view_host_ = NULL;
-    }
-  } else if (pending_render_view_host_ == render_view_host) {
-    SendErrorEvents(web_contents(), render_view_host_, NULL);
-    render_view_host_ = pending_render_view_host_;
-    pending_render_view_host_ = NULL;
-  }
 
   // Update the URL as it might have changed.
   navigation_state_.UpdateFrame(render_frame_host, url);
@@ -386,21 +354,10 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
-  content::RenderViewHost* render_view_host =
-      render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DidFailProvisionalLoad("
-           << "render_view_host=" << render_view_host
+           << "render_frame_host=" << render_frame_host
            << ", frame_num=" << render_frame_host->GetRoutingID()
            << ", url=" << validated_url << ")";
-  if (render_view_host != render_view_host_ &&
-      render_view_host != pending_render_view_host_)
-    return;
-  bool stop_tracking_frames = false;
-  if (render_view_host == pending_render_view_host_) {
-    pending_render_view_host_ = NULL;
-    stop_tracking_frames = true;
-  }
-
   if (navigation_state_.CanSendEvents(render_frame_host)) {
     helpers::DispatchOnErrorOccurred(
         web_contents(),
@@ -409,20 +366,13 @@ void WebNavigationTabObserver::DidFailProvisionalLoad(
         error_code);
   }
   navigation_state_.SetErrorOccurredInFrame(render_frame_host);
-  if (stop_tracking_frames) {
-    navigation_state_.StopTrackingFramesInRVH(render_view_host, NULL);
-  }
 }
 
 void WebNavigationTabObserver::DocumentLoadedInFrame(
     content::RenderFrameHost* render_frame_host) {
-  content::RenderViewHost* render_view_host =
-      render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DocumentLoadedInFrame("
-           << "render_view_host=" << render_view_host
+           << "render_frame_host=" << render_frame_host
            << ", frame_num=" << render_frame_host->GetRoutingID() << ")";
-  if (render_view_host != render_view_host_)
-    return;
   if (!navigation_state_.CanSendEvents(render_frame_host))
     return;
   navigation_state_.SetParsingFinished(render_frame_host);
@@ -445,14 +395,10 @@ void WebNavigationTabObserver::DocumentLoadedInFrame(
 void WebNavigationTabObserver::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
-  content::RenderViewHost* render_view_host =
-      render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DidFinishLoad("
-           << "render_view_host=" << render_view_host
+           << "render_frame_host=" << render_frame_host
            << ", frame_num=" << render_frame_host->GetRoutingID()
            << ", url=" << validated_url << ")";
-  if (render_view_host != render_view_host_)
-    return;
   // When showing replacement content, we might get load signals for frames
   // that weren't reguarly loaded.
   if (!navigation_state_.IsValidFrame(render_frame_host))
@@ -482,14 +428,10 @@ void WebNavigationTabObserver::DidFailLoad(
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
-  content::RenderViewHost* render_view_host =
-      render_frame_host->GetRenderViewHost();
   DVLOG(2) << "DidFailLoad("
-           << "render_view_host=" << render_view_host
+           << "render_frame_host=" << render_frame_host
            << ", frame_num=" << render_frame_host->GetRoutingID()
            << ", url=" << validated_url << ")";
-  if (render_view_host != render_view_host_)
-    return;
   // When showing replacement content, we might get load signals for frames
   // that weren't reguarly loaded.
   if (!navigation_state_.IsValidFrame(render_frame_host))
@@ -544,27 +486,6 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
 void WebNavigationTabObserver::WebContentsDestroyed() {
   g_tab_observer.Get().erase(web_contents());
   registrar_.RemoveAll();
-  SendErrorEvents(web_contents(), NULL, NULL);
-}
-
-void WebNavigationTabObserver::SendErrorEvents(
-    content::WebContents* web_contents,
-    content::RenderViewHost* render_view_host,
-    content::RenderFrameHost* frame_host_to_skip) {
-  for (FrameNavigationState::const_iterator it = navigation_state_.begin();
-       it != navigation_state_.end();
-       ++it) {
-    if (!navigation_state_.GetNavigationCompleted(*it) &&
-        navigation_state_.CanSendEvents(*it) && *it != frame_host_to_skip &&
-        (!render_view_host || (*it)->GetRenderViewHost() == render_view_host)) {
-      navigation_state_.SetErrorOccurredInFrame(*it);
-      helpers::DispatchOnErrorOccurred(
-          web_contents, *it, navigation_state_.GetUrl(*it), net::ERR_ABORTED);
-    }
-  }
-  if (render_view_host)
-    navigation_state_.StopTrackingFramesInRVH(render_view_host,
-                                              frame_host_to_skip);
 }
 
 // See also NavigationController::IsURLInPageNavigation.
@@ -610,7 +531,7 @@ bool WebNavigationGetFrameFunction::RunSync() {
       observer->frame_navigation_state();
 
   content::RenderFrameHost* render_frame_host =
-      frame_id == 0 ? frame_navigation_state.GetLastCommittedMainFrameHost()
+      frame_id == 0 ? web_contents->GetMainFrame()
                     : content::RenderFrameHost::FromID(process_id, frame_id);
   if (!frame_navigation_state.IsValidFrame(render_frame_host))
     return true;
@@ -666,7 +587,7 @@ bool WebNavigationGetAllFramesFunction::RunSync() {
     frame->url = frame_url.spec();
     frame->frame_id = helpers::GetFrameId(*it);
     frame->parent_frame_id = helpers::GetFrameId((*it)->GetParent());
-    frame->process_id = (*it)->GetRenderViewHost()->GetProcess()->GetID();
+    frame->process_id = (*it)->GetProcess()->GetID();
     frame->error_occurred = navigation_state.GetErrorOccurredInFrame(*it);
     result_list.push_back(frame);
   }

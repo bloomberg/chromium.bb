@@ -184,9 +184,10 @@ onload = function() {
               { url: getURL('c.html?' + config.testServer.port) });
         },
 
-        // Navigates to a different site, but then aborts the navigation by
-        // starting a new one.
-        function crossProcessAbort() {
+        // Navigates to a different site, but then commits
+        // same-site, non-user, renderer-initiated navigation
+        // before the slow cross-site navigation commits.
+        function crossProcessWithSameSiteCommit() {
           expect([
             { label: "a-onBeforeNavigate",
               event: "onBeforeNavigate",
@@ -227,10 +228,25 @@ onload = function() {
                          tabId: 0,
                          timeStamp: 0,
                          url: URL_TEST + "1" }},
-            { label: "b-onErrorOccurred",
-              event: "onErrorOccurred",
-              details: { error: "net::ERR_ABORTED",
-                         frameId: 0,
+            { label: "b-onCommitted",
+              event: "onCommitted",
+              details: { frameId: 0,
+                         processId: 1,
+                         tabId: 0,
+                         timeStamp: 0,
+                         transitionQualifiers: [],
+                         transitionType: "link",
+                         url: URL_TEST + "1" }},
+            { label: "b-onDOMContentLoaded",
+              event: "onDOMContentLoaded",
+              details: { frameId: 0,
+                         processId: 1,
+                         tabId: 0,
+                         timeStamp: 0,
+                         url: URL_TEST + "1" }},
+            { label: "b-onCompleted",
+              event: "onCompleted",
+              details: { frameId: 0,
                          processId: 1,
                          tabId: 0,
                          timeStamp: 0,
@@ -268,9 +284,12 @@ onload = function() {
                          url: getURL('empty.html') }}],
             [ navigationOrder("a-"),
               navigationOrder("c-"),
-              [ "a-onCompleted", "b-onBeforeNavigate", "b-onErrorOccurred",
-                "c-onCommitted"] ]);
+              navigationOrder("b-"),
+              [ "a-onCompleted", "b-onBeforeNavigate", "c-onBeforeNavigate",
+                "c-onCommitted", "b-onCommitted"] ]);
 
+          // Note: d.html expects the redirect path to follow the port
+          // number.
           chrome.tabs.update(
               tabId,
               { url: getURL('d.html?' + config.testServer.port + "/test1") });

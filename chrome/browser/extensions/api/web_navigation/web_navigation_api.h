@@ -45,9 +45,9 @@ class WebNavigationTabObserver
 
   // content::WebContentsObserver implementation.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
-  void AboutToNavigateRenderFrame(
-      content::RenderFrameHost* old_host,
-      content::RenderFrameHost* new_host) override;
+  void FrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
   void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
@@ -103,13 +103,6 @@ class WebNavigationTabObserver
 
   // Used for tracking registrations to redirect notifications.
   content::NotificationRegistrar registrar_;
-
-  // The current RenderViewHost of the observed WebContents.
-  content::RenderViewHost* render_view_host_;
-
-  // During a cross site navigation, the WebContents has a second, pending
-  // RenderViewHost.
-  content::RenderViewHost* pending_render_view_host_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNavigationTabObserver);
 };
