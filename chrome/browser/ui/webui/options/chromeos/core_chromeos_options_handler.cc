@@ -128,7 +128,7 @@ void CoreChromeOSOptionsHandler::RegisterMessages() {
 void CoreChromeOSOptionsHandler::InitializeHandler() {
   // This function is both called on the initial page load and on each reload.
   // For the latter case, forget the last selected network.
-  proxy_config_service_.SetCurrentNetwork(std::string());
+  proxy_config_service_.SetCurrentNetworkGuid("");
   // And clear the cached configuration.
   proxy_config_service_.UpdateFromPrefs();
 
@@ -368,13 +368,12 @@ void CoreChromeOSOptionsHandler::GetLocalizedValues(
 
 void CoreChromeOSOptionsHandler::SelectNetworkCallback(
     const base::ListValue* args) {
-  std::string service_path;
-  if (args->GetSize() != 1 ||
-      !args->GetString(0, &service_path)) {
+  std::string guid;
+  if (args->GetSize() != 1 || !args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
-  proxy_config_service_.SetCurrentNetwork(service_path);
+  proxy_config_service_.SetCurrentNetworkGuid(guid);
   NotifyProxyPrefsChanged();
 }
 

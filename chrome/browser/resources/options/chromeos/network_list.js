@@ -5,14 +5,13 @@
 /**
  * This partially describes the network list entries passed to
  * refreshNetworkData. The contents of those lists actually match
- * CrOnc.NetworkConfigType with the addition of the policyManaged and
- * servicePath properties. TODO(stevenjb): Use networkingPrivate.getNetworks.
+ * CrOnc.NetworkConfigType with the addition of the policyManaged property.
+ * TODO(stevenjb): Use networkingPrivate.getNetworks.
  * @typedef {{
  *   ConnectionState: string,
  *   GUID: string,
  *   Type: string,
  *   policyManaged: boolean,
- *   servicePath: string
  * }}
  * @see chrome/browser/ui/webui/options/chromeos/internet_options_handler.cc
  */
@@ -161,13 +160,11 @@ cr.define('options.network', function() {
   }
 
   /**
-   * @param {string} servicePath The network service path.
+   * @param {string} guid The network GUID.
    */
-  function showDetails(servicePath) {
-    // TODO(stevenjb): chrome.networkingPrivate.getManagedProperties
-    // (Note: we will need to provide DetailsInternetPage.initializeDetailsPage
-    // as the callback).
-    chrome.send('getManagedProperties', [servicePath]);
+  function showDetails(guid) {
+    chrome.networkingPrivate.getManagedProperties(
+      guid, DetailsInternetPage.initializeDetailsPage);
   }
 
   /**
@@ -717,11 +714,10 @@ cr.define('options.network', function() {
      * @private
      */
     createNetworkOptionsCallback_: function(parent, data) {
-      var servicePath = data.servicePath;
       var menuItem = createCallback_(parent,
                                      data,
                                      getNetworkName(data),
-                                     showDetails.bind(null, servicePath));
+                                     showDetails.bind(null, data.GUID));
       if (data.policyManaged)
         menuItem.appendChild(new ManagedNetworkIndicator());
       if (data.ConnectionState == 'Connected' ||
@@ -1033,10 +1029,7 @@ cr.define('options.network', function() {
     var ethernetConnection = getConnection_(data.wiredList);
     if (ethernetConnection) {
       var type = String('Ethernet');
-      var path = ethernetConnection.servicePath;
-      var ethernetOptions = function() {
-        showDetails(path);
-      };
+      var ethernetOptions = showDetails.bind(null, ethernetConnection.GUID);
       networkList.update(
           { key: 'Ethernet',
             subtitle: loadTimeData.getString('OncConnectionStateConnected'),

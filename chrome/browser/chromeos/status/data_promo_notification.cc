@@ -124,7 +124,7 @@ const chromeos::MobileConfig::CarrierDeal* GetCarrierDeal(
 void NotificationClicked(const std::string& service_path,
                          const std::string& info_url) {
   if (info_url.empty())
-    ui::NetworkConnect::Get()->ShowNetworkSettings(service_path);
+    ui::NetworkConnect::Get()->ShowNetworkSettingsForPath(service_path);
 
   chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetPrimaryUserProfile(),

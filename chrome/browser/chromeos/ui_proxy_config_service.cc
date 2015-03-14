@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/device_event_log/device_event_log.h"
 #include "net/proxy/proxy_config.h"
 
 namespace chromeos {
@@ -60,7 +61,7 @@ bool IsNetworkProxySettingsEditable(const onc::ONCSource onc_source) {
 }  // namespace
 
 UIProxyConfigService::UIProxyConfigService()
-    : profile_prefs_(NULL), local_state_prefs_(NULL) {
+    : profile_prefs_(nullptr), local_state_prefs_(nullptr) {
 }
 
 UIProxyConfigService::~UIProxyConfigService() {
@@ -72,23 +73,22 @@ void UIProxyConfigService::SetPrefs(PrefService* profile_prefs,
   local_state_prefs_ = local_state_prefs;
 }
 
-void UIProxyConfigService::SetCurrentNetwork(
-    const std::string& current_network) {
-  current_ui_network_ = current_network;
+void UIProxyConfigService::SetCurrentNetworkGuid(
+    const std::string& current_guid) {
+  current_ui_network_guid_ = current_guid;
 }
 
 void UIProxyConfigService::UpdateFromPrefs() {
-  const NetworkState* network = NULL;
-  if (!current_ui_network_.empty()) {
-    network = NetworkHandler::Get()
-                  ->network_state_handler()
-                  ->GetNetworkStateFromServicePath(current_ui_network_,
-                                                   true /* configured_only */);
-    LOG_IF(ERROR, !network) << "Couldn't find NetworkState for network "
-                            << current_ui_network_;
+  const NetworkState* network = nullptr;
+  if (!current_ui_network_guid_.empty()) {
+    network =
+        NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+            current_ui_network_guid_);
   }
-  if (!network) {
-    current_ui_network_.clear();
+  if (!network || !network->IsInProfile()) {
+    NET_LOG(ERROR) << "No configured NetworkState for guid: "
+                   << current_ui_network_guid_;
+    current_ui_network_guid_.clear();
     current_ui_config_ = UIProxyConfig();
     return;
   }
@@ -106,17 +106,15 @@ void UIProxyConfigService::GetProxyConfig(UIProxyConfig* config) const {
 
 void UIProxyConfigService::SetProxyConfig(const UIProxyConfig& config) {
   current_ui_config_ = config;
-  if (current_ui_network_.empty())
+  if (current_ui_network_guid_.empty())
     return;
 
   const NetworkState* network =
-      NetworkHandler::Get()
-          ->network_state_handler()
-          ->GetNetworkStateFromServicePath(current_ui_network_,
-                                           true /* configured_only */);
-  if (!network) {
-    LOG(ERROR) << "Couldn't find NetworkState for network "
-               << current_ui_network_;
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          current_ui_network_guid_);
+  if (!network || !network->IsInProfile()) {
+    NET_LOG(ERROR) << "No configured NetworkState for guid: "
+                   << current_ui_network_guid_;
     return;
   }
 
@@ -125,8 +123,8 @@ void UIProxyConfigService::SetProxyConfig(const UIProxyConfig& config) {
       config.ToPrefProxyConfig());
   ProxyConfigDictionary proxy_config_dict(proxy_config_value.get());
 
-  VLOG(1) << "Set proxy for " << current_ui_network_
-          << " to " << *proxy_config_value;
+  VLOG(1) << "Set proxy for " << current_ui_network_guid_ << " to "
+          << *proxy_config_value;
 
   proxy_config::SetProxyConfigForNetwork(proxy_config_dict, *network);
   current_ui_config_.state = ProxyPrefs::CONFIG_SYSTEM;

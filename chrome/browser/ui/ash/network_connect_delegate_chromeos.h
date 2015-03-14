@@ -18,7 +18,7 @@ class NetworkConnectDelegateChromeOS : public ui::NetworkConnect::Delegate {
   ~NetworkConnectDelegateChromeOS() override;
 
   void ShowNetworkConfigure(const std::string& network_id) override;
-  void ShowNetworkSettings(const std::string& network_id) override;
+  void ShowNetworkSettingsForGuid(const std::string& network_id) override;
   bool ShowEnrollNetwork(const std::string& network_id) override;
   void ShowMobileSimDialog() override;
   void ShowMobileSetupDialog(const std::string& service_path) override;

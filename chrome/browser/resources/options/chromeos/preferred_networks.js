@@ -5,7 +5,7 @@
 cr.exportPath('options');
 
 /**
- * @typedef {{Name: string, Type: string, servicePath: string}}
+ * @typedef {{Name: string, Type: string, GUID: string}}
  */
 options.PreferredNetwork;
 
@@ -128,7 +128,7 @@ cr.define('options', function() {
       if (item) {
         // TODO(stevenjb): Add removeNetwork to chrome.networkingPrivate and
         // use that here.
-        chrome.send('removeNetwork', [item.servicePath]);
+        chrome.send('removeNetwork', [item.GUID]);
       }
       this.dataModel.splice(index, 1);
       // Invalidate the list since it has a stale cache after a splice

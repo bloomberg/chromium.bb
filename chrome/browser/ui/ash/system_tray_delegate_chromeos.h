@@ -88,7 +88,7 @@ class SystemTrayDelegateChromeOS
   bool ShouldShowSettings() override;
   void ShowDateSettings() override;
   void ShowSetTimeDialog() override;
-  void ShowNetworkSettings(const std::string& service_path) override;
+  void ShowNetworkSettingsForGuid(const std::string& guid) override;
   void ShowBluetoothSettings() override;
   void ShowDisplaySettings() override;
   void ShowChromeSlow() override;

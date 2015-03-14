@@ -829,7 +829,7 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
 
     std::string url = base::StringPrintf("%s?network=%s",
                                          chrome::kChromeUIProxySettingsURL,
-                                         network->path().c_str());
+                                         network->guid().c_str());
 
     ui_test_utils::NavigateToURL(browser(), GURL(url));
     SetUpPrefs();

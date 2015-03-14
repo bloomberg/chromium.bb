@@ -184,7 +184,7 @@ void NetworkStateNotifier::UpdateCellularOutOfCredits(
     ShowErrorNotification(
         kNetworkOutOfCreditsNotificationId, cellular->type(),
         l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_CREDITS_TITLE), error_msg,
-        base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+        base::Bind(&NetworkStateNotifier::ShowNetworkSettingsForPath,
                    weak_ptr_factory_.GetWeakPtr(), cellular->path()));
   }
 }
@@ -218,7 +218,7 @@ void NetworkStateNotifier::UpdateCellularActivating(
           l10n_util::GetStringFUTF16(IDS_NETWORK_CELLULAR_ACTIVATED,
                                      base::UTF8ToUTF16((cellular->name()))),
           icon, kNotifierNetwork,
-          base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+          base::Bind(&NetworkStateNotifier::ShowNetworkSettingsForPath,
                      weak_ptr_factory_.GetWeakPtr(), cellular->path())));
 }
 
@@ -258,7 +258,7 @@ void NetworkStateNotifier::ShowMobileActivationError(
           ui::ResourceBundle::GetSharedInstance().GetImageNamed(
               IDR_AURA_UBER_TRAY_NETWORK_FAILED_CELLULAR),
           kNotifierNetworkError,
-          base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+          base::Bind(&NetworkStateNotifier::ShowNetworkSettingsForPath,
                      weak_ptr_factory_.GetWeakPtr(), service_path)));
 }
 
@@ -371,13 +371,13 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
   ShowErrorNotification(
       kNetworkConnectNotificationId, network_type,
       l10n_util::GetStringUTF16(IDS_NETWORK_CONNECTION_ERROR_TITLE), error_msg,
-      base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
+      base::Bind(&NetworkStateNotifier::ShowNetworkSettingsForPath,
                  weak_ptr_factory_.GetWeakPtr(), service_path));
 }
 
-void NetworkStateNotifier::ShowNetworkSettings(
+void NetworkStateNotifier::ShowNetworkSettingsForPath(
     const std::string& service_path) {
-  network_connect_->ShowNetworkSettings(service_path);
+  network_connect_->ShowNetworkSettingsForPath(service_path);
 }
 
 }  // namespace ui

@@ -209,7 +209,7 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
         list_type_ == LIST_TYPE_VPN
             ? ash::UMA_STATUS_AREA_VPN_SETTINGS_CLICKED
             : ash::UMA_STATUS_AREA_NETWORK_SETTINGS_CLICKED);
-    delegate->ShowNetworkSettings("");
+    delegate->ShowNetworkSettingsForGuid("");
   } else if (sender == proxy_settings_) {
     delegate->ChangeProxySettings();
   } else if (sender == other_mobile_) {
@@ -251,8 +251,8 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
         list_type_ == LIST_TYPE_VPN
             ? ash::UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS
             : ash::UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS);
-    Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
-        service_path);
+    Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettingsForGuid(
+        network ? network->guid() : "");
   } else {
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
         list_type_ == LIST_TYPE_VPN

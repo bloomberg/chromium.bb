@@ -174,13 +174,6 @@ void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
       ProfileManager::GetActiveUserProfile(), sub_page);
 }
 
-void ShowNetworkSettingsPage(const std::string& service_path) {
-  std::string page = chrome::kInternetOptionsSubPage;
-  page += "?servicePath=" + net::EscapeUrlEncodedData(service_path, true);
-  content::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
-  ShowSettingsSubPageForActiveUser(page);
-}
-
 void OnAcceptMultiprofilesIntro(bool no_show_again) {
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   prefs->SetBoolean(prefs::kMultiProfileNeverShowIntro, no_show_again);
@@ -453,15 +446,19 @@ void SystemTrayDelegateChromeOS::ShowSetTimeDialog() {
   SetTimeDialog::ShowDialog(GetNativeWindow());
 }
 
-void SystemTrayDelegateChromeOS::ShowNetworkSettings(
-    const std::string& service_path) {
+void SystemTrayDelegateChromeOS::ShowNetworkSettingsForGuid(
+    const std::string& guid) {
   bool userAddingRunning = ash::Shell::GetInstance()
                                ->session_state_delegate()
                                ->IsInSecondaryLoginScreen();
 
   if (!LoginState::Get()->IsUserLoggedIn() || userAddingRunning)
     return;
-  ShowNetworkSettingsPage(service_path);
+  std::string page = chrome::kInternetOptionsSubPage;
+  if (!guid.empty())
+    page += "?guid=" + net::EscapeUrlEncodedData(guid, true);
+  content::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
+  ShowSettingsSubPageForActiveUser(page);
 }
 
 void SystemTrayDelegateChromeOS::ShowBluetoothSettings() {

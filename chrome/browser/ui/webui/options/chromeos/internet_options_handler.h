@@ -55,6 +55,9 @@ class InternetOptionsHandler
   void SetCarrierCallback(const base::ListValue* args);
   void SimOperationCallback(const base::ListValue* args);
 
+  // Sets details_guid_ for event forwarding.
+  void SetNetworkGuidCallback(const base::ListValue* args);
+
   // networkingPrvate callbacks
   void GetManagedPropertiesCallback(const base::ListValue* args);
   void StartConnectCallback(const base::ListValue* args);
@@ -115,7 +118,7 @@ class InternetOptionsHandler
   void FillNetworkInfo(base::DictionaryValue* dictionary);
 
   // Keep track of the service path for the network shown in the Details view.
-  std::string details_path_;
+  std::string details_guid_;
 
   // Weak pointer factory so we can start connections at a later time
   // without worrying that they will actually try to happen after the lifetime

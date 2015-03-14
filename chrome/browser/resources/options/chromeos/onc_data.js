@@ -21,6 +21,8 @@ cr.define('cr.onc', function() {
   }
 
   OncData.prototype = {
+    /** @return {string} The GUID of the network. */
+    guid: function() { return this.data_['GUID']; },
 
     /**
      * Returns either a managed property dictionary or an unmanaged value.

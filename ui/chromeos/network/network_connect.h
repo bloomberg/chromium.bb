@@ -30,7 +30,7 @@ class UI_CHROMEOS_EXPORT NetworkConnect {
 
     // Shows the settings related to network. If |network_id| is not empty,
     // show the settings for that network.
-    virtual void ShowNetworkSettings(const std::string& network_id) = 0;
+    virtual void ShowNetworkSettingsForGuid(const std::string& network_id) = 0;
 
     // Shows UI to enroll the network specified by |network_id| if appropriate
     // and returns true, otherwise returns false.
@@ -103,7 +103,7 @@ class UI_CHROMEOS_EXPORT NetworkConnect {
 
   // Shows the settings for the network specified by |service_path|. If empty,
   // or no matching network exists, shows the general internet settings page.
-  virtual void ShowNetworkSettings(const std::string& service_path) = 0;
+  virtual void ShowNetworkSettingsForPath(const std::string& service_path) = 0;
 
  protected:
   NetworkConnect();

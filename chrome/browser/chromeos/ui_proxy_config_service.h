@@ -34,10 +34,10 @@ class UIProxyConfigService {
   // shared settings.
   void SetPrefs(PrefService* profile_prefs, PrefService* local_state_prefs);
 
-  // Called by UI to set the network with service path |current_network| to be
+  // Called by UI to set the network with GUID |current_guid| to be
   // displayed or edited.  Subsequent Set*/Get* methods will use this
   // network, until this method is called again.
-  void SetCurrentNetwork(const std::string& current_network);
+  void SetCurrentNetworkGuid(const std::string& current_guid);
 
   void UpdateFromPrefs();
 
@@ -57,9 +57,9 @@ class UIProxyConfigService {
   // hence, not picked up by observers.
   void DetermineEffectiveConfig(const NetworkState& network);
 
-  // Service path of network whose proxy configuration is being displayed or
+  // GUID of network whose proxy configuration is being displayed or
   // edited via UI.
-  std::string current_ui_network_;
+  std::string current_ui_network_guid_;
 
   // Proxy configuration of |current_ui_network_|.
   UIProxyConfig current_ui_config_;

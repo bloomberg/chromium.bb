@@ -57,12 +57,12 @@ void NetworkConnectDelegateChromeOS::ShowNetworkConfigure(
   NetworkConfigView::Show(network_id, GetNativeWindow());
 }
 
-void NetworkConnectDelegateChromeOS::ShowNetworkSettings(
-    const std::string& service_path) {
+void NetworkConnectDelegateChromeOS::ShowNetworkSettingsForGuid(
+    const std::string& network_id) {
   if (!IsUIAvailable())
     return;
-  ash::Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
-      service_path);
+  ash::Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettingsForGuid(
+      network_id);
 }
 
 bool NetworkConnectDelegateChromeOS::ShowEnrollNetwork(

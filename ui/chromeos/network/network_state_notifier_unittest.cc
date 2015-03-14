@@ -30,7 +30,7 @@ class NetworkConnectTestDelegate : public NetworkConnect::Delegate {
 
   // NetworkConnect::Delegate
   void ShowNetworkConfigure(const std::string& network_id) override {}
-  void ShowNetworkSettings(const std::string& network_id) override {}
+  void ShowNetworkSettingsForGuid(const std::string& network_id) override {}
   bool ShowEnrollNetwork(const std::string& network_id) override {
     return false;
   }

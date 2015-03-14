@@ -71,8 +71,6 @@ const char kNetworkInfoKeyPolicyManaged[] = "policyManaged";
 // Functions we call in JavaScript.
 const char kRefreshNetworkDataFunction[] =
     "options.network.NetworkList.refreshNetworkData";
-const char kGetManagedPropertiesResultFunction[] =
-    "options.internet.DetailsInternetPage.getManagedPropertiesResult";
 const char kUpdateConnectionDataFunction[] =
     "options.internet.DetailsInternetPage.updateConnectionData";
 const char kUpdateCarrierFunction[] =
@@ -86,9 +84,10 @@ const char kSimOperationMessage[] = "simOperation";
 
 // TODO(stevenjb): Replace these with the matching networkingPrivate methods.
 // crbug.com/279351.
-const char kGetManagedPropertiesMessage[] = "getManagedProperties";
 const char kStartConnectMessage[] = "startConnect";
-const char kSetPropertiesMessage[] = "setProperties";
+
+// TODO(stevenjb): Deprecate this once we handle events in the JS.
+const char kSetNetworkGuidMessage[] = "setNetworkGuid";
 
 // TODO(stevenjb): Add these to networkingPrivate.
 const char kRemoveNetworkMessage[] = "removeNetwork";
@@ -119,8 +118,6 @@ const char kTagWiredList[] = "wiredList";
 const char kTagWirelessList[] = "wirelessList";
 
 // Pseudo-ONC chrome specific properties appended to the ONC dictionary.
-const char kNetworkInfoKeyServicePath[] = "servicePath";
-const char kTagErrorMessage[] = "errorMessage";
 const char kTagShowViewAccountButton[] = "showViewAccountButton";
 
 void ShillError(const std::string& function,
@@ -140,6 +137,13 @@ const NetworkState* GetNetworkState(const std::string& service_path) {
       GetNetworkState(service_path);
 }
 
+std::string ServicePathFromGuid(const std::string& guid) {
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->GetNetworkStateFromGuid(
+          guid);
+  return network ? network->path() : "";
+}
+
 // Builds a dictionary with network information for the NetworkList on the
 // settings page. Ownership of the returned pointer is transferred to the
 // caller. TODO(stevenjb): Replace with calls to networkingPrivate.getNetworks.
@@ -152,8 +156,6 @@ base::DictionaryValue* BuildNetworkDictionary(
   bool has_policy = onc::HasPolicyForNetwork(
       profile_prefs, g_browser_process->local_state(), *network);
   network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, has_policy);
-
-  network_info->SetString(kNetworkInfoKeyServicePath, network->path());
 
   return network_info.release();
 }
@@ -263,15 +265,13 @@ void InternetOptionsHandler::RegisterMessages() {
       base::Bind(&InternetOptionsHandler::SimOperationCallback,
                  base::Unretained(this)));
 
-  // networkingPrivate methods
-  web_ui()->RegisterMessageCallback(kGetManagedPropertiesMessage,
-      base::Bind(&InternetOptionsHandler::GetManagedPropertiesCallback,
+  web_ui()->RegisterMessageCallback(kSetNetworkGuidMessage,
+      base::Bind(&InternetOptionsHandler::SetNetworkGuidCallback,
                  base::Unretained(this)));
+
+  // networkingPrivate methods
   web_ui()->RegisterMessageCallback(kStartConnectMessage,
       base::Bind(&InternetOptionsHandler::StartConnectCallback,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kSetPropertiesMessage,
-      base::Bind(&InternetOptionsHandler::SetPropertiesCallback,
                  base::Unretained(this)));
 }
 
@@ -279,12 +279,14 @@ void InternetOptionsHandler::ShowMorePlanInfoCallback(
     const base::ListValue* args) {
   if (!web_ui())
     return;
-  std::string service_path;
-  if (args->GetSize() != 1 || !args->GetString(0, &service_path)) {
+  std::string guid;
+  if (args->GetSize() != 1 || !args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
-  ui::NetworkConnect::Get()->ShowMobileSetup(service_path);
+  std::string service_path = ServicePathFromGuid(guid);
+  if (!service_path.empty())
+    ui::NetworkConnect::Get()->ShowMobileSetup(service_path);
 }
 
 void InternetOptionsHandler::CarrierStatusCallback() {
@@ -294,7 +296,7 @@ void InternetOptionsHandler::CarrierStatusCallback() {
   if (device && (device->carrier() == shill::kCarrierSprint)) {
     const NetworkState* network =
         handler->FirstNetworkByType(NetworkTypePattern::Cellular());
-    if (network && network->path() == details_path_) {
+    if (network && network->guid() == details_guid_) {
       ui::NetworkConnect::Get()->ActivateCellular(network->path());
       UpdateConnectionData(network->path());
     }
@@ -303,11 +305,8 @@ void InternetOptionsHandler::CarrierStatusCallback() {
 }
 
 void InternetOptionsHandler::SetCarrierCallback(const base::ListValue* args) {
-  std::string service_path;
   std::string carrier;
-  if (args->GetSize() != 2 ||
-      !args->GetString(0, &service_path) ||
-      !args->GetString(1, &carrier)) {
+  if (args->GetSize() != 1 || !args->GetString(1, &carrier)) {
     NOTREACHED();
     return;
   }
@@ -358,37 +357,33 @@ void InternetOptionsHandler::SimOperationCallback(const base::ListValue* args) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// TODO(stevenjb): Deprecate this once events are handled in the JS.
+
+void InternetOptionsHandler::SetNetworkGuidCallback(
+    const base::ListValue* args) {
+  std::string guid;
+  if (args->GetSize() != 1 || !args->GetString(0, &guid)) {
+    NOTREACHED();
+    return;
+  }
+  details_guid_ = guid;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // networkingPrivate implementation methods. TODO(stevenjb): Use the
 // networkingPrivate API directly in the settings JS and deprecate these
 // methods. crbug.com/279351.
 
-void InternetOptionsHandler::GetManagedPropertiesCallback(
-    const base::ListValue* args) {
-  std::string service_path;
-  if (!args->GetString(0, &service_path)) {
-    NOTREACHED();
-    return;
-  }
-  // This is only ever called to provide properties for the details page, so
-  // set |details_path_| (used by the NetworkState observers) here.
-  details_path_ = service_path;
-  NetworkHandler::Get()
-      ->managed_network_configuration_handler()
-      ->GetManagedProperties(
-          LoginState::Get()->primary_user_hash(), service_path,
-          base::Bind(&InternetOptionsHandler::GetManagedPropertiesResult,
-                     weak_factory_.GetWeakPtr(),
-                     kGetManagedPropertiesResultFunction),
-          base::Bind(&ShillError, "GetManagedProperties"));
-}
-
 void InternetOptionsHandler::StartConnectCallback(const base::ListValue* args) {
-  std::string service_path;
-  if (!args->GetString(0, &service_path)) {
+  std::string guid;
+  if (!args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
-  ui::NetworkConnect::Get()->ConnectToNetwork(service_path);
+  std::string service_path = ServicePathFromGuid(guid);
+  if (!service_path.empty())
+    ui::NetworkConnect::Get()->ConnectToNetwork(service_path);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -415,17 +410,8 @@ void InternetOptionsHandler::GetManagedPropertiesResult(
     const std::string& service_path,
     const base::DictionaryValue& onc_properties) {
   scoped_ptr<base::DictionaryValue> dictionary(onc_properties.DeepCopy());
-  // Add service path for now.
-  dictionary->SetString(kNetworkInfoKeyServicePath, service_path);
-
   const NetworkState* network = GetNetworkState(service_path);
   if (network) {
-    // Add a Chrome specific translated error message. TODO(stevenjb): Figure
-    // out a more robust way to track errors. Service.Error is transient so we
-    // use NetworkState.error() which accurately tracks the "last" error.
-    dictionary->SetString(kTagErrorMessage,
-                          ui::NetworkConnect::Get()->GetShillErrorString(
-                              network->error(), service_path));
     // Add additional non-ONC cellular properties to inform the UI.
     if (network->type() == shill::kTypeCellular) {
       dictionary->SetBoolean(kTagShowViewAccountButton,
@@ -455,7 +441,7 @@ void InternetOptionsHandler::NetworkConnectionStateChanged(
     const NetworkState* network) {
   if (!web_ui())
     return;
-  if (network->path() == details_path_)
+  if (network->guid() == details_guid_)
     UpdateConnectionData(network->path());
 }
 
@@ -464,7 +450,7 @@ void InternetOptionsHandler::NetworkPropertiesUpdated(
   if (!web_ui())
     return;
   RefreshNetworkData();
-  if (network->path() == details_path_)
+  if (network->guid() == details_guid_)
     UpdateConnectionData(network->path());
 }
 
@@ -477,24 +463,8 @@ void InternetOptionsHandler::DevicePropertiesUpdated(
   const NetworkState* network =
       NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
           NetworkTypePattern::Cellular());
-  if (network && network->path() == details_path_)
+  if (network && network->path() == details_guid_)
     UpdateConnectionData(network->path());
-}
-
-void InternetOptionsHandler::SetPropertiesCallback(
-    const base::ListValue* args) {
-  std::string service_path;
-  const base::DictionaryValue* properties;
-  if (args->GetSize() < 2 ||
-      !args->GetString(0, &service_path) ||
-      !args->GetDictionary(1, &properties)) {
-    NOTREACHED();
-    return;
-  }
-  NetworkHandler::Get()->managed_network_configuration_handler()->SetProperties(
-      service_path, *properties,
-      base::Bind(&base::DoNothing),
-      base::Bind(&ShillError, "SetProperties"));
 }
 
 gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
@@ -523,29 +493,36 @@ void InternetOptionsHandler::AddConnection(const base::ListValue* args) {
 }
 
 void InternetOptionsHandler::ConfigureNetwork(const base::ListValue* args) {
-  std::string service_path;
-  if (args->GetSize() != 1 || !args->GetString(0, &service_path)) {
+  std::string guid;
+  if (args->GetSize() != 1 || !args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
-  NetworkConfigView::Show(service_path, GetNativeWindow());
+  std::string service_path = ServicePathFromGuid(guid);
+  if (!service_path.empty())
+    NetworkConfigView::Show(service_path, GetNativeWindow());
 }
 
 void InternetOptionsHandler::ActivateNetwork(const base::ListValue* args) {
-  std::string service_path;
-  if (args->GetSize() != 1 || !args->GetString(0, &service_path)) {
+  std::string guid;
+  if (args->GetSize() != 1 || !args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
-  ui::NetworkConnect::Get()->ActivateCellular(service_path);
+  std::string service_path = ServicePathFromGuid(guid);
+  if (!service_path.empty())
+    ui::NetworkConnect::Get()->ActivateCellular(service_path);
 }
 
 void InternetOptionsHandler::RemoveNetwork(const base::ListValue* args) {
-  std::string service_path;
-  if (args->GetSize() != 1 || !args->GetString(0, &service_path)) {
+  std::string guid;
+  if (args->GetSize() != 1 || !args->GetString(0, &guid)) {
     NOTREACHED();
     return;
   }
+  std::string service_path = ServicePathFromGuid(guid);
+  if (service_path.empty())
+    return;
   NetworkHandler::Get()
       ->managed_network_configuration_handler()
       ->RemoveConfiguration(service_path, base::Bind(&base::DoNothing),

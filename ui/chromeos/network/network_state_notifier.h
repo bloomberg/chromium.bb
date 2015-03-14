@@ -91,8 +91,8 @@ class UI_CHROMEOS_EXPORT NetworkStateNotifier
   void UpdateCellularOutOfCredits(const chromeos::NetworkState* cellular);
   void UpdateCellularActivating(const chromeos::NetworkState* cellular);
 
-  // Invokes network_connect_->ShowNetworkSettings from a callback.
-  void ShowNetworkSettings(const std::string& service_path);
+  // Invokes network_connect_->ShowNetworkSettingsForPath from a callback.
+  void ShowNetworkSettingsForPath(const std::string& service_path);
 
   NetworkConnect* network_connect_;  // unowned
   std::string last_default_network_;

@@ -155,6 +155,7 @@
           },
           {
             "name": "callback",
+            "optional": true,
             "type": "function",
             "parameters": []
           }
@@ -176,6 +177,7 @@
           },
           {
             "name": "callback",
+            "optional": true,
             "type": "function",
             "parameters": [
               {
@@ -448,6 +450,7 @@
           },
           {
             "name": "callback",
+            "optional": true,
             "type": "function",
             "parameters": [
               {

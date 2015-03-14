@@ -118,7 +118,7 @@ void SystemTrayDelegate::ShowDateSettings() {
 void SystemTrayDelegate::ShowSetTimeDialog() {
 }
 
-void SystemTrayDelegate::ShowNetworkSettings(const std::string& service_path) {
+void SystemTrayDelegate::ShowNetworkSettingsForGuid(const std::string& guid) {
 }
 
 void SystemTrayDelegate::ShowBluetoothSettings() {

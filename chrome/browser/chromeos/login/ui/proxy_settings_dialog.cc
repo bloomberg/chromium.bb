@@ -37,11 +37,11 @@ int CalculateSize(int screen_size, int min_comfortable, float desired_ratio) {
   return std::min(screen_size, desired_size);
 }
 
-GURL GetURLForProxySettings(const std::string& service_path) {
+GURL GetURLForProxySettings(const std::string& guid) {
   std::string url(chrome::kChromeUIProxySettingsURL);
   url += base::StringPrintf(
       kProxySettingsURLParam,
-      net::EscapeUrlEncodedData(service_path, true).c_str());
+      net::EscapeUrlEncodedData(guid, true).c_str());
   return GURL(url);
 }
 
@@ -61,7 +61,7 @@ ProxySettingsDialog::ProxySettingsDialog(
                      delegate,
                      window,
                      base::string16(),
-                     GetURLForProxySettings(network.path())) {
+                     GetURLForProxySettings(network.guid())) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ++instance_count_;
 

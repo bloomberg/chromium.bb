@@ -132,7 +132,9 @@ void OfflineLoadPage::CommandReceived(const std::string& cmd) {
   }
   // TODO(oshima): record action for metrics.
   if (command == "open_network_settings") {
-    ash::Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings("");
+    ash::Shell::GetInstance()
+        ->system_tray_delegate()
+        ->ShowNetworkSettingsForGuid("");
   } else if (command == "open_connectivity_diagnostics") {
     Profile* profile = Profile::FromBrowserContext(
         web_contents_->GetBrowserContext());
