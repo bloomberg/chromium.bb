@@ -19068,7 +19068,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Net.QuicSession.AsyncRead">
+<histogram name="Net.QuicSession.AsyncRead" enum="Boolean">
   <owner>rch@chromium.org</owner>
   <summary>
     True if the result of reading a packet from the network was ERR_IO_PENDING.
@@ -19092,7 +19092,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Net.QuicSession.ClosedDuringInitializeSession">
+<histogram name="Net.QuicSession.ClosedDuringInitializeSession" enum="Boolean">
   <owner>rch@chromium.org</owner>
   <summary>
      True if the QUIC session is closed during the call to InitializeSession,
@@ -19582,7 +19582,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     enum="QuicSessionLocations">
   <owner>rch@chromium.org</owner>
   <summary>
-        The location in quic_client_session.cc where a session is unexpectedly
+    The location in quic_client_session.cc where a session is unexpectedly
     not going away.
   </summary>
 </histogram>
