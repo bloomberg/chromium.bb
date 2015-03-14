@@ -205,11 +205,21 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
   // AudioConverter::InputCallback overrides:
   double ProvideInput(media::AudioBus* dest,
                       base::TimeDelta /* buffer_delay */) override {
-    int remaining_frames = saved_samples_->frames() - saved_samples_index_;
-    int frames_to_copy = std::min(remaining_frames, dest->frames());
+    // Copy any saved samples we have to the output bus.
+    const int remaining_frames =
+        saved_samples_->frames() - saved_samples_index_;
+    const int frames_to_copy = std::min(remaining_frames, dest->frames());
     saved_samples_stereo_->CopyPartialFramesTo(saved_samples_index_,
                                                frames_to_copy, 0, dest);
     saved_samples_index_ += frames_to_copy;
+
+    // Pad any remaining space with zeroes.
+    for (int i = remaining_frames; i < dest->frames(); i++) {
+      for (int c = 0; c < dest->channels(); c++)
+        dest->channel(c)[i] = 0;
+    }
+
+    // Return the volume level.
     return 1.0;
   }
 
@@ -232,23 +242,25 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
 };
 
 // These tests are irrelevant if NACL is disabled. See crbug.com/449198.
-// TODO(crbug/464120): There is also a problem in Windows debug mode.
-// TODO(crbug/464843): There is also a problem under MSan.
-#if defined(DISABLE_NACL) || \
-    (!defined(NDEBUG) && defined(OS_WIN)) || \
-    defined(MEMORY_SANITIZER)
+#if defined(DISABLE_NACL)
 #define MAYBE_Initialize DISABLED_Initialize
 #define MAYBE_EncodeAndDecode DISABLED_EncodeAndDecode
 #define MAYBE_TokenLengths DISABLED_TokenLengths
 #define MAYBE_Crc DISABLED_Crc
 #define MAYBE_Parity DISABLED_Parity
-#define MAYBE_MultipleClients DISABLED_MultipleClients
 #else
 #define MAYBE_Initialize Initialize
 #define MAYBE_EncodeAndDecode EncodeAndDecode
 #define MAYBE_TokenLengths TokenLengths
 #define MAYBE_Crc Crc
 #define MAYBE_Parity Parity
+#endif
+
+// This test trips up ASAN on ChromeOS. See:
+// https://code.google.com/p/address-sanitizer/issues/detail?id=189
+#if defined(DISABLE_NACL) || defined(OS_CHROMEOS)
+#define MAYBE_MultipleClients DISABLED_MultipleClients
+#else
 #define MAYBE_MultipleClients MultipleClients
 #endif
 
