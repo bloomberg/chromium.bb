@@ -30,16 +30,22 @@ def _BuildShellCommand(args):
   shell_command = [os.path.join(build_dir, "mojo_shell")]
 
   options = []
+
   options.append(
       "--origin=https://storage.googleapis.com/mojo/services/linux-x64/%s" %
            sdk_version)
   options.append("--url-mappings=mojo:html_viewer=file://%s/html_viewer.mojo,"
                  "mojo:media=file://%s/media.mojo" % (build_dir, build_dir))
+
   args_for_html_viewer = "--enable-mojo-media-renderer --is-headless "
   if args.verbose:
     args_for_html_viewer += \
         "--vmodule=pipeline*=3,*renderer_impl*=3,*mojo_demuxer*=3"
   options.append("--args-for=mojo:html_viewer %s" % args_for_html_viewer)
+
+  if args.verbose:
+    args_for_media = "--vmodule=mojo*service=3"
+    options.append("--args-for=mojo:media %s" % args_for_media)
 
   full_command = shell_command + options + [args.url]
 
