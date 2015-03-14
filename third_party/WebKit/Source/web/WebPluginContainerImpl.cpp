@@ -60,6 +60,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/plugins/PluginOcclusionSupport.h"
 #include "platform/HostWindow.h"
 #include "platform/KeyboardCodes.h"
@@ -104,16 +105,18 @@ void WebPluginContainerImpl::setFrameRect(const IntRect& frameRect)
     reportGeometry();
 }
 
-void WebPluginContainerImpl::paint(GraphicsContext* gc, const IntRect& damageRect)
+void WebPluginContainerImpl::paint(GraphicsContext* context, const IntRect& rect)
 {
     if (!parent())
         return;
 
-    // Don't paint anything if the plugin doesn't intersect the damage rect.
-    if (!frameRect().intersects(damageRect))
+    // Don't paint anything if the plugin doesn't intersect.
+    if (!frameRect().intersects(rect))
         return;
 
-    gc->save();
+    LayoutObjectDrawingRecorder drawingRecorder(context, *m_element->layoutObject(), DisplayItem::Type::WebPlugin, rect);
+    if (drawingRecorder.canUseCachedDrawing())
+        return;
 
     ASSERT(parent()->isFrameView());
     FrameView* view =  toFrameView(parent());
@@ -121,14 +124,12 @@ void WebPluginContainerImpl::paint(GraphicsContext* gc, const IntRect& damageRec
     // The plugin is positioned in window coordinates, so it needs to be painted
     // in window coordinates.
     IntPoint origin = view->contentsToWindow(IntPoint(0, 0));
-    gc->translate(static_cast<float>(-origin.x()), static_cast<float>(-origin.y()));
+    context->translate(static_cast<float>(-origin.x()), static_cast<float>(-origin.y()));
 
-    WebCanvas* canvas = gc->canvas();
+    WebCanvas* canvas = context->canvas();
 
-    IntRect windowRect = view->contentsToWindow(damageRect);
+    IntRect windowRect = view->contentsToWindow(rect);
     m_webPlugin->paint(canvas, windowRect);
-
-    gc->restore();
 }
 
 void WebPluginContainerImpl::invalidateRect(const IntRect& rect)

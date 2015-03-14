@@ -77,7 +77,8 @@ public:
         SelectionGap,
         VideoBitmap,
         ViewBackground,
-        DrawingLast = ViewBackground,
+        WebPlugin,
+        DrawingLast = WebPlugin,
 
         CachedFirst,
         CachedLast = CachedFirst + DrawingLast - DrawingFirst,

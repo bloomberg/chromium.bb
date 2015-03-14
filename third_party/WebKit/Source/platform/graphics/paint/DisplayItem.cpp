@@ -63,6 +63,7 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::SelectionGap: return "DrawingSelectionGap";
     case DisplayItem::VideoBitmap: return "DrawingVideoBitmap";
     case DisplayItem::ViewBackground: return "DrawingViewBackground";
+    case DisplayItem::WebPlugin: return "DrawingWebPlugin";
     default:
         ASSERT_NOT_REACHED();
         return "Unknown";
