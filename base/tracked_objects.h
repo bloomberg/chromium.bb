@@ -14,6 +14,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -357,7 +358,7 @@ class BASE_EXPORT ThreadData {
     STATUS_LAST = PROFILING_CHILDREN_ACTIVE
   };
 
-  typedef std::map<Location, Births*> BirthMap;
+  typedef base::hash_map<Location, Births*, Location::Hash> BirthMap;
   typedef std::map<const Births*, DeathData> DeathMap;
   typedef std::pair<const Births*, const Births*> ParentChildPair;
   typedef std::set<ParentChildPair> ParentChildSet;
