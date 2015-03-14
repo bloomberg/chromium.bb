@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.sync.ui;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -26,18 +25,18 @@ import org.chromium.chrome.R;
 /**
  * Dialog to ask the user to enter a new custom passphrase.
  */
-public class PassphraseCreationDialogFragment extends DialogFragment implements
-        DialogInterface.OnClickListener {
+public class PassphraseCreationDialogFragment extends DialogFragment {
 
+    private EditText mEnterPassphrase;
     private EditText mConfirmPassphrase;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         super.onCreateDialog(savedInstanceState);
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View v = inflater.inflate(R.layout.sync_custom_passphrase, null);
-        final EditText passphrase = (EditText) v.findViewById(R.id.passphrase);
-        mConfirmPassphrase = (EditText) v.findViewById(R.id.confirm_passphrase);
+        View view = inflater.inflate(R.layout.sync_custom_passphrase, null);
+        mEnterPassphrase = (EditText) view.findViewById(R.id.passphrase);
+        mConfirmPassphrase = (EditText) view.findViewById(R.id.confirm_passphrase);
 
         // Check the value of the passphrases when they change
         TextWatcher validator = new TextWatcher() {
@@ -51,17 +50,24 @@ public class PassphraseCreationDialogFragment extends DialogFragment implements
 
             @Override
             public void afterTextChanged(Editable s) {
-                validatePassphraseText(passphrase, mConfirmPassphrase);
+                String confirmString = mConfirmPassphrase.getText().toString();
+                // Only set an error string if either the 'confirm' box has text in it
+                // or it has focus.
+                if (mConfirmPassphrase.hasFocus() || !confirmString.isEmpty()) {
+                    showErrorIfInvalid();
+                } else {
+                    mConfirmPassphrase.setError(null);
+                }
             }
         };
-        passphrase.addTextChangedListener(validator);
+        mEnterPassphrase.addTextChangedListener(validator);
         mConfirmPassphrase.addTextChangedListener(validator);
 
         // Make sure to display the error text on first entry.
         mConfirmPassphrase.setOnFocusChangeListener(new OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                validatePassphraseText(passphrase, mConfirmPassphrase);
+                showErrorIfInvalid();
             }
         });
 
@@ -72,7 +78,7 @@ public class PassphraseCreationDialogFragment extends DialogFragment implements
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_UP) {
-                    validatePassphraseText(passphrase, mConfirmPassphrase);
+                    showErrorIfInvalid();
                 }
                 return false;
             }
@@ -82,54 +88,59 @@ public class PassphraseCreationDialogFragment extends DialogFragment implements
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    validatePassphraseText(passphrase, mConfirmPassphrase);
-                    // Disable OK button if passphrases do not match.
-                    final AlertDialog dialog = (AlertDialog) getDialog();
-                    if (dialog != null) {
-                        dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                                .setEnabled(mConfirmPassphrase.getError() == null);
-                    }
+                    showErrorIfInvalid();
                 }
                 return false;
             }
         });
 
         return new AlertDialog.Builder(getActivity(), AlertDialog.THEME_HOLO_LIGHT)
-                .setView(v)
+                .setView(view)
                 .setTitle(R.string.sync_passphrase_type_custom)
-                .setPositiveButton(R.string.ok, this)
-                .setNegativeButton(R.string.cancel, this)
+                .setPositiveButton(R.string.ok, null)
+                .setNegativeButton(R.string.cancel, null)
                 .create();
     }
 
-    private void validatePassphraseText(EditText passphrase, EditText confirmPassphrase) {
-        String str1 = passphrase.getText().toString();
-        String str2 = confirmPassphrase.getText().toString();
-
-        // Only set an error string if either the 'confirm' box has text in it
-        // or it has focus.
-        String msg = null;
-        if (confirmPassphrase.hasFocus() || !str2.isEmpty()) {
-            if (str2.isEmpty()) {
-                msg = getString(R.string.sync_passphrase_cannot_be_blank);
-            } else if (!str2.equals(str1)) {
-                msg = getString(R.string.sync_passphrases_do_not_match);
+    @Override
+    public void onStart() {
+        super.onStart();
+        final AlertDialog d = (AlertDialog) getDialog();
+        // Override the button's onClick listener. The default gets set in the dialog's onCreate,
+        // when it is shown (in super.onStart()), so we have to do this here. Otherwise the dialog
+        // will close when the button is clicked regardless of what else we do.
+        d.getButton(Dialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isValidPassphraseText()) {
+                    PassphraseDialogFragment.Listener listener =
+                            (PassphraseDialogFragment.Listener) getTargetFragment();
+                    String passphrase = mConfirmPassphrase.getText().toString();
+                    listener.onPassphraseEntered(passphrase, false, true);
+                    d.dismiss();
+                } else {
+                    showErrorIfInvalid();
+                }
             }
-        }
-        confirmPassphrase.setError(msg);
+        });
     }
 
-    @Override
-    public void onClick(DialogInterface dialog, int which) {
-        if (which == AlertDialog.BUTTON_POSITIVE) {
-            if (mConfirmPassphrase.getError() == null) {
-                PassphraseDialogFragment.Listener listener =
-                        (PassphraseDialogFragment.Listener) getTargetFragment();
-                String passphrase = mConfirmPassphrase.getText().toString();
-                listener.onPassphraseEntered(passphrase, false, true);
-            }
-        } else if (which == AlertDialog.BUTTON_NEGATIVE) {
-            dismiss();
+    private boolean isValidPassphraseText() {
+        String str1 = mEnterPassphrase.getText().toString();
+        String str2 = mConfirmPassphrase.getText().toString();
+        return !str1.isEmpty() && str1.equals(str2);
+    }
+
+    private void showErrorIfInvalid() {
+        String str1 = mEnterPassphrase.getText().toString();
+        String str2 = mConfirmPassphrase.getText().toString();
+
+        String msg = null;
+        if (str1.isEmpty()) {
+            msg = getString(R.string.sync_passphrase_cannot_be_blank);
+        } else if (!str1.equals(str2)) {
+            msg = getString(R.string.sync_passphrases_do_not_match);
         }
+        mConfirmPassphrase.setError(msg);
     }
 }
