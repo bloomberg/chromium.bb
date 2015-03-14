@@ -124,6 +124,10 @@ namespace usb {
 
     // The data to transmit (required only by output transfers).
     ArrayBuffer? data;
+
+    // Request timeout (in milliseconds). The default value <code>0</code>
+    // indicates no timeout.
+    long? timeout;
   };
 
   dictionary GenericTransferInfo {
@@ -139,6 +143,10 @@ namespace usb {
 
     // The data to transmit (required only by output transfers).
     ArrayBuffer? data;
+
+    // Request timeout (in milliseconds). The default value <code>0</code>
+    // indicates no timeout.
+    long? timeout;
   };
 
   dictionary IsochronousTransferInfo {

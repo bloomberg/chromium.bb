@@ -108,6 +108,8 @@ const char kErrorInvalidNumberOfPackets[] =
     "Number of packets must be a positive number less than 4,194,304.";
 const char kErrorInvalidPacketLength[] =
     "Packet length must be a positive number less than 65,536.";
+const char kErrorInvalidTimeout[] =
+    "Transfer timeout must be greater than or equal to 0.";
 const char kErrorResetDevice[] =
     "Error resetting the device. The device has been closed.";
 
@@ -1066,16 +1068,15 @@ void UsbControlTransferFunction::AsyncWorkStart() {
     return;
   }
 
+  int timeout = transfer.timeout ? *transfer.timeout : 0;
+  if (timeout < 0) {
+    CompleteWithError(kErrorInvalidTimeout);
+    return;
+  }
+
   device_handle->ControlTransfer(
-      direction,
-      request_type,
-      recipient,
-      transfer.request,
-      transfer.value,
-      transfer.index,
-      buffer.get(),
-      size,
-      0,
+      direction, request_type, recipient, transfer.request, transfer.value,
+      transfer.index, buffer.get(), size, timeout,
       base::Bind(&UsbControlTransferFunction::OnCompleted, this));
 }
 
@@ -1119,12 +1120,14 @@ void UsbBulkTransferFunction::AsyncWorkStart() {
     return;
   }
 
+  int timeout = transfer.timeout ? *transfer.timeout : 0;
+  if (timeout < 0) {
+    CompleteWithError(kErrorInvalidTimeout);
+    return;
+  }
+
   device_handle->BulkTransfer(
-      direction,
-      transfer.endpoint,
-      buffer.get(),
-      size,
-      0,
+      direction, transfer.endpoint, buffer.get(), size, timeout,
       base::Bind(&UsbBulkTransferFunction::OnCompleted, this));
 }
 
@@ -1168,12 +1171,14 @@ void UsbInterruptTransferFunction::AsyncWorkStart() {
     return;
   }
 
+  int timeout = transfer.timeout ? *transfer.timeout : 0;
+  if (timeout < 0) {
+    CompleteWithError(kErrorInvalidTimeout);
+    return;
+  }
+
   device_handle->InterruptTransfer(
-      direction,
-      transfer.endpoint,
-      buffer.get(),
-      size,
-      0,
+      direction, transfer.endpoint, buffer.get(), size, timeout,
       base::Bind(&UsbInterruptTransferFunction::OnCompleted, this));
 }
 
@@ -1233,14 +1238,15 @@ void UsbIsochronousTransferFunction::AsyncWorkStart() {
     return;
   }
 
+  int timeout = generic_transfer.timeout ? *generic_transfer.timeout : 0;
+  if (timeout < 0) {
+    CompleteWithError(kErrorInvalidTimeout);
+    return;
+  }
+
   device_handle->IsochronousTransfer(
-      direction,
-      generic_transfer.endpoint,
-      buffer.get(),
-      size,
-      packets,
-      packet_length,
-      0,
+      direction, generic_transfer.endpoint, buffer.get(), size, packets,
+      packet_length, timeout,
       base::Bind(&UsbIsochronousTransferFunction::OnCompleted, this));
 }
 

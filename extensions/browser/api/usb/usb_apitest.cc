@@ -320,6 +320,11 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, InvalidLengthTransfer) {
   ASSERT_TRUE(RunAppTest("api_test/usb/invalid_length_transfer"));
 }
 
+IN_PROC_BROWSER_TEST_F(UsbApiTest, InvalidTimeout) {
+  EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
+  ASSERT_TRUE(RunAppTest("api_test/usb/invalid_timeout"));
+}
+
 IN_PROC_BROWSER_TEST_F(UsbApiTest, OnDeviceAdded) {
   ExtensionTestMessageListener load_listener("loaded", false);
   ExtensionTestMessageListener result_listener("success", false);
