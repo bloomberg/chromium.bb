@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 
 #include "base/auto_reset.h"
+#include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -558,6 +559,10 @@ void ToolbarActionsBar::CreateActions() {
     return;
 
   {
+    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/463337
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile1(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("ToolbarActionsBar::CreateActions1"));
     // We don't redraw the view while creating actions.
     base::AutoReset<bool> layout_resetter(&suppress_layout_, true);
 
@@ -576,6 +581,12 @@ void ToolbarActionsBar::CreateActions() {
     // Component actions come second, and are suppressed if the extension
     // actions are being highlighted.
     if (!model_->is_highlighting()) {
+      // TODO(robliao): Remove ScopedTracker below once https://crbug.com/463337
+      // is fixed.
+      tracked_objects::ScopedTracker tracking_profile2(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "ToolbarActionsBar::CreateActions2"));
+
       ScopedVector<ToolbarActionViewController> component_actions =
           ComponentToolbarActionsFactory::GetInstance()->
               GetComponentToolbarActions();
@@ -587,8 +598,17 @@ void ToolbarActionsBar::CreateActions() {
       component_actions.weak_clear();
     }
 
-    if (!toolbar_actions_.empty())
+    if (!toolbar_actions_.empty()) {
+      // TODO(robliao): Remove ScopedTracker below once https://crbug.com/463337
+      // is fixed.
+      tracked_objects::ScopedTracker tracking_profile3(
+          FROM_HERE_WITH_EXPLICIT_FUNCTION(
+              "ToolbarActionsBar::CreateActions3"));
       ReorderActions();
+    }
+
+    tracked_objects::ScopedTracker tracking_profile4(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION("ToolbarActionsBar::CreateActions4"));
 
     for (size_t i = 0; i < toolbar_actions_.size(); ++i)
       delegate_->AddViewForAction(toolbar_actions_[i], i);
@@ -826,6 +846,12 @@ void ToolbarActionsBar::OnToolbarModelInitialized() {
   // We shouldn't have any actions before the model is initialized.
   DCHECK(toolbar_actions_.empty());
   CreateActions();
+
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/463337 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "ToolbarActionsBar::OnToolbarModelInitialized"));
   ResizeDelegate(gfx::Tween::EASE_OUT, false);
 }
 
