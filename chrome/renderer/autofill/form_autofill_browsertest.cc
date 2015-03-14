@@ -3094,17 +3094,37 @@ TEST_F(FormAutofillTest, LabelsInferredFromTableAdjacentElements) {
 TEST_F(FormAutofillTest, LabelsInferredFromTableRow) {
   std::vector<base::string16> labels, names, values;
 
-  labels.push_back(ASCIIToUTF16("*First Name *Last Name *Email"));
+  labels.push_back(ASCIIToUTF16("*First Name"));
   names.push_back(ASCIIToUTF16("firstname"));
   values.push_back(ASCIIToUTF16("John"));
 
-  labels.push_back(ASCIIToUTF16("*First Name *Last Name *Email"));
+  labels.push_back(ASCIIToUTF16("*Last Name"));
   names.push_back(ASCIIToUTF16("lastname"));
   values.push_back(ASCIIToUTF16("Smith"));
 
-  labels.push_back(ASCIIToUTF16("*First Name *Last Name *Email"));
+  labels.push_back(ASCIIToUTF16("*Email"));
   names.push_back(ASCIIToUTF16("email"));
   values.push_back(ASCIIToUTF16("john@example.com"));
+
+  labels.push_back(ASCIIToUTF16("NAME"));
+  names.push_back(ASCIIToUTF16("name2"));
+  values.push_back(ASCIIToUTF16("John Smith"));
+
+  labels.push_back(ASCIIToUTF16("EMAIL"));
+  names.push_back(ASCIIToUTF16("email2"));
+  values.push_back(ASCIIToUTF16("john@example2.com"));
+
+  labels.push_back(ASCIIToUTF16("Phone"));
+  names.push_back(ASCIIToUTF16("phone1"));
+  values.push_back(ASCIIToUTF16("123"));
+
+  labels.push_back(ASCIIToUTF16("Phone"));
+  names.push_back(ASCIIToUTF16("phone2"));
+  values.push_back(ASCIIToUTF16("456"));
+
+  labels.push_back(ASCIIToUTF16("Phone"));
+  names.push_back(ASCIIToUTF16("phone3"));
+  values.push_back(ASCIIToUTF16("7890"));
 
   ExpectLabels(
       "<FORM name='TestForm' action='http://cnn.com' method='post'>"
@@ -3123,6 +3143,32 @@ TEST_F(FormAutofillTest, LabelsInferredFromTableRow) {
       "    </TD>"
       "    <TD>"
       "      <INPUT type='text' id='email' value='john@example.com'/>"
+      "    </TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD colspan='2'>NAME</TD>"
+      "    <TD>EMAIL</TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD colspan='2'>"
+      "      <INPUT type='text' id='name2' value='John Smith'/>"
+      "    </TD>"
+      "    <TD>"
+      "      <INPUT type='text' id='email2' value='john@example2.com'/>"
+      "    </TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD>Phone</TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD>"
+      "      <INPUT type='text' id='phone1' value='123'/>"
+      "    </TD>"
+      "    <TD>"
+      "      <INPUT type='text' id='phone2' value='456'/>"
+      "    </TD>"
+      "    <TD>"
+      "      <INPUT type='text' id='phone3' value='7890'/>"
       "    </TD>"
       "  </TR>"
       "  <TR>"

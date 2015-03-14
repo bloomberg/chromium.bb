@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
@@ -131,6 +132,24 @@ bool IsElementInsideFormOrFieldSet(const WebElement& element) {
 // Check whether the given field satisfies the REQUIRE_AUTOCOMPLETE requirement.
 bool SatisfiesRequireAutocomplete(const WebInputElement& input_element) {
   return input_element.autoComplete();
+}
+
+// Returns the colspan for a <td>. Defaults to 1.
+size_t CalculateTableCellColumnSpan(const WebElement& element) {
+  DCHECK(element.hasHTMLTagName("td"));
+
+  size_t span = 1;
+  if (element.hasAttribute("colspan")) {
+    base::string16 colspan = element.getAttribute("colspan");
+    // Do not check return value to accept imperfect conversions.
+    base::StringToSizeT(colspan, &span);
+    // Handle overflow.
+    if (span == std::numeric_limits<size_t>::max())
+      span = 1;
+    span = std::max(span, static_cast<size_t>(1));
+  }
+
+  return span;
 }
 
 // Appends |suffix| to |prefix| so that any intermediary whitespace is collapsed
@@ -392,8 +411,62 @@ base::string16 InferLabelFromTableColumn(const WebFormControlElement& element) {
 
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
 // surrounding table structure,
+//
+// If there are multiple cells and the row with the input matches up with the
+// previous row, then look for a specific cell within the previous row.
+// e.g. <tr><td>Input 1 label</td><td>Input 2 label</td></tr>
+//      <tr><td><input name="input 1"></td><td><input name="input2"></td></tr>
+//
+// Otherwise, just look in the entire previous row.
 // e.g. <tr><td>Some Text</td></tr><tr><td><input ...></td></tr>
 base::string16 InferLabelFromTableRow(const WebFormControlElement& element) {
+  CR_DEFINE_STATIC_LOCAL(WebString, kTableCell, ("td"));
+  base::string16 inferred_label;
+
+  // First find the <td> that contains |element|.
+  WebNode cell = element.parentNode();
+  while (!cell.isNull()) {
+    if (cell.isElementNode() &&
+        cell.to<WebElement>().hasHTMLTagName(kTableCell)) {
+      break;
+    }
+    cell = cell.parentNode();
+  }
+
+  // Not in a cell - bail out.
+  if (cell.isNull())
+    return inferred_label;
+
+  // Count the cell holding |element|.
+  size_t cell_count = CalculateTableCellColumnSpan(cell.to<WebElement>());
+  size_t cell_position = 0;
+  size_t cell_position_end = cell_count - 1;
+
+  // Count cells to the left to figure out |element|'s cell's position.
+  for (WebNode cell_it = cell.previousSibling();
+       !cell_it.isNull();
+       cell_it = cell_it.previousSibling()) {
+    if (cell_it.isElementNode() &&
+        cell_it.to<WebElement>().hasHTMLTagName(kTableCell)) {
+      cell_position += CalculateTableCellColumnSpan(cell_it.to<WebElement>());
+    }
+  }
+
+  // Count cells to the right.
+  for (WebNode cell_it = cell.nextSibling();
+       !cell_it.isNull();
+       cell_it = cell_it.nextSibling()) {
+    if (cell_it.isElementNode() &&
+        cell_it.to<WebElement>().hasHTMLTagName(kTableCell)) {
+      cell_count += CalculateTableCellColumnSpan(cell_it.to<WebElement>());
+    }
+  }
+
+  // Combine left + right.
+  cell_count += cell_position;
+  cell_position_end += cell_position;
+
+  // Find the current row.
   CR_DEFINE_STATIC_LOCAL(WebString, kTableRow, ("tr"));
   WebNode parent = element.parentNode();
   while (!parent.isNull() && parent.isElementNode() &&
@@ -402,11 +475,51 @@ base::string16 InferLabelFromTableRow(const WebFormControlElement& element) {
   }
 
   if (parent.isNull())
-    return base::string16();
+    return inferred_label;
 
-  // Check all previous siblings, skipping non-element nodes, until we find a
-  // non-empty text block.
-  base::string16 inferred_label;
+  // Now find the previous row.
+  WebNode row_it = parent.previousSibling();
+  while (!row_it.isNull()) {
+    if (row_it.isElementNode() &&
+        row_it.to<WebElement>().hasHTMLTagName(kTableRow)) {
+      break;
+    }
+    row_it = row_it.previousSibling();
+  }
+
+  // If there exists a previous row, check its cells and size. If they align
+  // with the current row, infer the label from the cell above.
+  if (!row_it.isNull()) {
+    WebNode matching_cell;
+    size_t prev_row_count = 0;
+    WebNode prev_row_it = row_it.firstChild();
+    CR_DEFINE_STATIC_LOCAL(WebString, kTableHeader, ("th"));
+    while (!prev_row_it.isNull()) {
+      if (prev_row_it.isElementNode()) {
+        WebElement prev_row_element = prev_row_it.to<WebElement>();
+        if (prev_row_element.hasHTMLTagName(kTableCell) ||
+            prev_row_element.hasHTMLTagName(kTableHeader)) {
+          size_t span = CalculateTableCellColumnSpan(prev_row_element);
+          size_t prev_row_count_end = prev_row_count + span - 1;
+          if (prev_row_count == cell_position &&
+              prev_row_count_end == cell_position_end) {
+            matching_cell = prev_row_it;
+          }
+          prev_row_count += span;
+        }
+      }
+      prev_row_it = prev_row_it.nextSibling();
+    }
+    if ((cell_count == prev_row_count) && !matching_cell.isNull()) {
+      inferred_label = FindChildText(matching_cell);
+      if (!inferred_label.empty())
+        return inferred_label;
+    }
+  }
+
+  // If there is no previous row, or if the previous row and current row do not
+  // align, check all previous siblings, skipping non-element nodes, until we
+  // find a non-empty text block.
   WebNode previous = parent.previousSibling();
   while (inferred_label.empty() && !previous.isNull()) {
     if (HasTagName(previous, kTableRow))
