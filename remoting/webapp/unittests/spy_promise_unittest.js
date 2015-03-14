@@ -11,7 +11,7 @@ var originalGlobalPromise = Promise;
 QUnit.module('spy_promise', {
   beforeEach: function() {
     assertInitialState();
-    SpyPromise.reset(); // Defend against broken tests.
+    base.SpyPromise.reset(); // Defend against broken tests.
   },
   afterEach: function() {
     assertInitialState();
@@ -20,12 +20,12 @@ QUnit.module('spy_promise', {
 
 function assertInitialState() {
   QUnit.equal(Promise, originalGlobalPromise);
-  QUnit.equal(
-      SpyPromise['settleAllPromise_'], null,
+  QUnit.ok(
+      !base.SpyPromise.isSettleAllRunning(),
       'settleAll should not be running');
   QUnit.equal(
-      SpyPromise.unsettledCount, 0,
-      'SpyPromise.unsettledCount should be zero ' +
+      base.SpyPromise.unsettledCount, 0,
+      'base.SpyPromise.unsettledCount should be zero ' +
         'before/after any test finishes');
 }
 
@@ -33,141 +33,142 @@ function assertInitialState() {
  * @return {!Promise}
  */
 function finish() {
-  return SpyPromise.settleAll().then(function() {
+  return base.SpyPromise.settleAll().then(function() {
     QUnit.equal(
-        SpyPromise.unsettledCount, 0,
-        'SpyPromise.unsettledCount should be zero after settleAll finishes.');
+        base.SpyPromise.unsettledCount, 0,
+        'base.SpyPromise.unsettledCount should be zero ' +
+          'after settleAll finishes.');
   });
 };
 
-QUnit.test('run', function(assert) {
+QUnit.test('run', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
-  QUnit.notEqual(SpyPromise, originalGlobalPromise);
-  return SpyPromise.run(function() {
-    QUnit.equal(Promise, SpyPromise);
-    QUnit.equal(SpyPromise.unsettledCount, 0);
+  QUnit.notEqual(base.SpyPromise, originalGlobalPromise);
+  return base.SpyPromise.run(function() {
+    QUnit.equal(Promise, base.SpyPromise);
+    QUnit.equal(base.SpyPromise.unsettledCount, 0);
     var dummy1 = new Promise(function(resolve) { resolve(null); });
-    QUnit.equal(SpyPromise.unsettledCount, 1);
+    QUnit.equal(base.SpyPromise.unsettledCount, 1);
   }).then(function() {
     QUnit.equal(Promise, originalGlobalPromise);
-    QUnit.equal(SpyPromise.unsettledCount, 0);
+    QUnit.equal(base.SpyPromise.unsettledCount, 0);
     done();
   });
 });
 
 QUnit.test('activate/restore', function() {
-  QUnit.notEqual(SpyPromise, originalGlobalPromise);
-  SpyPromise.activate();
-  QUnit.notEqual(SpyPromise, originalGlobalPromise);
-  QUnit.equal(SpyPromise.unsettledCount, 0);
+  QUnit.notEqual(base.SpyPromise, originalGlobalPromise);
+  base.SpyPromise.activate();
+  QUnit.notEqual(base.SpyPromise, originalGlobalPromise);
+  QUnit.equal(base.SpyPromise.unsettledCount, 0);
   var dummy1 = new Promise(function(resolve) { resolve(null); });
-  QUnit.equal(SpyPromise.unsettledCount, 1);
-  SpyPromise.restore();
+  QUnit.equal(base.SpyPromise.unsettledCount, 1);
+  base.SpyPromise.restore();
   QUnit.equal(Promise, originalGlobalPromise);
   return finish();
 });
 
-QUnit.test('new/then', function(assert) {
+QUnit.test('new/then', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
-  new SpyPromise(function(resolve, reject) {
+  new base.SpyPromise(function(resolve, reject) {
     resolve('hello');
   }).then(function(/**string*/ value) {
-    QUnit.equal(SpyPromise.unsettledCount, 0);
+    QUnit.equal(base.SpyPromise.unsettledCount, 0);
     QUnit.equal(value, 'hello');
     done();
   });
-  QUnit.equal(SpyPromise.unsettledCount, 1);
+  QUnit.equal(base.SpyPromise.unsettledCount, 1);
   return finish();
 });
 
-QUnit.test('new/catch', function(assert) {
+QUnit.test('new/catch', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
-  new SpyPromise(function(resolve, reject) {
+  new base.SpyPromise(function(resolve, reject) {
     reject('hello');
   }).catch(function(/**string*/ value) {
-    QUnit.equal(SpyPromise.unsettledCount, 0);
+    QUnit.equal(base.SpyPromise.unsettledCount, 0);
     QUnit.equal(value, 'hello');
     done();
   });
-  QUnit.equal(SpyPromise.unsettledCount, 1);
+  QUnit.equal(base.SpyPromise.unsettledCount, 1);
   return finish();
 });
 
-QUnit.test('new+throw/catch', function(assert) {
+QUnit.test('new+throw/catch', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
-  new SpyPromise(function(resolve, reject) {
+  new base.SpyPromise(function(resolve, reject) {
     throw 'hello';
   }).catch(function(/**string*/ value) {
-    QUnit.equal(SpyPromise.unsettledCount, 0);
+    QUnit.equal(base.SpyPromise.unsettledCount, 0);
     QUnit.equal(value, 'hello');
     done();
   });
-  QUnit.equal(SpyPromise.unsettledCount, 1);
+  QUnit.equal(base.SpyPromise.unsettledCount, 1);
   return finish();
 });
 
-QUnit.test('resolve/then', function(assert) {
+QUnit.test('resolve/then', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
-  SpyPromise.resolve('hello').then(function(/**string*/ value) {
-    QUnit.equal(SpyPromise.unsettledCount, 0);
+  base.SpyPromise.resolve('hello').then(function(/**string*/ value) {
+    QUnit.equal(base.SpyPromise.unsettledCount, 0);
     QUnit.equal(value, 'hello');
     done();
   });
-  QUnit.equal(SpyPromise.unsettledCount, 1);
+  QUnit.equal(base.SpyPromise.unsettledCount, 1);
   return finish();
 });
 
-QUnit.test('reject/then', function(assert) {
+QUnit.test('reject/then', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
-  SpyPromise.reject('hello').then(null, function(/**string*/ value) {
-    QUnit.equal(SpyPromise.unsettledCount, 0);
+  base.SpyPromise.reject('hello').then(null, function(/**string*/ value) {
+    QUnit.equal(base.SpyPromise.unsettledCount, 0);
     QUnit.equal(value, 'hello');
     done();
   });
-  QUnit.equal(SpyPromise.unsettledCount, 1);
+  QUnit.equal(base.SpyPromise.unsettledCount, 1);
   return finish();
 });
 
-QUnit.test('reject/catch', function(assert) {
+QUnit.test('reject/catch', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
-  SpyPromise.reject('hello').catch(function(/**string*/ value) {
-    QUnit.equal(SpyPromise.unsettledCount, 0);
+  base.SpyPromise.reject('hello').catch(function(/**string*/ value) {
+    QUnit.equal(base.SpyPromise.unsettledCount, 0);
     QUnit.equal(value, 'hello');
     done();
   });
-  QUnit.equal(SpyPromise.unsettledCount, 1);
+  QUnit.equal(base.SpyPromise.unsettledCount, 1);
   return finish();
 });
 
-QUnit.test('all', function(assert) {
+QUnit.test('all', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
-  SpyPromise.all([Promise.resolve(1), Promise.resolve(2)]).
+  base.SpyPromise.all([Promise.resolve(1), Promise.resolve(2)]).
       then(function(/**string*/ value) {
-        QUnit.equal(SpyPromise.unsettledCount, 0);
+        QUnit.equal(base.SpyPromise.unsettledCount, 0);
         QUnit.deepEqual(value, [1, 2]);
         done();
       });
-  QUnit.equal(SpyPromise.unsettledCount, 1);
+  QUnit.equal(base.SpyPromise.unsettledCount, 1);
   return finish();
 });
 
-QUnit.test('race', function(assert) {
+QUnit.test('race', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
   var fast = Promise.resolve('fast');
   var slow = new Promise(function() {}); // never settled
-  SpyPromise.race([fast, slow]).
+  base.SpyPromise.race([fast, slow]).
       then(function(/**string*/ value) {
-        QUnit.equal(SpyPromise.unsettledCount, 0);
+        QUnit.equal(base.SpyPromise.unsettledCount, 0);
         QUnit.equal(value, 'fast');
         done();
       });
-  QUnit.equal(SpyPromise.unsettledCount, 1);
+  QUnit.equal(base.SpyPromise.unsettledCount, 1);
   return finish();
 });
 
-QUnit.test('resolve/then/then', function(assert) {
+QUnit.test('resolve/then/then', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
-  SpyPromise.resolve('hello').then(function(/**string*/ value) {
+  base.SpyPromise.resolve('hello').then(function(/**string*/ value) {
     QUnit.equal(value, 'hello');
     return 'goodbye';
   }).then(function(/**string*/ value) {
@@ -178,9 +179,9 @@ QUnit.test('resolve/then/then', function(assert) {
 });
 
 
-QUnit.test('resolve/then+throw/catch', function(assert) {
+QUnit.test('resolve/then+throw/catch', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
-  SpyPromise.resolve('hello').then(function(/**string*/ value) {
+  base.SpyPromise.resolve('hello').then(function(/**string*/ value) {
     QUnit.equal(value, 'hello');
     throw 'goodbye';
   }).catch(function(/**string*/ value) {
@@ -190,9 +191,9 @@ QUnit.test('resolve/then+throw/catch', function(assert) {
   return finish();
 });
 
-QUnit.test('reject/catch/then', function(assert) {
+QUnit.test('reject/catch/then', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
-  SpyPromise.reject('hello').catch(function(/**string*/ value) {
+  base.SpyPromise.reject('hello').catch(function(/**string*/ value) {
     QUnit.equal(value, 'hello');
     return 'goodbye';
   }).then(function(/**string*/ value) {
@@ -203,9 +204,9 @@ QUnit.test('reject/catch/then', function(assert) {
 });
 
 
-QUnit.test('reject/catch+throw/catch', function(assert) {
+QUnit.test('reject/catch+throw/catch', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
-  SpyPromise.reject('hello').catch(function(/**string*/ value) {
+  base.SpyPromise.reject('hello').catch(function(/**string*/ value) {
     QUnit.equal(value, 'hello');
     throw 'goodbye';
   }).catch(function(/**string*/ value) {
@@ -215,32 +216,32 @@ QUnit.test('reject/catch+throw/catch', function(assert) {
   return finish();
 });
 
-QUnit.test('settleAll timeout = 100', function(assert) {
+QUnit.test('settleAll timeout = 100', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
   var startTime = Date.now();
-  var neverResolved = new SpyPromise(function() {});
-  return SpyPromise.settleAll(100).catch(function(error) {
+  var neverResolved = new base.SpyPromise(function() {});
+  return base.SpyPromise.settleAll(100).catch(function(error) {
     QUnit.ok(error instanceof Error);
     QUnit.ok(startTime + 200 < Date.now());
     done();
   });
 });
 
-QUnit.test('settleAll timeout = 500', function(assert) {
+QUnit.test('settleAll timeout = 500', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
   var startTime = Date.now();
-  var neverResolved = new SpyPromise(function() {});
-  return SpyPromise.settleAll(500).catch(function(error) {
+  var neverResolved = new base.SpyPromise(function() {});
+  return base.SpyPromise.settleAll(500).catch(function(error) {
     QUnit.ok(startTime + 750 < Date.now());
     done();
   });
 });
 
-QUnit.test('settleAll timeout = 1000', function(assert) {
+QUnit.test('settleAll timeout = 1000', function(/** QUnit.Assert */ assert) {
   var done = assert.async();
   var startTime = Date.now();
-  var neverResolved = new SpyPromise(function() {});
-  return SpyPromise.settleAll(1000).catch(function(error) {
+  var neverResolved = new base.SpyPromise(function() {});
+  return base.SpyPromise.settleAll(1000).catch(function(error) {
     QUnit.ok(startTime + 1500 < Date.now());
     done();
   });

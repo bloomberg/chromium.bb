@@ -11,7 +11,9 @@
 
 'use strict';
 
-var base = {};
+/** @suppress {duplicate} */
+var base = base || {};
+
 base.debug = function() {};
 
 /**

@@ -57,9 +57,9 @@ QUnit.module = function(desc, dict) {};
 /**
  * @param {*} a
  * @param {*} b
- * @param {string} desc
+ * @param {string=} opt_desc
  */
-QUnit.notEqual = function(a, b, desc) {};
+QUnit.notEqual = function(a, b, opt_desc) {};
 
 /**
  * @param {boolean} cond
@@ -79,6 +79,15 @@ QUnit.test = function(desc, f) {};
 /** @param {Function} f */
 QUnit.testStart = function(f) {};
 
+/**
+ * @interface
+ */
+QUnit.Assert = function() {};
+
+/**
+ * @return {function():void}
+ */
+QUnit.Assert.prototype.async = function() {};
 
 var deepEqual = QUnit.deepEqual;
 var equal = QUnit.equal;
