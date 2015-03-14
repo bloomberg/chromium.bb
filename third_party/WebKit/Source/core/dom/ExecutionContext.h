@@ -105,7 +105,6 @@ public:
 
     bool activeDOMObjectsAreSuspended() const { return m_activeDOMObjectsAreSuspended; }
     bool activeDOMObjectsAreStopped() const { return m_activeDOMObjectsAreStopped; }
-    bool isIteratingOverObservers() const;
 
     // Called after the construction of an ActiveDOMObject to synchronize suspend state.
     void suspendActiveDOMObjectIfNeeded(ActiveDOMObject*);
@@ -136,8 +135,6 @@ protected:
     virtual const KURL& virtualURL() const = 0;
     virtual KURL virtualCompleteURL(const String&) const = 0;
 
-    ContextLifecycleNotifier& lifecycleNotifier();
-
 private:
     bool dispatchErrorEvent(PassRefPtrWillBeRawPtr<ErrorEvent>, AccessControlStatus);
 
@@ -159,8 +156,6 @@ private:
     OwnPtrWillBeMember<PublicURLManager> m_publicURLManager;
 
     bool m_strictMixedContentCheckingEnforced;
-
-    OwnPtr<ContextLifecycleNotifier> m_lifecycleNotifier;
 
     // Counter that keeps track of how many window interaction calls are allowed
     // for this ExecutionContext. Callers are expected to call
