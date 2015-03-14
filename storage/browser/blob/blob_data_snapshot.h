@@ -37,6 +37,8 @@ class STORAGE_EXPORT BlobDataSnapshot : public base::SupportsUserData::Data {
   }
   size_t GetMemoryUsage() const;
 
+  const std::string& uuid() const { return uuid_; }
+
  private:
   friend class BlobDataBuilder;
   friend class BlobStorageContext;

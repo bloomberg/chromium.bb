@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/trace_event/trace_event.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "url/gurl.h"
@@ -92,6 +93,7 @@ scoped_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromPublicURL(
 
 scoped_ptr<BlobDataHandle> BlobStorageContext::AddFinishedBlob(
     BlobDataBuilder* external_builder) {
+  TRACE_EVENT0("Blob", "Context::AddFinishedBlob");
   StartBuildingBlob(external_builder->uuid_);
   BlobMap::iterator found = blob_map_.find(external_builder->uuid_);
   DCHECK(found != blob_map_.end());
@@ -163,6 +165,7 @@ void BlobStorageContext::StartBuildingBlob(const std::string& uuid) {
 void BlobStorageContext::AppendBlobDataItem(
     const std::string& uuid,
     const storage::DataElement& ipc_data_element) {
+  TRACE_EVENT0("Blob", "Context::AppendBlobDataItem");
   DCHECK(IsBeingBuilt(uuid));
   BlobMap::iterator found = blob_map_.find(uuid);
   if (found == blob_map_.end())
@@ -202,6 +205,7 @@ void BlobStorageContext::FinishBuildingBlob(const std::string& uuid,
   UMA_HISTOGRAM_COUNTS("Storage.Blob.TotalSize", total_memory / 1024);
   UMA_HISTOGRAM_COUNTS("Storage.Blob.TotalUnsharedSize",
                        nonshared_memory / 1024);
+  TRACE_COUNTER1("Blob", "MemoryStoreUsageBytes", memory_usage_);
 }
 
 void BlobStorageContext::CancelBuildingBlob(const std::string& uuid) {

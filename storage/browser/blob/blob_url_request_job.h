@@ -73,7 +73,7 @@ class STORAGE_EXPORT BlobURLRequestJob
   bool ReadBytesItem(const BlobDataItem& item, int bytes_to_read);
   bool ReadFileItem(FileStreamReader* reader, int bytes_to_read);
 
-  void DidReadFile(int result);
+  void DidReadFile(int chunk_number, int result);
   void DeleteCurrentFileReader();
 
   int ComputeBytesToRead() const;
@@ -113,6 +113,9 @@ class STORAGE_EXPORT BlobURLRequestJob
 
   bool byte_range_set_;
   net::HttpByteRange byte_range_;
+
+  // Used to create unique id's for tracing.
+  int current_file_chunk_number_;
 
   scoped_ptr<net::HttpResponseInfo> response_info_;
 

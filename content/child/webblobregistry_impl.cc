@@ -9,10 +9,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/trace_event/trace_event.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/fileapi/webblob_messages.h"
-#include "storage/common/data_element.h"
 #include "third_party/WebKit/public/platform/WebBlobData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThreadSafeData.h"
@@ -34,6 +34,9 @@ const size_t kMaxSharedMemoryBytes = 10 * 1024 * 1024;
 
 WebBlobRegistryImpl::WebBlobRegistryImpl(ThreadSafeSender* sender)
     : sender_(sender) {
+  // Record a dummy trace event on startup so the 'Storage' category shows up
+  // in the chrome://tracing viewer.
+  TRACE_EVENT0("Blob", "Init");
 }
 
 WebBlobRegistryImpl::~WebBlobRegistryImpl() {
@@ -41,6 +44,7 @@ WebBlobRegistryImpl::~WebBlobRegistryImpl() {
 
 void WebBlobRegistryImpl::registerBlobData(
     const blink::WebString& uuid, const blink::WebBlobData& data) {
+  TRACE_EVENT0("Blob", "Registry::RegisterBlob");
   const std::string uuid_str(uuid.utf8());
 
   storage::DataElement data_buffer;
@@ -150,6 +154,7 @@ void WebBlobRegistryImpl::BufferBlobData(const std::string& uuid_str,
     buffer_size = 0;
   }
   if (data_size >= kLargeThresholdBytes) {
+    TRACE_EVENT0("Blob", "Registry::SendOversizedBlobData");
     SendOversizedDataForBlob(uuid_str, data);
   } else {
     DCHECK_LT(buffer_size + data_size, kLargeThresholdBytes);
@@ -173,6 +178,7 @@ void WebBlobRegistryImpl::SendOversizedDataForBlob(
   size_t data_size = data.size();
   const char* data_ptr = data.data();
   while (data_size) {
+    TRACE_EVENT0("Blob", "Registry::SendOversizedBlobItem");
     size_t chunk_size = std::min(data_size, shared_memory_size);
     memcpy(shared_memory->memory(), data_ptr, chunk_size);
     sender_->Send(new BlobHostMsg_SyncAppendSharedMemory(

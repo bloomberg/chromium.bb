@@ -21,6 +21,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/trace_event/trace_event.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -70,6 +71,8 @@ BlobURLRequestJob::BlobURLRequestJob(
       error_(false),
       byte_range_set_(false),
       weak_factory_(this) {
+  TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest", this, "uuid",
+                           blob_data_->uuid());
   DCHECK(file_thread_proxy_.get());
 }
 
@@ -163,9 +166,11 @@ void BlobURLRequestJob::SetExtraRequestHeaders(
 
 BlobURLRequestJob::~BlobURLRequestJob() {
   STLDeleteValues(&index_to_reader_);
+  TRACE_EVENT_ASYNC_END1("Blob", "Request", this, "uuid", blob_data_->uuid());
 }
 
 void BlobURLRequestJob::DidStart() {
+  current_file_chunk_number_ = 0;
   error_ = false;
 
   // We only support GET request per the spec.
@@ -185,6 +190,8 @@ void BlobURLRequestJob::DidStart() {
 
 bool BlobURLRequestJob::AddItemLength(size_t index, int64 item_length) {
   if (item_length > kint64max - total_size_) {
+    TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest::CountSize", this, "uuid",
+                           blob_data_->uuid());
     NotifyFailure(net::ERR_FAILED);
     return false;
   }
@@ -197,6 +204,8 @@ bool BlobURLRequestJob::AddItemLength(size_t index, int64 item_length) {
 }
 
 void BlobURLRequestJob::CountSize() {
+  TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest::CountSize", this, "uuid",
+                           blob_data_->uuid());
   pending_get_file_info_count_ = 0;
   total_size_ = 0;
   const auto& items = blob_data_->items();
@@ -222,6 +231,8 @@ void BlobURLRequestJob::CountSize() {
 
 void BlobURLRequestJob::DidCountSize(int error) {
   DCHECK(!error_);
+  TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest::CountSize", this, "uuid",
+                         blob_data_->uuid());
 
   // If an error occured, bail out.
   if (error != net::OK) {
@@ -377,6 +388,8 @@ void BlobURLRequestJob::AdvanceBytesRead(int result) {
 
 bool BlobURLRequestJob::ReadBytesItem(const BlobDataItem& item,
                                       int bytes_to_read) {
+  TRACE_EVENT1("Blob", "BlobRequest::ReadBytesItem", "uuid",
+               blob_data_->uuid());
   DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
 
   memcpy(read_buf_->data(),
@@ -391,14 +404,17 @@ bool BlobURLRequestJob::ReadFileItem(FileStreamReader* reader,
                                      int bytes_to_read) {
   DCHECK_GE(read_buf_->BytesRemaining(), bytes_to_read);
   DCHECK(reader);
-  const int result = reader->Read(
-      read_buf_.get(),
-      bytes_to_read,
-      base::Bind(&BlobURLRequestJob::DidReadFile, base::Unretained(this)));
+  int chunk_number = current_file_chunk_number_++;
+  TRACE_EVENT_ASYNC_BEGIN1("Blob", "BlobRequest::ReadFileItem", this, "uuid",
+                           blob_data_->uuid());
+  const int result =
+      reader->Read(read_buf_.get(), bytes_to_read,
+                   base::Bind(&BlobURLRequestJob::DidReadFile,
+                              base::Unretained(this), chunk_number));
   if (result >= 0) {
     // Data is immediately available.
     if (GetStatus().is_io_pending())
-      DidReadFile(result);
+      DidReadFile(chunk_number, result);
     else
       AdvanceBytesRead(result);
     return true;
@@ -410,7 +426,9 @@ bool BlobURLRequestJob::ReadFileItem(FileStreamReader* reader,
   return false;
 }
 
-void BlobURLRequestJob::DidReadFile(int result) {
+void BlobURLRequestJob::DidReadFile(int chunk_number, int result) {
+  TRACE_EVENT_ASYNC_END1("Blob", "BlobRequest::ReadFileItem", this, "uuid",
+                         blob_data_->uuid());
   if (result <= 0) {
     NotifyFailure(net::ERR_FAILED);
     return;
