@@ -33,11 +33,6 @@
 
 namespace blink {
 
-ContextLifecycleNotifier::ContextLifecycleNotifier(ExecutionContext* context)
-    : LifecycleNotifier<ExecutionContext, ContextLifecycleObserver>(context)
-{
-}
-
 void ContextLifecycleNotifier::addObserver(ContextLifecycleObserver* observer)
 {
     LifecycleNotifier<ExecutionContext, ContextLifecycleObserver>::addObserver(observer);

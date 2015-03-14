@@ -31,11 +31,6 @@
 
 namespace blink {
 
-DocumentLifecycleNotifier::DocumentLifecycleNotifier(Document* document)
-    : LifecycleNotifier<Document, DocumentLifecycleObserver>(document)
-{
-}
-
 void DocumentLifecycleNotifier::notifyDocumentWasDetached()
 {
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);

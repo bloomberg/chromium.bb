@@ -38,9 +38,6 @@ class PageLifecycleNotifier : public LifecycleNotifier<Page, PageLifecycleObserv
 public:
     void notifyPageVisibilityChanged();
     void notifyDidCommitLoad(LocalFrame*);
-
-protected:
-    explicit PageLifecycleNotifier(Page*);
 };
 
 } // namespace blink

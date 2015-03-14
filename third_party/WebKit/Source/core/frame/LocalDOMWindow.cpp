@@ -373,8 +373,7 @@ bool LocalDOMWindow::allowPopUp()
 }
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
-    : DOMWindowLifecycleNotifier(this)
-    , m_frameObserver(WindowFrameObserver::create(this, frame))
+    : m_frameObserver(WindowFrameObserver::create(this, frame))
     , m_shouldPrintWhenFinishedLoading(false)
 #if ENABLE(ASSERT)
     , m_hasBeenReset(false)

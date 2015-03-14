@@ -27,7 +27,9 @@
 #include "config.h"
 
 #include "platform/LifecycleNotifier.h"
+#include "platform/LifecycleObserver.h"
 #include "platform/heap/Handle.h"
+
 #include <gtest/gtest.h>
 
 using namespace blink;
@@ -43,25 +45,9 @@ public:
         return adoptPtrWillBeNoop(new DummyContext());
     }
 
-    void addObserver(TestingObserver* observer)
-    {
-        LifecycleNotifier<DummyContext, TestingObserver>::addObserver(observer);
-    }
-
-    void removeObserver(TestingObserver* observer)
-    {
-        LifecycleNotifier<DummyContext, TestingObserver>::removeObserver(observer);
-    }
-
     DEFINE_INLINE_TRACE()
     {
         LifecycleNotifier<DummyContext, TestingObserver>::trace(visitor);
-    }
-
-private:
-    DummyContext()
-        : LifecycleNotifier<DummyContext, TestingObserver>(this)
-    {
     }
 };
 

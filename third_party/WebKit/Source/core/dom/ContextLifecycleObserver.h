@@ -28,6 +28,7 @@
 #define ContextLifecycleObserver_h
 
 #include "core/dom/ExecutionContext.h"
+#include "platform/LifecycleObserver.h"
 
 namespace blink {
 

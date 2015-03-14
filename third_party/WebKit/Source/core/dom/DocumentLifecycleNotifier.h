@@ -39,9 +39,6 @@ public:
 #if !ENABLE(OILPAN)
     void notifyDocumentWasDisposed();
 #endif
-
-protected:
-    explicit DocumentLifecycleNotifier(Document*);
 };
 
 } // namespace blink

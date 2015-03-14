@@ -31,11 +31,6 @@
 
 namespace blink {
 
-PageLifecycleNotifier::PageLifecycleNotifier(Page* context)
-    : LifecycleNotifier<Page, PageLifecycleObserver>(context)
-{
-}
-
 void PageLifecycleNotifier::notifyPageVisibilityChanged()
 {
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);

@@ -39,9 +39,6 @@ public:
     void notifyAddEventListener(LocalDOMWindow*, const AtomicString& eventType);
     void notifyRemoveEventListener(LocalDOMWindow*, const AtomicString& eventType);
     void notifyRemoveAllEventListeners(LocalDOMWindow*);
-
-protected:
-    explicit DOMWindowLifecycleNotifier(LocalDOMWindow*);
 };
 
 } // namespace blink

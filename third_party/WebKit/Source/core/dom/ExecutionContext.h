@@ -63,6 +63,9 @@ public:
     virtual bool isSharedWorkerGlobalScope() const { return false; }
     virtual bool isServiceWorkerGlobalScope() const { return false; }
     virtual bool isJSExecutionForbidden() const { return false; }
+
+    virtual bool isContextThread() const { return true; }
+
     SecurityOrigin* securityOrigin();
     ContentSecurityPolicy* contentSecurityPolicy();
     const KURL& url() const;

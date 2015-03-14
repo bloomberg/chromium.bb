@@ -48,8 +48,6 @@ public:
     bool hasPendingActivity() const;
 
 protected:
-    explicit ContextLifecycleNotifier(ExecutionContext*);
-
 #if ENABLE(ASSERT)
     bool contains(ActiveDOMObject*) const;
 #endif

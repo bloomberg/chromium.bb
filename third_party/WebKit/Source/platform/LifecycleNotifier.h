@@ -27,9 +27,8 @@
 #ifndef LifecycleNotifier_h
 #define LifecycleNotifier_h
 
-#include "platform/LifecycleObserver.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {
@@ -37,10 +36,7 @@ namespace blink {
 template<typename T, typename Observer>
 class LifecycleNotifier {
 public:
-    typedef T Context;
-
     virtual ~LifecycleNotifier();
-    virtual bool isContextThread() const { return true; }
 
     void addObserver(Observer*);
     void removeObserver(Observer*);
@@ -48,8 +44,8 @@ public:
     // notifyContextDestroyed() should be explicitly dispatched from an
     // observed context to notify observers that contextDestroyed().
     //
-    // When contextDestroyed() is called, m_context is still
-    // valid and safe to use m_context during the notification.
+    // When contextDestroyed() is called, the observer's lifecycleContext()
+    // is still valid and safe to use during the notification.
     virtual void notifyContextDestroyed();
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
@@ -57,14 +53,11 @@ public:
     bool isIteratingOverObservers() const { return m_iterating != IteratingNone; }
 
 protected:
-    explicit LifecycleNotifier(Context* context)
+    LifecycleNotifier()
         : m_iterating(IteratingNone)
-        , m_context(context)
         , m_didCallContextDestroyed(false)
     {
     }
-
-    Context* context() const { return m_context; }
 
     enum IterationType {
         IteratingNone,
@@ -79,8 +72,11 @@ protected:
 
     ObserverSet m_observers;
 
+#if ENABLE(ASSERT)
+    T* context() { return static_cast<T*>(this); }
+#endif
+
 private:
-    Context* m_context;
     bool m_didCallContextDestroyed;
 };
 
@@ -93,7 +89,7 @@ inline LifecycleNotifier<T, Observer>::~LifecycleNotifier()
 #if !ENABLE(OILPAN)
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);
     for (Observer* observer : m_observers) {
-        ASSERT(observer->lifecycleContext() == m_context);
+        ASSERT(observer->lifecycleContext() == context());
         observer->clearLifecycleContext();
     }
 #endif
@@ -116,7 +112,7 @@ inline void LifecycleNotifier<T, Observer>::notifyContextDestroyed()
         // a HeapHashSet<WeakMember<Observers>>. (i.e., we can just iterate
         // m_observers without taking a snapshot).
         if (m_observers.contains(observer)) {
-            ASSERT(observer->lifecycleContext() == m_context);
+            ASSERT(observer->lifecycleContext() == context());
             observer->contextDestroyed();
         }
     }

@@ -31,11 +31,6 @@
 
 namespace blink {
 
-DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(LocalDOMWindow* context)
-    : LifecycleNotifier<LocalDOMWindow, DOMWindowLifecycleObserver>(context)
-{
-}
-
 void DOMWindowLifecycleNotifier::notifyAddEventListener(LocalDOMWindow* window, const AtomicString& eventType)
 {
     TemporaryChange<IterationType> scope(m_iterating, IteratingOverAll);

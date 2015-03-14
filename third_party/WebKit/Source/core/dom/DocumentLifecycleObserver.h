@@ -27,6 +27,7 @@
 #define DocumentLifecycleObserver_h
 
 #include "core/dom/Document.h"
+#include "platform/LifecycleObserver.h"
 
 namespace blink {
 

@@ -113,8 +113,7 @@ float deviceScaleFactor(LocalFrame* frame)
 }
 
 Page::Page(PageClients& pageClients)
-    : PageLifecycleNotifier(this)
-    , SettingsDelegate(Settings::create())
+    : SettingsDelegate(Settings::create())
     , m_animator(PageAnimator::create(*this))
     , m_autoscrollController(AutoscrollController::create(*this))
     , m_chrome(Chrome::create(this, pageClients.chromeClient))

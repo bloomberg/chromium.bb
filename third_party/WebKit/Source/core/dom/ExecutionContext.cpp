@@ -66,8 +66,7 @@ public:
 };
 
 ExecutionContext::ExecutionContext()
-    : ContextLifecycleNotifier(this)
-    , m_circularSequentialID(0)
+    : m_circularSequentialID(0)
     , m_inDispatchErrorEvent(false)
     , m_activeDOMObjectsAreSuspended(false)
     , m_activeDOMObjectsAreStopped(false)
