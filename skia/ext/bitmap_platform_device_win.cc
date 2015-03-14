@@ -274,14 +274,6 @@ const SkBitmap& BitmapPlatformDevice::onAccessBitmap() {
   return SkBitmapDevice::onAccessBitmap();
 }
 
-SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
-                                                    const CreateInfo& cinfo) {
-  const SkImageInfo& info = cinfo.fInfo;
-  const bool do_clear = !info.isOpaque();
-  SkASSERT(info.colorType() == kN32_SkColorType);
-  return Create(info.width(), info.height(), info.isOpaque(), NULL, do_clear);
-}
-
 SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& cinfo,
                                                    const SkPaint*) {
   const SkImageInfo& info = cinfo.fInfo;
