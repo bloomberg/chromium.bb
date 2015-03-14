@@ -43,7 +43,7 @@ public:
     virtual void didFinalizeFrame() override
     {
         if (m_isDirty) {
-            Platform::current()->mainThread()->removeTaskObserver(this);
+            Platform::current()->currentThread()->removeTaskObserver(this);
             m_isDirty = false;
         }
         ++m_frameCount;
@@ -65,7 +65,7 @@ public:
         if (m_isDirty)
             return;
         m_isDirty = true;
-        Platform::current()->mainThread()->addTaskObserver(this);
+        Platform::current()->currentThread()->addTaskObserver(this);
     }
 
     int frameCount() { return m_frameCount; }
@@ -334,8 +334,8 @@ class TestWrapperTask_ ## TEST_METHOD : public WebThread::Task {                
 #define CALL_TEST_TASK_WRAPPER(TEST_METHOD)                                                               \
     {                                                                                                     \
         AutoInstallCurrentThreadPlatformMock ctpm;                                                        \
-        Platform::current()->mainThread()->postTask(FROM_HERE, new TestWrapperTask_ ## TEST_METHOD(this)); \
-        Platform::current()->mainThread()->enterRunLoop();                                      \
+        Platform::current()->currentThread()->postTask(FROM_HERE, new TestWrapperTask_ ## TEST_METHOD(this)); \
+        Platform::current()->currentThread()->enterRunLoop();                                      \
     }
 
 TEST_F(RecordingImageBufferSurfaceTest, testEmptyPicture)
