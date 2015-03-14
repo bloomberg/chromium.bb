@@ -773,7 +773,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 // Timing out on linux ARM bot: https://crbug/238453
 #define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       MAYBE_TestPauseWhenScriptIsRunning) {
+                       DISABLED_TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 
