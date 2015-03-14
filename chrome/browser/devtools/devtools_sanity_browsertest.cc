@@ -759,21 +759,19 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
-// Disabled because it fails on all trunk official build bots.
-// http://crbug.com/467072
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       DISABLED_TestPauseWhenLoadingDevTools) {
+                       TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
 // Tests that pressing 'Pause' will pause script execution if the script
 // is already running.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+// Disabled because it fails on all trunk official build bots.
+// http://crbug.com/467072
+// Previous condition:
+// defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on linux ARM bot: https://crbug/238453
 #define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
-#else
-#define MAYBE_TestPauseWhenScriptIsRunning TestPauseWhenScriptIsRunning
-#endif
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
                        MAYBE_TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
