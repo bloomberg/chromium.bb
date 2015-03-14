@@ -14,7 +14,6 @@
       '../tools/metrics/histograms/histograms.xml',
       # All unittests in browser, common, renderer and service.
       'browser/about_flags_unittest.cc',
-      'browser/android/banners/app_banner_manager_unittest.cc',
       'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
       # TODO(newt): move this to test_support_unit?
       'browser/android/mock_location_settings.cc',
@@ -35,6 +34,7 @@
       'browser/autocomplete/shortcuts_provider_unittest.cc',
       'browser/autocomplete/zero_suggest_provider_unittest.cc',
       'browser/autofill/autofill_cc_infobar_delegate_unittest.cc',
+      'browser/banners/app_banner_data_fetcher_unittest.cc',
       'browser/banners/app_banner_settings_helper_unittest.cc',
       'browser/bitmap_fetcher/bitmap_fetcher_service_unittest.cc',
       'browser/bookmarks/chrome_bookmark_client_unittest.cc',

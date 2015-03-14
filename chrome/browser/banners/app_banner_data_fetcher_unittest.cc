@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/banners/app_banner_manager.h"
+#include "chrome/browser/banners/app_banner_data_fetcher.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace banners {
 
-class AppBannerManagerTest : public testing::Test {
+class AppBannerDataFetcherUnitTest : public testing::Test {
+ public:
+  AppBannerDataFetcherUnitTest() { }
+
  protected:
   static base::NullableString16 ToNullableUTF16(const std::string& str) {
     return base::NullableString16(base::UTF8ToUTF16(str), false);
@@ -28,22 +31,23 @@ class AppBannerManagerTest : public testing::Test {
 
     return manifest;
   }
+
   static bool IsManifestValid(const content::Manifest& manifest) {
-    return AppBannerManager::IsManifestValid(manifest);
+    return AppBannerDataFetcher::IsManifestValid(manifest);
   }
 };
 
-TEST_F(AppBannerManagerTest, EmptyManifestIsInvalid) {
+TEST_F(AppBannerDataFetcherUnitTest, EmptyManifestIsInvalid) {
   content::Manifest manifest;
   EXPECT_FALSE(IsManifestValid(manifest));
 }
 
-TEST_F(AppBannerManagerTest, CheckMinimalValidManifest) {
+TEST_F(AppBannerDataFetcherUnitTest, CheckMinimalValidManifest) {
   content::Manifest manifest = GetValidManifest();
   EXPECT_TRUE(IsManifestValid(manifest));
 }
 
-TEST_F(AppBannerManagerTest, ManifestRequiresNameORShortName) {
+TEST_F(AppBannerDataFetcherUnitTest, ManifestRequiresNameORShortName) {
   content::Manifest manifest = GetValidManifest();
 
   manifest.name = base::NullableString16();
@@ -57,7 +61,7 @@ TEST_F(AppBannerManagerTest, ManifestRequiresNameORShortName) {
   EXPECT_FALSE(IsManifestValid(manifest));
 }
 
-TEST_F(AppBannerManagerTest, ManifestRequiresValidStartURL) {
+TEST_F(AppBannerDataFetcherUnitTest, ManifestRequiresValidStartURL) {
   content::Manifest manifest = GetValidManifest();
 
   manifest.start_url = GURL();
@@ -67,7 +71,7 @@ TEST_F(AppBannerManagerTest, ManifestRequiresValidStartURL) {
   EXPECT_FALSE(IsManifestValid(manifest));
 }
 
-TEST_F(AppBannerManagerTest, ManifestRequiresImagePNG) {
+TEST_F(AppBannerDataFetcherUnitTest, ManifestRequiresImagePNG) {
   content::Manifest manifest = GetValidManifest();
 
   manifest.icons[0].type = ToNullableUTF16("image/gif");
@@ -76,7 +80,7 @@ TEST_F(AppBannerManagerTest, ManifestRequiresImagePNG) {
   EXPECT_FALSE(IsManifestValid(manifest));
 }
 
-TEST_F(AppBannerManagerTest, ManifestRequiresMinimalSize) {
+TEST_F(AppBannerDataFetcherUnitTest, ManifestRequiresMinimalSize) {
   content::Manifest manifest = GetValidManifest();
 
   // The icon MUST be 144x144 size at least.

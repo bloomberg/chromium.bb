@@ -11,7 +11,7 @@
 #include "chrome/browser/android/accessibility_util.h"
 #include "chrome/browser/android/appmenu/app_menu_drag_helper.h"
 #include "chrome/browser/android/banners/app_banner_infobar_delegate.h"
-#include "chrome/browser/android/banners/app_banner_manager.h"
+#include "chrome/browser/android/banners/app_banner_manager_android.h"
 #include "chrome/browser/android/bookmarks/bookmarks_bridge.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 #include "chrome/browser/android/chrome_web_contents_delegate_android.h"
@@ -138,7 +138,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AnswersImageBridge", RegisterAnswersImageBridge},
     {"AppBannerInfoBar", RegisterAppBannerInfoBar},
     {"AppBannerInfoBarDelegate", banners::RegisterAppBannerInfoBarDelegate},
-    {"AppBannerManager", banners::RegisterAppBannerManager},
+    {"AppBannerManagerAndroid", banners::AppBannerManagerAndroid::Register},
     {"ApplicationLifetime", RegisterApplicationLifetimeAndroid},
     {"AutocompleteControllerAndroid", RegisterAutocompleteControllerAndroid},
     {"AutofillDialogControllerAndroid",

@@ -23,22 +23,18 @@ namespace banners {
 // Manages installation of an app being promoted by a webpage.
 class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a banner for the current page that promotes a native app.
-  // May return nullptr if the the infobar couldn't be created.
-  static AppBannerInfoBar* CreateForNativeApp(
-      infobars::InfoBarManager* infobar_manager,
-      const base::string16& app_title,
-      SkBitmap* app_icon,
-      const base::android::ScopedJavaGlobalRef<jobject>& app_data,
-      const std::string& app_package);
-
-  // Creates a banner for the current page that promotes a web app.
-  // May return nullptr if the the infobar couldn't be created.
-  static AppBannerInfoBar* CreateForWebApp(
-      infobars::InfoBarManager* infobar_manager,
+  // Delegate for promoting a web app.
+  AppBannerInfoBarDelegate(
       const base::string16& app_title,
       SkBitmap* app_icon,
       const content::Manifest& web_app_data);
+
+  // Delegate for promoting an Android app.
+  AppBannerInfoBarDelegate(
+      const base::string16& app_title,
+      SkBitmap* app_icon,
+      const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
+      const std::string& native_app_package);
 
   ~AppBannerInfoBarDelegate() override;
 
@@ -57,12 +53,7 @@ class AppBannerInfoBarDelegate : public ConfirmInfoBarDelegate {
                          jboolean success);
 
  private:
-  AppBannerInfoBarDelegate(
-      const base::string16& app_title,
-      SkBitmap* app_icon,
-      const content::Manifest& web_app_data,
-      const base::android::ScopedJavaGlobalRef<jobject>& native_app_data,
-      const std::string& native_app_package);
+  void CreateJavaDelegate();
 
   // ConfirmInfoBarDelegate:
   gfx::Image GetIcon() const override;

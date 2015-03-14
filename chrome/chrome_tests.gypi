@@ -74,6 +74,7 @@
       'browser/autofill/autofill_server_browsertest.cc',
       'browser/autofill/content_autofill_driver_browsertest.cc',
       'browser/autofill/form_structure_browsertest.cc',
+      'browser/banners/app_banner_data_fetcher_browsertest.cc',
       'browser/bitmap_fetcher/bitmap_fetcher_browsertest.cc',
       'browser/browser_encoding_browsertest.cc',
       'browser/browsing_data/browsing_data_database_helper_browsertest.cc',
