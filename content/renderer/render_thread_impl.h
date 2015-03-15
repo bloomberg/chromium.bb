@@ -606,19 +606,31 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_elastic_overscroll_enabled_;
   unsigned use_image_texture_target_;
 
-  struct PendingRenderFrameConnect
-      : public base::RefCounted<PendingRenderFrameConnect> {
+  class PendingRenderFrameConnect
+      : public base::RefCounted<PendingRenderFrameConnect>,
+        public mojo::ErrorHandler {
+   public:
     PendingRenderFrameConnect(
+        int routing_id,
         mojo::InterfaceRequest<mojo::ServiceProvider> services,
         mojo::ServiceProviderPtr exposed_services);
 
-    mojo::InterfaceRequest<mojo::ServiceProvider> services;
-    mojo::ServiceProviderPtr exposed_services;
+    mojo::InterfaceRequest<mojo::ServiceProvider>& services() {
+      return services_;
+    }
+
+    mojo::ServiceProviderPtr& exposed_services() { return exposed_services_; }
 
    private:
     friend class base::RefCounted<PendingRenderFrameConnect>;
 
-    ~PendingRenderFrameConnect();
+    ~PendingRenderFrameConnect() override;
+
+    void OnConnectionError() override;
+
+    int routing_id_;
+    mojo::InterfaceRequest<mojo::ServiceProvider> services_;
+    mojo::ServiceProviderPtr exposed_services_;
   };
 
   typedef std::map<int, scoped_refptr<PendingRenderFrameConnect>>

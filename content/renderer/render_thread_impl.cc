@@ -874,9 +874,10 @@ void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
 
   scoped_refptr<PendingRenderFrameConnect> connection(it->second);
   mojo::InterfaceRequest<mojo::ServiceProvider> services(
-      connection->services.Pass());
+      connection->services().Pass());
   mojo::ServiceProviderPtr exposed_services(
-      connection->exposed_services.Pass());
+      connection->exposed_services().Pass());
+  exposed_services.set_error_handler(nullptr);
   pending_render_frame_connects_.erase(it);
 
   frame->BindServiceRegistry(services.Pass(), exposed_services.Pass());
@@ -911,8 +912,7 @@ void RenderThreadImpl::RegisterPendingRenderFrameConnect(
       pending_render_frame_connects_.insert(std::make_pair(
           routing_id,
           make_scoped_refptr(new PendingRenderFrameConnect(
-              services.Pass(),
-              exposed_services.Pass()))));
+              routing_id, services.Pass(), exposed_services.Pass()))));
   CHECK(result.second) << "Inserting a duplicate item.";
 }
 
@@ -1790,13 +1790,26 @@ void RenderThreadImpl::WidgetRestored() {
 }
 
 RenderThreadImpl::PendingRenderFrameConnect::PendingRenderFrameConnect(
+    int routing_id,
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::ServiceProviderPtr exposed_services)
-    : services(services.Pass()),
-      exposed_services(exposed_services.Pass()) {
+    : routing_id_(routing_id),
+      services_(services.Pass()),
+      exposed_services_(exposed_services.Pass()) {
+  // The RenderFrame may be deleted before the ExchangeServiceProviders message
+  // is received. In that case, the RenderFrameHost should close the connection,
+  // which is detected by setting an error handler on |exposed_services_|.
+  exposed_services_.set_error_handler(this);
 }
 
 RenderThreadImpl::PendingRenderFrameConnect::~PendingRenderFrameConnect() {
+}
+
+void RenderThreadImpl::PendingRenderFrameConnect::OnConnectionError() {
+  size_t erased =
+      RenderThreadImpl::current()->pending_render_frame_connects_.erase(
+          routing_id_);
+  DCHECK_EQ(1u, erased);
 }
 
 }  // namespace content
