@@ -23,6 +23,8 @@ bool SignedCertificateTimestamp::LessThan::operator()(
     return lhs->timestamp < rhs->timestamp;
   if (lhs->extensions != rhs->extensions)
     return lhs->extensions < rhs->extensions;
+  if (lhs->origin != rhs->origin)
+    return lhs->origin < rhs->origin;
   return lhs->version < rhs->version;
 }
 

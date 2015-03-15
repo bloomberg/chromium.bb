@@ -114,8 +114,6 @@ struct NET_EXPORT SignedCertificateTimestamp
   base::Time timestamp;
   std::string extensions;
   DigitallySigned signature;
-  // The origin should not participate in equality checks
-  // as the same SCT can be provided from multiple sources.
   Origin origin;
   // The log description is not one of the SCT fields, but a user-readable
   // name defined alongside the log key. It should not participate
