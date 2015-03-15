@@ -418,10 +418,20 @@ inline uint16_t toUInt16(v8::Handle<v8::Value> value, ExceptionState& exceptionS
 // Convert a value to a 16-bit unsigned integer assuming the conversion cannot fail.
 uint16_t toUInt16(v8::Handle<v8::Value>);
 
+
+CORE_EXPORT int32_t toInt32Slow(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+
 // Convert a value to a 32-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-long
-CORE_EXPORT int32_t toInt32(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+{
+    // Fast case. The value is already a 32-bit integer.
+    if (value->IsInt32())
+        return value->Int32Value();
+    return toInt32Slow(value, configuration, exceptionState);
+}
+
 inline int32_t toInt32(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     return toInt32(value, NormalConversion, exceptionState);

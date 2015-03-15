@@ -322,31 +322,23 @@ uint16_t toUInt16(v8::Handle<v8::Value> value)
     return toUInt16(value, NormalConversion, exceptionState);
 }
 
-int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+int32_t toInt32Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
-    // Fast case. The value is already a 32-bit integer.
-    if (value->IsInt32())
-        return value->Int32Value();
-
-    v8::Local<v8::Number> numberObject;
-    if (value->IsNumber()) {
-        numberObject = value.As<v8::Number>();
-    } else {
-        v8::Isolate* isolate = v8::Isolate::GetCurrent();
-        // Can the value be converted to a number?
-        v8::TryCatch block(isolate);
-        numberObject = value->ToNumber(isolate);
-        if (block.HasCaught()) {
-            exceptionState.rethrowV8Exception(block.Exception());
-            return 0;
-        }
+    ASSERT(!value->IsInt32());
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    // Can the value be converted to a number?
+    v8::TryCatch block(isolate);
+    v8::Local<v8::Number> numberObject = value->ToNumber(isolate);
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
+
     ASSERT(!numberObject.IsEmpty());
 
-    if (configuration == EnforceRange)
-        return enforceRange(numberObject->Value(), kMinInt32, kMaxInt32, "long", exceptionState);
-
     double numberValue = numberObject->Value();
+    if (configuration == EnforceRange)
+        return enforceRange(numberValue, kMinInt32, kMaxInt32, "long", exceptionState);
 
     if (std::isnan(numberValue))
         return 0;
