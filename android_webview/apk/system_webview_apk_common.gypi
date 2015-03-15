@@ -16,6 +16,7 @@
     'never_lint': 1,
     'R_package': 'com.android.webview.chromium',
     'R_package_relpath': 'com/android/webview/chromium',
+    'shared_resources': 1,
     'extensions_to_not_compress': 'pak,bin,dat',
     'asset_location': '<(INTERMEDIATE_DIR)/assets/',
     'snapshot_copy_files': '<(snapshot_copy_files)',
