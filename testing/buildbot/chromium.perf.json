@@ -1,4 +1,13 @@
 {
+  "Linux Perf (3)": {
+    "scripts": [
+      {
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["cc_perftests", "--test-launcher-print-test-stdio=always"]
+      }
+    ]
+  },
   "Android Nexus4 Perf": {
     "scripts": [
       {
