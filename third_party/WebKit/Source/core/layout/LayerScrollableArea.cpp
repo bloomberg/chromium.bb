@@ -420,6 +420,12 @@ void LayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset)
             requiresPaintInvalidation = false;
     }
 
+    // Only the root layer can overlap non-composited fixed-position elements.
+    if (!requiresPaintInvalidation && layer()->isRootLayer() && frameView->hasViewportConstrainedObjects()) {
+        if (!frameView->invalidateViewportConstrainedObjects())
+            requiresPaintInvalidation = true;
+    }
+
     // Just schedule a full paint invalidation of our object.
     if (requiresPaintInvalidation)
         box().setShouldDoFullPaintInvalidation();

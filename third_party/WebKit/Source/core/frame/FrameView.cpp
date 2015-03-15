@@ -1356,16 +1356,8 @@ static void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(c
     }
 }
 
-bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
+bool FrameView::invalidateViewportConstrainedObjects()
 {
-    if (!contentsInCompositedLayer() || hasSlowRepaintObjects())
-        return false;
-
-    if (!m_viewportConstrainedObjects || m_viewportConstrainedObjects->isEmpty()) {
-        InspectorInstrumentation::didScroll(m_frame.get());
-        return true;
-    }
-
     for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
         LayoutObject* renderer = viewportConstrainedObject;
         ASSERT(renderer->style()->hasViewportConstrainedPosition());
@@ -1385,6 +1377,21 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
 
         setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(layer);
     }
+    return true;
+}
+
+bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
+{
+    if (!contentsInCompositedLayer() || hasSlowRepaintObjects())
+        return false;
+
+    if (!m_viewportConstrainedObjects || m_viewportConstrainedObjects->isEmpty()) {
+        InspectorInstrumentation::didScroll(m_frame.get());
+        return true;
+    }
+
+    if (!invalidateViewportConstrainedObjects())
+        return false;
 
     InspectorInstrumentation::didScroll(m_frame.get());
     return true;

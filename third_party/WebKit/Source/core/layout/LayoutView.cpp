@@ -241,6 +241,8 @@ void LayoutView::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidati
 
     if ((mode & IsFixed) && m_frameView) {
         transformState.move(m_frameView->scrollOffsetForViewportConstrainedObjects());
+        if (hasOverflowClip())
+            transformState.move(scrolledContentOffset());
         // IsFixed flag is only applicable within this LayoutView.
         mode &= ~IsFixed;
     }
@@ -265,8 +267,11 @@ const LayoutObject* LayoutView::pushMappingToContainer(const LayoutBoxModelObjec
     LayoutSize offset;
     LayoutObject* container = 0;
 
-    if (m_frameView)
+    if (m_frameView) {
         offsetForFixedPosition = LayoutSize(m_frameView->scrollOffsetForViewportConstrainedObjects());
+        if (hasOverflowClip())
+            offsetForFixedPosition = LayoutSize(scrolledContentOffset());
+    }
 
     if (geometryMap.mapCoordinatesFlags() & TraverseDocumentBoundaries) {
         if (LayoutPart* parentDocLayoutObject = frame()->ownerLayoutObject()) {
@@ -419,6 +424,8 @@ void LayoutView::adjustViewportConstrainedOffset(LayoutRect& rect, ViewportConst
 
     if (m_frameView) {
         rect.move(m_frameView->scrollOffsetForViewportConstrainedObjects());
+        if (hasOverflowClip())
+            rect.move(scrolledContentOffset());
 
         // FIXME: Paint invalidation should happen after scroll updates, so there should be no pending scroll delta.
         // However, we still have paint invalidation during layout, so we can't ASSERT for now. crbug.com/434950.

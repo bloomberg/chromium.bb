@@ -230,6 +230,7 @@ public:
     void updateLayoutAndStyleIfNeededRecursive();
 
     void invalidateTreeIfNeededRecursive();
+    bool invalidateViewportConstrainedObjects();
 
     void incrementVisuallyNonEmptyCharacterCount(unsigned);
     void incrementVisuallyNonEmptyPixelCount(const IntSize&);
