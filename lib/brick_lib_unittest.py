@@ -185,29 +185,13 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase):
 
   def testInherits(self):
     """Tests the containment checking works as intended."""
-    saved_root = constants.SOURCE_ROOT
-
-    try:
-      self.SetupFakeWorkspace()
-
-      # Mock the source root so that we can create fake legacy overlay.
-      constants.SOURCE_ROOT = self.tempdir
-      legacy = os.path.join(self.tempdir, 'src', 'overlays', 'overlay-foobar')
-      self.SetupLegacyBrick(brick_dir=legacy, brick_name='foobar')
-
-      bar_brick = brick_lib.Brick('//bar', initial_config={'name': 'bar'})
-      foo_brick = brick_lib.Brick(
-          '//foo', initial_config={'name': 'foo',
-                                   'dependencies': ['//bar', 'board:foobar']})
-
-      self.assertTrue(bar_brick.Inherits('bar'))
-      self.assertTrue(foo_brick.Inherits('bar'))
-      self.assertFalse(bar_brick.Inherits('foo'))
-      self.assertTrue(foo_brick.Inherits('foobar'))
-      self.assertFalse(foo_brick.Inherits('dontexist'))
-
-    finally:
-      constants.SOURCE_ROOT = saved_root
+    self.CreateNewBrick()
+    bar_overlay = os.path.join(self.tempdir, 'bar')
+    self.SetupLegacyBrick(brick_dir=bar_overlay, brick_name='bar')
+    with mock.patch('chromite.lib.portage_util.FindOverlays',
+                    return_value=[bar_overlay]):
+      self.assertTrue(self.brick.Inherits('bar'))
+      self.assertFalse(self.brick.Inherits('baz'))
 
   def testOverlayDir(self):
     """Tests that overlay directory is returned correctly."""
