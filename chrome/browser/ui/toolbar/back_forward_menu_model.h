@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/favicon/favicon_service.h"
+#include "components/favicon/core/browser/favicon_service.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/window_open_disposition.h"
 

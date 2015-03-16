@@ -1,0 +1,25 @@
+# Copyright 2015 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("browser") {
+  sources = [
+    "favicon_client.h",
+    "favicon_handler.cc",
+    "favicon_handler.h",
+    "favicon_service.cc",
+    "favicon_service.h",
+    "favicon_tab_helper_observer.h",
+  ]
+
+  deps = [
+    "//components/bookmarks/browser",
+    "//components/favicon/core",
+    "//components/favicon_base",
+    "//components/history/core/browser",
+    "//components/keyed_service/core",
+    "//skia",
+    "//ui/gfx",
+    "//url",
+  ]
+}

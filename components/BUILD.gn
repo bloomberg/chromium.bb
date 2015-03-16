@@ -38,7 +38,7 @@ group("all_components") {
     "//components/dom_distiller/core",
     "//components/domain_reliability",
     "//components/enhanced_bookmarks",
-    "//components/favicon/core",
+    "//components/favicon/core/browser",
     "//components/favicon_base",
     "//components/feedback",
     "//components/gcm_driver",
@@ -162,8 +162,9 @@ group("all_components") {
       "//components/data_reduction_proxy/core/common",  # Should work, needs checking.
       "//components/dom_distiller/core",  # Blocked on content.
       "//components/domain_reliability",  # Blocked on content.
+      "//components/favicon/core/browser",  # Blocked on keyed service.
       "//components/favicon_base",  # Should work, needs checking.
-      "//components/favicon/core",  # Blocked on keyed service.
+      "//components/feedback",  # Blocked on content.
       "//components/gcm_driver",  # Should work, needs checking.
       "//components/google/core/browser",  # Should work, needs checking.
       "//components/history/core/browser",  # Should work, needs checking.

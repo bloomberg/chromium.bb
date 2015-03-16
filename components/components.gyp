@@ -27,7 +27,6 @@
     'domain_reliability.gypi',
     'enhanced_bookmarks.gypi',
     'error_page.gypi',
-    'favicon.gypi',
     'favicon_base.gypi',
     'feedback.gypi',
     'google.gypi',
@@ -129,6 +128,7 @@
       # Android WebView fails to build if a dependency on these targets is
       # introduced.
       'includes': [
+        'favicon.gypi',
         'gcm_driver.gypi',
         'history.gypi',
         'omnibox.gypi',

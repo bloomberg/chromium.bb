@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/app_list/search/suggestions/url_suggestion_result.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
+#include "components/favicon/core/browser/favicon_service.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/suggestions/suggestions_service.h"

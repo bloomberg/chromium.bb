@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/favicon/favicon_handler.h"
+#include "components/favicon/core/browser/favicon_handler.h"
 
 #include <algorithm>
 #include <cmath>
@@ -12,8 +12,8 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
-#include "chrome/browser/favicon/favicon_service.h"
 #include "components/favicon/core/browser/favicon_client.h"
+#include "components/favicon/core/browser/favicon_service.h"
 #include "components/favicon/core/favicon_driver.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
@@ -124,12 +124,12 @@ bool HasValidResult(
 // Returns the index of the entry with the largest area.
 int GetLargestSizeIndex(const std::vector<gfx::Size>& sizes) {
   DCHECK(!sizes.empty());
-  int ret = 0;
+  size_t ret = 0;
   for (size_t i = 1; i < sizes.size(); ++i) {
     if (sizes[ret].GetArea() < sizes[i].GetArea())
       ret = i;
   }
-  return ret;
+  return static_cast<int>(ret);
 }
 
 // Return the index of a size which is same as the given |size|, -1 returned if

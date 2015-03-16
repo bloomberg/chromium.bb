@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/favicon/favicon_service.h"
+#include "components/favicon/core/browser/favicon_service.h"
 
 #include <cmath>
 

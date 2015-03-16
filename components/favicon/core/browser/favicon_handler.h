@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FAVICON_FAVICON_HANDLER_H_
-#define CHROME_BROWSER_FAVICON_FAVICON_HANDLER_H_
+#ifndef COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_HANDLER_H_
+#define COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_HANDLER_H_
 
 #include <deque>
 #include <map>
@@ -306,4 +306,4 @@ class FaviconHandler {
   DISALLOW_COPY_AND_ASSIGN(FaviconHandler);
 };
 
-#endif  // CHROME_BROWSER_FAVICON_FAVICON_HANDLER_H_
+#endif  // COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_HANDLER_H_

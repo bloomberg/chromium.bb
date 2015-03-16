@@ -93,7 +93,7 @@ static_library("browser") {
     "//components/domain_reliability",
     "//components/enhanced_bookmarks",
     "//components/favicon_base",
-    "//components/favicon/core",
+    "//components/favicon/core/browser",
     "//components/feedback",
     "//components/gcm_driver",
     "//components/google/core/browser",
