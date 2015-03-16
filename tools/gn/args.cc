@@ -66,13 +66,30 @@ const char kBuildArgs_Help[] =
     "  to specify build args in an \"import\"-ed file if you want such\n"
     "  arguments to apply to multiple buildfiles.\n";
 
+namespace {
+
+// Removes all entries in |overrides| that are in |declared_overrides|.
+void RemoveDeclaredOverrides(const Scope::KeyValueMap& declared_arguments,
+                             Scope::KeyValueMap* overrides) {
+  for (Scope::KeyValueMap::iterator override = overrides->begin();
+       override != overrides->end();) {
+    if (declared_arguments.find(override->first) == declared_arguments.end())
+      ++override;
+    else
+      overrides->erase(override++);
+  }
+}
+
+}  // namespace
+
 Args::Args() {
 }
 
 Args::Args(const Args& other)
     : overrides_(other.overrides_),
       all_overrides_(other.all_overrides_),
-      declared_arguments_(other.declared_arguments_) {
+      declared_arguments_per_toolchain_(
+          other.declared_arguments_per_toolchain_) {
 }
 
 Args::~Args() {
@@ -124,6 +141,8 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
                        Err* err) const {
   base::AutoLock lock(lock_);
 
+  Scope::KeyValueMap& declared_arguments(
+      DeclaredArgumentsForToolchainLocked(scope_to_set));
   for (const auto& arg : args) {
     // Verify that the value hasn't already been declared. We want each value
     // to be declared only once.
@@ -132,8 +151,8 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
     // when used from different toolchains, so we can't just check that we've
     // seen it before. Instead, we check that the location matches.
     Scope::KeyValueMap::iterator previously_declared =
-        declared_arguments_.find(arg.first);
-    if (previously_declared != declared_arguments_.end()) {
+        declared_arguments.find(arg.first);
+    if (previously_declared != declared_arguments.end()) {
       if (previously_declared->second.origin() != arg.second.origin()) {
         // Declaration location mismatch.
         *err = Err(arg.second.origin(),
@@ -151,7 +170,7 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
         return false;
       }
     } else {
-      declared_arguments_.insert(arg);
+      declared_arguments.insert(arg);
     }
 
     // Only set on the current scope to the new value if it hasn't been already
@@ -168,43 +187,41 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
 
 bool Args::VerifyAllOverridesUsed(Err* err) const {
   base::AutoLock lock(lock_);
-  return VerifyAllOverridesUsed(all_overrides_, declared_arguments_, err);
-}
+  Scope::KeyValueMap all_overrides(all_overrides_);
+  for (const auto& map_pair : declared_arguments_per_toolchain_)
+    RemoveDeclaredOverrides(map_pair.second, &all_overrides);
 
-bool Args::VerifyAllOverridesUsed(
-    const Scope::KeyValueMap& overrides,
-    const Scope::KeyValueMap& declared_arguments,
-    Err* err) {
-  for (const auto& override : overrides) {
-    if (declared_arguments.find(override.first) == declared_arguments.end()) {
-      // Get a list of all possible overrides for help with error finding.
-      //
-      // It might be nice to do edit distance checks to see if we can find one
-      // close to what you typed.
-      std::string all_declared_str;
-      for (Scope::KeyValueMap::const_iterator cur_str =
-               declared_arguments.begin();
-           cur_str != declared_arguments.end(); ++cur_str) {
-        if (cur_str != declared_arguments.begin())
-          all_declared_str += ", ";
-        all_declared_str += cur_str->first.as_string();
-      }
+  if (all_overrides.empty())
+    return true;
 
-      *err = Err(override.second.origin(), "Build argument has no effect.",
-          "The variable \"" + override.first.as_string() +
-          "\" was set as a build "
-          "argument\nbut never appeared in a declare_args() block in any "
-          "buildfile.\n\nPossible arguments: " + all_declared_str);
-      return false;
+  // Get a list of all possible overrides for help with error finding.
+  //
+  // It might be nice to do edit distance checks to see if we can find one close
+  // to what you typed.
+  std::string all_declared_str;
+  for (const auto& map_pair : declared_arguments_per_toolchain_) {
+    for (const auto& cur_str : map_pair.second) {
+      if (!all_declared_str.empty())
+        all_declared_str += ", ";
+      all_declared_str += cur_str.first.as_string();
     }
   }
-  return true;
+
+  *err = Err(
+      all_overrides.begin()->second.origin(), "Build argument has no effect.",
+      "The variable \"" + all_overrides.begin()->first.as_string() +
+          "\" was set as a build argument\nbut never appeared in a " +
+          "declare_args() block in any buildfile.\n\nPossible arguments: " +
+          all_declared_str);
+  return false;
 }
 
 void Args::MergeDeclaredArguments(Scope::KeyValueMap* dest) const {
   base::AutoLock lock(lock_);
-  for (const auto& arg : declared_arguments_)
-    (*dest)[arg.first] = arg.second;
+  for (const auto& map_pair : declared_arguments_per_toolchain_) {
+    for (const auto& arg : map_pair.second)
+      (*dest)[arg.first] = arg.second;
+  }
 }
 
 void Args::SetSystemVarsLocked(Scope* dest) const {
@@ -257,12 +274,14 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
   dest->SetValue(variables::kTargetCpu, empty_string, nullptr);
   dest->SetValue(variables::kCurrentCpu, empty_string, nullptr);
 
-  declared_arguments_[variables::kHostOs] = os_val;
-  declared_arguments_[variables::kCurrentOs] = empty_string;
-  declared_arguments_[variables::kTargetOs] = empty_string;
-  declared_arguments_[variables::kHostCpu] = arch_val;
-  declared_arguments_[variables::kCurrentCpu] = empty_string;
-  declared_arguments_[variables::kTargetCpu] = empty_string;
+  Scope::KeyValueMap& declared_arguments(
+      DeclaredArgumentsForToolchainLocked(dest));
+  declared_arguments[variables::kHostOs] = os_val;
+  declared_arguments[variables::kCurrentOs] = empty_string;
+  declared_arguments[variables::kTargetOs] = empty_string;
+  declared_arguments[variables::kHostCpu] = arch_val;
+  declared_arguments[variables::kCurrentCpu] = empty_string;
+  declared_arguments[variables::kTargetCpu] = empty_string;
 
   // Mark these variables used so the build config file can override them
   // without geting a warning about overwriting an unused variable.
@@ -285,4 +304,10 @@ void Args::SaveOverrideRecordLocked(const Scope::KeyValueMap& values) const {
   lock_.AssertAcquired();
   for (const auto& val : values)
     all_overrides_[val.first] = val.second;
+}
+
+Scope::KeyValueMap& Args::DeclaredArgumentsForToolchainLocked(
+    Scope* scope) const {
+  lock_.AssertAcquired();
+  return declared_arguments_per_toolchain_[scope->settings()];
 }

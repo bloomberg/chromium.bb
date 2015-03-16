@@ -61,19 +61,15 @@ class Args {
   // arguments. If there are, this returns false and sets the error.
   bool VerifyAllOverridesUsed(Err* err) const;
 
-  // Like VerifyAllOverridesUsed but takes the lists of overrides specified and
-  // parameters declared.
-  static bool VerifyAllOverridesUsed(
-      const Scope::KeyValueMap& overrides,
-      const Scope::KeyValueMap& declared_arguments,
-      Err* err);
-
   // Adds all declared arguments to the given output list. If the values exist
   // in the list already, their values will be overwriten, but other values
   // already in the list will remain.
   void MergeDeclaredArguments(Scope::KeyValueMap* dest) const;
 
  private:
+  using DeclaredArgumentsPerToolchain =
+      base::hash_map<const Settings*, Scope::KeyValueMap>;
+
   // Sets the default config based on the current system.
   void SetSystemVarsLocked(Scope* scope) const;
 
@@ -82,6 +78,10 @@ class Args {
                             Scope* scope) const;
 
   void SaveOverrideRecordLocked(const Scope::KeyValueMap& values) const;
+
+  // Returns the KeyValueMap used for arguments declared for the specified
+  // toolchain.
+  Scope::KeyValueMap& DeclaredArgumentsForToolchainLocked(Scope* scope) const;
 
   // Since this is called during setup which we assume is single-threaded,
   // this is not protected by the lock. It should be set only during init.
@@ -94,9 +94,12 @@ class Args {
   // check for overrides that were specified but never used.
   mutable Scope::KeyValueMap all_overrides_;
 
-  // Tracks all variables declared in any buildfile. This is so we can see if
-  // the user set variables on the command line that are not used anywhere.
-  mutable Scope::KeyValueMap declared_arguments_;
+  // Maps from Settings (which corresponds to a toolchain) to the map of
+  // declared variables. This is used to tracks all variables declared in any
+  // buildfile. This is so we can see if the user set variables on the command
+  // line that are not used anywhere. Each map is toolchain specific as each
+  // toolchain may define variables in different locations.
+  mutable DeclaredArgumentsPerToolchain declared_arguments_per_toolchain_;
 
   Args& operator=(const Args& other);  // Disallow assignment.
 };

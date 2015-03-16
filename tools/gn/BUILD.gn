@@ -222,6 +222,7 @@ executable("gn") {
 test("gn_unittests") {
   sources = [
     "action_target_generator_unittest.cc",
+    "args_unittest.cc",
     "builder_unittest.cc",
     "c_include_iterator_unittest.cc",
     "command_format_unittest.cc",

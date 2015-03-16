@@ -43,7 +43,7 @@ class ConfigValuesIterator {
     return target_->configs()[cur_index_].ptr->config_values();
   }
 
-  // Returns the origin of who added this config, if any. This will alwsya be
+  // Returns the origin of who added this config, if any. This will always be
   // null for the config values of a target itself.
   const ParseNode* origin() const {
     if (cur_index_ == -1)
