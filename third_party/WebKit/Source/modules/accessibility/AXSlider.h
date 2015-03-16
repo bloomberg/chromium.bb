@@ -50,7 +50,7 @@ private:
     HTMLInputElement* element() const;
     virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const override final;
 
-    virtual AccessibilityRole roleValue() const override { return SliderRole; }
+    virtual AccessibilityRole roleValue() const override;
     virtual bool isSlider() const override final { return true; }
     virtual bool isControl() const override final { return true; }
 

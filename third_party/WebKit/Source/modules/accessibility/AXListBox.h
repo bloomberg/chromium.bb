@@ -44,7 +44,7 @@ public:
     static PassRefPtr<AXListBox> create(LayoutObject*, AXObjectCacheImpl*);
     virtual ~AXListBox();
 
-    virtual AccessibilityRole roleValue() const override { return ListBoxRole; }
+    virtual AccessibilityRole roleValue() const override;
 };
 
 } // namespace blink

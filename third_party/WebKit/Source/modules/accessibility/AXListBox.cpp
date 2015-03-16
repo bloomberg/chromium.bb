@@ -51,4 +51,12 @@ PassRefPtr<AXListBox> AXListBox::create(LayoutObject* layoutObject, AXObjectCach
     return adoptRef(new AXListBox(layoutObject, axObjectCache));
 }
 
+AccessibilityRole AXListBox::roleValue() const
+{
+    AccessibilityRole ariaRole = ariaRoleAttribute();
+    if (ariaRole != UnknownRole)
+        return ariaRole;
+    return ListBoxRole;
+}
+
 } // namespace blink

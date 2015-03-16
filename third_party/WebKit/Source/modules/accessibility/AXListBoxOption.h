@@ -47,7 +47,7 @@ public:
     static PassRefPtr<AXListBoxOption> create(LayoutObject*, AXObjectCacheImpl*);
     virtual ~AXListBoxOption();
 
-    virtual AccessibilityRole roleValue() const override { return ListBoxOptionRole; }
+    virtual AccessibilityRole roleValue() const override;
     virtual bool isSelected() const override;
     virtual bool isEnabled() const override;
     virtual bool isSelectedOptionActive() const override;

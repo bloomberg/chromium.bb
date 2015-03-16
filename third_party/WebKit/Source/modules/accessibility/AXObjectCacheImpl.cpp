@@ -259,8 +259,8 @@ PassRefPtr<AXObject> AXObjectCacheImpl::createFromRenderer(LayoutObject* layoutO
 
     // If the node is aria role="list" or the aria role is empty and its a
     // ul/ol/dl type (it shouldn't be a list if aria says otherwise).
-    if (node && ((nodeHasRole(node, "list") || nodeHasRole(node, "directory"))
-        || (nodeHasRole(node, nullAtom) && (isHTMLUListElement(*node) || isHTMLOListElement(*node) || isHTMLDListElement(*node)))))
+    if (nodeHasRole(node, "list") || nodeHasRole(node, "directory")
+        || (nodeHasRole(node, nullAtom) && (isHTMLUListElement(node) || isHTMLOListElement(node) || isHTMLDListElement(node))))
         return AXList::create(layoutObject, this);
 
     // aria tables

@@ -53,6 +53,14 @@ PassRefPtr<AXListBoxOption> AXListBoxOption::create(LayoutObject* layoutObject, 
     return adoptRef(new AXListBoxOption(layoutObject, axObjectCache));
 }
 
+AccessibilityRole AXListBoxOption::roleValue() const
+{
+    AccessibilityRole ariaRole = ariaRoleAttribute();
+    if (ariaRole != UnknownRole)
+        return ariaRole;
+    return ListBoxOptionRole;
+}
+
 bool AXListBoxOption::isEnabled() const
 {
     if (!node())

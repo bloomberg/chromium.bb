@@ -42,6 +42,14 @@ PassRefPtr<AXMenuList> AXMenuList::create(LayoutMenuList* layoutObject, AXObject
     return adoptRef(new AXMenuList(layoutObject, axObjectCache));
 }
 
+AccessibilityRole AXMenuList::roleValue() const
+{
+    AccessibilityRole ariaRole = ariaRoleAttribute();
+    if (ariaRole != UnknownRole)
+        return ariaRole;
+    return PopUpButtonRole;
+}
+
 bool AXMenuList::press() const
 {
     LayoutMenuList* menuList = toLayoutMenuList(m_layoutObject);

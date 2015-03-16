@@ -47,7 +47,7 @@ private:
     AXMenuList(LayoutMenuList*, AXObjectCacheImpl*);
 
     virtual bool isMenuList() const override { return true; }
-    virtual AccessibilityRole roleValue() const override { return PopUpButtonRole; }
+    virtual AccessibilityRole roleValue() const override;
     virtual bool canSetFocusAttribute() const override;
 
     virtual void addChildren() override;

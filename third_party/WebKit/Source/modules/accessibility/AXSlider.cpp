@@ -49,6 +49,14 @@ PassRefPtr<AXSlider> AXSlider::create(LayoutObject* layoutObject, AXObjectCacheI
     return adoptRef(new AXSlider(layoutObject, axObjectCache));
 }
 
+AccessibilityRole AXSlider::roleValue() const
+{
+    AccessibilityRole ariaRole = ariaRoleAttribute();
+    if (ariaRole != UnknownRole)
+        return ariaRole;
+    return SliderRole;
+}
+
 AccessibilityOrientation AXSlider::orientation() const
 {
     // Default to horizontal in the unknown case.
