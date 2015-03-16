@@ -41,6 +41,14 @@ DEFINE_TRACE(FilterData)
 #endif
 }
 
+void FilterData::dispose()
+{
+    m_context.clear();
+    m_displayItemList.clear();
+    builder = nullptr;
+    filter = nullptr;
+}
+
 LayoutSVGResourceFilter::LayoutSVGResourceFilter(SVGFilterElement* node)
     : LayoutSVGResourceContainer(node)
 {
@@ -50,9 +58,18 @@ LayoutSVGResourceFilter::~LayoutSVGResourceFilter()
 {
 }
 
+void LayoutSVGResourceFilter::disposeFilterMap()
+{
+#if ENABLE(OILPAN)
+    for (auto& filter : m_filter)
+        filter.value->dispose();
+#endif
+    m_filter.clear();
+}
+
 void LayoutSVGResourceFilter::destroy()
 {
-    m_filter.clear();
+    disposeFilterMap();
     LayoutSVGResourceContainer::destroy();
 }
 
@@ -63,7 +80,7 @@ bool LayoutSVGResourceFilter::isChildAllowed(LayoutObject* child, const LayoutSt
 
 void LayoutSVGResourceFilter::removeAllClientsFromCache(bool markForInvalidation)
 {
-    m_filter.clear();
+    disposeFilterMap();
     markAllClientsForInvalidation(markForInvalidation ? LayoutAndBoundariesInvalidation : ParentOnlyInvalidation);
 }
 
@@ -115,7 +132,7 @@ void LayoutSVGResourceFilter::primitiveAttributeChanged(LayoutObject* object, co
 {
     FilterMap::iterator it = m_filter.begin();
     FilterMap::iterator end = m_filter.end();
-    SVGFilterPrimitiveStandardAttributes* primitve = static_cast<SVGFilterPrimitiveStandardAttributes*>(object->node());
+    SVGFilterPrimitiveStandardAttributes* primitive = static_cast<SVGFilterPrimitiveStandardAttributes*>(object->node());
 
     for (; it != end; ++it) {
         FilterData* filterData = it->value.get();
@@ -128,7 +145,7 @@ void LayoutSVGResourceFilter::primitiveAttributeChanged(LayoutObject* object, co
             continue;
         // Since all effects shares the same attribute value, all
         // or none of them will be changed.
-        if (!primitve->setFilterEffectAttribute(effect, attribute))
+        if (!primitive->setFilterEffectAttribute(effect, attribute))
             return;
         builder->clearResultsRecursive(effect);
 
@@ -138,4 +155,4 @@ void LayoutSVGResourceFilter::primitiveAttributeChanged(LayoutObject* object, co
     markAllClientLayersForInvalidation();
 }
 
-}
+} // namespace blink

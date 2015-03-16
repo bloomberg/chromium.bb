@@ -56,6 +56,8 @@ public:
         return adoptPtrWillBeNoop(new FilterData());
     }
 
+    void dispose();
+
     DECLARE_TRACE();
 
     RefPtrWillBeMember<SVGFilter> filter;
@@ -100,7 +102,9 @@ public:
     void setFilterDataForLayoutObject(LayoutObject* object, PassOwnPtrWillBeRawPtr<FilterData> filterData) { m_filter.set(object, filterData); }
 
 private:
-    typedef WillBePersistentHeapHashMap<LayoutObject*, OwnPtrWillBeMember<FilterData>> FilterMap;
+    void disposeFilterMap();
+
+    using FilterMap = WillBePersistentHeapHashMap<LayoutObject*, OwnPtrWillBeMember<FilterData>>;
     FilterMap m_filter;
 };
 
