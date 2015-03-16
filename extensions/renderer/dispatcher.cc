@@ -24,6 +24,7 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_urls.h"
@@ -36,6 +37,7 @@
 #include "extensions/common/manifest_handlers/content_capabilities_handler.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
+#include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/message_bundle.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -54,6 +56,7 @@
 #include "extensions/renderer/document_custom_bindings.h"
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/event_bindings.h"
+#include "extensions/renderer/extension_groups.h"
 #include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/extensions_renderer_client.h"
 #include "extensions/renderer/file_system_natives.h"
@@ -202,8 +205,6 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
 
   RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
 
-  script_context_set_.reset(
-      new ScriptContextSet(&extensions_, &active_extension_ids_));
   user_script_set_manager_.reset(new UserScriptSetManager(&extensions_));
   script_injection_manager_.reset(
       new ScriptInjectionManager(&extensions_, user_script_set_manager_.get()));
@@ -227,6 +228,39 @@ bool Dispatcher::IsExtensionActive(const std::string& extension_id) const {
   return is_active;
 }
 
+const Extension* Dispatcher::GetExtensionFromFrameAndWorld(
+    const blink::WebFrame* frame,
+    int world_id,
+    bool use_effective_url) {
+  std::string extension_id;
+  if (world_id != 0) {
+    // Isolated worlds (content script).
+    extension_id = ScriptInjection::GetHostIdForIsolatedWorld(world_id);
+  } else if (!frame->document().securityOrigin().isUnique()) {
+    // TODO(kalman): Delete the above check.
+
+    // Extension pages (chrome-extension:// URLs).
+    GURL frame_url = ScriptContext::GetDataSourceURLForFrame(frame);
+    frame_url = ScriptContext::GetEffectiveDocumentURL(
+        frame, frame_url, use_effective_url);
+    extension_id = extensions_.GetExtensionOrAppIDByURL(frame_url);
+  }
+
+  const Extension* extension = extensions_.GetByID(extension_id);
+  if (!extension && !extension_id.empty()) {
+    // There are conditions where despite a context being associated with an
+    // extension, no extension actually gets found.  Ignore "invalid" because
+    // CSP blocks extension page loading by switching the extension ID to
+    // "invalid". This isn't interesting.
+    if (extension_id != "invalid") {
+      LOG(ERROR) << "Extension \"" << extension_id << "\" not found";
+      RenderThread::Get()->RecordAction(
+          UserMetricsAction("ExtensionNotFound_ED"));
+    }
+  }
+  return extension;
+}
+
 void Dispatcher::DidCreateScriptContext(
     blink::WebLocalFrame* frame,
     const v8::Handle<v8::Context>& v8_context,
@@ -234,13 +268,32 @@ void Dispatcher::DidCreateScriptContext(
     int world_id) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
-  ScriptContext* context = script_context_set_->Register(
-      frame, v8_context, extension_group, world_id);
+  const Extension* extension =
+      GetExtensionFromFrameAndWorld(frame, world_id, false);
+  const Extension* effective_extension =
+      GetExtensionFromFrameAndWorld(frame, world_id, true);
+
+  GURL frame_url = ScriptContext::GetDataSourceURLForFrame(frame);
+  Feature::Context context_type =
+      ClassifyJavaScriptContext(extension,
+                                extension_group,
+                                frame_url,
+                                frame->document().securityOrigin());
+  Feature::Context effective_context_type = ClassifyJavaScriptContext(
+      effective_extension,
+      extension_group,
+      ScriptContext::GetEffectiveDocumentURL(frame, frame_url, true),
+      frame->document().securityOrigin());
+
+  ScriptContext* context =
+      new ScriptContext(v8_context, frame, extension, context_type,
+                        effective_extension, effective_context_type);
+  script_context_set_.Add(context);
 
   // Initialize origin permissions for content scripts, which can't be
   // initialized in |OnActivateExtension|.
-  if (context->context_type() == Feature::CONTENT_SCRIPT_CONTEXT)
-    InitOriginPermissions(context->extension());
+  if (context_type == Feature::CONTENT_SCRIPT_CONTEXT)
+    InitOriginPermissions(extension);
 
   {
     scoped_ptr<ModuleSystem> module_system(
@@ -275,7 +328,7 @@ void Dispatcher::DidCreateScriptContext(
   delegate_->RequireAdditionalModules(context, is_within_platform_app);
 
   const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
-  switch (context->context_type()) {
+  switch (context_type) {
     case Feature::UNSPECIFIED_CONTEXT:
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_Unspecified",
                           elapsed);
@@ -303,14 +356,14 @@ void Dispatcher::DidCreateScriptContext(
       break;
   }
 
-  VLOG(1) << "Num tracked contexts: " << script_context_set_->size();
+  VLOG(1) << "Num tracked contexts: " << script_context_set_.size();
 }
 
 void Dispatcher::WillReleaseScriptContext(
     blink::WebLocalFrame* frame,
     const v8::Handle<v8::Context>& v8_context,
     int world_id) {
-  ScriptContext* context = script_context_set_->GetByV8Context(v8_context);
+  ScriptContext* context = script_context_set_.GetByV8Context(v8_context);
   if (!context)
     return;
 
@@ -318,8 +371,8 @@ void Dispatcher::WillReleaseScriptContext(
   // TODO(kalman): add an invalidation observer interface to ScriptContext.
   request_sender_->InvalidateSource(context);
 
-  script_context_set_->Remove(context);
-  VLOG(1) << "Num tracked contexts: " << script_context_set_->size();
+  script_context_set_.Remove(context);
+  VLOG(1) << "Num tracked contexts: " << script_context_set_.size();
 }
 
 void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
@@ -390,8 +443,7 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
   // Theoretically we could end up with bindings being injected into sandboxed
   // frames, for example content scripts. Don't let them execute API functions.
   blink::WebFrame* frame = context->web_frame();
-  if (ScriptContext::IsSandboxedPage(
-          extensions_, ScriptContext::GetDataSourceURLForFrame(frame))) {
+  if (IsSandboxedPage(ScriptContext::GetDataSourceURLForFrame(frame))) {
     static const char kMessage[] =
         "%s cannot be used within a sandboxed frame.";
     std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
@@ -418,9 +470,11 @@ void Dispatcher::DispatchEvent(const std::string& extension_id,
 
   // Needed for Windows compilation, since kEventBindings is declared extern.
   const char* local_event_bindings = kEventBindings;
-  script_context_set_->ForEach(
-      extension_id, base::Bind(&CallModuleMethod, local_event_bindings,
-                               kEventDispatchFunction, &args));
+  script_context_set_.ForEach(extension_id,
+                              base::Bind(&CallModuleMethod,
+                                         local_event_bindings,
+                                         kEventDispatchFunction,
+                                         &args));
 }
 
 void Dispatcher::InvokeModuleSystemMethod(content::RenderView* render_view,
@@ -433,8 +487,9 @@ void Dispatcher::InvokeModuleSystemMethod(content::RenderView* render_view,
   if (user_gesture)
     web_user_gesture.reset(new WebScopedUserGesture);
 
-  script_context_set_->ForEach(
-      extension_id, render_view,
+  script_context_set_.ForEach(
+      extension_id,
+      render_view,
       base::Bind(&CallModuleMethod, module_name, function_name, &args));
 
   // Reset the idle handler each time there's any activity like event or message
@@ -839,7 +894,8 @@ void Dispatcher::OnDeliverMessage(int target_port_id, const Message& message) {
         new RequestSender::ScopedTabID(request_sender(), it->second));
   }
 
-  MessagingBindings::DeliverMessage(*script_context_set_, target_port_id,
+  MessagingBindings::DeliverMessage(script_context_set_,
+                                    target_port_id,
                                     message,
                                     NULL);  // All render frames.
 }
@@ -856,15 +912,19 @@ void Dispatcher::OnDispatchOnConnect(
   source.tab.GetInteger("id", &sender_tab_id);
   port_to_tab_id_map_[target_port_id] = sender_tab_id;
 
-  MessagingBindings::DispatchOnConnect(*script_context_set_, target_port_id,
-                                       channel_name, source, info,
+  MessagingBindings::DispatchOnConnect(script_context_set_,
+                                       target_port_id,
+                                       channel_name,
+                                       source,
+                                       info,
                                        tls_channel_id,
                                        NULL);  // All render frames.
 }
 
 void Dispatcher::OnDispatchOnDisconnect(int port_id,
                                         const std::string& error_message) {
-  MessagingBindings::DispatchOnDisconnect(*script_context_set_, port_id,
+  MessagingBindings::DispatchOnDisconnect(script_context_set_,
+                                          port_id,
                                           error_message,
                                           NULL);  // All render frames.
 }
@@ -954,10 +1014,12 @@ void Dispatcher::OnUnloaded(const std::string& id) {
 
   // Invalidate all of the contexts that were removed.
   // TODO(kalman): add an invalidation observer interface to ScriptContext.
-  std::set<ScriptContext*> removed_contexts =
-      script_context_set_->OnExtensionUnloaded(id);
-  for (ScriptContext* context : removed_contexts) {
-    request_sender_->InvalidateSource(context);
+  ScriptContextSet::ContextSet removed_contexts =
+      script_context_set_.OnExtensionUnloaded(id);
+  for (ScriptContextSet::ContextSet::iterator it = removed_contexts.begin();
+       it != removed_contexts.end();
+       ++it) {
+    request_sender_->InvalidateSource(*it);
   }
 
   // Update the available bindings for the remaining contexts. These may have
@@ -1320,6 +1382,75 @@ bool Dispatcher::IsWithinPlatformApp() {
       return true;
   }
   return false;
+}
+
+// TODO(kalman): This is checking for the wrong thing, it should be checking if
+// the frame's security origin is unique. The extension sandbox directive is
+// checked for in extensions/common/manifest_handlers/csp_info.cc.
+bool Dispatcher::IsSandboxedPage(const GURL& url) const {
+  if (url.SchemeIs(kExtensionScheme)) {
+    const Extension* extension = extensions_.GetByID(url.host());
+    if (extension) {
+      return SandboxedPageInfo::IsSandboxedPage(extension, url.path());
+    }
+  }
+  return false;
+}
+
+Feature::Context Dispatcher::ClassifyJavaScriptContext(
+    const Extension* extension,
+    int extension_group,
+    const GURL& url,
+    const blink::WebSecurityOrigin& origin) {
+  // WARNING: This logic must match ProcessMap::GetContextType, as much as
+  // possible.
+
+  DCHECK_GE(extension_group, 0);
+  if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS) {
+    return extension ?  // TODO(kalman): when does this happen?
+               Feature::CONTENT_SCRIPT_CONTEXT
+                     : Feature::UNSPECIFIED_CONTEXT;
+  }
+
+  // We have an explicit check for sandboxed pages before checking whether the
+  // extension is active in this process because:
+  // 1. Sandboxed pages run in the same process as regular extension pages, so
+  //    the extension is considered active.
+  // 2. ScriptContext creation (which triggers bindings injection) happens
+  //    before the SecurityContext is updated with the sandbox flags (after
+  //    reading the CSP header), so the caller can't check if the context's
+  //    security origin is unique yet.
+  if (IsSandboxedPage(url))
+    return Feature::WEB_PAGE_CONTEXT;
+
+  if (extension && IsExtensionActive(extension->id())) {
+    // |extension| is active in this process, but it could be either a true
+    // extension process or within the extent of a hosted app. In the latter
+    // case this would usually be considered a (blessed) web page context,
+    // unless the extension in question is a component extension, in which case
+    // we cheat and call it blessed.
+    return (extension->is_hosted_app() &&
+            extension->location() != Manifest::COMPONENT)
+               ? Feature::BLESSED_WEB_PAGE_CONTEXT
+               : Feature::BLESSED_EXTENSION_CONTEXT;
+  }
+
+  // TODO(kalman): This isUnique() check is wrong, it should be performed as
+  // part of IsSandboxedPage().
+  if (!origin.isUnique() && extensions_.ExtensionBindingsAllowed(url)) {
+    if (!extension)  // TODO(kalman): when does this happen?
+      return Feature::UNSPECIFIED_CONTEXT;
+    return extension->is_hosted_app() ? Feature::BLESSED_WEB_PAGE_CONTEXT
+                                      : Feature::UNBLESSED_EXTENSION_CONTEXT;
+  }
+
+  if (!url.is_valid())
+    return Feature::UNSPECIFIED_CONTEXT;
+
+  if (url.SchemeIs(content::kChromeUIScheme))
+    return Feature::WEBUI_CONTEXT;
+
+  return Feature::WEB_PAGE_CONTEXT;
 }
 
 v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(
