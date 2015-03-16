@@ -58,6 +58,8 @@ class InstrumentedPackageBuilder(object):
     product_dir = real_path(args.product_dir)
     self._destdir = os.path.join(
         product_dir, 'instrumented_libraries', self._sanitizer)
+    self._source_archives_dir = os.path.join(
+        product_dir, 'instrumented_libraries', 'sources', self._package)
 
     self._cflags = unescape_flags(args.cflags)
     if args.sanitizer_blacklist:
@@ -70,6 +72,7 @@ class InstrumentedPackageBuilder(object):
 
     # Initialized later.
     self._source_dir = None
+    self._source_archives = None
 
   def init_build_env(self):
     self._build_env = os.environ.copy()
@@ -105,7 +108,11 @@ class InstrumentedPackageBuilder(object):
       raise Exception('Failed to run: %s' % command)
 
   def maybe_download_source(self):
-    """Checks out the source code (if needed) and sets self._source_dir."""
+    """Checks out the source code (if needed).
+
+    Checks out the source code for the package, if required (i.e. unless running
+    in no-clobber mode). Initializes self._source_dir and self._source_archives.
+    """
     get_fresh_source = self._clobber or not os.path.exists(self._working_dir)
     if get_fresh_source:
       self.shell_call('rm -rf %s' % self._working_dir)
@@ -114,10 +121,18 @@ class InstrumentedPackageBuilder(object):
                       cwd=self._working_dir)
 
     (dirpath, dirnames, filenames) = os.walk(self._working_dir).next()
+
     if len(dirnames) != 1:
-      raise Exception('apt-get source %s must create exactly one subdirectory.'
-         % self._package)
+      raise Exception(
+          '`apt-get source %s\' must create exactly one subdirectory.'
+              % self._package)
     self._source_dir = os.path.join(dirpath, dirnames[0], '')
+
+    if len(filenames) == 0:
+      raise Exception('Can\'t find source archives after `apt-get source %s\'.'
+         % self._package)
+    self._source_archives = \
+        [os.path.join(dirpath, filename) for filename in filenames]
 
     return get_fresh_source
 
@@ -127,10 +142,24 @@ class InstrumentedPackageBuilder(object):
     if self._run_before_build:
       self.shell_call(self._run_before_build, cwd=self._source_dir)
 
+  def copy_source_archives(self):
+    """Copies the downloaded source archives to the output dir.
+
+    For license compliance purposes, every Chromium build that includes
+    instrumented libraries must include their full source code.
+    """
+    self.shell_call('rm -rf %s' % self._source_archives_dir)
+    os.makedirs(self._source_archives_dir)
+    for filename in self._source_archives:
+      shutil.copy(filename, self._source_archives_dir)
+    if self._patch:
+      shutil.copy(self._patch, self._source_archives_dir)
+
   def download_build_install(self):
     got_fresh_source = self.maybe_download_source()
     if got_fresh_source:
       self.patch_source()
+      self.copy_source_archives()
 
     self.shell_call('mkdir -p %s' % self.dest_libdir())
 
