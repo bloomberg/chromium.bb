@@ -2,6 +2,7 @@ ld-linux.so.2
 ld-linux.so.2(GLIBC_2.1)
 ld-linux.so.2(GLIBC_2.3)
 libasound.so.2
+libatk-1.0.so.0
 libcairo.so.2
 libcap.so.2
 libc.so.6
@@ -33,6 +34,7 @@ libgdk_pixbuf-2.0.so.0
 libgdk-x11-2.0.so.0
 libgio-2.0.so.0
 libglib-2.0.so.0
+libgmodule-2.0.so.0
 libgobject-2.0.so.0
 libgtk-x11-2.0.so.0
 libm.so.6

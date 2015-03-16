@@ -61,6 +61,8 @@ class AXPlatformNodeBase : public AXPlatformNode {
   base::string16 GetString16Attribute(
       ui::AXStringAttribute attribute) const;
 
+  AXPlatformNodeDelegate* delegate_;  // Weak. Owns this.
+
  protected:
   AXPlatformNodeBase();
   ~AXPlatformNodeBase() override;
@@ -70,7 +72,7 @@ class AXPlatformNodeBase : public AXPlatformNode {
   static AXPlatformNodeBase* FromNativeViewAccessible(
       gfx::NativeViewAccessible accessible);
 
-  AXPlatformNodeDelegate* delegate_;  // Weak. Owns this.
+
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeBase);

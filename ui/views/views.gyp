@@ -423,6 +423,8 @@
       'widget/desktop_aura/desktop_cursor_loader_updater_auralinux.h',
     ],
     'views_desktop_aura_x11_sources': [
+      'accessibility/native_view_accessibility_auralinux.cc',
+      'accessibility/native_view_accessibility_auralinux.h',
       'widget/desktop_aura/desktop_drag_drop_client_aurax11.cc',
       'widget/desktop_aura/desktop_drag_drop_client_aurax11.h',
       'widget/desktop_aura/desktop_screen_x11.cc',
@@ -635,6 +637,7 @@
         }],
         ['OS=="linux" and chromeos==0', {
           'dependencies': [
+            '../../build/linux/system.gyp:atk',
             '../shell_dialogs/shell_dialogs.gyp:shell_dialogs',
           ],
           'sources!': [

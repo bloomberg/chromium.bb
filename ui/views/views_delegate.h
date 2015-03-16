@@ -135,6 +135,9 @@ class VIEWS_EXPORT ViewsDelegate {
   // Returns the context factory for new windows.
   virtual ui::ContextFactory* GetContextFactory();
 
+  // Returns the user-visible name of the application.
+  virtual std::string GetApplicationName();
+
 #if defined(OS_WIN)
   // Starts a query for the appbar autohide edges of the specified monitor and
   // returns the current value.  If the query finds the edges have changed from

@@ -1,5 +1,6 @@
 gconf-service
 libasound2 (>= 1.0.23)
+libatk1.0-0 (>= 1.12.4)
 libc6 (>= 2.11)
 libcairo2 (>= 1.6.0)
 libcap2 (>= 2.10)
