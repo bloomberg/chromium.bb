@@ -45,7 +45,7 @@ interface HTMLElement : Element {
 
     // CSSOM View Module
     // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlelement-interface
-    [ImplementedAs=offsetParentForBindings, PerWorldBindings] readonly attribute Element? offsetParent;
+    [PerWorldBindings] readonly attribute Element? offsetParent;
     readonly attribute long offsetTop;
     readonly attribute long offsetLeft;
     readonly attribute long offsetWidth;

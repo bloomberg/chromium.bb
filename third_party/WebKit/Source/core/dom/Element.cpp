@@ -545,20 +545,22 @@ int Element::offsetHeight()
     return 0;
 }
 
-Element* Element::offsetParentForBindings()
-{
-    Element* element = offsetParent();
-    if (!element || !element->isInShadowTree())
-        return element;
-    return element->containingShadowRoot()->shouldExposeToBindings() ? element : nullptr;
-}
-
 Element* Element::offsetParent()
 {
     document().updateLayoutIgnorePendingStylesheets();
-    if (LayoutObject* renderer = this->layoutObject())
-        return renderer->offsetParent();
-    return nullptr;
+
+    LayoutObject* renderer = layoutObject();
+    if (!renderer)
+        return nullptr;
+
+    Element* element = renderer->offsetParent();
+    if (!element)
+        return nullptr;
+
+    if (element->isInShadowTree() && !element->containingShadowRoot()->shouldExposeToBindings())
+        return nullptr;
+
+    return element;
 }
 
 int Element::clientLeft()

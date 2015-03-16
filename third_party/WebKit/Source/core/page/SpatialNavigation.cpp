@@ -366,8 +366,11 @@ static LayoutRect rectToAbsoluteCoordinates(LocalFrame* initialFrame, const Layo
         // FIXME: Spatial navigation is broken for OOPI.
         Element* element = frame->deprecatedLocalOwner();
         if (element) {
-            for (; element; element = element->offsetParent())
+            do {
                 rect.move(element->offsetLeft(), element->offsetTop());
+                LayoutObject* layoutObject = element->layoutObject();
+                element = layoutObject ? layoutObject->offsetParent() : nullptr;
+            } while (element);
             rect.move((-toLocalFrame(frame)->view()->scrollOffset()));
         }
     }
