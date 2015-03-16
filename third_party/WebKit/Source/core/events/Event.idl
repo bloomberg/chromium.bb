@@ -18,58 +18,59 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// Introduced in DOM Level 2:
+// https://dom.spec.whatwg.org/#interface-event
+
 [
     WillBeGarbageCollected,
     EventConstructor,
     Exposed=(Window,Worker)
 ] interface Event {
+    readonly attribute DOMString type;
+    readonly attribute EventTarget? target;
+    readonly attribute EventTarget? currentTarget;
 
-    // DOM PhaseType
-    const unsigned short NONE                = 0;
-    const unsigned short CAPTURING_PHASE     = 1;
-    const unsigned short AT_TARGET           = 2;
-    const unsigned short BUBBLING_PHASE      = 3;
+    const unsigned short NONE = 0;
+    const unsigned short CAPTURING_PHASE = 1;
+    const unsigned short AT_TARGET = 2;
+    const unsigned short BUBBLING_PHASE = 3;
+    readonly attribute unsigned short eventPhase;
 
-    // Reverse-engineered from Netscape
-    const unsigned short MOUSEDOWN           = 1;
-    const unsigned short MOUSEUP             = 2;
-    const unsigned short MOUSEOVER           = 4;
-    const unsigned short MOUSEOUT            = 8;
-    const unsigned short MOUSEMOVE           = 16;
-    const unsigned short MOUSEDRAG           = 32;
-    const unsigned short CLICK               = 64;
-    const unsigned short DBLCLICK            = 128;
-    const unsigned short KEYDOWN             = 256;
-    const unsigned short KEYUP               = 512;
-    const unsigned short KEYPRESS            = 1024;
-    const unsigned short DRAGDROP            = 2048;
-    const unsigned short FOCUS               = 4096;
-    const unsigned short BLUR                = 8192;
-    const unsigned short SELECT              = 16384;
-    const unsigned short CHANGE              = 32768;
+    void stopPropagation();
+    void stopImmediatePropagation();
 
-    readonly attribute DOMString        type;
-    readonly attribute EventTarget      target;
-    readonly attribute EventTarget      currentTarget;
-    readonly attribute unsigned short   eventPhase;
     [InitializedByEventConstructor] readonly attribute boolean bubbles;
     [InitializedByEventConstructor] readonly attribute boolean cancelable;
-    readonly attribute DOMTimeStamp     timeStamp;
+    void preventDefault();
+    readonly attribute boolean defaultPrevented;
 
-    void               stopPropagation();
-    void               preventDefault();
+    // FIXME: Implement the isTrusted attribute. crbug.com/334015
+    // [Unforgeable] readonly attribute boolean isTrusted;
+    readonly attribute DOMTimeStamp timeStamp;
+
+    // FIXME: initEvent()'s arguments should not be optional.
     void initEvent([Default=Undefined] optional DOMString eventTypeArg,
                    [Default=Undefined] optional boolean canBubbleArg,
                    [Default=Undefined] optional boolean cancelableArg);
 
-    // DOM Level 3 Additions.
-    readonly attribute boolean defaultPrevented;
-    void stopImmediatePropagation();
-
-    // IE Extensions
+    // Non-standard APIs
+    const unsigned short MOUSEDOWN = 1;
+    const unsigned short MOUSEUP   = 2;
+    const unsigned short MOUSEOVER = 4;
+    const unsigned short MOUSEOUT  = 8;
+    const unsigned short MOUSEMOVE = 16;
+    const unsigned short MOUSEDRAG = 32;
+    const unsigned short CLICK     = 64;
+    const unsigned short DBLCLICK  = 128;
+    const unsigned short KEYDOWN   = 256;
+    const unsigned short KEYUP     = 512;
+    const unsigned short KEYPRESS  = 1024;
+    const unsigned short DRAGDROP  = 2048;
+    const unsigned short FOCUS     = 4096;
+    const unsigned short BLUR      = 8192;
+    const unsigned short SELECT    = 16384;
+    const unsigned short CHANGE    = 32768;
     [MeasureAs=EventSrcElement] readonly attribute EventTarget srcElement;
-    [CallWith=ExecutionContext, ImplementedAs=legacyReturnValue, MeasureAs=EventReturnValue] attribute boolean returnValue;
+    [MeasureAs=EventReturnValue, CallWith=ExecutionContext, ImplementedAs=legacyReturnValue] attribute boolean returnValue;
     [MeasureAs=EventCancelBubble] attribute boolean cancelBubble;
     [MeasureAs=EventPath] readonly attribute EventTarget[] path;
 };

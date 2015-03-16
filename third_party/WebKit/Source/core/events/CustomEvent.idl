@@ -23,12 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://dom.spec.whatwg.org/#interface-customevent
+
 [
     EventConstructor,
     Exposed=(Window,Worker)
 ] interface CustomEvent : Event {
     [Custom=Getter, InitializedByEventConstructor] readonly attribute any detail;
 
+    // FIXME: initCustomEvent()'s arguments should not be optional.
     [Custom] void initCustomEvent([Default=Undefined] optional DOMString typeArg,
                                   [Default=Undefined] optional boolean canBubbleArg,
                                   [Default=Undefined] optional boolean cancelableArg,
