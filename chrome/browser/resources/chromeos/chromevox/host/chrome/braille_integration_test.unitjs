@@ -14,7 +14,9 @@ GEN_INCLUDE(['../../testing/chromevox_unittest_base.js',
  * @constructor
  * @extends {ChromeVoxUnitTestBase}
  */
-function CvoxBrailleIntegrationUnitTest() {}
+function CvoxBrailleIntegrationUnitTest() {
+  ChromeVoxUnitTestBase.call(this);
+}
 
 CvoxBrailleIntegrationUnitTest.prototype = {
   __proto__: ChromeVoxUnitTestBase.prototype,
@@ -29,6 +31,9 @@ CvoxBrailleIntegrationUnitTest.prototype = {
     'cvox.ValueSelectionSpan',
     'cvox.ValueSpan',
   ],
+
+  /** @override */
+  isAsync: true,
 
   /** @override */
   setUp: function() {
@@ -63,6 +68,25 @@ CvoxBrailleIntegrationUnitTest.prototype = {
 
   sendCommand: function(command, content) {
     this.displayManager.commandListener(command, content);
+  },
+
+  /**
+   * Waits for {@code document} to gain focus, arranging to call
+   * {@code testDone} afterwards.
+   * @param {Function()} callback Called when focus is gained
+   */
+  awaitDocumentFocused: function(callback) {
+    callback = this.newCallback(callback);
+    if (!document.hasFocus()) {
+      var listener = this.newCallback(function() {
+        assertTrue(document.hasFocus());
+        window.removeEventListener('focus', listener);
+        callback();
+      });
+      window.addEventListener('focus', listener);
+    } else {
+      callback();
+    }
   }
 };
 
@@ -144,6 +168,7 @@ function FakeTranslatorManager() {
 TEST_F('CvoxBrailleIntegrationUnitTest', 'Write', function() {
   this.braille.write(this.content1);
   assertEqualsJSON(this.content1, this.displayManager.content);
+  testDone();
 });
 
 TEST_F('CvoxBrailleIntegrationUnitTest', 'WriteWithSpans', function() {
@@ -159,73 +184,72 @@ TEST_F('CvoxBrailleIntegrationUnitTest', 'WriteWithSpans', function() {
 
   this.braille.write(toSend);
   assertEqualsJSON(expected, this.displayManager.content);
+  testDone();
 });
 
-// Disabled due to Linux ChromiumOS Tests (1) flakes; http://crbug.com/462294.
-TEST_F('CvoxBrailleIntegrationUnitTest', 'DISABLED_CommandNoContent',
-       function() {
+TEST_F('CvoxBrailleIntegrationUnitTest', 'CommandNoContent', function() {
   // Commands are only delivered to the content script if the window has focus.
-  window.focus();
-  this.sendCommand(this.command1, null);
-  assertEqualsJSON(this.command1, this.lastCommand);
-  assertEquals(null, this.lastCommandContent);
+  this.awaitDocumentFocused(function() {
+    this.sendCommand(this.command1, null);
+    assertEqualsJSON(this.command1, this.lastCommand);
+    assertEquals(null, this.lastCommandContent);
+  });
 });
 
-// Disabled due to Linux ChromiumOS Tests (1) flakes; http://crbug.com/462294.
 TEST_F('CvoxBrailleIntegrationUnitTest',
-       'DISABLED_InterleavedWritesAndCommands',
+       'InterleavedWritesAndCommands',
        function() {
-  window.focus();
-  this.braille.write(this.content1);
-  this.sendCommand(this.command1, this.displayManager.content);
-  assertEqualsJSON(this.command1, this.lastCommand);
-  assertEqualsJSON(this.content1, this.lastCommandContent);
+  this.awaitDocumentFocused(function() {
+    this.braille.write(this.content1);
+    this.sendCommand(this.command1, this.displayManager.content);
+    assertEqualsJSON(this.command1, this.lastCommand);
+    assertEqualsJSON(this.content1, this.lastCommandContent);
 
-  var savedContent1 = this.displayManager.content;
-  this.braille.write(this.content2);
-  // Old content still on display.
-  this.sendCommand(this.command1, savedContent1);
-  assertEqualsJSON(this.command1, this.lastCommand);
-  assertEquals(null, this.lastCommandContent);
-  this.sendCommand(this.command2, this.displayManager.content);
-  assertEqualsJSON(this.command2, this.lastCommand);
-  assertEqualsJSON(this.content2, this.lastCommandContent);
-
+    var savedContent1 = this.displayManager.content;
+    this.braille.write(this.content2);
+    // Old content still on display.
+    this.sendCommand(this.command1, savedContent1);
+    assertEqualsJSON(this.command1, this.lastCommand);
+    assertEquals(null, this.lastCommandContent);
+    this.sendCommand(this.command2, this.displayManager.content);
+    assertEqualsJSON(this.command2, this.lastCommand);
+    assertEqualsJSON(this.content2, this.lastCommandContent);
+  });
 });
 
-// Disabled due to Linux ChromiumOS Tests (1) flakes; http://crbug.com/462294.
-TEST_F('CvoxBrailleIntegrationUnitTest', 'DISABLED_CommandAfterBackgroundWrite',
+TEST_F('CvoxBrailleIntegrationUnitTest', 'CommandAfterBackgroundWrite',
        function() {
-  window.focus();
-  this.braille.write(this.content1);
-  this.sendCommand(this.command1, this.displayManager.content);
-  assertEqualsJSON(this.command1, this.lastCommand);
-  assertEqualsJSON(this.content1, this.lastCommandContent);
+  this.awaitDocumentFocused(function() {
+    this.braille.write(this.content1);
+    this.sendCommand(this.command1, this.displayManager.content);
+    assertEqualsJSON(this.command1, this.lastCommand);
+    assertEqualsJSON(this.content1, this.lastCommandContent);
 
-  this.brailleBackground.write(this.content2);
-  assertEqualsJSON(this.content2, this.displayManager.content);
-  this.sendCommand(this.command2, this.displayManager.content);
-  assertEqualsJSON(this.command2, this.lastCommand);
-  assertEquals(null, this.lastCommandContent);
+    this.brailleBackground.write(this.content2);
+    assertEqualsJSON(this.content2, this.displayManager.content);
+    this.sendCommand(this.command2, this.displayManager.content);
+    assertEqualsJSON(this.command2, this.lastCommand);
+    assertEquals(null, this.lastCommandContent);
+  });
 });
 
-// Disabled due to Linux ChromiumOS Tests (1) flakes; http://crbug.com/462294.
-TEST_F('CvoxBrailleIntegrationUnitTest', 'DISABLED_CommandAfterOtherTabWrite',
+TEST_F('CvoxBrailleIntegrationUnitTest', 'CommandAfterOtherTabWrite',
        function() {
-  window.focus();
-  // Ignore the listener of the braille from the second 'tab'.
-  cvox.ExtensionBridge.addMessageListener = function() {}
-  // Create another content script braille object, presumably from another
-  // tab.
-  var anotherBraille = new cvox.ChromeBraille();
-  this.braille.write(this.content1);
-  this.sendCommand(this.command1, this.displayManager.content);
-  // Now, this other braille gets a different unique id.
-  cvox.ExtensionBridge.uniqueId = function() { return 2; }
-  anotherBraille.write(this.content2);
-  this.sendCommand(this.command2, this.displayManager.content);
-  // The first 'tab' still gets the command, but since the second 'tab's\
-  // braille was on the display, it gets null content.
-  assertEqualsJSON(this.command2, this.lastCommand);
-  assertEquals(null, this.lastCommandContent);
+  this.awaitDocumentFocused(function() {
+    // Ignore the listener of the braille from the second 'tab'.
+    cvox.ExtensionBridge.addMessageListener = function() {}
+    // Create another content script braille object, presumably from another
+    // tab.
+    var anotherBraille = new cvox.ChromeBraille();
+    this.braille.write(this.content1);
+    this.sendCommand(this.command1, this.displayManager.content);
+    // Now, this other braille gets a different unique id.
+    cvox.ExtensionBridge.uniqueId = function() { return 2; }
+    anotherBraille.write(this.content2);
+    this.sendCommand(this.command2, this.displayManager.content);
+    // The first 'tab' still gets the command, but since the second 'tab's\
+    // braille was on the display, it gets null content.
+    assertEqualsJSON(this.command2, this.lastCommand);
+    assertEquals(null, this.lastCommandContent);
+  });
 });
