@@ -159,10 +159,25 @@ const jobject GetApplicationContext() {
 ScopedJavaLocalRef<jclass> GetClass(JNIEnv* env, const char* class_name) {
   jclass clazz;
   if (!g_class_loader.Get().is_null()) {
+    // ClassLoader.loadClass expects a classname with components separated by
+    // dots instead of the slashes that JNIEnv::FindClass expects. The JNI
+    // generator generates names with slashes, so we have to replace them here.
+    // TODO(torne): move to an approach where we always use ClassLoader except
+    // for the special case of base::android::GetClassLoader(), and change the
+    // JNI generator to generate dot-separated names. http://crbug.com/461773
+    size_t bufsize = strlen(class_name) + 1;
+    char dotted_name[bufsize];
+    memmove(dotted_name, class_name, bufsize);
+    for (size_t i = 0; i < bufsize; ++i) {
+      if (dotted_name[i] == '/') {
+        dotted_name[i] = '.';
+      }
+    }
+
     clazz = static_cast<jclass>(
         env->CallObjectMethod(g_class_loader.Get().obj(),
                               g_class_loader_load_class_method_id,
-                              ConvertUTF8ToJavaString(env, class_name).obj()));
+                              ConvertUTF8ToJavaString(env, dotted_name).obj()));
   } else {
     clazz = env->FindClass(class_name);
   }
