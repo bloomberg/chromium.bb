@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "chrome/common/service_process_util_posix.h"
 #include "content/public/browser/browser_thread.h"

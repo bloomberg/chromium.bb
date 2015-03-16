@@ -87,10 +87,6 @@ void Launchd::SetInstance(Launchd* instance) {
 
 Launchd::~Launchd() { }
 
-CFDictionaryRef Launchd::CopyExports() {
-  return GTMCopyLaunchdExports();
-}
-
 CFDictionaryRef Launchd::CopyJobDictionary(CFStringRef label) {
   return GTMSMJobCopyDictionary(label);
 }

@@ -32,21 +32,15 @@ class MessageLoopProxy;
 // Return the IPC channel to connect to the service process.
 IPC::ChannelHandle GetServiceProcessChannel();
 
-#if !defined(OS_MACOSX)
 // Return a name that is scoped to this instance of the service process. We
 // use the user-data-dir as a scoping prefix.
 std::string GetServiceProcessScopedName(const std::string& append_str);
 
+#if !defined(OS_MACOSX)
 // Return a name that is scoped to this instance of the service process. We
 // use the user-data-dir and the version as a scoping prefix.
 std::string GetServiceProcessScopedVersionedName(const std::string& append_str);
-#endif  // OS_MACOSX
-
-#if defined(OS_MACOSX)
-// Return the name that is used to extract the socket path out of the
-// dictionary provided by launchd.
-NSString* GetServiceProcessLaunchDSocketEnvVar();
-#endif
+#endif  // !OS_MACOSX
 
 #if defined(OS_POSIX)
 // Attempts to take a lock named |name|. If |waiting| is true then this will

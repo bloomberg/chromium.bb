@@ -216,6 +216,11 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   content::RegisterPathProvider();
 
+  base::FilePath user_data_dir =
+      command_line->GetSwitchValuePath(switches::kUserDataDir);
+  CHECK(!user_data_dir.empty());
+  CHECK(test_launcher_utils::OverrideUserDataDir(user_data_dir));
+
 #if defined(OS_MACOSX)
   if (!command_line->HasSwitch(kTestExecutablePath))
     return kMissingSwitch;
@@ -226,10 +231,6 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   Launchd::ScopedInstance use_mock(&mock_launchd);
 #endif
 
-  base::FilePath user_data_dir =
-      command_line->GetSwitchValuePath(switches::kUserDataDir);
-  CHECK(!user_data_dir.empty());
-  CHECK(test_launcher_utils::OverrideUserDataDir(user_data_dir));
 
   ServiceProcessState* state(new ServiceProcessState);
   bool service_process_state_initialized = state->Initialize();
@@ -390,19 +391,6 @@ void CloudPrintProxyPolicyStartupTest::SetUp() {
   content::SetBrowserClientForTesting(browser_content_client_.get());
 
   TestingBrowserProcess::CreateInstance();
-#if defined(OS_MACOSX)
-  EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-  EXPECT_TRUE(MockLaunchd::MakeABundle(temp_dir_.path(),
-                                       "CloudPrintProxyTest",
-                                       &bundle_path_,
-                                       &executable_path_));
-  mock_launchd_.reset(new MockLaunchd(executable_path_,
-                                      base::MessageLoopForUI::current(),
-                                      true, false));
-  scoped_launchd_instance_.reset(
-      new Launchd::ScopedInstance(mock_launchd_.get()));
-#endif
-
   // Ensure test does not use the standard profile directory. This is copied
   // from InProcessBrowserTest::SetUp(). These tests require a more complex
   // process startup so they are unable to just inherit from
@@ -420,6 +408,19 @@ void CloudPrintProxyPolicyStartupTest::SetUp() {
     command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
   }
   ASSERT_TRUE(test_launcher_utils::OverrideUserDataDir(user_data_dir));
+
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+  EXPECT_TRUE(MockLaunchd::MakeABundle(temp_dir_.path(),
+                                       "CloudPrintProxyTest",
+                                       &bundle_path_,
+                                       &executable_path_));
+  mock_launchd_.reset(new MockLaunchd(executable_path_,
+                                      base::MessageLoopForUI::current(),
+                                      true, false));
+  scoped_launchd_instance_.reset(
+      new Launchd::ScopedInstance(mock_launchd_.get()));
+#endif
 }
 
 void CloudPrintProxyPolicyStartupTest::TearDown() {

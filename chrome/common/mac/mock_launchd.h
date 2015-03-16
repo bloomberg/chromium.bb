@@ -32,7 +32,6 @@ class MockLaunchd : public Launchd {
               bool create_socket, bool as_service);
   ~MockLaunchd() override;
 
-  CFDictionaryRef CopyExports() override;
   CFDictionaryRef CopyJobDictionary(CFStringRef label) override;
   CFDictionaryRef CopyDictionaryByCheckingIn(CFErrorRef* error) override;
   bool RemoveJob(CFStringRef label, CFErrorRef* error) override;

@@ -3035,6 +3035,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Event counts in ServiceProcessControl.</summary>
 </histogram>
 
+<histogram name="CloudPrint.ServiceProcessSocketLength">
+  <owner>vitalybuka@chromium.org</owner>
+  <summary>
+    Temporarily histogram with size of IPC sockets in default location.
+    TODO(vitalybuka) Remove after investigation http://crbug.com/466644
+  </summary>
+</histogram>
+
 <histogram name="CloudPrint.ServiceUtilityCapsFailTime" units="ms">
   <owner>vitalybuka@chromium.org</owner>
   <summary>

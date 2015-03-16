@@ -33,9 +33,6 @@ class Launchd {
 
   virtual ~Launchd();
 
-  // Return a dictionary with the launchd export settings.
-  virtual CFDictionaryRef CopyExports();
-
   // Return a dictionary with the launchd entries for job labeled |name|.
   virtual CFDictionaryRef CopyJobDictionary(CFStringRef label);
 

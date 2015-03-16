@@ -96,21 +96,6 @@ ServiceProcessRunningState GetServiceProcessRunningState(
 
 }  // namespace
 
-// Return a name that is scoped to this instance of the service process. We
-// use the hash of the user-data-dir as a scoping prefix. We can't use
-// the user-data-dir itself as we have limits on the size of the lock names.
-std::string GetServiceProcessScopedName(const std::string& append_str) {
-  base::FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-#if defined(OS_WIN)
-  std::string user_data_dir_path = base::WideToUTF8(user_data_dir.value());
-#elif defined(OS_POSIX)
-  std::string user_data_dir_path = user_data_dir.value();
-#endif  // defined(OS_WIN)
-  std::string hash = base::SHA1HashString(user_data_dir_path);
-  std::string hex_hash = base::HexEncode(hash.c_str(), hash.length());
-  return hex_hash + "." + append_str;
-}
 
 // Return a name that is scoped to this instance of the service process. We
 // use the user-data-dir and the version as a scoping prefix.
@@ -147,6 +132,22 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
 }
 
 #endif  // !OS_MACOSX
+
+// Return a name that is scoped to this instance of the service process. We
+// use the hash of the user-data-dir as a scoping prefix. We can't use
+// the user-data-dir itself as we have limits on the size of the lock names.
+std::string GetServiceProcessScopedName(const std::string& append_str) {
+  base::FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+#if defined(OS_WIN)
+  std::string user_data_dir_path = base::WideToUTF8(user_data_dir.value());
+#elif defined(OS_POSIX)
+  std::string user_data_dir_path = user_data_dir.value();
+#endif  // defined(OS_WIN)
+  std::string hash = base::SHA1HashString(user_data_dir_path);
+  std::string hex_hash = base::HexEncode(hash.c_str(), hash.length());
+  return hex_hash + "." + append_str;
+}
 
 scoped_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
   base::FilePath exe_path;

@@ -17,6 +17,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -27,6 +28,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/mac/launchd.h"
+#include "ipc/unix_domain_socket_util.h"
 
 using ::base::FilePathWatcher;
 
@@ -44,11 +46,11 @@ CFStringRef CopyServiceProcessLaunchDName() {
 NSString* GetServiceProcessLaunchDLabel() {
   base::scoped_nsobject<NSString> name(
       base::mac::CFToNSCast(CopyServiceProcessLaunchDName()));
-  NSString *label = [name stringByAppendingString:@".service_process"];
+  NSString* label = [name stringByAppendingString:@".service_process"];
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   std::string user_data_dir_path = user_data_dir.value();
-  NSString *ns_path = base::SysUTF8ToNSString(user_data_dir_path);
+  NSString* ns_path = base::SysUTF8ToNSString(user_data_dir_path);
   ns_path = [ns_path stringByReplacingOccurrencesOfString:@" "
                                                withString:@"_"];
   label = [label stringByAppendingString:ns_path];
@@ -84,29 +86,27 @@ class ExecFilePathWatcherCallback {
   FSRef executable_fsref_;
 };
 
-}  // namespace
-
-NSString* GetServiceProcessLaunchDSocketEnvVar() {
-  NSString *label = GetServiceProcessLaunchDLabel();
-  NSString *env_var = [label stringByReplacingOccurrencesOfString:@"."
-                                                       withString:@"_"];
-  env_var = [env_var stringByAppendingString:@"_SOCKET"];
-  env_var = [env_var uppercaseString];
-  return env_var;
+base::FilePath GetServiceProcessSocketName() {
+  base::FilePath socket_name;
+  PathService::Get(base::DIR_TEMP, &socket_name);
+  std::string pipe_name = GetServiceProcessScopedName("srv");
+  socket_name = socket_name.Append(pipe_name);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("CloudPrint.ServiceProcessSocketLength",
+                              socket_name.value().size(), 75, 124, 50);
+  if (socket_name.value().size() < IPC::kMaxSocketNameLength)
+    return socket_name;
+  // Fallback to /tmp if $TMPDIR is too long.
+  // TODO(vitalybuka): Investigate how often we get there.
+  // See http://crbug.com/466644
+  return base::FilePath("/tmp").Append(pipe_name);
 }
 
-// Gets the name of the service process IPC channel.
+}  // namespace
+
 IPC::ChannelHandle GetServiceProcessChannel() {
-  base::mac::ScopedNSAutoreleasePool pool;
-  std::string socket_path;
-  base::scoped_nsobject<NSDictionary> dictionary(
-      base::mac::CFToNSCast(Launchd::GetInstance()->CopyExports()));
-  NSString *ns_socket_path =
-      [dictionary objectForKey:GetServiceProcessLaunchDSocketEnvVar()];
-  if (ns_socket_path) {
-    socket_path = base::SysNSStringToUTF8(ns_socket_path);
-  }
-  return IPC::ChannelHandle(socket_path);
+  base::FilePath socket_name = GetServiceProcessSocketName();
+  VLOG(1) << "ServiceProcessChannel: " << socket_name.value();
+  return IPC::ChannelHandle(socket_name.value());
 }
 
 bool ForceServiceProcessShutdown(const std::string& /* version */,
@@ -135,14 +135,14 @@ bool GetServiceProcessData(std::string* version, base::ProcessId* pid) {
   // to be a service process of some sort registered with launchd.
   if (version) {
     *version = "0";
-    NSString *exe_path = [launchd_conf objectForKey:@ LAUNCH_JOBKEY_PROGRAM];
+    NSString* exe_path = [launchd_conf objectForKey:@ LAUNCH_JOBKEY_PROGRAM];
     if (exe_path) {
-      NSString *bundle_path = [[[exe_path stringByDeletingLastPathComponent]
+      NSString* bundle_path = [[[exe_path stringByDeletingLastPathComponent]
                                 stringByDeletingLastPathComponent]
                                stringByDeletingLastPathComponent];
-      NSBundle *bundle = [NSBundle bundleWithPath:bundle_path];
+      NSBundle* bundle = [NSBundle bundleWithPath:bundle_path];
       if (bundle) {
-        NSString *ns_version =
+        NSString* ns_version =
             [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
         if (ns_version) {
           *version = base::SysNSStringToUTF8(ns_version);
@@ -186,7 +186,7 @@ bool ServiceProcessState::Initialize() {
 
 IPC::ChannelHandle ServiceProcessState::GetServiceProcessChannel() {
   DCHECK(state_);
-  NSDictionary *ns_launchd_conf = base::mac::CFToNSCast(state_->launchd_conf);
+  NSDictionary* ns_launchd_conf = base::mac::CFToNSCast(state_->launchd_conf);
   NSDictionary* socket_dict =
       [ns_launchd_conf objectForKey:@ LAUNCH_JOBKEY_SOCKETS];
   NSArray* sockets =
@@ -231,11 +231,11 @@ CFDictionaryRef CreateServiceProcessLaunchdPlist(base::CommandLine* cmd_line,
                                                  bool for_auto_launch) {
   base::mac::ScopedNSAutoreleasePool pool;
 
-  NSString *program =
+  NSString* program =
       base::SysUTF8ToNSString(cmd_line->GetProgram().value());
 
   std::vector<std::string> args = cmd_line->argv();
-  NSMutableArray *ns_args = [NSMutableArray arrayWithCapacity:args.size()];
+  NSMutableArray* ns_args = [NSMutableArray arrayWithCapacity:args.size()];
 
   for (std::vector<std::string>::iterator iter = args.begin();
        iter < args.end();
@@ -243,20 +243,23 @@ CFDictionaryRef CreateServiceProcessLaunchdPlist(base::CommandLine* cmd_line,
     [ns_args addObject:base::SysUTF8ToNSString(*iter)];
   }
 
-  NSDictionary *socket =
-      [NSDictionary dictionaryWithObject:GetServiceProcessLaunchDSocketEnvVar()
-                                  forKey:@ LAUNCH_JOBSOCKETKEY_SECUREWITHKEY];
-  NSDictionary *sockets =
+  NSString* socket_name =
+      base::SysUTF8ToNSString(GetServiceProcessSocketName().value());
+
+  NSDictionary* socket =
+      [NSDictionary dictionaryWithObject:socket_name
+                                  forKey:@LAUNCH_JOBSOCKETKEY_PATHNAME];
+  NSDictionary* sockets =
       [NSDictionary dictionaryWithObject:socket
                                   forKey:GetServiceProcessLaunchDSocketKey()];
 
   // See the man page for launchd.plist.
-  NSMutableDictionary *launchd_plist =
+  NSMutableDictionary* launchd_plist =
       [[NSMutableDictionary alloc] initWithObjectsAndKeys:
-        GetServiceProcessLaunchDLabel(), @ LAUNCH_JOBKEY_LABEL,
-        program, @ LAUNCH_JOBKEY_PROGRAM,
-        ns_args, @ LAUNCH_JOBKEY_PROGRAMARGUMENTS,
-        sockets, @ LAUNCH_JOBKEY_SOCKETS,
+        GetServiceProcessLaunchDLabel(), @LAUNCH_JOBKEY_LABEL,
+        program, @LAUNCH_JOBKEY_PROGRAM,
+        ns_args, @LAUNCH_JOBKEY_PROGRAMARGUMENTS,
+        sockets, @LAUNCH_JOBKEY_SOCKETS,
         nil];
 
   if (for_auto_launch) {
@@ -264,16 +267,16 @@ CFDictionaryRef CreateServiceProcessLaunchdPlist(base::CommandLine* cmd_line,
     // enabled. With a value of NO in the SuccessfulExit key, launchd will
     // relaunch the service automatically in any other case than exiting
     // cleanly with a 0 return code.
-    NSDictionary *keep_alive =
-      [NSDictionary
-        dictionaryWithObject:[NSNumber numberWithBool:NO]
-                      forKey:@ LAUNCH_JOBKEY_KEEPALIVE_SUCCESSFULEXIT];
-    NSDictionary *auto_launchd_plist =
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-        [NSNumber numberWithBool:YES], @ LAUNCH_JOBKEY_RUNATLOAD,
-        keep_alive, @ LAUNCH_JOBKEY_KEEPALIVE,
-        @ kServiceProcessSessionType, @ LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE,
-        nil];
+    NSDictionary* keep_alive =
+        [NSDictionary
+           dictionaryWithObject:[NSNumber numberWithBool:NO]
+                         forKey:@LAUNCH_JOBKEY_KEEPALIVE_SUCCESSFULEXIT];
+    NSDictionary* auto_launchd_plist =
+        [[NSDictionary alloc] initWithObjectsAndKeys:
+          [NSNumber numberWithBool:YES], @LAUNCH_JOBKEY_RUNATLOAD,
+          keep_alive, @LAUNCH_JOBKEY_KEEPALIVE,
+          @kServiceProcessSessionType, @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE,
+          nil];
     [launchd_plist addEntriesFromDictionary:auto_launchd_plist];
   }
   return reinterpret_cast<CFDictionaryRef>(launchd_plist);
