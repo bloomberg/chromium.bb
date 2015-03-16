@@ -276,7 +276,7 @@ class Environment:
       return False
 
   def CheckForNewMessage(self, log_message, message_should_show_up,
-                         error_message, timeout=3):
+                         error_message, timeout=15):
     """Detects whether the save password prompt is shown.
 
     Args:
