@@ -170,6 +170,7 @@ class HTMLViewer : public mojo::ApplicationDelegate,
   void Initialize(mojo::ApplicationImpl* app) override {
     blink_platform_.reset(new MojoBlinkPlatformImpl(app));
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
+    // Note: this requires file system access.
     gin::IsolateHolder::LoadV8Snapshot();
 #endif
     blink::initialize(blink_platform_.get());
@@ -199,6 +200,8 @@ class HTMLViewer : public mojo::ApplicationDelegate,
 
     is_headless_ = command_line->HasSwitch(kIsHeadless);
     if (!is_headless_) {
+      // TODO(sky): consider putting this into the .so so that we don't need
+      // file system access.
       base::FilePath ui_test_pak_path;
       CHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
       ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);

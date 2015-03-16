@@ -110,13 +110,65 @@ source_set("lib") {
   ]
 }
 
-mojo_native_application("html_viewer") {
-  sources = [
-    "html_viewer.cc",
-  ]
-  deps = [
-    ":lib",
-  ]
+if (is_android) {
+  import("//build/config/android/rules.gni")
+
+  java_library_path = "$target_out_dir/java_library.dex.jar"
+
+  mojo_android_application("html_viewer") {
+    input_so = "$root_out_dir/lib.stripped/libhtml_viewer_lib.so"
+    input_dex_jar = java_library_path
+  }
+
+  shared_library("html_viewer_lib") {
+    sources = [
+      "android/android_hooks.cc",
+      "html_viewer.cc",
+    ]
+
+    deps = [
+      ":html_viewer_jni_headers",
+      ":lib",
+      "//base",
+      "//ui/gfx:gfx_jni_headers",
+    ]
+  }
+
+  generate_jni("html_viewer_jni_headers") {
+    sources = [
+      "android/java/org/chromium/html_viewer/Main.java",
+    ]
+    jni_package = "mojo/services/html_viewer"
+  }
+
+  android_library("html_viewer_java_classes") {
+    java_files = [ "android/java/org/chromium/html_viewer/Main.java" ]
+
+    deps = [
+      "//base:base_java",
+    ]
+  }
+
+  android_standalone_library("java_library") {
+    dex_path = java_library_path
+
+    deps = [
+      ":html_viewer_java_classes",
+
+      # TODO(sky): this is WAY more than we need. We really only need
+      # DeviceDisplayInfo. Refactor to make this clearer.
+      "//ui/android:ui_java",
+    ]
+  }
+} else {
+  mojo_native_application("html_viewer") {
+    sources = [
+      "html_viewer.cc",
+    ]
+    deps = [
+      ":lib",
+    ]
+  }
 }
 
 test("tests") {
