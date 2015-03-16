@@ -203,6 +203,8 @@ class CONTENT_EXPORT RenderViewImpl
     return history_controller_.get();
   }
 
+  const std::vector<unsigned long>& debug_info() { return debug_info_; }
+
   // Functions to add and remove observers for this object.
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);
@@ -1042,6 +1044,9 @@ class CONTENT_EXPORT RenderViewImpl
   BitmapMap disambiguation_bitmaps_;
 
   bool page_scale_factor_is_one_;
+
+  // Temporary debug information to help track http://crbug.com/464633.
+  std::vector<unsigned long> debug_info_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

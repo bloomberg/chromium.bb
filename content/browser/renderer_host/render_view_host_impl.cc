@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
@@ -296,6 +297,13 @@ bool RenderViewHostImpl::CreateRenderView(
   params.enable_auto_resize = auto_resize_enabled();
   params.min_size = min_size_for_auto_resize();
   params.max_size = max_size_for_auto_resize();
+  // TODO(lfg): Temporary. Only to help track http://crbug.com/464633.
+  base::debug::StackTrace trace;
+  size_t count;
+  const void* const* addresses = trace.Addresses(&count);
+  params.debug_info.reserve(count);
+  for (size_t i = 0; i < count; i++)
+    params.debug_info.push_back(reinterpret_cast<unsigned long>(addresses[i]));
   GetResizeParams(&params.initial_size);
   if (!is_active_) {
     params.replicated_frame_state =

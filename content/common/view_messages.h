@@ -532,6 +532,10 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
 
   // The maximum size to layout the page if auto-resize is enabled.
   IPC_STRUCT_MEMBER(gfx::Size, max_size)
+
+  // Stores the callstack of the sender. Temporary only to help debug
+  // http://crbug.com/464633.
+  IPC_STRUCT_MEMBER(std::vector<unsigned long>, debug_info)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_PostMessage_Params)

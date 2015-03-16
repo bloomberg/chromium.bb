@@ -675,7 +675,26 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       weak_factory_(this) {
   std::pair<RoutingIDFrameMap::iterator, bool> result =
       g_routing_id_frame_map.Get().insert(std::make_pair(routing_id_, this));
-  CHECK(result.second) << "Inserting a duplicate item.";
+  if (!result.second) {
+    // TODO(lfg): Temporary. We're about to force a crash, so save the debug
+    // info on the stack so we can recover it from the crash dumps.
+    RenderFrameImpl* duplicate = result.first->second;
+    const std::vector<unsigned long>& debug_info = render_view->debug_info();
+    const std::vector<unsigned long>& duplicate_debug_info =
+        duplicate->render_view()->debug_info();
+    unsigned long duplicate_stack_debug_info[128];
+    unsigned long stack_debug_info[128];
+    const int size = debug_info.size() > 128 ? 128 : debug_info.size();
+    const int duplicate_size =
+        duplicate_debug_info.size() > 128 ? 128 : duplicate_debug_info.size();
+    for (int i = 0; i < size; i++)
+      stack_debug_info[i] = debug_info[i];
+    for (int i = 0; i < duplicate_size; i++)
+      duplicate_stack_debug_info[i] = duplicate_debug_info[i];
+    (void) stack_debug_info;
+    (void) duplicate_stack_debug_info;
+    CHECK(result.second) << "Inserting a duplicate item.";
+  }
 
   RenderThread::Get()->AddRoute(routing_id_, this);
 
