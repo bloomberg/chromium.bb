@@ -1781,9 +1781,9 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     return;
   }
 
-  std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
-  if (!group.empty() && group != "Disabled" &&
-      HotwordServiceFactory::IsHotwordAllowed(profile)) {
+  // Don't need to check the field trial here since |IsHotwordAllowed| also
+  // checks it.
+  if (HotwordServiceFactory::IsHotwordAllowed(profile)) {
     // Update the current error value.
     HotwordServiceFactory::IsServiceAvailable(profile);
     int error = HotwordServiceFactory::GetCurrentError(profile);
