@@ -8,14 +8,22 @@
 
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "content/browser/notifications/notification_database_data.h"
 #include "content/public/browser/browser_thread.h"
+#include "storage/common/database/database_identifier.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
+#include "url/gurl.h"
 
 // Notification LevelDB database schema (in alphabetized order)
 // =======================
+//
+// key: "DATA:" <origin identifier> '\x00' <notification_id>
+// value: String containing the NotificationDatabaseDataProto protocol buffer
+//        in serialized form.
 //
 // key: "NEXT_NOTIFICATION_ID"
 // value: Decimal string which fits into an int64_t.
@@ -26,6 +34,10 @@ namespace {
 
 // Keys of the fields defined in the database.
 const char kNextNotificationIdKey[] = "NEXT_NOTIFICATION_ID";
+const char kDataKeyPrefix[] = "DATA:";
+
+// Separates the components of compound keys.
+const char kKeySeparator = '\x00';
 
 // The first notification id which to be handed out by the database.
 const int64_t kFirstNotificationId = 1;
@@ -43,11 +55,19 @@ NotificationDatabase::Status LevelDBStatusToStatus(
   return NotificationDatabase::STATUS_ERROR_FAILED;
 }
 
+// Creates the compound data key in which notification data is stored.
+std::string CreateDataKey(int64_t notification_id, const GURL& origin) {
+  return base::StringPrintf("%s%s%c%s",
+                            kDataKeyPrefix,
+                            storage::GetIdentifierFromOrigin(origin).c_str(),
+                            kKeySeparator,
+                            base::Int64ToString(notification_id).c_str());
+}
+
 }  // namespace
 
 NotificationDatabase::NotificationDatabase(const base::FilePath& path)
-    : path_(path),
-      state_(STATE_UNINITIALIZED) {
+    : path_(path) {
   sequence_checker_.DetachFromSequence();
 }
 
@@ -85,35 +105,77 @@ NotificationDatabase::Status NotificationDatabase::Open(
   state_ = STATE_INITIALIZED;
   db_.reset(db);
 
-  return STATUS_OK;
+  return ReadNextNotificationId();
 }
 
-NotificationDatabase::Status NotificationDatabase::GetNextNotificationId(
-    int64_t* notification_id) const {
+NotificationDatabase::Status NotificationDatabase::ReadNotificationData(
+    int64_t notification_id,
+    const GURL& origin,
+    NotificationDatabaseData* notification_database_data) const {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  DCHECK_EQ(state_, STATE_INITIALIZED);
-  DCHECK(notification_id);
+  DCHECK_EQ(STATE_INITIALIZED, state_);
+  DCHECK_GE(notification_id, kFirstNotificationId);
+  DCHECK(origin.is_valid());
+  DCHECK(notification_database_data);
 
-  std::string value;
+  std::string key = CreateDataKey(notification_id, origin);
+  std::string serialized_data;
+
   Status status = LevelDBStatusToStatus(
-      db_->Get(leveldb::ReadOptions(), kNextNotificationIdKey, &value));
-
-  if (status == STATUS_ERROR_NOT_FOUND) {
-    *notification_id = kFirstNotificationId;
-    return STATUS_OK;
-  }
-
+      db_->Get(leveldb::ReadOptions(), key, &serialized_data));
   if (status != STATUS_OK)
     return status;
 
-  int64_t next_notification_id;
-  if (!base::StringToInt64(value, &next_notification_id) ||
-      next_notification_id < kFirstNotificationId) {
-    return STATUS_ERROR_CORRUPTED;
+  if (notification_database_data->ParseFromString(serialized_data))
+    return STATUS_OK;
+
+  DLOG(ERROR) << "Unable to deserialize data for notification "
+              << notification_id << " belonging to " << origin << ".";
+  return STATUS_ERROR_CORRUPTED;
+}
+
+NotificationDatabase::Status NotificationDatabase::WriteNotificationData(
+    const GURL& origin,
+    const NotificationDatabaseData& notification_database_data,
+    int64_t* notification_id) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK_EQ(STATE_INITIALIZED, state_);
+  DCHECK(notification_id);
+  DCHECK(origin.is_valid());
+
+  std::string serialized_data;
+  if (!notification_database_data.SerializeToString(&serialized_data)) {
+    DLOG(ERROR) << "Unable to serialize data for a notification belonging "
+                << "to: " << origin;
+    return STATUS_ERROR_FAILED;
   }
 
-  *notification_id = next_notification_id;
+  DCHECK_GE(next_notification_id_, kFirstNotificationId);
+
+  leveldb::WriteBatch batch;
+  batch.Put(CreateDataKey(next_notification_id_, origin), serialized_data);
+  batch.Put(kNextNotificationIdKey,
+            base::Int64ToString(next_notification_id_ + 1));
+
+  Status status = LevelDBStatusToStatus(
+      db_->Write(leveldb::WriteOptions(), &batch));
+  if (status != STATUS_OK)
+    return status;
+
+  *notification_id = next_notification_id_++;
   return STATUS_OK;
+}
+
+NotificationDatabase::Status NotificationDatabase::DeleteNotificationData(
+    int64_t notification_id,
+    const GURL& origin) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK_EQ(STATE_INITIALIZED, state_);
+  DCHECK_GE(notification_id, kFirstNotificationId);
+  DCHECK(origin.is_valid());
+
+  std::string key = CreateDataKey(notification_id, origin);
+  return LevelDBStatusToStatus(db_->Delete(leveldb::WriteOptions(), key));
 }
 
 NotificationDatabase::Status NotificationDatabase::Destroy() {
@@ -134,13 +196,25 @@ NotificationDatabase::Status NotificationDatabase::Destroy() {
       leveldb::DestroyDB(path_.AsUTF8Unsafe(), options));
 }
 
-void NotificationDatabase::WriteNextNotificationId(
-    leveldb::WriteBatch* batch,
-    int64_t next_notification_id) const {
-  DCHECK_GE(next_notification_id, kFirstNotificationId);
-  DCHECK(batch);
+NotificationDatabase::Status NotificationDatabase::ReadNextNotificationId() {
+  std::string value;
+  Status status = LevelDBStatusToStatus(
+      db_->Get(leveldb::ReadOptions(), kNextNotificationIdKey, &value));
 
-  batch->Put(kNextNotificationIdKey, base::Int64ToString(next_notification_id));
+  if (status == STATUS_ERROR_NOT_FOUND) {
+    next_notification_id_ = kFirstNotificationId;
+    return STATUS_OK;
+  }
+
+  if (status != STATUS_OK)
+    return status;
+
+  if (!base::StringToInt64(value, &next_notification_id_) ||
+      next_notification_id_ < kFirstNotificationId) {
+    return STATUS_ERROR_CORRUPTED;
+  }
+
+  return STATUS_OK;
 }
 
 }  // namespace content

@@ -12,6 +12,8 @@
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 
+class GURL;
+
 namespace leveldb {
 class DB;
 class Env;
@@ -19,6 +21,8 @@ class WriteBatch;
 }
 
 namespace content {
+
+struct NotificationDatabaseData;
 
 // Implementation of the persistent notification database.
 //
@@ -32,8 +36,8 @@ class CONTENT_EXPORT NotificationDatabase {
   enum Status {
     STATUS_OK = 0,
 
-    // The database, or the key associated with the operation, could not be
-    // found.
+    // The database, a notification, or a LevelDB key associated with the
+    // operation could not be found.
     STATUS_ERROR_NOT_FOUND = 1,
 
     // The database, or data in the database, could not be parsed as valid data.
@@ -52,9 +56,27 @@ class CONTENT_EXPORT NotificationDatabase {
   // |create_if_missing| determines whether to create the database if necessary.
   Status Open(bool create_if_missing);
 
-  // Returns whether the next available notification id could be read, and
-  // stores the id in |notification_id| if the read was successful.
-  Status GetNextNotificationId(int64_t* notification_id) const;
+  // Reads the notification data for the notification identified by
+  // |notification_id| and belonging to |origin| from the database, and stores
+  // it in |notification_database_data|. Returns the status code.
+  Status ReadNotificationData(
+      int64_t notification_id,
+      const GURL& origin,
+      NotificationDatabaseData* notification_database_data) const;
+
+  // Writes the |notification_database_data| for a new notification belonging to
+  // |origin| to the database, and returns the status code of the writing
+  // operation. The id of the new notification will be set in |notification_id|.
+  Status WriteNotificationData(
+      const GURL& origin,
+      const NotificationDatabaseData& notification_database_data,
+      int64_t* notification_id);
+
+  // Deletes all data associated with the notification identified by
+  // |notification_id| belonging to |origin| from the database. Returns the
+  // status code of the deletion operation. Note that it is not considered a
+  // failure if the to-be-deleted notification does not exist.
+  Status DeleteNotificationData(int64_t notification_id, const GURL& origin);
 
   // Completely destroys the contents of this database.
   Status Destroy();
@@ -70,9 +92,10 @@ class CONTENT_EXPORT NotificationDatabase {
     STATE_DISABLED,
   };
 
-  // Writes the next available notification id as a put operation to |batch|.
-  void WriteNextNotificationId(leveldb::WriteBatch* batch,
-                               int64_t next_notification_id) const;
+  // Reads the next available notification id from the database and returns
+  // the status code of the reading operation. The value will be stored in
+  // the |next_notification_id_| member.
+  Status ReadNextNotificationId();
 
   // Returns whether the database has been opened.
   bool IsOpen() const { return db_ != nullptr; }
@@ -86,12 +109,14 @@ class CONTENT_EXPORT NotificationDatabase {
 
   base::FilePath path_;
 
+  int64_t next_notification_id_ = 0;
+
   // The declaration order for these members matters, as |db_| depends on |env_|
   // and thus has to be destructed first.
   scoped_ptr<leveldb::Env> env_;
   scoped_ptr<leveldb::DB> db_;
 
-  State state_;
+  State state_ = STATE_UNINITIALIZED;
 
   base::SequenceChecker sequence_checker_;
 
