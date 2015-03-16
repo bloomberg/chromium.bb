@@ -17,11 +17,11 @@ class DeferredStartRenderHostObserver {
   virtual ~DeferredStartRenderHostObserver() {}
 
   // Called when a DeferredStartRenderHost started loading.
-  virtual void OnDeferredStartRenderHostDidStartLoading(
+  virtual void OnDeferredStartRenderHostDidStartFirstLoad(
       const DeferredStartRenderHost* host) {}
 
   // Called when a DeferredStartRenderHost stopped loading.
-  virtual void OnDeferredStartRenderHostDidStopLoading(
+  virtual void OnDeferredStartRenderHostDidStopFirstLoad(
       const DeferredStartRenderHost* host) {}
 
   // Called when a DeferredStartRenderHost is destroyed.

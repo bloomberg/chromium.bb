@@ -49,7 +49,7 @@ class MessageSender : public content::NotificationObserver {
  public:
   MessageSender() {
     registrar_.Add(this,
-                   extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                   extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
                    content::NotificationService::AllSources());
   }
 
@@ -77,7 +77,8 @@ class MessageSender : public content::NotificationObserver {
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
-    DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING, type);
+    DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
+              type);
     EventRouter* event_router =
         EventRouter::Get(content::Source<Profile>(source).ptr());
 

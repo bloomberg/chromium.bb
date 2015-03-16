@@ -350,7 +350,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
 
     content::NotificationRegistrar registrar;
     registrar.Add(this,
-                  extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                  extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
                   content::NotificationService::AllSources());
     base::CancelableClosure timeout(
         base::Bind(&TimeoutCallback, "Extension host load timed out."));
@@ -378,7 +378,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
                const content::NotificationDetails& details) override {
     switch (type) {
       case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
-      case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
+      case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD:
         base::MessageLoopForUI::current()->Quit();
         break;
       default:

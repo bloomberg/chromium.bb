@@ -23,7 +23,7 @@ using extensions::ExtensionHost;
 AppLifetimeMonitor::AppLifetimeMonitor(Profile* profile)
     : profile_(profile) {
   registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
                  content::NotificationService::AllSources());
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
@@ -53,7 +53,7 @@ void AppLifetimeMonitor::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
       const Extension* extension = host->extension();
       if (!extension || !extension->is_platform_app())

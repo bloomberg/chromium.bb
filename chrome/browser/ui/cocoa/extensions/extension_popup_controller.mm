@@ -124,7 +124,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
     switch (type) {
-      case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
+      case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD: {
         if (content::Details<extensions::ExtensionViewHost>(
                 [controller_ extensionViewHost]) == details) {
           [controller_ showDevTools];
@@ -309,7 +309,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
     // Listen for the extension to finish loading so the dev tools can be
     // opened.
     registrar_->Add(notificationBridge_.get(),
-                    extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                    extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
                     content::Source<BrowserContext>(host_->browser_context()));
   }
 }
@@ -381,7 +381,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   // When we update the size, the window will become visible. Stay hidden until
   // the host is loaded.
   pendingSize_ = newSize;
-  if (!host_ || !host_->did_stop_loading())
+  if (!host_ || !host_->has_loaded_once())
     return;
 
   // No need to use CA here, our caller calls us repeatedly to animate the

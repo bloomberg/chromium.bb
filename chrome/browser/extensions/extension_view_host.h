@@ -59,7 +59,7 @@ class ExtensionViewHost
       const content::NativeWebKeyboardEvent& event);
 
   // ExtensionHost
-  void OnDidStopLoading() override;
+  void OnDidStopFirstLoad() override;
   void LoadInitialURL() override;
   bool IsBackgroundPage() const override;
 

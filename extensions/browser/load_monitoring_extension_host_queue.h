@@ -29,7 +29,7 @@ class LoadMonitoringExtensionHostQueue
   // monitoring has finished (timeout has elapsed and UMA is logged).
   using FinishedCallback = base::Callback<void(size_t,  // num_queued
                                                size_t,  // max_loaded
-                                               size_t,  // max_in_queue
+                                               size_t,  // max_awaiting_loading
                                                size_t   // max_active_loading
                                                )>;
   LoadMonitoringExtensionHostQueue(scoped_ptr<ExtensionHostQueue> delegate,
@@ -59,9 +59,9 @@ class LoadMonitoringExtensionHostQueue
   void Remove(DeferredStartRenderHost* host) override;
 
   // DeferredStartRenderHostObserver, public to be triggered by tests:
-  void OnDeferredStartRenderHostDidStartLoading(
+  void OnDeferredStartRenderHostDidStartFirstLoad(
       const DeferredStartRenderHost* host) override;
-  void OnDeferredStartRenderHostDidStopLoading(
+  void OnDeferredStartRenderHostDidStopFirstLoad(
       const DeferredStartRenderHost* host) override;
   void OnDeferredStartRenderHostDestroyed(
       const DeferredStartRenderHost* host) override;
@@ -71,9 +71,6 @@ class LoadMonitoringExtensionHostQueue
   // monitoring has already finished.
   void StartMonitoringHost(const DeferredStartRenderHost* host);
   void FinishMonitoringHost(const DeferredStartRenderHost* host);
-
-  // Removes |host| from the internal |in_queue_| tracking.
-  void RemoveFromQueue(const DeferredStartRenderHost* host);
 
   // Called when monitoring should finish. Metrics are recorded, and from this
   // point on no monitoring will take place.
@@ -89,8 +86,8 @@ class LoadMonitoringExtensionHostQueue
   // A callback to run when monitoring has finished. Intended for testing.
   FinishedCallback finished_callback_;
 
-  // The hosts which are in the delegate's queue.
-  std::set<DeferredStartRenderHost*> in_queue_;
+  // The hosts which are waiting to start loading.
+  std::set<const DeferredStartRenderHost*> awaiting_loading_;
   // The hosts which are currently loading.
   std::set<const DeferredStartRenderHost*> active_loading_;
 
@@ -102,8 +99,8 @@ class LoadMonitoringExtensionHostQueue
   size_t num_queued_;
   // The total number of hosts that started loading.
   size_t num_loaded_;
-  // The maximum number of hosts in the queue at any time.
-  size_t max_in_queue_;
+  // The maximum number of hosts waiting to load at the same time.
+  size_t max_awaiting_loading_;
   // The maximum number of hosts that were loading at the same time.
   size_t max_active_loading_;
 

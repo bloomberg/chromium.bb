@@ -40,7 +40,7 @@ ExtensionDialog::ExtensionDialog(extensions::ExtensionViewHost* host,
   AddRef();  // Balanced in DeleteDelegate();
 
   registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
                  content::Source<BrowserContext>(host->browser_context()));
   // Listen for the containing view calling window.close();
   registrar_.Add(this,
@@ -201,7 +201,7 @@ void ExtensionDialog::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
+    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD:
       // Avoid potential overdraw by removing the temporary background after
       // the extension finishes loading.
       GetExtensionView(host_.get())->set_background(NULL);

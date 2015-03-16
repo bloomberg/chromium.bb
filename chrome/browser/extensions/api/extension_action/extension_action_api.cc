@@ -627,8 +627,7 @@ bool BrowserActionOpenPopupFunction::RunAsync() {
   // If the extension is spanning, then extension hosts are created with the
   // original profile, and if it's split, then we know the api call came from
   // the right profile.
-  registrar_.Add(this,
-                 NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+  registrar_.Add(this, NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
                  content::Source<Profile>(profile));
 
   // Set a timeout for waiting for the notification that the popup is loaded.
@@ -656,7 +655,7 @@ void BrowserActionOpenPopupFunction::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING, type);
+  DCHECK_EQ(NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD, type);
   if (response_sent_)
     return;
 

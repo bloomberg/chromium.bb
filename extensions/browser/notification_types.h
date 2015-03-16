@@ -108,7 +108,7 @@ enum NotificationType {
   // Sent by an ExtensionHost* when it has finished its initial page load,
   // including any external resources.
   // The details are an ExtensionHost* and the source is a BrowserContext*.
-  NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+  NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
 
   // Sent by an ExtensionHost* when its render view requests closing through
   // window.close(). The details are an ExtensionHost* and the source is a

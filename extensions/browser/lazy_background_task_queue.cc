@@ -27,7 +27,7 @@ LazyBackgroundTaskQueue::LazyBackgroundTaskQueue(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context), extension_registry_observer_(this) {
   registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
+                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_DESTROYED,
@@ -49,7 +49,7 @@ bool LazyBackgroundTaskQueue::ShouldEnqueueTask(
     ProcessManager* pm = ProcessManager::Get(browser_context);
     ExtensionHost* background_host =
         pm->GetBackgroundHostForExtension(extension->id());
-    if (!background_host || !background_host->did_stop_loading())
+    if (!background_host || !background_host->has_loaded_once())
       return true;
     if (pm->IsBackgroundHostClosing(extension->id()))
       pm->CancelSuspend(extension);
@@ -136,13 +136,13 @@ void LazyBackgroundTaskQueue::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
+    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD: {
       // If an on-demand background page finished loading, dispatch queued up
       // events for it.
       ExtensionHost* host =
           content::Details<ExtensionHost>(details).ptr();
       if (host->extension_host_type() == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-        CHECK(host->did_stop_loading());
+        CHECK(host->has_loaded_once());
         ProcessPendingTasks(host, host->browser_context(), host->extension());
       }
       break;
