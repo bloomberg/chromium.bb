@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/base/latency_info_swap_promise_monitor.h"
+#include "cc/trees/latency_info_swap_promise_monitor.h"
 
 #include "base/threading/platform_thread.h"
-#include "cc/base/latency_info_swap_promise.h"
+#include "cc/output/latency_info_swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -14,9 +14,9 @@ namespace {
 
 bool AddRenderingScheduledComponent(ui::LatencyInfo* latency_info,
                                     bool on_main) {
-  ui::LatencyComponentType type = on_main ?
-      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT :
-      ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
+  ui::LatencyComponentType type =
+      on_main ? ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_MAIN_COMPONENT
+              : ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
   if (latency_info->FindLatency(type, 0, nullptr))
     return false;
   latency_info->AddLatencyNumber(type, 0, 0);
@@ -25,13 +25,11 @@ bool AddRenderingScheduledComponent(ui::LatencyInfo* latency_info,
 
 bool AddForwardingScrollUpdateToMainComponent(ui::LatencyInfo* latency_info) {
   if (latency_info->FindLatency(
-          ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,
-          0,
+          ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT, 0,
           nullptr))
     return false;
   latency_info->AddLatencyNumber(
-      ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,
-      0,
+      ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT, 0,
       latency_info->trace_id);
   return true;
 }
@@ -45,9 +43,11 @@ LatencyInfoSwapPromiseMonitor::LatencyInfoSwapPromiseMonitor(
     LayerTreeHost* layer_tree_host,
     LayerTreeHostImpl* layer_tree_host_impl)
     : SwapPromiseMonitor(layer_tree_host, layer_tree_host_impl),
-      latency_(latency) {}
+      latency_(latency) {
+}
 
-LatencyInfoSwapPromiseMonitor::~LatencyInfoSwapPromiseMonitor() {}
+LatencyInfoSwapPromiseMonitor::~LatencyInfoSwapPromiseMonitor() {
+}
 
 void LatencyInfoSwapPromiseMonitor::OnSetNeedsCommitOnMain() {
   if (AddRenderingScheduledComponent(latency_, true /* on_main */)) {
@@ -68,8 +68,7 @@ void LatencyInfoSwapPromiseMonitor::OnForwardScrollUpdateToMainThreadOnImpl() {
     int64 new_sequence_number = 0;
     for (ui::LatencyInfo::LatencyMap::const_iterator it =
              latency_->latency_components.begin();
-         it != latency_->latency_components.end();
-         ++it) {
+         it != latency_->latency_components.end(); ++it) {
       if (it->first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT) {
         new_sequence_number =
             (static_cast<int64>(base::PlatformThread::CurrentId()) << 32) |
@@ -82,8 +81,7 @@ void LatencyInfoSwapPromiseMonitor::OnForwardScrollUpdateToMainThreadOnImpl() {
       return;
     ui::LatencyInfo new_latency;
     new_latency.AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_BEGIN_SCROLL_UPDATE_MAIN_COMPONENT,
-        0,
+        ui::INPUT_EVENT_LATENCY_BEGIN_SCROLL_UPDATE_MAIN_COMPONENT, 0,
         new_sequence_number);
     new_latency.TraceEventType("ScrollUpdate");
     new_latency.CopyLatencyFrom(

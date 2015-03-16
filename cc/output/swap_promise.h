@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_BASE_SWAP_PROMISE_H_
-#define CC_BASE_SWAP_PROMISE_H_
+#ifndef CC_OUTPUT_SWAP_PROMISE_H_
+#define CC_OUTPUT_SWAP_PROMISE_H_
 
 #include "cc/output/compositor_frame_metadata.h"
 
@@ -50,4 +50,4 @@ class CC_EXPORT SwapPromise {
 
 }  // namespace cc
 
-#endif  // CC_BASE_SWAP_PROMISE_H_
+#endif  // CC_OUTPUT_SWAP_PROMISE_H_

@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/base/latency_info_swap_promise.h"
+#include "cc/output/latency_info_swap_promise.h"
 
 #include "base/logging.h"
 
 namespace {
-  ui::LatencyComponentType DidNotSwapReasonToLatencyComponentType(
-      cc::SwapPromise::DidNotSwapReason reason) {
-    switch (reason) {
-      case cc::SwapPromise::DID_NOT_SWAP_UNKNOWN:
-      case cc::SwapPromise::SWAP_FAILS:
-        return ui::INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT;
-      case cc::SwapPromise::COMMIT_FAILS:
-        return ui::INPUT_EVENT_LATENCY_TERMINATED_COMMIT_FAILED_COMPONENT;
-      case cc::SwapPromise::COMMIT_NO_UPDATE:
-        return ui::INPUT_EVENT_LATENCY_TERMINATED_COMMIT_NO_UPDATE_COMPONENT;
-    }
-    NOTREACHED() << "Unhandled DidNotSwapReason.";
-    return ui::INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT;
+ui::LatencyComponentType DidNotSwapReasonToLatencyComponentType(
+    cc::SwapPromise::DidNotSwapReason reason) {
+  switch (reason) {
+    case cc::SwapPromise::DID_NOT_SWAP_UNKNOWN:
+    case cc::SwapPromise::SWAP_FAILS:
+      return ui::INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT;
+    case cc::SwapPromise::COMMIT_FAILS:
+      return ui::INPUT_EVENT_LATENCY_TERMINATED_COMMIT_FAILED_COMPONENT;
+    case cc::SwapPromise::COMMIT_NO_UPDATE:
+      return ui::INPUT_EVENT_LATENCY_TERMINATED_COMMIT_NO_UPDATE_COMPONENT;
   }
+  NOTREACHED() << "Unhandled DidNotSwapReason.";
+  return ui::INPUT_EVENT_LATENCY_TERMINATED_SWAP_FAILED_COMPONENT;
+}
 }  // namespace
 
 namespace cc {
@@ -38,8 +38,8 @@ void LatencyInfoSwapPromise::DidSwap(CompositorFrameMetadata* metadata) {
 }
 
 void LatencyInfoSwapPromise::DidNotSwap(DidNotSwapReason reason) {
-  latency_.AddLatencyNumber(DidNotSwapReasonToLatencyComponentType(reason),
-                            0, 0);
+  latency_.AddLatencyNumber(DidNotSwapReasonToLatencyComponentType(reason), 0,
+                            0);
   // TODO(miletus): Turn this back on once per-event LatencyInfo tracking
   // is enabled in GPU side.
   // DCHECK(latency_.terminated);

@@ -6,7 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/base/swap_promise_monitor.h"
+#include "cc/trees/swap_promise_monitor.h"
 #include "content/common/input/did_overscroll_params.h"
 #include "content/renderer/input/input_handler_proxy_client.h"
 #include "testing/gmock/include/gmock/gmock.h"

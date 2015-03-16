@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/compiler_specific.h"
-#include "cc/base/swap_promise_monitor.h"
+#include "cc/trees/swap_promise_monitor.h"
 
-#ifndef CC_BASE_LATENCY_INFO_SWAP_PROMISE_MONITOR_H_
-#define CC_BASE_LATENCY_INFO_SWAP_PROMISE_MONITOR_H_
+#ifndef CC_TREES_LATENCY_INFO_SWAP_PROMISE_MONITOR_H_
+#define CC_TREES_LATENCY_INFO_SWAP_PROMISE_MONITOR_H_
 
 namespace ui {
 struct LatencyInfo;
@@ -34,4 +34,4 @@ class CC_EXPORT LatencyInfoSwapPromiseMonitor : public SwapPromiseMonitor {
 
 }  // namespace cc
 
-#endif  // CC_BASE_LATENCY_INFO_SWAP_PROMISE_MONITOR_H_
+#endif  // CC_TREES_LATENCY_INFO_SWAP_PROMISE_MONITOR_H_

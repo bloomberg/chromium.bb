@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/lock.h"
-#include "cc/base/swap_promise.h"
+#include "cc/output/swap_promise.h"
 #include "content/common/content_export.h"
 #include "content/renderer/message_delivery_policy.h"
 

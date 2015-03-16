@@ -5,7 +5,7 @@
 #ifndef CC_TREES_SCOPED_ABORT_REMAINING_SWAP_PROMISES_H_
 #define CC_TREES_SCOPED_ABORT_REMAINING_SWAP_PROMISES_H_
 
-#include "cc/base/swap_promise.h"
+#include "cc/output/swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {

@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
-#include "cc/base/swap_promise_monitor.h"
 #include "cc/input/scrollbar.h"
+#include "cc/trees/swap_promise_monitor.h"
 
 namespace gfx {
 class Point;

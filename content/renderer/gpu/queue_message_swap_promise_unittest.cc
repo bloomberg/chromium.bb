@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
-#include "cc/base/swap_promise.h"
+#include "cc/output/swap_promise.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/render_widget.h"

@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "cc/base/swap_promise_monitor.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "cc/trees/swap_promise_monitor.h"
 
 namespace cc {
 

@@ -4,8 +4,8 @@
 
 #include "cc/layers/surface_layer.h"
 
-#include "cc/base/swap_promise.h"
 #include "cc/layers/surface_layer_impl.h"
+#include "cc/output/swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
