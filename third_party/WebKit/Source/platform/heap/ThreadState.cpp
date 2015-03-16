@@ -596,8 +596,7 @@ void ThreadState::performIdleGC(double deadlineSeconds)
         return;
     }
 
-    // FIXME: Make this precise once idle task is guaranteed to be not in nested loop.
-    Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::IdleGC);
+    Heap::collectGarbage(NoHeapPointersOnStack, GCWithoutSweep, Heap::IdleGC);
 }
 
 void ThreadState::scheduleIdleGC()
@@ -612,7 +611,7 @@ void ThreadState::scheduleIdleGC()
 
     if (!m_hasPendingIdleTask) {
         m_hasPendingIdleTask = true;
-        Scheduler::shared()->postIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleGC, this));
+        Scheduler::shared()->postNonNestableIdleTask(FROM_HERE, WTF::bind<double>(&ThreadState::performIdleGC, this));
     }
     setGCState(IdleGCScheduled);
 }

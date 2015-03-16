@@ -70,6 +70,12 @@ void Scheduler::postIdleTask(const WebTraceLocation& location, PassOwnPtr<IdleTa
         m_webScheduler->postIdleTask(location, new IdleTaskRunner(idleTask));
 }
 
+void Scheduler::postNonNestableIdleTask(const WebTraceLocation& location, PassOwnPtr<IdleTask> idleTask)
+{
+    if (m_webScheduler)
+        m_webScheduler->postNonNestableIdleTask(location, new IdleTaskRunner(idleTask));
+}
+
 void Scheduler::postIdleTaskAfterWakeup(const WebTraceLocation& location, PassOwnPtr<IdleTask> idleTask)
 {
     if (m_webScheduler)
