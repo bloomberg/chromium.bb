@@ -255,7 +255,7 @@ static void wait_for_user_input(int last)
 static int g2d_solid_fill_test(struct exynos_device *dev, struct exynos_bo *dst)
 {
 	struct g2d_context *ctx;
-	struct g2d_image img;
+	struct g2d_image img = {0};
 	unsigned int count, img_w, img_h;
 	int ret = 0;
 
@@ -263,7 +263,6 @@ static int g2d_solid_fill_test(struct exynos_device *dev, struct exynos_bo *dst)
 	if (!ctx)
 		return -EFAULT;
 
-	memset(&img, 0, sizeof(struct g2d_image));
 	img.bo[0] = dst->handle;
 
 	printf("solid fill test.\n");
@@ -306,7 +305,7 @@ static int g2d_copy_test(struct exynos_device *dev, struct exynos_bo *src,
 				enum e_g2d_buf_type type)
 {
 	struct g2d_context *ctx;
-	struct g2d_image src_img, dst_img;
+	struct g2d_image src_img = {0}, dst_img = {0};
 	unsigned int src_x, src_y, dst_x, dst_y, img_w, img_h;
 	unsigned long userptr, size;
 	int ret;
@@ -315,8 +314,6 @@ static int g2d_copy_test(struct exynos_device *dev, struct exynos_bo *src,
 	if (!ctx)
 		return -EFAULT;
 
-	memset(&src_img, 0, sizeof(struct g2d_image));
-	memset(&dst_img, 0, sizeof(struct g2d_image));
 	dst_img.bo[0] = dst->handle;
 
 	src_x = 0;
@@ -389,7 +386,7 @@ static int g2d_copy_with_scale_test(struct exynos_device *dev,
 					enum e_g2d_buf_type type)
 {
 	struct g2d_context *ctx;
-	struct g2d_image src_img, dst_img;
+	struct g2d_image src_img = {0}, dst_img = {0};
 	unsigned int src_x, src_y, img_w, img_h;
 	unsigned long userptr, size;
 	int ret;
@@ -398,8 +395,6 @@ static int g2d_copy_with_scale_test(struct exynos_device *dev,
 	if (!ctx)
 		return -EFAULT;
 
-	memset(&src_img, 0, sizeof(struct g2d_image));
-	memset(&dst_img, 0, sizeof(struct g2d_image));
 	dst_img.bo[0] = dst->handle;
 
 	src_x = 0;
@@ -475,7 +470,7 @@ static int g2d_blend_test(struct exynos_device *dev,
 					enum e_g2d_buf_type type)
 {
 	struct g2d_context *ctx;
-	struct g2d_image src_img, dst_img;
+	struct g2d_image src_img = {0}, dst_img = {0};
 	unsigned int src_x, src_y, dst_x, dst_y, img_w, img_h;
 	unsigned long userptr, size;
 	int ret;
@@ -484,8 +479,6 @@ static int g2d_blend_test(struct exynos_device *dev,
 	if (!ctx)
 		return -EFAULT;
 
-	memset(&src_img, 0, sizeof(struct g2d_image));
-	memset(&dst_img, 0, sizeof(struct g2d_image));
 	dst_img.bo[0] = dst->handle;
 
 	src_x = 0;

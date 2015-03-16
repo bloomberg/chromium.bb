@@ -188,7 +188,7 @@ static void g2d_reset(struct g2d_context *ctx)
 static int g2d_flush(struct g2d_context *ctx)
 {
 	int ret;
-	struct drm_exynos_g2d_set_cmdlist cmdlist;
+	struct drm_exynos_g2d_set_cmdlist cmdlist = {0};
 
 	if (ctx->cmd_nr == 0 && ctx->cmd_buf_nr == 0)
 		return -1;
@@ -197,8 +197,6 @@ static int g2d_flush(struct g2d_context *ctx)
 		fprintf(stderr, "Overflow cmdlist.\n");
 		return -EINVAL;
 	}
-
-	memset(&cmdlist, 0, sizeof(struct drm_exynos_g2d_set_cmdlist));
 
 	cmdlist.cmd = (uint64_t)(uintptr_t)&ctx->cmd[0];
 	cmdlist.cmd_buf = (uint64_t)(uintptr_t)&ctx->cmd_buf[0];
