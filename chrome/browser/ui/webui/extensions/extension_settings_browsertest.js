@@ -95,7 +95,9 @@ TEST_F('AsyncExtensionSettingsWebUITest', 'testDeveloperModeA11y', function() {
   this.enableDeveloperMode(testDone);
 });
 
-TEST_F('AsyncExtensionSettingsWebUITest', 'testErrorListButtonVisibility',
+// Often times out on all platforms: http://crbug.com/467528
+TEST_F('AsyncExtensionSettingsWebUITest',
+       'DISABLED_testErrorListButtonVisibility',
     function() {
   this.enableDeveloperMode(function() {
     // 2 extensions are loaded:
