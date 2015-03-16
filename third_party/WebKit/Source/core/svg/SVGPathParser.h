@@ -27,8 +27,6 @@
 #include "core/svg/SVGPathConsumer.h"
 #include "core/svg/SVGPathSeg.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

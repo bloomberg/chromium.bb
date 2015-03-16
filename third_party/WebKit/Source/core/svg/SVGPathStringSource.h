@@ -22,7 +22,6 @@
 #define SVGPathStringSource_h
 
 #include "core/svg/SVGPathSource.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

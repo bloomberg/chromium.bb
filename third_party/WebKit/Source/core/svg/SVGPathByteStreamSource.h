@@ -23,7 +23,6 @@
 #include "core/svg/SVGPathByteStream.h"
 #include "core/svg/SVGPathSource.h"
 #include "platform/geometry/FloatPoint.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
