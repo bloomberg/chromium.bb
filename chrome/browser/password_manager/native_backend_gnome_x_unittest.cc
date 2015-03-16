@@ -1040,38 +1040,6 @@ TEST_F(NativeBackendGnomeTest, AddDuplicateLogin) {
     CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
 }
 
-TEST_F(NativeBackendGnomeTest, ListLoginsAppends) {
-  NativeBackendGnome backend(42);
-  backend.Init();
-
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
-
-  // Send the same request twice with the same list both times.
-  ScopedVector<autofill::PasswordForm> form_list;
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&NativeBackendGnome::GetAutofillableLogins),
-          base::Unretained(&backend), &form_list));
-  BrowserThread::PostTask(
-      BrowserThread::DB, FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&NativeBackendGnome::GetAutofillableLogins),
-          base::Unretained(&backend), &form_list));
-
-  RunBothThreads();
-
-  // Quick check that we got two results back.
-  EXPECT_EQ(2u, form_list.size());
-
-  EXPECT_EQ(1u, mock_keyring_items.size());
-  if (mock_keyring_items.size() > 0)
-    CheckMockKeyringItem(&mock_keyring_items[0], form_google_, "chrome-42");
-}
-
 TEST_F(NativeBackendGnomeTest, AndroidCredentials) {
   NativeBackendGnome backend(42);
   backend.Init();

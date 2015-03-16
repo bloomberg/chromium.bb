@@ -146,13 +146,13 @@ ScopedVector<autofill::PasswordForm> PasswordStoreX::FillMatchingLogins(
     // The native backend may succeed and return no data even while locked, if
     // the query did not match anything stored. So we continue to allow fallback
     // until we perform a write operation, or until a read returns actual data.
-    if (matched_forms.size() > 0)
+    if (!matched_forms.empty())
       allow_fallback_ = false;
-  } else if (allow_default_store()) {
-    DCHECK(matched_forms.empty());
-    return PasswordStoreDefault::FillMatchingLogins(form, prompt_policy);
+    return matched_forms.Pass();
   }
-  return matched_forms.Pass();
+  if (allow_default_store())
+    return PasswordStoreDefault::FillMatchingLogins(form, prompt_policy);
+  return ScopedVector<autofill::PasswordForm>();
 }
 
 bool PasswordStoreX::FillAutofillableLogins(
@@ -221,8 +221,12 @@ bool PasswordStoreX::allow_default_store() {
 ssize_t PasswordStoreX::MigrateLogins() {
   DCHECK(backend_.get());
   ScopedVector<autofill::PasswordForm> forms;
+  ScopedVector<autofill::PasswordForm> blacklist_forms;
   bool ok = PasswordStoreDefault::FillAutofillableLogins(&forms) &&
-      PasswordStoreDefault::FillBlacklistLogins(&forms);
+            PasswordStoreDefault::FillBlacklistLogins(&blacklist_forms);
+  forms.reserve(forms.size() + blacklist_forms.size());
+  forms.insert(forms.end(), blacklist_forms.begin(), blacklist_forms.end());
+  blacklist_forms.weak_clear();
   if (ok) {
     // We add all the passwords (and blacklist entries) to the native backend
     // before attempting to remove any from the login database, to make sure we

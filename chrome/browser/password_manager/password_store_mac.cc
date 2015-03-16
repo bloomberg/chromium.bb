@@ -1062,11 +1062,11 @@ ScopedVector<autofill::PasswordForm> PasswordStoreMac::FillMatchingLogins(
   chrome::ScopedSecKeychainSetUserInteractionAllowed user_interaction_allowed(
       prompt_policy == ALLOW_PROMPT);
 
-  if (!login_metadata_db_)
-    return ScopedVector<autofill::PasswordForm>();
-
   ScopedVector<PasswordForm> database_forms;
-  login_metadata_db_->GetLogins(form, &database_forms);
+  if (!login_metadata_db_ ||
+      !login_metadata_db_->GetLogins(form, &database_forms)) {
+    return ScopedVector<autofill::PasswordForm>();
+  }
 
   // Let's gather all signon realms we want to match with keychain entries.
   std::set<std::string> realm_set;
@@ -1110,21 +1110,24 @@ ScopedVector<autofill::PasswordForm> PasswordStoreMac::FillMatchingLogins(
 
 void PasswordStoreMac::GetBlacklistLoginsImpl(
     scoped_ptr<PasswordStore::GetLoginsRequest> request) {
-  ScopedVector<autofill::PasswordForm> obtained_forms;
-  FillBlacklistLogins(&obtained_forms);
+  ScopedVector<PasswordForm> obtained_forms;
+  if (!FillBlacklistLogins(&obtained_forms))
+    obtained_forms.clear();
   request->NotifyConsumerWithResults(obtained_forms.Pass());
 }
 
 void PasswordStoreMac::GetAutofillableLoginsImpl(
     scoped_ptr<PasswordStore::GetLoginsRequest> request) {
-  ScopedVector<autofill::PasswordForm> obtained_forms;
-  FillAutofillableLogins(&obtained_forms);
+  ScopedVector<PasswordForm> obtained_forms;
+  if (!FillAutofillableLogins(&obtained_forms))
+    obtained_forms.clear();
   request->NotifyConsumerWithResults(obtained_forms.Pass());
 }
 
 bool PasswordStoreMac::FillAutofillableLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
-  DCHECK(thread_->message_loop() == base::MessageLoop::current());
+    ScopedVector<PasswordForm>* forms) {
+  DCHECK_EQ(thread_->message_loop(), base::MessageLoop::current());
+  forms->clear();
 
   ScopedVector<PasswordForm> database_forms;
   if (!login_metadata_db_ ||
@@ -1142,9 +1145,8 @@ bool PasswordStoreMac::FillAutofillableLogins(
   return true;
 }
 
-bool PasswordStoreMac::FillBlacklistLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
-  DCHECK(thread_->message_loop() == base::MessageLoop::current());
+bool PasswordStoreMac::FillBlacklistLogins(ScopedVector<PasswordForm>* forms) {
+  DCHECK_EQ(thread_->message_loop(), base::MessageLoop::current());
   return login_metadata_db_ && login_metadata_db_->GetBlacklistLogins(forms);
 }
 
@@ -1161,7 +1163,8 @@ bool PasswordStoreMac::DatabaseHasFormMatchingKeychainForm(
   DCHECK(login_metadata_db_);
   bool has_match = false;
   ScopedVector<autofill::PasswordForm> database_forms;
-  login_metadata_db_->GetLogins(form, &database_forms);
+  if (!login_metadata_db_->GetLogins(form, &database_forms))
+    return false;
   for (const autofill::PasswordForm* db_form : database_forms) {
     // Below we filter out forms with non-empty original_signon_realm, because
     // those signal fuzzy matches, and we are only interested in exact ones.
@@ -1204,7 +1207,8 @@ void PasswordStoreMac::CleanOrphanedForms(
   DCHECK(login_metadata_db_);
 
   ScopedVector<autofill::PasswordForm> database_forms;
-  login_metadata_db_->GetAutofillableLogins(&database_forms);
+  if (!login_metadata_db_->GetAutofillableLogins(&database_forms))
+    return;
 
   // Filter forms with corresponding Keychain entry out of |database_forms|.
   ScopedVector<PasswordForm> forms_with_keychain_entry;

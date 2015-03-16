@@ -10,16 +10,18 @@ namespace password_manager {
 
 // TODO: Actually encrypt passwords on Linux.
 
+// static
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
     const base::string16& plain_text,
-    std::string* cipher_text) const {
+    std::string* cipher_text) {
   *cipher_text = base::UTF16ToUTF8(plain_text);
   return ENCRYPTION_RESULT_SUCCESS;
 }
 
+// static
 LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
     const std::string& cipher_text,
-    base::string16* plain_text) const {
+    base::string16* plain_text) {
   *plain_text = base::UTF8ToUTF16(cipher_text);
   return ENCRYPTION_RESULT_SUCCESS;
 }

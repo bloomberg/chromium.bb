@@ -671,9 +671,10 @@ bool LoginDatabase::RemoveLoginsSyncedBetween(base::Time delete_begin,
   return s.Run();
 }
 
+// static
 LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
     PasswordForm* form,
-    sql::Statement& s) const {
+    sql::Statement& s) {
   std::string encrypted_password;
   s.ColumnBlobAsString(COLUMN_PASSWORD_VALUE, &encrypted_password);
   base::string16 decrypted_password;
@@ -751,7 +752,6 @@ bool LoginDatabase::GetLogins(
   sql::Statement s;
   const GURL signon_realm(form.signon_realm);
   std::string registered_domain = GetRegistryControlledDomain(signon_realm);
-  PSLDomainMatchMetric psl_domain_match_metric = PSL_DOMAIN_MATCH_NONE;
   const bool should_PSL_matching_apply =
       form.scheme == PasswordForm::SCHEME_HTML &&
       ShouldPSLDomainMatchingApply(registered_domain);
@@ -786,49 +786,15 @@ bool LoginDatabase::GetLogins(
     s.BindString(0, form.signon_realm);
     s.BindString(1, regexp);
   } else {
-    psl_domain_match_metric = PSL_DOMAIN_MATCH_NOT_USED;
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
+                              PSL_DOMAIN_MATCH_NOT_USED,
+                              PSL_DOMAIN_MATCH_COUNT);
     s.Assign(db_.GetCachedStatement(SQL_FROM_HERE, sql_query.c_str()));
     s.BindString(0, form.signon_realm);
   }
 
-  while (s.Step()) {
-    scoped_ptr<PasswordForm> new_form(new PasswordForm());
-    EncryptionResult result = InitPasswordFormFromStatement(new_form.get(), s);
-    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
-      return false;
-    if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
-      continue;
-    DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
-    if (should_PSL_matching_apply) {
-      if (!IsPublicSuffixDomainMatch(new_form->signon_realm,
-                                     form.signon_realm)) {
-        // The database returned results that should not match. Skipping result.
-        continue;
-      }
-      if (form.signon_realm != new_form->signon_realm) {
-        // Ignore non-HTML matches.
-        if (new_form->scheme != PasswordForm::SCHEME_HTML)
-          continue;
-
-        psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND;
-        // This is not a perfect match, so we need to create a new valid result.
-        // We do this by copying over origin, signon realm and action from the
-        // observed form and setting the original signon realm to what we found
-        // in the database. We use the fact that |original_signon_realm| is
-        // non-empty to communicate that this match was found using public
-        // suffix matching.
-        new_form->original_signon_realm = new_form->signon_realm;
-        new_form->origin = form.origin;
-        new_form->signon_realm = form.signon_realm;
-        new_form->action = form.action;
-      }
-    }
-    forms->push_back(new_form.release());
-  }
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
-                            psl_domain_match_metric,
-                            PSL_DOMAIN_MATCH_COUNT);
-  return s.Succeeded();
+  return StatementToForms(&s, should_PSL_matching_apply ? &form : nullptr,
+                          forms);
 }
 
 bool LoginDatabase::GetLoginsCreatedBetween(
@@ -851,17 +817,7 @@ bool LoginDatabase::GetLoginsCreatedBetween(
   s.BindInt64(1, end.is_null() ? std::numeric_limits<int64>::max()
                                : end.ToInternalValue());
 
-  while (s.Step()) {
-    scoped_ptr<PasswordForm> new_form(new PasswordForm());
-    EncryptionResult result = InitPasswordFormFromStatement(new_form.get(), s);
-    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
-      return false;
-    if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
-      continue;
-    DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
-    forms->push_back(new_form.release());
-  }
-  return s.Succeeded();
+  return StatementToForms(&s, nullptr, forms);
 }
 
 bool LoginDatabase::GetLoginsSyncedBetween(
@@ -884,17 +840,7 @@ bool LoginDatabase::GetLoginsSyncedBetween(
               end.is_null() ? base::Time::Max().ToInternalValue()
                             : end.ToInternalValue());
 
-  while (s.Step()) {
-    scoped_ptr<PasswordForm> new_form(new PasswordForm());
-    EncryptionResult result = InitPasswordFormFromStatement(new_form.get(), s);
-    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
-      return false;
-    if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
-      continue;
-    DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
-    forms->push_back(new_form.release());
-  }
-  return s.Succeeded();
+  return StatementToForms(&s, nullptr, forms);
 }
 
 bool LoginDatabase::GetAutofillableLogins(
@@ -924,17 +870,7 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
       "WHERE blacklisted_by_user == ? ORDER BY origin_url"));
   s.BindInt(0, blacklisted ? 1 : 0);
 
-  while (s.Step()) {
-    scoped_ptr<PasswordForm> new_form(new PasswordForm());
-    EncryptionResult result = InitPasswordFormFromStatement(new_form.get(), s);
-    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
-      return false;
-    if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
-      continue;
-    DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
-    forms->push_back(new_form.release());
-  }
-  return s.Succeeded();
+  return StatementToForms(&s, nullptr, forms);
 }
 
 bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
@@ -943,6 +879,57 @@ bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
   db_.Close();
   sql::Connection::Delete(db_path_);
   return Init();
+}
+
+// static
+bool LoginDatabase::StatementToForms(
+    sql::Statement* statement,
+    const autofill::PasswordForm* psl_match,
+    ScopedVector<autofill::PasswordForm>* forms) {
+  PSLDomainMatchMetric psl_domain_match_metric = PSL_DOMAIN_MATCH_NONE;
+
+  forms->clear();
+  while (statement->Step()) {
+    scoped_ptr<PasswordForm> new_form(new PasswordForm());
+    EncryptionResult result =
+        InitPasswordFormFromStatement(new_form.get(), *statement);
+    if (result == ENCRYPTION_RESULT_SERVICE_FAILURE)
+      return false;
+    if (result == ENCRYPTION_RESULT_ITEM_FAILURE)
+      continue;
+    DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
+    if (psl_match && psl_match->signon_realm != new_form->signon_realm) {
+      if (new_form->scheme != PasswordForm::SCHEME_HTML)
+        continue;  // Ignore non-HTML matches.
+
+      if (!IsPublicSuffixDomainMatch(new_form->signon_realm,
+                                     psl_match->signon_realm)) {
+        continue;
+      }
+
+      psl_domain_match_metric = PSL_DOMAIN_MATCH_FOUND;
+      // This is not a perfect match, so we need to create a new valid result.
+      // We do this by copying over origin, signon realm and action from the
+      // observed form and setting the original signon realm to what we found
+      // in the database. We use the fact that |original_signon_realm| is
+      // non-empty to communicate that this match was found using public
+      // suffix matching.
+      new_form->original_signon_realm = new_form->signon_realm;
+      new_form->origin = psl_match->origin;
+      new_form->signon_realm = psl_match->signon_realm;
+      new_form->action = psl_match->action;
+    }
+    forms->push_back(new_form.Pass());
+  }
+
+  if (psl_match) {
+    UMA_HISTOGRAM_ENUMERATION("PasswordManager.PslDomainMatchTriggering",
+                              psl_domain_match_metric, PSL_DOMAIN_MATCH_COUNT);
+  }
+
+  if (!statement->Succeeded())
+    return false;
+  return true;
 }
 
 }  // namespace password_manager

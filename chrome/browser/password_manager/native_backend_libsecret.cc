@@ -236,6 +236,14 @@ void LibsecretAttributesBuilder::Append(const std::string& name, int64 value) {
   Append(name, base::Int64ToString(value));
 }
 
+// Generates a profile-specific app string based on profile_id_.
+std::string GetProfileSpecificAppString(LocalProfileId id) {
+  // Originally, the application string was always just "chrome" and used only
+  // so that we had *something* to search for since GNOME Keyring won't search
+  // for nothing. Now we use it to distinguish passwords for different profiles.
+  return base::StringPrintf("%s-%d", kLibsecretAppString, id);
+}
+
 }  // namespace
 
 bool LibsecretLoader::LibsecretIsAvailable() {
@@ -280,8 +288,8 @@ password_manager::PasswordStoreChangeList NativeBackendLibsecret::AddLogin(
   // element, and signon_realm first, remove that, and then add the new entry.
   // We'd add the new one first, and then delete the original, but then the
   // delete might actually delete the newly-added entry!
-  ScopedVector<autofill::PasswordForm> forms;
-  AddUpdateLoginSearch(form, SEARCH_USE_SUBMIT, &forms);
+  ScopedVector<autofill::PasswordForm> forms =
+      AddUpdateLoginSearch(form, SEARCH_USE_SUBMIT);
   password_manager::PasswordStoreChangeList changes;
   if (forms.size() > 0) {
     if (forms.size() > 1) {
@@ -313,8 +321,8 @@ bool NativeBackendLibsecret::UpdateLogin(
   DCHECK(changes);
   changes->clear();
 
-  ScopedVector<autofill::PasswordForm> forms;
-  AddUpdateLoginSearch(form, SEARCH_IGNORE_SUBMIT, &forms);
+  ScopedVector<autofill::PasswordForm> forms =
+      AddUpdateLoginSearch(form, SEARCH_IGNORE_SUBMIT);
 
   bool removed = false;
   for (size_t i = 0; i < forms.size(); ++i) {
@@ -375,10 +383,10 @@ bool NativeBackendLibsecret::GetLogins(
   return GetLoginsList(&form, ALL_LOGINS, forms);
 }
 
-void NativeBackendLibsecret::AddUpdateLoginSearch(
+ScopedVector<autofill::PasswordForm>
+NativeBackendLibsecret::AddUpdateLoginSearch(
     const autofill::PasswordForm& lookup_form,
-    AddUpdateLoginSearchOptions options,
-    ScopedVector<autofill::PasswordForm>* forms) {
+    AddUpdateLoginSearchOptions options) {
   LibsecretAttributesBuilder attrs;
   attrs.Append("origin_url", lookup_form.origin.spec());
   attrs.Append("username_element", UTF16ToUTF8(lookup_form.username_element));
@@ -400,10 +408,10 @@ void NativeBackendLibsecret::AddUpdateLoginSearch(
     g_error_free(error);
     if (found)
       g_list_free(found);
-    return;
+    return ScopedVector<autofill::PasswordForm>();
   }
 
-  ConvertFormList(found, &lookup_form, forms);
+  return ConvertFormList(found, &lookup_form);
 }
 
 bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
@@ -492,12 +500,8 @@ bool NativeBackendLibsecret::GetLoginsList(
     return false;
   }
 
-  return ConvertFormList(found, lookup_form, forms);
-}
-
-bool NativeBackendLibsecret::GetAllLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
-  return GetLoginsList(nullptr, ALL_LOGINS, forms);
+  *forms = ConvertFormList(found, lookup_form);
+  return true;
 }
 
 bool NativeBackendLibsecret::GetLoginsBetween(
@@ -505,8 +509,9 @@ bool NativeBackendLibsecret::GetLoginsBetween(
     base::Time get_end,
     TimestampToCompare date_to_compare,
     ScopedVector<autofill::PasswordForm>* forms) {
+  forms->clear();
   ScopedVector<autofill::PasswordForm> all_forms;
-  if (!GetAllLogins(&all_forms))
+  if (!GetLoginsList(nullptr, ALL_LOGINS, &all_forms))
     return false;
 
   base::Time autofill::PasswordForm::*date_member =
@@ -547,10 +552,10 @@ bool NativeBackendLibsecret::RemoveLoginsBetween(
   return ok;
 }
 
-bool NativeBackendLibsecret::ConvertFormList(
+ScopedVector<autofill::PasswordForm> NativeBackendLibsecret::ConvertFormList(
     GList* found,
-    const PasswordForm* lookup_form,
-    ScopedVector<autofill::PasswordForm>* forms) {
+    const PasswordForm* lookup_form) {
+  ScopedVector<autofill::PasswordForm> forms;
   password_manager::PSLDomainMatchMetric psl_domain_match_metric =
       password_manager::PSL_DOMAIN_MATCH_NONE;
   GError* error = nullptr;
@@ -588,7 +593,7 @@ bool NativeBackendLibsecret::ConvertFormList(
       } else {
         VLOG(1) << "Unable to access password from list element!";
       }
-      forms->push_back(form.release());
+      forms.push_back(form.release());
     } else {
       VLOG(1) << "Could not initialize PasswordForm from attributes!";
     }
@@ -606,13 +611,5 @@ bool NativeBackendLibsecret::ConvertFormList(
         password_manager::PSL_DOMAIN_MATCH_COUNT);
   }
   g_list_free(found);
-  return true;
-}
-
-std::string NativeBackendLibsecret::GetProfileSpecificAppString(
-    LocalProfileId id) {
-  // Originally, the application string was always just "chrome" and used only
-  // so that we had *something* to search for since GNOME Keyring won't search
-  // for nothing. Now we use it to distinguish passwords for different profiles.
-  return base::StringPrintf("%s-%d", kLibsecretAppString, id);
+  return forms.Pass();
 }

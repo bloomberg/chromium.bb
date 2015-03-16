@@ -151,13 +151,17 @@ gboolean mock_secret_password_clear_sync(const SecretSchema* schema,
     g_hash_table_insert(attributes, g_strdup(name), value);
   }
   va_end(ap);
-  for (uint32_t i = 0; i < global_mock_libsecret_items->size();)
-    if (Matches((*global_mock_libsecret_items)[i], attributes)) {
-      global_mock_libsecret_items->erase(global_mock_libsecret_items->begin() +
-                                         i);
-    } else {
-      ++i;
+
+  ScopedVector<MockSecretItem> kept_mock_libsecret_items;
+  kept_mock_libsecret_items.reserve(global_mock_libsecret_items->size());
+  for (auto& item : *global_mock_libsecret_items) {
+    if (!Matches(item, attributes)) {
+      kept_mock_libsecret_items.push_back(item);
+      item = nullptr;
     }
+  }
+  global_mock_libsecret_items->swap(kept_mock_libsecret_items);
+
   g_hash_table_unref(attributes);
   return true;
 }
@@ -796,26 +800,6 @@ TEST_F(NativeBackendLibsecretTest, AddDuplicateLogin) {
                         "chrome-42");
 }
 
-TEST_F(NativeBackendLibsecretTest, ListLoginsAppends) {
-  NativeBackendLibsecret backend(42);
-
-  backend.AddLogin(form_google_);
-
-  // Send the same request twice with the same list both times.
-  ScopedVector<autofill::PasswordForm> form_list;
-  backend.GetAutofillableLogins(&form_list);
-  backend.GetAutofillableLogins(&form_list);
-
-  // Quick check that we got two results back.
-  EXPECT_EQ(2u, form_list.size());
-  form_list.clear();
-
-  EXPECT_EQ(1u, global_mock_libsecret_items->size());
-  if (!global_mock_libsecret_items->empty())
-    CheckMockSecretItem((*global_mock_libsecret_items)[0], form_google_,
-                        "chrome-42");
-}
-
 TEST_F(NativeBackendLibsecretTest, AndroidCredentials) {
   NativeBackendLibsecret backend(42);
   backend.Init();
@@ -837,7 +821,6 @@ TEST_F(NativeBackendLibsecretTest, AndroidCredentials) {
   EXPECT_EQ(1u, form_list.size());
   EXPECT_EQ(saved_android_form, *form_list[0]);
 }
-
 
 TEST_F(NativeBackendLibsecretTest, RemoveLoginsCreatedBetween) {
   CheckRemoveLoginsBetween(CREATED);

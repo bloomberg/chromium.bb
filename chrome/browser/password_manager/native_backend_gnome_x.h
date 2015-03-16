@@ -20,6 +20,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -120,19 +121,24 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
   // Adds a login form without checking for one to replace first.
   bool RawAddLogin(const autofill::PasswordForm& form);
 
-  // Reads PasswordForms from the keyring with the given autofillability state.
+  // Retrieves all autofillable or all blacklisted credentials (depending on
+  // |autofillable|) from the keyring into |forms|, overwriting the original
+  // contents of |forms|. Returns true on success.
   bool GetLoginsList(bool autofillable,
-                     ScopedVector<autofill::PasswordForm>* forms);
+                     ScopedVector<autofill::PasswordForm>* forms)
+      WARN_UNUSED_RESULT;
 
   // Helper for GetLoginsCreatedBetween().
-  bool GetAllLogins(ScopedVector<autofill::PasswordForm>* forms);
+  bool GetAllLogins(ScopedVector<autofill::PasswordForm>* forms)
+      WARN_UNUSED_RESULT;
 
   // Retrieves password created/synced in the time interval. Returns |true| if
   // the operation succeeded.
   bool GetLoginsBetween(base::Time get_begin,
                         base::Time get_end,
                         TimestampToCompare date_to_compare,
-                        ScopedVector<autofill::PasswordForm>* forms);
+                        ScopedVector<autofill::PasswordForm>* forms)
+      WARN_UNUSED_RESULT;
 
   // Removes password created/synced in the time interval. Returns |true| if the
   // operation succeeded. |changes| will contain the changes applied.
@@ -140,9 +146,6 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
                            base::Time get_end,
                            TimestampToCompare date_to_compare,
                            password_manager::PasswordStoreChangeList* changes);
-
-  // Generates a profile-specific app string based on profile_id_.
-  std::string GetProfileSpecificAppString() const;
 
   // The local profile id, used to generate the app string.
   const LocalProfileId profile_id_;

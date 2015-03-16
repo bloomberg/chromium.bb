@@ -491,7 +491,6 @@ TEST_F(PasswordStoreMacInternalsTest, TestKeychainSearch) {
         keychain_adapter.PasswordsFillingForm(query_form->signon_realm,
                                               query_form->scheme);
     EXPECT_EQ(test_data[i].expected_fill_matches, matching_items.size());
-    matching_items.clear();
 
     // Check matches treating the form as a merging target.
     EXPECT_EQ(test_data[i].expected_merge_matches > 0,
@@ -1247,9 +1246,8 @@ TEST_F(PasswordStoreMacTest, TestStoreUpdate) {
     } else {
       EXPECT_EQ(0U, matching_items.size()) << "iteration " << i;
     }
-    matching_items.clear();
 
-    login_db()->GetLogins(*query_form, &matching_items);
+    EXPECT_TRUE(login_db()->GetLogins(*query_form, &matching_items));
     EXPECT_EQ(updates[i].password ? 1U : 0U, matching_items.size())
         << "iteration " << i;
   }
@@ -1312,13 +1310,13 @@ TEST_F(PasswordStoreMacTest, TestDBKeychainAssociation) {
       owned_keychain_adapter.PasswordsFillingForm(www_form->signon_realm,
                                                   www_form->scheme);
   EXPECT_EQ(0u, matching_items.size());
-  login_db()->GetLogins(*www_form, &matching_items);
+  EXPECT_TRUE(login_db()->GetLogins(*www_form, &matching_items));
   EXPECT_EQ(0u, matching_items.size());
   // No trace of m.facebook.com.
   matching_items = owned_keychain_adapter.PasswordsFillingForm(
       m_form.signon_realm, m_form.scheme);
   EXPECT_EQ(0u, matching_items.size());
-  login_db()->GetLogins(m_form, &matching_items);
+  EXPECT_TRUE(login_db()->GetLogins(m_form, &matching_items));
   EXPECT_EQ(0u, matching_items.size());
 }
 
@@ -1486,15 +1484,14 @@ TEST_F(PasswordStoreMacTest, TestRemoveLoginsMultiProfile) {
   FinishAsyncProcessing();
 
   ScopedVector<PasswordForm> matching_items;
-  login_db()->GetLogins(*www_form, &matching_items);
+  EXPECT_TRUE(login_db()->GetLogins(*www_form, &matching_items));
   EXPECT_EQ(1u, matching_items.size());
-  matching_items.clear();
 
   store_->RemoveLoginsCreatedBetween(base::Time(), base::Time());
   FinishAsyncProcessing();
 
   // Check the second facebook form is gone.
-  login_db()->GetLogins(*www_form, &matching_items);
+  EXPECT_TRUE(login_db()->GetLogins(*www_form, &matching_items));
   EXPECT_EQ(0u, matching_items.size());
 
   // Check the first facebook form is still there.
@@ -1502,7 +1499,6 @@ TEST_F(PasswordStoreMacTest, TestRemoveLoginsMultiProfile) {
       www_form->signon_realm, www_form->scheme);
   ASSERT_EQ(1u, matching_items.size());
   EXPECT_EQ(ASCIIToUTF16("joe_user"), matching_items[0]->username_value);
-  matching_items.clear();
 
   // Check the third-party password is still there.
   owned_keychain_adapter.SetFindsOnlyOwnedItems(false);
@@ -1641,7 +1637,6 @@ TEST_F(PasswordStoreMacTest, SilentlyRemoveOrphanedForm) {
   ScopedVector<autofill::PasswordForm> all_forms;
   EXPECT_TRUE(login_db()->GetAutofillableLogins(&all_forms));
   EXPECT_EQ(1u, all_forms.size());
-  all_forms.clear();
   ::testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
   // 3. Get a password for www.facebook.com. The form is implicitly removed and

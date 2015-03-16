@@ -69,34 +69,37 @@ class LoginDatabase {
   bool RemoveLoginsSyncedBetween(base::Time delete_begin,
                                  base::Time delete_end);
 
-  // Loads a list of matching password forms into the specified vector |forms|.
-  // The list will contain all possibly relevant entries to the observed |form|,
-  // including blacklisted matches.
-  bool GetLogins(const autofill::PasswordForm& form,
-                 ScopedVector<autofill::PasswordForm>* forms) const;
+  // All Get* methods below overwrite |forms| with the returned credentials. On
+  // success, those methods return true.
 
-  // Loads all logins created from |begin| onwards (inclusive) and before |end|.
+  // Gets a list of credentials matching |form|, including blacklisted matches.
+  bool GetLogins(const autofill::PasswordForm& form,
+                 ScopedVector<autofill::PasswordForm>* forms) const
+      WARN_UNUSED_RESULT;
+
+  // Gets all logins created from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
   // direction.
   bool GetLoginsCreatedBetween(
       base::Time begin,
       base::Time end,
-      ScopedVector<autofill::PasswordForm>* forms) const;
+      ScopedVector<autofill::PasswordForm>* forms) const WARN_UNUSED_RESULT;
 
-  // Loads all logins synced from |begin| onwards (inclusive) and before |end|.
+  // Gets all logins synced from |begin| onwards (inclusive) and before |end|.
   // You may use a null Time value to do an unbounded search in either
   // direction.
-  bool GetLoginsSyncedBetween(
-      base::Time begin,
-      base::Time end,
-      ScopedVector<autofill::PasswordForm>* forms) const;
+  bool GetLoginsSyncedBetween(base::Time begin,
+                              base::Time end,
+                              ScopedVector<autofill::PasswordForm>* forms) const
+      WARN_UNUSED_RESULT;
 
-  // Loads the complete list of autofillable password forms (i.e., not blacklist
-  // entries) into |forms|.
-  bool GetAutofillableLogins(ScopedVector<autofill::PasswordForm>* forms) const;
+  // Gets the complete list of not blacklisted credentials.
+  bool GetAutofillableLogins(ScopedVector<autofill::PasswordForm>* forms) const
+      WARN_UNUSED_RESULT;
 
-  // Loads the complete list of blacklist forms into |forms|.
-  bool GetBlacklistLogins(ScopedVector<autofill::PasswordForm>* forms) const;
+  // Gets the complete list of blacklisted credentials.
+  bool GetBlacklistLogins(ScopedVector<autofill::PasswordForm>* forms) const
+      WARN_UNUSED_RESULT;
 
   // Deletes the login database file on disk, and creates a new, empty database.
   // This can be used after migrating passwords to some other store, to ensure
@@ -124,15 +127,15 @@ class LoginDatabase {
   // successful, or returning false and leaving cipher_text unchanged if
   // encryption fails (e.g., if the underlying OS encryption system is
   // temporarily unavailable).
-  EncryptionResult EncryptedString(const base::string16& plain_text,
-                                   std::string* cipher_text) const;
+  static EncryptionResult EncryptedString(const base::string16& plain_text,
+                                          std::string* cipher_text);
 
   // Decrypts cipher_text, setting the value of plain_text and returning true if
   // successful, or returning false and leaving plain_text unchanged if
   // decryption fails (e.g., if the underlying OS encryption system is
   // temporarily unavailable).
-  EncryptionResult DecryptedString(const std::string& cipher_text,
-                                   base::string16* plain_text) const;
+  static EncryptionResult DecryptedString(const std::string& cipher_text,
+                                          base::string16* plain_text);
 
   bool InitLoginsTable();
   bool MigrateOldVersionsAsNeeded();
@@ -141,14 +144,23 @@ class LoginDatabase {
   // be of the form used by the Get*Logins methods).
   // Returns the EncryptionResult from decrypting the password in |s|; if not
   // ENCRYPTION_RESULT_SUCCESS, |form| is not filled.
-  EncryptionResult InitPasswordFormFromStatement(autofill::PasswordForm* form,
-                                                 sql::Statement& s) const;
+  static EncryptionResult InitPasswordFormFromStatement(
+      autofill::PasswordForm* form,
+      sql::Statement& s);
 
-  // Loads all logins whose blacklist setting matches |blacklisted| into
-  // |forms|.
+  // Gets all blacklisted or all non-blacklisted (depending on |blacklisted|)
+  // credentials. On success returns true and overwrites |forms| with the
+  // result.
   bool GetAllLoginsWithBlacklistSetting(
       bool blacklisted,
       ScopedVector<autofill::PasswordForm>* forms) const;
+
+  // Overwrites |forms| with credentials retrieved from |statement|. If
+  // |psl_match| is not null, filters out all results but thos PSL-matching
+  // |*psl_match|. On success returns true.
+  static bool StatementToForms(sql::Statement* statement,
+                               const autofill::PasswordForm* psl_match,
+                               ScopedVector<autofill::PasswordForm>* forms);
 
   base::FilePath db_path_;
   mutable sql::Connection db_;

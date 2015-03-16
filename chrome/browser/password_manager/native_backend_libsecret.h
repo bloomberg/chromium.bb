@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -86,10 +87,10 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend,
     SEARCH_IGNORE_SUBMIT,
   };
 
-  // Search that is used in AddLogin and UpdateLogin methods
-  void AddUpdateLoginSearch(const autofill::PasswordForm& lookup_form,
-                            AddUpdateLoginSearchOptions options,
-                            ScopedVector<autofill::PasswordForm>* forms);
+  // Returns credentials matching |lookup_form| and |options|.
+  ScopedVector<autofill::PasswordForm> AddUpdateLoginSearch(
+      const autofill::PasswordForm& lookup_form,
+      AddUpdateLoginSearchOptions options);
 
   // Adds a login form without checking for one to replace first.
   bool RawAddLogin(const autofill::PasswordForm& form);
@@ -100,20 +101,21 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend,
     BLACKLISTED_LOGINS,
   };
 
-  // Reads PasswordForms from the keyring with the given autofillability state.
+  // Retrieves credentials matching |options| from the keyring into |forms|,
+  // overwriting the original contents of |forms|. If |lookup_form| is not NULL,
+  // only retrieves credentials PSL-matching it. Returns true on success.
   bool GetLoginsList(const autofill::PasswordForm* lookup_form,
                      GetLoginsListOptions options,
-                     ScopedVector<autofill::PasswordForm>* forms);
+                     ScopedVector<autofill::PasswordForm>* forms)
+      WARN_UNUSED_RESULT;
 
-  // Helper for GetLoginsCreatedBetween().
-  bool GetAllLogins(ScopedVector<autofill::PasswordForm>* forms);
-
-  // Retrieves password created/synced in the time interval. Returns |true| if
-  // the operation succeeded.
+  // Retrieves password created/synced in the time interval into |forms|,
+  // overwriting the original contents of |forms|. Returns true on success.
   bool GetLoginsBetween(base::Time get_begin,
                         base::Time get_end,
                         TimestampToCompare date_to_compare,
-                        ScopedVector<autofill::PasswordForm>* forms);
+                        ScopedVector<autofill::PasswordForm>* forms)
+      WARN_UNUSED_RESULT;
 
   // Removes password created/synced in the time interval. Returns |true| if the
   // operation succeeded. |changes| will contain the changes applied.
@@ -123,12 +125,9 @@ class NativeBackendLibsecret : public PasswordStoreX::NativeBackend,
                            password_manager::PasswordStoreChangeList* changes);
 
   // convert data get from Libsecret to Passwordform
-  bool ConvertFormList(GList* found,
-                       const autofill::PasswordForm* lookup_form,
-                       ScopedVector<autofill::PasswordForm>* forms);
-
-  // Generates a profile-specific app string based on profile_id_.
-  static std::string GetProfileSpecificAppString(LocalProfileId id);
+  ScopedVector<autofill::PasswordForm> ConvertFormList(
+      GList* found,
+      const autofill::PasswordForm* lookup_form);
 
   // The app string, possibly based on the local profile id.
   std::string app_string_;

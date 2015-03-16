@@ -163,17 +163,15 @@ scoped_ptr<PasswordForm> FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   return form.Pass();
 }
 
-// Parse all the results from the given GList into a
-// ScopedVector<autofill::PasswordForm>, and free the GList. PasswordForms are
-// allocated on the heap, and should be deleted by the consumer. If not NULL,
+// Converts native credentials in |found| to PasswordForms. If not NULL,
 // |lookup_form| is used to filter out results -- only credentials with signon
 // realms passing the PSL matching against |lookup_form->signon_realm| will be
 // kept. PSL matched results get their signon_realm, origin, and action
 // rewritten to those of |lookup_form_|, with the original signon_realm saved
 // into the result's original_signon_realm data member.
-void ConvertFormList(GList* found,
-                     const PasswordForm* lookup_form,
-                     ScopedVector<autofill::PasswordForm>* forms) {
+ScopedVector<PasswordForm> ConvertFormList(GList* found,
+                                           const PasswordForm* lookup_form) {
+  ScopedVector<PasswordForm> forms;
   password_manager::PSLDomainMatchMetric psl_domain_match_metric =
       password_manager::PSL_DOMAIN_MATCH_NONE;
   for (GList* element = g_list_first(found); element;
@@ -202,7 +200,7 @@ void ConvertFormList(GList* found,
       } else {
         LOG(WARNING) << "Unable to access password from list element!";
       }
-      forms->push_back(form.release());
+      forms.push_back(form.release());
     } else {
       LOG(WARNING) << "Could not initialize PasswordForm from attributes!";
     }
@@ -218,6 +216,7 @@ void ConvertFormList(GList* found,
             : password_manager::PSL_DOMAIN_MATCH_NOT_USED,
         password_manager::PSL_DOMAIN_MATCH_COUNT);
   }
+  return forms.Pass();
 }
 
 // Schema is analagous to the fields in PasswordForm.
@@ -284,8 +283,8 @@ class GKRMethod : public GnomeKeyringLoader {
   GnomeKeyringResult WaitResult();
 
   // Use after AddLoginSearch, UpdateLoginSearch, GetLogins, GetLoginsList,
-  // GetAllLogins.
-  GnomeKeyringResult WaitResult(ScopedVector<autofill::PasswordForm>* forms);
+  // GetAllLogins. Replaces the content of |forms| with found logins.
+  GnomeKeyringResult WaitResult(ScopedVector<PasswordForm>* forms);
 
  private:
   struct GnomeKeyringAttributeListFreeDeleter {
@@ -312,12 +311,15 @@ class GKRMethod : public GnomeKeyringLoader {
   // All these callbacks are called on UI thread.
   static void OnOperationDone(GnomeKeyringResult result, gpointer data);
 
+  // This is marked as static, but acts on the GKRMethod instance that |data|
+  // points to. Saves |result| to |result_|. If the result is OK, overwrites
+  // |forms_| with the found credentials. Clears |forms_| otherwise.
   static void OnOperationGetList(GnomeKeyringResult result, GList* list,
                                  gpointer data);
 
   base::WaitableEvent event_;
   GnomeKeyringResult result_;
-  ScopedVector<autofill::PasswordForm> forms_;
+  ScopedVector<PasswordForm> forms_;
   // If the credential search is specified by a single form and needs to use PSL
   // matching, then the specifying form is stored in |lookup_form_|. If PSL
   // matching is used to find a result, then the results signon realm, origin
@@ -481,18 +483,10 @@ GnomeKeyringResult GKRMethod::WaitResult() {
   return result_;
 }
 
-GnomeKeyringResult GKRMethod::WaitResult(
-    ScopedVector<autofill::PasswordForm>* forms) {
+GnomeKeyringResult GKRMethod::WaitResult(ScopedVector<PasswordForm>* forms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   event_.Wait();
-  if (forms->empty()) {
-    // Normal case. Avoid extra allocation by swapping.
-    forms->swap(forms_);
-  } else {
-    // Rare case. Append forms_ to *forms.
-    forms->insert(forms->end(), forms_.begin(), forms_.end());
-    forms_.weak_clear();
-  }
+  *forms = forms_.Pass();
   return result_;
 }
 
@@ -529,18 +523,27 @@ void GKRMethod::OnOperationGetList(GnomeKeyringResult result, GList* list,
                                    gpointer data) {
   GKRMethod* method = static_cast<GKRMethod*>(data);
   method->result_ = result;
-  method->forms_.clear();
   // |list| will be freed after this callback returns, so convert it now.
-  ConvertFormList(list, method->lookup_form_.get(), &method->forms_);
+  if (result == GNOME_KEYRING_RESULT_OK)
+    method->forms_ = ConvertFormList(list, method->lookup_form_.get());
+  else
+    method->forms_.clear();
   method->lookup_form_.reset();
   method->event_.Signal();
+}
+
+// Generates a profile-specific app string based on profile_id.
+std::string GetProfileSpecificAppString(LocalProfileId profile_id) {
+  // Originally, the application string was always just "chrome" and used only
+  // so that we had *something* to search for since GNOME Keyring won't search
+  // for nothing. Now we use it to distinguish passwords for different profiles.
+  return base::StringPrintf("%s-%d", kGnomeKeyringAppString, profile_id);
 }
 
 }  // namespace
 
 NativeBackendGnome::NativeBackendGnome(LocalProfileId id)
-    : profile_id_(id) {
-  app_string_ = GetProfileSpecificAppString();
+    : profile_id_(id), app_string_(GetProfileSpecificAppString(id)) {
 }
 
 NativeBackendGnome::~NativeBackendGnome() {
@@ -579,7 +582,7 @@ password_manager::PasswordStoreChangeList NativeBackendGnome::AddLogin(
                           base::Bind(&GKRMethod::AddLoginSearch,
                                      base::Unretained(&method),
                                      form, app_string_.c_str()));
-  ScopedVector<autofill::PasswordForm> forms;
+  ScopedVector<PasswordForm> forms;
   GnomeKeyringResult result = method.WaitResult(&forms);
   if (result != GNOME_KEYRING_RESULT_OK &&
       result != GNOME_KEYRING_RESULT_NO_MATCH) {
@@ -623,7 +626,7 @@ bool NativeBackendGnome::UpdateLogin(
                           base::Bind(&GKRMethod::UpdateLoginSearch,
                                      base::Unretained(&method),
                                      form, app_string_.c_str()));
-  ScopedVector<autofill::PasswordForm> forms;
+  ScopedVector<PasswordForm> forms;
   GnomeKeyringResult result = method.WaitResult(&forms);
   if (result != GNOME_KEYRING_RESULT_OK) {
     LOG(ERROR) << "Keyring find failed: "
@@ -683,9 +686,8 @@ bool NativeBackendGnome::RemoveLoginsSyncedBetween(
   return RemoveLoginsBetween(delete_begin, delete_end, SYNC_TIMESTAMP, changes);
 }
 
-bool NativeBackendGnome::GetLogins(
-    const PasswordForm& form,
-    ScopedVector<autofill::PasswordForm>* forms) {
+bool NativeBackendGnome::GetLogins(const PasswordForm& form,
+                                   ScopedVector<PasswordForm>* forms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -704,18 +706,16 @@ bool NativeBackendGnome::GetLogins(
 }
 
 bool NativeBackendGnome::GetAutofillableLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+    ScopedVector<PasswordForm>* forms) {
   return GetLoginsList(true, forms);
 }
 
-bool NativeBackendGnome::GetBlacklistLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+bool NativeBackendGnome::GetBlacklistLogins(ScopedVector<PasswordForm>* forms) {
   return GetLoginsList(false, forms);
 }
 
-bool NativeBackendGnome::GetLoginsList(
-    bool autofillable,
-    ScopedVector<autofill::PasswordForm>* forms) {
+bool NativeBackendGnome::GetLoginsList(bool autofillable,
+                                       ScopedVector<PasswordForm>* forms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   uint32_t blacklisted_by_user = !autofillable;
@@ -736,8 +736,7 @@ bool NativeBackendGnome::GetLoginsList(
   return true;
 }
 
-bool NativeBackendGnome::GetAllLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+bool NativeBackendGnome::GetAllLogins(ScopedVector<PasswordForm>* forms) {
   GKRMethod method;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&GKRMethod::GetAllLogins,
@@ -754,22 +753,21 @@ bool NativeBackendGnome::GetAllLogins(
   return true;
 }
 
-bool NativeBackendGnome::GetLoginsBetween(
-    base::Time get_begin,
-    base::Time get_end,
-    TimestampToCompare date_to_compare,
-    ScopedVector<autofill::PasswordForm>* forms) {
+bool NativeBackendGnome::GetLoginsBetween(base::Time get_begin,
+                                          base::Time get_end,
+                                          TimestampToCompare date_to_compare,
+                                          ScopedVector<PasswordForm>* forms) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  forms->clear();
   // We could walk the list and add items as we find them, but it is much
   // easier to build the list and then filter the results.
-  ScopedVector<autofill::PasswordForm> all_forms;
+  ScopedVector<PasswordForm> all_forms;
   if (!GetAllLogins(&all_forms))
     return false;
 
-  base::Time autofill::PasswordForm::*date_member =
-      date_to_compare == CREATION_TIMESTAMP
-          ? &autofill::PasswordForm::date_created
-          : &autofill::PasswordForm::date_synced;
+  base::Time PasswordForm::*date_member = date_to_compare == CREATION_TIMESTAMP
+                                              ? &PasswordForm::date_created
+                                              : &PasswordForm::date_synced;
   for (auto& saved_form : all_forms) {
     if (get_begin <= saved_form->*date_member &&
         (get_end.is_null() || saved_form->*date_member < get_end)) {
@@ -791,7 +789,7 @@ bool NativeBackendGnome::RemoveLoginsBetween(
   changes->clear();
   // We could walk the list and delete items as we find them, but it is much
   // easier to build the list and use RemoveLogin() to delete them.
-  ScopedVector<autofill::PasswordForm> forms;
+  ScopedVector<PasswordForm> forms;
   if (!GetLoginsBetween(get_begin, get_end, date_to_compare, &forms))
     return false;
 
@@ -805,11 +803,4 @@ bool NativeBackendGnome::RemoveLoginsBetween(
     }
   }
   return ok;
-}
-
-std::string NativeBackendGnome::GetProfileSpecificAppString() const {
-  // Originally, the application string was always just "chrome" and used only
-  // so that we had *something* to search for since GNOME Keyring won't search
-  // for nothing. Now we use it to distinguish passwords for different profiles.
-  return base::StringPrintf("%s-%d", kGnomeKeyringAppString, profile_id_);
 }

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNC_INTERFACE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_SYNC_INTERFACE_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 
@@ -16,13 +17,15 @@ namespace password_manager {
 // thread only.
 class PasswordStoreSync {
  public:
-  // Finds all non-blacklist PasswordForms, and fills the vector.
+  // Overwrites |forms| with all stored non-blacklisted credentials. Returns
+  // true on success.
   virtual bool FillAutofillableLogins(
-      ScopedVector<autofill::PasswordForm>* forms) = 0;
+      ScopedVector<autofill::PasswordForm>* forms) WARN_UNUSED_RESULT = 0;
 
-  // Finds all blacklist PasswordForms, and fills the vector.
-  virtual bool FillBlacklistLogins(
-      ScopedVector<autofill::PasswordForm>* forms) = 0;
+  // Overwrites |forms| with all stored blacklisted credentials. Returns true on
+  // success.
+  virtual bool FillBlacklistLogins(ScopedVector<autofill::PasswordForm>* forms)
+      WARN_UNUSED_RESULT = 0;
 
   // Synchronous implementation to add the given login.
   virtual PasswordStoreChangeList AddLoginImpl(

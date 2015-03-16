@@ -115,33 +115,35 @@ ScopedVector<autofill::PasswordForm> PasswordStoreDefault::FillMatchingLogins(
     const autofill::PasswordForm& form,
     AuthorizationPromptPolicy prompt_policy) {
   ScopedVector<autofill::PasswordForm> matched_forms;
-  if (login_db_)
-    login_db_->GetLogins(form, &matched_forms);
+  if (login_db_ && !login_db_->GetLogins(form, &matched_forms))
+    return ScopedVector<autofill::PasswordForm>();
   return matched_forms.Pass();
 }
 
 void PasswordStoreDefault::GetAutofillableLoginsImpl(
     scoped_ptr<GetLoginsRequest> request) {
-  ScopedVector<autofill::PasswordForm> logins;
-  FillAutofillableLogins(&logins);
+  ScopedVector<PasswordForm> logins;
+  if (!FillAutofillableLogins(&logins))
+    logins.clear();
   request->NotifyConsumerWithResults(logins.Pass());
 }
 
 void PasswordStoreDefault::GetBlacklistLoginsImpl(
     scoped_ptr<GetLoginsRequest> request) {
-  ScopedVector<autofill::PasswordForm> logins;
-  FillBlacklistLogins(&logins);
+  ScopedVector<PasswordForm> logins;
+  if (!FillBlacklistLogins(&logins))
+    logins.clear();
   request->NotifyConsumerWithResults(logins.Pass());
 }
 
 bool PasswordStoreDefault::FillAutofillableLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+    ScopedVector<PasswordForm>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_db_ && login_db_->GetAutofillableLogins(forms);
 }
 
 bool PasswordStoreDefault::FillBlacklistLogins(
-    ScopedVector<autofill::PasswordForm>* forms) {
+    ScopedVector<PasswordForm>* forms) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
   return login_db_ && login_db_->GetBlacklistLogins(forms);
 }

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
@@ -68,9 +69,9 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   bool InitWithBus(scoped_refptr<dbus::Bus> optional_bus);
 
   // Deserializes a list of PasswordForms from the wallet.
-  static void DeserializeValue(const std::string& signon_realm,
-                               const Pickle& pickle,
-                               ScopedVector<autofill::PasswordForm>* forms);
+  static ScopedVector<autofill::PasswordForm> DeserializeValue(
+      const std::string& signon_realm,
+      const Pickle& pickle);
 
  private:
   enum InitResult {
@@ -84,6 +85,8 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
     SYNC_TIMESTAMP,
   };
 
+  enum class BlacklistOptions { AUTOFILLABLE, BLACKLISTED };
+
   // Initialization.
   bool StartKWalletd();
   InitResult InitWallet();
@@ -91,19 +94,24 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
                       base::WaitableEvent* event,
                       bool* success);
 
-  // Reads PasswordForms from the wallet that match the given signon_realm.
+  // Overwrites |forms| with all credentials matching |signon_realm|. Returns
+  // true on success.
   bool GetLoginsList(const std::string& signon_realm,
                      int wallet_handle,
-                     ScopedVector<autofill::PasswordForm>* forms);
+                     ScopedVector<autofill::PasswordForm>* forms)
+      WARN_UNUSED_RESULT;
 
-  // Reads PasswordForms from the wallet with the given autofillability state.
-  bool GetLoginsList(bool autofillable,
+  // Overwrites |forms| with all credentials matching |options|. Returns true on
+  // success.
+  bool GetLoginsList(BlacklistOptions options,
                      int wallet_handle,
-                     ScopedVector<autofill::PasswordForm>* forms);
+                     ScopedVector<autofill::PasswordForm>* forms)
+      WARN_UNUSED_RESULT;
 
-  // Helper for some of the above GetLoginsList() methods.
+  // Overwrites |forms| with all stored credentials. Returns true on success.
   bool GetAllLogins(int wallet_handle,
-                    ScopedVector<autofill::PasswordForm>* forms);
+                    ScopedVector<autofill::PasswordForm>* forms)
+      WARN_UNUSED_RESULT;
 
   // Writes a list of PasswordForms to the wallet with the given signon_realm.
   // Overwrites any existing list for this signon_realm. Removes the entry if
@@ -122,27 +130,6 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   // Opens the wallet and ensures that the "Chrome Form Data" folder exists.
   // Returns kInvalidWalletHandle on error.
   int WalletHandle();
-
-  // Serializes a list of PasswordForms to be stored in the wallet.
-  static void SerializeValue(const std::vector<autofill::PasswordForm*>& forms,
-                             Pickle* pickle);
-
-  // Deserializes a list of PasswordForms from the wallet.
-  // |size_32| controls reading the size field within the pickle as 32 bits.
-  // We used to use Pickle::WriteSize() to write the number of password forms,
-  // but that has a different size on 32- and 64-bit systems. So, now we always
-  // write a 64-bit quantity, but we support trying to read it as either size
-  // when reading old pickles that fail to deserialize using the native size.
-  static bool DeserializeValueSize(const std::string& signon_realm,
-                                   const PickleIterator& iter,
-                                   int version,
-                                   bool size_32,
-                                   bool warn_only,
-                                   ScopedVector<autofill::PasswordForm>* forms);
-
-  // In case the fields in the pickle ever change, version them so we can try to
-  // read old pickles. (Note: do not eat old pickles past the expiration date.)
-  static const int kPickleVersion = 6;
 
   // Generates a profile-specific folder name based on profile_id_.
   std::string GetProfileSpecificFolderName() const;

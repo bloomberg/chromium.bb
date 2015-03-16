@@ -10,16 +10,18 @@
 
 namespace password_manager {
 
+// static
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
     const base::string16& plain_text,
-    std::string* cipher_text) const {
+    std::string* cipher_text) {
   *cipher_text = std::string();
   return ENCRYPTION_RESULT_SUCCESS;
 }
 
+// static
 LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
     const std::string& cipher_text,
-    base::string16* plain_text) const {
+    base::string16* plain_text) {
   *plain_text = base::string16();
   return ENCRYPTION_RESULT_SUCCESS;
 }

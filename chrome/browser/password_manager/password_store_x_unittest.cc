@@ -80,17 +80,36 @@ class FailingBackend : public PasswordStoreX::NativeBackend {
     return false;
   }
 
+  // Use this as a landmine to check whether results of failed Get*Logins calls
+  // get ignored.
+  static ScopedVector<autofill::PasswordForm> CreateTrashForms() {
+    ScopedVector<autofill::PasswordForm> forms;
+    PasswordForm trash;
+    trash.username_element = base::ASCIIToUTF16("trash u. element");
+    trash.username_value = base::ASCIIToUTF16("trash u. value");
+    trash.password_element = base::ASCIIToUTF16("trash p. element");
+    trash.password_value = base::ASCIIToUTF16("trash p. value");
+    for (size_t i = 0; i < 3; ++i) {
+      trash.origin = GURL(base::StringPrintf("http://trash%zu.com", i));
+      forms.push_back(new PasswordForm(trash));
+    }
+    return forms.Pass();
+  }
+
   bool GetLogins(const PasswordForm& form,
                  ScopedVector<autofill::PasswordForm>* forms) override {
+    *forms = CreateTrashForms();
     return false;
   }
 
   bool GetAutofillableLogins(
       ScopedVector<autofill::PasswordForm>* forms) override {
+    *forms = CreateTrashForms();
     return false;
   }
   bool GetBlacklistLogins(
       ScopedVector<autofill::PasswordForm>* forms) override {
+    *forms = CreateTrashForms();
     return false;
   }
 };
@@ -207,9 +226,9 @@ void LoginDatabaseQueryCallback(password_manager::LoginDatabase* login_db,
                                 MockLoginDatabaseReturn* mock_return) {
   ScopedVector<autofill::PasswordForm> forms;
   if (autofillable)
-    login_db->GetAutofillableLogins(&forms);
+    EXPECT_TRUE(login_db->GetAutofillableLogins(&forms));
   else
-    login_db->GetBlacklistLogins(&forms);
+    EXPECT_TRUE(login_db->GetBlacklistLogins(&forms));
   mock_return->OnLoginDatabaseQueryDone(forms.get());
 }
 

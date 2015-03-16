@@ -303,8 +303,9 @@ bool PasswordSyncableService::ReadFromPasswordStore(
     ScopedVector<autofill::PasswordForm>* password_entries,
     PasswordEntryMap* passwords_entry_map) const {
   DCHECK(password_entries);
+  ScopedVector<autofill::PasswordForm> blacklist_entries;
   if (!password_store_->FillAutofillableLogins(password_entries) ||
-      !password_store_->FillBlacklistLogins(password_entries)) {
+      !password_store_->FillBlacklistLogins(&blacklist_entries)) {
     // Password store often fails to load passwords. Track failures with UMA.
     // (http://crbug.com/249000)
     UMA_HISTOGRAM_ENUMERATION("Sync.LocalDataFailedToLoad",
@@ -312,6 +313,12 @@ bool PasswordSyncableService::ReadFromPasswordStore(
                               syncer::MODEL_TYPE_COUNT);
     return false;
   }
+  // Move |blacklist_entries| to |password_entries|.
+  password_entries->reserve(password_entries->size() +
+                            blacklist_entries.size());
+  password_entries->insert(password_entries->end(), blacklist_entries.begin(),
+                           blacklist_entries.end());
+  blacklist_entries.weak_clear();
 
   if (!passwords_entry_map)
     return true;
