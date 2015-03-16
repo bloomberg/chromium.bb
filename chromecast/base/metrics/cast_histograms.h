@@ -39,10 +39,4 @@
         base::LinearHistogram::FactoryGet(name, 1, boundary_value, \
             boundary_value + 1, base::Histogram::kUmaTargetedHistogramFlag))
 
-#define UMA_HISTOGRAM_ENUMERATION_COUNT_NO_CACHE(name, sample, count, \
-                                                 boundary_value) \
-    STATIC_HISTOGRAM_POINTER_BLOCK_NO_CACHE(name, AddCount(sample, count), \
-        base::LinearHistogram::FactoryGet(name, 1, boundary_value, \
-            boundary_value + 1, base::HistogramBase::kUmaTargetedHistogramFlag))
-
 #endif  // CHROMECAST_BASE_METRICS_CAST_HISTOGRAMS_H_
