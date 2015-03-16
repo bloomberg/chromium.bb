@@ -1912,3 +1912,6 @@ crbug.com/463358 [ Debug ] transforms/2d/hindi-rotated.html [ Pass ImageOnlyFail
 crbug.com/463358 [ Debug ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ Pass Failure ImageOnlyFailure ]
 
 crbug.com/451235 virtual/slimmingpaint/svg/clip-path/invalid-clip-path-crash.html [ Pass Failure ]
+
+crbug.com/467450 http/tests/misc/client-hints-invalid-accept.php [ Failure ]
+crbug.com/467450 http/tests/misc/client-hints-no-accept.html [ Failure ]
