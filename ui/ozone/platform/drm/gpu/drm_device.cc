@@ -114,6 +114,7 @@ class DrmDevice::IOWatcher
     base::WaitableEvent done(false, false);
     io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&IOWatcher::SetPausedOnIO, this, &done));
+    done.Wait();
   }
 
   void Shutdown() {
@@ -125,7 +126,7 @@ class DrmDevice::IOWatcher
  private:
   friend class base::RefCountedThreadSafe<IOWatcher>;
 
-  ~IOWatcher() override { SetPaused(true); }
+  ~IOWatcher() override {}
 
   void RegisterOnIO() {
     DCHECK(base::MessageLoopForIO::IsCurrent());
