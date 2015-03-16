@@ -9,12 +9,16 @@ namespace blink {
 
 namespace ExpensiveCanvasHeuristicParameters {
 
-// FIXME (crbug.com/463239):
-// The ExpensiveCanvasHeuristic should go away after slimming paint is
-// completely phased in and display list canvases are modified to use
-// a lightweight layering primitive instead of the SkCanvas::saveLayer.
-
 enum {
+    // Layer promotion heuristic parameters
+    //======================================
+
+    // FIXME (crbug.com/463239):
+    // The Layer promotion heuristics should go away after slimming paint
+    // is completely phased in and display list canvases are modified to
+    // use a lightweight layering primitive instead of the
+    // SkCanvas::saveLayer.
+
     // Heuristic: Canvases that are overdrawn beyond this factor in a
     // single frame are promoted to a direct composited layer so that
     // their contents not be re-rasterized by the compositor when the
@@ -30,6 +34,20 @@ enum {
     ComplexClipsAreExpensive = 1,
 
     BlurredShadowsAreExpensive = 1,
+
+    // Display list fallback heuristic parameters
+    //============================================
+
+    // Frames ending with more than this number of levels remaining
+    // on the state stack at the end of a frame are too expensive to
+    // remain in display list mode. This criterion is motivated by an
+    // O(N) cost in carying over state from one frame to the next when
+    // in display list mode. The value of this parameter should be high
+    // enough to almost never kick in other than for cases with unmatched
+    // save()/restore() calls are low enough to kick in before state
+    // management becomes measurably expensive.
+    ExpensiveRecordingStackDepth = 50,
+
 }; // enum
 
 } // ExpensiveCanvasHeuristicParameters

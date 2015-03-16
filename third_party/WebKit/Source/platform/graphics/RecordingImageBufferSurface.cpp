@@ -162,9 +162,11 @@ void RecordingImageBufferSurface::didDraw(const FloatRect& rect)
 bool RecordingImageBufferSurface::finalizeFrameInternal()
 {
     ASSERT(!m_fallbackSurface);
+    ASSERT(m_currentFrame);
+    ASSERT(m_currentFrame->getRecordingCanvas());
 
     if (!m_imageBuffer->isDirty()) {
-        if (m_currentFrame && !m_previousFrame) {
+        if (!m_previousFrame) {
             // Create an initial blank frame
             m_previousFrame = adoptRef(m_currentFrame->endRecording());
             initializeCurrentFrame();
@@ -172,7 +174,7 @@ bool RecordingImageBufferSurface::finalizeFrameInternal()
         return m_currentFrame;
     }
 
-    if (!m_frameWasCleared) {
+    if (!m_frameWasCleared || m_currentFrame->getRecordingCanvas()->getSaveCount() > ExpensiveCanvasHeuristicParameters::ExpensiveRecordingStackDepth) {
         return false;
     }
 
