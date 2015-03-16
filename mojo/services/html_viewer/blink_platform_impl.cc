@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/command_line.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -21,10 +22,13 @@
 namespace html_viewer {
 namespace {
 
+// Allows overriding user agent scring.
+const char kUserAgentSwitch[] = "user-agent";
+
 // TODO(darin): Figure out what our UA should really be.
-const char kUserAgentString[] =
-  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
-  "Chrome/35.0.1916.153 Safari/537.36";
+const char kDefaultUserAgentString[] =
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/35.0.1916.153 Safari/537.36";
 
 class WebWaitableEventImpl : public blink::WebWaitableEvent {
  public:
@@ -172,7 +176,12 @@ blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {
 }
 
 blink::WebString BlinkPlatformImpl::userAgent() {
-  return blink::WebString::fromUTF8(kUserAgentString);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kUserAgentSwitch)) {
+    return blink::WebString::fromUTF8(
+        command_line->GetSwitchValueASCII(kUserAgentSwitch));
+  }
+  return blink::WebString::fromUTF8(kDefaultUserAgentString);
 }
 
 blink::WebData BlinkPlatformImpl::parseDataURL(
