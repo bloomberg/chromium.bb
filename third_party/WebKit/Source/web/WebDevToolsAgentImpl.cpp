@@ -36,7 +36,6 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
-#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/AsyncCallTracker.h"
@@ -250,7 +249,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_agents(m_instrumentingAgents.get(), m_state.get())
     , m_deferredAgentsInitialized(false)
     , m_generatingEvent(false)
-    , m_touchEventEmulationEnabled(false)
 {
     ASSERT(isMainThread());
 
@@ -467,32 +465,6 @@ bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inp
     if (!m_attached && !m_generatingEvent)
         return false;
 
-    // FIXME: This workaround is required for touch emulation on Mac, where
-    // compositor-side pinch handling is not enabled. See http://crbug.com/138003.
-    bool isPinch = inputEvent.type == WebInputEvent::GesturePinchBegin || inputEvent.type == WebInputEvent::GesturePinchUpdate || inputEvent.type == WebInputEvent::GesturePinchEnd;
-    if (isPinch && m_touchEventEmulationEnabled) {
-        FrameView* frameView = page->deprecatedLocalMainFrame()->view();
-        PlatformGestureEventBuilder gestureEvent(frameView, static_cast<const WebGestureEvent&>(inputEvent));
-        float pageScaleFactor = page->pageScaleFactor();
-        if (gestureEvent.type() == PlatformEvent::GesturePinchBegin) {
-            m_lastPinchAnchorCss = adoptPtr(new IntPoint(frameView->scrollPosition() + gestureEvent.position()));
-            m_lastPinchAnchorDip = adoptPtr(new IntPoint(gestureEvent.position()));
-            m_lastPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
-        }
-        if (gestureEvent.type() == PlatformEvent::GesturePinchUpdate && m_lastPinchAnchorCss) {
-            float newPageScaleFactor = pageScaleFactor * gestureEvent.scale();
-            IntPoint anchorCss(*m_lastPinchAnchorDip.get());
-            anchorCss.scale(1.f / newPageScaleFactor, 1.f / newPageScaleFactor);
-            m_webViewImpl->setPageScaleFactor(newPageScaleFactor);
-            m_webViewImpl->setMainFrameScrollOffset(*m_lastPinchAnchorCss.get() - toIntSize(anchorCss));
-        }
-        if (gestureEvent.type() == PlatformEvent::GesturePinchEnd) {
-            m_lastPinchAnchorCss.clear();
-            m_lastPinchAnchorDip.clear();
-        }
-        return true;
-    }
-
     if (WebInputEvent::isGestureEventType(inputEvent.type) && inputEvent.type == WebInputEvent::GestureTap) {
         // Only let GestureTab in (we only need it and we know PlatformGestureEventBuilder supports it).
         PlatformGestureEvent gestureEvent = PlatformGestureEventBuilder(page->deprecatedLocalMainFrame()->view(), static_cast<const WebGestureEvent&>(inputEvent));
@@ -598,7 +570,7 @@ void WebDevToolsAgentImpl::clearDeviceMetricsOverride()
 
 void WebDevToolsAgentImpl::setTouchEventEmulationEnabled(bool enabled)
 {
-    m_touchEventEmulationEnabled = enabled;
+    m_webViewImpl->devToolsEmulator()->setTouchEventEmulationEnabled(enabled);
 }
 
 void WebDevToolsAgentImpl::enableTracing(const String& categoryFilter)

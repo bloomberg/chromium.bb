@@ -404,11 +404,6 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
     , m_lastScriptIdentifier(0)
     , m_enabled(false)
     , m_viewportNotificationsEnabled(false)
-    , m_touchEmulationEnabled(false)
-    , m_originalTouchEnabled(false)
-    , m_originalDeviceSupportsMouse(false)
-    , m_originalDeviceSupportsTouch(false)
-    , m_originalMaxTouchPoints(0)
     , m_embedderScriptEnabled(m_page->settings().scriptEnabled())
     , m_reloading(false)
 {
@@ -1272,24 +1267,7 @@ void InspectorPageAgent::updateViewMetrics(bool enabled, int width, int height, 
 
 void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
 {
-    if (!inspectedFrame()->isMainFrame())
-        return;
-    if (!m_touchEmulationEnabled) {
-        m_originalTouchEnabled = RuntimeEnabledFeatures::touchEnabled();
-        m_originalDeviceSupportsMouse = m_page->settings().deviceSupportsMouse();
-        m_originalDeviceSupportsTouch = m_page->settings().deviceSupportsTouch();
-        m_originalMaxTouchPoints = m_page->settings().maxTouchPoints();
-    }
-    RuntimeEnabledFeatures::setTouchEnabled(enabled ? true : m_originalTouchEnabled);
-    if (!m_originalDeviceSupportsTouch) {
-        m_page->settings().setDeviceSupportsMouse(enabled ? false : m_originalDeviceSupportsMouse);
-        m_page->settings().setDeviceSupportsTouch(enabled ? true : m_originalDeviceSupportsTouch);
-        // Currently emulation does not provide multiple touch points.
-        m_page->settings().setMaxTouchPoints(enabled ? 1 : m_originalMaxTouchPoints);
-    }
-    m_touchEmulationEnabled = enabled;
     m_client->setTouchEventEmulationEnabled(enabled);
-    inspectedFrame()->view()->layout();
 }
 
 void InspectorPageAgent::setTouchEmulationEnabled(ErrorString*, bool enabled, const String* configuration)

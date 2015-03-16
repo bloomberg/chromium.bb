@@ -5,12 +5,14 @@
 #include "config.h"
 #include "web/DevToolsEmulator.h"
 
+#include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebDeviceEmulationParams.h"
 #include "web/WebDevToolsAgentImpl.h"
+#include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
@@ -59,6 +61,11 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     , m_embedderDeviceScaleAdjustment(webViewImpl->page()->settings().deviceScaleAdjustment())
     , m_embedderPreferCompositingToLCDTextEnabled(webViewImpl->page()->settings().preferCompositingToLCDTextEnabled())
     , m_embedderUseMobileViewport(webViewImpl->page()->settings().useMobileViewportStyle())
+    , m_touchEventEmulationEnabled(false)
+    , m_originalTouchEnabled(false)
+    , m_originalDeviceSupportsMouse(false)
+    , m_originalDeviceSupportsTouch(false)
+    , m_originalMaxTouchPoints(0)
     , m_ignoreSetOverrides(false)
 {
 }
@@ -235,6 +242,60 @@ void DevToolsEmulator::disableMobileEmulation()
     m_webViewImpl->setDefaultPageScaleLimits(
         m_originalDefaultMinimumPageScaleFactor,
         m_originalDefaultMaximumPageScaleFactor);
+}
+
+void DevToolsEmulator::setTouchEventEmulationEnabled(bool enabled)
+{
+    if (!m_touchEventEmulationEnabled) {
+        m_originalTouchEnabled = RuntimeEnabledFeatures::touchEnabled();
+        m_originalDeviceSupportsMouse = m_webViewImpl->page()->settings().deviceSupportsMouse();
+        m_originalDeviceSupportsTouch = m_webViewImpl->page()->settings().deviceSupportsTouch();
+        m_originalMaxTouchPoints = m_webViewImpl->page()->settings().maxTouchPoints();
+    }
+    RuntimeEnabledFeatures::setTouchEnabled(enabled ? true : m_originalTouchEnabled);
+    if (!m_originalDeviceSupportsTouch) {
+        m_webViewImpl->page()->settings().setDeviceSupportsMouse(enabled ? false : m_originalDeviceSupportsMouse);
+        m_webViewImpl->page()->settings().setDeviceSupportsTouch(enabled ? true : m_originalDeviceSupportsTouch);
+        // Currently emulation does not provide multiple touch points.
+        m_webViewImpl->page()->settings().setMaxTouchPoints(enabled ? 1 : m_originalMaxTouchPoints);
+    }
+    m_touchEventEmulationEnabled = enabled;
+    m_webViewImpl->mainFrameImpl()->frameView()->layout();
+}
+
+bool DevToolsEmulator::handleInputEvent(const WebInputEvent& inputEvent)
+{
+    Page* page = m_webViewImpl->page();
+    if (!page)
+        return false;
+
+    // FIXME: This workaround is required for touch emulation on Mac, where
+    // compositor-side pinch handling is not enabled. See http://crbug.com/138003.
+    bool isPinch = inputEvent.type == WebInputEvent::GesturePinchBegin || inputEvent.type == WebInputEvent::GesturePinchUpdate || inputEvent.type == WebInputEvent::GesturePinchEnd;
+    if (isPinch && m_touchEventEmulationEnabled) {
+        FrameView* frameView = page->deprecatedLocalMainFrame()->view();
+        PlatformGestureEventBuilder gestureEvent(frameView, static_cast<const WebGestureEvent&>(inputEvent));
+        float pageScaleFactor = page->pageScaleFactor();
+        if (gestureEvent.type() == PlatformEvent::GesturePinchBegin) {
+            m_lastPinchAnchorCss = adoptPtr(new IntPoint(frameView->scrollPosition() + gestureEvent.position()));
+            m_lastPinchAnchorDip = adoptPtr(new IntPoint(gestureEvent.position()));
+            m_lastPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
+        }
+        if (gestureEvent.type() == PlatformEvent::GesturePinchUpdate && m_lastPinchAnchorCss) {
+            float newPageScaleFactor = pageScaleFactor * gestureEvent.scale();
+            IntPoint anchorCss(*m_lastPinchAnchorDip.get());
+            anchorCss.scale(1.f / newPageScaleFactor, 1.f / newPageScaleFactor);
+            m_webViewImpl->setPageScaleFactor(newPageScaleFactor);
+            m_webViewImpl->setMainFrameScrollOffset(*m_lastPinchAnchorCss.get() - toIntSize(anchorCss));
+        }
+        if (gestureEvent.type() == PlatformEvent::GesturePinchEnd) {
+            m_lastPinchAnchorCss.clear();
+            m_lastPinchAnchorDip.clear();
+        }
+        return true;
+    }
+
+    return false;
 }
 
 } // namespace blink

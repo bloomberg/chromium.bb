@@ -2131,6 +2131,9 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
     if (m_doingDragAndDrop)
         return true;
 
+    if (m_devToolsEmulator->handleInputEvent(inputEvent))
+        return true;
+
     if (m_devToolsAgent && m_devToolsAgent->handleInputEvent(m_page.get(), inputEvent))
         return true;
 

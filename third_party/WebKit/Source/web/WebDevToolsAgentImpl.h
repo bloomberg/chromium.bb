@@ -50,7 +50,6 @@
 namespace blink {
 
 class LocalFrame;
-class IntPoint;
 class Page;
 class PlatformKeyboardEvent;
 class WebDevToolsAgentClient;
@@ -183,10 +182,6 @@ private:
     bool m_deferredAgentsInitialized;
 
     bool m_generatingEvent;
-
-    bool m_touchEventEmulationEnabled;
-    OwnPtr<IntPoint> m_lastPinchAnchorCss;
-    OwnPtr<IntPoint> m_lastPinchAnchorDip;
 
     typedef Vector<RefPtr<JSONObject> > NotificationQueue;
     NotificationQueue m_notificationQueue;

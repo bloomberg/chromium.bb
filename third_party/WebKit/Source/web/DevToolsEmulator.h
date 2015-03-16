@@ -6,10 +6,13 @@
 #define DevToolsEmulator_h
 
 #include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 
+class IntPoint;
 class WebDevToolsAgentImpl;
+class WebInputEvent;
 class WebViewImpl;
 
 struct WebDeviceEmulationParams;
@@ -32,10 +35,12 @@ public:
     void setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY);
     void clearDeviceMetricsOverride();
 
-    // Device emulation.
+    // Emulation.
     void enableDeviceEmulation(const WebDeviceEmulationParams&);
     void disableDeviceEmulation();
     bool deviceEmulationEnabled() { return m_deviceMetricsEnabled; }
+    void setTouchEventEmulationEnabled(bool);
+    bool handleInputEvent(const WebInputEvent&);
 
 private:
     void enableMobileEmulation();
@@ -57,6 +62,14 @@ private:
     float m_embedderDeviceScaleAdjustment;
     bool m_embedderPreferCompositingToLCDTextEnabled;
     bool m_embedderUseMobileViewport;
+
+    bool m_touchEventEmulationEnabled;
+    bool m_originalTouchEnabled;
+    bool m_originalDeviceSupportsMouse;
+    bool m_originalDeviceSupportsTouch;
+    int m_originalMaxTouchPoints;
+    OwnPtr<IntPoint> m_lastPinchAnchorCss;
+    OwnPtr<IntPoint> m_lastPinchAnchorDip;
 
     // FIXME(dgozman): remove this after reversing emulation flow.
     bool m_ignoreSetOverrides;

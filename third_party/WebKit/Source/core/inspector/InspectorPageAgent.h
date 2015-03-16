@@ -220,12 +220,6 @@ private:
     bool m_enabled;
     bool m_viewportNotificationsEnabled;
 
-    bool m_touchEmulationEnabled;
-    bool m_originalTouchEnabled;
-    bool m_originalDeviceSupportsMouse;
-    bool m_originalDeviceSupportsTouch;
-    int m_originalMaxTouchPoints;
-
     bool m_embedderScriptEnabled;
     bool m_reloading;
 
