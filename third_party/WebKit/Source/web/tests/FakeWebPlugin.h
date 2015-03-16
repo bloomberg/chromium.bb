@@ -54,7 +54,7 @@ public:
     virtual bool canProcessDrag() const override { return false; }
     virtual void paint(WebCanvas*, const WebRect&) override { }
     virtual void updateGeometry(const WebRect& frameRect, const WebRect& clipRect, const WebVector<WebRect>& cutOutsRects, bool isVisible) override { }
-    virtual void updateFocus(bool) override { }
+    virtual void updateFocus(bool, WebFocusType) override { }
     virtual void updateVisibility(bool) override { }
     virtual bool acceptsInputEvents() override { return true; }
     virtual bool handleInputEvent(const WebInputEvent&, WebCursorInfo&) override { return false; }

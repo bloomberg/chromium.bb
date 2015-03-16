@@ -94,14 +94,7 @@ public:
         const WebRect& frameRect, const WebRect& clipRect,
         const WebVector<WebRect>& cutOutsRects, bool isVisible) = 0;
 
-    // FIXME: Remove this once the Blink embedder has been updated to use
-    // the new version of updateFocus.
-    virtual void updateFocus(bool focused) { }
-
-    virtual void updateFocus(bool focused, WebFocusType)
-    {
-        updateFocus(focused);
-    }
+    virtual void updateFocus(bool focused, WebFocusType) = 0;
 
     virtual void updateVisibility(bool) = 0;
 
