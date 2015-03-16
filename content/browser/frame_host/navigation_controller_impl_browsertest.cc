@@ -396,7 +396,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
           GetFrameTree()->root();
 
   {
-    // Back.
+    // Back from the browser side.
     FrameNavigateParamsCapturer capturer(root);
     shell()->web_contents()->GetController().GoBack();
     capturer.Wait();
@@ -408,9 +408,61 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 
   {
-    // Forward.
+    // Forward from the browser side.
     FrameNavigateParamsCapturer capturer(root);
     shell()->web_contents()->GetController().GoForward();
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_TYPED
+              | ui::PAGE_TRANSITION_FORWARD_BACK
+              | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
+  }
+
+  {
+    // Back from the renderer side.
+    FrameNavigateParamsCapturer capturer(root);
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(),
+                                       "history.back()"));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_TYPED
+              | ui::PAGE_TRANSITION_FORWARD_BACK
+              | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
+  }
+
+  {
+    // Forward from the renderer side.
+    FrameNavigateParamsCapturer capturer(root);
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(),
+                                       "history.forward()"));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_TYPED
+              | ui::PAGE_TRANSITION_FORWARD_BACK
+              | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
+  }
+
+  {
+    // Back from the renderer side via history.go().
+    FrameNavigateParamsCapturer capturer(root);
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(),
+                                       "history.go(-1)"));
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_TYPED
+              | ui::PAGE_TRANSITION_FORWARD_BACK
+              | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR,
+              capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.details().type);
+  }
+
+  {
+    // Forward from the renderer side via history.go().
+    FrameNavigateParamsCapturer capturer(root);
+    EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(),
+                                       "history.go(1)"));
     capturer.Wait();
     EXPECT_EQ(ui::PAGE_TRANSITION_TYPED
               | ui::PAGE_TRANSITION_FORWARD_BACK
