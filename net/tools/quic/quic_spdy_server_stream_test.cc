@@ -72,8 +72,9 @@ namespace {
 class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
  public:
   QuicSpdyServerStreamTest()
-      : connection_(new StrictMock<MockConnection>(
-            true, SupportedVersions(GetParam()))),
+      : connection_(
+            new StrictMock<MockConnection>(Perspective::IS_SERVER,
+                                           SupportedVersions(GetParam()))),
         session_(connection_),
         body_("hello world") {
     BalsaHeaders request_headers;

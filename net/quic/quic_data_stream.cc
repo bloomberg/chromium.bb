@@ -14,7 +14,9 @@ using std::min;
 
 namespace net {
 
-#define ENDPOINT (session()->is_server() ? "Server: " : " Client: ")
+#define ENDPOINT                                                               \
+  (session()->perspective() == Perspective::IS_SERVER ? "Server: " : "Client:" \
+                                                                     " ")
 
 namespace {
 
@@ -150,7 +152,7 @@ void QuicDataStream::OnStreamHeaders(StringPiece headers_data) {
 }
 
 void QuicDataStream::OnStreamHeadersPriority(QuicPriority priority) {
-  DCHECK(session()->connection()->is_server());
+  DCHECK_EQ(Perspective::IS_SERVER, session()->connection()->perspective());
   set_priority(priority);
 }
 

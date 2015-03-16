@@ -61,13 +61,12 @@ static const char kPayload[] =
 class QuicStreamSequencerTest : public ::testing::Test {
  protected:
   QuicStreamSequencerTest()
-      : connection_(new MockConnection(false)),
+      : connection_(new MockConnection(Perspective::IS_CLIENT)),
         session_(connection_),
         stream_(&session_, 1),
         sequencer_(new QuicStreamSequencer(&stream_)),
         buffered_frames_(
-            QuicStreamSequencerPeer::GetBufferedFrames(sequencer_.get())) {
-  }
+            QuicStreamSequencerPeer::GetBufferedFrames(sequencer_.get())) {}
 
   bool VerifyIovec(const iovec& iovec, StringPiece expected) {
     if (iovec.iov_len != expected.length()) {

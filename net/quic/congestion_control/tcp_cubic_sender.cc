@@ -53,9 +53,9 @@ TcpCubicSender::~TcpCubicSender() {
 }
 
 void TcpCubicSender::SetFromConfig(const QuicConfig& config,
-                                   bool is_server,
+                                   Perspective perspective,
                                    bool using_pacing) {
-  if (is_server) {
+  if (perspective == Perspective::IS_SERVER) {
     if (config.HasReceivedConnectionOptions() &&
         ContainsQuicTag(config.ReceivedConnectionOptions(), kIW10)) {
       // Initial window experiment.

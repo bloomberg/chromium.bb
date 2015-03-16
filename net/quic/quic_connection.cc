@@ -197,19 +197,20 @@ QuicConnection::QueuedPacket::QueuedPacket(
       original_sequence_number(original_sequence_number) {
 }
 
-#define ENDPOINT (is_server_ ? "Server: " : " Client: ")
+#define ENDPOINT \
+  (perspective_ == Perspective::IS_SERVER ? "Server: " : "Client: ")
 
 QuicConnection::QuicConnection(QuicConnectionId connection_id,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper,
                                const PacketWriterFactory& writer_factory,
                                bool owns_writer,
-                               bool is_server,
+                               Perspective perspective,
                                bool is_secure,
                                const QuicVersionVector& supported_versions)
     : framer_(supported_versions,
               helper->GetClock()->ApproximateNow(),
-              is_server),
+              perspective),
       helper_(helper),
       writer_(writer_factory.Create(this)),
       owns_writer_(owns_writer),
@@ -250,14 +251,14 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       sequence_number_of_last_sent_packet_(0),
       sent_packet_manager_(
-          is_server,
+          perspective,
           clock_,
           &stats_,
           FLAGS_quic_use_bbr_congestion_control ? kBBR : kCubic,
           FLAGS_quic_use_time_loss_detection ? kTime : kNack,
           is_secure),
       version_negotiation_state_(START_NEGOTIATION),
-      is_server_(is_server),
+      perspective_(perspective),
       connected_(true),
       peer_ip_changed_(false),
       peer_port_changed_(false),
@@ -271,7 +272,8 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
   framer_.set_received_entropy_calculator(&received_packet_manager_);
   stats_.connection_creation_time = clock_->ApproximateNow();
   sent_packet_manager_.set_network_change_visitor(this);
-  if (FLAGS_quic_small_default_packet_size && is_server_) {
+  if (FLAGS_quic_small_default_packet_size &&
+      perspective_ == Perspective::IS_SERVER) {
     set_max_packet_length(kDefaultServerMaxPacketSize);
   }
 }
@@ -386,7 +388,7 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
   DVLOG(1) << ENDPOINT << "Received packet with mismatched version "
            << received_version;
   // TODO(satyamshekhar): Implement no server state in this mode.
-  if (!is_server_) {
+  if (perspective_ == Perspective::IS_CLIENT) {
     LOG(DFATAL) << ENDPOINT << "Framer called OnProtocolVersionMismatch. "
                 << "Closing connection.";
     CloseConnection(QUIC_INTERNAL_ERROR, false);
@@ -442,7 +444,7 @@ bool QuicConnection::OnProtocolVersionMismatch(QuicVersion received_version) {
 // Handles version negotiation for client connection.
 void QuicConnection::OnVersionNegotiationPacket(
     const QuicVersionNegotiationPacket& packet) {
-  if (is_server_) {
+  if (perspective_ == Perspective::IS_SERVER) {
     LOG(DFATAL) << ENDPOINT << "Framer parsed VersionNegotiationPacket."
                 << " Closing connection.";
     CloseConnection(QUIC_INTERNAL_ERROR, false);
@@ -548,7 +550,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
   }
 
   if (version_negotiation_state_ != NEGOTIATED_VERSION) {
-    if (is_server_) {
+    if (perspective_ == Perspective::IS_SERVER) {
       if (!header.public_header.version_flag) {
         DLOG(WARNING) << ENDPOINT << "Packet " << header.packet_sequence_number
                       << " without version flag before version negotiated.";
@@ -1269,7 +1271,8 @@ bool QuicConnection::ProcessValidatedPacket() {
   DVLOG(1) << ENDPOINT << "time of last received packet: "
            << time_of_last_received_packet_.ToDebuggingValue();
 
-  if (is_server_ && encryption_level_ == ENCRYPTION_NONE &&
+  if (perspective_ == Perspective::IS_SERVER &&
+      encryption_level_ == ENCRYPTION_NONE &&
       last_size_ > packet_generator_.max_packet_length()) {
     set_max_packet_length(last_size_);
   }
@@ -1596,7 +1599,7 @@ void QuicConnection::OnHandshakeComplete() {
   sent_packet_manager_.SetHandshakeConfirmed();
   // The client should immediately ack the SHLO to confirm the handshake is
   // complete with the server.
-  if (!is_server_ && !ack_queued_) {
+  if (perspective_ == Perspective::IS_CLIENT && !ack_queued_) {
     ack_alarm_->Cancel();
     ack_alarm_->Set(clock_->ApproximateNow());
   }
@@ -1942,7 +1945,7 @@ void QuicConnection::SetNetworkTimeouts(QuicTime::Delta overall_timeout,
       << " overall_timeout:" << overall_timeout.ToMilliseconds();
   // Adjust the idle timeout on client and server to prevent clients from
   // sending requests to servers which have already closed the connection.
-  if (is_server_) {
+  if (perspective_ == Perspective::IS_SERVER) {
     idle_timeout = idle_timeout.Add(QuicTime::Delta::FromSeconds(3));
   } else if (idle_timeout > QuicTime::Delta::FromSeconds(1)) {
     idle_timeout = idle_timeout.Subtract(QuicTime::Delta::FromSeconds(1));
@@ -2007,7 +2010,7 @@ void QuicConnection::SetTimeoutAlarm() {
 }
 
 void QuicConnection::SetPingAlarm() {
-  if (is_server_) {
+  if (perspective_ == Perspective::IS_SERVER) {
     // Only clients send pings.
     return;
   }

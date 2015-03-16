@@ -679,7 +679,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     CrypterPair crypters;
     if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
                                  info.client_nonce, info.server_nonce,
-                                 hkdf_input, CryptoUtils::SERVER, &crypters,
+                                 hkdf_input, Perspective::IS_SERVER, &crypters,
                                  nullptr /* subkey secret */)) {
       *error_details = "Symmetric key setup failed";
       return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
@@ -719,11 +719,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   hkdf_input.append(QuicCryptoConfig::kInitialLabel, label_len);
   hkdf_input.append(hkdf_suffix);
 
-  if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
-                               info.client_nonce, info.server_nonce, hkdf_input,
-                               CryptoUtils::SERVER,
-                               &params->initial_crypters,
-                               nullptr /* subkey secret */)) {
+  if (!CryptoUtils::DeriveKeys(
+          params->initial_premaster_secret, params->aead, info.client_nonce,
+          info.server_nonce, hkdf_input, Perspective::IS_SERVER,
+          &params->initial_crypters, nullptr /* subkey secret */)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }
@@ -754,10 +753,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   forward_secure_hkdf_input.append(hkdf_suffix);
 
   if (!CryptoUtils::DeriveKeys(
-           params->forward_secure_premaster_secret, params->aead,
-           info.client_nonce, info.server_nonce, forward_secure_hkdf_input,
-           CryptoUtils::SERVER, &params->forward_secure_crypters,
-           &params->subkey_secret)) {
+          params->forward_secure_premaster_secret, params->aead,
+          info.client_nonce, info.server_nonce, forward_secure_hkdf_input,
+          Perspective::IS_SERVER, &params->forward_secure_crypters,
+          &params->subkey_secret)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }

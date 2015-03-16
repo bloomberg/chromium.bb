@@ -22,7 +22,8 @@ using std::vector;
 
 namespace net {
 
-#define ENDPOINT (is_server() ? "Server: " : " Client: ")
+#define ENDPOINT \
+  (perspective() == Perspective::IS_SERVER ? "Server: " : " Client: ")
 
 // We want to make sure we delete any closed streams in a safe manner.
 // To avoid deleting a stream in mid-operation, we have a simple shim between
@@ -101,14 +102,14 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
       visitor_shim_(new VisitorShim(this)),
       config_(config),
       max_open_streams_(config_.MaxStreamsPerConnection()),
-      next_stream_id_(is_server() ? 2 : 5),
+      next_stream_id_(perspective() == Perspective::IS_SERVER ? 2 : 5),
       write_blocked_streams_(true),
       largest_peer_created_stream_id_(0),
       error_(QUIC_NO_ERROR),
       flow_controller_(new QuicFlowController(
           connection_.get(),
           0,
-          is_server(),
+          perspective(),
           kMinimumFlowControlSendWindow,
           config_.GetInitialSessionFlowControlWindowToSend(),
           config_.GetInitialSessionFlowControlWindowToSend())),
@@ -461,7 +462,7 @@ void QuicSession::OnConfigNegotiated() {
   connection_->SetFromConfig(config_);
 
   uint32 max_streams = config_.MaxStreamsPerConnection();
-  if (is_server()) {
+  if (perspective() == Perspective::IS_SERVER) {
     // A server should accept a small number of additional streams beyond the
     // limit sent to the client. This helps avoid early connection termination
     // when FIN/RSTs for old streams are lost or arrive out of order.
@@ -633,7 +634,7 @@ QuicDataStream* QuicSession::GetIncomingDataStream(QuicStreamId stream_id) {
       return nullptr;
     }
     if (largest_peer_created_stream_id_ == 0) {
-      if (is_server()) {
+      if (perspective() == Perspective::IS_SERVER) {
         largest_peer_created_stream_id_ = 3;
       } else {
         largest_peer_created_stream_id_ = 1;

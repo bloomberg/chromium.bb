@@ -72,8 +72,8 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
     config_.SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
 
-    connection_ =
-        new StrictMock<MockConnection>(true, SupportedVersions(GetParam()));
+    connection_ = new StrictMock<MockConnection>(Perspective::IS_SERVER,
+                                                 SupportedVersions(GetParam()));
     session_.reset(new QuicServerSession(config_, connection_, &owner_));
     MockClock clock;
     handshake_message_.reset(crypto_config_.AddDefaultConfig(

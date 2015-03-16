@@ -30,7 +30,6 @@ namespace net {
 namespace test {
 namespace {
 
-const bool kIsServer = true;
 const bool kShouldProcessData = true;
 
 class TestStream : public QuicDataStream {
@@ -93,7 +92,7 @@ class QuicDataStreamTest : public ::testing::TestWithParam<QuicVersion> {
 
   void Initialize(bool stream_should_process_data) {
     connection_ = new testing::StrictMock<MockConnection>(
-        kIsServer, SupportedVersions(GetParam()));
+        Perspective::IS_SERVER, SupportedVersions(GetParam()));
     session_.reset(new testing::StrictMock<MockSession>(connection_));
     stream_.reset(new TestStream(kClientDataStreamId1, session_.get(),
                                  stream_should_process_data));

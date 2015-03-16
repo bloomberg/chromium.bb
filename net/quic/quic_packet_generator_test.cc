@@ -106,7 +106,9 @@ struct PacketContents {
 class QuicPacketGeneratorTest : public ::testing::Test {
  protected:
   QuicPacketGeneratorTest()
-      : framer_(QuicSupportedVersions(), QuicTime::Zero(), false),
+      : framer_(QuicSupportedVersions(),
+                QuicTime::Zero(),
+                Perspective::IS_CLIENT),
         generator_(42, &framer_, &random_, &delegate_),
         creator_(QuicPacketGeneratorPeer::GetPacketCreator(&generator_)),
         packet_(0, PACKET_1BYTE_SEQUENCE_NUMBER, nullptr, 0, nullptr),

@@ -227,8 +227,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // FEC policy to be used for this stream.
   FecPolicy fec_policy_;
 
-  // True if the session this stream is running under is a server session.
-  bool is_server_;
+  // Tracks if the session this stream is running under was created by a
+  // server or a client.
+  Perspective perspective_;
 
   QuicFlowController flow_controller_;
 

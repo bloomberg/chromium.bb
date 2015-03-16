@@ -29,8 +29,9 @@ namespace {
 class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
  public:
   QuicSpdyClientStreamTest()
-      : connection_(new StrictMock<MockConnection>(
-            false, SupportedVersions(GetParam()))),
+      : connection_(
+            new StrictMock<MockConnection>(Perspective::IS_CLIENT,
+                                           SupportedVersions(GetParam()))),
         session_(DefaultQuicConfig(), connection_),
         body_("hello world") {
     session_.InitializeSession(

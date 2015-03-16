@@ -39,8 +39,8 @@ class ToolsQuicClientSessionTest
     : public ::testing::TestWithParam<QuicVersion> {
  protected:
   ToolsQuicClientSessionTest()
-      : connection_(
-            new PacketSavingConnection(false, SupportedVersions(GetParam()))) {
+      : connection_(new PacketSavingConnection(Perspective::IS_CLIENT,
+                                               SupportedVersions(GetParam()))) {
     session_.reset(new QuicClientSession(DefaultQuicConfig(), connection_));
     session_->InitializeSession(
         QuicServerId(kServerHostname, kPort, false, PRIVACY_MODE_DISABLED),
@@ -69,7 +69,7 @@ TEST_P(ToolsQuicClientSessionTest, CryptoConnect) {
 
 TEST_P(ToolsQuicClientSessionTest, MaxNumStreams) {
   session_->config()->SetMaxStreamsPerConnection(1, 1);
-  // FLAGS_max_streams_per_connection = 1;
+
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 

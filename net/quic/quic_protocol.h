@@ -193,6 +193,11 @@ enum IsHandshake {
   IS_HANDSHAKE
 };
 
+enum class Perspective { IS_SERVER, IS_CLIENT };
+
+NET_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
+                                            const Perspective& s);
+
 // Indicates FEC protection level for data being written.
 enum FecProtection {
   MUST_FEC_PROTECT,  // Callee must FEC protect this data.

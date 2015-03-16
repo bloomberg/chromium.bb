@@ -100,15 +100,10 @@ QuicPacketEntropyHash QuicConnectionPeer::ReceivedEntropyHash(
 }
 
 // static
-bool QuicConnectionPeer::IsServer(QuicConnection* connection) {
-  return connection->is_server_;
-}
-
-// static
-void QuicConnectionPeer::SetIsServer(QuicConnection* connection,
-                                     bool is_server) {
-  connection->is_server_ = is_server;
-  QuicFramerPeer::SetIsServer(&connection->framer_, is_server);
+void QuicConnectionPeer::SetPerspective(QuicConnection* connection,
+                                        Perspective perspective) {
+  connection->perspective_ = perspective;
+  QuicFramerPeer::SetPerspective(&connection->framer_, perspective);
 }
 
 // static

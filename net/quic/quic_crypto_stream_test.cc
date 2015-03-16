@@ -46,7 +46,7 @@ class MockQuicCryptoStream : public QuicCryptoStream {
 class QuicCryptoStreamTest : public ::testing::Test {
  public:
   QuicCryptoStreamTest()
-      : connection_(new MockConnection(false)),
+      : connection_(new MockConnection(Perspective::IS_CLIENT)),
         session_(connection_),
         stream_(&session_) {
     message_.set_tag(kSHLO);

@@ -183,8 +183,8 @@ CryptoTestUtils::FakeClientOptions::FakeClientOptions()
 int CryptoTestUtils::HandshakeWithFakeServer(
     PacketSavingConnection* client_conn,
     QuicCryptoClientStream* client) {
-  PacketSavingConnection* server_conn =
-      new PacketSavingConnection(true, client_conn->supported_versions());
+  PacketSavingConnection* server_conn = new PacketSavingConnection(
+      Perspective::IS_SERVER, client_conn->supported_versions());
   TestSession server_session(server_conn, DefaultQuicConfig());
   server_session.InitializeSession();
   QuicCryptoServerConfig crypto_config(QuicCryptoServerConfig::TESTING,
@@ -213,7 +213,8 @@ int CryptoTestUtils::HandshakeWithFakeClient(
     PacketSavingConnection* server_conn,
     QuicCryptoServerStream* server,
     const FakeClientOptions& options) {
-  PacketSavingConnection* client_conn = new PacketSavingConnection(false);
+  PacketSavingConnection* client_conn =
+      new PacketSavingConnection(Perspective::IS_CLIENT);
   // Advance the time, because timers do not like uninitialized times.
   client_conn->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   TestClientSession client_session(client_conn, DefaultQuicConfig());

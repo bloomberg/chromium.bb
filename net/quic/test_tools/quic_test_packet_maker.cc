@@ -82,7 +82,8 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   QuicRstStreamFrame rst(stream_id, error_code, 0);
   frames.push_back(QuicFrame(&rst));
 
-  QuicFramer framer(SupportedVersions(version_), clock_->Now(), false);
+  QuicFramer framer(SupportedVersions(version_), clock_->Now(),
+                    Perspective::IS_CLIENT);
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
@@ -128,7 +129,8 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckPacket(
     ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
   }
 
-  QuicFramer framer(SupportedVersions(version_), clock_->Now(), false);
+  QuicFramer framer(SupportedVersions(version_), clock_->Now(),
+                    Perspective::IS_CLIENT);
   QuicFrames frames;
   frames.push_back(QuicFrame(&ack));
 
@@ -234,7 +236,8 @@ SpdyHeaderBlock QuicTestPacketMaker::GetResponseHeaders(
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakePacket(
     const QuicPacketHeader& header,
     const QuicFrame& frame) {
-  QuicFramer framer(SupportedVersions(version_), QuicTime::Zero(), false);
+  QuicFramer framer(SupportedVersions(version_), QuicTime::Zero(),
+                    Perspective::IS_CLIENT);
   QuicFrames frames;
   frames.push_back(frame);
   scoped_ptr<QuicPacket> packet(

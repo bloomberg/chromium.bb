@@ -70,7 +70,7 @@ class MockServerConnection : public MockConnection {
  public:
   MockServerConnection(QuicConnectionId connection_id,
                        QuicDispatcher* dispatcher)
-      : MockConnection(connection_id, true),
+      : MockConnection(connection_id, Perspective::IS_SERVER),
         dispatcher_(dispatcher) {}
 
   void UnregisterOnConnectionClosed() {

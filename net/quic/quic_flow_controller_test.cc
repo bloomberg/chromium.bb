@@ -23,12 +23,11 @@ class QuicFlowControllerTest : public ::testing::Test {
         send_window_(kInitialSessionFlowControlWindowForTest),
         receive_window_(kInitialSessionFlowControlWindowForTest),
         max_receive_window_(kInitialSessionFlowControlWindowForTest),
-        connection_(false) {
-  }
+        connection_(Perspective::IS_CLIENT) {}
 
   void Initialize() {
     flow_controller_.reset(new QuicFlowController(
-        &connection_, stream_id_, false, send_window_,
+        &connection_, stream_id_, Perspective::IS_CLIENT, send_window_,
         receive_window_, max_receive_window_));
   }
 

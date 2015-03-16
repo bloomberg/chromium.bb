@@ -76,17 +76,17 @@ class MockVisitor : public SpdyFramerVisitorInterface {
 
 // Run all tests with each version, and client or server
 struct TestParams {
-  TestParams(QuicVersion version, bool is_server)
-      : version(version), is_server(is_server) {}
+  TestParams(QuicVersion version, Perspective perspective)
+      : version(version), perspective(perspective) {}
 
   friend ostream& operator<<(ostream& os, const TestParams& p) {
     os << "{ version: " << QuicVersionToString(p.version);
-    os << ", is_server: " << p.is_server << " }";
+    os << ", perspective: " << p.perspective << " }";
     return os;
   }
 
   QuicVersion version;
-  bool is_server;
+  Perspective perspective;
 };
 
 // Constructs various test permutations.
@@ -94,8 +94,8 @@ vector<TestParams> GetTestParams() {
   vector<TestParams> params;
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
   for (const QuicVersion version : all_supported_versions) {
-    params.push_back(TestParams(version, false));
-    params.push_back(TestParams(version, true));
+    params.push_back(TestParams(version, Perspective::IS_CLIENT));
+    params.push_back(TestParams(version, Perspective::IS_SERVER));
   }
   return params;
 }
@@ -103,7 +103,8 @@ vector<TestParams> GetTestParams() {
 class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
  public:
   QuicHeadersStreamTest()
-      : connection_(new StrictMock<MockConnection>(is_server(), GetVersion())),
+      : connection_(
+            new StrictMock<MockConnection>(perspective(), GetVersion())),
         session_(connection_),
         headers_stream_(QuicSessionPeer::GetHeadersStream(&session_)),
         body_("hello world"),
@@ -197,7 +198,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
     saved_header_data_.clear();
   }
 
-  bool is_server() { return GetParam().is_server; }
+  Perspective perspective() { return GetParam().perspective; }
 
   QuicVersion version() { return GetParam().version; }
 
@@ -244,7 +245,7 @@ TEST_P(QuicHeadersStreamTest, WriteHeaders) {
        stream_id < kClientDataStreamId3; stream_id += 2) {
     for (int count = 0; count < 2; ++count) {
       bool fin = (count == 0);
-      if (is_server()) {
+      if (perspective() == Perspective::IS_SERVER) {
         WriteHeadersAndExpectSynReply(stream_id, fin);
       } else {
         for (QuicPriority priority = 0; priority < 7; ++priority) {
@@ -264,7 +265,7 @@ TEST_P(QuicHeadersStreamTest, ProcessRawData) {
       for (QuicPriority priority = 0; priority < 7; ++priority) {
         // Replace with "WriteHeadersAndSaveData"
         scoped_ptr<SpdySerializedFrame> frame;
-        if (is_server()) {
+        if (perspective() == Perspective::IS_SERVER) {
           if (version() > QUIC_VERSION_23) {
             SpdyHeadersIR headers_frame(stream_id);
             headers_frame.set_name_value_block(headers_);
@@ -318,7 +319,7 @@ TEST_P(QuicHeadersStreamTest, ProcessLargeRawData) {
       for (QuicPriority priority = 0; priority < 7; ++priority) {
         // Replace with "WriteHeadersAndSaveData"
         scoped_ptr<SpdySerializedFrame> frame;
-        if (is_server()) {
+        if (perspective() == Perspective::IS_SERVER) {
           if (version() > QUIC_VERSION_23) {
             SpdyHeadersIR headers_frame(stream_id);
             headers_frame.set_name_value_block(headers_);

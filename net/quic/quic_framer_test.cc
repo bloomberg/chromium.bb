@@ -342,7 +342,7 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
       : encrypter_(new test::TestEncrypter()),
         decrypter_(new test::TestDecrypter()),
         start_(QuicTime::Zero().Add(QuicTime::Delta::FromMicroseconds(0x10))),
-        framer_(QuicSupportedVersions(), start_, true) {
+        framer_(QuicSupportedVersions(), start_, Perspective::IS_SERVER) {
     version_ = GetParam();
     framer_.set_version(version_);
     framer_.SetDecrypter(decrypter_, ENCRYPTION_NONE);
@@ -2769,7 +2769,7 @@ TEST_P(QuicFramerTest, VersionNegotiationPacket) {
     'Q', '2', '.', '0',
   };
 
-  QuicFramerPeer::SetIsServer(&framer_, false);
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
 
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
@@ -3193,7 +3193,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
       '!',
   };
 
-  QuicFramerPeer::SetIsServer(&framer_, false);
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
   scoped_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 

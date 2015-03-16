@@ -201,14 +201,10 @@ void QuicClient::StartConnect() {
 
   session_.reset(new QuicClientSession(
       config_,
-      new QuicConnection(GenerateConnectionId(),
-                         server_address_,
-                         helper_.get(),
+      new QuicConnection(GenerateConnectionId(), server_address_, helper_.get(),
                          factory,
-                         /* owns_writer= */ false,
-                         /* is_server= */ false,
-                         server_id_.is_https(),
-                         supported_versions_)));
+                         /* owns_writer= */ false, Perspective::IS_CLIENT,
+                         server_id_.is_https(), supported_versions_)));
 
   // Reset |writer_| after |session_| so that the old writer outlives the old
   // session.

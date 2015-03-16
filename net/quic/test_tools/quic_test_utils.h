@@ -20,6 +20,7 @@
 #include "net/quic/quic_dispatcher.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_per_connection_packet_writer.h"
+#include "net/quic/quic_protocol.h"
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_session.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -290,19 +291,20 @@ class NiceMockPacketWriterFactory : public QuicConnection::PacketWriterFactory {
 class MockConnection : public QuicConnection {
  public:
   // Uses a MockHelper, ConnectionId of 42, and 127.0.0.1:123.
-  explicit MockConnection(bool is_server);
+  explicit MockConnection(Perspective perspective);
 
   // Uses a MockHelper, ConnectionId of 42, and 127.0.0.1:123.
-  MockConnection(bool is_server, bool is_secure);
+  MockConnection(Perspective perspective, bool is_secure);
 
   // Uses a MockHelper, ConnectionId of 42.
-  MockConnection(IPEndPoint address, bool is_server);
+  MockConnection(IPEndPoint address, Perspective perspective);
 
   // Uses a MockHelper, and 127.0.0.1:123
-  MockConnection(QuicConnectionId connection_id, bool is_server);
+  MockConnection(QuicConnectionId connection_id, Perspective perspective);
 
   // Uses a Mock helper, ConnectionId of 42, and 127.0.0.1:123.
-  MockConnection(bool is_server, const QuicVersionVector& supported_versions);
+  MockConnection(Perspective perspective,
+                 const QuicVersionVector& supported_versions);
 
   ~MockConnection() override;
 
@@ -350,9 +352,9 @@ class MockConnection : public QuicConnection {
 
 class PacketSavingConnection : public MockConnection {
  public:
-  explicit PacketSavingConnection(bool is_server);
+  explicit PacketSavingConnection(Perspective perspective);
 
-  PacketSavingConnection(bool is_server,
+  PacketSavingConnection(Perspective perspective,
                          const QuicVersionVector& supported_versions);
 
   ~PacketSavingConnection() override;
@@ -464,9 +466,10 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MockSendAlgorithm();
   ~MockSendAlgorithm() override;
 
-  MOCK_METHOD3(SetFromConfig, void(const QuicConfig& config,
-                                   bool is_server,
-                                   bool using_pacing));
+  MOCK_METHOD3(SetFromConfig,
+               void(const QuicConfig& config,
+                    Perspective perspective,
+                    bool using_pacing));
   MOCK_METHOD1(SetNumEmulatedConnections, void(int num_connections));
   MOCK_METHOD1(SetMaxPacketSize, void(QuicByteCount max_packet_size));
   MOCK_METHOD4(OnCongestionEvent, void(bool rtt_updated,

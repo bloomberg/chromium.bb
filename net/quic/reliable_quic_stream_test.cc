@@ -38,7 +38,6 @@ namespace {
 const char kData1[] = "FooAndBar";
 const char kData2[] = "EepAndBaz";
 const size_t kDataLen = 9;
-const bool kIsServer = true;
 const bool kShouldProcessData = true;
 
 class TestStream : public ReliableQuicStream {
@@ -106,8 +105,8 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   }
 
   void Initialize(bool stream_should_process_data) {
-    connection_ =
-        new StrictMock<MockConnection>(kIsServer, supported_versions_);
+    connection_ = new StrictMock<MockConnection>(Perspective::IS_SERVER,
+                                                 supported_versions_);
     session_.reset(new StrictMock<MockSession>(connection_));
 
     // New streams rely on having the peer's flow control receive window

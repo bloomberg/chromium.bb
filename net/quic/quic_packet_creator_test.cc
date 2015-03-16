@@ -73,10 +73,12 @@ vector<TestParams> GetTestParams() {
 class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
  protected:
   QuicPacketCreatorTest()
-      : server_framer_(SupportedVersions(GetParam().version), QuicTime::Zero(),
-                       true),
-        client_framer_(SupportedVersions(GetParam().version), QuicTime::Zero(),
-                       false),
+      : server_framer_(SupportedVersions(GetParam().version),
+                       QuicTime::Zero(),
+                       Perspective::IS_SERVER),
+        client_framer_(SupportedVersions(GetParam().version),
+                       QuicTime::Zero(),
+                       Perspective::IS_CLIENT),
         connection_id_(2),
         data_("foo"),
         creator_(connection_id_, &client_framer_, &mock_random_) {
@@ -779,7 +781,7 @@ TEST_P(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
 }
 
 TEST_P(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
-  QuicFramerPeer::SetIsServer(&client_framer_, true);
+  QuicFramerPeer::SetPerspective(&client_framer_, Perspective::IS_SERVER);
   QuicVersionVector versions;
   versions.push_back(test::QuicVersionMax());
   scoped_ptr<QuicEncryptedPacket> encrypted(
@@ -791,7 +793,7 @@ TEST_P(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
     EXPECT_CALL(framer_visitor_, OnUnauthenticatedPublicHeader(_));
     EXPECT_CALL(framer_visitor_, OnVersionNegotiationPacket(_));
   }
-  QuicFramerPeer::SetIsServer(&client_framer_, false);
+  QuicFramerPeer::SetPerspective(&client_framer_, Perspective::IS_CLIENT);
   client_framer_.ProcessPacket(*encrypted);
 }
 

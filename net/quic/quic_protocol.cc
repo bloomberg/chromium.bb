@@ -199,6 +199,15 @@ string QuicVersionVectorToString(const QuicVersionVector& versions) {
   return result;
 }
 
+ostream& operator<<(ostream& os, const Perspective& s) {
+  if (s == Perspective::IS_SERVER) {
+    os << "IS_SERVER";
+  } else {
+    os << "IS_CLIENT";
+  }
+  return os;
+}
+
 ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
   os << "{ connection_id: " << header.public_header.connection_id
      << ", connection_id_length:" << header.public_header.connection_id_length

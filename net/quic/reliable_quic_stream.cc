@@ -17,7 +17,8 @@ using std::string;
 
 namespace net {
 
-#define ENDPOINT (is_server_ ? "Server: " : " Client: ")
+#define ENDPOINT \
+  (perspective_ == Perspective::IS_SERVER ? "Server: " : "Client: ")
 
 namespace {
 
@@ -126,12 +127,13 @@ ReliableQuicStream::ReliableQuicStream(QuicStreamId id, QuicSession* session)
       rst_sent_(false),
       rst_received_(false),
       fec_policy_(FEC_PROTECT_OPTIONAL),
-      is_server_(session_->is_server()),
-      flow_controller_(
-          session_->connection(), id_, is_server_,
-          GetReceivedFlowControlWindow(session),
-          GetInitialStreamFlowControlWindowToSend(session),
-          GetInitialStreamFlowControlWindowToSend(session)),
+      perspective_(session_->perspective()),
+      flow_controller_(session_->connection(),
+                       id_,
+                       perspective_,
+                       GetReceivedFlowControlWindow(session),
+                       GetInitialStreamFlowControlWindowToSend(session),
+                       GetInitialStreamFlowControlWindowToSend(session)),
       connection_flow_controller_(session_->flow_controller()),
       stream_contributes_to_connection_flow_control_(true) {
 }

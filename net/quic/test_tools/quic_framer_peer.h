@@ -24,7 +24,7 @@ class QuicFramerPeer {
   static void SetLastSequenceNumber(
       QuicFramer* framer,
       QuicPacketSequenceNumber packet_sequence_number);
-  static void SetIsServer(QuicFramer* framer, bool is_server);
+  static void SetPerspective(QuicFramer* framer, Perspective perspective);
 
   // SwapCrypters exchanges the state of the crypters of |framer1| with
   // |framer2|.

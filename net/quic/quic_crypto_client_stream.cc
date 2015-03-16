@@ -88,7 +88,7 @@ QuicCryptoClientStream::QuicCryptoClientStream(
       channel_id_source_callback_(nullptr),
       verify_context_(verify_context),
       proof_verify_callback_(nullptr) {
-  DCHECK(!session->connection()->is_server());
+  DCHECK_EQ(Perspective::IS_CLIENT, session->connection()->perspective());
 }
 
 QuicCryptoClientStream::~QuicCryptoClientStream() {

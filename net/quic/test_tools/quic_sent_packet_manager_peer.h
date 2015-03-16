@@ -27,8 +27,8 @@ class QuicSentPacketManagerPeer {
   static QuicByteCount GetReceiveWindow(
       QuicSentPacketManager* sent_packet_manager);
 
-  static void SetIsServer(QuicSentPacketManager* sent_packet_manager,
-                          bool is_server);
+  static void SetPerspective(QuicSentPacketManager* sent_packet_manager,
+                             Perspective perspective);
 
   static const SendAlgorithmInterface* GetSendAlgorithm(
       const QuicSentPacketManager& sent_packet_manager);

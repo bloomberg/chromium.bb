@@ -1079,14 +1079,10 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422516 QuicStreamFactory::CreateSession4"));
 
-  QuicConnection* connection = new QuicConnection(connection_id,
-                                                  addr,
-                                                  helper_.get(),
-                                                  packet_writer_factory,
-                                                  true  /* owns_writer */,
-                                                  false  /* is_server */,
-                                                  server_id.is_https(),
-                                                  supported_versions_);
+  QuicConnection* connection = new QuicConnection(
+      connection_id, addr, helper_.get(), packet_writer_factory,
+      true /* owns_writer */, Perspective::IS_CLIENT, server_id.is_https(),
+      supported_versions_);
   connection->set_max_packet_length(max_packet_length_);
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.

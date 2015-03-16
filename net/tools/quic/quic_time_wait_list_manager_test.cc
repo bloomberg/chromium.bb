@@ -90,9 +90,13 @@ class MockFakeTimeEpollServer : public FakeTimeEpollServer {
 class QuicTimeWaitListManagerTest : public ::testing::Test {
  protected:
   QuicTimeWaitListManagerTest()
-      : time_wait_list_manager_(&writer_, &visitor_,
-                                &epoll_server_, QuicSupportedVersions()),
-        framer_(QuicSupportedVersions(), QuicTime::Zero(), true),
+      : time_wait_list_manager_(&writer_,
+                                &visitor_,
+                                &epoll_server_,
+                                QuicSupportedVersions()),
+        framer_(QuicSupportedVersions(),
+                QuicTime::Zero(),
+                Perspective::IS_SERVER),
         connection_id_(45),
         client_address_(net::test::TestPeerIPAddress(), kTestPort),
         writer_is_blocked_(false) {}
@@ -184,9 +188,8 @@ class ValidatePublicResetPacketPredicate
       const std::tr1::tuple<const char*, int> packet_buffer,
       testing::MatchResultListener* /* listener */) const override {
     FramerVisitorCapturingPublicReset visitor;
-    QuicFramer framer(QuicSupportedVersions(),
-                      QuicTime::Zero(),
-                      false);
+    QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(),
+                      Perspective::IS_CLIENT);
     framer.set_visitor(&visitor);
     QuicEncryptedPacket encrypted(std::tr1::get<0>(packet_buffer),
                                   std::tr1::get<1>(packet_buffer));

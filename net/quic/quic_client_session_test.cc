@@ -41,8 +41,8 @@ const uint16 kServerPort = 80;
 class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicClientSessionTest()
-      : connection_(
-            new PacketSavingConnection(false, SupportedVersions(GetParam()))),
+      : connection_(new PacketSavingConnection(Perspective::IS_CLIENT,
+                                               SupportedVersions(GetParam()))),
         session_(connection_,
                  GetSocket().Pass(),
                  nullptr,

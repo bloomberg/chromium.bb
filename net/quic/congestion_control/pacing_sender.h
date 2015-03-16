@@ -37,7 +37,7 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
 
   // SendAlgorithmInterface methods.
   void SetFromConfig(const QuicConfig& config,
-                     bool is_server,
+                     Perspective perspective,
                      bool using_pacing) override;
   bool ResumeConnectionState(
       const CachedNetworkParameters& cached_network_params) override;

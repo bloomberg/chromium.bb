@@ -65,17 +65,18 @@ bool HasCryptoHandshake(const TransmissionInfo& transmission_info) {
 
 }  // namespace
 
-#define ENDPOINT (is_server_ ? "Server: " : " Client: ")
+#define ENDPOINT \
+  (perspective_ == Perspective::IS_SERVER ? "Server: " : "Client: ")
 
 QuicSentPacketManager::QuicSentPacketManager(
-    bool is_server,
+    Perspective perspective,
     const QuicClock* clock,
     QuicConnectionStats* stats,
     CongestionControlType congestion_control_type,
     LossDetectionType loss_type,
     bool is_secure)
     : unacked_packets_(),
-      is_server_(is_server),
+      perspective_(perspective),
       clock_(clock),
       stats_(stats),
       debug_delegate_(nullptr),
@@ -166,7 +167,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
         max(kMinSocketReceiveBuffer,
             static_cast<QuicByteCount>(config.ReceivedSocketReceiveBuffer()));
   }
-  send_algorithm_->SetFromConfig(config, is_server_, using_pacing_);
+  send_algorithm_->SetFromConfig(config, perspective_, using_pacing_);
 
   if (network_change_visitor_ != nullptr) {
     network_change_visitor_->OnCongestionWindowChange();
@@ -195,7 +196,7 @@ void QuicSentPacketManager::SetNumOpenStreams(size_t num_streams) {
 
 bool QuicSentPacketManager::HasClientSentConnectionOption(
     const QuicConfig& config, QuicTag tag) const {
-  if (is_server_) {
+  if (perspective_ == Perspective::IS_SERVER) {
     if (config.HasReceivedConnectionOptions() &&
         ContainsQuicTag(config.ReceivedConnectionOptions(), tag)) {
       return true;

@@ -184,7 +184,8 @@ class TestSession : public QuicSession {
 class QuicSessionTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicSessionTest()
-      : connection_(new MockConnection(true, SupportedVersions(GetParam()))),
+      : connection_(new MockConnection(Perspective::IS_SERVER,
+                                       SupportedVersions(GetParam()))),
         session_(connection_) {
     session_.config()->SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);

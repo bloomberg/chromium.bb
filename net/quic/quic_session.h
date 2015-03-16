@@ -202,7 +202,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   QuicErrorCode error() const { return error_; }
 
-  bool is_server() const { return connection_->is_server(); }
+  Perspective perspective() const { return connection_->perspective(); }
 
   QuicFlowController* flow_controller() { return flow_controller_.get(); }
 

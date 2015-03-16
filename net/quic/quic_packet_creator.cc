@@ -75,7 +75,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
       sequence_number_(0),
       should_fec_protect_(false),
       fec_group_number_(0),
-      send_version_in_packet_(!framer->is_server()),
+      send_version_in_packet_(framer->perspective() == Perspective::IS_CLIENT),
       max_packet_length_(kDefaultMaxPacketSize),
       max_packets_per_fec_group_(kDefaultMaxPacketsPerFecGroup),
       connection_id_length_(PACKET_8BYTE_CONNECTION_ID),
@@ -452,7 +452,7 @@ SerializedPacket QuicPacketCreator::SerializeFec() {
 
 QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
     const QuicVersionVector& supported_versions) {
-  DCHECK(framer_->is_server());
+  DCHECK_EQ(Perspective::IS_SERVER, framer_->perspective());
   QuicPacketPublicHeader header;
   header.connection_id = connection_id_;
   header.reset_flag = false;

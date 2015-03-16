@@ -93,7 +93,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
         QuicSequenceNumberLength sequence_number_length;
   };
 
-  QuicSentPacketManager(bool is_server,
+  QuicSentPacketManager(Perspective perspective,
                         const QuicClock* clock,
                         QuicConnectionStats* stats,
                         CongestionControlType congestion_control_type,
@@ -352,8 +352,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Pending retransmissions which have not been packetized and sent yet.
   PendingRetransmissionMap pending_retransmissions_;
 
-  // Tracks if the connection was created by the server.
-  bool is_server_;
+  // Tracks if the connection was created by the server or the client.
+  Perspective perspective_;
 
   // An AckNotifier can register to be informed when ACKs have been received for
   // all packets that a given block of data was sent in. The AckNotifierManager

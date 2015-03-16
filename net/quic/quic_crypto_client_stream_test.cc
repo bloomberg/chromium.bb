@@ -30,7 +30,7 @@ const uint16 kServerPort = 80;
 class QuicCryptoClientStreamTest : public ::testing::Test {
  public:
   QuicCryptoClientStreamTest()
-      : connection_(new PacketSavingConnection(/*is_server=*/false)),
+      : connection_(new PacketSavingConnection(Perspective::IS_CLIENT)),
         session_(new TestClientSession(connection_, DefaultQuicConfig())),
         server_id_(kServerHostname, kServerPort, false, PRIVACY_MODE_DISABLED),
         stream_(new QuicCryptoClientStream(server_id_,
@@ -123,7 +123,7 @@ TEST_F(QuicCryptoClientStreamTest, ExpiredServerConfig) {
   // Seed the config with a cached server config.
   CompleteCryptoHandshake();
 
-  connection_ = new PacketSavingConnection(/*is_server=*/false);
+  connection_ = new PacketSavingConnection(Perspective::IS_CLIENT);
   session_.reset(new TestClientSession(connection_, DefaultQuicConfig()));
   stream_.reset(new QuicCryptoClientStream(server_id_, session_.get(), nullptr,
                                            &crypto_config_));

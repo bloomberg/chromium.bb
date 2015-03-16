@@ -42,7 +42,8 @@ class QuicReliableClientStreamTest
     : public ::testing::TestWithParam<QuicVersion> {
  public:
   QuicReliableClientStreamTest()
-      : session_(new MockConnection(false, SupportedVersions(GetParam()))) {
+      : session_(new MockConnection(Perspective::IS_CLIENT,
+                                    SupportedVersions(GetParam()))) {
     stream_ = new QuicReliableClientStream(kStreamId, &session_, BoundNetLog());
     session_.ActivateStream(stream_);
     stream_->SetDelegate(&delegate_);

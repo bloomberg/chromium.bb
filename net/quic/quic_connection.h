@@ -247,7 +247,7 @@ class NET_EXPORT_PRIVATE QuicConnection
                  QuicConnectionHelperInterface* helper,
                  const PacketWriterFactory& writer_factory,
                  bool owns_writer,
-                 bool is_server,
+                 Perspective perspective,
                  bool is_secure,
                  const QuicVersionVector& supported_versions);
   ~QuicConnection() override;
@@ -404,7 +404,7 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Must only be called on client connections.
   const QuicVersionVector& server_supported_versions() const {
-    DCHECK(!is_server_);
+    DCHECK_EQ(Perspective::IS_CLIENT, perspective_);
     return server_supported_versions_;
   }
 
@@ -487,7 +487,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   const QuicDecrypter* decrypter() const;
   const QuicDecrypter* alternative_decrypter() const;
 
-  bool is_server() const { return is_server_; }
+  Perspective perspective() const { return perspective_; }
 
   // Allow easy overriding of truncated connection IDs.
   void set_can_truncate_connection_ids(bool can) {
@@ -804,8 +804,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // The state of connection in version negotiation finite state machine.
   QuicVersionNegotiationState version_negotiation_state_;
 
-  // Tracks if the connection was created by the server.
-  bool is_server_;
+  // Tracks if the connection was created by the server or the client.
+  Perspective perspective_;
 
   // True by default.  False if we've received or sent an explicit connection
   // close.

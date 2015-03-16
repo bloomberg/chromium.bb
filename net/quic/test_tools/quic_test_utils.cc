@@ -234,63 +234,63 @@ QuicPacketWriter* NiceMockPacketWriterFactory::Create(
   return new testing::NiceMock<MockPacketWriter>();
 }
 
-MockConnection::MockConnection(bool is_server)
+MockConnection::MockConnection(Perspective perspective)
     : QuicConnection(kTestConnectionId,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
-                     is_server,
+                     perspective,
                      /* is_secure= */ false,
                      QuicSupportedVersions()),
       helper_(helper()) {
 }
 
-MockConnection::MockConnection(bool is_server, bool is_secure)
+MockConnection::MockConnection(Perspective perspective, bool is_secure)
     : QuicConnection(kTestConnectionId,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
-                     is_server,
+                     perspective,
                      is_secure,
                      QuicSupportedVersions()),
       helper_(helper()) {
 }
 
-MockConnection::MockConnection(IPEndPoint address,
-                               bool is_server)
-    : QuicConnection(kTestConnectionId, address,
+MockConnection::MockConnection(IPEndPoint address, Perspective perspective)
+    : QuicConnection(kTestConnectionId,
+                     address,
                      new testing::NiceMock<MockHelper>(),
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
-                     is_server,
+                     perspective,
                      /* is_secure= */ false,
                      QuicSupportedVersions()),
       helper_(helper()) {
 }
 
 MockConnection::MockConnection(QuicConnectionId connection_id,
-                               bool is_server)
+                               Perspective perspective)
     : QuicConnection(connection_id,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
-                     is_server,
+                     perspective,
                      /* is_secure= */ false,
                      QuicSupportedVersions()),
       helper_(helper()) {
 }
 
-MockConnection::MockConnection(bool is_server,
+MockConnection::MockConnection(Perspective perspective,
                                const QuicVersionVector& supported_versions)
     : QuicConnection(kTestConnectionId,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
-                     is_server,
+                     perspective,
                      /* is_secure= */ false,
                      supported_versions),
       helper_(helper()) {
@@ -303,14 +303,14 @@ void MockConnection::AdvanceTime(QuicTime::Delta delta) {
   static_cast<MockHelper*>(helper())->AdvanceTime(delta);
 }
 
-PacketSavingConnection::PacketSavingConnection(bool is_server)
-    : MockConnection(is_server) {
+PacketSavingConnection::PacketSavingConnection(Perspective perspective)
+    : MockConnection(perspective) {
 }
 
 PacketSavingConnection::PacketSavingConnection(
-    bool is_server,
+    Perspective perspective,
     const QuicVersionVector& supported_versions)
-    : MockConnection(is_server, supported_versions) {
+    : MockConnection(perspective, supported_versions) {
 }
 
 PacketSavingConnection::~PacketSavingConnection() {
@@ -431,8 +431,9 @@ string HexDumpWithMarks(const char* data, int length,
     }
     hex = hex + "  ";
 
-    for (const char *p = row; p < row + 4 && p < row + length; ++p)
+    for (const char* p = row; p < row + 4 && p < row + length; ++p) {
       hex += (*p >= 0x20 && *p <= 0x7f) ? (*p) : '.';
+    }
 
     hex = hex + '\n';
   }
@@ -502,7 +503,8 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   QuicFrame frame(&stream_frame);
   QuicFrames frames;
   frames.push_back(frame);
-  QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), false);
+  QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(),
+                    Perspective::IS_CLIENT);
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   EXPECT_TRUE(packet != nullptr);
@@ -563,7 +565,8 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
     bool should_include_version) {
   CryptoFramer crypto_framer;
   scoped_ptr<QuicData> data(crypto_framer.ConstructHandshakeMessage(message));
-  QuicFramer quic_framer(QuicSupportedVersions(), QuicTime::Zero(), false);
+  QuicFramer quic_framer(QuicSupportedVersions(), QuicTime::Zero(),
+                         Perspective::IS_CLIENT);
 
   QuicPacketHeader header;
   header.public_header.connection_id = connection_id;

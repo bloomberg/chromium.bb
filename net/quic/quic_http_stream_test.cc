@@ -64,11 +64,10 @@ class TestQuicConnection : public QuicConnection {
                        address,
                        helper,
                        writer_factory,
-                       true   /* owns_writer */,
-                       false  /* is_server */,
-                       false  /* is_secure */,
-                       versions) {
-  }
+                       true /* owns_writer */,
+                       Perspective::IS_CLIENT,
+                       false /* is_secure */,
+                       versions) {}
 
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
     QuicConnectionPeer::SetSendAlgorithm(this, send_algorithm);

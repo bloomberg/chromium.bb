@@ -40,7 +40,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
 
   // Start implementation of SendAlgorithmInterface.
   void SetFromConfig(const QuicConfig& config,
-                     bool is_server,
+                     Perspective perspective,
                      bool using_pacing) override;
   bool ResumeConnectionState(
       const CachedNetworkParameters& cached_network_params) override;

@@ -67,9 +67,8 @@ class QuicConnectionPeer {
       QuicConnection* connection,
       QuicPacketSequenceNumber sequence_number);
 
-  static bool IsServer(QuicConnection* connection);
-
-  static void SetIsServer(QuicConnection* connection, bool is_server);
+  static void SetPerspective(QuicConnection* connection,
+                             Perspective perspective);
 
   static void SetSelfAddress(QuicConnection* connection,
                              const IPEndPoint& self_address);

@@ -331,10 +331,13 @@ class TestPacketWriter : public QuicPacketWriter {
     is_write_blocked_data_buffered_ = buffered;
   }
 
-  void set_is_server(bool is_server) {
-    // We invert is_server here, because the framer needs to parse packets
+  void set_perspective(Perspective perspective) {
+    // We invert perspective here, because the framer needs to parse packets
     // we send.
-    QuicFramerPeer::SetIsServer(framer_.framer(), !is_server);
+    perspective = perspective == Perspective::IS_CLIENT
+                      ? Perspective::IS_SERVER
+                      : Perspective::IS_CLIENT;
+    QuicFramerPeer::SetPerspective(framer_.framer(), perspective);
   }
 
   // final_bytes_of_last_packet_ returns the last four bytes of the previous
@@ -385,20 +388,20 @@ class TestConnection : public QuicConnection {
                  IPEndPoint address,
                  TestConnectionHelper* helper,
                  const PacketWriterFactory& factory,
-                 bool is_server,
+                 Perspective perspective,
                  QuicVersion version)
       : QuicConnection(connection_id,
                        address,
                        helper,
                        factory,
                        /* owns_writer= */ false,
-                       is_server,
+                       perspective,
                        /* is_secure= */ false,
                        SupportedVersions(version)) {
     // Disable tail loss probes for most tests.
     QuicSentPacketManagerPeer::SetMaxTailLossProbes(
         QuicConnectionPeer::GetSentPacketManager(this), 0);
-    writer()->set_is_server(is_server);
+    writer()->set_perspective(perspective);
   }
 
   void SendAck() {
@@ -501,10 +504,6 @@ class TestConnection : public QuicConnection {
     return SendStreamDataWithString(kCryptoStreamId, "chlo", 0, !kFin, nullptr);
   }
 
-  bool is_server() {
-    return QuicConnectionPeer::IsServer(this);
-  }
-
   void set_version(QuicVersion version) {
     QuicConnectionPeer::GetFramer(this)->set_version(version);
   }
@@ -514,9 +513,9 @@ class TestConnection : public QuicConnection {
     writer()->SetSupportedVersions(versions);
   }
 
-  void set_is_server(bool is_server) {
-    writer()->set_is_server(is_server);
-    QuicConnectionPeer::SetIsServer(this, is_server);
+  void set_perspective(Perspective perspective) {
+    writer()->set_perspective(perspective);
+    QuicConnectionPeer::SetPerspective(this, perspective);
   }
 
   TestConnectionHelper::TestAlarm* GetAckAlarm() {
@@ -596,7 +595,9 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicConnectionTest()
       : connection_id_(42),
-        framer_(SupportedVersions(version()), QuicTime::Zero(), false),
+        framer_(SupportedVersions(version()),
+                QuicTime::Zero(),
+                Perspective::IS_CLIENT),
         peer_creator_(connection_id_, &framer_, &random_generator_),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         loss_algorithm_(new MockLossAlgorithm()),
@@ -607,7 +608,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
                     IPEndPoint(),
                     helper_.get(),
                     factory_,
-                    false,
+                    Perspective::IS_CLIENT,
                     version()),
         creator_(QuicConnectionPeer::GetPacketCreator(&connection_)),
         generator_(QuicConnectionPeer::GetPacketGenerator(&connection_)),
@@ -683,8 +684,9 @@ class QuicConnectionTest : public ::testing::TestWithParam<QuicVersion> {
   QuicPacketEntropyHash ProcessFramePacket(QuicFrame frame) {
     QuicFrames frames;
     frames.push_back(QuicFrame(frame));
-    QuicPacketCreatorPeer::SetSendVersionInPacket(&peer_creator_,
-                                                  connection_.is_server());
+    QuicPacketCreatorPeer::SetSendVersionInPacket(
+        &peer_creator_, connection_.perspective() == Perspective::IS_SERVER);
+
     SerializedPacket serialized_packet =
         peer_creator_.SerializeAllFrames(frames);
     scoped_ptr<QuicEncryptedPacket> encrypted(serialized_packet.packet);
@@ -979,34 +981,32 @@ INSTANTIATE_TEST_CASE_P(SupportedVersion,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(QuicConnectionTest, MaxPacketSize) {
-  EXPECT_FALSE(connection_.is_server());
+  EXPECT_EQ(Perspective::IS_CLIENT, connection_.perspective());
   EXPECT_EQ(1350u, connection_.max_packet_length());
 }
 
 TEST_P(QuicConnectionTest, SmallerServerMaxPacketSize) {
   ValueRestore<bool> old_flag(&FLAGS_quic_small_default_packet_size, true);
   QuicConnectionId connection_id = 42;
-  bool kIsServer = true;
   TestConnection connection(connection_id, IPEndPoint(), helper_.get(),
-                            factory_, kIsServer, version());
-  EXPECT_TRUE(connection.is_server());
+                            factory_, Perspective::IS_SERVER, version());
+  EXPECT_EQ(Perspective::IS_SERVER, connection.perspective());
   EXPECT_EQ(1000u, connection.max_packet_length());
 }
 
 TEST_P(QuicConnectionTest, ServerMaxPacketSize) {
   ValueRestore<bool> old_flag(&FLAGS_quic_small_default_packet_size, false);
   QuicConnectionId connection_id = 42;
-  bool kIsServer = true;
   TestConnection connection(connection_id, IPEndPoint(), helper_.get(),
-                            factory_, kIsServer, version());
-  EXPECT_TRUE(connection.is_server());
+                            factory_, Perspective::IS_SERVER, version());
+  EXPECT_EQ(Perspective::IS_SERVER, connection.perspective());
   EXPECT_EQ(1350u, connection.max_packet_length());
 }
 
 TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSize) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
-  connection_.set_is_server(true);
+  connection_.set_perspective(Perspective::IS_SERVER);
   connection_.set_max_packet_length(1000);
 
   QuicPacketHeader header;
@@ -3299,13 +3299,13 @@ TEST_P(QuicConnectionTest, SendDelayedAckOnHandshakeConfirmed) {
   EXPECT_EQ(ack_time, connection_.GetAckAlarm()->deadline());
 
   // Completing the handshake as the server does nothing.
-  QuicConnectionPeer::SetIsServer(&connection_, true);
+  QuicConnectionPeer::SetPerspective(&connection_, Perspective::IS_SERVER);
   connection_.OnHandshakeComplete();
   EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
   EXPECT_EQ(ack_time, connection_.GetAckAlarm()->deadline());
 
   // Complete the handshake as the client decreases the delayed ack time to 0ms.
-  QuicConnectionPeer::SetIsServer(&connection_, false);
+  QuicConnectionPeer::SetPerspective(&connection_, Perspective::IS_CLIENT);
   connection_.OnHandshakeComplete();
   EXPECT_TRUE(connection_.GetAckAlarm()->IsSet());
   EXPECT_EQ(clock_.ApproximateNow(), connection_.GetAckAlarm()->deadline());
@@ -3646,7 +3646,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacket) {
       framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
 
   framer_.set_version(version());
-  connection_.set_is_server(true);
+  connection_.set_perspective(Perspective::IS_SERVER);
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
   EXPECT_TRUE(writer_->version_negotiation_packet() != nullptr);
 
@@ -3684,7 +3684,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
       framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
 
   framer_.set_version(version());
-  connection_.set_is_server(true);
+  connection_.set_perspective(Perspective::IS_SERVER);
   BlockOnNextWrite();
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
   EXPECT_EQ(0u, writer_->last_packet_size());
@@ -3729,7 +3729,7 @@ TEST_P(QuicConnectionTest,
       framer_.EncryptPacket(ENCRYPTION_NONE, 12, *packet));
 
   framer_.set_version(version());
-  connection_.set_is_server(true);
+  connection_.set_perspective(Perspective::IS_SERVER);
   BlockOnNextWrite();
   writer_->set_is_write_blocked_data_buffered(true);
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
@@ -4315,10 +4315,10 @@ TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
 }
 
 TEST_P(QuicConnectionTest, Pacing) {
-  TestConnection server(connection_id_, IPEndPoint(), helper_.get(),
-                        factory_, /* is_server= */ true, version());
-  TestConnection client(connection_id_, IPEndPoint(), helper_.get(),
-                        factory_, /* is_server= */ false, version());
+  TestConnection server(connection_id_, IPEndPoint(), helper_.get(), factory_,
+                        Perspective::IS_SERVER, version());
+  TestConnection client(connection_id_, IPEndPoint(), helper_.get(), factory_,
+                        Perspective::IS_CLIENT, version());
   EXPECT_FALSE(client.sent_packet_manager().using_pacing());
   EXPECT_FALSE(server.sent_packet_manager().using_pacing());
 }

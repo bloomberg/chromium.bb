@@ -46,7 +46,7 @@ class MockDebugDelegate : public QuicSentPacketManager::DebugDelegate {
 class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicSentPacketManagerTest()
-      : manager_(true, &clock_, &stats_, kCubic, kNack, false),
+      : manager_(Perspective::IS_SERVER, &clock_, &stats_, kCubic, kNack, true),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         network_change_visitor_(new StrictMock<MockNetworkChangeVisitor>) {
     QuicSentPacketManagerPeer::SetSendAlgorithm(&manager_, send_algorithm_);
@@ -1123,7 +1123,7 @@ TEST_F(QuicSentPacketManagerTest, NewRetransmissionTimeout) {
   QuicConfig client_config;
   QuicTagVector options;
   options.push_back(kNRTO);
-  QuicSentPacketManagerPeer::SetIsServer(&manager_, false);
+  QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
   client_config.SetConnectionOptionsToSend(options);
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*network_change_visitor_, OnRttChange());
@@ -1486,7 +1486,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateNumConnectionsFromOptions) {
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _));
   manager_.SetFromConfig(config);
 
-  QuicSentPacketManagerPeer::SetIsServer(&manager_, false);
+  QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
   QuicConfig client_config;
   client_config.SetConnectionOptionsToSend(options);
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
@@ -1532,7 +1532,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateNoTLPFromOptionsAtClient) {
   QuicTagVector options;
 
   options.push_back(kNTLP);
-  QuicSentPacketManagerPeer::SetIsServer(&manager_, false);
+  QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
   client_config.SetConnectionOptionsToSend(options);
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*network_change_visitor_, OnRttChange());
@@ -1561,7 +1561,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateNewRTOFromOptionsAtClient) {
   QuicTagVector options;
 
   options.push_back(kNRTO);
-  QuicSentPacketManagerPeer::SetIsServer(&manager_, false);
+  QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
   client_config.SetConnectionOptionsToSend(options);
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   EXPECT_CALL(*network_change_visitor_, OnRttChange());

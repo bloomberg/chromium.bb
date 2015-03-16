@@ -38,10 +38,10 @@ QuicByteCount QuicSentPacketManagerPeer::GetReceiveWindow(
 }
 
 // static
-void QuicSentPacketManagerPeer::SetIsServer(
+void QuicSentPacketManagerPeer::SetPerspective(
     QuicSentPacketManager* sent_packet_manager,
-    bool is_server) {
-  sent_packet_manager->is_server_ = is_server;
+    Perspective perspective) {
+  sent_packet_manager->perspective_ = perspective;
 }
 
 // static

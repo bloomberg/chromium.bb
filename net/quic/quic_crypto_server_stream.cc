@@ -33,7 +33,7 @@ QuicCryptoServerStream::QuicCryptoServerStream(
       validate_client_hello_cb_(nullptr),
       num_handshake_messages_(0),
       num_server_config_update_messages_sent_(0) {
-  DCHECK(session->connection()->is_server());
+  DCHECK_EQ(Perspective::IS_SERVER, session->connection()->perspective());
 }
 
 QuicCryptoServerStream::~QuicCryptoServerStream() {

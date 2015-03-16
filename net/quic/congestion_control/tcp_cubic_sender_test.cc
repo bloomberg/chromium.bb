@@ -501,8 +501,7 @@ TEST_F(TcpCubicSenderTest, ConfigureMaxInitialWindow) {
   QuicTagVector options;
   options.push_back(kIW10);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
-  sender_->SetFromConfig(config,
-                         /* is_server= */ true,
+  sender_->SetFromConfig(config, Perspective::IS_SERVER,
                          /* using_pacing= */ false);
   EXPECT_EQ(10u, sender_->congestion_window());
 }
@@ -511,8 +510,7 @@ TEST_F(TcpCubicSenderTest, DisableAckTrainDetectionWithPacing) {
   EXPECT_TRUE(sender_->hybrid_slow_start().ack_train_detection());
 
   QuicConfig config;
-  sender_->SetFromConfig(config,
-                         /* is_server= */ true,
+  sender_->SetFromConfig(config, Perspective::IS_SERVER,
                          /* using_pacing= */ true);
   EXPECT_FALSE(sender_->hybrid_slow_start().ack_train_detection());
 }
