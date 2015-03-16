@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestActivity;
 import org.chromium.net.CronetTestBase;
+import org.chromium.net.MockUrlRequestJobFactory;
 import org.chromium.net.NativeTestServer;
 import org.chromium.net.UrlRequestContextConfig;
 import org.chromium.net.UrlRequestException;
@@ -434,8 +435,9 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
-    public void testInputStreamReadOneByte() throws Exception {
-        String testInputString = "this is a really long header";
+    public void testInputStreamBatchReadBoundaryConditions() throws Exception {
+        String testInputString = "this is a very important header";
+        byte[] testInputBytes = testInputString.getBytes();
         URL url = new URL(NativeTestServer.getEchoHeaderURL("foo"));
         HttpURLConnection urlConnection =
                 (HttpURLConnection) url.openConnection();
@@ -443,14 +445,60 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         assertEquals(200, urlConnection.getResponseCode());
         assertEquals("OK", urlConnection.getResponseMessage());
         InputStream in = urlConnection.getInputStream();
+        try {
+            // Negative byteOffset.
+            int r = in.read(new byte[10], -1, 1);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            // Expected.
+        }
+        try {
+            // Negative byteCount.
+            int r = in.read(new byte[10], 1, -1);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            // Expected.
+        }
+        try {
+            // Read more than what buffer can hold.
+            int r = in.read(new byte[10], 0, 11);
+            fail();
+        } catch (IndexOutOfBoundsException e) {
+            // Expected.
+        }
+        urlConnection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunCronetHttpURLConnection
+    public void testInputStreamReadOneByte() throws Exception {
+        String data = "MyBigFunkyData";
+        int dataLength = data.length();
+        int repeatCount = 100000;
+        MockUrlRequestJobFactory mockUrlRequestJobFactory = new MockUrlRequestJobFactory(
+                getInstrumentation().getTargetContext());
+        URL url = new URL(mockUrlRequestJobFactory.getMockUrlForData(data,
+                repeatCount));
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        InputStream in = connection.getInputStream();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         int b;
         while ((b = in.read()) != -1) {
             out.write(b);
         }
-        urlConnection.disconnect();
-        assertTrue(Arrays.equals(
-                testInputString.getBytes(), out.toByteArray()));
+
+        // All data has been read. Try reading beyond what is available should give -1.
+        assertEquals(-1, in.read());
+        String responseData = new String(out.toByteArray());
+        for (int i = 0; i < repeatCount; ++i) {
+            assertEquals(data, responseData.substring(dataLength * i,
+                    dataLength * (i + 1)));
+        }
+        // TODO(xunjieli): Enable after crbug.com/463720 is fixed.
+        // assertEquals(200, connection.getResponseCode());
+        // assertEquals("OK", connection.getResponseMessage());
     }
 
     @SmallTest
@@ -468,14 +516,61 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         InputStream in = urlConnection.getInputStream();
         byte[] actualOutput = new byte[testInputBytes.length + 256];
         int bytesRead = in.read(actualOutput, 0, actualOutput.length);
+        assertEquals(testInputBytes.length, bytesRead);
         byte[] readSomeMore = new byte[10];
         int bytesReadBeyondAvailable  = in.read(readSomeMore, 0, 10);
-        urlConnection.disconnect();
-        assertEquals(testInputBytes.length, bytesRead);
         assertEquals(-1, bytesReadBeyondAvailable);
         for (int i = 0; i < bytesRead; i++) {
             assertEquals(testInputBytes[i], actualOutput[i]);
         }
+        urlConnection.disconnect();
+    }
+
+    /**
+     * Tests batch reading on CronetInputStream when
+     * {@link CronetHttpURLConnection#getMoreData} is called multiple times.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunCronetHttpURLConnection
+    public void testBigDataRead() throws Exception {
+        String data = "MyBigFunkyData";
+        int dataLength = data.length();
+        int repeatCount = 100000;
+        MockUrlRequestJobFactory mockUrlRequestJobFactory = new MockUrlRequestJobFactory(
+                getInstrumentation().getTargetContext());
+        URL url = new URL(mockUrlRequestJobFactory.getMockUrlForData(data,
+                repeatCount));
+        HttpURLConnection connection =
+                (HttpURLConnection) url.openConnection();
+        InputStream in = connection.getInputStream();
+        byte[] actualOutput = new byte[dataLength * repeatCount];
+        int totalBytesRead = 0;
+        // Number of bytes to read each time. It is incremented by one from 0.
+        int numBytesToRead = 0;
+        while (totalBytesRead < actualOutput.length) {
+            if (actualOutput.length - totalBytesRead < numBytesToRead) {
+                // Do not read out of bound.
+                numBytesToRead = actualOutput.length - totalBytesRead;
+            }
+            int bytesRead = in.read(actualOutput, totalBytesRead, numBytesToRead);
+            assertTrue(bytesRead <= numBytesToRead);
+            totalBytesRead += bytesRead;
+            numBytesToRead++;
+        }
+
+        // All data has been read. Try reading beyond what is available should give -1.
+        assertEquals(0, in.read(actualOutput, 0, 0));
+        assertEquals(-1, in.read(actualOutput, 0, 1));
+
+        String responseData = new String(actualOutput);
+        for (int i = 0; i < repeatCount; ++i) {
+            assertEquals(data, responseData.substring(dataLength * i,
+                    dataLength * (i + 1)));
+        }
+        // TODO(xunjieli): Enable after crbug.com/463720 is fixed.
+        // assertEquals(200, connection.getResponseCode());
+        // assertEquals("OK", connection.getResponseMessage());
     }
 
     @SmallTest

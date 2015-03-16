@@ -29,18 +29,49 @@ class CronetInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        if (!mResponseDataCompleted
-                && (mBuffer == null || !mBuffer.hasRemaining())) {
-            // Requests more data from CronetHttpURLConnection.
-            mBuffer = mHttpURLConnection.getMoreData();
-        }
-        if (mBuffer != null && mBuffer.hasRemaining()) {
+        getMoreDataIfNeeded();
+        if (hasUnreadData()) {
             return mBuffer.get() & 0xFF;
         }
         return -1;
     }
 
+    @Override
+    public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
+        if (byteOffset < 0 || byteCount < 0 || byteOffset + byteCount > buffer.length) {
+            throw new IndexOutOfBoundsException();
+        }
+        if (byteCount == 0) {
+            return 0;
+        }
+        getMoreDataIfNeeded();
+        if (hasUnreadData()) {
+            int bytesRead = Math.min(mBuffer.limit() - mBuffer.position(), byteCount);
+            mBuffer.get(buffer, byteOffset, bytesRead);
+            return bytesRead;
+        }
+        return -1;
+    }
+
+    /**
+     * Called by {@link CronetHttpURLConnection} to notify that the entire
+     * response body has been read.
+     */
     void setResponseDataCompleted() {
         mResponseDataCompleted = true;
+    }
+
+    private void getMoreDataIfNeeded() throws IOException {
+        if (!mResponseDataCompleted && !hasUnreadData()) {
+            // Requests more data from CronetHttpURLConnection.
+            mBuffer = mHttpURLConnection.getMoreData();
+        }
+    }
+
+    /**
+     * Returns whether {@link #mBuffer} has unread data.
+     */
+    private boolean hasUnreadData() {
+        return mBuffer != null && mBuffer.hasRemaining();
     }
 }
