@@ -276,6 +276,8 @@ void HTMLDocument::didAddMessageToConsole(
     const blink::WebString& source_name,
     unsigned source_line,
     const blink::WebString& stack_trace) {
+  VLOG(1) << "[" << source_name.utf8() << "(" << source_line << ")] "
+          << message.text.utf8();
 }
 
 void HTMLDocument::didNavigateWithinPage(
