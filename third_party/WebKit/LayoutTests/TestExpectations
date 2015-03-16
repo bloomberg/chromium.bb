@@ -397,6 +397,7 @@ crbug.com/455879 [ Win ] webaudio/waveshaper-oversample-2x.html [ Crash Pass ]
 crbug.com/455879 [ Win ] webaudio/pannernode-basic.html [ Crash Pass ]
 crbug.com/455879 [ Win ] webaudio/waveshaper-oversample-4x.html [ Crash Pass ]
 
+crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip ]
 
 crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/animation-border-overflow.html [ Pass Timeout ]
