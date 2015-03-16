@@ -98,7 +98,7 @@ remoting.DnsBlackholeChecker.prototype.getState = function() {
 
 remoting.DnsBlackholeChecker.prototype.getError = function() {
   if (this.blackholeState_ == BlackholeState.BLOCKED) {
-    return remoting.Error.NOT_AUTHORIZED;
+    return new remoting.Error(remoting.Error.Tag.NOT_AUTHORIZED);
   }
 
   return this.signalStrategy_.getError();

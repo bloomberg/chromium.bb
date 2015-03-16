@@ -86,7 +86,7 @@ remoting.Application.prototype.start = function() {
       this.delegate_.start.bind(this.delegate_, this.getSessionConnector())
   ).catch(remoting.Error.handler(
       function(/** !remoting.Error */ error) {
-        if (error == remoting.Error.CANCELLED) {
+        if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
           that.exit();
         } else {
           that.delegate_.signInFailed(error);
@@ -107,7 +107,7 @@ remoting.Application.prototype.exit = function() {
 /** Disconnect the remoting client. */
 remoting.Application.prototype.disconnect = function() {
   if (remoting.clientSession) {
-    remoting.clientSession.disconnect(remoting.Error.NONE);
+    remoting.clientSession.disconnect(remoting.Error.none());
     console.log('Disconnected.');
   }
 };
@@ -227,9 +227,10 @@ remoting.Application.prototype.onClientStateChange_ = function(state) {
       break;
     case remoting.ClientSession.State.FAILED:
       var error = remoting.clientSession.getError();
-      console.error('Client plugin reported connection failed: ' + error);
+      console.error('Client plugin reported connection failed: ' +
+                    error.toString());
       if (error === null) {
-        error = remoting.Error.UNEXPECTED;
+        error = remoting.Error.unexpected();
       }
       this.onError(error);
       break;
@@ -238,7 +239,7 @@ remoting.Application.prototype.onClientStateChange_ = function(state) {
       console.error('Unexpected client plugin state: ' + state.current);
       // This should only happen if the web-app and client plugin get out of
       // sync, so MISSING_PLUGIN is a suitable error.
-      this.onError(remoting.Error.MISSING_PLUGIN);
+      this.onError(new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN));
       break;
   }
 

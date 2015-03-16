@@ -71,7 +71,7 @@ remoting.MockHostListApi.prototype.put =
     }
     console.error('PUT request for unknown host: ' + hostId +
                   ' (' + hostName + ')');
-    onError(remoting.Error.UNEXPECTED);
+    onError(remoting.Error.unexpected());
   };
   remoting.mockIdentity.validateTokenAndCall(onTokenValid, onError, []);
 };
@@ -95,7 +95,7 @@ remoting.MockHostListApi.prototype.remove =
       }
     }
     console.error('DELETE request for unknown host: ' + hostId);
-    onError(remoting.Error.UNEXPECTED);
+    onError(remoting.Error.unexpected());
   };
   remoting.mockIdentity.validateTokenAndCall(onTokenValid, onError, []);
 };

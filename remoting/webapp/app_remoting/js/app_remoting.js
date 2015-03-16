@@ -148,7 +148,8 @@ remoting.AppRemoting.prototype.start = function(connector, token) {
 
         connector.connectMe2App(host, fetchThirdPartyToken);
       } else if (response && response.status == 'pending') {
-        that.handleError(remoting.Error.SERVICE_UNAVAILABLE);
+        that.handleError(new remoting.Error(
+            remoting.Error.Tag.SERVICE_UNAVAILABLE));
       }
     } else {
       console.error('Invalid "runApplication" response from server.');
@@ -156,15 +157,19 @@ remoting.AppRemoting.prototype.start = function(connector, token) {
       // been updated to properly report 'unknown' errors (rather than
       // reporting them as AUTHENTICATION_FAILED).
       if (xhr.status == 0) {
-        that.handleError(remoting.Error.NETWORK_FAILURE);
+        that.handleError(new remoting.Error(
+            remoting.Error.Tag.NETWORK_FAILURE));
       } else if (xhr.status == 401) {
-        that.handleError(remoting.Error.AUTHENTICATION_FAILED);
+        that.handleError(new remoting.Error(
+            remoting.Error.Tag.AUTHENTICATION_FAILED));
       } else if (xhr.status == 403) {
-        that.handleError(remoting.Error.APP_NOT_AUTHORIZED);
+        that.handleError(new remoting.Error(
+            remoting.Error.Tag.APP_NOT_AUTHORIZED));
       } else if (xhr.status == 502 || xhr.status == 503) {
-        that.handleError(remoting.Error.SERVICE_UNAVAILABLE);
+        that.handleError(new remoting.Error(
+            remoting.Error.Tag.SERVICE_UNAVAILABLE));
       } else {
-        that.handleError(remoting.Error.UNEXPECTED);
+        that.handleError(remoting.Error.unexpected());
       }
     }
   };
@@ -332,11 +337,11 @@ remoting.AppRemoting.prototype.handleExtensionMessage = function(
  * @return {void} Nothing.
  */
 remoting.AppRemoting.prototype.handleError = function(error) {
-  console.error('Connection failed: ' + error.tag);
+  console.error('Connection failed: ' + error.toString());
   remoting.LoadingWindow.close();
   remoting.MessageWindow.showErrorMessage(
       chrome.i18n.getMessage(/*i18n-content*/'CONNECTION_FAILED'),
-      chrome.i18n.getMessage(/** @type {string} */ (error.tag)));
+      chrome.i18n.getMessage(error.getTag()));
 };
 
 /**

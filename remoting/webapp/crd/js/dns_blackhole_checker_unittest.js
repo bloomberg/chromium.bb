@@ -125,7 +125,7 @@ test('blocked',
     fakeXhrs[0].respond(400);
     sinon.assert.calledWith(onStateChange,
                             remoting.SignalStrategy.State.FAILED);
-    equal(checker.getError().tag, remoting.Error.Tag.NOT_AUTHORIZED);
+    equal(checker.getError().getTag(), remoting.Error.Tag.NOT_AUTHORIZED);
     onStateChange.reset();
 
     [
@@ -163,7 +163,7 @@ test('blocked after connected',
     fakeXhrs[0].respond(400);
     sinon.assert.calledWith(onStateChange,
                             remoting.SignalStrategy.State.FAILED);
-    equal(checker.getError().tag, remoting.Error.Tag.NOT_AUTHORIZED);
+    ok(checker.getError().hasTag(remoting.Error.Tag.NOT_AUTHORIZED));
   }
 );
 

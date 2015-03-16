@@ -151,7 +151,9 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
       if (stanza.querySelector('features>starttls')) {
         this.state_ = remoting.XmppLoginHandler.State.WAIT_STARTTLS_RESPONSE;
       } else {
-        this.onError_(remoting.Error.UNEXPECTED, "Server doesn't support TLS.");
+        this.onError_(
+            remoting.Error.unexpected(),
+            "Server doesn't support TLS.");
       }
       break;
 
@@ -160,7 +162,7 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
         this.state_ = remoting.XmppLoginHandler.State.STARTING_TLS;
         this.startTlsCallback_();
       } else {
-        this.onError_(remoting.Error.UNEXPECTED,
+        this.onError_(remoting.Error.unexpected(),
                       "Failed to start TLS: " +
                           (new XMLSerializer().serializeToString(stanza)));
       }
@@ -172,7 +174,7 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
           /** @param {Element} m */
           function(m) { return m.textContent; });
       if (mechanisms.indexOf("X-OAUTH2")) {
-        this.onError_(remoting.Error.UNEXPECTED,
+        this.onError_(remoting.Error.unexpected(),
                       "OAuth2 is not supported by the server.");
         return;
       }
@@ -195,9 +197,10 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
               '<session xmlns="urn:ietf:params:xml:ns:xmpp-session"/>' +
             '</iq>');
       } else {
-        this.onError_(remoting.Error.AUTHENTICATION_FAILED,
-                      'Failed to authenticate: ' +
-                          (new XMLSerializer().serializeToString(stanza)));
+        this.onError_(
+            new remoting.Error(remoting.Error.Tag.AUTHENTICATION_FAILED),
+            'Failed to authenticate: ' +
+              (new XMLSerializer().serializeToString(stanza)));
       }
       break;
 
@@ -205,7 +208,7 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
       if (stanza.querySelector('features>bind')) {
         this.state_ = remoting.XmppLoginHandler.State.WAIT_BIND_RESULT;
       } else {
-        this.onError_(remoting.Error.UNEXPECTED,
+        this.onError_(remoting.Error.unexpected(),
                       "Server doesn't support bind after authentication.");
       }
       break;
@@ -214,7 +217,7 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
       var jidElement = stanza.querySelector('iq>bind>jid');
       if (stanza.getAttribute('id') != '0' ||
           stanza.getAttribute('type') != 'result' || !jidElement) {
-        this.onError_(remoting.Error.UNEXPECTED,
+        this.onError_(remoting.Error.unexpected(),
                       'Received unexpected response to bind: ' +
                           (new XMLSerializer().serializeToString(stanza)));
         return;
@@ -226,7 +229,7 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
     case remoting.XmppLoginHandler.State.WAIT_SESSION_IQ_RESULT:
       if (stanza.getAttribute('id') != '1' ||
           stanza.getAttribute('type') != 'result') {
-        this.onError_(remoting.Error.UNEXPECTED,
+        this.onError_(remoting.Error.unexpected(),
                       'Failed to start session: ' +
                           (new XMLSerializer().serializeToString(stanza)));
         return;
@@ -263,7 +266,7 @@ remoting.XmppLoginHandler.prototype.onTlsStarted = function() {
  * @private
  */
 remoting.XmppLoginHandler.prototype.onParserError_ = function(text) {
-  this.onError_(remoting.Error.UNEXPECTED, text);
+  this.onError_(remoting.Error.unexpected(), text);
 }
 
 /**

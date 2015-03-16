@@ -20,9 +20,9 @@ remoting.connectIT2Me = function() {
   var accessCode = document.getElementById('access-code-entry').value;
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
   remoting.It2MeConnectFlow.start(connector, accessCode).
-    catch(function(/** remoting.Error */ reason){
+    catch(function(/** !remoting.Error */ reason){
       var errorDiv = document.getElementById('connect-error-message');
-      l10n.localizeElementFromTag(errorDiv, reason.tag);
+      l10n.localizeElementFromTag(errorDiv, reason.getTag());
       remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
   });
 };
@@ -37,7 +37,8 @@ remoting.connectIT2Me = function() {
 remoting.connectMe2Me = function(hostId) {
   var host = remoting.hostList.getHostForId(hostId);
   if (!host) {
-    remoting.app.onError(remoting.Error.HOST_IS_OFFLINE);
+    remoting.app.onError(new remoting.Error(
+        remoting.Error.Tag.HOST_IS_OFFLINE));
     return;
   }
   var webappVersion = chrome.runtime.getManifest().version;
@@ -47,7 +48,7 @@ remoting.connectMe2Me = function(hostId) {
   needsUpdateDialog.showIfNecessary(webappVersion).then(function() {
     remoting.connectMe2MeHostVersionAcknowledged_(host);
   }).catch(function(/** remoting.Error */ error) {
-    if (error.tag === remoting.Error.Tag.CANCELLED) {
+    if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
       remoting.setMode(remoting.AppMode.HOME);
     }
   });

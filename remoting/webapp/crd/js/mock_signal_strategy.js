@@ -57,7 +57,7 @@ remoting.MockSignalStrategy.prototype.getState = function() {
 
 /** @return {!remoting.Error} */
 remoting.MockSignalStrategy.prototype.getError = function() {
-  return remoting.Error.NONE;
+  return remoting.Error.none();
 };
 
 /** @return {string} */

@@ -162,7 +162,8 @@ test('should return AUTHENTICATION_FAILED error when failed to authenticate',
   loginHandler.onDataReceived(
       base.encodeUtf8('<failure xmlns="urn:ietf:params:xml:ns:xmpp-sasl">' +
                       '<not-authorized/></failure>'));
-  sinon.assert.calledWith(onError, remoting.Error.AUTHENTICATION_FAILED);
+  sinon.assert.calledWith(onError, new remoting.Error(
+      remoting.Error.Tag.AUTHENTICATION_FAILED));
 });
 
 test('should return UNEXPECTED error when failed to parse stream',
@@ -170,7 +171,7 @@ test('should return UNEXPECTED error when failed to parse stream',
   handshakeBase();
   loginHandler.onDataReceived(
       base.encodeUtf8('BAD DATA'));
-  sinon.assert.calledWith(onError, remoting.Error.UNEXPECTED);
+  sinon.assert.calledWith(onError, remoting.Error.unexpected());
 });
 
 })();

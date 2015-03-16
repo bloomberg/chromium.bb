@@ -68,7 +68,7 @@ remoting.HostInstallDialog.prototype.show = function(onDone, onError) {
     that.continueInstallButton_.click();
     that.hostInstaller_.cancel();
   }, function(){
-    that.onErrorHandler_(remoting.Error.CANCELLED);
+    that.onErrorHandler_(new remoting.Error(remoting.Error.Tag.CANCELLED));
     that.hostInstaller_.cancel();
   });
 };
@@ -103,7 +103,7 @@ remoting.HostInstallDialog.prototype.onCancelClicked_ = function() {
   this.cancelInstallButton_.removeEventListener(
       'click', this.onCancelClickedHandler_, false);
   this.hostInstaller_.cancel();
-  this.onErrorHandler_(remoting.Error.CANCELLED);
+  this.onErrorHandler_(new remoting.Error(remoting.Error.Tag.CANCELLED));
 };
 
 remoting.HostInstallDialog.prototype.onRetryClicked_ = function() {

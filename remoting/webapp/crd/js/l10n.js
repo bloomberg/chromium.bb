@@ -28,7 +28,8 @@ l10n.getTranslationOrError = function(tag, opt_substitutions) {
  * and an optional set of substitutions.
  *
  * @param {Element} element The element to localize.
- * @param {string} tag The localization tag.
+ * @param {string} tag The localization tag or
+ *     an Error object containing the tag.
  * @param {(string|Array)=} opt_substitutions An optional set of substitution
  *     strings corresponding to the "placeholders" attributes in messages.json.
  * @param {boolean=} opt_asHtml If true, set innerHTML instead of innerText.

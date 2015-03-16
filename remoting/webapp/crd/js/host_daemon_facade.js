@@ -42,7 +42,7 @@ remoting.HostDaemonFacade = function() {
   this.initializingPromise_ = null;
 
   /** @private {!remoting.Error} */
-  this.error_ = remoting.Error.NONE;
+  this.error_ = remoting.Error.none();
 
   /** @private */
   this.onIncomingMessageCallback_ = this.onIncomingMessage_.bind(this);
@@ -206,8 +206,8 @@ remoting.HostDaemonFacade.prototype.onIncomingMessage_ = function(message) {
 
     this.handleIncomingMessage_(message, reply.onDone);
   } catch (/** @type {*} */ e) {
-    console.error('Error while processing native message' + e);
-    reply.onError(remoting.Error.UNEXPECTED);
+    console.error('Error while processing native message', e);
+    reply.onError(remoting.Error.unexpected());
   }
 }
 
@@ -324,8 +324,9 @@ remoting.HostDaemonFacade.prototype.onDisconnect_ = function() {
 
   // If initialization hasn't finished then assume that the port was
   // disconnected because Native Messaging host is not installed.
-  this.error_ = this.initializingPromise_ ? remoting.Error.MISSING_PLUGIN :
-                                            remoting.Error.UNEXPECTED;
+  this.error_ = this.initializingPromise_ ?
+      new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN) :
+      remoting.Error.unexpected();
 
   // Notify the error-handlers of any requests that are still outstanding.
   var pendingReplies = this.pendingReplies_;

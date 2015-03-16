@@ -158,9 +158,9 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
       remoting.hostList.onLocalHostStarted(hostName, newHostId, publicKey);
       onDone();
     } else if (result == remoting.HostController.AsyncResult.CANCELLED) {
-      onStartError(remoting.Error.CANCELLED);
+      onStartError(new remoting.Error(remoting.Error.Tag.CANCELLED));
     } else {
-      onStartError(remoting.Error.UNEXPECTED);
+      onStartError(remoting.Error.unexpected());
     }
   }
 
@@ -262,7 +262,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
     } else {
       console.log('Failed to register the host. Status: ' + xhr.status +
                   ' response: ' + xhr.responseText);
-      onError(remoting.Error.REGISTRATION_FAILED);
+      onError(new remoting.Error(remoting.Error.Tag.REGISTRATION_FAILED));
     }
   }
 
@@ -374,9 +374,9 @@ remoting.HostController.prototype.stop = function(onDone, onError) {
     if (result == remoting.HostController.AsyncResult.OK) {
       that.getLocalHostId(unregisterHost);
     } else if (result == remoting.HostController.AsyncResult.CANCELLED) {
-      onError(remoting.Error.CANCELLED);
+      onError(new remoting.Error(remoting.Error.Tag.CANCELLED));
     } else {
-      onError(remoting.Error.UNEXPECTED);
+      onError(remoting.Error.unexpected());
     }
   }
 
@@ -411,9 +411,9 @@ remoting.HostController.prototype.updatePin = function(newPin, onDone,
     if (result == remoting.HostController.AsyncResult.OK) {
       onDone();
     } else if (result == remoting.HostController.AsyncResult.CANCELLED) {
-      onError(remoting.Error.CANCELLED);
+      onError(new remoting.Error(remoting.Error.Tag.CANCELLED));
     } else {
-      onError(remoting.Error.UNEXPECTED);
+      onError(remoting.Error.unexpected());
     }
   }
 
@@ -429,7 +429,7 @@ remoting.HostController.prototype.updatePin = function(newPin, onDone,
   /** @param {Object} config */
   function onConfig(config) {
     if (!isHostConfigValid_(config)) {
-      onError(remoting.Error.UNEXPECTED);
+      onError(remoting.Error.unexpected());
       return;
     }
     /** @type {string} */
@@ -452,7 +452,7 @@ remoting.HostController.prototype.updatePin = function(newPin, onDone,
 remoting.HostController.prototype.getLocalHostState = function(onDone) {
   /** @param {!remoting.Error} error */
   function onError(error) {
-    onDone((error.tag == remoting.Error.Tag.MISSING_PLUGIN) ?
+    onDone((error.hasTag(remoting.Error.Tag.MISSING_PLUGIN)) ?
                remoting.HostController.State.NOT_INSTALLED :
                remoting.HostController.State.UNKNOWN);
   }

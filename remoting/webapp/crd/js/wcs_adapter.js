@@ -24,7 +24,7 @@ remoting.WcsAdapter = function() {
   /** @private */
   this.jid_ = '';
   /** @private */
-  this.error_ = remoting.Error.NONE;
+  this.error_ = remoting.Error.none();
 };
 
 /**

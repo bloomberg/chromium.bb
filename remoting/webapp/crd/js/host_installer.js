@@ -106,7 +106,7 @@ remoting.HostInstaller.prototype.download = function() {
   var hostPackageUrl = HOST_DOWNLOAD_URLS[navigator.platform];
   if (hostPackageUrl === undefined) {
     console.error("Tried to install host on " + navigator.platform);
-    throw new Error(remoting.Error.UNEXPECTED);
+    throw new Error(remoting.Error.unexpected());
   }
 
   // Start downloading the package.

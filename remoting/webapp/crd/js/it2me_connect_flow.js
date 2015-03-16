@@ -74,7 +74,8 @@ remoting.It2MeConnectFlow.prototype.connect_ = function(accessCode) {
 remoting.It2MeConnectFlow.prototype.verifyAccessCode_ = function(accessCode) {
   var normalizedAccessCode = accessCode.replace(/\s/g, '');
   if (normalizedAccessCode.length !== ACCESS_CODE_LENGTH) {
-    return Promise.reject(remoting.Error.INVALID_ACCESS_CODE);
+    return Promise.reject(new remoting.Error(
+        remoting.Error.Tag.INVALID_ACCESS_CODE));
   }
 
   this.hostId_ = normalizedAccessCode.substring(0, SUPPORT_ID_LENGTH);
@@ -124,7 +125,7 @@ remoting.It2MeConnectFlow.prototype.onHostInfo_ = function(xhr) {
       return Promise.resolve(host);
     } else {
       console.error('Invalid "support-hosts" response from server.');
-      return Promise.reject(remoting.Error.UNEXPECTED);
+      return Promise.reject(remoting.Error.unexpected());
     }
   } else {
     return Promise.reject(translateSupportHostsError(xhr.status));
@@ -138,11 +139,11 @@ remoting.It2MeConnectFlow.prototype.onHostInfo_ = function(xhr) {
  */
 function translateSupportHostsError(error) {
   switch (error) {
-    case 0: return remoting.Error.NETWORK_FAILURE;
-    case 404: return remoting.Error.INVALID_ACCESS_CODE;
+    case 0: return new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE);
+    case 404: return new remoting.Error(remoting.Error.Tag.INVALID_ACCESS_CODE);
     case 502: // No break
-    case 503: return remoting.Error.SERVICE_UNAVAILABLE;
-    default: return remoting.Error.UNEXPECTED;
+    case 503: return new remoting.Error(remoting.Error.Tag.SERVICE_UNAVAILABLE);
+    default: return remoting.Error.unexpected();
   }
 }
 

@@ -39,7 +39,7 @@ remoting.XmppConnection = function() {
   /** @private */
   this.jid_ = '';
   /** @private */
-  this.error_ = remoting.Error.NONE;
+  this.error_ = remoting.Error.none();
 };
 
 /**
@@ -74,7 +74,7 @@ remoting.XmppConnection.prototype.connect =
   base.debug.assert(this.state_ == remoting.SignalStrategy.State.NOT_CONNECTED);
   base.debug.assert(this.onStateChangedCallback_ != null);
 
-  this.error_ = remoting.Error.NONE;
+  this.error_ = remoting.Error.none();
   var hostnameAndPort = server.split(':', 2);
   this.server_ = hostnameAndPort[0];
   this.port_ =
@@ -111,7 +111,7 @@ remoting.XmppConnection.prototype.connect =
   this.socket_.connect(this.server_, this.port_)
       .then(this.onSocketConnected_.bind(this))
       .catch(function(error) {
-        that.onError_(remoting.Error.NETWORK_FAILURE,
+        that.onError_(new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE),
                       'Failed to connect to ' + that.server_ + ': ' + error);
       });
 };
@@ -192,7 +192,7 @@ remoting.XmppConnection.prototype.onReceive_ = function(data) {
  * @private
  */
 remoting.XmppConnection.prototype.onReceiveError_ = function(errorCode) {
-  this.onError_(remoting.Error.NETWORK_FAILURE,
+  this.onError_(new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE),
                 'Failed to receive from XMPP socket: ' + errorCode);
 };
 
@@ -231,7 +231,7 @@ remoting.XmppConnection.prototype.flushSendQueue_ = function() {
       })
       .catch(function(/** number */ error) {
         that.sendPending_ = false;
-        that.onError_(remoting.Error.NETWORK_FAILURE,
+        that.onError_(new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE),
                       'TCP write failed with error ' + error);
       });
 };
@@ -279,7 +279,7 @@ remoting.XmppConnection.prototype.startTls_ = function() {
       })
       .catch(function(/** number */ error) {
         that.startTlsPending_ = false;
-        that.onError_(remoting.Error.NETWORK_FAILURE,
+        that.onError_(new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE),
                       'Failed to start TLS: ' + error);
       });
 }
@@ -313,8 +313,8 @@ remoting.XmppConnection.prototype.onIncomingStanza_ = function(stanza) {
  * @private
  */
 remoting.XmppConnection.prototype.onParserError_ = function(text) {
-  this.onError_(remoting.Error.UNEXPECTED, text);
-}
+  this.onError_(remoting.Error.unexpected(), text);
+};
 
 /**
  * @param {!remoting.Error} error

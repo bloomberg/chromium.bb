@@ -91,7 +91,7 @@ remoting.ServerLogEntry.KEY_CONNECTION_ERROR_ = 'connection-error';
 remoting.ServerLogEntry.getValueForError_ = function(connectionError) {
   // Directory service should be updated if a new string is added here as
   // otherwise the error code will be ignored (i.e. recorded as 0 instead).
-  switch (connectionError.tag) {
+  switch (connectionError.getTag()) {
     case remoting.Error.Tag.NONE:
       return 'none';
     case remoting.Error.Tag.INVALID_ACCESS_CODE:
@@ -115,10 +115,9 @@ remoting.ServerLogEntry.getValueForError_ = function(connectionError) {
     case remoting.Error.Tag.UNEXPECTED:
       return 'unexpected';
     default:
-      return 'unknown-' + connectionError;
+      return 'unknown-' + connectionError.getTag();
   }
 };
-
 
 /** @private */
 remoting.ServerLogEntry.VALUE_EVENT_NAME_CONNECTION_STATISTICS_ =
@@ -231,7 +230,7 @@ remoting.ServerLogEntry.makeClientSessionStateChange = function(state,
              remoting.ServerLogEntry.VALUE_EVENT_NAME_SESSION_STATE_);
   entry.set_(remoting.ServerLogEntry.KEY_SESSION_STATE_,
              remoting.ServerLogEntry.getValueForSessionState_(state));
-  if (connectionError.tag != remoting.Error.NONE) {
+  if (!connectionError.isNone()) {
     entry.set_(remoting.ServerLogEntry.KEY_CONNECTION_ERROR_,
                remoting.ServerLogEntry.getValueForError_(connectionError));
   }

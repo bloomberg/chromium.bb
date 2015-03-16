@@ -208,12 +208,12 @@ remoting.xhr.defaultResponse = function(onDone, onError, opt_ignoreErrors) {
   var result = function(xhr) {
     var error =
         remoting.Error.fromHttpStatus(/** @type {number} */ (xhr.status));
-    if (!error.isError()) {
+    if (error.isNone()) {
       onDone();
       return;
     }
 
-    if (opt_ignoreErrors && opt_ignoreErrors.indexOf(error.tag) !== -1) {
+    if (opt_ignoreErrors && error.hasTag.apply(error, opt_ignoreErrors)) {
       onDone();
       return;
     }

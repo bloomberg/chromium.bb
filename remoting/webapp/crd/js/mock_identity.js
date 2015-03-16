@@ -79,7 +79,8 @@ remoting.MockIdentity.validateTokenAndCall =
         0);
   } else {
     window.setTimeout(
-        onError.bind(null, remoting.Error.AUTHENTICATION_FAILED),
+        onError.bind(null, new remoting.Error(
+            remoting.Error.Tag.AUTHENTICATION_FAILED)),
         0);
   }
 };

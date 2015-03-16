@@ -139,7 +139,7 @@ remoting.updateLocalHostState = function() {
      * @param {!remoting.Error} error
      */
     var onError = function(error) {
-      console.error('Failed to get pairing status: ' + error);
+      console.error('Failed to get pairing status: ' + error.toString());
       remoting.pairedClientManager.setPairedClients([]);
     };
 

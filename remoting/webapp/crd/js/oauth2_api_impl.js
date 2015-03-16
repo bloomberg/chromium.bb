@@ -48,13 +48,13 @@ remoting.OAuth2ApiImpl.prototype.interpretXhrStatus_ =
   // Return AUTHENTICATION_FAILED by default, so that the user can try to
   // recover from an unexpected failure by signing in again.
   /** @type {!remoting.Error} */
-  var error = remoting.Error.AUTHENTICATION_FAILED;
+  var error = new remoting.Error(remoting.Error.Tag.AUTHENTICATION_FAILED);
   if (xhrStatus == 400 || xhrStatus == 401 || xhrStatus == 403) {
-    error = remoting.Error.AUTHENTICATION_FAILED;
+    error = new remoting.Error(remoting.Error.Tag.AUTHENTICATION_FAILED);
   } else if (xhrStatus == 502 || xhrStatus == 503) {
-    error = remoting.Error.SERVICE_UNAVAILABLE;
+    error = new remoting.Error(remoting.Error.Tag.SERVICE_UNAVAILABLE);
   } else if (xhrStatus == 0) {
-    error = remoting.Error.NETWORK_FAILURE;
+    error = new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE);
   } else {
     console.warn('Unexpected authentication response code: ' + xhrStatus);
   }
@@ -86,7 +86,7 @@ remoting.OAuth2ApiImpl.prototype.refreshAccessToken = function(
         onDone(tokens['access_token'], tokens['expires_in']);
       } catch (/** @type {Error} */ err) {
         console.error('Invalid "token" response from server:', err);
-        onError(remoting.Error.UNEXPECTED);
+        onError(remoting.Error.unexpected());
       }
     } else {
       console.error('Failed to refresh token. Status: ' + xhr.status +
@@ -136,7 +136,7 @@ remoting.OAuth2ApiImpl.prototype.exchangeCodeForTokens = function(
                tokens['access_token'], tokens['expires_in']);
       } catch (/** @type {Error} */ err) {
         console.error('Invalid "token" response from server:', err);
-        onError(remoting.Error.UNEXPECTED);
+        onError(remoting.Error.unexpected());
       }
     } else {
       console.error('Failed to exchange code for token. Status: ' + xhr.status +
@@ -178,7 +178,7 @@ remoting.OAuth2ApiImpl.prototype.getEmail = function(onDone, onError, token) {
         onDone(result['email']);
       } catch (/** @type {Error} */ err) {
         console.error('Invalid "userinfo" response from server:', err);
-        onError(remoting.Error.UNEXPECTED);
+        onError(remoting.Error.unexpected());
       }
     } else {
       console.error('Failed to get email. Status: ' + xhr.status +
@@ -214,7 +214,7 @@ remoting.OAuth2ApiImpl.prototype.getUserInfo =
         onDone(result['email'], result['name']);
       } catch (/** @type {Error} */ err) {
         console.error('Invalid "userinfo" response from server:', err);
-        onError(remoting.Error.UNEXPECTED);
+        onError(remoting.Error.unexpected());
       }
     } else {
       console.error('Failed to get user info. Status: ' + xhr.status +
@@ -233,10 +233,10 @@ remoting.OAuth2ApiImpl.prototype.getUserInfo =
 /** @returns {!remoting.Error} */
 function fromHttpStatus(/** number */ status) {
   var error = remoting.Error.fromHttpStatus(status);
-  if (error === remoting.Error.UNEXPECTED) {
+  if (error === remoting.Error.unexpected()) {
     // Return AUTHENTICATION_FAILED by default, so that the user can try to
     // recover from an unexpected failure by signing in again.
-    return remoting.Error.AUTHENTICATION_FAILED;
+    return new remoting.Error(remoting.Error.Tag.AUTHENTICATION_FAILED);
   }
   return error;
 }

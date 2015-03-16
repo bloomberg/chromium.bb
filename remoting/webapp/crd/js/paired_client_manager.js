@@ -231,7 +231,7 @@ remoting.PairedClientManager.prototype.setWorking_ = function(working) {
  */
 remoting.PairedClientManager.prototype.onError_ = function(error) {
   this.setWorking_(false);
-  l10n.localizeElementFromTag(this.errorDiv_, error.tag);
+  l10n.localizeElementFromTag(this.errorDiv_, error.getTag());
   this.errorDiv_.hidden = false;
 };
 

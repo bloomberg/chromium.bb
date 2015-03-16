@@ -74,7 +74,7 @@ remoting.HostNeedsUpdateDialog.prototype.onOK_ = function() {
 
 /** @private */
 remoting.HostNeedsUpdateDialog.prototype.onCancel_ = function() {
-  this.deferred_.reject(remoting.Error.CANCELLED);
+  this.deferred_.reject(new remoting.Error(remoting.Error.Tag.CANCELLED));
   this.cleanup_();
 };
 
@@ -163,7 +163,7 @@ remoting.PinDialog.prototype.onConnect_ = function() {
 
 /** @private */
 remoting.PinDialog.prototype.onCancel_ = function() {
-  this.deferred_.reject(remoting.Error.CANCELLED);
+  this.deferred_.reject(new remoting.Error(remoting.Error.Tag.CANCELLED));
   remoting.setMode(remoting.AppMode.HOME);
 };
 

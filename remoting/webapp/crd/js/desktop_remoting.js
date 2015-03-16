@@ -277,7 +277,7 @@ remoting.DesktopRemoting.prototype.handleConnectionFailed = function(
     that.handleError(error);
   };
 
-  if (error.tag == remoting.Error.Tag.HOST_IS_OFFLINE &&
+  if (error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
       that.refreshHostJidIfOffline_) {
     that.refreshHostJidIfOffline_ = false;
     // The plugin will be re-created when the host finished refreshing
@@ -313,10 +313,10 @@ remoting.DesktopRemoting.prototype.handleExtensionMessage = function(
  * @return {void} Nothing.
  */
 remoting.DesktopRemoting.prototype.handleError = function(error) {
-  console.error('Connection failed:' + error.tag);
+  console.error('Connection failed: ' + error.toString());
   remoting.accessCode = '';
 
-  if (error.tag === remoting.Error.Tag.AUTHENTICATION_FAILED) {
+  if (error.hasTag(remoting.Error.Tag.AUTHENTICATION_FAILED)) {
     remoting.setMode(remoting.AppMode.HOME);
     remoting.handleAuthFailureAndRelaunch();
     return;
@@ -326,7 +326,7 @@ remoting.DesktopRemoting.prototype.handleError = function(error) {
   this.refreshHostJidIfOffline_ = true;
 
   var errorDiv = document.getElementById('connect-error-message');
-  l10n.localizeElementFromTag(errorDiv, error.tag);
+  l10n.localizeElementFromTag(errorDiv, error.getTag());
 
   var mode = remoting.clientSession ? remoting.desktopConnectedView.getMode()
       : this.app_.getSessionConnector().getConnectionMode();

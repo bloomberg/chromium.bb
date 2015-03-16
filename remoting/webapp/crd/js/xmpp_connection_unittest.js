@@ -70,7 +70,7 @@ QUnit.asyncTest('should go to FAILED state when failed to connect', function() {
 
   function onFailed() {
     sinon.assert.calledWith(socket.dispose);
-    QUnit.equal(connection.getError(), remoting.Error.NETWORK_FAILURE);
+    QUnit.ok(connection.getError().hasTag(remoting.Error.Tag.NETWORK_FAILURE));
 
     QUnit.start();
   }

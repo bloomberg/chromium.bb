@@ -48,7 +48,7 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton,
   /** @private {Array<remoting.Host>} */
   this.hosts_ = [];
   /** @private {!remoting.Error} */
-  this.lastError_ = remoting.Error.NONE;
+  this.lastError_ = remoting.Error.none();
   /** @private {remoting.LocalHostSection} */
   this.localHostSection_ = new remoting.LocalHostSection(
       /** @type {HTMLElement} */ (document.querySelector('.daemon-control')),
@@ -157,7 +157,7 @@ remoting.HostList.prototype.refresh = function(onDone) {
  * @private
  */
 remoting.HostList.prototype.onHostListResponse_ = function(onDone, hosts) {
-  this.lastError_ = remoting.Error.NONE;
+  this.lastError_ = remoting.Error.none();
   this.hosts_ = hosts;
   this.sortHosts_();
   this.save_();
@@ -211,9 +211,9 @@ remoting.HostList.prototype.display = function() {
   this.table_.hidden = noHostsRegistered;
   this.noHosts_.hidden = !noHostsRegistered;
 
-  if (this.lastError_.isError()) {
-    l10n.localizeElementFromTag(this.errorMsg_, this.lastError_.tag);
-    if (this.lastError_.tag == remoting.Error.Tag.AUTHENTICATION_FAILED) {
+  if (!this.lastError_.isNone()) {
+    l10n.localizeElementFromTag(this.errorMsg_, this.lastError_.getTag());
+    if (this.lastError_.hasTag(remoting.Error.Tag.AUTHENTICATION_FAILED)) {
       l10n.localizeElementFromTag(this.errorButton_,
                                   /*i18n-content*/'SIGN_IN_BUTTON');
     } else {
@@ -241,7 +241,7 @@ remoting.HostList.prototype.display = function() {
     }
   }
 
-  this.errorMsg_.parentNode.hidden = !this.lastError_.isError();
+  this.errorMsg_.parentNode.hidden = this.lastError_.isNone();
   if (noHostsRegistered) {
     this.showHostListEmptyMessage_(this.localHostSection_.canChangeState());
   }
@@ -355,7 +355,7 @@ remoting.HostList.prototype.unregisterHostById = function(hostId, opt_onDone) {
  */
 remoting.HostList.prototype.setLocalHostStateAndId = function(state, hostId) {
   var host = hostId ? this.getHostForId(hostId) : null;
-  this.localHostSection_.setModel(host, state, this.lastError_.isError());
+  this.localHostSection_.setModel(host, state, !this.lastError_.isNone());
 };
 
 /**
@@ -386,7 +386,7 @@ remoting.HostList.prototype.onLocalHostStarted = function(
   this.save_();
   this.localHostSection_.setModel(localHost,
                                   remoting.HostController.State.STARTED,
-                                  this.lastError_.isError());
+                                  !this.lastError_.isNone());
 };
 
 /**
@@ -396,7 +396,7 @@ remoting.HostList.prototype.onLocalHostStarted = function(
  * @private
  */
 remoting.HostList.prototype.onErrorClick_ = function() {
-  if (this.lastError_.tag == remoting.Error.Tag.AUTHENTICATION_FAILED) {
+  if (this.lastError_.hasTag(remoting.Error.Tag.AUTHENTICATION_FAILED)) {
     remoting.handleAuthFailureAndRelaunch();
   } else {
     this.refresh(remoting.updateLocalHostState);

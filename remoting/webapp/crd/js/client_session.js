@@ -51,7 +51,7 @@ remoting.ClientSession = function(plugin, host, signalStrategy, mode,
   this.state_ = remoting.ClientSession.State.CREATED;
 
   /** @private {!remoting.Error} */
-  this.error_ = remoting.Error.NONE;
+  this.error_ = remoting.Error.none();
 
   /** @private */
   this.host_ = host;
@@ -253,13 +253,13 @@ remoting.ClientSession.prototype.removePlugin = function() {
  * dispose() to remove and destroy the <embed> element.
  *
  * @param {!remoting.Error} error The reason for the disconnection.  Use
- *    remoting.Error.NONE if there is no error.
+ *    remoting.Error.none() if there is no error.
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.disconnect = function(error) {
-  var state = error.isError() ?
-                  remoting.ClientSession.State.FAILED :
-                  remoting.ClientSession.State.CLOSED;
+  var state = error.isNone() ?
+                  remoting.ClientSession.State.CLOSED :
+                  remoting.ClientSession.State.FAILED;
 
   // The plugin won't send a state change notification, so we explicitly log
   // the fact that the connection has closed.
@@ -392,22 +392,27 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate =
   } else if (status == remoting.ClientSession.State.FAILED) {
     switch (error) {
       case remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE:
-        this.error_ = remoting.Error.HOST_IS_OFFLINE;
+        this.error_ = new remoting.Error(
+            remoting.Error.Tag.HOST_IS_OFFLINE);
         break;
       case remoting.ClientSession.ConnectionError.SESSION_REJECTED:
-        this.error_ = remoting.Error.INVALID_ACCESS_CODE;
+        this.error_ = new remoting.Error(
+            remoting.Error.Tag.INVALID_ACCESS_CODE);
         break;
       case remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL:
-        this.error_ = remoting.Error.INCOMPATIBLE_PROTOCOL;
+        this.error_ = new remoting.Error(
+            remoting.Error.Tag.INCOMPATIBLE_PROTOCOL);
         break;
       case remoting.ClientSession.ConnectionError.NETWORK_FAILURE:
-        this.error_ = remoting.Error.P2P_FAILURE;
+        this.error_ = new remoting.Error(
+            remoting.Error.Tag.P2P_FAILURE);
         break;
       case remoting.ClientSession.ConnectionError.HOST_OVERLOAD:
-        this.error_ = remoting.Error.HOST_OVERLOAD;
+        this.error_ = new remoting.Error(
+            remoting.Error.Tag.HOST_OVERLOAD);
         break;
       default:
-        this.error_ = remoting.Error.UNEXPECTED;
+        this.error_ = remoting.Error.unexpected();
     }
   }
   this.setState_(status);
@@ -497,7 +502,7 @@ remoting.ClientSession.prototype.setState_ = function(newState) {
     if (this.state_ == remoting.ClientSession.State.CLOSED) {
       state = remoting.ClientSession.State.CONNECTION_CANCELED;
     } else if (this.state_ == remoting.ClientSession.State.FAILED &&
-        this.error_.tag == remoting.Error.Tag.HOST_IS_OFFLINE &&
+        this.error_.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
         !this.logHostOfflineErrors_) {
       // The application requested host-offline errors to be suppressed, for
       // example, because this connection attempt is using a cached host JID.
@@ -599,7 +604,7 @@ remoting.ClientSession.prototype.sendGoogleDriveAccessToken_ = function() {
   };
   /** @param {!remoting.Error} error */
   var sendError = function(error) {
-    console.log('Failed to refresh access token: ' + error);
+    console.log('Failed to refresh access token: ' + error.toString());
   };
   remoting.identity.getNewToken().
       then(sendToken).

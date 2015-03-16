@@ -180,8 +180,8 @@ remoting.timestamp = function() {
 remoting.showErrorMessage = function(error) {
   l10n.localizeElementFromTag(
       document.getElementById('token-refresh-error-message'),
-      error.tag);
-  var auth_failed = (error.tag == remoting.Error.Tag.AUTHENTICATION_FAILED);
+      error.getTag());
+  var auth_failed = (error.hasTag(remoting.Error.Tag.AUTHENTICATION_FAILED));
   if (auth_failed && base.isAppsV2()) {
     remoting.handleAuthFailureAndRelaunch();
   } else {

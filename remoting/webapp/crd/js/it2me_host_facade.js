@@ -132,7 +132,7 @@ remoting.It2MeHostFacade.prototype.connect =
   if (!this.port_) {
     console.error(
         'remoting.It2MeHostFacade.connect() without initialization.');
-    onError(remoting.Error.UNEXPECTED);
+    onError(remoting.Error.unexpected());
     return;
   }
 
@@ -268,7 +268,7 @@ remoting.It2MeHostFacade.prototype.onIncomingMessage_ =
     case 'error':
       console.error(getStringAttr(message, 'description'));
       if (this.onError_) {
-        this.onError_(remoting.Error.UNEXPECTED);
+        this.onError_(remoting.Error.unexpected());
       }
       break;
 
@@ -316,7 +316,7 @@ remoting.It2MeHostFacade.prototype.onHostDisconnect_ = function() {
   } else {
     console.error('Native Messaging port disconnected.');
     this.port_ = null;
-    this.onError_(remoting.Error.UNEXPECTED);
+    this.onError_(remoting.Error.unexpected());
   }
 };
 

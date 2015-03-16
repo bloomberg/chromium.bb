@@ -344,13 +344,14 @@ remoting.SessionConnectorImpl.prototype.onPluginInitialized_ = function(
     initialized) {
   if (!initialized) {
     console.error('ERROR: remoting plugin not loaded');
-    this.pluginError_(remoting.Error.MISSING_PLUGIN);
+    this.pluginError_(new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN));
     return;
   }
 
   if (!this.plugin_.isSupportedVersion()) {
     console.error('ERROR: bad plugin version');
-    this.pluginError_(remoting.Error.BAD_PLUGIN_VERSION);
+    this.pluginError_(new remoting.Error(
+        remoting.Error.Tag.BAD_PLUGIN_VERSION));
     return;
   }
 
@@ -506,14 +507,15 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
       // accepting it. Since there's no way of knowing exactly what went wrong,
       // we rely on server-side logs in this case and report a generic error
       // message.
-      this.onError_(remoting.Error.UNEXPECTED);
+      this.onError_(remoting.Error.unexpected());
       break;
 
     case remoting.ClientSession.State.FAILED:
       var error = this.clientSession_.getError();
-      console.error('Client plugin reported connection failed: ' + error);
+      console.error('Client plugin reported connection failed: ' +
+                    error.toString());
       if (error == null) {
-        error = remoting.Error.UNEXPECTED;
+        error = remoting.Error.unexpected();
       }
       this.onConnectionFailed_(error);
       break;
@@ -522,7 +524,7 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
       console.error('Unexpected client plugin state: ' + event.current);
       // This should only happen if the web-app and client plugin get out of
       // sync, and even then the version check should ensure compatibility.
-      this.onError_(remoting.Error.MISSING_PLUGIN);
+      this.onError_(new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN));
   }
 };
 

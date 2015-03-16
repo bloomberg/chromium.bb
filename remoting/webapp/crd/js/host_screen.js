@@ -59,7 +59,7 @@ remoting.tryShare = function() {
 
   /** @param {!remoting.Error} error */
   var onInstallError = function(error) {
-    if (error.tag == remoting.Error.Tag.CANCELLED) {
+    if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
       remoting.setMode(remoting.AppMode.HOME);
     } else {
       showShareError_(error);
@@ -169,10 +169,10 @@ function onHostStateChanged_(state) {
     cleanUp();
   } else if (state == remoting.HostSession.State.ERROR) {
     console.error('Host state: ERROR');
-    showShareError_(remoting.Error.UNEXPECTED);
+    showShareError_(remoting.Error.unexpected());
   } else if (state == remoting.HostSession.State.INVALID_DOMAIN_ERROR) {
     console.error('Host state: INVALID_DOMAIN_ERROR');
-    showShareError_(remoting.Error.INVALID_HOST_DOMAIN);
+    showShareError_(new remoting.Error(remoting.Error.Tag.INVALID_HOST_DOMAIN));
   } else {
     console.error('Unknown state -> ' + state);
   }
@@ -195,8 +195,8 @@ function logDebugInfo_(msg) {
  */
 function showShareError_(error) {
   var errorDiv = document.getElementById('host-plugin-error');
-  l10n.localizeElementFromTag(errorDiv, error.tag);
-  console.error('Sharing error:', error.tag);
+  l10n.localizeElementFromTag(errorDiv, error.getTag());
+  console.error('Sharing error: ' + error.toString());
   remoting.setMode(remoting.AppMode.HOST_SHARE_FAILED);
   cleanUp();
 }
@@ -211,7 +211,7 @@ function it2meConnectFailed_() {
   // We probably want to add a new error code (with the corresponding error
   // message for sharing error.
   console.error('Cannot share desktop.');
-  showShareError_(remoting.Error.UNEXPECTED);
+  showShareError_(remoting.Error.unexpected());
 }
 
 function cleanUp() {
@@ -237,7 +237,7 @@ remoting.cancelShare = function() {
     // the host plugin, like we do for the client, which should handle crash
     // reporting and it should use a more detailed error message than the
     // default 'generic' one. See crbug.com/94624
-    showShareError_(remoting.Error.UNEXPECTED);
+    showShareError_(remoting.Error.unexpected());
   }
   disableTimeoutCountdown_();
 };

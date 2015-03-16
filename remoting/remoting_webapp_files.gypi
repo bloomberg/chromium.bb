@@ -71,6 +71,7 @@
       'webapp/crd/js/apps_v2_migration_unittest.js',
       'webapp/crd/js/desktop_viewport_unittest.js',
       'webapp/crd/js/dns_blackhole_checker_unittest.js',
+      'webapp/crd/js/error_unittest.js',
       'webapp/crd/js/fallback_signal_strategy_unittest.js',
       'webapp/crd/js/host_table_entry_unittest.js',
       'webapp/crd/js/l10n_unittest.js',

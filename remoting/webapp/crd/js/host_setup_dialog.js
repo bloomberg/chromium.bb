@@ -69,13 +69,13 @@ remoting.HostSetupFlow.prototype.switchToNextStep = function() {
  * @param {!remoting.Error} error
  */
 remoting.HostSetupFlow.prototype.switchToErrorState = function(error) {
-  if (error.tag == remoting.Error.Tag.CANCELLED) {
+  if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
     // Stop the setup flow if user rejected one of the actions.
     this.state_ = remoting.HostSetupFlow.State.NONE;
   } else {
     // Current step failed, so switch to corresponding error state.
     if (this.state_ == remoting.HostSetupFlow.State.STARTING_HOST) {
-      if (error.tag == remoting.Error.Tag.REGISTRATION_FAILED) {
+      if (error.hasTag(remoting.Error.Tag.REGISTRATION_FAILED)) {
         this.state_ = remoting.HostSetupFlow.State.REGISTRATION_FAILED;
       } else {
         this.state_ = remoting.HostSetupFlow.State.START_HOST_FAILED;
@@ -209,7 +209,7 @@ remoting.HostSetupDialog.prototype.showForStartWithToken_ =
 
   /** @param {!remoting.Error} error */
   function onError(error) {
-    console.error('Error getting consent status: ' + error);
+    console.error('Error getting consent status: ' + error.toString());
   }
 
   this.usageStats_.hidden = true;

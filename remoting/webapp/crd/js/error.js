@@ -14,22 +14,71 @@ var remoting = remoting || {};
  *
  * @constructor
  * @param {remoting.Error.Tag} tag
- * @param {string=} opt_message
+ * @param {string=} opt_detail
  */
-remoting.Error = function(tag, opt_message) {
-  /** @const {remoting.Error.Tag} */
-  this.tag = tag;
+remoting.Error = function(tag, opt_detail) {
+  /** @private @const {remoting.Error.Tag} */
+  this.tag_ = tag;
 
   /** @const {?string} */
-  this.message = opt_message || null;
+  this.detail_ = opt_detail || null;
 };
 
 /**
- * @return {boolean} True if this object represents an error
- *     condition.
+ * @override
  */
-remoting.Error.prototype.isError = function() {
-  return this.tag != remoting.Error.Tag.NONE;
+remoting.Error.prototype.toString = function() {
+  var result = this.tag_;
+  if (this.detail_ != null) {
+    result += ' (' + this.detail_ + ')';
+  }
+  return result;
+};
+
+/**
+ * @return {remoting.Error.Tag} The tag used to create this Error.
+ */
+remoting.Error.prototype.getTag = function() {
+  return this.tag_;
+};
+
+/**
+ * Checks the type of an error.
+ * @param {remoting.Error.Tag} tag
+ * @param {...remoting.Error.Tag} var_args
+ * @return {boolean} True if this object has one of the specified tags.
+ */
+remoting.Error.prototype.hasTag = function(tag, var_args) {
+  var thisTag = this.tag_;
+  return Array.prototype.some.call(
+      arguments,
+      function(/** remoting.Error.Tag */ tag) {
+        return thisTag == tag;
+      });
+};
+
+/**
+ * @return {boolean} True if this object's tag is NONE, meaning this
+ *     object represents the lack of an error.
+ */
+remoting.Error.prototype.isNone = function() {
+  return this.hasTag(remoting.Error.Tag.NONE);
+};
+
+/**
+ * Convenience method for creating the second most common error type.
+ * @return {!remoting.Error}
+ */
+remoting.Error.none = function() {
+  return new remoting.Error(remoting.Error.Tag.NONE);
+};
+
+/**
+ * Convenience method for creating the most common error type.
+ * @return {!remoting.Error}
+ */
+remoting.Error.unexpected = function() {
+  return new remoting.Error(remoting.Error.Tag.UNEXPECTED);
 };
 
 /**
@@ -70,81 +119,6 @@ remoting.Error.Tag = {
 // Please don't add any more constants here; just call the
 // remoting.Error constructor directly
 
-/** @const */
-remoting.Error.NONE = new remoting.Error(remoting.Error.Tag.NONE);
-
-/** @const */
-remoting.Error.CANCELLED =
-  new remoting.Error(remoting.Error.Tag.CANCELLED);
-
-/** @const */
-remoting.Error.INVALID_ACCESS_CODE =
-  new remoting.Error(remoting.Error.Tag.INVALID_ACCESS_CODE);
-
-/** @const */
-remoting.Error.MISSING_PLUGIN =
-  new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN);
-
-/** @const */
-remoting.Error.AUTHENTICATION_FAILED =
-  new remoting.Error(remoting.Error.Tag.AUTHENTICATION_FAILED);
-
-/** @const */
-remoting.Error.HOST_IS_OFFLINE =
-  new remoting.Error(remoting.Error.Tag.HOST_IS_OFFLINE);
-
-/** @const */
-remoting.Error.INCOMPATIBLE_PROTOCOL =
-  new remoting.Error(remoting.Error.Tag.INCOMPATIBLE_PROTOCOL);
-
-/** @const */
-remoting.Error.BAD_PLUGIN_VERSION =
-  new remoting.Error(remoting.Error.Tag.BAD_PLUGIN_VERSION);
-
-/** @const */
-remoting.Error.NETWORK_FAILURE =
-  new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE);
-
-/** @const */
-remoting.Error.HOST_OVERLOAD =
-  new remoting.Error(remoting.Error.Tag.HOST_OVERLOAD);
-
-/** @const */
-remoting.Error.UNEXPECTED =
-  new remoting.Error(remoting.Error.Tag.UNEXPECTED);
-
-/** @const */
-remoting.Error.SERVICE_UNAVAILABLE =
-  new remoting.Error(remoting.Error.Tag.SERVICE_UNAVAILABLE);
-
-/** @const */
-remoting.Error.NOT_AUTHENTICATED =
-  new remoting.Error(remoting.Error.Tag.NOT_AUTHENTICATED);
-
-/** @const */
-remoting.Error.NOT_FOUND =
-  new remoting.Error(remoting.Error.Tag.NOT_FOUND);
-
-/** @const */
-remoting.Error.INVALID_HOST_DOMAIN =
-  new remoting.Error(remoting.Error.Tag.INVALID_HOST_DOMAIN);
-
-/** @const */
-remoting.Error.P2P_FAILURE =
-  new remoting.Error(remoting.Error.Tag.P2P_FAILURE);
-
-/** @const */
-remoting.Error.REGISTRATION_FAILED =
-  new remoting.Error(remoting.Error.Tag.REGISTRATION_FAILED);
-
-/** @const */
-remoting.Error.NOT_AUTHORIZED =
-  new remoting.Error(remoting.Error.Tag.NOT_AUTHORIZED);
-
-/** @const */
-remoting.Error.APP_NOT_AUTHORIZED =
-  new remoting.Error(remoting.Error.Tag.APP_NOT_AUTHORIZED);
-
 /**
  * @param {number} httpStatus An HTTP status code.
  * @return {!remoting.Error} The remoting.Error enum corresponding to the
@@ -152,20 +126,20 @@ remoting.Error.APP_NOT_AUTHORIZED =
  */
 remoting.Error.fromHttpStatus = function(httpStatus) {
   if (httpStatus == 0) {
-    return remoting.Error.NETWORK_FAILURE;
+    return new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE);
   } else if (httpStatus >= 200 && httpStatus < 300) {
-    return remoting.Error.NONE;
+    return remoting.Error.none();
   } else if (httpStatus == 400 || httpStatus == 401) {
-    return remoting.Error.AUTHENTICATION_FAILED;
+    return new remoting.Error(remoting.Error.Tag.AUTHENTICATION_FAILED);
   } else if (httpStatus == 403) {
-    return remoting.Error.NOT_AUTHORIZED;
+    return new remoting.Error(remoting.Error.Tag.NOT_AUTHORIZED);
   } else if (httpStatus == 404) {
-    return remoting.Error.NOT_FOUND;
+    return new remoting.Error(remoting.Error.Tag.NOT_FOUND);
   } else if (httpStatus >= 500 && httpStatus < 600) {
-    return remoting.Error.SERVICE_UNAVAILABLE;
+    return new remoting.Error(remoting.Error.Tag.SERVICE_UNAVAILABLE);
   } else {
     console.warn('Unexpected HTTP error code: ' + httpStatus);
-    return remoting.Error.UNEXPECTED;
+    return remoting.Error.unexpected();
   }
 };
 
@@ -181,8 +155,8 @@ remoting.Error.handler = function(onError) {
     if (error instanceof remoting.Error) {
       onError(/** @type {!remoting.Error} */ (error));
     } else {
-      console.error('Unexpected error: %o', error);
-      onError(remoting.Error.UNEXPECTED);
+      console.error('Unexpected error:', error);
+      onError(remoting.Error.unexpected());
     }
   };
 };

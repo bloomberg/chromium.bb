@@ -112,7 +112,7 @@ remoting.HostListApiImpl.prototype.parseHostListResponse_ =
         (base.jsonParseSafe(xhr.responseText));
     if (!response || !response.data) {
       console.error('Invalid "hosts" response from server.');
-      onError(remoting.Error.UNEXPECTED);
+      onError(remoting.Error.unexpected());
     } else {
       var items = response.data.items || [];
       var hosts = items.map(

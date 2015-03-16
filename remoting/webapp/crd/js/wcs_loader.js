@@ -53,7 +53,7 @@ remoting.WcsLoader.prototype.start = function(token, onReady, onError) {
   var node = document.getElementById(this.SCRIPT_NODE_ID_);
   if (node) {
     console.error('Multiple calls to WcsLoader.start are not allowed.');
-    onError(remoting.Error.UNEXPECTED);
+    onError(remoting.Error.unexpected());
     return;
   }
 
@@ -83,10 +83,11 @@ remoting.WcsLoader.prototype.start = function(token, onReady, onError) {
       // there's something wrong with the talkgadget service, or there is a
       // cookie problem. Only the cookie problem can be fixed by the user, so
       // suggest that fix.
-      onValidateError(remoting.Error.AUTHENTICATION_FAILED);
-    }
+      onValidateError(new remoting.Error(
+          remoting.Error.Tag.AUTHENTICATION_FAILED));
+    };
     that.validateToken(token, onValidateOk, onValidateError);
-  }
+  };
   node.addEventListener('load', onLoad, false);
   node.addEventListener('error', onLoadError, false);
 };
@@ -124,14 +125,14 @@ remoting.WcsLoader.prototype.validateToken = function(token, onOk, onError) {
     if (xhr.status == 200) {
       onOk();
     } else {
-      var error = remoting.Error.AUTHENTICATION_FAILED;
+      var error = new remoting.Error(remoting.Error.Tag.AUTHENTICATION_FAILED);
       switch (xhr.status) {
         case 0:
-          error = remoting.Error.NETWORK_FAILURE;
+          error = new remoting.Error(remoting.Error.Tag.NETWORK_FAILURE);
           break;
         case 502: // No break
         case 503:
-          error = remoting.Error.SERVICE_UNAVAILABLE;
+          error = new remoting.Error(remoting.Error.Tag.SERVICE_UNAVAILABLE);
           break;
       }
       onError(error);

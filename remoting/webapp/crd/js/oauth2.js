@@ -323,7 +323,7 @@ remoting.OAuth2.prototype.doAuthRedirect = function(onDone) {
 remoting.OAuth2.prototype.exchangeCodeForToken = function(code, onDone) {
   /** @param {!remoting.Error} error */
   var onError = function(error) {
-    console.error('Unable to exchange code for token: ', error);
+    console.error('Unable to exchange code for token: ' + error.toString());
   };
 
   remoting.oauth2Api.exchangeCodeForTokens(
@@ -375,7 +375,7 @@ remoting.OAuth2.prototype.getToken = function() {
         resolve(that.getAccessTokenInternal_()['token']);
       }
     } else {
-      reject(remoting.Error.NOT_AUTHENTICATED);
+      reject(new remoting.Error(remoting.Error.Tag.NOT_AUTHENTICATED));
     }
   });
 };
