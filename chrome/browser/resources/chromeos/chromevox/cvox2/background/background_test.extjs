@@ -12,7 +12,9 @@ GEN_INCLUDE(['../../testing/mock_tts.js']);
  * @constructor
  * @extends {ChromeVoxNextE2ETest}
  */
-function BackgroundTest() {}
+function BackgroundTest() {
+  ChromeVoxNextE2ETest.call(this);
+}
 
 BackgroundTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
@@ -83,16 +85,16 @@ TEST_F('BackgroundTest', 'DesktopFocus', function() {
     return null;
   }
 
-  chrome.automation.getDesktop(function(root) {
+  chrome.automation.getDesktop(this.newCallback(function(root) {
     var testButton = findStatusTray(root);
-    cvox.ChromeVox.tts.expectSpeech('Status tray', testDone);
+    cvox.ChromeVox.tts.expectSpeech('Status tray', this.newCallback());
     testButton.focus();
-  });
+  }));
 });
 
 /** Tests feedback once a page loads. */
 TEST_F('BackgroundTest', 'MANUAL_InitialFeedback', function() {
-  cvox.ChromeVox.tts.expectSpeech('start', testDone);
+  cvox.ChromeVox.tts.expectSpeech('start', this.newCallback());
 
   this.runWithTab(function() {/*!
     <p>start
@@ -103,74 +105,73 @@ TEST_F('BackgroundTest', 'MANUAL_InitialFeedback', function() {
 /** Tests consistency of navigating forward and backward. */
 TEST_F('BackgroundTest', 'MANUAL_ForwardBackwardNavigation', function() {
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
-      var doCmd = this.doCmd.bind(this);
-      var expectAfter =
-          cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
+    var doCmd = this.doCmd.bind(this);
+    var expectAfter =
+        cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
 
-      expectAfter('alpha', doCmd('nextLink'));
-      expectAfter('beta', doCmd('nextLink'));
-      expectAfter('delta', doCmd('nextLink'));
-      expectAfter('beta', doCmd('previousLink'));
+    expectAfter('alpha', doCmd('nextLink'));
+    expectAfter('beta', doCmd('nextLink'));
+    expectAfter('delta', doCmd('nextLink'));
+    expectAfter('beta', doCmd('previousLink'));
 
-      expectAfter('charlie', doCmd('nextHeading'));
-      expectAfter('foxtraut', doCmd('nextHeading'));
-      expectAfter('charlie', doCmd('previousHeading'));
+    expectAfter('charlie', doCmd('nextHeading'));
+    expectAfter('foxtraut', doCmd('nextHeading'));
+    expectAfter('charlie', doCmd('previousHeading'));
 
-      expectAfter('delta', doCmd('nextElement'));
-      expectAfter('echo', doCmd('nextElement'));
-      expectAfter('foxtraut', doCmd('nextElement'));
-      expectAfter('end', doCmd('nextElement'));
-      expectAfter('foxtraut', doCmd('previousElement'));
-      expectAfter('end of test', doCmd('nextLine'));
+    expectAfter('delta', doCmd('nextElement'));
+    expectAfter('echo', doCmd('nextElement'));
+    expectAfter('foxtraut', doCmd('nextElement'));
+    expectAfter('end', doCmd('nextElement'));
+    expectAfter('foxtraut', doCmd('previousElement'));
+    expectAfter('end of test', doCmd('nextLine'));
 
-      expectAfter('start', doCmd('goToBeginning'));
-      expectAfter('of test', doCmd('goToEnd'));
+    expectAfter('start', doCmd('goToBeginning'));
+    expectAfter('of test', doCmd('goToEnd'));
 
-      cvox.ChromeVox.tts.finishExpectations();
-    }.bind(this)
-  );
+    cvox.ChromeVox.tts.finishExpectations(this.newCallback());
+  });
 });
 
 TEST_F('BackgroundTest', 'MANUAL_CaretNavigation', function() {
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
-      var doCmd = this.doCmd.bind(this);
-      var expectAfter =
-          cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
+    var doCmd = this.doCmd.bind(this);
+    var expectAfter =
+        cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
 
-      expectAfter('t', doCmd('nextCharacter'), true);
-      expectAfter('a', doCmd('nextCharacter'), true);
-      expectAfter('Link alpha', doCmd('nextWord'), true);
-      expectAfter('Link beta', doCmd('nextWord'), true);
-      expectAfter('Heading charlie', doCmd('nextWord'), true);
-      expectAfter('Link delta', doCmd('nextLine'), true);
-      expectAfter('Link echo', doCmd('nextLine'), true);
-      expectAfter('Heading foxtraut', doCmd('nextLine'), true);
-      expectAfter(
-          'end of test', doCmd('nextLine'), true);
-      expectAfter('n', doCmd('nextCharacter'), true);
-      expectAfter('e', doCmd('previousCharacter'), true);
-      expectAfter('Heading t', doCmd('previousCharacter'), true);
-      expectAfter('foxtraut', doCmd('previousWord'), true);
-      expectAfter('Link echo', doCmd('previousWord'), true);
-      expectAfter('Link a', doCmd('previousCharacter'), true);
-      expectAfter('t', doCmd('previousCharacter'), true);
-      expectAfter('Link echo', doCmd('nextWord'), true);
+    expectAfter('t', doCmd('nextCharacter'), true);
+    expectAfter('a', doCmd('nextCharacter'), true);
+    expectAfter('Link alpha', doCmd('nextWord'), true);
+    expectAfter('Link beta', doCmd('nextWord'), true);
+    expectAfter('Heading charlie', doCmd('nextWord'), true);
+    expectAfter('Link delta', doCmd('nextLine'), true);
+    expectAfter('Link echo', doCmd('nextLine'), true);
+    expectAfter('Heading foxtraut', doCmd('nextLine'), true);
+    expectAfter(
+        'end of test', doCmd('nextLine'), true);
+    expectAfter('n', doCmd('nextCharacter'), true);
+    expectAfter('e', doCmd('previousCharacter'), true);
+    expectAfter('Heading t', doCmd('previousCharacter'), true);
+    expectAfter('foxtraut', doCmd('previousWord'), true);
+    expectAfter('Link echo', doCmd('previousWord'), true);
+    expectAfter('Link a', doCmd('previousCharacter'), true);
+    expectAfter('t', doCmd('previousCharacter'), true);
+    expectAfter('Link echo', doCmd('nextWord'), true);
 
-      cvox.ChromeVox.tts.finishExpectations();
-  }.bind(this));
+    cvox.ChromeVox.tts.finishExpectations(this.newCallback());
+  });
 });
 
 // Flaky: http://crbug.com/451362
 TEST_F('BackgroundTest', 'DISABLED_SelectSingleBasic', function() {
-  this.runWithLoadedTree(this.formsDoc, function(tabId) {
+  this.runWithLoadedTree(this.formsDoc, function() {
     var sendDownToSelect =
-        this.sendKeyToElement.bind(this, tabId, 'Down', '#fruitSelect');
+        this.sendKeyToElement.bind(this, undefined, 'Down', '#fruitSelect');
     var expect = cvox.ChromeVox.tts.expectSpeech.bind(cvox.ChromeVox.tts);
     expect('apple Menu item  1 of 3 ', sendDownToSelect, true);
     expect('grape  2 of 3 ', sendDownToSelect, true);
-    expect('banana  3 of 3 ', testDone, true);
-    cvox.ChromeVox.tts.finishExpectations();
-  }.bind(this));
+    expect('banana  3 of 3 ', function() {}, true);
+    cvox.ChromeVox.tts.finishExpectations(this.newCallback());
+  });
 });
 
 TEST_F('BackgroundTest', 'MANUAL_ContinuousRead', function() {
@@ -179,7 +180,7 @@ TEST_F('BackgroundTest', 'MANUAL_ContinuousRead', function() {
     cvox.ChromeVox.tts.expectSpeechAfter('start', this.doCmd('continuousRead'));
     cvox.ChromeVox.tts.expectSpeech('alpha Link');
     cvox.ChromeVox.tts.expectSpeech('beta Link');
-    cvox.ChromeVox.tts.expectSpeech('Heading charlie', testDone);
-    cvox.ChromeVox.tts.finishExpectations();
-  }.bind(this));
+    cvox.ChromeVox.tts.expectSpeech('Heading charlie', function() {});
+    cvox.ChromeVox.tts.finishExpectations(this.newCallback());
+  });
 });

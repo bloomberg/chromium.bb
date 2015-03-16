@@ -15,7 +15,9 @@ GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js',
  * @constructor
  * @extends {ChromeVoxE2ETest}
  */
-function CvoxLibLouisTest() {}
+function CvoxLibLouisTest() {
+  ChromeVoxE2ETest.call(this);
+}
 
 CvoxLibLouisTest.prototype = {
   __proto__: ChromeVoxE2ETest.prototype,
@@ -33,8 +35,7 @@ CvoxLibLouisTest.prototype = {
   },
 
   withTranslator: function(liblouis, tableNames, callback) {
-    liblouis.getTranslator(tableNames,
-                           this.continueTest(WhenTestDone.ASSERT, callback));
+    liblouis.getTranslator(tableNames, this.newCallback(callback));
   },
 };
 
@@ -49,7 +50,7 @@ function assertEqualsUint8Array(expected, actual) {
 
 TEST_F('CvoxLibLouisTest', 'checkAllTables', function() {
   var liblouis = this.createAndAttachLiblouis();
-  var continuation = this.continueTest(WhenTestDone.ASSERT, function(tables) {
+  cvox.BrailleTable.getAll(this.newCallback(function(tables) {
     var i = 0;
     var checkNextTable = function() {
       var table = tables[i++];
@@ -59,26 +60,21 @@ TEST_F('CvoxLibLouisTest', 'checkAllTables', function() {
                              'Table ' + table + ' should be valid');
           checkNextTable();
         });
-      } else {
-        testDone();
       }
     }.bind(this);
     checkNextTable();
-  }.bind(this));
-  cvox.BrailleTable.getAll(continuation);
+  }.bind(this)));
 });
 
 TEST_F('CvoxLibLouisTest', 'testTranslateComputerBraille', function() {
   var liblouis = this.createAndAttachLiblouis();
   this.withTranslator(liblouis, 'en-us-comp8.ctb', function(translator) {
-    var continuation = this.continueTest(
-        WhenTestDone.ALWAYS,
+    translator.translate('Hello!', this.newCallback(
         function(cells, textToBraille, brailleToText) {
           assertEqualsUint8Array([0x53, 0x11, 0x07, 0x07, 0x15, 0x2e], cells);
           assertEqualsJSON([0, 1, 2, 3, 4, 5], textToBraille);
           assertEqualsJSON([0, 1, 2, 3, 4, 5], brailleToText);
-        });
-    translator.translate('Hello!', continuation);
+        }));
   });
 });
 
@@ -86,10 +82,9 @@ TEST_F('CvoxLibLouisTest', 'testBackTranslateComputerBraille', function() {
   var liblouis = this.createAndAttachLiblouis();
   this.withTranslator(liblouis, 'en-us-comp8.ctb', function(translator) {
     var cells = new Uint8Array([0x53, 0x11, 0x07, 0x07, 0x15, 0x2e]);
-    var continuation = this.continueTest(WhenTestDone.ALWAYS, function(text) {
+    translator.backTranslate(cells.buffer, this.newCallback(function(text) {
       assertEquals('Hello!', text);
-    });
-    translator.backTranslate(cells.buffer, continuation);
+    }));
   });
 });
 
@@ -97,13 +92,12 @@ TEST_F('CvoxLibLouisTest', 'testTranslateGermanGrade2Braille', function() {
   var liblouis = this.createAndAttachLiblouis();
   // This is one of the moderately large tables.
   this.withTranslator(liblouis, 'de-de-g2.ctb', function(translator) {
-    var continuation = this.continueTest(
-        WhenTestDone.ALWAYS, function(cells, textToBraille, brailleToText) {
+    translator.translate('München', this.newCallback(
+        function(cells, textToBraille, brailleToText) {
           assertEqualsUint8Array([0x0d, 0x33, 0x1d, 0x39, 0x09], cells);
           assertEqualsJSON([0, 1, 2, 3, 3, 4, 4], textToBraille);
           assertEqualsJSON([0, 1, 2, 3, 5], brailleToText);
-        });
-    translator.translate('München', continuation);
+        }));
   });
 });
 
@@ -111,21 +105,21 @@ TEST_F('CvoxLibLouisTest', 'testBackTranslateGermanComputerBraille', function() 
   var liblouis = this.createAndAttachLiblouis();
   this.withTranslator(liblouis, 'de-de-comp8.ctb', function(translator) {
     var cells = new Uint8Array([0xb3]);
-    var continuation = this.continueTest(WhenTestDone.ALWAYS, function(text) {
+    translator.backTranslate(cells.buffer, this.newCallback(function(text) {
       assertEquals('ü', text);
-    });
-    translator.backTranslate(cells.buffer, continuation);
+    }));
   });
 });
 
 TEST_F('CvoxLibLouisTest', 'testBackTranslateEmptyCells', function() {
   var liblouis = this.createAndAttachLiblouis();
   this.withTranslator(liblouis, 'de-de-comp8.ctb', function(translator) {
-    var continuation = this.continueTest(WhenTestDone.ALWAYS, function(text) {
-      assertNotEquals(null, text);
-      assertEquals(0, text.length);
-    });
-    translator.backTranslate(new Uint8Array().buffer, continuation);
+       translator.backTranslate(
+           new Uint8Array().buffer,
+           this.newCallback(function(text) {
+             assertNotEquals(null, text);
+             assertEquals(0, text.length);
+           }));
   });
 });
 
@@ -134,7 +128,6 @@ TEST_F('CvoxLibLouisTest', 'testGetTranslatorBeforeAttach', function() {
   assertFalse(liblouis.isAttached());
   this.withTranslator(liblouis, 'en-us-comp8.ctb', function(translator) {
     assertEquals(null, translator);
-    testDone();
   });
 });
 
@@ -142,7 +135,6 @@ TEST_F('CvoxLibLouisTest', 'testGetInvalidTranslator', function() {
   var liblouis = this.createAndAttachLiblouis();
   this.withTranslator(liblouis, 'nonexistant-table', function(translator) {
     assertEquals(null, translator);
-    testDone();
   });
 });
 
@@ -150,28 +142,27 @@ TEST_F('CvoxLibLouisTest', 'testTranslateAfterDetach', function() {
   var liblouis = this.createAndAttachLiblouis();
   this.withTranslator(liblouis, 'de-de-comp8.ctb', function(translator) {
     liblouis.detach();
-    var continuation = this.continueTest(
-        WhenTestDone.ALWAYS,
+    translator.translate('Hamburg', this.newCallback(
         function(cells, textToBraille, brailleToText) {
           assertEquals(null, cells);
           assertEquals(null, textToBraille);
           assertEquals(null, brailleToText);
-        });
-    translator.translate('Hamburg', continuation);
+        }));
   });
 });
 
 TEST_F('CvoxLibLouisTest', 'testDetachWithOutstandingCallbacks', function() {
   var liblouis = this.createAndAttachLiblouis();
   this.withTranslator(liblouis, 'de-de-comp8.ctb', function(translator) {
-    var continuation = this.continueTest(
-        WhenTestDone.ALWAYS,
+    var called = false;
+    translator.translate('Berlin', this.newCallback(
         function(cells, textToBraille, brailleToText) {
           assertEquals(null, cells);
           assertEquals(null, textToBraille);
           assertEquals(null, brailleToText);
-        });
-    translator.translate('Berlin', continuation);
+          called = true;
+        }));
+    assertFalse(called);
     liblouis.detach();
   });
 });

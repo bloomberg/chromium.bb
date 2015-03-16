@@ -10,7 +10,9 @@ GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
  * @constructor
  * @extends {ChromeVoxNextE2ETestBase}
  */
-function OutputE2ETest() {}
+function OutputE2ETest() {
+  ChromeVoxNextE2ETest.call(this);
+}
 
 OutputE2ETest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
@@ -33,6 +35,5 @@ TEST_F('OutputE2ETest', 'RenderBasic', function() {
                         {value: {}, start: 11, end: 15}
           ]},
           o.getBuffer());
-      testDone();
-  }.bind(this));
+  });
 });

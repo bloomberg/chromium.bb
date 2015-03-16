@@ -10,7 +10,9 @@ GEN_INCLUDE(['../../testing/chromevox_unittest_base.js']);
  * @constructor
  * @extends {ChromeVoxUnitTestBase}
  */
-function CvoxEventWatcherUnitTest() {}
+function CvoxEventWatcherUnitTest() {
+  ChromeVoxUnitTestBase.call(this);
+}
 
 CvoxEventWatcherUnitTest.prototype = {
   __proto__: ChromeVoxUnitTestBase.prototype,
@@ -85,8 +87,7 @@ CvoxEventWatcherUnitTest.prototype = {
 TEST_F('CvoxEventWatcherUnitTest', 'ButtonFocusFeedback', function() {
   this.loadHtml('<div> <button id="alpha">Alpha</button> </div>');
   this.setFocus('alpha');
-  this.waitForCalm(this.assertSpoken, 'Alpha Button')
-      .waitForCalm(testDone);
+  this.waitForCalm(this.assertSpoken, 'Alpha Button');
 });
 
 /**
@@ -106,8 +107,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'FocusLinksBackwards', function() {
       .waitForCalm(this.setFocus, 'l1')
       .waitForCalm(this.assertSpoken,
           '1 Internal link 2 Internal link 3 Internal link ' +
-          '2 Internal link 1 Internal link')
-      .waitForCalm(testDone);
+          '2 Internal link 1 Internal link');
 });
 
 /**
@@ -120,8 +120,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'TextFocusFeedback', function() {
       '</div>');
 
   this.setFocus('mytext');
-  this.waitForCalm(this.assertSpoken, 'Label Value Edit text')
-      .waitForCalm(testDone);
+  this.waitForCalm(this.assertSpoken, 'Label Value Edit text');
 });
 
 /**
@@ -134,8 +133,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'ContentEditableFocusFeedback', function() {
       '</div>');
 
   this.setFocus('mytext');
-  this.waitForCalm(this.assertSpoken, 'Label This is editable Edit text')
-      .waitForCalm(testDone);
+  this.waitForCalm(this.assertSpoken, 'Label This is editable Edit text');
 });
 
 /**
@@ -162,8 +160,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'DialogFeedback', function() {
       })
       .waitForCalm(this.assertSpoken, 'OK Button')
       .waitForCalm(this.setFocus, 'show')
-      .waitForCalm(this.assertSpoken, 'Exited dialog. Show Button')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, 'Exited dialog. Show Button');
 });
 
 /**
@@ -182,8 +179,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'AlertDialogFeedback', function() {
   this.waitForCalm(this.assertSpoken,
           'Entered dialog ' +
           'Are you sure you want to install Windows? Yes Button No Button ' +
-          'No Button')
-      .waitForCalm(testDone);
+          'No Button');
 });
 
 /**
@@ -214,8 +210,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'DoubleFocusAlertDialogFeedback',
                        .queue('Yes')
                        .queue('Button'))
       .waitForCalm(this.setFocus, 'outside')
-      .waitForCalm(this.assertSpoken, 'Exited dialog. Outside Button')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, 'Exited dialog. Outside Button');
 });
 
 /**
@@ -246,8 +241,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'CloseDialogTabRecovery', function() {
       .waitForCalm(this.assertSpoken, 'invalid after click')
       .waitForCalm(displayNone)
       .waitForCalm(this.userCommand, 'forward')
-      .waitForCalm(this.assertSpoken, 'valid text after')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, 'valid text after');
 });
 
 /**
@@ -278,8 +272,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'ListBoxFeedback', function() {
               { 'target': listbox,
                 'type': 'keydown' }));
         })
-      .waitForCalm(this.assertSpoken, 'Yellow 2 of 3')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, 'Yellow 2 of 3');
 });
 
 /**
@@ -302,8 +295,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'ListBoxOptionFeedback', function() {
 
   this.waitForCalm(this.assertSpoken, 'List box Yellow 2 of 3')
       .waitForCalm(this.setFocus, 'red')
-      .waitForCalm(this.assertSpoken, 'Red Selected 1 of 3')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, 'Red Selected 1 of 3');
 });
 
 /**
@@ -333,8 +325,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'ListBoxOptionFeedbackWithFocus', function() 
       .waitForCalm(this.setFocus, 'green')
       .waitForCalm(this.assertSpoken, 'Green 3 of 4')
       .waitForCalm(this.userCommand, 'forward')
-      .waitForCalm(this.assertSpoken, 'Blue 4 of 4')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, 'Blue 4 of 4');
 });
 
 /**
@@ -369,8 +360,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'EditableText', function() {
                        .queue('abc')
                        .queue('Edit text')
                        .flush('d')
-                       .flush('e'))
-      .waitForCalm(testDone);
+                       .flush('e'));
 });
 
 /**
@@ -403,8 +393,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'EditableTextListbox', function() {
           input.setAttribute('aria-activedescendant', 'option1');
           this.changeTextField(input, '', 0, 0, 40);  // 'down'
           })
-      .waitForCalm(this.assertSpoken, 'First pick 1 of 2')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, 'First pick 1 of 2');
 });
 
 /**
@@ -438,8 +427,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'EditableTextListboxUpdatingInput',
           input.setAttribute('aria-activedescendant', 'option1');
           this.changeTextField(input, 'First pick', 9, 9, 40);  // 'down'
           })
-      .waitForCalm(this.assertSpoken, 'First pick')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, 'First pick');
 });
 
 /**
@@ -482,8 +470,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'MultilineNavigation', function() {
       .waitForCalm(setAreaCursor, 9)
       .waitForCalm(this.assertSpoken, 'Blank')
       .waitForCalm(setAreaCursor, 10)
-      .waitForCalm(this.assertSpoken, 'three')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, 'three');
 });
 
 TEST_F('CvoxEventWatcherUnitTest', 'ShouldWaitToProcess', function() {
@@ -529,8 +516,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'AriaHiddenFeedback', function() {
       .waitForCalm(this.setFocus, 'button3')
       .waitForCalm(this.assertSpoken, '')
       .waitForCalm(this.setFocus, 'button4')
-      .waitForCalm(this.assertSpoken, 'Button 4 Button')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, 'Button 4 Button');
 });
 
 /**
@@ -571,8 +557,7 @@ TEST_F('CvoxEventWatcherUnitTest',
                    'green Radio button selected green Radio button selected')
       .waitForCalm(performKeyDown, 'Left') // left arrow
       // Arrowed beyond beginning. Should be quiet.
-      .waitForCalm(this.assertSpoken, '')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, '');
 });
 
 /**
@@ -635,8 +620,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'TimeWidget', function() {
   this.waitForCalm(performKeyDown, 'Down') // down arrow
       .waitForCalm(performKeyUp, 'Down') // down arrow
       .waitForCalm(this.assertSpoken,
-                   'PM')
-      .waitForCalm(testDone);
+                   'PM');
 });
 
 /**
@@ -696,8 +680,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'DateWidget', function() {
       .waitForCalm(performKeyDown, 'Down') // down arrow
       .waitForCalm(performKeyUp, 'Down') // down arrow
       .waitForCalm(this.assertSpoken,
-                   '1998')
-      .waitForCalm(testDone);
+                   '1998');
 });
 
 /**
@@ -735,8 +718,7 @@ TEST_F('CvoxEventWatcherUnitTest', 'ToggleOnKeyUp', function() {
   this.waitForCalm(keyupSpaceAndMarkPressed)
       .waitForCalm(this.assertSpoken, 'Pressed')
       .waitForCalm(keyupSpaceAndMarkNotPressed)
-      .waitForCalm(this.assertSpoken, 'Not pressed')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, 'Not pressed');
 });
 
 /**
@@ -769,6 +751,5 @@ TEST_F('CvoxEventWatcherUnitTest', 'ExitDialogWithLiveRegion', function() {
         assertEquals('Exited dialog.', ulist[1]);
         assertEquals('Final focus', ulist[2]);
         assertEquals('Button', ulist[3]);
-        testDone();
       });
 });

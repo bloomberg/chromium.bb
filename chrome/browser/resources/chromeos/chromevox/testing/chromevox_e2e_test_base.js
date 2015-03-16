@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 GEN_INCLUDE([
-    'chrome/browser/resources/chromeos/chromevox/testing/common.js']);
+    'chrome/browser/resources/chromeos/chromevox/testing/common.js',
+    'chrome/browser/resources/chromeos/chromevox/testing/callback_helper.js']);
 
 /**
  * Base test fixture for ChromeVox end to end tests.
@@ -12,7 +13,9 @@ GEN_INCLUDE([
  * background page context.
  * @constructor
  */
-function ChromeVoxE2ETest() {}
+function ChromeVoxE2ETest() {
+  this.callbackHelper_ = new CallbackHelper(this);
+}
 
 ChromeVoxE2ETest.prototype = {
   __proto__: testing.Test.prototype,
@@ -101,6 +104,18 @@ ChromeVoxE2ETest.prototype = {
     */}, [key, elementQueryString]);
 
     chrome.tabs.executeScript(tabId, {code: code});
+  },
+
+  /**
+   * Creates a callback that optionally calls {@code opt_callback} when
+   * called.  If this method is called one or more times, then
+   * {@code testDone()} will be called when all callbacks have been called.
+   * @param {Function=} opt_callback Wrapped callback that will have its this
+   *        reference bound to the test fixture.
+   * @return {Function}
+   */
+  newCallback: function(opt_callback) {
+    return this.callbackHelper_.wrap(opt_callback);
   }
 };
 

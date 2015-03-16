@@ -113,7 +113,9 @@
             '<(mock_js)',
             '<(test_api_js)',
             '<(js2gtest)',
+            'testing/callback_helper.js',
             'testing/chromevox_e2e_test_base.js',
+            'testing/chromevox_next_e2e_test_base.js',
             'testing/assert_additions.js',
           ],
           'outputs': [

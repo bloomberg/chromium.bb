@@ -235,6 +235,7 @@ cvox.LibLouis.Translator = function(instance, tableNames) {
 cvox.LibLouis.Translator.prototype.translate = function(text, callback) {
   if (!this.instance_.isAttached()) {
     callback(null /*cells*/, null /*textToBraille*/, null /*brailleToText*/);
+    return;
   }
   var message = { 'table_names': this.tableNames_, 'text': text };
   this.instance_.rpc_('Translate', message, function(reply) {
@@ -268,6 +269,7 @@ cvox.LibLouis.Translator.prototype.backTranslate =
     function(cells, callback) {
   if (!this.instance_.isAttached()) {
     callback(null /*text*/);
+    return;
   }
   if (cells.byteLength == 0) {
     // liblouis doesn't handle empty input, so handle that trivially

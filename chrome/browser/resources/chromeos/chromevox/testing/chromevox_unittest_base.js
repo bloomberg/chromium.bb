@@ -5,7 +5,8 @@
 GEN_INCLUDE([
     'chrome/browser/resources/chromeos/chromevox/testing/assert_additions.js']);
 GEN_INCLUDE([
-  'chrome/browser/resources/chromeos/chromevox/testing/common.js']);
+  'chrome/browser/resources/chromeos/chromevox/testing/common.js',
+  'chrome/browser/resources/chromeos/chromevox/testing/callback_helper.js']);
 
 /**
  * Base test fixture for ChromeVox unit tests.
@@ -17,7 +18,11 @@ GEN_INCLUDE([
  * @constructor
  * @extends {testing.Test}
  */
-function ChromeVoxUnitTestBase() {}
+function ChromeVoxUnitTestBase() {
+  if (this.isAsync) {
+    this.callbackHelper_ = new CallbackHelper(this);
+  }
+}
 
 ChromeVoxUnitTestBase.prototype = {
   __proto__: testing.Test.prototype,
@@ -115,12 +120,11 @@ ChromeVoxUnitTestBase.prototype = {
    * @return {ChromeVoxUnitTestBase} this.
    */
   waitForCalm: function(func, var_args) {
-    var me = this;
     var calmArguments = Array.prototype.slice.call(arguments);
     calmArguments.shift();
-    cvox.ChromeVoxEventWatcher.addReadyCallback(function() {
-      func.apply(me, calmArguments);
-    });
+    cvox.ChromeVoxEventWatcher.addReadyCallback(this.newCallback(function() {
+      func.apply(this, calmArguments);
+    }));
     return this; // for chaining.
   },
 
@@ -190,5 +194,24 @@ ChromeVoxUnitTestBase.prototype = {
    */
   spokenList: function() {
     return new cvox.SpokenListBuilder();
+  },
+
+  /**
+   * @type {CallbackHelper}
+   * @private
+   */
+  callbackHelper_: null,
+
+  /**
+   * Creates a callback that optionally calls {@code opt_callback} when
+   * called.  If this method is called one or more times, then
+   * {@code testDone()} will be called when all callbacks have been called.
+   * @param {Function=} opt_callback Wrapped callback that will have its this
+   *        reference bound to the test fixture.
+   * @return {Function}
+   */
+  newCallback: function(opt_callback) {
+    assertNotEquals(null, this.callbackHelper_);
+    return this.callbackHelper_.wrap(opt_callback);
   }
 };

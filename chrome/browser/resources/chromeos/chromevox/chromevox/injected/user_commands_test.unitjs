@@ -10,7 +10,9 @@ GEN_INCLUDE(['../../testing/chromevox_unittest_base.js']);
  * @constructor
  * @extends {ChromeVoxUnitTestBase}
  */
-function CvoxUserCommandsUnitTest() {}
+function CvoxUserCommandsUnitTest() {
+  ChromeVoxUnitTestBase.call(this);
+}
 
 CvoxUserCommandsUnitTest.prototype = {
   __proto__: ChromeVoxUnitTestBase.prototype,
@@ -57,7 +59,6 @@ TEST_F('CvoxUserCommandsUnitTest', 'TabHandling', function() {
     var id = document.activeElement.nextSibling.id;
     assertEquals('foo', id);
   });
-  this.waitForCalm(testDone);
 });
 
 /**

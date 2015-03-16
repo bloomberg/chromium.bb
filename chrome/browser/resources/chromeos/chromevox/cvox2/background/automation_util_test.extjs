@@ -10,7 +10,9 @@ GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
  * @constructor
  * @extends {ChromeVoxE2ETestBase}
  */
-function AutomationUtilE2ETest() {}
+function AutomationUtilE2ETest() {
+  ChromeVoxNextE2ETest.call(this);
+}
 
 AutomationUtilE2ETest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
@@ -27,16 +29,14 @@ AutomationUtilE2ETest.prototype = {
 };
 
 TEST_F('AutomationUtilE2ETest', 'GetAncestors', function() {
-  this.runWithLoadedTree(this.basicDoc,
-    function(root) {
-      var expectedLength = 1;
-      while (root) {
-        var ancestors = AutomationUtil.getAncestors(root);
-        assertEquals(expectedLength++, ancestors.length);
-        root = root.firstChild;
-      }
-    testDone();
-  }.bind(this));
+  this.runWithLoadedTree(this.basicDoc, function(root) {
+    var expectedLength = 1;
+    while (root) {
+      var ancestors = AutomationUtil.getAncestors(root);
+      assertEquals(expectedLength++, ancestors.length);
+      root = root.firstChild;
+    }
+  });
 });
   
 TEST_F('AutomationUtilE2ETest', 'GetUniqueAncestors', function() {
@@ -78,8 +78,7 @@ TEST_F('AutomationUtilE2ETest', 'GetUniqueAncestors', function() {
     assertEquals(
         1, AutomationUtil.getUniqueAncestors(leftmost, leftmost).length);
 
-    testDone();
-  }.bind(this));
+  });
 });
   
 TEST_F('AutomationUtilE2ETest', 'GetDirection', function() {
@@ -99,6 +98,5 @@ TEST_F('AutomationUtilE2ETest', 'GetDirection', function() {
     assertEquals(Dir.BACKWARD, AutomationUtil.getDirection(right, left));
     assertEquals(Dir.FORWARD, AutomationUtil.getDirection(left, right));
 
-    testDone();
-  }.bind(this));
+  });
 });

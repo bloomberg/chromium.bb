@@ -13,7 +13,9 @@ GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js',
  * @constructor
  * @extends {ChromeVoxE2ETest}
  */
-function CvoxBrailleTableTest() {}
+function CvoxBrailleTableTest() {
+  ChromeVoxE2ETest.call(this);
+}
 
 CvoxBrailleTableTest.prototype = {
   __proto__: ChromeVoxE2ETest.prototype,
@@ -24,7 +26,7 @@ CvoxBrailleTableTest.prototype = {
  * NOTE: This will need to be adjusted when more tables are added.
  */
 TEST_F('CvoxBrailleTableTest', 'testGetAllAndValidate', function() {
-  cvox.BrailleTable.getAll(function(tables) {
+  cvox.BrailleTable.getAll(this.newCallback(function(tables) {
     expectEquals(68, tables.length);
     assertNotNullNorUndefined(
         cvox.BrailleTable.forId(tables, 'en-US-g1'),
@@ -34,13 +36,12 @@ TEST_F('CvoxBrailleTableTest', 'testGetAllAndValidate', function() {
       expectTrue(table.dots === '6' || table.dots === '8');
       expectTrue(cvox.BrailleTable.getDisplayName(table).length > 0);
     }
-    testDone();
-  });
+  }));
 });
 
 /** Tests getDisplayName for some specific representative cases. */
 TEST_F('CvoxBrailleTableTest', 'testGetDisplayName', function() {
-  cvox.BrailleTable.getAll(function(tables) {
+  cvox.BrailleTable.getAll(this.newCallback(function(tables) {
     var table = cvox.BrailleTable.forId(tables, 'bg-comp8');
     expectEquals('Bulgarian', cvox.BrailleTable.getDisplayName(table));
     table = cvox.BrailleTable.forId(tables, 'ar-g1');
@@ -48,15 +49,14 @@ TEST_F('CvoxBrailleTableTest', 'testGetDisplayName', function() {
     table = cvox.BrailleTable.forId(tables, 'en-UEB-g1');
     expectEquals('English (UEB), Grade 1',
                  cvox.BrailleTable.getDisplayName(table));
-    testDone();
-  });
+  }));
 });
 
 /**
  * Tests the getUncontracted function.
  */
 TEST_F('CvoxBrailleTableTest', 'testGetUncontracted', function() {
-  cvox.BrailleTable.getAll(function(tables) {
+  cvox.BrailleTable.getAll(this.newCallback(function(tables) {
     function expectUncontracted(uncontractedId, idToCheck) {
       var checkedTable = cvox.BrailleTable.forId(tables, idToCheck);
       var uncontractedTable = cvox.BrailleTable.getUncontracted(
@@ -70,6 +70,5 @@ TEST_F('CvoxBrailleTableTest', 'testGetUncontracted', function() {
     expectUncontracted('sv-comp8', 'sv-g1');
     expectUncontracted('ar-g1', 'ar-g1');
     expectUncontracted('de-comp8', 'de-CH-g2');
-    testDone();
-  });
+  }));
 });

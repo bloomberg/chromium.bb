@@ -10,7 +10,9 @@ GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
  * @constructor
  * @extends {ChromeVoxNextE2ETest}
  */
-function CursorsTest() {}
+function CursorsTest() {
+  ChromeVoxNextE2ETest.call(this);
+}
 
 CursorsTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
@@ -107,13 +109,11 @@ CursorsTest.prototype = {
       if (!opt_testType || opt_testType == this.CURSOR) {
         var cursor = new cursors.Cursor(start, 0);
         this.cursorMoveAndAssert(cursor, moves);
-        testDone();
       } else if (opt_testType == this.RANGE) {
         var range = new cursors.Range(cursor, cursor);
         this.rangeMoveAndAssert(range, moves);
-        testDone();
       }
-    }.bind(this));
+    });
   },
 
 simpleDoc: function() {/*!

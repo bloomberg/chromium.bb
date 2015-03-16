@@ -62,10 +62,11 @@ MockTts.prototype = {
   },
 
   /**
-   * Finishes expectations and calls testDone.
+   * Finishes expectations and calls {@code callback} afterwards.
+   * @param {Function} callback
    */
-  finishExpectations: function() {
-    this.expectSpeechAfter('', testDone);
+  finishExpectations: function(callback) {
+    this.expectSpeechAfter('', callback);
   },
 
   /**

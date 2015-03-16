@@ -10,7 +10,9 @@ GEN_INCLUDE(['../../testing/chromevox_unittest_base.js']);
  * @constructor
  * @extends {ChromeVoxUnitTestBase}
  */
-function CvoxLiveRegionsUnitTest() {}
+function CvoxLiveRegionsUnitTest() {
+  ChromeVoxUnitTestBase.call(this);
+}
 
 CvoxLiveRegionsUnitTest.prototype = {
   __proto__: ChromeVoxUnitTestBase.prototype,
@@ -42,7 +44,6 @@ TEST_F('CvoxLiveRegionsUnitTest', 'InsertNonLiveRegion', function() {
 
   this.waitForCalm(function() {
     assertEquals(0, cvox.ChromeVoxTester.getUtteranceList().length);
-    testDone();
   });
 });
 
@@ -59,7 +60,6 @@ TEST_F('CvoxLiveRegionsUnitTest', 'InsertAlertLiveRegion', function() {
     var utterances = cvox.ChromeVoxTester.getUtteranceList();
     assertEquals('Alpha', utterances[0]);
     assertEquals('Alert', utterances[1]);
-    testDone();
   });
 });
 
@@ -86,7 +86,6 @@ TEST_F('CvoxLiveRegionsUnitTest', 'RevealAlertLiveRegion', function() {
   this.waitForCalm(function() {
     var utterances = cvox.ChromeVoxTester.getUtteranceList();
     assertEquals('I just appeared!', utterances[0]);
-    testDone();
   });
 });
 
@@ -102,7 +101,6 @@ TEST_F('CvoxLiveRegionsUnitTest', 'InsertPoliteLiveRegion', function() {
   this.waitForCalm(function() {
     var utterances = cvox.ChromeVoxTester.getUtteranceList();
     assertEquals('Beta', utterances[0]);
-    testDone();
   });
 });
 
@@ -122,7 +120,6 @@ TEST_F('CvoxLiveRegionsUnitTest', 'ModifyStatusLiveRegion', function() {
     this.waitForCalm(function() {
       var utterances = cvox.ChromeVoxTester.getUtteranceList();
       assertEquals('Delta', utterances[utterances.length - 1]);
-      testDone();
     });
   });
 });
@@ -156,7 +153,6 @@ TEST_F('CvoxLiveRegionsUnitTest', 'AddToLiveRegion', function() {
       var utterances = cvox.ChromeVoxTester.getUtteranceList();
       assertEquals('Eric', utterances[utterances.length - 2]);
       assertEquals('Larry Sergey Eric', utterances[utterances.length - 1]);
-      testDone();
     });
   });
 });
@@ -181,7 +177,6 @@ TEST_F('CvoxLiveRegionsUnitTest', 'RemoveFromLiveRegion', function() {
     var utterances = cvox.ChromeVoxTester.getUtteranceList();
     assertEquals(1, utterances.length);
     assertEquals('removed:, Jack', utterances[0]);
-    testDone();
   });
 });
 
@@ -203,7 +198,6 @@ TEST_F('CvoxLiveRegionsUnitTest', 'ProgressBarLiveRegionEvents', function() {
   this.waitForCalm(function() {
     var utterances = cvox.ChromeVoxTester.getUtteranceList();
     assertEquals('Progress bar 2', utterances[utterances.length - 1]);
-    testDone();
   });
 });
 
@@ -251,8 +245,7 @@ TEST_F('CvoxLiveRegionsUnitTest', 'FocusTriggeredAlertLiveRegion', function() {
                        .categoryFlush('Address')
                            .queue('Edit text')
                        .categoryFlush('Not a valid name!')
-                       .queue('Alert'))
-      .waitForCalm(testDone);
+                       .queue('Alert'));
 });
 
 
@@ -272,8 +265,7 @@ TEST_F('CvoxLiveRegionsUnitTest', 'FocusThenLiveRegion', function() {
                    new cvox.SpokenListBuilder()
                        .categoryFlush('Button To Focus')
                        .queue('Button')
-                       .categoryFlush('Live region text'))
-      .waitForCalm(testDone);
+                       .categoryFlush('Live region text'));
 });
 
 
@@ -295,8 +287,7 @@ TEST_F('CvoxLiveRegionsUnitTest', 'LiveRegionThenFocus', function() {
                    new cvox.SpokenListBuilder()
                        .categoryFlush('Live region text')
                        .categoryFlush('Button To Focus')
-                       .queue('Button'))
-      .waitForCalm(testDone);
+                       .queue('Button'));
 });
 
 
@@ -317,6 +308,5 @@ TEST_F('CvoxLiveRegionsUnitTest', 'TwoElementsInLiveRegion', function() {
   $('hidden').style.display = 'block';
   this.waitForCalm(this.assertSpokenList,
                     new cvox.SpokenListBuilder()
-                        .categoryFlush('L1, L2'))
-      .waitForCalm(testDone);
+                        .categoryFlush('L1, L2'));
 });

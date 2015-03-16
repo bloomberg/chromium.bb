@@ -10,7 +10,9 @@ GEN_INCLUDE(['../../testing/chromevox_unittest_base.js']);
  * @constructor
  * @extends {ChromeVoxUnitTestBase}
  */
-function CvoxNavigationManagerUnitTest() {}
+function CvoxNavigationManagerUnitTest() {
+  ChromeVoxUnitTestBase.call(this);
+}
 
 CvoxNavigationManagerUnitTest.prototype = {
   __proto__: ChromeVoxUnitTestBase.prototype,
@@ -47,7 +49,7 @@ CvoxNavigationManagerUnitTest.prototype = {
    */
   checkNavSequence: function(strategies, commandsAndExpectations) {
     if (strategies.length == 0)
-      testDone();
+      return;
 
     var strategy = strategies.shift();
     this.waitForCalm(cvox.ChromeVoxTester.setStrategy, strategy)
@@ -322,7 +324,6 @@ TEST_F('CvoxNavigationManagerUnitTest', 'FindNextHeading', function() {
   this.waitForCalm(this.userCommand, 'backward');
   this.waitForCalm(this.assertSpoken, 'Some text.');
 
-  this.waitForCalm(testDone);
 });
 
 
@@ -1266,8 +1267,7 @@ TEST_F('CvoxNavigationManagerUnitTest', 'ContinuousReading', function() {
       .waitForCalm(cvox.ChromeVoxTester.syncToFirstNode)
       .waitForCalm(cvox.ChromeVoxTester.readFromHere)
       .waitForCalm(this.assertSpoken,
-                   'Before Some text. First Second Third Internal link After')
-      .waitForCalm(testDone);
+                   'Before Some text. First Second Third Internal link After');
 });
 
 
@@ -1391,6 +1391,5 @@ TEST_F('CvoxNavigationManagerUnitTest', 'AriaMathRoles', function() {
   this.waitForCalm(this.userCommand, 'forward')
       .waitForCalm(this.assertSpoken, 'Math a times x squared plus b times x plus c equals 0')
       .waitForCalm(this.userCommand, 'forward')
-      .waitForCalm(this.assertSpoken, 'Math square root of n cube')
-      .waitForCalm(testDone);
+      .waitForCalm(this.assertSpoken, 'Math square root of n cube');
 });

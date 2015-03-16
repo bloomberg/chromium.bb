@@ -13,7 +13,9 @@ GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js',
  * @constructor
  * @extends {ChromeVoxE2ETest}
  */
-function CvoxBrailleTranslatorManagerTest() {}
+function CvoxBrailleTranslatorManagerTest() {
+  ChromeVoxE2ETest.call(this);
+}
 
 CvoxBrailleTranslatorManagerTest.prototype = {
   __proto__: ChromeVoxE2ETest.prototype,
@@ -29,8 +31,7 @@ CvoxBrailleTranslatorManagerTest.prototype = {
   },
 
   addChangeListener: function(callback) {
-    return this.manager.addChangeListener(this.continueTest(
-        WhenTestDone.ASSERT, callback));
+    return this.manager.addChangeListener(callOnce(this.newCallback(callback)));
   },
 };
 
@@ -71,8 +72,8 @@ function callOnce(callback) {
   var called = false;
   return function() {
     if (!called) {
-      callback.apply(null, arguments);
       called = true;
+      callback.apply(null, arguments);
     }
   };
 }
@@ -85,34 +86,31 @@ TEST_F('CvoxBrailleTranslatorManagerTest', 'testInitial', function() {
     assertNotEquals(null, this.manager.getExpandingTranslator());
     assertEquals('en-US-comp8', this.manager.getDefaultTranslator().table.id);
     assertEquals(null, this.manager.getUncontractedTranslator());
-    testDone();
-  }.bind(this));
+  });
 });
 
 TEST_F('CvoxBrailleTranslatorManagerTest', 'testRefreshWithoutChange',
        function() {
-  this.addChangeListener(callOnce(function() {
+  this.addChangeListener(function() {
     assertNotEquals(null, this.manager.getExpandingTranslator());
     // This works because the fake liblouis is actually not asynchonous.
-    this.addChangeListener(function() {
-      throw Error('Should not be called.');
+    this.manager.addChangeListener(function() {
+      assertNotReached('Refresh should not be called without a change.');
     });
     this.manager.refresh();
-    testDone();
-  }.bind(this)));
+  });
 });
 
 TEST_F('CvoxBrailleTranslatorManagerTest', 'testRefreshWithChange',
        function() {
-  this.addChangeListener(callOnce(function() {
+  this.addChangeListener(function() {
     assertNotEquals(null, this.manager.getExpandingTranslator());
     this.addChangeListener(function() {
       assertEquals('en-UEB-g2', this.manager.getDefaultTranslator().table.id);
       assertEquals('en-US-comp8',
                    this.manager.getUncontractedTranslator().table.id);
-      testDone();
-    }.bind(this));
+    });
     localStorage['brailleTable'] = 'en-UEB-g2';
     this.manager.refresh();
-  }.bind(this)));
+  });
 });
