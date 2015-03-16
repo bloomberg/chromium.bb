@@ -44,6 +44,7 @@ namespace blink {
 
 class Color;
 class EmptyChromeClient;
+class LocalFrame;
 class GraphicsContext;
 class InspectorOverlayHost;
 class JSONValue;
@@ -82,9 +83,9 @@ public:
         virtual void hideHighlight() = 0;
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorOverlay> create(Page* page, Client* client)
+    static PassOwnPtrWillBeRawPtr<InspectorOverlay> create(LocalFrame* frame, Client* client)
     {
-        return adoptPtrWillBeNoop(new InspectorOverlay(page, client));
+        return adoptPtrWillBeNoop(new InspectorOverlay(frame, client));
     }
 
     ~InspectorOverlay();
@@ -121,7 +122,7 @@ public:
     // Methods supporting underlying overlay page.
     void invalidate();
 private:
-    InspectorOverlay(Page*, Client*);
+    InspectorOverlay(LocalFrame*, Client*);
 
     bool isEmpty();
 
@@ -136,7 +137,7 @@ private:
     void evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument);
     void onTimer(Timer<InspectorOverlay>*);
 
-    RawPtrWillBeMember<Page> m_page;
+    RawPtrWillBeMember<LocalFrame> m_frame;
     Client* m_client;
     String m_pausedInDebuggerMessage;
     bool m_inspectModeEnabled;
