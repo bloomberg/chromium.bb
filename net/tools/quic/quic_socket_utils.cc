@@ -5,7 +5,15 @@
 #include "net/tools/quic/quic_socket_utils.h"
 
 #include <errno.h>
+// Apple's "in6.h" header file says:
+//  *  RFC 3542 define[s] the following socket options in a manner incompatible
+//  *  with RFC 2292:
+//  *    IPV6_PKTINFO
+// and in order to get IPV6_PKTINFO defined at all,
+// you must pick a mode, as follows:
+#define __APPLE_USE_RFC_3542
 #include <netinet/in.h>
+#undef __APPLE_USE_RFC_3542
 #include <sys/socket.h>
 #include <sys/uio.h>
 #include <string>

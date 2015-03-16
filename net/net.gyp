@@ -1245,6 +1245,10 @@
             'tools/quic/quic_client_bin.cc',
           ],
         },
+      ]
+    }],
+    ['os_posix == 1 and OS != "ios" and OS != "android"', {
+      'targets': [
         {
           'target_name': 'quic_server',
           'type': 'executable',

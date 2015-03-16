@@ -1042,19 +1042,25 @@ if (!is_ios && !is_android) {
   }
 }
 
-if (is_linux) {
+if (is_linux || is_mac) {
   static_library("epoll_server") {
     sources = [
       "tools/epoll_server/epoll_server.cc",
       "tools/epoll_server/epoll_server.h",
-      "tools/epoll_server/linux_epoll_server.cc",
     ]
+    if (is_mac) {
+      sources += [ "tools/epoll_server/darwin_epoll_server.cc" ]
+    } else {
+      sources += [ "tools/epoll_server/linux_epoll_server.cc" ]
+    }
     deps = [
       ":net",
       "//base",
     ]
   }
+}
 
+if (is_linux) {
   static_library("flip_in_mem_edsm_server_base") {
     testonly = true
     sources = [
@@ -1228,37 +1234,39 @@ if (is_android || is_linux) {
   }
 }
 
+# This source_set is defined even if no build targets need it,
+# such as when all dependees are not buildable for the chosen OS.
+source_set("quic_tools") {
+  sources = [
+    "quic/quic_dispatcher.cc",
+    "quic/quic_dispatcher.h",
+    "quic/quic_in_memory_cache.cc",
+    "quic/quic_in_memory_cache.h",
+    "quic/quic_per_connection_packet_writer.cc",
+    "quic/quic_per_connection_packet_writer.h",
+    "quic/quic_server.cc",
+    "quic/quic_server.h",
+    "quic/quic_server_packet_writer.cc",
+    "quic/quic_server_packet_writer.h",
+    "quic/quic_server_session.cc",
+    "quic/quic_server_session.h",
+    "quic/quic_spdy_server_stream.cc",
+    "quic/quic_spdy_server_stream.h",
+    "quic/quic_time_wait_list_manager.cc",
+    "quic/quic_time_wait_list_manager.h",
+  ]
+  deps = [
+    ":net",
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//url",
+  ]
+}
+
 # TODO(GYP) make this compile on Android, we need some native test deps done.
 # TODO(GYP) Also doesn't work on Windows; dependency on boringssl is wrong.
 # TODO(GYP) Also doesn't work on Mac, need to figure out why not.
 if (!is_android && !is_win && !is_mac) {
-  source_set("quic_tools") {
-    sources = [
-      "quic/quic_dispatcher.cc",
-      "quic/quic_dispatcher.h",
-      "quic/quic_in_memory_cache.cc",
-      "quic/quic_in_memory_cache.h",
-      "quic/quic_per_connection_packet_writer.cc",
-      "quic/quic_per_connection_packet_writer.h",
-      "quic/quic_server.cc",
-      "quic/quic_server.h",
-      "quic/quic_server_packet_writer.cc",
-      "quic/quic_server_packet_writer.h",
-      "quic/quic_server_session.cc",
-      "quic/quic_server_session.h",
-      "quic/quic_spdy_server_stream.cc",
-      "quic/quic_spdy_server_stream.h",
-      "quic/quic_time_wait_list_manager.cc",
-      "quic/quic_time_wait_list_manager.h",
-    ]
-    deps = [
-      ":net",
-      "//base",
-      "//base/third_party/dynamic_annotations",
-      "//url",
-    ]
-  }
-
   test("net_unittests") {
     sources = gypi_values.net_test_sources
 
@@ -1553,7 +1561,9 @@ if (!is_android && !is_win && !is_mac) {
       deps -= [ "//base:i18n" ]
     }
   }
+}  # !is_android && !is_win && !is_mac
 
+if (!is_android && !is_win) {
   executable("quic_server") {
     sources = [
       "quic/quic_server_bin.cc",
@@ -1565,7 +1575,7 @@ if (!is_android && !is_win && !is_mac) {
       "//third_party/boringssl",
     ]
   }
-}  # !is_android && !is_win && !is_mac
+}
 
 executable("net_perftests") {
   testonly = true
