@@ -229,9 +229,11 @@ def CreateWrapper(target_list, target_dicts, data, params):
 
   sources = []
   for target, target_dict in target_dicts.iteritems():
-    base =  os.path.dirname(target)
+    base = os.path.dirname(target)
     files = target_dict.get('sources', []) + \
             target_dict.get('mac_bundle_resources', [])
+    for action in target_dict.get('actions', []):
+      files.extend(action.get('inputs', []))
     # Remove files starting with $. These are mostly intermediate files for the
     # build system.
     files = [ file for file in files if not file.startswith('$')]
