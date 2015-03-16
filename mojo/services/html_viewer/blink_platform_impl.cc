@@ -159,7 +159,7 @@ blink::WebData BlinkPlatformImpl::loadResource(const char* resource) {
       return blink::WebData(data, length);
     }
   }
-  NOTREACHED() << "Requested resource is unavailable!";
+  NOTREACHED() << "Requested resource is unavailable: " << resource;
   return blink::WebData();
 }
 
