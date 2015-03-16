@@ -69,7 +69,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
       const blink::WebRect& clip_rect,
       const blink::WebVector<blink::WebRect>& cut_outs_rects,
       bool is_visible);
-  virtual void updateFocus(bool focus) {}
+  virtual void updateFocus(bool focus, blink::WebFocusType focus_type) {}
   virtual void updateVisibility(bool visibility) {}
   virtual bool acceptsInputEvents();
   virtual bool handleInputEvent(const blink::WebInputEvent& event,
