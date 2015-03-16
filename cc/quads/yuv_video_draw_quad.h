@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "cc/layers/video_layer_impl.h"
 #include "cc/quads/draw_quad.h"
 
 namespace cc {

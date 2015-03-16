@@ -39,7 +39,6 @@ using cc::TextureDrawQuad;
 using cc::TileDrawQuad;
 using cc::TransferableResource;
 using cc::StreamVideoDrawQuad;
-using cc::VideoLayerImpl;
 using cc::YUVVideoDrawQuad;
 using gfx::Transform;
 
