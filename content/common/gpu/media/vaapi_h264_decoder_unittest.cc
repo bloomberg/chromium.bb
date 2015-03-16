@@ -8,13 +8,19 @@
 // See http://code.google.com/p/googletest/issues/detail?id=371
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "content/common/gpu/media/vaapi_h264_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "third_party/libyuv/include/libyuv.h"
+
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
 
 // This program is run like this:
 // DISPLAY=:0 ./vaapi_h264_decoder_unittest --input_file input.h264
@@ -335,6 +341,8 @@ int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);  // Removes gtest-specific args.
   base::CommandLine::Init(argc, argv);
 
+  base::ShadowingAtExitManager at_exit_manager;
+
   // Needed to enable DVLOG through --vmodule.
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
@@ -362,8 +370,16 @@ int main(int argc, char** argv) {
     }
     if (it->first == "v" || it->first == "vmodule")
       continue;
+    if (it->first == "ozone-platform")
+      continue;
     LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }
+
+#if defined(USE_OZONE)
+  base::MessageLoopForUI main_loop;
+  ui::OzonePlatform::InitializeForUI();
+  ui::OzonePlatform::InitializeForGPU();
+#endif
 
   return RUN_ALL_TESTS();
 }
