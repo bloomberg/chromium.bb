@@ -94,6 +94,7 @@
           "shards": 2
         }
       },
+      "ipc_mojo_unittests",
       "ipc_tests",
       "jingle_unittests",
       {
