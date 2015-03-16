@@ -710,7 +710,7 @@ HANDLE LEAK
 name=http://crbug.com/449989
 system call NtOpenProcess
 KERNELBASE.dll!OpenProcess
-base.dll!base::Process::OpenWithExtraPriviles
+base.dll!base::Process::OpenWithExtraPrivileges
 content.dll!content::BrowserMessageFilter::Internal::OnChannelConnected
 
 UNADDRESSABLE ACCESS

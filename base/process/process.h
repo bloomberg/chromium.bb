@@ -55,7 +55,7 @@ class BASE_EXPORT Process {
   // Returns a Process for the given |pid|. On Windows the handle is opened
   // with more access rights and must only be used by trusted code (can read the
   // address space and duplicate handles).
-  static Process OpenWithExtraPriviles(ProcessId pid);
+  static Process OpenWithExtraPrivileges(ProcessId pid);
 
 #if defined(OS_WIN)
   // Returns a Process for the given |pid|, using some |desired_access|.

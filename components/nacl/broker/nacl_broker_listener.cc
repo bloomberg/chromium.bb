@@ -61,7 +61,7 @@ void NaClBrokerListener::PreSpawnTarget(sandbox::TargetPolicy* policy,
 }
 
 void NaClBrokerListener::OnChannelConnected(int32 peer_pid) {
-  browser_process_ = base::Process::OpenWithExtraPriviles(peer_pid);
+  browser_process_ = base::Process::OpenWithExtraPrivileges(peer_pid);
   CHECK(browser_process_.IsValid());
 }
 

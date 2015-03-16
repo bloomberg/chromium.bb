@@ -238,7 +238,7 @@ Process Process::Open(ProcessId pid) {
 }
 
 // static
-Process Process::OpenWithExtraPriviles(ProcessId pid) {
+Process Process::OpenWithExtraPrivileges(ProcessId pid) {
   // On POSIX there are no privileges to set.
   return Open(pid);
 }

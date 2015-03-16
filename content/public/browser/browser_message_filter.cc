@@ -43,7 +43,7 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
   }
 
   void OnChannelConnected(int32 peer_pid) override {
-    filter_->peer_process_ = base::Process::OpenWithExtraPriviles(peer_pid);
+    filter_->peer_process_ = base::Process::OpenWithExtraPrivileges(peer_pid);
     filter_->OnChannelConnected(peer_pid);
   }
 

@@ -54,7 +54,7 @@ Process Process::Open(ProcessId pid) {
 }
 
 // static
-Process Process::OpenWithExtraPriviles(ProcessId pid) {
+Process Process::OpenWithExtraPrivileges(ProcessId pid) {
   DWORD access = kBasicProcessAccess | PROCESS_DUP_HANDLE | PROCESS_VM_READ;
   return Process(::OpenProcess(access, FALSE, pid));
 }

@@ -275,7 +275,7 @@ bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
 void ChildProcessHostImpl::OnChannelConnected(int32 peer_pid) {
   if (!peer_process_.IsValid()) {
-    peer_process_ = base::Process::OpenWithExtraPriviles(peer_pid);
+    peer_process_ = base::Process::OpenWithExtraPrivileges(peer_pid);
     if (!peer_process_.IsValid())
        peer_process_ = delegate_->GetProcess().Duplicate();
     DCHECK(peer_process_.IsValid());
