@@ -9,9 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "content/public/browser/navigation_controller.h"
@@ -50,7 +48,6 @@ class ExtensionSettingsHandler
       public content::NotificationObserver,
       public content::WebContentsObserver,
       public ErrorConsole::Observer,
-      public ExtensionInstallPrompt::Delegate,
       public ExtensionManagement::Observer,
       public ExtensionPrefsObserver,
       public ExtensionRegistryObserver,
@@ -65,8 +62,6 @@ class ExtensionSettingsHandler
   void GetLocalizedValues(content::WebUIDataSource* source);
 
  private:
-  friend class BrokerDelegate;
-
   // content::WebContentsObserver implementation.
   void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
   void DidStartNavigationToPendingEntry(
@@ -103,13 +98,6 @@ class ExtensionSettingsHandler
 
   // WarningService::Observer implementation.
   void ExtensionWarningsChanged() override;
-
-  // ExtensionInstallPrompt::Delegate implementation.
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
-
-  // Called after the App Info Dialog has closed.
-  virtual void AppInfoDialogClosed();
 
   // Helper method that reloads all unpacked extensions.
   void ReloadUnpackedExtensions();
@@ -168,9 +156,6 @@ class ExtensionSettingsHandler
   // Our model.  Outlives us since it's owned by our containing profile.
   ExtensionService* extension_service_;
 
-  // The id of the extension we are prompting the user about.
-  std::string extension_id_prompting_;
-
   // If true, we will ignore notifications in ::Observe(). This is needed
   // to prevent reloading the page when we were the cause of the
   // notification.
@@ -193,9 +178,6 @@ class ExtensionSettingsHandler
   bool registered_for_notifications_;
 
   content::NotificationRegistrar registrar_;
-
-  // The UI for showing what permissions the extension has.
-  scoped_ptr<ExtensionInstallPrompt> prompt_;
 
   ScopedObserver<WarningService, WarningService::Observer>
       warning_service_observer_;

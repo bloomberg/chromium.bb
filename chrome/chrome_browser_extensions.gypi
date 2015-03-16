@@ -192,6 +192,8 @@
       'browser/extensions/api/declarative_content/content_constants.h',
       'browser/extensions/api/desktop_capture/desktop_capture_api.cc',
       'browser/extensions/api/desktop_capture/desktop_capture_api.h',
+      'browser/extensions/api/developer_private/show_permissions_dialog_helper.cc',
+      'browser/extensions/api/developer_private/show_permissions_dialog_helper.h',
       'browser/extensions/api/developer_private/developer_private_api.cc',
       'browser/extensions/api/developer_private/developer_private_api.h',
       'browser/extensions/api/developer_private/developer_private_mangle.cc',

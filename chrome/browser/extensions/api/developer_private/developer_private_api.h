@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
-#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "content/public/browser/notification_observer.h"
@@ -278,25 +277,20 @@ class DeveloperPrivateReloadFunction : public DeveloperPrivateAPIFunction {
 };
 
 class DeveloperPrivateShowPermissionsDialogFunction
-    : public ChromeSyncExtensionFunction,
-      public ExtensionInstallPrompt::Delegate {
+    : public DeveloperPrivateAPIFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("developerPrivate.showPermissionsDialog",
                              DEVELOPERPRIVATE_PERMISSIONS);
-
   DeveloperPrivateShowPermissionsDialogFunction();
+
  protected:
+  // DeveloperPrivateAPIFunction:
   ~DeveloperPrivateShowPermissionsDialogFunction() override;
+  ResponseAction Run() override;
 
-  // ExtensionFunction:
-  bool RunSync() override;
+  void Finish();
 
-  // Overridden from ExtensionInstallPrompt::Delegate
-  void InstallUIProceed() override;
-  void InstallUIAbort(bool user_initiated) override;
-
-  scoped_ptr<ExtensionInstallPrompt> prompt_;
-  std::string extension_id_;
+  DISALLOW_COPY_AND_ASSIGN(DeveloperPrivateShowPermissionsDialogFunction);
 };
 
 class DeveloperPrivateChooseEntryFunction : public UIThreadExtensionFunction,

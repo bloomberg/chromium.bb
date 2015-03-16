@@ -6,8 +6,6 @@
 
 #include <vector>
 
-#include "apps/app_load_service.h"
-#include "apps/saved_files_service.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -89,45 +87,6 @@ const char kAppsDeveloperToolsExtensionId[] =
 }  // namespace
 
 namespace extensions {
-
-// The install prompt is not necessarily modal (e.g. Mac, Linux Unity). This
-// means that the user can navigate while the dialog is up, causing the dialog
-// handler to outlive the ExtensionSettingsHandler. That's a problem because the
-// dialog framework will try to contact us back once the dialog is closed, which
-// causes a crash. This class is designed to broker the message between the two
-// objects, while managing its own lifetime so that it can outlive the
-// ExtensionSettingsHandler and (when doing so) gracefully ignore the message
-// from the dialog.
-class BrokerDelegate : public ExtensionInstallPrompt::Delegate {
- public:
-  explicit BrokerDelegate(
-      const base::WeakPtr<ExtensionSettingsHandler>& delegate)
-      : delegate_(delegate) {}
-
-  // ExtensionInstallPrompt::Delegate implementation.
-  void InstallUIProceed() override {
-    if (delegate_)
-      delegate_->InstallUIProceed();
-    delete this;
-  };
-
-  void InstallUIAbort(bool user_initiated) override {
-    if (delegate_)
-      delegate_->InstallUIAbort(user_initiated);
-    delete this;
-  };
-
-  void AppInfoDialogClosed() {
-    if (delegate_)
-      delegate_->AppInfoDialogClosed();
-    delete this;
-  }
-
- private:
-  base::WeakPtr<ExtensionSettingsHandler> delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrokerDelegate);
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -407,9 +366,6 @@ void ExtensionSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("extensionSettingsOptions",
       base::Bind(&ExtensionSettingsHandler::HandleOptionsMessage,
                  AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsPermissions",
-      base::Bind(&ExtensionSettingsHandler::HandlePermissionsMessage,
-                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsShowButton",
       base::Bind(&ExtensionSettingsHandler::HandleShowButtonMessage,
                  AsWeakPtr()));
@@ -512,26 +468,6 @@ void ExtensionSettingsHandler::OnExtensionManagementSettingsChanged() {
 
 void ExtensionSettingsHandler::ExtensionWarningsChanged() {
   MaybeUpdateAfterNotification();
-}
-
-// This is called when the user clicks "Revoke File/Device Access."
-void ExtensionSettingsHandler::InstallUIProceed() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  extensions::DevicePermissionsManager::Get(profile)
-      ->Clear(extension_id_prompting_);
-  apps::SavedFilesService::Get(profile)->ClearQueue(
-      extension_service_->GetExtensionById(extension_id_prompting_, true));
-  apps::AppLoadService::Get(profile)
-      ->RestartApplicationIfRunning(extension_id_prompting_);
-  extension_id_prompting_.clear();
-}
-
-void ExtensionSettingsHandler::InstallUIAbort(bool user_initiated) {
-  extension_id_prompting_.clear();
-}
-
-void ExtensionSettingsHandler::AppInfoDialogClosed() {
-  extension_id_prompting_.clear();
 }
 
 void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
@@ -671,62 +607,6 @@ void ExtensionSettingsHandler::HandleOptionsMessage(
     return;
   ExtensionTabUtil::OpenOptionsPage(extension,
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
-}
-
-void ExtensionSettingsHandler::HandlePermissionsMessage(
-    const base::ListValue* args) {
-  std::string extension_id(base::UTF16ToUTF8(ExtractStringValue(args)));
-  CHECK(!extension_id.empty());
-  const Extension* extension =
-      ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
-          ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
-  if (!extension)
-    return;
-
-  if (!extension_id_prompting_.empty())
-    return;  // Only one prompt at a time.
-  extension_id_prompting_ = extension->id();
-
-  // The BrokerDelegate manages its own lifetime.
-  BrokerDelegate* broker_delegate = new BrokerDelegate(AsWeakPtr());
-
-  // Show the new-style extensions dialog when it is available. It is currently
-  // unavailable by default on Mac.
-  if (CanShowAppInfoDialog()) {
-    UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialog.Launches",
-                              AppInfoLaunchSource::FROM_EXTENSIONS_PAGE,
-                              AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
-
-    // Display the dialog at a size similar to the app list.
-    ShowAppInfoInNativeDialog(
-        web_contents()->GetTopLevelNativeWindow(),
-        GetAppInfoNativeDialogSize(),
-        Profile::FromWebUI(web_ui()), extension,
-        base::Bind(&BrokerDelegate::AppInfoDialogClosed,
-                   base::Unretained(broker_delegate)));
-  } else {
-    prompt_.reset(new ExtensionInstallPrompt(web_contents()));
-    std::vector<base::FilePath> retained_file_paths;
-    if (extension->permissions_data()->HasAPIPermission(
-            APIPermission::kFileSystem)) {
-      std::vector<apps::SavedFileEntry> retained_file_entries =
-          apps::SavedFilesService::Get(Profile::FromWebUI(web_ui()))
-              ->GetAllFileEntries(extension_id_prompting_);
-      for (size_t i = 0; i < retained_file_entries.size(); ++i) {
-        retained_file_paths.push_back(retained_file_entries[i].path);
-      }
-    }
-    std::vector<base::string16> retained_device_messages;
-    if (extension->permissions_data()->HasAPIPermission(APIPermission::kUsb)) {
-      retained_device_messages =
-          extensions::DevicePermissionsManager::Get(
-              Profile::FromWebUI(web_ui()))
-              ->GetPermissionMessageStrings(extension_id_prompting_);
-    }
-
-    prompt_->ReviewPermissions(broker_delegate, extension, retained_file_paths,
-                               retained_device_messages);
-  }
 }
 
 void ExtensionSettingsHandler::HandleShowButtonMessage(

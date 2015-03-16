@@ -172,10 +172,15 @@ cr.define('extensions', function() {
     /**
      * Indicates whether an uninstall dialog is being shown to prevent multiple
      * dialogs from being displayed.
-     * @type {boolean}
-     * @private
+     * @private {boolean}
      */
     uninstallIsShowing_: false,
+
+    /**
+     * Indicates whether a permissions prompt is showing.
+     * @private {boolean}
+     */
+    permissionsPromptIsShowing_: false,
 
     /**
      * Necessary to only show the butterbar once.
@@ -375,7 +380,13 @@ cr.define('extensions', function() {
 
       // The 'Permissions' link.
       row.setupColumn('.permissions-link', 'details', 'click', function(e) {
-        chrome.send('extensionSettingsPermissions', [extension.id]);
+        if (!this.permissionsPromptIsShowing_) {
+          chrome.developerPrivate.showPermissionsDialog(extension.id,
+                                                        function() {
+            this.permissionsPromptIsShowing_ = false;
+          }.bind(this));
+          this.permissionsPromptIsShowing_ = true;
+        }
         e.preventDefault();
       });
 

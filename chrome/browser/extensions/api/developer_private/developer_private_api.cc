@@ -4,8 +4,6 @@
 
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 
-#include "apps/app_load_service.h"
-#include "apps/saved_files_service.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -17,6 +15,7 @@
 #include "chrome/browser/extensions/api/developer_private/developer_private_mangle.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/developer_private/extension_info_generator.h"
+#include "chrome/browser/extensions/api/developer_private/show_permissions_dialog_helper.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -39,7 +38,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_error.h"
@@ -88,6 +86,8 @@ const char kNoSuchRendererError[] = "No such renderer.";
 const char kInvalidPathError[] = "Invalid path.";
 const char kManifestKeyIsRequiredError[] =
     "The 'manifestKey' argument is required for manifest files.";
+const char kCouldNotFindWebContentsError[] =
+    "Could not find a valid web contents.";
 
 const char kUnpackedAppsFolder[] = "apps_target";
 const char kManifestFile[] = "manifest.json";
@@ -540,6 +540,8 @@ DeveloperPrivateAllowIncognitoFunction::Run() {
 DeveloperPrivateAllowIncognitoFunction::
     ~DeveloperPrivateAllowIncognitoFunction() {}
 
+DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() {}
+
 ExtensionFunction::ResponseAction DeveloperPrivateReloadFunction::Run() {
   scoped_ptr<Reload::Params> params(Reload::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -563,70 +565,38 @@ ExtensionFunction::ResponseAction DeveloperPrivateReloadFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-bool DeveloperPrivateShowPermissionsDialogFunction::RunSync() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_id_));
-  CHECK(!extension_id_.empty());
-  AppWindowRegistry* registry = AppWindowRegistry::Get(GetProfile());
-  DCHECK(registry);
-  AppWindow* app_window =
-      registry->GetAppWindowForRenderViewHost(render_view_host());
-  prompt_.reset(new ExtensionInstallPrompt(app_window->web_contents()));
-  const Extension* extension =
-      ExtensionRegistry::Get(GetProfile())
-          ->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
-
-  if (!extension)
-    return false;
-
-  // Released by InstallUIAbort or InstallUIProceed.
-  AddRef();
-  std::vector<base::FilePath> retained_file_paths;
-  if (extension->permissions_data()->HasAPIPermission(
-          APIPermission::kFileSystem)) {
-    std::vector<apps::SavedFileEntry> retained_file_entries =
-        apps::SavedFilesService::Get(GetProfile())
-            ->GetAllFileEntries(extension_id_);
-    for (size_t i = 0; i < retained_file_entries.size(); i++) {
-      retained_file_paths.push_back(retained_file_entries[i].path);
-    }
-  }
-  std::vector<base::string16> retained_device_messages;
-  if (extension->permissions_data()->HasAPIPermission(APIPermission::kUsb)) {
-    retained_device_messages =
-        extensions::DevicePermissionsManager::Get(GetProfile())
-            ->GetPermissionMessageStrings(extension_id_);
-  }
-  prompt_->ReviewPermissions(
-      this, extension, retained_file_paths, retained_device_messages);
-  return true;
-}
-
-DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() {}
-
-// This is called when the user clicks "Revoke File Access."
-void DeveloperPrivateShowPermissionsDialogFunction::InstallUIProceed() {
-  Profile* profile = GetProfile();
-  extensions::DevicePermissionsManager::Get(profile)->Clear(extension_id_);
-  const Extension* extension = ExtensionRegistry::Get(
-      profile)->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
-  apps::SavedFilesService::Get(profile)->ClearQueue(extension);
-  apps::AppLoadService::Get(profile)
-      ->RestartApplicationIfRunning(extension_id_);
-  SendResponse(true);
-  Release();
-}
-
-void DeveloperPrivateShowPermissionsDialogFunction::InstallUIAbort(
-    bool user_initiated) {
-  SendResponse(true);
-  Release();
-}
+DeveloperPrivateShowPermissionsDialogFunction::
+DeveloperPrivateShowPermissionsDialogFunction() {}
 
 DeveloperPrivateShowPermissionsDialogFunction::
-    DeveloperPrivateShowPermissionsDialogFunction() {}
+~DeveloperPrivateShowPermissionsDialogFunction() {}
 
-DeveloperPrivateShowPermissionsDialogFunction::
-    ~DeveloperPrivateShowPermissionsDialogFunction() {}
+ExtensionFunction::ResponseAction
+DeveloperPrivateShowPermissionsDialogFunction::Run() {
+  scoped_ptr<developer::ShowPermissionsDialog::Params> params(
+      developer::ShowPermissionsDialog::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const Extension* target_extension = GetExtensionById(params->extension_id);
+  if (!target_extension)
+    return RespondNow(Error(kNoSuchExtensionError));
+
+  content::WebContents* web_contents = GetSenderWebContents();
+  if (!web_contents)
+    return RespondNow(Error(kCouldNotFindWebContentsError));
+
+  ShowPermissionsDialogHelper::Show(
+      browser_context(),
+      web_contents,
+      target_extension,
+      source_context_type() == Feature::WEBUI_CONTEXT,
+      base::Bind(&DeveloperPrivateShowPermissionsDialogFunction::Finish, this));
+  return RespondLater();
+}
+
+void DeveloperPrivateShowPermissionsDialogFunction::Finish() {
+  Respond(NoArguments());
+}
 
 ExtensionFunction::ResponseAction DeveloperPrivateInspectFunction::Run() {
   scoped_ptr<developer::Inspect::Params> params(
