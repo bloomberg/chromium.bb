@@ -7,5 +7,5 @@ Comparing viewports...
   viewports match, SUCCESS
 Comparing selection ranges...
   original selection range: {"startLine":203,"startColumn":7,"endLine":203,"endColumn":7}
-  current selection range: {"startLine":203,"startColumn":13,"endLine":203,"endColumn":13}
+  current selection range: {"startLine":203,"startColumn":7,"endLine":203,"endColumn":13}
 
