@@ -9,6 +9,9 @@
 # http://crbug.com/450221
 ProfileChooserViewExtensionsTest.LockProfileNoBlockOtherProfileExtensions
 
+# http://crbug.com/467514
+AsyncExtensionSettingsWebUITest.testErrorListButtonVisibility
+
 # it takes too long to run all browser_tests with Dr.Memory,
 # and we only select subset to run
 # A*
