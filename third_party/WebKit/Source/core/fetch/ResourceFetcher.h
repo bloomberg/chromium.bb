@@ -55,7 +55,6 @@ class XSLStyleSheetResource;
 class Document;
 class DocumentLoader;
 class LocalFrame;
-class ImageLoader;
 class KURL;
 class ResourceTimingInfo;
 class ResourceLoaderSet;
@@ -170,7 +169,6 @@ public:
     static ResourceFetcher* toResourceFetcher(ResourceLoaderHost*);
 
 private:
-    friend class ImageLoader;
     friend class ResourceCacheValidationSuppressor;
     friend class ResourceFetcherUpgradeTest;
     friend class ResourceFetcherHintsTest;

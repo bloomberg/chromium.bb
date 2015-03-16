@@ -206,17 +206,6 @@ static void configureRequest(FetchRequest& request, ImageLoader::BypassMainWorld
         request.setCrossOriginAccessControl(element.document().securityOrigin(), crossOriginMode);
 }
 
-ResourcePtr<ImageResource> ImageLoader::createImageResourceForImageDocument(Document& document, FetchRequest& request)
-{
-    bool autoLoadOtherImages = document.fetcher()->autoLoadImages();
-    document.fetcher()->setAutoLoadImages(false);
-    ResourcePtr<ImageResource> newImage = new ImageResource(request.resourceRequest());
-    newImage->setLoading(true);
-    document.fetcher()->m_documentResources.set(newImage->url(), newImage.get());
-    document.fetcher()->setAutoLoadImages(autoLoadOtherImages);
-    return newImage;
-}
-
 inline void ImageLoader::dispatchErrorEvent()
 {
     m_hasPendingErrorEvent = true;
@@ -274,10 +263,16 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         FetchRequest request(resourceRequest, element()->localName(), resourceLoaderOptions);
         configureRequest(request, bypassBehavior, *m_element);
 
+        // Prevent the immediate creation of a ResourceLoader (and therefore a network
+        // request) for ImageDocument loads. In this case, the image contents have already
+        // been requested as a main resource and ImageDocumentParser will take care of
+        // funneling the main resource bytes into the ImageResource.
         if (m_loadingImageDocument)
-            newImage = createImageResourceForImageDocument(document, request);
-        else
-            newImage = document.fetcher()->fetchImage(request);
+            request.setDefer(FetchRequest::DeferredByClient);
+
+        newImage = document.fetcher()->fetchImage(request);
+        if (m_loadingImageDocument && newImage)
+            newImage->setLoading(true);
 
         if (!newImage && !pageIsBeingDismissed(&document)) {
             crossSiteOrCSPViolationOccurred(imageSourceURL);

@@ -266,7 +266,8 @@ ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
     if (request.resourceRequest().url().protocolIsData())
         preCacheDataURIImage(request);
 
-    request.setDefer(clientDefersImage(request.resourceRequest().url()) ? FetchRequest::DeferredByClient : FetchRequest::NoDefer);
+    if (clientDefersImage(request.resourceRequest().url()))
+        request.setDefer(FetchRequest::DeferredByClient);
     ResourcePtr<Resource> resource = requestResource(Resource::Image, request);
     return resource && resource->type() == Resource::Image ? toImageResource(resource) : 0;
 }
