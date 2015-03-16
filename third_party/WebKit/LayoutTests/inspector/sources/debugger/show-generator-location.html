@@ -24,17 +24,8 @@ var iterSuspended2 = forward(gen(), 2);
 var iterSuspended3 = forward(gen(), 3);
 var iterClosed = forward(gen(), 4);
 
-var old = testRunner.closeWebInspector;
-testRunner.closeWebInspector = function()
-{
-    testRunner.closeWebInspector = old;
-    testRunner.closeWebInspector();
-    testRunner.logToStderr("closeWebInspector");
-}
-
 function test()
 {
-    InspectorTest.startDumpingProtocolMessages();
     var panel = WebInspector.panels.sources;
 
     function performStandardTestCase(pageExpression, next)
