@@ -34,6 +34,7 @@ class Abi {
     GENERAL,
     READ_ONLY,
     X86_64_TRUSTED_PTR,
+    READ_ONLY_ZERO,
     REG_TYPE_CNT
   };
 

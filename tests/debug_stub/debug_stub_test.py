@@ -360,6 +360,12 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['esp'], 0x88000099)
       self.assertEquals(registers['eflags'] & KNOWN_X86_FLAGS_MASK,
                         RESET_X86_FLAGS_VALUE)
+      self.assertEquals(registers['cs'], 0x00000000)
+      self.assertEquals(registers['ds'], 0x00000000)
+      self.assertEquals(registers['es'], 0x00000000)
+      self.assertEquals(registers['fs'], 0x00000000)
+      self.assertEquals(registers['gs'], 0x00000000)
+      self.assertEquals(registers['ss'], 0x00000000)
     elif ARCH == 'x86-64':
       self.assertEquals(registers['rax'], 0x1100000000000022)
       self.assertEquals(registers['rbx'], 0x2200000000000033)
@@ -378,6 +384,12 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['rbp'], registers['r15'] + 0x23400432)
       self.assertEquals(registers['eflags'] & KNOWN_X86_FLAGS_MASK,
                         RESET_X86_FLAGS_VALUE)
+      self.assertEquals(registers['cs'], 0x00000000)
+      self.assertEquals(registers['ds'], 0x00000000)
+      self.assertEquals(registers['es'], 0x00000000)
+      self.assertEquals(registers['fs'], 0x00000000)
+      self.assertEquals(registers['gs'], 0x00000000)
+      self.assertEquals(registers['ss'], 0x00000000)
     elif ARCH == 'arm':
       self.assertEquals(registers['r0'], 0x00000001)
       self.assertEquals(registers['r1'], 0x10000002)
@@ -470,22 +482,28 @@ class DebugStubTest(unittest.TestCase):
 
   def CheckReadOnlyRegisters(self, connection):
     if ARCH == 'x86-32':
-      sample_read_only_regs = ['cs', 'ds']
+      read_only_regs = []
+      read_only_zero_regs = ['cs', 'ds', 'es', 'fs', 'gs', 'ss']
     elif ARCH == 'x86-64':
-      sample_read_only_regs = ['r15', 'cs', 'ds']
+      read_only_regs = ['r15']
+      read_only_zero_regs = ['cs', 'ds', 'es', 'fs', 'gs', 'ss']
     elif ARCH == 'arm':
-      sample_read_only_regs = []
+      read_only_regs = []
+      read_only_zero_regs = []
     elif ARCH == 'mips32':
-      sample_read_only_regs = ['zero']
+      read_only_regs = ['zero', 'k0', 'k1']
+      read_only_zero_regs = []
     else:
       raise AssertionError('Unknown architecture')
 
-    for reg_name in sample_read_only_regs:
+    for reg_name in read_only_regs + read_only_zero_regs:
       # Read registers.
       regs = DecodeRegs(connection.RspRequest('g'))
 
       # Change a register.
       old_value = regs[reg_name]
+      if reg_name in read_only_zero_regs:
+        self.assertEquals(old_value, 0)
       regs[reg_name] += 1
 
       # Write registers.

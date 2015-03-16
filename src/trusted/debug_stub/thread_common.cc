@@ -57,14 +57,19 @@ class Thread : public IThread {
   virtual bool GetRegister(uint32_t index, void *dst, uint32_t len) {
     const gdb_rsp::Abi *abi = gdb_rsp::Abi::Get();
     const gdb_rsp::Abi::RegDef *reg = abi->GetRegisterDef(index);
-    memcpy(dst, (char *) &context_ + reg->offset_, len);
+    if (reg->type_ == gdb_rsp::Abi::READ_ONLY_ZERO) {
+      memset(dst, 0, len);
+    } else {
+      memcpy(dst, (char *) &context_ + reg->offset_, len);
+    }
     return false;
   }
 
   virtual bool SetRegister(uint32_t index, void* src, uint32_t len) {
     const gdb_rsp::Abi *abi = gdb_rsp::Abi::Get();
     const gdb_rsp::Abi::RegDef *reg = abi->GetRegisterDef(index);
-    if (reg->type_ == gdb_rsp::Abi::READ_ONLY) {
+    if (reg->type_ == gdb_rsp::Abi::READ_ONLY ||
+        reg->type_ == gdb_rsp::Abi::READ_ONLY_ZERO) {
       // Do not change read-only registers.
       // TODO(eaeltsin): it is an error if new value is not equal to old value.
       // Suppress it for now as this is used in G packet that writes all
