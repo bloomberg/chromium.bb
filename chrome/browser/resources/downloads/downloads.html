@@ -57,22 +57,26 @@
         <canvas class="progress"></canvas>
         <img class="icon" alt="">
         <div class="title-area">
-          <a is="action-link" class="name"></a>
+          <a is="action-link" class="name" column-type="name"></a>
           <span class="name"></span>
           <span class="status"></span>
         </div>
         <div class="url-container">
-          <a class="src-url" target="_blank"></a>
+          <a class="src-url" target="_blank" column-type="url"></a>
         </div>
         <div class="controls">
-          <a is="action-link" class="show"
+          <a is="action-link" class="show" column-type="show"
               i18n-content="control_showinfolder"></a>
-          <a class="retry" i18n-content="control_retry" download></a>
-          <a is="action-link" class="pause" i18n-content="control_pause"></a>
-          <a is="action-link" class="resume" i18n-content="control_resume"></a>
-          <a is="action-link" class="remove"
+          <a class="retry" column-type="retry" i18n-content="control_retry"
+              download></a>
+          <a is="action-link" class="pause" column-type="pause"
+              i18n-content="control_pause"></a>
+          <a is="action-link" class="resume" column-type="resume"
+              i18n-content="control_resume"></a>
+          <a is="action-link" class="remove" column-type="remove"
               i18n-content="control_removefromlist"></a>
-          <a is="action-link" class="cancel" i18n-content="control_cancel"></a>
+          <a is="action-link" class="cancel" column-type="cancel"
+              i18n-content="control_cancel"></a>
           <span class="controlled-by"
               i18n-values=".innerHTML:control_by_extension"></span>
         </div>
@@ -81,13 +85,15 @@
         <img class="icon" alt="">
         <div class="description"></div>
         <div class="controls">
-          <a is="action-link" class="restore"
+          <a is="action-link" class="restore" column-type="save"
               i18n-content="danger_restore"></a>
-          <a is="action-link" class="remove"
+          <a is="action-link" class="remove" column-type="discard"
               i18n-content="control_removefromlist"></a>
         </div>
-        <button class="save" i18n-content="danger_save"></button>
-        <button class="discard" i18n-content="danger_discard"></button>
+        <button class="save" column-type="save"
+            i18n-content="danger_save"></button>
+        <button class="discard" column-type="discard"
+            i18n-content="danger_discard"></button>
       </div>
     </div>
   </div>

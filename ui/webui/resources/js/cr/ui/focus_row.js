@@ -54,6 +54,9 @@ cr.define('cr.ui', function() {
     onMousedown: assertNotReached,
   };
 
+  /** @const {string} */
+  FocusRow.ACTIVE_CLASS = 'focus-row-active';
+
   FocusRow.prototype = {
     __proto__: HTMLDivElement.prototype,
 
@@ -105,6 +108,8 @@ cr.define('cr.ui', function() {
       assert(this.focusableElements.indexOf(element) == -1);
       assert(this.contains(element));
 
+      element.tabIndex = this.isActive() ? 0 : -1;
+
       this.focusableElements.push(element);
       this.eventTracker_.add(element, 'mousedown',
                              this.onMousedown_.bind(this));
@@ -118,12 +123,12 @@ cr.define('cr.ui', function() {
      * @private
     */
     onFocusChange_: function(element) {
-      var isActive = this.contains(element);
-      var wasActive = this.classList.contains('focus-row-active');
+      this.makeActive(this.contains(element));
+    },
 
-      // Only send events if the active state is different for the row.
-      if (isActive != wasActive)
-        this.makeRowActive(isActive);
+    /** @return {boolean} Whether this row is currently active. */
+    isActive: function() {
+      return this.classList.contains(FocusRow.ACTIVE_CLASS);
     },
 
     /**
@@ -131,17 +136,21 @@ cr.define('cr.ui', function() {
      * tabIndex can be set properly.
      * @param {boolean} active True if tab is allowed for this row.
      */
-    makeRowActive: function(active) {
+    makeActive: function(active) {
+      if (active == this.isActive())
+        return;
+
       this.focusableElements.forEach(function(element) {
         element.tabIndex = active ? 0 : -1;
       });
 
-      this.classList.toggle('focus-row-active', active);
+      this.classList.toggle(FocusRow.ACTIVE_CLASS, active);
       this.onActiveStateChanged(active);
     },
 
-    /** Call this to clean up event handling before dereferencing. */
+    /** Dereferences nodes and removes event handlers. */
     destroy: function() {
+      this.focusableElements.length = 0;
       this.eventTracker_.removeAll();
     },
 

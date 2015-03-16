@@ -23,39 +23,39 @@ cr.define('downloads', function() {
     this.safeImg_ = /** @type !HTMLImageElement */(
         this.queryRequired_('.safe img'));
     this.fileName_ = this.queryRequired_('span.name');
-    this.fileLink = this.queryRequired_('[is="action-link"].name');
+    this.fileLink_ = this.queryRequired_('[is="action-link"].name');
     this.status_ = this.queryRequired_('.status');
-    this.srcUrl = this.queryRequired_('.src-url');
-    this.show = this.queryRequired_('.show');
-    this.retry = this.queryRequired_('.retry');
-    this.pause = this.queryRequired_('.pause');
-    this.resume = this.queryRequired_('.resume');
-    this.safeRemove = this.queryRequired_('.safe .remove');
-    this.cancel = this.queryRequired_('.cancel');
-    this.controlledBy = this.queryRequired_('.controlled-by');
+    this.srcUrl_ = this.queryRequired_('.src-url');
+    this.show_ = this.queryRequired_('.show');
+    this.retry_ = this.queryRequired_('.retry');
+    this.pause_ = this.queryRequired_('.pause');
+    this.resume_ = this.queryRequired_('.resume');
+    this.safeRemove_ = this.queryRequired_('.safe .remove');
+    this.cancel_ = this.queryRequired_('.cancel');
+    this.controlledBy_ = this.queryRequired_('.controlled-by');
 
     this.dangerous_ = this.queryRequired_('.dangerous');
     this.dangerImg_ = /** @type {!HTMLImageElement} */(
         this.queryRequired_('.dangerous img'));
     this.description_ = this.queryRequired_('.description');
     this.malwareControls_ = this.queryRequired_('.dangerous .controls');
-    this.restore = this.queryRequired_('.restore');
-    this.dangerRemove = this.queryRequired_('.dangerous .remove');
-    this.save = this.queryRequired_('.save');
-    this.discard = this.queryRequired_('.discard');
+    this.restore_ = this.queryRequired_('.restore');
+    this.dangerRemove_ = this.queryRequired_('.dangerous .remove');
+    this.save_ = this.queryRequired_('.save');
+    this.discard_ = this.queryRequired_('.discard');
 
     // Event handlers (bound once on creation).
     this.safe_.ondragstart = this.onSafeDragstart_.bind(this);
-    this.fileLink.onclick = this.onFileLinkClick_.bind(this);
-    this.show.onclick = this.onShowClick_.bind(this);
-    this.pause.onclick = this.onPauseClick_.bind(this);
-    this.resume.onclick = this.onResumeClick_.bind(this);
-    this.safeRemove.onclick = this.onSafeRemoveClick_.bind(this);
-    this.cancel.onclick = this.onCancelClick_.bind(this);
-    this.restore.onclick = this.onRestoreClick_.bind(this);
-    this.save.onclick = this.onSaveClick_.bind(this);
-    this.dangerRemove.onclick = this.onDangerRemoveClick_.bind(this);
-    this.discard.onclick = this.onDiscardClick_.bind(this);
+    this.fileLink_.onclick = this.onFileLinkClick_.bind(this);
+    this.show_.onclick = this.onShowClick_.bind(this);
+    this.pause_.onclick = this.onPauseClick_.bind(this);
+    this.resume_.onclick = this.onResumeClick_.bind(this);
+    this.safeRemove_.onclick = this.onSafeRemoveClick_.bind(this);
+    this.cancel_.onclick = this.onCancelClick_.bind(this);
+    this.restore_.onclick = this.onRestoreClick_.bind(this);
+    this.save_.onclick = this.onSaveClick_.bind(this);
+    this.dangerRemove_.onclick = this.onDangerRemoveClick_.bind(this);
+    this.discard_.onclick = this.onDiscardClick_.bind(this);
   }
 
   /** Progress meter constants. */
@@ -186,8 +186,8 @@ cr.define('downloads', function() {
             data.danger_type == Item.DangerType.POTENTIALLY_UNWANTED;
 
         this.malwareControls_.hidden = !showMalwareControls;
-        this.discard.hidden = showMalwareControls;
-        this.save.hidden = showMalwareControls;
+        this.discard_.hidden = showMalwareControls;
+        this.save_.hidden = showMalwareControls;
       } else {
         var path = encodeURIComponent(data.file_path);
         ItemView.loadScaledIcon(this.safeImg_, 'chrome://fileicon/' + path);
@@ -198,44 +198,45 @@ cr.define('downloads', function() {
         /** @const */ var completelyOnDisk =
             data.state == Item.States.COMPLETE && !data.file_externally_removed;
 
-        this.fileLink.href = data.url;
-        this.ensureTextIs_(this.fileLink, data.file_name);
-        this.fileLink.hidden = !completelyOnDisk;
+        this.fileLink_.href = data.url;
+        this.ensureTextIs_(this.fileLink_, data.file_name);
+        this.fileLink_.hidden = !completelyOnDisk;
 
         /** @const */ var isInterrupted = data.state == Item.States.INTERRUPTED;
         this.fileName_.classList.toggle('interrupted', isInterrupted);
         this.ensureTextIs_(this.fileName_, data.file_name);
         this.fileName_.hidden = completelyOnDisk;
 
-        this.show.hidden = !completelyOnDisk;
+        this.show_.hidden = !completelyOnDisk;
 
-        this.retry.href = data.url;
-        this.retry.hidden = !data.retry;
+        this.retry_.href = data.url;
+        this.retry_.hidden = !data.retry;
 
-        this.pause.hidden = !isInProgress;
+        this.pause_.hidden = !isInProgress;
 
-        this.resume.hidden = !data.resume;
+        this.resume_.hidden = !data.resume;
 
         /** @const */ var isPaused = data.state == Item.States.PAUSED;
         /** @const */ var showCancel = isPaused || isInProgress;
-        this.cancel.hidden = !showCancel;
+        this.cancel_.hidden = !showCancel;
 
-        this.safeRemove.hidden = showCancel ||
+        this.safeRemove_.hidden = showCancel ||
             !loadTimeData.getBoolean('allow_deleting_history');
 
         /** @const */ var controlledByExtension = data.by_ext_id &&
                                                   data.by_ext_name;
-        this.controlledBy.hidden = !controlledByExtension;
+        this.controlledBy_.hidden = !controlledByExtension;
         if (controlledByExtension) {
-          var link = this.controlledBy.querySelector('a');
+          var link = this.controlledBy_.querySelector('a');
           link.href = 'chrome://extensions#' + data.by_ext_id;
+          link.setAttribute('column-type', 'controlled-by');
           link.textContent = data.by_ext_name;
         }
 
         this.ensureTextIs_(this.since_, data.since_string);
         this.ensureTextIs_(this.date_, data.date_string);
-        this.ensureTextIs_(this.srcUrl, data.url);
-        this.srcUrl.href = data.url;
+        this.ensureTextIs_(this.srcUrl_, data.url);
+        this.srcUrl_.href = data.url;
         this.ensureTextIs_(this.status_, this.getStatusText_(data));
 
         this.foregroundProgress_.hidden = !isInProgress;

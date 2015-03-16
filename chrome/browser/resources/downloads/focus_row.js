@@ -20,21 +20,7 @@ cr.define('downloads', function() {
   FocusRow.decorate = function(focusRow, itemView, boundary) {
     focusRow.__proto__ = FocusRow.prototype;
     focusRow.decorate(boundary);
-
-    // Add all clickable elements as a row into the grid.
-    focusRow.addElementIfFocusable_(itemView.fileLink, 'name');
-    focusRow.addElementIfFocusable_(itemView.srcUrl, 'url');
-    focusRow.addElementIfFocusable_(itemView.show, 'show');
-    focusRow.addElementIfFocusable_(itemView.retry, 'retry');
-    focusRow.addElementIfFocusable_(itemView.pause, 'pause');
-    focusRow.addElementIfFocusable_(itemView.resume, 'resume');
-    focusRow.addElementIfFocusable_(itemView.safeRemove, 'remove');
-    focusRow.addElementIfFocusable_(itemView.cancel, 'cancel');
-    focusRow.addElementIfFocusable_(itemView.restore, 'save');
-    focusRow.addElementIfFocusable_(itemView.save, 'save');
-    focusRow.addElementIfFocusable_(itemView.dangerRemove, 'discard');
-    focusRow.addElementIfFocusable_(itemView.discard, 'discard');
-    focusRow.addElementIfFocusable_(itemView.controlledBy, 'extension');
+    focusRow.addFocusableElements_();
   };
 
   FocusRow.prototype = {
@@ -50,6 +36,7 @@ cr.define('downloads', function() {
       var equivalent = this.querySelector('[column-type=' + columnType + ']');
 
       if (this.focusableElements.indexOf(equivalent) < 0) {
+        equivalent = null;
         var equivalentTypes =
             ['show', 'retry', 'pause', 'resume', 'remove', 'cancel'];
         if (equivalentTypes.indexOf(columnType) != -1) {
@@ -64,15 +51,13 @@ cr.define('downloads', function() {
       return assert(equivalent || this.focusableElements[0]);
     },
 
-    /**
-     * @param {Element} element The element that should be added.
-     * @param {string} type The column type to use for the element.
-     * @private
-     */
-    addElementIfFocusable_: function(element, type) {
-      if (this.shouldFocus_(element)) {
-        this.addFocusableElement(element);
-        element.setAttribute('column-type', type);
+    /** @private */
+    addFocusableElements_: function() {
+      var possiblyFocusableElements = this.querySelectorAll('[column-type]');
+      for (var i = 0; i < possiblyFocusableElements.length; ++i) {
+        var possiblyFocusableElement = possiblyFocusableElements[i];
+        if (this.shouldFocus_(possiblyFocusableElement))
+          this.addFocusableElement(possiblyFocusableElement);
       }
     },
 

@@ -102,7 +102,14 @@ cr.define('downloads', function() {
 
     /** @param {!downloads.Data} data Info about the item to update. */
     updateItem: function(data) {
-      this.idMap_[data.id].render(data);
+      var activeElement = document.activeElement;
+
+      var item = this.idMap_[data.id];
+      item.render(data);
+      var focusRow = this.decorateItem_(item);
+
+      if (activeElement != document.activeElement)
+        focusRow.getEquivalentElement(activeElement).focus();
     },
 
     /**
@@ -117,15 +124,23 @@ cr.define('downloads', function() {
       this.focusGrid_.destroy();
 
       this.items_.forEach(function(item) {
-        downloads.FocusRow.decorate(item.view.node, item.view, this.node_);
-        var focusRow = assertInstanceof(item.view.node, downloads.FocusRow);
+        var focusRow = this.decorateItem_(item);
         this.focusGrid_.addRow(focusRow);
 
-        // Focus the equivalent element in the focusRow because the active
-        // element may no longer be visible.
-        if (focusRow.contains(activeElement))
+        if (activeElement != document.activeElement &&
+            focusRow.contains(activeElement)) {
           focusRow.getEquivalentElement(activeElement).focus();
+        }
       }, this);
+    },
+
+    /**
+     * @param {!downloads.Item} item An item to decorate as a FocusRow.
+     * @return {!downloads.FocusRow} |item| decorated as a FocusRow.
+     */
+    decorateItem_: function(item) {
+      downloads.FocusRow.decorate(item.view.node, item.view, this.node_);
+      return assertInstanceof(item.view.node, downloads.FocusRow);
     },
 
     /** @return {number} The number of downloads shown on the page. */
