@@ -154,8 +154,8 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
     EXPECT_TRUE(observer.last_navigation_succeeded());
   }
 
-  // The RenderFrameHost should have changed.
-  EXPECT_NE(initial_rfh, static_cast<WebContentsImpl*>(shell()->web_contents())
+  // The RenderFrameHost should not have changed.
+  EXPECT_EQ(initial_rfh, static_cast<WebContentsImpl*>(shell()->web_contents())
                              ->GetFrameTree()->root()->current_frame_host());
 }
 

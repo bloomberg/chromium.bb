@@ -787,9 +787,12 @@ TEST_F(NavigationControllerTest, LoadURL_NewPending) {
       kExistingURL2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(0U, notifications.size());
 
-  // After the beforeunload but before it commits, do a new navigation.
+  // After the beforeunload but before it commits...
   main_test_rfh()->PrepareForCommit();
+
+  // ... Do a new navigation.
   const GURL kNewURL("http://see");
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(kNewURL, true);
   main_test_rfh()->PrepareForCommit();
   contents()->GetMainFrame()->SendNavigate(3, kNewURL);
 
@@ -1009,6 +1012,7 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   const GURL kNewURL("http://eh");
   controller.LoadURL(
       kNewURL, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  main_test_rfh()->PrepareForCommit();
   EXPECT_EQ(0U, notifications.size());
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
@@ -1635,11 +1639,13 @@ TEST_F(NavigationControllerTest, Forward) {
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
 
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(url1, true);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(0, url1);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(url2, true);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(1, url2);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
@@ -1704,10 +1710,12 @@ TEST_F(NavigationControllerTest, Forward_GeneratesNewPage) {
   const GURL url2("http://foo2");
   const GURL url3("http://foo3");
 
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(url1, true);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(0, url1);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
+  main_test_rfh()->SendRendererInitiatedNavigationRequest(url2, true);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(1, url2);
   EXPECT_EQ(1U, navigation_entry_committed_counter_);

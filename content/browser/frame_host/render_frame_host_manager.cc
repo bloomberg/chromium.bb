@@ -751,9 +751,16 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // The appropriate RenderFrameHost to commit the navigation.
   RenderFrameHostImpl* navigation_rfh = nullptr;
 
-  // TODO(carlosk): do not swap processes for renderer initiated navigations
-  // (see crbug.com/440266).
+  // Renderer-initiated navigations that may require a SiteInstance swap are
+  // sent to the browser via the OpenURL IPC and are afterwards treated as
+  // browser-initiated navigations. NavigationRequests marked as
+  // renderer-initiated are created by receiving a BeginNavigation IPC, and will
+  // then proceed in the same renderer that sent the IPC due to the condition
+  // below.
+  // TODO(carlosk): Once there is support for cross-process scripting check for
+  // non-browser-initiated navigations should be removed (see crbug.com/440266).
   if (current_site_instance == dest_site_instance.get() ||
+      !request.browser_initiated() ||
       (!frame_tree_node_->IsMainFrame() &&
        !base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kSitePerProcess))) {
