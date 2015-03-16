@@ -567,13 +567,13 @@ bool InlineLoginHandlerImpl::CanOffer(Profile* profile,
     // If some profile, not just the current one, is already connected to this
     // account, don't show the infobar.
     if (g_browser_process && !same_email) {
-      ProfileManager* manager = g_browser_process->profile_manager();
-      if (manager) {
-        ProfileInfoCache& cache = manager->GetProfileInfoCache();
+      ProfileManager* profile_manager = g_browser_process->profile_manager();
+      if (profile_manager) {
+        ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
         for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
-          std::string current_email =
+          std::string profile_email =
               base::UTF16ToUTF8(cache.GetUserNameOfProfileAtIndex(i));
-          if (gaia::AreEmailsSame(email, current_email)) {
+          if (gaia::AreEmailsSame(email, profile_email)) {
             if (error_message) {
               error_message->assign(
                   l10n_util::GetStringUTF8(IDS_SYNC_USER_NAME_IN_USE_ERROR));
