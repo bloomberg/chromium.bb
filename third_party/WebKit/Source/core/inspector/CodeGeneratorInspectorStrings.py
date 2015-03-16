@@ -32,14 +32,13 @@
 frontend_domain_class = (
 """    class $domainClassName {
     public:
+        static $domainClassName* from(InspectorFrontend* frontend) { return &(frontend->m_$domainFieldName) ;}
         $domainClassName(InspectorFrontendChannel* inspectorFrontendChannel) : m_inspectorFrontendChannel(inspectorFrontendChannel) { }
 ${frontendDomainMethodDeclarations}
         void flush() { m_inspectorFrontendChannel->flush(); }
     private:
         InspectorFrontendChannel* m_inspectorFrontendChannel;
     };
-
-    $domainClassName* $domainFieldName() { return &m_$domainFieldName; }
 
 """)
 

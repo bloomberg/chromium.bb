@@ -47,7 +47,7 @@ class HeapStatsUpdateTask;
 
 typedef String ErrorString;
 
-class InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent>, public InspectorBackendDispatcher::HeapProfilerCommandHandler {
+class InspectorHeapProfilerAgent final : public InspectorBaseAgent<InspectorHeapProfilerAgent, InspectorFrontend::HeapProfiler>, public InspectorBackendDispatcher::HeapProfilerCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorHeapProfilerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
@@ -58,13 +58,11 @@ public:
     virtual void collectGarbage(ErrorString*) override;
 
     virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override;
     virtual void startTrackingHeapObjects(ErrorString*, const bool* trackAllocations) override;
     virtual void stopTrackingHeapObjects(ErrorString*, const bool* reportProgress) override;
 
-    virtual void setFrontend(InspectorFrontend*) override;
-    virtual void clearFrontend() override;
-    virtual void restore() override;
+    void disable(ErrorString*) override;
+    void restore() override;
 
     virtual void takeHeapSnapshot(ErrorString*, const bool* reportProgress) override;
 
@@ -85,7 +83,6 @@ private:
     void stopTrackingHeapObjectsInternal();
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
-    InspectorFrontend::HeapProfiler* m_frontend;
     OwnPtrWillBeMember<HeapStatsUpdateTask> m_heapStatsUpdateTask;
 };
 

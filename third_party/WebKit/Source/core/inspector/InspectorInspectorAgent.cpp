@@ -52,8 +52,7 @@ static const char inspectorAgentEnabled[] = "inspectorAgentEnabled";
 }
 
 InspectorInspectorAgent::InspectorInspectorAgent(InjectedScriptManager* injectedScriptManager)
-    : InspectorBaseAgent<InspectorInspectorAgent>("Inspector")
-    , m_frontend(nullptr)
+    : InspectorBaseAgent<InspectorInspectorAgent, InspectorFrontend::Inspector>("Inspector")
     , m_injectedScriptManager(injectedScriptManager)
 {
 }
@@ -76,24 +75,12 @@ void InspectorInspectorAgent::init()
     m_instrumentingAgents->setInspectorInspectorAgent(this);
 }
 
-void InspectorInspectorAgent::setFrontend(InspectorFrontend* inspectorFrontend)
-{
-    m_frontend = inspectorFrontend->inspector();
-}
-
-void InspectorInspectorAgent::clearFrontend()
-{
-    m_frontend = nullptr;
-    ErrorString error;
-    disable(&error);
-}
-
 void InspectorInspectorAgent::enable(ErrorString*)
 {
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, true);
 
-    for (Vector<pair<long, String> >::iterator it = m_pendingEvaluateTestCommands.begin(); m_frontend && it != m_pendingEvaluateTestCommands.end(); ++it)
-        m_frontend->evaluateForTestInFrontend(static_cast<int>((*it).first), (*it).second);
+    for (Vector<pair<long, String>>::iterator it = m_pendingEvaluateTestCommands.begin(); frontend() && it != m_pendingEvaluateTestCommands.end(); ++it)
+        frontend()->evaluateForTestInFrontend(static_cast<int>((*it).first), (*it).second);
     m_pendingEvaluateTestCommands.clear();
 }
 
@@ -116,8 +103,8 @@ void InspectorInspectorAgent::domContentLoadedEventFired(LocalFrame* frame)
 void InspectorInspectorAgent::evaluateForTestInFrontend(long callId, const String& script)
 {
     if (m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled)) {
-        m_frontend->evaluateForTestInFrontend(static_cast<int>(callId), script);
-        m_frontend->flush();
+        frontend()->evaluateForTestInFrontend(static_cast<int>(callId), script);
+        frontend()->flush();
     } else {
         m_pendingEvaluateTestCommands.append(pair<long, String>(callId, script));
     }
@@ -125,8 +112,8 @@ void InspectorInspectorAgent::evaluateForTestInFrontend(long callId, const Strin
 
 void InspectorInspectorAgent::inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> objectToInspect, PassRefPtr<JSONObject> hints)
 {
-    if (m_frontend && m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled))
-        m_frontend->inspect(objectToInspect, hints);
+    if (frontend() && m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled))
+        frontend()->inspect(objectToInspect, hints);
 }
 
 } // namespace blink

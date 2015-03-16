@@ -225,7 +225,7 @@ PassRefPtr<TypeBuilder::Accessibility::AXNode> buildObjectForNode(Element* eleme
 } // namespace
 
 InspectorAccessibilityAgent::InspectorAccessibilityAgent(Page* page)
-    : InspectorBaseAgent<InspectorAccessibilityAgent>("Accessibility")
+    : InspectorBaseAgent<InspectorAccessibilityAgent, InspectorFrontend::Accessibility>("Accessibility")
     , m_page(page)
 {
 }

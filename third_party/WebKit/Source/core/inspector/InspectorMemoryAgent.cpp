@@ -48,20 +48,8 @@ void InspectorMemoryAgent::getDOMCounters(ErrorString*, int* documents, int* nod
 }
 
 InspectorMemoryAgent::InspectorMemoryAgent()
-    : InspectorBaseAgent<InspectorMemoryAgent>("Memory")
-    , m_frontend(0)
+    : InspectorBaseAgent<InspectorMemoryAgent, InspectorFrontend::Memory>("Memory")
 {
-}
-
-void InspectorMemoryAgent::setFrontend(InspectorFrontend* frontend)
-{
-    ASSERT(!m_frontend);
-    m_frontend = frontend->memory();
-}
-
-void InspectorMemoryAgent::clearFrontend()
-{
-    m_frontend = 0;
 }
 
 } // namespace blink

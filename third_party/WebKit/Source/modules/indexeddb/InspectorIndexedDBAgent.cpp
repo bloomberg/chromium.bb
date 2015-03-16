@@ -570,18 +570,13 @@ PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> InspectorIndexedDBAgent::create(
 }
 
 InspectorIndexedDBAgent::InspectorIndexedDBAgent(Page* page)
-    : InspectorBaseAgent<InspectorIndexedDBAgent>("IndexedDB")
+    : InspectorBaseAgent<InspectorIndexedDBAgent, InspectorFrontend::IndexedDB>("IndexedDB")
     , m_page(page)
 {
 }
 
 InspectorIndexedDBAgent::~InspectorIndexedDBAgent()
 {
-}
-
-void InspectorIndexedDBAgent::clearFrontend()
-{
-    disable(0);
 }
 
 void InspectorIndexedDBAgent::restore()

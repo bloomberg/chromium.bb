@@ -13,7 +13,7 @@ namespace blink {
 
 class Page;
 
-class InspectorAccessibilityAgent : public InspectorBaseAgent<InspectorAccessibilityAgent>, public InspectorBackendDispatcher::AccessibilityCommandHandler {
+class InspectorAccessibilityAgent : public InspectorBaseAgent<InspectorAccessibilityAgent, InspectorFrontend::Accessibility>, public InspectorBackendDispatcher::AccessibilityCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorAccessibilityAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorAccessibilityAgent> create(Page* page)

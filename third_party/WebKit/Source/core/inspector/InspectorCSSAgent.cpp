@@ -428,8 +428,7 @@ CSSMediaRule* InspectorCSSAgent::asCSSMediaRule(CSSRule* rule)
 }
 
 InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent)
-    : InspectorBaseAgent<InspectorCSSAgent>("CSS")
-    , m_frontend(0)
+    : InspectorBaseAgent<InspectorCSSAgent, InspectorFrontend::CSS>("CSS")
     , m_domAgent(domAgent)
     , m_pageAgent(pageAgent)
     , m_resourceAgent(resourceAgent)
@@ -448,20 +447,6 @@ InspectorCSSAgent::~InspectorCSSAgent()
     ASSERT(!m_domAgent);
     reset();
 #endif
-}
-
-void InspectorCSSAgent::setFrontend(InspectorFrontend* frontend)
-{
-    ASSERT(!m_frontend);
-    m_frontend = frontend->css();
-}
-
-void InspectorCSSAgent::clearFrontend()
-{
-    ASSERT(m_frontend);
-    ErrorString error;
-    disable(&error);
-    m_frontend = nullptr;
 }
 
 void InspectorCSSAgent::discardAgent()
@@ -549,7 +534,7 @@ void InspectorCSSAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 void InspectorCSSAgent::mediaQueryResultChanged()
 {
     flushPendingProtocolNotifications();
-    m_frontend->mediaQueryResultChanged();
+    frontend()->mediaQueryResultChanged();
 }
 
 void InspectorCSSAgent::willMutateRules()
@@ -633,8 +618,8 @@ void InspectorCSSAgent::setActiveStyleSheets(Document* document, const WillBeHea
         documentCSSStyleSheets->remove(cssStyleSheet);
         if (m_idToInspectorStyleSheet.contains(inspectorStyleSheet->id())) {
             String id = unbindStyleSheet(inspectorStyleSheet.get());
-            if (m_frontend && !isInitialFrontendLoad)
-                m_frontend->styleSheetRemoved(id);
+            if (frontend() && !isInitialFrontendLoad)
+                frontend()->styleSheetRemoved(id);
         }
     }
 
@@ -643,8 +628,8 @@ void InspectorCSSAgent::setActiveStyleSheets(Document* document, const WillBeHea
         if (isNew) {
             InspectorStyleSheet* newStyleSheet = bindStyleSheet(cssStyleSheet);
             documentCSSStyleSheets->add(cssStyleSheet);
-            if (m_frontend)
-                m_frontend->styleSheetAdded(newStyleSheet->buildObjectForStyleSheetInfo());
+            if (frontend())
+                frontend()->styleSheetAdded(newStyleSheet->buildObjectForStyleSheetInfo());
         }
     }
 
@@ -1534,7 +1519,7 @@ void InspectorCSSAgent::didModifyDOMAttr(Element* element)
 void InspectorCSSAgent::styleSheetChanged(InspectorStyleSheetBase* styleSheet)
 {
     flushPendingProtocolNotifications();
-    m_frontend->styleSheetChanged(styleSheet->id());
+    frontend()->styleSheetChanged(styleSheet->id());
 }
 
 void InspectorCSSAgent::willReparseStyleSheet()

@@ -67,9 +67,8 @@ static bool hadException(ExceptionState& exceptionState, ErrorString* errorStrin
 }
 
 InspectorDOMStorageAgent::InspectorDOMStorageAgent(Page* page)
-    : InspectorBaseAgent<InspectorDOMStorageAgent>("DOMStorage")
+    : InspectorBaseAgent<InspectorDOMStorageAgent, InspectorFrontend::DOMStorage>("DOMStorage")
     , m_page(page)
-    , m_frontend(0)
     , m_isEnabled(false)
 {
 }
@@ -82,17 +81,6 @@ DEFINE_TRACE(InspectorDOMStorageAgent)
 {
     visitor->trace(m_page);
     InspectorBaseAgent::trace(visitor);
-}
-
-void InspectorDOMStorageAgent::setFrontend(InspectorFrontend* frontend)
-{
-    m_frontend = frontend->domstorage();
-}
-
-void InspectorDOMStorageAgent::clearFrontend()
-{
-    m_frontend = nullptr;
-    disable(0);
 }
 
 void InspectorDOMStorageAgent::restore()
@@ -190,19 +178,19 @@ PassRefPtr<TypeBuilder::DOMStorage::StorageId> InspectorDOMStorageAgent::storage
 
 void InspectorDOMStorageAgent::didDispatchDOMStorageEvent(const String& key, const String& oldValue, const String& newValue, StorageType storageType, SecurityOrigin* securityOrigin)
 {
-    if (!m_frontend)
+    if (!frontend())
         return;
 
     RefPtr<TypeBuilder::DOMStorage::StorageId> id = storageId(securityOrigin, storageType == LocalStorage);
 
     if (key.isNull())
-        m_frontend->domStorageItemsCleared(id);
+        frontend()->domStorageItemsCleared(id);
     else if (newValue.isNull())
-        m_frontend->domStorageItemRemoved(id, key);
+        frontend()->domStorageItemRemoved(id, key);
     else if (oldValue.isNull())
-        m_frontend->domStorageItemAdded(id, key, newValue);
+        frontend()->domStorageItemAdded(id, key, newValue);
     else
-        m_frontend->domStorageItemUpdated(id, key, oldValue, newValue);
+        frontend()->domStorageItemUpdated(id, key, oldValue, newValue);
 }
 
 static LocalFrame* findFrameWithSecurityOrigin(LocalFrame* inspectedFrame, const String& originRawString)

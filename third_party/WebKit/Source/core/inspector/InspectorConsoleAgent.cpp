@@ -44,9 +44,8 @@ static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
 }
 
 InspectorConsoleAgent::InspectorConsoleAgent(InjectedScriptManager* injectedScriptManager)
-    : InspectorBaseAgent<InspectorConsoleAgent>("Console")
+    : InspectorBaseAgent<InspectorConsoleAgent, InspectorFrontend::Console>("Console")
     , m_injectedScriptManager(injectedScriptManager)
-    , m_frontend(nullptr)
     , m_enabled(false)
 {
 }
@@ -100,22 +99,10 @@ void InspectorConsoleAgent::disable(ErrorString*)
 void InspectorConsoleAgent::restore()
 {
     if (m_state->getBoolean(ConsoleAgentState::consoleMessagesEnabled)) {
-        m_frontend->messagesCleared();
+        frontend()->messagesCleared();
         ErrorString error;
         enable(&error);
     }
-}
-
-void InspectorConsoleAgent::setFrontend(InspectorFrontend* frontend)
-{
-    m_frontend = frontend->console();
-}
-
-void InspectorConsoleAgent::clearFrontend()
-{
-    m_frontend = nullptr;
-    String errorString;
-    disable(&errorString);
 }
 
 void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
@@ -126,7 +113,7 @@ void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
 void InspectorConsoleAgent::consoleMessagesCleared()
 {
     m_injectedScriptManager->releaseObjectGroup("console");
-    m_frontend->messagesCleared();
+    frontend()->messagesCleared();
 }
 
 static TypeBuilder::Console::ConsoleMessage::Source::Enum messageSourceValue(MessageSource source)
@@ -234,8 +221,8 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
         if (asyncCallStack)
             jsonObj->setAsyncStackTrace(asyncCallStack->buildInspectorObject());
     }
-    m_frontend->messageAdded(jsonObj);
-    m_frontend->flush();
+    frontend()->messageAdded(jsonObj);
+    frontend()->flush();
 }
 
 } // namespace blink

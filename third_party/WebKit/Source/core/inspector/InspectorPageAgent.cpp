@@ -394,13 +394,12 @@ TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::cachedResourceTypeJson
 }
 
 InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* injectedScriptManager, Client* client, InspectorOverlay* overlay)
-    : InspectorBaseAgent<InspectorPageAgent>("Page")
+    : InspectorBaseAgent<InspectorPageAgent, InspectorFrontend::Page>("Page")
     , m_page(page)
     , m_injectedScriptManager(injectedScriptManager)
     , m_debuggerAgent(nullptr)
     , m_cssAgent(nullptr)
     , m_client(client)
-    , m_frontend(0)
     , m_overlay(overlay)
     , m_lastScriptIdentifier(0)
     , m_enabled(false)
@@ -420,18 +419,6 @@ void InspectorPageAgent::setScriptEnabled(bool enabled)
     m_embedderScriptEnabled = enabled;
     if (!m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled))
         m_page->settings().setScriptEnabled(enabled);
-}
-
-void InspectorPageAgent::setFrontend(InspectorFrontend* frontend)
-{
-    m_frontend = frontend->page();
-}
-
-void InspectorPageAgent::clearFrontend()
-{
-    ErrorString error;
-    disable(&error);
-    m_frontend = 0;
 }
 
 void InspectorPageAgent::restore()
@@ -936,7 +923,7 @@ void InspectorPageAgent::setScriptExecutionDisabled(ErrorString*, bool value)
 
 void InspectorPageAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
-    if (!m_frontend)
+    if (!frontend())
         return;
 
     RefPtr<JSONObject> scripts = m_state->getObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
@@ -955,14 +942,14 @@ void InspectorPageAgent::domContentLoadedEventFired(LocalFrame* frame)
 {
     if (frame != inspectedFrame())
         return;
-    m_frontend->domContentEventFired(monotonicallyIncreasingTime());
+    frontend()->domContentEventFired(monotonicallyIncreasingTime());
 }
 
 void InspectorPageAgent::loadEventFired(LocalFrame* frame)
 {
     if (frame != inspectedFrame())
         return;
-    m_frontend->loadEventFired(monotonicallyIncreasingTime());
+    frontend()->loadEventFired(monotonicallyIncreasingTime());
 }
 
 void InspectorPageAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
@@ -974,7 +961,7 @@ void InspectorPageAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
         if (m_inspectorResourceContentLoader)
             m_inspectorResourceContentLoader->stop();
     }
-    m_frontend->frameNavigated(buildObjectForFrame(loader->frame()));
+    frontend()->frameNavigated(buildObjectForFrame(loader->frame()));
     viewportChanged();
 }
 
@@ -983,14 +970,14 @@ void InspectorPageAgent::frameAttachedToParent(LocalFrame* frame)
     Frame* parentFrame = frame->tree().parent();
     if (!parentFrame->isLocalFrame())
         parentFrame = 0;
-    m_frontend->frameAttached(frameId(frame), frameId(toLocalFrame(parentFrame)));
+    frontend()->frameAttached(frameId(frame), frameId(toLocalFrame(parentFrame)));
 }
 
 void InspectorPageAgent::frameDetachedFromParent(LocalFrame* frame)
 {
     HashMap<LocalFrame*, String>::iterator iterator = m_frameToIdentifier.find(frame);
     if (iterator != m_frameToIdentifier.end()) {
-        m_frontend->frameDetached(iterator->value);
+        frontend()->frameDetached(iterator->value);
         m_identifierToFrame.remove(iterator->value);
         m_frameToIdentifier.remove(iterator);
     }
@@ -1084,32 +1071,32 @@ void InspectorPageAgent::loaderDetachedFromFrame(DocumentLoader* loader)
 
 void InspectorPageAgent::frameStartedLoading(LocalFrame* frame)
 {
-    m_frontend->frameStartedLoading(frameId(frame));
+    frontend()->frameStartedLoading(frameId(frame));
 }
 
 void InspectorPageAgent::frameStoppedLoading(LocalFrame* frame)
 {
-    m_frontend->frameStoppedLoading(frameId(frame));
+    frontend()->frameStoppedLoading(frameId(frame));
 }
 
 void InspectorPageAgent::frameScheduledNavigation(LocalFrame* frame, double delay)
 {
-    m_frontend->frameScheduledNavigation(frameId(frame), delay);
+    frontend()->frameScheduledNavigation(frameId(frame), delay);
 }
 
 void InspectorPageAgent::frameClearedScheduledNavigation(LocalFrame* frame)
 {
-    m_frontend->frameClearedScheduledNavigation(frameId(frame));
+    frontend()->frameClearedScheduledNavigation(frameId(frame));
 }
 
 void InspectorPageAgent::willRunJavaScriptDialog(const String& message)
 {
-    m_frontend->javascriptDialogOpening(message);
+    frontend()->javascriptDialogOpening(message);
 }
 
 void InspectorPageAgent::didRunJavaScriptDialog()
 {
-    m_frontend->javascriptDialogClosed();
+    frontend()->javascriptDialogClosed();
 }
 
 void InspectorPageAgent::didPaint(LayoutObject*, const GraphicsLayer*, GraphicsContext* context, const LayoutRect& rect)
@@ -1158,7 +1145,7 @@ void InspectorPageAgent::viewportChanged()
         .setPageScaleFactor(m_page->pageScaleFactor())
         .setMinimumPageScaleFactor(m_client->minimumPageScaleFactor())
         .setMaximumPageScaleFactor(m_client->maximumPageScaleFactor());
-    m_frontend->viewportChanged(viewport);
+    frontend()->viewportChanged(viewport);
 }
 
 void InspectorPageAgent::didResizeMainFrame()
@@ -1169,7 +1156,7 @@ void InspectorPageAgent::didResizeMainFrame()
     if (m_enabled && m_state->getBoolean(PageAgentState::showSizeOnResize))
         m_overlay->showAndHideViewSize(m_state->getBoolean(PageAgentState::showGridOnResize));
 #endif
-    m_frontend->frameResized();
+    frontend()->frameResized();
     viewportChanged();
 }
 

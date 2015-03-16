@@ -53,15 +53,16 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     virtual void init() { }
-    virtual void setFrontend(InspectorFrontend*) { }
-    virtual void clearFrontend() { }
+    virtual void setFrontend(InspectorFrontend*) = 0;
+    virtual void clearFrontend() = 0;
+    virtual void disable(ErrorString*) { }
     virtual void restore() { }
     virtual void registerInDispatcher(InspectorBackendDispatcher*) = 0;
     virtual void discardAgent() { }
     virtual void didCommitLoadForLocalFrame(LocalFrame*) { }
     virtual void flushPendingProtocolNotifications() { }
 
-    String name() { return m_name; }
+    String name() const { return m_name; }
     void appended(InstrumentingAgents*, InspectorState*);
 
 protected:
@@ -94,20 +95,41 @@ private:
     WillBeHeapVector<OwnPtrWillBeMember<InspectorAgent> > m_agents;
 };
 
-template<typename T>
+template<typename AgentClass, typename FrontendClass>
 class InspectorBaseAgent : public InspectorAgent {
 public:
     virtual ~InspectorBaseAgent() { }
 
+    void setFrontend(InspectorFrontend* frontend) override final
+    {
+        ASSERT(!m_frontend);
+        m_frontend = FrontendClass::from(frontend);
+    }
+
+    void clearFrontend() override final
+    {
+        ErrorString error;
+        disable(&error);
+        ASSERT(m_frontend);
+        m_frontend = nullptr;
+    }
+
     virtual void registerInDispatcher(InspectorBackendDispatcher* dispatcher) override final
     {
-        dispatcher->registerAgent(static_cast<T*>(this));
+        dispatcher->registerAgent(static_cast<AgentClass*>(this));
     }
 
 protected:
-    explicit InspectorBaseAgent(const String& name) : InspectorAgent(name)
+    explicit InspectorBaseAgent(const String& name)
+        : InspectorAgent(name)
+        , m_frontend(nullptr)
     {
     }
+
+    FrontendClass* frontend() const { return m_frontend; }
+
+private:
+    FrontendClass* m_frontend;
 };
 
 inline bool asBool(const bool* const b)

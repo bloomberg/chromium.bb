@@ -55,7 +55,7 @@ class Node;
 class LayoutText;
 
 class InspectorCSSAgent final
-    : public InspectorBaseAgent<InspectorCSSAgent>
+    : public InspectorBaseAgent<InspectorCSSAgent, InspectorFrontend::CSS>
     , public InspectorDOMAgent::DOMListener
     , public InspectorBackendDispatcher::CSSCommandHandler
     , public InspectorStyleSheetBase::Listener {
@@ -105,14 +105,11 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     bool forcePseudoState(Element*, CSSSelector::PseudoType);
-    virtual void setFrontend(InspectorFrontend*) override;
-    virtual void clearFrontend() override;
-    virtual void discardAgent() override;
-    virtual void didCommitLoadForLocalFrame(LocalFrame*) override;
-    virtual void restore() override;
-    virtual void flushPendingProtocolNotifications() override;
-    virtual void enable(ErrorString*, PassRefPtrWillBeRawPtr<EnableCallback>) override;
-    virtual void disable(ErrorString*) override;
+    void discardAgent() override;
+    void didCommitLoadForLocalFrame(LocalFrame*) override;
+    void restore() override;
+    void flushPendingProtocolNotifications() override;
+    void disable(ErrorString*) override;
     void reset();
     void mediaQueryResultChanged();
     void willMutateRules();
@@ -126,6 +123,7 @@ public:
     void addEditedStyleSheet(const String& url, const String& content);
     bool getEditedStyleSheet(const String& url, String* content);
 
+    void enable(ErrorString*, PassRefPtrWillBeRawPtr<EnableCallback>) override;
     virtual void getComputedStyleForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >&) override;
     virtual void getPlatformFontsForNode(ErrorString*, int nodeId, String* cssFamilyName, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage> >&) override;
     virtual void getInlineStylesForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributes) override;
@@ -196,7 +194,6 @@ private:
 
     void resetPseudoStates();
 
-    InspectorFrontend::CSS* m_frontend;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;

@@ -61,7 +61,7 @@ void InspectorTimelineAgent::stop(ErrorString* errorString)
 
 
 InspectorTimelineAgent::InspectorTimelineAgent()
-    : InspectorBaseAgent<InspectorTimelineAgent>("Timeline")
+    : InspectorBaseAgent<InspectorTimelineAgent, InspectorFrontend::Timeline>("Timeline")
 {
 }
 

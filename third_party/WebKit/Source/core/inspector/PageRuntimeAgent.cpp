@@ -99,7 +99,7 @@ void PageRuntimeAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 
     if (!m_enabled)
         return;
-    ASSERT(m_frontend);
+    ASSERT(frontend());
 
     frame->script().initializeMainWorld();
 }
@@ -114,7 +114,7 @@ void PageRuntimeAgent::didCreateScriptContext(LocalFrame* frame, ScriptState* sc
 
     if (!m_enabled)
         return;
-    ASSERT(m_frontend);
+    ASSERT(frontend());
     String originString = origin ? origin->toRawString() : "";
     String frameId = m_pageAgent->frameId(frame);
     addExecutionContextToFrontend(scriptState, isMainWorld, originString, frameId);
@@ -128,7 +128,7 @@ void PageRuntimeAgent::willReleaseScriptContext(LocalFrame* frame, ScriptState* 
         return;
     int id = it->value;
     m_scriptStateToId.remove(scriptState);
-    m_frontend->executionContextDestroyed(id);
+    frontend()->executionContextDestroyed(id);
 }
 
 InjectedScript PageRuntimeAgent::injectedScriptForEval(ErrorString* errorString, const int* executionContextId)

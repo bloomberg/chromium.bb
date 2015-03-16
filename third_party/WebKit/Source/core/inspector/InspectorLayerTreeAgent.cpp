@@ -146,8 +146,7 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
 }
 
 InspectorLayerTreeAgent::InspectorLayerTreeAgent(InspectorPageAgent* pageAgent)
-    : InspectorBaseAgent<InspectorLayerTreeAgent>("LayerTree")
-    , m_frontend(0)
+    : InspectorBaseAgent<InspectorLayerTreeAgent, InspectorFrontend::LayerTree>("LayerTree")
     , m_pageAgent(pageAgent)
 {
 }
@@ -160,17 +159,6 @@ DEFINE_TRACE(InspectorLayerTreeAgent)
 {
     visitor->trace(m_pageAgent);
     InspectorBaseAgent::trace(visitor);
-}
-
-void InspectorLayerTreeAgent::setFrontend(InspectorFrontend* frontend)
-{
-    m_frontend = frontend->layertree();
-}
-
-void InspectorLayerTreeAgent::clearFrontend()
-{
-    m_frontend = nullptr;
-    disable(0);
 }
 
 void InspectorLayerTreeAgent::restore()
@@ -199,7 +187,7 @@ void InspectorLayerTreeAgent::disable(ErrorString*)
 
 void InspectorLayerTreeAgent::layerTreeDidChange()
 {
-    m_frontend->layerTreeDidChange(buildLayerTree());
+    frontend()->layerTreeDidChange(buildLayerTree());
 }
 
 void InspectorLayerTreeAgent::didPaint(LayoutObject*, const GraphicsLayer* graphicsLayer, GraphicsContext*, const LayoutRect& rect)
@@ -213,7 +201,7 @@ void InspectorLayerTreeAgent::didPaint(LayoutObject*, const GraphicsLayer* graph
         .setY(rect.y())
         .setWidth(rect.width())
         .setHeight(rect.height());
-    m_frontend->layerPainted(idForLayer(graphicsLayer), domRect.release());
+    frontend()->layerPainted(idForLayer(graphicsLayer), domRect.release());
 }
 
 PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTreeAgent::buildLayerTree()

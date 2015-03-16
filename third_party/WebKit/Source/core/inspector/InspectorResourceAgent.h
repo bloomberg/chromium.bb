@@ -67,16 +67,15 @@ class WebSocketHandshakeResponse;
 
 typedef String ErrorString;
 
-class InspectorResourceAgent final : public InspectorBaseAgent<InspectorResourceAgent>, public InspectorBackendDispatcher::NetworkCommandHandler {
+class InspectorResourceAgent final : public InspectorBaseAgent<InspectorResourceAgent, InspectorFrontend::Network>, public InspectorBackendDispatcher::NetworkCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorResourceAgent> create(InspectorPageAgent* pageAgent)
     {
         return adoptPtrWillBeNoop(new InspectorResourceAgent(pageAgent));
     }
 
-    virtual void setFrontend(InspectorFrontend*) override;
-    virtual void clearFrontend() override;
-    virtual void restore() override;
+    void disable(ErrorString*) override;
+    void restore() override;
 
     virtual ~InspectorResourceAgent();
     DECLARE_VIRTUAL_TRACE();
@@ -127,7 +126,6 @@ public:
 
     // Called from frontend
     virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override;
     virtual void setUserAgentOverride(ErrorString*, const String& userAgent) override;
     virtual void setExtraHTTPHeaders(ErrorString*, const RefPtr<JSONObject>&) override;
     virtual void getResponseBody(ErrorString*, const String& requestId, PassRefPtrWillBeRawPtr<GetResponseBodyCallback>) override;
@@ -154,7 +152,6 @@ private:
     void removeFinishedReplayXHRFired(Timer<InspectorResourceAgent>*);
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
-    InspectorFrontend::Network* m_frontend;
     String m_userAgentOverride;
     String m_hostId;
     OwnPtr<NetworkResourcesData> m_resourcesData;

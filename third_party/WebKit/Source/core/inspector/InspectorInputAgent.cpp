@@ -90,8 +90,9 @@ void ConvertInspectorPoint(blink::LocalFrame* frame, const blink::IntPoint& poin
 namespace blink {
 
 InspectorInputAgent::InspectorInputAgent(InspectorPageAgent* pageAgent, Client* client)
-    : InspectorBaseAgent<InspectorInputAgent>("Input")
-    , m_pageAgent(pageAgent), m_client(client)
+    : InspectorBaseAgent<InspectorInputAgent, InspectorFrontend::Input>("Input")
+    , m_pageAgent(pageAgent)
+    , m_client(client)
 {
 }
 

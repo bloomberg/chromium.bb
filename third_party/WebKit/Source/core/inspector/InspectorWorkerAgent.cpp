@@ -111,8 +111,7 @@ PassOwnPtrWillBeRawPtr<InspectorWorkerAgent> InspectorWorkerAgent::create(PageCo
 }
 
 InspectorWorkerAgent::InspectorWorkerAgent(PageConsoleAgent* consoleAgent)
-    : InspectorBaseAgent<InspectorWorkerAgent>("Worker")
-    , m_frontend(0)
+    : InspectorBaseAgent<InspectorWorkerAgent, InspectorFrontend::Worker>("Worker")
     , m_consoleAgent(consoleAgent)
 {
 }
@@ -129,28 +128,15 @@ void InspectorWorkerAgent::init()
     m_instrumentingAgents->setInspectorWorkerAgent(this);
 }
 
-void InspectorWorkerAgent::setFrontend(InspectorFrontend* frontend)
-{
-    m_frontend = frontend->worker();
-}
-
 void InspectorWorkerAgent::restore()
 {
     if (m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
         createWorkerAgentClientsForExistingWorkers();
 }
 
-void InspectorWorkerAgent::clearFrontend()
-{
-    disable(0);
-    m_frontend = 0;
-}
-
 void InspectorWorkerAgent::enable(ErrorString*)
 {
     m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, true);
-    if (!m_frontend)
-        return;
     createWorkerAgentClientsForExistingWorkers();
 }
 
@@ -158,8 +144,6 @@ void InspectorWorkerAgent::disable(ErrorString*)
 {
     m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, false);
     m_state->setBoolean(WorkerAgentState::autoconnectToWorkers, false);
-    if (!m_frontend)
-        return;
     destroyWorkerAgentClients();
 }
 
@@ -213,7 +197,7 @@ void InspectorWorkerAgent::didStartWorker(WorkerInspectorProxy* workerInspectorP
 {
     String id = "dedicated:" + IdentifiersFactory::createIdentifier();
     m_workerInfos.set(workerInspectorProxy, WorkerInfo(url.string(), id));
-    if (m_frontend && m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
+    if (frontend() && m_state->getBoolean(WorkerAgentState::workerInspectionEnabled))
         createWorkerAgentClient(workerInspectorProxy, url.string(), id);
     if (!m_tracingSessionId.isEmpty())
         workerInspectorProxy->writeTimelineStartedEvent(m_tracingSessionId, id);
@@ -224,7 +208,7 @@ void InspectorWorkerAgent::workerTerminated(WorkerInspectorProxy* proxy)
     m_workerInfos.remove(proxy);
     for (WorkerClients::iterator it = m_idToClient.begin(); it != m_idToClient.end(); ++it) {
         if (proxy == it->value->proxy()) {
-            m_frontend->workerTerminated(it->key);
+            frontend()->workerTerminated(it->key);
             delete it->value;
             m_idToClient.remove(it);
             return;
@@ -249,14 +233,14 @@ void InspectorWorkerAgent::destroyWorkerAgentClients()
 
 void InspectorWorkerAgent::createWorkerAgentClient(WorkerInspectorProxy* workerInspectorProxy, const String& url, const String& id)
 {
-    WorkerAgentClient* client = new WorkerAgentClient(m_frontend, workerInspectorProxy, id, m_consoleAgent);
+    WorkerAgentClient* client = new WorkerAgentClient(frontend(), workerInspectorProxy, id, m_consoleAgent);
     m_idToClient.set(id, client);
 
-    ASSERT(m_frontend);
+    ASSERT(frontend());
     bool autoconnectToWorkers = m_state->getBoolean(WorkerAgentState::autoconnectToWorkers);
     if (autoconnectToWorkers)
         client->connectToWorker();
-    m_frontend->workerCreated(id, url, autoconnectToWorkers);
+    frontend()->workerCreated(id, url, autoconnectToWorkers);
 }
 
 } // namespace blink

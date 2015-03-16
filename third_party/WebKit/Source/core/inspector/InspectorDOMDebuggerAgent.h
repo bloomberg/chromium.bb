@@ -55,7 +55,7 @@ class Node;
 typedef String ErrorString;
 
 class InspectorDOMDebuggerAgent final
-    : public InspectorBaseAgent<InspectorDOMDebuggerAgent>
+    : public InspectorBaseAgent<InspectorDOMDebuggerAgent, InspectorFrontend::DOMDebugger>
     , public InspectorDebuggerAgent::Listener
     , public InspectorDOMAgent::Listener
     , public InspectorBackendDispatcher::DOMDebuggerCommandHandler {
@@ -98,7 +98,7 @@ public:
     void didFireWebGLErrorOrWarning(const String& message);
     void willCloseWindow();
 
-    void clearFrontend() override;
+    void disable(ErrorString*) override;
     void discardAgent() override;
 
 private:
@@ -118,7 +118,6 @@ private:
     void didCreatePromise() override;
     void didResolvePromise() override;
     void didRejectPromise() override;
-    void disable();
 
     void descriptionForDOMEvent(Node* target, int breakpointType, bool insertion, JSONObject* description);
     void updateSubtreeBreakpoints(Node*, uint32_t rootMask, bool set);

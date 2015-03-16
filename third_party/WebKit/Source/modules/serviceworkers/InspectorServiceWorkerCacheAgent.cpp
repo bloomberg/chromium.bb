@@ -293,7 +293,7 @@ private:
 } // namespace
 
 InspectorServiceWorkerCacheAgent::InspectorServiceWorkerCacheAgent(ServiceWorkerGlobalScope* scope)
-    : InspectorBaseAgent<blink::InspectorServiceWorkerCacheAgent>("ServiceWorkerCache")
+    : InspectorBaseAgent<blink::InspectorServiceWorkerCacheAgent, InspectorFrontend::ServiceWorkerCache>("ServiceWorkerCache")
     , m_globalScope(scope)
 {
 }
@@ -304,9 +304,6 @@ DEFINE_TRACE(InspectorServiceWorkerCacheAgent)
 {
     InspectorBaseAgent::trace(visitor);
 }
-
-void InspectorServiceWorkerCacheAgent::clearFrontend() { }
-void InspectorServiceWorkerCacheAgent::restore() { }
 
 void InspectorServiceWorkerCacheAgent::requestCacheNames(ErrorString* errorString, PassRefPtrWillBeRawPtr<RequestCacheNamesCallback> callback)
 {

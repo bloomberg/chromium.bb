@@ -61,7 +61,7 @@ class TextResourceDecoder;
 
 typedef String ErrorString;
 
-class InspectorPageAgent final : public InspectorBaseAgent<InspectorPageAgent>, public InspectorBackendDispatcher::PageCommandHandler {
+class InspectorPageAgent final : public InspectorBaseAgent<InspectorPageAgent, InspectorFrontend::Page>, public InspectorBackendDispatcher::PageCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorPageAgent);
 public:
     class Client {
@@ -115,7 +115,6 @@ public:
 
     // Page API for InspectorFrontend
     void enable(ErrorString*) override;
-    void disable(ErrorString*) override;
     void addScriptToEvaluateOnLoad(ErrorString*, const String& source, String* result) override;
     void removeScriptToEvaluateOnLoad(ErrorString*, const String& identifier) override;
     void reload(ErrorString*, const bool* optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad) override;
@@ -165,8 +164,7 @@ public:
     void didRecalculateStyle(int);
 
     // Inspector Controller API
-    void setFrontend(InspectorFrontend*) override;
-    void clearFrontend() override;
+    void disable(ErrorString*) override;
     void restore() override;
     void discardAgent() override;
 
@@ -212,7 +210,6 @@ private:
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
     Client* m_client;
-    InspectorFrontend::Page* m_frontend;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
     long m_lastScriptIdentifier;
     String m_pendingScriptToEvaluateOnLoadOnce;

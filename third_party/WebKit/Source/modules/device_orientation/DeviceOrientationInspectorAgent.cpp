@@ -32,7 +32,7 @@ DeviceOrientationInspectorAgent::~DeviceOrientationInspectorAgent()
 }
 
 DeviceOrientationInspectorAgent::DeviceOrientationInspectorAgent(Page& page)
-    : InspectorBaseAgent<DeviceOrientationInspectorAgent>("DeviceOrientation")
+    : InspectorBaseAgent<DeviceOrientationInspectorAgent, InspectorFrontend::DeviceOrientation>("DeviceOrientation")
     , m_page(page)
 {
 }
@@ -58,7 +58,7 @@ void DeviceOrientationInspectorAgent::clearDeviceOrientationOverride(ErrorString
     controller().clearOverride();
 }
 
-void DeviceOrientationInspectorAgent::clearFrontend()
+void DeviceOrientationInspectorAgent::disable(ErrorString*)
 {
     m_state->setBoolean(DeviceOrientationInspectorAgentState::overrideEnabled, false);
     controller().clearOverride();

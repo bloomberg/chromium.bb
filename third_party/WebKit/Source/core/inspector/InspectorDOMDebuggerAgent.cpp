@@ -86,7 +86,7 @@ PassOwnPtrWillBeRawPtr<InspectorDOMDebuggerAgent> InspectorDOMDebuggerAgent::cre
 }
 
 InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(InspectorDOMAgent* domAgent, InspectorDebuggerAgent* debuggerAgent)
-    : InspectorBaseAgent<InspectorDOMDebuggerAgent>("DOMDebugger")
+    : InspectorBaseAgent<InspectorDOMDebuggerAgent, InspectorFrontend::DOMDebugger>("DOMDebugger")
     , m_domAgent(domAgent)
     , m_debuggerAgent(debuggerAgent)
 {
@@ -121,7 +121,7 @@ void InspectorDOMDebuggerAgent::debuggerWasEnabled()
 
 void InspectorDOMDebuggerAgent::debuggerWasDisabled()
 {
-    disable();
+    disable(nullptr);
 }
 
 void InspectorDOMDebuggerAgent::domAgentWasEnabled()
@@ -132,18 +132,13 @@ void InspectorDOMDebuggerAgent::domAgentWasEnabled()
 
 void InspectorDOMDebuggerAgent::domAgentWasDisabled()
 {
-    disable();
+    disable(nullptr);
 }
 
-void InspectorDOMDebuggerAgent::disable()
+void InspectorDOMDebuggerAgent::disable(ErrorString*)
 {
     m_instrumentingAgents->setInspectorDOMDebuggerAgent(nullptr);
     clear();
-}
-
-void InspectorDOMDebuggerAgent::clearFrontend()
-{
-    disable();
 }
 
 void InspectorDOMDebuggerAgent::discardAgent()

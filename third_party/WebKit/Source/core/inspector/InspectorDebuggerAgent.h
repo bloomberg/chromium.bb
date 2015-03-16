@@ -66,7 +66,7 @@ class V8AsyncCallTracker;
 typedef String ErrorString;
 
 class InspectorDebuggerAgent
-    : public InspectorBaseAgent<InspectorDebuggerAgent>
+    : public InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>
     , public ScriptDebugListener
     , public InspectorBackendDispatcher::DebuggerCommandHandler
     , public PromiseTracker::Listener {
@@ -86,17 +86,15 @@ public:
 
     void canSetScriptSource(ErrorString*, bool* result) final { *result = true; }
 
-    void init() final;
-    void setFrontend(InspectorFrontend*) final;
-    void clearFrontend() final;
-    void restore() final;
+    void init() override final;
+    void restore() override final;
+    void disable(ErrorString*) override final;
 
     bool isPaused();
     void addMessageToConsole(ConsoleMessage*);
 
     // Part of the protocol.
     void enable(ErrorString*) final;
-    void disable(ErrorString*) final;
     void setBreakpointsActive(ErrorString*, bool active) final;
     void setSkipAllPauses(ErrorString*, bool skipped) final;
 
@@ -266,7 +264,6 @@ private:
     };
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
-    InspectorFrontend::Debugger* m_frontend;
     RefPtr<ScriptState> m_pausedScriptState;
     ScriptValue m_currentCallStack;
     ScriptsMap m_scripts;

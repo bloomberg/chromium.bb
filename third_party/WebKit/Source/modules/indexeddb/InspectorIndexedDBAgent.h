@@ -31,6 +31,7 @@
 #ifndef InspectorIndexedDBAgent_h
 #define InspectorIndexedDBAgent_h
 
+#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -41,19 +42,18 @@ class Page;
 
 typedef String ErrorString;
 
-class InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent>, public InspectorBackendDispatcher::IndexedDBCommandHandler {
+class InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent, InspectorFrontend::IndexedDB>, public InspectorBackendDispatcher::IndexedDBCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorIndexedDBAgent> create(Page*);
 
     virtual ~InspectorIndexedDBAgent();
     DECLARE_VIRTUAL_TRACE();
 
-    virtual void clearFrontend() override;
-    virtual void restore() override;
+    void disable(ErrorString*) override;
+    void restore() override;
 
     // Called from the front-end.
     virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override;
     virtual void requestDatabaseNames(ErrorString*, const String& securityOrigin, PassRefPtrWillBeRawPtr<RequestDatabaseNamesCallback>) override;
     virtual void requestDatabase(ErrorString*, const String& securityOrigin, const String& databaseName, PassRefPtrWillBeRawPtr<RequestDatabaseCallback>) override;
     virtual void requestData(ErrorString*, const String& securityOrigin, const String& databaseName, const String& objectStoreName, const String& indexName, int skipCount, int pageSize, const RefPtr<JSONObject>* keyRange, PassRefPtrWillBeRawPtr<RequestDataCallback>) override;

@@ -38,20 +38,18 @@ class InjectedScriptManager;
 
 typedef String ErrorString;
 
-class InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent>, public InspectorBackendDispatcher::ConsoleCommandHandler {
+class InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent, InspectorFrontend::Console>, public InspectorBackendDispatcher::ConsoleCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
     explicit InspectorConsoleAgent(InjectedScriptManager*);
     virtual ~InspectorConsoleAgent();
     DECLARE_VIRTUAL_TRACE();
 
-    virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override;
+    void enable(ErrorString*) override;
     bool enabled() { return m_enabled; }
 
-    virtual void setFrontend(InspectorFrontend*) override final;
-    virtual void clearFrontend() override final;
-    virtual void restore() override final;
+    void disable(ErrorString*) override;
+    void restore() override final;
 
     void addMessageToConsole(ConsoleMessage*);
     void consoleMessagesCleared();
@@ -64,7 +62,6 @@ protected:
     virtual void disableStackCapturingIfNeeded() = 0;
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
-    InspectorFrontend::Console* m_frontend;
     bool m_enabled;
 };
 

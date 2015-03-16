@@ -689,19 +689,13 @@ void InspectorFileSystemAgent::deleteEntry(ErrorString* error, const String& url
     DeleteEntryRequest::create(requestCallback, url)->start(executionContext);
 }
 
-void InspectorFileSystemAgent::clearFrontend()
-{
-    m_enabled = false;
-    m_state->setBoolean(FileSystemAgentState::fileSystemAgentEnabled, m_enabled);
-}
-
 void InspectorFileSystemAgent::restore()
 {
     m_enabled = m_state->getBoolean(FileSystemAgentState::fileSystemAgentEnabled);
 }
 
 InspectorFileSystemAgent::InspectorFileSystemAgent(Page* page)
-    : InspectorBaseAgent<InspectorFileSystemAgent>("FileSystem")
+    : InspectorBaseAgent<InspectorFileSystemAgent, InspectorFrontend::FileSystem>("FileSystem")
     , m_page(page)
     , m_enabled(false)
 {

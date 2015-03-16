@@ -33,28 +33,10 @@ static const char animationAgentEnabled[] = "animationAgentEnabled";
 namespace blink {
 
 InspectorAnimationAgent::InspectorAnimationAgent(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent)
-    : InspectorBaseAgent<InspectorAnimationAgent>("Animation")
+    : InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>("Animation")
     , m_pageAgent(pageAgent)
     , m_domAgent(domAgent)
-    , m_frontend(nullptr)
 {
-}
-
-void InspectorAnimationAgent::setFrontend(InspectorFrontend* frontend)
-{
-    m_frontend = frontend->animation();
-}
-
-void InspectorAnimationAgent::clearFrontend()
-{
-    m_instrumentingAgents->setInspectorAnimationAgent(nullptr);
-    m_frontend = nullptr;
-    reset();
-}
-
-void InspectorAnimationAgent::reset()
-{
-    m_idToAnimationPlayer.clear();
 }
 
 void InspectorAnimationAgent::restore()
@@ -69,6 +51,13 @@ void InspectorAnimationAgent::enable(ErrorString*)
 {
     m_state->setBoolean(AnimationAgentState::animationAgentEnabled, true);
     m_instrumentingAgents->setInspectorAnimationAgent(this);
+}
+
+void InspectorAnimationAgent::disable(ErrorString*)
+{
+    m_state->setBoolean(AnimationAgentState::animationAgentEnabled, false);
+    m_instrumentingAgents->setInspectorAnimationAgent(nullptr);
+    m_idToAnimationPlayer.clear();
 }
 
 static PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimation(Animation* animation, bool isTransition)
@@ -288,7 +277,7 @@ void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer& player)
     }
 
     m_idToAnimationPlayer.set(playerId, &player);
-    m_frontend->animationPlayerCreated(buildObjectForAnimationPlayer(player), reset);
+    frontend()->animationPlayerCreated(buildObjectForAnimationPlayer(player), reset);
 }
 
 AnimationPlayer* InspectorAnimationAgent::assertAnimationPlayer(ErrorString* errorString, const String& id)

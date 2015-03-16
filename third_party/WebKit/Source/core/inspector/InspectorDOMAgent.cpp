@@ -308,11 +308,10 @@ bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, TypeBuilder::DOM
 }
 
 InspectorDOMAgent::InspectorDOMAgent(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
-    : InspectorBaseAgent<InspectorDOMAgent>("DOM")
+    : InspectorBaseAgent<InspectorDOMAgent, InspectorFrontend::DOM>("DOM")
     , m_pageAgent(pageAgent)
     , m_injectedScriptManager(injectedScriptManager)
     , m_overlay(overlay)
-    , m_frontend(0)
     , m_domListener(nullptr)
     , m_documentNodeToIdMap(adoptPtrWillBeNoop(new NodeToIdMap()))
     , m_lastNodeId(1)
@@ -329,19 +328,6 @@ InspectorDOMAgent::~InspectorDOMAgent()
     setDocument(nullptr);
     ASSERT(m_searchingForNode == NotSearching);
 #endif
-}
-
-void InspectorDOMAgent::setFrontend(InspectorFrontend* frontend)
-{
-    ASSERT(!m_frontend);
-    m_frontend = frontend->dom();
-}
-
-void InspectorDOMAgent::clearFrontend()
-{
-    ASSERT(m_frontend);
-    m_frontend = nullptr;
-    disable(0);
 }
 
 void InspectorDOMAgent::restore()
@@ -383,7 +369,7 @@ void InspectorDOMAgent::setDocument(Document* doc)
 
     // Immediately communicate 0 document or document that has finished loading.
     if (!doc || !doc->parsing())
-        m_frontend->documentUpdated();
+        frontend()->documentUpdated();
 }
 
 void InspectorDOMAgent::releaseDanglingNodes()
@@ -572,7 +558,7 @@ void InspectorDOMAgent::innerEnable()
     if (m_listener)
         m_listener->domAgentWasEnabled();
     if (m_backendNodeIdToInspect)
-        m_frontend->inspectNodeRequested(m_backendNodeIdToInspect);
+        frontend()->inspectNodeRequested(m_backendNodeIdToInspect);
     m_backendNodeIdToInspect = 0;
 }
 
@@ -646,7 +632,7 @@ void InspectorDOMAgent::pushChildNodesToFrontend(int nodeId, int depth)
     }
 
     RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > children = buildArrayForContainerChildren(node, depth, nodeMap);
-    m_frontend->setChildNodes(nodeId, children.release());
+    frontend()->setChildNodes(nodeId, children.release());
 }
 
 void InspectorDOMAgent::discardFrontendBindings()
@@ -843,7 +829,7 @@ int InspectorDOMAgent::pushNodePathToFrontend(Node* nodeToPush)
     m_danglingNodeToIdMaps.append(newMap.release());
     RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > children = TypeBuilder::Array<TypeBuilder::DOM::Node>::create();
     children->addItem(buildObjectForNode(node, 0, danglingMap));
-    m_frontend->setChildNodes(0, children);
+    frontend()->setChildNodes(0, children);
 
     return pushNodePathToFrontend(nodeToPush, danglingMap);
 }
@@ -1325,12 +1311,12 @@ void InspectorDOMAgent::inspect(Node* inspectedNode)
         return;
 
     int backendNodeId = InspectorNodeIds::idForNode(node);
-    if (!m_frontend || !enabled()) {
+    if (!frontend() || !enabled()) {
         m_backendNodeIdToInspect = backendNodeId;
         return;
     }
 
-    m_frontend->inspectNodeRequested(backendNodeId);
+    frontend()->inspectNodeRequested(backendNodeId);
 }
 
 bool InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEvent& event)
@@ -1948,7 +1934,7 @@ void InspectorDOMAgent::domContentLoadedEventFired(LocalFrame* frame)
     // Re-push document once it is loaded.
     discardFrontendBindings();
     if (enabled())
-        m_frontend->documentUpdated();
+        frontend()->documentUpdated();
 }
 
 void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame)
@@ -1963,13 +1949,13 @@ void InspectorDOMAgent::invalidateFrameOwnerElement(LocalFrame* frame)
 
     // Re-add frame owner element together with its new children.
     int parentId = m_documentNodeToIdMap->get(innerParentNode(frameOwner));
-    m_frontend->childNodeRemoved(parentId, frameOwnerId);
+    frontend()->childNodeRemoved(parentId, frameOwnerId);
     unbind(frameOwner, m_documentNodeToIdMap.get());
 
     RefPtr<TypeBuilder::DOM::Node> value = buildObjectForNode(frameOwner, 0, m_documentNodeToIdMap.get());
     Node* previousSibling = innerPreviousSibling(frameOwner);
     int prevId = previousSibling ? m_documentNodeToIdMap->get(previousSibling) : 0;
-    m_frontend->childNodeInserted(parentId, prevId, value.release());
+    frontend()->childNodeInserted(parentId, prevId, value.release());
 }
 
 void InspectorDOMAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
@@ -2003,13 +1989,13 @@ void InspectorDOMAgent::didInsertDOMNode(Node* node)
         // No children are mapped yet -> only notify on changes of child count.
         int count = m_cachedChildCount.get(parentId) + 1;
         m_cachedChildCount.set(parentId, count);
-        m_frontend->childNodeCountUpdated(parentId, count);
+        frontend()->childNodeCountUpdated(parentId, count);
     } else {
         // Children have been requested -> return value of a new child.
         Node* prevSibling = innerPreviousSibling(node);
         int prevId = prevSibling ? m_documentNodeToIdMap->get(prevSibling) : 0;
         RefPtr<TypeBuilder::DOM::Node> value = buildObjectForNode(node, 0, m_documentNodeToIdMap.get());
-        m_frontend->childNodeInserted(parentId, prevId, value.release());
+        frontend()->childNodeInserted(parentId, prevId, value.release());
     }
 }
 
@@ -2030,9 +2016,9 @@ void InspectorDOMAgent::willRemoveDOMNode(Node* node)
         // No children are mapped yet -> only notify on changes of child count.
         int count = m_cachedChildCount.get(parentId) - 1;
         m_cachedChildCount.set(parentId, count);
-        m_frontend->childNodeCountUpdated(parentId, count);
+        frontend()->childNodeCountUpdated(parentId, count);
     } else {
-        m_frontend->childNodeRemoved(parentId, m_documentNodeToIdMap->get(node));
+        frontend()->childNodeRemoved(parentId, m_documentNodeToIdMap->get(node));
     }
     unbind(node, m_documentNodeToIdMap.get());
 }
@@ -2057,7 +2043,7 @@ void InspectorDOMAgent::didModifyDOMAttr(Element* element, const QualifiedName& 
     if (m_domListener)
         m_domListener->didModifyDOMAttr(element);
 
-    m_frontend->attributeModified(id, name.toString(), value);
+    frontend()->attributeModified(id, name.toString(), value);
 }
 
 void InspectorDOMAgent::didRemoveDOMAttr(Element* element, const QualifiedName& name)
@@ -2070,7 +2056,7 @@ void InspectorDOMAgent::didRemoveDOMAttr(Element* element, const QualifiedName& 
     if (m_domListener)
         m_domListener->didModifyDOMAttr(element);
 
-    m_frontend->attributeRemoved(id, name.toString());
+    frontend()->attributeRemoved(id, name.toString());
 }
 
 void InspectorDOMAgent::styleAttributeInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element> >& elements)
@@ -2087,7 +2073,7 @@ void InspectorDOMAgent::styleAttributeInvalidated(const WillBeHeapVector<RawPtrW
             m_domListener->didModifyDOMAttr(element);
         nodeIds->addItem(id);
     }
-    m_frontend->inlineStyleInvalidated(nodeIds.release());
+    frontend()->inlineStyleInvalidated(nodeIds.release());
 }
 
 void InspectorDOMAgent::contentDistributionInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element> >& elements)
@@ -2100,7 +2086,7 @@ void InspectorDOMAgent::contentDistributionInvalidated(const WillBeHeapVector<Ra
             continue;
         nodeIds->addItem(id);
     }
-    m_frontend->shadowHostDistributionInvalidated(nodeIds.release());
+    frontend()->shadowHostDistributionInvalidated(nodeIds.release());
 }
 
 void InspectorDOMAgent::characterDataModified(CharacterData* characterData)
@@ -2111,7 +2097,7 @@ void InspectorDOMAgent::characterDataModified(CharacterData* characterData)
         didInsertDOMNode(characterData);
         return;
     }
-    m_frontend->characterDataModified(id, characterData->data());
+    frontend()->characterDataModified(id, characterData->data());
 }
 
 RawPtrWillBeMember<InspectorRevalidateDOMTask> InspectorDOMAgent::revalidateTask()
@@ -2141,7 +2127,7 @@ void InspectorDOMAgent::didPushShadowRoot(Element* host, ShadowRoot* root)
         return;
 
     pushChildNodesToFrontend(hostId, 1);
-    m_frontend->shadowRootPushed(hostId, buildObjectForNode(root, 0, m_documentNodeToIdMap.get()));
+    frontend()->shadowRootPushed(hostId, buildObjectForNode(root, 0, m_documentNodeToIdMap.get()));
 }
 
 void InspectorDOMAgent::willPopShadowRoot(Element* host, ShadowRoot* root)
@@ -2152,7 +2138,7 @@ void InspectorDOMAgent::willPopShadowRoot(Element* host, ShadowRoot* root)
     int hostId = m_documentNodeToIdMap->get(host);
     int rootId = m_documentNodeToIdMap->get(root);
     if (hostId && rootId)
-        m_frontend->shadowRootPopped(hostId, rootId);
+        frontend()->shadowRootPopped(hostId, rootId);
 }
 
 void InspectorDOMAgent::didPerformElementShadowDistribution(Element* shadowHost)
@@ -2189,7 +2175,7 @@ void InspectorDOMAgent::pseudoElementCreated(PseudoElement* pseudoElement)
         return;
 
     pushChildNodesToFrontend(parentId, 1);
-    m_frontend->pseudoElementAdded(parentId, buildObjectForNode(pseudoElement, 0, m_documentNodeToIdMap.get()));
+    frontend()->pseudoElementAdded(parentId, buildObjectForNode(pseudoElement, 0, m_documentNodeToIdMap.get()));
 }
 
 void InspectorDOMAgent::pseudoElementDestroyed(PseudoElement* pseudoElement)
@@ -2205,7 +2191,7 @@ void InspectorDOMAgent::pseudoElementDestroyed(PseudoElement* pseudoElement)
     ASSERT(parentId);
 
     unbind(pseudoElement, m_documentNodeToIdMap.get());
-    m_frontend->pseudoElementRemoved(parentId, pseudoElementId);
+    frontend()->pseudoElementRemoved(parentId, pseudoElementId);
 }
 
 static ShadowRoot* shadowRootForNode(Node* node, const String& type)

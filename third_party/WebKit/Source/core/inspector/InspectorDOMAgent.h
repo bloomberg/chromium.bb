@@ -82,7 +82,7 @@ struct EventListenerInfo {
     const EventListenerVector eventListenerVector;
 };
 
-class InspectorDOMAgent final : public InspectorBaseAgent<InspectorDOMAgent>, public InspectorBackendDispatcher::DOMCommandHandler {
+class InspectorDOMAgent final : public InspectorBaseAgent<InspectorDOMAgent, InspectorFrontend::DOM>, public InspectorBackendDispatcher::DOMCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorDOMAgent);
 public:
     struct DOMListener : public WillBeGarbageCollectedMixin {
@@ -105,16 +105,14 @@ public:
     virtual ~InspectorDOMAgent();
     DECLARE_VIRTUAL_TRACE();
 
-    virtual void setFrontend(InspectorFrontend*) override;
-    virtual void clearFrontend() override;
-    virtual void restore() override;
+    void disable(ErrorString*) override;
+    void restore() override;
 
     WillBeHeapVector<RawPtrWillBeMember<Document> > documents();
     void reset();
 
     // Methods called from the frontend for DOM nodes inspection.
     virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override;
     virtual void querySelector(ErrorString*, int nodeId, const String& selectors, int* elementId) override;
     virtual void querySelectorAll(ErrorString*, int nodeId, const String& selectors, RefPtr<TypeBuilder::Array<int> >& result) override;
     virtual void getDocument(ErrorString*, RefPtr<TypeBuilder::DOM::Node>& root) override;
@@ -261,7 +259,6 @@ private:
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
-    InspectorFrontend::DOM* m_frontend;
     RawPtrWillBeMember<DOMListener> m_domListener;
     OwnPtrWillBeMember<NodeToIdMap> m_documentNodeToIdMap;
     // Owns node mappings for dangling nodes.

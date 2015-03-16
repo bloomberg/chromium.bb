@@ -42,21 +42,9 @@ static const char applicationCacheAgentEnabled[] = "applicationCacheAgentEnabled
 }
 
 InspectorApplicationCacheAgent::InspectorApplicationCacheAgent(InspectorPageAgent* pageAgent)
-    : InspectorBaseAgent<InspectorApplicationCacheAgent>("ApplicationCache")
+    : InspectorBaseAgent<InspectorApplicationCacheAgent, InspectorFrontend::ApplicationCache>("ApplicationCache")
     , m_pageAgent(pageAgent)
-    , m_frontend(0)
 {
-}
-
-void InspectorApplicationCacheAgent::setFrontend(InspectorFrontend* frontend)
-{
-    m_frontend = frontend->applicationcache();
-}
-
-void InspectorApplicationCacheAgent::clearFrontend()
-{
-    m_instrumentingAgents->setInspectorApplicationCacheAgent(0);
-    m_frontend = nullptr;
 }
 
 void InspectorApplicationCacheAgent::restore()
@@ -71,7 +59,13 @@ void InspectorApplicationCacheAgent::enable(ErrorString*)
 {
     m_state->setBoolean(ApplicationCacheAgentState::applicationCacheAgentEnabled, true);
     m_instrumentingAgents->setInspectorApplicationCacheAgent(this);
-    m_frontend->networkStateUpdated(networkStateNotifier().onLine());
+    frontend()->networkStateUpdated(networkStateNotifier().onLine());
+}
+
+void InspectorApplicationCacheAgent::disable(ErrorString*)
+{
+    m_state->setBoolean(ApplicationCacheAgentState::applicationCacheAgentEnabled, false);
+    m_instrumentingAgents->setInspectorApplicationCacheAgent(nullptr);
 }
 
 void InspectorApplicationCacheAgent::updateApplicationCacheStatus(LocalFrame* frame)
@@ -85,13 +79,13 @@ void InspectorApplicationCacheAgent::updateApplicationCacheStatus(LocalFrame* fr
     ApplicationCacheHost::CacheInfo info = host->applicationCacheInfo();
 
     String manifestURL = info.m_manifest.string();
-    m_frontend->applicationCacheStatusUpdated(m_pageAgent->frameId(frame), manifestURL, static_cast<int>(status));
+    frontend()->applicationCacheStatusUpdated(m_pageAgent->frameId(frame), manifestURL, static_cast<int>(status));
 }
 
 void InspectorApplicationCacheAgent::networkStateChanged(LocalFrame* frame, bool online)
 {
     if (frame == m_pageAgent->inspectedFrame())
-        m_frontend->networkStateUpdated(online);
+        frontend()->networkStateUpdated(online);
 }
 
 void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::ApplicationCache::FrameWithManifest> >& result)

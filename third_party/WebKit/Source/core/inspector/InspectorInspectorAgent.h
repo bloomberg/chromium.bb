@@ -43,7 +43,7 @@ class JSONObject;
 
 typedef String ErrorString;
 
-class InspectorInspectorAgent final : public InspectorBaseAgent<InspectorInspectorAgent>, public InspectorBackendDispatcher::InspectorCommandHandler {
+class InspectorInspectorAgent final : public InspectorBaseAgent<InspectorInspectorAgent, InspectorFrontend::Inspector>, public InspectorBackendDispatcher::InspectorCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorInspectorAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorInspectorAgent> create(InjectedScriptManager* injectedScriptManager)
@@ -55,16 +55,14 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // Inspector front-end API.
-    virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override;
+    void enable(ErrorString*) override;
 
-    virtual void init() override;
-    virtual void setFrontend(InspectorFrontend*) override;
-    virtual void clearFrontend() override;
-
+    // InspectorAgent overrides.
+    void init() override;
+    void disable(ErrorString*) override;
     void domContentLoadedEventFired(LocalFrame*);
 
-    bool hasFrontend() const { return m_frontend; }
+    bool hasFrontend() const { return frontend(); }
 
     // Generic code called from custom implementations.
     void evaluateForTestInFrontend(long testCallId, const String& script);
@@ -74,7 +72,6 @@ public:
 private:
     explicit InspectorInspectorAgent(InjectedScriptManager*);
 
-    InspectorFrontend::Inspector* m_frontend;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
 
     Vector<pair<long, String> > m_pendingEvaluateTestCommands;

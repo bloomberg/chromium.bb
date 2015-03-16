@@ -31,6 +31,7 @@
 #ifndef InspectorTimelineAgent_h
 #define InspectorTimelineAgent_h
 
+#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -39,7 +40,7 @@ namespace blink {
 typedef String ErrorString;
 
 class InspectorTimelineAgent final
-    : public InspectorBaseAgent<InspectorTimelineAgent>
+    : public InspectorBaseAgent<InspectorTimelineAgent, InspectorFrontend::Timeline>
     , public InspectorBackendDispatcher::TimelineCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorTimelineAgent);
 public:

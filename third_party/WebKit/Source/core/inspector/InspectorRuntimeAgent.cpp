@@ -48,9 +48,8 @@ static const char runtimeEnabled[] = "runtimeEnabled";
 };
 
 InspectorRuntimeAgent::InspectorRuntimeAgent(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer)
-    : InspectorBaseAgent<InspectorRuntimeAgent>("Runtime")
+    : InspectorBaseAgent<InspectorRuntimeAgent, InspectorFrontend::Runtime>("Runtime")
     , m_enabled(false)
-    , m_frontend(nullptr)
     , m_injectedScriptManager(injectedScriptManager)
     , m_scriptDebugServer(scriptDebugServer)
 {
@@ -176,23 +175,11 @@ void InspectorRuntimeAgent::setCustomObjectFormatterEnabled(ErrorString*, bool e
     injectedScriptManager()->setCustomObjectFormatterEnabled(enabled);
 }
 
-void InspectorRuntimeAgent::setFrontend(InspectorFrontend* frontend)
-{
-    m_frontend = frontend->runtime();
-}
-
-void InspectorRuntimeAgent::clearFrontend()
-{
-    m_frontend = nullptr;
-    String errorString;
-    disable(&errorString);
-}
-
 void InspectorRuntimeAgent::restore()
 {
     if (m_state->getBoolean(InspectorRuntimeAgentState::runtimeEnabled)) {
         m_scriptStateToId.clear();
-        m_frontend->executionContextsCleared();
+        frontend()->executionContextsCleared();
         String error;
         enable(&error);
     }
@@ -230,7 +217,7 @@ void InspectorRuntimeAgent::addExecutionContextToFrontend(ScriptState* scriptSta
         .setFrameId(frameId);
     if (isPageContext)
         description->setIsPageContext(isPageContext);
-    m_frontend->executionContextCreated(description.release());
+    frontend()->executionContextCreated(description.release());
 }
 
 } // namespace blink

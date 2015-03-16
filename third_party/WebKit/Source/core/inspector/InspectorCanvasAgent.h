@@ -51,7 +51,7 @@ class ScriptValue;
 
 typedef String ErrorString;
 
-class InspectorCanvasAgent final : public InspectorBaseAgent<InspectorCanvasAgent>, public InspectorBackendDispatcher::CanvasCommandHandler {
+class InspectorCanvasAgent final : public InspectorBaseAgent<InspectorCanvasAgent, InspectorFrontend::Canvas>, public InspectorBackendDispatcher::CanvasCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorCanvasAgent> create(InspectorPageAgent* pageAgent, InjectedScriptManager* injectedScriptManager)
     {
@@ -60,9 +60,8 @@ public:
     virtual ~InspectorCanvasAgent();
     DECLARE_VIRTUAL_TRACE();
 
-    virtual void setFrontend(InspectorFrontend*) override;
-    virtual void clearFrontend() override;
-    virtual void restore() override;
+    void restore() override;
+    void disable(ErrorString*) override;
 
     void didCommitLoad(LocalFrame*, DocumentLoader*);
     void frameDetachedFromParent(LocalFrame*);
@@ -74,7 +73,6 @@ public:
 
     // Called from the front-end.
     virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override;
     virtual void dropTraceLog(ErrorString*, const TypeBuilder::Canvas::TraceLogId&) override;
     virtual void hasUninstrumentedCanvases(ErrorString*, bool*) override;
     virtual void captureFrame(ErrorString*, const TypeBuilder::Page::FrameId*, TypeBuilder::Canvas::TraceLogId*) override;
@@ -97,7 +95,6 @@ private:
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
-    InspectorFrontend::Canvas* m_frontend;
     bool m_enabled;
     // Contains all frames with canvases, value is true only for frames that have an uninstrumented canvas.
     typedef HashMap<LocalFrame*, bool> FramesWithUninstrumentedCanvases;

@@ -226,8 +226,8 @@ void InspectorDatabaseAgent::didOpenDatabase(Database* database, const String& d
     InspectorDatabaseResource* resource = InspectorDatabaseResource::create(database, domain, name, version);
     m_resources.set(resource->id(), resource);
     // Resources are only bound while visible.
-    if (m_frontend && m_enabled)
-        resource->bind(m_frontend);
+    if (frontend() && m_enabled)
+        resource->bind(frontend());
 }
 
 void InspectorDatabaseAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
@@ -240,9 +240,8 @@ void InspectorDatabaseAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 }
 
 InspectorDatabaseAgent::InspectorDatabaseAgent(Page* page)
-    : InspectorBaseAgent<InspectorDatabaseAgent>("Database")
+    : InspectorBaseAgent<InspectorDatabaseAgent, InspectorFrontend::Database>("Database")
     , m_page(page)
-    , m_frontend(0)
     , m_enabled(false)
 {
     DatabaseClient::fromPage(page)->setInspectorAgent(this);
@@ -250,17 +249,6 @@ InspectorDatabaseAgent::InspectorDatabaseAgent(Page* page)
 
 InspectorDatabaseAgent::~InspectorDatabaseAgent()
 {
-}
-
-void InspectorDatabaseAgent::setFrontend(InspectorFrontend* frontend)
-{
-    m_frontend = frontend->database();
-}
-
-void InspectorDatabaseAgent::clearFrontend()
-{
-    m_frontend = 0;
-    disable(0);
 }
 
 void InspectorDatabaseAgent::enable(ErrorString*)
@@ -272,7 +260,7 @@ void InspectorDatabaseAgent::enable(ErrorString*)
 
     DatabaseResourcesHeapMap::iterator databasesEnd = m_resources.end();
     for (DatabaseResourcesHeapMap::iterator it = m_resources.begin(); it != databasesEnd; ++it)
-        it->value->bind(m_frontend);
+        it->value->bind(frontend());
 }
 
 void InspectorDatabaseAgent::disable(ErrorString*)

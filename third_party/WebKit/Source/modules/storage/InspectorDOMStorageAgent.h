@@ -45,7 +45,7 @@ class StorageArea;
 
 typedef String ErrorString;
 
-class InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent>, public InspectorBackendDispatcher::DOMStorageCommandHandler {
+class InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent, InspectorFrontend::DOMStorage>, public InspectorBackendDispatcher::DOMStorageCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorDOMStorageAgent> create(Page* page)
     {
@@ -61,13 +61,11 @@ private:
     explicit InspectorDOMStorageAgent(Page*);
 
     // InspectorBaseAgent overrides.
-    virtual void setFrontend(InspectorFrontend*) override;
-    virtual void clearFrontend() override;
-    virtual void restore() override;
+    void disable(ErrorString*) override;
+    void restore() override;
 
     // InspectorBackendDispatcher::DOMStorageCommandHandler overrides.
     void enable(ErrorString*) override;
-    void disable(ErrorString*) override;
     void getDOMStorageItems(ErrorString*, const RefPtr<JSONObject>& storageId, RefPtr<TypeBuilder::Array<TypeBuilder::Array<String>>>& items) override;
     void setDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key, const String& value) override;
     void removeDOMStorageItem(ErrorString*, const RefPtr<JSONObject>& storageId, const String& key) override;
@@ -76,7 +74,6 @@ private:
     PassRefPtr<TypeBuilder::DOMStorage::StorageId> storageId(SecurityOrigin*, bool isLocalStorage);
 
     RawPtrWillBeMember<Page> m_page;
-    InspectorFrontend::DOMStorage* m_frontend;
     bool m_isEnabled;
 };
 

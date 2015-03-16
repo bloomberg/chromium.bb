@@ -39,7 +39,7 @@ namespace blink {
 
 typedef String ErrorString;
 
-class InspectorMemoryAgent final : public InspectorBaseAgent<InspectorMemoryAgent>, public InspectorBackendDispatcher::MemoryCommandHandler {
+class InspectorMemoryAgent final : public InspectorBaseAgent<InspectorMemoryAgent, InspectorFrontend::Memory>, public InspectorBackendDispatcher::MemoryCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorMemoryAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorMemoryAgent> create()
@@ -50,13 +50,8 @@ public:
 
     virtual void getDOMCounters(ErrorString*, int* documents, int* nodes, int* jsEventListeners) override;
 
-    virtual void setFrontend(InspectorFrontend*) override;
-    virtual void clearFrontend() override;
-
 private:
     InspectorMemoryAgent();
-
-    InspectorFrontend::Memory* m_frontend;
 };
 
 } // namespace blink

@@ -5,6 +5,7 @@
 #ifndef InspectorServiceWorkerCacheAgent_h
 #define InspectorServiceWorkerCacheAgent_h
 
+#include "core/InspectorFrontend.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -15,7 +16,7 @@ typedef String ErrorString;
 
 class ServiceWorkerGlobalScope;
 
-class InspectorServiceWorkerCacheAgent final : public InspectorBaseAgent<InspectorServiceWorkerCacheAgent>, public InspectorBackendDispatcher::ServiceWorkerCacheCommandHandler {
+class InspectorServiceWorkerCacheAgent final : public InspectorBaseAgent<InspectorServiceWorkerCacheAgent, InspectorFrontend::ServiceWorkerCache>, public InspectorBackendDispatcher::ServiceWorkerCacheCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorServiceWorkerCacheAgent);
 
 public:
@@ -27,9 +28,6 @@ public:
     virtual ~InspectorServiceWorkerCacheAgent();
 
     DECLARE_VIRTUAL_TRACE();
-
-    virtual void clearFrontend() override;
-    virtual void restore() override;
 
     virtual void requestCacheNames(ErrorString*, PassRefPtrWillBeRawPtr<RequestCacheNamesCallback>) override;
     virtual void requestEntries(ErrorString*, const String& cacheName, int skipCount, int pageSize, PassRefPtrWillBeRawPtr<RequestEntriesCallback>) override;

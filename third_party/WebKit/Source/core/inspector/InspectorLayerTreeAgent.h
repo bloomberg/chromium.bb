@@ -48,7 +48,7 @@ class LayerCompositor;
 
 typedef String ErrorString;
 
-class InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
+class InspectorLayerTreeAgent final : public InspectorBaseAgent<InspectorLayerTreeAgent, InspectorFrontend::LayerTree>, public InspectorBackendDispatcher::LayerTreeCommandHandler {
 public:
     static PassOwnPtrWillBeRawPtr<InspectorLayerTreeAgent> create(InspectorPageAgent* pageAgent)
     {
@@ -57,9 +57,8 @@ public:
     virtual ~InspectorLayerTreeAgent();
     DECLARE_VIRTUAL_TRACE();
 
-    virtual void setFrontend(InspectorFrontend*) override;
-    virtual void clearFrontend() override;
-    virtual void restore() override;
+    void disable(ErrorString*) override;
+    void restore() override;
 
     // Called from InspectorController
     void willAddPageOverlay(const GraphicsLayer*);
@@ -71,7 +70,6 @@ public:
 
     // Called from the front-end.
     virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override;
     virtual void compositingReasons(ErrorString*, const String& layerId, RefPtr<TypeBuilder::Array<String> >&) override;
     virtual void makeSnapshot(ErrorString*, const String& layerId, String* snapshotId) override;
     virtual void loadSnapshot(ErrorString*, const RefPtr<JSONArray>& tiles, String* snapshotId) override;
@@ -99,7 +97,6 @@ private:
     void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
     int idForNode(Node*);
 
-    InspectorFrontend::LayerTree* m_frontend;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     Vector<int, 2> m_pageOverlayLayerIds;
 

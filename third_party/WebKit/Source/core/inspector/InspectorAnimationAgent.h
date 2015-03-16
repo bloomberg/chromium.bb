@@ -20,7 +20,7 @@ class InspectorDOMAgent;
 class InspectorPageAgent;
 class TimingFunction;
 
-class InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent>, public InspectorBackendDispatcher::AnimationCommandHandler {
+class InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>, public InspectorBackendDispatcher::AnimationCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);
 public:
     static PassOwnPtrWillBeRawPtr<InspectorAnimationAgent> create(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent)
@@ -29,10 +29,8 @@ public:
     }
 
     // Base agent methods.
-    virtual void setFrontend(InspectorFrontend*) override;
-    virtual void clearFrontend() override;
-    void reset();
-    virtual void restore() override;
+    void restore() override;
+    void disable(ErrorString*) override;
 
     // Protocol method implementations
     virtual void getAnimationPlayersForNode(ErrorString*, int nodeId, bool includeSubtreeAnimations, RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> >& animationPlayersArray) override;
@@ -63,7 +61,6 @@ private:
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
-    InspectorFrontend::Animation* m_frontend;
     WillBeHeapHashMap<String, RefPtrWillBeMember<AnimationPlayer>> m_idToAnimationPlayer;
 };
 

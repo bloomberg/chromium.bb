@@ -67,9 +67,8 @@ PassOwnPtrWillBeRawPtr<InspectorHeapProfilerAgent> InspectorHeapProfilerAgent::c
 }
 
 InspectorHeapProfilerAgent::InspectorHeapProfilerAgent(InjectedScriptManager* injectedScriptManager)
-    : InspectorBaseAgent<InspectorHeapProfilerAgent>("HeapProfiler")
+    : InspectorBaseAgent<InspectorHeapProfilerAgent, InspectorFrontend::HeapProfiler>("HeapProfiler")
     , m_injectedScriptManager(injectedScriptManager)
-    , m_frontend(0)
 {
 }
 
@@ -77,22 +76,10 @@ InspectorHeapProfilerAgent::~InspectorHeapProfilerAgent()
 {
 }
 
-void InspectorHeapProfilerAgent::setFrontend(InspectorFrontend* frontend)
-{
-    m_frontend = frontend->heapprofiler();
-}
-
-void InspectorHeapProfilerAgent::clearFrontend()
-{
-    m_frontend = 0;
-    ErrorString error;
-    disable(&error);
-}
-
 void InspectorHeapProfilerAgent::restore()
 {
     if (m_state->getBoolean(HeapProfilerAgentState::heapProfilerEnabled))
-        m_frontend->resetProfiles();
+        frontend()->resetProfiles();
     if (m_state->getBoolean(HeapProfilerAgentState::heapObjectsTrackingEnabled))
         startTrackingHeapObjectsInternal(m_state->getBoolean(HeapProfilerAgentState::allocationTrackingEnabled));
 }
@@ -153,21 +140,21 @@ void InspectorHeapProfilerAgent::startTrackingHeapObjects(ErrorString*, const bo
 
 void InspectorHeapProfilerAgent::requestHeapStatsUpdate()
 {
-    if (!m_frontend)
+    if (!frontend())
         return;
     HeapStatsStream stream(this);
     SnapshotObjectId lastSeenObjectId = ScriptProfiler::requestHeapStatsUpdate(&stream);
-    m_frontend->lastSeenObjectId(lastSeenObjectId, WTF::currentTimeMS());
+    frontend()->lastSeenObjectId(lastSeenObjectId, WTF::currentTimeMS());
 }
 
 void InspectorHeapProfilerAgent::pushHeapStatsUpdate(const uint32_t* const data, const int size)
 {
-    if (!m_frontend)
+    if (!frontend())
         return;
     RefPtr<TypeBuilder::Array<int> > statsDiff = TypeBuilder::Array<int>::create();
     for (int i = 0; i < size; ++i)
         statsDiff->addItem(data[i]);
-    m_frontend->heapStatsUpdate(statsDiff.release());
+    frontend()->heapStatsUpdate(statsDiff.release());
 }
 
 void InspectorHeapProfilerAgent::stopTrackingHeapObjects(ErrorString* error, const bool* reportProgress)
@@ -245,7 +232,7 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
         int m_totalWork;
     };
 
-    HeapSnapshotProgress progress(asBool(reportProgress) ? m_frontend : 0);
+    HeapSnapshotProgress progress(asBool(reportProgress) ? frontend() : 0);
     RefPtr<ScriptHeapSnapshot> snapshot = ScriptProfiler::takeHeapSnapshot(&progress);
     if (!snapshot) {
         *errorString = "Failed to take heap snapshot";
@@ -266,8 +253,8 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
         InspectorFrontend::HeapProfiler* m_frontend;
     };
 
-    if (m_frontend) {
-        OutputStream stream(m_frontend);
+    if (frontend()) {
+        OutputStream stream(frontend());
         snapshot->writeJSON(&stream);
     }
 }

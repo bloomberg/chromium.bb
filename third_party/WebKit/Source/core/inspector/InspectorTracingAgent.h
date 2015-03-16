@@ -18,7 +18,7 @@ class InspectorPageAgent;
 class InspectorWorkerAgent;
 
 class InspectorTracingAgent final
-    : public InspectorBaseAgent<InspectorTracingAgent>
+    : public InspectorBaseAgent<InspectorTracingAgent, InspectorFrontend::Tracing>
     , public InspectorBackendDispatcher::TracingCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorTracingAgent);
 public:
@@ -38,9 +38,8 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     // Base agent methods.
-    virtual void restore() override;
-    virtual void setFrontend(InspectorFrontend*) override;
-    virtual void clearFrontend() override;
+    void restore() override;
+    void disable(ErrorString*) override;
 
     // Protocol method implementations.
     virtual void start(ErrorString*, const String* categoryFilter, const String*, const double*, PassRefPtrWillBeRawPtr<StartCallback>) override;
@@ -58,7 +57,6 @@ private:
 
     int m_layerTreeId;
     Client* m_client;
-    InspectorFrontend::Tracing* m_frontend;
     RawPtrWillBeMember<InspectorWorkerAgent> m_workerAgent;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
 };

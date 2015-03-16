@@ -46,7 +46,7 @@ class ScriptDebugServer;
 
 typedef String ErrorString;
 
-class InspectorRuntimeAgent : public InspectorBaseAgent<InspectorRuntimeAgent>, public InspectorBackendDispatcher::RuntimeCommandHandler {
+class InspectorRuntimeAgent : public InspectorBaseAgent<InspectorRuntimeAgent, InspectorFrontend::Runtime>, public InspectorBackendDispatcher::RuntimeCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorRuntimeAgent);
 public:
     virtual ~InspectorRuntimeAgent();
@@ -54,7 +54,6 @@ public:
 
     // Part of the protocol.
     virtual void enable(ErrorString*) override;
-    virtual void disable(ErrorString*) override final;
     virtual void evaluate(ErrorString*,
         const String& expression,
         const String* objectGroup,
@@ -82,9 +81,8 @@ public:
     virtual void isRunRequired(ErrorString*, bool* out_result) override;
     virtual void setCustomObjectFormatterEnabled(ErrorString*, bool) override final;
 
-    virtual void setFrontend(InspectorFrontend*) override final;
-    virtual void clearFrontend() override final;
-    virtual void restore() override final;
+    void disable(ErrorString*) override final;
+    void restore() override final;
 
 protected:
     InspectorRuntimeAgent(InjectedScriptManager*, ScriptDebugServer*);
@@ -97,7 +95,6 @@ protected:
     void addExecutionContextToFrontend(ScriptState*, bool isPageContext, const String& origin, const String& frameId);
 
     bool m_enabled;
-    InspectorFrontend::Runtime* m_frontend;
 
     typedef HashMap<RefPtr<ScriptState>, int> ScriptStateToId;
     ScriptStateToId m_scriptStateToId;

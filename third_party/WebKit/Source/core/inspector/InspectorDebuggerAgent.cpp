@@ -137,9 +137,8 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(const ScriptVal
 }
 
 InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager)
-    : InspectorBaseAgent<InspectorDebuggerAgent>("Debugger")
+    : InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>("Debugger")
     , m_injectedScriptManager(injectedScriptManager)
-    , m_frontend(0)
     , m_pausedScriptState(nullptr)
     , m_breakReason(InspectorFrontend::Debugger::Reason::Other)
     , m_scheduledDebuggerStep(NoStep)
@@ -227,7 +226,7 @@ void InspectorDebuggerAgent::enable(ErrorString*)
     enable();
     m_state->setBoolean(DebuggerAgentState::debuggerEnabled, true);
 
-    ASSERT(m_frontend);
+    ASSERT(frontend());
 }
 
 void InspectorDebuggerAgent::disable(ErrorString*)
@@ -271,7 +270,7 @@ void InspectorDebuggerAgent::internalSetAsyncCallStackDepth(int depth)
 void InspectorDebuggerAgent::restore()
 {
     if (enabled()) {
-        m_frontend->globalObjectCleared();
+        frontend()->globalObjectCleared();
         enable();
         long pauseState = m_state->getLong(DebuggerAgentState::pauseOnExceptionsState);
         String error;
@@ -283,18 +282,6 @@ void InspectorDebuggerAgent::restore()
         internalSetAsyncCallStackDepth(m_state->getLong(DebuggerAgentState::asyncCallStackDepth));
         promiseTracker().setEnabled(m_state->getBoolean(DebuggerAgentState::promiseTrackerEnabled), m_state->getBoolean(DebuggerAgentState::promiseTrackerCaptureStacks));
     }
-}
-
-void InspectorDebuggerAgent::setFrontend(InspectorFrontend* frontend)
-{
-    m_frontend = frontend->debugger();
-}
-
-void InspectorDebuggerAgent::clearFrontend()
-{
-    m_frontend = nullptr;
-    ErrorString error;
-    disable(&error);
 }
 
 void InspectorDebuggerAgent::setBreakpointsActive(ErrorString*, bool active)
@@ -1042,8 +1029,8 @@ void InspectorDebuggerAgent::getPromiseById(ErrorString* errorString, int promis
 
 void InspectorDebuggerAgent::didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum eventType, PassRefPtr<TypeBuilder::Debugger::PromiseDetails> promise)
 {
-    if (m_frontend)
-        m_frontend->promiseUpdated(eventType, promise);
+    if (frontend())
+        frontend()->promiseUpdated(eventType, promise);
 }
 
 int InspectorDebuggerAgent::traceAsyncOperationStarting(const String& description)
@@ -1165,13 +1152,13 @@ void InspectorDebuggerAgent::traceAsyncOperationCompleted(int operationId)
         if (!m_pausingOnAsyncOperation && m_pausingAsyncOperations.isEmpty())
             clearStepIntoAsync();
     }
-    if (m_frontend && shouldNotify)
-        m_frontend->asyncOperationCompleted(operationId);
+    if (frontend() && shouldNotify)
+        frontend()->asyncOperationCompleted(operationId);
 }
 
 void InspectorDebuggerAgent::flushAsyncOperationEvents(ErrorString*)
 {
-    if (!m_frontend)
+    if (!frontend())
         return;
 
     for (int operationId : m_asyncOperationNotifications) {
@@ -1205,7 +1192,7 @@ void InspectorDebuggerAgent::flushAsyncOperationEvents(ErrorString*)
         }
 
         if (operation)
-            m_frontend->asyncOperationStarted(operation.release());
+            frontend()->asyncOperationStarted(operation.release());
     }
 
     m_asyncOperationNotifications.clear();
@@ -1446,9 +1433,9 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
     const bool* isInternalScriptParam = isInternalScript ? &isInternalScript : nullptr;
     const bool* hasSourceURLParam = hasSourceURL ? &hasSourceURL : nullptr;
     if (!hasSyntaxError)
-        m_frontend->scriptParsed(scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
+        frontend()->scriptParsed(scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
     else
-        m_frontend->scriptFailedToParse(scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
+        frontend()->scriptFailedToParse(scriptId, scriptURL, script.startLine(), script.startColumn(), script.endLine(), script.endColumn(), isContentScriptParam, isInternalScriptParam, sourceMapURLParam, hasSourceURLParam);
 
     m_scripts.set(scriptId, script);
 
@@ -1470,7 +1457,7 @@ void InspectorDebuggerAgent::didParseSource(const String& scriptId, const Script
         breakpointObject->getString(DebuggerAgentState::condition, &breakpoint.condition);
         RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(cookie.key, scriptId, breakpoint, UserBreakpointSource);
         if (location)
-            m_frontend->breakpointResolved(cookie.key, location);
+            frontend()->breakpointResolved(cookie.key, location);
     }
 }
 
@@ -1531,7 +1518,7 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptSta
     if (!m_asyncOperationNotifications.isEmpty())
         flushAsyncOperationEvents(nullptr);
 
-    m_frontend->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds, currentAsyncStackTrace());
+    frontend()->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds, currentAsyncStackTrace());
     m_scheduledDebuggerStep = NoStep;
     m_javaScriptPauseScheduled = false;
     m_steppingFromFramework = false;
@@ -1552,7 +1539,7 @@ void InspectorDebuggerAgent::didContinue()
     m_pausedScriptState = nullptr;
     m_currentCallStack = ScriptValue();
     clearBreakDetails();
-    m_frontend->resumed();
+    frontend()->resumed();
 }
 
 bool InspectorDebuggerAgent::canBreakProgram()
@@ -1636,8 +1623,8 @@ void InspectorDebuggerAgent::reset()
     m_breakpointIdToDebugServerBreakpointIds.clear();
     resetAsyncCallTracker();
     promiseTracker().clear();
-    if (m_frontend)
-        m_frontend->globalObjectCleared();
+    if (frontend())
+        frontend()->globalObjectCleared();
 }
 
 DEFINE_TRACE(InspectorDebuggerAgent)
