@@ -55,6 +55,15 @@ class Facebook(WebsiteTest):
     self.Submit("[name='pass']")
 
 
+class Github(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https://github.com/login")
+    self.FillUsernameInto("[name='login']")
+    self.FillPasswordInto("[name='password']")
+    self.Submit("[name='commit']")
+
+
 class Google(WebsiteTest):
 
   def Login(self):
@@ -223,6 +232,39 @@ class Aliexpress(WebsiteTest):
     self.FillUsernameInto("#fm-login-id")
     self.FillPasswordInto("#fm-login-password")
     self.Click("#fm-login-submit")
+
+
+# Fails to save password.
+class Adobe(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https://adobeid-na1.services.adobe.com/renga-idprovider/pages/l"
+              "ogin?callback=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2Fadob"
+              "eid%2Fadobedotcom2%2FAdobeID%2Ftoken%3Fredirect_uri%3Dhttps%253"
+              "A%252F%252Fwww.adobe.com%252F%2523from_ims%253Dtrue%2526old_has"
+              "h%253D%2526client_id%253Dadobedotcom2%2526scope%253Dcreative_cl"
+              "oud%25252CAdobeID%25252Copenid%25252Cgnav%25252Cread_organizati"
+              "ons%25252Cadditional_info.projectedProductContext%2526api%253Da"
+              "uthorize&client_id=adobedotcom2&scope=creative_cloud%2CAdobeID%"
+              "2Copenid%2Cgnav%2Cread_organizations%2Cadditional_info.projecte"
+              "dProductContext&display=web_v2&denied_callback=https%3A%2F%2Fim"
+              "s-na1.adobelogin.com%2Fims%2Fdenied%2Fadobedotcom2%3Fredirect_u"
+              "ri%3Dhttps%253A%252F%252Fwww.adobe.com%252F%2523from_ims%253Dtr"
+              "ue%2526old_hash%253D%2526client_id%253Dadobedotcom2%2526scope%2"
+              "53Dcreative_cloud%25252CAdobeID%25252Copenid%25252Cgnav%25252Cr"
+              "ead_organizations%25252Cadditional_info.projectedProductContext"
+              "%2526api%253Dauthorize%26response_type%3Dtoken&relay=afebfef8-e"
+              "2b3-4c0e-9c94-07baf205bae8&locale=en_US&flow_type=token&dc=fals"
+              "e&client_redirect=https%3A%2F%2Fims-na1.adobelogin.com%2Fims%2F"
+              "redirect%2Fadobedotcom2%3Fclient_redirect%3Dhttps%253A%252F%252"
+              "Fwww.adobe.com%252F%2523from_ims%253Dtrue%2526old_hash%253D%252"
+              "6client_id%253Dadobedotcom2%2526scope%253Dcreative_cloud%25252C"
+              "AdobeID%25252Copenid%25252Cgnav%25252Cread_organizations%25252C"
+              "additional_info.projectedProductContext%2526api%253Dauthorize&i"
+              "dp_flow_type=login")
+    self.FillUsernameInto("[name='username']")
+    self.FillPasswordInto("[name='password']")
+    self.Submit("#sign_in")
 
 
 # Bug not reproducible without test.
@@ -405,6 +447,7 @@ def Tests(environment, tests_to_run=None):
     "alexa": Alexa("alexa"),
     "dropbox": Dropbox("dropbox"),
     "facebook": Facebook("facebook"),
+    "github": Github("github"),
     "google": Google("google"),
     "imgur": Imgur("imgur"),
     "liveinternet": Liveinternet("liveinternet"),
@@ -425,6 +468,7 @@ def Tests(environment, tests_to_run=None):
   }
 
   disabled_tests = {
+    "adobe": Adobe("adobe"), # Password saving not offered.
     "aliexpress": Aliexpress("aliexpress"), # Fails due to test framework issue.
     "amazon": Amazon("amazon"), # Bug not reproducible without test.
     "ask": Ask("ask"), # Password not saved.
@@ -439,7 +483,7 @@ def Tests(environment, tests_to_run=None):
     "live": Live("live", username_not_auto=True),  # http://crbug.com/367768
     "163": One63("163"), # http://crbug.com/368690
     "vube": Vube("vube"), # http://crbug.com/368690
-    "ziddu": Ziddu("ziddu"), #Password not saved
+    "ziddu": Ziddu("ziddu"), # Password not saved.
   }
 
   if tests_to_run:
