@@ -519,6 +519,7 @@ void RendererSchedulerImpl::StartIdlePeriod(IdlePeriodState new_state) {
                            "RendererSchedulerIdlePeriod", this);
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(IsInIdlePeriod(new_state));
+
   renderer_task_queue_selector_->EnableQueue(
       IDLE_TASK_QUEUE, RendererTaskQueueSelector::BEST_EFFORT_PRIORITY);
   task_queue_manager_->PumpQueue(IDLE_TASK_QUEUE);
@@ -561,6 +562,13 @@ void RendererSchedulerImpl::EndIdlePeriod() {
 // static
 bool RendererSchedulerImpl::IsInIdlePeriod(IdlePeriodState state) {
   return state != IdlePeriodState::NOT_IN_IDLE_PERIOD;
+}
+
+bool RendererSchedulerImpl::CanExceedIdleDeadlineIfRequired() const {
+  TRACE_EVENT_BEGIN0("renderer.scheduler", "CanExceedIdleDeadlineIfRequired");
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  return idle_period_state_ ==
+         IdlePeriodState::IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE;
 }
 
 void RendererSchedulerImpl::SetTimeSourceForTesting(

@@ -1246,4 +1246,61 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodInTouchStartPolicy) {
   EXPECT_EQ(1, run_count);
 }
 
+void TestCanExceedIdleDeadlineIfRequiredTask(RendererScheduler* scheduler,
+                                             bool* can_exceed_idle_deadline_out,
+                                             int* run_count,
+                                             base::TimeTicks deadline) {
+  *can_exceed_idle_deadline_out = scheduler->CanExceedIdleDeadlineIfRequired();
+  (*run_count)++;
+}
+
+TEST_F(RendererSchedulerImplTest, CanExceedIdleDeadlineIfRequired) {
+  int run_count = 0;
+  bool can_exceed_idle_deadline = false;
+
+  // Should return false if not in an idle period.
+  EXPECT_FALSE(scheduler_->CanExceedIdleDeadlineIfRequired());
+
+  // Should return false for short idle periods.
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&TestCanExceedIdleDeadlineIfRequiredTask, scheduler_.get(),
+                 &can_exceed_idle_deadline, &run_count));
+  EnableIdleTasks();
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);
+  EXPECT_FALSE(can_exceed_idle_deadline);
+
+  // Should return false for a long idle period which is shortened due to a
+  // pending delayed task.
+  default_task_runner_->PostDelayedTask(FROM_HERE, base::Bind(&NullTask),
+                                        base::TimeDelta::FromMilliseconds(10));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&TestCanExceedIdleDeadlineIfRequiredTask, scheduler_.get(),
+                 &can_exceed_idle_deadline, &run_count));
+  scheduler_->BeginFrameNotExpectedSoon();
+  RunUntilIdle();
+  EXPECT_EQ(2, run_count);
+  EXPECT_FALSE(can_exceed_idle_deadline);
+
+  // Next long idle period will be for the maximum time, so
+  // CanExceedIdleDeadlineIfRequired should return true.
+  clock_->AdvanceNow(maximum_idle_period_duration());
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&TestCanExceedIdleDeadlineIfRequiredTask, scheduler_.get(),
+                 &can_exceed_idle_deadline, &run_count));
+  RunUntilIdle();
+  EXPECT_EQ(3, run_count);
+  EXPECT_TRUE(can_exceed_idle_deadline);
+
+  // Next long idle period will be for the maximum time, so
+  // CanExceedIdleDeadlineIfRequired should return true.
+  scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
+  EXPECT_FALSE(scheduler_->CanExceedIdleDeadlineIfRequired());
+}
+
 }  // namespace content

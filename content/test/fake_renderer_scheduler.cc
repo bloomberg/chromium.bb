@@ -56,6 +56,10 @@ bool FakeRendererScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }
 
+bool FakeRendererScheduler::CanExceedIdleDeadlineIfRequired() const {
+  return false;
+}
+
 void FakeRendererScheduler::AddTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
 }

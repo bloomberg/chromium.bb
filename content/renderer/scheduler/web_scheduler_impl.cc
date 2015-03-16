@@ -24,6 +24,10 @@ bool WebSchedulerImpl::shouldYieldForHighPriorityWork() {
   return renderer_scheduler_->ShouldYieldForHighPriorityWork();
 }
 
+bool WebSchedulerImpl::canExceedIdleDeadlineIfRequired() {
+  return renderer_scheduler_->CanExceedIdleDeadlineIfRequired();
+}
+
 void WebSchedulerImpl::runIdleTask(
     scoped_ptr<blink::WebScheduler::IdleTask> task,
     base::TimeTicks deadline) {

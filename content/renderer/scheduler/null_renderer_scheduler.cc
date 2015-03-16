@@ -89,6 +89,10 @@ bool NullRendererScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }
 
+bool NullRendererScheduler::CanExceedIdleDeadlineIfRequired() const {
+  return false;
+}
+
 void NullRendererScheduler::AddTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   base::MessageLoop::current()->AddTaskObserver(task_observer);

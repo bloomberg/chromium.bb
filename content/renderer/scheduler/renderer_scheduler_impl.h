@@ -43,6 +43,7 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   void DidReceiveInputEventOnCompositorThread(
       const blink::WebInputEvent& web_input_event) override;
   void DidAnimateForInputOnCompositorThread() override;
+  bool CanExceedIdleDeadlineIfRequired() const override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
