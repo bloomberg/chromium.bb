@@ -157,7 +157,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
                ssl_bulk_ciphers, ssl_key_exchanges, enable_npn,
                record_resume_info, tls_intolerant,
                tls_intolerance_type, signed_cert_timestamps,
-               fallback_scsv_enabled, ocsp_response, disable_session_cache):
+               fallback_scsv_enabled, ocsp_response):
     self.cert_chain = tlslite.api.X509CertChain()
     self.cert_chain.parsePemList(pem_cert_and_key)
     # Force using only python implementation - otherwise behavior is different
@@ -203,10 +203,7 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
       self.ssl_handshake_settings.tlsIntolerant = (3, tls_intolerant)
       self.ssl_handshake_settings.tlsIntoleranceType = tls_intolerance_type
 
-
-    if disable_session_cache:
-      self.session_cache = None
-    elif record_resume_info:
+    if record_resume_info:
       # If record_resume_info is true then we'll replace the session cache with
       # an object that records the lookups and inserts that it sees.
       self.session_cache = RecordingSSLSessionCache()
@@ -2048,8 +2045,7 @@ class ServerRunner(testserver_base.TestServerRunner):
                              self.options.signed_cert_timestamps_tls_ext.decode(
                                  "base64"),
                              self.options.fallback_scsv,
-                             stapled_ocsp_response,
-                             self.options.disable_session_cache)
+                             stapled_ocsp_response)
         print 'HTTPS server started on https://%s:%d...' % \
             (host, server.server_port)
       else:
@@ -2149,11 +2145,6 @@ class ServerRunner(testserver_base.TestServerRunner):
 
   def add_options(self):
     testserver_base.TestServerRunner.add_options(self)
-    self.option_parser.add_option('--disable-session-cache',
-                                  action='store_true',
-                                  dest='disable_session_cache',
-                                  help='tells the server to disable the'
-                                  'TLS session cache.')
     self.option_parser.add_option('-f', '--ftp', action='store_const',
                                   const=SERVER_FTP, default=SERVER_HTTP,
                                   dest='server_type',

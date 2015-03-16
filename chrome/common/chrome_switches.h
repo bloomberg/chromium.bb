@@ -165,7 +165,6 @@ extern const char kEnableSessionCrashedBubble[];
 extern const char kEnableSettingsWindow[];
 extern const char kDisableSettingsWindow[];
 extern const char kEnableSpdy4[];
-extern const char kEnableSSLConnectJobWaiting[];
 extern const char kEnableStaleWhileRevalidate[];
 extern const char kEnableSuggestionsService[];
 extern const char kEnableSupervisedUserBlacklist[];

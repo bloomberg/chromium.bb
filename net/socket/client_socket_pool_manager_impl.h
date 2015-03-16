@@ -65,7 +65,6 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
                               CertPolicyEnforcer* cert_policy_enforcer,
                               const std::string& ssl_session_cache_shard,
                               SSLConfigService* ssl_config_service,
-                              bool enable_ssl_connect_job_waiting,
                               HttpNetworkSession::SocketPoolType pool_type);
   ~ClientSocketPoolManagerImpl() override;
 
@@ -113,7 +112,6 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
   CertPolicyEnforcer* const cert_policy_enforcer_;
   const std::string ssl_session_cache_shard_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
-  bool enable_ssl_connect_job_waiting_;
   const HttpNetworkSession::SocketPoolType pool_type_;
 
   // Note: this ordering is important.

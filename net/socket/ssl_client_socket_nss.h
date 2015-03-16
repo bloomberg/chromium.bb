@@ -68,9 +68,6 @@ class SSLClientSocketNSS : public SSLClientSocket {
   ~SSLClientSocketNSS() override;
 
   // SSLClientSocket implementation.
-  std::string GetSessionCacheKey() const override;
-  bool InSessionCache() const override;
-  void SetHandshakeCompletionCallback(const base::Closure& callback) override;
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
   NextProtoStatus GetNextProto(std::string* proto) override;
 

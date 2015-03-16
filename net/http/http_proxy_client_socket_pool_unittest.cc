@@ -177,7 +177,6 @@ class HttpProxyClientSocketPoolTest
                          NULL,
                          NULL,
                          session_deps_.ssl_config_service.get(),
-                         false,
                          BoundNetLog().net_log()),
         session_(CreateNetworkSession()),
         http_proxy_histograms_("HttpProxyUnitTest"),

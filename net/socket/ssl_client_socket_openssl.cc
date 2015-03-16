@@ -218,7 +218,7 @@ class SSLClientSocketOpenSSL::SSLContext {
 
   static std::string GetSessionCacheKey(const SSL* ssl) {
     SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    DCHECK(socket);
+    CHECK(socket);
     return socket->GetSessionCacheKey();
   }
 
@@ -386,8 +386,6 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       next_handshake_state_(STATE_NONE),
       npn_status_(kNextProtoUnsupported),
       channel_id_xtn_negotiated_(false),
-      handshake_succeeded_(false),
-      marked_session_as_good_(false),
       transport_security_state_(context.transport_security_state),
       policy_enforcer_(context.cert_policy_enforcer),
       net_log_(transport_->socket()->NetLog()),
@@ -396,45 +394,6 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
 
 SSLClientSocketOpenSSL::~SSLClientSocketOpenSSL() {
   Disconnect();
-}
-
-std::string SSLClientSocketOpenSSL::GetSessionCacheKey() const {
-  std::string result = host_and_port_.ToString();
-  result.append("/");
-  result.append(ssl_session_cache_shard_);
-
-  // Shard the session cache based on maximum protocol version. This causes
-  // fallback connections to use a separate session cache.
-  result.append("/");
-  switch (ssl_config_.version_max) {
-    case SSL_PROTOCOL_VERSION_SSL3:
-      result.append("ssl3");
-      break;
-    case SSL_PROTOCOL_VERSION_TLS1:
-      result.append("tls1");
-      break;
-    case SSL_PROTOCOL_VERSION_TLS1_1:
-      result.append("tls1.1");
-      break;
-    case SSL_PROTOCOL_VERSION_TLS1_2:
-      result.append("tls1.2");
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  return result;
-}
-
-bool SSLClientSocketOpenSSL::InSessionCache() const {
-  SSLContext* context = SSLContext::GetInstance();
-  std::string cache_key = GetSessionCacheKey();
-  return context->session_cache()->SSLSessionIsInCache(cache_key);
-}
-
-void SSLClientSocketOpenSSL::SetHandshakeCompletionCallback(
-    const base::Closure& callback) {
-  handshake_completion_callback_ = callback;
 }
 
 void SSLClientSocketOpenSSL::GetSSLCertRequestInfo(
@@ -509,18 +468,12 @@ int SSLClientSocketOpenSSL::Connect(const CompletionCallback& callback) {
     user_connect_callback_ = callback;
   } else {
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_SSL_CONNECT, rv);
-    if (rv < OK)
-      OnHandshakeCompletion();
   }
 
   return rv > OK ? OK : rv;
 }
 
 void SSLClientSocketOpenSSL::Disconnect() {
-  // If a handshake was pending (Connect() had been called), notify interested
-  // parties that it's been aborted now. If the handshake had already
-  // completed, this is a no-op.
-  OnHandshakeCompletion();
   if (ssl_) {
     // Calling SSL_shutdown prevents the session from being marked as
     // unresumable.
@@ -699,11 +652,6 @@ int SSLClientSocketOpenSSL::Read(IOBuffer* buf,
       was_ever_used_ = true;
     user_read_buf_ = NULL;
     user_read_buf_len_ = 0;
-    if (rv <= 0) {
-      // Failure of a read attempt may indicate a failed false start
-      // connection.
-      OnHandshakeCompletion();
-    }
   }
 
   return rv;
@@ -724,11 +672,6 @@ int SSLClientSocketOpenSSL::Write(IOBuffer* buf,
       was_ever_used_ = true;
     user_write_buf_ = NULL;
     user_write_buf_len_ = 0;
-    if (rv < 0) {
-      // Failure of a write attempt may indicate a failed false start
-      // connection.
-      OnHandshakeCompletion();
-    }
   }
 
   return rv;
@@ -756,9 +699,6 @@ int SSLClientSocketOpenSSL::Init() {
   if (!SSL_set_tlsext_host_name(ssl_, host_and_port_.host().c_str()))
     return ERR_UNEXPECTED;
 
-  // Set an OpenSSL callback to monitor this SSL*'s connection.
-  SSL_set_info_callback(ssl_, &InfoCallback);
-
   trying_cached_session_ = context->session_cache()->SetSSLSessionWithKey(
       ssl_, GetSessionCacheKey());
 
@@ -780,7 +720,7 @@ int SSLClientSocketOpenSSL::Init() {
   DCHECK(transport_bio_);
 
   // Install a callback on OpenSSL's end to plumb transport errors through.
-  BIO_set_callback(ssl_bio, BIOCallback);
+  BIO_set_callback(ssl_bio, &SSLClientSocketOpenSSL::BIOCallback);
   BIO_set_callback_arg(ssl_bio, reinterpret_cast<char*>(this));
 
   SSL_set_bio(ssl_, ssl_bio, ssl_bio);
@@ -917,11 +857,6 @@ void SSLClientSocketOpenSSL::DoReadCallback(int rv) {
     was_ever_used_ = true;
   user_read_buf_ = NULL;
   user_read_buf_len_ = 0;
-  if (rv <= 0) {
-    // Failure of a read attempt may indicate a failed false start
-    // connection.
-    OnHandshakeCompletion();
-  }
   base::ResetAndReturn(&user_read_callback_).Run(rv);
 }
 
@@ -932,17 +867,7 @@ void SSLClientSocketOpenSSL::DoWriteCallback(int rv) {
     was_ever_used_ = true;
   user_write_buf_ = NULL;
   user_write_buf_len_ = 0;
-  if (rv < 0) {
-    // Failure of a write attempt may indicate a failed false start
-    // connection.
-    OnHandshakeCompletion();
-  }
   base::ResetAndReturn(&user_write_callback_).Run(rv);
-}
-
-void SSLClientSocketOpenSSL::OnHandshakeCompletion() {
-  if (!handshake_completion_callback_.is_null())
-    base::ResetAndReturn(&handshake_completion_callback_).Run();
 }
 
 bool SSLClientSocketOpenSSL::DoTransportIO() {
@@ -1259,23 +1184,18 @@ int SSLClientSocketOpenSSL::DoVerifyCertComplete(int result) {
     // TODO(joth): Work out if we need to remember the intermediate CA certs
     // when the server sends them to us, and do so here.
     SSLContext::GetInstance()->session_cache()->MarkSSLSessionAsGood(ssl_);
-    marked_session_as_good_ = true;
-    CheckIfHandshakeFinished();
   } else {
     DVLOG(1) << "DoVerifyCertComplete error " << ErrorToString(result)
              << " (" << result << ")";
   }
 
   completed_connect_ = true;
-
   // Exit DoHandshakeLoop and return the result to the caller to Connect.
   DCHECK_EQ(STATE_NONE, next_handshake_state_);
   return result;
 }
 
 void SSLClientSocketOpenSSL::DoConnectCallback(int rv) {
-  if (rv < OK)
-    OnHandshakeCompletion();
   if (!user_connect_callback_.is_null()) {
     CompletionCallback c = user_connect_callback_;
     user_connect_callback_.Reset();
@@ -1486,7 +1406,6 @@ int SSLClientSocketOpenSSL::DoHandshakeLoop(int last_io_result) {
       rv = OK;  // This causes us to stay in the loop.
     }
   } while (rv != ERR_IO_PENDING && next_handshake_state_ != STATE_NONE);
-
   return rv;
 }
 
@@ -1607,6 +1526,7 @@ int SSLClientSocketOpenSSL::DoPayloadRead() {
 int SSLClientSocketOpenSSL::DoPayloadWrite() {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
   int rv = SSL_write(ssl_, user_write_buf_->data(), user_write_buf_len_);
+
   if (rv >= 0) {
     net_log_.AddByteTransferEvent(NetLog::TYPE_SSL_SOCKET_BYTES_SENT, rv,
                                   user_write_buf_->data());
@@ -1991,37 +1911,6 @@ long SSLClientSocketOpenSSL::BIOCallback(
       bio, cmd, argp, argi, argl, retvalue);
 }
 
-// static
-void SSLClientSocketOpenSSL::InfoCallback(const SSL* ssl,
-                                          int type,
-                                          int /*val*/) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "424386 SSLClientSocketOpenSSL::InfoCallback"));
-
-  if (type == SSL_CB_HANDSHAKE_DONE) {
-    SSLClientSocketOpenSSL* ssl_socket =
-        SSLContext::GetInstance()->GetClientSocketFromSSL(ssl);
-    ssl_socket->handshake_succeeded_ = true;
-    ssl_socket->CheckIfHandshakeFinished();
-  }
-}
-
-// Determines if both the handshake and certificate verification have completed
-// successfully, and calls the handshake completion callback if that is the
-// case.
-//
-// CheckIfHandshakeFinished is called twice per connection: once after
-// MarkSSLSessionAsGood, when the certificate has been verified, and
-// once via an OpenSSL callback when the handshake has completed. On the
-// second call, when the certificate has been verified and the handshake
-// has completed, the connection's handshake completion callback is run.
-void SSLClientSocketOpenSSL::CheckIfHandshakeFinished() {
-  if (handshake_succeeded_ && marked_session_as_good_)
-    OnHandshakeCompletion();
-}
-
 void SSLClientSocketOpenSSL::AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const {
   for (ct::SCTList::const_iterator iter =
        ct_verify_result_.verified_scts.begin();
@@ -2042,6 +1931,34 @@ void SSLClientSocketOpenSSL::AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const {
         SignedCertificateTimestampAndStatus(*iter,
                                             ct::SCT_STATUS_LOG_UNKNOWN));
   }
+}
+
+std::string SSLClientSocketOpenSSL::GetSessionCacheKey() const {
+  std::string result = host_and_port_.ToString();
+  result.append("/");
+  result.append(ssl_session_cache_shard_);
+
+  // Shard the session cache based on maximum protocol version. This causes
+  // fallback connections to use a separate session cache.
+  result.append("/");
+  switch (ssl_config_.version_max) {
+    case SSL_PROTOCOL_VERSION_SSL3:
+      result.append("ssl3");
+      break;
+    case SSL_PROTOCOL_VERSION_TLS1:
+      result.append("tls1");
+      break;
+    case SSL_PROTOCOL_VERSION_TLS1_1:
+      result.append("tls1.1");
+      break;
+    case SSL_PROTOCOL_VERSION_TLS1_2:
+      result.append("tls1.2");
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  return result;
 }
 
 scoped_refptr<X509Certificate>

@@ -253,27 +253,6 @@ class SSLSessionCacheOpenSSLImpl {
     return SSL_set_session(ssl, session) == 1;
   }
 
-  // Return true iff a cached session was associated with the given |cache_key|.
-  bool SSLSessionIsInCache(const std::string& cache_key) const {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
-    tracked_objects::ScopedTracker tracking_profile(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "424386 SSLSessionCacheOpenSSLImpl::SSLSessionIsInCache"));
-
-    base::AutoLock locked(lock_);
-    KeyIndex::const_iterator it = key_index_.find(cache_key);
-    if (it == key_index_.end())
-      return false;
-
-    SSL_SESSION* session = *it->second;
-    DCHECK(session);
-
-    void* session_is_good =
-        SSL_SESSION_get_ex_data(session, GetSSLSessionExIndex());
-
-    return session_is_good != NULL;
-  }
-
   void MarkSSLSessionAsGood(SSL* ssl) {
     // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
     tracked_objects::ScopedTracker tracking_profile(
@@ -281,7 +260,8 @@ class SSLSessionCacheOpenSSLImpl {
             "424386 SSLSessionCacheOpenSSLImpl::MarkSSLSessionAsGood"));
 
     SSL_SESSION* session = SSL_get_session(ssl);
-    CHECK(session);
+    if (!session)
+      return;
 
     // Mark the session as good, allowing it to be used for future connections.
     SSL_SESSION_set_ex_data(
@@ -394,8 +374,7 @@ class SSLSessionCacheOpenSSLImpl {
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "424386 SSLSessionCacheOpenSSLImpl::NewSessionCallbackStatic"));
 
-    SSLSessionCacheOpenSSLImpl* cache = GetCache(ssl->ctx);
-    cache->OnSessionAdded(ssl, session);
+    GetCache(ssl->ctx)->OnSessionAdded(ssl, session);
     return 1;
   }
 
@@ -532,7 +511,7 @@ class SSLSessionCacheOpenSSLImpl {
 
   // method to get the index which can later be used with SSL_CTX_get_ex_data()
   // or SSL_CTX_set_ex_data().
-  mutable base::Lock lock_;  // Protects access to containers below.
+  base::Lock lock_;  // Protects access to containers below.
 
   MRUSessionList ordering_;
   KeyIndex key_index_;
@@ -560,11 +539,6 @@ bool SSLSessionCacheOpenSSL::SetSSLSessionWithKey(
     SSL* ssl,
     const std::string& cache_key) {
   return impl_->SetSSLSessionWithKey(ssl, cache_key);
-}
-
-bool SSLSessionCacheOpenSSL::SSLSessionIsInCache(
-    const std::string& cache_key) const {
-  return impl_->SSLSessionIsInCache(cache_key);
 }
 
 void SSLSessionCacheOpenSSL::MarkSSLSessionAsGood(SSL* ssl) {

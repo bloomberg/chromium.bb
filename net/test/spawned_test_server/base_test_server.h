@@ -209,11 +209,6 @@ class BaseTestServer {
 
     // Whether to enable NPN support.
     bool enable_npn;
-
-    // Whether to disable TLS session caching. When session caching is
-    // disabled, the server will use an empty session ID in the
-    // ServerHello.
-    bool disable_session_cache;
   };
 
   // Pass as the 'host' parameter during construction to server on 127.0.0.1

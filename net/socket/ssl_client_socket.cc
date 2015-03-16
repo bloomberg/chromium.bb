@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/connection_type_histograms.h"
-#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_cipher_suite_names.h"

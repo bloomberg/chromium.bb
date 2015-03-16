@@ -79,7 +79,6 @@ class NET_EXPORT HttpNetworkSession
     base::WeakPtr<HttpServerProperties> http_server_properties;
     NetLog* net_log;
     HostMappingRules* host_mapping_rules;
-    bool enable_ssl_connect_job_waiting;
     bool ignore_certificate_errors;
     bool use_stale_while_revalidate;
     uint16 testing_fixed_http_port;

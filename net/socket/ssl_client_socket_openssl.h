@@ -60,9 +60,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   }
 
   // SSLClientSocket implementation.
-  std::string GetSessionCacheKey() const override;
-  bool InSessionCache() const override;
-  void SetHandshakeCompletionCallback(const base::Closure& callback) override;
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
   NextProtoStatus GetNextProto(std::string* proto) override;
   ChannelIDService* GetChannelIDService() const override;
@@ -113,8 +110,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   int Init();
   void DoReadCallback(int result);
   void DoWriteCallback(int result);
-
-  void OnHandshakeCompletion();
 
   bool DoTransportIO();
   int DoHandshake();
@@ -171,18 +166,16 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
                           const char *argp, int argi, long argl,
                           long retvalue);
 
-  // Callback that is used to obtain information about the state of the SSL
-  // handshake.
-  static void InfoCallback(const SSL* ssl, int type, int val);
-
-  void CheckIfHandshakeFinished();
-
   // Adds the SignedCertificateTimestamps from ct_verify_result_ to |ssl_info|.
   // SCTs are held in three separate vectors in ct_verify_result, each
   // vetor representing a particular verification state, this method associates
   // each of the SCTs with the corresponding SCTVerifyStatus as it adds it to
   // the |ssl_info|.signed_certificate_timestamps list.
   void AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const;
+
+  // Returns a unique key string for the SSL session cache for
+  // this socket.
+  std::string GetSessionCacheKey() const;
 
   bool transport_send_busy_;
   bool transport_recv_busy_;
@@ -259,12 +252,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // The service for retrieving Channel ID keys.  May be NULL.
   ChannelIDService* channel_id_service_;
 
-  // Callback that is invoked when the connection finishes.
-  //
-  // Note: this callback will be run in Disconnect(). It will not alter
-  // any member variables of the SSLClientSocketOpenSSL.
-  base::Closure handshake_completion_callback_;
-
   // OpenSSL stuff
   SSL* ssl_;
   BIO* transport_bio_;
@@ -296,11 +283,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   std::string channel_id_cert_;
   // True if channel ID extension was negotiated.
   bool channel_id_xtn_negotiated_;
-  // True if InfoCallback has been run with result = SSL_CB_HANDSHAKE_DONE.
-  bool handshake_succeeded_;
-  // True if MarkSSLSessionAsGood has been called for this socket's
-  // SSL session.
-  bool marked_session_as_good_;
   // The request handle for |channel_id_service_|.
   ChannelIDService::RequestHandle channel_id_request_handle_;
 
