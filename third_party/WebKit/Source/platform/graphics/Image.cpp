@@ -29,16 +29,20 @@
 
 #include "platform/Length.h"
 #include "platform/MIMETypeRegistry.h"
+#include "platform/PlatformInstrumentation.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/BitmapImage.h"
+#include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
@@ -218,12 +222,77 @@ void Image::drawTiled(GraphicsContext* ctxt, const FloatRect& dstRect, const Flo
     startAnimation();
 }
 
+static SkBitmap createBitmapWithSpace(const SkBitmap& bitmap, int spaceWidth, int spaceHeight)
+{
+    SkImageInfo info = bitmap.info();
+    info = SkImageInfo::Make(info.width() + spaceWidth, info.height() + spaceHeight, info.colorType(), kPremul_SkAlphaType);
+
+    SkBitmap result;
+    result.allocPixels(info);
+    result.eraseColor(SK_ColorTRANSPARENT);
+    bitmap.copyPixelsTo(reinterpret_cast<uint8_t*>(result.getPixels()), result.rowBytes() * result.height(), result.rowBytes());
+
+    return result;
+}
+
 void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect, const FloatSize& scale,
-    const FloatPoint& phase, SkXfermode::Mode op, const FloatRect& destRect, const IntSize& repeatSpacing)
+    const FloatPoint& phase, SkXfermode::Mode compositeOp, const FloatRect& destRect, const IntSize& repeatSpacing)
 {
     TRACE_EVENT0("skia", "Image::drawPattern");
-    if (RefPtr<NativeImageSkia> bitmap = nativeImageForCurrentFrame())
-        bitmap->drawPattern(context, adjustForNegativeSize(floatSrcRect), scale, phase, op, destRect, repeatSpacing);
+    SkBitmap bitmap;
+    if (!bitmapForCurrentFrame(&bitmap))
+        return;
+
+    FloatRect normSrcRect = floatSrcRect;
+
+    normSrcRect.intersect(FloatRect(0, 0, bitmap.width(), bitmap.height()));
+    if (destRect.isEmpty() || normSrcRect.isEmpty())
+        return; // nothing to draw
+
+    SkMatrix localMatrix;
+    // We also need to translate it such that the origin of the pattern is the
+    // origin of the destination rect, which is what WebKit expects. Skia uses
+    // the coordinate system origin as the base for the pattern. If WebKit wants
+    // a shifted image, it will shift it from there using the localMatrix.
+    const float adjustedX = phase.x() + normSrcRect.x() * scale.width();
+    const float adjustedY = phase.y() + normSrcRect.y() * scale.height();
+    localMatrix.setTranslate(SkFloatToScalar(adjustedX), SkFloatToScalar(adjustedY));
+
+    // Because no resizing occurred, the shader transform should be
+    // set to the pattern's transform, which just includes scale.
+    localMatrix.preScale(scale.width(), scale.height());
+
+    SkBitmap bitmapToPaint;
+    bitmap.extractSubset(&bitmapToPaint, enclosingIntRect(normSrcRect));
+    if (!repeatSpacing.isZero()) {
+        SkScalar ctmScaleX = 1.0;
+        SkScalar ctmScaleY = 1.0;
+
+        if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+            AffineTransform ctm = context->getCTM();
+            ctmScaleX = ctm.xScale();
+            ctmScaleY = ctm.yScale();
+        }
+
+        bitmapToPaint = createBitmapWithSpace(
+            bitmapToPaint,
+            repeatSpacing.width() * ctmScaleX / scale.width(),
+            repeatSpacing.height() * ctmScaleY / scale.height());
+    }
+    RefPtr<SkShader> shader = adoptRef(SkShader::CreateBitmapShader(bitmapToPaint, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
+
+    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap);
+    {
+        SkPaint paint;
+        int initialSaveCount = context->preparePaintForDrawRectToRect(&paint, floatSrcRect,
+            destRect, compositeOp, !bitmap.isOpaque(), isLazyDecoded, bitmap.isImmutable());
+        paint.setShader(shader.get());
+        context->drawRect(destRect, paint);
+        context->canvas()->restoreToCount(initialSaveCount);
+    }
+
+    if (isLazyDecoded)
+        PlatformInstrumentation::didDrawLazyPixelRef(bitmap.getGenerationID());
 }
 
 void Image::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
@@ -238,6 +307,11 @@ PassRefPtr<Image> Image::imageForDefaultFrame()
     RefPtr<Image> image(this);
 
     return image.release();
+}
+
+bool Image::bitmapForCurrentFrame(SkBitmap* bitmap)
+{
+    return false;
 }
 
 PassRefPtr<SkImage> Image::skImage()

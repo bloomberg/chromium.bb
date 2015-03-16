@@ -208,18 +208,19 @@ void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize contai
     draw(context, dstRect, scaledSrc, compositeOp, DoNotRespectImageOrientation);
 }
 
-PassRefPtr<NativeImageSkia> SVGImage::nativeImageForCurrentFrame()
+bool SVGImage::bitmapForCurrentFrame(SkBitmap* bitmap)
 {
     if (!m_page)
-        return nullptr;
+        return false;
 
     OwnPtr<ImageBuffer> buffer = ImageBuffer::create(size());
     if (!buffer)
-        return nullptr;
+        return false;
 
     drawForContainer(buffer->context(), size(), 1, rect(), rect(), SkXfermode::kSrcOver_Mode);
 
-    return NativeImageSkia::create(buffer->bitmap());
+    *bitmap = buffer->bitmap();
+    return true;
 }
 
 void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize,

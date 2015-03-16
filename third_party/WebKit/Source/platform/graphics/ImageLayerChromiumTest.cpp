@@ -26,7 +26,6 @@
 #include "platform/graphics/Image.h"
 
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "wtf/PassOwnPtr.h"
 
 #include <gtest/gtest.h>
@@ -53,10 +52,8 @@ public:
         : Image(0)
         , m_size(size)
     {
-        SkBitmap bitmap;
-        bitmap.allocN32Pixels(size.width(), size.height(), isOpaque);
-        bitmap.eraseColor(SK_ColorTRANSPARENT);
-        m_nativeImage = NativeImageSkia::create(bitmap);
+        m_bitmap.allocN32Pixels(size.width(), size.height(), isOpaque);
+        m_bitmap.eraseColor(SK_ColorTRANSPARENT);
     }
 
     virtual bool isBitmapImage() const override
@@ -66,7 +63,7 @@ public:
 
     virtual bool currentFrameKnownToBeOpaque() override
     {
-        return m_nativeImage->bitmap().isOpaque();
+        return m_bitmap.isOpaque();
     }
 
     virtual IntSize size() const override
@@ -74,12 +71,13 @@ public:
         return m_size;
     }
 
-    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() override
+    virtual bool bitmapForCurrentFrame(SkBitmap* bitmap) override
     {
         if (m_size.isZero())
-            return nullptr;
+            return false;
 
-        return m_nativeImage;
+        *bitmap = m_bitmap;
+        return true;
     }
 
     // Stub implementations of pure virtual Image functions.
@@ -95,7 +93,7 @@ private:
 
     IntSize m_size;
 
-    RefPtr<NativeImageSkia> m_nativeImage;
+    SkBitmap m_bitmap;
 };
 
 class GraphicsLayerForTesting : public GraphicsLayer {

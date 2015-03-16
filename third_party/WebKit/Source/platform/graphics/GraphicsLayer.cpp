@@ -39,7 +39,6 @@
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/Platform.h"
@@ -1008,13 +1007,13 @@ void GraphicsLayer::setContentsRect(const IntRect& rect)
 
 void GraphicsLayer::setContentsToImage(Image* image)
 {
-    RefPtr<NativeImageSkia> nativeImage = image ? image->nativeImageForCurrentFrame() : nullptr;
-    if (nativeImage) {
+    SkBitmap bitmap;
+    if (image && image->bitmapForCurrentFrame(&bitmap)) {
         if (!m_imageLayer) {
             m_imageLayer = adoptPtr(Platform::current()->compositorSupport()->createImageLayer());
             registerContentsLayer(m_imageLayer->layer());
         }
-        m_imageLayer->setImageBitmap(nativeImage->bitmap());
+        m_imageLayer->setImageBitmap(bitmap);
         m_imageLayer->layer()->setOpaque(image->currentFrameKnownToBeOpaque());
         updateContentsRect();
     } else {
@@ -1033,10 +1032,9 @@ void GraphicsLayer::setContentsToNinePatch(Image* image, const IntRect& aperture
         unregisterContentsLayer(m_ninePatchLayer->layer());
         m_ninePatchLayer.clear();
     }
-    RefPtr<NativeImageSkia> nativeImage = image ? image->nativeImageForCurrentFrame() : nullptr;
-    if (nativeImage) {
+    SkBitmap bitmap;
+    if (image && image->bitmapForCurrentFrame(&bitmap)) {
         m_ninePatchLayer = adoptPtr(Platform::current()->compositorSupport()->createNinePatchLayer());
-        const SkBitmap& bitmap = nativeImage->bitmap();
         int borderWidth = bitmap.width() - aperture.width();
         int borderHeight = bitmap.height() - aperture.height();
         WebRect border(aperture.x(), aperture.y(), borderWidth, borderHeight);

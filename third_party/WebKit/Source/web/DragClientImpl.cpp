@@ -36,7 +36,6 @@
 #include "core/frame/LocalFrame.h"
 #include "platform/DragImage.h"
 #include "platform/geometry/IntSize.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebImage.h"

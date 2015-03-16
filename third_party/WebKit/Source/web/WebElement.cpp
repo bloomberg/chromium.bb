@@ -158,11 +158,11 @@ WebImage WebElement::imageContents()
     if (!image)
         return WebImage();
 
-    RefPtr<NativeImageSkia> bitmap = image->nativeImageForCurrentFrame();
-    if (!bitmap)
+    SkBitmap bitmap;
+    if (!image->bitmapForCurrentFrame(&bitmap))
         return WebImage();
 
-    return bitmap->bitmap();
+    return WebImage(bitmap);
 }
 
 WebElement::WebElement(const PassRefPtrWillBeRawPtr<Element>& elem)

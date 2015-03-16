@@ -114,9 +114,9 @@ bool ImageFrame::setSize(int newWidth, int newHeight)
     return true;
 }
 
-PassRefPtr<NativeImageSkia> ImageFrame::asNewNativeImage() const
+const SkBitmap& ImageFrame::bitmap() const
 {
-    return NativeImageSkia::create(m_bitmap);
+    return m_bitmap;
 }
 
 bool ImageFrame::hasAlpha() const

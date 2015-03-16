@@ -58,7 +58,7 @@ public:
 
     String filenameExtension() const;
 
-    PassRefPtr<NativeImageSkia> createFrameAtIndex(size_t);
+    bool createFrameAtIndex(size_t, SkBitmap*) WARN_UNUSED_RETURN;
 
     void setData(SharedBuffer& data, bool allDataReceived);
 

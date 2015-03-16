@@ -27,13 +27,10 @@
 #include "config.h"
 #include "platform/graphics/FrameData.h"
 
-#include "platform/graphics/skia/NativeImageSkia.h"
-
 namespace blink {
 
 FrameData::FrameData()
-    : m_frame(nullptr)
-    , m_orientation(DefaultImageOrientation)
+    : m_orientation(DefaultImageOrientation)
     , m_duration(0)
     , m_haveMetadata(false)
     , m_isComplete(false)
@@ -55,8 +52,8 @@ bool FrameData::clear(bool clearMetadata)
     m_orientation = DefaultImageOrientation;
     m_frameBytes = 0;
 
-    if (m_frame) {
-        m_frame.clear();
+    if (!m_frame.isNull()) {
+        m_frame.reset();
 
         return true;
     }

@@ -41,7 +41,6 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/text/StringTruncator.h"
 #include "platform/text/TextRun.h"
@@ -75,8 +74,8 @@ PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnu
     if (!image)
         return nullptr;
 
-    RefPtr<NativeImageSkia> bitmap = image->nativeImageForCurrentFrame();
-    if (!bitmap)
+    SkBitmap bitmap;
+    if (!image->bitmapForCurrentFrame(&bitmap))
         return nullptr;
 
     if (image->isBitmapImage()) {
@@ -99,14 +98,14 @@ PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnu
             skBitmap.eraseColor(SK_ColorTRANSPARENT);
             SkCanvas canvas(skBitmap);
             canvas.concat(affineTransformToSkMatrix(orientation.transformFromDefault(sizeRespectingOrientation)));
-            canvas.drawBitmapRect(bitmap->bitmap(), 0, destRect);
+            canvas.drawBitmapRect(bitmap, 0, destRect);
 
             return adoptPtr(new DragImage(skBitmap, deviceScaleFactor, interpolationQuality));
         }
     }
 
     SkBitmap skBitmap;
-    if (!bitmap->bitmap().copyTo(&skBitmap, kN32_SkColorType))
+    if (!bitmap.copyTo(&skBitmap, kN32_SkColorType))
         return nullptr;
     return adoptPtr(new DragImage(skBitmap, deviceScaleFactor, interpolationQuality));
 }

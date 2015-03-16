@@ -96,7 +96,7 @@ PassRefPtr<Image> createTransparentImage(const IntSize& size)
     SkBitmap bitmap;
     bitmap.allocN32Pixels(size.width(), size.height());
     bitmap.eraseColor(SK_ColorTRANSPARENT);
-    return BitmapImage::create(NativeImageSkia::create(bitmap));
+    return BitmapImage::create(bitmap);
 }
 
 } // namespace

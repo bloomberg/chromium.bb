@@ -493,7 +493,10 @@ bool ImageResource::currentFrameKnownToBeOpaque(const LayoutObject* renderer)
     blink::Image* image = imageForRenderer(renderer);
     if (image->isBitmapImage()) {
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(renderer, *this));
-        image->nativeImageForCurrentFrame(); // force decode
+        SkBitmap dummy;
+        if (!image->bitmapForCurrentFrame(&dummy)) { // force decode
+            // We don't care about failures here, since we don't use "dummy"
+        }
     }
     return image->currentFrameKnownToBeOpaque();
 }

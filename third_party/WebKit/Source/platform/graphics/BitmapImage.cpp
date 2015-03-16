@@ -27,30 +27,32 @@
 #include "config.h"
 #include "platform/graphics/BitmapImage.h"
 
+#include "platform/PlatformInstrumentation.h"
 #include "platform/Timer.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageObserver.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-PassRefPtr<BitmapImage> BitmapImage::create(PassRefPtr<NativeImageSkia> nativeImage, ImageObserver* observer)
+PassRefPtr<BitmapImage> BitmapImage::create(const SkBitmap& bitmap, ImageObserver* observer)
 {
-    if (!nativeImage) {
+    if (bitmap.isNull()) {
         return BitmapImage::create(observer);
     }
 
-    return adoptRef(new BitmapImage(nativeImage, observer));
+    return adoptRef(new BitmapImage(bitmap, observer));
 }
 
-PassRefPtr<BitmapImage> BitmapImage::createWithOrientationForTesting(PassRefPtr<NativeImageSkia> nativeImage, ImageOrientation orientation)
+PassRefPtr<BitmapImage> BitmapImage::createWithOrientationForTesting(const SkBitmap& bitmap, ImageOrientation orientation)
 {
-    RefPtr<BitmapImage> result = create(nativeImage);
+    RefPtr<BitmapImage> result = create(bitmap);
     result->m_frames[0].m_orientation = orientation;
     if (orientation.usesWidthAsHeight())
         result->m_sizeRespectingOrientation = IntSize(result->m_size.height(), result->m_size.width());
@@ -79,9 +81,9 @@ BitmapImage::BitmapImage(ImageObserver* observer)
 {
 }
 
-BitmapImage::BitmapImage(PassRefPtr<NativeImageSkia> nativeImage, ImageObserver* observer)
+BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
     : Image(observer)
-    , m_size(nativeImage->bitmap().width(), nativeImage->bitmap().height())
+    , m_size(bitmap.width(), bitmap.height())
     , m_currentFrame(0)
     , m_frames(0)
     , m_frameTimer(0)
@@ -103,8 +105,8 @@ BitmapImage::BitmapImage(PassRefPtr<NativeImageSkia> nativeImage, ImageObserver*
     m_sizeRespectingOrientation = m_size;
 
     m_frames.grow(1);
-    m_frames[0].m_hasAlpha = !nativeImage->bitmap().isOpaque();
-    m_frames[0].m_frame = nativeImage;
+    m_frames[0].m_hasAlpha = !bitmap.isOpaque();
+    m_frames[0].m_frame = bitmap;
     m_frames[0].m_haveMetadata = true;
 
     checkForSolidColor();
@@ -166,8 +168,8 @@ void BitmapImage::cacheFrame(size_t index)
     if (m_frames.size() < numFrames)
         m_frames.grow(numFrames);
 
-    m_frames[index].m_frame = m_source.createFrameAtIndex(index);
-    if (numFrames == 1 && m_frames[index].m_frame)
+    bool created = m_source.createFrameAtIndex(index, &m_frames[index].m_frame);
+    if (numFrames == 1 && created)
         checkForSolidColor();
 
     m_frames[index].m_orientation = m_source.orientationAtIndex(index);
@@ -182,7 +184,7 @@ void BitmapImage::cacheFrame(size_t index)
     if (frameSize != m_size)
         m_hasUniformFrameSize = false;
 
-    if (m_frames[index].m_frame) {
+    if (created) {
         int deltaBytes = safeCast<int>(m_frames[index].m_frameBytes);
         // The fully-decoded frame will subsume the partially decoded data used
         // to determine image properties.
@@ -272,13 +274,15 @@ String BitmapImage::filenameExtension() const
 
 void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode compositeOp, RespectImageOrientationEnum shouldRespectImageOrientation)
 {
-    RefPtr<NativeImageSkia> image = nativeImageForCurrentFrame();
-    if (!image)
+    TRACE_EVENT0("skia", "BitmapImage::draw");
+
+    SkBitmap bitmap;
+    if (!bitmapForCurrentFrame(&bitmap))
         return; // It's too early and we don't have an image yet.
 
     FloatRect normDstRect = adjustForNegativeSize(dstRect);
     FloatRect normSrcRect = adjustForNegativeSize(srcRect);
-    normSrcRect.intersect(FloatRect(0, 0, image->bitmap().width(), image->bitmap().height()));
+    normSrcRect.intersect(FloatRect(0, 0, bitmap.width(), bitmap.height()));
 
     if (normSrcRect.isEmpty() || normDstRect.isEmpty())
         return; // Nothing to draw.
@@ -304,7 +308,23 @@ void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dstRect, const Fl
         }
     }
 
-    image->draw(ctxt, normSrcRect, normDstRect, compositeOp);
+    bool isLazyDecoded = DeferredImageDecoder::isLazyDecoded(bitmap);
+    bool isOpaque = bitmap.isOpaque();
+
+    {
+        SkPaint paint;
+        SkRect skSrcRect = normSrcRect;
+        int initialSaveCount = ctxt->preparePaintForDrawRectToRect(&paint, skSrcRect, normDstRect, compositeOp, !isOpaque, isLazyDecoded, bitmap.isImmutable());
+        // We want to filter it if we decided to do interpolation above, or if
+        // there is something interesting going on with the matrix (like a rotation).
+        // Note: for serialization, we will want to subset the bitmap first so we
+        // don't send extra pixels.
+        ctxt->drawBitmapRect(bitmap, &skSrcRect, normDstRect, &paint);
+        ctxt->canvas()->restoreToCount(initialSaveCount);
+    }
+
+    if (isLazyDecoded)
+        PlatformInstrumentation::didDrawLazyPixelRef(bitmap.getGenerationID());
 
     if (ImageObserver* observer = imageObserver())
         observer->didDraw(this);
@@ -339,18 +359,19 @@ bool BitmapImage::ensureFrameIsCached(size_t index)
     if (index >= frameCount())
         return false;
 
-    if (index >= m_frames.size() || !m_frames[index].m_frame)
+    if (index >= m_frames.size() || m_frames[index].m_frame.isNull())
         cacheFrame(index);
 
     return true;
 }
 
-PassRefPtr<NativeImageSkia> BitmapImage::frameAtIndex(size_t index)
+bool BitmapImage::frameAtIndex(size_t index, SkBitmap* bitmap)
 {
     if (!ensureFrameIsCached(index))
-        return nullptr;
+        return false;
 
-    return m_frames[index].m_frame;
+    *bitmap = m_frames[index].m_frame;
+    return true;
 }
 
 bool BitmapImage::frameIsCompleteAtIndex(size_t index)
@@ -369,15 +390,16 @@ float BitmapImage::frameDurationAtIndex(size_t index)
     return m_source.frameDurationAtIndex(index);
 }
 
-PassRefPtr<NativeImageSkia> BitmapImage::nativeImageForCurrentFrame()
+bool BitmapImage::bitmapForCurrentFrame(SkBitmap* bitmap)
 {
-    return frameAtIndex(currentFrame());
+    return frameAtIndex(currentFrame(), bitmap);
 }
 
 PassRefPtr<Image> BitmapImage::imageForDefaultFrame()
 {
-    if (frameCount() > 1 && frameAtIndex(0))
-        return BitmapImage::create(frameAtIndex(0));
+    SkBitmap bitmap;
+    if (frameCount() > 1 && frameAtIndex(0, &bitmap))
+        return BitmapImage::create(bitmap);
 
     return Image::imageForDefaultFrame();
 }
@@ -624,15 +646,14 @@ void BitmapImage::checkForSolidColor()
     if (frameCount() > 1)
         return;
 
-    RefPtr<NativeImageSkia> frame = frameAtIndex(0);
-
-    if (frame && size().width() == 1 && size().height() == 1) {
-        SkAutoLockPixels lock(frame->bitmap());
-        if (!frame->bitmap().getPixels())
+    SkBitmap bitmap;
+    if (frameAtIndex(0, &bitmap) && size().width() == 1 && size().height() == 1) {
+        SkAutoLockPixels lock(bitmap);
+        if (!bitmap.getPixels())
             return;
 
         m_isSolidColor = true;
-        m_solidColor = Color(frame->bitmap().getColor(0, 0));
+        m_solidColor = Color(bitmap.getColor(0, 0));
     }
 }
 

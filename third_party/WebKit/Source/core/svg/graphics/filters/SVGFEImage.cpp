@@ -217,11 +217,11 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* bui
 
     m_preserveAspectRatio->transformRect(dstRect, srcRect);
 
-    if (!m_image->nativeImageForCurrentFrame())
+    SkBitmap bitmap;
+    if (!m_image->bitmapForCurrentFrame(&bitmap))
         return adoptRef(SkBitmapSource::Create(SkBitmap()));
 
-    RefPtr<SkImageFilter> result = adoptRef(SkBitmapSource::Create(m_image->nativeImageForCurrentFrame()->bitmap(), srcRect, dstRect));
-    return result.release();
+    return adoptRef(SkBitmapSource::Create(bitmap, srcRect, dstRect));
 }
 
 } // namespace blink

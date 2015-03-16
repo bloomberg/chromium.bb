@@ -107,11 +107,11 @@ size_t ImageSource::frameCount() const
     return count;
 }
 
-PassRefPtr<NativeImageSkia> ImageSource::createFrameAtIndex(size_t index)
+bool ImageSource::createFrameAtIndex(size_t index, SkBitmap* bitmap)
 {
     if (!m_decoder)
-        return nullptr;
-    return m_decoder->createFrameAtIndex(index);
+        return false;
+    return m_decoder->createFrameAtIndex(index, bitmap);
 }
 
 float ImageSource::frameDurationAtIndex(size_t index) const

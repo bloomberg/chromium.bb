@@ -31,9 +31,13 @@ static inline PassRefPtr<Image> cropImage(Image* image, const IntRect& cropRect)
     if (!intersectRect.width() || !intersectRect.height())
         return nullptr;
 
+    SkBitmap bitmap;
+    if (!image->bitmapForCurrentFrame(&bitmap))
+        return nullptr;
+
     SkBitmap cropped;
-    image->nativeImageForCurrentFrame()->bitmap().extractSubset(&cropped, intersectRect);
-    return BitmapImage::create(NativeImageSkia::create(cropped));
+    bitmap.extractSubset(&cropped, intersectRect);
+    return BitmapImage::create(cropped);
 }
 
 ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)

@@ -52,6 +52,7 @@ class SkPath;
 class SkPicture;
 class SkRRect;
 class SkTextBlob;
+struct SkImageInfo;
 struct SkRect;
 
 namespace blink {

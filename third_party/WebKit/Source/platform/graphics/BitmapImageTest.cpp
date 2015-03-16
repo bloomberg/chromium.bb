@@ -83,8 +83,9 @@ public:
         EXPECT_EQ(0u, decodedSize());
 
         size_t frameCount = m_image->frameCount();
+        SkBitmap dummy;
         for (size_t i = 0; i < frameCount; ++i)
-            m_image->frameAtIndex(i);
+            ASSERT_TRUE(m_image->frameAtIndex(i, &dummy));
     }
 
     size_t decodedSize()

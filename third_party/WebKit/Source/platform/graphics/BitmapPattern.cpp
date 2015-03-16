@@ -16,23 +16,21 @@ BitmapPattern::BitmapPattern(PassRefPtr<Image> image, RepeatMode repeatMode)
 {
     if (image) {
         // If image is animated, what about the pattern?
-        m_tileImage = image->nativeImageForCurrentFrame();
-
-        if (m_tileImage)
-            adjustExternalMemoryAllocated(m_tileImage->bitmap().getSafeSize());
+        if (image->bitmapForCurrentFrame(&m_tileImage))
+            adjustExternalMemoryAllocated(m_tileImage.getSafeSize());
     }
 }
 
 PassRefPtr<SkShader> BitmapPattern::createShader()
 {
-    if (!m_tileImage) {
+    if (m_tileImage.isNull()) {
         return adoptRef(SkShader::CreateColorShader(SK_ColorTRANSPARENT));
     }
 
     SkMatrix localMatrix = affineTransformToSkMatrix(m_patternSpaceTransformation);
 
     if (isRepeatXY()) {
-        return adoptRef(SkShader::CreateBitmapShader(m_tileImage->bitmap(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
+        return adoptRef(SkShader::CreateBitmapShader(m_tileImage, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
     }
 
     return BitmapPatternBase::createShader();
@@ -40,12 +38,12 @@ PassRefPtr<SkShader> BitmapPattern::createShader()
 
 SkImageInfo BitmapPattern::getBitmapInfo()
 {
-    return m_tileImage->bitmap().info();
+    return m_tileImage.info();
 }
 
 void BitmapPattern::drawBitmapToCanvas(SkCanvas& canvas, SkPaint& paint)
 {
-    canvas.drawBitmap(m_tileImage->bitmap(), SkIntToScalar(0), SkIntToScalar(0), &paint);
+    canvas.drawBitmap(m_tileImage, SkIntToScalar(0), SkIntToScalar(0), &paint);
 }
 
 } // namespace

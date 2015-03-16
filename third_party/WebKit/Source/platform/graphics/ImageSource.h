@@ -32,13 +32,14 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 
+class SkBitmap;
+
 namespace blink {
 
 class DeferredImageDecoder;
 class ImageOrientation;
 class IntPoint;
 class IntSize;
-class NativeImageSkia;
 class SharedBuffer;
 
 // This is a helper class used by BitmapImage only. If you need an image
@@ -93,7 +94,7 @@ public:
 
     size_t frameCount() const;
 
-    PassRefPtr<NativeImageSkia> createFrameAtIndex(size_t);
+    bool createFrameAtIndex(size_t, SkBitmap*);
 
     float frameDurationAtIndex(size_t) const;
     bool frameHasAlphaAtIndex(size_t) const; // Whether or not the frame actually used any alpha.

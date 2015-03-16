@@ -6,6 +6,7 @@
 #define BitmapPattern_h
 
 #include "platform/graphics/BitmapPatternBase.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
 
@@ -27,7 +28,7 @@ protected:
 private:
     BitmapPattern(PassRefPtr<Image>, RepeatMode);
 
-    RefPtr<NativeImageSkia> m_tileImage;
+    SkBitmap m_tileImage;
 };
 
 } // namespace

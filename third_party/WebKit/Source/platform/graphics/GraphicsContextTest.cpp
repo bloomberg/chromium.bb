@@ -28,7 +28,6 @@
 
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"

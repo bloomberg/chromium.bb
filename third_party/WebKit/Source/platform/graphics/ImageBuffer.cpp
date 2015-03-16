@@ -43,7 +43,6 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-encoders/skia/JPEGImageEncoder.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
@@ -170,10 +169,10 @@ static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
 PassRefPtr<Image> ImageBuffer::copyImage(BackingStoreCopy copyBehavior, ScaleBehavior) const
 {
     if (!isSurfaceValid())
-        return BitmapImage::create(NativeImageSkia::create());
+        return BitmapImage::create(SkBitmap());
 
     const SkBitmap& bitmap = m_surface->bitmap();
-    return BitmapImage::create(NativeImageSkia::create(copyBehavior == CopyBackingStore ? deepSkBitmapCopy(bitmap) : bitmap));
+    return BitmapImage::create(copyBehavior == CopyBackingStore ? deepSkBitmapCopy(bitmap) : bitmap);
 }
 
 BackingStoreCopy ImageBuffer::fastCopyImageMode()

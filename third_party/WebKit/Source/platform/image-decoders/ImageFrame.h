@@ -29,7 +29,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 
@@ -114,7 +114,7 @@ public:
     // Returns a caller-owned pointer to the underlying native image data.
     // (Actual use: This pointer will be owned by BitmapImage and freed in
     // FrameData::clear()).
-    PassRefPtr<NativeImageSkia> asNewNativeImage() const;
+    const SkBitmap& bitmap() const;
 
     bool hasAlpha() const;
     const IntRect& originalFrameRect() const { return m_originalFrameRect; }

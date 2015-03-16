@@ -34,7 +34,6 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/Image.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebSize.h"
@@ -84,11 +83,7 @@ WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize)
     if (!frame)
         return WebImage();
 
-    RefPtr<NativeImageSkia> image = frame->asNewNativeImage();
-    if (!image)
-        return WebImage();
-
-    return WebImage(image->bitmap());
+    return WebImage(frame->bitmap());
 }
 
 WebVector<WebImage> WebImage::framesFromData(const WebData& data)
@@ -121,9 +116,9 @@ WebVector<WebImage> WebImage::framesFromData(const WebData& data)
         if (!frame)
             continue;
 
-        RefPtr<NativeImageSkia> image = frame->asNewNativeImage();
-        if (image && image->isDataComplete())
-            frames.append(WebImage(image->bitmap()));
+        const SkBitmap& bitmap = frame->bitmap();
+        if (!bitmap.isNull() && bitmap.isImmutable())
+            frames.append(WebImage(bitmap));
     }
 
     return frames;
@@ -156,9 +151,9 @@ WebImage::WebImage(const PassRefPtr<Image>& image)
 
 WebImage& WebImage::operator=(const PassRefPtr<Image>& image)
 {
-    RefPtr<NativeImageSkia> p;
-    if (image && (p = image->nativeImageForCurrentFrame()))
-        assign(p->bitmap());
+    SkBitmap p;
+    if (image && image->bitmapForCurrentFrame(&p))
+        assign(p);
     else
         reset();
     return *this;

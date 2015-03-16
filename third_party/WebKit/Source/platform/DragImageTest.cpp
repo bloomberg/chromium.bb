@@ -37,7 +37,6 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/Image.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/weborigin/KURL.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -65,10 +64,8 @@ public:
         : Image(0)
         , m_size(size)
     {
-        SkBitmap bitmap;
-        bitmap.allocN32Pixels(size.width(), size.height());
-        bitmap.eraseColor(SK_ColorTRANSPARENT);
-        m_nativeImage = NativeImageSkia::create(bitmap);
+        m_bitmap.allocN32Pixels(size.width(), size.height());
+        m_bitmap.eraseColor(SK_ColorTRANSPARENT);
     }
 
     virtual IntSize size() const override
@@ -76,12 +73,13 @@ public:
         return m_size;
     }
 
-    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() override
+    virtual bool bitmapForCurrentFrame(SkBitmap* bitmap) override
     {
         if (m_size.isZero())
-            return nullptr;
+            return false;
 
-        return m_nativeImage;
+        *bitmap = m_bitmap;
+        return true;
     }
 
     // Stub implementations of pure virtual Image functions.
@@ -102,7 +100,7 @@ private:
 
     IntSize m_size;
 
-    RefPtr<NativeImageSkia> m_nativeImage;
+    SkBitmap m_bitmap;
 };
 
 TEST(DragImageTest, NullHandling)
@@ -131,7 +129,7 @@ TEST(DragImageTest, CreateDragImage)
 {
     {
         // Tests that the DrageImage implementation doesn't choke on null values
-        // of nativeImageForCurrentFrame().
+        // of bitmapForCurrentFrame().
         RefPtr<TestImage> testImage(TestImage::create(IntSize()));
         EXPECT_FALSE(DragImage::create(testImage.get()));
     }
@@ -141,8 +139,10 @@ TEST(DragImageTest, CreateDragImage)
         RefPtr<TestImage> testImage(TestImage::create(IntSize(1, 1)));
         OwnPtr<DragImage> dragImage = DragImage::create(testImage.get());
         ASSERT_TRUE(dragImage);
-        SkAutoLockPixels lock1(dragImage->bitmap()), lock2(testImage->nativeImageForCurrentFrame()->bitmap());
-        EXPECT_NE(dragImage->bitmap().getPixels(), testImage->nativeImageForCurrentFrame()->bitmap().getPixels());
+        SkBitmap bitmap;
+        EXPECT_TRUE(testImage->bitmapForCurrentFrame(&bitmap));
+        SkAutoLockPixels lock1(dragImage->bitmap()), lock2(bitmap);
+        EXPECT_NE(dragImage->bitmap().getPixels(), bitmap.getPixels());
     }
 }
 
@@ -191,8 +191,7 @@ TEST(DragImageTest, InvalidRotatedBitmapImage)
     SkBitmap invalidBitmap;
     invalidBitmap.setInfo(info);
     invalidBitmap.setPixelRef(pixelRef.get());
-    RefPtr<NativeImageSkia> nativeImage = NativeImageSkia::create(invalidBitmap);
-    RefPtr<BitmapImage> image = BitmapImage::createWithOrientationForTesting(nativeImage, OriginRightTop);
+    RefPtr<BitmapImage> image = BitmapImage::createWithOrientationForTesting(invalidBitmap, OriginRightTop);
 
     // Create a DragImage from it. In MSAN builds, this will cause a failure if
     // the pixel memory is not initialized, if we have to respect non-default
@@ -200,7 +199,7 @@ TEST(DragImageTest, InvalidRotatedBitmapImage)
     OwnPtr<DragImage> dragImage = DragImage::create(image.get(), RespectImageOrientation);
 
     // The DragImage should be fully transparent.
-    SkBitmap dragImageBitmap = dragImage->bitmap();
+    const SkBitmap& dragImageBitmap = dragImage->bitmap();
     SkAutoLockPixels lock(dragImageBitmap);
     ASSERT_NE(nullptr, dragImageBitmap.getPixels());
     for (int x = 0; x < dragImageBitmap.width(); x++) {
@@ -224,7 +223,8 @@ TEST(DragImageTest, InterpolationNone)
     }
 
     RefPtr<TestImage> testImage(TestImage::create(IntSize(2, 2)));
-    const SkBitmap& testBitmap = testImage->nativeImageForCurrentFrame()->bitmap();
+    SkBitmap testBitmap;
+    EXPECT_TRUE(testImage->bitmapForCurrentFrame(&testBitmap));
     {
         SkAutoLockPixels lock(testBitmap);
         testBitmap.eraseArea(SkIRect::MakeXYWH(0, 0, 1, 1), 0xFFFFFFFF);

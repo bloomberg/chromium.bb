@@ -9,6 +9,7 @@
 #include "platform/graphics/Image.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -95,8 +96,8 @@ public:
         // This needs to lock the resources or relevant data if needed and return true upon success
         bool extractImage(bool premultiplyAlpha, bool ignoreGammaAndColorProfile);
 
-        RefPtr<NativeImageSkia> m_nativeImage;
-        RefPtr<NativeImageSkia> m_skiaImage;
+        SkBitmap m_bitmap;
+        SkBitmap m_skiaBitmap;
         Image* m_image;
         ImageHtmlDomSource m_imageHtmlDomSource;
         bool m_extractSucceeded;

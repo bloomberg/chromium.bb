@@ -88,30 +88,31 @@ String DeferredImageDecoder::filenameExtension() const
     return m_actualDecoder ? m_actualDecoder->filenameExtension() : m_filenameExtension;
 }
 
-PassRefPtr<NativeImageSkia> DeferredImageDecoder::createFrameAtIndex(size_t index)
+bool DeferredImageDecoder::createFrameAtIndex(size_t index, SkBitmap* bitmap)
 {
     prepareLazyDecodedFrames();
     if (index < m_frameData.size()) {
         // ImageFrameGenerator has the latest known alpha state. There will
         // be a performance boost if this frame is opaque.
-        SkBitmap bitmap = createBitmap(index);
+        *bitmap = createBitmap(index);
         if (m_frameGenerator->hasAlpha(index)) {
             m_frameData[index].m_hasAlpha = true;
-            bitmap.setAlphaType(kPremul_SkAlphaType);
+            bitmap->setAlphaType(kPremul_SkAlphaType);
         } else {
             m_frameData[index].m_hasAlpha = false;
-            bitmap.setAlphaType(kOpaque_SkAlphaType);
+            bitmap->setAlphaType(kOpaque_SkAlphaType);
         }
         m_frameData[index].m_frameBytes = m_size.area() *  sizeof(ImageFrame::PixelData);
-        return NativeImageSkia::create(bitmap);
+        return true;
     }
     if (m_actualDecoder) {
         ImageFrame* buffer = m_actualDecoder->frameBufferAtIndex(index);
         if (!buffer || buffer->status() == ImageFrame::FrameEmpty)
-            return nullptr;
-        return buffer->asNewNativeImage();
+            return false;
+        *bitmap = buffer->bitmap();
+        return true;
     }
-    return nullptr;
+    return false;
 }
 
 void DeferredImageDecoder::setData(SharedBuffer& data, bool allDataReceived)

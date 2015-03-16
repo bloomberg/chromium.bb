@@ -33,7 +33,6 @@
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/graphics/ImageOrientation.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
@@ -42,6 +41,7 @@
 #include "wtf/RetainPtr.h"
 #include "wtf/text/WTFString.h"
 
+class SkBitmap;
 class SkImage;
 
 namespace blink {
@@ -126,7 +126,7 @@ public:
 
     enum TileRule { StretchTile, RoundTile, SpaceTile, RepeatTile };
 
-    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() { return nullptr; }
+    virtual bool bitmapForCurrentFrame(SkBitmap*) WARN_UNUSED_RETURN;
 
     virtual PassRefPtr<Image> imageForDefaultFrame();
 

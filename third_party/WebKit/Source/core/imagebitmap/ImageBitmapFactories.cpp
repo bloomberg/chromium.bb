@@ -46,7 +46,6 @@
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/ImageSource.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "public/platform/WebSize.h"
 #include <v8.h>
 
@@ -307,13 +306,13 @@ void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
 
     OwnPtr<ImageSource> source = adoptPtr(new ImageSource());
     source->setData(*sharedBuffer, true);
-    RefPtr<NativeImageSkia> imageSkia = source->createFrameAtIndex(0);
-    if (!imageSkia) {
+    SkBitmap bitmap;
+    if (!source->createFrameAtIndex(0, &bitmap)) {
         rejectPromise();
         return;
     }
 
-    RefPtr<Image> image = BitmapImage::create(imageSkia);
+    RefPtr<Image> image = BitmapImage::create(bitmap);
     if (!image->width() || !image->height()) {
         rejectPromise();
         return;

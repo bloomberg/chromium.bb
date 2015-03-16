@@ -61,7 +61,7 @@ public:
     // FIXME: Implement this to be less conservative.
     virtual bool currentFrameKnownToBeOpaque() override { return false; }
 
-    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() override;
+    virtual bool bitmapForCurrentFrame(SkBitmap*) override;
 
 private:
     SVGImageForContainer(SVGImage* image, const FloatSize& containerSize, float zoom)

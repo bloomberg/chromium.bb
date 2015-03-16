@@ -61,7 +61,7 @@ public:
     virtual void stopAnimation() override;
     virtual void resetAnimation() override;
 
-    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() override;
+    virtual bool bitmapForCurrentFrame(SkBitmap*) override;
 
     // Returns the SVG image document's frame.
     FrameView* frameView() const;

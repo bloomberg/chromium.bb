@@ -108,8 +108,7 @@ WebImage WebImageDecoder::getFrameAtIndex(int index = 0) const
     ImageFrame* const frameBuffer = m_private->frameBufferAtIndex(index);
     if (!frameBuffer)
         return WebImage();
-    RefPtr<NativeImageSkia> image = frameBuffer->asNewNativeImage();
-    return WebImage(image->bitmap());
+    return WebImage(frameBuffer->bitmap());
 }
 
 } // namespace blink

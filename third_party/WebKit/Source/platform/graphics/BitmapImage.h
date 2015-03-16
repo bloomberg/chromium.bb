@@ -40,7 +40,6 @@
 
 namespace blink {
 
-class NativeImageSkia;
 template <typename T> class Timer;
 
 class PLATFORM_EXPORT BitmapImage : public Image {
@@ -49,7 +48,7 @@ class PLATFORM_EXPORT BitmapImage : public Image {
     friend class GradientGeneratedImage;
     friend class GraphicsContext;
 public:
-    static PassRefPtr<BitmapImage> create(PassRefPtr<NativeImageSkia>, ImageObserver* = 0);
+    static PassRefPtr<BitmapImage> create(const SkBitmap&, ImageObserver* = 0);
 
     static PassRefPtr<BitmapImage> create(ImageObserver* observer = 0)
     {
@@ -57,7 +56,7 @@ public:
     }
 
     // This allows constructing a BitmapImage with a forced non-default orientation.
-    static PassRefPtr<BitmapImage> createWithOrientationForTesting(PassRefPtr<NativeImageSkia>, ImageOrientation);
+    static PassRefPtr<BitmapImage> createWithOrientationForTesting(const SkBitmap&, ImageOrientation);
 
     virtual ~BitmapImage();
 
@@ -85,7 +84,7 @@ public:
     virtual void setAnimationPolicy(ImageAnimationPolicy policy) override { m_animationPolicy = policy; }
     virtual ImageAnimationPolicy animationPolicy() override { return m_animationPolicy; }
 
-    virtual PassRefPtr<NativeImageSkia> nativeImageForCurrentFrame() override;
+    virtual bool bitmapForCurrentFrame(SkBitmap*) override;
     virtual PassRefPtr<Image> imageForDefaultFrame() override;
     virtual bool currentFrameKnownToBeOpaque() override;
     ImageOrientation currentFrameOrientation();
@@ -106,7 +105,7 @@ private:
       Certain     // The repetition count is known to be correct.
     };
 
-    BitmapImage(PassRefPtr<NativeImageSkia>, ImageObserver* = 0);
+    BitmapImage(const SkBitmap &, ImageObserver* = 0);
     BitmapImage(ImageObserver* = 0);
 
     void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, SkXfermode::Mode, RespectImageOrientationEnum) override;
@@ -114,7 +113,7 @@ private:
     size_t currentFrame() const { return m_currentFrame; }
     size_t frameCount();
 
-    PassRefPtr<NativeImageSkia> frameAtIndex(size_t);
+    bool frameAtIndex(size_t, SkBitmap*) WARN_UNUSED_RETURN;
 
     bool frameIsCompleteAtIndex(size_t);
     float frameDurationAtIndex(size_t);

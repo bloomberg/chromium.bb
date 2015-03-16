@@ -7,7 +7,6 @@
 
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageObserver.h"
-#include "platform/graphics/skia/NativeImageSkia.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPaint.h"

@@ -106,7 +106,7 @@ void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRec
         bmp = cachedBitmap();
     }
 
-    RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(needsCopy ? deepSkBitmapCopy(bmp) : bmp));
+    RefPtr<Image> image = BitmapImage::create(needsCopy ? deepSkBitmapCopy(bmp) : bmp);
 
     context->drawImage(image.get(), destRect, srcRect, op, DoNotRespectImageOrientation);
 }

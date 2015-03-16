@@ -6,6 +6,7 @@
 #define BitmapPatternBase_h
 
 #include "platform/graphics/Pattern.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 
 namespace blink {
 
