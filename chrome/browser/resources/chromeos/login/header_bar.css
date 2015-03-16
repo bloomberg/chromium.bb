@@ -69,16 +69,19 @@ html[screen=oobe] .login-header-bar-animate-slow {
   display: none;
 }
 
-#more-settings-header-bar-item.active .add-supervised-user-menu {
+#more-settings-header-bar-item.active button.add-supervised-user-menu {
   background-color: white;
   border: 1px solid lightgray;
   border-radius: 2px;
   bottom: 15px;
+  color: black !important;
   display: block;
   font-size: 13px;
   left: 15px;
+  margin: 0 0 -10px -10px;
   position: absolute;
-  width: 220px;
+  text-align: center;
+  width: 180px;
 }
 
 html[dir=rtl] .header-bar-item {

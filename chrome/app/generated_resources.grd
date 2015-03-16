@@ -14142,6 +14142,9 @@ After you create a new supervised user, you can manage their settings at any tim
             <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON" desc="Text shown on a button that confirms removal of a user.">
               Remove This Person
             </message>
+            <message name="IDS_CREATE_SUPERVISED_USER_MENU_LABEL" desc="Text shown on a menu option that creates a legacy supervised user.">
+              Add Supervised Person
+            </message>
           </if>
           <if expr="chromeos">
             <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
@@ -14149,6 +14152,9 @@ After you create a new supervised user, you can manage their settings at any tim
             </message>
             <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON" desc="Text shown on a button that confirms removal of a user.">
               Remove This User
+            </message>
+            <message name="IDS_CREATE_SUPERVISED_USER_MENU_LABEL" desc="Text shown on a menu option that creates a legacy supervised user.">
+              Add Supervised User
             </message>
           </if>
           <message name="IDS_SCREEN_LOCK_SIGN_OUT">
@@ -14166,6 +14172,9 @@ After you create a new supervised user, you can manage their settings at any tim
             <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON" desc="Text shown on a button that confirms removal of a user.">
               Remove this person
             </message>
+            <message name="IDS_CREATE_SUPERVISED_USER_MENU_LABEL" desc="Text shown on a menu option that creates a legacy supervised user.">
+              Add supervised person
+            </message>
           </if>
           <if expr="chromeos">
             <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
@@ -14173,6 +14182,9 @@ After you create a new supervised user, you can manage their settings at any tim
             </message>
             <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON" desc="Text shown on a button that confirms removal of a user.">
               Remove this user
+            </message>
+            <message name="IDS_CREATE_SUPERVISED_USER_MENU_LABEL" desc="Text shown on a menu option that creates a legacy supervised user.">
+              Add supervised user
             </message>
           </if>
           <message name="IDS_SCREEN_LOCK_SIGN_OUT">

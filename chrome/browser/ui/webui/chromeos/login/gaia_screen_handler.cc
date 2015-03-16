@@ -245,6 +245,8 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
       command_line->AppendSwitchASCII(switches::kGaiaEndpointChromeOS,
                                       kMinuteMaidPath);
     }
+  } else {
+    params.SetBoolean("useMinuteMaid", false);
   }
 
   if (!command_line->HasSwitch(::switches::kGaiaUrl) &&

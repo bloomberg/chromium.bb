@@ -147,6 +147,7 @@ cr.define('login', function() {
 
     handleMoreSettingsClick_: function(e) {
       this.isMoreSettingsActive = !this.isMoreSettingsActive;
+      this.addSupervisedUserMenu.focus();
       e.stopPropagation();
     },
 
@@ -158,6 +159,7 @@ cr.define('login', function() {
       chrome.send('showSupervisedUserCreationScreen');
       e.preventDefault();
     },
+
     /**
      * Cancel add user button click handler.
      *
@@ -329,8 +331,8 @@ cr.define('login', function() {
       $('add-user-button').hidden =
           !accountPickerIsActive || isMultiProfilesUI || isLockScreen;
       $('more-settings-header-bar-item').hidden = !this.isMinuteMaid_ ||
-          !gaiaIsActive ||
-          !this.showCreateSupervised_;
+          !this.showCreateSupervised_ ||
+          !accountPickerIsActive;
       $('cancel-add-user-button').hidden =
           (gaiaIsActive && this.isMinuteMaid_) ||
           accountPickerIsActive ||
