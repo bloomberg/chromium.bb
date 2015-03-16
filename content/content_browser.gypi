@@ -1715,6 +1715,11 @@
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
       ],
     }],
+    ['debug_devtools==1', {
+      'defines': [
+        'DEBUG_DEVTOOLS=1',
+      ],
+    }],
     ['enable_basic_printing==1 or enable_print_preview==1', {
       'dependencies': [
         '../printing/printing.gyp:printing',

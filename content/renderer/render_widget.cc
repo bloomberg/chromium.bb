@@ -248,7 +248,7 @@ class RenderWidget::ScreenMetricsEmulator {
   // Scale and offset used to convert between host coordinates
   // and webwidget coordinates.
   float scale() { return scale_; }
-  gfx::Point offset() { return offset_; }
+  gfx::PointF offset() { return offset_; }
   gfx::Rect applied_widget_rect() const { return applied_widget_rect_; }
   gfx::Rect original_screen_rect() const { return original_view_screen_rect_; }
   const WebScreenInfo& original_screen_info() { return original_screen_info_; }
@@ -278,7 +278,7 @@ class RenderWidget::ScreenMetricsEmulator {
 
   // The computed scale and offset used to fit widget into browser window.
   float scale_;
-  gfx::Point offset_;
+  gfx::PointF offset_;
 
   // Widget rect as passed to webwidget.
   gfx::Rect applied_widget_rect_;
@@ -314,7 +314,7 @@ RenderWidget::ScreenMetricsEmulator::~ScreenMetricsEmulator() {
   widget_->screen_info_ = original_screen_info_;
 
   widget_->SetDeviceScaleFactor(original_screen_info_.deviceScaleFactor);
-  widget_->SetScreenMetricsEmulationParameters(0.f, gfx::Point(), 1.f);
+  widget_->SetScreenMetricsEmulationParameters(false, params_);
   widget_->view_screen_rect_ = original_view_screen_rect_;
   widget_->window_screen_rect_ = original_window_screen_rect_;
   widget_->Resize(original_size_,
@@ -392,8 +392,11 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
   //   even when emulating different scale factor;
   // - in order to fit into view, WebView applies offset and scale to the
   //   root layer.
-  widget_->SetScreenMetricsEmulationParameters(
-      original_screen_info_.deviceScaleFactor, offset_, scale_);
+  blink::WebDeviceEmulationParams modified_params = params_;
+  modified_params.deviceScaleFactor = original_screen_info_.deviceScaleFactor;
+  modified_params.offset = blink::WebFloatPoint(offset_.x(), offset_.y());
+  modified_params.scale = scale_;
+  widget_->SetScreenMetricsEmulationParameters(true, modified_params);
 
   widget_->SetDeviceScaleFactor(applied_device_scale_factor);
   widget_->view_screen_rect_ = applied_widget_rect_;
@@ -656,18 +659,6 @@ void RenderWidget::WasSwappedOut() {
   RenderProcess::current()->ReleaseProcess();
 }
 
-void RenderWidget::EnableScreenMetricsEmulation(
-    const WebDeviceEmulationParams& params) {
-  if (!screen_metrics_emulator_)
-    screen_metrics_emulator_.reset(new ScreenMetricsEmulator(this, params));
-  else
-    screen_metrics_emulator_->ChangeEmulationParams(params);
-}
-
-void RenderWidget::DisableScreenMetricsEmulation() {
-  screen_metrics_emulator_.reset();
-}
-
 void RenderWidget::SetPopupOriginAdjustmentsForEmulation(
     ScreenMetricsEmulator* emulator) {
   popup_origin_scale_for_emulation_ = emulator->scale();
@@ -686,9 +677,8 @@ gfx::Rect RenderWidget::AdjustValidationMessageAnchor(const gfx::Rect& anchor) {
 }
 
 void RenderWidget::SetScreenMetricsEmulationParameters(
-    float device_scale_factor,
-    const gfx::Point& root_layer_offset,
-    float root_layer_scale) {
+    bool enabled,
+    const blink::WebDeviceEmulationParams& params) {
   // This is only supported in RenderView.
   NOTREACHED();
 }
@@ -732,6 +722,10 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewMsg_CreatingNew_ACK, OnCreatingNewAck)
     IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
+    IPC_MESSAGE_HANDLER(ViewMsg_EnableDeviceEmulation,
+                        OnEnableDeviceEmulation)
+    IPC_MESSAGE_HANDLER(ViewMsg_DisableDeviceEmulation,
+                        OnDisableDeviceEmulation)
     IPC_MESSAGE_HANDLER(ViewMsg_ColorProfile, OnColorProfile)
     IPC_MESSAGE_HANDLER(ViewMsg_ChangeResizeRect, OnChangeResizeRect)
     IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
@@ -913,6 +907,18 @@ void RenderWidget::OnResize(const ViewMsg_Resize_Params& params) {
 
   if (orientation_changed)
     OnOrientationChange();
+}
+
+void RenderWidget::OnEnableDeviceEmulation(
+   const blink::WebDeviceEmulationParams& params) {
+  if (!screen_metrics_emulator_)
+    screen_metrics_emulator_.reset(new ScreenMetricsEmulator(this, params));
+  else
+    screen_metrics_emulator_->ChangeEmulationParams(params);
+}
+
+void RenderWidget::OnDisableDeviceEmulation() {
+  screen_metrics_emulator_.reset();
 }
 
 void RenderWidget::OnColorProfile(const std::vector<char>& color_profile) {

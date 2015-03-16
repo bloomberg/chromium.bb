@@ -274,11 +274,6 @@ class CONTENT_EXPORT RenderWidget
   // widget if required to fit into the browser window.
   class ScreenMetricsEmulator;
 
-  // Emulates screen and widget metrics. Supplied values override everything
-  // coming from host.
-  void EnableScreenMetricsEmulation(
-      const blink::WebDeviceEmulationParams& params);
-  void DisableScreenMetricsEmulation();
   void SetPopupOriginAdjustmentsForEmulation(ScreenMetricsEmulator* emulator);
   gfx::Rect AdjustValidationMessageAnchor(const gfx::Rect& anchor);
 
@@ -398,9 +393,8 @@ class CONTENT_EXPORT RenderWidget
   // Used to force the size of a window when running layout tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
   virtual void SetScreenMetricsEmulationParameters(
-      float device_scale_factor,
-      const gfx::Point& root_layer_offset,
-      float root_layer_scale);
+      bool enabled,
+      const blink::WebDeviceEmulationParams& params);
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   void SetExternalPopupOriginAdjustmentsForEmulation(
       ExternalPopupMenu* popup, ScreenMetricsEmulator* emulator);
@@ -416,6 +410,8 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnClose();
   void OnCreatingNewAck();
   virtual void OnResize(const ViewMsg_Resize_Params& params);
+  void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
+  void OnDisableDeviceEmulation();
   void OnColorProfile(const std::vector<char>& color_profile);
   void OnChangeResizeRect(const gfx::Rect& resizer_rect);
   virtual void OnWasHidden();
@@ -784,8 +780,8 @@ class CONTENT_EXPORT RenderWidget
 
   // Popups may be displaced when screen metrics emulation is enabled.
   // These values are used to properly adjust popup position.
-  gfx::Point popup_view_origin_for_emulation_;
-  gfx::Point popup_screen_origin_for_emulation_;
+  gfx::PointF popup_view_origin_for_emulation_;
+  gfx::PointF popup_screen_origin_for_emulation_;
   float popup_origin_scale_for_emulation_;
 
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;

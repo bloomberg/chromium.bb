@@ -121,7 +121,10 @@ source_set("browser") {
     ]
   }
 
-  configs += [ "//content:content_implementation" ]
+  configs += [
+    "//content:content_implementation",
+    "//third_party/WebKit/public:debug_devtools",
+  ]
 
   if (toolkit_views) {
     deps += [ "//ui/events" ]

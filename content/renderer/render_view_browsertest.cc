@@ -2209,7 +2209,7 @@ TEST_F(RenderViewImplTest, ScreenMetricsEmulation) {
 
   params.viewSize.width = 327;
   params.viewSize.height = 415;
-  view()->EnableScreenMetricsEmulation(params);
+  view()->OnEnableDeviceEmulation(params);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &width));
   EXPECT_EQ(params.viewSize.width, width);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_height, &height));
@@ -2217,15 +2217,15 @@ TEST_F(RenderViewImplTest, ScreenMetricsEmulation) {
 
   params.viewSize.width = 1005;
   params.viewSize.height = 1102;
-  view()->EnableScreenMetricsEmulation(params);
+  view()->OnEnableDeviceEmulation(params);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_width, &width));
   EXPECT_EQ(params.viewSize.width, width);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_height, &height));
   EXPECT_EQ(params.viewSize.height, height);
 
-  view()->DisableScreenMetricsEmulation();
+  view()->OnDisableDeviceEmulation();
 
-  view()->EnableScreenMetricsEmulation(params);
+  view()->OnEnableDeviceEmulation(params);
   // Don't disable here to test that emulation is being shutdown properly.
 }
 

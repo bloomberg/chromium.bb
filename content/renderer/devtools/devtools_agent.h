@@ -72,10 +72,6 @@ class DevToolsAgent : public RenderFrameObserver,
   void enableTracing(const blink::WebString& category_filter) override;
   void disableTracing() override;
 
-  void enableDeviceEmulation(
-      const blink::WebDeviceEmulationParams& params) override;
-  void disableDeviceEmulation() override;
-
   void OnAttach(const std::string& host_id);
   void OnReattach(const std::string& host_id,
                   const std::string& agent_state);

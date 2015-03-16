@@ -12,6 +12,7 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/public/browser/readback_types.h"
+#include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 
 class SkBitmap;
 
@@ -99,6 +100,7 @@ class PageHandler {
 
  private:
   void UpdateTouchEventEmulationState();
+  void UpdateDeviceEmulationState();
 
   void NotifyScreencastVisibility(bool visible);
   void InnerSwapCompositorFrame();
@@ -120,8 +122,12 @@ class PageHandler {
       scoped_refptr<StopRecordingFramesResponse> response_data);
 
   bool enabled_;
+
   bool touch_emulation_enabled_;
   std::string touch_emulation_configuration_;
+
+  bool device_emulation_enabled_;
+  blink::WebDeviceEmulationParams device_emulation_params_;
 
   bool screencast_enabled_;
   std::string screencast_format_;

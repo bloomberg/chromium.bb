@@ -42,6 +42,7 @@
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
+#include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
 #include "third_party/WebKit/public/web/WebPluginAction.h"
@@ -73,6 +74,8 @@
 
 #define IPC_MESSAGE_START ViewMsgStart
 
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDeviceEmulationParams::ScreenPosition,
+                          blink::WebDeviceEmulationParams::ScreenPositionLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMediaPlayerAction::Type,
                           blink::WebMediaPlayerAction::Type::TypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPluginAction::Type,
@@ -137,6 +140,20 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatRect)
   IPC_STRUCT_TRAITS_MEMBER(y)
   IPC_STRUCT_TRAITS_MEMBER(width)
   IPC_STRUCT_TRAITS_MEMBER(height)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(blink::WebSize)
+  IPC_STRUCT_TRAITS_MEMBER(width)
+  IPC_STRUCT_TRAITS_MEMBER(height)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(blink::WebDeviceEmulationParams)
+  IPC_STRUCT_TRAITS_MEMBER(screenPosition)
+  IPC_STRUCT_TRAITS_MEMBER(deviceScaleFactor)
+  IPC_STRUCT_TRAITS_MEMBER(viewSize)
+  IPC_STRUCT_TRAITS_MEMBER(fitToView)
+  IPC_STRUCT_TRAITS_MEMBER(offset)
+  IPC_STRUCT_TRAITS_MEMBER(scale)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebScreenInfo)
@@ -618,6 +635,13 @@ IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 // we don't have to fetch it every time WebKit asks for it.
 IPC_MESSAGE_ROUTED1(ViewMsg_Resize,
                     ViewMsg_Resize_Params /* params */)
+
+// Enables device emulation. See WebDeviceEmulationParams for description.
+IPC_MESSAGE_ROUTED1(ViewMsg_EnableDeviceEmulation,
+                    blink::WebDeviceEmulationParams /* params */)
+
+// Disables device emulation, enabled previously by EnableDeviceEmulation.
+IPC_MESSAGE_ROUTED0(ViewMsg_DisableDeviceEmulation)
 
 // Sent to inform the renderer of its screen device color profile. An empty
 // profile tells the renderer use the default sRGB color profile.

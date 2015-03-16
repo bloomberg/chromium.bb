@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/web/WebExternalPopupMenu.h"
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace blink {
 class WebExternalPopupMenuClient;
@@ -28,7 +28,7 @@ class ExternalPopupMenu : public blink::WebExternalPopupMenu {
   virtual ~ExternalPopupMenu() {}
 
   void SetOriginScaleAndOffsetForEmulation(
-      float scale, const gfx::Point& offset);
+      float scale, const gfx::PointF& offset);
 
 #if defined(OS_MACOSX)
   // Called when the user has selected an item. |selected_item| is -1 if the
@@ -53,7 +53,7 @@ class ExternalPopupMenu : public blink::WebExternalPopupMenu {
   // Popups may be displaced when screen metrics emulation is enabled.
   // These scale and offset are used to properly adjust popup position.
   float origin_scale_for_emulation_;
-  gfx::Point origin_offset_for_emulation_;
+  gfx::PointF origin_offset_for_emulation_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPopupMenu);
 };

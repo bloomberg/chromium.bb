@@ -201,15 +201,6 @@ void DevToolsAgent::TraceEventCallbackWrapper(
   }
 }
 
-void DevToolsAgent::enableDeviceEmulation(
-    const blink::WebDeviceEmulationParams& params) {
-  GetRenderViewImpl()->EnableScreenMetricsEmulation(params);
-}
-
-void DevToolsAgent::disableDeviceEmulation() {
-  GetRenderViewImpl()->DisableScreenMetricsEmulation();
-}
-
 // static
 DevToolsAgent* DevToolsAgent::FromRoutingId(int routing_id) {
   IdToAgentMap::iterator it = g_agent_for_routing_id.Get().find(routing_id);

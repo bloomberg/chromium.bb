@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "content/browser/devtools/protocol/color_picker.h"
@@ -106,6 +107,7 @@ typedef DevToolsProtocolClient::Response Response;
 PageHandler::PageHandler()
     : enabled_(false),
       touch_emulation_enabled_(false),
+      device_emulation_enabled_(false),
       screencast_enabled_(false),
       screencast_quality_(kDefaultScreenshotQuality),
       screencast_max_width_(-1),
@@ -133,6 +135,7 @@ void PageHandler::SetRenderViewHost(RenderViewHostImpl* host) {
   frame_recorder_->SetRenderViewHost(host);
   host_ = host;
   UpdateTouchEventEmulationState();
+  UpdateDeviceEmulationState();
 }
 
 void PageHandler::SetClient(scoped_ptr<Client> client) {
@@ -183,7 +186,9 @@ Response PageHandler::Disable() {
   enabled_ = false;
   touch_emulation_enabled_ = false;
   screencast_enabled_ = false;
+  device_emulation_enabled_ = false;
   UpdateTouchEventEmulationState();
+  UpdateDeviceEmulationState();
   color_picker_->SetEnabled(false);
   return Response::FallThrough();
 }
@@ -342,7 +347,10 @@ Response PageHandler::CanEmulate(bool* result) {
 #else
   if (host_) {
     if (WebContents* web_contents = WebContents::FromRenderViewHost(host_)) {
-      *result = !web_contents->GetVisibleURL().SchemeIs(kChromeDevToolsScheme);
+      *result = web_contents->GetMainFrame()->GetRenderViewHost() == host_;
+#if defined(DEBUG_DEVTOOLS)
+      *result &= !web_contents->GetVisibleURL().SchemeIs(kChromeDevToolsScheme);
+#endif  // defined(DEBUG_DEVTOOLS)
     } else {
       *result = true;
     }
@@ -357,11 +365,54 @@ Response PageHandler::SetDeviceMetricsOverride(
     int width, int height, double device_scale_factor, bool mobile,
     bool fit_window, const double* optional_scale,
     const double* optional_offset_x, const double* optional_offset_y) {
-  return Response::FallThrough();
+  const static int max_size = 10000000;
+  const static double max_scale = 10;
+
+  if (!host_)
+    return Response::InternalError("Could not connect to view");
+
+  if (width < 0 || height < 0 || width > max_size || height > max_size) {
+    return Response::InvalidParams(
+        "Width and height values must be positive, not greater than " +
+        base::IntToString(max_size));
+  }
+
+  if (device_scale_factor < 0)
+    return Response::InvalidParams("deviceScaleFactor must be non-negative");
+
+  if (optional_scale && (*optional_scale <= 0 || *optional_scale > max_scale)) {
+    return Response::InvalidParams(
+        "scale must be positive, not greater than " +
+        base::IntToString(max_scale));
+  }
+
+  blink::WebDeviceEmulationParams params;
+  params.screenPosition = mobile ? blink::WebDeviceEmulationParams::Mobile :
+      blink::WebDeviceEmulationParams::Desktop;
+  params.deviceScaleFactor = device_scale_factor;
+  params.viewSize = blink::WebSize(width, height);
+  params.fitToView = fit_window;
+  params.scale = optional_scale ? *optional_scale : 1;
+  params.offset = blink::WebFloatPoint(
+      optional_offset_x ? *optional_offset_x : 0.f,
+      optional_offset_y ? *optional_offset_y : 0.f);
+
+  if (device_emulation_enabled_ && params == device_emulation_params_)
+    return Response::OK();
+
+  device_emulation_enabled_ = true;
+  device_emulation_params_ = params;
+  UpdateDeviceEmulationState();
+  return Response::OK();
 }
 
 Response PageHandler::ClearDeviceMetricsOverride() {
-  return Response::FallThrough();
+  if (!device_emulation_enabled_)
+    return Response::OK();
+
+  device_emulation_enabled_ = false;
+  UpdateDeviceEmulationState();
+  return Response::OK();
 }
 
 Response PageHandler::StartScreencast(const std::string* format,
@@ -462,6 +513,17 @@ void PageHandler::UpdateTouchEventEmulationState() {
       WebContents::FromRenderViewHost(host_));
   if (web_contents)
     web_contents->SetForceDisableOverscrollContent(enabled);
+}
+
+void PageHandler::UpdateDeviceEmulationState() {
+  if (!host_)
+    return;
+  if (device_emulation_enabled_) {
+    host_->Send(new ViewMsg_EnableDeviceEmulation(
+        host_->GetRoutingID(), device_emulation_params_));
+  } else {
+    host_->Send(new ViewMsg_DisableDeviceEmulation(host_->GetRoutingID()));
+  }
 }
 
 void PageHandler::NotifyScreencastVisibility(bool visible) {

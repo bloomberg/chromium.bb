@@ -44,6 +44,7 @@ include_rules = [
   "+third_party/WebKit/public/web/WebAXEnums.h",
   "+third_party/WebKit/public/web/WebCompositionUnderline.h",
   "+third_party/WebKit/public/web/WebContentSecurityPolicy.h",
+  "+third_party/WebKit/public/web/WebDeviceEmulationParams.h",
   "+third_party/WebKit/public/web/WebDragOperation.h",
   "+third_party/WebKit/public/web/WebDragStatus.h",
   "+third_party/WebKit/public/web/WebFindOptions.h",

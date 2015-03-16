@@ -509,9 +509,9 @@ class CONTENT_EXPORT RenderViewImpl
   void Initialize(const ViewMsg_New_Params& params,
                   CompositorDependencies* compositor_deps,
                   bool was_created_by_renderer);
-  void SetScreenMetricsEmulationParameters(float device_scale_factor,
-                                           const gfx::Point& root_layer_offset,
-                                           float root_layer_scale) override;
+  void SetScreenMetricsEmulationParameters(
+      bool enabled,
+      const blink::WebDeviceEmulationParams& params) override;
 
   // Do not delete directly.  This class is reference counted.
   virtual ~RenderViewImpl();
@@ -551,6 +551,7 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            GetCompositionCharacterBoundsTest);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnNavigationHttpPost);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ScreenMetricsEmulation);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            DecideNavigationPolicyHandlesAllTopLevel);
 #if defined(OS_MACOSX)

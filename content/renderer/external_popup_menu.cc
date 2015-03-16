@@ -23,7 +23,7 @@ ExternalPopupMenu::ExternalPopupMenu(
 }
 
 void ExternalPopupMenu::SetOriginScaleAndOffsetForEmulation(
-    float scale, const gfx::Point& offset) {
+    float scale, const gfx::PointF& offset) {
   origin_scale_for_emulation_ = scale;
   origin_offset_for_emulation_ = offset;
 }
