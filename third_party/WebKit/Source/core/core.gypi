@@ -488,7 +488,6 @@
             'html/canvas/WebGLRenderingContextBase.idl',
             'imagebitmap/ImageBitmapFactories.idl',
             'imagebitmap/WindowImageBitmapFactories.idl',
-            'page/WindowPagePopup.idl',
             'plugins/NavigatorPlugins.idl',
             'svg/SVGDocument.idl',
             'svg/SVGFilterPrimitiveStandardAttributes.idl',

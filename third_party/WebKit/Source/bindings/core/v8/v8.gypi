@@ -152,6 +152,8 @@
             'V8NodeFilterCondition.h',
             'V8ObjectConstructor.cpp',
             'V8ObjectConstructor.h',
+            'V8PagePopupControllerBinding.cpp',
+            'V8PagePopupControllerBinding.h',
             'V8PerContextData.cpp',
             'V8PerContextData.h',
             'V8PerIsolateData.cpp',

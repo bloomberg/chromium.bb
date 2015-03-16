@@ -42,6 +42,7 @@
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Initializer.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
+#include "bindings/core/v8/V8PagePopupControllerBinding.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -329,7 +330,7 @@ bool WindowProxy::installDOMWindow()
     V8DOMWrapper::setNativeInfo(innerGlobalObject, wrapperTypeInfo, window);
     innerGlobalObject->SetPrototype(windowWrapper);
     V8DOMWrapper::associateObjectWithWrapper(m_isolate, window, wrapperTypeInfo, windowWrapper);
-    wrapperTypeInfo->installConditionallyEnabledProperties(windowWrapper, m_isolate);
+    V8PagePopupControllerBinding::installPagePopupController(m_scriptState->context(), windowWrapper);
     return true;
 }
 

@@ -153,7 +153,7 @@ V8PerIsolateData::DOMTemplateMap& V8PerIsolateData::currentDOMTemplateMap()
     return m_domTemplateMapForNonMainWorld;
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::domTemplate(void* domTemplateKey, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::domTemplate(const void* domTemplateKey, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
 {
     DOMTemplateMap& domTemplateMap = currentDOMTemplateMap();
     DOMTemplateMap::iterator result = domTemplateMap.find(domTemplateKey);
@@ -165,7 +165,7 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::domTemplate(void* domTemplate
     return templ;
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::existingDOMTemplate(void* domTemplateKey)
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::existingDOMTemplate(const void* domTemplateKey)
 {
     DOMTemplateMap& domTemplateMap = currentDOMTemplateMap();
     DOMTemplateMap::iterator result = domTemplateMap.find(domTemplateKey);
@@ -174,7 +174,7 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::existingDOMTemplate(void* dom
     return v8::Local<v8::FunctionTemplate>();
 }
 
-void V8PerIsolateData::setDOMTemplate(void* domTemplateKey, v8::Handle<v8::FunctionTemplate> templ)
+void V8PerIsolateData::setDOMTemplate(const void* domTemplateKey, v8::Handle<v8::FunctionTemplate> templ)
 {
     currentDOMTemplateMap().add(domTemplateKey, v8::Eternal<v8::FunctionTemplate>(isolate(), v8::Local<v8::FunctionTemplate>(templ)));
 }

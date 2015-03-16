@@ -97,9 +97,9 @@ public:
 
     V8HiddenValue* hiddenValue() { return m_hiddenValue.get(); }
 
-    v8::Handle<v8::FunctionTemplate> domTemplate(void* domTemplateKey, v8::FunctionCallback = 0, v8::Handle<v8::Value> data = v8::Handle<v8::Value>(), v8::Handle<v8::Signature> = v8::Handle<v8::Signature>(), int length = 0);
-    v8::Handle<v8::FunctionTemplate> existingDOMTemplate(void* domTemplateKey);
-    void setDOMTemplate(void* domTemplateKey, v8::Handle<v8::FunctionTemplate>);
+    v8::Handle<v8::FunctionTemplate> domTemplate(const void* domTemplateKey, v8::FunctionCallback = 0, v8::Handle<v8::Value> data = v8::Handle<v8::Value>(), v8::Handle<v8::Signature> = v8::Handle<v8::Signature>(), int length = 0);
+    v8::Handle<v8::FunctionTemplate> existingDOMTemplate(const void* domTemplateKey);
+    void setDOMTemplate(const void* domTemplateKey, v8::Handle<v8::FunctionTemplate>);
 
     bool hasInstance(const WrapperTypeInfo* untrusted, v8::Handle<v8::Value>);
     v8::Local<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Local<v8::Value>);
