@@ -126,13 +126,13 @@ class GoogleMapsPage(top_pages.GoogleMapsPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'DragAction', is_smooth=True)
+        'DragAction', is_smooth=True, repeatable=True)
     action_runner.DragPage(left_start_ratio=0.5, top_start_ratio=0.75,
                            left_end_ratio=0.75, top_end_ratio=0.5)
     interaction.End()
     action_runner.Wait(2)
     interaction = action_runner.BeginGestureInteraction(
-        'DragAction', is_smooth=True)
+        'DragAction', is_smooth=True, repeatable=True)
     action_runner.DragPage(left_start_ratio=0.5, top_start_ratio=0.5,
                            left_end_ratio=0.35, top_end_ratio=0.75)
     interaction.End()
