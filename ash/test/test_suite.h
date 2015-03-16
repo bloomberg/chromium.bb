@@ -6,7 +6,6 @@
 #define ASH_TEST_TEST_SUITE_H_
 
 #include "base/compiler_specific.h"
-#include "base/test/test_discardable_memory_shmem_allocator.h"
 #include "base/test/test_suite.h"
 
 #if defined(OS_WIN)
@@ -30,8 +29,6 @@ class AuraShellTestSuite : public base::TestSuite {
 #if defined(OS_WIN)
   scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
 #endif
-
-  base::TestDiscardableMemoryShmemAllocator discardable_memory_allocator_;
 };
 
 }  // namespace test

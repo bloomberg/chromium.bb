@@ -71,10 +71,6 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
     return a.memory->last_known_usage() > b.memory->last_known_usage();
   }
 
-  void AllocateLockedDiscardableSharedMemory(
-      base::ProcessHandle process_handle,
-      size_t size,
-      base::SharedMemoryHandle* shared_memory_handle);
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
   void ReduceMemoryUsageUntilWithinMemoryLimit();

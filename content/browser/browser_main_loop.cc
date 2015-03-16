@@ -41,7 +41,6 @@
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_shutdown.h"
 #include "content/public/browser/content_browser_client.h"
@@ -460,9 +459,6 @@ void BrowserMainLoop::EarlyInitialization() {
   BrowserGpuChannelHostFactory::EnableGpuMemoryBufferFactoryUsage(
       gfx::GpuMemoryBuffer::SCANOUT);
 #endif
-
-  base::DiscardableMemoryShmemAllocator::SetInstance(
-      HostDiscardableSharedMemoryManager::current());
 
   if (parts_)
     parts_->PostEarlyInitialization();
