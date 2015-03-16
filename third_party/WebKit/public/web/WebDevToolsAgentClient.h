@@ -79,12 +79,6 @@ public:
     virtual void startGPUEventsRecording() { }
     virtual void stopGPUEventsRecording() { }
 
-    // Enables device emulation as specified in params.
-    virtual void enableDeviceEmulation(const WebDeviceEmulationParams& params) { }
-
-    // Cancel emulation started via |enableDeviceEmulation| call.
-    virtual void disableDeviceEmulation() { }
-
 protected:
     ~WebDevToolsAgentClient() { }
 };

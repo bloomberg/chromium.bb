@@ -127,8 +127,6 @@ private:
     void setShowFPSCounter(bool) override;
     void setContinuousPaintingEnabled(bool) override;
     void setShowScrollBottleneckRects(bool) override;
-    void setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY) override;
-    void clearDeviceMetricsOverride() override;
     void setTouchEventEmulationEnabled(bool) override;
 
     // InspectorTracingAgent::Client implementation.

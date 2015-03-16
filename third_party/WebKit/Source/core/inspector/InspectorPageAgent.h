@@ -78,8 +78,6 @@ public:
         virtual void setContinuousPaintingEnabled(bool) { }
         virtual void setShowScrollBottleneckRects(bool) { }
         virtual bool overridesShowPaintRects() { return false; }
-        virtual void setDeviceMetricsOverride(int /*width*/, int /*height*/, float /*deviceScaleFactor*/, bool /*mobile*/, bool /*fitWindow*/, float /* scale */, float /* offsetX */, float /* offsetY */) { }
-        virtual void clearDeviceMetricsOverride() { }
         virtual void setTouchEventEmulationEnabled(bool) { }
     };
 
@@ -125,8 +123,6 @@ public:
     void getResourceContent(ErrorString*, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>) override;
     void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>>&) override;
     void setDocumentContent(ErrorString*, const String& frameId, const String& html) override;
-    void setDeviceMetricsOverride(ErrorString*, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, const double* optionalScale, const double* optionalOffsetX, const double* optionalOffsetY) override;
-    void clearDeviceMetricsOverride(ErrorString*) override;
     void resetScrollAndPageScaleFactor(ErrorString*) override;
     void setPageScaleFactor(ErrorString*, double pageScaleFactor) override;
     void setShowPaintRects(ErrorString*, bool show) override;
@@ -190,9 +186,6 @@ private:
     class GetResourceContentLoadListener;
 
     InspectorPageAgent(Page*, InjectedScriptManager*, Client*, InspectorOverlay*);
-    bool deviceMetricsChanged(bool enabled, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, double scale, double offsetX, double offsetY);
-    void updateViewMetricsFromState();
-    void updateViewMetrics(bool enabled, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, double scale, double offsetX, double offsetY);
     void updateTouchEventEmulationInPage(bool);
     bool compositingEnabled(ErrorString*);
 

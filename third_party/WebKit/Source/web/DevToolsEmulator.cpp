@@ -9,7 +9,6 @@
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "public/web/WebDevToolsAgentClient.h"
 #include "public/web/WebDeviceEmulationParams.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebInputEventConversion.h"
@@ -50,7 +49,6 @@ namespace blink {
 
 DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     : m_webViewImpl(webViewImpl)
-    , m_devToolsAgent(nullptr)
     , m_deviceMetricsEnabled(false)
     , m_emulateMobileEnabled(false)
     , m_originalViewportEnabled(false)
@@ -66,17 +64,11 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     , m_originalDeviceSupportsMouse(false)
     , m_originalDeviceSupportsTouch(false)
     , m_originalMaxTouchPoints(0)
-    , m_ignoreSetOverrides(false)
 {
 }
 
 DevToolsEmulator::~DevToolsEmulator()
 {
-}
-
-void DevToolsEmulator::setDevToolsAgent(WebDevToolsAgentImpl* agent)
-{
-    m_devToolsAgent = agent;
 }
 
 void DevToolsEmulator::setTextAutosizingEnabled(bool enabled)
@@ -111,32 +103,22 @@ void DevToolsEmulator::setUseMobileViewportStyle(bool enabled)
         m_webViewImpl->page()->settings().setUseMobileViewportStyle(enabled);
 }
 
-void DevToolsEmulator::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY)
-{
-    if (m_ignoreSetOverrides)
-        return;
-    WebDeviceEmulationParams params;
-    params.screenPosition = mobile ? WebDeviceEmulationParams::Mobile : WebDeviceEmulationParams::Desktop;
-    params.deviceScaleFactor = deviceScaleFactor;
-    params.viewSize = WebSize(width, height);
-    params.fitToView = fitWindow;
-    params.scale = scale;
-    params.offset = WebFloatPoint(offsetX, offsetY);
-
-    enableDeviceEmulationInner(params);
-    ASSERT(m_devToolsAgent);
-    m_devToolsAgent->client()->enableDeviceEmulation(params);
-
-    if (Document* document = m_webViewImpl->mainFrameImpl()->frame()->document()) {
-        document->styleResolverChanged();
-        document->mediaQueryAffectingValueChanged();
-    }
-}
-
 void DevToolsEmulator::enableDeviceEmulation(const WebDeviceEmulationParams& params)
 {
-    m_ignoreSetOverrides = true;
-    enableDeviceEmulationInner(params);
+    if (!m_deviceMetricsEnabled) {
+        m_deviceMetricsEnabled = true;
+        m_webViewImpl->setBackgroundColorOverride(Color::darkGray);
+        m_webViewImpl->updateShowFPSCounterAndContinuousPainting();
+        if (WebDevToolsAgentImpl* devToolsAgent = m_webViewImpl->devToolsAgentImpl())
+            devToolsAgent->pageAgent()->setViewportNotificationsEnabled(true);
+    }
+    m_webViewImpl->page()->settings().setDeviceScaleAdjustment(calculateDeviceScaleAdjustment(params.viewSize.width, params.viewSize.height, params.deviceScaleFactor));
+
+    if (params.screenPosition == WebDeviceEmulationParams::Mobile)
+        enableMobileEmulation();
+    else
+        disableMobileEmulation();
+
     m_webViewImpl->setCompositorDeviceScaleFactorOverride(params.deviceScaleFactor);
     m_webViewImpl->setRootLayerTransform(WebSize(params.offset.x, params.offset.y), params.scale);
     if (Document* document = m_webViewImpl->mainFrameImpl()->frame()->document()) {
@@ -145,61 +127,23 @@ void DevToolsEmulator::enableDeviceEmulation(const WebDeviceEmulationParams& par
     }
 }
 
-void DevToolsEmulator::enableDeviceEmulationInner(const WebDeviceEmulationParams& params)
+void DevToolsEmulator::disableDeviceEmulation()
 {
-    if (!m_deviceMetricsEnabled) {
-        m_deviceMetricsEnabled = true;
-        m_webViewImpl->setBackgroundColorOverride(Color::darkGray);
-        m_webViewImpl->updateShowFPSCounterAndContinuousPainting();
-        if (m_devToolsAgent)
-            m_devToolsAgent->pageAgent()->setViewportNotificationsEnabled(true);
-    }
-    m_webViewImpl->page()->settings().setDeviceScaleAdjustment(calculateDeviceScaleAdjustment(params.viewSize.width, params.viewSize.height, params.deviceScaleFactor));
-
-    if (params.screenPosition == WebDeviceEmulationParams::Mobile)
-        enableMobileEmulation();
-    else
-        disableMobileEmulation();
-}
-
-void DevToolsEmulator::clearDeviceMetricsOverride()
-{
-    if (m_ignoreSetOverrides)
-        return;
     if (!m_deviceMetricsEnabled)
         return;
 
-    disableDeviceEmulationInner();
-    ASSERT(m_devToolsAgent);
-    m_devToolsAgent->client()->disableDeviceEmulation();
-    if (Document* document = m_webViewImpl->mainFrameImpl()->frame()->document()) {
-        document->styleResolverChanged();
-        document->mediaQueryAffectingValueChanged();
-    }
-}
-
-void DevToolsEmulator::disableDeviceEmulation()
-{
-    m_ignoreSetOverrides = true;
-    disableDeviceEmulationInner();
+    m_deviceMetricsEnabled = false;
+    m_webViewImpl->setBackgroundColorOverride(Color::transparent);
+    m_webViewImpl->updateShowFPSCounterAndContinuousPainting();
+    if (WebDevToolsAgentImpl* devToolsAgent = m_webViewImpl->devToolsAgentImpl())
+        devToolsAgent->pageAgent()->setViewportNotificationsEnabled(false);
+    m_webViewImpl->page()->settings().setDeviceScaleAdjustment(m_embedderDeviceScaleAdjustment);
+    disableMobileEmulation();
     m_webViewImpl->setCompositorDeviceScaleFactorOverride(0.f);
     m_webViewImpl->setRootLayerTransform(WebSize(0.f, 0.f), 1.f);
     if (Document* document = m_webViewImpl->mainFrameImpl()->frame()->document()) {
         document->styleResolverChanged();
         document->mediaQueryAffectingValueChanged();
-    }
-}
-
-void DevToolsEmulator::disableDeviceEmulationInner()
-{
-    if (m_deviceMetricsEnabled) {
-        m_deviceMetricsEnabled = false;
-        m_webViewImpl->setBackgroundColorOverride(Color::transparent);
-        m_webViewImpl->updateShowFPSCounterAndContinuousPainting();
-        if (m_devToolsAgent)
-            m_devToolsAgent->pageAgent()->setViewportNotificationsEnabled(false);
-        m_webViewImpl->page()->settings().setDeviceScaleAdjustment(m_embedderDeviceScaleAdjustment);
-        disableMobileEmulation();
     }
 }
 

@@ -258,8 +258,6 @@ public:
     virtual void spellingMarkers(WebVector<uint32_t>* markers) override;
     virtual void removeSpellingMarkersUnderWords(const WebVector<WebString>& words) override;
     virtual unsigned long createUniqueIdentifierForRequest() override;
-    virtual void setCompositorDeviceScaleFactorOverride(float) override;
-    virtual void setRootLayerTransform(const WebSize& offset, float scale) override;
     void enableDeviceEmulation(const WebDeviceEmulationParams&) override;
     void disableDeviceEmulation() override;
     virtual WebDevToolsAgent* devToolsAgent() override;
@@ -301,6 +299,8 @@ public:
     void setBackgroundColorOverride(WebColor);
     void setZoomFactorOverride(float);
     void updateShowFPSCounterAndContinuousPainting();
+    void setCompositorDeviceScaleFactorOverride(float);
+    void setRootLayerTransform(const WebSize& offset, float scale);
 
     Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 

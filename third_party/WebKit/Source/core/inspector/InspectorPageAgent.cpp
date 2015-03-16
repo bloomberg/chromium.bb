@@ -91,15 +91,6 @@ namespace PageAgentState {
 static const char pageAgentEnabled[] = "pageAgentEnabled";
 static const char pageAgentScriptExecutionDisabled[] = "pageAgentScriptExecutionDisabled";
 static const char pageAgentScriptsToEvaluateOnLoad[] = "pageAgentScriptsToEvaluateOnLoad";
-static const char deviceMetricsOverrideEnabled[] = "deviceMetricsOverrideEnabled";
-static const char pageAgentScreenWidthOverride[] = "pageAgentScreenWidthOverride";
-static const char pageAgentScreenHeightOverride[] = "pageAgentScreenHeightOverride";
-static const char pageAgentDeviceScaleFactorOverride[] = "pageAgentDeviceScaleFactorOverride";
-static const char pageAgentEmulateMobile[] = "pageAgentEmulateMobile";
-static const char pageAgentFitWindow[] = "pageAgentFitWindow";
-static const char deviceScale[] = "deviceScale";
-static const char deviceOffsetX[] = "deviceOffsetX";
-static const char deviceOffsetY[] = "deviceOffsetY";
 static const char pageAgentShowFPSCounter[] = "pageAgentShowFPSCounter";
 static const char pageAgentContinuousPaintingEnabled[] = "pageAgentContinuousPaintingEnabled";
 static const char pageAgentShowPaintRects[] = "pageAgentShowPaintRects";
@@ -437,7 +428,6 @@ void InspectorPageAgent::restore()
         bool showScrollBottleneckRects = m_state->getBoolean(PageAgentState::pageAgentShowScrollBottleneckRects);
         setShowScrollBottleneckRects(0, showScrollBottleneckRects);
 
-        updateViewMetricsFromState();
         updateTouchEventEmulationInPage(m_state->getBoolean(PageAgentState::touchEventEmulationEnabled));
     }
 }
@@ -489,20 +479,6 @@ void InspectorPageAgent::disable(ErrorString*)
     }
 
     finishReload();
-
-    if (!deviceMetricsChanged(false, 0, 0, 0, false, false, 1, 0, 0))
-        return;
-
-    // When disabling the agent, reset the override values if necessary.
-    updateViewMetrics(false, 0, 0, 0, false, false, 1, 0, 0);
-    m_state->setLong(PageAgentState::pageAgentScreenWidthOverride, 0);
-    m_state->setLong(PageAgentState::pageAgentScreenHeightOverride, 0);
-    m_state->setDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, 0);
-    m_state->setBoolean(PageAgentState::pageAgentEmulateMobile, false);
-    m_state->setBoolean(PageAgentState::pageAgentFitWindow, false);
-    m_state->setDouble(PageAgentState::deviceScale, 1);
-    m_state->setDouble(PageAgentState::deviceOffsetX, 0);
-    m_state->setDouble(PageAgentState::deviceOffsetY, 0);
 }
 
 void InspectorPageAgent::addScriptToEvaluateOnLoad(ErrorString*, const String& source, String* identifier)
@@ -775,60 +751,6 @@ void InspectorPageAgent::setDocumentContent(ErrorString* errorString, const Stri
     DOMPatchSupport::patchDocument(*document, html);
 }
 
-void InspectorPageAgent::setDeviceMetricsOverride(ErrorString* errorString, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, const double* optionalScale, const double* optionalOffsetX, const double* optionalOffsetY)
-{
-    const static long maxDimension = 10000000;
-    const static double maxScale = 10;
-
-    double scale = optionalScale ? *optionalScale : 1;
-    double offsetX = optionalOffsetX ? *optionalOffsetX : 0;
-    double offsetY = optionalOffsetY ? *optionalOffsetY : 0;
-
-    if (width < 0 || height < 0 || width > maxDimension || height > maxDimension) {
-        *errorString = "Width and height values must be positive, not greater than " + String::number(maxDimension);
-        return;
-    }
-
-    if (deviceScaleFactor < 0) {
-        *errorString = "deviceScaleFactor must be non-negative";
-        return;
-    }
-
-    if (scale <= 0 || scale > maxScale) {
-        *errorString = "scale must be positive, not greater than " + String::number(maxScale);
-        return;
-    }
-
-    Settings& settings = m_page->settings();
-    if (!settings.acceleratedCompositingEnabled()) {
-        if (errorString)
-            *errorString = "Compositing mode is not supported";
-        return;
-    }
-
-    if (!deviceMetricsChanged(true, width, height, deviceScaleFactor, mobile, fitWindow, scale, offsetX, offsetY))
-        return;
-
-    m_state->setBoolean(PageAgentState::deviceMetricsOverrideEnabled, true);
-    m_state->setLong(PageAgentState::pageAgentScreenWidthOverride, width);
-    m_state->setLong(PageAgentState::pageAgentScreenHeightOverride, height);
-    m_state->setDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, deviceScaleFactor);
-    m_state->setBoolean(PageAgentState::pageAgentEmulateMobile, mobile);
-    m_state->setBoolean(PageAgentState::pageAgentFitWindow, fitWindow);
-    m_state->setDouble(PageAgentState::deviceScale, scale);
-    m_state->setDouble(PageAgentState::deviceOffsetX, offsetX);
-    m_state->setDouble(PageAgentState::deviceOffsetY, offsetY);
-    updateViewMetricsFromState();
-}
-
-void InspectorPageAgent::clearDeviceMetricsOverride(ErrorString*)
-{
-    if (m_state->getBoolean(PageAgentState::deviceMetricsOverrideEnabled)) {
-        m_state->setBoolean(PageAgentState::deviceMetricsOverrideEnabled, false);
-        updateViewMetricsFromState();
-    }
-}
-
 void InspectorPageAgent::resetScrollAndPageScaleFactor(ErrorString*)
 {
     m_client->resetScrollAndPageScaleFactor();
@@ -837,30 +759,6 @@ void InspectorPageAgent::resetScrollAndPageScaleFactor(ErrorString*)
 void InspectorPageAgent::setPageScaleFactor(ErrorString*, double pageScaleFactor)
 {
     m_client->setPageScaleFactor(static_cast<float>(pageScaleFactor));
-}
-
-bool InspectorPageAgent::deviceMetricsChanged(bool enabled, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, double scale, double offsetX, double offsetY)
-{
-    bool currentEnabled = m_state->getBoolean(PageAgentState::deviceMetricsOverrideEnabled);
-    // These two always fit an int.
-    int currentWidth = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenWidthOverride));
-    int currentHeight = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenHeightOverride));
-    double currentDeviceScaleFactor = m_state->getDouble(PageAgentState::pageAgentDeviceScaleFactorOverride, 0);
-    bool currentMobile = m_state->getBoolean(PageAgentState::pageAgentEmulateMobile);
-    bool currentFitWindow = m_state->getBoolean(PageAgentState::pageAgentFitWindow);
-    double currentScale = m_state->getDouble(PageAgentState::deviceScale, 1);
-    double currentOffsetX = m_state->getDouble(PageAgentState::deviceOffsetX, 0);
-    double currentOffsetY = m_state->getDouble(PageAgentState::deviceOffsetY, 0);
-
-    return enabled != currentEnabled
-        || width != currentWidth
-        || height != currentHeight
-        || deviceScaleFactor != currentDeviceScaleFactor
-        || mobile != currentMobile
-        || fitWindow != currentFitWindow
-        || scale != currentScale
-        || offsetX != currentOffsetX
-        || offsetY != currentOffsetY;
 }
 
 void InspectorPageAgent::setShowPaintRects(ErrorString*, bool show)
@@ -1243,33 +1141,6 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
         childrenArray->addItem(buildObjectForFrameTree(toLocalFrame(child)));
     }
     return result;
-}
-
-void InspectorPageAgent::updateViewMetricsFromState()
-{
-    bool enabled = m_state->getBoolean(PageAgentState::deviceMetricsOverrideEnabled);
-    int width = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenWidthOverride));
-    int height = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenHeightOverride));
-    bool mobile = m_state->getBoolean(PageAgentState::pageAgentEmulateMobile);
-    double deviceScaleFactor = m_state->getDouble(PageAgentState::pageAgentDeviceScaleFactorOverride);
-    bool fitWindow = m_state->getBoolean(PageAgentState::pageAgentFitWindow);
-    double scale = m_state->getDouble(PageAgentState::deviceScale, 1);
-    double offsetX = m_state->getDouble(PageAgentState::deviceOffsetX, 0);
-    double offsetY = m_state->getDouble(PageAgentState::deviceOffsetY, 0);
-    updateViewMetrics(enabled, width, height, deviceScaleFactor, mobile, fitWindow, scale, offsetX, offsetY);
-}
-
-void InspectorPageAgent::updateViewMetrics(bool enabled, int width, int height, double deviceScaleFactor, bool mobile, bool fitWindow, double scale, double offsetX, double offsetY)
-{
-    if (enabled && !m_page->settings().acceleratedCompositingEnabled())
-        return;
-    if (!inspectedFrame()->isMainFrame())
-        return;
-
-    if (enabled)
-        m_client->setDeviceMetricsOverride(width, height, static_cast<float>(deviceScaleFactor), mobile, fitWindow, static_cast<float>(scale), static_cast<float>(offsetX), static_cast<float>(offsetY));
-    else
-        m_client->clearDeviceMetricsOverride();
 }
 
 void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)

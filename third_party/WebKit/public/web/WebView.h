@@ -369,15 +369,6 @@ public:
 
     // Developer tools -----------------------------------------------------
 
-    // Set an override of device scale factor passed from WebView to
-    // compositor. Pass zero to cancel override. This is used to implement
-    // device metrics emulation.
-    virtual void setCompositorDeviceScaleFactorOverride(float) = 0;
-
-    // Set offset and scale on the root composited layer. This is used
-    // to implement device metrics emulation.
-    virtual void setRootLayerTransform(const WebSize& offset, float scale) = 0;
-
     // Enables device emulation as specified in params.
     virtual void enableDeviceEmulation(const WebDeviceEmulationParams&) = 0;
 

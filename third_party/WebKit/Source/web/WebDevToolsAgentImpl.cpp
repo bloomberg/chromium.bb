@@ -301,7 +301,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_agents.append(InspectorDOMStorageAgent::create(page));
 
     m_webViewImpl->settingsImpl()->setWebDevToolsAgentImpl(this);
-    m_webViewImpl->devToolsEmulator()->setDevToolsAgent(this);
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
@@ -315,7 +314,6 @@ void WebDevToolsAgentImpl::dispose()
     // same behavior (and correctness) with and without Oilpan.
     ClientMessageLoopAdapter::inspectedViewClosed(m_webViewImpl);
     m_webViewImpl->settingsImpl()->setWebDevToolsAgentImpl(nullptr);
-    m_webViewImpl->devToolsEmulator()->setDevToolsAgent(nullptr);
     if (m_attached)
         Platform::current()->currentThread()->removeTaskObserver(this);
 #if ENABLE(ASSERT)
@@ -556,16 +554,6 @@ void WebDevToolsAgentImpl::didRemovePageOverlay(const GraphicsLayer* layer)
 void WebDevToolsAgentImpl::setScriptEnabled(bool enabled)
 {
     m_pageAgent->setScriptEnabled(enabled);
-}
-
-void WebDevToolsAgentImpl::setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool mobile, bool fitWindow, float scale, float offsetX, float offsetY)
-{
-    m_webViewImpl->devToolsEmulator()->setDeviceMetricsOverride(width, height, deviceScaleFactor, mobile, fitWindow, scale, offsetX, offsetY);
-}
-
-void WebDevToolsAgentImpl::clearDeviceMetricsOverride()
-{
-    m_webViewImpl->devToolsEmulator()->clearDeviceMetricsOverride();
 }
 
 void WebDevToolsAgentImpl::setTouchEventEmulationEnabled(bool enabled)
