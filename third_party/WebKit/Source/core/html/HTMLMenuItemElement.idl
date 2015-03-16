@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// https://html.spec.whatwg.org/#htmlmenuitemelement
+
 [
     RuntimeEnabled=ContextMenu,
 ] interface HTMLMenuItemElement : HTMLElement {
@@ -10,7 +12,7 @@
     [Reflect] attribute DOMString icon;
     [Reflect] attribute boolean disabled;
     [Reflect] attribute boolean checked;
-    [Reflect] attribute boolean default;
     [Reflect] attribute DOMString radiogroup;
-    // FIXME: icon and command need to be implemented.
+    [Reflect] attribute boolean default;
+    // FIXME: readonly attribute HTMLElement? command;
 };

@@ -18,7 +18,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlmapelement
+
 interface HTMLMapElement : HTMLElement {
-    readonly attribute HTMLCollection areas;
     [Reflect] attribute DOMString name;
+    readonly attribute HTMLCollection areas;
 };

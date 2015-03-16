@@ -17,6 +17,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlmodelement
+
 interface HTMLModElement : HTMLElement {
     [Reflect, URL] attribute DOMString cite;
     [Reflect] attribute DOMString dateTime;

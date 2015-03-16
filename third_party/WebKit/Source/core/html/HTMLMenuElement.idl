@@ -17,9 +17,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlmenuelement
+
 interface HTMLMenuElement : HTMLElement {
     [RuntimeEnabled=ContextMenu, Reflect] attribute DOMString type;
     [RuntimeEnabled=ContextMenu, Reflect] attribute DOMString label;
+
+    // obsolete members
+    // https://html.spec.whatwg.org/#HTMLMenuElement-partial
     [Reflect] attribute boolean compact;
 };
-
