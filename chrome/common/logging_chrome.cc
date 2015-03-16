@@ -26,9 +26,10 @@
 #include <windows.h>
 #endif
 
-#include <fstream>
-
 #include "chrome/common/logging_chrome.h"
+
+#include <fstream>  // NOLINT
+#include <string>  // NOLINT
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -37,14 +38,12 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -392,35 +391,6 @@ base::FilePath GetLogFileName() {
 bool DialogsAreSuppressed() {
   return dialogs_are_suppressed_;
 }
-
-size_t GetFatalAssertions(AssertionList* assertions) {
-  // In this function, we don't assume that assertions is non-null, so
-  // that if you just want an assertion count, you can pass in NULL.
-  if (assertions)
-    assertions->clear();
-  size_t assertion_count = 0;
-
-  std::ifstream log_file;
-  log_file.open(GetLogFileName().value().c_str());
-  if (!log_file.is_open())
-    return 0;
-
-  std::string utf8_line;
-  std::wstring wide_line;
-  while (!log_file.eof()) {
-    getline(log_file, utf8_line);
-    if (utf8_line.find(":FATAL:") != std::string::npos) {
-      wide_line = base::UTF8ToWide(utf8_line);
-      if (assertions)
-        assertions->push_back(wide_line);
-      ++assertion_count;
-    }
-  }
-  log_file.close();
-
-  return assertion_count;
-}
-
 base::FilePath GenerateTimestampedName(const base::FilePath& base_path,
                                        base::Time timestamp) {
   base::Time::Exploded time_deets;

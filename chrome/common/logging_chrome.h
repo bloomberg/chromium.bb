@@ -5,9 +5,6 @@
 #ifndef CHROME_COMMON_LOGGING_CHROME_H__
 #define CHROME_COMMON_LOGGING_CHROME_H__
 
-#include <string>
-#include <vector>
-
 #include "base/logging.h"
 #include "base/time/time.h"
 
@@ -51,21 +48,9 @@ void CleanupChromeLogging();
 // Returns the fully-qualified name of the log file.
 base::FilePath GetLogFileName();
 
-// Returns true when error/assertion dialogs are to be shown,
-// false otherwise.
+// Returns true when error/assertion dialogs are not to be shown, false
+// otherwise.
 bool DialogsAreSuppressed();
-
-typedef std::vector<std::wstring> AssertionList;
-
-// Gets the list of fatal assertions in the current log file, and
-// returns the number of fatal assertions.  (If you don't care
-// about the actual list of assertions, you can pass in NULL.)
-// NOTE: Since this reads the log file to determine the assertions,
-// this operation is O(n) over the length of the log.
-// NOTE: This can fail if the file is locked for writing.  However,
-// this is unlikely as this function is most useful after
-// the program writing the log has terminated.
-size_t GetFatalAssertions(AssertionList* assertions);
 
 // Inserts timestamp before file extension in the format
 // "_yymmdd-hhmmss".
