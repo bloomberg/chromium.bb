@@ -380,8 +380,7 @@ bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
   TRACE_EVENT1("cc,benchmark", "Scheduler::BeginFrame", "args", args.AsValue());
 
   // Deliver BeginFrames to children.
-  if (settings_.forward_begin_frames_to_children &&
-      state_machine_.children_need_begin_frames()) {
+  if (state_machine_.children_need_begin_frames()) {
     BeginFrameArgs adjusted_args_for_children(args);
     // Adjust a deadline for child schedulers.
     // TODO(simonhong): Once we have commitless update, we can get rid of
@@ -431,7 +430,6 @@ bool Scheduler::OnBeginFrameMixInDelegate(const BeginFrameArgs& args) {
 }
 
 void Scheduler::SetChildrenNeedBeginFrames(bool children_need_begin_frames) {
-  DCHECK(settings_.forward_begin_frames_to_children);
   state_machine_.SetChildrenNeedBeginFrames(children_need_begin_frames);
   ProcessScheduledActions();
 }

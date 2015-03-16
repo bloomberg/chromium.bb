@@ -407,7 +407,6 @@ TEST_F(SchedulerTest, InitializeOutputSurfaceDoesNotBeginImplFrame) {
 
 TEST_F(SchedulerTest, SendBeginFramesToChildren) {
   scheduler_settings_.use_external_begin_frame_source = true;
-  scheduler_settings_.forward_begin_frames_to_children = true;
   SetUpScheduler(true);
 
   EXPECT_FALSE(client_->begin_frame_is_sent_to_children());
@@ -428,7 +427,6 @@ TEST_F(SchedulerTest, SendBeginFramesToChildren) {
 
 TEST_F(SchedulerTest, SendBeginFramesToChildrenWithoutCommit) {
   scheduler_settings_.use_external_begin_frame_source = true;
-  scheduler_settings_.forward_begin_frames_to_children = true;
   SetUpScheduler(true);
 
   EXPECT_FALSE(client_->needs_begin_frames());
@@ -503,10 +501,6 @@ TEST_F(SchedulerTest, RequestCommitAfterSetDeferCommit) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
 
-  scheduler_->SetCanStart();
-  scheduler_->SetVisible(true);
-  scheduler_->SetCanDraw(true);
-
   scheduler_->SetDeferCommits(true);
 
   scheduler_->SetNeedsCommit();
@@ -538,10 +532,6 @@ TEST_F(SchedulerTest, RequestCommitAfterSetDeferCommit) {
 TEST_F(SchedulerTest, DeferCommitWithRedraw) {
   scheduler_settings_.use_external_begin_frame_source = true;
   SetUpScheduler(true);
-
-  scheduler_->SetCanStart();
-  scheduler_->SetVisible(true);
-  scheduler_->SetCanDraw(true);
 
   scheduler_->SetDeferCommits(true);
 

@@ -5286,10 +5286,6 @@ class LayerTreeHostTestSendBeginFramesToChildren : public LayerTreeHostTest {
       : begin_frame_sent_to_children_(false) {
   }
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->forward_begin_frames_to_children = true;
-  }
-
   void BeginTest() override {
     // Kick off the test with a commit.
     PostSetNeedsCommitToMainThread();
@@ -5326,7 +5322,6 @@ class LayerTreeHostTestSendBeginFramesToChildrenWithExternalBFS
 
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->use_external_begin_frame_source = true;
-    settings->forward_begin_frames_to_children = true;
   }
 
   void BeginTest() override {

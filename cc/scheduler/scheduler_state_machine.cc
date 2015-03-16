@@ -768,7 +768,6 @@ bool SchedulerStateMachine::SupportsProactiveBeginFrame() const {
 
 void SchedulerStateMachine::SetChildrenNeedBeginFrames(
     bool children_need_begin_frames) {
-  DCHECK(settings_.forward_begin_frames_to_children);
   children_need_begin_frames_ = children_need_begin_frames;
 }
 

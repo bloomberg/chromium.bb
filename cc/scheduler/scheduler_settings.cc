@@ -11,7 +11,6 @@ namespace cc {
 
 SchedulerSettings::SchedulerSettings()
     : use_external_begin_frame_source(false),
-      forward_begin_frames_to_children(false),
       main_frame_before_activation_enabled(false),
       impl_side_painting(false),
       timeout_and_draw_when_animation_checkerboards(true),
@@ -24,8 +23,6 @@ SchedulerSettings::SchedulerSettings()
 
 SchedulerSettings::SchedulerSettings(const LayerTreeSettings& settings)
     : use_external_begin_frame_source(settings.use_external_begin_frame_source),
-      forward_begin_frames_to_children(
-          settings.forward_begin_frames_to_children),
       main_frame_before_activation_enabled(
           settings.main_frame_before_activation_enabled),
       impl_side_painting(settings.impl_side_painting),
@@ -49,8 +46,6 @@ SchedulerSettings::AsValue() const {
       new base::trace_event::TracedValue();
   state->SetBoolean("use_external_begin_frame_source",
                     use_external_begin_frame_source);
-  state->SetBoolean("forward_begin_frames_to_children",
-                    forward_begin_frames_to_children);
   state->SetBoolean("main_frame_before_activation_enabled",
                     main_frame_before_activation_enabled);
   state->SetBoolean("impl_side_painting", impl_side_painting);

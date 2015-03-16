@@ -26,7 +26,6 @@ class CC_EXPORT SchedulerSettings {
   ~SchedulerSettings();
 
   bool use_external_begin_frame_source;
-  bool forward_begin_frames_to_children;
   bool main_frame_before_activation_enabled;
   bool impl_side_painting;
   bool timeout_and_draw_when_animation_checkerboards;

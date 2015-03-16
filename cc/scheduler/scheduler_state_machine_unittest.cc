@@ -1804,7 +1804,6 @@ TEST(SchedulerStateMachineTest, TestSetNeedsAnimateAfterAnimate) {
 
 TEST(SchedulerStateMachineTest, TestForwardBeginFramesToChildren) {
   SchedulerSettings settings;
-  settings.forward_begin_frames_to_children = true;
   StateMachine state(settings);
   SET_UP_STATE(state)
 
