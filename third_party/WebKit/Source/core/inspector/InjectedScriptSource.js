@@ -433,9 +433,10 @@ InjectedScript.prototype = {
      * @param {string} objectId
      * @param {boolean} ownProperties
      * @param {boolean} accessorPropertiesOnly
+     * @param {boolean} generatePreview
      * @return {!Array.<!RuntimeAgent.PropertyDescriptor>|boolean}
      */
-    getProperties: function(objectId, ownProperties, accessorPropertiesOnly)
+    getProperties: function(objectId, ownProperties, accessorPropertiesOnly, generatePreview)
     {
         var parsedObjectId = this._parseObjectId(objectId);
         var object = this._objectForId(parsedObjectId);
@@ -454,7 +455,7 @@ InjectedScript.prototype = {
             if ("set" in descriptor)
                 descriptor.set = this._wrapObject(descriptor.set, objectGroupName);
             if ("value" in descriptor)
-                descriptor.value = this._wrapObject(descriptor.value, objectGroupName);
+                descriptor.value = this._wrapObject(descriptor.value, objectGroupName, false, generatePreview);
             if (!("configurable" in descriptor))
                 descriptor.configurable = false;
             if (!("enumerable" in descriptor))

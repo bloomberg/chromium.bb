@@ -209,12 +209,13 @@ void InjectedScript::getCollectionEntries(ErrorString* errorString, const String
     *result = Array<CollectionEntry>::runtimeCast(resultValue);
 }
 
-void InjectedScript::getProperties(ErrorString* errorString, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, RefPtr<Array<PropertyDescriptor> >* properties)
+void InjectedScript::getProperties(ErrorString* errorString, const String& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, RefPtr<Array<PropertyDescriptor>>* properties)
 {
     ScriptFunctionCall function(injectedScriptObject(), "getProperties");
     function.appendArgument(objectId);
     function.appendArgument(ownProperties);
     function.appendArgument(accessorPropertiesOnly);
+    function.appendArgument(generatePreview);
 
     RefPtr<JSONValue> result;
     makeCall(function, &result);

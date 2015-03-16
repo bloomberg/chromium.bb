@@ -75,7 +75,7 @@ public:
                         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
                         TypeBuilder::OptOutput<bool>* wasThrown) override final;
     virtual void releaseObject(ErrorString*, const String& objectId) override final;
-    virtual void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor> >& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor> >& internalProperties) override final;
+    virtual void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties) override final;
     virtual void releaseObjectGroup(ErrorString*, const String& objectGroup) override final;
     virtual void run(ErrorString*) override;
     virtual void isRunRequired(ErrorString*, bool* out_result) override;

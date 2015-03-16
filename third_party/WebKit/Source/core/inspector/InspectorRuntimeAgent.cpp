@@ -118,7 +118,7 @@ void InspectorRuntimeAgent::callFunctionOn(ErrorString* errorString, const Strin
     }
 }
 
-void InspectorRuntimeAgent::getProperties(ErrorString* errorString, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor> >& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor> >& internalProperties)
+void InspectorRuntimeAgent::getProperties(ErrorString* errorString, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties)
 {
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(objectId);
     if (injectedScript.isEmpty()) {
@@ -129,7 +129,7 @@ void InspectorRuntimeAgent::getProperties(ErrorString* errorString, const String
     ScriptDebugServer::PauseOnExceptionsState previousPauseOnExceptionsState = setPauseOnExceptionsState(m_scriptDebugServer, ScriptDebugServer::DontPauseOnExceptions);
     muteConsole();
 
-    injectedScript.getProperties(errorString, objectId, asBool(ownProperties), asBool(accessorPropertiesOnly), &result);
+    injectedScript.getProperties(errorString, objectId, asBool(ownProperties), asBool(accessorPropertiesOnly), asBool(generatePreview), &result);
 
     if (!asBool(accessorPropertiesOnly))
         injectedScript.getInternalProperties(errorString, objectId, &internalProperties);
