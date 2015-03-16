@@ -1110,6 +1110,7 @@ void AppsGridView::SetSelectedItemByIndex(const Index& index) {
 
   EnsureViewVisible(index);
   selected_view_ = new_selection;
+  selected_view_->SetTitleSubpixelAA();
   selected_view_->SchedulePaint();
   selected_view_->NotifyAccessibilityEvent(
       ui::AX_EVENT_FOCUS, true);

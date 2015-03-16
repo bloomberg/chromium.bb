@@ -205,28 +205,6 @@ void AppListItemView::OnMouseDragTimer() {
   SetUIState(UI_STATE_DRAGGING);
 }
 
-void AppListItemView::SetTitleSubpixelAA() {
-  // TODO(tapted): Enable AA for folders as well, taking care to play nice with
-  // the folder bubble animation.
-  bool enable_aa = !is_in_folder_ && ui_state_ == UI_STATE_NORMAL &&
-                   !is_highlighted_ && !apps_grid_view_->IsSelectedView(this) &&
-                   !apps_grid_view_->IsAnimatingView(this);
-
-  title_->SetSubpixelRenderingEnabled(enable_aa);
-  if (enable_aa) {
-    title_->SetBackgroundColor(app_list::kLabelBackgroundColor);
-    title_->set_background(views::Background::CreateSolidBackground(
-        app_list::kLabelBackgroundColor));
-  } else {
-    // In other cases, keep the background transparent to ensure correct
-    // interactions with animations. This will temporarily disable subpixel AA.
-    title_->SetBackgroundColor(0);
-    title_->set_background(NULL);
-  }
-  title_->Invalidate();
-  title_->SchedulePaint();
-}
-
 void AppListItemView::Prerender() {
   title_->PaintToBackingImage();
 }
@@ -565,6 +543,28 @@ gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
   gfx::Rect icon_bounds(rect.x(), rect.y(), rect.width(), kGridIconDimension);
   icon_bounds.Inset(gfx::ShadowValue::GetMargin(GetIconShadows()));
   return icon_bounds;
+}
+
+void AppListItemView::SetTitleSubpixelAA() {
+  // TODO(tapted): Enable AA for folders as well, taking care to play nice with
+  // the folder bubble animation.
+  bool enable_aa = !is_in_folder_ && ui_state_ == UI_STATE_NORMAL &&
+                   !is_highlighted_ && !apps_grid_view_->IsSelectedView(this) &&
+                   !apps_grid_view_->IsAnimatingView(this);
+
+  title_->SetSubpixelRenderingEnabled(enable_aa);
+  if (enable_aa) {
+    title_->SetBackgroundColor(app_list::kLabelBackgroundColor);
+    title_->set_background(views::Background::CreateSolidBackground(
+        app_list::kLabelBackgroundColor));
+  } else {
+    // In other cases, keep the background transparent to ensure correct
+    // interactions with animations. This will temporarily disable subpixel AA.
+    title_->SetBackgroundColor(0);
+    title_->set_background(NULL);
+  }
+  title_->Invalidate();
+  title_->SchedulePaint();
 }
 
 void AppListItemView::ItemIconChanged() {

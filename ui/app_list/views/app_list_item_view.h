@@ -81,6 +81,10 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // the assuming bounds of this view.
   gfx::Rect GetIconBoundsForTargetViewBounds(const gfx::Rect& target_bounds);
 
+  // If the item is not in a folder, not highlighted, not being dragged, and not
+  // having something dropped onto it, enables subpixel AA for the title.
+  void SetTitleSubpixelAA();
+
   // views::CustomButton overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
@@ -108,10 +112,6 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   // Invoked when |mouse_drag_timer_| fires to show dragging UI.
   void OnMouseDragTimer();
-
-  // If the item is not in a folder, not highlighted, not being dragged, and not
-  // having something dropped onto it, enables subpixel AA for the title.
-  void SetTitleSubpixelAA();
 
   // views::View overrides:
   const char* GetClassName() const override;
