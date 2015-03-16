@@ -88,14 +88,6 @@ crbug.com/432129 virtual/slimmingpaint/fast/html/marquee-scroll.html [ Pass Fail
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 crbug.com/421283 virtual/slimmingpaint/fast/html/marquee-scrollamount.html [ Pass Failure ]
 
-# Failing with virtual-viewport mode on, disable for now and fix ASAP
-crbug.com/428980 fast/repaint/fixed-right-bottom-in-page-scale.html [ ImageOnlyFailure ]
-crbug.com/428980 fast/repaint/fixed-right-in-page-scale.html [ ImageOnlyFailure ]
-crbug.com/428980 fast/transforms/selection-bounds-in-transformed-view.html [ Failure ]
-crbug.com/428980 compositing/layer-creation/fixed-position-out-of-view-scaled-scroll.html [ Failure ]
-crbug.com/428980 virtual/slimmingpaint/fast/repaint/fixed-right-bottom-in-page-scale.html [ ImageOnlyFailure ]
-crbug.com/428980 virtual/slimmingpaint/fast/repaint/fixed-right-in-page-scale.html [ ImageOnlyFailure ]
-
 crbug.com/437743 virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ Skip ]
 
 crbug.com/446356 [ Linux Debug ] fast/svg/whitespace-length-invalid.html [ Failure Timeout ]
