@@ -32,11 +32,6 @@ WebViewImpl.setupElement = function(proto) {
   // Public-facing API methods.
   var apiMethods = WebViewImpl.getApiMethods();
 
-  // Add the experimental API methods, if available.
-  var experimentalApiMethods =
-      WebViewImpl.maybeGetExperimentalApiMethods();
-  apiMethods = $Array.concat(apiMethods, experimentalApiMethods);
-
   // Create default implementations for undefined API methods.
   var createDefaultApiMethod = function(m) {
     return function(var_args) {
@@ -222,11 +217,7 @@ WebViewImpl.prototype.executeCode = function(func, args) {
 }
 
 // Implemented when the ChromeWebView API is available.
-WebViewImpl.prototype.maybeGetChromeWebViewEvents = function() {};
-
-// Implemented when the experimental WebView API is available.
-WebViewImpl.maybeGetExperimentalApiMethods = function() { return []; };
-WebViewImpl.prototype.setupExperimentalContextMenus = function() {};
+WebViewImpl.prototype.maybeSetupContextMenus = function() {};
 
 GuestViewContainer.registerElement(WebViewImpl);
 

@@ -22,7 +22,7 @@ function WebViewEvents(webViewImpl) {
   GuestViewEvents.call(this, webViewImpl);
 
   this.setupWebRequestEvents();
-  this.view.setupExperimentalContextMenus();
+  this.view.maybeSetupContextMenus();
 }
 
 WebViewEvents.prototype.__proto__ = GuestViewEvents.prototype;

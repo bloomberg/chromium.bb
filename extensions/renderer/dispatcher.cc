@@ -587,8 +587,6 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("webViewConstants",
                                      IDR_WEB_VIEW_CONSTANTS_JS));
   resources.push_back(std::make_pair("webViewEvents", IDR_WEB_VIEW_EVENTS_JS));
-  resources.push_back(std::make_pair("webViewExperimental",
-                                     IDR_WEB_VIEW_EXPERIMENTAL_JS));
   resources.push_back(std::make_pair("webViewInternal",
                                      IDR_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
   resources.push_back(
@@ -1559,10 +1557,6 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
     module_system->Require("webView");
     module_system->Require("webViewApiMethods");
     module_system->Require("webViewAttributes");
-    if (context->GetAvailability("webViewExperimentalInternal")
-        .is_available()) {
-      module_system->Require("webViewExperimental");
-    }
   }
 
   // The "guestViewDeny" module must always be loaded last. It registers
