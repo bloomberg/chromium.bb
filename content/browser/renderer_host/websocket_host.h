@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/websocket.h"
 
@@ -37,7 +39,8 @@ class CONTENT_EXPORT WebSocketHost {
  public:
   WebSocketHost(int routing_id,
                 WebSocketDispatcherHost* dispatcher,
-                net::URLRequestContext* url_request_context);
+                net::URLRequestContext* url_request_context,
+                base::TimeDelta delay);
   virtual ~WebSocketHost();
 
   // The renderer process is going away.
@@ -50,6 +53,9 @@ class CONTENT_EXPORT WebSocketHost {
 
   int routing_id() const { return routing_id_; }
 
+  bool handshake_succeeded() const { return handshake_succeeded_; }
+  void OnHandshakeSucceeded() { handshake_succeeded_ = true; }
+
  private:
   // Handlers for each message type, dispatched by OnMessageReceived(), as
   // defined in content/common/websocket_messages.h
@@ -58,6 +64,11 @@ class CONTENT_EXPORT WebSocketHost {
                            const std::vector<std::string>& requested_protocols,
                            const url::Origin& origin,
                            int render_frame_id);
+
+  void AddChannel(const GURL& socket_url,
+                  const std::vector<std::string>& requested_protocols,
+                  const url::Origin& origin,
+                  int render_frame_id);
 
   void OnSendFrame(bool fin,
                    WebSocketMessageType type,
@@ -78,6 +89,20 @@ class CONTENT_EXPORT WebSocketHost {
 
   // The ID used to route messages.
   const int routing_id_;
+
+  // Delay used for per-renderer WebSocket throttling.
+  base::TimeDelta delay_;
+
+  // SendFlowControl() is delayed when OnFlowControl() is called before
+  // AddChannel() is called.
+  // Zero indicates there is no pending SendFlowControl().
+  int64_t pending_flow_control_quota_;
+
+  // handshake_succeeded_ is set and used by WebSocketDispatcherHost
+  // to manage counters for per-renderer WebSocket throttling.
+  bool handshake_succeeded_;
+
+  base::WeakPtrFactory<WebSocketHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketHost);
 };
