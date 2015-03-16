@@ -50,17 +50,6 @@ public:
     virtual void setJavascriptPrompt() = 0;
 };
 
-class PLATFORM_EXPORT UserGestureIndicatorDisabler {
-    WTF_MAKE_NONCOPYABLE(UserGestureIndicatorDisabler);
-public:
-    UserGestureIndicatorDisabler();
-    ~UserGestureIndicatorDisabler();
-
-private:
-    ProcessingUserGestureState m_savedState;
-    UserGestureIndicator* m_savedIndicator;
-};
-
 class PLATFORM_EXPORT UserGestureIndicator {
     WTF_MAKE_NONCOPYABLE(UserGestureIndicator);
     friend class UserGestureIndicatorDisabler;

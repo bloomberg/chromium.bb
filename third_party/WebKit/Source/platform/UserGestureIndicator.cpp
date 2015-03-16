@@ -215,20 +215,4 @@ bool UserGestureIndicator::processedUserGestureSinceLoad()
     return s_processedUserGestureSinceLoad;
 }
 
-UserGestureIndicatorDisabler::UserGestureIndicatorDisabler()
-    : m_savedState(UserGestureIndicator::s_state)
-    , m_savedIndicator(UserGestureIndicator::s_topmostIndicator)
-{
-    RELEASE_ASSERT(isMainThread());
-    UserGestureIndicator::s_state = DefinitelyNotProcessingUserGesture;
-    UserGestureIndicator::s_topmostIndicator = 0;
-}
-
-UserGestureIndicatorDisabler::~UserGestureIndicatorDisabler()
-{
-    RELEASE_ASSERT(isMainThread());
-    UserGestureIndicator::s_state = m_savedState;
-    UserGestureIndicator::s_topmostIndicator = m_savedIndicator;
-}
-
 }
