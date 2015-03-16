@@ -36,6 +36,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourcePtr.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include <gtest/gtest.h>
@@ -50,11 +51,11 @@ TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach)
     KURL secureURL(ParsedURLString, "https://secureorigin.test/image.png");
     // Try to request a url. The request should fail, no resource should be returned,
     // and no resource should be present in the cache.
-    RefPtr<ResourceFetcher> fetcher = ResourceFetcher::create(FetchContext::create());
+    RefPtrWillBeRawPtr<ResourceFetcher> fetcher = ResourceFetcher::create(FetchContext::create());
     FetchRequest fetchRequest = FetchRequest(ResourceRequest(secureURL), FetchInitiatorInfo());
     ResourcePtr<ImageResource> image = fetcher->fetchImage(fetchRequest);
     EXPECT_EQ(image.get(), static_cast<ImageResource*>(0));
     EXPECT_EQ(memoryCache()->resourceForURL(secureURL), static_cast<Resource*>(0));
 }
 
-} // namespace
+} // namespace blink
