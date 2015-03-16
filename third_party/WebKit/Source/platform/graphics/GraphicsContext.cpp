@@ -653,7 +653,7 @@ void GraphicsContext::drawFocusRing(const Vector<IntRect>& rects, int width, int
     }
 
     if (focusRingRegion.isRect()) {
-        drawFocusRingRect(SkRect::MakeFromIRect(focusRingRegion.getBounds()), color, width);
+        drawFocusRingRect(SkRect::Make(focusRingRegion.getBounds()), color, width);
     } else {
         SkPath path;
         if (focusRingRegion.getBoundaryPath(&path))

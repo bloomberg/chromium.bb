@@ -1620,7 +1620,7 @@ void CanvasRenderingContext2D::didDraw(const SkIRect& dirtyRect)
             buffer->setHasExpensiveOp();
     }
 
-    canvas()->didDraw(SkRect::MakeFromIRect(dirtyRect));
+    canvas()->didDraw(SkRect::Make(dirtyRect));
 }
 
 SkCanvas* CanvasRenderingContext2D::drawingCanvas() const
