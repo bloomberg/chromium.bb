@@ -77,7 +77,12 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* scriptState)
     }
     scriptState->executionContext()->consumeWindowInteraction();
 
-    ServiceWorkerGlobalScopeClient::from(scriptState->executionContext())->focus(uuid(), new CallbackPromiseAdapter<ServiceWorkerWindowClient, ServiceWorkerError>(resolver));
+    if (!uuid().isEmpty()) {
+        ServiceWorkerGlobalScopeClient::from(scriptState->executionContext())->focus(uuid(), new CallbackPromiseAdapter<ServiceWorkerWindowClient, ServiceWorkerError>(resolver));
+    } else {
+        // FIXME: Deprecate this when we switch to uuid.
+        ServiceWorkerGlobalScopeClient::from(scriptState->executionContext())->focus(id(), new CallbackPromiseAdapter<ServiceWorkerWindowClient, ServiceWorkerError>(resolver));
+    }
     return promise;
 }
 

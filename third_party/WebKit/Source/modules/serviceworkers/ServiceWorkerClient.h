@@ -33,9 +33,11 @@ public:
 protected:
     explicit ServiceWorkerClient(const WebServiceWorkerClientInfo&);
 
+    unsigned id() const { return m_id; }
     String uuid() const { return m_uuid; }
 
 private:
+    unsigned m_id; // FIXME: Deprecate this when we switch to UUID.
     String m_uuid;
     String m_url;
 };

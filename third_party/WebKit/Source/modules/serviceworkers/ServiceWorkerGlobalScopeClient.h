@@ -76,10 +76,12 @@ public:
     virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult) = 0;
     virtual void didHandleSyncEvent(int syncEventID) = 0;
     virtual void didHandleCrossOriginConnectEvent(int connectEventID, bool acceptConnect) = 0;
+    virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0; // FIXME: Deprecate this once we switch to uuid.
     virtual void postMessageToClient(const WebString& clientUUID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0;
     virtual void postMessageToCrossOriginClient(const WebCrossOriginServiceWorkerClient&, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0;
     virtual void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) = 0;
     virtual void claim(WebServiceWorkerClientsClaimCallbacks*) = 0;
+    virtual void focus(int clientID, WebServiceWorkerClientCallbacks*) = 0; // FIXME: Deprecate this once we switch to uuid.
     virtual void focus(const WebString& clientUUID, WebServiceWorkerClientCallbacks*) = 0;
 
     static const char* supplementName();
