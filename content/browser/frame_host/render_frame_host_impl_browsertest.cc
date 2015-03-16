@@ -114,8 +114,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, IsFocused_Widget) {
 
 // Test that a frame is visible/hidden depending on its WebContents visibility
 // state.
+// Flaky on Mac.  http://crbug.com/467670
+#if defined(OS_MACOSX)
+#define MAYBE_GetVisibilityState_Basic DISABLED_GetVisibilityState_Basic
+#else
+#define MAYBE_GetVisibilityState_Basic GetVisibilityState_Basic
+#endif
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       GetVisibilityState_Basic) {
+                       MAYBE_GetVisibilityState_Basic) {
   EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,foo")));
   WebContents* web_contents = shell()->web_contents();
 
