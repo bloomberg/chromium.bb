@@ -50,7 +50,7 @@ class WebContentsImplTestWebUIControllerFactory
   WebUIController* CreateWebUIControllerForURL(WebUI* web_ui,
                                                const GURL& url) const override {
     if (!UseWebUI(url))
-      return NULL;
+      return nullptr;
     return new WebUIController(web_ui);
   }
 
@@ -129,7 +129,7 @@ class TestInterstitialPage : public InterstitialPageImpl {
         state_(state),
         deleted_(deleted),
         command_received_count_(0),
-        delegate_(NULL) {
+        delegate_(nullptr) {
     *state_ = UNDECIDED;
     *deleted_ = false;
   }
@@ -177,9 +177,9 @@ class TestInterstitialPage : public InterstitialPageImpl {
   }
 
   void ClearStates() {
-    state_ = NULL;
-    deleted_ = NULL;
-    delegate_ = NULL;
+    state_ = nullptr;
+    deleted_ = nullptr;
+    delegate_ = nullptr;
   }
 
   void CommandReceived() {
@@ -191,7 +191,7 @@ class TestInterstitialPage : public InterstitialPageImpl {
   }
 
  protected:
-  WebContentsView* CreateWebContentsView() override { return NULL; }
+  WebContentsView* CreateWebContentsView() override { return nullptr; }
 
  private:
   InterstitialState* state_;
@@ -228,7 +228,7 @@ class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
   void TestInterstitialPageDeleted(
       TestInterstitialPage* interstitial) override {
     DCHECK(interstitial_page_ == interstitial);
-    interstitial_page_ = NULL;
+    interstitial_page_ = nullptr;
   }
 
  private:
@@ -300,7 +300,7 @@ class TestWebContentsObserver : public WebContentsObserver {
 // a fullscreened state.
 class FakeFullscreenDelegate : public WebContentsDelegate {
  public:
-  FakeFullscreenDelegate() : fullscreened_contents_(NULL) {}
+  FakeFullscreenDelegate() : fullscreened_contents_(nullptr) {}
   ~FakeFullscreenDelegate() override {}
 
   void EnterFullscreenModeForTab(WebContents* web_contents,
@@ -309,7 +309,7 @@ class FakeFullscreenDelegate : public WebContentsDelegate {
   }
 
   void ExitFullscreenModeForTab(WebContents* web_contents) override {
-    fullscreened_contents_ = NULL;
+    fullscreened_contents_ = nullptr;
   }
 
   bool IsFullscreenForTabOrPending(
@@ -409,7 +409,7 @@ TEST_F(WebContentsImplTest, NTPViewSource) {
 // Test to ensure UpdateMaxPageID is working properly.
 TEST_F(WebContentsImplTest, UpdateMaxPageID) {
   SiteInstance* instance1 = contents()->GetSiteInstance();
-  scoped_refptr<SiteInstance> instance2(SiteInstance::Create(NULL));
+  scoped_refptr<SiteInstance> instance2(SiteInstance::Create(nullptr));
 
   // Starts at -1.
   EXPECT_EQ(-1, contents()->GetMaxPageID());
@@ -433,7 +433,7 @@ TEST_F(WebContentsImplTest, UpdateMaxPageID) {
 TEST_F(WebContentsImplTest, SimpleNavigation) {
   TestRenderFrameHost* orig_rfh = contents()->GetMainFrame();
   SiteInstance* instance1 = contents()->GetSiteInstance();
-  EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetPendingMainFrame());
 
   // Navigate to URL
   const GURL url("http://www.google.com");
@@ -441,11 +441,12 @@ TEST_F(WebContentsImplTest, SimpleNavigation) {
       url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(instance1, orig_rfh->GetSiteInstance());
-  // Controller's pending entry will have a NULL site instance until we assign
+  // Controller's pending entry will have a null site instance until we assign
   // it in DidNavigate.
-  EXPECT_TRUE(
+  EXPECT_EQ(
+      nullptr,
       NavigationEntryImpl::FromNavigationEntry(controller().GetVisibleEntry())->
-          site_instance() == NULL);
+          site_instance());
 
   // DidNavigate from the page
   contents()->TestDidNavigate(orig_rfh, 1, url, ui::PAGE_TRANSITION_TYPED);
@@ -468,7 +469,7 @@ TEST_F(WebContentsImplTest, NavigateToExcessivelyLongURL) {
 
   controller().LoadURL(
       url, Referrer(), ui::PAGE_TRANSITION_GENERATED, std::string());
-  EXPECT_TRUE(controller().GetVisibleEntry() == NULL);
+  EXPECT_EQ(nullptr, controller().GetVisibleEntry());
 }
 
 // Test that navigating across a site boundary creates a new RenderViewHost
@@ -534,7 +535,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_EQ(url2, contents()->GetLastCommittedURL());
   EXPECT_EQ(url2, contents()->GetVisibleURL());
   EXPECT_NE(instance1, instance2);
-  EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetPendingMainFrame());
   // We keep the original RFH around, swapped out.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->IsOnSwappedOutList(
       orig_rfh));
@@ -607,7 +608,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundariesAfterCrash) {
   contents()->GetMainFrame()->PrepareForCommit();
   TestRenderFrameHost* new_rfh = contents()->GetMainFrame();
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetPendingMainFrame());
   EXPECT_NE(orig_rfh, new_rfh);
   EXPECT_EQ(orig_rvh_delete_count, 1);
 
@@ -618,7 +619,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundariesAfterCrash) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(new_rfh, main_rfh());
   EXPECT_NE(instance1, instance2);
-  EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetPendingMainFrame());
 
   // Close contents and ensure RVHs are deleted.
   DeleteContents();
@@ -670,7 +671,7 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
   TestRenderFrameHost* rfh2 = contents2->GetMainFrame();
   rfh2->PrepareForCommit();
   TestRenderFrameHost* pending_rfh_b = contents2->GetPendingMainFrame();
-  EXPECT_TRUE(pending_rfh_b != NULL);
+  EXPECT_NE(nullptr, pending_rfh_b);
   EXPECT_TRUE(contents2->cross_navigation_pending());
 
   // NOTE(creis): We used to be in danger of showing a crash page here if the
@@ -1000,7 +1001,7 @@ TEST_F(WebContentsImplTest, CrossSiteUnloadHandlers) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(pending_rfh, contents()->GetMainFrame());
   EXPECT_NE(instance1, instance2);
-  EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetPendingMainFrame());
 }
 
 // Test that during a slow cross-site navigation, the original renderer can
@@ -1036,7 +1037,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationPreempted) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
   EXPECT_EQ(instance1, instance2);
-  EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetPendingMainFrame());
 }
 
 TEST_F(WebContentsImplTest, CrossSiteNavigationBackPreempted) {
@@ -1248,7 +1249,7 @@ TEST_F(WebContentsImplTest, CrossSiteNavigationCanceled) {
   EXPECT_EQ(orig_rfh, contents()->GetMainFrame());
   EXPECT_EQ(RenderFrameHostImpl::STATE_DEFAULT, orig_rfh->rfh_state());
   EXPECT_EQ(instance1, instance2);
-  EXPECT_TRUE(contents()->GetPendingMainFrame() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetPendingMainFrame());
 }
 
 // Test that NavigationEntries have the correct page state after going
@@ -1261,7 +1262,7 @@ TEST_F(WebContentsImplTest, NavigationEntryContentState) {
   controller().LoadURL(
       url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   NavigationEntry* entry = controller().GetLastCommittedEntry();
-  EXPECT_TRUE(entry == NULL);
+  EXPECT_EQ(nullptr, entry);
 
   // Committed entry should have page state after DidNavigate.
   contents()->TestDidNavigate(orig_rfh, 1, url, ui::PAGE_TRANSITION_TYPED);
@@ -1362,7 +1363,7 @@ TEST_F(WebContentsImplTest, NavigationExitsFullscreen) {
   EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
-  contents()->SetDelegate(NULL);
+  contents()->SetDelegate(nullptr);
 }
 
 // Tests that fullscreen is exited throughout the object hierarchy when
@@ -1417,7 +1418,7 @@ TEST_F(WebContentsImplTest, HistoryNavigationExitsFullscreen) {
     EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
   }
 
-  contents()->SetDelegate(NULL);
+  contents()->SetDelegate(nullptr);
 }
 
 TEST_F(WebContentsImplTest, TerminateHidesValidationMessage) {
@@ -1433,7 +1434,7 @@ TEST_F(WebContentsImplTest, TerminateHidesValidationMessage) {
   // Confirm HideValidationMessage was called.
   EXPECT_TRUE(fake_delegate.hide_validation_message_was_called());
 
-  contents()->SetDelegate(NULL);
+  contents()->SetDelegate(nullptr);
 }
 
 // Tests that fullscreen is exited throughout the object hierarchy on a renderer
@@ -1469,7 +1470,7 @@ TEST_F(WebContentsImplTest, CrashExitsFullscreen) {
   EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
   EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
 
-  contents()->SetDelegate(NULL);
+  contents()->SetDelegate(nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1502,23 +1503,23 @@ TEST_F(WebContentsImplTest,
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   // Let's commit the interstitial navigation.
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
   NavigationEntry* entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   EXPECT_TRUE(entry->GetURL() == url2);
 
   // Now don't proceed.
   interstitial->DontProceed();
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   EXPECT_TRUE(entry->GetURL() == url1);
   EXPECT_EQ(1, controller().GetEntryCount());
 
@@ -1549,23 +1550,23 @@ TEST_F(WebContentsImplTest,
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   // Let's commit the interstitial navigation.
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
   NavigationEntry* entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   EXPECT_TRUE(entry->GetURL() == url2);
 
   // Now don't proceed.
   interstitial->DontProceed();
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   EXPECT_TRUE(entry->GetURL() == url1);
   EXPECT_EQ(1, controller().GetEntryCount());
 
@@ -1594,14 +1595,14 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationDontProceed) {
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   // Let's commit the interstitial navigation.
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
   NavigationEntry* entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   // The URL specified to the interstitial should have been ignored.
   EXPECT_TRUE(entry->GetURL() == url1);
 
@@ -1609,9 +1610,9 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationDontProceed) {
   interstitial->DontProceed();
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   EXPECT_TRUE(entry->GetURL() == url1);
   EXPECT_EQ(1, controller().GetEntryCount());
 
@@ -1645,14 +1646,14 @@ TEST_F(WebContentsImplTest,
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   // Let's commit the interstitial navigation.
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
   NavigationEntry* entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   EXPECT_TRUE(entry->GetURL() == url2);
 
   // Then proceed.
@@ -1670,9 +1671,9 @@ TEST_F(WebContentsImplTest,
   contents()->GetMainFrame()->SendNavigate(2, url3);
 
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   EXPECT_TRUE(entry->GetURL() == url3);
 
   EXPECT_EQ(2, controller().GetEntryCount());
@@ -1703,14 +1704,14 @@ TEST_F(WebContentsImplTest,
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   // Let's commit the interstitial navigation.
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
   NavigationEntry* entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   EXPECT_TRUE(entry->GetURL() == url2);
 
   // Then proceed.
@@ -1728,9 +1729,9 @@ TEST_F(WebContentsImplTest,
   contents()->GetMainFrame()->SendNavigate(2, url3);
 
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   EXPECT_TRUE(entry->GetURL() == url3);
 
   EXPECT_EQ(2, controller().GetEntryCount());
@@ -1760,14 +1761,14 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationProceed) {
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   // Let's commit the interstitial navigation.
   interstitial->TestDidNavigate(1, url2);
   EXPECT_TRUE(interstitial->is_showing());
   EXPECT_TRUE(contents()->ShowingInterstitialPage());
   EXPECT_TRUE(contents()->GetInterstitialPage() == interstitial);
   NavigationEntry* entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   // The URL specified to the interstitial should have been ignored.
   EXPECT_TRUE(entry->GetURL() == url1);
 
@@ -1777,9 +1778,9 @@ TEST_F(WebContentsImplTest, ShowInterstitialNoNewNavigationProceed) {
   // away and shows the original page.
   EXPECT_EQ(TestInterstitialPage::OKED, state);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   EXPECT_TRUE(entry->GetURL() == url1);
 
   EXPECT_EQ(1, controller().GetEntryCount());
@@ -2043,9 +2044,9 @@ TEST_F(WebContentsImplTest, ShowInterstitialOnInterstitial) {
   contents()->GetMainFrame()->SendNavigate(2, landing_url);
 
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   NavigationEntry* entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   EXPECT_TRUE(entry->GetURL() == landing_url);
   EXPECT_EQ(2, controller().GetEntryCount());
   RunAllPendingInMessageLoop();
@@ -2102,9 +2103,9 @@ TEST_F(WebContentsImplTest, ShowInterstitialProceedShowInterstitial) {
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(deleted2);
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
-  EXPECT_TRUE(contents()->GetInterstitialPage() == NULL);
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
   NavigationEntry* entry = controller().GetVisibleEntry();
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_NE(nullptr, entry);
   EXPECT_TRUE(entry->GetURL() == landing_url);
   EXPECT_EQ(2, controller().GetEntryCount());
 }
@@ -2414,7 +2415,7 @@ TEST_F(WebContentsImplTest, PendingContents) {
   contents()->AddPendingContents(other_contents.get());
   int route_id = other_contents->GetRenderViewHost()->GetRoutingID();
   other_contents.reset();
-  EXPECT_EQ(NULL, contents()->GetCreatedWindow(route_id));
+  EXPECT_EQ(nullptr, contents()->GetCreatedWindow(route_id));
 }
 
 TEST_F(WebContentsImplTest, CapturerOverridesPreferredSize) {
@@ -2630,7 +2631,7 @@ TEST_F(WebContentsImplTest, HandleWheelEvent) {
   EXPECT_EQ(0, delegate->GetAndResetContentsZoomChangedCallCount());
 
   // Ensure pointers to the delegate aren't kept beyond its lifetime.
-  contents()->SetDelegate(NULL);
+  contents()->SetDelegate(nullptr);
 }
 
 // Tests that GetRelatedActiveContentsCount is shared between related
