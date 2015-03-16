@@ -76,6 +76,13 @@ rietveld_instances = [
     'requires_auth': False,
     'email_domain': 'chromium.org',
   },
+  {
+    'url': 'webrtc-codereview.appspot.com',
+    'shorturl': 'go/rtcrev',
+    'supports_owner_modified_query': True,
+    'requires_auth': False,
+    'email_domain': 'webrtc.org',
+  },
 ]
 
 gerrit_instances = [
