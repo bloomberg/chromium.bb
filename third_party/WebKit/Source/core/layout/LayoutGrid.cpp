@@ -531,7 +531,7 @@ LayoutUnit LayoutGrid::computeUsedBreadthOfSpecifiedLength(GridTrackSizingDirect
 {
     ASSERT(trackLength.isSpecified());
     // FIXME: The -1 here should be replaced by whatever the intrinsic height of the grid is.
-    return valueForLength(trackLength, direction == ForColumns ? logicalWidth() : computeContentLogicalHeight(style()->logicalHeight(), -1));
+    return valueForLength(trackLength, direction == ForColumns ? logicalWidth() : std::max(LayoutUnit(), computeContentLogicalHeight(style()->logicalHeight(), -1)));
 }
 
 static bool sortByGridNormalizedFlexValue(const GridTrackForNormalization& track1, const GridTrackForNormalization& track2)
