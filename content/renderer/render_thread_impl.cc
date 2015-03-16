@@ -656,8 +656,12 @@ void RenderThreadImpl::Init() {
 #endif
   }
 
-  base::DiscardableMemoryShmemAllocator::SetInstance(
-      ChildThreadImpl::discardable_shared_memory_manager());
+  // In single process, browser main loop set up the discardable memory
+  // allocator.
+  if (!command_line.HasSwitch(switches::kSingleProcess)) {
+    base::DiscardableMemoryShmemAllocator::SetInstance(
+        ChildThreadImpl::discardable_shared_memory_manager());
+  }
 
   service_registry()->AddService<RenderFrameSetup>(
       base::Bind(CreateRenderFrameSetup));
