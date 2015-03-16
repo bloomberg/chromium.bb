@@ -1793,7 +1793,7 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
     bool authenticated = signin && signin->IsAuthenticated();
     if (HotwordService::IsExperimentalHotwordingEnabled()) {
-      if (HotwordServiceFactory::IsHotwordHardwareAvailable() &&
+      if (HotwordServiceFactory::IsAlwaysOnAvailable() &&
           authenticated) {
         function_name = "BrowserOptions.showHotwordAlwaysOnSection";
         always_on = true;

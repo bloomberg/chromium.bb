@@ -383,7 +383,7 @@ HotwordService::HotwordService(Profile* profile)
   SetAudioHistoryHandler(new HotwordAudioHistoryHandler(
       profile_, base::MessageLoop::current()->task_runner()));
 
-  if (HotwordServiceFactory::IsHotwordHardwareAvailable() &&
+  if (HotwordServiceFactory::IsAlwaysOnAvailable() &&
       IsHotwordAllowed() &&
       IsExperimentalHotwordingEnabled()) {
     // Show the hotword notification in 5 seconds if the experimental flag is
@@ -686,13 +686,13 @@ bool HotwordService::IsAlwaysOnEnabled() {
   return
       profile_->GetPrefs()->HasPrefPath(prefs::kHotwordAlwaysOnSearchEnabled) &&
       profile_->GetPrefs()->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled) &&
-      HotwordServiceFactory::IsHotwordHardwareAvailable();
+      HotwordServiceFactory::IsAlwaysOnAvailable();
 }
 
 bool HotwordService::IsSometimesOnEnabled() {
   return profile_->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled) &&
       profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled) &&
-      !HotwordServiceFactory::IsHotwordHardwareAvailable();
+      !HotwordServiceFactory::IsAlwaysOnAvailable();
 }
 
 void HotwordService::EnableHotwordExtension(

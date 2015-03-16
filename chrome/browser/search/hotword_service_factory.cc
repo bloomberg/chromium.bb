@@ -46,7 +46,7 @@ bool HotwordServiceFactory::IsHotwordAllowed(BrowserContext* context) {
 }
 
 // static
-bool HotwordServiceFactory::IsHotwordHardwareAvailable() {
+bool HotwordServiceFactory::IsAlwaysOnAvailable() {
 // Temporarily disabling hotword hardware check for M42. Will be
 // re-enabled for M43.
 #if 0
