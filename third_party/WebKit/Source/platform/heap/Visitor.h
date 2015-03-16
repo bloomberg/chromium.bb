@@ -130,6 +130,23 @@ struct FinalizerTrait {
     static void finalize(void* obj) { FinalizerTraitImpl<T, nonTrivialFinalizer>::finalize(obj); }
 };
 
+// Template to determine if a class is a GarbageCollectedMixin by checking if it
+// has IsGarbageCollectedMixinMarker
+template<typename T>
+struct IsGarbageCollectedMixin {
+private:
+    typedef char YesType;
+    struct NoType {
+        char padding[8];
+    };
+
+    template <typename U> static YesType checkMarker(typename U::IsGarbageCollectedMixinMarker*);
+    template <typename U> static NoType checkMarker(...);
+
+public:
+    static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
+};
+
 // Trait to get the GCInfo structure for types that have their
 // instances allocated in the Blink garbage-collected heap.
 template<typename T> struct GCInfoTrait;
@@ -147,7 +164,7 @@ template <typename T> const bool NeedsAdjustAndMark<T, true>::value;
 template<typename T>
 class NeedsAdjustAndMark<T, false> {
 public:
-    static const bool value = WTF::IsSubclass<typename WTF::RemoveConst<T>::Type, GarbageCollectedMixin>::value;
+    static const bool value = IsGarbageCollectedMixin<typename WTF::RemoveConst<T>::Type>::value;
 };
 
 template <typename T> const bool NeedsAdjustAndMark<T, false>::value;
@@ -1041,23 +1058,6 @@ protected:                                                        \
 #define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TYPE)
 #define WILL_BE_USING_GARBAGE_COLLECTED_MIXIN_NESTED(TYPE, NESTEDMIXIN)
 #endif
-
-// Template to determine if a class is a GarbageCollectedMixin by checking if it
-// has IsGarbageCollectedMixinMarker
-template<typename T>
-struct IsGarbageCollectedMixin {
-private:
-    typedef char YesType;
-    struct NoType {
-        char padding[8];
-    };
-
-    template <typename U> static YesType checkMarker(typename U::IsGarbageCollectedMixinMarker*);
-    template <typename U> static NoType checkMarker(...);
-
-public:
-    static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
-};
 
 // An empty class with a constructor that's arranged invoked when all derived constructors
 // of a mixin instance have completed and it is safe to allow GCs again. See

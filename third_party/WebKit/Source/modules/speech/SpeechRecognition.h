@@ -127,18 +127,6 @@ private:
     HeapVector<Member<SpeechRecognitionResult>> m_finalResults;
 };
 
-// FIXME: Oilpan: two GarbageCollectedLifetime-based subclasses introduces
-// ambiguity for WebPrivatePtr<T>'s LifeTimeOf<T> inference of lifetime.
-template<>
-class LifetimeOf<SpeechRecognition> {
-public:
-#if ENABLE(OILPAN)
-    static const LifetimeManagementType value = RefCountedGarbageCollectedLifetime;
-#else
-    static const LifetimeManagementType value = RefCountedLifetime;
-#endif
-};
-
 } // namespace blink
 
 #endif // SpeechRecognition_h
