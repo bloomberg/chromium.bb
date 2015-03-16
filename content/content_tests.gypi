@@ -1663,6 +1663,7 @@
               '../testing/gtest.gyp:gtest',
               '../third_party/libyuv/libyuv.gyp:libyuv',
               '../ui/gfx/gfx.gyp:gfx_geometry',
+              '../ui/ozone/ozone.gyp:ozone',
             ],
             'sources': [
               'common/gpu/media/vaapi_h264_decoder_unittest.cc',
