@@ -410,33 +410,5 @@ TEST_F(WebSocketDispatcherHostTest, NotRejectedAfter255FailedConnections) {
   EXPECT_EQ(0, dispatcher_host_->num_succeeded_connections());
 }
 
-// This is a regression test for https://crrev.com/998173003/.
-TEST_F(WebSocketDispatcherHostTest, InvalidScheme) {
-  int routing_id = 123;
-  GURL socket_url("http://example.com/test");
-  std::vector<std::string> requested_protocols;
-  requested_protocols.push_back("hello");
-  url::Origin origin("http://example.com");
-  int render_frame_id = -2;
-  WebSocketHostMsg_AddChannelRequest message(
-      routing_id, socket_url, requested_protocols, origin, render_frame_id);
-
-  ASSERT_TRUE(dispatcher_host_->OnMessageReceived(message));
-
-  ASSERT_EQ(1U, mock_hosts_.size());
-  MockWebSocketHost* host = mock_hosts_[0];
-
-  // Tests that WebSocketHost::OnMessageReceived() doesn't cause a crash and
-  // the connection with an invalid scheme fails here.
-  // We call WebSocketHost::OnMessageReceived() here explicitly because
-  // MockWebSocketHost does not call WebSocketHost::OnMessageReceived() for
-  // WebSocketHostMsg_AddChannelRequest.
-  host->WebSocketHost::OnMessageReceived(message);
-
-  EXPECT_EQ(0, dispatcher_host_->num_pending_connections());
-  EXPECT_EQ(1, dispatcher_host_->num_failed_connections());
-  EXPECT_EQ(0, dispatcher_host_->num_succeeded_connections());
-}
-
 }  // namespace
 }  // namespace content
