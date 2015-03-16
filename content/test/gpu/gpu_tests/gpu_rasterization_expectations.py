@@ -11,7 +11,4 @@ class GpuRasterizationExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('GpuRasterization.BlueBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-
-    # Flaky on Mac Retina tryservers.
-    self.Fail('GpuRasterization.BlueBox',
-              ['mac', ('nvidia', 0x0fe9)], bug=466690)
+    pass
