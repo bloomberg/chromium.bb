@@ -52,6 +52,9 @@ void AuraShellTestSuite::Initialize() {
   // output, it'll pass regardless of the system language.
   ui::ResourceBundle::InitSharedInstanceWithLocale(
       "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+
+  base::DiscardableMemoryShmemAllocator::SetInstance(
+      &discardable_memory_allocator_);
 }
 
 void AuraShellTestSuite::Shutdown() {

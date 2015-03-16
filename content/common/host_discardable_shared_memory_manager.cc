@@ -18,6 +18,46 @@
 namespace content {
 namespace {
 
+class DiscardableMemoryShmemChunkImpl
+    : public base::DiscardableMemoryShmemChunk {
+ public:
+  explicit DiscardableMemoryShmemChunkImpl(
+      scoped_ptr<base::DiscardableSharedMemory> shared_memory)
+      : shared_memory_(shared_memory.Pass()), is_locked_(true) {}
+  ~DiscardableMemoryShmemChunkImpl() override {
+    if (is_locked_)
+      shared_memory_->Unlock(0, 0);
+    shared_memory_->Purge(base::Time::Now());
+  }
+
+  // Overridden from base::DiscardableMemoryShmemChunk:
+  bool Lock() override {
+    DCHECK(!is_locked_);
+
+    if (shared_memory_->Lock(0, 0) != base::DiscardableSharedMemory::SUCCESS)
+      return false;
+
+    is_locked_ = true;
+    return true;
+  }
+  void Unlock() override {
+    DCHECK(is_locked_);
+
+    shared_memory_->Unlock(0, 0);
+    is_locked_ = false;
+  }
+  void* Memory() const override {
+    DCHECK(is_locked_);
+    return shared_memory_->memory();
+  }
+
+ private:
+  scoped_ptr<base::DiscardableSharedMemory> shared_memory_;
+  bool is_locked_;
+
+  DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryShmemChunkImpl);
+};
+
 base::LazyInstance<HostDiscardableSharedMemoryManager>
     g_discardable_shared_memory_manager = LAZY_INSTANCE_INITIALIZER;
 
@@ -61,10 +101,16 @@ HostDiscardableSharedMemoryManager::current() {
 scoped_ptr<base::DiscardableMemoryShmemChunk>
 HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     size_t size) {
-  // TODO(reveman): Need to implement this for discardable memory support in
-  // the browser process.
-  NOTIMPLEMENTED();
-  return nullptr;
+  // Note: Use DiscardableSharedMemoryHeap for in-process allocation
+  // of discardable memory if the cost of each allocation is too high.
+  base::SharedMemoryHandle handle;
+  AllocateLockedDiscardableSharedMemory(base::GetCurrentProcessHandle(), size,
+                                        &handle);
+  CHECK(base::SharedMemory::IsHandleValid(handle));
+  scoped_ptr<base::DiscardableSharedMemory> memory(
+      new base::DiscardableSharedMemory(handle));
+  CHECK(memory->Map(size));
+  return make_scoped_ptr(new DiscardableMemoryShmemChunkImpl(memory.Pass()));
 }
 
 void HostDiscardableSharedMemoryManager::
@@ -72,86 +118,8 @@ void HostDiscardableSharedMemoryManager::
         base::ProcessHandle process_handle,
         size_t size,
         base::SharedMemoryHandle* shared_memory_handle) {
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466405 AllocateLockedDiscardableSharedMemoryForChild::Start"));
-  base::AutoLock lock(lock_);
-
-  // Memory usage must be reduced to prevent the addition of |size| from
-  // taking usage above the limit. Usage should be reduced to 0 in cases
-  // where |size| is greater than the limit.
-  size_t limit = 0;
-  // Note: the actual mapped size can be larger than requested and cause
-  // |bytes_allocated_| to temporarily be larger than |memory_limit_|. The
-  // error is minimized by incrementing |bytes_allocated_| with the actual
-  // mapped size rather than |size| below.
-  if (size < memory_limit_)
-    limit = memory_limit_ - size;
-
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466405 "
-          "AllocateLockedDiscardableSharedMemoryForChild::ReduceMemoryUsage"));
-  if (bytes_allocated_ > limit)
-    ReduceMemoryUsageUntilWithinLimit(limit);
-
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466405 AllocateLockedDiscardableSharedMemoryForChild::NewMemory"));
-  linked_ptr<base::DiscardableSharedMemory> memory(
-      new base::DiscardableSharedMemory);
-  if (!memory->CreateAndMap(size)) {
-    *shared_memory_handle = base::SharedMemory::NULLHandle();
-    return;
-  }
-
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466405 "
-          "AllocateLockedDiscardableSharedMemoryForChild::ShareToProcess"));
-  if (!memory->ShareToProcess(process_handle, shared_memory_handle)) {
-    LOG(ERROR) << "Cannot share discardable memory segment";
-    *shared_memory_handle = base::SharedMemory::NULLHandle();
-    return;
-  }
-
-  base::CheckedNumeric<size_t> checked_bytes_allocated = bytes_allocated_;
-  checked_bytes_allocated += memory->mapped_size();
-  if (!checked_bytes_allocated.IsValid()) {
-    *shared_memory_handle = base::SharedMemory::NULLHandle();
-    return;
-  }
-
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile5(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466405 "
-          "AllocateLockedDiscardableSharedMemoryForChild::"
-          "BytesAllocatedChanged"));
-  bytes_allocated_ = checked_bytes_allocated.ValueOrDie();
-  BytesAllocatedChanged(bytes_allocated_);
-
-  segments_.push_back(MemorySegment(memory, process_handle));
-  std::push_heap(segments_.begin(), segments_.end(), CompareMemoryUsageTime);
-
-  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
-  // is fixed.
-  tracked_objects::ScopedTracker tracking_profile6(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466405 "
-          "AllocateLockedDiscardableSharedMemoryForChild::"
-          "ScheduleEnforceMemoryPolicy"));
-  if (bytes_allocated_ > memory_limit_)
-    ScheduleEnforceMemoryPolicy();
+  AllocateLockedDiscardableSharedMemory(process_handle, size,
+                                        shared_memory_handle);
 }
 
 void HostDiscardableSharedMemoryManager::ProcessRemoved(
@@ -193,6 +161,89 @@ void HostDiscardableSharedMemoryManager::EnforceMemoryPolicy() {
 
   enforce_memory_policy_pending_ = false;
   ReduceMemoryUsageUntilWithinMemoryLimit();
+}
+
+void HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
+    base::ProcessHandle process_handle,
+    size_t size,
+    base::SharedMemoryHandle* shared_memory_handle) {
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466405 AllocateLockedDiscardableSharedMemory::Start"));
+  base::AutoLock lock(lock_);
+
+  // Memory usage must be reduced to prevent the addition of |size| from
+  // taking usage above the limit. Usage should be reduced to 0 in cases
+  // where |size| is greater than the limit.
+  size_t limit = 0;
+  // Note: the actual mapped size can be larger than requested and cause
+  // |bytes_allocated_| to temporarily be larger than |memory_limit_|. The
+  // error is minimized by incrementing |bytes_allocated_| with the actual
+  // mapped size rather than |size| below.
+  if (size < memory_limit_)
+    limit = memory_limit_ - size;
+
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile2(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466405 AllocateLockedDiscardableSharedMemory::ReduceMemoryUsage"));
+  if (bytes_allocated_ > limit)
+    ReduceMemoryUsageUntilWithinLimit(limit);
+
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466405 AllocateLockedDiscardableSharedMemory::NewMemory"));
+  linked_ptr<base::DiscardableSharedMemory> memory(
+      new base::DiscardableSharedMemory);
+  if (!memory->CreateAndMap(size)) {
+    *shared_memory_handle = base::SharedMemory::NULLHandle();
+    return;
+  }
+
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile4(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466405 AllocateLockedDiscardableSharedMemory::ShareToProcess"));
+  if (!memory->ShareToProcess(process_handle, shared_memory_handle)) {
+    LOG(ERROR) << "Cannot share discardable memory segment";
+    *shared_memory_handle = base::SharedMemory::NULLHandle();
+    return;
+  }
+
+  base::CheckedNumeric<size_t> checked_bytes_allocated = bytes_allocated_;
+  checked_bytes_allocated += memory->mapped_size();
+  if (!checked_bytes_allocated.IsValid()) {
+    *shared_memory_handle = base::SharedMemory::NULLHandle();
+    return;
+  }
+
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile5(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466405 "
+          "AllocateLockedDiscardableSharedMemory::BytesAllocatedChanged"));
+  bytes_allocated_ = checked_bytes_allocated.ValueOrDie();
+  BytesAllocatedChanged(bytes_allocated_);
+
+  segments_.push_back(MemorySegment(memory, process_handle));
+  std::push_heap(segments_.begin(), segments_.end(), CompareMemoryUsageTime);
+
+  // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
+  // is fixed.
+  tracked_objects::ScopedTracker tracking_profile6(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "466405 "
+          "AllocateLockedDiscardableSharedMemory::"
+          "ScheduleEnforceMemoryPolicy"));
+  if (bytes_allocated_ > memory_limit_)
+    ScheduleEnforceMemoryPolicy();
 }
 
 void HostDiscardableSharedMemoryManager::OnMemoryPressure(
