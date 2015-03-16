@@ -22,6 +22,10 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 namespace {
 
 const char kFieldTrialName[] = "EnhancedBookmarks";
@@ -135,6 +139,11 @@ void UpdateBookmarksExperimentState(
   }
 
 #if defined(OS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <=
+      base::android::SdkVersion::SDK_VERSION_ICE_CREAM_SANDWICH_MR1) {
+    opt_out = true;
+    bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_NONE;
+  }
   bool opt_in = !opt_out &&
                 base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                     switches::kEnhancedBookmarksExperiment) == "1";
