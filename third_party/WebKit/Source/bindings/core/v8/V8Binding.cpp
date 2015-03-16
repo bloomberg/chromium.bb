@@ -407,27 +407,18 @@ uint32_t toUInt32(v8::Handle<v8::Value> value)
     return toUInt32(value, NormalConversion, exceptionState);
 }
 
-int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+int64_t toInt64Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
-    // Clamping not supported for int64_t/long long int. See Source/wtf/MathExtras.h.
-    ASSERT(configuration != Clamp);
-
-    // Fast case. The value is a 32-bit integer.
-    if (value->IsInt32())
-        return value->Int32Value();
+    ASSERT(!value->IsInt32());
 
     v8::Local<v8::Number> numberObject;
-    if (value->IsNumber()) {
-        numberObject = value.As<v8::Number>();
-    } else {
-        v8::Isolate* isolate = v8::Isolate::GetCurrent();
-        // Can the value be converted to a number?
-        v8::TryCatch block(isolate);
-        numberObject = value->ToNumber(isolate);
-        if (block.HasCaught()) {
-            exceptionState.rethrowV8Exception(block.Exception());
-            return 0;
-        }
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    // Can the value be converted to a number?
+    v8::TryCatch block(isolate);
+    numberObject = value->ToNumber(isolate);
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     ASSERT(!numberObject.IsEmpty());
 

@@ -466,10 +466,23 @@ inline uint32_t toUInt32(v8::Handle<v8::Value> value, ExceptionState& exceptionS
 // Convert a value to a 32-bit unsigned integer assuming the conversion cannot fail.
 uint32_t toUInt32(v8::Handle<v8::Value>);
 
+CORE_EXPORT int64_t toInt64Slow(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+
 // Convert a value to a 64-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-long-long
-CORE_EXPORT int64_t toInt64(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+{
+    // Clamping not supported for int64_t/long long int. See Source/wtf/MathExtras.h.
+    ASSERT(configuration != Clamp);
+
+    // Fast case. The value is a 32-bit integer.
+    if (value->IsInt32())
+        return value->Int32Value();
+
+    return toInt64Slow(value, configuration, exceptionState);
+}
+
 inline int64_t toInt64(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     return toInt64(value, NormalConversion, exceptionState);
