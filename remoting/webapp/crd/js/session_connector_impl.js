@@ -28,7 +28,7 @@ remoting.desktopConnectedView = null;
 
 /**
  * @param {HTMLElement} clientContainer Container element for the client view.
- * @param {function(remoting.ClientSession):void} onConnected Callback on
+ * @param {function(remoting.ConnectionInfo):void} onConnected Callback on
  *     success.
  * @param {function(!remoting.Error):void} onError Callback on error.
  * @param {function(string, string):boolean} appProtocolExtensionHandler The
@@ -51,7 +51,7 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
   /** @private {HTMLElement} */
   this.clientContainer_ = clientContainer;
 
-  /** @private {function(remoting.ClientSession):void} */
+  /** @private {function(remoting.ConnectionInfo):void} */
   this.onConnected_ = onConnected;
 
   /** @private {function(!remoting.Error):void} */
@@ -479,7 +479,10 @@ remoting.SessionConnectorImpl.prototype.onStateChange_ = function(event) {
         this.reconnector_ =
             new remoting.SmartReconnector(this, this.clientSession_);
       }
-      this.onConnected_(this.clientSession_);
+      var connectionInfo = new remoting.ConnectionInfo(
+          this.host_, this.credentialsProvider_, this.clientSession_,
+          this.plugin_, this.connectionMode_);
+      this.onConnected_(connectionInfo);
       // Initialize any protocol extensions that may have been added by the app.
       this.initProtocolExtensions_();
       break;
@@ -536,7 +539,7 @@ remoting.DefaultSessionConnectorFactory = function() {};
 
 /**
  * @param {HTMLElement} clientContainer Container element for the client view.
- * @param {function(remoting.ClientSession):void} onConnected Callback on
+ * @param {function(remoting.ConnectionInfo):void} onConnected Callback on
  *     success.
  * @param {function(!remoting.Error):void} onError Callback on error.
  * @param {function(string, string):boolean} appProtocolExtensionHandler The

@@ -115,18 +115,18 @@ remoting.Application.prototype.disconnect = function() {
 /**
  * Called when a new session has been connected.
  *
- * @param {remoting.ClientSession} clientSession
+ * @param {remoting.ConnectionInfo} connectionInfo
  * @return {void} Nothing.
  */
-remoting.Application.prototype.onConnected = function(clientSession) {
+remoting.Application.prototype.onConnected = function(connectionInfo) {
   this.sessionConnectedHooks_ = new base.Disposables(
-    new base.EventHook(
-      clientSession, 'stateChanged', this.onClientStateChange_.bind(this)),
+    new base.EventHook(connectionInfo.session(), 'stateChanged',
+                       this.onClientStateChange_.bind(this)),
     new base.RepeatingTimer(this.updateStatistics_.bind(this), 1000)
   );
   remoting.clipboard.startSession();
 
-  this.delegate_.handleConnected(clientSession);
+  this.delegate_.handleConnected(connectionInfo);
 };
 
 /**
@@ -301,11 +301,11 @@ remoting.Application.Delegate.prototype.getDefaultRemapKeys = function() {};
 /**
  * Called when a new session has been connected.
  *
- * @param {remoting.ClientSession} clientSession
+ * @param {remoting.ConnectionInfo} connectionInfo
  * @return {void} Nothing.
  */
 remoting.Application.Delegate.prototype.handleConnected = function(
-    clientSession) {};
+    connectionInfo) {};
 
 /**
  * Called when the current session has been disconnected.

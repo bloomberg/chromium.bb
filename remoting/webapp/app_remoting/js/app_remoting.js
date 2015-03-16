@@ -30,8 +30,8 @@ remoting.AppRemoting = function(app) {
   /** @private {remoting.WindowActivationMenu} */
   this.windowActivationMenu_ = null;
 
-   /** @private {number} */
-   this.pingTimerId_ = 0;
+   /** @private {base.RepeatingTimer} */
+   this.pingTimer_ = null;
 };
 
 /**
@@ -221,10 +221,10 @@ remoting.AppRemoting.prototype.getDefaultRemapKeys = function() {
 /**
  * Called when a new session has been connected.
  *
- * @param {remoting.ClientSession} clientSession
+ * @param {remoting.ConnectionInfo} connectionInfo
  * @return {void} Nothing.
  */
-remoting.AppRemoting.prototype.handleConnected = function(clientSession) {
+remoting.AppRemoting.prototype.handleConnected = function(connectionInfo) {
   remoting.identity.getUserInfo().then(
       function(userInfo) {
         remoting.clientSession.sendClientMessage(
@@ -232,13 +232,13 @@ remoting.AppRemoting.prototype.handleConnected = function(clientSession) {
             JSON.stringify({fullName: userInfo.name}));
       });
 
+  var clientSession = connectionInfo.session();
   // Set up a ping at 10-second intervals to test the connection speed.
-  function ping() {
+  var CONNECTION_SPEED_PING_INTERVAL = 10 * 1000;
+  this.pingTimer_ = new base.RepeatingTimer(function () {
     var message = { timestamp: new Date().getTime() };
     clientSession.sendClientMessage('pingRequest', JSON.stringify(message));
-  };
-  ping();
-  this.pingTimerId_ = window.setInterval(ping, 10 * 1000);
+  }, CONNECTION_SPEED_PING_INTERVAL);
 };
 
 /**
@@ -248,7 +248,8 @@ remoting.AppRemoting.prototype.handleConnected = function(clientSession) {
  */
 remoting.AppRemoting.prototype.handleDisconnected = function() {
   // Cancel the ping when the connection closes.
-  window.clearInterval(this.pingTimerId_);
+  base.dispose(this.pingTimer_);
+  this.pingTimer_ = null;
 
   chrome.app.window.current().close();
 };

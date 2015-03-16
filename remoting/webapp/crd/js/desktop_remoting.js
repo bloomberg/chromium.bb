@@ -166,10 +166,10 @@ remoting.DesktopRemoting.prototype.getDefaultRemapKeys = function() {
 /**
  * Called when a new session has been connected.
  *
- * @param {remoting.ClientSession} clientSession
+ * @param {remoting.ConnectionInfo} connectionInfo
  * @return {void} Nothing.
  */
-remoting.DesktopRemoting.prototype.handleConnected = function(clientSession) {
+remoting.DesktopRemoting.prototype.handleConnected = function(connectionInfo) {
   // Set the text on the buttons shown under the error message so that they are
   // easy to understand in the case where a successful connection failed, as
   // opposed to the case where a connection never succeeded.
@@ -235,7 +235,7 @@ remoting.DesktopRemoting.prototype.handleConnected = function(clientSession) {
       console.log('Unrecognized client platform. Using navigator.platform.');
       clientName = navigator.platform;
     }
-    clientSession.requestPairing(clientName, onPairingComplete);
+    connectionInfo.session().requestPairing(clientName, onPairingComplete);
   }
 };
 

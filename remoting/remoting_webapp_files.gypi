@@ -146,6 +146,7 @@
       'webapp/crd/js/client_session.js',
       'webapp/crd/js/clipboard.js',
       'webapp/crd/js/connected_view.js',
+      'webapp/crd/js/connection_info.js',
       'webapp/crd/js/credentials_provider.js',
       'webapp/crd/js/desktop_connected_view.js',
       'webapp/crd/js/host_desktop.js',
