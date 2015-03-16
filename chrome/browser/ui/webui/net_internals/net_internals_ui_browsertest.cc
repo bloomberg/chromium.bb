@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -277,20 +278,21 @@ void NetInternalsTest::MessageHandler::GetNetLogLoggerLog(
   base::FilePath temp_file;
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.path(),
                                              &temp_file));
-  FILE* temp_file_handle = base::OpenFile(temp_file, "w");
+  base::ScopedFILE temp_file_handle(base::OpenFile(temp_file, "w"));
   ASSERT_TRUE(temp_file_handle);
 
   scoped_ptr<base::Value> constants(NetInternalsUI::GetConstants());
-  scoped_ptr<net::NetLogLogger> net_log_logger(new net::NetLogLogger(
-      temp_file_handle, *constants));
-  net_log_logger->StartObserving(g_browser_process->net_log());
+  scoped_ptr<net::NetLogLogger> net_log_logger(new net::NetLogLogger());
+  net_log_logger->StartObserving(
+      g_browser_process->net_log(), temp_file_handle.Pass(), constants.get(),
+      nullptr);
   g_browser_process->net_log()->AddGlobalEntry(
       net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED);
   net::BoundNetLog bound_net_log = net::BoundNetLog::Make(
       g_browser_process->net_log(),
       net::NetLog::SOURCE_URL_REQUEST);
   bound_net_log.BeginEvent(net::NetLog::TYPE_REQUEST_ALIVE);
-  net_log_logger->StopObserving();
+  net_log_logger->StopObserving(nullptr);
   net_log_logger.reset();
 
   std::string log_contents;

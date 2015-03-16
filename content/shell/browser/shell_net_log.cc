@@ -8,16 +8,18 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/values.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_log_logger.h"
+#include "net/base/net_log_util.h"
 
 namespace content {
 
 namespace {
 
 base::DictionaryValue* GetShellConstants(const std::string& app_name) {
-  base::DictionaryValue* constants_dict = net::NetLogLogger::GetConstants();
+  scoped_ptr<base::DictionaryValue> constants_dict = net::GetNetConstants();
 
   // Add a dictionary with client information
   base::DictionaryValue* dict = new base::DictionaryValue();
@@ -29,12 +31,14 @@ base::DictionaryValue* GetShellConstants(const std::string& app_name) {
 
   constants_dict->Set("clientInfo", dict);
 
-  return constants_dict;
+  return constants_dict.release();
 }
 
 }  // namespace
 
 ShellNetLog::ShellNetLog(const std::string& app_name) {
+  // TODO(mmenke):  Other than a different set of constants, this code is
+  //     identical to code in ChromeNetLog.  Consider merging the code.
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
@@ -47,20 +51,21 @@ ShellNetLog::ShellNetLog(const std::string& app_name) {
     // would result in an unbounded buffer size, so not much can be gained by
     // doing this on another thread.  It's only used when debugging, so
     // performance is not a big concern.
-    FILE* file = NULL;
+    base::ScopedFILE file;
 #if defined(OS_WIN)
-    file = _wfopen(log_path.value().c_str(), L"w");
+    file.reset(_wfopen(log_path.value().c_str(), L"w"));
 #elif defined(OS_POSIX)
-    file = fopen(log_path.value().c_str(), "w");
+    file.reset(fopen(log_path.value().c_str(), "w"));
 #endif
 
-    if (file == NULL) {
+    if (!file) {
       LOG(ERROR) << "Could not open file " << log_path.value()
                  << " for net logging";
     } else {
       scoped_ptr<base::Value> constants(GetShellConstants(app_name));
-      net_log_logger_.reset(new net::NetLogLogger(file, *constants));
-      net_log_logger_->StartObserving(this);
+      net_log_logger_.reset(new net::NetLogLogger());
+      net_log_logger_->StartObserving(this, file.Pass(), constants.get(),
+                                      nullptr);
     }
   }
 }
@@ -68,7 +73,7 @@ ShellNetLog::ShellNetLog(const std::string& app_name) {
 ShellNetLog::~ShellNetLog() {
   // Remove the observer we own before we're destroyed.
   if (net_log_logger_)
-    RemoveThreadSafeObserver(net_log_logger_.get());
+    net_log_logger_->StopObserving(nullptr);
 }
 
 }  // namespace content

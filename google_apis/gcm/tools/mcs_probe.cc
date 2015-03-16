@@ -13,6 +13,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -278,6 +279,8 @@ MCSProbe::MCSProbe(
 }
 
 MCSProbe::~MCSProbe() {
+  if (logger_)
+    logger_->StopObserving(nullptr);
   file_thread_.Stop();
 }
 
@@ -345,20 +348,19 @@ void MCSProbe::UpdateCallback(bool success) {
 }
 
 void MCSProbe::InitializeNetworkState() {
-  FILE* log_file = NULL;
+  base::ScopedFILE log_file;
   if (command_line_.HasSwitch(kLogFileSwitch)) {
     base::FilePath log_path = command_line_.GetSwitchValuePath(kLogFileSwitch);
 #if defined(OS_WIN)
-    log_file = _wfopen(log_path.value().c_str(), L"w");
+    log_file.reset(_wfopen(log_path.value().c_str(), L"w"));
 #elif defined(OS_POSIX)
-    log_file = fopen(log_path.value().c_str(), "w");
+    log_file.reset(fopen(log_path.value().c_str(), "w"));
 #endif
   }
-  if (log_file != NULL) {
-    scoped_ptr<base::Value> net_constants(net::NetLogLogger::GetConstants());
-    logger_.reset(new net::NetLogLogger(log_file, *net_constants));
+  if (log_file.get()) {
+    logger_.reset(new net::NetLogLogger());
     logger_->set_log_level(net::NetLog::LOG_ALL_BUT_BYTES);
-    logger_->StartObserving(&net_log_);
+    logger_->StartObserving(&net_log_, log_file.Pass(), nullptr, nullptr);
   }
 
   host_resolver_ = net::HostResolver::CreateDefaultResolver(&net_log_);

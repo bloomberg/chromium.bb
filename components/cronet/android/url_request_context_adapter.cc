@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/cronet/url_request_context_config.h"
@@ -280,19 +281,19 @@ void URLRequestContextAdapter::StartNetLogToFileHelper(
     return;
 
   base::FilePath file_path(file_name);
-  FILE* file = base::OpenFile(file_path, "w");
+  base::ScopedFILE file(base::OpenFile(file_path, "w"));
   if (!file)
     return;
 
-  scoped_ptr<base::Value> constants(net::NetLogLogger::GetConstants());
-  net_log_logger_.reset(new net::NetLogLogger(file, *constants));
-  net_log_logger_->StartObserving(context_->net_log());
+  net_log_logger_.reset(new net::NetLogLogger());
+  net_log_logger_->StartObserving(context_->net_log(), file.Pass(), nullptr,
+                                  context_.get());
 }
 
 void URLRequestContextAdapter::StopNetLogHelper() {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   if (net_log_logger_) {
-    net_log_logger_->StopObserving();
+    net_log_logger_->StopObserving(context_.get());
     net_log_logger_.reset();
   }
 }

@@ -254,10 +254,10 @@ void LogPrivateAPI::AddEntriesOnUI(scoped_ptr<base::ListValue> value) {
   }
 }
 
-void LogPrivateAPI::InitializeNetLogger(const std::string& owner_extension_id,
-                                        net::NetLogLogger** net_log_logger) {
+void LogPrivateAPI::CreateFileForNetLogger(
+    const std::string& owner_extension_id,
+    base::ScopedFILE* file) {
   DCHECK(IsRunningOnSequenceThread());
-  (*net_log_logger) = NULL;
 
   // Create app-specific subdirectory in session logs folder.
   base::FilePath app_log_dir = GetAppLogDirectory().Append(owner_extension_id);
@@ -270,28 +270,27 @@ void LogPrivateAPI::InitializeNetLogger(const std::string& owner_extension_id,
 
   base::FilePath file_path = app_log_dir.Append(kLogFileNameBase);
   file_path = logging::GenerateTimestampedName(file_path, base::Time::Now());
-  FILE* file = NULL;
-  file = fopen(file_path.value().c_str(), "w");
-  if (file == NULL) {
+  FILE* file_ptr = fopen(file_path.value().c_str(), "w");
+  if (file_ptr == nullptr) {
     LOG(ERROR) << "Could not open " << file_path.value();
     return;
   }
 
   RegisterTempFile(owner_extension_id, file_path);
-  scoped_ptr<base::Value> constants(net::NetLogLogger::GetConstants());
-  *net_log_logger = new net::NetLogLogger(file, *constants);
-  (*net_log_logger)->set_log_level(net::NetLog::LOG_ALL_BUT_BYTES);
+  return file->reset(file_ptr);
 }
 
 void LogPrivateAPI::StartObservingNetEvents(
     IOThread* io_thread,
-    net::NetLogLogger** net_log_logger) {
+    base::ScopedFILE* file) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!(*net_log_logger))
+  if (!file->get())
     return;
 
-  net_log_logger_.reset(*net_log_logger);
-  net_log_logger_->StartObserving(io_thread->net_log());
+  net_log_logger_.reset(new net::NetLogLogger());
+  net_log_logger_->set_log_level(net::NetLog::LOG_ALL_BUT_BYTES);
+  net_log_logger_->StartObserving(io_thread->net_log(), file->Pass(), nullptr,
+                                  nullptr);
 }
 
 void LogPrivateAPI::MaybeStartNetInternalLogging(
@@ -309,19 +308,19 @@ void LogPrivateAPI::MaybeStartNetInternalLogging(
         break;
       }
       case api::log_private::EVENT_SINK_FILE: {
-        net::NetLogLogger** net_logger_ptr = new net::NetLogLogger* [1];
-        // Initialize net logger on the blocking pool and start observing event
-        // with in on IO thread.
+        base::ScopedFILE* file = new base::ScopedFILE();
+        // Initialize a FILE on the blocking pool and start observing event
+        // on IO thread.
         GetSequencedTaskRunner()->PostTaskAndReply(
             FROM_HERE,
-            base::Bind(&LogPrivateAPI::InitializeNetLogger,
+            base::Bind(&LogPrivateAPI::CreateFileForNetLogger,
                        base::Unretained(this),
                        caller_extension_id,
-                       net_logger_ptr),
+                       file),
             base::Bind(&LogPrivateAPI::StartObservingNetEvents,
                        base::Unretained(this),
                        io_thread,
-                       base::Owned(net_logger_ptr)));
+                       base::Owned(file)));
         break;
       }
       case api::log_private::EVENT_SINK_NONE: {
@@ -360,7 +359,7 @@ void LogPrivateAPI::StopNetInternalLogging() {
         net_log()->RemoveThreadSafeObserver(this);
         break;
       case api::log_private::EVENT_SINK_FILE:
-        net_log_logger_->StopObserving();
+        net_log_logger_->StopObserving(nullptr);
         net_log_logger_.reset();
         break;
       case api::log_private::EVENT_SINK_NONE:

@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -32,19 +33,19 @@ ChromeNetLog::ChromeNetLog()
     // would result in an unbounded buffer size, so not much can be gained by
     // doing this on another thread.  It's only used when debugging Chrome, so
     // performance is not a big concern.
-    FILE* file = NULL;
+    base::ScopedFILE file;
 #if defined(OS_WIN)
-    file = _wfopen(log_path.value().c_str(), L"w");
+    file.reset(_wfopen(log_path.value().c_str(), L"w"));
 #elif defined(OS_POSIX)
-    file = fopen(log_path.value().c_str(), "w");
+    file.reset(fopen(log_path.value().c_str(), "w"));
 #endif
 
-    if (file == NULL) {
+    if (!file) {
       LOG(ERROR) << "Could not open file " << log_path.value()
                  << " for net logging";
     } else {
       scoped_ptr<base::Value> constants(NetInternalsUI::GetConstants());
-      net_log_logger_.reset(new net::NetLogLogger(file, *constants));
+      net_log_logger_.reset(new net::NetLogLogger());
       if (command_line->HasSwitch(switches::kNetLogLevel)) {
         std::string log_level_string =
             command_line->GetSwitchValueASCII(switches::kNetLogLevel);
@@ -56,7 +57,8 @@ ChromeNetLog::ChromeNetLog()
               static_cast<LogLevel>(command_line_log_level));
         }
       }
-      net_log_logger_->StartObserving(this);
+      net_log_logger_->StartObserving(this, file.Pass(), constants.get(),
+                                      nullptr);
     }
   }
 
@@ -68,7 +70,7 @@ ChromeNetLog::~ChromeNetLog() {
   net_log_temp_file_.reset();
   // Remove the observers we own before we're destroyed.
   if (net_log_logger_)
-    RemoveThreadSafeObserver(net_log_logger_.get());
+    net_log_logger_->StopObserving(nullptr);
   if (trace_net_log_observer_)
     trace_net_log_observer_->StopWatchForTraceStart();
 }

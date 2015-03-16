@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/files/scoped_file.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 #include "chrome/browser/extensions/api/log_private/log_parser.h"
@@ -88,14 +89,12 @@ class LogPrivateAPI : public BrowserContextKeyedAPI,
   void PostPendingEntries();
   void AddEntriesOnUI(scoped_ptr<base::ListValue> value);
 
-  // Initializes a new instance of net::NetLogLogger and passes it back via
-  // |net_logger| param.
-  void InitializeNetLogger(const std::string& owner_extension_id,
-                           net::NetLogLogger** net_logger);
+  // Creates a file for use with a new instance of net::NetLogLogger.
+  void CreateFileForNetLogger(
+      const std::string& owner_extension_id, base::ScopedFILE* file);
 
   // Starts observing network events with a new |net_logger| instance.
-  void StartObservingNetEvents(IOThread* io_thread,
-                               net::NetLogLogger** net_logger);
+  void StartObservingNetEvents(IOThread* io_thread, base::ScopedFILE* file);
   void MaybeStartNetInternalLogging(const std::string& caller_extension_id,
                                     IOThread* io_thread,
                                     api::log_private::EventSink event_sink);

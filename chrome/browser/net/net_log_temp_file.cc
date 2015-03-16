@@ -5,6 +5,7 @@
 #include "chrome/browser/net/net_log_temp_file.h"
 
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/values.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
@@ -22,7 +23,7 @@ NetLogTempFile::NetLogTempFile(ChromeNetLog* chrome_net_log)
 
 NetLogTempFile::~NetLogTempFile() {
   if (net_log_logger_)
-    net_log_logger_->StopObserving();
+    net_log_logger_->StopObserving(nullptr);
 }
 
 void NetLogTempFile::ProcessCommand(Command command) {
@@ -135,17 +136,18 @@ void NetLogTempFile::StartNetLog(LogType log_type) {
   // Try to make sure we can create the file.
   // TODO(rtenneti): Find a better for doing the following. Surface some error
   // to the user if we couldn't create the file.
-  FILE* file = base::OpenFile(log_path_, "w");
-  if (file == NULL)
+  base::ScopedFILE file(base::OpenFile(log_path_, "w"));
+  if (!file)
     return;
 
   log_type_ = log_type;
   state_ = STATE_LOGGING;
 
   scoped_ptr<base::Value> constants(NetInternalsUI::GetConstants());
-  net_log_logger_.reset(new net::NetLogLogger(file, *constants));
+  net_log_logger_.reset(new net::NetLogLogger());
   net_log_logger_->set_log_level(GetLogLevelForLogType(log_type));
-  net_log_logger_->StartObserving(chrome_net_log_);
+  net_log_logger_->StartObserving(chrome_net_log_, file.Pass(), constants.get(),
+                                  nullptr);
 }
 
 void NetLogTempFile::StopNetLog() {
@@ -153,7 +155,7 @@ void NetLogTempFile::StopNetLog() {
   if (state_ != STATE_LOGGING)
     return;
 
-  net_log_logger_->StopObserving();
+  net_log_logger_->StopObserving(nullptr);
   net_log_logger_.reset();
   state_ = STATE_NOT_LOGGING;
 }
