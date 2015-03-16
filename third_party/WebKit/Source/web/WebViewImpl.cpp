@@ -143,6 +143,7 @@
 #include "web/DevToolsEmulator.h"
 #include "web/FullscreenController.h"
 #include "web/GraphicsLayerFactoryChromium.h"
+#include "web/InspectorRenderingAgent.h"
 #include "web/LinkHighlight.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
 #include "web/PopupContainer.h"
@@ -351,10 +352,12 @@ void WebViewImpl::setCredentialManagerClient(WebCredentialManagerClient* webCred
 
 void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 {
-    if (devToolsClient)
+    if (devToolsClient) {
         m_devToolsAgent = adoptPtrWillBeNoop(new WebDevToolsAgentImpl(this, devToolsClient));
-    else
+        m_devToolsAgent->registerAgent(InspectorRenderingAgent::create(this, m_devToolsAgent->overlay()));
+    } else {
         m_devToolsAgent.clear();
+    }
 }
 
 void WebViewImpl::setPrerendererClient(WebPrerendererClient* prerendererClient)

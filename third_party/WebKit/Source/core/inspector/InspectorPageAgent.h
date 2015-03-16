@@ -44,18 +44,14 @@ class Resource;
 class Document;
 class DocumentLoader;
 class FrameHost;
-class GraphicsContext;
-class GraphicsLayer;
 class InjectedScriptManager;
 class InspectorCSSAgent;
 class InspectorDebuggerAgent;
 class InspectorOverlay;
 class InspectorResourceContentLoader;
 class KURL;
-class LayoutRect;
 class LocalFrame;
 class Page;
-class LayoutObject;
 class SharedBuffer;
 class TextResourceDecoder;
 
@@ -72,12 +68,6 @@ public:
         virtual float minimumPageScaleFactor() { return 1; }
         virtual float maximumPageScaleFactor() { return 1; }
         virtual void setPageScaleFactor(float) { }
-        virtual void setShowPaintRects(bool) { }
-        virtual void setShowDebugBorders(bool) { }
-        virtual void setShowFPSCounter(bool) { }
-        virtual void setContinuousPaintingEnabled(bool) { }
-        virtual void setShowScrollBottleneckRects(bool) { }
-        virtual bool overridesShowPaintRects() { return false; }
         virtual void setTouchEventEmulationEnabled(bool) { }
     };
 
@@ -125,11 +115,6 @@ public:
     void setDocumentContent(ErrorString*, const String& frameId, const String& html) override;
     void resetScrollAndPageScaleFactor(ErrorString*) override;
     void setPageScaleFactor(ErrorString*, double pageScaleFactor) override;
-    void setShowPaintRects(ErrorString*, bool show) override;
-    void setShowDebugBorders(ErrorString*, bool show) override;
-    void setShowFPSCounter(ErrorString*, bool show) override;
-    void setContinuousPaintingEnabled(ErrorString*, bool enabled) override;
-    void setShowScrollBottleneckRects(ErrorString*, bool show) override;
     void setScriptExecutionDisabled(ErrorString*, bool) override;
     void setTouchEmulationEnabled(ErrorString*, bool enabled, const String* configuration) override;
     void setEmulatedMedia(ErrorString*, const String&) override;
@@ -153,7 +138,6 @@ public:
     void willRunJavaScriptDialog(const String& message);
     void didRunJavaScriptDialog();
     void applyEmulatedMedia(String*);
-    void didPaint(LayoutObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
     void didLayout();
     void didScroll();
     void didResizeMainFrame();

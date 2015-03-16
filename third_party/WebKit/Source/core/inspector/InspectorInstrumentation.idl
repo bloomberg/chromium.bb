@@ -221,7 +221,7 @@ interface InspectorInstrumentation {
     [AsyncCallTracker, Inline=FastReturn]
     void didDispatchXHRLoadendEvent(ExecutionContext*, XMLHttpRequest*);
 
-    [Page, LayerTree, Inline=FastReturn]
+    [LayerTree, Inline=FastReturn]
     void didPaint([Keep] LayoutObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
 
     [Resource, Inline=FastReturn]

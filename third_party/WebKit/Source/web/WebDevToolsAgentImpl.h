@@ -49,6 +49,7 @@
 
 namespace blink {
 
+class GraphicsLayer;
 class LocalFrame;
 class Page;
 class PlatformKeyboardEvent;
@@ -83,6 +84,8 @@ public:
     void flushPendingProtocolNotifications();
     void dispatchMessageFromFrontend(const String& message);
     InspectorPageAgent* pageAgent() const { return m_pageAgent.get(); }
+    void registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
+    InspectorOverlay* overlay() const { return m_overlay.get(); }
 
     // Instrumentation from web/ layer.
     void didCommitLoadForLocalFrame(LocalFrame*);
@@ -121,12 +124,6 @@ private:
     float minimumPageScaleFactor() override;
     float maximumPageScaleFactor() override;
     void setPageScaleFactor(float) override;
-    bool overridesShowPaintRects() override;
-    void setShowPaintRects(bool) override;
-    void setShowDebugBorders(bool) override;
-    void setShowFPSCounter(bool) override;
-    void setContinuousPaintingEnabled(bool) override;
-    void setShowScrollBottleneckRects(bool) override;
     void setTouchEventEmulationEnabled(bool) override;
 
     // InspectorTracingAgent::Client implementation.

@@ -91,11 +91,6 @@ namespace PageAgentState {
 static const char pageAgentEnabled[] = "pageAgentEnabled";
 static const char pageAgentScriptExecutionDisabled[] = "pageAgentScriptExecutionDisabled";
 static const char pageAgentScriptsToEvaluateOnLoad[] = "pageAgentScriptsToEvaluateOnLoad";
-static const char pageAgentShowFPSCounter[] = "pageAgentShowFPSCounter";
-static const char pageAgentContinuousPaintingEnabled[] = "pageAgentContinuousPaintingEnabled";
-static const char pageAgentShowPaintRects[] = "pageAgentShowPaintRects";
-static const char pageAgentShowDebugBorders[] = "pageAgentShowDebugBorders";
-static const char pageAgentShowScrollBottleneckRects[] = "pageAgentShowScrollBottleneckRects";
 static const char touchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char pageAgentEmulatedMedia[] = "pageAgentEmulatedMedia";
 static const char showSizeOnResize[] = "showSizeOnResize";
@@ -415,18 +410,8 @@ void InspectorPageAgent::restore()
         enable(&error);
         bool scriptExecutionDisabled = m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled);
         setScriptExecutionDisabled(0, scriptExecutionDisabled);
-        bool showPaintRects = m_state->getBoolean(PageAgentState::pageAgentShowPaintRects);
-        setShowPaintRects(0, showPaintRects);
-        bool showDebugBorders = m_state->getBoolean(PageAgentState::pageAgentShowDebugBorders);
-        setShowDebugBorders(0, showDebugBorders);
-        bool showFPSCounter = m_state->getBoolean(PageAgentState::pageAgentShowFPSCounter);
-        setShowFPSCounter(0, showFPSCounter);
         String emulatedMedia = m_state->getString(PageAgentState::pageAgentEmulatedMedia);
         setEmulatedMedia(0, emulatedMedia);
-        bool continuousPaintingEnabled = m_state->getBoolean(PageAgentState::pageAgentContinuousPaintingEnabled);
-        setContinuousPaintingEnabled(0, continuousPaintingEnabled);
-        bool showScrollBottleneckRects = m_state->getBoolean(PageAgentState::pageAgentShowScrollBottleneckRects);
-        setShowScrollBottleneckRects(0, showScrollBottleneckRects);
 
         updateTouchEventEmulationInPage(m_state->getBoolean(PageAgentState::touchEventEmulationEnabled));
     }
@@ -462,13 +447,7 @@ void InspectorPageAgent::disable(ErrorString*)
         m_inspectorResourceContentLoader.clear();
     }
 
-    setShowPaintRects(0, false);
-    setShowDebugBorders(0, false);
-    setShowFPSCounter(0, false);
     setEmulatedMedia(0, String());
-    if (m_state->getBoolean(PageAgentState::pageAgentContinuousPaintingEnabled))
-        setContinuousPaintingEnabled(0, false);
-    setShowScrollBottleneckRects(0, false);
     setShowViewportSizeOnResize(0, false, 0);
     setScriptExecutionDisabled(nullptr, false);
     stopScreencast(0);
@@ -761,47 +740,6 @@ void InspectorPageAgent::setPageScaleFactor(ErrorString*, double pageScaleFactor
     m_client->setPageScaleFactor(static_cast<float>(pageScaleFactor));
 }
 
-void InspectorPageAgent::setShowPaintRects(ErrorString*, bool show)
-{
-    m_state->setBoolean(PageAgentState::pageAgentShowPaintRects, show);
-    m_client->setShowPaintRects(show);
-
-    if (!show && inspectedFrame() && inspectedFrame()->isMainFrame() && inspectedFrame()->view())
-        inspectedFrame()->view()->invalidate();
-}
-
-void InspectorPageAgent::setShowDebugBorders(ErrorString* errorString, bool show)
-{
-    m_state->setBoolean(PageAgentState::pageAgentShowDebugBorders, show);
-    if (show && !compositingEnabled(errorString))
-        return;
-    m_client->setShowDebugBorders(show);
-}
-
-void InspectorPageAgent::setShowFPSCounter(ErrorString* errorString, bool show)
-{
-    m_state->setBoolean(PageAgentState::pageAgentShowFPSCounter, show);
-    if (show && !compositingEnabled(errorString))
-        return;
-    m_client->setShowFPSCounter(show);
-}
-
-void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString* errorString, bool enabled)
-{
-    m_state->setBoolean(PageAgentState::pageAgentContinuousPaintingEnabled, enabled);
-    if (enabled && !compositingEnabled(errorString))
-        return;
-    m_client->setContinuousPaintingEnabled(enabled);
-}
-
-void InspectorPageAgent::setShowScrollBottleneckRects(ErrorString* errorString, bool show)
-{
-    m_state->setBoolean(PageAgentState::pageAgentShowScrollBottleneckRects, show);
-    if (show && !compositingEnabled(errorString))
-        return;
-    m_client->setShowScrollBottleneckRects(show);
-}
-
 void InspectorPageAgent::setScriptExecutionDisabled(ErrorString*, bool value)
 {
     if (m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled) == value)
@@ -991,23 +929,6 @@ void InspectorPageAgent::willRunJavaScriptDialog(const String& message)
 void InspectorPageAgent::didRunJavaScriptDialog()
 {
     frontend()->javascriptDialogClosed();
-}
-
-void InspectorPageAgent::didPaint(LayoutObject*, const GraphicsLayer*, GraphicsContext* context, const LayoutRect& rect)
-{
-    if (!m_enabled || m_client->overridesShowPaintRects() || !m_state->getBoolean(PageAgentState::pageAgentShowPaintRects))
-        return;
-
-    static int colorSelector = 0;
-    const Color colors[] = {
-        Color(0, 0x5F, 0, 0x3F),
-        Color(0, 0xAF, 0, 0x3F),
-        Color(0, 0xFF, 0, 0x3F),
-    };
-
-    LayoutRect inflatedRect(rect);
-    inflatedRect.inflate(-1);
-    m_overlay->drawOutline(context, inflatedRect, colors[colorSelector++ % WTF_ARRAY_LENGTH(colors)]);
 }
 
 void InspectorPageAgent::didLayout()

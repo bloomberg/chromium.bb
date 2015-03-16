@@ -394,6 +394,11 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_pageAgent->setDeferredAgents(debuggerAgent, m_cssAgent);
 }
 
+void WebDevToolsAgentImpl::registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)
+{
+    m_agents.append(agent);
+}
+
 void WebDevToolsAgentImpl::attach(const WebString& hostId)
 {
     if (m_attached)
@@ -665,36 +670,6 @@ float WebDevToolsAgentImpl::maximumPageScaleFactor()
 void WebDevToolsAgentImpl::setPageScaleFactor(float pageScaleFactor)
 {
     m_webViewImpl->setPageScaleFactor(pageScaleFactor);
-}
-
-bool WebDevToolsAgentImpl::overridesShowPaintRects()
-{
-    return m_webViewImpl->isAcceleratedCompositingActive();
-}
-
-void WebDevToolsAgentImpl::setShowPaintRects(bool show)
-{
-    m_webViewImpl->setShowPaintRects(show);
-}
-
-void WebDevToolsAgentImpl::setShowDebugBorders(bool show)
-{
-    m_webViewImpl->setShowDebugBorders(show);
-}
-
-void WebDevToolsAgentImpl::setShowFPSCounter(bool show)
-{
-    m_webViewImpl->setShowFPSCounter(show);
-}
-
-void WebDevToolsAgentImpl::setContinuousPaintingEnabled(bool enabled)
-{
-    m_webViewImpl->setContinuousPaintingEnabled(enabled);
-}
-
-void WebDevToolsAgentImpl::setShowScrollBottleneckRects(bool show)
-{
-    m_webViewImpl->setShowScrollBottleneckRects(show);
 }
 
 void WebDevToolsAgentImpl::sendProtocolResponse(int callId, PassRefPtr<JSONObject> message)

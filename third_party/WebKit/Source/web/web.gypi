@@ -43,6 +43,8 @@
       'GraphicsLayerFactoryChromium.h',
       'IndexedDBClientImpl.cpp',
       'IndexedDBClientImpl.h',
+      'InspectorRenderingAgent.cpp',
+      'InspectorRenderingAgent.h',
       'LinkHighlight.cpp',
       'LinkHighlight.h',
       'LocalFileSystemClient.cpp',
