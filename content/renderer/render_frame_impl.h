@@ -738,7 +738,10 @@ class CONTENT_EXPORT RenderFrameImpl
   RendererCdmManager* GetCdmManager();
 #endif
 
-  // Stores the WebLocalFrame we are associated with.
+  // Stores the WebLocalFrame we are associated with.  This is null from the
+  // constructor until SetWebFrame is called, and it is null after
+  // frameDetached is called until destruction (which is asynchronous in the
+  // case of the main frame, but not subframes).
   blink::WebLocalFrame* frame_;
 
   base::WeakPtr<RenderViewImpl> render_view_;

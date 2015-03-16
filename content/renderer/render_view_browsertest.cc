@@ -286,6 +286,31 @@ class RenderViewImplTest : public RenderViewTest {
   scoped_ptr<MockKeyboard> mock_keyboard_;
 };
 
+// Test for https://crbug.com/461191.
+TEST_F(RenderViewImplTest, RenderFrameMessageAfterDetach) {
+  // Create a new main frame RenderFrame so that we don't interfere with the
+  // shutdown of frame() in RenderViewTest.TearDown.
+  blink::WebURLRequest popup_request(GURL("http://foo.com"));
+  blink::WebView* new_web_view = view()->createView(
+      GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
+      blink::WebNavigationPolicyNewForegroundTab, false);
+  RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
+  RenderFrameImpl* new_frame =
+      static_cast<RenderFrameImpl*>(new_view->GetMainRenderFrame());
+
+  // Detach the main frame.
+  new_view->Close();
+
+  // Before the frame is asynchronously deleted, it may receive a message.
+  // We should not crash here, and the message should not be processed.
+  scoped_ptr<const IPC::Message> msg(
+      new FrameMsg_Stop(frame()->GetRoutingID()));
+  EXPECT_FALSE(new_frame->OnMessageReceived(*msg));
+
+  // Clean up after the new view so we don't leak it.
+  new_view->Release();
+}
+
 TEST_F(RenderViewImplTest, SaveImageFromDataURL) {
   const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
       ViewHostMsg_SaveImageFromDataURL::ID);

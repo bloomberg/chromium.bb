@@ -952,6 +952,11 @@ void RenderFrameImpl::DidHideExternalPopupMenu() {
 #endif
 
 bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
+  // We may get here while detaching, when the WebFrame has been deleted.  Do
+  // not process any messages in this state.
+  if (!frame_)
+    return false;
+
   // TODO(kenrb): document() should not be null, but as a transitional step
   // we have RenderFrameProxy 'wrapping' a RenderFrameImpl, passing messages
   // to this method. This happens for a top-level remote frame, where a
@@ -2104,8 +2109,11 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   if (is_subframe)
     frame->parent()->removeChild(frame);
 
-  // |frame| is invalid after here.
+  // |frame| is invalid after here.  Be sure to clear frame_ as well, since this
+  // object may not be deleted immediately and other methods may try to access
+  // it.
   frame->close();
+  frame_ = nullptr;
 
   if (is_subframe) {
     delete this;

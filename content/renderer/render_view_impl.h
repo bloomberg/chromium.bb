@@ -528,6 +528,7 @@ class CONTENT_EXPORT RenderViewImpl
   // code away from this class.
   friend class RenderFrameImpl;
 
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, RenderFrameMessageAfterDetach);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, DecideNavigationPolicyForWebUI);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            DidFailProvisionalLoadWithErrorForError);
