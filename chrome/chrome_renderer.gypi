@@ -52,8 +52,6 @@
       'renderer/prerender/prerender_helper.h',
       'renderer/prerender/prerenderer_client.cc',
       'renderer/prerender/prerenderer_client.h',
-      'renderer/principals_extension_bindings.cc',
-      'renderer/principals_extension_bindings.h',
       'renderer/searchbox/search_bouncer.cc',
       'renderer/searchbox/search_bouncer.h',
       'renderer/searchbox/searchbox.cc',

@@ -64,7 +64,6 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
-#include "chrome/browser/signin/principals_message_filter.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_message_filter.h"
@@ -943,9 +942,6 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #if defined(OS_ANDROID)
   host->AddFilter(new cdm::CdmMessageFilterAndroid());
 #endif
-  if (switches::IsEnableAccountConsistency())
-    host->AddFilter(new PrincipalsMessageFilter(id));
-
   DataReductionProxyChromeSettings* data_reduction_proxy_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile);
   host->AddFilter(new data_reduction_proxy::DataReductionProxyMessageFilter(

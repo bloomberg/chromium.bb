@@ -48,7 +48,6 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerender_media_load_deferrer.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
-#include "chrome/renderer/principals_extension_bindings.h"
 #include "chrome/renderer/safe_browsing/malware_dom_details.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "chrome/renderer/searchbox/search_bouncer.h"
@@ -436,11 +435,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
       command_line->HasSwitch(switches::kRecordMode)) {
     thread->RegisterExtension(extensions_v8::PlaybackExtension::Get());
   }
-
-  // TODO(guohui): needs to forward the new-profile-management switch to
-  // renderer processes.
-  if (switches::IsEnableAccountConsistency())
-    thread->RegisterExtension(extensions_v8::PrincipalsExtension::Get());
 
   // chrome:, chrome-search:, chrome-devtools:, and chrome-distiller: pages
   // should not be accessible by normal content, and should also be unable to
