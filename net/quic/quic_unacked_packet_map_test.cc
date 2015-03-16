@@ -138,9 +138,9 @@ TEST_F(QuicUnackedPacketMapTest, RttOnly) {
 
 TEST_F(QuicUnackedPacketMapTest, DiscardOldRttOnly) {
   // Acks are only tracked for RTT measurement purposes, and are discarded
-  // when more than 2500 accumulate.
-  const size_t kNumUnackedPackets = 2500;
-  for (size_t i = 1; i < 3000; ++i) {
+  // when more than 200 accumulate.
+  const size_t kNumUnackedPackets = 200;
+  for (size_t i = 1; i < 400; ++i) {
     unacked_packets_.AddSentPacket(CreateNonRetransmittablePacket(i), 0,
                                    NOT_RETRANSMISSION, now_, kDefaultAckLength,
                                    false);
@@ -189,7 +189,7 @@ TEST_F(QuicUnackedPacketMapTest, StopRetransmission) {
   QuicPacketSequenceNumber retransmittable[] = {1};
   VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
 
-  unacked_packets_.StopRetransmissionForStream(stream_id);
+  unacked_packets_.CancelRetransmissionsForStream(stream_id);
   VerifyUnackedPackets(unacked, arraysize(unacked));
   VerifyInFlightPackets(unacked, arraysize(unacked));
   VerifyRetransmittablePackets(nullptr, 0);
@@ -208,7 +208,7 @@ TEST_F(QuicUnackedPacketMapTest, StopRetransmissionOnOtherStream) {
   VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
 
   // Stop retransmissions on another stream and verify the packet is unchanged.
-  unacked_packets_.StopRetransmissionForStream(stream_id + 2);
+  unacked_packets_.CancelRetransmissionsForStream(stream_id + 2);
   VerifyUnackedPackets(unacked, arraysize(unacked));
   VerifyInFlightPackets(unacked, arraysize(unacked));
   VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
@@ -229,7 +229,7 @@ TEST_F(QuicUnackedPacketMapTest, StopRetransmissionAfterRetransmission) {
   QuicPacketSequenceNumber retransmittable[] = {2};
   VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
 
-  unacked_packets_.StopRetransmissionForStream(stream_id);
+  unacked_packets_.CancelRetransmissionsForStream(stream_id);
   VerifyUnackedPackets(unacked, arraysize(unacked));
   VerifyInFlightPackets(unacked, arraysize(unacked));
   VerifyRetransmittablePackets(nullptr, 0);

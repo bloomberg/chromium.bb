@@ -30,6 +30,9 @@ namespace {
 // Default packet length.
 const uint32 kDefaultLength = 1000;
 
+// Stream ID for data sent in CreatePacket().
+const QuicStreamId kStreamId = 7;
+
 // Matcher to check the key of the key-value pair it receives as first argument
 // equals its second argument.
 MATCHER(KeyEq, "") {
@@ -177,9 +180,14 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
   SerializedPacket CreatePacket(QuicPacketSequenceNumber sequence_number,
                                 bool retransmittable) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
-    return SerializedPacket(
-        sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER, packets_.back(), 0u,
-        retransmittable ? new RetransmittableFrames(ENCRYPTION_NONE) : nullptr);
+    RetransmittableFrames* frames = nullptr;
+    if (retransmittable) {
+      frames = new RetransmittableFrames(ENCRYPTION_NONE);
+      frames->AddStreamFrame(
+          new QuicStreamFrame(kStreamId, false, 0, IOVector()));
+    }
+    return SerializedPacket(sequence_number, PACKET_6BYTE_SEQUENCE_NUMBER,
+                            packets_.back(), 0u, frames);
   }
 
   SerializedPacket CreateFecPacket(QuicPacketSequenceNumber sequence_number) {
@@ -316,6 +324,23 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
 
   // No unacked packets remain.
   VerifyUnackedPackets(nullptr, 0);
+  VerifyRetransmittablePackets(nullptr, 0);
+  EXPECT_EQ(0u, stats_.packets_spuriously_retransmitted);
+}
+
+TEST_F(QuicSentPacketManagerTest, RetransmitThenStopRetransmittingBeforeSend) {
+  SendDataPacket(1);
+  QuicSentPacketManagerPeer::MarkForRetransmission(&manager_, 1,
+                                                   TLP_RETRANSMISSION);
+  EXPECT_TRUE(manager_.HasPendingRetransmissions());
+
+  manager_.CancelRetransmissionsForStream(kStreamId);
+
+  // There should no longer be a pending retransmission.
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+
+  QuicPacketSequenceNumber unacked[] = {1};
+  VerifyUnackedPackets(unacked, arraysize(unacked));
   VerifyRetransmittablePackets(nullptr, 0);
   EXPECT_EQ(0u, stats_.packets_spuriously_retransmitted);
 }
@@ -1472,6 +1497,25 @@ TEST_F(QuicSentPacketManagerTest, NegotiateCongestionControlFromOptions) {
   EXPECT_EQ(kBBR, QuicSentPacketManagerPeer::GetSendAlgorithm(
       manager_)->GetCongestionControlType());
 #endif
+
+  options.clear();
+  options.push_back(kBYTE);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
+  EXPECT_CALL(*network_change_visitor_, OnRttChange());
+  manager_.SetFromConfig(config);
+  EXPECT_EQ(kCubicBytes, QuicSentPacketManagerPeer::GetSendAlgorithm(manager_)
+                             ->GetCongestionControlType());
+
+  options.clear();
+  options.push_back(kRENO);
+  options.push_back(kBYTE);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
+  EXPECT_CALL(*network_change_visitor_, OnRttChange());
+  manager_.SetFromConfig(config);
+  EXPECT_EQ(kRenoBytes, QuicSentPacketManagerPeer::GetSendAlgorithm(manager_)
+                            ->GetCongestionControlType());
 }
 
 TEST_F(QuicSentPacketManagerTest, NegotiateNumConnectionsFromOptions) {

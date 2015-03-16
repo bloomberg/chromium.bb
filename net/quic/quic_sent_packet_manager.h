@@ -215,6 +215,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Called by the connection every time it receives a serialized packet.
   void OnSerializedPacket(const SerializedPacket& serialized_packet);
 
+  // No longer retransmit data for |stream_id|.
+  void CancelRetransmissionsForStream(QuicStreamId stream_id);
+
   // Enables pacing if it has not already been enabled.
   void EnablePacing();
 

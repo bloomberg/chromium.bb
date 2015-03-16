@@ -285,7 +285,7 @@ QuicSession* QuicDispatcher::AdditionalValidityChecksThenCreateSession(
     return nullptr;
   }
 
-  DVLOG(1) << "Created new session for " << connection_id;
+  DVLOG(1) << "Created new session for connection ID " << connection_id;
   session_map_.insert(std::make_pair(connection_id, session));
 
   return session;

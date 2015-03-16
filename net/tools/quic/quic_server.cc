@@ -22,9 +22,15 @@
 #include "net/quic/quic_protocol.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
+#include "net/tools/quic/quic_packet_reader.h"
 #include "net/tools/quic/quic_socket_utils.h"
 
+// TODO(rtenneti): Add support for MMSG_MORE.
 #define MMSG_MORE 0
+// If true, QuicListener uses the QuicPacketReader to read packets instead of
+// QuicServer.
+// TODO(rtenneti): Enable this flag after MMSG_MORE is set to 1.
+#define FLAGS_quic_use_optimized_packet_reader false
 
 #ifndef SO_RXQ_OVFL
 #define SO_RXQ_OVFL 40
@@ -47,7 +53,8 @@ QuicServer::QuicServer()
       overflow_supported_(false),
       use_recvmmsg_(false),
       crypto_config_(kSourceAddressTokenSecret, QuicRandom::GetInstance()),
-      supported_versions_(QuicSupportedVersions()) {
+      supported_versions_(QuicSupportedVersions()),
+      packet_reader_(new QuicPacketReader()) {
   Initialize();
 }
 
@@ -60,7 +67,8 @@ QuicServer::QuicServer(const QuicConfig& config,
       use_recvmmsg_(false),
       config_(config),
       crypto_config_(kSourceAddressTokenSecret, QuicRandom::GetInstance()),
-      supported_versions_(supported_versions) {
+      supported_versions_(supported_versions),
+      packet_reader_(new QuicPacketReader()) {
   Initialize();
 }
 
@@ -201,9 +209,34 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
     DVLOG(1) << "NET_POLLIN";
     bool read = true;
     while (read) {
-        read = ReadAndDispatchSinglePacket(
-            fd_, port_, dispatcher_.get(),
-            overflow_supported_ ? &packets_dropped_ : nullptr);
+      if (use_recvmmsg_) {
+        if (FLAGS_quic_use_optimized_packet_reader) {
+          read = packet_reader_->ReadAndDispatchPackets(
+              fd_, port_, dispatcher_.get(),
+              overflow_supported_ ? &packets_dropped_ : nullptr);
+        } else {
+// TODO(rtenneti): Add support for ReadAndDispatchPackets.
+#if 0
+          read = ReadAndDispatchPackets(
+              fd_, port_, dispatcher_.get(),
+              overflow_supported_ ? &packets_dropped_ : nullptr);
+#else
+          read = ReadAndDispatchSinglePacket(
+              fd_, port_, dispatcher_.get(),
+              overflow_supported_ ? &packets_dropped_ : nullptr);
+#endif
+        }
+      } else {
+        if (FLAGS_quic_use_optimized_packet_reader) {
+          read = QuicPacketReader::ReadAndDispatchSinglePacket(
+              fd_, port_, dispatcher_.get(),
+              overflow_supported_ ? &packets_dropped_ : nullptr);
+        } else {
+          read = ReadAndDispatchSinglePacket(
+              fd_, port_, dispatcher_.get(),
+              overflow_supported_ ? &packets_dropped_ : nullptr);
+        }
+      }
     }
   }
   if (event->in_events & NET_POLLOUT) {

@@ -32,6 +32,7 @@ class NET_EXPORT_PRIVATE TcpCubicBytesSender : public SendAlgorithmInterface {
                       const RttStats* rtt_stats,
                       bool reno,
                       QuicPacketCount initial_tcp_congestion_window,
+                      QuicPacketCount max_congestion_window,
                       QuicConnectionStats* stats);
   ~TcpCubicBytesSender() override;
 
@@ -111,6 +112,12 @@ class NET_EXPORT_PRIVATE TcpCubicBytesSender : public SendAlgorithmInterface {
 
   // Congestion window in bytes.
   QuicByteCount congestion_window_;
+
+  // Minimum congestion window in bytes.
+  QuicByteCount min_congestion_window_;
+
+  // Maximum congestion window in bytes.
+  QuicByteCount max_congestion_window_;
 
   // Slow start congestion window in bytes, aka ssthresh.
   QuicByteCount slowstart_threshold_;

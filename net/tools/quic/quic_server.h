@@ -26,6 +26,7 @@ class QuicServerPeer;
 
 class ProcessPacketInterface;
 class QuicDispatcher;
+class QuicPacketReader;
 
 class QuicServer : public EpollCallbackInterface {
  public:
@@ -132,6 +133,8 @@ class QuicServer : public EpollCallbackInterface {
   // element, with subsequent elements in descending order (versions can be
   // skipped as necessary).
   QuicVersionVector supported_versions_;
+
+  scoped_ptr<QuicPacketReader> packet_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServer);
 };

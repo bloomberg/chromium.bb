@@ -61,6 +61,9 @@ const size_t kMaxFecGroups = 2;
 // Maximum number of acks received before sending an ack in response.
 const QuicPacketCount kMaxPacketsReceivedBeforeAckSend = 20;
 
+// Maximum number of tracked packets.
+const QuicPacketCount kMaxTrackedPackets = 5 * kMaxTcpCongestionWindow;
+
 bool Near(QuicPacketSequenceNumber a, QuicPacketSequenceNumber b) {
   QuicPacketSequenceNumber delta = (a > b) ? a - b : b - a;
   return delta <= kMaxPacketGap;
@@ -1118,6 +1121,31 @@ void QuicConnection::SendRstStream(QuicStreamId id,
   ScopedPacketBundler ack_bundler(this, BUNDLE_PENDING_ACK);
   packet_generator_.AddControlFrame(QuicFrame(new QuicRstStreamFrame(
       id, AdjustErrorForVersion(error, version()), bytes_written)));
+  if (!FLAGS_quic_do_not_retransmit_for_reset_streams) {
+    return;
+  }
+
+  sent_packet_manager_.CancelRetransmissionsForStream(id);
+  // Remove all queued packets which only contain data for the reset stream.
+  QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
+  while (packet_iterator != queued_packets_.end()) {
+    RetransmittableFrames* retransmittable_frames =
+        packet_iterator->serialized_packet.retransmittable_frames;
+    if (!retransmittable_frames) {
+      ++packet_iterator;
+      continue;
+    }
+    retransmittable_frames->RemoveFramesForStream(id);
+    if (!retransmittable_frames->frames().empty()) {
+      ++packet_iterator;
+      continue;
+    }
+    delete packet_iterator->serialized_packet.retransmittable_frames;
+    delete packet_iterator->serialized_packet.packet;
+    packet_iterator->serialized_packet.retransmittable_frames = nullptr;
+    packet_iterator->serialized_packet.packet = nullptr;
+    packet_iterator = queued_packets_.erase(packet_iterator);
+  }
 }
 
 void QuicConnection::SendWindowUpdate(QuicStreamId id,

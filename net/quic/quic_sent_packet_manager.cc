@@ -138,8 +138,17 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   }
   if (config.HasReceivedConnectionOptions() &&
       ContainsQuicTag(config.ReceivedConnectionOptions(), kRENO)) {
+    if (ContainsQuicTag(config.ReceivedConnectionOptions(), kBYTE)) {
+      send_algorithm_.reset(SendAlgorithmInterface::Create(
+          clock_, &rtt_stats_, kRenoBytes, stats_, initial_congestion_window_));
+    } else {
+      send_algorithm_.reset(SendAlgorithmInterface::Create(
+          clock_, &rtt_stats_, kReno, stats_, initial_congestion_window_));
+    }
+  } else if (config.HasReceivedConnectionOptions() &&
+             ContainsQuicTag(config.ReceivedConnectionOptions(), kBYTE)) {
     send_algorithm_.reset(SendAlgorithmInterface::Create(
-        clock_, &rtt_stats_, kReno, stats_, initial_congestion_window_));
+        clock_, &rtt_stats_, kCubicBytes, stats_, initial_congestion_window_));
   }
   EnablePacing();
 
@@ -930,6 +939,19 @@ QuicPacketCount QuicSentPacketManager::GetSlowStartThresholdInTcpMss() const {
 void QuicSentPacketManager::OnSerializedPacket(
     const SerializedPacket& serialized_packet) {
   ack_notifier_manager_.OnSerializedPacket(serialized_packet);
+}
+
+void QuicSentPacketManager::CancelRetransmissionsForStream(
+    QuicStreamId stream_id) {
+  unacked_packets_.CancelRetransmissionsForStream(stream_id);
+  PendingRetransmissionMap::iterator it = pending_retransmissions_.begin();
+  while (it != pending_retransmissions_.end()) {
+    if (HasRetransmittableFrames(it->first)) {
+      ++it;
+      continue;
+    }
+    it = pending_retransmissions_.erase(it);
+  }
 }
 
 void QuicSentPacketManager::EnablePacing() {

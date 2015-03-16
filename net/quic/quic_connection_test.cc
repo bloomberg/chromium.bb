@@ -311,6 +311,10 @@ class TestPacketWriter : public QuicPacketWriter {
     return framer_.connection_close_frames();
   }
 
+  const vector<QuicRstStreamFrame>& rst_stream_frames() const {
+    return framer_.rst_stream_frames();
+  }
+
   const vector<QuicStreamFrame>& stream_frames() const {
     return framer_.stream_frames();
   }
@@ -1332,8 +1336,8 @@ TEST_P(QuicConnectionTest, LeastUnackedLower) {
 
 TEST_P(QuicConnectionTest, TooManySentPackets) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  const QuicPacketCount num_sent_packets = kMaxTrackedPackets + 100;
-  for (QuicPacketCount i = 0; i < num_sent_packets; ++i) {
+
+  for (int i = 0; i < 1100; ++i) {
     SendStreamDataToPeer(1, "foo", 3 * i, !kFin, nullptr);
   }
 
@@ -1345,8 +1349,8 @@ TEST_P(QuicConnectionTest, TooManySentPackets) {
   EXPECT_CALL(visitor_, OnCanWrite()).Times(0);
 
   // Nack every packet except the last one, leaving a huge gap.
-  QuicAckFrame frame1 = InitAckFrame(num_sent_packets);
-  for (QuicPacketSequenceNumber i = 1; i < num_sent_packets; ++i) {
+  QuicAckFrame frame1 = InitAckFrame(1100);
+  for (QuicPacketSequenceNumber i = 1; i < 1100; ++i) {
     NackPacket(i, &frame1);
   }
   ProcessAckPacket(&frame1);
@@ -1357,8 +1361,8 @@ TEST_P(QuicConnectionTest, TooManyReceivedPackets) {
   EXPECT_CALL(visitor_, OnConnectionClosed(
                             QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS, false));
 
-  // Miss every other packet for 5000 packets.
-  for (QuicPacketSequenceNumber i = 1; i < kMaxTrackedPackets; ++i) {
+  // Miss every other packet for 1000 packets.
+  for (QuicPacketSequenceNumber i = 1; i < 1000; ++i) {
     ProcessPacket(i * 2);
     if (!connection_.connected()) {
       break;
@@ -2200,6 +2204,108 @@ TEST_P(QuicConnectionTest, RetransmitOnNack) {
               OnPacketSent(_, _, _, second_packet_size - kQuicVersionSize, _)).
                   Times(1);
   ProcessAckPacket(&nack_two);
+}
+
+TEST_P(QuicConnectionTest, DoNotSendQueuedPacketForResetStream) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_do_not_retransmit_for_reset_streams,
+                              true);
+
+  // Block the connection to queue the packet.
+  BlockOnNextWrite();
+
+  QuicStreamId stream_id = 2;
+  connection_.SendStreamDataWithString(stream_id, "foo", 0, !kFin, nullptr);
+
+  // Now that there is a queued packet, reset the stream.
+  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+
+  // Unblock the connection and verify that only the RST_STREAM is sent.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  writer_->SetWritable();
+  connection_.OnCanWrite();
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_EQ(1u, writer_->rst_stream_frames().size());
+}
+
+TEST_P(QuicConnectionTest, DoNotRetransmitForResetStreamOnNack) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_do_not_retransmit_for_reset_streams,
+                              true);
+
+  QuicStreamId stream_id = 2;
+  QuicPacketSequenceNumber last_packet;
+  SendStreamDataToPeer(stream_id, "foo", 0, !kFin, &last_packet);
+  SendStreamDataToPeer(stream_id, "foos", 3, !kFin, &last_packet);
+  SendStreamDataToPeer(stream_id, "fooos", 7, !kFin, &last_packet);
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+
+  // Lose a packet and ensure it does not trigger retransmission.
+  QuicAckFrame nack_two = InitAckFrame(last_packet);
+  NackPacket(last_packet - 1, &nack_two);
+  SequenceNumberSet lost_packets;
+  lost_packets.insert(last_packet - 1);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
+      .WillOnce(Return(lost_packets));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
+  ProcessAckPacket(&nack_two);
+}
+
+TEST_P(QuicConnectionTest, DoNotRetransmitForResetStreamOnRTO) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_do_not_retransmit_for_reset_streams,
+                              true);
+
+  QuicStreamId stream_id = 2;
+  QuicPacketSequenceNumber last_packet;
+  SendStreamDataToPeer(stream_id, "foo", 0, !kFin, &last_packet);
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+
+  // Fire the RTO and verify that the RST_STREAM is resent, not stream data.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  clock_.AdvanceTime(DefaultRetransmissionTime());
+  connection_.GetRetransmissionAlarm()->Fire();
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_EQ(1u, writer_->rst_stream_frames().size());
+  EXPECT_EQ(stream_id, writer_->rst_stream_frames().front().stream_id);
+}
+
+TEST_P(QuicConnectionTest, DoNotSendPendingRetransmissionForResetStream) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_do_not_retransmit_for_reset_streams,
+                              true);
+
+  QuicStreamId stream_id = 2;
+  QuicPacketSequenceNumber last_packet;
+  SendStreamDataToPeer(stream_id, "foo", 0, !kFin, &last_packet);
+  SendStreamDataToPeer(stream_id, "foos", 3, !kFin, &last_packet);
+  BlockOnNextWrite();
+  connection_.SendStreamDataWithString(stream_id, "fooos", 7, !kFin, nullptr);
+
+  // Lose a packet which will trigger a pending retransmission.
+  QuicAckFrame ack = InitAckFrame(last_packet);
+  NackPacket(last_packet - 1, &ack);
+  SequenceNumberSet lost_packets;
+  lost_packets.insert(last_packet - 1);
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  EXPECT_CALL(*loss_algorithm_, DetectLostPackets(_, _, _, _))
+      .WillOnce(Return(lost_packets));
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(0);
+  ProcessAckPacket(&ack);
+
+  connection_.SendRstStream(stream_id, QUIC_STREAM_NO_ERROR, 14);
+
+  // Unblock the connection and verify that the RST_STREAM is sent but not the
+  // second data packet nor a retransmit.
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
+  writer_->SetWritable();
+  connection_.OnCanWrite();
+  EXPECT_EQ(1u, writer_->frame_count());
+  EXPECT_EQ(1u, writer_->rst_stream_frames().size());
+  EXPECT_EQ(stream_id, writer_->rst_stream_frames().front().stream_id);
 }
 
 TEST_P(QuicConnectionTest, DiscardRetransmit) {
@@ -3224,10 +3330,10 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPacketsWithTruncation) {
             connection_.SendStreamDataWithString(
                 3, payload, 0, !kFin, nullptr).bytes_consumed);
   // Track the size of the second packet here.  The overhead will be the largest
-  // we see in this test, due to the non-truncated CID.
+  // we see in this test, due to the non-truncated connection id.
   size_t non_truncated_packet_size = writer_->last_packet_size();
 
-  // Change to a 4 byte CID.
+  // Change to a 4 byte connection id.
   QuicConfig config;
   QuicConfigPeer::SetReceivedBytesForConnectionId(&config, 4);
   connection_.SetFromConfig(config);
@@ -3240,8 +3346,7 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPacketsWithTruncation) {
   // headers here are also 4 byte smaller.
   EXPECT_EQ(non_truncated_packet_size, writer_->last_packet_size() + 8);
 
-
-  // Change to a 1 byte CID.
+  // Change to a 1 byte connection id.
   QuicConfigPeer::SetReceivedBytesForConnectionId(&config, 1);
   connection_.SetFromConfig(config);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
@@ -3251,7 +3356,7 @@ TEST_P(QuicConnectionTest, LoopThroughSendingPacketsWithTruncation) {
   // Just like above, we save 7 bytes on payload, and 7 on truncation.
   EXPECT_EQ(non_truncated_packet_size, writer_->last_packet_size() + 7 * 2);
 
-  // Change to a 0 byte CID.
+  // Change to a 0 byte connection id.
   QuicConfigPeer::SetReceivedBytesForConnectionId(&config, 0);
   connection_.SetFromConfig(config);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);

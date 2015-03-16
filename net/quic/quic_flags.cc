@@ -49,3 +49,6 @@ int64 FLAGS_quic_time_wait_list_max_connections = 50000;
 
 // Use small QUIC packet sizes by default.
 bool FLAGS_quic_small_default_packet_size = true;
+
+// Do not retransmit data for streams that have been reset.
+bool FLAGS_quic_do_not_retransmit_for_reset_streams = true;

@@ -283,6 +283,20 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
       helper_(helper()) {
 }
 
+MockConnection::MockConnection(QuicConnectionId connection_id,
+                               Perspective perspective,
+                               bool is_secure)
+    : QuicConnection(connection_id,
+                     IPEndPoint(TestPeerIPAddress(), kTestPort),
+                     new testing::NiceMock<MockHelper>(),
+                     NiceMockPacketWriterFactory(),
+                     /* owns_writer= */ true,
+                     perspective,
+                     is_secure,
+                     QuicSupportedVersions()),
+      helper_(helper()) {
+}
+
 MockConnection::MockConnection(Perspective perspective,
                                const QuicVersionVector& supported_versions)
     : QuicConnection(kTestConnectionId,

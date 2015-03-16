@@ -299,8 +299,13 @@ class MockConnection : public QuicConnection {
   // Uses a MockHelper, ConnectionId of 42.
   MockConnection(IPEndPoint address, Perspective perspective);
 
-  // Uses a MockHelper, and 127.0.0.1:123
+  // Uses a MockHelper, and 127.0.0.1:123.
   MockConnection(QuicConnectionId connection_id, Perspective perspective);
+
+  // Uses a MockHelper, and 127.0.0.1:123.
+  MockConnection(QuicConnectionId connection_id,
+                 Perspective perspective,
+                 bool is_secure);
 
   // Uses a Mock helper, ConnectionId of 42, and 127.0.0.1:123.
   MockConnection(Perspective perspective,

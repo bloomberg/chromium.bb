@@ -273,7 +273,7 @@ bool QuicUnackedPacketMap::IsPacketRemovable(
     QuicPacketSequenceNumber sequence_number,
     const TransmissionInfo& info) const {
   return (!IsPacketUsefulForMeasuringRtt(sequence_number, info) ||
-          unacked_packets_.size() > kMaxTrackedPackets / 2) &&
+          unacked_packets_.size() > kMaxTcpCongestionWindow) &&
          !IsPacketUsefulForCongestionControl(info) &&
          !IsPacketUsefulForRetransmittableData(info);
 }
@@ -300,7 +300,8 @@ void QuicUnackedPacketMap::RemoveFromInFlight(
   }
 }
 
-void QuicUnackedPacketMap::StopRetransmissionForStream(QuicStreamId stream_id) {
+void QuicUnackedPacketMap::CancelRetransmissionsForStream(
+    QuicStreamId stream_id) {
   if (stream_id == kCryptoStreamId || stream_id == kHeadersStreamId) {
     LOG(DFATAL) << "Special streams must always retransmit data: " << stream_id;
     return;

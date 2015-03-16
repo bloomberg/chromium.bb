@@ -1215,6 +1215,8 @@
             'tools/quic/quic_epoll_connection_helper.h',
             'tools/quic/quic_in_memory_cache.cc',
             'tools/quic/quic_in_memory_cache.h',
+            'tools/quic/quic_packet_reader.cc',
+            'tools/quic/quic_packet_reader.h',
             'tools/quic/quic_packet_writer_wrapper.cc',
             'tools/quic/quic_packet_writer_wrapper.h',
             'tools/quic/quic_per_connection_packet_writer.cc',
