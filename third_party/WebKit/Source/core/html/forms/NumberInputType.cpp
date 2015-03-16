@@ -37,6 +37,7 @@
 #include "core/InputTypeNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/KeyboardEvent.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTextControl.h"
@@ -181,6 +182,7 @@ bool NumberInputType::isSteppable() const
 
 void NumberInputType::handleKeydownEvent(KeyboardEvent* event)
 {
+    EventQueueScope scope;
     handleKeydownEventForSpinButton(event);
     if (!event->defaultHandled())
         TextFieldInputType::handleKeydownEvent(event);
