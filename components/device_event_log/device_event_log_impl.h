@@ -10,11 +10,10 @@
 
 #include "base/time/time.h"
 #include "components/device_event_log/device_event_log.h"
-#include "components/device_event_log/device_event_log_export.h"
 
 namespace device_event_log {
 
-class DEVICE_EVENT_LOG_EXPORT DeviceEventLogImpl {
+class DeviceEventLogImpl {
  public:
   struct LogEntry {
     LogEntry(const char* filedesc,

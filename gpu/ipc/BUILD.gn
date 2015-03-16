@@ -8,9 +8,10 @@ source_set("ipc") {
     "gpu_command_buffer_traits.h",
   ]
 
-  defines = [ "GPU_IMPLEMENTATION" ]
-
-  configs += [ "//third_party/khronos:khronos_headers" ]
+  configs += [
+    "//gpu:gpu_implementation",
+    "//third_party/khronos:khronos_headers",
+  ]
 
   deps = [
     "//gpu/command_buffer/common",

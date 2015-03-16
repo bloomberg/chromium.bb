@@ -45,10 +45,11 @@ source_set("config") {
     "software_rendering_list_json.cc",
   ]
 
-  # TODO(jschuh): size_t to int.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
-  defines = [ "GPU_IMPLEMENTATION" ]
+  configs += [
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//gpu:gpu_implementation",
+  ]
 
   deps = [
     "//base",
@@ -74,7 +75,7 @@ source_set("config") {
     }
   }
   if (use_libpci) {
-    defines += [ "USE_LIBPCI=1" ]
+    defines = [ "USE_LIBPCI=1" ]
   }
   if (is_linux && use_libpci && (use_x11 || use_ozone)) {
     deps += [ "//build/config/linux:libpci" ]

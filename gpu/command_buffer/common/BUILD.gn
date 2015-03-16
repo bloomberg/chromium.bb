@@ -32,7 +32,7 @@ source_set("common") {
     "value_state.h",
   ]
 
-  defines = [ "GPU_IMPLEMENTATION" ]
+  configs += [ "//gpu:gpu_implementation" ]
 
   deps = [
     ":gles2_utils",

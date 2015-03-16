@@ -6,16 +6,13 @@
   'targets': [
     {
       'target_name': 'device_event_log_component',
-      'type': '<(component)',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../net/net.gyp:net',
       ],
       'include_dirs': [
         '..',
-      ],
-      'defines': [
-        'DEVICE_EVENT_LOG_IMPLEMENTATION',
       ],
       'sources': [
         'device_event_log/device_event_log.cc',

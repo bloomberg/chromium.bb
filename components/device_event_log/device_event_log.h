@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/timer/elapsed_timer.h"
-#include "components/device_event_log/device_event_log_export.h"
 
 // These macros can be used to log device related events.
 // The following values should be used for |level| in these macros:
@@ -98,21 +97,21 @@ enum StringOrder { OLDEST_FIRST, NEWEST_FIRST };
 
 // Initializes / shuts down device event logging. If |max_entries| = 0 the
 // default value will be used.
-DEVICE_EVENT_LOG_EXPORT void Initialize(size_t max_entries);
-DEVICE_EVENT_LOG_EXPORT void Shutdown();
+void Initialize(size_t max_entries);
+void Shutdown();
 
 // If the global instance is initialized, adds an entry to it. Regardless of
 // whether the global instance was intitialzed, this logs the event to
 // LOG(ERROR) if |type| = ERROR or VLOG(1) otherwise.
-DEVICE_EVENT_LOG_EXPORT void AddEntry(const char* file,
-                                      int line,
-                                      LogType type,
-                                      LogLevel level,
-                                      const std::string& event);
+void AddEntry(const char* file,
+              int line,
+              LogType type,
+              LogLevel level,
+              const std::string& event);
 
 // For backwards compatibility with network_event_log. Combines |event| and
 // |description| and calls AddEntry().
-DEVICE_EVENT_LOG_EXPORT void AddEntryWithDescription(
+void AddEntryWithDescription(
     const char* file,
     int line,
     LogType type,
@@ -136,20 +135,20 @@ DEVICE_EVENT_LOG_EXPORT void AddEntryWithDescription(
 // |max_level| determines the maximum log level to be included in the output.
 // |max_events| limits how many events are output if > 0, otherwise all events
 //  are included.
-DEVICE_EVENT_LOG_EXPORT std::string GetAsString(StringOrder order,
-                                                const std::string& format,
-                                                const std::string& types,
-                                                LogLevel max_level,
-                                                size_t max_events);
+std::string GetAsString(StringOrder order,
+                        const std::string& format,
+                        const std::string& types,
+                        LogLevel max_level,
+                        size_t max_events);
 
-DEVICE_EVENT_LOG_EXPORT extern const LogLevel kDefaultLogLevel;
+extern const LogLevel kDefaultLogLevel;
 
 namespace internal {
 
 // Implementation class for DEVICE_LOG macros. Provides a stream for creating
 // a log string and adds the event using device_event_log::AddEntry on
 // destruction.
-class DEVICE_EVENT_LOG_EXPORT DeviceEventLogInstance {
+class DeviceEventLogInstance {
  public:
   DeviceEventLogInstance(const char* file,
                          int line,
@@ -172,7 +171,7 @@ class DEVICE_EVENT_LOG_EXPORT DeviceEventLogInstance {
 // Implementation class for DEVICE_PLOG macros. Provides a stream for creating
 // a log string and adds the event, including system error code, using
 // device_event_log::AddEntry on destruction.
-class DEVICE_EVENT_LOG_EXPORT DeviceEventSystemErrorLogInstance {
+class DeviceEventSystemErrorLogInstance {
  public:
   DeviceEventSystemErrorLogInstance(const char* file,
                                     int line,
@@ -196,7 +195,7 @@ class DEVICE_EVENT_LOG_EXPORT DeviceEventSystemErrorLogInstance {
 // Implementation class for SCOPED_LOG_IF_SLOW macros. Tests the elapsed time on
 // destruction and adds a Debug or Error log entry if it exceeds the
 // corresponding expected maximum elapsed time.
-class DEVICE_EVENT_LOG_EXPORT ScopedDeviceLogIfSlow {
+class ScopedDeviceLogIfSlow {
  public:
   ScopedDeviceLogIfSlow(LogType type,
                         const char* file,

@@ -119,9 +119,10 @@ source_set("service") {
     "vertex_attrib_manager.h",
   ]
 
-  defines = [ "GPU_IMPLEMENTATION" ]
-
-  configs += [ "//third_party/khronos:khronos_headers" ]
+  configs += [
+    "//gpu:gpu_implementation",
+    "//third_party/khronos:khronos_headers",
+  ]
 
   # Prefer mesa GL headers to system headers, which cause problems on Win.
   include_dirs = [ "//third_party/mesa/src/include" ]

@@ -36,6 +36,10 @@
 import("//testing/test.gni")
 import("//build/config/ui.gni")
 
+config("gpu_implementation") {
+  defines = [ "GPU_IMPLEMENTATION" ]
+}
+
 component("gpu") {
   public_deps = [
     "//gpu/command_buffer/client",
@@ -55,6 +59,8 @@ source_set("test_support") {
     "command_buffer/service/error_state_mock.cc",
     "command_buffer/service/gles2_cmd_decoder_mock.cc",
   ]
+
+  configs += [ ":gpu_implementation" ]
 
   public_deps = [
     ":gpu",
