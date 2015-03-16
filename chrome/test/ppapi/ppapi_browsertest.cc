@@ -1219,8 +1219,8 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_FlashMessageLoop) {
 TEST_PPAPI_NACL_SUBTESTS(MAYBE_Compositor0, RUN_COMPOSITOR_SUBTESTS_0)
 TEST_PPAPI_NACL_SUBTESTS(MAYBE_Compositor1, RUN_COMPOSITOR_SUBTESTS_1)
 
-#if defined(OS_WIN)
-// Flaky on Windows (crbug.com/438729)
+#if defined(OS_LINUX) || defined(OS_WIN)
+// Flaky on Linux and Windows (crbug.com/438729)
 #define MAYBE_MediaStreamAudioTrack DISABLED_MediaStreamAudioTrack
 #else
 #define MAYBE_MediaStreamAudioTrack MediaStreamAudioTrack
