@@ -443,10 +443,10 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   GenHelper<GenQueriesEXTImmediate>(kNewClientId);
 
   // Test valid parameters work.
-  EXPECT_CALL(*gl_, GenQueriesARB(1, _))
+  EXPECT_CALL(*gl_, GenQueries(1, _))
       .WillOnce(SetArgumentPointee<1>(kNewServiceId))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BeginQueryARB(GL_ANY_SAMPLES_PASSED_EXT, kNewServiceId))
+  EXPECT_CALL(*gl_, BeginQuery(GL_ANY_SAMPLES_PASSED_EXT, kNewServiceId))
       .Times(1)
       .RetiresOnSaturation();
 
@@ -486,7 +486,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
   // Test end succeeds
-  EXPECT_CALL(*gl_, EndQueryARB(GL_ANY_SAMPLES_PASSED_EXT))
+  EXPECT_CALL(*gl_, EndQuery(GL_ANY_SAMPLES_PASSED_EXT))
       .Times(1)
       .RetiresOnSaturation();
   end_cmd.Init(GL_ANY_SAMPLES_PASSED_EXT, 1);
@@ -494,7 +494,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(query->pending());
 
-  EXPECT_CALL(*gl_, DeleteQueriesARB(1, _)).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DeleteQueries(1, _)).Times(1).RetiresOnSaturation();
 }
 
 struct QueryType {
@@ -534,10 +534,10 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
   test->GenHelper<GenQueriesEXTImmediate>(client_id);
 
   if (query_type.is_gl) {
-    EXPECT_CALL(*gl, GenQueriesARB(1, _))
+    EXPECT_CALL(*gl, GenQueries(1, _))
         .WillOnce(SetArgumentPointee<1>(service_id))
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl, BeginQueryARB(query_type.type, service_id))
+    EXPECT_CALL(*gl, BeginQuery(query_type.type, service_id))
         .Times(1)
         .RetiresOnSaturation();
   }
@@ -547,7 +547,7 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
   error::Error error1 = test->ExecuteCmd(begin_cmd);
 
   if (query_type.is_gl) {
-    EXPECT_CALL(*gl, EndQueryARB(query_type.type))
+    EXPECT_CALL(*gl, EndQuery(query_type.type))
         .Times(1)
         .RetiresOnSaturation();
   }
@@ -575,10 +575,10 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
 
   if (query_type.is_gl) {
     EXPECT_CALL(
-        *gl, GetQueryObjectuivARB(service_id, GL_QUERY_RESULT_AVAILABLE_EXT, _))
+        *gl, GetQueryObjectuiv(service_id, GL_QUERY_RESULT_AVAILABLE_EXT, _))
         .WillOnce(SetArgumentPointee<2>(1))
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl, GetQueryObjectuivARB(service_id, GL_QUERY_RESULT_EXT, _))
+    EXPECT_CALL(*gl, GetQueryObjectuiv(service_id, GL_QUERY_RESULT_EXT, _))
         .WillOnce(SetArgumentPointee<2>(1))
         .RetiresOnSaturation();
   }
@@ -601,7 +601,7 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
               !process_success);
 
   if (query_type.is_gl) {
-    EXPECT_CALL(*gl, DeleteQueriesARB(1, _)).Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*gl, DeleteQueries(1, _)).Times(1).RetiresOnSaturation();
   }
   if (query_type.type == GL_COMMANDS_COMPLETED_CHROMIUM) {
 #if DCHECK_IS_ON()

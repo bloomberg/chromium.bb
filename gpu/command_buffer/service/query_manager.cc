@@ -171,13 +171,13 @@ bool AllSamplesPassedQuery::End(base::subtle::Atomic32 submit_count) {
 
 bool AllSamplesPassedQuery::Process(bool did_finish) {
   GLuint available = 0;
-  glGetQueryObjectuivARB(
+  glGetQueryObjectuiv(
       service_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
   if (!available) {
     return true;
   }
   GLuint result = 0;
-  glGetQueryObjectuivARB(
+  glGetQueryObjectuiv(
       service_id_, GL_QUERY_RESULT_EXT, &result);
 
   return MarkAsCompleted(result != 0);
@@ -185,7 +185,7 @@ bool AllSamplesPassedQuery::Process(bool did_finish) {
 
 void AllSamplesPassedQuery::Destroy(bool have_context) {
   if (have_context && !IsDeleted()) {
-    glDeleteQueriesARB(1, &service_id_);
+    glDeleteQueries(1, &service_id_);
     MarkAsDeleted();
   }
 }
@@ -508,7 +508,7 @@ QueryManager::Query* QueryManager::CreateQuery(
       break;
     default: {
       GLuint service_id = 0;
-      glGenQueriesARB(1, &service_id);
+      glGenQueries(1, &service_id);
       DCHECK_NE(0u, service_id);
       query = new AllSamplesPassedQuery(
           this, target, shm_id, shm_offset, service_id);
@@ -582,12 +582,12 @@ GLenum QueryManager::AdjustTargetForEmulation(GLenum target) {
 
 void QueryManager::BeginQueryHelper(GLenum target, GLuint id) {
   target = AdjustTargetForEmulation(target);
-  glBeginQueryARB(target, id);
+  glBeginQuery(target, id);
 }
 
 void QueryManager::EndQueryHelper(GLenum target) {
   target = AdjustTargetForEmulation(target);
-  glEndQueryARB(target);
+  glEndQuery(target);
 }
 
 QueryManager::Query::Query(

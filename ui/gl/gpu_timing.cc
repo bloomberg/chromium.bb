@@ -44,7 +44,7 @@ uint32_t GPUTiming::GetDisjointCount() {
 }
 
 GPUTimer::~GPUTimer() {
-  glDeleteQueriesARB(2, queries_);
+  glDeleteQueries(2, queries_);
 }
 
 void GPUTimer::Start() {
@@ -84,8 +84,8 @@ bool GPUTimer::IsAvailable() {
     return false;
   }
   GLint done = 0;
-  glGetQueryObjectivARB(queries_[1] ? queries_[1] : queries_[0],
-                        GL_QUERY_RESULT_AVAILABLE, &done);
+  glGetQueryObjectiv(queries_[1] ? queries_[1] : queries_[0],
+                     GL_QUERY_RESULT_AVAILABLE, &done);
   return done != 0;
 }
 
@@ -145,7 +145,7 @@ GPUTimer::GPUTimer(scoped_refptr<GPUTimingClient> gpu_timing_client)
     default:
       NOTREACHED();
   }
-  glGenQueriesARB(queries, queries_);
+  glGenQueries(queries, queries_);
 }
 
 GPUTimingClient::GPUTimingClient(GPUTiming* gpu_timing)

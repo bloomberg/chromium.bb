@@ -29,7 +29,6 @@ void DriverGL::InitializeStaticBindings() {
   fn.glAttachShaderFn =
       reinterpret_cast<glAttachShaderProc>(GetGLProcAddress("glAttachShader"));
   fn.glBeginQueryFn = 0;
-  fn.glBeginQueryARBFn = 0;
   fn.glBeginTransformFeedbackFn = 0;
   fn.glBindAttribLocationFn = reinterpret_cast<glBindAttribLocationProc>(
       GetGLProcAddress("glBindAttribLocation"));
@@ -108,7 +107,6 @@ void DriverGL::InitializeStaticBindings() {
   fn.glDeleteProgramFn = reinterpret_cast<glDeleteProgramProc>(
       GetGLProcAddress("glDeleteProgram"));
   fn.glDeleteQueriesFn = 0;
-  fn.glDeleteQueriesARBFn = 0;
   fn.glDeleteRenderbuffersEXTFn = 0;
   fn.glDeleteSamplersFn = 0;
   fn.glDeleteShaderFn =
@@ -149,7 +147,6 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glEnableVertexAttribArrayProc>(
           GetGLProcAddress("glEnableVertexAttribArray"));
   fn.glEndQueryFn = 0;
-  fn.glEndQueryARBFn = 0;
   fn.glEndTransformFeedbackFn = 0;
   fn.glFenceSyncFn = 0;
   fn.glFinishFn = reinterpret_cast<glFinishProc>(GetGLProcAddress("glFinish"));
@@ -171,7 +168,6 @@ void DriverGL::InitializeStaticBindings() {
   fn.glGenFencesNVFn = 0;
   fn.glGenFramebuffersEXTFn = 0;
   fn.glGenQueriesFn = 0;
-  fn.glGenQueriesARBFn = 0;
   fn.glGenRenderbuffersEXTFn = 0;
   fn.glGenSamplersFn = 0;
   fn.glGenTexturesFn =
@@ -214,13 +210,10 @@ void DriverGL::InitializeStaticBindings() {
       reinterpret_cast<glGetProgramivProc>(GetGLProcAddress("glGetProgramiv"));
   fn.glGetProgramResourceLocationFn = 0;
   fn.glGetQueryivFn = 0;
-  fn.glGetQueryivARBFn = 0;
   fn.glGetQueryObjecti64vFn = 0;
   fn.glGetQueryObjectivFn = 0;
-  fn.glGetQueryObjectivARBFn = 0;
   fn.glGetQueryObjectui64vFn = 0;
   fn.glGetQueryObjectuivFn = 0;
-  fn.glGetQueryObjectuivARBFn = 0;
   fn.glGetRenderbufferParameterivEXTFn = 0;
   fn.glGetSamplerParameterfvFn = 0;
   fn.glGetSamplerParameterivFn = 0;
@@ -272,7 +265,6 @@ void DriverGL::InitializeStaticBindings() {
   fn.glIsProgramFn =
       reinterpret_cast<glIsProgramProc>(GetGLProcAddress("glIsProgram"));
   fn.glIsQueryFn = 0;
-  fn.glIsQueryARBFn = 0;
   fn.glIsRenderbufferEXTFn = 0;
   fn.glIsSamplerFn = 0;
   fn.glIsShaderFn =
@@ -540,18 +532,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glBeginQueryFn =
         reinterpret_cast<glBeginQueryProc>(GetGLProcAddress("glBeginQuery"));
     DCHECK(fn.glBeginQueryFn);
-  }
-
-  debug_fn.glBeginQueryARBFn = 0;
-  if (ext.b_GL_ARB_occlusion_query) {
-    fn.glBeginQueryARBFn = reinterpret_cast<glBeginQueryARBProc>(
-        GetGLProcAddress("glBeginQueryARB"));
-    DCHECK(fn.glBeginQueryARBFn);
+  } else if (ext.b_GL_ARB_occlusion_query) {
+    fn.glBeginQueryFn =
+        reinterpret_cast<glBeginQueryProc>(GetGLProcAddress("glBeginQueryARB"));
+    DCHECK(fn.glBeginQueryFn);
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
-    fn.glBeginQueryARBFn = reinterpret_cast<glBeginQueryARBProc>(
-        GetGLProcAddress("glBeginQueryEXT"));
-    DCHECK(fn.glBeginQueryARBFn);
+    fn.glBeginQueryFn =
+        reinterpret_cast<glBeginQueryProc>(GetGLProcAddress("glBeginQueryEXT"));
+    DCHECK(fn.glBeginQueryFn);
   }
 
   debug_fn.glBeginTransformFeedbackFn = 0;
@@ -793,18 +782,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glDeleteQueriesFn = reinterpret_cast<glDeleteQueriesProc>(
         GetGLProcAddress("glDeleteQueries"));
     DCHECK(fn.glDeleteQueriesFn);
-  }
-
-  debug_fn.glDeleteQueriesARBFn = 0;
-  if (ext.b_GL_ARB_occlusion_query) {
-    fn.glDeleteQueriesARBFn = reinterpret_cast<glDeleteQueriesARBProc>(
+  } else if (ext.b_GL_ARB_occlusion_query) {
+    fn.glDeleteQueriesFn = reinterpret_cast<glDeleteQueriesProc>(
         GetGLProcAddress("glDeleteQueriesARB"));
-    DCHECK(fn.glDeleteQueriesARBFn);
+    DCHECK(fn.glDeleteQueriesFn);
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
-    fn.glDeleteQueriesARBFn = reinterpret_cast<glDeleteQueriesARBProc>(
+    fn.glDeleteQueriesFn = reinterpret_cast<glDeleteQueriesProc>(
         GetGLProcAddress("glDeleteQueriesEXT"));
-    DCHECK(fn.glDeleteQueriesARBFn);
+    DCHECK(fn.glDeleteQueriesFn);
   }
 
   debug_fn.glDeleteRenderbuffersEXTFn = 0;
@@ -963,18 +949,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glEndQueryFn =
         reinterpret_cast<glEndQueryProc>(GetGLProcAddress("glEndQuery"));
     DCHECK(fn.glEndQueryFn);
-  }
-
-  debug_fn.glEndQueryARBFn = 0;
-  if (ext.b_GL_ARB_occlusion_query) {
-    fn.glEndQueryARBFn =
-        reinterpret_cast<glEndQueryARBProc>(GetGLProcAddress("glEndQueryARB"));
-    DCHECK(fn.glEndQueryARBFn);
+  } else if (ext.b_GL_ARB_occlusion_query) {
+    fn.glEndQueryFn =
+        reinterpret_cast<glEndQueryProc>(GetGLProcAddress("glEndQueryARB"));
+    DCHECK(fn.glEndQueryFn);
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
-    fn.glEndQueryARBFn =
-        reinterpret_cast<glEndQueryARBProc>(GetGLProcAddress("glEndQueryEXT"));
-    DCHECK(fn.glEndQueryARBFn);
+    fn.glEndQueryFn =
+        reinterpret_cast<glEndQueryProc>(GetGLProcAddress("glEndQueryEXT"));
+    DCHECK(fn.glEndQueryFn);
   }
 
   debug_fn.glEndTransformFeedbackFn = 0;
@@ -1105,18 +1088,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glGenQueriesFn =
         reinterpret_cast<glGenQueriesProc>(GetGLProcAddress("glGenQueries"));
     DCHECK(fn.glGenQueriesFn);
-  }
-
-  debug_fn.glGenQueriesARBFn = 0;
-  if (ext.b_GL_ARB_occlusion_query) {
-    fn.glGenQueriesARBFn = reinterpret_cast<glGenQueriesARBProc>(
-        GetGLProcAddress("glGenQueriesARB"));
-    DCHECK(fn.glGenQueriesARBFn);
+  } else if (ext.b_GL_ARB_occlusion_query) {
+    fn.glGenQueriesFn =
+        reinterpret_cast<glGenQueriesProc>(GetGLProcAddress("glGenQueriesARB"));
+    DCHECK(fn.glGenQueriesFn);
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
-    fn.glGenQueriesARBFn = reinterpret_cast<glGenQueriesARBProc>(
-        GetGLProcAddress("glGenQueriesEXT"));
-    DCHECK(fn.glGenQueriesARBFn);
+    fn.glGenQueriesFn =
+        reinterpret_cast<glGenQueriesProc>(GetGLProcAddress("glGenQueriesEXT"));
+    DCHECK(fn.glGenQueriesFn);
   }
 
   debug_fn.glGenRenderbuffersEXTFn = 0;
@@ -1287,18 +1267,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glGetQueryivFn =
         reinterpret_cast<glGetQueryivProc>(GetGLProcAddress("glGetQueryiv"));
     DCHECK(fn.glGetQueryivFn);
-  }
-
-  debug_fn.glGetQueryivARBFn = 0;
-  if (ext.b_GL_ARB_occlusion_query) {
-    fn.glGetQueryivARBFn = reinterpret_cast<glGetQueryivARBProc>(
-        GetGLProcAddress("glGetQueryivARB"));
-    DCHECK(fn.glGetQueryivARBFn);
+  } else if (ext.b_GL_ARB_occlusion_query) {
+    fn.glGetQueryivFn =
+        reinterpret_cast<glGetQueryivProc>(GetGLProcAddress("glGetQueryivARB"));
+    DCHECK(fn.glGetQueryivFn);
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
-    fn.glGetQueryivARBFn = reinterpret_cast<glGetQueryivARBProc>(
-        GetGLProcAddress("glGetQueryivEXT"));
-    DCHECK(fn.glGetQueryivARBFn);
+    fn.glGetQueryivFn =
+        reinterpret_cast<glGetQueryivProc>(GetGLProcAddress("glGetQueryivEXT"));
+    DCHECK(fn.glGetQueryivFn);
   }
 
   debug_fn.glGetQueryObjecti64vFn = 0;
@@ -1317,17 +1294,14 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glGetQueryObjectivFn = reinterpret_cast<glGetQueryObjectivProc>(
         GetGLProcAddress("glGetQueryObjectiv"));
     DCHECK(fn.glGetQueryObjectivFn);
-  }
-
-  debug_fn.glGetQueryObjectivARBFn = 0;
-  if (ext.b_GL_ARB_occlusion_query) {
-    fn.glGetQueryObjectivARBFn = reinterpret_cast<glGetQueryObjectivARBProc>(
+  } else if (ext.b_GL_ARB_occlusion_query) {
+    fn.glGetQueryObjectivFn = reinterpret_cast<glGetQueryObjectivProc>(
         GetGLProcAddress("glGetQueryObjectivARB"));
-    DCHECK(fn.glGetQueryObjectivARBFn);
+    DCHECK(fn.glGetQueryObjectivFn);
   } else if (ext.b_GL_EXT_disjoint_timer_query) {
-    fn.glGetQueryObjectivARBFn = reinterpret_cast<glGetQueryObjectivARBProc>(
+    fn.glGetQueryObjectivFn = reinterpret_cast<glGetQueryObjectivProc>(
         GetGLProcAddress("glGetQueryObjectivEXT"));
-    DCHECK(fn.glGetQueryObjectivARBFn);
+    DCHECK(fn.glGetQueryObjectivFn);
   }
 
   debug_fn.glGetQueryObjectui64vFn = 0;
@@ -1346,18 +1320,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glGetQueryObjectuivFn = reinterpret_cast<glGetQueryObjectuivProc>(
         GetGLProcAddress("glGetQueryObjectuiv"));
     DCHECK(fn.glGetQueryObjectuivFn);
-  }
-
-  debug_fn.glGetQueryObjectuivARBFn = 0;
-  if (ext.b_GL_ARB_occlusion_query) {
-    fn.glGetQueryObjectuivARBFn = reinterpret_cast<glGetQueryObjectuivARBProc>(
+  } else if (ext.b_GL_ARB_occlusion_query) {
+    fn.glGetQueryObjectuivFn = reinterpret_cast<glGetQueryObjectuivProc>(
         GetGLProcAddress("glGetQueryObjectuivARB"));
-    DCHECK(fn.glGetQueryObjectuivARBFn);
+    DCHECK(fn.glGetQueryObjectuivFn);
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
-    fn.glGetQueryObjectuivARBFn = reinterpret_cast<glGetQueryObjectuivARBProc>(
+    fn.glGetQueryObjectuivFn = reinterpret_cast<glGetQueryObjectuivProc>(
         GetGLProcAddress("glGetQueryObjectuivEXT"));
-    DCHECK(fn.glGetQueryObjectuivARBFn);
+    DCHECK(fn.glGetQueryObjectuivFn);
   }
 
   debug_fn.glGetRenderbufferParameterivEXTFn = 0;
@@ -1511,18 +1482,15 @@ void DriverGL::InitializeDynamicBindings(GLContext* context) {
     fn.glIsQueryFn =
         reinterpret_cast<glIsQueryProc>(GetGLProcAddress("glIsQuery"));
     DCHECK(fn.glIsQueryFn);
-  }
-
-  debug_fn.glIsQueryARBFn = 0;
-  if (ext.b_GL_ARB_occlusion_query) {
-    fn.glIsQueryARBFn =
-        reinterpret_cast<glIsQueryARBProc>(GetGLProcAddress("glIsQueryARB"));
-    DCHECK(fn.glIsQueryARBFn);
+  } else if (ext.b_GL_ARB_occlusion_query) {
+    fn.glIsQueryFn =
+        reinterpret_cast<glIsQueryProc>(GetGLProcAddress("glIsQueryARB"));
+    DCHECK(fn.glIsQueryFn);
   } else if (ext.b_GL_EXT_disjoint_timer_query ||
              ext.b_GL_EXT_occlusion_query_boolean) {
-    fn.glIsQueryARBFn =
-        reinterpret_cast<glIsQueryARBProc>(GetGLProcAddress("glIsQueryEXT"));
-    DCHECK(fn.glIsQueryARBFn);
+    fn.glIsQueryFn =
+        reinterpret_cast<glIsQueryProc>(GetGLProcAddress("glIsQueryEXT"));
+    DCHECK(fn.glIsQueryFn);
   }
 
   debug_fn.glIsRenderbufferEXTFn = 0;
@@ -2038,12 +2006,6 @@ static void GL_BINDING_CALL Debug_glBeginQuery(GLenum target, GLuint id) {
   GL_SERVICE_LOG("glBeginQuery"
                  << "(" << GLEnums::GetStringEnum(target) << ", " << id << ")");
   g_driver_gl.debug_fn.glBeginQueryFn(target, id);
-}
-
-static void GL_BINDING_CALL Debug_glBeginQueryARB(GLenum target, GLuint id) {
-  GL_SERVICE_LOG("glBeginQueryARB"
-                 << "(" << GLEnums::GetStringEnum(target) << ", " << id << ")");
-  g_driver_gl.debug_fn.glBeginQueryARBFn(target, id);
 }
 
 static void GL_BINDING_CALL
@@ -2572,13 +2534,6 @@ Debug_glDeleteQueries(GLsizei n, const GLuint* ids) {
 }
 
 static void GL_BINDING_CALL
-Debug_glDeleteQueriesARB(GLsizei n, const GLuint* ids) {
-  GL_SERVICE_LOG("glDeleteQueriesARB"
-                 << "(" << n << ", " << static_cast<const void*>(ids) << ")");
-  g_driver_gl.debug_fn.glDeleteQueriesARBFn(n, ids);
-}
-
-static void GL_BINDING_CALL
 Debug_glDeleteRenderbuffersEXT(GLsizei n, const GLuint* renderbuffers) {
   GL_SERVICE_LOG("glDeleteRenderbuffersEXT"
                  << "(" << n << ", " << static_cast<const void*>(renderbuffers)
@@ -2792,12 +2747,6 @@ static void GL_BINDING_CALL Debug_glEndQuery(GLenum target) {
   g_driver_gl.debug_fn.glEndQueryFn(target);
 }
 
-static void GL_BINDING_CALL Debug_glEndQueryARB(GLenum target) {
-  GL_SERVICE_LOG("glEndQueryARB"
-                 << "(" << GLEnums::GetStringEnum(target) << ")");
-  g_driver_gl.debug_fn.glEndQueryARBFn(target);
-}
-
 static void GL_BINDING_CALL Debug_glEndTransformFeedback(void) {
   GL_SERVICE_LOG("glEndTransformFeedback"
                  << "("
@@ -2968,12 +2917,6 @@ static void GL_BINDING_CALL Debug_glGenQueries(GLsizei n, GLuint* ids) {
   GL_SERVICE_LOG("glGenQueries"
                  << "(" << n << ", " << static_cast<const void*>(ids) << ")");
   g_driver_gl.debug_fn.glGenQueriesFn(n, ids);
-}
-
-static void GL_BINDING_CALL Debug_glGenQueriesARB(GLsizei n, GLuint* ids) {
-  GL_SERVICE_LOG("glGenQueriesARB"
-                 << "(" << n << ", " << static_cast<const void*>(ids) << ")");
-  g_driver_gl.debug_fn.glGenQueriesARBFn(n, ids);
 }
 
 static void GL_BINDING_CALL
@@ -3287,15 +3230,6 @@ Debug_glGetQueryiv(GLenum target, GLenum pname, GLint* params) {
 }
 
 static void GL_BINDING_CALL
-Debug_glGetQueryivARB(GLenum target, GLenum pname, GLint* params) {
-  GL_SERVICE_LOG("glGetQueryivARB"
-                 << "(" << GLEnums::GetStringEnum(target) << ", "
-                 << GLEnums::GetStringEnum(pname) << ", "
-                 << static_cast<const void*>(params) << ")");
-  g_driver_gl.debug_fn.glGetQueryivARBFn(target, pname, params);
-}
-
-static void GL_BINDING_CALL
 Debug_glGetQueryObjecti64v(GLuint id, GLenum pname, GLint64* params) {
   GL_SERVICE_LOG("glGetQueryObjecti64v"
                  << "(" << id << ", " << GLEnums::GetStringEnum(pname) << ", "
@@ -3312,14 +3246,6 @@ Debug_glGetQueryObjectiv(GLuint id, GLenum pname, GLint* params) {
 }
 
 static void GL_BINDING_CALL
-Debug_glGetQueryObjectivARB(GLuint id, GLenum pname, GLint* params) {
-  GL_SERVICE_LOG("glGetQueryObjectivARB"
-                 << "(" << id << ", " << GLEnums::GetStringEnum(pname) << ", "
-                 << static_cast<const void*>(params) << ")");
-  g_driver_gl.debug_fn.glGetQueryObjectivARBFn(id, pname, params);
-}
-
-static void GL_BINDING_CALL
 Debug_glGetQueryObjectui64v(GLuint id, GLenum pname, GLuint64* params) {
   GL_SERVICE_LOG("glGetQueryObjectui64v"
                  << "(" << id << ", " << GLEnums::GetStringEnum(pname) << ", "
@@ -3333,14 +3259,6 @@ Debug_glGetQueryObjectuiv(GLuint id, GLenum pname, GLuint* params) {
                  << "(" << id << ", " << GLEnums::GetStringEnum(pname) << ", "
                  << static_cast<const void*>(params) << ")");
   g_driver_gl.debug_fn.glGetQueryObjectuivFn(id, pname, params);
-}
-
-static void GL_BINDING_CALL
-Debug_glGetQueryObjectuivARB(GLuint id, GLenum pname, GLuint* params) {
-  GL_SERVICE_LOG("glGetQueryObjectuivARB"
-                 << "(" << id << ", " << GLEnums::GetStringEnum(pname) << ", "
-                 << static_cast<const void*>(params) << ")");
-  g_driver_gl.debug_fn.glGetQueryObjectuivARBFn(id, pname, params);
 }
 
 static void GL_BINDING_CALL
@@ -3681,14 +3599,6 @@ static GLboolean GL_BINDING_CALL Debug_glIsQuery(GLuint query) {
   GL_SERVICE_LOG("glIsQuery"
                  << "(" << query << ")");
   GLboolean result = g_driver_gl.debug_fn.glIsQueryFn(query);
-  GL_SERVICE_LOG("GL_RESULT: " << result);
-  return result;
-}
-
-static GLboolean GL_BINDING_CALL Debug_glIsQueryARB(GLuint query) {
-  GL_SERVICE_LOG("glIsQueryARB"
-                 << "(" << query << ")");
-  GLboolean result = g_driver_gl.debug_fn.glIsQueryARBFn(query);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }
@@ -4751,10 +4661,6 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glBeginQueryFn = fn.glBeginQueryFn;
     fn.glBeginQueryFn = Debug_glBeginQuery;
   }
-  if (!debug_fn.glBeginQueryARBFn) {
-    debug_fn.glBeginQueryARBFn = fn.glBeginQueryARBFn;
-    fn.glBeginQueryARBFn = Debug_glBeginQueryARB;
-  }
   if (!debug_fn.glBeginTransformFeedbackFn) {
     debug_fn.glBeginTransformFeedbackFn = fn.glBeginTransformFeedbackFn;
     fn.glBeginTransformFeedbackFn = Debug_glBeginTransformFeedback;
@@ -4968,10 +4874,6 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glDeleteQueriesFn = fn.glDeleteQueriesFn;
     fn.glDeleteQueriesFn = Debug_glDeleteQueries;
   }
-  if (!debug_fn.glDeleteQueriesARBFn) {
-    debug_fn.glDeleteQueriesARBFn = fn.glDeleteQueriesARBFn;
-    fn.glDeleteQueriesARBFn = Debug_glDeleteQueriesARB;
-  }
   if (!debug_fn.glDeleteRenderbuffersEXTFn) {
     debug_fn.glDeleteRenderbuffersEXTFn = fn.glDeleteRenderbuffersEXTFn;
     fn.glDeleteRenderbuffersEXTFn = Debug_glDeleteRenderbuffersEXT;
@@ -5082,10 +4984,6 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glEndQueryFn = fn.glEndQueryFn;
     fn.glEndQueryFn = Debug_glEndQuery;
   }
-  if (!debug_fn.glEndQueryARBFn) {
-    debug_fn.glEndQueryARBFn = fn.glEndQueryARBFn;
-    fn.glEndQueryARBFn = Debug_glEndQueryARB;
-  }
   if (!debug_fn.glEndTransformFeedbackFn) {
     debug_fn.glEndTransformFeedbackFn = fn.glEndTransformFeedbackFn;
     fn.glEndTransformFeedbackFn = Debug_glEndTransformFeedback;
@@ -5165,10 +5063,6 @@ void DriverGL::InitializeDebugBindings() {
   if (!debug_fn.glGenQueriesFn) {
     debug_fn.glGenQueriesFn = fn.glGenQueriesFn;
     fn.glGenQueriesFn = Debug_glGenQueries;
-  }
-  if (!debug_fn.glGenQueriesARBFn) {
-    debug_fn.glGenQueriesARBFn = fn.glGenQueriesARBFn;
-    fn.glGenQueriesARBFn = Debug_glGenQueriesARB;
   }
   if (!debug_fn.glGenRenderbuffersEXTFn) {
     debug_fn.glGenRenderbuffersEXTFn = fn.glGenRenderbuffersEXTFn;
@@ -5292,10 +5186,6 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glGetQueryivFn = fn.glGetQueryivFn;
     fn.glGetQueryivFn = Debug_glGetQueryiv;
   }
-  if (!debug_fn.glGetQueryivARBFn) {
-    debug_fn.glGetQueryivARBFn = fn.glGetQueryivARBFn;
-    fn.glGetQueryivARBFn = Debug_glGetQueryivARB;
-  }
   if (!debug_fn.glGetQueryObjecti64vFn) {
     debug_fn.glGetQueryObjecti64vFn = fn.glGetQueryObjecti64vFn;
     fn.glGetQueryObjecti64vFn = Debug_glGetQueryObjecti64v;
@@ -5304,10 +5194,6 @@ void DriverGL::InitializeDebugBindings() {
     debug_fn.glGetQueryObjectivFn = fn.glGetQueryObjectivFn;
     fn.glGetQueryObjectivFn = Debug_glGetQueryObjectiv;
   }
-  if (!debug_fn.glGetQueryObjectivARBFn) {
-    debug_fn.glGetQueryObjectivARBFn = fn.glGetQueryObjectivARBFn;
-    fn.glGetQueryObjectivARBFn = Debug_glGetQueryObjectivARB;
-  }
   if (!debug_fn.glGetQueryObjectui64vFn) {
     debug_fn.glGetQueryObjectui64vFn = fn.glGetQueryObjectui64vFn;
     fn.glGetQueryObjectui64vFn = Debug_glGetQueryObjectui64v;
@@ -5315,10 +5201,6 @@ void DriverGL::InitializeDebugBindings() {
   if (!debug_fn.glGetQueryObjectuivFn) {
     debug_fn.glGetQueryObjectuivFn = fn.glGetQueryObjectuivFn;
     fn.glGetQueryObjectuivFn = Debug_glGetQueryObjectuiv;
-  }
-  if (!debug_fn.glGetQueryObjectuivARBFn) {
-    debug_fn.glGetQueryObjectuivARBFn = fn.glGetQueryObjectuivARBFn;
-    fn.glGetQueryObjectuivARBFn = Debug_glGetQueryObjectuivARB;
   }
   if (!debug_fn.glGetRenderbufferParameterivEXTFn) {
     debug_fn.glGetRenderbufferParameterivEXTFn =
@@ -5464,10 +5346,6 @@ void DriverGL::InitializeDebugBindings() {
   if (!debug_fn.glIsQueryFn) {
     debug_fn.glIsQueryFn = fn.glIsQueryFn;
     fn.glIsQueryFn = Debug_glIsQuery;
-  }
-  if (!debug_fn.glIsQueryARBFn) {
-    debug_fn.glIsQueryARBFn = fn.glIsQueryARBFn;
-    fn.glIsQueryARBFn = Debug_glIsQueryARB;
   }
   if (!debug_fn.glIsRenderbufferEXTFn) {
     debug_fn.glIsRenderbufferEXTFn = fn.glIsRenderbufferEXTFn;
@@ -5948,10 +5826,6 @@ void GLApiBase::glBeginQueryFn(GLenum target, GLuint id) {
   driver_->fn.glBeginQueryFn(target, id);
 }
 
-void GLApiBase::glBeginQueryARBFn(GLenum target, GLuint id) {
-  driver_->fn.glBeginQueryARBFn(target, id);
-}
-
 void GLApiBase::glBeginTransformFeedbackFn(GLenum primitiveMode) {
   driver_->fn.glBeginTransformFeedbackFn(primitiveMode);
 }
@@ -6292,10 +6166,6 @@ void GLApiBase::glDeleteQueriesFn(GLsizei n, const GLuint* ids) {
   driver_->fn.glDeleteQueriesFn(n, ids);
 }
 
-void GLApiBase::glDeleteQueriesARBFn(GLsizei n, const GLuint* ids) {
-  driver_->fn.glDeleteQueriesARBFn(n, ids);
-}
-
 void GLApiBase::glDeleteRenderbuffersEXTFn(GLsizei n,
                                            const GLuint* renderbuffers) {
   driver_->fn.glDeleteRenderbuffersEXTFn(n, renderbuffers);
@@ -6425,10 +6295,6 @@ void GLApiBase::glEndQueryFn(GLenum target) {
   driver_->fn.glEndQueryFn(target);
 }
 
-void GLApiBase::glEndQueryARBFn(GLenum target) {
-  driver_->fn.glEndQueryARBFn(target);
-}
-
 void GLApiBase::glEndTransformFeedbackFn(void) {
   driver_->fn.glEndTransformFeedbackFn();
 }
@@ -6531,10 +6397,6 @@ void GLApiBase::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
 
 void GLApiBase::glGenQueriesFn(GLsizei n, GLuint* ids) {
   driver_->fn.glGenQueriesFn(n, ids);
-}
-
-void GLApiBase::glGenQueriesARBFn(GLsizei n, GLuint* ids) {
-  driver_->fn.glGenQueriesARBFn(n, ids);
 }
 
 void GLApiBase::glGenRenderbuffersEXTFn(GLsizei n, GLuint* renderbuffers) {
@@ -6712,10 +6574,6 @@ void GLApiBase::glGetQueryivFn(GLenum target, GLenum pname, GLint* params) {
   driver_->fn.glGetQueryivFn(target, pname, params);
 }
 
-void GLApiBase::glGetQueryivARBFn(GLenum target, GLenum pname, GLint* params) {
-  driver_->fn.glGetQueryivARBFn(target, pname, params);
-}
-
 void GLApiBase::glGetQueryObjecti64vFn(GLuint id,
                                        GLenum pname,
                                        GLint64* params) {
@@ -6726,12 +6584,6 @@ void GLApiBase::glGetQueryObjectivFn(GLuint id, GLenum pname, GLint* params) {
   driver_->fn.glGetQueryObjectivFn(id, pname, params);
 }
 
-void GLApiBase::glGetQueryObjectivARBFn(GLuint id,
-                                        GLenum pname,
-                                        GLint* params) {
-  driver_->fn.glGetQueryObjectivARBFn(id, pname, params);
-}
-
 void GLApiBase::glGetQueryObjectui64vFn(GLuint id,
                                         GLenum pname,
                                         GLuint64* params) {
@@ -6740,12 +6592,6 @@ void GLApiBase::glGetQueryObjectui64vFn(GLuint id,
 
 void GLApiBase::glGetQueryObjectuivFn(GLuint id, GLenum pname, GLuint* params) {
   driver_->fn.glGetQueryObjectuivFn(id, pname, params);
-}
-
-void GLApiBase::glGetQueryObjectuivARBFn(GLuint id,
-                                         GLenum pname,
-                                         GLuint* params) {
-  driver_->fn.glGetQueryObjectuivARBFn(id, pname, params);
 }
 
 void GLApiBase::glGetRenderbufferParameterivEXTFn(GLenum target,
@@ -6951,10 +6797,6 @@ GLboolean GLApiBase::glIsProgramFn(GLuint program) {
 
 GLboolean GLApiBase::glIsQueryFn(GLuint query) {
   return driver_->fn.glIsQueryFn(query);
-}
-
-GLboolean GLApiBase::glIsQueryARBFn(GLuint query) {
-  return driver_->fn.glIsQueryARBFn(query);
 }
 
 GLboolean GLApiBase::glIsRenderbufferEXTFn(GLuint renderbuffer) {
@@ -7617,11 +7459,6 @@ void TraceGLApi::glBeginQueryFn(GLenum target, GLuint id) {
   gl_api_->glBeginQueryFn(target, id);
 }
 
-void TraceGLApi::glBeginQueryARBFn(GLenum target, GLuint id) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBeginQueryARB")
-  gl_api_->glBeginQueryARBFn(target, id);
-}
-
 void TraceGLApi::glBeginTransformFeedbackFn(GLenum primitiveMode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBeginTransformFeedback")
   gl_api_->glBeginTransformFeedbackFn(primitiveMode);
@@ -8018,11 +7855,6 @@ void TraceGLApi::glDeleteQueriesFn(GLsizei n, const GLuint* ids) {
   gl_api_->glDeleteQueriesFn(n, ids);
 }
 
-void TraceGLApi::glDeleteQueriesARBFn(GLsizei n, const GLuint* ids) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteQueriesARB")
-  gl_api_->glDeleteQueriesARBFn(n, ids);
-}
-
 void TraceGLApi::glDeleteRenderbuffersEXTFn(GLsizei n,
                                             const GLuint* renderbuffers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteRenderbuffersEXT")
@@ -8182,11 +8014,6 @@ void TraceGLApi::glEndQueryFn(GLenum target) {
   gl_api_->glEndQueryFn(target);
 }
 
-void TraceGLApi::glEndQueryARBFn(GLenum target) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glEndQueryARB")
-  gl_api_->glEndQueryARBFn(target);
-}
-
 void TraceGLApi::glEndTransformFeedbackFn(void) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glEndTransformFeedback")
   gl_api_->glEndTransformFeedbackFn();
@@ -8311,11 +8138,6 @@ void TraceGLApi::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
 void TraceGLApi::glGenQueriesFn(GLsizei n, GLuint* ids) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenQueries")
   gl_api_->glGenQueriesFn(n, ids);
-}
-
-void TraceGLApi::glGenQueriesARBFn(GLsizei n, GLuint* ids) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGenQueriesARB")
-  gl_api_->glGenQueriesARBFn(n, ids);
 }
 
 void TraceGLApi::glGenRenderbuffersEXTFn(GLsizei n, GLuint* renderbuffers) {
@@ -8526,11 +8348,6 @@ void TraceGLApi::glGetQueryivFn(GLenum target, GLenum pname, GLint* params) {
   gl_api_->glGetQueryivFn(target, pname, params);
 }
 
-void TraceGLApi::glGetQueryivARBFn(GLenum target, GLenum pname, GLint* params) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetQueryivARB")
-  gl_api_->glGetQueryivARBFn(target, pname, params);
-}
-
 void TraceGLApi::glGetQueryObjecti64vFn(GLuint id,
                                         GLenum pname,
                                         GLint64* params) {
@@ -8541,13 +8358,6 @@ void TraceGLApi::glGetQueryObjecti64vFn(GLuint id,
 void TraceGLApi::glGetQueryObjectivFn(GLuint id, GLenum pname, GLint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetQueryObjectiv")
   gl_api_->glGetQueryObjectivFn(id, pname, params);
-}
-
-void TraceGLApi::glGetQueryObjectivARBFn(GLuint id,
-                                         GLenum pname,
-                                         GLint* params) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetQueryObjectivARB")
-  gl_api_->glGetQueryObjectivARBFn(id, pname, params);
 }
 
 void TraceGLApi::glGetQueryObjectui64vFn(GLuint id,
@@ -8562,13 +8372,6 @@ void TraceGLApi::glGetQueryObjectuivFn(GLuint id,
                                        GLuint* params) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetQueryObjectuiv")
   gl_api_->glGetQueryObjectuivFn(id, pname, params);
-}
-
-void TraceGLApi::glGetQueryObjectuivARBFn(GLuint id,
-                                          GLenum pname,
-                                          GLuint* params) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glGetQueryObjectuivARB")
-  gl_api_->glGetQueryObjectuivARBFn(id, pname, params);
 }
 
 void TraceGLApi::glGetRenderbufferParameterivEXTFn(GLenum target,
@@ -8811,11 +8614,6 @@ GLboolean TraceGLApi::glIsProgramFn(GLuint program) {
 GLboolean TraceGLApi::glIsQueryFn(GLuint query) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsQuery")
   return gl_api_->glIsQueryFn(query);
-}
-
-GLboolean TraceGLApi::glIsQueryARBFn(GLuint query) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsQueryARB")
-  return gl_api_->glIsQueryARBFn(query);
 }
 
 GLboolean TraceGLApi::glIsRenderbufferEXTFn(GLuint renderbuffer) {
@@ -9596,11 +9394,6 @@ void NoContextGLApi::glBeginQueryFn(GLenum target, GLuint id) {
   LOG(ERROR) << "Trying to call glBeginQuery() without current GL context";
 }
 
-void NoContextGLApi::glBeginQueryARBFn(GLenum target, GLuint id) {
-  NOTREACHED() << "Trying to call glBeginQueryARB() without current GL context";
-  LOG(ERROR) << "Trying to call glBeginQueryARB() without current GL context";
-}
-
 void NoContextGLApi::glBeginTransformFeedbackFn(GLenum primitiveMode) {
   NOTREACHED()
       << "Trying to call glBeginTransformFeedback() without current GL context";
@@ -10043,13 +9836,6 @@ void NoContextGLApi::glDeleteQueriesFn(GLsizei n, const GLuint* ids) {
   LOG(ERROR) << "Trying to call glDeleteQueries() without current GL context";
 }
 
-void NoContextGLApi::glDeleteQueriesARBFn(GLsizei n, const GLuint* ids) {
-  NOTREACHED()
-      << "Trying to call glDeleteQueriesARB() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glDeleteQueriesARB() without current GL context";
-}
-
 void NoContextGLApi::glDeleteRenderbuffersEXTFn(GLsizei n,
                                                 const GLuint* renderbuffers) {
   NOTREACHED()
@@ -10233,11 +10019,6 @@ void NoContextGLApi::glEndQueryFn(GLenum target) {
   LOG(ERROR) << "Trying to call glEndQuery() without current GL context";
 }
 
-void NoContextGLApi::glEndQueryARBFn(GLenum target) {
-  NOTREACHED() << "Trying to call glEndQueryARB() without current GL context";
-  LOG(ERROR) << "Trying to call glEndQueryARB() without current GL context";
-}
-
 void NoContextGLApi::glEndTransformFeedbackFn(void) {
   NOTREACHED()
       << "Trying to call glEndTransformFeedback() without current GL context";
@@ -10376,11 +10157,6 @@ void NoContextGLApi::glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) {
 void NoContextGLApi::glGenQueriesFn(GLsizei n, GLuint* ids) {
   NOTREACHED() << "Trying to call glGenQueries() without current GL context";
   LOG(ERROR) << "Trying to call glGenQueries() without current GL context";
-}
-
-void NoContextGLApi::glGenQueriesARBFn(GLsizei n, GLuint* ids) {
-  NOTREACHED() << "Trying to call glGenQueriesARB() without current GL context";
-  LOG(ERROR) << "Trying to call glGenQueriesARB() without current GL context";
 }
 
 void NoContextGLApi::glGenRenderbuffersEXTFn(GLsizei n, GLuint* renderbuffers) {
@@ -10630,13 +10406,6 @@ void NoContextGLApi::glGetQueryivFn(GLenum target,
   LOG(ERROR) << "Trying to call glGetQueryiv() without current GL context";
 }
 
-void NoContextGLApi::glGetQueryivARBFn(GLenum target,
-                                       GLenum pname,
-                                       GLint* params) {
-  NOTREACHED() << "Trying to call glGetQueryivARB() without current GL context";
-  LOG(ERROR) << "Trying to call glGetQueryivARB() without current GL context";
-}
-
 void NoContextGLApi::glGetQueryObjecti64vFn(GLuint id,
                                             GLenum pname,
                                             GLint64* params) {
@@ -10655,15 +10424,6 @@ void NoContextGLApi::glGetQueryObjectivFn(GLuint id,
       << "Trying to call glGetQueryObjectiv() without current GL context";
 }
 
-void NoContextGLApi::glGetQueryObjectivARBFn(GLuint id,
-                                             GLenum pname,
-                                             GLint* params) {
-  NOTREACHED()
-      << "Trying to call glGetQueryObjectivARB() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetQueryObjectivARB() without current GL context";
-}
-
 void NoContextGLApi::glGetQueryObjectui64vFn(GLuint id,
                                              GLenum pname,
                                              GLuint64* params) {
@@ -10680,15 +10440,6 @@ void NoContextGLApi::glGetQueryObjectuivFn(GLuint id,
       << "Trying to call glGetQueryObjectuiv() without current GL context";
   LOG(ERROR)
       << "Trying to call glGetQueryObjectuiv() without current GL context";
-}
-
-void NoContextGLApi::glGetQueryObjectuivARBFn(GLuint id,
-                                              GLenum pname,
-                                              GLuint* params) {
-  NOTREACHED()
-      << "Trying to call glGetQueryObjectuivARB() without current GL context";
-  LOG(ERROR)
-      << "Trying to call glGetQueryObjectuivARB() without current GL context";
 }
 
 void NoContextGLApi::glGetRenderbufferParameterivEXTFn(GLenum target,
@@ -10980,12 +10731,6 @@ GLboolean NoContextGLApi::glIsProgramFn(GLuint program) {
 GLboolean NoContextGLApi::glIsQueryFn(GLuint query) {
   NOTREACHED() << "Trying to call glIsQuery() without current GL context";
   LOG(ERROR) << "Trying to call glIsQuery() without current GL context";
-  return GL_FALSE;
-}
-
-GLboolean NoContextGLApi::glIsQueryARBFn(GLuint query) {
-  NOTREACHED() << "Trying to call glIsQueryARB() without current GL context";
-  LOG(ERROR) << "Trying to call glIsQueryARB() without current GL context";
   return GL_FALSE;
 }
 

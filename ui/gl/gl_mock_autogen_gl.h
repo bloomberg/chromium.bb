@@ -11,7 +11,6 @@
 MOCK_METHOD1(ActiveTexture, void(GLenum texture));
 MOCK_METHOD2(AttachShader, void(GLuint program, GLuint shader));
 MOCK_METHOD2(BeginQuery, void(GLenum target, GLuint id));
-MOCK_METHOD2(BeginQueryARB, void(GLenum target, GLuint id));
 MOCK_METHOD1(BeginTransformFeedback, void(GLenum primitiveMode));
 MOCK_METHOD3(BindAttribLocation,
              void(GLuint program, GLuint index, const char* name));
@@ -177,7 +176,6 @@ MOCK_METHOD2(DeleteFramebuffersEXT,
              void(GLsizei n, const GLuint* framebuffers));
 MOCK_METHOD1(DeleteProgram, void(GLuint program));
 MOCK_METHOD2(DeleteQueries, void(GLsizei n, const GLuint* ids));
-MOCK_METHOD2(DeleteQueriesARB, void(GLsizei n, const GLuint* ids));
 MOCK_METHOD2(DeleteRenderbuffersEXT,
              void(GLsizei n, const GLuint* renderbuffers));
 MOCK_METHOD2(DeleteSamplers, void(GLsizei n, const GLuint* samplers));
@@ -225,7 +223,6 @@ MOCK_METHOD2(EGLImageTargetTexture2DOES,
 MOCK_METHOD1(Enable, void(GLenum cap));
 MOCK_METHOD1(EnableVertexAttribArray, void(GLuint index));
 MOCK_METHOD1(EndQuery, void(GLenum target));
-MOCK_METHOD1(EndQueryARB, void(GLenum target));
 MOCK_METHOD0(EndTransformFeedback, void());
 MOCK_METHOD2(FenceSync, GLsync(GLenum condition, GLbitfield flags));
 MOCK_METHOD0(Finish, void());
@@ -272,7 +269,6 @@ MOCK_METHOD2(GenFencesAPPLE, void(GLsizei n, GLuint* fences));
 MOCK_METHOD2(GenFencesNV, void(GLsizei n, GLuint* fences));
 MOCK_METHOD2(GenFramebuffersEXT, void(GLsizei n, GLuint* framebuffers));
 MOCK_METHOD2(GenQueries, void(GLsizei n, GLuint* ids));
-MOCK_METHOD2(GenQueriesARB, void(GLsizei n, GLuint* ids));
 MOCK_METHOD2(GenRenderbuffersEXT, void(GLsizei n, GLuint* renderbuffers));
 MOCK_METHOD2(GenSamplers, void(GLsizei n, GLuint* samplers));
 MOCK_METHOD2(GenTextures, void(GLsizei n, GLuint* textures));
@@ -349,16 +345,12 @@ MOCK_METHOD3(GetProgramiv, void(GLuint program, GLenum pname, GLint* params));
 MOCK_METHOD3(GetProgramResourceLocation,
              GLint(GLuint program, GLenum programInterface, const char* name));
 MOCK_METHOD3(GetQueryiv, void(GLenum target, GLenum pname, GLint* params));
-MOCK_METHOD3(GetQueryivARB, void(GLenum target, GLenum pname, GLint* params));
 MOCK_METHOD3(GetQueryObjecti64v,
              void(GLuint id, GLenum pname, GLint64* params));
 MOCK_METHOD3(GetQueryObjectiv, void(GLuint id, GLenum pname, GLint* params));
-MOCK_METHOD3(GetQueryObjectivARB, void(GLuint id, GLenum pname, GLint* params));
 MOCK_METHOD3(GetQueryObjectui64v,
              void(GLuint id, GLenum pname, GLuint64* params));
 MOCK_METHOD3(GetQueryObjectuiv, void(GLuint id, GLenum pname, GLuint* params));
-MOCK_METHOD3(GetQueryObjectuivARB,
-             void(GLuint id, GLenum pname, GLuint* params));
 MOCK_METHOD3(GetRenderbufferParameterivEXT,
              void(GLenum target, GLenum pname, GLint* params));
 MOCK_METHOD3(GetSamplerParameterfv,
@@ -442,7 +434,6 @@ MOCK_METHOD1(IsFenceNV, GLboolean(GLuint fence));
 MOCK_METHOD1(IsFramebufferEXT, GLboolean(GLuint framebuffer));
 MOCK_METHOD1(IsProgram, GLboolean(GLuint program));
 MOCK_METHOD1(IsQuery, GLboolean(GLuint query));
-MOCK_METHOD1(IsQueryARB, GLboolean(GLuint query));
 MOCK_METHOD1(IsRenderbufferEXT, GLboolean(GLuint renderbuffer));
 MOCK_METHOD1(IsSampler, GLboolean(GLuint sampler));
 MOCK_METHOD1(IsShader, GLboolean(GLuint shader));

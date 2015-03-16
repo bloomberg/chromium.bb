@@ -41,13 +41,13 @@ MockGLInterface::Mock_glBeginQuery(GLenum target, GLuint id) {
 void GL_BINDING_CALL
 MockGLInterface::Mock_glBeginQueryARB(GLenum target, GLuint id) {
   MakeFunctionUnique("glBeginQueryARB");
-  interface_->BeginQueryARB(target, id);
+  interface_->BeginQuery(target, id);
 }
 
 void GL_BINDING_CALL
 MockGLInterface::Mock_glBeginQueryEXT(GLenum target, GLuint id) {
   MakeFunctionUnique("glBeginQueryEXT");
-  interface_->BeginQueryARB(target, id);
+  interface_->BeginQuery(target, id);
 }
 
 void GL_BINDING_CALL
@@ -518,13 +518,13 @@ MockGLInterface::Mock_glDeleteQueries(GLsizei n, const GLuint* ids) {
 void GL_BINDING_CALL
 MockGLInterface::Mock_glDeleteQueriesARB(GLsizei n, const GLuint* ids) {
   MakeFunctionUnique("glDeleteQueriesARB");
-  interface_->DeleteQueriesARB(n, ids);
+  interface_->DeleteQueries(n, ids);
 }
 
 void GL_BINDING_CALL
 MockGLInterface::Mock_glDeleteQueriesEXT(GLsizei n, const GLuint* ids) {
   MakeFunctionUnique("glDeleteQueriesEXT");
-  interface_->DeleteQueriesARB(n, ids);
+  interface_->DeleteQueries(n, ids);
 }
 
 void GL_BINDING_CALL
@@ -773,12 +773,12 @@ void GL_BINDING_CALL MockGLInterface::Mock_glEndQuery(GLenum target) {
 
 void GL_BINDING_CALL MockGLInterface::Mock_glEndQueryARB(GLenum target) {
   MakeFunctionUnique("glEndQueryARB");
-  interface_->EndQueryARB(target);
+  interface_->EndQuery(target);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glEndQueryEXT(GLenum target) {
   MakeFunctionUnique("glEndQueryEXT");
-  interface_->EndQueryARB(target);
+  interface_->EndQuery(target);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glEndTransformFeedback(void) {
@@ -941,13 +941,13 @@ MockGLInterface::Mock_glGenQueries(GLsizei n, GLuint* ids) {
 void GL_BINDING_CALL
 MockGLInterface::Mock_glGenQueriesARB(GLsizei n, GLuint* ids) {
   MakeFunctionUnique("glGenQueriesARB");
-  interface_->GenQueriesARB(n, ids);
+  interface_->GenQueries(n, ids);
 }
 
 void GL_BINDING_CALL
 MockGLInterface::Mock_glGenQueriesEXT(GLsizei n, GLuint* ids) {
   MakeFunctionUnique("glGenQueriesEXT");
-  interface_->GenQueriesARB(n, ids);
+  interface_->GenQueries(n, ids);
 }
 
 void GL_BINDING_CALL
@@ -1267,7 +1267,7 @@ MockGLInterface::Mock_glGetQueryObjectivARB(GLuint id,
                                             GLenum pname,
                                             GLint* params) {
   MakeFunctionUnique("glGetQueryObjectivARB");
-  interface_->GetQueryObjectivARB(id, pname, params);
+  interface_->GetQueryObjectiv(id, pname, params);
 }
 
 void GL_BINDING_CALL
@@ -1275,7 +1275,7 @@ MockGLInterface::Mock_glGetQueryObjectivEXT(GLuint id,
                                             GLenum pname,
                                             GLint* params) {
   MakeFunctionUnique("glGetQueryObjectivEXT");
-  interface_->GetQueryObjectivARB(id, pname, params);
+  interface_->GetQueryObjectiv(id, pname, params);
 }
 
 void GL_BINDING_CALL
@@ -1306,7 +1306,7 @@ MockGLInterface::Mock_glGetQueryObjectuivARB(GLuint id,
                                              GLenum pname,
                                              GLuint* params) {
   MakeFunctionUnique("glGetQueryObjectuivARB");
-  interface_->GetQueryObjectuivARB(id, pname, params);
+  interface_->GetQueryObjectuiv(id, pname, params);
 }
 
 void GL_BINDING_CALL
@@ -1314,7 +1314,7 @@ MockGLInterface::Mock_glGetQueryObjectuivEXT(GLuint id,
                                              GLenum pname,
                                              GLuint* params) {
   MakeFunctionUnique("glGetQueryObjectuivEXT");
-  interface_->GetQueryObjectuivARB(id, pname, params);
+  interface_->GetQueryObjectuiv(id, pname, params);
 }
 
 void GL_BINDING_CALL
@@ -1327,14 +1327,14 @@ void GL_BINDING_CALL MockGLInterface::Mock_glGetQueryivARB(GLenum target,
                                                            GLenum pname,
                                                            GLint* params) {
   MakeFunctionUnique("glGetQueryivARB");
-  interface_->GetQueryivARB(target, pname, params);
+  interface_->GetQueryiv(target, pname, params);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glGetQueryivEXT(GLenum target,
                                                            GLenum pname,
                                                            GLint* params) {
   MakeFunctionUnique("glGetQueryivEXT");
-  interface_->GetQueryivARB(target, pname, params);
+  interface_->GetQueryiv(target, pname, params);
 }
 
 void GL_BINDING_CALL
@@ -1614,12 +1614,12 @@ GLboolean GL_BINDING_CALL MockGLInterface::Mock_glIsQuery(GLuint query) {
 
 GLboolean GL_BINDING_CALL MockGLInterface::Mock_glIsQueryARB(GLuint query) {
   MakeFunctionUnique("glIsQueryARB");
-  return interface_->IsQueryARB(query);
+  return interface_->IsQuery(query);
 }
 
 GLboolean GL_BINDING_CALL MockGLInterface::Mock_glIsQueryEXT(GLuint query) {
   MakeFunctionUnique("glIsQueryEXT");
-  return interface_->IsQueryARB(query);
+  return interface_->IsQuery(query);
 }
 
 GLboolean GL_BINDING_CALL

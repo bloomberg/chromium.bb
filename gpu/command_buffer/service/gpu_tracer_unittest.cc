@@ -61,21 +61,21 @@ class GlFakeQueries {
   void SetCurrentGLTime(GLint64 current_time) { current_time_ = current_time; }
   void SetDisjoint() { disjointed_ = true; }
 
-  void GenQueriesARB(GLsizei n, GLuint* ids) {
+  void GenQueries(GLsizei n, GLuint* ids) {
     for (GLsizei i = 0; i < n; i++) {
       ids[i] = next_query_id_++;
       alloced_queries_.insert(ids[i]);
     }
   }
 
-  void DeleteQueriesARB(GLsizei n, const GLuint* ids) {
+  void DeleteQueries(GLsizei n, const GLuint* ids) {
     for (GLsizei i = 0; i < n; i++) {
       alloced_queries_.erase(ids[i]);
       query_timestamp_.erase(ids[i]);
     }
   }
 
-  void GetQueryObjectivARB(GLuint id, GLenum pname, GLint* params) {
+  void GetQueryObjectiv(GLuint id, GLenum pname, GLint* params) {
     switch (pname) {
       case GL_QUERY_RESULT_AVAILABLE: {
         std::map<GLuint, GLint64>::iterator it = query_timestamp_.find(id);
@@ -86,7 +86,7 @@ class GlFakeQueries {
         break;
       }
       default:
-        FAIL() << "Invalid variable passed to GetQueryObjectivARB: " << pname;
+        FAIL() << "Invalid variable passed to GetQueryObjectiv: " << pname;
     }
   }
 
@@ -237,14 +237,14 @@ class BaseGpuTest : public GpuServiceTest {
     if (gpu_timing_client_->IsAvailable() &&
         gpu_timing_client_->IsTimerOffsetAvailable()) {
       // Delegate query APIs used by GPUTrace to a GlFakeQueries
-      EXPECT_CALL(*gl_, GenQueriesARB(2, NotNull())).Times(AtLeast(1))
+      EXPECT_CALL(*gl_, GenQueries(2, NotNull())).Times(AtLeast(1))
           .WillRepeatedly(
-              Invoke(&gl_fake_queries_, &GlFakeQueries::GenQueriesARB));
+              Invoke(&gl_fake_queries_, &GlFakeQueries::GenQueries));
 
-      EXPECT_CALL(*gl_, GetQueryObjectivARB(_, GL_QUERY_RESULT_AVAILABLE,
+      EXPECT_CALL(*gl_, GetQueryObjectiv(_, GL_QUERY_RESULT_AVAILABLE,
                                             NotNull()))
           .WillRepeatedly(
-              Invoke(&gl_fake_queries_, &GlFakeQueries::GetQueryObjectivARB));
+              Invoke(&gl_fake_queries_, &GlFakeQueries::GetQueryObjectiv));
 
       EXPECT_CALL(*gl_, GetInteger64v(GL_TIMESTAMP, _))
           .WillRepeatedly(
@@ -259,9 +259,9 @@ class BaseGpuTest : public GpuServiceTest {
                Invoke(&gl_fake_queries_,
                       &GlFakeQueries::GetQueryObjectui64v));
 
-      EXPECT_CALL(*gl_, DeleteQueriesARB(2, NotNull())).Times(AtLeast(1))
+      EXPECT_CALL(*gl_, DeleteQueries(2, NotNull())).Times(AtLeast(1))
           .WillRepeatedly(
-               Invoke(&gl_fake_queries_, &GlFakeQueries::DeleteQueriesARB));
+               Invoke(&gl_fake_queries_, &GlFakeQueries::DeleteQueries));
     }
   }
 

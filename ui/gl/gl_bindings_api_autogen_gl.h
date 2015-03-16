@@ -11,7 +11,6 @@
 void glActiveTextureFn(GLenum texture) override;
 void glAttachShaderFn(GLuint program, GLuint shader) override;
 void glBeginQueryFn(GLenum target, GLuint id) override;
-void glBeginQueryARBFn(GLenum target, GLuint id) override;
 void glBeginTransformFeedbackFn(GLenum primitiveMode) override;
 void glBindAttribLocationFn(GLuint program,
                             GLuint index,
@@ -181,7 +180,6 @@ void glDeleteFencesNVFn(GLsizei n, const GLuint* fences) override;
 void glDeleteFramebuffersEXTFn(GLsizei n, const GLuint* framebuffers) override;
 void glDeleteProgramFn(GLuint program) override;
 void glDeleteQueriesFn(GLsizei n, const GLuint* ids) override;
-void glDeleteQueriesARBFn(GLsizei n, const GLuint* ids) override;
 void glDeleteRenderbuffersEXTFn(GLsizei n,
                                 const GLuint* renderbuffers) override;
 void glDeleteSamplersFn(GLsizei n, const GLuint* samplers) override;
@@ -229,7 +227,6 @@ void glEGLImageTargetTexture2DOESFn(GLenum target,
 void glEnableFn(GLenum cap) override;
 void glEnableVertexAttribArrayFn(GLuint index) override;
 void glEndQueryFn(GLenum target) override;
-void glEndQueryARBFn(GLenum target) override;
 void glEndTransformFeedbackFn(void) override;
 GLsync glFenceSyncFn(GLenum condition, GLbitfield flags) override;
 void glFinishFn(void) override;
@@ -272,7 +269,6 @@ void glGenFencesAPPLEFn(GLsizei n, GLuint* fences) override;
 void glGenFencesNVFn(GLsizei n, GLuint* fences) override;
 void glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) override;
 void glGenQueriesFn(GLsizei n, GLuint* ids) override;
-void glGenQueriesARBFn(GLsizei n, GLuint* ids) override;
 void glGenRenderbuffersEXTFn(GLsizei n, GLuint* renderbuffers) override;
 void glGenSamplersFn(GLsizei n, GLuint* samplers) override;
 void glGenTexturesFn(GLsizei n, GLuint* textures) override;
@@ -347,15 +343,12 @@ GLint glGetProgramResourceLocationFn(GLuint program,
                                      GLenum programInterface,
                                      const char* name) override;
 void glGetQueryivFn(GLenum target, GLenum pname, GLint* params) override;
-void glGetQueryivARBFn(GLenum target, GLenum pname, GLint* params) override;
 void glGetQueryObjecti64vFn(GLuint id, GLenum pname, GLint64* params) override;
 void glGetQueryObjectivFn(GLuint id, GLenum pname, GLint* params) override;
-void glGetQueryObjectivARBFn(GLuint id, GLenum pname, GLint* params) override;
 void glGetQueryObjectui64vFn(GLuint id,
                              GLenum pname,
                              GLuint64* params) override;
 void glGetQueryObjectuivFn(GLuint id, GLenum pname, GLuint* params) override;
-void glGetQueryObjectuivARBFn(GLuint id, GLenum pname, GLuint* params) override;
 void glGetRenderbufferParameterivEXTFn(GLenum target,
                                        GLenum pname,
                                        GLint* params) override;
@@ -443,7 +436,6 @@ GLboolean glIsFenceNVFn(GLuint fence) override;
 GLboolean glIsFramebufferEXTFn(GLuint framebuffer) override;
 GLboolean glIsProgramFn(GLuint program) override;
 GLboolean glIsQueryFn(GLuint query) override;
-GLboolean glIsQueryARBFn(GLuint query) override;
 GLboolean glIsRenderbufferEXTFn(GLuint renderbuffer) override;
 GLboolean glIsSamplerFn(GLuint sampler) override;
 GLboolean glIsShaderFn(GLuint shader) override;

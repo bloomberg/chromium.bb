@@ -19,7 +19,6 @@ typedef void(GL_BINDING_CALL* glActiveTextureProc)(GLenum texture);
 typedef void(GL_BINDING_CALL* glAttachShaderProc)(GLuint program,
                                                   GLuint shader);
 typedef void(GL_BINDING_CALL* glBeginQueryProc)(GLenum target, GLuint id);
-typedef void(GL_BINDING_CALL* glBeginQueryARBProc)(GLenum target, GLuint id);
 typedef void(GL_BINDING_CALL* glBeginTransformFeedbackProc)(
     GLenum primitiveMode);
 typedef void(GL_BINDING_CALL* glBindAttribLocationProc)(GLuint program,
@@ -203,8 +202,6 @@ typedef void(GL_BINDING_CALL* glDeleteFramebuffersEXTProc)(
 typedef void(GL_BINDING_CALL* glDeleteProgramProc)(GLuint program);
 typedef void(GL_BINDING_CALL* glDeleteQueriesProc)(GLsizei n,
                                                    const GLuint* ids);
-typedef void(GL_BINDING_CALL* glDeleteQueriesARBProc)(GLsizei n,
-                                                      const GLuint* ids);
 typedef void(GL_BINDING_CALL* glDeleteRenderbuffersEXTProc)(
     GLsizei n,
     const GLuint* renderbuffers);
@@ -268,7 +265,6 @@ typedef void(GL_BINDING_CALL* glEGLImageTargetTexture2DOESProc)(
 typedef void(GL_BINDING_CALL* glEnableProc)(GLenum cap);
 typedef void(GL_BINDING_CALL* glEnableVertexAttribArrayProc)(GLuint index);
 typedef void(GL_BINDING_CALL* glEndQueryProc)(GLenum target);
-typedef void(GL_BINDING_CALL* glEndQueryARBProc)(GLenum target);
 typedef void(GL_BINDING_CALL* glEndTransformFeedbackProc)(void);
 typedef GLsync(GL_BINDING_CALL* glFenceSyncProc)(GLenum condition,
                                                  GLbitfield flags);
@@ -316,7 +312,6 @@ typedef void(GL_BINDING_CALL* glGenFencesNVProc)(GLsizei n, GLuint* fences);
 typedef void(GL_BINDING_CALL* glGenFramebuffersEXTProc)(GLsizei n,
                                                         GLuint* framebuffers);
 typedef void(GL_BINDING_CALL* glGenQueriesProc)(GLsizei n, GLuint* ids);
-typedef void(GL_BINDING_CALL* glGenQueriesARBProc)(GLsizei n, GLuint* ids);
 typedef void(GL_BINDING_CALL* glGenRenderbuffersEXTProc)(GLsizei n,
                                                          GLuint* renderbuffers);
 typedef void(GL_BINDING_CALL* glGenSamplersProc)(GLsizei n, GLuint* samplers);
@@ -413,27 +408,18 @@ typedef GLint(GL_BINDING_CALL* glGetProgramResourceLocationProc)(
 typedef void(GL_BINDING_CALL* glGetQueryivProc)(GLenum target,
                                                 GLenum pname,
                                                 GLint* params);
-typedef void(GL_BINDING_CALL* glGetQueryivARBProc)(GLenum target,
-                                                   GLenum pname,
-                                                   GLint* params);
 typedef void(GL_BINDING_CALL* glGetQueryObjecti64vProc)(GLuint id,
                                                         GLenum pname,
                                                         GLint64* params);
 typedef void(GL_BINDING_CALL* glGetQueryObjectivProc)(GLuint id,
                                                       GLenum pname,
                                                       GLint* params);
-typedef void(GL_BINDING_CALL* glGetQueryObjectivARBProc)(GLuint id,
-                                                         GLenum pname,
-                                                         GLint* params);
 typedef void(GL_BINDING_CALL* glGetQueryObjectui64vProc)(GLuint id,
                                                          GLenum pname,
                                                          GLuint64* params);
 typedef void(GL_BINDING_CALL* glGetQueryObjectuivProc)(GLuint id,
                                                        GLenum pname,
                                                        GLuint* params);
-typedef void(GL_BINDING_CALL* glGetQueryObjectuivARBProc)(GLuint id,
-                                                          GLenum pname,
-                                                          GLuint* params);
 typedef void(GL_BINDING_CALL* glGetRenderbufferParameterivEXTProc)(
     GLenum target,
     GLenum pname,
@@ -542,7 +528,6 @@ typedef GLboolean(GL_BINDING_CALL* glIsFenceNVProc)(GLuint fence);
 typedef GLboolean(GL_BINDING_CALL* glIsFramebufferEXTProc)(GLuint framebuffer);
 typedef GLboolean(GL_BINDING_CALL* glIsProgramProc)(GLuint program);
 typedef GLboolean(GL_BINDING_CALL* glIsQueryProc)(GLuint query);
-typedef GLboolean(GL_BINDING_CALL* glIsQueryARBProc)(GLuint query);
 typedef GLboolean(GL_BINDING_CALL* glIsRenderbufferEXTProc)(
     GLuint renderbuffer);
 typedef GLboolean(GL_BINDING_CALL* glIsSamplerProc)(GLuint sampler);
@@ -943,7 +928,6 @@ struct ProcsGL {
   glActiveTextureProc glActiveTextureFn;
   glAttachShaderProc glAttachShaderFn;
   glBeginQueryProc glBeginQueryFn;
-  glBeginQueryARBProc glBeginQueryARBFn;
   glBeginTransformFeedbackProc glBeginTransformFeedbackFn;
   glBindAttribLocationProc glBindAttribLocationFn;
   glBindBufferProc glBindBufferFn;
@@ -997,7 +981,6 @@ struct ProcsGL {
   glDeleteFramebuffersEXTProc glDeleteFramebuffersEXTFn;
   glDeleteProgramProc glDeleteProgramFn;
   glDeleteQueriesProc glDeleteQueriesFn;
-  glDeleteQueriesARBProc glDeleteQueriesARBFn;
   glDeleteRenderbuffersEXTProc glDeleteRenderbuffersEXTFn;
   glDeleteSamplersProc glDeleteSamplersFn;
   glDeleteShaderProc glDeleteShaderFn;
@@ -1026,7 +1009,6 @@ struct ProcsGL {
   glEnableProc glEnableFn;
   glEnableVertexAttribArrayProc glEnableVertexAttribArrayFn;
   glEndQueryProc glEndQueryFn;
-  glEndQueryARBProc glEndQueryARBFn;
   glEndTransformFeedbackProc glEndTransformFeedbackFn;
   glFenceSyncProc glFenceSyncFn;
   glFinishProc glFinishFn;
@@ -1048,7 +1030,6 @@ struct ProcsGL {
   glGenFencesNVProc glGenFencesNVFn;
   glGenFramebuffersEXTProc glGenFramebuffersEXTFn;
   glGenQueriesProc glGenQueriesFn;
-  glGenQueriesARBProc glGenQueriesARBFn;
   glGenRenderbuffersEXTProc glGenRenderbuffersEXTFn;
   glGenSamplersProc glGenSamplersFn;
   glGenTexturesProc glGenTexturesFn;
@@ -1080,13 +1061,10 @@ struct ProcsGL {
   glGetProgramivProc glGetProgramivFn;
   glGetProgramResourceLocationProc glGetProgramResourceLocationFn;
   glGetQueryivProc glGetQueryivFn;
-  glGetQueryivARBProc glGetQueryivARBFn;
   glGetQueryObjecti64vProc glGetQueryObjecti64vFn;
   glGetQueryObjectivProc glGetQueryObjectivFn;
-  glGetQueryObjectivARBProc glGetQueryObjectivARBFn;
   glGetQueryObjectui64vProc glGetQueryObjectui64vFn;
   glGetQueryObjectuivProc glGetQueryObjectuivFn;
-  glGetQueryObjectuivARBProc glGetQueryObjectuivARBFn;
   glGetRenderbufferParameterivEXTProc glGetRenderbufferParameterivEXTFn;
   glGetSamplerParameterfvProc glGetSamplerParameterfvFn;
   glGetSamplerParameterivProc glGetSamplerParameterivFn;
@@ -1122,7 +1100,6 @@ struct ProcsGL {
   glIsFramebufferEXTProc glIsFramebufferEXTFn;
   glIsProgramProc glIsProgramFn;
   glIsQueryProc glIsQueryFn;
-  glIsQueryARBProc glIsQueryARBFn;
   glIsRenderbufferEXTProc glIsRenderbufferEXTFn;
   glIsSamplerProc glIsSamplerFn;
   glIsShaderProc glIsShaderFn;
@@ -1247,7 +1224,6 @@ class GL_EXPORT GLApi {
   virtual void glActiveTextureFn(GLenum texture) = 0;
   virtual void glAttachShaderFn(GLuint program, GLuint shader) = 0;
   virtual void glBeginQueryFn(GLenum target, GLuint id) = 0;
-  virtual void glBeginQueryARBFn(GLenum target, GLuint id) = 0;
   virtual void glBeginTransformFeedbackFn(GLenum primitiveMode) = 0;
   virtual void glBindAttribLocationFn(GLuint program,
                                       GLuint index,
@@ -1420,7 +1396,6 @@ class GL_EXPORT GLApi {
                                          const GLuint* framebuffers) = 0;
   virtual void glDeleteProgramFn(GLuint program) = 0;
   virtual void glDeleteQueriesFn(GLsizei n, const GLuint* ids) = 0;
-  virtual void glDeleteQueriesARBFn(GLsizei n, const GLuint* ids) = 0;
   virtual void glDeleteRenderbuffersEXTFn(GLsizei n,
                                           const GLuint* renderbuffers) = 0;
   virtual void glDeleteSamplersFn(GLsizei n, const GLuint* samplers) = 0;
@@ -1469,7 +1444,6 @@ class GL_EXPORT GLApi {
   virtual void glEnableFn(GLenum cap) = 0;
   virtual void glEnableVertexAttribArrayFn(GLuint index) = 0;
   virtual void glEndQueryFn(GLenum target) = 0;
-  virtual void glEndQueryARBFn(GLenum target) = 0;
   virtual void glEndTransformFeedbackFn(void) = 0;
   virtual GLsync glFenceSyncFn(GLenum condition, GLbitfield flags) = 0;
   virtual void glFinishFn(void) = 0;
@@ -1512,7 +1486,6 @@ class GL_EXPORT GLApi {
   virtual void glGenFencesNVFn(GLsizei n, GLuint* fences) = 0;
   virtual void glGenFramebuffersEXTFn(GLsizei n, GLuint* framebuffers) = 0;
   virtual void glGenQueriesFn(GLsizei n, GLuint* ids) = 0;
-  virtual void glGenQueriesARBFn(GLsizei n, GLuint* ids) = 0;
   virtual void glGenRenderbuffersEXTFn(GLsizei n, GLuint* renderbuffers) = 0;
   virtual void glGenSamplersFn(GLsizei n, GLuint* samplers) = 0;
   virtual void glGenTexturesFn(GLsizei n, GLuint* textures) = 0;
@@ -1591,25 +1564,16 @@ class GL_EXPORT GLApi {
                                                GLenum programInterface,
                                                const char* name) = 0;
   virtual void glGetQueryivFn(GLenum target, GLenum pname, GLint* params) = 0;
-  virtual void glGetQueryivARBFn(GLenum target,
-                                 GLenum pname,
-                                 GLint* params) = 0;
   virtual void glGetQueryObjecti64vFn(GLuint id,
                                       GLenum pname,
                                       GLint64* params) = 0;
   virtual void glGetQueryObjectivFn(GLuint id, GLenum pname, GLint* params) = 0;
-  virtual void glGetQueryObjectivARBFn(GLuint id,
-                                       GLenum pname,
-                                       GLint* params) = 0;
   virtual void glGetQueryObjectui64vFn(GLuint id,
                                        GLenum pname,
                                        GLuint64* params) = 0;
   virtual void glGetQueryObjectuivFn(GLuint id,
                                      GLenum pname,
                                      GLuint* params) = 0;
-  virtual void glGetQueryObjectuivARBFn(GLuint id,
-                                        GLenum pname,
-                                        GLuint* params) = 0;
   virtual void glGetRenderbufferParameterivEXTFn(GLenum target,
                                                  GLenum pname,
                                                  GLint* params) = 0;
@@ -1705,7 +1669,6 @@ class GL_EXPORT GLApi {
   virtual GLboolean glIsFramebufferEXTFn(GLuint framebuffer) = 0;
   virtual GLboolean glIsProgramFn(GLuint program) = 0;
   virtual GLboolean glIsQueryFn(GLuint query) = 0;
-  virtual GLboolean glIsQueryARBFn(GLuint query) = 0;
   virtual GLboolean glIsRenderbufferEXTFn(GLuint renderbuffer) = 0;
   virtual GLboolean glIsSamplerFn(GLuint sampler) = 0;
   virtual GLboolean glIsShaderFn(GLuint shader) = 0;
@@ -2023,7 +1986,6 @@ class GL_EXPORT GLApi {
 #define glActiveTexture ::gfx::g_current_gl_context->glActiveTextureFn
 #define glAttachShader ::gfx::g_current_gl_context->glAttachShaderFn
 #define glBeginQuery ::gfx::g_current_gl_context->glBeginQueryFn
-#define glBeginQueryARB ::gfx::g_current_gl_context->glBeginQueryARBFn
 #define glBeginTransformFeedback \
   ::gfx::g_current_gl_context->glBeginTransformFeedbackFn
 #define glBindAttribLocation ::gfx::g_current_gl_context->glBindAttribLocationFn
@@ -2089,7 +2051,6 @@ class GL_EXPORT GLApi {
   ::gfx::g_current_gl_context->glDeleteFramebuffersEXTFn
 #define glDeleteProgram ::gfx::g_current_gl_context->glDeleteProgramFn
 #define glDeleteQueries ::gfx::g_current_gl_context->glDeleteQueriesFn
-#define glDeleteQueriesARB ::gfx::g_current_gl_context->glDeleteQueriesARBFn
 #define glDeleteRenderbuffersEXT \
   ::gfx::g_current_gl_context->glDeleteRenderbuffersEXTFn
 #define glDeleteSamplers ::gfx::g_current_gl_context->glDeleteSamplersFn
@@ -2127,7 +2088,6 @@ class GL_EXPORT GLApi {
 #define glEnableVertexAttribArray \
   ::gfx::g_current_gl_context->glEnableVertexAttribArrayFn
 #define glEndQuery ::gfx::g_current_gl_context->glEndQueryFn
-#define glEndQueryARB ::gfx::g_current_gl_context->glEndQueryARBFn
 #define glEndTransformFeedback \
   ::gfx::g_current_gl_context->glEndTransformFeedbackFn
 #define glFenceSync ::gfx::g_current_gl_context->glFenceSyncFn
@@ -2154,7 +2114,6 @@ class GL_EXPORT GLApi {
 #define glGenFencesNV ::gfx::g_current_gl_context->glGenFencesNVFn
 #define glGenFramebuffersEXT ::gfx::g_current_gl_context->glGenFramebuffersEXTFn
 #define glGenQueries ::gfx::g_current_gl_context->glGenQueriesFn
-#define glGenQueriesARB ::gfx::g_current_gl_context->glGenQueriesARBFn
 #define glGenRenderbuffersEXT \
   ::gfx::g_current_gl_context->glGenRenderbuffersEXTFn
 #define glGenSamplers ::gfx::g_current_gl_context->glGenSamplersFn
@@ -2196,16 +2155,11 @@ class GL_EXPORT GLApi {
 #define glGetProgramResourceLocation \
   ::gfx::g_current_gl_context->glGetProgramResourceLocationFn
 #define glGetQueryiv ::gfx::g_current_gl_context->glGetQueryivFn
-#define glGetQueryivARB ::gfx::g_current_gl_context->glGetQueryivARBFn
 #define glGetQueryObjecti64v ::gfx::g_current_gl_context->glGetQueryObjecti64vFn
 #define glGetQueryObjectiv ::gfx::g_current_gl_context->glGetQueryObjectivFn
-#define glGetQueryObjectivARB \
-  ::gfx::g_current_gl_context->glGetQueryObjectivARBFn
 #define glGetQueryObjectui64v \
   ::gfx::g_current_gl_context->glGetQueryObjectui64vFn
 #define glGetQueryObjectuiv ::gfx::g_current_gl_context->glGetQueryObjectuivFn
-#define glGetQueryObjectuivARB \
-  ::gfx::g_current_gl_context->glGetQueryObjectuivARBFn
 #define glGetRenderbufferParameterivEXT \
   ::gfx::g_current_gl_context->glGetRenderbufferParameterivEXTFn
 #define glGetSamplerParameterfv \
@@ -2254,7 +2208,6 @@ class GL_EXPORT GLApi {
 #define glIsFramebufferEXT ::gfx::g_current_gl_context->glIsFramebufferEXTFn
 #define glIsProgram ::gfx::g_current_gl_context->glIsProgramFn
 #define glIsQuery ::gfx::g_current_gl_context->glIsQueryFn
-#define glIsQueryARB ::gfx::g_current_gl_context->glIsQueryARBFn
 #define glIsRenderbufferEXT ::gfx::g_current_gl_context->glIsRenderbufferEXTFn
 #define glIsSampler ::gfx::g_current_gl_context->glIsSamplerFn
 #define glIsShader ::gfx::g_current_gl_context->glIsShaderFn
