@@ -45,8 +45,7 @@
               # Run net_unittests first to avoid random failures due to slow python startup
               # KeygenHandlerTest.SmokeTest and KeygenHandlerTest.ConcurrencyTest fail due to
               # readonly certdb (b/8153161)
-              # Disable EndToEndTests/EndToEndTest (b/19100148)
-             'net_unittests --gtest_filter=-KeygenHandlerTest.SmokeTest:KeygenHandlerTest.ConcurrencyTest:EndToEndTests/EndToEndTest.*',
+             'net_unittests --gtest_filter=-KeygenHandlerTest.SmokeTest:KeygenHandlerTest.ConcurrencyTest',
               # Disable OutOfMemoryDeathTest.ViaSharedLibraries due to gTrusty eglibc incompatibility (crbug/428211)
               # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
               # Disable ProcessUtilTest.* (need to define OS_ANDROID)
