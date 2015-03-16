@@ -406,10 +406,19 @@ class StatsResponse : public webrtc::StatsObserver {
     int idx = response->addReport(blink::WebString::fromUTF8(report.id),
                                   blink::WebString::fromUTF8(report.type),
                                   report.timestamp);
+    blink::WebString name, value_str;
     for (const auto& value : report.values) {
-      response->addStatistic(idx,
-          blink::WebString::fromUTF8(value.second->display_name()),
-          blink::WebString::fromUTF8(value.second->ToString()));
+      const StatsReport::ValuePtr& v = value.second;
+      name = blink::WebString::fromUTF8(value.second->display_name());
+
+      if (v->type() == StatsReport::Value::kString)
+        value_str = blink::WebString::fromUTF8(v->string_val());
+      if (v->type() == StatsReport::Value::kStaticString)
+        value_str = blink::WebString::fromUTF8(v->static_string_val());
+      else
+        value_str = blink::WebString::fromUTF8(v->ToString());
+
+      response->addStatistic(idx, name, value_str);
     }
   }
 

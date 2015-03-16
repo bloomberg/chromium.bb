@@ -22,6 +22,8 @@
 
 using std::string;
 using webrtc::MediaConstraintsInterface;
+using webrtc::StatsReport;
+using webrtc::StatsReports;
 using blink::WebRTCPeerConnectionHandlerClient;
 
 namespace content {
@@ -204,8 +206,7 @@ static string GetIceGatheringStateString(
 // Note:
 // The format must be consistent with what webrtc_internals.js expects.
 // If you change it here, you must change webrtc_internals.js as well.
-static base::DictionaryValue* GetDictValueStats(
-    const webrtc::StatsReport& report) {
+static base::DictionaryValue* GetDictValueStats(const StatsReport& report) {
   if (report.values().empty())
     return NULL;
 
@@ -216,8 +217,30 @@ static base::DictionaryValue* GetDictValueStats(
   dict->Set("values", values);
 
   for (const auto& v : report.values()) {
-    values->AppendString(v.second->display_name());
-    values->AppendString(v.second->ToString());
+    const StatsReport::ValuePtr& value = v.second;
+    values->AppendString(value->display_name());
+    switch (value->type()) {
+      case StatsReport::Value::kInt:
+        values->AppendInteger(value->int_val());
+        break;
+      case StatsReport::Value::kFloat:
+        values->AppendDouble(value->float_val());
+        break;
+      case StatsReport::Value::kString:
+        values->AppendString(value->string_val());
+        break;
+      case StatsReport::Value::kStaticString:
+        values->AppendString(value->static_string_val());
+        break;
+      case StatsReport::Value::kBool:
+        values->AppendBoolean(value->bool_val());
+        break;
+      case StatsReport::Value::kInt64:  // int64 isn't supported, so use string.
+      case StatsReport::Value::kId:
+      default:
+        values->AppendString(value->ToString());
+        break;
+    }
   }
 
   return dict;
@@ -225,7 +248,7 @@ static base::DictionaryValue* GetDictValueStats(
 
 // Builds a DictionaryValue from the StatsReport.
 // The caller takes the ownership of the returned value.
-static base::DictionaryValue* GetDictValue(const webrtc::StatsReport& report) {
+static base::DictionaryValue* GetDictValue(const StatsReport& report) {
   scoped_ptr<base::DictionaryValue> stats, result;
 
   stats.reset(GetDictValueStats(report));
@@ -248,7 +271,7 @@ class InternalStatsObserver : public webrtc::StatsObserver {
   InternalStatsObserver(int lid)
       : lid_(lid), main_thread_(base::ThreadTaskRunnerHandle::Get()) {}
 
-  void OnComplete(const webrtc::StatsReports& reports) override {
+  void OnComplete(const StatsReports& reports) override {
     scoped_ptr<base::ListValue> list(new base::ListValue());
 
     for (const auto* r : reports) {

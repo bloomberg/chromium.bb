@@ -142,7 +142,7 @@ var StatsTable = (function(ssrcInfoManager) {
       trElement.cells[1].textContent = value;
 
       // Highlights the table for the active connection.
-      if (rowName == 'googActiveConnection' && value == 'true')
+      if (rowName == 'googActiveConnection' && value == true)
         statsTable.parentElement.classList.add('stats-table-active-connection');
     }
   };
