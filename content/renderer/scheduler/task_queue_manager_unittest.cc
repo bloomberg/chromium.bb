@@ -840,6 +840,54 @@ TEST_F(TaskQueueManagerTest, ThreadCheckAfterTermination) {
   EXPECT_TRUE(runner->RunsTasksOnCurrentThread());
 }
 
+TEST_F(TaskQueueManagerTest, NextPendingDelayedTaskRunTime) {
+  scoped_refptr<cc::TestNowSource> clock(cc::TestNowSource::Create());
+  Initialize(2u);
+  manager_->SetTimeSourceForTesting(clock);
+
+  scoped_refptr<base::SingleThreadTaskRunner> runners[2] = {
+      manager_->TaskRunnerForQueue(0), manager_->TaskRunnerForQueue(1)};
+
+  // With no delayed tasks.
+  EXPECT_TRUE(manager_->NextPendingDelayedTaskRunTime().is_null());
+
+  // With a non-delayed task.
+  runners[0]->PostTask(FROM_HERE, base::Bind(&NullTestTask));
+  EXPECT_TRUE(manager_->NextPendingDelayedTaskRunTime().is_null());
+
+  // With a delayed task.
+  base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(50);
+  runners[0]->PostDelayedTask(
+      FROM_HERE, base::Bind(&NullTestTask), expected_delay);
+  EXPECT_EQ(clock->Now() + expected_delay,
+            manager_->NextPendingDelayedTaskRunTime());
+
+  // With another delayed task in the same queue with a longer delay.
+  runners[0]->PostDelayedTask(
+      FROM_HERE, base::Bind(&NullTestTask),
+      base::TimeDelta::FromMilliseconds(100));
+  EXPECT_EQ(clock->Now() + expected_delay,
+            manager_->NextPendingDelayedTaskRunTime());
+
+  // With another delayed task in the same queue with a shorter delay.
+  expected_delay = base::TimeDelta::FromMilliseconds(20);
+  runners[0]->PostDelayedTask(
+      FROM_HERE, base::Bind(&NullTestTask), expected_delay);
+  EXPECT_EQ(clock->Now() + expected_delay,
+            manager_->NextPendingDelayedTaskRunTime());
+
+  // With another delayed task in a different queue with a shorter delay.
+  expected_delay = base::TimeDelta::FromMilliseconds(10);
+  runners[1]->PostDelayedTask(
+      FROM_HERE, base::Bind(&NullTestTask), expected_delay);
+  EXPECT_EQ(clock->Now() + expected_delay,
+            manager_->NextPendingDelayedTaskRunTime());
+
+  // Test it updates as time progresses
+  clock->AdvanceNow(expected_delay);
+  EXPECT_EQ(clock->Now(), manager_->NextPendingDelayedTaskRunTime());
+}
+
 }  // namespace
 }  // namespace content
 

@@ -37,6 +37,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                      base::Unretained(this)),
           control_task_runner_),
       current_policy_(Policy::NORMAL),
+      idle_period_state_(IdlePeriodState::NOT_IN_IDLE_PERIOD),
+      long_idle_periods_enabled_(false),
       last_input_type_(blink::WebInputEvent::Undefined),
       input_stream_state_(InputStreamState::INACTIVE),
       policy_may_need_update_(&incoming_signals_lock_),
@@ -46,6 +48,13 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                                       weak_renderer_scheduler_ptr_);
   end_idle_period_closure_.Reset(base::Bind(
       &RendererSchedulerImpl::EndIdlePeriod, weak_renderer_scheduler_ptr_));
+  initiate_next_long_idle_period_closure_.Reset(base::Bind(
+      &RendererSchedulerImpl::InitiateLongIdlePeriod,
+      weak_renderer_scheduler_ptr_));
+  initiate_next_long_idle_period_after_wakeup_closure_.Reset(base::Bind(
+      &RendererSchedulerImpl::InitiateLongIdlePeriodAfterWakeup,
+      weak_renderer_scheduler_ptr_));
+
   idle_task_runner_ = make_scoped_refptr(new SingleThreadIdleTaskRunner(
       task_queue_manager_->TaskRunnerForQueue(IDLE_TASK_QUEUE),
       control_task_after_wakeup_runner_,
@@ -136,7 +145,9 @@ void RendererSchedulerImpl::DidCommitFrameToCompositor() {
 
   base::TimeTicks now(Now());
   if (now < estimated_next_frame_begin_) {
-    StartIdlePeriod();
+    // TODO(rmcilroy): Consider reducing the idle period based on the runtime of
+    // the next pending delayed tasks (as currently done in for long idle times)
+    StartIdlePeriod(IdlePeriodState::IN_SHORT_IDLE_PERIOD);
     control_task_runner_->PostDelayedTask(FROM_HERE,
                                           end_idle_period_closure_.callback(),
                                           estimated_next_frame_begin_ - now);
@@ -147,10 +158,14 @@ void RendererSchedulerImpl::BeginFrameNotExpectedSoon() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::BeginFrameNotExpectedSoon");
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (!task_queue_manager_)
+    return;
+
   // TODO(skyostil): Wire up real notification of input events processing
   // instead of this approximation.
   DidProcessInputEvent(base::TimeTicks());
-  // TODO(rmcilroy): Implement long idle times.
+
+  InitiateLongIdlePeriod();
 }
 
 void RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread(
@@ -301,8 +316,11 @@ void RendererSchedulerImpl::UpdatePolicyLocked() {
   base::TimeDelta new_policy_duration;
   Policy new_policy = ComputeNewPolicy(now, &new_policy_duration);
   if (new_policy_duration > base::TimeDelta()) {
+    current_policy_expiration_time_ = now + new_policy_duration;
     delayed_update_policy_runner_.SetDeadline(FROM_HERE, new_policy_duration,
                                               now);
+  } else {
+    current_policy_expiration_time_ = base::TimeTicks();
   }
 
   if (new_policy == current_policy_)
@@ -354,67 +372,195 @@ RendererSchedulerImpl::Policy RendererSchedulerImpl::ComputeNewPolicy(
   if (input_stream_state_ == InputStreamState::INACTIVE)
     return new_policy;
 
-  base::TimeDelta new_priority_duration =
-      base::TimeDelta::FromMilliseconds(kPriorityEscalationAfterInputMillis);
   Policy input_priority_policy =
       input_stream_state_ ==
               InputStreamState::ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE
           ? Policy::TOUCHSTART_PRIORITY
           : Policy::COMPOSITOR_PRIORITY;
+  base::TimeDelta time_left_in_policy = TimeLeftInInputEscalatedPolicy(now);
+  if (time_left_in_policy > base::TimeDelta()) {
+    new_policy = input_priority_policy;
+    *new_policy_duration = time_left_in_policy;
+  } else {
+    // Reset |input_stream_state_| to ensure
+    // DidReceiveInputEventOnCompositorThread will post an UpdatePolicy task
+    // when it's next called.
+    input_stream_state_ = InputStreamState::INACTIVE;
+  }
+  return new_policy;
+}
 
-  // If the input event is still pending, go into input prioritized policy
-  // and check again later.
+base::TimeDelta RendererSchedulerImpl::TimeLeftInInputEscalatedPolicy(
+    base::TimeTicks now) const {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  // TODO(rmcilroy): Change this to DCHECK_EQ when crbug.com/463869 is fixed.
+  DCHECK(input_stream_state_ != InputStreamState::INACTIVE);
+  incoming_signals_lock_.AssertAcquired();
+
+  base::TimeDelta escalated_priority_duration =
+      base::TimeDelta::FromMilliseconds(kPriorityEscalationAfterInputMillis);
+  base::TimeDelta time_left_in_policy;
   if (last_input_process_time_on_main_.is_null() &&
       !task_queue_manager_->IsQueueEmpty(COMPOSITOR_TASK_QUEUE)) {
-    new_policy = input_priority_policy;
-    *new_policy_duration = new_priority_duration;
+    // If the input event is still pending, go into input prioritized policy
+    // and check again later.
+    time_left_in_policy = escalated_priority_duration;
   } else {
     // Otherwise make sure the input prioritization policy ends on time.
     base::TimeTicks new_priority_end(
         std::max(last_input_receipt_time_on_compositor_,
                  last_input_process_time_on_main_) +
-        new_priority_duration);
-    base::TimeDelta time_left_in_policy = new_priority_end - now;
-
-    if (time_left_in_policy > base::TimeDelta()) {
-      new_policy = input_priority_policy;
-      *new_policy_duration = time_left_in_policy;
-    } else {
-      // Reset |input_stream_state_| to ensure
-      // DidReceiveInputEventOnCompositorThread will post an UpdatePolicy task
-      // when it's next called.
-      input_stream_state_ = InputStreamState::INACTIVE;
-    }
+        escalated_priority_duration);
+    time_left_in_policy = new_priority_end - now;
   }
-  return new_policy;
+  return time_left_in_policy;
 }
 
-void RendererSchedulerImpl::StartIdlePeriod() {
+RendererSchedulerImpl::IdlePeriodState
+RendererSchedulerImpl::ComputeNewLongIdlePeriodState(
+    const base::TimeTicks now,
+    base::TimeDelta* next_long_idle_period_delay_out) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  MaybeUpdatePolicy();
+  if (SchedulerPolicy() == Policy::TOUCHSTART_PRIORITY) {
+    // Don't start a long idle task in touch start priority, try again when
+    // the policy is scheduled to end.
+    *next_long_idle_period_delay_out = current_policy_expiration_time_ - now;
+    return IdlePeriodState::NOT_IN_IDLE_PERIOD;
+  }
+
+  base::TimeTicks next_pending_delayed_task =
+      task_queue_manager_->NextPendingDelayedTaskRunTime();
+  base::TimeDelta max_long_idle_period_duration =
+      base::TimeDelta::FromMilliseconds(kMaximumIdlePeriodMillis);
+  base::TimeDelta long_idle_period_duration;
+  if (next_pending_delayed_task.is_null()) {
+    long_idle_period_duration = max_long_idle_period_duration;
+  } else {
+    // Limit the idle period duration to be before the next pending task.
+    long_idle_period_duration = std::min(next_pending_delayed_task - now,
+                                         max_long_idle_period_duration);
+  }
+
+  if (long_idle_period_duration > base::TimeDelta()) {
+    *next_long_idle_period_delay_out = long_idle_period_duration;
+    return long_idle_period_duration == max_long_idle_period_duration
+               ? IdlePeriodState::IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE
+               : IdlePeriodState::IN_LONG_IDLE_PERIOD;
+  } else {
+    // If we can't start the idle period yet then try again after wakeup.
+    *next_long_idle_period_delay_out = base::TimeDelta::FromMilliseconds(
+        kRetryInitiateLongIdlePeriodDelayMillis);
+    return IdlePeriodState::NOT_IN_IDLE_PERIOD;
+  }
+}
+
+void RendererSchedulerImpl::InitiateLongIdlePeriod() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "InitiateLongIdlePeriod");
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  // End any previous idle period.
+  EndIdlePeriod();
+
+  base::TimeTicks now(Now());
+  base::TimeDelta next_long_idle_period_delay;
+  IdlePeriodState new_idle_period_state =
+      ComputeNewLongIdlePeriodState(now, &next_long_idle_period_delay);
+  if (long_idle_periods_enabled_ && IsInIdlePeriod(new_idle_period_state)) {
+    estimated_next_frame_begin_ = now + next_long_idle_period_delay;
+    StartIdlePeriod(new_idle_period_state);
+  }
+
+  if (task_queue_manager_->IsQueueEmpty(IDLE_TASK_QUEUE)) {
+    // If there are no current idle tasks then post the call to initiate the
+    // next idle for execution after wakeup (at which point after-wakeup idle
+    // tasks might be eligible to run or more idle tasks posted).
+    control_task_after_wakeup_runner_->PostDelayedTask(
+        FROM_HERE,
+        initiate_next_long_idle_period_after_wakeup_closure_.callback(),
+        next_long_idle_period_delay);
+  } else {
+    // Otherwise post on the normal control task queue.
+    control_task_runner_->PostDelayedTask(
+        FROM_HERE,
+        initiate_next_long_idle_period_closure_.callback(),
+        next_long_idle_period_delay);
+  }
+}
+
+void RendererSchedulerImpl::InitiateLongIdlePeriodAfterWakeup() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "InitiateLongIdlePeriodAfterWakeup");
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  if (IsInIdlePeriod(idle_period_state_)) {
+    // Since we were asleep until now, end the async idle period trace event at
+    // the time when it would have ended were we awake.
+    TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
+        "renderer.scheduler", "RendererSchedulerIdlePeriod", this,
+        std::min(estimated_next_frame_begin_, Now()).ToInternalValue());
+    idle_period_state_ = IdlePeriodState::ENDING_LONG_IDLE_PERIOD;
+    EndIdlePeriod();
+  }
+
+  // Post a task to initiate the next long idle period rather than calling it
+  // directly to allow all pending PostIdleTaskAfterWakeup tasks to get enqueued
+  // on the idle task queue before the next idle period starts so they are
+  // eligible to be run during the new idle period.
+  control_task_runner_->PostTask(
+      FROM_HERE,
+      initiate_next_long_idle_period_closure_.callback());
+}
+
+void RendererSchedulerImpl::StartIdlePeriod(IdlePeriodState new_state) {
   TRACE_EVENT_ASYNC_BEGIN0("renderer.scheduler",
                            "RendererSchedulerIdlePeriod", this);
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(IsInIdlePeriod(new_state));
   renderer_task_queue_selector_->EnableQueue(
       IDLE_TASK_QUEUE, RendererTaskQueueSelector::BEST_EFFORT_PRIORITY);
   task_queue_manager_->PumpQueue(IDLE_TASK_QUEUE);
+  idle_period_state_ = new_state;
 }
 
 void RendererSchedulerImpl::EndIdlePeriod() {
-  bool is_tracing;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED("renderer.scheduler", &is_tracing);
-  if (is_tracing && !estimated_next_frame_begin_.is_null() &&
-      base::TimeTicks::Now() > estimated_next_frame_begin_) {
-    TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
-        "renderer.scheduler",
-        "RendererSchedulerIdlePeriod",
-        this,
-        "DeadlineOverrun",
-        estimated_next_frame_begin_.ToInternalValue());
-  }
-  TRACE_EVENT_ASYNC_END0("renderer.scheduler",
-                         "RendererSchedulerIdlePeriod", this);
   DCHECK(main_thread_checker_.CalledOnValidThread());
+
   end_idle_period_closure_.Cancel();
+  initiate_next_long_idle_period_closure_.Cancel();
+  initiate_next_long_idle_period_after_wakeup_closure_.Cancel();
+
+  // If we weren't already within an idle period then early-out.
+  if (!IsInIdlePeriod(idle_period_state_))
+    return;
+
+  // If we are in the ENDING_LONG_IDLE_PERIOD state we have already logged the
+  // trace event.
+  if (idle_period_state_ != IdlePeriodState::ENDING_LONG_IDLE_PERIOD) {
+    bool is_tracing;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED("renderer.scheduler", &is_tracing);
+    if (is_tracing && !estimated_next_frame_begin_.is_null() &&
+        base::TimeTicks::Now() > estimated_next_frame_begin_) {
+      TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
+          "renderer.scheduler",
+          "RendererSchedulerIdlePeriod",
+          this,
+          "DeadlineOverrun",
+          estimated_next_frame_begin_.ToInternalValue());
+    }
+    TRACE_EVENT_ASYNC_END0("renderer.scheduler",
+                           "RendererSchedulerIdlePeriod", this);
+  }
+
   renderer_task_queue_selector_->DisableQueue(IDLE_TASK_QUEUE);
+  idle_period_state_ = IdlePeriodState::NOT_IN_IDLE_PERIOD;
+}
+
+// static
+bool RendererSchedulerImpl::IsInIdlePeriod(IdlePeriodState state) {
+  return state != IdlePeriodState::NOT_IN_IDLE_PERIOD;
 }
 
 void RendererSchedulerImpl::SetTimeSourceForTesting(
@@ -427,6 +573,12 @@ void RendererSchedulerImpl::SetTimeSourceForTesting(
 void RendererSchedulerImpl::SetWorkBatchSizeForTesting(size_t work_batch_size) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   task_queue_manager_->SetWorkBatchSize(work_batch_size);
+}
+
+void RendererSchedulerImpl::SetLongIdlePeriodsEnabledForTesting(
+    bool long_idle_periods_enabled) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  long_idle_periods_enabled_ = long_idle_periods_enabled;
 }
 
 base::TimeTicks RendererSchedulerImpl::Now() const {
@@ -502,6 +654,25 @@ const char* RendererSchedulerImpl::InputStreamStateToString(
   }
 }
 
+const char* RendererSchedulerImpl::IdlePeriodStateToString(
+    IdlePeriodState idle_period_state) {
+  switch (idle_period_state) {
+    case IdlePeriodState::NOT_IN_IDLE_PERIOD:
+      return "not_in_idle_period";
+    case IdlePeriodState::IN_SHORT_IDLE_PERIOD:
+      return "in_short_idle_period";
+    case IdlePeriodState::IN_LONG_IDLE_PERIOD:
+      return "in_long_idle_period";
+    case IdlePeriodState::IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE:
+      return "in_long_idle_period_with_max_deadline";
+    case IdlePeriodState::ENDING_LONG_IDLE_PERIOD:
+      return "ending_long_idle_period";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -513,6 +684,8 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
       new base::trace_event::TracedValue();
 
   state->SetString("current_policy", PolicyToString(current_policy_));
+  state->SetString("idle_period_state",
+                   IdlePeriodStateToString(idle_period_state_));
   state->SetString("input_stream_state",
                    InputStreamStateToString(input_stream_state_));
   state->SetDouble("now", (optional_now - base::TimeTicks()).InMillisecondsF());

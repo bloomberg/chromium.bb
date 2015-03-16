@@ -57,6 +57,7 @@ class RendererSchedulerImplTest : public testing::Test {
         loading_task_runner_(scheduler_->LoadingTaskRunner()),
         idle_task_runner_(scheduler_->IdleTaskRunner()) {
     scheduler_->SetTimeSourceForTesting(clock_);
+    scheduler_->SetLongIdlePeriodsEnabledForTesting(true);
   }
 
   RendererSchedulerImplTest(base::MessageLoop* message_loop)
@@ -70,6 +71,7 @@ class RendererSchedulerImplTest : public testing::Test {
         loading_task_runner_(scheduler_->LoadingTaskRunner()),
         idle_task_runner_(scheduler_->IdleTaskRunner()) {
     scheduler_->SetTimeSourceForTesting(clock_);
+    scheduler_->SetLongIdlePeriodsEnabledForTesting(true);
   }
   ~RendererSchedulerImplTest() override {}
 
@@ -156,6 +158,17 @@ class RendererSchedulerImplTest : public testing::Test {
   static base::TimeDelta priority_escalation_after_input_duration() {
     return base::TimeDelta::FromMilliseconds(
         RendererSchedulerImpl::kPriorityEscalationAfterInputMillis);
+  }
+
+  static base::TimeDelta maximum_idle_period_duration() {
+    return base::TimeDelta::FromMilliseconds(
+        RendererSchedulerImpl::kMaximumIdlePeriodMillis);
+  }
+
+  base::TimeTicks CurrentIdleTaskDeadline() {
+    base::TimeTicks deadline;
+    scheduler_->CurrentIdleTaskDeadlineCallback(&deadline);
+    return deadline;
   }
 
   scoped_refptr<cc::TestNowSource> clock_;
@@ -496,7 +509,7 @@ TEST_F(RendererSchedulerImplTest, TestTouchstartPolicy) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "L1 D1 C1 D2 C2");
 
-  // Observation of touchstart should defer execution of idle and loading tasks.
+  // Observation of touchstart should defer execution of loading tasks.
   scheduler_->DidReceiveInputEventOnCompositorThread(
       FakeInputEvent(blink::WebInputEvent::TouchStart));
   RunUntilIdle();
@@ -1084,6 +1097,153 @@ TEST_F(RendererSchedulerImplWithMessageLoopTest,
   EXPECT_THAT(order, testing::ElementsAre(std::string("1"), std::string("2"),
                                           std::string("4"), std::string("5"),
                                           std::string("3")));
+}
+
+TEST_F(RendererSchedulerImplTest, TestLongIdlePeriod) {
+  base::TimeTicks expected_deadline =
+      clock_->Now() + maximum_idle_period_duration();
+  base::TimeTicks deadline_in_task;
+  int run_count = 0;
+
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+
+  RunUntilIdle();
+  EXPECT_EQ(0, run_count);  // Shouldn't run yet as no idle period.
+
+  scheduler_->BeginFrameNotExpectedSoon();
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);  // Should have run in a long idle time.
+  EXPECT_EQ(expected_deadline, deadline_in_task);
+}
+
+TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodWithPendingDelayedTask) {
+  base::TimeDelta pending_task_delay = base::TimeDelta::FromMilliseconds(30);
+  base::TimeTicks expected_deadline = clock_->Now() + pending_task_delay;
+  base::TimeTicks deadline_in_task;
+  int run_count = 0;
+
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+  default_task_runner_->PostDelayedTask(
+      FROM_HERE, base::Bind(&NullTask), pending_task_delay);
+
+  scheduler_->BeginFrameNotExpectedSoon();
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);  // Should have run in a long idle time.
+  EXPECT_EQ(expected_deadline, deadline_in_task);
+}
+
+TEST_F(RendererSchedulerImplTest,
+       TestLongIdlePeriodWithLatePendingDelayedTask) {
+  base::TimeDelta pending_task_delay = base::TimeDelta::FromMilliseconds(10);
+  base::TimeTicks deadline_in_task;
+  int run_count = 0;
+
+  default_task_runner_->PostDelayedTask(
+      FROM_HERE, base::Bind(&NullTask), pending_task_delay);
+
+  // Advance clock until after delayed task was meant to be run.
+  clock_->AdvanceNow(base::TimeDelta::FromMilliseconds(20));
+
+  // Post an idle task and BeginFrameNotExpectedSoon to initiate a long idle
+  // period. Since there is a late pending delayed task this shouldn't actually
+  // start an idle period.
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+  scheduler_->BeginFrameNotExpectedSoon();
+  RunUntilIdle();
+  EXPECT_EQ(0, run_count);
+
+  // After the delayed task has been run we should trigger an idle period.
+  clock_->AdvanceNow(maximum_idle_period_duration());
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);
+}
+
+TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodRepeating) {
+  int run_count = 0;
+
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
+
+  scheduler_->BeginFrameNotExpectedSoon();
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);  // Should only run once per idle period.
+
+  // Advance time to start of next long idle period and check task reposted task
+  // gets run.
+  clock_->AdvanceNow(maximum_idle_period_duration());
+  RunUntilIdle();
+  EXPECT_EQ(2, run_count);
+
+  // Advance time to start of next long idle period then end idle period with a
+  // new BeginMainFrame and check idle task doesn't run.
+  clock_->AdvanceNow(maximum_idle_period_duration());
+  scheduler_->WillBeginFrame(cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->Now(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(1000), cc::BeginFrameArgs::NORMAL));
+  RunUntilIdle();
+  EXPECT_EQ(2, run_count);
+}
+
+TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodDoesNotWakeScheduler) {
+  base::TimeTicks deadline_in_task;
+  int run_count = 0;
+
+  // Start a long idle period and get the time it should end.
+  scheduler_->BeginFrameNotExpectedSoon();
+  // The scheduler should not run the initiate_next_long_idle_period task if
+  // there are no idle tasks and no other task woke up the scheduler, thus
+  // the idle period deadline shouldn't update at the end of the current long
+  // idle period.
+  base::TimeTicks idle_period_deadline = CurrentIdleTaskDeadline();
+  clock_->AdvanceNow(maximum_idle_period_duration());
+  RunUntilIdle();
+
+  base::TimeTicks new_idle_period_deadline = CurrentIdleTaskDeadline();
+  EXPECT_EQ(idle_period_deadline, new_idle_period_deadline);
+
+  // Posting a after-wakeup idle task also shouldn't wake the scheduler or
+  // initiate the next long idle period.
+  idle_task_runner_->PostIdleTaskAfterWakeup(
+      FROM_HERE,
+      base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+  RunUntilIdle();
+  new_idle_period_deadline = CurrentIdleTaskDeadline();
+  EXPECT_EQ(idle_period_deadline, new_idle_period_deadline);
+  EXPECT_EQ(0, run_count);
+
+  // Running a normal task should initiate a new long idle period though.
+  default_task_runner_->PostTask(FROM_HERE, base::Bind(&NullTask));
+  RunUntilIdle();
+  new_idle_period_deadline = CurrentIdleTaskDeadline();
+  EXPECT_EQ(idle_period_deadline + maximum_idle_period_duration(),
+            new_idle_period_deadline);
+
+  EXPECT_EQ(1, run_count);
+}
+
+TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodInTouchStartPolicy) {
+  base::TimeTicks deadline_in_task;
+  int run_count = 0;
+
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE,
+      base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+
+  // Observation of touchstart should defer the start of the long idle period.
+  scheduler_->DidReceiveInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchStart));
+  scheduler_->BeginFrameNotExpectedSoon();
+  RunUntilIdle();
+  EXPECT_EQ(0, run_count);
+
+  // The long idle period should start after the touchstart policy has finished.
+  clock_->AdvanceNow(priority_escalation_after_input_duration());
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);
 }
 
 }  // namespace content

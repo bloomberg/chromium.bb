@@ -52,6 +52,8 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
 
   void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
+  // TODO(rmcilroy): Remove this when http://crbug.com/467655 is fixed.
+  void SetLongIdlePeriodsEnabledForTesting(bool long_idle_periods_enabled);
 
  private:
   friend class RendererSchedulerImplTest;
@@ -69,16 +71,28 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
     TASK_QUEUE_COUNT,
   };
 
+  // Keep RendererSchedulerImpl::PolicyToString in sync with this enum.
   enum class Policy {
     NORMAL,
     COMPOSITOR_PRIORITY,
     TOUCHSTART_PRIORITY,
   };
 
+  // Keep RendererSchedulerImpl::InputStreamStateToString in sync with this
+  // enum.
   enum class InputStreamState {
     INACTIVE,
     ACTIVE,
     ACTIVE_AND_AWAITING_TOUCHSTART_RESPONSE
+  };
+
+  // Keep RendererSchedulerImpl::IdlePeriodStateToString in sync with this enum.
+  enum class IdlePeriodState {
+    NOT_IN_IDLE_PERIOD,
+    IN_SHORT_IDLE_PERIOD,
+    IN_LONG_IDLE_PERIOD,
+    IN_LONG_IDLE_PERIOD_WITH_MAX_DEADLINE,
+    ENDING_LONG_IDLE_PERIOD
   };
 
   class PollableNeedsUpdateFlag {
@@ -105,6 +119,7 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   static const char* TaskQueueIdToString(QueueId queue_id);
   static const char* PolicyToString(Policy policy);
   static const char* InputStreamStateToString(InputStreamState state);
+  static const char* IdlePeriodStateToString(IdlePeriodState state);
 
   static InputStreamState ComputeNewInputStreamState(
       InputStreamState current_state,
@@ -113,6 +128,12 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
 
   // The time we should stay in a priority-escalated mode after an input event.
   static const int kPriorityEscalationAfterInputMillis = 100;
+
+  // The maximum length of an idle period.
+  static const int kMaximumIdlePeriodMillis = 50;
+
+  // The minimum delay to wait between retrying to initiate a long idle time.
+  static const int kRetryInitiateLongIdlePeriodDelayMillis = 1;
 
   // IdleTaskDeadlineSupplier Implementation:
   void CurrentIdleTaskDeadlineCallback(base::TimeTicks* deadline_out) const;
@@ -135,6 +156,10 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   void UpdatePolicy();
   virtual void UpdatePolicyLocked();
 
+  // Returns the amount of time left in the current input escalated priority
+  // policy.
+  base::TimeDelta TimeLeftInInputEscalatedPolicy(base::TimeTicks now) const;
+
   // Helper for computing the new policy. |new_policy_duration| will be filled
   // with the amount of time after which the policy should be updated again. If
   // the duration is zero, a new policy update will not be scheduled. Must be
@@ -150,9 +175,23 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   // input was processed.
   void DidProcessInputEvent(base::TimeTicks begin_frame_time);
 
+  // Returns the new idle period state for the next long idle period. Fills in
+  // |next_long_idle_period_delay_out| with the next time we should try to
+  // initiate the next idle period.
+  IdlePeriodState ComputeNewLongIdlePeriodState(
+      const base::TimeTicks now,
+      base::TimeDelta* next_long_idle_period_delay_out);
+
+  // Initiate a long idle period.
+  void InitiateLongIdlePeriod();
+  void InitiateLongIdlePeriodAfterWakeup();
+
   // Start and end an idle period.
-  void StartIdlePeriod();
+  void StartIdlePeriod(IdlePeriodState new_idle_period_state);
   void EndIdlePeriod();
+
+  // Returns true if |state| represents being within an idle period state.
+  static bool IsInIdlePeriod(IdlePeriodState state);
 
   base::TimeTicks Now() const;
 
@@ -169,11 +208,18 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   base::Closure update_policy_closure_;
   DeadlineTaskRunner delayed_update_policy_runner_;
   CancelableClosureHolder end_idle_period_closure_;
+  CancelableClosureHolder initiate_next_long_idle_period_closure_;
+  CancelableClosureHolder initiate_next_long_idle_period_after_wakeup_closure_;
 
   // Don't access current_policy_ directly, instead use SchedulerPolicy().
   Policy current_policy_;
+  IdlePeriodState idle_period_state_;
+
+    // TODO(rmcilroy): Remove this when http://crbug.com/467655 is fixed.
+  bool long_idle_periods_enabled_;
 
   base::TimeTicks estimated_next_frame_begin_;
+  base::TimeTicks current_policy_expiration_time_;
 
   // The incoming_signals_lock_ mutex protects access to all variables in the
   // (contiguous) block below.

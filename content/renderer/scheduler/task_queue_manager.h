@@ -98,6 +98,10 @@ class CONTENT_EXPORT TaskQueueManager {
   // lock, so calling it has some overhead.
   bool IsQueueEmpty(size_t queue_index) const;
 
+  // Returns the time of the next pending delayed task in any queue. Returns
+  // a null TimeTicks object if no tasks are pending.
+  base::TimeTicks NextPendingDelayedTaskRunTime();
+
   // Set the name |queue_index| for tracing purposes. |name| must be a pointer
   // to a static string.
   void SetQueueName(size_t queue_index, const char* name);

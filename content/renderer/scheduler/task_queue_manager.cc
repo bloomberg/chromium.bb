@@ -43,6 +43,9 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   void SetPumpPolicy(TaskQueueManager::PumpPolicy pump_policy);
   void PumpQueue();
 
+  bool NextPendingDelayedTaskRunTime(
+      base::TimeTicks* next_pending_delayed_task);
+
   bool UpdateWorkQueue(base::TimeTicks* next_pending_delayed_task,
                        const base::PendingTask* previous_task);
   base::PendingTask TakeTaskFromWorkQueue();
@@ -77,6 +80,8 @@ class TaskQueue : public base::SingleThreadTaskRunner {
   bool TaskIsOlderThanQueuedTasks(const base::PendingTask* task);
   bool ShouldAutoPumpQueueLocked(const base::PendingTask* previous_task);
   void EnqueueTaskLocked(const base::PendingTask& pending_task);
+  bool NextPendingDelayedTaskRunTimeLocked(
+      base::TimeTicks* next_pending_delayed_task);
 
   void TraceQueueSize(bool is_locked) const;
   static const char* PumpPolicyToString(
@@ -189,6 +194,23 @@ bool TaskQueue::ShouldAutoPumpQueueLocked(
   return true;
 }
 
+bool TaskQueue::NextPendingDelayedTaskRunTime(
+    base::TimeTicks* next_pending_delayed_task) {
+  base::AutoLock lock(lock_);
+  return NextPendingDelayedTaskRunTimeLocked(next_pending_delayed_task);
+}
+
+bool TaskQueue::NextPendingDelayedTaskRunTimeLocked(
+    base::TimeTicks* next_pending_delayed_task) {
+  lock_.AssertAcquired();
+  if (!delayed_task_run_times_.empty()) {
+    *next_pending_delayed_task =
+        std::min(*next_pending_delayed_task, delayed_task_run_times_.top());
+    return true;
+  }
+  return false;
+}
+
 bool TaskQueue::UpdateWorkQueue(
     base::TimeTicks* next_pending_delayed_task,
     const base::PendingTask* previous_task) {
@@ -197,10 +219,7 @@ bool TaskQueue::UpdateWorkQueue(
 
   {
     base::AutoLock lock(lock_);
-    if (!delayed_task_run_times_.empty()) {
-      *next_pending_delayed_task =
-          std::min(*next_pending_delayed_task, delayed_task_run_times_.top());
-    }
+    NextPendingDelayedTaskRunTimeLocked(next_pending_delayed_task);
     if (!ShouldAutoPumpQueueLocked(previous_task))
       return false;
     work_queue_.Swap(&incoming_queue_);
@@ -389,6 +408,24 @@ TaskQueueManager::TaskRunnerForQueue(size_t queue_index) const {
 bool TaskQueueManager::IsQueueEmpty(size_t queue_index) const {
   internal::TaskQueue* queue = Queue(queue_index);
   return queue->IsQueueEmpty();
+}
+
+base::TimeTicks TaskQueueManager::NextPendingDelayedTaskRunTime() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  bool found_pending_task = false;
+  base::TimeTicks next_pending_delayed_task(
+      base::TimeTicks::FromInternalValue(kMaxTimeTicks));
+  for (auto& queue : queues_) {
+    found_pending_task |=
+        queue->NextPendingDelayedTaskRunTime(&next_pending_delayed_task);
+  }
+
+  if (!found_pending_task)
+    return base::TimeTicks();
+
+  DCHECK_NE(next_pending_delayed_task,
+            base::TimeTicks::FromInternalValue(kMaxTimeTicks));
+  return next_pending_delayed_task;
 }
 
 void TaskQueueManager::SetPumpPolicy(size_t queue_index,
