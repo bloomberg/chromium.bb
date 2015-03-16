@@ -7,7 +7,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Bug fixes
 
 ** Other changes
-- The build dependency on makeinfo 5 is now optional. If it is not
+- The build dependency on makeinfo is now optional. If it is not
   installed we simply do not build the documentation.
 
 ** Braille table improvements
