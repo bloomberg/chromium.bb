@@ -215,6 +215,7 @@ void Page::documentDetached(Document* document)
     m_contextMenuController->documentDetached(document);
     if (m_validationMessageClient)
         m_validationMessageClient->documentDetached(*document);
+    m_originsUsingFeatures.documentDetached(*document);
 }
 
 bool Page::openedByDOM() const
@@ -545,6 +546,7 @@ void Page::didCommitLoad(LocalFrame* frame)
     if (m_mainFrame == frame) {
         frame->console().clearMessages();
         useCounter().didCommitLoad();
+        m_originsUsingFeatures.updateMeasurementsAndClear();
         UserGestureIndicator::clearProcessedUserGestureSinceLoad();
     }
 }

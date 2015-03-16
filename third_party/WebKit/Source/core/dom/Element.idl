@@ -65,7 +65,7 @@
 
     // Shadow DOM
     // http://w3c.github.io/webcomponents/spec/shadow/#extensions-to-element-interface
-    [RaisesException, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
+    [RaisesException, CallWith=ScriptState, MeasureAs=ElementCreateShadowRoot] ShadowRoot createShadowRoot();
     NodeList getDestinationInsertionPoints();
     [PerWorldBindings] readonly attribute ShadowRoot? shadowRoot;
 

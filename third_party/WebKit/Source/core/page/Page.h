@@ -23,6 +23,7 @@
 
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/SettingsDelegate.h"
 #include "core/frame/UseCounter.h"
 #include "core/page/PageAnimator.h"
@@ -148,6 +149,7 @@ public:
     Settings& settings() const { return *m_settings; }
 
     UseCounter& useCounter() { return m_useCounter; }
+    OriginsUsingFeatures& originsUsingFeatures() { return m_originsUsingFeatures; }
 
     void setTabKeyCyclesThroughElements(bool b) { m_tabKeyCyclesThroughElements = b; }
     bool tabKeyCyclesThroughElements() const { return m_tabKeyCyclesThroughElements; }
@@ -245,6 +247,7 @@ private:
     OwnPtrWillBeMember<ValidationMessageClient> m_validationMessageClient;
 
     UseCounter m_useCounter;
+    OriginsUsingFeatures m_originsUsingFeatures;
 
     bool m_openedByDOM;
 

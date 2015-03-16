@@ -542,7 +542,8 @@ public:
     virtual void histogramEnumeration(const char* name, int sample, int boundaryValue) { }
     // Unlike enumeration histograms, sparse histograms only allocate memory for non-empty buckets.
     virtual void histogramSparse(const char* name, int sample) { }
-
+    // Record to RAPPOR.
+    virtual void recordRappor(const char* metric, const WebString& sample) { }
 
     // GPU ----------------------------------------------------------------
     //

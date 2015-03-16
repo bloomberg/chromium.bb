@@ -49,6 +49,7 @@
 #include "core/dom/custom/CustomElement.h"
 #include "core/frame/DOMTimerCoordinator.h"
 #include "core/frame/LocalDOMWindow.h"
+#include "core/frame/OriginsUsingFeatures.h"
 #include "core/html/CollectionType.h"
 #include "core/html/parser/ParserSynchronizationPolicy.h"
 #include "core/page/PageVisibilityState.h"
@@ -1061,6 +1062,8 @@ public:
     virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) override;
     virtual v8::Handle<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper) override;
 
+    OriginsUsingFeatures::Value& originsUsingFeaturesValue() { return m_originsUsingFeaturesValue; }
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1395,6 +1398,8 @@ private:
     int m_styleRecalcElementCounter;
 
     ParserSynchronizationPolicy m_parserSyncPolicy;
+
+    OriginsUsingFeatures::Value m_originsUsingFeaturesValue;
 };
 
 inline bool Document::shouldOverrideLegacyDescription(ViewportDescription::Type origin)

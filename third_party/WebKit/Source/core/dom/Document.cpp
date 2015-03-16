@@ -123,6 +123,7 @@
 #include "core/frame/History.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -812,6 +813,8 @@ PassRefPtrWillBeRawPtr<Element> Document::createElementNS(const AtomicString& na
 
 ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, const ElementRegistrationOptions& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
 {
+    OriginsUsingFeatures::count(scriptState, *this, OriginsUsingFeatures::Feature::DocumentRegisterElement);
+
     if (!registrationContext()) {
         exceptionState.throwDOMException(NotSupportedError, "No element registration context is available.");
         return ScriptValue();

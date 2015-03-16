@@ -1515,6 +1515,7 @@
             'frame/NavigatorLanguage.cpp',
             'frame/NavigatorLanguage.h',
             'frame/NavigatorOnLine.h',
+            'frame/OriginsUsingFeatures.cpp',
             'frame/PinchViewport.cpp',
             'frame/PinchViewport.h',
             'frame/PlatformEventController.cpp',

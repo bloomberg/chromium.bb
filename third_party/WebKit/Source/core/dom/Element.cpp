@@ -84,6 +84,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/PinchViewport.h"
 #include "core/frame/ScrollToOptions.h"
 #include "core/frame/Settings.h"
@@ -1769,6 +1770,12 @@ CustomElementDefinition* Element::customElementDefinition() const
     if (hasRareData())
         return elementRareData()->customElementDefinition();
     return nullptr;
+}
+
+PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ScriptState* scriptState, ExceptionState& exceptionState)
+{
+    OriginsUsingFeatures::count(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
+    return createShadowRoot(exceptionState);
 }
 
 PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
