@@ -88,6 +88,20 @@ public:
     bool isControlledByServiceWorker() const override;
     int64_t serviceWorkerID() const override;
 
+    bool isMainFrame() const override;
+    bool hasSubstituteData() const override;
+    bool defersLoading() const override;
+    bool isLoadComplete() const override;
+    bool pageDismissalEventBeingDispatched() const override;
+    bool updateTimingInfoForIFrameNavigation(ResourceTimingInfo*) override;
+    void sendImagePing(const KURL&) override;
+    void addConsoleMessage(const String&) const override;
+    ExecutionContext* executionContext() const override;
+    SecurityOrigin* securityOrigin() const override;
+    String charset() const override;
+    void upgradeInsecureRequest(FetchRequest&) override;
+    void addClientHintsIfNecessary(FetchRequest&) override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

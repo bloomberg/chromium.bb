@@ -44,19 +44,8 @@
 #include "core/fetch/SubstituteData.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/fetch/XSLStyleSheetResource.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoader.h"
-#include "core/loader/FrameLoaderClient.h"
-#include "core/loader/MixedContentChecker.h"
-#include "core/loader/PingLoader.h"
 #include "core/timing/ResourceTimingInfo.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -188,11 +177,11 @@ static void populateResourceTiming(ResourceTimingInfo* info, Resource* resource,
     }
 }
 
-static WebURLRequest::RequestContext requestContextFromType(const ResourceFetcher* fetcher, Resource::Type type)
+static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Resource::Type type)
 {
     switch (type) {
     case Resource::MainResource:
-        if (fetcher->frame()->tree().parent())
+        if (!isMainFrame)
             return WebURLRequest::RequestContextIframe;
         // FIXME: Change this to a context frame type (once we introduce them): http://fetch.spec.whatwg.org/#concept-request-context-frame-type
         return WebURLRequest::RequestContextHyperlink;
@@ -267,13 +256,11 @@ ResourcePtr<ImageResource> ResourceFetcher::fetchImage(FetchRequest& request)
 {
     if (request.resourceRequest().requestContext() == WebURLRequest::RequestContextUnspecified)
         request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImage);
-    if (LocalFrame* f = frame()) {
-        if (f->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal) {
-            KURL requestURL = request.resourceRequest().url();
-            if (requestURL.isValid() && context().canRequest(Resource::Image, request.resourceRequest(), requestURL, request.options(), request.forPreload(), request.originRestriction()))
-                PingLoader::loadImage(f, requestURL);
-            return 0;
-        }
+    if (context().pageDismissalEventBeingDispatched()) {
+        KURL requestURL = request.resourceRequest().url();
+        if (requestURL.isValid() && context().canRequest(Resource::Image, request.resourceRequest(), requestURL, request.options(), request.forPreload(), request.originRestriction()))
+            context().sendImagePing(requestURL);
+        return 0;
     }
 
     if (request.resourceRequest().url().protocolIsData())
@@ -408,8 +395,8 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
     if (!context().canRequest(resource->type(), resource->resourceRequest(), url, resource->options(), forPreload, FetchRequest::UseDefaultOriginRestrictionForType))
         return false;
 
-    if (!sourceOrigin && document())
-        sourceOrigin = document()->securityOrigin();
+    if (!sourceOrigin)
+        sourceOrigin = context().securityOrigin();
 
     if (sourceOrigin->canRequest(url))
         return true;
@@ -418,9 +405,9 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
     if (!resource->passesAccessControlCheck(document(), sourceOrigin, errorDescription)) {
         if (resource->type() == Resource::Font)
             toFontResource(resource)->setCORSFailed();
-        if (!forPreload && (logErrorsDecision == ShouldLogAccessControlErrors) && frame() && frame()->document()) {
+        if (!forPreload && (logErrorsDecision == ShouldLogAccessControlErrors)) {
             String resourceType = Resource::resourceTypeToString(resource->type(), resource->options().initiatorInfo);
-            frame()->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, resourceType + " from origin '" + SecurityOrigin::create(url)->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription));
+            context().addConsoleMessage(resourceType + " from origin '" + SecurityOrigin::create(url)->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + errorDescription);
         }
         return false;
     }
@@ -452,7 +439,7 @@ void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest&
     if (type == ResourceLoadingFromCache)
         notifyLoadedFromMemoryCache(resource);
 
-    if (request.resourceRequest().url().protocolIsData() || (documentLoader() && documentLoader()->substituteData().isValid()))
+    if (request.resourceRequest().url().protocolIsData() || context().hasSubstituteData())
         return;
 
     if (type == ResourceLoadingFromCache && !resource->stillNeedsLoad() && !m_validatedURLs.contains(request.resourceRequest().url())) {
@@ -476,8 +463,8 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
 
     TRACE_EVENT0("blink", "ResourceFetcher::requestResource");
 
-    upgradeInsecureRequest(request);
-    addClientHintsIfNeccessary(request);
+    context().upgradeInsecureRequest(request);
+    context().addClientHintsIfNecessary(request);
 
     KURL url = request.resourceRequest().url();
 
@@ -579,7 +566,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     // use.
     // Remove main resource from cache to prevent reuse.
     if (type == Resource::MainResource) {
-        ASSERT(policy != Use || documentLoader()->substituteData().isValid());
+        ASSERT(policy != Use || context().hasSubstituteData());
         ASSERT(policy != Revalidate);
         memoryCache()->remove(resource.get());
     }
@@ -602,7 +589,7 @@ void ResourceFetcher::resourceTimingReportTimerFired(Timer<ResourceFetcher>* tim
 
 void ResourceFetcher::determineRequestContext(ResourceRequest& request, Resource::Type type)
 {
-    WebURLRequest::RequestContext requestContext = requestContextFromType(this, type);
+    WebURLRequest::RequestContext requestContext = requestContextFromType(context().isMainFrame(), type);
     request.setRequestContext(requestContext);
 }
 
@@ -616,51 +603,6 @@ void ResourceFetcher::addAdditionalRequestHeaders(ResourceRequest& request, Reso
         request.setHTTPHeaderField("Purpose", "prefetch");
 
     context().addAdditionalRequestHeaders(request, (type == Resource::MainResource) ? FetchMainResource : FetchSubresource);
-}
-
-void ResourceFetcher::upgradeInsecureRequest(FetchRequest& fetchRequest)
-{
-    if (!document() || !RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled())
-        return;
-
-    KURL url = fetchRequest.resourceRequest().url();
-
-    // Tack a 'Prefer' header to outgoing navigational requests, as described in
-    // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
-    if (fetchRequest.resourceRequest().frameType() != WebURLRequest::FrameTypeNone && !SecurityOrigin::isSecure(url))
-        fetchRequest.mutableResourceRequest().addHTTPHeaderField("Prefer", "return=secure-representation");
-
-    if (document()->insecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && url.protocolIs("http")) {
-        // We always upgrade subresource requests and nested frames, we always upgrade form
-        // submissions, and we always upgrade requests whose host matches the host of the
-        // containing document's security origin.
-        //
-        // FIXME: We need to check the document that set the policy, not the current document.
-        const ResourceRequest& request = fetchRequest.resourceRequest();
-        if (request.frameType() == WebURLRequest::FrameTypeNone
-            || request.frameType() == WebURLRequest::FrameTypeNested
-            || request.requestContext() == WebURLRequest::RequestContextForm
-            || url.host() == document()->securityOrigin()->host())
-        {
-            url.setProtocol("https");
-            if (url.port() == 80)
-                url.setPort(443);
-            fetchRequest.mutableResourceRequest().setURL(url);
-        }
-    }
-}
-
-void ResourceFetcher::addClientHintsIfNeccessary(FetchRequest& fetchRequest)
-{
-    if (!RuntimeEnabledFeatures::clientHintsEnabled() || !document() || !frame())
-        return;
-
-    if (frame()->shouldSendDPRHint())
-        fetchRequest.mutableResourceRequest().addHTTPHeaderField("DPR", AtomicString(String::number(document()->devicePixelRatio())));
-
-    // FIXME: Send the RW hint based on the actual resource width, when we have it.
-    if (frame()->shouldSendRWHint() && frame()->view())
-        fetchRequest.mutableResourceRequest().addHTTPHeaderField("RW", AtomicString(String::number(frame()->view()->viewportWidth())));
 }
 
 ResourcePtr<Resource> ResourceFetcher::createResourceForRevalidation(const FetchRequest& request, Resource* resource)
@@ -729,17 +671,8 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
             info->setOriginalTimingAllowOrigin(timingAllowOrigin);
     }
 
-    if (resource->type() == Resource::MainResource) {
-        // <iframe>s should report the initial navigation requested by the parent document, but not subsequent navigations.
-        // FIXME: Resource timing is broken when the parent is a remote frame.
-        if (frame() && frame()->deprecatedLocalOwner() && !frame()->deprecatedLocalOwner()->loadedNonEmptyDocument()) {
-            info->setInitiatorType(frame()->deprecatedLocalOwner()->localName());
-            m_resourceTimingInfoMap.add(resource, info);
-            frame()->deprecatedLocalOwner()->didLoadNonEmptyDocument();
-        }
-    } else {
+    if (resource->type() != Resource::MainResource || context().updateTimingInfoForIFrameNavigation(info.get()))
         m_resourceTimingInfoMap.add(resource, info);
-    }
 }
 
 ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy(Resource::Type type, const FetchRequest& fetchRequest, Resource* existingResource) const
@@ -774,7 +707,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         return Use;
 
     // If a main resource was populated from a SubstituteData load, use it.
-    if (type == Resource::MainResource && documentLoader()->substituteData().isValid())
+    if (type == Resource::MainResource && context().hasSubstituteData())
         return Use;
 
     if (!existingResource->canReuse(request))
@@ -829,7 +762,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     // Raw resources are exempted, as XHRs fall into this category and may have user-set Cache-Control:
     // headers or other factors that require separate requests.
     if (type != Resource::Raw) {
-        if (document() && !document()->loadEventFinished() && m_validatedURLs.contains(existingResource->url()))
+        if (!context().isLoadComplete() && m_validatedURLs.contains(existingResource->url()))
             return Use;
         if (existingResource->isLoading())
             return Use;
@@ -902,7 +835,7 @@ void ResourceFetcher::setImagesEnabled(bool enable)
 
 bool ResourceFetcher::clientDefersImage(const KURL& url) const
 {
-    return frame() && !frame()->loader().client()->allowImage(m_imagesEnabled, url);
+    return !context().allowImage(m_imagesEnabled, url);
 }
 
 bool ResourceFetcher::shouldDeferImageLoad(const KURL& url) const
@@ -991,7 +924,7 @@ void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const 
 
     String encoding;
     if (type == Resource::Script || type == Resource::CSSStyleSheet) {
-        encoding = charset.isEmpty() ? document()->charset().string() : charset;
+        encoding = charset.isEmpty() ? context().charset() : charset;
 
         // RequestContext for Resource::Image is set in fetchImage below.
         determineRequestContext(request.mutableResourceRequest(), type);
@@ -1154,8 +1087,7 @@ void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* lo
         m_nonBlockingLoaders = ResourceLoaderSet::create();
     m_nonBlockingLoaders->add(loader);
     m_loaders->remove(loader);
-    if (LocalFrame* frame = this->frame())
-        frame->loader().loadDone();
+    context().didLoadResource();
 }
 
 void ResourceFetcher::didInitializeResourceLoader(ResourceLoader* loader)
@@ -1211,9 +1143,7 @@ void ResourceFetcher::setDefersLoading(bool defers)
 
 bool ResourceFetcher::defersLoading() const
 {
-    if (LocalFrame* frame = this->frame())
-        return frame->page()->defersLoading();
-    return false;
+    return context().defersLoading();
 }
 
 bool ResourceFetcher::isLoadedBy(ResourceLoaderHost* possibleOwner) const
@@ -1227,15 +1157,14 @@ bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& req
         return false;
     if (options.corsEnabled == IsCORSEnabled) {
         SecurityOrigin* sourceOrigin = options.securityOrigin.get();
-        if (!sourceOrigin && document())
-            sourceOrigin = document()->securityOrigin();
+        if (!sourceOrigin)
+            sourceOrigin = context().securityOrigin();
 
         String errorMessage;
-        if (!CrossOriginAccessControl::handleRedirect(document(), resource, sourceOrigin, request, redirectResponse, options, errorMessage)) {
+        if (!CrossOriginAccessControl::handleRedirect(context().executionContext(), resource, sourceOrigin, request, redirectResponse, options, errorMessage)) {
             if (resource->type() == Resource::Font)
                 toFontResource(resource)->setCORSFailed();
-            if (frame() && frame()->document())
-                frame()->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
+            context().addConsoleMessage(errorMessage);
             return false;
         }
     }

@@ -190,8 +190,6 @@ private:
 
     void determineRequestContext(ResourceRequest&, Resource::Type);
     void addAdditionalRequestHeaders(ResourceRequest&, Resource::Type);
-    void upgradeInsecureRequest(FetchRequest&);
-    void addClientHintsIfNeccessary(FetchRequest&);
 
     static bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
 

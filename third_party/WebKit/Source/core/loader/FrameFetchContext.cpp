@@ -36,8 +36,10 @@
 #include "core/fetch/AcceptClientHints.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -47,12 +49,14 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/MixedContentChecker.h"
+#include "core/loader/PingLoader.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/Page.h"
 #include "core/svg/graphics/SVGImageChromeClient.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
+#include "core/timing/ResourceTimingInfo.h"
 #include "platform/Logging.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityPolicy.h"
@@ -349,7 +353,7 @@ void FrameFetchContext::addResourceTiming(ResourceTimingInfo* info, bool isMainR
 
 bool FrameFetchContext::allowImage(bool imagesEnabled, const KURL& url) const
 {
-    return frame() && !frame()->loader().client()->allowImage(imagesEnabled, url);
+    return !frame() || frame()->loader().client()->allowImage(imagesEnabled, url);
 }
 
 void FrameFetchContext::printAccessDeniedMessage(const KURL& url) const
@@ -548,6 +552,114 @@ int64_t FrameFetchContext::serviceWorkerID() const
     // In such cases a service worker ID could be retrieved from the document
     // loader of the frame.
     return frame()->loader().client()->serviceWorkerID(*frame()->loader().documentLoader());
+}
+
+bool FrameFetchContext::isMainFrame() const
+{
+    return frame() && frame()->isMainFrame();
+}
+
+bool FrameFetchContext::hasSubstituteData() const
+{
+    return m_documentLoader && m_documentLoader->substituteData().isValid();
+}
+
+bool FrameFetchContext::defersLoading() const
+{
+    return frame() && frame()->page()->defersLoading();
+}
+
+bool FrameFetchContext::isLoadComplete() const
+{
+    return m_document && m_document->loadEventFinished();
+}
+
+bool FrameFetchContext::pageDismissalEventBeingDispatched() const
+{
+    return m_document && m_document->pageDismissalEventBeingDispatched() != Document::NoDismissal;
+}
+
+bool FrameFetchContext::updateTimingInfoForIFrameNavigation(ResourceTimingInfo* info)
+{
+    // <iframe>s should report the initial navigation requested by the parent document, but not subsequent navigations.
+    // FIXME: Resource timing is broken when the parent is a remote frame.
+    if (!frame() || !frame()->deprecatedLocalOwner() || frame()->deprecatedLocalOwner()->loadedNonEmptyDocument())
+        return false;
+    info->setInitiatorType(frame()->deprecatedLocalOwner()->localName());
+    frame()->deprecatedLocalOwner()->didLoadNonEmptyDocument();
+    return true;
+}
+
+void FrameFetchContext::sendImagePing(const KURL& url)
+{
+    if (frame())
+        PingLoader::loadImage(frame(), url);
+}
+
+void FrameFetchContext::addConsoleMessage(const String& message) const
+{
+    if (frame() && frame()->document())
+        frame()->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
+}
+
+ExecutionContext* FrameFetchContext::executionContext() const
+{
+    return m_document.get();
+}
+
+SecurityOrigin* FrameFetchContext::securityOrigin() const
+{
+    return m_document ? m_document->securityOrigin() : nullptr;
+}
+
+String FrameFetchContext::charset() const
+{
+    return m_document ? m_document->charset().string() : String();
+}
+
+void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
+{
+    if (!m_document || !RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled())
+        return;
+
+    KURL url = fetchRequest.resourceRequest().url();
+
+    // Tack a 'Prefer' header to outgoing navigational requests, as described in
+    // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
+    if (fetchRequest.resourceRequest().frameType() != WebURLRequest::FrameTypeNone && !SecurityOrigin::isSecure(url))
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("Prefer", "return=secure-representation");
+
+    if (m_document->insecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && url.protocolIs("http")) {
+        // We always upgrade subresource requests and nested frames, we always upgrade form
+        // submissions, and we always upgrade requests whose host matches the host of the
+        // containing document's security origin.
+        //
+        // FIXME: We need to check the document that set the policy, not the current document.
+        const ResourceRequest& request = fetchRequest.resourceRequest();
+        if (request.frameType() == WebURLRequest::FrameTypeNone
+            || request.frameType() == WebURLRequest::FrameTypeNested
+            || request.requestContext() == WebURLRequest::RequestContextForm
+            || url.host() == document()->securityOrigin()->host())
+        {
+            url.setProtocol("https");
+            if (url.port() == 80)
+                url.setPort(443);
+            fetchRequest.mutableResourceRequest().setURL(url);
+        }
+    }
+}
+
+void FrameFetchContext::addClientHintsIfNecessary(FetchRequest& fetchRequest)
+{
+    if (!frame() || !RuntimeEnabledFeatures::clientHintsEnabled() || !m_document)
+        return;
+
+    if (frame()->shouldSendDPRHint())
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("DPR", AtomicString(String::number(m_document->devicePixelRatio())));
+
+    // FIXME: Send the RW hint based on the actual resource width, when we have it.
+    if (frame()->shouldSendRWHint() && frame()->view())
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("RW", AtomicString(String::number(frame()->view()->viewportWidth())));
 }
 
 DEFINE_TRACE(FrameFetchContext)

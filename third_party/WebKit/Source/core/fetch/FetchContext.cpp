@@ -34,12 +34,6 @@
 
 namespace blink {
 
-FetchContext& FetchContext::nullInstance()
-{
-    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FetchContext>, instance, (adoptPtrWillBeNoop(new FetchContext())));
-    return *instance;
-}
-
 void FetchContext::dispatchDidChangeResourcePriority(unsigned long, ResourceLoadPriority, int)
 {
 }
@@ -107,6 +101,22 @@ void FetchContext::didLoadResource()
 }
 
 void FetchContext::addResourceTiming(ResourceTimingInfo*, bool)
+{
+}
+
+void FetchContext::sendImagePing(const KURL&)
+{
+}
+
+void FetchContext::addConsoleMessage(const String&) const
+{
+}
+
+void FetchContext::upgradeInsecureRequest(FetchRequest&)
+{
+}
+
+void FetchContext::addClientHintsIfNecessary(FetchRequest&)
 {
 }
 

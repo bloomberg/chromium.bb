@@ -59,9 +59,11 @@ enum FetchResourceType {
 class FetchContext : public NoBaseWillBeGarbageCollectedFinalized<FetchContext> {
     WTF_MAKE_NONCOPYABLE(FetchContext);
 public:
-    static FetchContext& nullInstance();
+    static PassOwnPtrWillBeRawPtr<FetchContext> create()
+    {
+        return adoptPtrWillBeNoop(new FetchContext);
+    }
 
-    FetchContext() { }
     virtual ~FetchContext() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
@@ -96,6 +98,23 @@ public:
 
     virtual bool isControlledByServiceWorker() const { return false; }
     virtual int64_t serviceWorkerID() const { return -1; }
+
+    virtual bool isMainFrame() const { return true; }
+    virtual bool hasSubstituteData() const { return false; }
+    virtual bool defersLoading() const { return false; }
+    virtual bool isLoadComplete() const { return false; }
+    virtual bool pageDismissalEventBeingDispatched() const { return false; }
+    virtual bool updateTimingInfoForIFrameNavigation(ResourceTimingInfo*) { return false; }
+    virtual void sendImagePing(const KURL&);
+    virtual void addConsoleMessage(const String&) const;
+    virtual ExecutionContext* executionContext() const { return nullptr; }
+    virtual SecurityOrigin* securityOrigin() const { return nullptr; }
+    virtual String charset() const { return String(); }
+    virtual void upgradeInsecureRequest(FetchRequest&);
+    virtual void addClientHintsIfNecessary(FetchRequest&);
+
+protected:
+    FetchContext() { }
 };
 
 }

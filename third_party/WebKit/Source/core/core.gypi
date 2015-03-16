@@ -3805,6 +3805,7 @@
             'layout/style/OutlineValueTest.cpp',
             'layout/style/LayoutStyleTest.cpp',
             'layout/style/SVGLayoutStyleTest.cpp',
+            'loader/FrameFetchContextTest.cpp',
             'loader/LinkHeaderTest.cpp',
             'loader/MixedContentCheckerTest.cpp',
             'page/ContextMenuControllerTest.cpp',
