@@ -416,6 +416,7 @@ class EncryptedMediaTest
 
   void TestMultiplePlayback(const std::string& encrypted_media,
                             const std::string& media_type) {
+    DCHECK(IsPlayBackPossible(CurrentKeySystem()));
     RunEncryptedMediaTest(kDefaultEmePlayer, encrypted_media, media_type,
                           CurrentKeySystem(), CurrentSourceType(),
                           CurrentEmeVersion(), kNoSessionToLoad, false,
@@ -575,6 +576,10 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoClearAudio_WebM_Opus) {
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Multiple_VideoAudio_WebM) {
+  if (!IsPlayBackPossible(CurrentKeySystem())) {
+    DVLOG(0) << "Skipping test - Playback_Multiple test requires playback.";
+    return;
+  }
   TestMultiplePlayback("bear-320x240-av_enc-av.webm", kWebMAudioVideo);
 }
 
