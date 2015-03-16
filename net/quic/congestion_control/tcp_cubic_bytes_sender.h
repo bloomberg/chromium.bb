@@ -1,20 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
 // TCP cubic send side congestion algorithm, emulates the behavior of TCP cubic.
 
-#ifndef NET_QUIC_CONGESTION_CONTROL_TCP_CUBIC_SENDER_H_
-#define NET_QUIC_CONGESTION_CONTROL_TCP_CUBIC_SENDER_H_
+#ifndef NET_QUIC_CONGESTION_CONTROL_TCP_CUBIC_BYTES_SENDER_H_
+#define NET_QUIC_CONGESTION_CONTROL_TCP_CUBIC_BYTES_SENDER_H_
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "net/base/net_export.h"
-#include "net/quic/congestion_control/cubic.h"
+#include "net/quic/congestion_control/cubic_bytes.h"
 #include "net/quic/congestion_control/hybrid_slow_start.h"
 #include "net/quic/congestion_control/prr_sender.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
-#include "net/quic/crypto/cached_network_parameters.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_protocol.h"
@@ -25,17 +23,17 @@ namespace net {
 class RttStats;
 
 namespace test {
-class TcpCubicSenderPeer;
+class TcpCubicBytesSenderPeer;
 }  // namespace test
 
-class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
+class NET_EXPORT_PRIVATE TcpCubicBytesSender : public SendAlgorithmInterface {
  public:
-  TcpCubicSender(const QuicClock* clock,
-                 const RttStats* rtt_stats,
-                 bool reno,
-                 QuicPacketCount initial_tcp_congestion_window,
-                 QuicConnectionStats* stats);
-  ~TcpCubicSender() override;
+  TcpCubicBytesSender(const QuicClock* clock,
+                      const RttStats* rtt_stats,
+                      bool reno,
+                      QuicPacketCount initial_tcp_congestion_window,
+                      QuicConnectionStats* stats);
+  ~TcpCubicBytesSender() override;
 
   // Start implementation of SendAlgorithmInterface.
   void SetFromConfig(const QuicConfig& config,
@@ -70,7 +68,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // End implementation of SendAlgorithmInterface.
 
  private:
-  friend class test::TcpCubicSenderPeer;
+  friend class test::TcpCubicBytesSenderPeer;
 
   // Compute the TCP Reno beta based on the current number of connections.
   float RenoBeta() const;
@@ -83,11 +81,12 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
                     QuicByteCount bytes_in_flight);
 
   void MaybeIncreaseCwnd(QuicPacketSequenceNumber acked_sequence_number,
+                         QuicByteCount acked_bytes,
                          QuicByteCount bytes_in_flight);
   bool IsCwndLimited(QuicByteCount bytes_in_flight) const;
 
   HybridSlowStart hybrid_slow_start_;
-  Cubic cubic_;
+  CubicBytes cubic_;
   PrrSender prr_;
   const RttStats* rtt_stats_;
   QuicConnectionStats* stats_;
@@ -110,24 +109,21 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // Track the largest sequence number outstanding when a CWND cutback occurs.
   QuicPacketSequenceNumber largest_sent_at_last_cutback_;
 
-  // Congestion window in packets.
-  QuicPacketCount congestion_window_;
+  // Congestion window in bytes.
+  QuicByteCount congestion_window_;
 
-  // Minimum congestion window in packets.
-  QuicPacketCount min_congestion_window_;
+  // Slow start congestion window in bytes, aka ssthresh.
+  QuicByteCount slowstart_threshold_;
 
-  // Slow start congestion window in packets, aka ssthresh.
-  QuicPacketCount slowstart_threshold_;
-
-  // Whether the last loss event caused us to exit slowstart.
-  // Used for stats collection of slowstart_packets_lost
+  // Whether the last loss event caused us to exit slowstart. Used for stats
+  // collection of slowstart_packets_lost.
   bool last_cutback_exited_slowstart_;
 
   const QuicClock* clock_;
 
-  DISALLOW_COPY_AND_ASSIGN(TcpCubicSender);
+  DISALLOW_COPY_AND_ASSIGN(TcpCubicBytesSender);
 };
 
 }  // namespace net
 
-#endif  // NET_QUIC_CONGESTION_CONTROL_TCP_CUBIC_SENDER_H_
+#endif  // NET_QUIC_CONGESTION_CONTROL_TCP_CUBIC_BYTES_SENDER_H_

@@ -377,6 +377,7 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
   EXPECT_CALL(*crypto_stream,
               SendServerConfigUpdate(EqualsProto(expected_network_params)))
       .Times(1);
+  EXPECT_CALL(*connection_, OnSendConnectionState(_)).Times(1);
   session_->OnCongestionWindowChange(now);
 }
 

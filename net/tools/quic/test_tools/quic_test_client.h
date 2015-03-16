@@ -50,10 +50,15 @@ class MockableQuicClient : public QuicClient {
   QuicConnectionId GenerateConnectionId() override;
   void UseWriter(QuicPacketWriterWrapper* writer);
   void UseConnectionId(QuicConnectionId connection_id);
+  void SendCachedNetworkParamaters(
+      const CachedNetworkParameters& cached_network_params) {
+    cached_network_paramaters_ = cached_network_params;
+  }
 
  private:
   QuicConnectionId override_connection_id_;  // ConnectionId to use, if nonzero
   QuicPacketWriterWrapper* test_writer_;
+  CachedNetworkParameters cached_network_paramaters_;
 
   DISALLOW_COPY_AND_ASSIGN(MockableQuicClient);
 };

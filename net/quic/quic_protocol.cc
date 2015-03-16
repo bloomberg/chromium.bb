@@ -624,6 +624,18 @@ const QuicFrame& RetransmittableFrames::AddNonStreamFrame(
   return frames_.back();
 }
 
+void RetransmittableFrames::RemoveFramesForStream(QuicStreamId stream_id) {
+  QuicFrames::iterator it = frames_.begin();
+  while (it != frames_.end()) {
+    if (it->type != STREAM_FRAME || it->stream_frame->stream_id != stream_id) {
+      ++it;
+      continue;
+    }
+    delete it->stream_frame;
+    it = frames_.erase(it);
+  }
+}
+
 SerializedPacket::SerializedPacket(
     QuicPacketSequenceNumber sequence_number,
     QuicSequenceNumberLength sequence_number_length,

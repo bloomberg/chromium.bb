@@ -156,6 +156,9 @@ void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
   }
 
   crypto_stream_->SendServerConfigUpdate(&cached_network_params);
+
+  connection()->OnSendConnectionState(cached_network_params);
+
   last_scup_time_ = now;
   last_scup_sequence_number_ =
       connection()->sequence_number_of_last_sent_packet();

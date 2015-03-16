@@ -312,8 +312,18 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   max_undecryptable_packets_ = config.max_undecryptable_packets();
 }
 
+void QuicConnection::OnSendConnectionState(
+    const CachedNetworkParameters& cached_network_params) {
+  if (debug_visitor_ != nullptr) {
+    debug_visitor_->OnSendConnectionState(cached_network_params);
+  }
+}
+
 bool QuicConnection::ResumeConnectionState(
     const CachedNetworkParameters& cached_network_params) {
+  if (debug_visitor_ != nullptr) {
+    debug_visitor_->OnResumeConnectionState(cached_network_params);
+  }
   return sent_packet_manager_.ResumeConnectionState(cached_network_params);
 }
 

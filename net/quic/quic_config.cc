@@ -64,7 +64,8 @@ QuicNegotiableUint32::QuicNegotiableUint32(QuicTag tag,
                                            QuicConfigPresence presence)
     : QuicNegotiableValue(tag, presence),
       max_value_(0),
-      default_value_(0) {
+      default_value_(0),
+      negotiated_value_(0) {
 }
 QuicNegotiableUint32::~QuicNegotiableUint32() {}
 

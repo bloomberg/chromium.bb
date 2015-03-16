@@ -77,13 +77,11 @@ struct TestParams {
   TestParams(const QuicVersionVector& client_supported_versions,
              const QuicVersionVector& server_supported_versions,
              QuicVersion negotiated_version,
-             bool use_pacing,
              bool use_fec,
              QuicTag congestion_control_tag)
       : client_supported_versions(client_supported_versions),
         server_supported_versions(server_supported_versions),
         negotiated_version(negotiated_version),
-        use_pacing(use_pacing),
         use_fec(use_fec),
         congestion_control_tag(congestion_control_tag) {
   }
@@ -94,7 +92,6 @@ struct TestParams {
     os << " client_supported_versions: "
        << QuicVersionVectorToString(p.client_supported_versions);
     os << " negotiated_version: " << QuicVersionToString(p.negotiated_version);
-    os << " use_pacing: " << p.use_pacing;
     os << " use_fec: " << p.use_fec;
     os << " congestion_control_tag: "
        << QuicUtils::TagToString(p.congestion_control_tag) << " }";
@@ -104,7 +101,6 @@ struct TestParams {
   QuicVersionVector client_supported_versions;
   QuicVersionVector server_supported_versions;
   QuicVersion negotiated_version;
-  bool use_pacing;
   bool use_fec;
   QuicTag congestion_control_tag;
 };
@@ -131,27 +127,25 @@ vector<TestParams> GetTestParams() {
     QuicTag congestion_control_tag =
         congestion_control_tags[congestion_control_index];
     for (int use_fec = 0; use_fec < 2; ++use_fec) {
-      for (int use_pacing = 0; use_pacing < 2; ++use_pacing) {
-        for (int spdy_version = 3; spdy_version <= 4; ++spdy_version) {
-          const QuicVersionVector* client_versions =
-              spdy_version == 3 ? &spdy3_versions : &spdy4_versions;
-          // Add an entry for server and client supporting all versions.
-          params.push_back(TestParams(*client_versions, all_supported_versions,
-                                      (*client_versions)[0], use_pacing != 0,
-                                      use_fec != 0, congestion_control_tag));
+      for (int spdy_version = 3; spdy_version <= 4; ++spdy_version) {
+        const QuicVersionVector* client_versions =
+            spdy_version == 3 ? &spdy3_versions : &spdy4_versions;
+        // Add an entry for server and client supporting all versions.
+        params.push_back(TestParams(*client_versions, all_supported_versions,
+                                    (*client_versions)[0], use_fec != 0,
+                                    congestion_control_tag));
 
-          // Test client supporting all versions and server supporting 1
-          // version. Simulate an old server and exercise version downgrade in
-          // the client. Protocol negotiation should occur. Skip the i = 0 case
-          // because it is essentially the same as the default case.
-          for (QuicVersion version : *client_versions) {
-            QuicVersionVector server_supported_versions;
-            server_supported_versions.push_back(version);
-            params.push_back(
-                TestParams(*client_versions, server_supported_versions,
-                           server_supported_versions[0], use_pacing != 0,
-                           use_fec != 0, congestion_control_tag));
-          }
+        // Test client supporting all versions and server supporting 1
+        // version. Simulate an old server and exercise version downgrade in
+        // the client. Protocol negotiation should occur. Skip the i = 0 case
+        // because it is essentially the same as the default case.
+        for (QuicVersion version : *client_versions) {
+          QuicVersionVector server_supported_versions;
+          server_supported_versions.push_back(version);
+          params.push_back(TestParams(*client_versions,
+                                      server_supported_versions,
+                                      server_supported_versions[0],
+                                      use_fec != 0, congestion_control_tag));
         }
       }
     }
@@ -279,10 +273,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   bool Initialize() {
     QuicTagVector copt;
-
-    if (GetParam().use_pacing) {
-      copt.push_back(kPACE);
-    }
     server_config_.SetConnectionOptionsToSend(copt);
 
     // TODO(nimia): Consider setting the congestion control algorithm for the
@@ -318,8 +308,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     // and TestWriterFactory when Initialize() is executed.
     client_writer_ = new PacketDroppingTestWriter();
     server_writer_ = new PacketDroppingTestWriter();
-    // TODO(ianswett): Remove this once it's fully rolled out.
-    FLAGS_quic_enable_pacing = false;
   }
 
   void TearDown() override { StopServer(); }
@@ -929,16 +917,6 @@ TEST_P(EndToEndTest, ClientSuggestsRTT) {
   const QuicSentPacketManager& server_sent_packet_manager =
       *GetSentPacketManagerFromFirstServerSession();
 
-  // BBR automatically enables pacing.
-  EXPECT_EQ(GetParam().use_pacing ||
-            (FLAGS_quic_allow_bbr &&
-             GetParam().congestion_control_tag == kTBBR),
-            server_sent_packet_manager.using_pacing());
-  EXPECT_EQ(GetParam().use_pacing ||
-            (FLAGS_quic_allow_bbr &&
-             GetParam().congestion_control_tag == kTBBR),
-            client_sent_packet_manager.using_pacing());
-
   EXPECT_EQ(kInitialRTT,
             client_sent_packet_manager.GetRttStats()->initial_rtt_us());
   EXPECT_EQ(kInitialRTT,
@@ -1354,28 +1332,6 @@ TEST_P(EndToEndTest, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
   EXPECT_EQ(0u, QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(
       session).size());
   server_thread_->Resume();
-}
-
-TEST_P(EndToEndTest, EnablePacingViaFlag) {
-  // When pacing is enabled via command-line flag, it will always be enabled,
-  // regardless of the config. or the specific congestion-control algorithm.
-  ValueRestore<bool> old_flag(&FLAGS_quic_enable_pacing, true);
-  ASSERT_TRUE(Initialize());
-
-  client_->client()->WaitForCryptoHandshakeConfirmed();
-  server_thread_->WaitForCryptoHandshakeConfirmed();
-
-  // Pause the server so we can access the server's internals without races.
-  server_thread_->Pause();
-  QuicDispatcher* dispatcher =
-      QuicServerPeer::GetDispatcher(server_thread_->server());
-  ASSERT_EQ(1u, dispatcher->session_map().size());
-  const QuicSentPacketManager& client_sent_packet_manager =
-      client_->client()->session()->connection()->sent_packet_manager();
-  const QuicSentPacketManager& server_sent_packet_manager =
-      *GetSentPacketManagerFromFirstServerSession();
-  EXPECT_TRUE(server_sent_packet_manager.using_pacing());
-  EXPECT_TRUE(client_sent_packet_manager.using_pacing());
 }
 
 // A TestAckNotifierDelegate verifies that its OnAckNotification method has been

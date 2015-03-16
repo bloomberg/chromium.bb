@@ -979,6 +979,9 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
   const QuicFrame& AddStreamFrame(QuicStreamFrame* stream_frame);
   // Takes ownership of the frame inside |frame|.
   const QuicFrame& AddNonStreamFrame(const QuicFrame& frame);
+  // Removes all stream frames associated with |stream_id|.
+  void RemoveFramesForStream(QuicStreamId stream_id);
+
   const QuicFrames& frames() const { return frames_; }
 
   IsHandshake HasCryptoHandshake() const {

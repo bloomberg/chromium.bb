@@ -201,6 +201,14 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
 
   // Called when the version negotiation is successful.
   virtual void OnSuccessfulVersionNegotiation(const QuicVersion& version) {}
+
+  // Called when a CachedNetworkParameters is sent to the client.
+  virtual void OnSendConnectionState(
+      const CachedNetworkParameters& cached_network_params) {}
+
+  // Called when resuming previous connection state.
+  virtual void OnResumeConnectionState(
+      const CachedNetworkParameters& cached_network_params) {}
 };
 
 class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
@@ -254,6 +262,10 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Sets connection parameters from the supplied |config|.
   void SetFromConfig(const QuicConfig& config);
+
+  // Called by the session when sending connection state to the client.
+  virtual void OnSendConnectionState(
+      const CachedNetworkParameters& cached_network_params);
 
   // Called by the Session when the client has provided CachedNetworkParameters.
   // Returns true if this changes the initial connection state.

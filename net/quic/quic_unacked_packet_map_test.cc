@@ -36,6 +36,18 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
                             new RetransmittableFrames(ENCRYPTION_NONE));
   }
 
+  SerializedPacket CreateRetransmittablePacketForStream(
+      QuicPacketSequenceNumber sequence_number,
+      QuicStreamId stream_id) {
+    packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
+    RetransmittableFrames* frames = new RetransmittableFrames(ENCRYPTION_NONE);
+    QuicStreamFrame* frame = new QuicStreamFrame();
+    frame->stream_id = stream_id;
+    frames->AddStreamFrame(frame);
+    return SerializedPacket(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
+                            packets_.back(), 0, frames);
+  }
+
   SerializedPacket CreateNonRetransmittablePacket(
       QuicPacketSequenceNumber sequence_number) {
     packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
@@ -162,6 +174,64 @@ TEST_F(QuicUnackedPacketMapTest, RetransmittableInflightAndRtt) {
   unacked_packets_.RemoveFromInFlight(1);
   VerifyUnackedPackets(nullptr, 0);
   VerifyInFlightPackets(nullptr, 0);
+  VerifyRetransmittablePackets(nullptr, 0);
+}
+
+TEST_F(QuicUnackedPacketMapTest, StopRetransmission) {
+  const QuicStreamId stream_id = 2;
+  unacked_packets_.AddSentPacket(
+      CreateRetransmittablePacketForStream(1, stream_id), 0, NOT_RETRANSMISSION,
+      now_, kDefaultLength, true);
+
+  QuicPacketSequenceNumber unacked[] = {1};
+  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyInFlightPackets(unacked, arraysize(unacked));
+  QuicPacketSequenceNumber retransmittable[] = {1};
+  VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
+
+  unacked_packets_.StopRetransmissionForStream(stream_id);
+  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyInFlightPackets(unacked, arraysize(unacked));
+  VerifyRetransmittablePackets(nullptr, 0);
+}
+
+TEST_F(QuicUnackedPacketMapTest, StopRetransmissionOnOtherStream) {
+  const QuicStreamId stream_id = 2;
+  unacked_packets_.AddSentPacket(
+      CreateRetransmittablePacketForStream(1, stream_id), 0, NOT_RETRANSMISSION,
+      now_, kDefaultLength, true);
+
+  QuicPacketSequenceNumber unacked[] = {1};
+  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyInFlightPackets(unacked, arraysize(unacked));
+  QuicPacketSequenceNumber retransmittable[] = {1};
+  VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
+
+  // Stop retransmissions on another stream and verify the packet is unchanged.
+  unacked_packets_.StopRetransmissionForStream(stream_id + 2);
+  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyInFlightPackets(unacked, arraysize(unacked));
+  VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
+}
+
+TEST_F(QuicUnackedPacketMapTest, StopRetransmissionAfterRetransmission) {
+  const QuicStreamId stream_id = 2;
+  unacked_packets_.AddSentPacket(
+      CreateRetransmittablePacketForStream(1, stream_id), 0, NOT_RETRANSMISSION,
+      now_, kDefaultLength, true);
+  unacked_packets_.AddSentPacket(CreateNonRetransmittablePacket(2), 1,
+                                 LOSS_RETRANSMISSION, now_, kDefaultLength,
+                                 true);
+
+  QuicPacketSequenceNumber unacked[] = {1, 2};
+  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyInFlightPackets(unacked, arraysize(unacked));
+  QuicPacketSequenceNumber retransmittable[] = {2};
+  VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
+
+  unacked_packets_.StopRetransmissionForStream(stream_id);
+  VerifyUnackedPackets(unacked, arraysize(unacked));
+  VerifyInFlightPackets(unacked, arraysize(unacked));
   VerifyRetransmittablePackets(nullptr, 0);
 }
 

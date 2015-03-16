@@ -332,6 +332,7 @@ class MockConnection : public QuicConnection {
                                       QuicStreamOffset byte_offset));
   MOCK_METHOD0(OnCanWrite, void());
 
+  MOCK_METHOD1(OnSendConnectionState, void(const CachedNetworkParameters&));
   MOCK_METHOD1(ResumeConnectionState, bool(const CachedNetworkParameters&));
 
   void ReallyProcessUdpPacket(const IPEndPoint& self_address,

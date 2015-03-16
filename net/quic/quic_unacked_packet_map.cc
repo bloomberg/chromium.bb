@@ -300,6 +300,25 @@ void QuicUnackedPacketMap::RemoveFromInFlight(
   }
 }
 
+void QuicUnackedPacketMap::StopRetransmissionForStream(QuicStreamId stream_id) {
+  if (stream_id == kCryptoStreamId || stream_id == kHeadersStreamId) {
+    LOG(DFATAL) << "Special streams must always retransmit data: " << stream_id;
+    return;
+  }
+  QuicPacketSequenceNumber sequence_number = least_unacked_;
+  for (UnackedPacketMap::const_iterator it = unacked_packets_.begin();
+       it != unacked_packets_.end(); ++it, ++sequence_number) {
+    RetransmittableFrames* retransmittable_frames = it->retransmittable_frames;
+    if (!retransmittable_frames) {
+      continue;
+    }
+    retransmittable_frames->RemoveFramesForStream(stream_id);
+    if (retransmittable_frames->frames().empty()) {
+      RemoveRetransmittability(sequence_number);
+    }
+  }
+}
+
 bool QuicUnackedPacketMap::HasUnackedPackets() const {
   return !unacked_packets_.empty();
 }

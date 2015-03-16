@@ -29,11 +29,6 @@ bool FLAGS_quic_allow_bbr = false;
 // Chrome/Finch).
 bool FLAGS_quic_enable_bandwidth_resumption_experiment = true;
 
-// If true, QUIC congestion control will be paced.  If false, pacing may be
-// controlled by QUIC connection options in the config or by enabling BBR
-// congestion control.
-bool FLAGS_quic_enable_pacing = true;
-
 // If true, then the source address tokens generated for QUIC connects will
 // store multiple addresses.
 bool FLAGS_quic_use_multiple_address_in_source_tokens = false;

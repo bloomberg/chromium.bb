@@ -1585,21 +1585,6 @@ TEST_F(QuicSentPacketManagerTest, NegotiatePacingFromOptions) {
   EXPECT_TRUE(manager_.using_pacing());
 }
 
-TEST_F(QuicSentPacketManagerTest, EnablePacingViaFlag) {
-  EXPECT_FALSE(manager_.using_pacing());
-
-  // If pacing is enabled via command-line flag, it will be turned on,
-  // regardless of the contents of the config.
-  ValueRestore<bool> old_flag(&FLAGS_quic_enable_pacing, true);
-  QuicConfig config;
-  EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
-  EXPECT_CALL(*network_change_visitor_, OnRttChange());
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, /*using_pacing=*/true));
-  manager_.SetFromConfig(config);
-
-  EXPECT_TRUE(manager_.using_pacing());
-}
-
 TEST_F(QuicSentPacketManagerTest, NegotiateReceiveWindowFromOptions) {
   EXPECT_EQ(kDefaultSocketReceiveBuffer,
             QuicSentPacketManagerPeer::GetReceiveWindow(&manager_));

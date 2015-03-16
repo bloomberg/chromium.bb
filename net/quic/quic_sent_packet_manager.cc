@@ -141,11 +141,8 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     send_algorithm_.reset(SendAlgorithmInterface::Create(
         clock_, &rtt_stats_, kReno, stats_, initial_congestion_window_));
   }
-  if (HasClientSentConnectionOption(config, kPACE) ||
-      FLAGS_quic_enable_pacing ||
-      (FLAGS_quic_allow_bbr && HasClientSentConnectionOption(config, kTBBR))) {
-    EnablePacing();
-  }
+  EnablePacing();
+
   if (HasClientSentConnectionOption(config, k1CON)) {
     send_algorithm_->SetNumEmulatedConnections(1);
   }
@@ -936,6 +933,8 @@ void QuicSentPacketManager::OnSerializedPacket(
 }
 
 void QuicSentPacketManager::EnablePacing() {
+  // TODO(ianswett): Replace with a method which wraps the send algorithm in a
+  // pacer every time a new algorithm is set.
   if (using_pacing_) {
     return;
   }
