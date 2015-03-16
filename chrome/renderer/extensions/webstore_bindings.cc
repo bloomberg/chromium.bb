@@ -14,6 +14,7 @@
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
@@ -22,7 +23,6 @@
 
 using blink::WebDocument;
 using blink::WebElement;
-using blink::WebFrame;
 using blink::WebNode;
 using blink::WebNodeList;
 using blink::WebUserGestureIndicator;
@@ -79,7 +79,7 @@ void WebstoreBindings::Install(
 
   std::string webstore_item_id;
   std::string error;
-  WebFrame* frame = context()->web_frame();
+  blink::WebLocalFrame* frame = context()->web_frame();
 
   if (!GetWebstoreItemIdFromFrame(
       frame, preferred_store_link_url, &webstore_item_id, &error)) {
@@ -102,8 +102,10 @@ void WebstoreBindings::Install(
 
 // static
 bool WebstoreBindings::GetWebstoreItemIdFromFrame(
-      WebFrame* frame, const std::string& preferred_store_link_url,
-      std::string* webstore_item_id, std::string* error) {
+    blink::WebLocalFrame* frame,
+    const std::string& preferred_store_link_url,
+    std::string* webstore_item_id,
+    std::string* error) {
   if (frame != frame->top()) {
     *error = kNotInTopFrameError;
     return false;

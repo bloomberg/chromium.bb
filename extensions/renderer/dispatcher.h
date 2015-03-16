@@ -11,10 +11,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "extensions/common/event_filter.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature.h"
@@ -53,7 +55,6 @@ class RenderThread;
 namespace extensions {
 class ContentWatcher;
 class DispatcherDelegate;
-class Extension;
 class FilteredEventRouter;
 class ManifestPermissionSet;
 class RequestSender;
@@ -76,7 +77,7 @@ class Dispatcher : public content::RenderProcessObserver,
   const ExtensionSet* extensions() const { return &extensions_; }
 
   const ScriptContextSet& script_context_set() const {
-    return script_context_set_;
+    return *script_context_set_;
   }
 
   V8SchemaRegistry* v8_schema_registry() { return v8_schema_registry_.get(); }
@@ -88,14 +89,6 @@ class Dispatcher : public content::RenderProcessObserver,
   void OnRenderViewCreated(content::RenderView* render_view);
 
   bool IsExtensionActive(const std::string& extension_id) const;
-
-  // Finds the extension for the JavaScript context associated with the
-  // specified |frame| and isolated world. If |world_id| is zero, finds the
-  // extension ID associated with the main world's JavaScript context. If the
-  // JavaScript context isn't from an extension, returns empty string.
-  const Extension* GetExtensionFromFrameAndWorld(const blink::WebFrame* frame,
-                                                 int world_id,
-                                                 bool use_effective_url);
 
   void DidCreateScriptContext(blink::WebLocalFrame* frame,
                               const v8::Handle<v8::Context>& context,
@@ -242,15 +235,6 @@ class Dispatcher : public content::RenderProcessObserver,
   // Returns whether the current renderer hosts a platform app.
   bool IsWithinPlatformApp();
 
-  bool IsSandboxedPage(const GURL& url) const;
-
-  // Returns the Feature::Context type of context for a JavaScript context.
-  Feature::Context ClassifyJavaScriptContext(
-      const Extension* extension,
-      int extension_group,
-      const GURL& url,
-      const blink::WebSecurityOrigin& origin);
-
   // Gets |field| from |object| or creates it as an empty object if it doesn't
   // exist.
   v8::Handle<v8::Object> GetOrCreateObject(const v8::Handle<v8::Object>& object,
@@ -284,7 +268,7 @@ class Dispatcher : public content::RenderProcessObserver,
 
   // All the bindings contexts that are currently loaded for this renderer.
   // There is zero or one for each v8 context.
-  ScriptContextSet script_context_set_;
+  scoped_ptr<ScriptContextSet> script_context_set_;
 
   scoped_ptr<ContentWatcher> content_watcher_;
 
@@ -300,7 +284,7 @@ class Dispatcher : public content::RenderProcessObserver,
   std::set<std::string> function_names_;
 
   // The extensions and apps that are active in this process.
-  std::set<std::string> active_extension_ids_;
+  ExtensionIdSet active_extension_ids_;
 
   ResourceBundleSourceMap source_map_;
 

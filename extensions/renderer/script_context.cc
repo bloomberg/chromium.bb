@@ -13,15 +13,19 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/base_feature_provider.h"
+#include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "gin/per_context_data.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -75,7 +79,7 @@ class ScriptContext::Runner : public gin::Runner {
 };
 
 ScriptContext::ScriptContext(const v8::Handle<v8::Context>& v8_context,
-                             blink::WebFrame* web_frame,
+                             blink::WebLocalFrame* web_frame,
                              const Extension* extension,
                              Feature::Context context_type,
                              const Extension* effective_extension,
@@ -108,6 +112,21 @@ ScriptContext::~ScriptContext() {
           << "  effective extension id: "
           << (effective_extension_.get() ? effective_extension_->id() : "");
   Invalidate();
+}
+
+// static
+bool ScriptContext::IsSandboxedPage(const ExtensionSet& extensions,
+                                    const GURL& url) {
+  // TODO(kalman): This is checking for the wrong thing, it should be checking
+  // if the frame's security origin is unique. The extension sandbox directive
+  // is checked for in extensions/common/manifest_handlers/csp_info.cc.
+  if (url.SchemeIs(kExtensionScheme)) {
+    const Extension* extension = extensions.GetByID(url.host());
+    if (extension) {
+      return SandboxedPageInfo::IsSandboxedPage(extension, url.path());
+    }
+  }
+  return false;
 }
 
 void ScriptContext::Invalidate() {
