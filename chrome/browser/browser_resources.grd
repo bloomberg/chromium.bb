@@ -207,6 +207,9 @@
       <include name="IDR_MOST_VISITED_THUMBNAIL_HTML" file="resources\local_ntp\most_visited_thumbnail.html" type="BINDATA" />
       <include name="IDR_MOST_VISITED_THUMBNAIL_CSS" file="resources\local_ntp\most_visited_thumbnail.css" type="BINDATA" />
       <include name="IDR_MOST_VISITED_THUMBNAIL_JS" file="resources\local_ntp\most_visited_thumbnail.js" type="BINDATA" />
+      <include name="IDR_MOST_VISITED_SINGLE_HTML" file="resources\local_ntp\most_visited_single.html" type="BINDATA" />
+      <include name="IDR_MOST_VISITED_SINGLE_CSS" file="resources\local_ntp\most_visited_single.css" type="BINDATA" />
+      <include name="IDR_MOST_VISITED_SINGLE_JS" file="resources\local_ntp\most_visited_single.js" type="BINDATA" />
       <include name="IDR_MOST_VISITED_UTIL_JS" file="resources\local_ntp\most_visited_util.js" type="BINDATA" flattenhtml="true" />
       <include name="IDR_MOST_VISITED_WINDOW_DISPOSITION_UTIL_JS" file="resources\local_ntp\window_disposition_util.js" type="BINDATA" />
       <include name="IDR_OMNIBOX_HTML" file="resources\omnibox\omnibox.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
