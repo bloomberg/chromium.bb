@@ -40,33 +40,25 @@ function test()
 
     function onSnapshotLoaded(rect, snapshot)
     {
-        snapshot.commandLog(onGotLog);
+        snapshot.commandLog(InspectorTest.safeWrap(onGotLog));
     }
 
     function onGotLog(log)
     {
-        var seenNodes = {};
+        var nodesToRequest = new Set();
         for (var i = 0; i < log.length; ++i) {
             if (!log[i].annotations)
                 continue;
             var nodeId = Number(log[i].annotations["INSPECTOR_ID"]);
             if (nodeId)
-                seenNodes[nodeId] = true;
+                nodesToRequest.add(nodeId);
         }
-        var requestedNodes = Object.keys(seenNodes).map(function(value) { return Number(value); });
         var domModel = WebInspector.targetManager.mainTarget().domModel;
-        WebInspector.targetManager.mainTarget().domModel.pushNodesByBackendIdsToFrontend(requestedNodes, onNodesResolved.bind(this, log, requestedNodes));
+        WebInspector.targetManager.mainTarget().domModel.pushNodesByBackendIdsToFrontend(nodesToRequest, onNodesResolved.bind(this, log));
     }
 
-    function onNodesResolved(log, requestedNodes, resolvedNodes)
+    function onNodesResolved(log, nodeMap)
     {
-        InspectorTest.assertEquals(requestedNodes.length, resolvedNodes.length);
-        var nodeMap = {};
-        var domModel = WebInspector.targetManager.mainTarget().domModel;
-        for (var i = 0; i < requestedNodes.length; ++i) {
-            if (resolvedNodes[i])
-                nodeMap[requestedNodes[i]] = domModel.nodeForId(resolvedNodes[i]);
-        }
         InspectorTest.addResult("Paint command log:");
         for (var i = 0; i < log.length; ++i) {
             if (!log[i].annotations)
@@ -74,9 +66,9 @@ function test()
             if (!/^draw/.test(log[i].method))
                 continue;
             var nodeId = Number(log[i].annotations["INSPECTOR_ID"]);
-            if (!nodeId)
+            if (!nodeId || !nodeMap.get(nodeId))
                 continue;
-            InspectorTest.addResult("    " + WebInspector.DOMPresentationUtils.simpleSelector(nodeMap[nodeId]) + " " + log[i].method);
+            InspectorTest.addResult("    " + WebInspector.DOMPresentationUtils.simpleSelector(nodeMap.get(nodeId)) + " " + log[i].method);
         }
         if (!--inFlightPictures)
             InspectorTest.completeTest();

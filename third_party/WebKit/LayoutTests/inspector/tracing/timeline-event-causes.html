@@ -30,7 +30,7 @@ function test()
                 var linkifier = new WebInspector.Linkifier();
                 var record = InspectorTest.findFirstTimelineRecord("TimerFire");
                 InspectorTest.check(record, "Should receive a TimerFire record.");
-                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, true);
+                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, null, true);
                 WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
                 var causes = contentHelper.element.textContent;
                 InspectorTest.check(causes, "Should generate causes");
@@ -56,7 +56,7 @@ function test()
                 var linkifier = new WebInspector.Linkifier();
                 var record = InspectorTest.findFirstTimelineRecord("FireAnimationFrame");
                 InspectorTest.check(record, "Should receive a FireAnimationFrame record.");
-                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, true);
+                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, null, true);
                 WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
                 var causes = contentHelper.element.textContent;
                 InspectorTest.check(causes, "Should generate causes");
@@ -84,7 +84,7 @@ function test()
                 var linkifier = new WebInspector.Linkifier();
                 var record = InspectorTest.findFirstTimelineRecord("RecalculateStyles");
                 InspectorTest.check(record, "Should receive a RecalculateStyles record.");
-                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, true);
+                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, null, true);
                 WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
                 var causes = contentHelper.element.textContent;
                 InspectorTest.check(causes, "Should generate causes");
@@ -113,7 +113,7 @@ function test()
                 var linkifier = new WebInspector.Linkifier();
                 var record = InspectorTest.findFirstTimelineRecord("Layout");
                 InspectorTest.check(record, "Should receive a Layout record.");
-                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, true);
+                var contentHelper = new WebInspector.TimelineDetailsContentHelper(InspectorTest.timelineModel().target(), linkifier, null, true);
                 WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), InspectorTest.timelineModel().target(), contentHelper);
                 var causes = contentHelper.element.textContent;
                 InspectorTest.check(causes, "Should generate causes");

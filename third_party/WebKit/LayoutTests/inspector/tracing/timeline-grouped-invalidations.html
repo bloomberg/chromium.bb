@@ -29,7 +29,7 @@ function test()
 
         var linkifier = new WebInspector.Linkifier();
         var target = InspectorTest.timelineModel().target();
-        var contentHelper = new WebInspector.TimelineDetailsContentHelper(target, linkifier, true);
+        var contentHelper = new WebInspector.TimelineDetailsContentHelper(target, linkifier, null, true);
         WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), target, contentHelper);
         var invalidationGroups = contentHelper.element.getElementsByClassName("invalidations-group");
 
