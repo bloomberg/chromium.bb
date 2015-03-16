@@ -26,6 +26,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
     WebFrame* frame,
     int id,
     WebURLRequest::RequestContext request_context,
+    blink::WebURLRequest::CachePolicy cache_policy,
     const Callback& callback)
     : callback_(callback),
       id_(id),
@@ -44,6 +45,8 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
   // See https://crbug.com/448427
   if (request_context == WebURLRequest::RequestContextFavicon)
     fetcher_->SetSkipServiceWorker(true);
+
+  fetcher_->SetCachePolicy(cache_policy);
 
   fetcher_->Start(
       frame,

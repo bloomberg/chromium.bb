@@ -74,6 +74,7 @@ void IconHelper::DidUpdateFaviconURL(
         web_contents()->DownloadImage(i->icon_url,
             true,  // Is a favicon
             0,  // No maximum size
+            false,  // Normal cache policy
             base::Bind(
                 &IconHelper::DownloadFaviconCallback, base::Unretained(this)));
         break;

@@ -104,10 +104,12 @@ ImageLoadingHelper::ImageLoadingHelper(RenderFrame* render_frame)
 ImageLoadingHelper::~ImageLoadingHelper() {
 }
 
-void ImageLoadingHelper::OnDownloadImage(int id,
-                                         const GURL& image_url,
-                                         bool is_favicon,
-                                         uint32_t max_image_size) {
+void ImageLoadingHelper::OnDownloadImage(
+    int id,
+    const GURL& image_url,
+    bool is_favicon,
+    uint32_t max_image_size,
+    bool bypass_cache) {
   std::vector<SkBitmap> result_images;
   std::vector<gfx::Size> result_original_image_sizes;
   if (image_url.SchemeIs(url::kDataScheme)) {
@@ -118,7 +120,8 @@ void ImageLoadingHelper::OnDownloadImage(int id,
           gfx::Size(data_image.width(), data_image.height()));
     }
   } else {
-    if (DownloadImage(id, image_url, is_favicon, max_image_size)) {
+    if (DownloadImage(id, image_url, is_favicon, max_image_size,
+                      bypass_cache)) {
       // Will complete asynchronously via ImageLoadingHelper::DidDownloadImage
       return;
     }
@@ -132,19 +135,20 @@ void ImageLoadingHelper::OnDownloadImage(int id,
                                          result_original_image_sizes));
 }
 
-bool ImageLoadingHelper::DownloadImage(int id,
-                                       const GURL& image_url,
-                                       bool is_favicon,
-                                       uint32_t max_image_size) {
+bool ImageLoadingHelper::DownloadImage(
+    int id,
+    const GURL& image_url,
+    bool is_favicon,
+    uint32_t max_image_size,
+    bool bypass_cache) {
   // Create an image resource fetcher and assign it with a call back object.
   image_fetchers_.push_back(new MultiResolutionImageResourceFetcher(
-      image_url,
-      render_frame()->GetWebFrame(),
-      id,
+      image_url, render_frame()->GetWebFrame(), id,
       is_favicon ? WebURLRequest::RequestContextFavicon
                  : WebURLRequest::RequestContextImage,
-      base::Bind(&ImageLoadingHelper::DidDownloadImage,
-                 base::Unretained(this),
+      bypass_cache ? WebURLRequest::ReloadBypassingCache
+                   : WebURLRequest::UseProtocolCachePolicy,
+      base::Bind(&ImageLoadingHelper::DidDownloadImage, base::Unretained(this),
                  max_image_size)));
   return true;
 }

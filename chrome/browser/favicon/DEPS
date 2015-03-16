@@ -29,3 +29,10 @@ include_rules = [
   # Do not add to the list of temporarily-allowed dependencies above,
   # and please do not introduce more #includes of these files.
 ]
+
+specific_include_rules = {
+  # Browser tests, by definition, need access to the browser objects.
+  '.*_browsertest\.cc': [
+    "+chrome/browser",
+  ]
+}

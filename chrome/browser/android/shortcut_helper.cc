@@ -130,6 +130,7 @@ void ShortcutHelper::OnDidGetManifest(const content::Manifest& manifest) {
     web_contents()->DownloadImage(icon_src,
                                   false,
                                   preferred_icon_size_in_px_,
+                                  false,
                                   base::Bind(&ShortcutHelper::OnDidDownloadIcon,
                                              weak_ptr_factory_.GetWeakPtr()));
     manifest_icon_status_ = MANIFEST_ICON_STATUS_FETCHING;

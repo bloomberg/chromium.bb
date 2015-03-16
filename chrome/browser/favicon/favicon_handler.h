@@ -148,7 +148,9 @@ class FaviconHandler {
   virtual bool ShouldSaveFavicon(const GURL& url);
 
  private:
-  friend class TestFaviconHandler; // For testing
+  // For testing:
+  friend class FaviconTabHelperTest;
+  friend class TestFaviconHandler;
 
   // Represents an in progress download of an image from the renderer.
   struct DownloadRequest {
@@ -257,7 +259,10 @@ class FaviconHandler {
   // URL of the page we're requesting the favicon for.
   GURL url_;
 
-  // Whether we got the initial response for the favicon back from the renderer.
+  // Whether we are waiting for data from the FaviconService.
+  bool waiting_for_favicon_service_data_;
+
+  // Whether we got data back for the initial request to the FaviconService.
   bool got_favicon_from_history_;
 
   // Whether the favicon is out of date or the favicon data in

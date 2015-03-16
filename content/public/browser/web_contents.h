@@ -584,15 +584,19 @@ class WebContents : public PageNavigator,
 
   // Sends a request to download the given image |url| and returns the unique
   // id of the download request. When the download is finished, |callback| will
-  // be called with the bitmaps received from the renderer. If |is_favicon| is
-  // true, the cookies are not sent and not accepted during download.
+  // be called with the bitmaps received from the renderer.
+  // If |is_favicon| is true, the cookies are not sent and not accepted during
+  // download.
   // Bitmaps with pixel sizes larger than |max_bitmap_size| are filtered out
   // from the bitmap results. If there are no bitmap results <=
   // |max_bitmap_size|, the smallest bitmap is resized to |max_bitmap_size| and
   // is the only result. A |max_bitmap_size| of 0 means unlimited.
+  // If |bypass_cache| is true, |url| is requested from the server even if it
+  // is present in the browser cache.
   virtual int DownloadImage(const GURL& url,
                             bool is_favicon,
                             uint32_t max_bitmap_size,
+                            bool bypass_cache,
                             const ImageDownloadCallback& callback) = 0;
 
   // Returns true if the WebContents is responsible for displaying a subframe

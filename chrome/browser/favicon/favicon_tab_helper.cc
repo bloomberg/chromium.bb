@@ -155,11 +155,13 @@ int FaviconTabHelper::StartDownload(const GURL& url, int max_image_size) {
     return 0;
   }
 
+  bool bypass_cache = (bypass_cache_page_url_ == GetActiveURL());
+  bypass_cache_page_url_ = GURL();
+
   return web_contents()->DownloadImage(
-      url,
-      true,
-      max_image_size,
-      base::Bind(&FaviconTabHelper::DidDownloadFavicon,base::Unretained(this)));
+      url, true, max_image_size, bypass_cache,
+      base::Bind(&FaviconTabHelper::DidDownloadFavicon,
+                 base::Unretained(this)));
 }
 
 bool FaviconTabHelper::IsOffTheRecord() {
@@ -232,6 +234,8 @@ void FaviconTabHelper::DidStartNavigationToPendingEntry(
     NavigationController::ReloadType reload_type) {
   if (reload_type != NavigationController::NO_RELOAD &&
       !profile_->IsOffTheRecord()) {
+    bypass_cache_page_url_ = url;
+
     FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
         profile_, ServiceAccessType::IMPLICIT_ACCESS);
     if (favicon_service) {
@@ -246,8 +250,20 @@ void FaviconTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   favicon_urls_.clear();
+
+  // Wait till the user navigates to a new URL to start checking the cache
+  // again. The cache may be ignored for non-reload navigations (e.g.
+  // history.replace() in-page navigation). This is allowed to increase the
+  // likelihood that "reloading a page ignoring the cache" redownloads the
+  // favicon. In particular, a page may do an in-page navigation before
+  // FaviconHandler has the time to determine that the favicon needs to be
+  // redownloaded.
+  GURL url = details.entry->GetURL();
+  if (url != bypass_cache_page_url_)
+    bypass_cache_page_url_ = GURL();
+
   // Get the favicon, either from history or request it from the net.
-  FetchFavicon(details.entry->GetURL());
+  FetchFavicon(url);
 }
 
 // Returns favicon_base::IconType the given icon_type corresponds to.

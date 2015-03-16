@@ -1,0 +1,228 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/favicon/favicon_tab_helper.h"
+
+#include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/favicon/favicon_handler.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "net/base/load_flags.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/url_request/url_request.h"
+#include "url/url_constants.h"
+
+namespace {
+
+// Tracks whether the URL passed to the constructor is requested and whether
+// the request bypasses the cache.
+class TestResourceDispatcherHostDelegate
+    : public content::ResourceDispatcherHostDelegate {
+ public:
+  explicit TestResourceDispatcherHostDelegate(const GURL& url)
+      : url_(url), was_requested_(false), bypassed_cache_(false) {}
+  ~TestResourceDispatcherHostDelegate() override {}
+
+  void Reset() {
+    was_requested_ = false;
+    bypassed_cache_ = false;
+  }
+
+  // Resturns whether |url_| was requested.
+  bool was_requested() const { return was_requested_; }
+
+  // Returns whether any of the requests bypassed the HTTP cache.
+  bool bypassed_cache() const { return bypassed_cache_; }
+
+ private:
+  // content::ResourceDispatcherHostDelegate:
+  bool ShouldBeginRequest(const std::string& method,
+                          const GURL& url,
+                          content::ResourceType resource_type,
+                          content::ResourceContext* resource_context) override {
+    return true;
+  }
+
+  void RequestBeginning(
+      net::URLRequest* request,
+      content::ResourceContext* resource_context,
+      content::AppCacheService* appcache_service,
+      content::ResourceType resource_type,
+      ScopedVector<content::ResourceThrottle>* throttles) override {
+    if (request->url() == url_) {
+      was_requested_ = true;
+      if (request->load_flags() & net::LOAD_BYPASS_CACHE)
+        bypassed_cache_ = true;
+    }
+  }
+
+  void DownloadStarting(
+      net::URLRequest* request,
+      content::ResourceContext* resource_context,
+      int child_id,
+      int route_id,
+      int request_id,
+      bool is_content_initiated,
+      bool must_download,
+      ScopedVector<content::ResourceThrottle>* throttles) override {}
+
+ private:
+  GURL url_;
+  bool was_requested_;
+  bool bypassed_cache_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcherHostDelegate);
+};
+
+// Checks whether the FaviconTabHelper is waiting for a download to complete or
+// for data from the FaviconService.
+class FaviconTabHelperPendingTaskChecker {
+ public:
+  virtual ~FaviconTabHelperPendingTaskChecker() {}
+
+  virtual bool HasPendingTasks() = 0;
+};
+
+// Waits for the following the finish:
+// - The pending navigation.
+// - FaviconHandler's pending favicon database requests.
+// - FaviconHandler's pending downloads.
+class PendingTaskWaiter : public content::NotificationObserver {
+ public:
+  PendingTaskWaiter(content::WebContents* web_contents,
+                    FaviconTabHelperPendingTaskChecker* checker)
+      : checker_(checker), load_stopped_(false), weak_factory_(this) {
+    registrar_.Add(this, chrome::NOTIFICATION_FAVICON_UPDATED,
+                   content::Source<content::WebContents>(web_contents));
+    registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
+                   content::Source<content::NavigationController>(
+                       &web_contents->GetController()));
+  }
+  ~PendingTaskWaiter() override {}
+
+  void Wait() {
+    if (load_stopped_ && !checker_->HasPendingTasks())
+      return;
+
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+ private:
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    if (type == content::NOTIFICATION_LOAD_STOP)
+      load_stopped_ = true;
+
+    if (!quit_closure_.is_null()) {
+      // We stop waiting based on changes in state to FaviconHandler which occur
+      // immediately after NOTIFICATION_FAVICON_UPDATED is sent. Post a task to
+      // check if we can stop waiting.
+      base::MessageLoopForUI::current()->PostTask(
+          FROM_HERE, base::Bind(&PendingTaskWaiter::EndLoopIfCanStopWaiting,
+                                weak_factory_.GetWeakPtr()));
+    }
+  }
+
+  void EndLoopIfCanStopWaiting() {
+    if (!quit_closure_.is_null() &&
+        load_stopped_ &&
+        !checker_->HasPendingTasks()) {
+      quit_closure_.Run();
+    }
+  }
+
+  FaviconTabHelperPendingTaskChecker* checker_;  // Not owned.
+  bool load_stopped_;
+  base::Closure quit_closure_;
+  content::NotificationRegistrar registrar_;
+  base::WeakPtrFactory<PendingTaskWaiter> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(PendingTaskWaiter);
+};
+
+}  // namespace
+
+class FaviconTabHelperTest : public InProcessBrowserTest,
+                             public FaviconTabHelperPendingTaskChecker {
+ public:
+  FaviconTabHelperTest() {}
+  ~FaviconTabHelperTest() override {}
+
+  content::WebContents* web_contents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  // FaviconTabHelperPendingTaskChecker:
+  bool HasPendingTasks() override {
+    FaviconHandler* favicon_handler =
+        FaviconTabHelper::FromWebContents(web_contents())
+            ->favicon_handler_.get();
+    return !favicon_handler->download_requests_.empty() ||
+        favicon_handler->cancelable_task_tracker_.HasTrackedTasks();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FaviconTabHelperTest);
+};
+
+// Test that when a user reloads a page ignoring the cache that the favicon is
+// is redownloaded and (not returned from either the favicon cache or the HTTP
+// cache).
+IN_PROC_BROWSER_TEST_F(FaviconTabHelperTest, ReloadIgnoringCache) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL url = test_server()->GetURL("files/favicon/page_with_favicon.html");
+  GURL icon_url = test_server()->GetURL("files/favicon/icon.ico");
+
+  scoped_ptr<TestResourceDispatcherHostDelegate> delegate(
+      new TestResourceDispatcherHostDelegate(icon_url));
+  content::ResourceDispatcherHost::Get()->SetDelegate(delegate.get());
+
+  // Initial visit in order to populate the cache.
+  {
+    PendingTaskWaiter waiter(web_contents(), this);
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), url, CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+    waiter.Wait();
+  }
+  ASSERT_TRUE(delegate->was_requested());
+  EXPECT_FALSE(delegate->bypassed_cache());
+  delegate->Reset();
+
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  // A normal visit should fetch the favicon from either the favicon database or
+  // the HTTP cache.
+  {
+    PendingTaskWaiter waiter(web_contents(), this);
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), url, CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+    waiter.Wait();
+  }
+  EXPECT_FALSE(delegate->bypassed_cache());
+  delegate->Reset();
+
+  // A reload ignoring the cache should refetch the favicon from the website.
+  {
+    PendingTaskWaiter waiter(web_contents(), this);
+    chrome::ExecuteCommand(browser(), IDC_RELOAD_IGNORING_CACHE);
+    waiter.Wait();
+  }
+  ASSERT_TRUE(delegate->was_requested());
+  EXPECT_TRUE(delegate->bypassed_cache());
+}

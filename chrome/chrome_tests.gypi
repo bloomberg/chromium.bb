@@ -290,6 +290,7 @@
       'browser/extensions/window_open_apitest.cc',
       'browser/external_extension_browsertest.cc',
       'browser/fast_shutdown_browsertest.cc',
+      'browser/favicon/favicon_tab_helper_browsertest.cc',
       'browser/first_run/first_run_browsertest.cc',
       'browser/first_run/try_chrome_dialog_view_browsertest.cc',
       'browser/geolocation/access_token_store_browsertest.cc',

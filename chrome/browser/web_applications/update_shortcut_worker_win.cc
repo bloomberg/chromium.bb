@@ -89,6 +89,7 @@ void UpdateShortcutWorker::DownloadIcon() {
       unprocessed_icons_.back().url,
       true,  // favicon
       0,  // no maximum size
+      false,  // normal cache policy
       base::Bind(&UpdateShortcutWorker::DidDownloadFavicon,
                  base::Unretained(this),
                  preferred_size));

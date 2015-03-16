@@ -400,6 +400,7 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
         web_contents()->DownloadImage(iter->icon_url,
             true,
             max_image_size,
+            false,
             base::Bind(&MetroPinTabHelper::DidDownloadFavicon,
                        base::Unretained(this))));
   }

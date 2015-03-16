@@ -107,8 +107,9 @@ void FaviconRawBitmapHandler::DidUpdateFaviconURL(
     pending_requests_.insert(*iter);
     web_contents()->DownloadImage(
         *iter,
-        true,  // is a favicon
-        0,     // no maximum size
+        true,   // is a favicon
+        0,      // no maximum size
+        false,  // normal cache policy
         base::Bind(&FaviconRawBitmapHandler::DidDownloadFavicon,
                    weak_ptr_factory_.GetWeakPtr()));
   }

@@ -381,8 +381,13 @@ void FaviconHandler::OnDidDownloadFavicon(
     return;
   }
 
+  DownloadRequest download_request = i->second;
+  download_requests_.erase(i);
+
   if (current_candidate() &&
-      DoUrlAndIconMatch(*current_candidate(), image_url, i->second.icon_type)) {
+      DoUrlAndIconMatch(*current_candidate(),
+                        image_url,
+                        download_request.icon_type)) {
     bool request_next_icon = true;
     float score = 0.0f;
     gfx::ImageSkia image_skia;
@@ -412,7 +417,8 @@ void FaviconHandler::OnDidDownloadFavicon(
       // during the downloading.
       if (!bitmaps.empty()) {
         request_next_icon = !UpdateFaviconCandidate(
-            i->second.url, image_url, image, score, i->second.icon_type);
+            download_request.url, image_url, image, score,
+            download_request.icon_type);
       }
     }
     if (request_next_icon && !PageChangedSinceFaviconWasRequested() &&
@@ -429,10 +435,10 @@ void FaviconHandler::OnDidDownloadFavicon(
                  best_favicon_candidate_.icon_type);
       // Reset candidate.
       image_urls_.clear();
+      download_requests_.clear();
       best_favicon_candidate_ = FaviconCandidate();
     }
   }
-  download_requests_.erase(i);
 }
 
 bool FaviconHandler::PageChangedSinceFaviconWasRequested() {

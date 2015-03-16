@@ -474,6 +474,7 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
       unprocessed_icons_.back().url,
       true,  // is a favicon
       0,  // no maximum size
+      false,  // normal cache policy
       base::Bind(&CreateUrlApplicationShortcutView::DidDownloadFavicon,
                  weak_ptr_factory_.GetWeakPtr(),
                  preferred_size));

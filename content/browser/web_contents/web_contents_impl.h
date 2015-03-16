@@ -339,6 +339,7 @@ class CONTENT_EXPORT WebContentsImpl
   int DownloadImage(const GURL& url,
                     bool is_favicon,
                     uint32_t max_bitmap_size,
+                    bool bypass_cache,
                     const ImageDownloadCallback& callback) override;
   bool IsSubframe() const override;
   void Find(int request_id,

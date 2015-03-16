@@ -95,8 +95,10 @@ class FaviconTabHelper : public content::WebContentsObserver,
       const std::vector<gfx::Size>& original_bitmap_sizes);
 
  private:
-  explicit FaviconTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<FaviconTabHelper>;
+  friend class FaviconTabHelperTest;
+
+  explicit FaviconTabHelper(content::WebContents* web_contents);
 
   // content::WebContentsObserver overrides.
   void DidStartNavigationToPendingEntry(
@@ -124,6 +126,9 @@ class FaviconTabHelper : public content::WebContentsObserver,
   FaviconClient* client_;
 
   std::vector<content::FaviconURL> favicon_urls_;
+
+  // Bypass cache when downloading favicons for this page URL.
+  GURL bypass_cache_page_url_;
 
   scoped_ptr<FaviconHandler> favicon_handler_;
 

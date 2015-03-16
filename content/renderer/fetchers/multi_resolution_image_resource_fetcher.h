@@ -37,6 +37,7 @@ class MultiResolutionImageResourceFetcher {
       blink::WebFrame* frame,
       int id,
       blink::WebURLRequest::RequestContext request_context,
+      blink::WebURLRequest::CachePolicy cache_policy,
       const Callback& callback);
 
   virtual ~MultiResolutionImageResourceFetcher();

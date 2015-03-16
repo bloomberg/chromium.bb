@@ -42,6 +42,7 @@ int FaviconDownloader::DownloadImage(const GURL& url) {
       url,
       true,  // is_favicon
       0,     // no max size
+      false,  // normal cache policy
       base::Bind(&FaviconDownloader::DidDownloadFavicon,
                  weak_ptr_factory_.GetWeakPtr()));
 }

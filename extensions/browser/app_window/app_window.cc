@@ -525,8 +525,9 @@ void AppWindow::SetAppIconUrl(const GURL& url) {
   app_icon_url_ = url;
   web_contents()->DownloadImage(
       url,
-      true,  // is a favicon
-      0,     // no maximum size
+      true,   // is a favicon
+      0,      // no maximum size
+      false,  // normal cache policy
       base::Bind(&AppWindow::DidDownloadFavicon,
                  image_loader_ptr_factory_.GetWeakPtr()));
 }
@@ -541,8 +542,9 @@ void AppWindow::SetBadgeIconUrl(const GURL& url) {
   badge_icon_url_ = url;
   web_contents()->DownloadImage(
       url,
-      true,  // is a favicon
-      0,     // no maximum size
+      true,   // is a favicon
+      0,      // no maximum size
+      false,  // normal cache policy
       base::Bind(&AppWindow::DidDownloadFavicon,
                  image_loader_ptr_factory_.GetWeakPtr()));
 }
