@@ -342,7 +342,9 @@ bool ElementRuleCollector::hasAnyMatchingRules(RuleSet* ruleSet)
     // information about "scope".
     int firstRuleIndex = -1, lastRuleIndex = -1;
     RuleRange ruleRange(firstRuleIndex, lastRuleIndex);
-    collectMatchingRules(MatchRequest(ruleSet), ruleRange);
+    MatchRequest matchRequest(ruleSet);
+    collectMatchingRules(matchRequest, ruleRange);
+    collectMatchingShadowHostRules(matchRequest, ruleRange);
 
     return !m_matchedRules.isEmpty();
 }
