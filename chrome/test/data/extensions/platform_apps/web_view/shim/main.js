@@ -1238,6 +1238,29 @@ function testDeclarativeWebRequestAPISendMessage() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that setting a <webview>'s style.display = 'block' does
+// not throw and attach error.
+function testDisplayBlock() {
+  var webview = new WebView();
+  webview.onloadstop = function(e) {
+    LOG('webview.onloadstop');
+    window.console.error = function() {
+      // If we see an error, that means attach failed.
+      embedder.test.fail();
+    };
+    webview.style.display = 'block';
+    embedder.test.assertTrue(webview.getProcessId() > 0);
+
+    webview.onloadstop = function(e) {
+      LOG('Second webview.onloadstop');
+      embedder.test.succeed();
+    };
+    webview.src = 'data:text/html,<body>Second load</body>';
+  }
+  webview.src = 'about:blank';
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the WebRequest API onBeforeRequest event fires on
 // clients*.google.com URLs.
 function testWebRequestAPIGoogleProperty() {
@@ -2127,6 +2150,7 @@ embedder.test.testList = {
   'testDeclarativeWebRequestAPI': testDeclarativeWebRequestAPI,
   'testDeclarativeWebRequestAPISendMessage':
       testDeclarativeWebRequestAPISendMessage,
+  'testDisplayBlock': testDisplayBlock,
   'testWebRequestAPI': testWebRequestAPI,
   'testWebRequestAPIWithHeaders': testWebRequestAPIWithHeaders,
   'testWebRequestAPIGoogleProperty': testWebRequestAPIGoogleProperty,

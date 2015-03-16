@@ -55,6 +55,8 @@ class CONTENT_EXPORT BrowserPlugin :
   // A request to enable hardware compositing.
   void EnableCompositing(bool enable);
 
+  void UpdateInternalInstanceId();
+
   // Provided that a guest instance ID has been allocated, this method attaches
   // this BrowserPlugin instance to that guest.
   void Attach();

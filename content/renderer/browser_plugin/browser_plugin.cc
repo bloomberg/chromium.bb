@@ -300,14 +300,12 @@ bool BrowserPlugin::initialize(WebPluginContainer* container) {
   BrowserPluginManager::Get()->AddBrowserPlugin(
       browser_plugin_instance_id_, this);
 
-  // This is a way to notify observers of our attributes that this plugin is
-  // available in render tree.
-  // TODO(lazyboy): This should be done through the delegate instead. Perhaps
-  // by firing an event from there.
-  UpdateDOMAttribute(
-      "internalinstanceid",
-      base::UTF8ToUTF16(base::IntToString(browser_plugin_instance_id_)));
-
+  // Defer attach call so that if there's any pending browser plugin
+  // destruction, then it can progress first.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&BrowserPlugin::UpdateInternalInstanceId,
+                 weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 
@@ -331,6 +329,16 @@ void BrowserPlugin::EnableCompositing(bool enable) {
     compositing_helper_->OnContainerDestroy();
     compositing_helper_ = nullptr;
   }
+}
+
+void BrowserPlugin::UpdateInternalInstanceId() {
+  // This is a way to notify observers of our attributes that this plugin is
+  // available in render tree.
+  // TODO(lazyboy): This should be done through the delegate instead. Perhaps
+  // by firing an event from there.
+  UpdateDOMAttribute(
+      "internalinstanceid",
+      base::UTF8ToUTF16(base::IntToString(browser_plugin_instance_id_)));
 }
 
 void BrowserPlugin::destroy() {

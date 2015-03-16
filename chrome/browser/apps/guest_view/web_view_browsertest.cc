@@ -959,6 +959,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDisplayNoneWebviewRemoveChild) {
              "web_view/shim", NO_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDisplayBlock) {
+  TestHelper("testDisplayBlock", "web_view/shim", NO_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        Shim_TestInlineScriptFromAccessibleResources) {
   TestHelper("testInlineScriptFromAccessibleResources",
