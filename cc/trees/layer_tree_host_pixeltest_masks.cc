@@ -365,24 +365,24 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
        MaskOfLayerWithBackgroundFilter) {
   scoped_refptr<SolidColorLayer> background = CreateSolidColorLayer(
-      gfx::Rect(128, 128), SK_ColorWHITE);
+      gfx::Rect(100, 100), SK_ColorWHITE);
 
-  gfx::Size picture_bounds(128, 128);
+  gfx::Size picture_bounds(100, 100);
   CheckerContentLayerClient picture_client(picture_bounds, SK_ColorGREEN, true);
   scoped_refptr<PictureLayer> picture = PictureLayer::Create(&picture_client);
   picture->SetBounds(picture_bounds);
   picture->SetIsDrawable(true);
 
   scoped_refptr<SolidColorLayer> blur = CreateSolidColorLayer(
-      gfx::Rect(128, 128), SK_ColorTRANSPARENT);
+      gfx::Rect(100, 100), SK_ColorTRANSPARENT);
   background->AddChild(picture);
   background->AddChild(blur);
 
   FilterOperations filters;
-  filters.Append(FilterOperation::CreateBlurFilter(2.f));
+  filters.Append(FilterOperation::CreateBlurFilter(1.5f));
   blur->SetBackgroundFilters(filters);
 
-  gfx::Size mask_bounds(128, 128);
+  gfx::Size mask_bounds(100, 100);
   CircleContentLayerClient mask_client(mask_bounds);
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&mask_client);
   mask->SetBounds(mask_bounds);
@@ -390,7 +390,7 @@ TEST_P(LayerTreeHostMasksForBackgroundFiltersPixelTest,
   mask->SetIsMask(true);
   blur->SetMaskLayer(mask.get());
 
-  float percentage_pixels_large_error = 2.5f;  // 2.5%, ~400px / (128*128)
+  float percentage_pixels_large_error = 2.5f;  // 2.5%, ~250px / (100*100)
   float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 100.0f;
   int large_error_allowed = 256;
