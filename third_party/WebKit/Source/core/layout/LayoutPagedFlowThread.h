@@ -20,7 +20,7 @@ public:
     LayoutBlockFlow* pagedBlockFlow() const { return toLayoutBlockFlow(parent()); }
 
     virtual bool isLayoutPagedFlowThread() const override { return true; }
-    virtual const char* name() const override { return "LayoutMultiColumnSpannerPlaceholder"; }
+    virtual const char* name() const override { return "LayoutPagedFlowThread"; }
     virtual bool needsNewWidth() const override;
     virtual void updateLogicalWidth() override;
     virtual void layout();
