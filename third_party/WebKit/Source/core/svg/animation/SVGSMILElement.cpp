@@ -1339,7 +1339,7 @@ void SVGSMILElement::schedule()
 {
     ASSERT(!m_isScheduled);
 
-    if (!m_timeContainer || !m_targetElement || !hasValidAttributeName() || !hasValidAttributeType())
+    if (!m_timeContainer || !m_targetElement || !hasValidAttributeName() || !hasValidAttributeType() || !m_targetElement->inActiveDocument())
         return;
 
     m_timeContainer->schedule(this, m_targetElement, m_attributeName);
