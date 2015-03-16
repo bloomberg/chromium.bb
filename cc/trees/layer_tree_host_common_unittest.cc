@@ -7031,6 +7031,27 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_EQ(2u, render_surface_layer_list.size());
+
+    int count_represents_target_render_surface = 0;
+    int count_represents_contributing_render_surface = 0;
+    int count_represents_itself = 0;
+    auto end = LayerIterator<LayerImpl>::End(&render_surface_layer_list);
+    for (auto it = LayerIterator<LayerImpl>::Begin(&render_surface_layer_list);
+         it != end; ++it) {
+      if (it.represents_target_render_surface())
+        count_represents_target_render_surface++;
+      if (it.represents_contributing_render_surface())
+        count_represents_contributing_render_surface++;
+      if (it.represents_itself())
+        count_represents_itself++;
+    }
+
+    // Two render surfaces.
+    EXPECT_EQ(2, count_represents_target_render_surface);
+    // Second render surface contributes to root render surface.
+    EXPECT_EQ(1, count_represents_contributing_render_surface);
+    // All 4 layers represent itself.
+    EXPECT_EQ(4, count_represents_itself);
   }
 
   {
@@ -7041,6 +7062,27 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     EXPECT_EQ(1u, render_surface_layer_list.size());
+
+    int count_represents_target_render_surface = 0;
+    int count_represents_contributing_render_surface = 0;
+    int count_represents_itself = 0;
+    auto end = LayerIterator<LayerImpl>::End(&render_surface_layer_list);
+    for (auto it = LayerIterator<LayerImpl>::Begin(&render_surface_layer_list);
+         it != end; ++it) {
+      if (it.represents_target_render_surface())
+        count_represents_target_render_surface++;
+      if (it.represents_contributing_render_surface())
+        count_represents_contributing_render_surface++;
+      if (it.represents_itself())
+        count_represents_itself++;
+    }
+
+    // Only root layer has a render surface.
+    EXPECT_EQ(1, count_represents_target_render_surface);
+    // No layer contributes a render surface to root render surface.
+    EXPECT_EQ(0, count_represents_contributing_render_surface);
+    // All 4 layers represent itself.
+    EXPECT_EQ(4, count_represents_itself);
   }
 }
 

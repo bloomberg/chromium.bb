@@ -172,12 +172,14 @@ bool LayerTreeHostCommon::RenderSurfaceContributesToTarget(
   // A layer will either contribute its own content, or its render surface's
   // content, to the target surface. The layer contributes its surface's content
   // when both the following are true:
-  //  (1) The layer actually has a render surface, and
+  //  (1) The layer actually has a render surface and rendering into that
+  //      surface, and
   //  (2) The layer's render surface is not the same as the target surface.
   //
   // Otherwise, the layer just contributes itself to the target surface.
 
-  return layer->render_surface() && layer->id() != target_surface_layer_id;
+  return layer->render_target() == layer &&
+         layer->id() != target_surface_layer_id;
 }
 
 template <typename LayerType>
