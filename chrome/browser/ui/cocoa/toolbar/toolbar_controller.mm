@@ -81,6 +81,42 @@ const CGFloat kMinimumLocationBarWidth = 100.0;
 // The amount of left padding that the wrench menu should have.
 const CGFloat kWrenchMenuLeftPadding = 3.0;
 
+class BrowserActionsContainerDelegate :
+    public BrowserActionsContainerViewSizeDelegate {
+ public:
+  BrowserActionsContainerDelegate(
+      AutocompleteTextField* location_bar,
+      BrowserActionsContainerView* browser_actions_container_view);
+  ~BrowserActionsContainerDelegate() override;
+
+ private:
+  // BrowserActionsContainerSizeDelegate:
+  CGFloat GetMaxAllowedWidth() override;
+
+  AutocompleteTextField* location_bar_;
+  BrowserActionsContainerView* browser_actions_container_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainerDelegate);
+};
+
+BrowserActionsContainerDelegate::BrowserActionsContainerDelegate(
+    AutocompleteTextField* location_bar,
+    BrowserActionsContainerView* browser_actions_container_view)
+    : location_bar_(location_bar),
+      browser_actions_container_(browser_actions_container_view) {
+  [browser_actions_container_ setDelegate:this];
+}
+
+BrowserActionsContainerDelegate::~BrowserActionsContainerDelegate() {
+  [browser_actions_container_ setDelegate:nil];
+}
+
+CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
+  CGFloat location_bar_flex =
+      NSWidth([location_bar_ frame]) - kMinimumLocationBarWidth;
+  return NSWidth([browser_actions_container_ frame]) + location_bar_flex;
+}
+
 }  // namespace
 
 @interface ToolbarController()
@@ -93,7 +129,6 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 - (void)pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate;
 - (void)maintainMinimumLocationBarWidth;
 - (void)adjustBrowserActionsContainerForNewWindow:(NSNotification*)notification;
-- (void)browserActionsContainerWillDrag:(NSNotification*)notification;
 - (void)browserActionsContainerDragged:(NSNotification*)notification;
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification;
 - (void)browserActionsContainerWillAnimate:(NSNotification*)notification;
@@ -184,6 +219,8 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 
 
 - (void)dealloc {
+  browserActionsContainerDelegate_.reset();
+
   // Unset ViewIDs of toolbar elements.
   // ViewIDs of |toolbarView|, |reloadButton_|, |locationBar_| and
   // |browserActionsContainerView_| are handled by themselves.
@@ -589,15 +626,13 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 
 - (void)createBrowserActionButtons {
   if (!browserActionsController_.get()) {
+    browserActionsContainerDelegate_.reset(
+        new BrowserActionsContainerDelegate(locationBar_,
+                                            browserActionsContainerView_));
     browserActionsController_.reset([[BrowserActionsController alloc]
             initWithBrowser:browser_
               containerView:browserActionsContainerView_
              mainController:nil]);
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(browserActionsContainerWillDrag:)
-               name:kBrowserActionGrippyWillDragNotification
-             object:browserActionsContainerView_];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(browserActionsContainerDragged:)
@@ -637,22 +672,8 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 - (void)browserActionsContainerDragged:(NSNotification*)notification {
   CGFloat locationBarWidth = NSWidth([locationBar_ frame]);
   locationBarAtMinSize_ = locationBarWidth <= kMinimumLocationBarWidth;
-  [browserActionsContainerView_ setCanDragLeft:!locationBarAtMinSize_];
-  [browserActionsContainerView_ setGrippyPinned:locationBarAtMinSize_];
   [self adjustLocationSizeBy:
       [browserActionsContainerView_ resizeDeltaX] animate:NO];
-}
-
-- (void)browserActionsContainerWillDrag:(NSNotification*)notification {
-  CGFloat deltaX = [[notification.userInfo objectForKey:kTranslationWithDelta]
-      floatValue];
-  CGFloat locationBarWidth = NSWidth([locationBar_ frame]);
-  BOOL locationBarWillBeAtMinSize =
-      (locationBarWidth + deltaX) <= kMinimumLocationBarWidth;
-
-  // Prevent the |browserActionsContainerView_| from dragging if the width of
-  // location bar will reach the minimum.
-  [browserActionsContainerView_ setCanDragLeft:!locationBarWillBeAtMinSize];
 }
 
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification {
@@ -665,7 +686,7 @@ class NotificationBridge : public WrenchMenuBadgeController::Delegate {
 
 - (void)pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate {
   CGFloat locationBarXPos = NSMaxX([locationBar_ frame]);
-  CGFloat leftDistance;
+  CGFloat leftDistance = 0.0;
 
   if ([browserActionsContainerView_ isHidden]) {
     CGFloat edgeXPos = [wrenchButton_ frame].origin.x;

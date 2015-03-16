@@ -15,8 +15,6 @@ NSString* const kBrowserActionGrippyDraggingNotification =
     @"BrowserActionGrippyDraggingNotification";
 NSString* const kBrowserActionGrippyDragFinishedNotification =
     @"BrowserActionGrippyDragFinishedNotification";
-NSString* const kBrowserActionGrippyWillDragNotification =
-    @"BrowserActionGrippyWillDragNotification";
 NSString* const kBrowserActionsContainerWillAnimate =
     @"BrowserActionsContainerWillAnimate";
 NSString* const kBrowserActionsContainerMouseEntered =
@@ -34,6 +32,9 @@ const CGFloat kMinimumContainerWidth = 3.0;
 // Returns the cursor that should be shown when hovering over the grippy based
 // on |canDragLeft_| and |canDragRight_|.
 - (NSCursor*)appropriateCursorForGrippy;
+
+// Returns the maximum allowed size for the container.
+- (CGFloat)maxAllowedWidth;
 @end
 
 @implementation BrowserActionsContainerView
@@ -41,8 +42,9 @@ const CGFloat kMinimumContainerWidth = 3.0;
 @synthesize canDragLeft = canDragLeft_;
 @synthesize canDragRight = canDragRight_;
 @synthesize grippyPinned = grippyPinned_;
-@synthesize maxWidth = maxWidth_;
+@synthesize maxDesiredWidth = maxDesiredWidth_;
 @synthesize userIsResizing = userIsResizing_;
+@synthesize delegate = delegate_;
 
 #pragma mark -
 #pragma mark Overridden Class Functions
@@ -156,27 +158,20 @@ const CGFloat kMinimumContainerWidth = 3.0;
   CGFloat withDelta = location.x - dX;
   canDragRight_ = (withDelta >= initialDragPoint_.x) &&
       (NSWidth(containerFrame) > kMinimumContainerWidth);
-  canDragLeft_ = (withDelta <= initialDragPoint_.x) &&
-      (NSWidth(containerFrame) < maxWidth_);
-
-  // Notify others to see whether this dragging is allowed.
-  if ((dX < 0.0 && canDragLeft_) || (dX > 0.0 && canDragRight_)) {
-    NSDictionary* userInfo = @{ kTranslationWithDelta : @(dX) };
-    [[NSNotificationCenter defaultCenter]
-        postNotificationName:kBrowserActionGrippyWillDragNotification
-                      object:self
-                    userInfo:userInfo];
-  }
+  CGFloat maxAllowedWidth = [self maxAllowedWidth];
+  containerFrame.size.width =
+      std::max(NSWidth(containerFrame) - dX, kMinimumContainerWidth);
+  canDragLeft_ = withDelta <= initialDragPoint_.x &&
+      NSWidth(containerFrame) < maxDesiredWidth_ &&
+      NSWidth(containerFrame) < maxAllowedWidth;
 
   if ((dX < 0.0 && !canDragLeft_) || (dX > 0.0 && !canDragRight_))
     return;
 
-  containerFrame.size.width =
-      std::max(NSWidth(containerFrame) - dX, kMinimumContainerWidth);
-
   if (NSWidth(containerFrame) == kMinimumContainerWidth)
     return;
 
+  grippyPinned_ = NSWidth(containerFrame) == maxAllowedWidth;
   containerFrame.origin.x += dX;
 
   [self setFrame:containerFrame];
@@ -199,10 +194,16 @@ const CGFloat kMinimumContainerWidth = 3.0;
 - (void)resizeToWidth:(CGFloat)width animate:(BOOL)animate {
   width = std::max(width, kMinimumContainerWidth);
   NSRect frame = [self frame];
+
+  CGFloat maxAllowedWidth = [self maxAllowedWidth];
+  width = std::min(maxAllowedWidth, width);
+
   lastXPos_ = frame.origin.x;
   CGFloat dX = frame.size.width - width;
   frame.size.width = width;
   NSRect newFrame = NSOffsetRect(frame, dX, 0);
+
+  grippyPinned_ = width == maxAllowedWidth;
 
   [self stopAnimation];
 
@@ -264,6 +265,10 @@ const CGFloat kMinimumContainerWidth = 3.0;
     retVal = [NSCursor resizeLeftRightCursor];
   }
   return retVal;
+}
+
+- (CGFloat)maxAllowedWidth {
+  return delegate_ ? delegate_->GetMaxAllowedWidth() : CGFLOAT_MAX;
 }
 
 @end

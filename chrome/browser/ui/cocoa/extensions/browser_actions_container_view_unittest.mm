@@ -12,6 +12,19 @@ namespace {
 
 const CGFloat kContainerHeight = 15.0;
 const CGFloat kMinimumContainerWidth = 3.0;
+const CGFloat kMaxAllowedWidthForTest = 50.0;
+
+class BrowserActionsContainerTestDelegate
+    : public BrowserActionsContainerViewSizeDelegate {
+ public:
+  BrowserActionsContainerTestDelegate() {}
+  ~BrowserActionsContainerTestDelegate() override {}
+
+  CGFloat GetMaxAllowedWidth() override { return kMaxAllowedWidthForTest; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainerTestDelegate);
+};
 
 class BrowserActionsContainerViewTest : public CocoaTest {
  public:
@@ -64,6 +77,12 @@ TEST_F(BrowserActionsContainerViewTest, SetWidthTests) {
   [view_ resizeToWidth:35.0 animate:NO];
   EXPECT_EQ(35.0, NSWidth([view_ frame]));
   EXPECT_EQ(35.0, NSWidth([view_ animationEndFrame]));
+
+  BrowserActionsContainerTestDelegate delegate;
+  [view_ setDelegate:&delegate];
+  [view_ resizeToWidth:kMaxAllowedWidthForTest + 10.0 animate:NO];
+  EXPECT_EQ(kMaxAllowedWidthForTest, NSWidth([view_ frame]));
+  [view_ setDelegate:nil];
 }
 
 }  // namespace

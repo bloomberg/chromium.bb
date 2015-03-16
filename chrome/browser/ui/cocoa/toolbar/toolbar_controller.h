@@ -20,6 +20,7 @@
 @class BackForwardMenuController;
 class Browser;
 @class BrowserActionsContainerView;
+class BrowserActionsContainerViewSizeDelegate;
 @class BrowserActionsController;
 class CommandUpdater;
 class LocationBarViewMac;
@@ -68,6 +69,8 @@ class NotificationBridge;
   base::scoped_nsobject<BackForwardMenuController> backMenuController_;
   base::scoped_nsobject<BackForwardMenuController> forwardMenuController_;
   base::scoped_nsobject<BrowserActionsController> browserActionsController_;
+  scoped_ptr<BrowserActionsContainerViewSizeDelegate>
+      browserActionsContainerDelegate_;
 
   // Lazily-instantiated menu controller.
   base::scoped_nsobject<WrenchMenuController> wrenchMenuController_;

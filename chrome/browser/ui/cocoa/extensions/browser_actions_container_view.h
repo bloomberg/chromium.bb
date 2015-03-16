@@ -19,9 +19,6 @@ extern NSString* const kBrowserActionGrippyDraggingNotification;
 // Sent when a user-initiated drag to resize the container has finished.
 extern NSString* const kBrowserActionGrippyDragFinishedNotification;
 
-// Sent before the dragging will resize the container.
-extern NSString* const kBrowserActionGrippyWillDragNotification;
-
 // Sent when the Browser Actions container view is about to animate.
 extern NSString* const kBrowserActionsContainerWillAnimate;
 
@@ -31,6 +28,12 @@ extern NSString* const kBrowserActionsContainerMouseEntered;
 
 // Key which is used to notify the translation with delta.
 extern NSString* const kTranslationWithDelta;
+
+class BrowserActionsContainerViewSizeDelegate {
+ public:
+  virtual CGFloat GetMaxAllowedWidth() = 0;
+  virtual ~BrowserActionsContainerViewSizeDelegate() {}
+};
 
 // The view that encompasses the Browser Action buttons in the toolbar and
 // provides mechanisms for resizing.
@@ -46,8 +49,9 @@ extern NSString* const kTranslationWithDelta;
   // Used to cache the previous x-pos of the frame rect for resizing purposes.
   CGFloat lastXPos_;
 
-  // The maximum width of the container.
-  CGFloat maxWidth_;
+  // The maximum width the container could want; i.e., the width required to
+  // display all the icons.
+  CGFloat maxDesiredWidth_;
 
   // Whether the container is currently being resized by the user.
   BOOL userIsResizing_;
@@ -74,6 +78,10 @@ extern NSString* const kTranslationWithDelta;
 
   // A tracking area to receive mouseEntered events, if tracking is enabled.
   ui::ScopedCrTrackingArea trackingArea_;
+
+  // The size delegate, if any.
+  // Weak; delegate is responsible for adding/removing itself.
+  BrowserActionsContainerViewSizeDelegate* sizeDelegate_;
 
   base::scoped_nsobject<NSViewAnimation> resizeAnimation_;
 }
@@ -104,8 +112,9 @@ extern NSString* const kTranslationWithDelta;
 @property(nonatomic) BOOL canDragRight;
 @property(nonatomic) BOOL grippyPinned;
 @property(nonatomic,getter=isResizable) BOOL resizable;
-@property(nonatomic) CGFloat maxWidth;
+@property(nonatomic) CGFloat maxDesiredWidth;
 @property(readonly, nonatomic) BOOL userIsResizing;
+@property(nonatomic) BrowserActionsContainerViewSizeDelegate* delegate;
 
 @end
 
