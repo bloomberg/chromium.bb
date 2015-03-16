@@ -52,6 +52,9 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testAlert',
     # Enable per-browser when http://crbug.com/456324 is fixed.
     'ChromeDriverTest.testEmulateNetworkConditionsOffline',
+    # This test is too flaky on the bots, but seems to run perfectly fine
+    # on developer workstations.
+    'ChromeDriverTest.testEmulateNetworkConditionsSpeed',
 ]
 
 _VERSION_SPECIFIC_FILTER = {}
@@ -159,6 +162,7 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         # WebView doesn't support emulating network conditions.
         'ChromeDriverTest.testEmulateNetworkConditions',
         'ChromeDriverTest.testEmulateNetworkConditionsOffline',
+        'ChromeDriverTest.testEmulateNetworkConditionsSpeed',
     ]
 )
 
@@ -802,6 +806,31 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals(latency, network['latency']);
     self.assertEquals(throughput, network['download_throughput']);
     self.assertEquals(throughput, network['upload_throughput']);
+
+  def testEmulateNetworkConditionsSpeed(self):
+    # Warm up the browser.
+    self._http_server.SetDataForPath(
+        '/', "<html><body>blank</body></html>")
+    self._driver.Load(self._http_server.GetUrl() + '/')
+
+    # DSL: 2Mbps throughput, 5ms RTT
+    latency = 5
+    throughput_kbps = 2048
+    throughput = throughput_kbps * 1024
+    self._driver.SetNetworkConditions(latency, throughput, throughput)
+
+    _32_bytes = " 0 1 2 3 4 5 6 7 8 9 A B C D E F"
+    _1_megabyte = _32_bytes * 32768
+    self._http_server.SetDataForPath(
+        '/1MB',
+        "<html><body>%s</body></html>" % _1_megabyte)
+    start = time.time()
+    self._driver.Load(self._http_server.GetUrl() + '/1MB')
+    finish = time.time()
+    duration = finish - start
+    actual_throughput_kbps = 1024 / duration
+    self.assertLessEqual(actual_throughput_kbps, throughput_kbps * 1.5)
+    self.assertGreaterEqual(actual_throughput_kbps, throughput_kbps / 1.5)
 
   def testEmulateNetworkConditionsOffline(self):
     self._driver.SetNetworkConditions(5, 2048, 2048, offline=True)
