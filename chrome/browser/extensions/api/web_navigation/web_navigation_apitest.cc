@@ -608,8 +608,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, History) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/history")) << message_;
 }
 
-// Disabled because of http://crbug.com/467483
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, DISABLED_CrossProcess) {
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, CrossProcess) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   LoadExtension(test_data_dir_.AppendASCII("webnavigation").AppendASCII("app"));
