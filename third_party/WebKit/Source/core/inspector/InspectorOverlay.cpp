@@ -36,7 +36,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -334,8 +333,8 @@ static void buildNodeHighlight(Node& node, const HighlightConfig& highlightConfi
 
 } // anonymous namespace
 
-InspectorOverlay::InspectorOverlay(LocalFrame* frame, Client* client)
-    : m_frame(frame)
+InspectorOverlay::InspectorOverlay(Page* page, Client* client)
+    : m_page(page)
     , m_client(client)
     , m_inspectModeEnabled(false)
     , m_overlayHost(InspectorOverlayHost::create())
@@ -355,7 +354,7 @@ InspectorOverlay::~InspectorOverlay()
 
 DEFINE_TRACE(InspectorOverlay)
 {
-    visitor->trace(m_frame);
+    visitor->trace(m_page);
     visitor->trace(m_highlightNode);
     visitor->trace(m_eventTargetNode);
     visitor->trace(m_overlayPage);
@@ -497,7 +496,7 @@ void InspectorOverlay::update()
         return;
     }
 
-    FrameView* view = m_frame->view();
+    FrameView* view = m_page->deprecatedLocalMainFrame()->view();
     if (!view)
         return;
 
@@ -730,11 +729,11 @@ Page* InspectorOverlay::overlayPage()
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
     ASSERT(!m_overlayChromeClient);
-    m_overlayChromeClient = adoptPtr(new InspectorOverlayChromeClient(m_frame->host()->chrome().client(), this));
+    m_overlayChromeClient = adoptPtr(new InspectorOverlayChromeClient(m_page->chrome().client(), this));
     pageClients.chromeClient = m_overlayChromeClient.get();
     m_overlayPage = adoptPtrWillBeNoop(new Page(pageClients));
 
-    Settings& settings = m_frame->host()->settings();
+    Settings& settings = m_page->settings();
     Settings& overlaySettings = m_overlayPage->settings();
 
     overlaySettings.genericFontFamilySettings().updateStandard(settings.genericFontFamilySettings().standard());
@@ -785,10 +784,10 @@ Page* InspectorOverlay::overlayPage()
 void InspectorOverlay::reset(const IntSize& viewportSize, int scrollX, int scrollY)
 {
     RefPtr<JSONObject> resetData = JSONObject::create();
-    resetData->setNumber("pageScaleFactor", (m_frame->host()->settings().pinchVirtualViewportEnabled() || !m_frame->view()) ? 1 : m_frame->view()->visibleContentScaleFactor());
-    resetData->setNumber("deviceScaleFactor", m_frame->host()->deviceScaleFactor());
+    resetData->setNumber("pageScaleFactor", m_page->settings().pinchVirtualViewportEnabled() ? 1 : m_page->pageScaleFactor());
+    resetData->setNumber("deviceScaleFactor", m_page->deviceScaleFactor());
     resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
-    resetData->setNumber("pageZoomFactor", m_frame->pageZoomFactor());
+    resetData->setNumber("pageZoomFactor", m_page->deprecatedLocalMainFrame()->pageZoomFactor());
     resetData->setNumber("scrollX", scrollX);
     resetData->setNumber("scrollY", scrollY);
     evaluateInOverlay("reset", resetData.release());

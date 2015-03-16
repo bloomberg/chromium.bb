@@ -242,7 +242,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_instrumentingAgents(webViewImpl->page()->instrumentingAgents())
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(this)))
-    , m_overlay(InspectorOverlay::create(webViewImpl->page()->deprecatedLocalMainFrame(), this))
+    , m_overlay(InspectorOverlay::create(webViewImpl->page(), this))
     , m_cssAgent(nullptr)
     , m_resourceAgent(nullptr)
     , m_layerTreeAgent(nullptr)
