@@ -802,17 +802,11 @@ TEST(PermissionsTest, FileSystemPermissionMessages) {
   scoped_refptr<PermissionSet> permissions(
       new PermissionSet(api_permissions, ManifestPermissionSet(),
                         URLPatternSet(), URLPatternSet()));
-  PermissionMessages messages =
-      PermissionMessageProvider::Get()->GetPermissionMessages(
+  PermissionMessageIDs ids =
+      PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
           permissions.get(), Manifest::TYPE_PLATFORM_APP);
-  ASSERT_EQ(1u, messages.size());
-  std::sort(messages.begin(), messages.end());
-  std::set<PermissionMessage::ID> ids;
-  for (PermissionMessages::const_iterator it = messages.begin();
-       it != messages.end(); ++it) {
-    ids.insert(it->id());
-  }
-  EXPECT_TRUE(ContainsKey(ids, PermissionMessage::kFileSystemDirectory));
+  ASSERT_EQ(1u, ids.size());
+  EXPECT_EQ(PermissionMessage::kFileSystemDirectory, ids[0]);
 }
 
 // The file system permissions have a special-case hack to show a warning for
@@ -855,11 +849,11 @@ TEST(PermissionsTest, HiddenFileSystemPermissionMessages) {
   scoped_refptr<PermissionSet> permissions(
       new PermissionSet(api_permissions, ManifestPermissionSet(),
                         URLPatternSet(), URLPatternSet()));
-  PermissionMessages messages =
-      PermissionMessageProvider::Get()->GetPermissionMessages(
+  PermissionMessageIDs ids =
+      PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
           permissions.get(), Manifest::TYPE_PLATFORM_APP);
-  ASSERT_EQ(1u, messages.size());
-  EXPECT_EQ(PermissionMessage::kFileSystemWriteDirectory, messages[0].id());
+  ASSERT_EQ(1u, ids.size());
+  EXPECT_EQ(PermissionMessage::kFileSystemWriteDirectory, ids[0]);
 }
 
 TEST(PermissionsTest, SuppressedPermissionMessages) {
@@ -873,11 +867,11 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     scoped_refptr<PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           hosts, URLPatternSet()));
-    PermissionMessages messages =
-        PermissionMessageProvider::Get()->GetPermissionMessages(
+    PermissionMessageIDs ids =
+        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
             permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, messages.size());
-    EXPECT_EQ(PermissionMessage::kTabs, messages[0].id());
+    EXPECT_EQ(1u, ids.size());
+    EXPECT_EQ(PermissionMessage::kTabs, ids[0]);
   }
   {
     // History warning suppresses favicon warning.
@@ -889,11 +883,11 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     scoped_refptr<PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           hosts, URLPatternSet()));
-    PermissionMessages messages =
-        PermissionMessageProvider::Get()->GetPermissionMessages(
+    PermissionMessageIDs ids =
+        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
             permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, messages.size());
-    EXPECT_EQ(PermissionMessage::kBrowsingHistory, messages[0].id());
+    EXPECT_EQ(1u, ids.size());
+    EXPECT_EQ(PermissionMessage::kBrowsingHistory, ids[0]);
   }
   {
     // All sites warning suppresses tabs warning.
@@ -903,11 +897,11 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kTab);
     scoped_refptr<PermissionSet> permissions(new PermissionSet(
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
-    PermissionMessages messages =
-        PermissionMessageProvider::Get()->GetPermissionMessages(
+    PermissionMessageIDs ids =
+        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
             permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, messages.size());
-    EXPECT_EQ(PermissionMessage::kHostsAll, messages[0].id());
+    EXPECT_EQ(1u, ids.size());
+    EXPECT_EQ(PermissionMessage::kHostsAll, ids[0]);
   }
   {
     // All sites warning suppresses topSites warning.
@@ -917,11 +911,11 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kTopSites);
     scoped_refptr<PermissionSet> permissions(new PermissionSet(
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
-    PermissionMessages messages =
-        PermissionMessageProvider::Get()->GetPermissionMessages(
+    PermissionMessageIDs ids =
+        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
             permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, messages.size());
-    EXPECT_EQ(PermissionMessage::kHostsAll, messages[0].id());
+    EXPECT_EQ(1u, ids.size());
+    EXPECT_EQ(PermissionMessage::kHostsAll, ids[0]);
   }
   {
     // All sites warning suppresses declarativeWebRequest warning.
@@ -931,11 +925,11 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kDeclarativeWebRequest);
     scoped_refptr<PermissionSet> permissions(new PermissionSet(
         api_permissions, ManifestPermissionSet(), hosts, URLPatternSet()));
-    PermissionMessages messages =
-        PermissionMessageProvider::Get()->GetPermissionMessages(
+    PermissionMessageIDs ids =
+        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
             permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, messages.size());
-    EXPECT_EQ(PermissionMessage::kHostsAll, messages[0].id());
+    EXPECT_EQ(1u, ids.size());
+    EXPECT_EQ(PermissionMessage::kHostsAll, ids[0]);
   }
   {
     // BrowsingHistory warning suppresses all history read/write warnings.
@@ -948,11 +942,11 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     scoped_refptr<PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
-    PermissionMessages messages =
-        PermissionMessageProvider::Get()->GetPermissionMessages(
+    PermissionMessageIDs ids =
+        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
             permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, messages.size());
-    EXPECT_EQ(PermissionMessage::kBrowsingHistory, messages[0].id());
+    EXPECT_EQ(1u, ids.size());
+    EXPECT_EQ(PermissionMessage::kBrowsingHistory, ids[0]);
   }
   {
     // Tabs warning suppresses all read-only history warnings.
@@ -964,11 +958,11 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     scoped_refptr<PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
-    PermissionMessages messages =
-        PermissionMessageProvider::Get()->GetPermissionMessages(
+    PermissionMessageIDs ids =
+        PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
             permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, messages.size());
-    EXPECT_EQ(PermissionMessage::kTabs, messages[0].id());
+    EXPECT_EQ(1u, ids.size());
+    EXPECT_EQ(PermissionMessage::kTabs, ids[0]);
   }
 }
 
@@ -982,7 +976,7 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
                           URLPatternSet(),
                           URLPatternSet()));
     std::vector<base::string16> messages =
-        PermissionMessageProvider::Get()->GetWarningMessages(
+        PermissionMessageProvider::Get()->GetLegacyWarningMessages(
             permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_SERIAL),
@@ -999,7 +993,7 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
                           URLPatternSet(),
                           URLPatternSet()));
     std::vector<base::string16> messages =
-        PermissionMessageProvider::Get()->GetWarningMessages(
+        PermissionMessageProvider::Get()->GetLegacyWarningMessages(
             permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_SERIAL),
@@ -1013,14 +1007,14 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
     PermissionSet* set = const_cast<PermissionSet*>(
         extension->permissions_data()->active_permissions().get());
     std::vector<base::string16> warnings =
-        provider->GetWarningMessages(set, extension->GetType());
+        provider->GetLegacyWarningMessages(set, extension->GetType());
     EXPECT_EQ(1u, warnings.size());
     EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH),
               warnings[0]);
 
     // Test Bluetooth and Serial
     set->apis_.insert(APIPermission::kSerial);
-    warnings = provider->GetWarningMessages(set, extension->GetType());
+    warnings = provider->GetLegacyWarningMessages(set, extension->GetType());
     EXPECT_EQ(1u, warnings.size());
     EXPECT_EQ(l10n_util::GetStringUTF16(
                   IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_SERIAL),
@@ -1113,7 +1107,7 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   PermissionSet* set = const_cast<PermissionSet*>(
       extension->permissions_data()->active_permissions().get());
   std::vector<base::string16> warnings =
-      provider->GetWarningMessages(set, extension->GetType());
+      provider->GetLegacyWarningMessages(set, extension->GetType());
   EXPECT_FALSE(Contains(warnings, "Use your microphone"));
   EXPECT_FALSE(Contains(warnings, "Use your camera"));
   EXPECT_TRUE(Contains(warnings, "Use your microphone and camera"));
@@ -1122,7 +1116,7 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
 
   // Just audio present.
   set->apis_.erase(APIPermission::kVideoCapture);
-  warnings = provider->GetWarningMessages(set, extension->GetType());
+  warnings = provider->GetLegacyWarningMessages(set, extension->GetType());
   EXPECT_EQ(combined_size, warnings.size());
   EXPECT_EQ(combined_index, IndexOf(warnings, "Use your microphone"));
   EXPECT_FALSE(Contains(warnings, "Use your camera"));
@@ -1131,7 +1125,7 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   // Just video present.
   set->apis_.erase(APIPermission::kAudioCapture);
   set->apis_.insert(APIPermission::kVideoCapture);
-  warnings = provider->GetWarningMessages(set, extension->GetType());
+  warnings = provider->GetLegacyWarningMessages(set, extension->GetType());
   EXPECT_EQ(combined_size, warnings.size());
   EXPECT_FALSE(Contains(warnings, "Use your microphone"));
   EXPECT_FALSE(Contains(warnings, "Use your microphone and camera"));
@@ -1150,7 +1144,7 @@ TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
     std::vector<base::string16> messages =
-        PermissionMessageProvider::Get()->GetWarningMessages(
+        PermissionMessageProvider::Get()->GetLegacyWarningMessages(
             permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(l10n_util::GetStringUTF16(
@@ -1169,7 +1163,7 @@ TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
     std::vector<base::string16> messages =
-        PermissionMessageProvider::Get()->GetWarningMessages(
+        PermissionMessageProvider::Get()->GetLegacyWarningMessages(
             permissions.get(), Manifest::TYPE_EXTENSION);
     EXPECT_EQ(1u, messages.size());
     EXPECT_EQ(l10n_util::GetStringUTF16(
@@ -1196,7 +1190,7 @@ TEST(PermissionsTest, GetWarningMessages_DeclarativeWebRequest) {
   const PermissionSet* set =
       extension->permissions_data()->active_permissions().get();
   std::vector<base::string16> warnings =
-      provider->GetWarningMessages(set, extension->GetType());
+      provider->GetLegacyWarningMessages(set, extension->GetType());
   EXPECT_TRUE(Contains(warnings, "Block parts of web pages"));
   EXPECT_FALSE(Contains(
       warnings, "Read and change all your data on the websites you visit"));
@@ -1206,7 +1200,7 @@ TEST(PermissionsTest, GetWarningMessages_DeclarativeWebRequest) {
   extension =
       LoadManifest("permissions", "web_request_all_host_permissions.json");
   set = extension->permissions_data()->active_permissions().get();
-  warnings = provider->GetWarningMessages(set, extension->GetType());
+  warnings = provider->GetLegacyWarningMessages(set, extension->GetType());
   EXPECT_FALSE(Contains(warnings, "Block parts of web pages"));
   EXPECT_TRUE(Contains(
       warnings, "Read and change all your data on the websites you visit"));
@@ -1772,7 +1766,7 @@ TEST(PermissionsTest, ChromeURLs) {
   scoped_refptr<PermissionSet> permissions(
       new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
                         allowed_hosts, URLPatternSet()));
-  PermissionMessageProvider::Get()->GetPermissionMessages(
+  PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
       permissions.get(), Manifest::TYPE_EXTENSION);
 }
 

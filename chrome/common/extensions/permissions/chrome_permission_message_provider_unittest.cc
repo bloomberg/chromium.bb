@@ -36,15 +36,16 @@ class ChromePermissionMessageProviderUnittest : public testing::Test {
                                           Manifest::Type type) {
     scoped_refptr<const PermissionSet> permission_set = new PermissionSet(
         permissions, ManifestPermissionSet(), URLPatternSet(), URLPatternSet());
-    return message_provider_->GetWarningMessages(permission_set.get(), type);
+    return message_provider_->GetLegacyWarningMessages(permission_set.get(),
+                                                       type);
   }
 
   std::vector<base::string16> GetDetails(const APIPermissionSet& permissions,
                                          Manifest::Type type) {
     scoped_refptr<const PermissionSet> permission_set = new PermissionSet(
         permissions, ManifestPermissionSet(), URLPatternSet(), URLPatternSet());
-    return message_provider_->GetWarningMessagesDetails(permission_set.get(),
-                                                        type);
+    return message_provider_->GetLegacyWarningMessagesDetails(
+        permission_set.get(), type);
   }
 
  private:

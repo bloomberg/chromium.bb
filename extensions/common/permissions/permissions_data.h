@@ -131,10 +131,10 @@ class PermissionsData {
   // network, etc.)
   bool HasEffectiveAccessToAllHosts() const;
 
-  // Returns the full list of permission messages that should display at
-  // install time.
-  // TODO(sashab): Deprecate this in favor of GetCoalescedPermissionMessages().
-  PermissionMessages GetPermissionMessages() const;
+  // Returns the full list of legacy permission message IDs.
+  // Deprecated. You DO NOT want to call this!
+  // TODO(treib): Remove once we've switched to the new system.
+  PermissionMessageIDs GetLegacyPermissionMessageIDs() const;
 
   // Returns the full list of permission messages that should display at install
   // time as strings.

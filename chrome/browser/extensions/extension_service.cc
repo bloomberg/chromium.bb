@@ -109,7 +109,7 @@ using extensions::InstallVerifier;
 using extensions::ManagementPolicy;
 using extensions::Manifest;
 using extensions::PermissionMessage;
-using extensions::PermissionMessages;
+using extensions::PermissionMessageIDs;
 using extensions::PermissionSet;
 using extensions::SharedModuleInfo;
 using extensions::SharedModuleService;
@@ -1017,14 +1017,13 @@ void ExtensionService::RecordPermissionMessagesHistogram(
       PermissionMessage::kEnumBoundary + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 
-  PermissionMessages permissions =
-      extension->permissions_data()->GetPermissionMessages();
+  PermissionMessageIDs permissions =
+      extension->permissions_data()->GetLegacyPermissionMessageIDs();
   if (permissions.empty()) {
     counter->Add(PermissionMessage::kNone);
   } else {
-    for (PermissionMessages::iterator it = permissions.begin();
-         it != permissions.end(); ++it)
-      counter->Add(it->id());
+    for (PermissionMessage::ID id : permissions)
+      counter->Add(id);
   }
 }
 

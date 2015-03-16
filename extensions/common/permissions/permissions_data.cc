@@ -196,11 +196,11 @@ bool PermissionsData::HasEffectiveAccessToAllHosts() const {
   return active_permissions()->HasEffectiveAccessToAllHosts();
 }
 
-PermissionMessages PermissionsData::GetPermissionMessages() const {
+PermissionMessageIDs PermissionsData::GetLegacyPermissionMessageIDs() const {
   if (ShouldSkipPermissionWarnings(extension_id_)) {
-    return PermissionMessages();
+    return PermissionMessageIDs();
   } else {
-    return PermissionMessageProvider::Get()->GetPermissionMessages(
+    return PermissionMessageProvider::Get()->GetLegacyPermissionMessageIDs(
         active_permissions().get(), manifest_type_);
   }
 }
@@ -209,7 +209,7 @@ std::vector<base::string16> PermissionsData::GetPermissionMessageStrings()
     const {
   if (ShouldSkipPermissionWarnings(extension_id_))
     return std::vector<base::string16>();
-  return PermissionMessageProvider::Get()->GetWarningMessages(
+  return PermissionMessageProvider::Get()->GetLegacyWarningMessages(
       active_permissions().get(), manifest_type_);
 }
 
@@ -217,7 +217,7 @@ std::vector<base::string16>
 PermissionsData::GetPermissionMessageDetailsStrings() const {
   if (ShouldSkipPermissionWarnings(extension_id_))
     return std::vector<base::string16>();
-  return PermissionMessageProvider::Get()->GetWarningMessagesDetails(
+  return PermissionMessageProvider::Get()->GetLegacyWarningMessagesDetails(
       active_permissions().get(), manifest_type_);
 }
 

@@ -12,10 +12,18 @@ TestPermissionMessageProvider::TestPermissionMessageProvider() {
 TestPermissionMessageProvider::~TestPermissionMessageProvider() {
 }
 
-PermissionMessages TestPermissionMessageProvider::GetPermissionMessages(
+PermissionMessageStrings
+TestPermissionMessageProvider::GetPermissionMessageStrings(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
-  return PermissionMessages();
+  return PermissionMessageStrings();
+}
+
+PermissionMessageIDs
+TestPermissionMessageProvider::GetLegacyPermissionMessageIDs(
+    const PermissionSet* permissions,
+    Manifest::Type extension_type) const {
+  return PermissionMessageIDs();
 }
 
 CoalescedPermissionMessages
@@ -24,14 +32,15 @@ TestPermissionMessageProvider::GetCoalescedPermissionMessages(
   return CoalescedPermissionMessages();
 }
 
-std::vector<base::string16> TestPermissionMessageProvider::GetWarningMessages(
+std::vector<base::string16>
+TestPermissionMessageProvider::GetLegacyWarningMessages(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
   return std::vector<base::string16>();
 }
 
 std::vector<base::string16>
-TestPermissionMessageProvider::GetWarningMessagesDetails(
+TestPermissionMessageProvider::GetLegacyWarningMessagesDetails(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
   return std::vector<base::string16>();

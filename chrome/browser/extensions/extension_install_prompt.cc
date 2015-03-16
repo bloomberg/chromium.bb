@@ -928,21 +928,23 @@ void ExtensionInstallPrompt::ShowConfirmation() {
         extension_ ? extension_->GetType() : Manifest::TYPE_UNKNOWN;
     const extensions::PermissionMessageProvider* message_provider =
         extensions::PermissionMessageProvider::Get();
-    prompt_->SetPermissions(message_provider->GetWarningMessages(
+    prompt_->SetPermissions(message_provider->GetLegacyWarningMessages(
                                 permissions_to_display.get(), type),
                             REGULAR_PERMISSIONS);
-    prompt_->SetPermissionsDetails(message_provider->GetWarningMessagesDetails(
-                                       permissions_to_display.get(), type),
-                                   REGULAR_PERMISSIONS);
+    prompt_->SetPermissionsDetails(
+        message_provider->GetLegacyWarningMessagesDetails(
+            permissions_to_display.get(), type),
+        REGULAR_PERMISSIONS);
 
     scoped_refptr<const extensions::PermissionSet> withheld =
         extension_->permissions_data()->withheld_permissions();
     if (!withheld->IsEmpty()) {
       prompt_->SetPermissions(
-          message_provider->GetWarningMessages(withheld.get(), type),
+          message_provider->GetLegacyWarningMessages(withheld.get(), type),
           PermissionsType::WITHHELD_PERMISSIONS);
       prompt_->SetPermissionsDetails(
-          message_provider->GetWarningMessagesDetails(withheld.get(), type),
+          message_provider->GetLegacyWarningMessagesDetails(withheld.get(),
+                                                            type),
           PermissionsType::WITHHELD_PERMISSIONS);
     }
   }

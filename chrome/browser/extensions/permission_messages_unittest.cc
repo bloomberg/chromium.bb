@@ -113,8 +113,8 @@ class PermissionMessagesUnittest : public testing::Test {
  private:
   std::vector<base::string16> GetMessages(
       scoped_refptr<const PermissionSet> permissions) {
-    return message_provider_->GetWarningMessages(permissions.get(),
-                                                 app_->GetType());
+    return message_provider_->GetLegacyWarningMessages(permissions.get(),
+                                                       app_->GetType());
   }
 
   extensions::TestExtensionEnvironment env_;

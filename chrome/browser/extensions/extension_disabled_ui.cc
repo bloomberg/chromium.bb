@@ -293,7 +293,7 @@ std::vector<base::string16>
 ExtensionDisabledGlobalError::GetBubbleViewMessages() {
   std::vector<base::string16> messages;
   std::vector<base::string16> permission_warnings =
-      extensions::PermissionMessageProvider::Get()->GetWarningMessages(
+      extensions::PermissionMessageProvider::Get()->GetLegacyWarningMessages(
           extension_->permissions_data()->active_permissions().get(),
           extension_->GetType());
   if (is_remote_install_) {

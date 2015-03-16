@@ -26,15 +26,21 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
   ~ChromePermissionMessageProvider() override;
 
   // PermissionMessageProvider implementation.
-  PermissionMessages GetPermissionMessages(
+  // See comments in permission_message_provider.h. TL;DR: You want to use only
+  // GetPermissionMessageStrings to get messages, not the *Legacy* or
+  // *Coalesced* methods.
+  PermissionMessageStrings GetPermissionMessageStrings(
+      const PermissionSet* permissions,
+      Manifest::Type extension_type) const override;
+  PermissionMessageIDs GetLegacyPermissionMessageIDs(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const override;
   CoalescedPermissionMessages GetCoalescedPermissionMessages(
       const PermissionIDSet& permissions) const override;
-  std::vector<base::string16> GetWarningMessages(
+  std::vector<base::string16> GetLegacyWarningMessages(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const override;
-  std::vector<base::string16> GetWarningMessagesDetails(
+  std::vector<base::string16> GetLegacyWarningMessagesDetails(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const override;
   bool IsPrivilegeIncrease(const PermissionSet* old_permissions,
@@ -45,6 +51,10 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
       Manifest::Type extension_type) const override;
 
  private:
+  // TODO(treib): Remove this once we've switched to the new system.
+  PermissionMessages GetPermissionMessages(const PermissionSet* permissions,
+                                           Manifest::Type extension_type) const;
+
   // Gets the permission messages for the API permissions. Also adds any
   // permission IDs from API Permissions to |permission_ids|.
   // TODO(sashab): Deprecate the |permissions| argument, and rename this to

@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -23,6 +24,12 @@
 namespace extensions {
 
 namespace {
+
+bool IsNewPermissionMessageSystemEnabled() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("PermissionMessageSystem");
+  return group_name == "NewSystem";
+}
 
 typedef std::set<PermissionMessage> PermissionMsgSet;
 
@@ -155,6 +162,40 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
   return messages;
 }
 
+PermissionMessageStrings
+ChromePermissionMessageProvider::GetPermissionMessageStrings(
+    const PermissionSet* permissions,
+    Manifest::Type extension_type) const {
+  PermissionMessageStrings strings;
+  if (IsNewPermissionMessageSystemEnabled()) {
+    CoalescedPermissionMessages messages = GetCoalescedPermissionMessages(
+        GetAllPermissionIDs(permissions, extension_type));
+    for (const CoalescedPermissionMessage& msg : messages)
+      strings.push_back(PermissionMessageString(msg));
+  } else {
+    std::vector<base::string16> messages =
+        GetLegacyWarningMessages(permissions, extension_type);
+    std::vector<base::string16> details =
+        GetLegacyWarningMessagesDetails(permissions, extension_type);
+    DCHECK_EQ(messages.size(), details.size());
+    for (size_t i = 0; i < messages.size(); i++)
+      strings.push_back(PermissionMessageString(messages[i], details[i]));
+  }
+  return strings;
+}
+
+PermissionMessageIDs
+ChromePermissionMessageProvider::GetLegacyPermissionMessageIDs(
+    const PermissionSet* permissions,
+    Manifest::Type extension_type) const {
+  PermissionMessageIDs ids;
+  for (const PermissionMessage& msg :
+       GetPermissionMessages(permissions, extension_type)) {
+    ids.push_back(msg.id());
+  }
+  return ids;
+}
+
 CoalescedPermissionMessages
 ChromePermissionMessageProvider::GetCoalescedPermissionMessages(
     const PermissionIDSet& permissions) const {
@@ -185,7 +226,8 @@ ChromePermissionMessageProvider::GetCoalescedPermissionMessages(
   return messages;
 }
 
-std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
+std::vector<base::string16>
+ChromePermissionMessageProvider::GetLegacyWarningMessages(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
   std::vector<base::string16> message_strings;
@@ -198,7 +240,7 @@ std::vector<base::string16> ChromePermissionMessageProvider::GetWarningMessages(
 }
 
 std::vector<base::string16>
-ChromePermissionMessageProvider::GetWarningMessagesDetails(
+ChromePermissionMessageProvider::GetLegacyWarningMessagesDetails(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
   std::vector<base::string16> message_strings;
