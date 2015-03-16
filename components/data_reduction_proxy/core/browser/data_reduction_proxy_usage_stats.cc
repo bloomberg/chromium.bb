@@ -11,8 +11,6 @@
 #include "base/prefs/pref_member.h"
 #include "base/single_thread_task_runner.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -106,10 +104,10 @@ void DataReductionProxyUsageStats::DetectAndRecordMissingViaHeaderResponseCode(
 
 DataReductionProxyUsageStats::DataReductionProxyUsageStats(
     DataReductionProxyConfig* config,
-    base::WeakPtr<DataReductionProxyService> service,
+    UnreachableCallback unreachable_callback,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : data_reduction_proxy_config_(config),
-      service_(service),
+      unreachable_callback_(unreachable_callback),
       last_bypass_type_(BYPASS_EVENT_TYPE_MAX),
       triggering_request_(true),
       ui_task_runner_(ui_task_runner),
@@ -387,8 +385,7 @@ void DataReductionProxyUsageStats::NotifyUnavailabilityIfChanged() {
 void DataReductionProxyUsageStats::NotifyUnavailabilityOnUIThread(
     bool unavailable) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
-  if (service_)
-    service_->settings()->SetUnreachable(unavailable);
+  unreachable_callback_.Run(unavailable);
 }
 
 void DataReductionProxyUsageStats::RecordBypassedBytes(

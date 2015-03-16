@@ -10,6 +10,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "net/base/capturing_net_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -177,6 +178,11 @@ class DataReductionProxyTestContext {
   // Returns the underlying |MockDataReductionProxyService|. This can only
   // be called if built with WithMockDataReductionProxyService.
   MockDataReductionProxyService* mock_data_reduction_proxy_service() const;
+
+  // Obtains a callback for notifying that the Data Reduction Proxy is no
+  // longer reachable.
+  DataReductionProxyUsageStats::UnreachableCallback
+  unreachable_callback() const;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
     return task_runner_;

@@ -344,4 +344,10 @@ DataReductionProxyTestContext::mock_data_reduction_proxy_service()
       data_reduction_proxy_service());
 }
 
+DataReductionProxyUsageStats::UnreachableCallback
+DataReductionProxyTestContext::unreachable_callback() const {
+  return base::Bind(&DataReductionProxySettings::SetUnreachable,
+                    base::Unretained(settings_.get()));
+}
+
 }  // namespace data_reduction_proxy

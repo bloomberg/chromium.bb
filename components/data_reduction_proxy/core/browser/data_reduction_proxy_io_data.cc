@@ -14,6 +14,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
@@ -104,11 +106,18 @@ DataReductionProxyIOData::CreateNetworkDelegate(
           request_options_.get(), configurator_.get()));
   if (track_proxy_bypass_statistics && !usage_stats_) {
     usage_stats_.reset(new DataReductionProxyUsageStats(
-        config_.get(), service_, ui_task_runner_));
+        config_.get(), base::Bind(&DataReductionProxyIOData::SetUnreachable,
+                                  base::Unretained(this)), ui_task_runner_));
     network_delegate->InitIODataAndUMA(ui_task_runner_, this, &enabled_,
                                        usage_stats_.get());
   }
   return network_delegate.Pass();
+}
+
+void DataReductionProxyIOData::SetUnreachable(bool unreachable) {
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
+  if (service_)
+    service_->settings()->SetUnreachable(unreachable);
 }
 
 }  // namespace data_reduction_proxy

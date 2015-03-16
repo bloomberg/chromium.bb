@@ -116,7 +116,7 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
     return make_scoped_ptr(
         new DataReductionProxyUsageStats(
             test_context_->config(),
-            test_context_->data_reduction_proxy_service()->GetWeakPtr(),
+            test_context_->unreachable_callback(),
             test_context_->task_runner())).Pass();
   }
 

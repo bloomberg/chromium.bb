@@ -6,7 +6,6 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_USAGE_STATS_H_
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -24,12 +23,13 @@ class ProxyServer;
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfig;
-class DataReductionProxyService;
 
 // TODO(bengr): Rename as DataReductionProxyBypassStats.
 class DataReductionProxyUsageStats
     : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
+  typedef base::Callback<void(bool /* unreachable */)> UnreachableCallback;
+
   // Records a data reduction proxy bypass event as a "BlockType" if
   // |bypass_all| is true and as a "BypassType" otherwise. Records the event as
   // "Primary" if |is_primary| is true and "Fallback" otherwise.
@@ -46,12 +46,13 @@ class DataReductionProxyUsageStats
       bool is_primary,
       const net::HttpResponseHeaders* headers);
 
-  // |params| outlives this class instance. |service| provides a hook to inform
-  // the user that the Data Reduction Proxy is unreachable, which occurs on the
-  // UI thread, hence the |ui_task_runner|. |config| must not be null.
+  // |params| outlives this class instance. |unreachable_callback| provides a
+  // hook to inform the user that the Data Reduction Proxy is unreachable, which
+  // occurs on the UI thread, hence the |ui_task_runner|.
+  // |config| must not be null.
   DataReductionProxyUsageStats(
       DataReductionProxyConfig* config,
-      base::WeakPtr<DataReductionProxyService> service,
+      UnreachableCallback unreachable_callback,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   ~DataReductionProxyUsageStats() override;
@@ -137,7 +138,7 @@ class DataReductionProxyUsageStats
 
   DataReductionProxyConfig* data_reduction_proxy_config_;
 
-  base::WeakPtr<DataReductionProxyService> service_;
+  UnreachableCallback unreachable_callback_;
 
   // The last reason for bypass as determined by
   // MaybeBypassProxyAndPrepareToRetry

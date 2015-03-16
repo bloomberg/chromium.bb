@@ -118,6 +118,9 @@ class DataReductionProxyIOData {
   // Used for testing.
   DataReductionProxyIOData();
 
+  // Records that the data reduction proxy is unreachable or not.
+  void SetUnreachable(bool unreachable);
+
   // The type of Data Reduction Proxy client.
   Client client_;
 
