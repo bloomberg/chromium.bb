@@ -78,7 +78,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ArrayBufferOrArra
 
 template <>
 struct NativeValueTraits<ArrayBufferOrArrayBufferViewOrDictionary> {
-    static ArrayBufferOrArrayBufferViewOrDictionary nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static ArrayBufferOrArrayBufferViewOrDictionary nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class BooleanOrStringOrUnrestrictedDouble final {
@@ -133,7 +133,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrStringOr
 
 template <>
 struct NativeValueTraits<BooleanOrStringOrUnrestrictedDouble> {
-    static BooleanOrStringOrUnrestrictedDouble nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static BooleanOrStringOrUnrestrictedDouble nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class DoubleOrString final {
@@ -181,7 +181,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, DoubleOrString& i
 
 template <>
 struct NativeValueTraits<DoubleOrString> {
-    static DoubleOrString nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static DoubleOrString nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class NodeOrNodeList final {
@@ -231,7 +231,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, NodeOrNodeList& i
 
 template <>
 struct NativeValueTraits<NodeOrNodeList> {
-    static NodeOrNodeList nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static NodeOrNodeList nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class StringOrArrayBufferOrArrayBufferView final {
@@ -286,7 +286,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrArrayBuff
 
 template <>
 struct NativeValueTraits<StringOrArrayBufferOrArrayBufferView> {
-    static StringOrArrayBufferOrArrayBufferView nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static StringOrArrayBufferOrArrayBufferView nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class StringOrDouble final {
@@ -334,7 +334,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrDouble& i
 
 template <>
 struct NativeValueTraits<StringOrDouble> {
-    static StringOrDouble nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static StringOrDouble nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class StringOrStringSequence final {
@@ -382,7 +382,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrStringSeq
 
 template <>
 struct NativeValueTraits<StringOrStringSequence> {
-    static StringOrStringSequence nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static StringOrStringSequence nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class TestEnumOrDouble final {
@@ -430,7 +430,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestEnumOrDouble&
 
 template <>
 struct NativeValueTraits<TestEnumOrDouble> {
-    static TestEnumOrDouble nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static TestEnumOrDouble nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class TestInterface2OrUint8Array final {
@@ -478,7 +478,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2OrU
 
 template <>
 struct NativeValueTraits<TestInterface2OrUint8Array> {
-    static TestInterface2OrUint8Array nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static TestInterface2OrUint8Array nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class TestInterfaceGarbageCollectedOrString final {
@@ -528,7 +528,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceGarb
 
 template <>
 struct NativeValueTraits<TestInterfaceGarbageCollectedOrString> {
-    static TestInterfaceGarbageCollectedOrString nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static TestInterfaceGarbageCollectedOrString nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class TestInterfaceOrLong final {
@@ -576,7 +576,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrLo
 
 template <>
 struct NativeValueTraits<TestInterfaceOrLong> {
-    static TestInterfaceOrLong nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static TestInterfaceOrLong nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class TestInterfaceOrTestInterfaceEmpty final {
@@ -624,7 +624,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrTe
 
 template <>
 struct NativeValueTraits<TestInterfaceOrTestInterfaceEmpty> {
-    static TestInterfaceOrTestInterfaceEmpty nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static TestInterfaceOrTestInterfaceEmpty nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class TestInterfaceWillBeGarbageCollectedOrTestDictionary final {
@@ -674,7 +674,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceWill
 
 template <>
 struct NativeValueTraits<TestInterfaceWillBeGarbageCollectedOrTestDictionary> {
-    static TestInterfaceWillBeGarbageCollectedOrTestDictionary nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static TestInterfaceWillBeGarbageCollectedOrTestDictionary nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class UnrestrictedDoubleOrString final {
@@ -722,7 +722,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, UnrestrictedDoubl
 
 template <>
 struct NativeValueTraits<UnrestrictedDoubleOrString> {
-    static UnrestrictedDoubleOrString nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static UnrestrictedDoubleOrString nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 class V8DoubleOrStringOrNull final {

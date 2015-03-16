@@ -141,7 +141,7 @@ v8::Local<v8::Value> toV8(const ArrayBufferOrArrayBufferViewOrDictionary& impl, 
     return v8::Local<v8::Value>();
 }
 
-ArrayBufferOrArrayBufferViewOrDictionary NativeValueTraits<ArrayBufferOrArrayBufferViewOrDictionary>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+ArrayBufferOrArrayBufferViewOrDictionary NativeValueTraits<ArrayBufferOrArrayBufferViewOrDictionary>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     ArrayBufferOrArrayBufferViewOrDictionary impl;
     V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(isolate, value, impl, exceptionState);
@@ -258,7 +258,7 @@ v8::Local<v8::Value> toV8(const BooleanOrStringOrUnrestrictedDouble& impl, v8::L
     return v8::Local<v8::Value>();
 }
 
-BooleanOrStringOrUnrestrictedDouble NativeValueTraits<BooleanOrStringOrUnrestrictedDouble>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+BooleanOrStringOrUnrestrictedDouble NativeValueTraits<BooleanOrStringOrUnrestrictedDouble>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     BooleanOrStringOrUnrestrictedDouble impl;
     V8BooleanOrStringOrUnrestrictedDouble::toImpl(isolate, value, impl, exceptionState);
@@ -348,7 +348,7 @@ v8::Local<v8::Value> toV8(const DoubleOrString& impl, v8::Local<v8::Object> crea
     return v8::Local<v8::Value>();
 }
 
-DoubleOrString NativeValueTraits<DoubleOrString>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+DoubleOrString NativeValueTraits<DoubleOrString>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     DoubleOrString impl;
     V8DoubleOrString::toImpl(isolate, value, impl, exceptionState);
@@ -441,7 +441,7 @@ v8::Local<v8::Value> toV8(const NodeOrNodeList& impl, v8::Local<v8::Object> crea
     return v8::Local<v8::Value>();
 }
 
-NodeOrNodeList NativeValueTraits<NodeOrNodeList>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+NodeOrNodeList NativeValueTraits<NodeOrNodeList>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     NodeOrNodeList impl;
     V8NodeOrNodeList::toImpl(isolate, value, impl, exceptionState);
@@ -557,7 +557,7 @@ v8::Local<v8::Value> toV8(const StringOrArrayBufferOrArrayBufferView& impl, v8::
     return v8::Local<v8::Value>();
 }
 
-StringOrArrayBufferOrArrayBufferView NativeValueTraits<StringOrArrayBufferOrArrayBufferView>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+StringOrArrayBufferOrArrayBufferView NativeValueTraits<StringOrArrayBufferOrArrayBufferView>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     StringOrArrayBufferOrArrayBufferView impl;
     V8StringOrArrayBufferOrArrayBufferView::toImpl(isolate, value, impl, exceptionState);
@@ -647,7 +647,7 @@ v8::Local<v8::Value> toV8(const StringOrDouble& impl, v8::Local<v8::Object> crea
     return v8::Local<v8::Value>();
 }
 
-StringOrDouble NativeValueTraits<StringOrDouble>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+StringOrDouble NativeValueTraits<StringOrDouble>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     StringOrDouble impl;
     V8StringOrDouble::toImpl(isolate, value, impl, exceptionState);
@@ -737,7 +737,7 @@ v8::Local<v8::Value> toV8(const StringOrStringSequence& impl, v8::Local<v8::Obje
     return v8::Local<v8::Value>();
 }
 
-StringOrStringSequence NativeValueTraits<StringOrStringSequence>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+StringOrStringSequence NativeValueTraits<StringOrStringSequence>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     StringOrStringSequence impl;
     V8StringOrStringSequence::toImpl(isolate, value, impl, exceptionState);
@@ -837,7 +837,7 @@ v8::Local<v8::Value> toV8(const TestEnumOrDouble& impl, v8::Local<v8::Object> cr
     return v8::Local<v8::Value>();
 }
 
-TestEnumOrDouble NativeValueTraits<TestEnumOrDouble>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+TestEnumOrDouble NativeValueTraits<TestEnumOrDouble>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     TestEnumOrDouble impl;
     V8TestEnumOrDouble::toImpl(isolate, value, impl, exceptionState);
@@ -924,7 +924,7 @@ v8::Local<v8::Value> toV8(const TestInterface2OrUint8Array& impl, v8::Local<v8::
     return v8::Local<v8::Value>();
 }
 
-TestInterface2OrUint8Array NativeValueTraits<TestInterface2OrUint8Array>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+TestInterface2OrUint8Array NativeValueTraits<TestInterface2OrUint8Array>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     TestInterface2OrUint8Array impl;
     V8TestInterface2OrUint8Array::toImpl(isolate, value, impl, exceptionState);
@@ -1017,7 +1017,7 @@ v8::Local<v8::Value> toV8(const TestInterfaceGarbageCollectedOrString& impl, v8:
     return v8::Local<v8::Value>();
 }
 
-TestInterfaceGarbageCollectedOrString NativeValueTraits<TestInterfaceGarbageCollectedOrString>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+TestInterfaceGarbageCollectedOrString NativeValueTraits<TestInterfaceGarbageCollectedOrString>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     TestInterfaceGarbageCollectedOrString impl;
     V8TestInterfaceGarbageCollectedOrString::toImpl(isolate, value, impl, exceptionState);
@@ -1113,7 +1113,7 @@ v8::Local<v8::Value> toV8(const TestInterfaceOrLong& impl, v8::Local<v8::Object>
     return v8::Local<v8::Value>();
 }
 
-TestInterfaceOrLong NativeValueTraits<TestInterfaceOrLong>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+TestInterfaceOrLong NativeValueTraits<TestInterfaceOrLong>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     TestInterfaceOrLong impl;
     V8TestInterfaceOrLong::toImpl(isolate, value, impl, exceptionState);
@@ -1200,7 +1200,7 @@ v8::Local<v8::Value> toV8(const TestInterfaceOrTestInterfaceEmpty& impl, v8::Loc
     return v8::Local<v8::Value>();
 }
 
-TestInterfaceOrTestInterfaceEmpty NativeValueTraits<TestInterfaceOrTestInterfaceEmpty>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+TestInterfaceOrTestInterfaceEmpty NativeValueTraits<TestInterfaceOrTestInterfaceEmpty>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     TestInterfaceOrTestInterfaceEmpty impl;
     V8TestInterfaceOrTestInterfaceEmpty::toImpl(isolate, value, impl, exceptionState);
@@ -1296,7 +1296,7 @@ v8::Local<v8::Value> toV8(const TestInterfaceWillBeGarbageCollectedOrTestDiction
     return v8::Local<v8::Value>();
 }
 
-TestInterfaceWillBeGarbageCollectedOrTestDictionary NativeValueTraits<TestInterfaceWillBeGarbageCollectedOrTestDictionary>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+TestInterfaceWillBeGarbageCollectedOrTestDictionary NativeValueTraits<TestInterfaceWillBeGarbageCollectedOrTestDictionary>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     TestInterfaceWillBeGarbageCollectedOrTestDictionary impl;
     V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(isolate, value, impl, exceptionState);
@@ -1386,7 +1386,7 @@ v8::Local<v8::Value> toV8(const UnrestrictedDoubleOrString& impl, v8::Local<v8::
     return v8::Local<v8::Value>();
 }
 
-UnrestrictedDoubleOrString NativeValueTraits<UnrestrictedDoubleOrString>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+UnrestrictedDoubleOrString NativeValueTraits<UnrestrictedDoubleOrString>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     UnrestrictedDoubleOrString impl;
     V8UnrestrictedDoubleOrString::toImpl(isolate, value, impl, exceptionState);

@@ -59,7 +59,7 @@ void toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8
 
 }
 
-TestInterfaceEventInit NativeValueTraits<TestInterfaceEventInit>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+TestInterfaceEventInit NativeValueTraits<TestInterfaceEventInit>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     TestInterfaceEventInit impl;
     V8TestInterfaceEventInit::toImpl(isolate, value, impl, exceptionState);

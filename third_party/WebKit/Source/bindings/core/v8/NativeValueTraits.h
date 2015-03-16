@@ -13,7 +13,7 @@ class ExceptionState;
 
 template <typename T>
 struct NativeValueTraits {
-    static T nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static T nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 } // namespace blink

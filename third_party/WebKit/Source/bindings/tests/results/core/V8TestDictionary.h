@@ -32,7 +32,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestDictionary& i
 
 template <>
 struct NativeValueTraits<TestDictionary> {
-    static TestDictionary nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static TestDictionary nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 } // namespace blink

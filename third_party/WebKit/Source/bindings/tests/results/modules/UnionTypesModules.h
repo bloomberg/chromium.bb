@@ -61,7 +61,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrString& 
 
 template <>
 struct NativeValueTraits<BooleanOrString> {
-    static BooleanOrString nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static BooleanOrString nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 } // namespace blink

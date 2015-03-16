@@ -423,7 +423,7 @@ ScriptValue deserializeScriptValue(ScriptState* scriptState, SerializedScriptVal
     return ScriptValue(scriptState, v8::Null(isolate));
 }
 
-SQLValue NativeValueTraits<SQLValue>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+SQLValue NativeValueTraits<SQLValue>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     if (value.IsEmpty() || value->IsNull())
         return SQLValue();
@@ -435,12 +435,12 @@ SQLValue NativeValueTraits<SQLValue>::nativeValue(const v8::Local<v8::Value>& va
     return SQLValue(stringValue);
 }
 
-IDBKey* NativeValueTraits<IDBKey*>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+IDBKey* NativeValueTraits<IDBKey*>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     return createIDBKeyFromValue(isolate, value);
 }
 
-IDBKeyRange* NativeValueTraits<IDBKeyRange*>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+IDBKeyRange* NativeValueTraits<IDBKeyRange*>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     return V8IDBKeyRange::toImplWithTypeCheck(isolate, value);
 }

@@ -589,7 +589,7 @@ void toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
 
 }
 
-TestDictionary NativeValueTraits<TestDictionary>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+TestDictionary NativeValueTraits<TestDictionary>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     TestDictionary impl;
     V8TestDictionary::toImpl(isolate, value, impl, exceptionState);

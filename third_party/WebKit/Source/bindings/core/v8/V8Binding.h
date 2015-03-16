@@ -841,7 +841,7 @@ inline bool toV8Sequence(v8::Handle<v8::Value> value, uint32_t& length, v8::Isol
 
 template<>
 struct NativeValueTraits<String> {
-    static inline String nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+    static inline String nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
     {
         V8StringResource<> stringValue(value);
         if (!stringValue.prepare(exceptionState))
@@ -852,7 +852,7 @@ struct NativeValueTraits<String> {
 
 template<>
 struct NativeValueTraits<int> {
-    static inline int nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+    static inline int nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
     {
         return toInt32(value, exceptionState);
     }
@@ -860,7 +860,7 @@ struct NativeValueTraits<int> {
 
 template<>
 struct NativeValueTraits<unsigned> {
-    static inline unsigned nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+    static inline unsigned nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
     {
         return toUInt32(value, exceptionState);
     }
@@ -868,7 +868,7 @@ struct NativeValueTraits<unsigned> {
 
 template<>
 struct NativeValueTraits<float> {
-    static inline float nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+    static inline float nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
     {
         return toFloat(value, exceptionState);
     }
@@ -876,7 +876,7 @@ struct NativeValueTraits<float> {
 
 template<>
 struct NativeValueTraits<double> {
-    static inline double nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+    static inline double nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
     {
         return toDouble(value, exceptionState);
     }
@@ -884,7 +884,7 @@ struct NativeValueTraits<double> {
 
 template<>
 struct NativeValueTraits<v8::Local<v8::Value>> {
-    static inline v8::Local<v8::Value> nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState&)
+    static inline v8::Local<v8::Value> nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState&)
     {
         return value;
     }
@@ -892,7 +892,7 @@ struct NativeValueTraits<v8::Local<v8::Value>> {
 
 template<>
 struct NativeValueTraits<ScriptValue> {
-    static inline ScriptValue nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState&)
+    static inline ScriptValue nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState&)
     {
         return ScriptValue(ScriptState::current(isolate), value);
     }
@@ -900,7 +900,7 @@ struct NativeValueTraits<ScriptValue> {
 
 template <typename T>
 struct NativeValueTraits<Vector<T>> {
-    static inline Vector<T> nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+    static inline Vector<T> nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
     {
         return toImplArray<T>(value, 0, isolate, exceptionState);
     }

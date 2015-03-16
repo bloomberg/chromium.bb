@@ -107,7 +107,7 @@ void toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictiona
     {% endfor %}
 }
 
-{{cpp_class}} NativeValueTraits<{{cpp_class}}>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{{cpp_class}} NativeValueTraits<{{cpp_class}}>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     {{cpp_class}} impl;
     {{v8_class}}::toImpl(isolate, value, impl, exceptionState);

@@ -66,7 +66,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{container.cpp_c
 
 template <>
 struct NativeValueTraits<{{container.cpp_class}}> {
-    static {{container.cpp_class}} nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static {{container.cpp_class}} nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 {% endfor %}

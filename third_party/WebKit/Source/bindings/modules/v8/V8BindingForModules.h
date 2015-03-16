@@ -32,17 +32,17 @@ void assertPrimaryKeyValidOrInjectable(ScriptState*, PassRefPtr<SharedBuffer>, c
 
 template <>
 struct NativeValueTraits<SQLValue> {
-    static SQLValue nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static SQLValue nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 template <>
 struct NativeValueTraits<IDBKey*> {
-    static IDBKey* nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static IDBKey* nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 template <>
 struct NativeValueTraits<IDBKeyRange*> {
-    static IDBKeyRange* nativeValue(const v8::Local<v8::Value>&, v8::Isolate*, ExceptionState&);
+    static IDBKeyRange* nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
 };
 
 } // namespace blink

@@ -79,7 +79,7 @@ void toV8TestDictionaryDerivedImplementedAs(const TestDictionaryDerivedImplement
 
 }
 
-TestDictionaryDerivedImplementedAs NativeValueTraits<TestDictionaryDerivedImplementedAs>::nativeValue(const v8::Local<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+TestDictionaryDerivedImplementedAs NativeValueTraits<TestDictionaryDerivedImplementedAs>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
 {
     TestDictionaryDerivedImplementedAs impl;
     V8TestDictionaryDerivedImplementedAs::toImpl(isolate, value, impl, exceptionState);
