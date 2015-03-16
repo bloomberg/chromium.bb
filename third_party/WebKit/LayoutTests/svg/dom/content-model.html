@@ -101,6 +101,28 @@
         // http://dev.w3.org/fxtf/filters/#FilterElement
         'CLASS_DESCRIPTIVE', 'CLASS_FILTER_PRIMITIVE', 'animate', 'set'
       ]);
+      validateTag('linearGradient', [
+        // https://svgwg.org/svg2-draft/pservers.html#LinearGradientElement
+        'CLASS_DESCRIPTIVE', 'CLASS_PAINT_SERVER', 'animate', 'animateTransform', 'script', 'set',
+        'stop'
+      ]);
+      validateTag('g', [
+        // https://svgwg.org/svg2-draft/struct.html#GElement
+        'CLASS_ANIMATION', 'CLASS_DESCRIPTIVE', 'CLASS_PAINT_SERVER', 'CLASS_SHAPE',
+        'CLASS_STRUCTURAL', 'a', 'clipPath', 'cursor', 'filter', 'foreignObject', 'image', 'marker',
+        'mask', 'script', 'style', 'switch', 'text', 'view'
+      ]);
+      validateTag('radialGradient', [
+        // https://svgwg.org/svg2-draft/pservers.html#RadialGradientElement
+        'CLASS_DESCRIPTIVE', 'CLASS_PAINT_SERVER', 'animate', 'animateTransform', 'script', 'set',
+        'stop'
+      ]);
+      validateTag('svg', [
+        // https://svgwg.org/svg2-draft/struct.html#SVGElement
+        'CLASS_ANIMATION', 'CLASS_DESCRIPTIVE', 'CLASS_PAINT_SERVER', 'CLASS_SHAPE',
+        'CLASS_STRUCTURAL', 'a', 'clipPath', 'cursor', 'filter', 'foreignObject', 'image', 'marker',
+        'mask', 'script', 'style', 'switch', 'text', 'view'
+      ]);
     </script>
   </body>
 </html>

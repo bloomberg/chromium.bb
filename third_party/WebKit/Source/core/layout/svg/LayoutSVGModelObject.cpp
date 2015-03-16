@@ -48,7 +48,7 @@ LayoutSVGModelObject::LayoutSVGModelObject(SVGElement* node)
 
 bool LayoutSVGModelObject::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
-    return child->isSVG() && !(child->isSVGInline() || child->isSVGInlineText());
+    return child->isSVG() && !(child->isSVGInline() || child->isSVGInlineText() || child->isSVGGradientStop());
 }
 
 LayoutRect LayoutSVGModelObject::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
