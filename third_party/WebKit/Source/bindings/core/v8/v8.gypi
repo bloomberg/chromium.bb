@@ -40,6 +40,7 @@
             'Maplike.h',
             'ModuleProxy.cpp',
             'ModuleProxy.h',
+            'NativeValueTraits.h',
             'NPV8Object.cpp',
             'NPV8Object.h',
             'Nullable.h',

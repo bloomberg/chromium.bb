@@ -36,6 +36,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8BindingMacros.h"
@@ -540,8 +541,6 @@ inline v8::Handle<v8::Value> v8DateOrNaN(double value, v8::Isolate* isolate)
 // FIXME: Remove the special casing for NodeFilter and XPathNSResolver.
 PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>, v8::Handle<v8::Object>, ScriptState*);
 PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Isolate*, v8::Handle<v8::Value>);
-
-template<class T> struct NativeValueTraits;
 
 bool toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, v8::Isolate*, ExceptionState&);
 

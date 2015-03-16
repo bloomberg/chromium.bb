@@ -24,8 +24,6 @@ bool injectV8KeyIntoV8Value(v8::Isolate*, v8::Local<v8::Value> key, v8::Local<v8
 // For use by Source/modules/indexeddb:
 IDBKey* createIDBKeyFromScriptValueAndKeyPath(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
 bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
-IDBKey* scriptValueToIDBKey(v8::Isolate*, const ScriptValue&);
-IDBKeyRange* scriptValueToIDBKeyRange(v8::Isolate*, const ScriptValue&);
 ScriptValue deserializeScriptValue(ScriptState*, SerializedScriptValue*, const Vector<blink::WebBlobInfo>*);
 
 #if ENABLE(ASSERT)

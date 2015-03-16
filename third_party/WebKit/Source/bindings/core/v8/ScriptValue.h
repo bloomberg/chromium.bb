@@ -31,6 +31,7 @@
 #ifndef ScriptValue_h
 #define ScriptValue_h
 
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/SharedPersistent.h"
 #include "core/CoreExport.h"
@@ -49,6 +50,12 @@ public:
     static ScriptValue from(ScriptState* scriptState, T value)
     {
         return ScriptValue(scriptState, toV8(value, scriptState->context()->Global(), scriptState->isolate()));
+    }
+
+    template<typename T>
+    inline T to(ExceptionState& exceptionState) const
+    {
+        return NativeValueTraits<T>::nativeValue(v8Value(), isolate(), exceptionState);
     }
 
     ScriptValue() { }

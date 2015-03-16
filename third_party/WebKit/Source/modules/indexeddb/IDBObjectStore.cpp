@@ -155,7 +155,7 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState, const ScriptValue& val
 
 IDBRequest* IDBObjectStore::put(ScriptState* scriptState, WebIDBPutMode putMode, IDBAny* source, const ScriptValue& value, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
-    IDBKey* key = keyValue.isUndefined() ? nullptr : scriptValueToIDBKey(scriptState->isolate(), keyValue);
+    IDBKey* key = keyValue.isUndefined() ? nullptr : keyValue.to<IDBKey*>(exceptionState);
     return put(scriptState, putMode, source, value, key, exceptionState);
 }
 

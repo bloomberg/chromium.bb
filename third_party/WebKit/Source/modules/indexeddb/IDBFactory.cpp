@@ -155,8 +155,8 @@ IDBOpenDBRequest* IDBFactory::deleteDatabase(ScriptState* scriptState, const Str
 
 short IDBFactory::cmp(ScriptState* scriptState, const ScriptValue& firstValue, const ScriptValue& secondValue, ExceptionState& exceptionState)
 {
-    IDBKey* first = scriptValueToIDBKey(scriptState->isolate(), firstValue);
-    IDBKey* second = scriptValueToIDBKey(scriptState->isolate(), secondValue);
+    IDBKey* first = firstValue.to<IDBKey*>(exceptionState);
+    IDBKey* second = secondValue.to<IDBKey*>(exceptionState);
 
     ASSERT(first);
     ASSERT(second);
