@@ -30,6 +30,7 @@ class BeginFrameSource;
 class ContextProvider;
 class InputHandlerClient;
 class LayerTreeHost;
+class PrioritizedResourceManager;
 class ResourceUpdateQueue;
 class Scheduler;
 class ScopedThreadProxy;

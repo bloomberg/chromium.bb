@@ -7,6 +7,7 @@
 #include "cc/output/software_renderer.h"
 #include "cc/quads/render_pass.h"
 #include "cc/test/pixel_comparator.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_implementation.h"

@@ -15,6 +15,11 @@
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surfaces_export.h"
+#include "ui/events/latency_info.h"
+
+namespace gpu {
+class GpuMemoryBufferManager;
+}
 
 namespace gfx {
 class Size;

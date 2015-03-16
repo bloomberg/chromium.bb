@@ -31,6 +31,7 @@
 #include "cc/input/top_controls_state.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/output/output_surface.h"
+#include "cc/output/renderer_capabilities.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/surfaces/surface_sequence.h"
@@ -66,24 +67,6 @@ struct PendingPageScaleAnimation;
 struct RenderingStats;
 struct ScrollAndScaleSet;
 enum class GpuRasterizationStatus;
-
-// Provides information on an Impl's rendering capabilities back to the
-// LayerTreeHost.
-struct CC_EXPORT RendererCapabilities {
-  RendererCapabilities(ResourceFormat best_texture_format,
-                       bool allow_partial_texture_updates,
-                       int max_texture_size,
-                       bool using_shared_memory_resources);
-
-  RendererCapabilities();
-  ~RendererCapabilities();
-
-  // Duplicate any modification to this list to RendererCapabilitiesImpl.
-  ResourceFormat best_texture_format;
-  bool allow_partial_texture_updates;
-  int max_texture_size;
-  bool using_shared_memory_resources;
-};
 
 class CC_EXPORT LayerTreeHost {
  public:

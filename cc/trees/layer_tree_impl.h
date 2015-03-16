@@ -14,9 +14,12 @@
 #include "cc/base/scoped_ptr_vector.h"
 #include "cc/base/swap_promise.h"
 #include "cc/base/synced_property.h"
+#include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/renderer.h"
 #include "cc/resources/ui_resource_client.h"
+#include "cc/trees/layer_tree_host_impl.h"
 
 namespace base {
 namespace trace_event {
@@ -32,7 +35,6 @@ class FrameRateCounter;
 class HeadsUpDisplayLayerImpl;
 class LayerScrollOffsetDelegateProxy;
 class LayerTreeDebugState;
-class LayerTreeHostImpl;
 class LayerTreeImpl;
 class LayerTreeSettings;
 class MemoryHistory;

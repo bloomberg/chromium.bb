@@ -4,6 +4,7 @@
 
 #include "cc/test/fake_ui_resource_layer_tree_host_impl.h"
 
+#include "cc/resources/ui_resource_bitmap.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 
 namespace cc {

@@ -9,6 +9,7 @@
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/resources/display_list_recording_source.h"
 #include "cc/resources/picture_pile.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/rect_conversions.h"

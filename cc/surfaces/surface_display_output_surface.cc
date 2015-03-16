@@ -4,6 +4,7 @@
 
 #include "cc/surfaces/surface_display_output_surface.h"
 
+#include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/surfaces/display.h"

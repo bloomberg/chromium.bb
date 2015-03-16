@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"

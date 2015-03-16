@@ -23,6 +23,7 @@ class BeginFrameSource;
 class ContextProvider;
 class LayerTreeHost;
 class LayerTreeHostSingleThreadClient;
+class ResourceUpdateQueue;
 
 class CC_EXPORT SingleThreadProxy : public Proxy,
                                     NON_EXPORTED_BASE(LayerTreeHostImplClient),

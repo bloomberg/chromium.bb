@@ -33,8 +33,11 @@
 #include "cc/resources/rasterizer.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/tile_manager.h"
+#include "cc/resources/ui_resource_client.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
+#include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/proxy.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -63,11 +66,13 @@ class RenderingStatsInstrumentation;
 class ResourcePool;
 class ScrollElasticityHelper;
 class ScrollbarLayerImplBase;
+class SwapPromise;
+class SwapPromiseMonitor;
 class TextureMailboxDeleter;
 class TopControlsManager;
 class UIResourceBitmap;
 class UIResourceRequest;
-struct RendererCapabilitiesImpl;
+struct ScrollAndScaleSet;
 
 enum class GpuRasterizationStatus {
   ON,

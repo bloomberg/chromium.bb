@@ -8,7 +8,9 @@
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/output/renderer_capabilities.h"
+#include "cc/output/renderer_settings.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 
