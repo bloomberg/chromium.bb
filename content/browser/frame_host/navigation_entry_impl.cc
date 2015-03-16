@@ -25,6 +25,22 @@ namespace content {
 
 int NavigationEntryImpl::kInvalidBindings = -1;
 
+NavigationEntryImpl::TreeNode::TreeNode(FrameNavigationEntry* frame_entry)
+    : frame_entry(frame_entry) {
+}
+
+NavigationEntryImpl::TreeNode::~TreeNode() {
+}
+
+NavigationEntryImpl::TreeNode* NavigationEntryImpl::TreeNode::Clone() const {
+  // Clone the tree using a copy of the FrameNavigationEntry, without sharing.
+  NavigationEntryImpl::TreeNode* copy =
+      new NavigationEntryImpl::TreeNode(frame_entry->Clone());
+
+  // TODO(creis): Clone children once we add them.
+  return copy;
+}
+
 NavigationEntry* NavigationEntry::Create() {
   return new NavigationEntryImpl();
 }
@@ -46,7 +62,8 @@ NavigationEntryImpl::NavigationEntryImpl(SiteInstanceImpl* instance,
                                          const base::string16& title,
                                          ui::PageTransition transition_type,
                                          bool is_renderer_initiated)
-    : frame_entry_(instance, url, referrer),
+    : frame_tree_(
+          new TreeNode(new FrameNavigationEntry(instance, url, referrer))),
       unique_id_(GetUniqueIDInConstructor()),
       bindings_(kInvalidBindings),
       page_type_(PAGE_TYPE_NORMAL),
@@ -78,12 +95,12 @@ PageType NavigationEntryImpl::GetPageType() const {
 }
 
 void NavigationEntryImpl::SetURL(const GURL& url) {
-  frame_entry_.set_url(url);
+  frame_tree_->frame_entry->set_url(url);
   cached_display_title_.clear();
 }
 
 const GURL& NavigationEntryImpl::GetURL() const {
-  return frame_entry_.url();
+  return frame_tree_->frame_entry->url();
 }
 
 void NavigationEntryImpl::SetBaseURLForDataURL(const GURL& url) {
@@ -95,11 +112,11 @@ const GURL& NavigationEntryImpl::GetBaseURLForDataURL() const {
 }
 
 void NavigationEntryImpl::SetReferrer(const Referrer& referrer) {
-  frame_entry_.set_referrer(referrer);
+  frame_tree_->frame_entry->set_referrer(referrer);
 }
 
 const Referrer& NavigationEntryImpl::GetReferrer() const {
-  return frame_entry_.referrer();
+  return frame_tree_->frame_entry->referrer();
 }
 
 void NavigationEntryImpl::SetVirtualURL(const GURL& url) {
@@ -137,7 +154,8 @@ int32 NavigationEntryImpl::GetPageID() const {
 }
 
 void NavigationEntryImpl::set_site_instance(SiteInstanceImpl* site_instance) {
-  frame_entry_.set_site_instance(site_instance);
+  // TODO(creis): Update all callers and remove this method.
+  frame_tree_->frame_entry->set_site_instance(site_instance);
 }
 
 void NavigationEntryImpl::set_source_site_instance(
@@ -326,10 +344,9 @@ void NavigationEntryImpl::ClearExtraData(const std::string& key) {
 NavigationEntryImpl* NavigationEntryImpl::Clone() const {
   NavigationEntryImpl* copy = new NavigationEntryImpl();
 
-  // TODO(creis): Once we have a tree of FrameNavigationEntries, make a deep
-  // copy.  Only share the same FrameNavigationEntries if cloning within the
-  // same tab.
-  copy->frame_entry_ = frame_entry_;
+  // TODO(creis): Only share the same FrameNavigationEntries if cloning within
+  // the same tab.
+  copy->frame_tree_.reset(frame_tree_->Clone());
 
   // Copy all state over, unless cleared in ResetForCommit.
   copy->unique_id_ = unique_id_;

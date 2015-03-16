@@ -27,6 +27,25 @@ struct StartNavigationParams;
 class CONTENT_EXPORT NavigationEntryImpl
     : public NON_EXPORTED_BASE(NavigationEntry) {
  public:
+  // Represents a tree of FrameNavigationEntries that make up this joint session
+  // history item.  The tree currently only tracks the main frame.
+  // TODO(creis): Populate the tree with subframe entries in --site-per-process.
+  struct TreeNode {
+    TreeNode(FrameNavigationEntry* frame_entry);
+    ~TreeNode();
+
+    // Returns a deep copy of the tree with copies of each node's
+    // FrameNavigationEntries.  We do not yet share FrameNavigationEntries
+    // across trees.
+    // TODO(creis): For --site-per-process, share FrameNavigationEntries between
+    // NavigationEntries of the same tab.
+    TreeNode* Clone() const;
+
+    // Ref counted pointer that keeps the FrameNavigationEntry alive as long as
+    // it is needed by this node's NavigationEntry.
+    scoped_refptr<FrameNavigationEntry> frame_entry;
+  };
+
   static NavigationEntryImpl* FromNavigationEntry(NavigationEntry* entry);
 
   // The value of bindings() before it is set during commit.
@@ -121,7 +140,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // different SiteInstance.
   void set_site_instance(SiteInstanceImpl* site_instance);
   SiteInstanceImpl* site_instance() const {
-    return frame_entry_.site_instance();
+    return frame_tree_->frame_entry->site_instance();
   }
 
   // The |source_site_instance| is used to identify the SiteInstance of the
@@ -271,9 +290,11 @@ class CONTENT_EXPORT NavigationEntryImpl
   // For all new fields, update |Clone| and possibly |ResetForCommit|.
   // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 
-  // The FrameNavigationEntry for the main frame.
-  // TODO(creis): Make this a tree with nodes for each frame in the page.
-  FrameNavigationEntry frame_entry_;
+  // Tree of FrameNavigationEntries, one for each frame on the page.
+  // TODO(creis): Once FrameNavigationEntries can be shared across multiple
+  // NavigationEntries, we will need to update Session/Tab restore.  For now,
+  // each NavigationEntry's tree has its own unshared FrameNavigationEntries.
+  scoped_ptr<TreeNode> frame_tree_;
 
   // See the accessors above for descriptions.
   int unique_id_;

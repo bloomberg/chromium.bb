@@ -14,19 +14,24 @@ namespace content {
 
 // Represents a session history item for a particular frame.
 //
-// This class is currently owned by a single NavigationEntry and only tracks the
-// main frame.
+// This class is refcounted and can be shared across multiple NavigationEntries.
+// For now, it is owned by a single NavigationEntry and only tracks the main
+// frame.
 //
-// TODO(creis): Keep a tree of FrameNavigationEntries in each NavigationEntry,
-// one per frame.  FrameNavigationEntries may be shared across NavigationEntries
-// if the frame hasn't changed.
-class CONTENT_EXPORT FrameNavigationEntry {
+// TODO(creis): In --site-per-process, fill in a tree of FrameNavigationEntries
+// in each NavigationEntry, one per frame.  FrameNavigationEntries may be shared
+// across NavigationEntries if the frame hasn't changed.
+class CONTENT_EXPORT FrameNavigationEntry
+    : public base::RefCounted<FrameNavigationEntry> {
  public:
   FrameNavigationEntry();
   FrameNavigationEntry(SiteInstanceImpl* site_instance,
                        const GURL& url,
                        const Referrer& referrer);
-  virtual ~FrameNavigationEntry();
+
+  // Creates a copy of this FrameNavigationEntry that can be modified
+  // independently from the original.
+  FrameNavigationEntry* Clone() const;
 
   // The SiteInstance responsible for rendering this frame.  All frames sharing
   // a SiteInstance must live in the same process.  This is a refcounted pointer
@@ -39,7 +44,6 @@ class CONTENT_EXPORT FrameNavigationEntry {
 
   // The actual URL loaded in the frame.  This is in contrast to the virtual
   // URL, which is shown to the user.
-  // TODO(creis): Move virtual URL and related members to FrameNavigationEntry.
   void set_url(const GURL& url) { url_ = url; }
   const GURL& url() const { return url_; }
 
@@ -48,15 +52,21 @@ class CONTENT_EXPORT FrameNavigationEntry {
   const Referrer& referrer() const { return referrer_; }
 
  private:
+  friend class base::RefCounted<FrameNavigationEntry>;
+  virtual ~FrameNavigationEntry();
+
+  // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+  // For all new fields, update |Clone|.
   // TODO(creis): These fields have implications for session restore.  This is
   // currently managed by NavigationEntry, but the logic will move here.
+  // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 
   // See the accessors above for descriptions.
   scoped_refptr<SiteInstanceImpl> site_instance_;
   GURL url_;
   Referrer referrer_;
 
-  // Copy and assignment is explicitly allowed for this class.
+  DISALLOW_COPY_AND_ASSIGN(FrameNavigationEntry);
 };
 
 }  // namespace content

@@ -18,4 +18,14 @@ FrameNavigationEntry::FrameNavigationEntry(SiteInstanceImpl* site_instance,
 FrameNavigationEntry::~FrameNavigationEntry() {
 }
 
+FrameNavigationEntry* FrameNavigationEntry::Clone() const {
+  FrameNavigationEntry* copy = new FrameNavigationEntry();
+
+  copy->site_instance_ = site_instance_;
+  copy->url_ = url_;
+  copy->referrer_ = referrer_;
+
+  return copy;
+}
+
 }  // namespace content
