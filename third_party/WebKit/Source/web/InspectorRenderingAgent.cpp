@@ -7,6 +7,7 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
 #include "web/WebLocalFrameImpl.h"
