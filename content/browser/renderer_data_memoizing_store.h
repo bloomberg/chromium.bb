@@ -126,7 +126,7 @@ class RendererDataMemoizingStore : public RenderProcessHostObserver {
   };
 
   void StartObservingProcess(int process_id) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     RenderProcessHost* host = RenderProcessHost::FromID(process_id);
     if (!host) {
       // We lost the race to observe the host before it was destroyed. Since
@@ -154,7 +154,7 @@ class RendererDataMemoizingStore : public RenderProcessHostObserver {
   }
 
   void RenderProcessHostDestroyed(RenderProcessHost* host) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     RemoveRenderProcessItems(host->GetID());
   }
 

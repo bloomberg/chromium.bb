@@ -60,7 +60,7 @@ namespace content {
 // static
 WebContents* WebContents::FromJavaWebContents(
     jobject jweb_contents_android) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!jweb_contents_android)
     return NULL;
 

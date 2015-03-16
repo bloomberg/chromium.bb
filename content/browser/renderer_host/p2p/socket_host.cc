@@ -578,7 +578,7 @@ void P2PSocketHost::StartRtpDump(
     bool incoming,
     bool outgoing,
     const RenderProcessHost::WebRtcRtpPacketCallback& packet_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!packet_callback.is_null());
   DCHECK(incoming || outgoing);
 
@@ -594,7 +594,7 @@ void P2PSocketHost::StartRtpDump(
 }
 
 void P2PSocketHost::StopRtpDump(bool incoming, bool outgoing) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(incoming || outgoing);
 
   if (incoming) {
@@ -652,7 +652,7 @@ void P2PSocketHost::DumpRtpPacketOnIOThread(scoped_ptr<uint8[]> packet_header,
                                             size_t header_length,
                                             size_t packet_length,
                                             bool incoming) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if ((incoming && !dump_incoming_rtp_packet_) ||
       (!incoming && !dump_outgoing_rtp_packet_) ||

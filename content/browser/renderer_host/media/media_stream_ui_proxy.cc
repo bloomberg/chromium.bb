@@ -15,7 +15,7 @@
 namespace content {
 
 void SetAndCheckAncestorFlag(MediaStreamRequest* request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* rfh =
       RenderFrameHostImpl::FromID(request->render_process_id,
                                   request->render_frame_id);

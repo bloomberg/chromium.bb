@@ -135,7 +135,7 @@ void ThemeHelperMac::Observe(int type,
                              const NotificationDetails& details) {
   DCHECK_EQ(NOTIFICATION_RENDERER_PROCESS_CREATED, type);
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults synchronize];
 

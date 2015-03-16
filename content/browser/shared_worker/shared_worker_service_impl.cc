@@ -190,7 +190,7 @@ class SharedWorkerServiceImpl::SharedWorkerReserver
   void TryReserve(const base::Callback<void(bool)>& success_cb,
                   const base::Closure& failure_cb,
                   bool (*try_increment_worker_ref_count)(int)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!try_increment_worker_ref_count(worker_process_id_)) {
       BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, failure_cb);
       return;
@@ -220,7 +220,7 @@ bool (*SharedWorkerServiceImpl::s_try_increment_worker_ref_count_)(int) =
     TryIncrementWorkerRefCount;
 
 SharedWorkerServiceImpl* SharedWorkerServiceImpl::GetInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return Singleton<SharedWorkerServiceImpl>::get();
 }
 
@@ -269,12 +269,12 @@ std::vector<WorkerService::WorkerInfo> SharedWorkerServiceImpl::GetWorkers() {
 }
 
 void SharedWorkerServiceImpl::AddObserver(WorkerServiceObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   observers_.AddObserver(observer);
 }
 
 void SharedWorkerServiceImpl::RemoveObserver(WorkerServiceObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   observers_.RemoveObserver(observer);
 }
 
@@ -285,7 +285,7 @@ void SharedWorkerServiceImpl::CreateWorker(
     ResourceContext* resource_context,
     const WorkerStoragePartitionId& partition_id,
     bool* url_mismatch) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   *url_mismatch = false;
   scoped_ptr<SharedWorkerInstance> instance(
       new SharedWorkerInstance(params.url,
@@ -468,7 +468,7 @@ void SharedWorkerServiceImpl::NotifyWorkerDestroyed(int worker_process_id,
 void SharedWorkerServiceImpl::ReserveRenderProcessToCreateWorker(
     scoped_ptr<SharedWorkerPendingInstance> pending_instance,
     bool* url_mismatch) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!FindPendingInstance(*pending_instance->instance()));
   if (url_mismatch)
     *url_mismatch = false;
@@ -529,7 +529,7 @@ void SharedWorkerServiceImpl::RenderProcessReservedCallback(
     int worker_route_id,
     bool is_new_worker,
     bool pause_on_start) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // To offset the TryIncrementWorkerRefCount called for the reservation,
   // calls DecrementWorkerRefCount after CheckWorkerDependency in
   // ScopeWorkerDependencyChecker's destructor.

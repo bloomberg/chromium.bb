@@ -440,7 +440,7 @@ namespace {
 void GetMimeTypeOnUI(URLDataSourceImpl* source,
                      const std::string& path,
                      const base::WeakPtr<URLRequestChromeJob>& job) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string mime_type = source->source()->GetMimeType(path);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -556,7 +556,7 @@ URLDataManagerBackend::CreateProtocolHandler(
 
 void URLDataManagerBackend::AddDataSource(
     URLDataSourceImpl* source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DataSourceMap::iterator i = data_sources_.find(source->source_name());
   if (i != data_sources_.end()) {
     if (!source->source()->ShouldReplaceExistingSource())

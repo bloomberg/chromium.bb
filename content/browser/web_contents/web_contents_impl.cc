@@ -4462,7 +4462,7 @@ bool WebContentsImpl::CreateRenderFrameForRenderManager(
 
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsImpl::GetJavaWebContents() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return GetWebContentsAndroid()->GetJavaObject();
 }
 

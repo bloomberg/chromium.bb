@@ -36,7 +36,7 @@ StreamContext* StreamContext::GetFor(BrowserContext* context) {
 }
 
 void StreamContext::InitializeOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   registry_.reset(new StreamRegistry());
 }
 

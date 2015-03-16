@@ -39,7 +39,7 @@ URLDataManager* GetFromBrowserContext(BrowserContext* context) {
 static void AddDataSourceOnIOThread(
     ResourceContext* resource_context,
     scoped_refptr<URLDataSourceImpl> data_source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GetURLDataManagerForResourceContext(resource_context)->AddDataSource(
       data_source.get());
 }
@@ -57,7 +57,7 @@ URLDataManager::~URLDataManager() {
 }
 
 void URLDataManager::AddDataSource(URLDataSourceImpl* source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&AddDataSourceOnIOThread,
@@ -67,7 +67,7 @@ void URLDataManager::AddDataSource(URLDataSourceImpl* source) {
 
 // static
 void URLDataManager::DeleteDataSources() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   URLDataSources sources;
   {
     base::AutoLock lock(g_delete_lock.Get());

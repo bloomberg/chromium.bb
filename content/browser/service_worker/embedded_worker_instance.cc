@@ -36,19 +36,19 @@ struct SecondGreater {
 
 void NotifyWorkerReadyForInspectionOnUI(int worker_process_id,
                                         int worker_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
       worker_process_id, worker_route_id);
 }
 
 void NotifyWorkerDestroyedOnUI(int worker_process_id, int worker_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceWorkerDevToolsManager::GetInstance()->WorkerDestroyed(
       worker_process_id, worker_route_id);
 }
 
 void NotifyWorkerStopIgnoredOnUI(int worker_process_id, int worker_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceWorkerDevToolsManager::GetInstance()->WorkerStopIgnored(
       worker_process_id, worker_route_id);
 }
@@ -61,7 +61,7 @@ void RegisterToWorkerDevToolsManagerOnUI(
     const GURL& url,
     const base::Callback<void(int worker_devtools_agent_route_id,
                               bool wait_for_debugger)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int worker_devtools_agent_route_id = MSG_ROUTING_NONE;
   bool wait_for_debugger = false;
   if (RenderProcessHost* rph = RenderProcessHost::FromID(process_id)) {

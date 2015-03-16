@@ -51,7 +51,7 @@ class TimeZoneMonitorLinuxImpl
       : base::RefCountedThreadSafe<TimeZoneMonitorLinuxImpl>(),
         file_path_watchers_(),
         owner_(owner) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostTask(
         BrowserThread::FILE,
         FROM_HERE,
@@ -59,7 +59,7 @@ class TimeZoneMonitorLinuxImpl
   }
 
   void StopWatching() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     owner_ = NULL;
     BrowserThread::PostTask(
         BrowserThread::FILE,
@@ -76,7 +76,7 @@ class TimeZoneMonitorLinuxImpl
   }
 
   void StartWatchingOnFileThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
     // There is no true standard for where time zone information is actually
     // stored. glibc uses /etc/localtime, uClibc uses /etc/TZ, and some older
@@ -101,12 +101,12 @@ class TimeZoneMonitorLinuxImpl
   }
 
   void StopWatchingOnFileThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     STLDeleteElements(&file_path_watchers_);
   }
 
   void OnTimeZoneFileChanged(const base::FilePath& path, bool error) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -115,7 +115,7 @@ class TimeZoneMonitorLinuxImpl
   }
 
   void OnTimeZoneFileChangedOnUIThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (owner_) {
       owner_->NotifyRenderersFromImpl();
     }

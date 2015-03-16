@@ -110,7 +110,7 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
 }
 
 UtilityProcessHostImpl::~UtilityProcessHostImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (is_batch_mode_)
     EndBatchMode();
 

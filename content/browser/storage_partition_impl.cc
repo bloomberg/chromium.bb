@@ -50,7 +50,7 @@ void ClearCookiesOnIOThread(
     const base::Time end,
     const GURL& storage_origin,
     const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::CookieStore* cookie_store = rq_context->
       GetURLRequestContext()->cookie_store();
   if (storage_origin.is_empty()) {
@@ -68,7 +68,7 @@ void ClearCookiesOnIOThread(
 
 void CheckQuotaManagedDataDeletionStatus(size_t* deletion_task_count,
                                          const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (*deletion_task_count == 0) {
     delete deletion_task_count;
     callback.Run();
@@ -80,7 +80,7 @@ void OnQuotaManagedOriginDeleted(const GURL& origin,
                                  size_t* deletion_task_count,
                                  const base::Closure& callback,
                                  storage::QuotaStatusCode status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(*deletion_task_count, 0u);
   if (status != storage::kQuotaStatusOk) {
     DLOG(ERROR) << "Couldn't remove data of type " << type << " for origin "
@@ -105,7 +105,7 @@ void ClearShaderCacheOnIOThread(const base::FilePath& path,
                                 const base::Time begin,
                                 const base::Time end,
                                 const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ShaderCacheFactory::GetInstance()->ClearByPath(
       path, begin, end, base::Bind(&ClearedShaderCache, callback));
 }
@@ -118,7 +118,7 @@ void OnLocalStorageUsageInfo(
     const base::Time delete_end,
     const base::Closure& callback,
     const std::vector<LocalStorageUsageInfo>& infos) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (size_t i = 0; i < infos.size(); ++i) {
     if (!origin_matcher.is_null() &&
@@ -140,7 +140,7 @@ void OnSessionStorageUsageInfo(
     const StoragePartition::OriginMatcherFunction& origin_matcher,
     const base::Closure& callback,
     const std::vector<SessionStorageUsageInfo>& infos) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (size_t i = 0; i < infos.size(); ++i) {
     if (!origin_matcher.is_null() &&
@@ -161,7 +161,7 @@ void ClearLocalStorageOnUIThread(
     const base::Time begin,
     const base::Time end,
     const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!storage_origin.is_empty()) {
     bool can_delete = origin_matcher.is_null() ||
@@ -185,7 +185,7 @@ void ClearSessionStorageOnUIThread(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
     const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   dom_storage_context->GetSessionStorageUsage(
       base::Bind(&OnSessionStorageUsageInfo, dom_storage_context,
@@ -348,7 +348,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
     const scoped_refptr<storage::SpecialStoragePolicy>& special_storage_policy,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
     const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   StoragePartitionImpl::QuotaManagedDataDeletionHelper* helper =
       new StoragePartitionImpl::QuotaManagedDataDeletionHelper(
@@ -582,7 +582,7 @@ void StoragePartitionImpl::ClearDataImpl(
     const base::Time begin,
     const base::Time end,
     const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DataDeletionHelper* helper = new DataDeletionHelper(remove_mask,
                                                       quota_storage_remove_mask,
                                                       callback);
@@ -602,13 +602,13 @@ void StoragePartitionImpl::ClearDataImpl(
 
 void StoragePartitionImpl::
     QuotaManagedDataDeletionHelper::IncrementTaskCountOnIO() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ++task_count;
 }
 
 void StoragePartitionImpl::
     QuotaManagedDataDeletionHelper::DecrementTaskCountOnIO() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_GT(task_count, 0);
   --task_count;
   if (task_count)
@@ -686,7 +686,7 @@ StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread(
   // The QuotaManager manages all storage other than cookies, LocalStorage,
   // and SessionStorage. This loop wipes out most HTML5 storage for the given
   // origins.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!origins.size()) {
     callback.Run();
     return;
@@ -719,7 +719,7 @@ StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread(
 }
 
 void StoragePartitionImpl::DataDeletionHelper::IncrementTaskCountOnUI() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ++task_count;
 }
 
@@ -836,7 +836,7 @@ void StoragePartitionImpl::ClearDataForOrigin(
     const GURL& storage_origin,
     net::URLRequestContextGetter* request_context_getter,
     const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ClearDataImpl(remove_mask,
                 quota_storage_remove_mask,
                 storage_origin,

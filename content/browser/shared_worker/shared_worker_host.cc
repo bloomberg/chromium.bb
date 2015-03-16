@@ -72,11 +72,11 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance,
       closed_(false),
       creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 SharedWorkerHost::~SharedWorkerHost() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_LONG_TIMES("SharedWorker.TimeToDeleted",
                            base::TimeTicks::Now() - creation_time_);
   // If we crashed, tell the RenderViewHosts.

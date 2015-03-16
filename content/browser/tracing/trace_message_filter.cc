@@ -59,14 +59,14 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void TraceMessageFilter::SendBeginTracing(
     const base::trace_event::CategoryFilter& category_filter,
     const base::trace_event::TraceOptions& options) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Send(new TracingMsg_BeginTracing(category_filter.ToString(),
                                    base::TimeTicks::NowFromSystemTraceTime(),
                                    options.ToString()));
 }
 
 void TraceMessageFilter::SendEndTracing() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_awaiting_end_ack_);
   is_awaiting_end_ack_ = true;
   Send(new TracingMsg_EndTracing);
@@ -75,26 +75,26 @@ void TraceMessageFilter::SendEndTracing() {
 void TraceMessageFilter::SendEnableMonitoring(
     const base::trace_event::CategoryFilter& category_filter,
     const base::trace_event::TraceOptions& options) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Send(new TracingMsg_EnableMonitoring(category_filter.ToString(),
       base::TimeTicks::NowFromSystemTraceTime(),
       options.ToString()));
 }
 
 void TraceMessageFilter::SendDisableMonitoring() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Send(new TracingMsg_DisableMonitoring);
 }
 
 void TraceMessageFilter::SendCaptureMonitoringSnapshot() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_awaiting_capture_monitoring_snapshot_ack_);
   is_awaiting_capture_monitoring_snapshot_ack_ = true;
   Send(new TracingMsg_CaptureMonitoringSnapshot);
 }
 
 void TraceMessageFilter::SendGetTraceLogStatus() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_awaiting_buffer_percent_full_ack_);
   is_awaiting_buffer_percent_full_ack_ = true;
   Send(new TracingMsg_GetTraceLogStatus);

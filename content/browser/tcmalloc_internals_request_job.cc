@@ -33,13 +33,13 @@ void AboutTcmallocOutputs::OnStatsForChildProcess(
 
 void AboutTcmallocOutputs::SetOutput(const std::string& header,
                                      const std::string& output) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   outputs_[header] = output;
 }
 
 void AboutTcmallocOutputs::DumpToHTMLTable(std::string* data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   data->append("<table width=\"100%\">\n");
   for (AboutTcmallocOutputsType::const_iterator oit = outputs_.begin();

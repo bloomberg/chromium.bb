@@ -231,12 +231,12 @@ void SpeechRecognizerImpl::StopAudioCapture() {
 bool SpeechRecognizerImpl::IsActive() const {
   // Checking the FSM state from another thread (thus, while the FSM is
   // potentially concurrently evolving) is meaningless.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return state_ != STATE_IDLE && state_ != STATE_ENDED;
 }
 
 bool SpeechRecognizerImpl::IsCapturingAudio() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO)); // See IsActive().
+  DCHECK_CURRENTLY_ON(BrowserThread::IO); // See IsActive().
   const bool is_capturing_audio = state_ >= STATE_STARTING &&
                                   state_ <= STATE_RECOGNIZING;
   DCHECK((is_capturing_audio && (audio_controller_.get() != NULL)) ||
@@ -250,7 +250,7 @@ SpeechRecognizerImpl::recognition_engine() const {
 }
 
 SpeechRecognizerImpl::~SpeechRecognizerImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   endpointer_.EndSession();
   if (audio_controller_.get()) {
     audio_controller_->Close(
@@ -312,7 +312,7 @@ void SpeechRecognizerImpl::OnSpeechRecognitionEngineError(
 // does, but they will become flaky if TestAudioInputController will be fixed.
 
 void SpeechRecognizerImpl::DispatchEvent(const FSMEventArgs& event_args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_LE(event_args.event, EVENT_MAX_VALUE);
   DCHECK_LE(state_, STATE_MAX_VALUE);
 

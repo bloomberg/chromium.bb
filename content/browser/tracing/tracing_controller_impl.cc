@@ -188,7 +188,7 @@ TracingControllerImpl* TracingControllerImpl::GetInstance() {
 
 bool TracingControllerImpl::GetCategories(
     const GetCategoriesDoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Known categories come back from child processes with the EndTracingAck
   // message. So to get known categories, just begin and end tracing immediately
@@ -210,7 +210,7 @@ void TracingControllerImpl::SetEnabledOnFileThread(
     int mode,
     const TraceOptions& trace_options,
     const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   TraceLog::GetInstance()->SetEnabled(
       category_filter, static_cast<TraceLog::Mode>(mode), trace_options);
@@ -219,7 +219,7 @@ void TracingControllerImpl::SetEnabledOnFileThread(
 
 void TracingControllerImpl::SetDisabledOnFileThread(
     const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   TraceLog::GetInstance()->SetDisabled();
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
@@ -229,7 +229,7 @@ bool TracingControllerImpl::EnableRecording(
     const CategoryFilter& category_filter,
     const TraceOptions& trace_options,
     const EnableRecordingDoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!can_enable_recording())
     return false;
@@ -274,7 +274,7 @@ void TracingControllerImpl::OnEnableRecordingDone(
     const CategoryFilter& category_filter,
     const TraceOptions& trace_options,
     const EnableRecordingDoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
@@ -288,7 +288,7 @@ void TracingControllerImpl::OnEnableRecordingDone(
 
 bool TracingControllerImpl::DisableRecording(
     const scoped_refptr<TraceDataSink>& trace_data_sink) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!can_disable_recording())
     return false;
@@ -307,7 +307,7 @@ bool TracingControllerImpl::DisableRecording(
 }
 
 void TracingControllerImpl::OnDisableRecordingDone() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(OS_ANDROID)
   if (pending_get_categories_done_callback_.is_null())
@@ -363,7 +363,7 @@ bool TracingControllerImpl::EnableMonitoring(
     const CategoryFilter& category_filter,
     const TraceOptions& trace_options,
     const EnableMonitoringDoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!can_enable_monitoring())
     return false;
@@ -393,7 +393,7 @@ void TracingControllerImpl::OnEnableMonitoringDone(
     const CategoryFilter& category_filter,
     const TraceOptions& trace_options,
     const EnableMonitoringDoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
@@ -407,7 +407,7 @@ void TracingControllerImpl::OnEnableMonitoringDone(
 
 bool TracingControllerImpl::DisableMonitoring(
     const DisableMonitoringDoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!can_disable_monitoring())
     return false;
@@ -437,7 +437,7 @@ TracingController::CreateFileSink(const base::FilePath& file_path,
 
 void TracingControllerImpl::OnDisableMonitoringDone(
     const DisableMonitoringDoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   OnMonitoringStateChanged(false);
 
@@ -461,7 +461,7 @@ void TracingControllerImpl::GetMonitoringStatus(
 
 bool TracingControllerImpl::CaptureMonitoringSnapshot(
     const scoped_refptr<TraceDataSink>& monitoring_data_sink) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!can_disable_monitoring())
     return false;
@@ -502,7 +502,7 @@ bool TracingControllerImpl::CaptureMonitoringSnapshot(
 
 bool TracingControllerImpl::GetTraceBufferUsage(
     const GetTraceBufferUsageCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!can_get_trace_buffer_usage() || callback.is_null())
     return false;
@@ -538,7 +538,7 @@ bool TracingControllerImpl::SetWatchEvent(
     const std::string& category_name,
     const std::string& event_name,
     const WatchEventCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (callback.is_null())
     return false;
@@ -560,7 +560,7 @@ bool TracingControllerImpl::SetWatchEvent(
 }
 
 bool TracingControllerImpl::CancelWatchEvent() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!can_cancel_watch_event())
     return false;
@@ -706,7 +706,7 @@ void TracingControllerImpl::OnDisableRecordingAcked(
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
 void TracingControllerImpl::OnEndSystemTracingAcked(
     const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (trace_data_sink_.get()) {
 #if defined(OS_WIN)

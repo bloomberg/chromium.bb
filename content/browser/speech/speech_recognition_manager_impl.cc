@@ -39,7 +39,7 @@ namespace {
 SpeechRecognitionManagerImpl* g_speech_recognition_manager_impl;
 
 void ShowAudioInputSettingsOnFileThread(media::AudioManager* audio_manager) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   audio_manager->ShowAudioInputSettings();
 }
 
@@ -91,7 +91,7 @@ SpeechRecognitionManagerImpl::~SpeechRecognitionManagerImpl() {
 
 int SpeechRecognitionManagerImpl::CreateSession(
     const SpeechRecognitionSessionConfig& config) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const int session_id = GetNextSessionID();
   DCHECK(!SessionExists(session_id));
@@ -160,7 +160,7 @@ int SpeechRecognitionManagerImpl::CreateSession(
 }
 
 void SpeechRecognitionManagerImpl::StartSession(int session_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -184,7 +184,7 @@ void SpeechRecognitionManagerImpl::StartSession(int session_id) {
 void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
                                                               bool ask_user,
                                                               bool is_allowed) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -232,7 +232,7 @@ void SpeechRecognitionManagerImpl::MediaRequestPermissionCallback(
     int session_id,
     const MediaStreamDevices& devices,
     scoped_ptr<MediaStreamUIProxy> stream_ui) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   SessionsTable::iterator iter = sessions_.find(session_id);
   if (iter == sessions_.end())
@@ -255,7 +255,7 @@ void SpeechRecognitionManagerImpl::MediaRequestPermissionCallback(
 }
 
 void SpeechRecognitionManagerImpl::AbortSession(int session_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -276,7 +276,7 @@ void SpeechRecognitionManagerImpl::AbortSession(int session_id) {
 }
 
 void SpeechRecognitionManagerImpl::StopAudioCaptureForSession(int session_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -297,7 +297,7 @@ void SpeechRecognitionManagerImpl::StopAudioCaptureForSession(int session_id) {
 // (if any).
 
 void SpeechRecognitionManagerImpl::OnRecognitionStart(int session_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -316,7 +316,7 @@ void SpeechRecognitionManagerImpl::OnRecognitionStart(int session_id) {
 }
 
 void SpeechRecognitionManagerImpl::OnAudioStart(int session_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -329,7 +329,7 @@ void SpeechRecognitionManagerImpl::OnAudioStart(int session_id) {
 
 void SpeechRecognitionManagerImpl::OnEnvironmentEstimationComplete(
     int session_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -341,7 +341,7 @@ void SpeechRecognitionManagerImpl::OnEnvironmentEstimationComplete(
 }
 
 void SpeechRecognitionManagerImpl::OnSoundStart(int session_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -353,7 +353,7 @@ void SpeechRecognitionManagerImpl::OnSoundStart(int session_id) {
 }
 
 void SpeechRecognitionManagerImpl::OnSoundEnd(int session_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -364,7 +364,7 @@ void SpeechRecognitionManagerImpl::OnSoundEnd(int session_id) {
 }
 
 void SpeechRecognitionManagerImpl::OnAudioEnd(int session_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -382,7 +382,7 @@ void SpeechRecognitionManagerImpl::OnAudioEnd(int session_id) {
 
 void SpeechRecognitionManagerImpl::OnRecognitionResults(
     int session_id, const SpeechRecognitionResults& results) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -394,7 +394,7 @@ void SpeechRecognitionManagerImpl::OnRecognitionResults(
 
 void SpeechRecognitionManagerImpl::OnRecognitionError(
     int session_id, const SpeechRecognitionError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -406,7 +406,7 @@ void SpeechRecognitionManagerImpl::OnRecognitionError(
 
 void SpeechRecognitionManagerImpl::OnAudioLevelsChange(
     int session_id, float volume, float noise_volume) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -417,7 +417,7 @@ void SpeechRecognitionManagerImpl::OnAudioLevelsChange(
 }
 
 void SpeechRecognitionManagerImpl::OnRecognitionEnd(int session_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!SessionExists(session_id))
     return;
 
@@ -435,7 +435,7 @@ void SpeechRecognitionManagerImpl::OnRecognitionEnd(int session_id) {
 
 int SpeechRecognitionManagerImpl::GetSession(
     int render_process_id, int render_view_id, int request_id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SessionsTable::const_iterator iter;
   for (iter = sessions_.begin(); iter != sessions_.end(); ++iter) {
     const int session_id = iter->first;
@@ -459,7 +459,7 @@ void SpeechRecognitionManagerImpl::AbortAllSessionsForRenderProcess(
   // This method gracefully destroys sessions for the listener. However, since
   // the listener itself is likely to be destroyed after this call, we avoid
   // dispatching further events to it, marking the |listener_is_active| flag.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (SessionsTable::iterator it = sessions_.begin(); it != sessions_.end();
        ++it) {
     Session* session = it->second;
@@ -473,7 +473,7 @@ void SpeechRecognitionManagerImpl::AbortAllSessionsForRenderProcess(
 void SpeechRecognitionManagerImpl::AbortAllSessionsForRenderView(
     int render_process_id,
     int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (SessionsTable::iterator it = sessions_.begin(); it != sessions_.end();
        ++it) {
     Session* session = it->second;
@@ -487,7 +487,7 @@ void SpeechRecognitionManagerImpl::AbortAllSessionsForRenderView(
 // -----------------------  Core FSM implementation ---------------------------
 void SpeechRecognitionManagerImpl::DispatchEvent(int session_id,
                                                  FSMEvent event) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // There are some corner cases in which the session might be deleted (due to
   // an EndRecognition event) between a request (e.g. Abort) and its dispatch.
@@ -651,7 +651,7 @@ bool SpeechRecognitionManagerImpl::SessionExists(int session_id) const {
 
 SpeechRecognitionManagerImpl::Session*
 SpeechRecognitionManagerImpl::GetSession(int session_id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SessionsTable::const_iterator iter = sessions_.find(session_id);
   DCHECK(iter != sessions_.end());
   return iter->second;

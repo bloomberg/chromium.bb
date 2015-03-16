@@ -69,21 +69,21 @@ void ResourceContext::CreateKeygenHandler(
 
 ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
     const ResourceContext* resource_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return UserDataAdapter<ChromeBlobStorageContext>::Get(
       resource_context, kBlobStorageContextKeyName);
 }
 
 StreamContext* GetStreamContextForResourceContext(
     const ResourceContext* resource_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return UserDataAdapter<StreamContext>::Get(
       resource_context, kStreamContextKeyName);
 }
 
 URLDataManagerBackend* GetURLDataManagerForResourceContext(
     ResourceContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!context->GetUserData(kURLDataManagerBackendKeyName)) {
     context->SetUserData(kURLDataManagerBackendKeyName,
                          new URLDataManagerBackend());

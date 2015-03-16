@@ -84,7 +84,7 @@ AudioInputRendererHost::AudioInputRendererHost(
           media::AudioLogFactory::AUDIO_INPUT_CONTROLLER)) {}
 
 AudioInputRendererHost::~AudioInputRendererHost() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(audio_entries_.empty());
 }
 

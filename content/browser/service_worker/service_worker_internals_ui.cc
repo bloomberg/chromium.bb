@@ -47,7 +47,7 @@ void OperationCompleteCallback(WeakPtr<ServiceWorkerInternalsUI> internals,
         base::Bind(OperationCompleteCallback, internals, callback_id, status));
     return;
   }
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (internals) {
     internals->web_ui()->CallJavascriptFunction(
         "serviceworker.onOperationComplete",
@@ -72,7 +72,7 @@ void CallServiceWorkerVersionMethodWithVersionID(
                    callback));
     return;
   }
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<ServiceWorkerVersion> version =
       context->context()->GetLiveVersion(version_id);
   if (!version.get()) {
@@ -96,7 +96,7 @@ void DispatchPushEventWithVersionID(
                    callback));
     return;
   }
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<ServiceWorkerVersion> version =
       context->context()->GetLiveVersion(version_id);
   if (!version.get()) {
@@ -118,7 +118,7 @@ void UnregisterWithScope(
         base::Bind(UnregisterWithScope, context, scope, callback));
     return;
   }
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context->context()->UnregisterServiceWorker(scope, callback);
 }
 
@@ -132,7 +132,7 @@ void StartActiveWorker(
     const ServiceWorkerInternalsUI::StatusCallback& callback,
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (status == SERVICE_WORKER_OK) {
     // Pass the reference of |registration| to WorkerStarted callback to prevent
     // it from being deleted while starting the worker. If the refcount of
@@ -155,7 +155,7 @@ void FindRegistrationForPattern(
         base::Bind(FindRegistrationForPattern, context, scope, callback));
     return;
   }
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context->context()->storage()->FindRegistrationForPattern(scope, callback);
 }
 
@@ -253,7 +253,7 @@ void GetRegistrationsOnIOThread(
     scoped_refptr<ServiceWorkerContextWrapper> context,
     base::Callback<void(const std::vector<ServiceWorkerRegistrationInfo>&)>
         callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context->context()->storage()->GetAllRegistrations(callback);
 }
 
@@ -264,7 +264,7 @@ void OnStoredRegistrations(
                         const std::vector<ServiceWorkerRegistrationInfo>&)>
         callback,
     const std::vector<ServiceWorkerRegistrationInfo>& stored_registrations) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -281,7 +281,7 @@ void OnAllRegistrations(
     const std::vector<ServiceWorkerRegistrationInfo>& live_registrations,
     const std::vector<ServiceWorkerVersionInfo>& live_versions,
     const std::vector<ServiceWorkerRegistrationInfo>& stored_registrations) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!internals)
     return;
 
@@ -305,13 +305,13 @@ class ServiceWorkerInternalsUI::PartitionObserver
   ~PartitionObserver() override {}
   // ServiceWorkerContextObserver overrides:
   void OnRunningStateChanged(int64 version_id) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunction(
         "serviceworker.onRunningStateChanged", FundamentalValue(partition_id_),
         StringValue(base::Int64ToString(version_id)));
   }
   void OnVersionStateChanged(int64 version_id) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunction(
         "serviceworker.onVersionStateChanged",
         FundamentalValue(partition_id_),
@@ -321,7 +321,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
                        int process_id,
                        int thread_id,
                        const ErrorInfo& info) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ScopedVector<const Value> args;
     args.push_back(new FundamentalValue(partition_id_));
     args.push_back(new StringValue(base::Int64ToString(version_id)));
@@ -340,7 +340,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
                               int process_id,
                               int thread_id,
                               const ConsoleMessage& message) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ScopedVector<const Value> args;
     args.push_back(new FundamentalValue(partition_id_));
     args.push_back(new StringValue(base::Int64ToString(version_id)));
@@ -358,7 +358,7 @@ class ServiceWorkerInternalsUI::PartitionObserver
   }
   void OnRegistrationStored(int64 registration_id,
                             const GURL& pattern) override {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunction("serviceworker.onRegistrationStored",
                                     StringValue(pattern.spec()));
   }
@@ -460,7 +460,7 @@ void ServiceWorkerInternalsUI::SetOption(const ListValue* args) {
 }
 
 void ServiceWorkerInternalsUI::GetAllRegistrations(const ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
   // Safe to use base::Unretained(this) because
@@ -548,7 +548,7 @@ bool ServiceWorkerInternalsUI::GetServiceWorkerContext(
 void ServiceWorkerInternalsUI::CallServiceWorkerVersionMethod(
     ServiceWorkerVersionMethod method,
     const ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int callback_id;
   const DictionaryValue* cmd_args = NULL;
   int partition_id;
@@ -572,7 +572,7 @@ void ServiceWorkerInternalsUI::CallServiceWorkerVersionMethod(
 
 void ServiceWorkerInternalsUI::DispatchPushEvent(
     const ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int callback_id;
   int partition_id;
   int64 version_id = 0;
@@ -594,7 +594,7 @@ void ServiceWorkerInternalsUI::DispatchPushEvent(
 }
 
 void ServiceWorkerInternalsUI::InspectWorker(const ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int callback_id;
   const DictionaryValue* cmd_args = NULL;
   int process_id = 0;
@@ -620,7 +620,7 @@ void ServiceWorkerInternalsUI::InspectWorker(const ListValue* args) {
 }
 
 void ServiceWorkerInternalsUI::Unregister(const ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int callback_id;
   int partition_id;
   std::string scope_string;
@@ -640,7 +640,7 @@ void ServiceWorkerInternalsUI::Unregister(const ListValue* args) {
 }
 
 void ServiceWorkerInternalsUI::StartWorker(const ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int callback_id;
   int partition_id;
   std::string scope_string;

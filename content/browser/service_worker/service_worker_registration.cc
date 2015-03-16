@@ -34,13 +34,13 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
       should_activate_when_ready_(false),
       resources_total_size_bytes_(0),
       context_(context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context_);
   context_->AddLiveRegistration(this);
 }
 
 ServiceWorkerRegistration::~ServiceWorkerRegistration() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!listeners_.might_have_observers());
   if (context_)
     context_->RemoveLiveRegistration(registration_id_);
@@ -73,7 +73,7 @@ void ServiceWorkerRegistration::NotifyUpdateFound() {
 }
 
 ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return ServiceWorkerRegistrationInfo(
       pattern(),
       registration_id_,

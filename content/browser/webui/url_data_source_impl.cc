@@ -51,7 +51,7 @@ void URLDataSourceImpl::SendResponse(
 void URLDataSourceImpl::SendResponseOnIOThread(
     int request_id,
     scoped_refptr<base::RefCountedMemory> bytes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (backend_)
     backend_->DataAvailable(request_id, bytes.get());
 }

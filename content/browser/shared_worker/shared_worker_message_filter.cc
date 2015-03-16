@@ -32,7 +32,7 @@ SharedWorkerMessageFilter::SharedWorkerMessageFilter(
 }
 
 SharedWorkerMessageFilter::~SharedWorkerMessageFilter() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 void SharedWorkerMessageFilter::OnChannelClosing() {

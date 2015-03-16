@@ -370,7 +370,7 @@ void ServiceWorkerVersion::RegisterStatusChangeCallback(
 }
 
 ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return ServiceWorkerVersionInfo(
       running_status(), status(), script_url(), registration_id(), version_id(),
       embedded_worker()->process_id(), embedded_worker()->thread_id(),

@@ -42,7 +42,7 @@ PeerConnectionTrackerHost::~PeerConnectionTrackerHost() {
 }
 
 void PeerConnectionTrackerHost::OnChannelConnected(int32 peer_pid) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Add PowerMonitor when connected to channel rather than in constructor due
   // to thread safety concerns. Observers of PowerMonitor must be added and
   // removed on the same thread. BrowserMessageFilter is created on the UI
@@ -56,7 +56,7 @@ void PeerConnectionTrackerHost::OnChannelConnected(int32 peer_pid) {
 }
 
 void PeerConnectionTrackerHost::OnChannelClosing() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   if (power_monitor)
     power_monitor->RemoveObserver(this);
@@ -112,7 +112,7 @@ void PeerConnectionTrackerHost::OnSuspend() {
 }
 
 void PeerConnectionTrackerHost::SendOnSuspendOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(render_process_id_);
   if (host)

@@ -227,7 +227,7 @@ class LongLivedResourceInterceptor : public net::URLRequestInterceptor {
 
 void CreateLongLivedResourceInterceptors(
     const GURL& worker_url, const GURL& import_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_ptr<net::URLRequestInterceptor> interceptor;
 
   interceptor.reset(new LongLivedResourceInterceptor(

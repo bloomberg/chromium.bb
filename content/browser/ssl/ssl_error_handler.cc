@@ -56,7 +56,7 @@ SSLCertErrorHandler* SSLErrorHandler::AsSSLCertErrorHandler() {
 }
 
 void SSLErrorHandler::Dispatch() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents = NULL;
   RenderFrameHost* render_frame_host =
@@ -78,7 +78,7 @@ void SSLErrorHandler::Dispatch() {
 }
 
 void SSLErrorHandler::CancelRequest() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // We need to complete this task on the IO thread.
   BrowserThread::PostTask(
@@ -88,7 +88,7 @@ void SSLErrorHandler::CancelRequest() {
 }
 
 void SSLErrorHandler::DenyRequest() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // We need to complete this task on the IO thread.
   BrowserThread::PostTask(
@@ -99,7 +99,7 @@ void SSLErrorHandler::DenyRequest() {
 }
 
 void SSLErrorHandler::ContinueRequest() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // We need to complete this task on the IO thread.
   BrowserThread::PostTask(
@@ -108,7 +108,7 @@ void SSLErrorHandler::ContinueRequest() {
 }
 
 void SSLErrorHandler::TakeNoAction() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // We need to complete this task on the IO thread.
   BrowserThread::PostTask(
@@ -117,7 +117,7 @@ void SSLErrorHandler::TakeNoAction() {
 }
 
 void SSLErrorHandler::CompleteCancelRequest(int error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // It is important that we notify the net::URLRequest only once.  If we try
   // to notify the request twice, it may no longer exist and |this| might have
@@ -139,7 +139,7 @@ void SSLErrorHandler::CompleteCancelRequest(int error) {
 }
 
 void SSLErrorHandler::CompleteContinueRequest() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // It is important that we notify the net::URLRequest only once. If we try to
   // notify the request twice, it may no longer exist and |this| might have
@@ -157,7 +157,7 @@ void SSLErrorHandler::CompleteContinueRequest() {
 }
 
 void SSLErrorHandler::CompleteTakeNoAction() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // It is important that we notify the net::URLRequest only once. If we try to
   // notify the request twice, it may no longer exist and |this| might have

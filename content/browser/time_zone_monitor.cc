@@ -11,15 +11,15 @@
 namespace content {
 
 TimeZoneMonitor::TimeZoneMonitor() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 TimeZoneMonitor::~TimeZoneMonitor() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void TimeZoneMonitor::NotifyRenderers() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (RenderProcessHost::iterator iterator =
            RenderProcessHost::AllHostsIterator();
        !iterator.IsAtEnd();
