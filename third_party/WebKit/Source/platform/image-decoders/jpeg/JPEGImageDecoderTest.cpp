@@ -222,4 +222,20 @@ TEST(JPEGImageDecoderTest, yuv)
     EXPECT_EQ(256u, outputYHeight);
     EXPECT_EQ(128u, outputUVWidth);
     EXPECT_EQ(128u, outputUVHeight);
+
+    // Make sure we revert to RGBA decoding when we're about to downscale,
+    // which can occur on memory-constrained android devices.
+    RefPtr<SharedBuffer> data = readFile(jpegFile);
+    ASSERT_TRUE(data.get());
+
+    OwnPtr<JPEGImageDecoder> decoder = createDecoder(230 * 230 * 4);
+    decoder->setData(data.get(), true);
+
+    OwnPtr<ImagePlanes> imagePlanes = adoptPtr(new ImagePlanes());
+    decoder->setImagePlanes(imagePlanes.release());
+    bool sizeIsAvailable = decoder->isSizeAvailable();
+    ASSERT_TRUE(sizeIsAvailable);
+
+    bool canDecodeToYUV = decoder->canDecodeToYUV();
+    ASSERT_FALSE(canDecodeToYUV);
 }

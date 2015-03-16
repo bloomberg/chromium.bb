@@ -451,6 +451,12 @@ public:
             // Calculate and set decoded size.
             m_info.scale_num = m_decoder->desiredScaleNumerator();
             m_info.scale_denom = scaleDenominator;
+            // Scaling caused by running low on memory isn't supported by YUV decoding since
+            // YUV decoding is performed on full sized images. At this point, buffers and various
+            // image info structs have already been setup to the scaled size after reading the
+            // image header using this decoder, so using the full size is no longer possible.
+            if (m_info.scale_num != m_info.scale_denom)
+                overrideColorSpace = JCS_UNKNOWN;
             jpeg_calc_output_dimensions(&m_info);
             m_decoder->setDecodedSize(m_info.output_width, m_info.output_height);
 
