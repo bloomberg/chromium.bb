@@ -473,22 +473,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
         prefs::kGoogleServicesUserAccountId, pref_service);
     google_services_user_account_id_.MoveToThread(io_message_loop_proxy);
 
-    google_services_username_.Init(
-        prefs::kGoogleServicesUsername, pref_service);
-    google_services_username_.MoveToThread(io_message_loop_proxy);
-
-    google_services_username_pattern_.Init(
-        prefs::kGoogleServicesUsernamePattern, local_state_pref_service);
-    google_services_username_pattern_.MoveToThread(io_message_loop_proxy);
-
-    reverse_autologin_enabled_.Init(
-        prefs::kReverseAutologinEnabled, pref_service);
-    reverse_autologin_enabled_.MoveToThread(io_message_loop_proxy);
-
-    one_click_signin_rejected_email_list_.Init(
-        prefs::kReverseAutologinRejectedEmailList, pref_service);
-    one_click_signin_rejected_email_list_.MoveToThread(io_message_loop_proxy);
-
     sync_disabled_.Init(sync_driver::prefs::kSyncManaged, pref_service);
     sync_disabled_.MoveToThread(io_message_loop_proxy);
 
@@ -1246,10 +1230,6 @@ void ProfileIOData::ShutdownOnUIThread(
     signin_names_->ReleaseResourcesOnUIThread();
 
   google_services_user_account_id_.Destroy();
-  google_services_username_.Destroy();
-  google_services_username_pattern_.Destroy();
-  reverse_autologin_enabled_.Destroy();
-  one_click_signin_rejected_email_list_.Destroy();
   enable_referrers_.Destroy();
   enable_do_not_track_.Destroy();
   force_safesearch_.Destroy();

@@ -202,10 +202,13 @@ bool AppendMirrorRequestHeaderIfPossible(
     int route_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  if (io_data->IsOffTheRecord() ||
-      io_data->google_services_username()->GetValue().empty()) {
+  if (io_data->IsOffTheRecord())
     return false;
-  }
+
+  std::string account_id(io_data->google_services_account_id()->GetValue());
+
+  if (account_id.empty())
+    return false;
 
   // If signin cookies are not allowed, don't add the header.
   if (!ChromeSigninClient::SettingsAllowSigninCookies(
@@ -250,8 +253,6 @@ bool AppendMirrorRequestHeaderIfPossible(
   if (is_guest && webview_info.owner_extension_id.empty())
     return false;
 #endif // !OS_ANDROID && !OS_IOS
-
-  std::string account_id(io_data->google_services_account_id()->GetValue());
 
   int profile_mode_mask = PROFILE_MODE_DEFAULT;
   if (io_data->incognito_availibility()->GetValue() ==
