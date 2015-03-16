@@ -68,7 +68,6 @@ std::string CreateDataKey(int64_t notification_id, const GURL& origin) {
 
 NotificationDatabase::NotificationDatabase(const base::FilePath& path)
     : path_(path) {
-  sequence_checker_.DetachFromSequence();
 }
 
 NotificationDatabase::~NotificationDatabase() {

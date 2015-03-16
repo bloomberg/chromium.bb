@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
@@ -26,9 +25,13 @@ struct NotificationDatabaseData;
 
 // Implementation of the persistent notification database.
 //
-// This class can be constructed on any thread, but method calls must only be
-// made on a thread or sequenced task runner that allows file I/O. The same
-// thread or task runner must be used for all method calls.
+// The database is built on top of a LevelDB database, either in memory or on
+// the filesystem depending on the path passed to the constructor. When writing
+// a new notification, it will be assigned an id guaranteed to be unique for the
+// lifetime of the database.
+//
+// This class must only be used on a thread or sequenced task runner that allows
+// file I/O. The same thread or task runner must be used for all method calls.
 class CONTENT_EXPORT NotificationDatabase {
  public:
   // Result status codes for interations with the database. Will be used for

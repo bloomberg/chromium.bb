@@ -1003,6 +1003,8 @@
       'browser/notifications/notification_message_filter.h',
       'browser/notifications/page_notification_delegate.cc',
       'browser/notifications/page_notification_delegate.h',
+      'browser/notifications/platform_notification_context.cc',
+      'browser/notifications/platform_notification_context.h',
       'browser/permissions/permission_service_context.cc',
       'browser/permissions/permission_service_context.h',
       'browser/permissions/permission_service_impl.cc',
