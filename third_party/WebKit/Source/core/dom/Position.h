@@ -105,6 +105,12 @@ public:
     int computeOffsetInContainerNode() const;  // O(n) for before/after-anchored positions, O(1) for parent-anchored positions
     Position parentAnchoredEquivalent() const; // Convenience method for DOM positions that also fixes up some positions for editing
 
+    // Returns |PositionIsAnchor| type |Position| which is compatible with
+    // |RangeBoundaryPoint| as safe to pass |Range| constructor. Return value
+    // of this function is different from |parentAnchoredEquivalent()| which
+    // returns editing specific position.
+    Position toOffsetInAnchor() const;
+
     // Inline O(1) access for Positions which callers know to be parent-anchored
     int offsetInContainerNode() const
     {
@@ -123,6 +129,16 @@ public:
     // These are convenience methods which are smart about whether the position is neighbor anchored or parent anchored
     Node* computeNodeBeforePosition() const;
     Node* computeNodeAfterPosition() const;
+
+    // Returns node as |Range::firstNode()|. This position must be a
+    // |PositionIs::OffsetInAhcor| to behave as |Range| boundary point.
+    Node* nodeAsRangeFirstNode() const;
+
+    // Returns a node as past last as same as |Range::pastLastNode()|. This
+    // function is supposed to used in HTML serialization and plain text
+    // iterator. This position must be a |PositionIs::OffsetInAhcor| to
+    // behave as |Range| boundary point.
+    Node* nodeAsRangePastLastNode() const;
 
     Node* anchorNode() const { return m_anchorNode.get(); }
 

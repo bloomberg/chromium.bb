@@ -231,6 +231,14 @@ Position Position::parentAnchoredEquivalent() const
     return Position(containerNode(), computeOffsetInContainerNode(), PositionIsOffsetInAnchor);
 }
 
+Position Position::toOffsetInAnchor() const
+{
+    if (isNull())
+        return Position();
+
+    return Position(containerNode(), computeOffsetInContainerNode(), Position::PositionIsOffsetInAnchor);
+}
+
 Node* Position::computeNodeBeforePosition() const
 {
     if (!m_anchorNode)
@@ -270,6 +278,34 @@ Node* Position::computeNodeAfterPosition() const
     }
     ASSERT_NOT_REACHED();
     return 0;
+}
+
+// An implementation of |Range::firstNode()|.
+Node* Position::nodeAsRangeFirstNode() const
+{
+    ASSERT(m_anchorType == PositionIsOffsetInAnchor);
+    if (!m_anchorNode)
+        return nullptr;
+    if (m_anchorNode->offsetInCharacters())
+        return m_anchorNode.get();
+    if (Node* child = NodeTraversal::childAt(*m_anchorNode, m_offset))
+        return child;
+    if (!m_offset)
+        return m_anchorNode.get();
+    return NodeTraversal::nextSkippingChildren(*m_anchorNode);
+}
+
+// An implementation of |Range::pastLastNode()|.
+Node* Position::nodeAsRangePastLastNode() const
+{
+    ASSERT(m_anchorType == PositionIsOffsetInAnchor);
+    if (!m_anchorNode)
+        return nullptr;
+    if (m_anchorNode->offsetInCharacters())
+        return NodeTraversal::nextSkippingChildren(*m_anchorNode);
+    if (Node* child = NodeTraversal::childAt(*m_anchorNode, m_offset))
+        return child;
+    return NodeTraversal::nextSkippingChildren(*m_anchorNode);
 }
 
 Position::AnchorType Position::anchorTypeForLegacyEditingPosition(Node* anchorNode, int offset)

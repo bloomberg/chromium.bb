@@ -1414,13 +1414,7 @@ void Range::checkExtractPrecondition(ExceptionState& exceptionState)
 
 Node* Range::firstNode() const
 {
-    if (m_start.container()->offsetInCharacters())
-        return m_start.container();
-    if (Node* child = NodeTraversal::childAt(*m_start.container(), m_start.offset()))
-        return child;
-    if (!m_start.offset())
-        return m_start.container();
-    return NodeTraversal::nextSkippingChildren(*m_start.container());
+    return startPosition().toOffsetInAnchor().nodeAsRangeFirstNode();
 }
 
 ShadowRoot* Range::shadowRoot() const
@@ -1430,11 +1424,7 @@ ShadowRoot* Range::shadowRoot() const
 
 Node* Range::pastLastNode() const
 {
-    if (m_end.container()->offsetInCharacters())
-        return NodeTraversal::nextSkippingChildren(*m_end.container());
-    if (Node* child = NodeTraversal::childAt(*m_end.container(), m_end.offset()))
-        return child;
-    return NodeTraversal::nextSkippingChildren(*m_end.container());
+    return endPosition().toOffsetInAnchor().nodeAsRangePastLastNode();
 }
 
 IntRect Range::boundingBox() const
