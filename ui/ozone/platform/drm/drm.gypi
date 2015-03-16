@@ -12,6 +12,7 @@
     ],
     'internal_ozone_platforms': [
       'dri',
+      'drm',
     ],
   },
   'targets': [

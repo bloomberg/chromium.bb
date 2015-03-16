@@ -106,11 +106,6 @@
                     ['exclude', '(^|/)evdev/'],
       ]
     }],
-    ['<(ozone_platform_dri)==0 or >(nacl_untrusted_build)==1', {
-      'sources/': [ ['exclude', '_dri(_browsertest|_unittest)?\\.(h|cc)$'],
-                    ['exclude', '(^|/)dri/'],
-      ]
-    }],
     ['<(use_pango)==0', {
       'sources/': [ ['exclude', '(^|_)pango(_util|_browsertest|_unittest)?\\.(h|cc)$'], ],
     }],

@@ -36,6 +36,10 @@ MediaOzonePlatform* CreateMediaOzonePlatformDri() {
   return new MediaOzonePlatformStub;
 }
 
+MediaOzonePlatform* CreateMediaOzonePlatformDrm() {
+  return new MediaOzonePlatformStub;
+}
+
 MediaOzonePlatform* CreateMediaOzonePlatformEgltest() {
   return new MediaOzonePlatformStub;
 }

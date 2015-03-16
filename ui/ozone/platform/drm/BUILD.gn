@@ -101,7 +101,7 @@ source_set("drm_common") {
   public_configs = [ ":libdrm" ]
 }
 
-if (ozone_platform_dri) {
+if (ozone_platform_dri || ozone_platform_drm) {
   source_set("drm") {
     sources = [
       "ozone_platform_drm.cc",

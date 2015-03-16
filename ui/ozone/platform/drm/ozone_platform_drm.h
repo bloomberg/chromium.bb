@@ -12,6 +12,8 @@ class OzonePlatform;
 // Constructor hook for use in ozone_platform_list.cc
 OzonePlatform* CreateOzonePlatformDri();
 
+OzonePlatform* CreateOzonePlatformDrm();
+
 }  // namespace ui
 
 #endif  // UI_OZONE_PLATFORM_DRM_OZONE_PLATFORM_DRM_H_

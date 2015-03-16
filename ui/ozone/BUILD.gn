@@ -29,8 +29,11 @@ if (ozone_platform_caca) {
   ozone_platform_deps += [ "platform/caca" ]
 }
 
-if (ozone_platform_dri) {
-  ozone_platforms += [ "dri" ]
+if (ozone_platform_dri || ozone_platform_drm) {
+  ozone_platforms += [
+    "dri",
+    "drm",
+  ]
   ozone_platform_deps += [ "platform/drm" ]
   ozone_platform_test_deps += [ "platform/drm:drm_unittests" ]
 }

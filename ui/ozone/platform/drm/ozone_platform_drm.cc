@@ -172,4 +172,8 @@ OzonePlatform* CreateOzonePlatformDri() {
   return new OzonePlatformDrm;
 }
 
+OzonePlatform* CreateOzonePlatformDrm() {
+  return new OzonePlatformDrm;
+}
+
 }  // namespace ui
