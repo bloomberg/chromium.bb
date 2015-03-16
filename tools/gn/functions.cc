@@ -20,6 +20,27 @@
 #include "tools/gn/token.h"
 #include "tools/gn/value.h"
 
+namespace {
+
+// Some functions take a {} following them, and some don't. For the ones that
+// don't, this is used to verify that the given block node is null and will
+// set the error accordingly if it's not. Returns true if the block is null.
+bool VerifyNoBlockForFunctionCall(const FunctionCallNode* function,
+                                  const BlockNode* block,
+                                  Err* err) {
+  if (!block)
+    return true;
+
+  *err = Err(block, "Unexpected '{'.",
+      "This function call doesn't take a {} block following it, and you\n"
+      "can't have a {} block that's not connected to something like an if\n"
+      "statement or a target declaration.");
+  err->AppendRange(function->function().range());
+  return false;
+}
+
+}  // namespace
+
 bool EnsureNotProcessingImport(const ParseNode* node,
                                const Scope* scope,
                                Err* err) {
@@ -744,6 +765,14 @@ Value RunFunction(Scope* scope,
   }
 
   if (found_function->second.self_evaluating_args_runner) {
+    // Self evaluating args functions are special weird built-ins. Currently,
+    // only foreach() takes a block following it. Rather than force them all to
+    // check that they have a block or no block and risk bugs for new additions,
+    // check a whitelist here.
+    if (found_function->second.self_evaluating_args_runner != &RunForEach) {
+      if (!VerifyNoBlockForFunctionCall(function, block, err))
+        return Value();
+    }
     return found_function->second.self_evaluating_args_runner(
         scope, function, args_list, err);
   }
@@ -784,6 +813,8 @@ Value RunFunction(Scope* scope,
   }
 
   // Otherwise it's a no-block function.
+  if (!VerifyNoBlockForFunctionCall(function, block, err))
+    return Value();
   return found_function->second.no_block_runner(scope, function,
                                                 args.list_value(), err);
 }

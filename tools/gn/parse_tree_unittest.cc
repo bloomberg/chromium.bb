@@ -56,8 +56,14 @@ TEST(ParseTree, BlockUnusedVars) {
   TestWithScope setup;
 
   // Printing both values should be OK.
+  //
+  // The crazy template definition here is a way to execute a block without
+  // defining a target. Templates require that both the target_name and the
+  // invoker be used, which is what the assertion statement inside the template
+  // does.
   TestParseInput input_all_used(
-      "{\n"
+      "template(\"foo\") { assert(target_name != 0 && invoker != 0) }\n"
+      "foo(\"a\") {\n"
       "  a = 12\n"
       "  b = 13\n"
       "  print(\"$a $b\")\n"
@@ -70,7 +76,7 @@ TEST(ParseTree, BlockUnusedVars) {
 
   // Skipping one should throw an unused var error.
   TestParseInput input_unused(
-      "{\n"
+      "foo(\"a\") {\n"
       "  a = 12\n"
       "  b = 13\n"
       "  print(\"$a\")\n"
@@ -85,7 +91,6 @@ TEST(ParseTree, BlockUnusedVars) {
   // "13" assigned to "b".
   EXPECT_EQ(3, err.location().line_number());
   EXPECT_EQ(7, err.location().char_offset());
-
 }
 
 TEST(ParseTree, OriginForDereference) {

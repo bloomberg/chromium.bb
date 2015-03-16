@@ -53,3 +53,36 @@ TEST(Functions, Defined) {
   ASSERT_EQ(Value::BOOLEAN, result.type());
   EXPECT_FALSE(result.boolean_value());
 }
+
+// Tests that an error is thrown when a {} is supplied to a function that
+// doesn't take one.
+TEST(Functions, FunctionsWithBlock) {
+  TestWithScope setup;
+  Err err;
+
+  // No scope to print() is OK.
+  TestParseInput print_no_scope("print(6)");
+  EXPECT_FALSE(print_no_scope.has_error());
+  Value result = print_no_scope.parsed()->Execute(setup.scope(), &err);
+  EXPECT_FALSE(err.has_error());
+
+  // Passing a scope should pass parsing (it doesn't know about what kind of
+  // function it is) and then throw an error during execution.
+  TestParseInput print_with_scope("print(foo) {}");
+  EXPECT_FALSE(print_with_scope.has_error());
+  result = print_with_scope.parsed()->Execute(setup.scope(), &err);
+  EXPECT_TRUE(err.has_error());
+  err = Err();
+
+  // defined() is a special function so test it separately.
+  TestParseInput defined_no_scope("defined(foo)");
+  EXPECT_FALSE(defined_no_scope.has_error());
+  result = defined_no_scope.parsed()->Execute(setup.scope(), &err);
+  EXPECT_FALSE(err.has_error());
+
+  // A block to defined should fail.
+  TestParseInput defined_with_scope("defined(foo) {}");
+  EXPECT_FALSE(defined_with_scope.has_error());
+  result = defined_with_scope.parsed()->Execute(setup.scope(), &err);
+  EXPECT_TRUE(err.has_error());
+}

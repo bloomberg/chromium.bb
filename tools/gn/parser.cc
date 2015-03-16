@@ -446,9 +446,7 @@ scoped_ptr<ParseNode> Parser::ParseFile() {
 }
 
 scoped_ptr<ParseNode> Parser::ParseStatement() {
-  if (LookAhead(Token::LEFT_BRACE)) {
-    return ParseBlock();
-  } else if (LookAhead(Token::IF)) {
+  if (LookAhead(Token::IF)) {
     return ParseCondition();
   } else if (LookAhead(Token::BLOCK_COMMENT)) {
     return BlockComment(Consume());
@@ -500,11 +498,14 @@ scoped_ptr<ParseNode> Parser::ParseCondition() {
   Consume(Token::RIGHT_PAREN, "Expected ')' after condition of 'if'.");
   condition->set_if_true(ParseBlock().Pass());
   if (Match(Token::ELSE)) {
-    if (!LookAhead(Token::LEFT_BRACE) && !LookAhead(Token::IF)) {
+    if (LookAhead(Token::LEFT_BRACE)) {
+      condition->set_if_false(ParseBlock().Pass());
+    } else if (LookAhead(Token::IF)) {
+      condition->set_if_false(ParseStatement().Pass());
+    } else {
       *err_ = Err(cur_token(), "Expected '{' or 'if' after 'else'.");
       return scoped_ptr<ParseNode>();
     }
-    condition->set_if_false(ParseStatement().Pass());
   }
   if (has_error())
     return scoped_ptr<ParseNode>();
