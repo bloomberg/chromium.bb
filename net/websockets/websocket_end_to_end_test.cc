@@ -242,12 +242,11 @@ class WebSocketEndToEndTest : public ::testing::Test {
     if (!initialised_context_) {
       InitialiseContext();
     }
-    std::vector<std::string> sub_protocols;
     url::Origin origin("http://localhost");
     event_interface_ = new ConnectTestingEventInterface;
     channel_.reset(
         new WebSocketChannel(make_scoped_ptr(event_interface_), &context_));
-    channel_->SendAddChannelRequest(GURL(socket_url), sub_protocols, origin);
+    channel_->SendAddChannelRequest(GURL(socket_url), sub_protocols_, origin);
     event_interface_->WaitForResponse();
     return !event_interface_->failed();
   }
@@ -256,6 +255,7 @@ class WebSocketEndToEndTest : public ::testing::Test {
   scoped_ptr<TestNetworkDelegateWithProxyInfo> network_delegate_;
   TestURLRequestContext context_;
   scoped_ptr<WebSocketChannel> channel_;
+  std::vector<std::string> sub_protocols_;
   bool initialised_context_;
 };
 
@@ -454,6 +454,20 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsWebSocketToWebSocket)) {
   // Verify via wss:
   GURL ws_url = ReplaceUrlScheme(wss_server.GetURL(kEchoServer), "ws");
   EXPECT_TRUE(ConnectAndWait(ws_url));
+}
+
+// Regression test for crbug.com/180504 "WebSocket handshake fails when HTTP
+// headers have trailing LWS".
+TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(TrailingWhitespace)) {
+  SpawnedTestServer ws_server(SpawnedTestServer::TYPE_WS,
+                              SpawnedTestServer::kLocalhost,
+                              GetWebSocketTestDataDirectory());
+  ASSERT_TRUE(ws_server.Start());
+
+  GURL ws_url = ws_server.GetURL("trailing-whitespace");
+  sub_protocols_.push_back("sip");
+  EXPECT_TRUE(ConnectAndWait(ws_url));
+  EXPECT_EQ("sip", event_interface_->selected_subprotocol());
 }
 
 }  // namespace
