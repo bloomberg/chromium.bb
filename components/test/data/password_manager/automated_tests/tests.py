@@ -154,6 +154,15 @@ class Twitter(WebsiteTest):
     self.Submit("#signin-password")
 
 
+class Vkontakte(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https:///vk.com")
+    self.FillUsernameInto("[name='email']")
+    self.FillPasswordInto("[name='pass']")
+    self.Submit("[name='pass']")
+
+
 class Wikia(WebsiteTest):
 
   def Login(self):
@@ -407,6 +416,7 @@ def Tests(environment, tests_to_run=None):
     "reddit": Reddit("reddit", username_not_auto=True),
     "tumblr": Tumblr("tumblr", username_not_auto=True),
     "twitter": Twitter("twitter"),
+    "vkontakte": Vkontakte("vkontakte"),
     "wikia": Wikia("wikia"),
     "wikipedia": Wikipedia("wikipedia", username_not_auto=True),
     "wordpress": Wordpress("wordpress"),
