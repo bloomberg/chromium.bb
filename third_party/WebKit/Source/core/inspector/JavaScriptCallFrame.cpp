@@ -110,6 +110,16 @@ String JavaScriptCallFrame::functionName() const
     return callV8FunctionReturnString("functionName");
 }
 
+int JavaScriptCallFrame::functionLine() const
+{
+    return callV8FunctionReturnInt("functionLine");
+}
+
+int JavaScriptCallFrame::functionColumn() const
+{
+    return callV8FunctionReturnInt("functionColumn");
+}
+
 v8::Local<v8::Value> JavaScriptCallFrame::scopeChain() const
 {
     v8::Local<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);

@@ -51,6 +51,8 @@
     [Custom=Getter] readonly attribute object thisObject;
     readonly attribute DOMString stepInPositions;
     readonly attribute DOMString functionName;
+    readonly attribute long functionLine;
+    readonly attribute long functionColumn;
     [Custom=Getter] readonly attribute DOMString type;
     readonly attribute boolean isAtReturn;
     [Custom=Getter] readonly attribute any returnValue;

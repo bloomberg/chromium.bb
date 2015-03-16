@@ -503,6 +503,18 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
         return DebuggerScript._displayFunctionName(ensureFuncMirror());
     }
 
+    function functionLine()
+    {
+        var location = ensureFuncMirror().sourceLocation();
+        return location ? location.line : 0;
+    }
+
+    function functionColumn()
+    {
+        var location = ensureFuncMirror().sourceLocation();
+        return location ? location.column : 0;
+    }
+
     function evaluate(expression, scopeExtension)
     {
         return frameMirror.evaluate(expression, false, scopeExtension).value();
@@ -546,6 +558,8 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame, sc
         "column": column,
         "scriptName": scriptName,
         "functionName": functionName,
+        "functionLine": functionLine,
+        "functionColumn": functionColumn,
         "thisObject": thisObject,
         "scopeChain": lazyScopeChain,
         "scopeType": lazyScopeTypes,

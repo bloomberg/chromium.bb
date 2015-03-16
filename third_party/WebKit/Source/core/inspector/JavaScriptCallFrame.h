@@ -60,6 +60,8 @@ public:
     int column() const;
     String scriptName() const;
     String functionName() const;
+    int functionLine() const;
+    int functionColumn() const;
 
     v8::Local<v8::Value> scopeChain() const;
     int scopeType(int scopeIndex) const;
