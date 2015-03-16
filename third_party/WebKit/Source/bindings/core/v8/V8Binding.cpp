@@ -442,14 +442,11 @@ int64_t toInt64(v8::Handle<v8::Value> value)
     return toInt64(value, NormalConversion, exceptionState);
 }
 
-uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+uint64_t toUInt64Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
-    // Fast case. The value is a 32-bit unsigned integer.
-    if (value->IsUint32())
-        return value->Uint32Value();
-
-    // Fast case. The value is a 32-bit integer.
+    ASSERT(!value->IsUint32());
     if (value->IsInt32()) {
+        ASSERT(configuration != NormalConversion);
         int32_t result = value->Int32Value();
         if (result >= 0)
             return result;
@@ -457,23 +454,18 @@ uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
             exceptionState.throwTypeError("Value is outside the 'unsigned long long' value range.");
             return 0;
         }
-        if (configuration == Clamp)
-            return clampTo<uint64_t>(result);
-        return result;
+        ASSERT(configuration == Clamp);
+        return clampTo<uint64_t>(result);
     }
 
     v8::Local<v8::Number> numberObject;
-    if (value->IsNumber()) {
-        numberObject = value.As<v8::Number>();
-    } else {
-        v8::Isolate* isolate = v8::Isolate::GetCurrent();
-        // Can the value be converted to a number?
-        v8::TryCatch block(isolate);
-        numberObject = value->ToNumber(isolate);
-        if (block.HasCaught()) {
-            exceptionState.rethrowV8Exception(block.Exception());
-            return 0;
-        }
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    // Can the value be converted to a number?
+    v8::TryCatch block(isolate);
+    numberObject = value->ToNumber(isolate);
+    if (block.HasCaught()) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return 0;
     }
     ASSERT(!numberObject.IsEmpty());
 

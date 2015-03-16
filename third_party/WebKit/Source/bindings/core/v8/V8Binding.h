@@ -491,10 +491,23 @@ inline int64_t toInt64(v8::Handle<v8::Value> value, ExceptionState& exceptionSta
 // Convert a value to a 64-bit integer assuming the conversion cannot fail.
 int64_t toInt64(v8::Handle<v8::Value>);
 
+CORE_EXPORT uint64_t toUInt64Slow(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+
 // Convert a value to a 64-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-unsigned-long-long
-CORE_EXPORT uint64_t toUInt64(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+{
+    // Fast case. The value is a 32-bit unsigned integer.
+    if (value->IsUint32())
+        return value->Uint32Value();
+
+    if (value->IsInt32() && configuration == NormalConversion)
+        return value->Int32Value();
+
+    return toUInt64Slow(value, configuration, exceptionState);
+}
+
 inline uint64_t toUInt64(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     return toUInt64(value, NormalConversion, exceptionState);
