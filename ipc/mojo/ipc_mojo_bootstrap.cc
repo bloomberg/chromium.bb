@@ -61,7 +61,7 @@ void MojoServerBootstrap::SendClientPipe() {
     // GetFileHandleForProcess() only fails on Windows.
     NOTREACHED();
 #endif
-    DLOG(WARNING) << "Failed to translate file handle for client process.";
+    LOG(WARNING) << "Failed to translate file handle for client process.";
     Fail();
     return;
   }
@@ -143,7 +143,7 @@ bool MojoClientBootstrap::OnMessageReceived(const Message& message) {
   PlatformFileForTransit pipe;
   PickleIterator iter(message);
   if (!ParamTraits<PlatformFileForTransit>::Read(&message, &iter, &pipe)) {
-    DLOG(WARNING) << "Failed to read a file handle from bootstrap channel.";
+    LOG(WARNING) << "Failed to read a file handle from bootstrap channel.";
     message.set_dispatch_error();
     return false;
   }

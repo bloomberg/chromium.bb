@@ -168,7 +168,7 @@ void MessagePipeReader::ReadMessagesThenWait() {
     // We have to consume then and retry in that case.
     if (result != MOJO_RESULT_ALREADY_EXISTS) {
       if (result != MOJO_RESULT_OK) {
-        DLOG(ERROR) << "Result is " << result;
+        LOG(ERROR) << "Failed to wait on the pipe. Result is " << result;
         OnPipeError(result);
         Close();
       }
@@ -183,7 +183,7 @@ void MessagePipeReader::PipeIsReady(MojoResult wait_result) {
     if (wait_result != MOJO_RESULT_ABORTED) {
       // FAILED_PRECONDITION happens every time the peer is dead so
       // it isn't worth polluting the log message.
-      DLOG_IF(WARNING, wait_result != MOJO_RESULT_FAILED_PRECONDITION)
+      LOG_IF(WARNING, wait_result != MOJO_RESULT_FAILED_PRECONDITION)
           << "Pipe got error from the waiter. Closing: " << wait_result;
       OnPipeError(wait_result);
     }

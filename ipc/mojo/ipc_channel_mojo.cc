@@ -141,7 +141,7 @@ void ServerChannelMojo::OnPipeAvailable(
   MojoResult create_result =
       mojo::CreateMessagePipe(nullptr, &message_pipe_, &peer);
   if (create_result != MOJO_RESULT_OK) {
-    DLOG(WARNING) << "mojo::CreateMessagePipe failed: " << create_result;
+    LOG(WARNING) << "mojo::CreateMessagePipe failed: " << create_result;
     listener()->OnChannelError();
     return;
   }
@@ -392,8 +392,8 @@ MojoResult ChannelMojo::ReadFromMessageAttachmentSet(
                   mojo::embedder::PlatformHandle(file.release())),
               &wrapped_handle);
           if (MOJO_RESULT_OK != wrap_result) {
-            DLOG(WARNING) << "Pipe failed to wrap handles. Closing: "
-                          << wrap_result;
+            LOG(WARNING) << "Pipe failed to wrap handles. Closing: "
+                         << wrap_result;
             set->CommitAll();
             return wrap_result;
           }
@@ -429,7 +429,7 @@ MojoResult ChannelMojo::WriteToMessageAttachmentSet(
             mojo::MakeScopedHandle(mojo::Handle(handle_buffer[i]))));
     DCHECK(ok);
     if (!ok) {
-      DLOG(ERROR) << "Failed to add new Mojo handle.";
+      LOG(ERROR) << "Failed to add new Mojo handle.";
       return MOJO_RESULT_UNKNOWN;
     }
   }

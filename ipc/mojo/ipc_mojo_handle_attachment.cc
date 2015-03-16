@@ -27,7 +27,7 @@ base::PlatformFile MojoHandleAttachment::TakePlatformFile() {
   MojoResult unwrap_result = mojo::embedder::PassWrappedPlatformHandle(
       handle_.release().value(), &platform_handle);
   if (unwrap_result != MOJO_RESULT_OK) {
-    DLOG(ERROR) << "Pipe failed to covert handles. Closing: " << unwrap_result;
+    LOG(ERROR) << "Pipe failed to covert handles. Closing: " << unwrap_result;
     return -1;
   }
 

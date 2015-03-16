@@ -24,12 +24,12 @@ bool MojoMessageHelper::ReadMessagePipeFrom(
     mojo::ScopedMessagePipeHandle* handle) {
   scoped_refptr<MessageAttachment> attachment;
   if (!message->ReadAttachment(iter, &attachment)) {
-    DLOG(ERROR) << "Failed to read attachment for message pipe.";
+    LOG(ERROR) << "Failed to read attachment for message pipe.";
     return false;
   }
 
   if (attachment->GetType() != MessageAttachment::TYPE_MOJO_HANDLE) {
-    DLOG(ERROR) << "Unxpected attachment type:" << attachment->GetType();
+    LOG(ERROR) << "Unxpected attachment type:" << attachment->GetType();
     return false;
   }
 
