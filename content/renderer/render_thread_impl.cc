@@ -776,10 +776,10 @@ void RenderThreadImpl::Shutdown() {
 bool RenderThreadImpl::Send(IPC::Message* msg) {
   // Certain synchronous messages cannot always be processed synchronously by
   // the browser, e.g., putting up UI and waiting for the user. This could cause
-  // a complete hang of Chrome if a windowed plug-in is trying to communicate
+  // a complete hang of Chrome if a windowed plugin is trying to communicate
   // with the renderer thread since the browser's UI thread could be stuck
   // (within a Windows API call) trying to synchronously communicate with the
-  // plug-in.  The remedy is to pump messages on this thread while the browser
+  // plugin.  The remedy is to pump messages on this thread while the browser
   // is processing this request. This creates an opportunity for re-entrancy
   // into WebKit, so we need to take care to disable callbacks, timers, and
   // pending network loads that could trigger such callbacks.

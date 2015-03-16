@@ -27,7 +27,7 @@ namespace content {
 struct WebPluginInfo;
 }
 
-// This class stores information about whether a plug-in or a plug-in group is
+// This class stores information about whether a plugin or a plugin group is
 // enabled or disabled.
 // Except where otherwise noted, it can be used on every thread.
 class PluginPrefs : public RefcountedKeyedService {
@@ -57,15 +57,15 @@ class PluginPrefs : public RefcountedKeyedService {
   // Enable or disable a plugin group.
   void EnablePluginGroup(bool enable, const base::string16& group_name);
 
-  // Enables or disables a specific plug-in file, if possible.
-  // If the plug-in state can't be changed (because of a policy for example)
-  // then enabling/disabling the plug-in is ignored and |callback| is run
-  // with 'false' passed to it. Otherwise the plug-in state is changed
+  // Enables or disables a specific plugin file, if possible.
+  // If the plugin state can't be changed (because of a policy for example)
+  // then enabling/disabling the plugin is ignored and |callback| is run
+  // with 'false' passed to it. Otherwise the plugin state is changed
   // and |callback| is run with 'true' passed to it.
   void EnablePlugin(bool enable, const base::FilePath& file_path,
                     const base::Callback<void(bool)>& callback);
 
-  // Returns whether there is a policy enabling or disabling plug-ins of the
+  // Returns whether there is a policy enabling or disabling plugins of the
   // given name.
   PolicyStatus PolicyStatusForPlugin(const base::string16& name) const;
 
@@ -107,7 +107,7 @@ class PluginPrefs : public RefcountedKeyedService {
   void UpdatePatternsAndNotify(std::set<base::string16>* patterns,
                                const std::string& pref_name);
 
-  // Allows unit tests to directly set enforced plug-in patterns.
+  // Allows unit tests to directly set enforced plugin patterns.
   void SetPolicyEnforcedPluginPatterns(
       const std::set<base::string16>& disabled_patterns,
       const std::set<base::string16>& disabled_exception_patterns,

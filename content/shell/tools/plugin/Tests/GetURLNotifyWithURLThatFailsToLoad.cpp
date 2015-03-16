@@ -34,7 +34,7 @@
 using namespace std;
 
 // From NPP_New, call NPN_GetURLNotify with a URL that fails to load (NPP_NewStream won't be called).
-// The plug-in should still get a NPP_URLNotify indicating that the load failed.
+// The plugin should still get a NPP_URLNotify indicating that the load failed.
 static const char *urlThatFailsToLoad = "foo://bar/";
 
 class GetURLNotifyWithURLThatFailsToLoad : public PluginTest {

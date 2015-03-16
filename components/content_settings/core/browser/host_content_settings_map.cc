@@ -69,7 +69,7 @@ static_assert(arraysize(kProviderSourceMap) ==
               "kProviderSourceMap should have NUM_PROVIDER_TYPES elements");
 
 // Returns true if the |content_type| supports a resource identifier.
-// Resource identifiers are supported (but not required) for plug-ins.
+// Resource identifiers are supported (but not required) for plugins.
 bool SupportsResourceIdentifier(ContentSettingsType content_type) {
   return content_type == CONTENT_SETTINGS_TYPE_PLUGINS;
 }

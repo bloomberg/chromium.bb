@@ -10,7 +10,7 @@
 class PrefService;
 class PrefRegistrySimple;
 
-// This resource service periodically fetches plug-in metadata
+// This resource service periodically fetches plugin metadata
 // from a remote server and updates local state and PluginFinder.
 class PluginsResourceService : public ChromeWebResourceService {
  public:

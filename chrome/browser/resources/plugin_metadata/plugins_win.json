@@ -366,7 +366,7 @@
       {
         "version": "0",
         "status": "requires_authorization",
-        "comment": "Google Update plug-in is versioned but kept automatically up-to-date"
+        "comment": "Google Update plugin is versioned but kept automatically up-to-date"
       }
     ],
     "name": "Google Update",

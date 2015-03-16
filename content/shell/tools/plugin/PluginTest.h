@@ -158,7 +158,7 @@ class PluginTest {
  protected:
   PluginTest(NPP npp, const std::string& identifier);
 
-  // FIXME: A plug-in test shouldn't need to know about it's NPP. Make this
+  // FIXME: A plugin test shouldn't need to know about it's NPP. Make this
   // private.
   NPP m_npp;
 

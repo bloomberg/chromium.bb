@@ -204,7 +204,7 @@ bool PluginURLFetcher::OnReceivedRedirect(
   // Currently this check is just to catch an https -> http redirect when
   // loading the main plugin src URL. Longer term, we could investigate
   // firing mixed diplay or scripting issues for subresource loads
-  // initiated by plug-ins.
+  // initiated by plugins.
   if (is_plugin_src_load_ &&
       !plugin_stream_->instance()->webplugin()->CheckIfRunInsecureContent(
           redirect_info.new_url)) {

@@ -118,7 +118,7 @@ static bool FindDeviceInterfaceInUsbDevice(
     const int product_id,
     const io_service_t usb_device,
     IOUSBDeviceInterface*** device_interface) {
-  // Create a plug-in, i.e. a user-side controller to manipulate USB device.
+  // Create a plugin, i.e. a user-side controller to manipulate USB device.
   IOCFPlugInInterface** plugin;
   SInt32 score;  // Unused, but required for IOCreatePlugInInterfaceForService.
   kern_return_t kr =
@@ -133,7 +133,7 @@ static bool FindDeviceInterfaceInUsbDevice(
   }
   base::mac::ScopedIOPluginInterface<IOCFPlugInInterface> plugin_ref(plugin);
 
-  // Fetch the Device Interface from the plug-in.
+  // Fetch the Device Interface from the plugin.
   HRESULT res =
       (*plugin)->QueryInterface(plugin,
                                 CFUUIDGetUUIDBytes(kIOUSBDeviceInterfaceID),
@@ -179,7 +179,7 @@ static bool FindVideoControlInterfaceInDeviceInterface(
   }
   base::mac::ScopedIOObject<io_service_t> found_interface_ref(found_interface);
 
-  // Create a user side controller (i.e. a "plug-in") for the found interface.
+  // Create a user side controller (i.e. a "plugin") for the found interface.
   SInt32 score;
   kr = IOCreatePlugInInterfaceForService(found_interface,
                                          kIOUSBInterfaceUserClientTypeID,
@@ -198,8 +198,8 @@ static bool FindVideoControlInterfaceInDeviceInterface(
 static void SetAntiFlickerInVideoControlInterface(
     IOCFPlugInInterface** plugin_interface,
     const int frequency) {
-  // Create, the control interface for the found plug-in, and release
-  // the intermediate plug-in.
+  // Create, the control interface for the found plugin, and release
+  // the intermediate plugin.
   IOUSBInterfaceInterface** control_interface = NULL;
   HRESULT res = (*plugin_interface)->QueryInterface(
       plugin_interface,

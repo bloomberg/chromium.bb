@@ -2105,7 +2105,7 @@ TEST_F(DownloadTargetDeterminerTestWithPlugin,
       GetPathInDownloadDir(kInitialPath), item.get());
   EXPECT_FALSE(target_info->is_filetype_handled_safely);
 
-  // Now register an unsandboxed PPAPI plug-in. This plugin should not be
+  // Now register an unsandboxed PPAPI plugin. This plugin should not be
   // considered secure.
   ScopedRegisterInternalPlugin ppapi_unsandboxed_plugin(
       plugin_service,

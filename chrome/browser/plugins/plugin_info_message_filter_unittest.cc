@@ -64,7 +64,7 @@ bool FakePluginServiceFilter::IsPluginAvailable(
   std::map<base::FilePath, bool>::iterator it =
       plugin_state_.find(plugin->path);
   if (it == plugin_state_.end()) {
-    ADD_FAILURE() << "No plug-in state for '" << plugin->path.value() << "'";
+    ADD_FAILURE() << "No plugin state for '" << plugin->path.value() << "'";
     return false;
   }
   return it->second;
@@ -86,10 +86,10 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    content::WebPluginInfo foo_plugin(base::ASCIIToUTF16("Foo Plug-in"),
+    content::WebPluginInfo foo_plugin(base::ASCIIToUTF16("Foo Plugin"),
                                       foo_plugin_path_,
                                       base::ASCIIToUTF16("1"),
-                                      base::ASCIIToUTF16("The Foo plug-in."));
+                                      base::ASCIIToUTF16("The Foo plugin."));
     content::WebPluginMimeType mime_type;
     mime_type.mime_type = "foo/bar";
     foo_plugin.mime_types.push_back(mime_type);
@@ -97,10 +97,10 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
     PluginService::GetInstance()->Init();
     PluginService::GetInstance()->RegisterInternalPlugin(foo_plugin, false);
 
-    content::WebPluginInfo bar_plugin(base::ASCIIToUTF16("Bar Plug-in"),
+    content::WebPluginInfo bar_plugin(base::ASCIIToUTF16("Bar Plugin"),
                                       bar_plugin_path_,
                                       base::ASCIIToUTF16("1"),
-                                      base::ASCIIToUTF16("The Bar plug-in."));
+                                      base::ASCIIToUTF16("The Bar plugin."));
     mime_type.mime_type = "foo/bar";
     bar_plugin.mime_types.push_back(mime_type);
     bar_plugin.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;

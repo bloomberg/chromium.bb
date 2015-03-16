@@ -30,7 +30,7 @@ class CONTENT_EXPORT RenderProcessObserver {
   // Called right after the WebKit API is initialized.
   virtual void WebKitInitialized() {}
 
-  // Called when the renderer cache of the plug-in list has changed.
+  // Called when the renderer cache of the plugin list has changed.
   virtual void PluginListChanged() {}
 
   virtual void IdleNotification() {}

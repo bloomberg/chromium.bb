@@ -174,8 +174,8 @@ class PluginsDOMHandler : public WebUIMessageHandler,
 
   content::NotificationRegistrar registrar_;
 
-  // Holds grouped plug-ins. The key is the group identifier and
-  // the value is the list of plug-ins belonging to the group.
+  // Holds grouped plugins. The key is the group identifier and
+  // the value is the list of plugins belonging to the group.
   typedef base::hash_map<std::string, std::vector<const WebPluginInfo*> >
       PluginGroups;
 
@@ -226,7 +226,7 @@ void PluginsDOMHandler::HandleRequestPluginsData(const base::ListValue* args) {
 void PluginsDOMHandler::HandleEnablePluginMessage(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  // Be robust in accepting badness since plug-ins display HTML (hence
+  // Be robust in accepting badness since plugins display HTML (hence
   // JavaScript).
   if (args->GetSize() != 3) {
     NOTREACHED();
@@ -310,7 +310,7 @@ void PluginsDOMHandler::HandleSetPluginAlwaysAllowed(
       plugin,
       allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_DEFAULT);
 
-  // Keep track of the whitelist separately, so that we can distinguish plug-ins
+  // Keep track of the whitelist separately, so that we can distinguish plugins
   // whitelisted by the user from automatically whitelisted ones.
   DictionaryPrefUpdate update(profile->GetPrefs(),
                               prefs::kContentSettingsPluginWhitelist);
@@ -341,8 +341,8 @@ void PluginsDOMHandler::PluginsLoaded(
   ContentSettingsPattern wildcard = ContentSettingsPattern::Wildcard();
 
   PluginFinder* plugin_finder = PluginFinder::GetInstance();
-  // Group plug-ins by identifier. This is done to be able to display
-  // the plug-ins in UI in a grouped fashion.
+  // Group plugins by identifier. This is done to be able to display
+  // the plugins in UI in a grouped fashion.
   PluginGroups groups;
   for (size_t i = 0; i < plugins.size(); ++i) {
     scoped_ptr<PluginMetadata> plugin(

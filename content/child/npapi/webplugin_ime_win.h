@@ -17,14 +17,14 @@ namespace content {
 
 class PluginInstance;
 
-// A class that emulates an IME for windowless plug-ins. A windowless plug-in
+// A class that emulates an IME for windowless plugins. A windowless plugin
 // does not have a window. Therefore, we cannot attach an IME to a windowless
-// plug-in. To allow such windowless plug-ins to use IMEs without any changes to
+// plugin. To allow such windowless plugins to use IMEs without any changes to
 // them, this class receives the IME data from a browser and patches IMM32
-// functions to return the IME data when a windowless plug-in calls IMM32
+// functions to return the IME data when a windowless plugin calls IMM32
 // functions. I would not Flash retrieves pointers to IMM32 functions with
 // GetProcAddress(), this class also needs a hook to GetProcAddress() to
-// dispatch IMM32 function calls from a plug-in to this class as listed in the
+// dispatch IMM32 function calls from a plugin to this class as listed in the
 // following snippet.
 //
 //   FARPROC WINAPI GetProcAddressPatch(HMODULE module, LPCSTR name) {
@@ -39,13 +39,13 @@ class PluginInstance;
 //       GetPluginPath().value().c_str(), "kernel32.dll", "GetProcAddress",
 //       GetProcAddressPatch);
 //
-// After we successfuly dispatch IMM32 calls from a plug-in to this class, we
-// need to update its IME data so the class can return it to the plug-in through
+// After we successfuly dispatch IMM32 calls from a plugin to this class, we
+// need to update its IME data so the class can return it to the plugin through
 // its IMM32 calls. To update the IME data, we call CompositionUpdated() or
 // CompositionCompleted() BEFORE sending an IMM32 Window message to the plugin
-// with a SendEvents() call as listed in the following snippet. (Plug-ins call
+// with a SendEvents() call as listed in the following snippet. (Plugins call
 // IMM32 functions when it receives IMM32 window messages. We need to update the
-// IME data of this class before sending IMM32 messages so the plug-ins can get
+// IME data of this class before sending IMM32 messages so the plugins can get
 // the latest data.)
 //
 //   WebPluginIMEWin ime;
@@ -63,12 +63,12 @@ class PluginInstance;
 //   ime.SendEvents(instance());
 //
 // This class also provides GetStatus() so we can retrieve the IME status
-// changed by a plug-in with IMM32 functions. This function is mainly used for
+// changed by a plugin with IMM32 functions. This function is mainly used for
 // retrieving the position of a caret.
 //
 class WebPluginIMEWin {
  public:
-  // A simple class that allows a plug-in to access a WebPluginIMEWin instance
+  // A simple class that allows a plugin to access a WebPluginIMEWin instance
   // only in a scope.
   class ScopedLock {
    public:
@@ -89,17 +89,17 @@ class WebPluginIMEWin {
   ~WebPluginIMEWin();
 
   // Sends raw IME events sent from a browser to this IME emulator and updates
-  // the list of Windows events to be sent to a plug-in. A raw IME event is
+  // the list of Windows events to be sent to a plugin. A raw IME event is
   // mapped to two or more Windows events and it is not so trivial to send these
-  // Windows events to a plug-in. This function inserts Windows events in the
-  // order expected by a plug-in.
+  // Windows events to a plugin. This function inserts Windows events in the
+  // order expected by a plugin.
   void CompositionUpdated(const base::string16& text,
                           std::vector<int> clauses,
                           std::vector<int> target,
                           int cursor_position);
   void CompositionCompleted(const base::string16& text);
 
-  // Send all the events added in Update() to a plug-in.
+  // Send all the events added in Update() to a plugin.
   bool SendEvents(PluginInstance* instance);
 
   // Retrieves the status of this IME emulator.
@@ -114,7 +114,7 @@ class WebPluginIMEWin {
   // Allow (or disallow) the patch functions to use this WebPluginIMEWin
   // instance through our patch functions. Our patch functions need a static
   // member variable |instance_| to access a WebPluginIMEWIn instance. We lock
-  // this static variable to prevent two or more plug-ins from accessing a
+  // this static variable to prevent two or more plugins from accessing a
   // WebPluginIMEWin instance.
   void Lock();
   void Unlock();
@@ -136,7 +136,7 @@ class WebPluginIMEWin {
                                            CANDIDATEFORM* candidate);
   static BOOL WINAPI ImmSetOpenStatus(HIMC context, BOOL open);
 
-  // a list of NPEvents to be sent to a plug-in.
+  // a list of NPEvents to be sent to a plugin.
   std::vector<NPEvent> events_;
 
   // The return value for GCS_COMPSTR.
@@ -164,12 +164,12 @@ class WebPluginIMEWin {
   // WM_IME_STARTCOMPOSITION message when we start composing IME text.
   bool composing_text_;
 
-  // Whether a plug-in supports IME messages. When a plug-in cannot handle
+  // Whether a plugin supports IME messages. When a plugin cannot handle
   // IME messages, we need to send the IME text with WM_CHAR messages as Windows
   // does.
   bool support_ime_messages_;
 
-  // The IME status received from a plug-in.
+  // The IME status received from a plugin.
   bool status_updated_;
   int input_type_;
   gfx::Rect caret_rect_;

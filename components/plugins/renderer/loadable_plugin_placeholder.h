@@ -11,7 +11,7 @@
 #include "content/public/renderer/plugin_instance_throttler.h"
 
 namespace plugins {
-// Placeholders can be used if a plug-in is missing or not available
+// Placeholders can be used if a plugin is missing or not available
 // (blocked or disabled).
 class LoadablePluginPlaceholder
     : public PluginPlaceholder,
@@ -30,7 +30,7 @@ class LoadablePluginPlaceholder
     power_saver_enabled_ = power_saver_enabled;
   }
 
-  // Defer loading of plug-in, and instead show the Power Saver poster image.
+  // Defer loading of plugin, and instead show the Power Saver poster image.
   void BlockForPowerSaverPoster();
 #endif
 

@@ -103,7 +103,7 @@ class CONTENT_EXPORT PluginList {
   void GetPlugins(std::vector<WebPluginInfo>* plugins,
                   bool include_npapi);
 
-  // Copies the list of plug-ins into |plugins| without loading them.
+  // Copies the list of plugins into |plugins| without loading them.
   // Returns true if the list of plugins is up-to-date.
   bool GetPluginsNoRefresh(std::vector<WebPluginInfo>* plugins);
 
@@ -116,9 +116,9 @@ class CONTENT_EXPORT PluginList {
   // returns plugins which support wildcard mime types (* as the mime
   // type).  The |info| parameter is required to be non-NULL.  The
   // list is in order of "most desirable" to "least desirable".
-  // If |use_stale| is NULL, this will load the plug-in list if necessary.
-  // If it is not NULL, the plug-in list will not be loaded, and |*use_stale|
-  // will be true iff the plug-in list was stale.
+  // If |use_stale| is NULL, this will load the plugin list if necessary.
+  // If it is not NULL, the plugin list will not be loaded, and |*use_stale|
+  // will be true iff the plugin list was stale.
   void GetPluginInfoArray(const GURL& url,
                           const std::string& mime_type,
                           bool allow_wildcard,
@@ -127,7 +127,7 @@ class CONTENT_EXPORT PluginList {
                           std::vector<WebPluginInfo>* info,
                           std::vector<std::string>* actual_mime_types);
 
-  // Load a specific plugin with full path. Return true iff loading the plug-in
+  // Load a specific plugin with full path. Return true iff loading the plugin
   // was successful.
   bool LoadPluginIntoPluginList(const base::FilePath& filename,
                                 std::vector<WebPluginInfo>* plugins,
@@ -212,7 +212,7 @@ class CONTENT_EXPORT PluginList {
   // Internals
   //
 
-  // States whether we will load the plug-in list the next time we try to access
+  // States whether we will load the plugin list the next time we try to access
   // it, whether we are currently in the process of loading it, or whether we
   // consider it up-to-date.
   LoadingState loading_state_;
@@ -226,7 +226,7 @@ class CONTENT_EXPORT PluginList {
   // Holds information about internal plugins.
   std::vector<WebPluginInfo> internal_plugins_;
 
-  // A list holding all plug-ins.
+  // A list holding all plugins.
   std::vector<WebPluginInfo> plugins_list_;
 
   // Callback that is invoked whenever the PluginList will reload the plugins.

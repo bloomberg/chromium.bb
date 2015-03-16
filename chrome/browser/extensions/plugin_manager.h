@@ -37,7 +37,7 @@ class PluginManager : public BrowserContextKeyedAPI,
 
 #if !defined(DISABLE_NACL)
 
-  // We implement some Pepper plug-ins using NaCl to take advantage of NaCl's
+  // We implement some Pepper plugins using NaCl to take advantage of NaCl's
   // strong sandbox. Typically, these NaCl modules are stored in extensions
   // and registered here. Not all NaCl modules need to register for a MIME
   // type, just the ones that are responsible for rendering a particular MIME

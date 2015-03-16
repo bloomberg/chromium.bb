@@ -43,7 +43,7 @@ class PluginFinder {
   void ReinitializePlugins(const base::DictionaryValue* json_metadata);
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  // Finds a plug-in for the given MIME type and language (specified as an IETF
+  // Finds a plugin for the given MIME type and language (specified as an IETF
   // language tag, i.e. en-US). If found, sets |installer| to the
   // corresponding PluginInstaller and |plugin_metadata| to a copy of the
   // corresponding PluginMetadata.
@@ -52,7 +52,7 @@ class PluginFinder {
                   PluginInstaller** installer,
                   scoped_ptr<PluginMetadata>* plugin_metadata);
 
-  // Finds the plug-in with the given identifier. If found, sets |installer|
+  // Finds the plugin with the given identifier. If found, sets |installer|
   // to the corresponding PluginInstaller and |plugin_metadata| to a copy
   // of the corresponding PluginMetadata. |installer| may be NULL.
   bool FindPluginWithIdentifier(const std::string& identifier,
@@ -60,10 +60,10 @@ class PluginFinder {
                                 scoped_ptr<PluginMetadata>* plugin_metadata);
 #endif
 
-  // Returns the plug-in name with the given identifier.
+  // Returns the plugin name with the given identifier.
   base::string16 FindPluginNameWithIdentifier(const std::string& identifier);
 
-  // Gets plug-in metadata using |plugin|.
+  // Gets plugin metadata using |plugin|.
   scoped_ptr<PluginMetadata> GetPluginMetadata(
       const content::WebPluginInfo& plugin);
 
@@ -76,8 +76,8 @@ class PluginFinder {
   PluginFinder();
   ~PluginFinder();
 
-  // Loads the plug-in information from the browser resources and parses it.
-  // Returns NULL if the plug-in list couldn't be parsed.
+  // Loads the plugin information from the browser resources and parses it.
+  // Returns NULL if the plugin list couldn't be parsed.
   static base::DictionaryValue* LoadBuiltInPluginList();
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)

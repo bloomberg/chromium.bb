@@ -68,7 +68,7 @@ struct CONTENT_EXPORT WebPluginInfo {
           (type == PLUGIN_TYPE_PEPPER_UNSANDBOXED));
   }
 
-  // Parse a version string as used by a plug-in. This method is more lenient
+  // Parse a version string as used by a plugin. This method is more lenient
   // in accepting weird version strings than base::Version::GetFromString()
   static void CreateVersionFromString(const base::string16& version_string,
                                       base::Version* parsed_version);

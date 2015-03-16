@@ -18,7 +18,7 @@ namespace content {
 class WebContents;
 }
 
-// Shows an infobar that asks the user whether a Pepper plug-in is allowed
+// Shows an infobar that asks the user whether a Pepper plugin is allowed
 // to connect to its (privileged) broker. The user decision is made "sticky"
 // by storing a content setting for the site.
 class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {

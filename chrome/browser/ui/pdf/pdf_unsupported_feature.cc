@@ -206,7 +206,7 @@ class PDFUnsupportedFeatureInterstitial
     } else if (command == "2") {
       content::RecordAction(
           UserMetricsAction("PDF_ReaderInterstitialIgnore"));
-      // Pretend that the plug-in is up-to-date so that we don't block it.
+      // Pretend that the plugin is up-to-date so that we don't block it.
       reader_webplugininfo_.version = base::ASCIIToUTF16("11.0.0.0");
       OpenUsingReader(web_contents_, reader_webplugininfo_, NULL);
     } else {

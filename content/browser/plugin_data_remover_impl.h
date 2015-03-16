@@ -22,9 +22,9 @@ class CONTENT_EXPORT PluginDataRemoverImpl : public PluginDataRemover {
   // PluginDataRemover implementation:
   base::WaitableEvent* StartRemoving(base::Time begin_time) override;
 
-  // The plug-in whose data should be removed (usually Flash) is specified via
+  // The plugin whose data should be removed (usually Flash) is specified via
   // its MIME type. This method sets a different MIME type in order to call a
-  // different plug-in (for example in tests).
+  // different plugin (for example in tests).
   void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
 
  private:

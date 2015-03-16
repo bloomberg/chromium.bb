@@ -450,7 +450,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
 
 // Return information about a plugin for the given URL and MIME type.
 // In contrast to ViewHostMsg_GetPluginInfo in content/, this IPC call knows
-// about specific reasons why a plug-in can't be used, for example because it's
+// about specific reasons why a plugin can't be used, for example because it's
 // disabled.
 IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_GetPluginInfo,
                             int /* render_frame_id */,
@@ -475,42 +475,42 @@ IPC_SYNC_MESSAGE_CONTROL1_3(
 #endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-// Tells the browser to search for a plug-in that can handle the given MIME
+// Tells the browser to search for a plugin that can handle the given MIME
 // type. The result will be sent asynchronously to the routing ID
 // |placeholder_id|.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_FindMissingPlugin,
                     int /* placeholder_id */,
                     std::string /* mime_type */)
 
-// Notifies the browser that a missing plug-in placeholder has been removed, so
+// Notifies the browser that a missing plugin placeholder has been removed, so
 // the corresponding PluginPlaceholderHost can be deleted.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RemovePluginPlaceholderHost,
                     int /* placeholder_id */)
 
-// Notifies a missing plug-in placeholder that a plug-in with name |plugin_name|
+// Notifies a missing plugin placeholder that a plugin with name |plugin_name|
 // has been found.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_FoundMissingPlugin,
                     base::string16 /* plugin_name */)
 
-// Notifies a missing plug-in placeholder that no plug-in has been found.
+// Notifies a missing plugin placeholder that no plugin has been found.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_DidNotFindMissingPlugin)
 
-// Notifies a missing plug-in placeholder that we have started downloading
-// the plug-in.
+// Notifies a missing plugin placeholder that we have started downloading
+// the plugin.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_StartedDownloadingPlugin)
 
-// Notifies a missing plug-in placeholder that we have finished downloading
-// the plug-in.
+// Notifies a missing plugin placeholder that we have finished downloading
+// the plugin.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_FinishedDownloadingPlugin)
 
-// Notifies a missing plug-in placeholder that there was an error downloading
-// the plug-in.
+// Notifies a missing plugin placeholder that there was an error downloading
+// the plugin.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_ErrorDownloadingPlugin,
                     std::string /* message */)
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
-// Notifies a missing plug-in placeholder that the user cancelled downloading
-// the plug-in.
+// Notifies a missing plugin placeholder that the user cancelled downloading
+// the plugin.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_CancelledDownloadingPlugin)
 
 // Tells the browser to open chrome://plugins in a new tab. We use a separate
@@ -518,11 +518,11 @@ IPC_MESSAGE_ROUTED0(ChromeViewMsg_CancelledDownloadingPlugin)
 // chrome:// URLs.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_OpenAboutPlugins)
 
-// Tells the browser that there was an error loading a plug-in.
+// Tells the browser that there was an error loading a plugin.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CouldNotLoadPlugin,
                     base::FilePath /* plugin_path */)
 
-// Tells the browser that we blocked a plug-in because NPAPI is not supported.
+// Tells the browser that we blocked a plugin because NPAPI is not supported.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_NPAPINotSupported,
                     std::string /* identifer */)
 
@@ -557,13 +557,13 @@ IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_V8HeapStats,
 // Notifies when a plugin couldn't be loaded because it's outdated.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,
                     int /* placeholder ID */,
-                    std::string /* plug-in group identifier */)
+                    std::string /* plugin group identifier */)
 
 // Notifies when a plugin couldn't be loaded because it requires
 // user authorization.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
                     base::string16 /* name */,
-                    std::string /* plug-in group identifier */)
+                    std::string /* plugin group identifier */)
 
 // Provide the browser process with information about the WebCore resource
 // cache and current renderer framerate.

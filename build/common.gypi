@@ -581,7 +581,7 @@
       # Use experimental lld linker instead of the platform's default linker.
       'use_lld%': 0,
 
-      # Enable plug-in installation by default.
+      # Enable plugin installation by default.
       'enable_plugin_installation%': 1,
 
       # Specifies whether to use canvas_skia.cc in place of platform

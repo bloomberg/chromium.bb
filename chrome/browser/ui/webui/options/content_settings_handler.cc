@@ -316,7 +316,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"javascript_header", IDS_JAVASCRIPT_HEADER},
     {"javascriptAllow", IDS_JS_ALLOW_RADIO},
     {"javascriptBlock", IDS_JS_DONOTALLOW_RADIO},
-    // Plug-ins filter.
+    // Plugins filter.
     {"pluginsTabLabel", IDS_PLUGIN_TAB_LABEL},
     {"plugins_header", IDS_PLUGIN_HEADER},
     {"pluginsAllow", IDS_PLUGIN_ALLOW_RADIO},

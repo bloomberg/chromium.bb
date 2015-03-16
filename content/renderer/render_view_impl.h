@@ -282,7 +282,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Returns true if the focused element is editable text from the perspective
   // of IME support (also used for on-screen keyboard). Works correctly inside
-  // supported PPAPI plug-ins.
+  // supported PPAPI plugins.
   bool HasIMETextFocus();
 
   // Callback for use with GetWindowSnapshot.
@@ -970,7 +970,7 @@ class CONTENT_EXPORT RenderViewImpl
   std::set<WebPluginDelegateProxy*> plugin_delegates_;
 
 #if defined(OS_WIN)
-  // The ID of the focused NPAPI plug-in.
+  // The ID of the focused NPAPI plugin.
   int focused_plugin_id_;
 #endif
 

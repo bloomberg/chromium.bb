@@ -954,10 +954,10 @@ const char kPluginsAllowOutdated[] = "plugins.allow_outdated";
 const char kPluginsAlwaysAuthorize[] = "plugins.always_authorize";
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-// Dictionary holding plug-ins metadata.
+// Dictionary holding plugins metadata.
 const char kPluginsMetadata[] = "plugins.metadata";
 
-// Last update time of plug-ins resource cache.
+// Last update time of plugins resource cache.
 const char kPluginsResourceCacheUpdate[] = "plugins.resource_cache_update";
 #endif
 
@@ -1524,7 +1524,7 @@ const char kDisableVideoAndChat[] = "disable_video_chat";
 // Whether Extensions are enabled.
 const char kDisableExtensions[] = "extensions.disabled";
 
-// Whether the plugin finder that lets you install missing plug-ins is enabled.
+// Whether the plugin finder that lets you install missing plugins is enabled.
 const char kDisablePluginFinder[] = "plugins.disable_plugin_finder";
 
 // Customized app page names that appear on the New Tab Page.

@@ -40,7 +40,7 @@
 - (void)drawInContext:(CGContextRef)context
 {
     CGRect bounds = [self bounds];
-    const char* text = "Test Plug-in";
+    const char* text = "Test Plugin";
     CGContextSelectFont(context, "Helvetica", 24, kCGEncodingMacRoman);
     CGContextShowTextAtPoint(context,
                              bounds.origin.x + 3.0f,

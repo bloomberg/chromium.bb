@@ -139,7 +139,7 @@ bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
 
 bool IsPepperFlash(const content::WebPluginInfo& plugin) {
   // We try to recognize Pepper Flash by the following criteria:
-  // * It is a Pepper plug-in.
+  // * It is a Pepper plugin.
   // * It has the special Flash permissions.
   return plugin.is_pepper_plugin() &&
          (plugin.pepper_permissions & ppapi::PERMISSION_FLASH);

@@ -510,7 +510,7 @@ void ContentSettingPluginBubbleModel::OnCustomLinkClicked() {
   if (!web_contents())
     return;
 #if defined(ENABLE_PLUGINS)
-  // TODO(bauerb): We should send the identifiers of blocked plug-ins here.
+  // TODO(bauerb): We should send the identifiers of blocked plugins here.
   ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
       web_contents(), true, std::string());
 #endif

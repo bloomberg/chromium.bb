@@ -3448,8 +3448,8 @@ void RenderViewImpl::OnImeSetComposition(
   }
 
 #if defined(OS_WIN)
-  // When a plug-in has focus, we create platform-specific IME data used by
-  // our IME emulator and send it directly to the focused plug-in, i.e. we
+  // When a plugin has focus, we create platform-specific IME data used by
+  // our IME emulator and send it directly to the focused plugin, i.e. we
   // bypass WebKit. (WebPluginDelegate dispatches this IME data only when its
   // instance ID is the same one as the specified ID.)
   if (focused_plugin_id_ >= 0) {
@@ -3491,7 +3491,7 @@ void RenderViewImpl::OnImeConfirmComposition(
   }
 #if defined(OS_WIN)
   // Same as OnImeSetComposition(), we send the text from IMEs directly to
-  // plug-ins. When we send IME text directly to plug-ins, we should not send
+  // plugins. When we send IME text directly to plugins, we should not send
   // it to WebKit to prevent WebKit from controlling IMEs.
   // TODO(thakis): Honor |replacement_range| for plugins?
   if (focused_plugin_id_ >= 0) {

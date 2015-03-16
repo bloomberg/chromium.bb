@@ -128,20 +128,20 @@ void LoadablePluginPlaceholder::ReplacePlugin(WebPlugin* new_plugin) {
   if (!new_plugin)
     return;
   WebPluginContainer* container = plugin()->container();
-  // Set the new plug-in on the container before initializing it.
+  // Set the new plugin on the container before initializing it.
   container->setPlugin(new_plugin);
-  // Save the element in case the plug-in is removed from the page during
+  // Save the element in case the plugin is removed from the page during
   // initialization.
   WebElement element = container->element();
   bool plugin_needs_initialization =
       !premade_throttler_ || new_plugin != premade_throttler_->GetWebPlugin();
   if (plugin_needs_initialization && !new_plugin->initialize(container)) {
-    // We couldn't initialize the new plug-in. Restore the old one and abort.
+    // We couldn't initialize the new plugin. Restore the old one and abort.
     container->setPlugin(plugin());
     return;
   }
 
-  // The plug-in has been removed from the page. Destroy the old plug-in. We
+  // The plugin has been removed from the page. Destroy the old plugin. We
   // will be destroyed as soon as V8 garbage collects us.
   if (!element.pluginContainer()) {
     plugin()->destroy();
@@ -150,8 +150,8 @@ void LoadablePluginPlaceholder::ReplacePlugin(WebPlugin* new_plugin) {
 
   placeholder_was_replaced_ = true;
 
-  // During initialization, the new plug-in might have replaced itself in turn
-  // with another plug-in. Make sure not to use the passed in |new_plugin| after
+  // During initialization, the new plugin might have replaced itself in turn
+  // with another plugin. Make sure not to use the passed in |new_plugin| after
   // this point.
   new_plugin = container->plugin();
 
@@ -312,7 +312,7 @@ void LoadablePluginPlaceholder::LoadPlugin() {
 void LoadablePluginPlaceholder::LoadCallback() {
   RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_Click"));
 #if defined(ENABLE_PLUGINS)
-  // If the user specifically clicks on the plug-in content's placeholder,
+  // If the user specifically clicks on the plugin content's placeholder,
   // disable power saver throttling for this instance.
   MarkPluginEssential(PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_CLICK);
 #endif

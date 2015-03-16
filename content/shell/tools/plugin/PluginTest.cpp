@@ -72,7 +72,7 @@ void PluginTest::registerNPShutdownFunction(void (*func)()) {
 
 void PluginTest::indicateTestFailure() {
 // This should really be an assert, but there's no way for the test framework
-// to know that the plug-in process crashed, so we'll just sleep for a while
+// to know that the plugin process crashed, so we'll just sleep for a while
 // to ensure that the test times out.
 #if defined(XP_WIN)
   ::Sleep(100000);
@@ -124,7 +124,7 @@ bool PluginTest::NPP_URLNotify(const char* url, NPReason, void* notifyData) {
 }
 
 NPError PluginTest::NPP_GetValue(NPPVariable variable, void* value) {
-  // We don't know anything about plug-in values so just return
+  // We don't know anything about plugin values so just return
   // NPERR_GENERIC_ERROR.
   return NPERR_GENERIC_ERROR;
 }

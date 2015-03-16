@@ -67,7 +67,7 @@ NPError PluginThreadAsyncCallTest::New(
   // a different thread to fully test it.
   if (this == g_short_lived_instance) {
     // This is slightly complicated thanks to the Linux shared library build,
-    // which shares more compilation units between the NPAPI plug-in and
+    // which shares more compilation units between the NPAPI plugin and
     // the base code.
     at_exit_manager_ = new base::ShadowingAtExitManager();
     base::Thread random_thread("random_thread");

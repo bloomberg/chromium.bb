@@ -197,11 +197,11 @@ typedef char*         NPMIMEType;
 #endif /* __LP64__ */
 
 /*
- *  NPP is a plug-in's opaque instance handle
+ *  NPP is a plugin's opaque instance handle
  */
 typedef struct _NPP
 {
-  void* pdata;      /* plug-in private data */
+  void* pdata;      /* plugin private data */
   void* ndata;      /* netscape private data */
 } NPP_t;
 
@@ -209,7 +209,7 @@ typedef NPP_t*  NPP;
 
 typedef struct _NPStream
 {
-  void*    pdata; /* plug-in private data */
+  void*    pdata; /* plugin private data */
   void*    ndata; /* netscape private data */
   const    char* url;
   uint32_t end;
@@ -387,7 +387,7 @@ typedef enum {
   /* Browsers can retrieve a native ATK accessibility plug ID via this variable. */
   NPPVpluginNativeAccessibleAtkPlugId = 19,
 
-  /* Checks to see if the plug-in would like the browser to load the "src" attribute. */
+  /* Checks to see if the plugin would like the browser to load the "src" attribute. */
   NPPVpluginCancelSrcStream = 20,
 
   NPPVsupportsAdvancedKeyHandling = 21,
@@ -399,7 +399,7 @@ typedef enum {
   , NPPVpluginDrawingModel = 1000
   /* Used for negotiating event models */
   , NPPVpluginEventModel = 1001
-  /* In the NPDrawingModelCoreAnimation drawing model, the browser asks the plug-in for a Core Animation layer. */
+  /* In the NPDrawingModelCoreAnimation drawing model, the browser asks the plugin for a Core Animation layer. */
   , NPPVpluginCoreAnimationLayer = 1003
 #endif
 

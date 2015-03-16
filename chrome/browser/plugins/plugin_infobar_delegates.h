@@ -21,7 +21,7 @@ namespace content {
 class WebContents;
 }
 
-// Base class for blocked plug-in infobars.
+// Base class for blocked plugin infobars.
 class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
  protected:
   explicit PluginInfoBarDelegate(const std::string& identifier);
@@ -45,7 +45,7 @@ class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-// Infobar that's shown when a plug-in is out of date.
+// Infobar that's shown when a plugin is out of date.
 class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
                                       public WeakPluginInstallerObserver {
  public:
@@ -99,7 +99,7 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   // Shows an infobar asking whether to install the plugin represented by
   // |installer|. When the user accepts, |callback| is called.
-  // During installation of the plug-in, the infobar will change to reflect the
+  // During installation of the plugin, the infobar will change to reflect the
   // installation state.
   static void Create(InfoBarService* infobar_service,
                      PluginInstaller* installer,
@@ -148,7 +148,7 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate,
 
   InstallCallback callback_;
 
-  // True iff the plug-in isn't installed yet.
+  // True iff the plugin isn't installed yet.
   bool new_install_;
 
   base::string16 message_;

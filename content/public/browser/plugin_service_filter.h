@@ -14,7 +14,7 @@ class FilePath;
 namespace content {
 struct WebPluginInfo;
 
-// Callback class to let the client filter the list of all installed plug-ins
+// Callback class to let the client filter the list of all installed plugins
 // and block them from being loaded.
 // This class is called on the FILE thread.
 class PluginServiceFilter {

@@ -305,11 +305,11 @@ IPC_SYNC_MESSAGE_ROUTED2_0(PluginHostMsg_SetWindowlessData,
                            HANDLE /* modal_loop_pump_messages_event */,
                            gfx::NativeViewId /* dummy_activation_window*/)
 
-// Send the IME status retrieved from a windowless plug-in. A windowless plug-in
-// uses the IME attached to a browser process as a renderer does. A plug-in
+// Send the IME status retrieved from a windowless plugin. A windowless plugin
+// uses the IME attached to a browser process as a renderer does. A plugin
 // sends this message to control the IME status of a browser process. I would
-// note that a plug-in sends this message to a renderer process that hosts this
-// plug-in (not directly to a browser process) so the renderer process can
+// note that a plugin sends this message to a renderer process that hosts this
+// plugin (not directly to a browser process) so the renderer process can
 // update its IME status.
 IPC_MESSAGE_ROUTED2(PluginHostMsg_NotifyIMEStatus,
                     int /* input_type */,

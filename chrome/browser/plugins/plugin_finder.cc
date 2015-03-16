@@ -33,7 +33,7 @@ namespace {
 
 typedef std::map<std::string, PluginMetadata*> PluginMap;
 
-// Gets the full path of the plug-in file as the identifier.
+// Gets the full path of the plugin file as the identifier.
 std::string GetLongIdentifier(const content::WebPluginInfo& plugin) {
   return plugin.path.AsUTF8Unsafe();
 }
@@ -43,7 +43,7 @@ std::string GetIdentifier(const content::WebPluginInfo& plugin) {
   return plugin.path.BaseName().AsUTF8Unsafe();
 }
 
-// Gets the plug-in group name as the plug-in name if it is not empty or
+// Gets the plugin group name as the plugin name if it is not empty or
 // the filename without extension if the name is empty.
 static base::string16 GetGroupName(const content::WebPluginInfo& plugin) {
   if (!plugin.name.empty())
@@ -148,7 +148,7 @@ PluginFinder::PluginFinder() : version_(-1) {
 
 void PluginFinder::Init() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  // Load the built-in plug-in list first. If we have a newer version stored
+  // Load the built-in plugin list first. If we have a newer version stored
   // locally or download one, we will replace this one with it.
   scoped_ptr<base::DictionaryValue> plugin_list(LoadBuiltInPluginList());
   DCHECK(plugin_list);
@@ -280,7 +280,7 @@ scoped_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(
     return it->second->Clone();
   }
 
-  // The plug-in metadata was not found, create a dummy one holding
+  // The plugin metadata was not found, create a dummy one holding
   // the name, identifier and group name only.
   std::string identifier = GetIdentifier(plugin);
   PluginMetadata* metadata = new PluginMetadata(identifier,

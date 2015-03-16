@@ -40,7 +40,7 @@ class PPB_Broker_Impl : public ppapi::Resource,
       scoped_refptr<ppapi::TrackedCallback> connect_callback) override;
   int32_t GetHandle(int32_t* handle) override;
 
-  // Returns the URL of the document this plug-in runs in. This is necessary to
+  // Returns the URL of the document this plugin runs in. This is necessary to
   // decide whether to grant access to the PPAPI broker.
   GURL GetDocumentUrl();
 

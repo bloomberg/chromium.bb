@@ -72,7 +72,7 @@ class WebClient {
   // browser would return true for "chrome://about" URL.
   virtual bool IsAppSpecificURL(const GURL& url) const;
 
-  // Returns text to be displayed for an unsupported plug-in.
+  // Returns text to be displayed for an unsupported plugin.
   virtual base::string16 GetPluginNotSupportedText() const;
 
   // Returns a string describing the embedder product name and version, of the

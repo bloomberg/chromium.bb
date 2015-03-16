@@ -917,7 +917,7 @@ void WebPluginImpl::willSendRequest(WebURLLoader* loader,
     // Currently this check is just to catch an https -> http redirect when
     // loading the main plugin src URL. Longer term, we could investigate
     // firing mixed diplay or scripting issues for subresource loads
-    // initiated by plug-ins.
+    // initiated by plugins.
     if (client_info->is_plugin_src_load &&
         webframe_ &&
         !webframe_->checkIfRunInsecureContent(request.url())) {

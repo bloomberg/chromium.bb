@@ -500,7 +500,7 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
   DCHECK(result == TRUE) << "SetProp failed, last error = " << GetLastError();
 
   // Calling SetWindowLongPtrA here makes the window proc ASCII, which is
-  // required by at least the Shockwave Director plug-in.
+  // required by at least the Shockwave Director plugin.
   SetWindowLongPtrA(windowed_handle_,
                     GWLP_WNDPROC,
                     reinterpret_cast<LONG_PTR>(DefWindowProcA));
@@ -872,7 +872,7 @@ LRESULT CALLBACK WebPluginDelegateImpl::WrapperWindowProc(
   // window messages when its first parameter is a handle representing the
   // DefWindowProc() function. To avoid this problem, this code creates a
   // wrapper function which just encapsulates the DefWindowProc() function
-  // and set it as the window procedure of a windowed plug-in.
+  // and set it as the window procedure of a windowed plugin.
   return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
@@ -1207,8 +1207,8 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
     return false;
   }
 
-  // Allow this plug-in to access this IME emulator through IMM32 API while the
-  // plug-in is processing this event.
+  // Allow this plugin to access this IME emulator through IMM32 API while the
+  // plugin is processing this event.
   if (GetQuirks() & PLUGIN_QUIRK_EMULATE_IME) {
     if (!plugin_ime_)
       plugin_ime_.reset(new WebPluginIMEWin);

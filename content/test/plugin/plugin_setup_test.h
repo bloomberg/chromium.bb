@@ -9,7 +9,7 @@
 
 namespace NPAPIClient {
 
-// A very simple test that just sets up a new plug-in.
+// A very simple test that just sets up a new plugin.
 class PluginSetupTest : public PluginTest {
  public:
   // Constructor.

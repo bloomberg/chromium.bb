@@ -743,8 +743,8 @@ below:
         Please lengthen this text to <ph name="MIN_CHARACTERS">$2<ex>101</ex></ph> characters or more (you are currently using <ph name="CURRENT_LENGTH">$1<ex>100</ex></ph> characters).
       </message>
 
-      <message name="IDS_PLUGIN_INITIALIZATION_ERROR" desc="A message displayed when a plug-in failed to load">
-        Couldn't load plug-in.
+      <message name="IDS_PLUGIN_INITIALIZATION_ERROR" desc="A message displayed when a plugin failed to load">
+        Couldn't load plugin.
       </message>
 
     </messages>

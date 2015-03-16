@@ -311,13 +311,13 @@ bool WebPluginDelegateProxy::Initialize(
       if (!info_.path.empty()) {
         render_view_->GetMainRenderFrame()->PluginCrashed(
             info_.path, base::kNullProcessId);
-        LOG(ERROR) << "Plug-in crashed on start";
+        LOG(ERROR) << "Plugin crashed on start";
 
         // Return true so that the plugin widget is created and we can paint the
         // crashed plugin there.
         return true;
       }
-      LOG(ERROR) << "Plug-in couldn't be found";
+      LOG(ERROR) << "Plugin couldn't be found";
       return false;
     }
 
@@ -801,7 +801,7 @@ void WebPluginDelegateProxy::ImeCompositionUpdated(
     const std::vector<int>& target,
     int cursor_position,
     int plugin_id) {
-  // Dispatch the raw IME data if this plug-in is the focused one.
+  // Dispatch the raw IME data if this plugin is the focused one.
   if (instance_id_ != plugin_id)
     return;
 
@@ -813,7 +813,7 @@ void WebPluginDelegateProxy::ImeCompositionUpdated(
 
 void WebPluginDelegateProxy::ImeCompositionCompleted(const base::string16& text,
                                                      int plugin_id) {
-  // Dispatch the IME text if this plug-in is the focused one.
+  // Dispatch the IME text if this plugin is the focused one.
   if (instance_id_ != plugin_id)
     return;
 

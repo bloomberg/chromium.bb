@@ -273,7 +273,7 @@ class BrowsingDataRemover
   // clears the respective waiting flag, and invokes NotifyAndDeleteIfDone.
   void OnKeywordsLoaded();
 
-  // Called when plug-in data has been cleared. Invokes NotifyAndDeleteIfDone.
+  // Called when plugin data has been cleared. Invokes NotifyAndDeleteIfDone.
   void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
 
 #if defined(ENABLE_PLUGINS)

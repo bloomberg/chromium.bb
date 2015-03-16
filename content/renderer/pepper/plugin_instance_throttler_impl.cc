@@ -157,7 +157,7 @@ void PluginInstanceThrottlerImpl::OnImageFlush(const SkBitmap* bitmap) {
 
 bool PluginInstanceThrottlerImpl::ConsumeInputEvent(
     const blink::WebInputEvent& event) {
-  // Always allow right-clicks through so users may verify it's a plug-in.
+  // Always allow right-clicks through so users may verify it's a plugin.
   // TODO(tommycli): We should instead show a custom context menu (probably
   // using PluginPlaceholder) so users aren't confused and try to click the
   // Flash-internal 'Play' menu item. This is a stopgap solution.

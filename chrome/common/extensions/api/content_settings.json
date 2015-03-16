@@ -5,7 +5,7 @@
 [
   {
     "namespace": "contentSettings",
-    "description": "Use the <code>chrome.contentSettings</code> API to change settings that control whether websites can use features such as cookies, JavaScript, and plug-ins. More generally speaking, content settings allow you to customize Chrome's behavior on a per-site basis instead of globally.",
+    "description": "Use the <code>chrome.contentSettings</code> API to change settings that control whether websites can use features such as cookies, JavaScript, and plugins. More generally speaking, content settings allow you to customize Chrome's behavior on a per-site basis instead of globally.",
     "compiler_options": {
       "generate_type_functions": true
     },
@@ -207,7 +207,7 @@
       },
       "plugins": {
         "$ref": "ContentSetting",
-        "description": "Whether to run plug-ins. One of<br><var>allow</var>: Run plug-ins automatically,<br><var>block</var>: Don't run plug-ins automatically. <br>Default is <var>allow</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is not used.",
+        "description": "Whether to run plugins. One of<br><var>allow</var>: Run plugins automatically,<br><var>block</var>: Don't run plugins automatically. <br>Default is <var>allow</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is not used.",
         "value": [
           "plugins",
           {"type":"string", "enum": ["allow", "block"]}
@@ -247,7 +247,7 @@
       },
       "unsandboxedPlugins": {
         "$ref": "ContentSetting",
-        "description": "Whether to allow sites to run plug-ins unsandboxed. One of <br><var>allow</var>: Allow sites to run plug-ins unsandboxed,<br><var>block</var>: Don't allow sites to run plug-ins unsandboxed,<br><var>ask</var>: Ask when a site wants to run a plug-in unsandboxed. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is not used.",
+        "description": "Whether to allow sites to run plugins unsandboxed. One of <br><var>allow</var>: Allow sites to run plugins unsandboxed,<br><var>block</var>: Don't allow sites to run plugins unsandboxed,<br><var>ask</var>: Ask when a site wants to run a plugin unsandboxed. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is not used.",
         "value": [
           "ppapi-broker",
           {"type":"string", "enum": ["allow", "block", "ask"]}

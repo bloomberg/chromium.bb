@@ -212,7 +212,7 @@ class PluginDataRemoverImpl::Context
                                       kClearAllData, max_age);
   }
 
-  // Connects the client side of a newly opened plug-in channel.
+  // Connects the client side of a newly opened plugin channel.
   void ConnectToChannel(const IPC::ChannelHandle& handle, bool is_ppapi) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -288,7 +288,7 @@ class PluginDataRemoverImpl::Context
   // The name of the plugin. Use only on the I/O thread.
   std::string plugin_name_;
 
-  // The channel is NULL until we have opened a connection to the plug-in
+  // The channel is NULL until we have opened a connection to the plugin
   // process.
   scoped_ptr<IPC::Channel> channel_;
 };

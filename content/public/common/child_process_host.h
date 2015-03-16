@@ -64,7 +64,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
     // Requests that the child run in a process that does not protect the
     // heap against execution. Normally, heap pages may be made executable
     // with mprotect, so this mode should be used sparingly. It is intended
-    // for processes that may host plug-ins that expect an executable heap
+    // for processes that may host plugins that expect an executable heap
     // without having to call mprotect. This option is currently incompatible
     // with CHILD_NO_PIE.
     CHILD_ALLOW_HEAP_EXECUTION = 1 << 2,

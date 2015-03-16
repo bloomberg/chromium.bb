@@ -28,7 +28,7 @@ class SandboxedProcessLauncherDelegate;
 
 #if defined(OS_WIN)
 
-// Initialize the sandbox for renderer, gpu, utility, worker, nacl, and plug-in
+// Initialize the sandbox for renderer, gpu, utility, worker, nacl, and plugin
 // processes, depending on the command line flags. Although The browser process
 // is not sandboxed, this also needs to be called because it will initialize
 // the broker code.

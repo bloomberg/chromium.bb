@@ -205,7 +205,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
       break;
     case NPDrawingModelCoreAnimation:
     case NPDrawingModelInvalidatingCoreAnimation: {
-      // Ask the plug-in for the CALayer it created for rendering content.
+      // Ask the plugin for the CALayer it created for rendering content.
       // Create a surface to host it, and request a "window" handle to identify
       // the surface.
       CALayer* layer = nil;
@@ -702,7 +702,7 @@ void WebPluginDelegateImpl::DrawLayerInSurface() {
   surface_->EndDrawing();
 }
 
-// Update the size of the surface to match the current size of the plug-in.
+// Update the size of the surface to match the current size of the plugin.
 void WebPluginDelegateImpl::UpdateAcceleratedSurface() {
   if (!surface_ || !layer_)
     return;

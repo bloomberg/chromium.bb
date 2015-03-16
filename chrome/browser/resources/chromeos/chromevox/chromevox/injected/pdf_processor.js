@@ -11,7 +11,7 @@ goog.provide('cvox.PdfProcessor');
 goog.require('cvox.QueueMode');
 
 /**
- * Process PDFs created with Chrome's built-in PDF plug-in, which has an
+ * Process PDFs created with Chrome's built-in PDF plugin, which has an
  * accessibility hook.
  */
 cvox.PdfProcessor.processEmbeddedPdfs = function() {

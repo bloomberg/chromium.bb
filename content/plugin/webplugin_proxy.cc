@@ -605,8 +605,8 @@ bool WebPluginProxy::CheckIfRunInsecureContent(const GURL& url) {
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 void WebPluginProxy::UpdateIMEStatus() {
-  // Retrieve the IME status from a plug-in and send it to a renderer process
-  // when the plug-in has updated it.
+  // Retrieve the IME status from a plugin and send it to a renderer process
+  // when the plugin has updated it.
   int input_type;
   gfx::Rect caret_rect;
   if (!delegate_->GetIMEStatus(&input_type, &caret_rect))

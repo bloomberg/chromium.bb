@@ -382,8 +382,8 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
     NOTREACHED();
   }
 #else
-  // If we don't support third-party plug-in installation, we shouldn't have
-  // outdated plug-ins.
+  // If we don't support third-party plugin installation, we shouldn't have
+  // outdated plugins.
   NOTREACHED();
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 }

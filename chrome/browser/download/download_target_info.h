@@ -51,7 +51,7 @@ struct DownloadTargetInfo {
   // Whether the |target_path| would be handled safely by the browser if it were
   // to be opened with a file:// URL. This can be used later to decide how file
   // opens should be handled. The file is considered to be handled safely if the
-  // filetype is supported by the renderer or a sandboxed plug-in.
+  // filetype is supported by the renderer or a sandboxed plugin.
   bool is_filetype_handled_safely;
 };
 

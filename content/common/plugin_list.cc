@@ -278,7 +278,7 @@ void PluginList::GetPluginPathsToLoad(std::vector<base::FilePath>* plugin_paths,
 void PluginList::SetPlugins(const std::vector<WebPluginInfo>& plugins) {
   base::AutoLock lock(lock_);
 
-  // If we haven't been invalidated in the mean time, mark the plug-in list as
+  // If we haven't been invalidated in the mean time, mark the plugin list as
   // up-to-date.
   if (loading_state_ != LOADING_STATE_NEEDS_REFRESH)
     loading_state_ = LOADING_STATE_UP_TO_DATE;
@@ -340,11 +340,11 @@ void PluginList::GetPluginInfoArray(
   }
 
   // Add in plugins by url.
-  // We do not permit URL-sniff based plug-in MIME type overrides aside from
+  // We do not permit URL-sniff based plugin MIME type overrides aside from
   // the case where the "type" was initially missing.
   // We collected stats to determine this approach isn't a major compat issue,
   // and we defend against content confusion attacks in various cases, such
-  // as when the user doesn't have the Flash plug-in enabled.
+  // as when the user doesn't have the Flash plugin enabled.
   std::string path = url.path();
   std::string::size_type last_dot = path.rfind('.');
   if (last_dot != std::string::npos && mime_type.empty()) {

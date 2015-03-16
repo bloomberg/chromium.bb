@@ -14,10 +14,10 @@ PluginMetadata::SecurityStatus GetSecurityStatus(
     PluginMetadata* plugin_metadata,
     const char* version) {
   content::WebPluginInfo plugin(
-      base::ASCIIToUTF16("Foo plug-in"),
+      base::ASCIIToUTF16("Foo plugin"),
       base::FilePath(FILE_PATH_LITERAL("/tmp/plugin.so")),
       base::ASCIIToUTF16(version),
-      base::ASCIIToUTF16("Foo plug-in."));
+      base::ASCIIToUTF16("Foo plugin."));
   return plugin_metadata->GetSecurityStatus(plugin);
 }
 

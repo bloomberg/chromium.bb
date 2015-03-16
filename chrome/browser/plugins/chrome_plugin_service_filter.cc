@@ -141,7 +141,7 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
 
 bool ChromePluginServiceFilter::CanLoadPlugin(int render_process_id,
                                               const base::FilePath& path) {
-  // The browser itself sometimes loads plug-ins to e.g. clear plug-in data.
+  // The browser itself sometimes loads plugins to e.g. clear plugin data.
   // We always grant the browser permission.
   if (!render_process_id)
     return true;

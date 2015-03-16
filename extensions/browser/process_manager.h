@@ -120,7 +120,7 @@ class ProcessManager : public KeyedService,
   // called regularly.
   void KeepaliveImpulse(const Extension* extension);
 
-  // Triggers a keepalive impulse for a plug-in (e.g NaCl).
+  // Triggers a keepalive impulse for a plugin (e.g NaCl).
   static void OnKeepaliveFromPlugin(int render_process_id,
                                     int render_frame_id,
                                     const std::string& extension_id);

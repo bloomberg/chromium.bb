@@ -154,7 +154,7 @@ class CONTENT_EXPORT PluginServiceImpl
   // Cancels opening a channel to a NPAPI plugin.
   void CancelOpenChannelToNpapiPlugin(PluginProcessHost::Client* client);
 
-  // Used to monitor plug-in stability.
+  // Used to monitor plugin stability.
   void RegisterPluginCrash(const base::FilePath& plugin_path);
 
  private:
@@ -240,14 +240,14 @@ class CONTENT_EXPORT PluginServiceImpl
 
   std::set<PluginProcessHost::Client*> pending_plugin_clients_;
 
-  // Used to sequentialize loading plug-ins from disk.
+  // Used to sequentialize loading plugins from disk.
   base::SequencedWorkerPool::SequenceToken plugin_list_token_;
 
 #if defined(OS_POSIX)
   scoped_refptr<PluginLoaderPosix> plugin_loader_;
 #endif
 
-  // Used to detect if a given plug-in is crashing over and over.
+  // Used to detect if a given plugin is crashing over and over.
   std::map<base::FilePath, std::vector<base::Time> > crash_times_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginServiceImpl);

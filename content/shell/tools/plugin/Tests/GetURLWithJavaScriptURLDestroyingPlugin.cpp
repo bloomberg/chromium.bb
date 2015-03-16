@@ -31,7 +31,7 @@
 
 using namespace std;
 
-// From NPP_New, call NPN_GetURL to evaluate JavaScript that destroys the plug-in.
+// From NPP_New, call NPN_GetURL to evaluate JavaScript that destroys the plugin.
 
 class GetURLWithJavaScriptURLDestroyingPlugin : public PluginTest {
 public:

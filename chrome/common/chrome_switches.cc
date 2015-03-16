@@ -54,7 +54,7 @@ const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
 // Don't block outdated plugins.
 const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 
-// By default, an https page cannot run JavaScript, CSS or plug-ins from http
+// By default, an https page cannot run JavaScript, CSS or plugins from http
 // URLs. This provides an override to get the old insecure behavior.
 const char kAllowRunningInsecureContent[]   = "allow-running-insecure-content";
 
@@ -65,7 +65,7 @@ const char kAlternateProtocolProbabilityThreshold[] =
     "alternate-protocol-probability-threshold";
 
 // Prevents Chrome from requiring authorization to run certain widely installed
-// but less commonly used plug-ins.
+// but less commonly used plugins.
 const char kAlwaysAuthorizePlugins[]        = "always-authorize-plugins";
 
 // Specifies that the extension-app with the specified id should be launched

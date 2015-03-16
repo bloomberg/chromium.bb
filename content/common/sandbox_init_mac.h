@@ -7,7 +7,7 @@
 
 namespace content {
 
-// Initialize the sandbox for renderer, gpu, utility, worker, and plug-in
+// Initialize the sandbox for renderer, gpu, utility, worker, and plugin
 // processes, depending on the command line flags. For the browser process which
 // is not sandboxed, this call is a no-op.
 // Returns true if the sandbox was initialized succesfully, false if an error

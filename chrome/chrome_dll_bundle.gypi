@@ -183,7 +183,7 @@
     },
     {
       # This file is used by the component installer.
-      # It is not a complete plug-in on its own.
+      # It is not a complete plugin on its own.
       'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Internet Plug-Ins/',
       'files': [],
       'conditions': [

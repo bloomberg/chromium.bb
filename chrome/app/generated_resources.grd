@@ -1124,18 +1124,18 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
 
       <if expr="not use_titlecase">
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_RUN" desc="The name of the Run command on the blocked plugin context menu">
-          Run this plug-in
+          Run this plugin
         </message>
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_HIDE" desc="The name of the Hide command on the blocked plugin context menu">
-          Hide this plug-in
+          Hide this plugin
         </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_RUN" desc="In Title Case: The name of the Run command on the blocked plugin context menu">
-          Run This Plug-in
+          Run This Plugin
         </message>
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_HIDE" desc="In Title Case: The name of the Hide command on the blocked plugin context menu">
-          Hide This Plug-in
+          Hide This Plugin
         </message>
       </if>
 
@@ -2675,7 +2675,7 @@ Even if you have downloaded files from this website before, the website might ha
         Pop-up blocked
       </message>
       <message name="IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT" desc="Explanatory animated text that appears (and then disappears) in the address line when plugin is blocked">
-        Plug-in blocked
+        Plugin blocked
       </message>
       <message name="IDS_BLOCKED_JAVASCRIPT_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to run JavaScript.">
         JavaScript was blocked on this page.
@@ -2689,28 +2689,28 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_BLOCKED_JAVASCRIPT_LINK" desc="Link to JavaScript section of content blocking management dialog, displayed in bubble when a page tries to run JavaScript.">
         Manage JavaScript blocking...
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to display plug-ins.">
-        The following plug-ins were blocked on this page:
+      <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to display plugins.">
+        The following plugins were blocked on this page:
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_MESSAGE" desc="Tooltip and message when a page is not allowed to display plug-ins.">
-        Plug-ins were blocked on this page.
+      <message name="IDS_BLOCKED_PLUGINS_MESSAGE" desc="Tooltip and message when a page is not allowed to display plugins.">
+        Plugins were blocked on this page.
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_UNBLOCK_ALL" desc="Radio button choice to unblock a site from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
-        Always allow plug-ins on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
+      <message name="IDS_BLOCKED_PLUGINS_UNBLOCK_ALL" desc="Radio button choice to unblock a site from using plugins, displayed in bubble when a page tries to use plugins.">
+        Always allow plugins on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
       </message>
       <if expr="is_macosx">
-        <message name="IDS_BLOCKED_PLUGINS_UNBLOCK" desc="Radio button choice to unblock a site from using *a specific set* of plug-ins, displayed in bubble when a page tries to use plug-ins.">
-          Always allow these plug-ins on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
+        <message name="IDS_BLOCKED_PLUGINS_UNBLOCK" desc="Radio button choice to unblock a site from using *a specific set* of plugins, displayed in bubble when a page tries to use plugins.">
+          Always allow these plugins on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
         </message>
       </if>
-      <message name="IDS_BLOCKED_PLUGINS_NO_ACTION" desc="Radio button choice to continue blocking a site from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
-        Continue blocking plug-ins
+      <message name="IDS_BLOCKED_PLUGINS_NO_ACTION" desc="Radio button choice to continue blocking a site from using plugins, displayed in bubble when a page tries to use plugins.">
+        Continue blocking plugins
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_LINK" desc="Link to plug-ins section of content blocking management dialog, displayed in bubble when a page tries to display plug-ins.">
-        Manage plug-in blocking...
+      <message name="IDS_BLOCKED_PLUGINS_LINK" desc="Link to plugins section of content blocking management dialog, displayed in bubble when a page tries to display plugins.">
+        Manage plugin blocking...
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_LOAD_ALL" desc="Button to load all blocked plugins on a page, displayed in bubble when a page tries to display plug-ins.">
-        Run all plug-ins this time
+      <message name="IDS_BLOCKED_PLUGINS_LOAD_ALL" desc="Button to load all blocked plugins on a page, displayed in bubble when a page tries to display plugins.">
+        Run all plugins this time
       </message>
 
       <!-- Certificate error strings -->
@@ -3900,16 +3900,16 @@ Even if you have downloaded files from this website before, the website might ha
           Background Page: <ph name="BACKGROUND_PAGE_URL">$1<ex>http://www.google.com</ex></ph>
         </message>
         <message name="IDS_TASK_MANAGER_PLUGIN_PREFIX" desc="The prefix for a Task Manager plugin row">
-          Plug-in: <ph name="PLUGIN_NAME">$1<ex>Unknown Plug-in</ex></ph>
+          Plugin: <ph name="PLUGIN_NAME">$1<ex>Unknown Plugin</ex></ph>
         </message>
         <message name="IDS_TASK_MANAGER_PLUGIN_BROKER_PREFIX" desc="Task Manager row for PPAPI plugin broker, which provides additional access for PPAPI plugins">
-          Plug-in Broker: <ph name="PLUGIN_NAME">$1<ex>Unknown Plug-in</ex></ph>
+          Plugin Broker: <ph name="PLUGIN_NAME">$1<ex>Unknown Plugin</ex></ph>
         </message>
         <message name="IDS_TASK_MANAGER_PRERENDER_PREFIX" desc="The prefix for a Task Manager prerender row">
           Prerender: <ph name="PRERENDER_CONTENTS_NAME">$1<ex>http://www.google.com</ex></ph>
         </message>
         <message name="IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME" desc="The prefix for a Task Manager plugin row">
-          Unknown plug-in
+          Unknown plugin
         </message>
         <message name="IDS_TASK_MANAGER_WORKER_PREFIX" desc="The prefix for a Task Manager HTML5 Web Worker process row">
           Web Worker: <ph name="WORKER_NAME">$1<ex>http://www.domain.com</ex></ph>
@@ -4632,7 +4632,7 @@ Even if you have downloaded files from this website before, the website might ha
         Read all text spoken using synthesized speech
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS" desc="Permission string for access to content settings.">
-        Change your settings that control websites' access to features such as cookies, JavaScript, plug-ins, geolocation, microphone, camera etc.
+        Change your settings that control websites' access to features such as cookies, JavaScript, plugins, geolocation, microphone, camera etc.
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_PRIVACY" desc="Permission string for access to privacy settings.">
         Change your privacy-related settings
@@ -5561,63 +5561,63 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Plugins -->
       <if expr="enable_plugins">
         <message name="IDS_PLUGINS_TITLE" desc="Title for the chrome://plugins page.">
-          Plug-ins
+          Plugins
         </message>
         <message name="IDS_PLUGINS_DETAILS_MODE_LINK" desc="Text of the link for details mode.">
           Details
         </message>
-        <message name="IDS_PLUGINS_NONE_INSTALLED" desc="Text that lets the user know that no plug-ins are installed.">
-          No plug-ins installed.
+        <message name="IDS_PLUGINS_NONE_INSTALLED" desc="Text that lets the user know that no plugins are installed.">
+          No plugins installed.
         </message>
-        <message name="IDS_PLUGINS_DISABLED_PLUGIN" desc="Text that signifies that the plug-in is currently disabled.">
+        <message name="IDS_PLUGINS_DISABLED_PLUGIN" desc="Text that signifies that the plugin is currently disabled.">
           (Disabled)
         </message>
-        <message name="IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plug-in is currently disabled by enterprise policy.">
+        <message name="IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plugin is currently disabled by enterprise policy.">
           (Disabled by enterprise policy)
         </message>
-        <message name="IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plug-in is currently enabled by enterprise policy.">
+        <message name="IDS_PLUGINS_ENABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plugin is currently enabled by enterprise policy.">
           (Enabled by enterprise policy)
         </message>
-        <message name="IDS_PLUGINS_GROUP_MANAGED_BY_POLICY" desc="Text that signifies that the plug-in group is currently managed by enterprise policy.">
+        <message name="IDS_PLUGINS_GROUP_MANAGED_BY_POLICY" desc="Text that signifies that the plugin group is currently managed by enterprise policy.">
           (Managed by enterprise policy)
         </message>
-        <message name="IDS_PLUGINS_VERSION" desc="The label in front of a plug-in version number.">
+        <message name="IDS_PLUGINS_VERSION" desc="The label in front of a plugin version number.">
           Version:
         </message>
-        <message name="IDS_PLUGINS_DESCRIPTION" desc="The label in front of a plug-in description.">
+        <message name="IDS_PLUGINS_DESCRIPTION" desc="The label in front of a plugin description.">
           Description:
         </message>
-        <message name="IDS_PLUGINS_PATH" desc="The label in front of a plug-in path (file/location on disk).">
+        <message name="IDS_PLUGINS_PATH" desc="The label in front of a plugin path (file/location on disk).">
           Location:
         </message>
-        <message name="IDS_PLUGINS_TYPE" desc="The label in front of a plug-in type (NPAPI, PPAPI, etc.).">
+        <message name="IDS_PLUGINS_TYPE" desc="The label in front of a plugin type (NPAPI, PPAPI, etc.).">
           Type:
         </message>
-        <message name="IDS_PLUGINS_MIME_TYPES" desc="The label in front of a plug-in's MIME types table.">
+        <message name="IDS_PLUGINS_MIME_TYPES" desc="The label in front of a plugin's MIME types table.">
           MIME types:
         </message>
-        <message name="IDS_PLUGINS_MIME_TYPES_MIME_TYPE" desc="The label over the MIME type column in a plug-in's MIME types table.">
+        <message name="IDS_PLUGINS_MIME_TYPES_MIME_TYPE" desc="The label over the MIME type column in a plugin's MIME types table.">
           MIME type
         </message>
-        <message name="IDS_PLUGINS_MIME_TYPES_DESCRIPTION" desc="The label over the description column in a plug-in's MIME types table.">
+        <message name="IDS_PLUGINS_MIME_TYPES_DESCRIPTION" desc="The label over the description column in a plugin's MIME types table.">
           Description
         </message>
-        <message name="IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS" desc="The label over the file extensions column in a plug-in's MIME types table.">
+        <message name="IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS" desc="The label over the file extensions column in a plugin's MIME types table.">
           File extensions
         </message>
-        <message name="IDS_PLUGINS_DISABLE" desc="The link for disabling a plug-in.">
+        <message name="IDS_PLUGINS_DISABLE" desc="The link for disabling a plugin.">
           Disable
         </message>
-        <message name="IDS_PLUGINS_ENABLE" desc="The link for enabling a plug-in.">
+        <message name="IDS_PLUGINS_ENABLE" desc="The link for enabling a plugin.">
           Enable
         </message>
-        <message name="IDS_PLUGINS_ALWAYS_ALLOWED" desc="The checkbox label for whitelisting a plug-in for content settings.">
+        <message name="IDS_PLUGINS_ALWAYS_ALLOWED" desc="The checkbox label for whitelisting a plugin for content settings.">
           Always allowed to run
         </message>
-        <message name="IDS_PLUGINS_DOWNLOAD" desc="The link label to download the latest version of this plug-in">
+        <message name="IDS_PLUGINS_DOWNLOAD" desc="The link label to download the latest version of this plugin">
           Download Critical Security Update
         </message>
-        <message name="IDS_PLUGINS_NAME" desc="The label for the name of this plug-in">
+        <message name="IDS_PLUGINS_NAME" desc="The label for the name of this plugin">
           Name:
         </message>
         <message name="IDS_PLUGINS_NO_PLUGINS" desc="Text that indicates that no plugins are installed">
@@ -7037,7 +7037,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         This feature is temporarily unavailable. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Help<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
       </message>
       <message name="IDS_HOTWORD_NACL_DISABLED_ERROR_MESSAGE" desc="The error message text when hotwording fails because NaCl is disabled.">
-        <ph name="BEGIN_LINK">&lt;a target="_blank" href="chrome://plugins"&gt;</ph>Native Client plug-in<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> needs to be enabled to use this feature.
+        <ph name="BEGIN_LINK">&lt;a target="_blank" href="chrome://plugins"&gt;</ph>Native Client plugin<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> needs to be enabled to use this feature.
       </message>
       <message name="IDS_HOTWORD_MICROPHONE_ERROR_MESSAGE" desc="The error message text when hotwording fails because the microphone isn't working.">
         Microphone is currently unavailable. <ph name="BEGIN_LINK">&lt;a target="_blank" href="chrome://settings/content#media-stream-settings"&gt;</ph>Manage microphone<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
@@ -7123,77 +7123,77 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </if>
       </if> <!-- is_win -->
 
-      <!-- Plug-in placeholders -->
-      <message name="IDS_PLUGIN_HIDE" desc="The tooltip for hiding a blocked plug-in, displayed in the click to play UI.">
-        Hide this plug-in
+      <!-- Plugin placeholders -->
+      <message name="IDS_PLUGIN_HIDE" desc="The tooltip for hiding a blocked plugin, displayed in the click to play UI.">
+        Hide this plugin
       </message>
-      <message name="IDS_PLUGIN_UPDATE" desc="The link for updating an outdated plug-in.">
-        Update plug-in...
+      <message name="IDS_PLUGIN_UPDATE" desc="The link for updating an outdated plugin.">
+        Update plugin...
       </message>
-      <message name="IDS_PLUGIN_NOT_SUPPORTED_METRO" desc="The placeholder text for a plug-in that can't run in Windows Metro mode.">
-        This plug-in only works on the desktop.
+      <message name="IDS_PLUGIN_NOT_SUPPORTED_METRO" desc="The placeholder text for a plugin that can't run in Windows Metro mode.">
+        This plugin only works on the desktop.
       </message>
       <if expr="is_macosx">
-        <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
+        <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plugin.">
           Control-click to play <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
         </message>
       </if>
       <if expr="not is_macosx">
-        <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
+        <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plugin.">
           Right-click to play <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
         </message>
       </if>
       <if expr="chromeos">
-        <message name="IDS_NACL_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
+        <message name="IDS_NACL_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plugin.">
           This app is not currently supported on this device but the Chrome gnomes are hard at work to make it work soon.
         </message>
       </if>
-      <message name="IDS_PLUGIN_OUTDATED" desc="The placeholder text for an outdated plug-in.">
+      <message name="IDS_PLUGIN_OUTDATED" desc="The placeholder text for an outdated plugin.">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is out of date.
       </message>
-      <message name="IDS_PLUGIN_NOT_AUTHORIZED" desc="The placeholder text for a plug-in that requires user permission to run.">
+      <message name="IDS_PLUGIN_NOT_AUTHORIZED" desc="The placeholder text for a plugin that requires user permission to run.">
         <ph name="PLUGIN_NAME">$1<ex>Java</ex></ph> needs your permission to run.
       </message>
-      <message name="IDS_PLUGIN_NOT_SUPPORTED" desc="The placeholder text for an unsupported plug-in.">
-        This plug-in is not supported.
+      <message name="IDS_PLUGIN_NOT_SUPPORTED" desc="The placeholder text for an unsupported plugin.">
+        This plugin is not supported.
       </message>
-      <message name="IDS_PLUGIN_NOT_FOUND" desc="The placeholder text for an unknown plug-in that is not installed.">
-        No plug-in available to display this content.
+      <message name="IDS_PLUGIN_NOT_FOUND" desc="The placeholder text for an unknown plugin that is not installed.">
+        No plugin available to display this content.
       </message>
-      <message name="IDS_PLUGIN_SEARCHING" desc="The placeholder text when searching for a missing plug-in.">
-        Looking for plug-in...
+      <message name="IDS_PLUGIN_SEARCHING" desc="The placeholder text when searching for a missing plugin.">
+        Looking for plugin...
       </message>
-      <message name="IDS_PLUGIN_DOWNLOADING" desc="The placeholder text when downloading a missing plug-in.">
+      <message name="IDS_PLUGIN_DOWNLOADING" desc="The placeholder text when downloading a missing plugin.">
         Downloading <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>...
       </message>
-      <message name="IDS_PLUGIN_DOWNLOAD_ERROR" desc="The placeholder text when there was an error download a missing plug-in.">
-        There was an error (<ph name="ERROR">$1<ex>net::ERR_TOO_MANY_GOATS</ex></ph>) while downloading the plug-in.
+      <message name="IDS_PLUGIN_DOWNLOAD_ERROR" desc="The placeholder text when there was an error download a missing plugin.">
+        There was an error (<ph name="ERROR">$1<ex>net::ERR_TOO_MANY_GOATS</ex></ph>) while downloading the plugin.
       </message>
-      <message name="IDS_PLUGIN_DOWNLOAD_ERROR_SHORT" desc="The placeholder text when there was an error download a missing plug-in.">
+      <message name="IDS_PLUGIN_DOWNLOAD_ERROR_SHORT" desc="The placeholder text when there was an error download a missing plugin.">
         <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> download failed.
       </message>
-      <message name="IDS_PLUGIN_DOWNLOAD_CANCELLED" desc="The placeholder text when the user canceled downloading the plug-in.">
+      <message name="IDS_PLUGIN_DOWNLOAD_CANCELLED" desc="The placeholder text when the user canceled downloading the plugin.">
         <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> download was canceled.
       </message>
-      <message name="IDS_PLUGIN_INSTALLING" desc="The placeholder text when installing a missing plug-in.">
+      <message name="IDS_PLUGIN_INSTALLING" desc="The placeholder text when installing a missing plugin.">
         When <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> has finished installing, reload the page to activate it.
       </message>
-      <message name="IDS_PLUGIN_UPDATING" desc="The placeholder text when updating an out-of-date plug-in.">
+      <message name="IDS_PLUGIN_UPDATING" desc="The placeholder text when updating an out-of-date plugin.">
         When <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> has finished updating, reload the page to activate it.
       </message>
-      <message name="IDS_PLUGIN_FOUND" desc="The placeholder text for a known plug-in that is not installed.">
+      <message name="IDS_PLUGIN_FOUND" desc="The placeholder text for a known plugin that is not installed.">
         <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display this content.
       </message>
-      <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_TITLE" desc="Title of the plug-in installation confirmation dialog.">
+      <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_TITLE" desc="Title of the plugin installation confirmation dialog.">
         Install <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>
       </message>
-      <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_MSG" desc="Message of the plug-in installation confirmation dialog.">
-        Are you sure you want to install <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>? You should only install plug-ins that you trust.
+      <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_MSG" desc="Message of the plugin installation confirmation dialog.">
+        Are you sure you want to install <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>? You should only install plugins that you trust.
       </message>
-      <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_ACCEPT_BUTTON" desc="Button title to install a missing plug-in.">
+      <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_ACCEPT_BUTTON" desc="Button title to install a missing plugin.">
         Install
       </message>
-      <message name="IDS_PLUGIN_DISABLED" desc="The placeholder text for a disabled plug-in.">
+      <message name="IDS_PLUGIN_DISABLED" desc="The placeholder text for a disabled plugin.">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> has been disabled. To re-enable it, please go to <ph name="CHROME_PLUGINS_LINK">chrome://plugins</ph>.
       </message>
 
@@ -7238,25 +7238,25 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Deny
       </message>
       <message name="IDS_BLOCKED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper broker access was blocked">
-        An unsandboxed plug-in was prevented from running on this page.
+        An unsandboxed plugin was prevented from running on this page.
       </message>
       <message name="IDS_ALLOWED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper broker access was allowed">
-        An unsandboxed plug-in was allowed to run running on this page.
+        An unsandboxed plugin was allowed to run running on this page.
       </message>
       <message name="IDS_BLOCKED_PPAPI_BROKER_UNBLOCK" desc="Radio button to unblock the Pepper broker">
-        Always allow unsandboxed plug-ins on <ph name="HOST">$1<ex>example.com</ex></ph>
+        Always allow unsandboxed plugins on <ph name="HOST">$1<ex>example.com</ex></ph>
       </message>
       <message name="IDS_BLOCKED_PPAPI_BROKER_NO_ACTION" desc="Radio button to keep blocking the Pepper broker">
-        Continue blocking unsandboxed plug-ins
+        Continue blocking unsandboxed plugins
       </message>
       <message name="IDS_ALLOWED_PPAPI_BROKER_NO_ACTION" desc="Radio button to keep allowing the Pepper broker">
-        Continue allowing unsandboxed plug-ins
+        Continue allowing unsandboxed plugins
       </message>
       <message name="IDS_ALLOWED_PPAPI_BROKER_BLOCK" desc="Radio button to block the Pepper broker">
-        Never allow unsandboxed plug-ins on <ph name="HOST">$1<ex>example.com</ex></ph>
+        Never allow unsandboxed plugins on <ph name="HOST">$1<ex>example.com</ex></ph>
       </message>
       <message name="IDS_PPAPI_BROKER_BUBBLE_MANAGE_LINK" desc="Link title to manage Pepper broker settings">
-        Manage unsandboxed plug-in blocking...
+        Manage unsandboxed plugin blocking...
       </message>
 
       <!-- Blocked Displaying/Running Insecure Content info bar -->
@@ -7607,10 +7607,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Unknown
         </message>
         <message name="IDS_BROWSER_HANGMONITOR_TITLE" desc="Title for the hung plugin message">
-          Plug-in Unresponsive
+          Plugin Unresponsive
         </message>
         <message name="IDS_BROWSER_HANGMONITOR" desc="A plugin on a page has hung">
-  The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
+  The following plugin is unresponsive: <ph name="PLUGIN_NAME">$1
   <ex>Shockwave
   </ex></ph>Would you like to stop it?
         </message>
@@ -7628,10 +7628,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Kill pages
       </message>
       <message name="IDS_BROWSER_HANGMONITOR_PLUGIN_INFOBAR" desc="The text of the infobar notifying the user that a plugin has hung">
-        A plug-in (<ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>) isn't responding.
+        A plugin (<ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>) isn't responding.
       </message>
       <message name="IDS_BROWSER_HANGMONITOR_PLUGIN_INFOBAR_KILLBUTTON" desc="The button on the hung plugin infobar (...PLUGIN_INFOBAR above) to terminate the plugin">
-        Stop plug-in
+        Stop plugin
       </message>
 
       <!-- Passwords and Exceptions Dialog -->
@@ -7915,7 +7915,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Cookies and other site data
       </message>
       <message name="IDS_DEL_COOKIES_FLASH_CHKBOX" desc="Checkbox for deleting Cookies and other site data">
-        Cookies and other site and plug-in data
+        Cookies and other site and plugin data
       </message>
       <message name="IDS_DEL_PASSWORDS_CHKBOX" desc="Checkbox for deleting Passwords">
         Passwords
@@ -8120,7 +8120,7 @@ I don't think this site should be blocked!
           Clear cookies and other site data when you close your browser
         </message>
         <message name="IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
-          Clear cookies and other site and plug-in data when you close your browser
+          Clear cookies and other site and plugin data when you close your browser
         </message>
       </if>
       <if expr="is_macosx">
@@ -8128,7 +8128,7 @@ I don't think this site should be blocked!
           Clear cookies and other site data when you quit your browser
         </message>
         <message name="IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is quit (Mac).">
-          Clear cookies and other site and plug-in data when you quit your browser
+          Clear cookies and other site and plugin data when you quit your browser
         </message>
       </if>
       <if expr="chromeos">
@@ -8136,7 +8136,7 @@ I don't think this site should be blocked!
           Clear cookies and other site data when you log out
         </message>
         <message name="IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX" desc="A checkbox in the Content Settings dialog for removing all cookies on when browser is closed.">
-          Clear cookies and other site and plug-in data when you log out
+          Clear cookies and other site and plugin data when you log out
         </message>
       </if>
 
@@ -8172,23 +8172,23 @@ I don't think this site should be blocked!
           Pop-ups blocked (<ph name="POP_UP_COUNT">$1<ex>3</ex></ph>)
         </message>
       </if>
-      <message name="IDS_PLUGIN_TAB_LABEL" desc="Label for Plug-ins tab on Content Settings dialog">
-        Plug-ins
+      <message name="IDS_PLUGIN_TAB_LABEL" desc="Label for Plugins tab on Content Settings dialog">
+        Plugins
       </message>
       <message name="IDS_PLUGIN_HEADER" desc="Header for plugin exception management page on Content Settings dialog">
-        Plug-in exceptions
+        Plugin exceptions
       </message>
-      <message name="IDS_PLUGIN_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing plug-ins use on any site.">
+      <message name="IDS_PLUGIN_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing plugins use on any site.">
         Run all plugin content (recommended)
       </message>
       <message name="IDS_PLUGIN_DETECT_RADIO" desc="A radio button in the Content Settings dialog for detecting and running important plugin content only.">
         Detect and run important plugin content
       </message>
-      <message name="IDS_PLUGIN_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for gating plug-ins on a context menu activation.">
+      <message name="IDS_PLUGIN_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for gating plugins on a context menu activation.">
         Let me choose when to run plugin content
       </message>
-      <message name="IDS_PLUGIN_MANAGE_INDIVIDUAL" desc="Link to manage individual plug-ins">
-        Manage individual plug-ins...
+      <message name="IDS_PLUGIN_MANAGE_INDIVIDUAL" desc="Link to manage individual plugins">
+        Manage individual plugins...
       </message>
       <message name="IDS_JAVASCRIPT_TAB_LABEL" desc="Label for JavaScript tab on Content Settings dialog">
         JavaScript
@@ -8341,19 +8341,19 @@ I don't think this site should be blocked!
         </message>
       </if>
       <message name="IDS_PPAPI_BROKER_TAB_LABEL" desc="Label for PPAPI broker tab on Content Settings dialog">
-        Unsandboxed plug-in access
+        Unsandboxed plugin access
       </message>
       <message name="IDS_PPAPI_BROKER_HEADER" desc="Label for PPAPI broker tab exception management page on Content Settings dialog">
-        Unsandboxed plug-in access exceptions
+        Unsandboxed plugin access exceptions
       </message>
       <message name="IDS_PPAPI_BROKER_ALLOW_RADIO" desc="A radio button in Content Settings dialog to allow all sites to access the PPAPI broker.">
-        Allow all sites to use a plug-in to access your computer
+        Allow all sites to use a plugin to access your computer
       </message>
       <message name="IDS_PPAPI_BROKER_BLOCK_RADIO" desc="A radio button in Content Settings dialog to deny all sites to access the PPAPI broker.">
-        Do not allow any sites to use a plug-in to access your computer
+        Do not allow any sites to use a plugin to access your computer
       </message>
       <message name="IDS_PPAPI_BROKER_ASK_RADIO" desc="A radio button in Content Settings dialog to allow site to query the permision to access the PPAPI broker.">
-        Ask when a site wants to use a plug-in to access your computer (recommended)
+        Ask when a site wants to use a plugin to access your computer (recommended)
       </message>
 
       <message name="IDS_EXCEPTIONS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">
@@ -12164,7 +12164,7 @@ Chrome ran out of memory.
         <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display some elements on this page.
       </message>
       <message name="IDS_PLUGININSTALLER_INSTALLPLUGIN_BUTTON" desc="Info Bar button to install missing plugin">
-        Install plug-in...
+        Install plugin...
       </message>
       <message name="IDS_PLUGININSTALLER_PROBLEMSINSTALLING" desc="Infobar text for link to help center">
         Problems installing?

@@ -15,7 +15,7 @@ namespace chrome {
 namespace common {
 namespace mac {
 
-// Arranges to block loading of some third-party plug-in code that might try
+// Arranges to block loading of some third-party plugin code that might try
 // to inject itself into the process. Modules loaded by CFBundle are blocked
 // if located within specific directories. Because NSBundle uses CFBundle
 // behind the scenes, this also blocks modules loaded by NSBundle when located

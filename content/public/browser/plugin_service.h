@@ -53,7 +53,7 @@ class PluginService {
   // Must be called on the instance to finish initialization.
   virtual void Init() = 0;
 
-  // Starts watching for changes in the list of installed plug-ins.
+  // Starts watching for changes in the list of installed plugins.
   virtual void StartWatchingPlugins() = 0;
 
   // Gets the plugin in the list of plugins that matches the given url and mime
@@ -108,7 +108,7 @@ class PluginService {
   // If the plugin with the given path is running, cleanly shuts it down.
   virtual void ForcePluginShutdown(const base::FilePath& plugin_path) = 0;
 
-  // Used to monitor plug-in stability. An unstable plug-in is one that has
+  // Used to monitor plugin stability. An unstable plugin is one that has
   // crashed more than a set number of times in a set time period.
   virtual bool IsPluginUnstable(const base::FilePath& plugin_path) = 0;
 

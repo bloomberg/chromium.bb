@@ -24,10 +24,10 @@ class CONTENT_EXPORT PluginDataRemover {
   static PluginDataRemover* Create(content::BrowserContext* browser_context);
   virtual ~PluginDataRemover() {}
 
-  // Starts removing plug-in data stored since |begin_time|.
+  // Starts removing plugin data stored since |begin_time|.
   virtual base::WaitableEvent* StartRemoving(base::Time begin_time) = 0;
 
-  // Returns a list of all plug-ins that support removing LSO data. This method
+  // Returns a list of all plugins that support removing LSO data. This method
   // will use cached plugin data. Call PluginService::GetPlugins() if the latest
   // data is needed.
   static void GetSupportedPlugins(std::vector<WebPluginInfo>* plugins);

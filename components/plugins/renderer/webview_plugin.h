@@ -60,9 +60,9 @@ class WebViewPlugin : public blink::WebPlugin,
 
   blink::WebView* web_view() { return web_view_; }
 
-  // When loading a plug-in document (i.e. a full page plug-in not embedded in
+  // When loading a plugin document (i.e. a full page plugin not embedded in
   // another page), we save all data that has been received, and replay it with
-  // this method on the actual plug-in.
+  // this method on the actual plugin.
   void ReplayReceivedData(blink::WebPlugin* plugin);
 
   void RestoreTitleText();

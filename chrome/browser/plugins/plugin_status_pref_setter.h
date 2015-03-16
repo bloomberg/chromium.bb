@@ -33,7 +33,7 @@ class PluginStatusPrefSetter : public content::NotificationObserver {
   // Binds the preferences in the profile's PrefService, notifying |observer| if
   // any value changes.
   // This asynchronously calls the PluginService to get the list of installed
-  // plug-ins.
+  // plugins.
   void Init(Profile* profile,
             const BooleanPrefMember::NamedChangeCallback& observer);
 

@@ -81,7 +81,7 @@ typedef std::map<NSPopUpButton*, MediaMenuParts*> MediaMenuPartsMap;
 // Callback for "info" link.
 - (IBAction)showMoreInfo:(id)sender;
 
-// Callback for "load" (plug-ins, mixed script) button.
+// Callback for "load" (plugins, mixed script) button.
 - (IBAction)load:(id)sender;
 
 // Callback for "Learn More" link.

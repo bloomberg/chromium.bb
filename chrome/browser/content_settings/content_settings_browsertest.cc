@@ -717,7 +717,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Baseline) {
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 // The following tests verify that Pepper plugins that use JavaScript settings
-// instead of Plug-ins settings still work when Plug-ins are blocked.
+// instead of Plugins settings still work when Plugins are blocked.
 
 #if defined(ENABLE_PEPPER_CDMS)
 // The plugin successfully loaded above is blocked.

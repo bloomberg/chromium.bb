@@ -20,17 +20,17 @@ class PluginClient {
   // NPAPI Host to call.
   static NPError GetEntryPoints(NPPluginFuncs* pFuncs);
 
-  // The browser calls this function only once: when a plug-in is loaded,
+  // The browser calls this function only once: when a plugin is loaded,
   // before the first instance is created. This is the first function that
-  // the browser calls. NP_Initialize tells the plug-in that the browser has
+  // the browser calls. NP_Initialize tells the plugin that the browser has
   // loaded it and provides global initialization. Allocate any memory or
-  // resources shared by all instances of your plug-in at this time.
+  // resources shared by all instances of your plugin at this time.
   static NPError Initialize(NPNetscapeFuncs* pFuncs);
 
   // The browser calls this function once after the last instance of your
-  // plug-in is destroyed, before unloading the plug-in library itself. Use
+  // plugin is destroyed, before unloading the plugin library itself. Use
   // NP_Shutdown to delete any data allocated in NP_Initialize to be shared
-  // by all instances of a plug-in.
+  // by all instances of a plugin.
   static NPError Shutdown();
 
   // The table of functions provided by the host.

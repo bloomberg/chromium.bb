@@ -618,12 +618,12 @@ void NPN_InvalidateRect(NPP id, NPRect *invalidRect) {
 
   // Before a windowless plugin can refresh part of its drawing area, it must
   // first invalidate it.  This function causes the NPP_HandleEvent method to
-  // pass an update event or a paint message to the plug-in.  After calling
-  // this method, the plug-in receives a paint message asynchronously.
+  // pass an update event or a paint message to the plugin.  After calling
+  // this method, the plugin receives a paint message asynchronously.
 
   // The browser redraws invalid areas of the document and any windowless
-  // plug-ins at regularly timed intervals. To force a paint message, the
-  // plug-in can call NPN_ForceRedraw after calling this method.
+  // plugins at regularly timed intervals. To force a paint message, the
+  // plugin can call NPN_ForceRedraw after calling this method.
 
   scoped_refptr<PluginInstance> plugin(FindInstance(id));
   if (plugin.get() && plugin->webplugin()) {
@@ -665,7 +665,7 @@ void NPN_InvalidateRegion(NPP id, NPRegion invalidRegion) {
 }
 
 void NPN_ForceRedraw(NPP id) {
-  // Forces repaint for a windowless plug-in.
+  // Forces repaint for a windowless plugin.
   //
   // We deliberately do not implement this; we don't want plugins forcing
   // synchronous paints.
@@ -678,7 +678,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
   //    NPNVxDisplay (unix only)
   //    NPNVxtAppContext (unix only)
   //    NPNVnetscapeWindow (win only) - Gets the native window on which the
-  //              plug-in drawing occurs, returns HWND
+  //              plugin drawing occurs, returns HWND
   //    NPNVjavascriptEnabledBool:  tells whether Javascript is enabled
   //    NPNVasdEnabledBool:  tells whether SmartUpdate is enabled
   //    NPNVOfflineBool: tells whether offline-mode is enabled

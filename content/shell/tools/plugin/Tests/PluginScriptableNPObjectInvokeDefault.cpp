@@ -31,7 +31,7 @@
 
 using namespace std;
 
-// A test where the plug-ins scriptable object either has or doesn't have an invokeDefault function.
+// A test where the plugins scriptable object either has or doesn't have an invokeDefault function.
 class PluginScriptableNPObjectInvokeDefault : public PluginTest {
 public:
     PluginScriptableNPObjectInvokeDefault(NPP npp, const string& identifier)

@@ -49,7 +49,7 @@ const char* const kTypeAttribute = "type";
 // JSON matching ISAs with .nexe URLs).
 const char* const kSrcManifestAttribute = "src";
 // The "nacl" attribute of the <embed> tag.  We use the value of this attribute
-// to find the manifest file when NaCl is registered as a plug-in for another
+// to find the manifest file when NaCl is registered as a plugin for another
 // MIME type because the "src" attribute is used to supply us with the resource
 // of that MIME type that we're supposed to display.
 const char* const kNaClManifestAttribute = "nacl";

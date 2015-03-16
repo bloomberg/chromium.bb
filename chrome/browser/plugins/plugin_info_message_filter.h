@@ -34,7 +34,7 @@ namespace extensions {
 class ExtensionRegistry;
 }
 
-// This class filters out incoming IPC messages requesting plug-in information.
+// This class filters out incoming IPC messages requesting plugin information.
 class PluginInfoMessageFilter : public content::BrowserMessageFilter {
  public:
   struct GetPluginInfo_Params;

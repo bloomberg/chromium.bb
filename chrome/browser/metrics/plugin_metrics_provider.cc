@@ -301,8 +301,8 @@ void PluginMetricsProvider::LogPluginLoadingError(
   ChildProcessStats& stats = child_process_stats_buffer_[plugin.name];
   // Initialize the type if this entry is new.
   if (stats.process_type == content::PROCESS_TYPE_UNKNOWN) {
-    // The plug-in process might not actually be of type PLUGIN (which means
-    // NPAPI), but we only care that it is *a* plug-in process.
+    // The plugin process might not actually be of type PLUGIN (which means
+    // NPAPI), but we only care that it is *a* plugin process.
     stats.process_type = content::PROCESS_TYPE_PLUGIN;
   } else {
     DCHECK(IsPluginProcess(stats.process_type));

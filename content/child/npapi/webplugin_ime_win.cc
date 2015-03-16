@@ -19,7 +19,7 @@
 
 namespace content {
 
-// A critical section that prevents two or more plug-ins from accessing a
+// A critical section that prevents two or more plugins from accessing a
 // WebPluginIMEWin instance through our patch function.
 base::LazyInstance<base::Lock>::Leaky
     g_webplugin_ime_lock = LAZY_INSTANCE_INITIALIZER;
@@ -65,10 +65,10 @@ void WebPluginIMEWin::CompositionUpdated(const base::string16& text,
   events_.push_back(np_event);
 
   // Converts this event to the IMM32 data so we do not have to convert it every
-  // time when a plug-in call an IMM32 function.
+  // time when a plugin call an IMM32 function.
   composition_text_ = text;
 
-  // Create the composition clauses returned when a plug-in calls
+  // Create the composition clauses returned when a plugin calls
   // ImmGetCompositionString() with GCS_COMPCLAUSE.
   composition_clauses_.clear();
   for (size_t i = 0; i < clauses.size(); ++i)
@@ -107,8 +107,8 @@ void WebPluginIMEWin::CompositionCompleted(const base::string16& text) {
   np_event.lParam = 0;
   events_.push_back(np_event);
 
-  // If the target plug-in does not seem to support IME messages, we send
-  // each character in IME text with a WM_CHAR message so the plug-in can
+  // If the target plugin does not seem to support IME messages, we send
+  // each character in IME text with a WM_CHAR message so the plugin can
   // insert the IME text.
   if (!support_ime_messages_) {
     np_event.event = WM_CHAR;
@@ -133,7 +133,7 @@ void WebPluginIMEWin::CompositionCompleted(const base::string16& text) {
 
 bool WebPluginIMEWin::SendEvents(PluginInstance* instance) {
   // We allow the patch functions to access this WebPluginIMEWin instance only
-  // while we send IME events to the plug-in.
+  // while we send IME events to the plugin.
   ScopedLock lock(this);
 
   bool ret = true;
@@ -266,8 +266,8 @@ HIMC WINAPI WebPluginIMEWin::ImmGetContext(HWND window) {
   // Call the original ImmGetContext() function if the given window is the one
   // created in WebPluginDelegateImpl::WindowedCreatePlugin(). (We attached IME
   // context only with the windows created in this function.) On the other hand,
-  // some windowless plug-ins (such as Flash) call this function with a dummy
-  // window handle. We return our dummy IME context for these plug-ins so they
+  // some windowless plugins (such as Flash) call this function with a dummy
+  // window handle. We return our dummy IME context for these plugins so they
   // can use our IME emulator.
   if (IsWindow(window)) {
     wchar_t name[128];

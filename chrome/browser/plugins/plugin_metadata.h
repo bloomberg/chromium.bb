@@ -18,7 +18,7 @@ struct WebPluginInfo;
 
 class PluginMetadata {
  public:
-  // Information about a certain version of the plug-in.
+  // Information about a certain version of the plugin.
   enum SecurityStatus {
     SECURITY_STATUS_UP_TO_DATE,
     SECURITY_STATUS_OUT_OF_DATE,
@@ -44,15 +44,15 @@ class PluginMetadata {
                  const std::string& language);
   ~PluginMetadata();
 
-  // Unique identifier for the plug-in.
+  // Unique identifier for the plugin.
   const std::string& identifier() const { return identifier_; }
 
-  // Human-readable name of the plug-in.
+  // Human-readable name of the plugin.
   const base::string16& name() const { return name_; }
 
   // If |url_for_display| is false, |plugin_url| is the URL of the download page
-  // for the plug-in, which should be opened in a new tab. If it is true,
-  // |plugin_url| is the URL of the plug-in installer binary, which can be
+  // for the plugin, which should be opened in a new tab. If it is true,
+  // |plugin_url| is the URL of the plugin installer binary, which can be
   // directly downloaded.
   bool url_for_display() const { return url_for_display_; }
   const GURL& plugin_url() const { return plugin_url_; }
@@ -66,7 +66,7 @@ class PluginMetadata {
   void AddMimeType(const std::string& mime_type);
   void AddMatchingMimeType(const std::string& mime_type);
 
-  // Adds information about a plug-in version.
+  // Adds information about a plugin version.
   void AddVersion(const Version& version, SecurityStatus status);
 
   // Checks if |plugin| mime types match all |matching_mime_types_|.
@@ -79,7 +79,7 @@ class PluginMetadata {
   static bool ParseSecurityStatus(const std::string& status_str,
                                   SecurityStatus* status);
 
-  // Returns the security status for the given plug-in (i.e. whether it is
+  // Returns the security status for the given plugin (i.e. whether it is
   // considered out-of-date, etc.)
   SecurityStatus GetSecurityStatus(const content::WebPluginInfo& plugin) const;
 

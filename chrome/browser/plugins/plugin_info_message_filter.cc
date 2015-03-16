@@ -351,8 +351,8 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   bool uses_default_content_setting = true;
   bool is_managed = false;
-  // Check plug-in content settings. The primary URL is the top origin URL and
-  // the secondary URL is the plug-in URL.
+  // Check plugin content settings. The primary URL is the top origin URL and
+  // the secondary URL is the plugin URL.
   GetPluginContentSetting(plugin, params.top_origin_url, params.url,
                           plugin_metadata->identifier(), &plugin_setting,
                           &uses_default_content_setting, &is_managed);
@@ -361,7 +361,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   PluginMetadata::SecurityStatus plugin_status =
       plugin_metadata->GetSecurityStatus(plugin);
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-  // Check if the plug-in is outdated.
+  // Check if the plugin is outdated.
   if (plugin_status == PluginMetadata::SECURITY_STATUS_OUT_OF_DATE &&
       !allow_outdated_plugins_.GetValue()) {
     if (allow_outdated_plugins_.IsManaged()) {
@@ -373,13 +373,13 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     return;
   }
 #endif
-  // Check if the plug-in or its group is enabled by policy.
+  // Check if the plugin or its group is enabled by policy.
   PluginPrefs::PolicyStatus plugin_policy =
       plugin_prefs_->PolicyStatusForPlugin(plugin.name);
   PluginPrefs::PolicyStatus group_policy =
       plugin_prefs_->PolicyStatusForPlugin(plugin_metadata->name());
 
-  // Check if the plug-in requires authorization.
+  // Check if the plugin requires authorization.
   if (plugin_status ==
           PluginMetadata::SECURITY_STATUS_REQUIRES_AUTHORIZATION &&
       plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS &&
@@ -396,7 +396,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     return;
   }
 
-  // Check if the plug-in is crashing too much.
+  // Check if the plugin is crashing too much.
   if (PluginService::GetInstance()->IsPluginUnstable(plugin.path) &&
       !always_authorize_plugins_.GetValue() &&
       plugin_setting != CONTENT_SETTING_BLOCK &&
@@ -473,10 +473,10 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
     }
   }
 
-  // If we broke out of the loop, we have found an enabled plug-in.
+  // If we broke out of the loop, we have found an enabled plugin.
   bool enabled = i < matching_plugins.size();
   if (!enabled) {
-    // Otherwise, we only found disabled plug-ins, so we take the first one.
+    // Otherwise, we only found disabled plugins, so we take the first one.
     i = 0;
     status->value = ChromeViewHostMsg_GetPluginInfo_Status::kDisabled;
   }

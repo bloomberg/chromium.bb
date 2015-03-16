@@ -131,7 +131,7 @@ class WebPluginProxy : public WebPlugin,
   void OnResourceCreated(int resource_id, WebPluginResourceClient* client);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-  // Retrieves the IME status from a windowless plug-in and sends it to a
+  // Retrieves the IME status from a windowless plugin and sends it to a
   // renderer process. A renderer process will convert the coordinates from
   // local to the window coordinates and send the converted coordinates to a
   // browser process.

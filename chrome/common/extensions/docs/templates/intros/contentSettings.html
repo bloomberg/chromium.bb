@@ -115,10 +115,10 @@ is ordered by precedence:</p>
 Resource identifiers allow you to specify content settings for specific
 subtypes of a content type. Currently, the only content type that supports
 resource identifiers is $(ref:contentSettings.plugins),
-where a resource identifier identifies a specific plug-in. When applying content
-settings, first the settings for the specific plug-in are checked. If there are
-no settings found for the specific plug-in, the general content settings for
-plug-ins are checked.
+where a resource identifier identifies a specific plugin. When applying content
+settings, first the settings for the specific plugin are checked. If there are
+no settings found for the specific plugin, the general content settings for
+plugins are checked.
 </p>
 <p>
 For example, if a content setting rule has the resource identifier
@@ -129,8 +129,8 @@ it takes precedence over a rule without a resource identifier and the pattern
 <p>
 You can get a list of resource identifiers for a content type by calling the
 $(ref:contentSettings.ContentSetting.getResourceIdentifiers) method. The returned list
-can change with the set of installed plug-ins on the user's machine, but Chrome
-tries to keep the identifiers stable across plug-in updates.
+can change with the set of installed plugins on the user's machine, but Chrome
+tries to keep the identifiers stable across plugin updates.
 </p>
 
 <h2 id="examples">Examples</h2>

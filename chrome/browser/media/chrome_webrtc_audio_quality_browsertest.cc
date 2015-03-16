@@ -66,7 +66,7 @@ static const char kWebRtcAudioTestHtmlPage[] =
 // 2. For the user who will run the test: # pavucontrol
 // 3. In a separate terminal, # arecord dummy
 // 4. In pavucontrol, go to the recording tab.
-// 5. For the ALSA plug-in [aplay]: ALSA Capture from, change from <x> to
+// 5. For the ALSA plugin [aplay]: ALSA Capture from, change from <x> to
 //    <Monitor of x>, where x is whatever your primary sound device is called.
 // 6. Try launching chrome as the target user on the target machine, try
 //    playing, say, a YouTube video, and record with # arecord -f dat tmp.dat.

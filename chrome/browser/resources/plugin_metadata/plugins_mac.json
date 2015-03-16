@@ -99,7 +99,7 @@
       {
         "version": "0",
         "status": "requires_authorization",
-        "comment": "The Real Player plug-in for mac doesn't expose a version at all."
+        "comment": "The Real Player plugin for mac doesn't expose a version at all."
       }
     ],
     "lang": "en-US",

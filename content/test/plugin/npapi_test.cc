@@ -94,7 +94,7 @@ EXPORT NPError API_CALL NP_GetValue(NPP instance, NPPVariable variable,
       break;
     case NPPVpluginDescriptionString:
       *(static_cast<const char**>(value)) =
-          "Simple NPAPI plug-in for Chromium unit tests";
+          "Simple NPAPI plugin for Chromium unit tests";
       break;
     case NPPVpluginNeedsXEmbed:
       *(static_cast<NPBool*>(value)) = true;

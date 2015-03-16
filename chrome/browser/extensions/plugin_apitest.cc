@@ -166,15 +166,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(result);
 #else
-  // TODO(bauerb): This might wrongly fail if the plug-in takes too long
-  // to load. Extension-private plug-ins don't appear in navigator.plugins, so
-  // we can't check for the plug-in in Javascript.
+  // TODO(bauerb): This might wrongly fail if the plugin takes too long
+  // to load. Extension-private plugins don't appear in navigator.plugins, so
+  // we can't check for the plugin in Javascript.
   EXPECT_TRUE(result);
 #endif
 
-  // Regression test for http://crbug.com/131811: The plug-in should be
+  // Regression test for http://crbug.com/131811: The plugin should be
   // whitelisted for the extension (and only for the extension), so it should be
-  // loaded even if content settings are set to block plug-ins.
+  // loaded even if content settings are set to block plugins.
   browser()->profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(

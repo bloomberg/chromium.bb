@@ -40,7 +40,7 @@ namespace mac {
 
 namespace {
 
-// Returns an autoreleased array of paths that contain plug-ins that should be
+// Returns an autoreleased array of paths that contain plugins that should be
 // forbidden to load. Each element of the array will be a string containing
 // an absolute pathname ending in '/'.
 NSArray* BlockedPaths() {
@@ -62,9 +62,9 @@ NSArray* BlockedPaths() {
     // loading things contained in these directories.
     NSString* const blocked_suffixes[] = {
 #if !defined(__LP64__)
-      // Contextual menu manager plug-ins are unavailable to 64-bit processes.
+      // Contextual menu manager plugins are unavailable to 64-bit processes.
       // http://developer.apple.com/library/mac/releasenotes/Cocoa/AppKitOlderNotes.html#NSMenu
-      // Contextual menu plug-ins are loaded when a contextual menu is opened,
+      // Contextual menu plugins are loaded when a contextual menu is opened,
       // for example, from within
       // +[NSMenu popUpContextMenu:withEvent:forView:].
       @"Contextual Menu Items/",
@@ -83,7 +83,7 @@ NSArray* BlockedPaths() {
       @"ScriptingAdditions/"
 
       // This list is intentionally incomplete. For example, it doesn't block
-      // printer drivers or Internet plug-ins.
+      // printer drivers or Internet plugins.
     };
 
     NSUInteger blocked_paths_count = [blocked_prefixes count] *

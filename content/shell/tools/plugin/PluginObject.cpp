@@ -437,7 +437,7 @@ static bool testDOMAccess(PluginObject* obj,
                           const NPVariant*,
                           uint32_t,
                           NPVariant* result) {
-  // Get plug-in's DOM element
+  // Get plugin's DOM element
   NPObject* elementObject;
   if (browser->getvalue(obj->npp, NPNVPluginElementNPObject, &elementObject) ==
       NPERR_NO_ERROR) {

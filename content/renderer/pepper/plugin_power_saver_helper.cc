@@ -32,13 +32,13 @@ enum PeripheralHeuristicDecision {
 const char kPeripheralHeuristicHistogram[] =
     "Plugin.PowerSaver.PeripheralHeuristic";
 
-// Maximum dimensions plug-in content may have while still being considered
+// Maximum dimensions plugin content may have while still being considered
 // peripheral content. These match the sizes used by Safari.
 const int kPeripheralContentMaxWidth = 400;
 const int kPeripheralContentMaxHeight = 300;
 
-// Plug-in content below this size in height and width is considered "tiny".
-// Tiny content is never peripheral, as tiny plug-ins often serve a critical
+// Plugin content below this size in height and width is considered "tiny".
+// Tiny content is never peripheral, as tiny plugins often serve a critical
 // purpose, and the user often cannot find and click to unthrottle it.
 const int kPeripheralContentTinySize = 5;
 

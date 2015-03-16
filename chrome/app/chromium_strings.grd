@@ -247,10 +247,10 @@ be available for now. -->
           https://support.google.com/chrome/?p=ib_chromeframe
         </message>
         <message name="IDS_CHROME_FRAME_TURNDOWN_TEXT_IE_OLDER" desc="Text of Chromium Frame turndown prompt for IE 6, 7, and 8">
-          This site is using the Chromium Frame plug-in which will soon be unsupported. Please uninstall it and upgrade to a modern browser.
+          This site is using the Chromium Frame plugin which will soon be unsupported. Please uninstall it and upgrade to a modern browser.
         </message>
         <message name="IDS_CHROME_FRAME_TURNDOWN_TEXT_IE_NEWER" desc="Text of Chromium Frame turndown prompt for IE 9 and 10">
-          This site is using the Chromium Frame plug-in that will soon be unsupported. Please uninstall it and download a compatible browser.
+          This site is using the Chromium Frame plugin that will soon be unsupported. Please uninstall it and download a compatible browser.
         </message>
         <message name="IDS_SHORTCUT_NEW_WINDOW" desc="The text label of the New window shortcut context menu entry as of Windows 8">
           New window
