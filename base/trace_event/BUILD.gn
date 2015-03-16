@@ -41,7 +41,7 @@ source_set("trace_event") {
     ]
   }
 
-  defines = [ "BASE_IMPLEMENTATION" ]
+  configs += [ "//base:base_implementation" ]
 
   deps = [
     "//base/debug",

@@ -54,7 +54,7 @@ source_set("memory") {
     sources -= [ "shared_memory_nacl.cc" ]
   }
 
-  defines = [ "BASE_IMPLEMENTATION" ]
+  configs += [ "//base:base_implementation" ]
 
   visibility = [ "//base/*" ]
 }

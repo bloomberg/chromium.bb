@@ -9,6 +9,10 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+config("base_implementation") {
+  defines = [ "BASE_IMPLEMENTATION" ]
+}
+
 source_set("base_paths") {
   sources = [
     "base_paths.cc",
@@ -34,7 +38,7 @@ source_set("base_paths") {
     ]
   }
 
-  defines = [ "BASE_IMPLEMENTATION" ]
+  configs += [ ":base_implementation" ]
 
   deps = [
     "//base/memory",
@@ -607,7 +611,7 @@ component("base") {
     "sys_info_openbsd.cc",
   ]
 
-  defines = [ "BASE_IMPLEMENTATION" ]
+  configs += [ ":base_implementation" ]
 
   deps = [
     ":base_static",
@@ -630,7 +634,7 @@ component("base") {
   # Allow more direct string conversions on platforms with native utf8
   # strings
   if (is_mac || is_ios || is_chromeos) {
-    defines += [ "SYSTEM_NATIVE_UTF8" ]
+    defines = [ "SYSTEM_NATIVE_UTF8" ]
   }
 
   if (is_android) {
@@ -1279,8 +1283,6 @@ test("base_unittests") {
     "win/wrapped_window_proc_unittest.cc",
   ]
 
-  defines = []
-
   deps = [
     ":base",
     ":i18n",
@@ -1300,7 +1302,7 @@ test("base_unittests") {
   # Allow more direct string conversions on platforms with native utf8
   # strings
   if (is_mac || is_ios || is_chromeos) {
-    defines += [ "SYSTEM_NATIVE_UTF8" ]
+    defines = [ "SYSTEM_NATIVE_UTF8" ]
   }
 
   if (is_android) {

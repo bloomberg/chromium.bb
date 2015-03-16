@@ -55,7 +55,7 @@ source_set("debug") {
     ]
   }
 
-  defines = [ "BASE_IMPLEMENTATION" ]
+  configs += [ "//base:base_implementation" ]
 
   deps = [
     "//base/memory",
@@ -63,7 +63,7 @@ source_set("debug") {
   ]
 
   if (is_linux) {
-    defines += [ "USE_SYMBOLIZE" ]
+    defines = [ "USE_SYMBOLIZE" ]
     deps += [ "//base/third_party/symbolize" ]
   }
 

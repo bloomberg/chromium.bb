@@ -37,7 +37,7 @@ source_set("metrics") {
     sources -= [ "field_trial.cc" ]
   }
 
-  defines = [ "BASE_IMPLEMENTATION" ]
+  configs += [ "//base:base_implementation" ]
 
   deps = [
     "//base/debug",

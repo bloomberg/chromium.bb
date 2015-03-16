@@ -94,7 +94,7 @@ source_set("process") {
     ]
   }
 
-  defines = [ "BASE_IMPLEMENTATION" ]
+  configs += [ "//base:base_implementation" ]
 
   deps = [
     "//base/memory",

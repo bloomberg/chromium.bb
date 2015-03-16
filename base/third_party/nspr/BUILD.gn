@@ -12,7 +12,7 @@ source_set("nspr") {
 
   # In GYP this project is part of base, so it uses the base implementation
   # define. TODO(brettw) rename this define.
-  defines = [ "BASE_IMPLEMENTATION" ]
+  configs += [ "//base:base_implementation" ]
 
   if (is_android && !is_debug) {
     configs -= [ "//build/config/compiler:optimize" ]

@@ -27,7 +27,7 @@ source_set("json") {
     ]
   }
 
-  defines = [ "BASE_IMPLEMENTATION" ]
+  configs += [ "//base:base_implementation" ]
 
   deps = [
     "//base/memory",
