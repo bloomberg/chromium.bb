@@ -1533,9 +1533,9 @@ LayoutRect AXNodeObject::elementRect() const
     if (node()->parentElement()->isInCanvasSubtree()) {
         LayoutRect rect;
 
-        for (Node* child = node()->firstChild(); child; child = child->nextSibling()) {
-            if (child->isHTMLElement()) {
-                if (AXObject* obj = axObjectCache()->get(child)) {
+        for (Node& child : NodeTraversal::childrenOf(*node())) {
+            if (child.isHTMLElement()) {
+                if (AXObject* obj = axObjectCache()->get(&child)) {
                     if (rect.isEmpty())
                         rect = obj->elementRect();
                     else
@@ -1630,8 +1630,8 @@ void AXNodeObject::addChildren()
     if (layoutObject() && !isHTMLCanvasElement(*m_node))
         return;
 
-    for (Node* child = m_node->firstChild(); child; child = child->nextSibling())
-        addChild(axObjectCache()->getOrCreate(child));
+    for (Node& child : NodeTraversal::childrenOf(*m_node))
+        addChild(axObjectCache()->getOrCreate(&child));
 
     for (unsigned i = 0; i < m_children.size(); ++i)
         m_children[i].get()->setParent(this);

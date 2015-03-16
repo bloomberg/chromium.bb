@@ -2162,8 +2162,8 @@ void AXLayoutObject::addHiddenChildren()
     // First do a quick run through to determine if we have any hidden nodes (most often we will not).
     // If we do have hidden nodes, we need to determine where to insert them so they match DOM order as close as possible.
     bool shouldInsertHiddenNodes = false;
-    for (Node* child = node->firstChild(); child; child = child->nextSibling()) {
-        if (!child->layoutObject() && isNodeAriaVisible(child)) {
+    for (Node& child : NodeTraversal::childrenOf(*node)) {
+        if (!child.layoutObject() && isNodeAriaVisible(&child)) {
             shouldInsertHiddenNodes = true;
             break;
         }
@@ -2175,31 +2175,28 @@ void AXLayoutObject::addHiddenChildren()
     // Iterate through all of the children, including those that may have already been added, and
     // try to insert hidden nodes in the correct place in the DOM order.
     unsigned insertionIndex = 0;
-    for (Node* child = node->firstChild(); child; child = child->nextSibling()) {
-        if (child->layoutObject()) {
+    for (Node& child : NodeTraversal::childrenOf(*node)) {
+        if (child.layoutObject()) {
             // Find out where the last layout sibling is located within m_children.
-            AXObject* childObject = axObjectCache()->get(child->layoutObject());
-            if (childObject && childObject->accessibilityIsIgnored()) {
-                const AccessibilityChildrenVector& children = childObject->children();
-                if (children.size())
-                    childObject = children.last().get();
-                else
-                    childObject = 0;
+            if (AXObject* childObject = axObjectCache()->get(child.layoutObject())) {
+                if (childObject->accessibilityIsIgnored()) {
+                    const AccessibilityChildrenVector& children = childObject->children();
+                    childObject = children.size() ? children.last().get() : 0;
+                }
+                if (childObject)
+                    insertionIndex = m_children.find(childObject) + 1;
+                continue;
             }
-
-            if (childObject)
-                insertionIndex = m_children.find(childObject) + 1;
-            continue;
         }
 
-        if (!isNodeAriaVisible(child))
+        if (!isNodeAriaVisible(&child))
             continue;
 
         unsigned previousSize = m_children.size();
         if (insertionIndex > previousSize)
             insertionIndex = previousSize;
 
-        insertChild(axObjectCache()->getOrCreate(child), insertionIndex);
+        insertChild(axObjectCache()->getOrCreate(&child), insertionIndex);
         insertionIndex += (m_children.size() - previousSize);
     }
 }
