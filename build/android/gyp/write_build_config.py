@@ -139,6 +139,9 @@ def main(argv):
 
   direct_resources_deps = DepsOfType('android_resources', direct_deps_configs)
   all_resources_deps = DepsOfType('android_resources', all_deps_configs)
+  # Resources should be ordered with the highest-level dependency first so that
+  # overrides are done correctly.
+  all_resources_deps.reverse()
 
   # Initialize some common config.
   config = {

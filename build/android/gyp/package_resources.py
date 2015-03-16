@@ -100,11 +100,11 @@ def PackageArgsForExtractedZip(d):
   multiple targets. If it is multiple targets merged into one, the actual
   resource directories will be contained in the subdirectories 0, 1, 2, ...
   """
-  res_dirs = []
   subdirs = [os.path.join(d, s) for s in os.listdir(d)]
-  subdirs = sorted([s for s in subdirs if os.path.isdir(s)])
-  if subdirs and os.path.basename(subdirs[0]) == '0':
-    res_dirs = subdirs
+  subdirs = [s for s in subdirs if os.path.isdir(s)]
+  is_multi = '0' in [os.path.basename(s) for s in subdirs]
+  if is_multi:
+    res_dirs = sorted(subdirs, key=lambda p : int(os.path.basename(p)))
   else:
     res_dirs = [d]
   package_command = []
