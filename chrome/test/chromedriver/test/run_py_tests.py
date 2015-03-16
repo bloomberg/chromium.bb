@@ -157,6 +157,7 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'PerformanceLoggerTest.testPerformanceLogger',
         'ChromeDriverTest.testShadowDom*',
         # WebView doesn't support emulating network conditions.
+        'ChromeDriverTest.testEmulateNetworkConditions',
         'ChromeDriverTest.testEmulateNetworkConditionsOffline',
     ]
 )
