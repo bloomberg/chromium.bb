@@ -163,6 +163,22 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
   if (options->HasKey(constants::kOnEventKey))
     options->Remove(constants::kOnEventKey, NULL);
 
+  // Get the volume, pitch, and rate, but only if they weren't already in
+  // the options. TODO(dmazzoni): these shouldn't be redundant.
+  // http://crbug.com/463264
+  if (!options->HasKey(constants::kRateKey)) {
+    options->SetDouble(constants::kRateKey,
+                       utterance->continuous_parameters().rate);
+  }
+  if (!options->HasKey(constants::kPitchKey)) {
+    options->SetDouble(constants::kPitchKey,
+                       utterance->continuous_parameters().pitch);
+  }
+  if (!options->HasKey(constants::kVolumeKey)) {
+    options->SetDouble(constants::kVolumeKey,
+                       utterance->continuous_parameters().volume);
+  }
+
   // Add the voice name and language to the options if they're not
   // already there, since they might have been picked by the TTS controller
   // rather than directly by the client that requested the speech.
@@ -173,6 +189,9 @@ void TtsExtensionEngine::Speak(Utterance* utterance,
 
   args->Append(options.release());
   args->AppendInteger(utterance->id());
+
+  std::string json;
+  base::JSONWriter::Write(args.get(), &json);
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       tts_engine_events::kOnSpeak, args.Pass()));
