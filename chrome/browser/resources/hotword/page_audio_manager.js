@@ -454,8 +454,10 @@ cr.define('hotword', function() {
     statusDone_: function(tab, sendResponse, hotwordStatus) {
       var response = {'doNotShowOptinMessage': true};
 
+      // If always-on is available, then we do not show the promo, as the promo
+      // only works with the sometimes-on pref.
       if (!tab.incognito && hotwordStatus.available &&
-          !hotwordStatus.enabledSet) {
+          !hotwordStatus.enabledSet && !hotwordStatus.alwaysOnAvailable) {
         response = hotwordStatus;
       }
 

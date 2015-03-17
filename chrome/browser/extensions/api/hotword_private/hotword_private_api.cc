@@ -151,12 +151,15 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
       HotwordServiceFactory::GetForProfile(GetProfile());
   if (!hotword_service) {
     result.available = false;
+    result.always_on_available = false;
     result.enabled = false;
     result.audio_logging_enabled = false;
     result.always_on_enabled = false;
     result.user_is_active = false;
   } else {
     result.available = hotword_service->IsServiceAvailable();
+    result.always_on_available =
+        HotwordServiceFactory::IsAlwaysOnAvailable();
     result.enabled = hotword_service->IsSometimesOnEnabled();
     result.audio_logging_enabled = hotword_service->IsOptedIntoAudioLogging();
     result.training_enabled = hotword_service->IsTraining();

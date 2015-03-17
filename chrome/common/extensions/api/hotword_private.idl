@@ -23,6 +23,9 @@ namespace hotwordPrivate {
     // Whether the hotword extension is available to be enabled
     boolean available;
 
+    // Whether always-on is available to be enabled
+    boolean alwaysOnAvailable;
+
     // Whether the sound of "Ok, Google" plus a few seconds before is sent
     // back to Google.
     boolean audioLoggingEnabled;
