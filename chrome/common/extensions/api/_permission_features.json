@@ -491,6 +491,7 @@
     "whitelist": [
       "8CE39F175D076AD6BDF7CBF418F2409558B367E3",  // hotword_helper
       "09FDCB5851B8F3378DB630D06E316076E89C95A6",  // hotword nacl
+      "62CCAAD339E6451BBF97C4BBDF758E934A05AD0B",  // hotword component
       "B6356EFF4047BC5F868C7D91868B6F5C01951A8A"   // hotword_audio_verification
     ]
   },
