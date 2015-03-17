@@ -2073,7 +2073,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   // un-antialiased quad should have and which vertex this is and the float
   // quad passed in via uniform is the actual geometry that gets used to draw
   // it. This is why this centered rect is used and not the original quad_rect.
-  gfx::RectF tile_rect = quad->visible_rect;
+  gfx::RectF tile_rect = quad->rect;
   GLC(gl_, gl_->UniformMatrix3fv(yuv_matrix_location, 1, 0, yuv_to_rgb));
   GLC(gl_, gl_->Uniform3fv(yuv_adj_location, 1, yuv_adjust));
 
