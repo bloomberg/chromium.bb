@@ -1024,10 +1024,13 @@ def CMDcollect(parser, args):
     parser.error('Only use one of task id or --json.')
 
   if options.json:
-    with open(options.json) as f:
-      tasks = sorted(
-          json.load(f)['tasks'].itervalues(), key=lambda x: x['shard_index'])
-      args = [t['task_id'] for t in tasks]
+    try:
+      with open(options.json) as f:
+        tasks = sorted(
+            json.load(f)['tasks'].itervalues(), key=lambda x: x['shard_index'])
+        args = [t['task_id'] for t in tasks]
+    except (KeyError, IOError, ValueError):
+      parser.error('Failed to parse %s' % options.json)
   else:
     valid = frozenset('0123456789abcdef')
     if any(not valid.issuperset(task_id) for task_id in args):
