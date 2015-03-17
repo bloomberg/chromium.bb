@@ -213,18 +213,6 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
   info->Set("basic_info", basic_info);
 
 #if defined(OS_WIN)
-  base::ListValue* perf_info = new base::ListValue();
-  perf_info->Append(NewDescriptionValuePair(
-      "Graphics",
-      base::StringPrintf("%.1f", gpu_info.performance_stats.graphics)));
-  perf_info->Append(NewDescriptionValuePair(
-      "Gaming",
-      base::StringPrintf("%.1f", gpu_info.performance_stats.gaming)));
-  perf_info->Append(NewDescriptionValuePair(
-      "Overall",
-      base::StringPrintf("%.1f", gpu_info.performance_stats.overall)));
-  info->Set("performance_info", perf_info);
-
   base::Value* dx_info = gpu_info.dx_diagnostics.children.size() ?
     DxDiagNodeToList(gpu_info.dx_diagnostics) :
     base::Value::CreateNullValue();

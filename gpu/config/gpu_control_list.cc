@@ -1204,18 +1204,6 @@ bool GpuControlList::GpuControlListEntry::Contains(
       !gl_reset_notification_strategy_info_->Contains(
           gpu_info.gl_reset_notification_strategy))
     return false;
-  if (perf_graphics_info_.get() != NULL &&
-      (gpu_info.performance_stats.graphics == 0.0 ||
-       !perf_graphics_info_->Contains(gpu_info.performance_stats.graphics)))
-    return false;
-  if (perf_gaming_info_.get() != NULL &&
-      (gpu_info.performance_stats.gaming == 0.0 ||
-       !perf_gaming_info_->Contains(gpu_info.performance_stats.gaming)))
-    return false;
-  if (perf_overall_info_.get() != NULL &&
-      (gpu_info.performance_stats.overall == 0.0 ||
-       !perf_overall_info_->Contains(gpu_info.performance_stats.overall)))
-    return false;
   if (!machine_model_name_list_.empty()) {
     if (gpu_info.machine_model_name.empty())
       return false;

@@ -16,7 +16,6 @@
 #include "base/version.h"
 #include "build/build_config.h"
 #include "gpu/config/dx_diag_node.h"
-#include "gpu/config/gpu_performance_stats.h"
 #include "gpu/gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -179,9 +178,6 @@ struct GPU_EXPORT GPUInfo {
   // The device semantics, i.e. whether the Vista and Windows 7 specific
   // semantics are available.
   bool can_lose_context;
-
-  // By default all values are 0.
-  GpuPerformanceStats performance_stats;
 
   bool software_rendering;
 

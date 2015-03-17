@@ -44,24 +44,21 @@
 // 12. "gl_vendor" is a string pattern.
 // 13. "gl_renderer" is a string pattern.
 // 14. "gl_extensions" is a string pattern.
-// 15. "perf_graphics" is a FLOAT structure (defined below).
-// 16. "perf_gaming" is a FLOAT structure (defined below).
-// 17. "perf_overall" is a FLOAT structure (defined below).
-// 18. "machine_model_name" is an array of string patterns.
-// 19. "machine_model_version" is a VERSION structure (defined below).
-// 20. "gpu_count" is a INT structure (defined below).
-// 21  "cpu_info" is a string pattern.
-// 22. "exceptions" is a list of entries.
-// 23. "features" is a list of gpu control list options, which can be
+// 15. "machine_model_name" is an array of string patterns.
+// 16. "machine_model_version" is a VERSION structure (defined below).
+// 17. "gpu_count" is a INT structure (defined below).
+// 18. "cpu_info" is a string pattern.
+// 19. "exceptions" is a list of entries.
+// 20. "features" is a list of gpu control list options, which can be
 //     configured by a specific list. See its *_json.cc file for a list of
 //     supported features. This field is mandatory.
-// 24. "description" has the description of the entry.
-// 25. "webkit_bugs" is an array of associated webkit bug numbers.
-// 26. "cr_bugs" is an array of associated webkit bug numbers.
-// 27. "disabled" is a boolean. If it is present, the entry will be skipped.
+// 21. "description" has the description of the entry.
+// 22. "webkit_bugs" is an array of associated webkit bug numbers.
+// 23. "cr_bugs" is an array of associated webkit bug numbers.
+// 24. "disabled" is a boolean. If it is present, the entry will be skipped.
 //     This can not be used in exceptions.
-// 28. "direct_rendering" is a boolean. If present, this will filter on whether
-// the GL contexts are direct or indirect based on the value.
+// 25. "direct_rendering" is a boolean. If present, this will filter on whether
+//     the GL contexts are direct or indirect based on the value.
 //
 // VERSION includes "op", "style", "value", and "value2".  "op" can be any of
 // the following values: "=", "<", "<=", ">", ">=", "any", "between".  "style"

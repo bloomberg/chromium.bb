@@ -75,11 +75,6 @@ void GPUMetricsProvider::ProvideSystemProfileMetrics(
   gpu->set_device_id(gpu_info.gpu.device_id);
   gpu->set_driver_version(gpu_info.driver_version);
   gpu->set_driver_date(gpu_info.driver_date);
-  SystemProfileProto::Hardware::Graphics::PerformanceStatistics*
-      gpu_performance = gpu->mutable_performance_statistics();
-  gpu_performance->set_graphics_score(gpu_info.performance_stats.graphics);
-  gpu_performance->set_gaming_score(gpu_info.performance_stats.gaming);
-  gpu_performance->set_overall_score(gpu_info.performance_stats.overall);
   gpu->set_gl_vendor(gpu_info.gl_vendor);
   gpu->set_gl_renderer(gpu_info.gl_renderer);
 

@@ -90,7 +90,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     std::string gl_ws_extensions;
     uint32 gl_reset_notification_strategy;
     bool can_lose_context;
-    GpuPerformanceStats performance_stats;
     bool software_rendering;
     bool direct_rendering;
     bool sandboxed;

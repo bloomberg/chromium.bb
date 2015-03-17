@@ -59,9 +59,6 @@ class GpuControlListEntryTest : public testing::Test {
     gpu_info_.gl_version = "2.1 NVIDIA-8.24.11 310.90.9b01";
     gpu_info_.gl_vendor = "NVIDIA Corporation";
     gpu_info_.gl_renderer = "NVIDIA GeForce GT 120 OpenGL Engine";
-    gpu_info_.performance_stats.graphics = 5.0;
-    gpu_info_.performance_stats.gaming = 5.0;
-    gpu_info_.performance_stats.overall = 5.0;
   }
 
  protected:
@@ -608,61 +605,6 @@ TEST_F(GpuControlListEntryTest, GlExtensionsEndWith) {
                            "GL_SGIX_shadow";
   EXPECT_FALSE(entry->Contains(
       GpuControlList::kOsMacosx, "10.9", gpu_info));
-}
-
-TEST_F(GpuControlListEntryTest, PerfGraphicsEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "perf_graphics": {
-          "op": "<",
-          "value": "6.0"
-        },
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_TRUE(entry->Contains(GpuControlList::kOsWin, "10.6", gpu_info()));
-}
-
-TEST_F(GpuControlListEntryTest, PerfGamingEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "perf_graphics": {
-          "op": "<=",
-          "value": "4.0"
-        },
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_FALSE(entry->Contains(GpuControlList::kOsWin, "10.6", gpu_info()));
-}
-
-TEST_F(GpuControlListEntryTest, PerfOverallEntry) {
-  const std::string json = LONG_STRING_CONST(
-      {
-        "id": 1,
-        "perf_overall": {
-          "op": "between",
-          "value": "1.0",
-          "value2": "9.0"
-        },
-        "features": [
-          "test_feature_0"
-        ]
-      }
-  );
-  ScopedEntry entry(GetEntryFromString(json));
-  EXPECT_TRUE(entry.get() != NULL);
-  EXPECT_TRUE(entry->Contains(GpuControlList::kOsWin, "10.6", gpu_info()));
 }
 
 TEST_F(GpuControlListEntryTest, DisabledEntry) {

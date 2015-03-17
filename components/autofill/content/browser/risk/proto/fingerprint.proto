@@ -51,14 +51,6 @@ message Fingerprint {
 
       // The driver date on the GPU.
       optional string driver_date = 4;
-
-      // The GPU performance statistics.
-      message PerformanceStatistics {
-        optional float graphics_score = 1;
-        optional float gaming_score = 2;
-        optional float overall_score = 3;
-      }
-      optional PerformanceStatistics performance_statistics = 5;
     }
 
     // Browser features that integrate with Risk.

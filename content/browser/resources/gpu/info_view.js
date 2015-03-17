@@ -152,7 +152,6 @@ cr.define('gpu', function() {
       var problemsList = this.querySelector('.problems-list');
       var workaroundsDiv = this.querySelector('.workarounds-div');
       var workaroundsList = this.querySelector('.workarounds-list');
-      var performanceDiv = this.querySelector('.performance-div');
       var gpuInfo = browserBridge.gpuInfo;
       var i;
       if (gpuInfo) {
@@ -222,13 +221,6 @@ cr.define('gpu', function() {
           this.setTable_('basic-info', gpuInfo.basic_info);
         else
           this.setTable_('basic-info', []);
-
-        if (gpuInfo.performance_info) {
-          performanceDiv.hidden = false;
-          this.setTable_('performance-info', gpuInfo.performance_info);
-        } else {
-          performanceDiv.hidden = true;
-        }
 
         if (gpuInfo.diagnostics) {
           diagnosticsDiv.hidden = false;

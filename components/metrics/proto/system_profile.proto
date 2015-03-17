@@ -157,16 +157,6 @@ message SystemProfileProto {
       // The driver date on the GPU.
       optional string driver_date = 4;
 
-      // The GPU performance statistics.
-      // See http://src.chromium.org/viewvc/chrome/trunk/src/content/public/common/gpu_performance_stats.h?view=markup
-      // for details.  Currently logged only on Windows.
-      message PerformanceStatistics {
-        optional float graphics_score = 1;
-        optional float gaming_score = 2;
-        optional float overall_score = 3;
-      }
-      optional PerformanceStatistics performance_statistics = 5;
-
       // The GL_VENDOR string. An example of a gl_vendor string is
       // "Imagination Technologies". "" if we are not using OpenGL.
       optional string gl_vendor = 6;

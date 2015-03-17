@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "9.19",
+  "version": "10.0",
   "entries": [
     {
       "id": 1,
@@ -333,32 +333,6 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       "gl_vendor": "(?i)nouveau.*",
       "features": [
         "all"
-      ]
-    },
-    {
-      "id": 32,
-      "description": "Accelerated 2d canvas is disabled on Windows systems with low perf stats",
-      "cr_bugs": [116350, 151500],
-      "os": {
-        "type": "win"
-      },
-      "perf_overall": {
-        "op": "<",
-        "value": "3.5"
-      },
-      "exceptions": [
-        {
-          "perf_gaming": {
-            "op": ">",
-            "value": "3.5"
-          }
-        },
-        {
-          "cpu_info": "(?i).*Atom.*"
-        }
-      ],
-      "features": [
-        "accelerated_2d_canvas"
       ]
     },
     {

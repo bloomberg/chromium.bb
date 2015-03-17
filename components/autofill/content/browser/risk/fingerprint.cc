@@ -172,12 +172,6 @@ void AddGpuInfoToFingerprint(Fingerprint::MachineCharacteristics* machine,
   graphics->set_device_id(gpu_info.gpu.device_id);
   graphics->set_driver_version(gpu_info.driver_version);
   graphics->set_driver_date(gpu_info.driver_date);
-
-  Fingerprint::MachineCharacteristics::Graphics::PerformanceStatistics*
-      gpu_performance = graphics->mutable_performance_statistics();
-  gpu_performance->set_graphics_score(gpu_info.performance_stats.graphics);
-  gpu_performance->set_gaming_score(gpu_info.performance_stats.gaming);
-  gpu_performance->set_overall_score(gpu_info.performance_stats.overall);
 }
 
 // Waits for all asynchronous data required for the fingerprint to be loaded,

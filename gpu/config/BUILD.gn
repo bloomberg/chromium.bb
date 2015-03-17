@@ -35,7 +35,6 @@ source_set("config") {
     "gpu_info_collector_ozone.cc",
     "gpu_info_collector_win.cc",
     "gpu_info_collector_x11.cc",
-    "gpu_performance_stats.h",
     "gpu_test_config.cc",
     "gpu_test_config.h",
     "gpu_test_expectations_parser.cc",

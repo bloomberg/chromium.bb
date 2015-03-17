@@ -63,116 +63,6 @@ float ReadXMLFloatValue(XmlReader* reader) {
   return static_cast<float>(score);
 }
 
-GpuPerformanceStats RetrieveGpuPerformanceStats() {
-  TRACE_EVENT0("gpu", "RetrieveGpuPerformanceStats");
-
-  // If the user re-runs the assessment without restarting, the COM API
-  // returns WINSAT_ASSESSMENT_STATE_NOT_AVAILABLE. Because of that and
-  // http://crbug.com/124325, read the assessment result files directly.
-  GpuPerformanceStats stats;
-
-  // Get path to WinSAT results files.
-  wchar_t winsat_results_path[MAX_PATH];
-  DWORD size = ExpandEnvironmentStrings(
-      L"%WinDir%\\Performance\\WinSAT\\DataStore\\",
-      winsat_results_path, MAX_PATH);
-  if (size == 0 || size > MAX_PATH) {
-    LOG(ERROR) << "The path to the WinSAT results is too long: "
-               << size << " chars.";
-    return stats;
-  }
-
-  // Find most recent formal assessment results.
-  base::FileEnumerator file_enumerator(
-      base::FilePath(winsat_results_path),
-      false,  // not recursive
-      base::FileEnumerator::FILES,
-      FILE_PATH_LITERAL("* * Formal.Assessment (*).WinSAT.xml"));
-
-  base::FilePath current_results;
-  for (base::FilePath results = file_enumerator.Next(); !results.empty();
-       results = file_enumerator.Next()) {
-    // The filenames start with the date and time as yyyy-mm-dd hh.mm.ss.xxx,
-    // so the greatest file lexicographically is also the most recent file.
-    if (base::FilePath::CompareLessIgnoreCase(current_results.value(),
-                                              results.value()))
-      current_results = results;
-  }
-
-  std::string current_results_string = current_results.MaybeAsASCII();
-  if (current_results_string.empty())
-    return stats;
-
-  // Get relevant scores from results file. XML schema at:
-  // http://msdn.microsoft.com/en-us/library/windows/desktop/aa969210.aspx
-  XmlReader reader;
-  if (!reader.LoadFile(current_results_string)) {
-    LOG(ERROR) << "Could not open WinSAT results file.";
-    return stats;
-  }
-  // Descend into <WinSAT> root element.
-  if (!reader.SkipToElement() || !reader.Read()) {
-    LOG(ERROR) << "Could not read WinSAT results file.";
-    return stats;
-  }
-
-  // Search for <WinSPR> element containing the results.
-  do {
-    if (reader.NodeName() == "WinSPR")
-      break;
-  } while (reader.Next());
-  // Descend into <WinSPR> element.
-  if (!reader.Read()) {
-    LOG(ERROR) << "Could not find WinSPR element in results file.";
-    return stats;
-  }
-
-  // Read scores.
-  for (int depth = reader.Depth(); reader.Depth() == depth; reader.Next()) {
-    std::string node_name = reader.NodeName();
-    if (node_name == "SystemScore")
-      stats.overall = ReadXMLFloatValue(&reader);
-    else if (node_name == "GraphicsScore")
-      stats.graphics = ReadXMLFloatValue(&reader);
-    else if (node_name == "GamingScore")
-      stats.gaming = ReadXMLFloatValue(&reader);
-  }
-
-  if (stats.overall == 0.0)
-    LOG(ERROR) << "Could not read overall score from assessment results.";
-  if (stats.graphics == 0.0)
-    LOG(ERROR) << "Could not read graphics score from assessment results.";
-  if (stats.gaming == 0.0)
-    LOG(ERROR) << "Could not read gaming score from assessment results.";
-
-  return stats;
-}
-
-GpuPerformanceStats RetrieveGpuPerformanceStatsWithHistograms() {
-  base::TimeTicks start_time = base::TimeTicks::Now();
-
-  GpuPerformanceStats stats = RetrieveGpuPerformanceStats();
-
-  UMA_HISTOGRAM_TIMES("GPU.WinSAT.ReadResultsFileTime",
-                      base::TimeTicks::Now() - start_time);
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "GPU.WinSAT.OverallScore2",
-      static_cast<base::HistogramBase::Sample>(stats.overall * 10), 10, 200,
-      50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "GPU.WinSAT.GraphicsScore2",
-      static_cast<base::HistogramBase::Sample>(stats.graphics * 10), 10, 200,
-      50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "GPU.WinSAT.GamingScore2",
-      static_cast<base::HistogramBase::Sample>(stats.gaming * 10), 10, 200, 50);
-  UMA_HISTOGRAM_BOOLEAN(
-      "GPU.WinSAT.HasResults",
-      stats.overall != 0.0 && stats.graphics != 0.0 && stats.gaming != 0.0);
-
-  return stats;
-}
-
 // Returns the display link driver version or an invalid version if it is
 // not installed.
 Version DisplayLinkVersion() {
@@ -504,8 +394,6 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectPreliminaryGraphicsInfo");
 
   DCHECK(gpu_info);
-
-  gpu_info->performance_stats = RetrieveGpuPerformanceStatsWithHistograms();
 
   // nvd3d9wrap.dll is loaded into all processes when Optimus is enabled.
   HMODULE nvd3d9wrap = GetModuleHandleW(L"nvd3d9wrap.dll");
