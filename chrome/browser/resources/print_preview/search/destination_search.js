@@ -481,14 +481,14 @@ cr.define('print_preview', function() {
       if (invitation.asGroupManager) {
         invitationText = loadTimeData.getStringF(
             'groupPrinterSharingInviteText',
-            invitation.sender,
-            invitation.destination.displayName,
-            invitation.receiver);
+            HTMLEscape(invitation.sender),
+            HTMLEscape(invitation.destination.displayName),
+            HTMLEscape(invitation.receiver));
       } else {
         invitationText = loadTimeData.getStringF(
             'printerSharingInviteText',
-            invitation.sender,
-            invitation.destination.displayName);
+            HTMLEscape(invitation.sender),
+            HTMLEscape(invitation.destination.displayName));
       }
       this.getChildElement('.invitation-text').innerHTML = invitationText;
 
