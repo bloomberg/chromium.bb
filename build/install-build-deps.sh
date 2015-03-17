@@ -136,8 +136,16 @@ dbg_list="libatk1.0-dbg libc6-dbg libcairo2-dbg libfontconfig1-dbg
           libpixman-1-0-dbg libsqlite3-0-dbg libx11-6-dbg libxau6-dbg
           libxcb1-dbg libxcomposite1-dbg libxcursor1-dbg libxdamage1-dbg
           libxdmcp6-dbg libxext6-dbg libxfixes3-dbg libxi6-dbg libxinerama1-dbg
-          libxrandr2-dbg libxrender1-dbg libxtst6-dbg zlib1g-dbg
-          libstdc++6-4.6-dbg"
+          libxrandr2-dbg libxrender1-dbg libxtst6-dbg zlib1g-dbg"
+
+# Find the proper version of libstdc++6-4.x-dbg.
+if [ "x$lsb_release" = "xprecise" ]; then
+  dbg_list="${dbg_list} libstdc++6-4.6-dbg"
+elif [ "x$lsb_release" = "xtrusty" ]; then
+  dbg_list="${dbg_list} libstdc++6-4.8-dbg"
+else
+  dbg_list="${dbg_list} libstdc++6-4.9-dbg"
+fi
 
 # 32-bit libraries needed e.g. to compile V8 snapshot for Android or armhf
 lib32_list="linux-libc-dev:i386"
