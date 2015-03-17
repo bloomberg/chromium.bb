@@ -314,7 +314,8 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setBorderImageOutset(animatableValueToBorderImageLengthBox(value, state));
         return;
     case CSSPropertyBorderImageSlice:
-        style->setBorderImageSlices(animatableValueToLengthBox(value, state, ValueRangeNonNegative));
+        style->setBorderImageSlices(animatableValueToLengthBox(toAnimatableLengthBoxAndBool(value)->box(), state, ValueRangeNonNegative));
+        style->setBorderImageSlicesFill(toAnimatableLengthBoxAndBool(value)->flag());
         return;
     case CSSPropertyBorderImageSource:
         style->setBorderImageSource(state.styleImage(property, toAnimatableImage(value)->toCSSValue()));

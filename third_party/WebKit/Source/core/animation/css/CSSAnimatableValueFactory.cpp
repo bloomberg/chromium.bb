@@ -333,7 +333,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
     case CSSPropertyBorderImageOutset:
         return createFromBorderImageLengthBox(style.borderImageOutset(), style);
     case CSSPropertyBorderImageSlice:
-        return createFromLengthBox(style.borderImageSlices(), style);
+        return createFromLengthBoxAndBool(style.borderImageSlices(), style.borderImageSlicesFill(), style);
     case CSSPropertyBorderImageSource:
         return createFromStyleImage(style.borderImageSource());
     case CSSPropertyBorderImageWidth:

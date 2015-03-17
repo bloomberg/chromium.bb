@@ -44,6 +44,11 @@ public:
     }
     Length length(float zoom, ValueRange) const;
 
+    bool hasSameUnits(const AnimatableLength* other) const
+    {
+        return m_hasPixels == other->m_hasPixels && m_hasPercent == other->m_hasPercent;
+    }
+
     DEFINE_INLINE_VIRTUAL_TRACE() { AnimatableValue::trace(visitor); }
 
 protected:

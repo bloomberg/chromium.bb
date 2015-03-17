@@ -1657,6 +1657,13 @@ void LayoutStyle::setBorderImageSlices(const LengthBox& slices)
     surround.access()->border.m_image.setImageSlices(slices);
 }
 
+void LayoutStyle::setBorderImageSlicesFill(bool fill)
+{
+    if (surround->border.m_image.fill() == fill)
+        return;
+    surround.access()->border.m_image.setFill(fill);
+}
+
 void LayoutStyle::setBorderImageWidth(const BorderImageLengthBox& slices)
 {
     if (surround->border.m_image.borderSlices() == slices)

@@ -488,6 +488,7 @@ public:
     const NinePieceImage& borderImage() const { return surround->border.image(); }
     StyleImage* borderImageSource() const { return surround->border.image().image(); }
     const LengthBox& borderImageSlices() const { return surround->border.image().imageSlices(); }
+    bool borderImageSlicesFill() const { return surround->border.image().fill(); }
     const BorderImageLengthBox& borderImageWidth() const { return surround->border.image().borderSlices(); }
     const BorderImageLengthBox& borderImageOutset() const { return surround->border.image().outset(); }
 
@@ -1010,6 +1011,7 @@ public:
     void setBorderImage(const NinePieceImage& b) { SET_VAR(surround, border.m_image, b); }
     void setBorderImageSource(PassRefPtr<StyleImage>);
     void setBorderImageSlices(const LengthBox&);
+    void setBorderImageSlicesFill(bool);
     void setBorderImageWidth(const BorderImageLengthBox&);
     void setBorderImageOutset(const BorderImageLengthBox&);
 
