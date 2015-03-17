@@ -243,11 +243,7 @@ group("gn_all") {
       "//base:protect_file_posix",
       "//base:build_utf8_validator_tables",
       "//breakpad:core-2-minidump",
-      "//breakpad:dump_syms",
-      "//breakpad:microdump_stackwalk",
       "//breakpad:minidump-2-core",
-      "//breakpad:minidump_dump",
-      "//breakpad:minidump_stackwalk",
       "//build/sanitizers:copy_llvm_symbolizer",
       "//cc/blink:cc_blink_unittests",
       "//cc:cc_perftests",
@@ -333,6 +329,16 @@ group("gn_all") {
       "//third_party/sqlite:sqlite_shell",
       "//ui/compositor:compositor_unittests",
     ]
+
+    if (current_toolchain == host_toolchain) {
+      # Do not build the breakpad utilities in cross-compiles.
+      deps += [
+        "//breakpad:dump_syms",
+        "//breakpad:microdump_stackwalk",
+        "//breakpad:minidump_dump",
+        "//breakpad:minidump_stackwalk",
+      ]
+    }
 
     if (enable_extensions) {
       deps += [ "//extensions/shell:app_shell" ]
@@ -514,7 +520,6 @@ group("gn_only") {
       "//ui/display/types",
       "//ui/shell_dialogs:shell_dialogs_unittests",
       "//ui/views/examples:views_examples_exe",
-      "//v8:d8",
     ]
     if (enable_nacl) {
       deps += [ "//native_client/src/trusted/service_runtime:sel_ldr" ]
@@ -524,6 +529,10 @@ group("gn_only") {
     }
     if (is_android) {
       deps += [ "//build/android/gyp/test:hello_world" ]
+    }
+
+    if (is_linux && current_toolchain == host_toolchain) {
+      deps += [ "//v8:d8" ]
     }
   }
 }
