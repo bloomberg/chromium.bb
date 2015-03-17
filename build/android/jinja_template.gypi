@@ -45,6 +45,7 @@
         'jinja_output%': '',
         'jinja_outputs_zip%': '',
         'jinja_inputs_base_dir%': '',
+        'jinja_includes%': [],
         'jinja_variables%': [],
         'jinja_args': [],
       },
@@ -52,6 +53,7 @@
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/jinja_template.py',
         '<@(jinja_inputs)',
+        '<@(jinja_includes)',
       ],
       'conditions': [
         ['jinja_output != ""', {

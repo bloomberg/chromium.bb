@@ -18,18 +18,31 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../../third_party'))
 import jinja2  # pylint: disable=F0401
 
 
-def ProcessFile(input_filename, output_filename, variables):
-  with codecs.open(input_filename, 'r', 'utf-8') as input_file:
-    input_ = input_file.read()
-  env = jinja2.Environment(undefined=jinja2.StrictUndefined)
-  template = env.from_string(input_)
-  template.filename = os.path.abspath(input_filename)
+class RecordingFileSystemLoader(jinja2.FileSystemLoader):
+  '''A FileSystemLoader that stores a list of loaded templates.'''
+  def __init__(self, searchpath):
+    jinja2.FileSystemLoader.__init__(self, searchpath)
+    self.loaded_templates = set()
+
+  def get_source(self, environment, template):
+    contents, filename, uptodate = jinja2.FileSystemLoader.get_source(
+        self, environment, template)
+    self.loaded_templates.add(os.path.relpath(filename))
+    return contents, filename, uptodate
+
+  def get_loaded_templates(self):
+    return list(self.loaded_templates)
+
+
+def ProcessFile(env, input_filename, output_filename, variables):
+  input_rel_path = os.path.relpath(input_filename, build_utils.CHROMIUM_SRC)
+  template = env.get_template(input_rel_path)
   output = template.render(variables)
   with codecs.open(output_filename, 'w', 'utf-8') as output_file:
     output_file.write(output)
 
 
-def ProcessFiles(input_filenames, inputs_base_dir, outputs_zip, variables):
+def ProcessFiles(env, input_filenames, inputs_base_dir, outputs_zip, variables):
   with build_utils.TempDir() as temp_dir:
     for input_filename in input_filenames:
       relpath = os.path.relpath(os.path.abspath(input_filename),
@@ -41,7 +54,7 @@ def ProcessFiles(input_filenames, inputs_base_dir, outputs_zip, variables):
       output_filename = os.path.join(temp_dir, relpath)
       parent_dir = os.path.dirname(output_filename)
       build_utils.MakeDirectory(parent_dir)
-      ProcessFile(input_filename, output_filename, variables)
+      ProcessFile(env, input_filename, output_filename, variables)
 
     build_utils.ZipDir(outputs_zip, temp_dir)
 
@@ -82,14 +95,17 @@ def main():
     name, _, value = v.partition('=')
     variables[name] = value
 
+  loader = RecordingFileSystemLoader(build_utils.CHROMIUM_SRC)
+  env = jinja2.Environment(loader=loader, undefined=jinja2.StrictUndefined,
+                           line_comment_prefix='##')
   if options.output:
-    ProcessFile(inputs[0], options.output, variables)
+    ProcessFile(env, inputs[0], options.output, variables)
   else:
-    ProcessFiles(inputs, options.inputs_base_dir, options.outputs_zip,
+    ProcessFiles(env, inputs, options.inputs_base_dir, options.outputs_zip,
                  variables)
 
   if options.depfile:
-    deps = inputs + build_utils.GetPythonDependencies()
+    deps = loader.get_loaded_templates() + build_utils.GetPythonDependencies()
     build_utils.WriteDepfile(options.depfile, deps)
 
 
