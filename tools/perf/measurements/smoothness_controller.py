@@ -44,7 +44,7 @@ class SmoothnessController(object):
     # Start the smooth marker for all smooth actions.
     runner = action_runner.ActionRunner(tab)
     self._interaction = runner.BeginInteraction(
-        RUN_SMOOTH_ACTIONS, is_smooth=True)
+        RUN_SMOOTH_ACTIONS)
 
   def Stop(self, tab):
     # End the smooth marker for  all smooth actions.
@@ -71,7 +71,7 @@ class SmoothnessController(object):
           'SmoothnessController cannot issue more than 1 %s record' %
           RUN_SMOOTH_ACTIONS)
         run_smooth_actions_record = r
-      elif r.is_smooth:
+      else:
         smooth_records.append(
           smooth_gesture_util.GetAdjustedInteractionIfContainGesture(
             self._timeline_model, r))

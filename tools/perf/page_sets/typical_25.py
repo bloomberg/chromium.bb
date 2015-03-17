@@ -17,7 +17,7 @@ class Typical25Page(page_module.Page):
     if self._run_no_page_interactions:
       return
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage()
     interaction.End()
 

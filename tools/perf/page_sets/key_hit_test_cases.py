@@ -34,7 +34,7 @@ class PaperCalculatorHitTest(KeyHitTestCasesPage):
 
   def TapButton(self, action_runner):
     interaction = action_runner.BeginInteraction(
-        'Action_TapAction', is_smooth=True)
+        'Action_TapAction')
     action_runner.TapElement(element_function='''
         document.querySelector(
             'body /deep/ #outerPanels'

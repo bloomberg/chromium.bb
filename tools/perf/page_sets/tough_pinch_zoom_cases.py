@@ -16,7 +16,7 @@ class ToughPinchZoomCasesPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'PinchAction', is_smooth=True)
+        'PinchAction')
     action_runner.PinchPage()
     interaction.End()
 
@@ -70,7 +70,7 @@ class GoogleCalendarPage(ToughPinchZoomCasesPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'PinchAction', is_smooth=True)
+        'PinchAction')
     action_runner.PinchPage(left_anchor_ratio=0.1, top_anchor_ratio=0.3)
     interaction.End()
 
@@ -104,7 +104,7 @@ class GooglePlusPage(ToughPinchZoomCasesPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'PinchAction', is_smooth=True)
+        'PinchAction')
     action_runner.PinchElement(selector='[id="110031535020051778989-tab-bar"]')
     interaction.End()
 
@@ -235,7 +235,7 @@ class YahooAnswersPage(ToughPinchZoomCasesPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'PinchAction', is_smooth=True)
+        'PinchAction')
     action_runner.PinchElement(selector='#ya-content-apps')
     interaction.End()
 

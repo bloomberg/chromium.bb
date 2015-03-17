@@ -48,22 +48,22 @@ class GoogleSearchPage(MobileMemoryPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage()
     interaction.End()
     action_runner.Wait(3)
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage()
     interaction.End()
     action_runner.Wait(3)
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage()
     interaction.End()
     action_runner.Wait(3)
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage()
     interaction.End()
     action_runner.WaitForJavaScriptCondition(
@@ -77,7 +77,7 @@ class ScrollPage(MobileMemoryPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage()
     interaction.End()
 

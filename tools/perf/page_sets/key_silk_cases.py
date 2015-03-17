@@ -36,7 +36,7 @@ class KeySilkCasesPage(page_module.Page):
     Override this to define custom actions to be run after navigate steps.
     """
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage()
     interaction.End()
 
@@ -52,7 +52,7 @@ class Page1(KeySilkCasesPage):
 
   def PerformPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(selector='#scrollable')
     interaction.End()
 
@@ -85,7 +85,7 @@ class Page3(KeySilkCasesPage):
 
   def PerformPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(selector='#container')
     interaction.End()
 
@@ -292,7 +292,7 @@ class Page16(KeySilkCasesPage):
 
   def SwipeToDismiss(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'SwipeAction', is_smooth=True)
+        'SwipeAction')
     action_runner.SwipeElement(
         left_start_ratio=0.8, top_start_ratio=0.2,
         direction='left', distance=400, speed_in_pixels_per_second=5000,
@@ -315,17 +315,17 @@ class Page17(KeySilkCasesPage):
 
   def StressHideyBars(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(
         selector='#messages', direction='down', speed_in_pixels_per_second=200)
     interaction.End()
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(
         selector='#messages', direction='up', speed_in_pixels_per_second=200)
     interaction.End()
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(
         selector='#messages', direction='down', speed_in_pixels_per_second=200)
     interaction.End()
@@ -344,7 +344,7 @@ class Page18(KeySilkCasesPage):
 
   def ToggleDrawer(self, action_runner):
     interaction = action_runner.BeginInteraction(
-        'Action_TapAction', is_smooth=True)
+        'Action_TapAction')
     action_runner.TapElement('#menu-button')
     action_runner.Wait(1)
     interaction.End()
@@ -359,11 +359,11 @@ class Page19(KeySilkCasesPage):
 
   def ToggleDrawer(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'TapAction', is_smooth=True)
+        'TapAction')
     action_runner.TapElement('#menu-button')
     interaction.End()
 
-    interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
+    interaction = action_runner.BeginInteraction('Wait')
     action_runner.WaitForJavaScriptCondition('''
         document.getElementById("nav-drawer").active &&
         document.getElementById("nav-drawer").children[0]
@@ -380,7 +380,7 @@ class Page19(KeySilkCasesPage):
 
   def SlideDrawer(self, action_runner):
     interaction = action_runner.BeginInteraction(
-        'Action_SwipeAction', is_smooth=True)
+        'Action_SwipeAction')
     action_runner.SwipeElement(
         left_start_ratio=0.8, top_start_ratio=0.2,
         direction='left', distance=200,
@@ -401,7 +401,7 @@ class Page20(KeySilkCasesPage):
 
   def PerformPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(
         selector='#container', speed_in_pixels_per_second=5000)
     interaction.End()
@@ -417,7 +417,7 @@ class GwsExpansionPage(KeySilkCasesPage):
   def ExpandKnowledgeCard(self, action_runner):
     # expand card
     interaction = action_runner.BeginInteraction(
-        'Action_TapAction', is_smooth=True)
+        'Action_TapAction')
     action_runner.TapElement(
         element_function='document.getElementsByClassName("vk_arc")[0]')
     action_runner.Wait(2)
@@ -477,7 +477,7 @@ class Page22(KeySilkCasesPage):
 
   def PerformPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(selector='#mainContent')
     interaction.End()
 
@@ -496,13 +496,13 @@ class Page23(KeySilkCasesPage):
 
   def PerformPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage(
         distance_expr='window.innerHeight / 2',
         direction='down',
         use_touch=True)
     interaction.End()
-    interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
+    interaction = action_runner.BeginInteraction('Wait')
     action_runner.Wait(1)
     interaction.End()
 
@@ -526,7 +526,7 @@ class Page24(KeySilkCasesPage):
 
   def PerformPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(
         element_function='document.getElementById(":5")',
         distance=2500,
@@ -549,12 +549,12 @@ class Page25(KeySilkCasesPage):
 
   def PerformPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'SwipeAction', is_smooth=True)
+        'SwipeAction')
     action_runner.SwipeElement(
         direction='left', distance=100,
         element_function='document.getElementById(":f")')
     interaction.End()
-    interaction = action_runner.BeginInteraction('Wait', is_smooth=True)
+    interaction = action_runner.BeginInteraction('Wait')
     action_runner.Wait(1)
     interaction.End()
 
@@ -576,7 +576,7 @@ class Page26(KeySilkCasesPage):
 
   def PerformPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage(distance=5000)
     interaction.End()
 
@@ -601,7 +601,7 @@ class SVGIconRaster(KeySilkCasesPage):
       button_func = ('document.getElementById("demo").$.'
                      'buttons.children[%d]') % i
       interaction = action_runner.BeginInteraction(
-            'Action_TapAction', is_smooth=True)
+            'Action_TapAction')
       action_runner.TapElement(element_function=button_func)
       action_runner.Wait(1)
       interaction.End()
@@ -627,8 +627,7 @@ class UpdateHistoryState(KeySilkCasesPage):
         'window.__history_state_loaded == true;')
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginInteraction('animation_interaction',
-        is_smooth=True)
+    interaction = action_runner.BeginInteraction('animation_interaction')
     action_runner.Wait(5) # JS runs the animation continuously on the page
     interaction.End()
 
@@ -643,8 +642,7 @@ class SilkFinance(KeySilkCasesPage):
       page_set=page_set, run_no_page_interactions=run_no_page_interactions)
 
   def PerformPageInteractions(self, action_runner):
-    interaction = action_runner.BeginInteraction('animation_interaction',
-        is_smooth=True)
+    interaction = action_runner.BeginInteraction('animation_interaction')
     action_runner.Wait(10) # animation runs automatically
     interaction.End()
 

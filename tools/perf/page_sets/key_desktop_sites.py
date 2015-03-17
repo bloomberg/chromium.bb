@@ -14,7 +14,7 @@ class KeyDesktopSitesPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage()
     interaction.End()
 
@@ -46,7 +46,7 @@ class GmailPage(KeyDesktopSitesPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage()
     interaction.End()
     action_runner.WaitForJavaScriptCondition(
@@ -83,7 +83,7 @@ class GoogleDrivePage(KeyDesktopSitesPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage()
     interaction.End()
     action_runner.WaitForJavaScriptCondition(
@@ -106,7 +106,7 @@ class GoogleDocPage(KeyDesktopSitesPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage()
     interaction.End()
     action_runner.WaitForJavaScriptCondition(

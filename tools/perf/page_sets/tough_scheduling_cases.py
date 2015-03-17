@@ -15,7 +15,7 @@ class ToughSchedulingCasesPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage()
     interaction.End()
 
@@ -309,7 +309,7 @@ class Page20(ToughSchedulingCasesPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(
         selector='#card',
         use_touch=True,
@@ -340,12 +340,12 @@ class EmptyTouchHandlerPage(ToughSchedulingCasesPage):
   def RunPageInteractions(self, action_runner):
     if self.bounce:
       interaction = action_runner.BeginGestureInteraction(
-          'ScrollBounceAction', is_smooth=True)
+          'ScrollBounceAction')
       action_runner.ScrollBouncePage()
       interaction.End()
     else:
       interaction = action_runner.BeginGestureInteraction(
-          'ScrollAction', is_smooth=True)
+          'ScrollAction')
       # Speed and distance are tuned to run exactly as long as a scroll
       # bounce.
       action_runner.ScrollPage(use_touch=True, speed_in_pixels_per_second=400,
@@ -364,7 +364,7 @@ class SynchronizedScrollOffsetPage(ToughSchedulingCasesPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollBounceAction', is_smooth=True)
+        'ScrollBounceAction')
     action_runner.ScrollBouncePage()
     interaction.End()
 

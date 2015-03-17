@@ -9,7 +9,7 @@ from page_sets import top_pages
 
 def _IssueMarkerAndScroll(action_runner):
   interaction = action_runner.BeginGestureInteraction(
-      'ScrollAction', is_smooth=True)
+      'ScrollAction')
   action_runner.ScrollPage()
   interaction.End()
 
@@ -47,7 +47,7 @@ class GmailSmoothPage(top_pages.GmailPage):
     action_runner.WaitForJavaScriptCondition(
         'window.__scrollableElementForTelemetry != null')
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(
         element_function='window.__scrollableElementForTelemetry')
     interaction.End()
@@ -67,7 +67,7 @@ class GmailMouseScrollPage(top_pages.GmailPage):
     scrollbar_x, start_y, end_y = self._CalculateScrollBarRatios(action_runner)
 
     interaction = action_runner.BeginGestureInteraction(
-        'DragAction', is_smooth=True)
+        'DragAction')
     action_runner.DragPage(left_start_ratio=scrollbar_x,
         top_start_ratio=start_y, left_end_ratio=scrollbar_x,
         top_end_ratio=end_y, speed_in_pixels_per_second=100,
@@ -104,7 +104,7 @@ class GoogleCalendarSmoothPage(top_pages.GoogleCalendarPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(selector='#scrolltimedeventswk')
     interaction.End()
 
@@ -115,7 +115,7 @@ class GoogleDocSmoothPage(top_pages.GoogleDocPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(selector='.kix-appview-editor')
     interaction.End()
 
@@ -126,13 +126,13 @@ class GoogleMapsPage(top_pages.GoogleMapsPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'DragAction', is_smooth=True, repeatable=True)
+        'DragAction', repeatable=True)
     action_runner.DragPage(left_start_ratio=0.5, top_start_ratio=0.75,
                            left_end_ratio=0.75, top_end_ratio=0.5)
     interaction.End()
     action_runner.Wait(2)
     interaction = action_runner.BeginGestureInteraction(
-        'DragAction', is_smooth=True, repeatable=True)
+        'DragAction', repeatable=True)
     action_runner.DragPage(left_start_ratio=0.5, top_start_ratio=0.5,
                            left_end_ratio=0.35, top_end_ratio=0.75)
     interaction.End()
@@ -145,7 +145,7 @@ class ESPNSmoothPage(top_pages.ESPNPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage(left_start_ratio=0.1)
     interaction.End()
 

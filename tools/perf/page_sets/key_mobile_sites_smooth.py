@@ -9,7 +9,7 @@ from page_sets import key_mobile_sites_pages
 
 def _IssueMarkerAndScroll(action_runner):
   interaction = action_runner.BeginGestureInteraction(
-      'ScrollAction', is_smooth=True)
+      'ScrollAction')
   action_runner.ScrollPage()
   interaction.End()
 
@@ -74,12 +74,12 @@ class GmailSmoothPage(key_mobile_sites_pages.GmailPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(element_function=(
         'document.getElementById("views").childNodes[1].firstChild'))
     interaction.End()
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(element_function=(
         'document.getElementById("views").childNodes[1].firstChild'))
     interaction.End()
@@ -89,7 +89,7 @@ class GroupClonedSmoothPage(key_mobile_sites_pages.GroupClonedPage):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage(
         distance_expr='''
             Math.max(0, 1250 + document.getElementById("element-19")
@@ -105,7 +105,7 @@ class GroupClonedListImagesPage(
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollPage(
         distance_expr='''
             Math.max(0, 1250 +
@@ -119,7 +119,7 @@ class GoogleNewsMobile2SmoothPage(
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(
         element_function='document.getElementById(":5")',
         distance_expr='''
@@ -134,7 +134,7 @@ class AmazonNicolasCageSmoothPage(
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     action_runner.ScrollElement(
         selector='#search',
         distance_expr='document.body.scrollHeight - window.innerHeight')

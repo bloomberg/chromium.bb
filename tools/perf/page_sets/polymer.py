@@ -54,7 +54,7 @@ class PolymerCalculatorPage(PolymerPage):
 
   def TapButton(self, action_runner):
     interaction = action_runner.BeginInteraction(
-        'Action_TapAction', is_smooth=True)
+        'Action_TapAction')
     action_runner.TapElement(element_function='''
         document.querySelector(
             'body /deep/ #outerPanels'
@@ -75,7 +75,7 @@ class PolymerCalculatorPage(PolymerPage):
           }());''')
     if not opened:
       interaction = action_runner.BeginInteraction(
-          'Action_SwipeAction', is_smooth=True)
+          'Action_SwipeAction')
       action_runner.SwipeElement(
           left_start_ratio=0.1, top_start_ratio=0.2,
           direction='left', distance=300, speed_in_pixels_per_second=5000,
@@ -158,13 +158,13 @@ class PolymerSampler(PolymerPage):
   def ScrollContentPane(self, action_runner):
     element_function = (self.iframe_js + '.querySelector('
         '"core-scroll-header-panel").$.mainContainer')
-    interaction = action_runner.BeginInteraction('Scroll_Page', is_smooth=True)
+    interaction = action_runner.BeginInteraction('Scroll_Page')
     action_runner.ScrollElement(use_touch=True,
                                 direction='down',
                                 distance='900',
                                 element_function=element_function)
     interaction.End()
-    interaction = action_runner.BeginInteraction('Scroll_Page', is_smooth=True)
+    interaction = action_runner.BeginInteraction('Scroll_Page')
     action_runner.ScrollElement(use_touch=True,
                                 direction='up',
                                 distance='900',
@@ -207,14 +207,14 @@ class PolymerSampler(PolymerPage):
 
   def TapWidget(self, action_runner, element_function):
     interaction = action_runner.BeginInteraction(
-        'Tap_Widget', is_smooth=True)
+        'Tap_Widget')
     action_runner.TapElement(element_function=element_function)
     action_runner.Wait(1) # wait for e.g. animations on the widget
     interaction.End()
 
   def SwipeWidget(self, action_runner, element_function):
     interaction = action_runner.BeginInteraction(
-        'Swipe_Widget', is_smooth=True)
+        'Swipe_Widget')
     action_runner.SwipeElement(element_function=element_function,
                                left_start_ratio=0.75,
                                speed_in_pixels_per_second=300)

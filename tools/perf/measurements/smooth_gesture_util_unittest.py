@@ -103,7 +103,7 @@ class ScrollingPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
     interaction = action_runner.BeginGestureInteraction(
-        'ScrollAction', is_smooth=True)
+        'ScrollAction')
     # Add 0.5s gap between when Gesture records are issued to when we actually
     # scroll the page.
     time.sleep(0.5)
