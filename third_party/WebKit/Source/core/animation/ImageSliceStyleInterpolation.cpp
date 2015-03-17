@@ -60,10 +60,10 @@ PassRefPtrWillBeRawPtr<CSSBorderImageSliceValue> compose(const InterpolableValue
     const InterpolableList& interpolableList = toInterpolableList(value);
     CSSPrimitiveValue::UnitType type = metadata.isPercentage ? CSSPrimitiveValue::CSS_PERCENTAGE : CSSPrimitiveValue::CSS_NUMBER;
     RefPtrWillBeRawPtr<Quad> quad = Quad::create();
-    quad->setTop(CSSPrimitiveValue::create(clampTo(toInterpolableNumber(interpolableList.get(0))->value(), 0), type));
-    quad->setRight(CSSPrimitiveValue::create(clampTo(toInterpolableNumber(interpolableList.get(1))->value(), 0), type));
-    quad->setBottom(CSSPrimitiveValue::create(clampTo(toInterpolableNumber(interpolableList.get(2))->value(), 0), type));
-    quad->setLeft(CSSPrimitiveValue::create(clampTo(toInterpolableNumber(interpolableList.get(3))->value(), 0), type));
+    quad->setTop(CSSPrimitiveValue::create(clampTo<double>(toInterpolableNumber(interpolableList.get(0))->value(), 0), type));
+    quad->setRight(CSSPrimitiveValue::create(clampTo<double>(toInterpolableNumber(interpolableList.get(1))->value(), 0), type));
+    quad->setBottom(CSSPrimitiveValue::create(clampTo<double>(toInterpolableNumber(interpolableList.get(2))->value(), 0), type));
+    quad->setLeft(CSSPrimitiveValue::create(clampTo<double>(toInterpolableNumber(interpolableList.get(3))->value(), 0), type));
     return CSSBorderImageSliceValue::create(CSSPrimitiveValue::create(quad.release()), metadata.fill);
 }
 

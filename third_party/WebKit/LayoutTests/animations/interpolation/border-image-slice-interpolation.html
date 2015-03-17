@@ -64,7 +64,7 @@ assertInterpolation({
   from: '0% 10% 20% 30%',
   to: '40% 50% 60% 70%',
 }, [
-  {at: -0.3, is: '0% 0% 8% 17%'},
+  {at: -0.5, is: '0% 0% 0% 10%'},
   {at: 0, is: '0% 10% 20% 30%'},
   {at: 0.3, is: '12% 22% 32% 42%'},
   {at: 0.5, is: '20% 30% 40% 50%'},
@@ -78,7 +78,7 @@ assertInterpolation({
   from: '0 10 20 30 fill',
   to: '40 50 60 70 fill',
 }, [
-  {at: -0.3, is: '0 0 8 17 fill'}, // CSS border-image-slice can't be negative.
+  {at: -0.5, is: '0 0 0 10 fill'}, // CSS border-image-slice can't be negative.
   {at: 0, is: '0 10 20 30 fill'},
   {at: 0.3, is: '12 22 32 42 fill'},
   {at: 0.5, is: '20 30 40 50 fill'},
