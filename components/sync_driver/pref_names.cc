@@ -8,12 +8,6 @@ namespace sync_driver {
 
 namespace prefs {
 
-// Set to true when enhanced bookmarks experiment is enabled via Chrome sync.
-const char kEnhancedBookmarksExperimentEnabled[] = "enhanced_bookmarks_enabled";
-
-// Enhanced bookmarks extension id passed via Chrome sync.
-const char kEnhancedBookmarksExtensionId[] = "enhanced_bookmarks_extension_id";
-
 // 64-bit integer serialization of the base::Time when the last sync occurred.
 const char kSyncLastSyncedTime[] = "sync.last_synced_time";
 

@@ -142,8 +142,7 @@ static jlong Init(JNIEnv* env, jobject obj, jobject j_profile) {
 static jboolean IsEnhancedBookmarksFeatureEnabled(JNIEnv* env,
                                                   jclass clazz,
                                                   jobject j_profile) {
-  Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  return IsEnhancedBookmarksEnabled(profile->GetPrefs());
+  return IsEnhancedBookmarksEnabled();
 }
 
 static bool IsEditBookmarksEnabled(Profile* profile) {
@@ -739,7 +738,7 @@ base::string16 BookmarksBridge::GetTitle(const BookmarkNode* node) const {
     return partner_bookmarks_shim_->GetTitle(node);
 
   if (node == bookmark_model_->bookmark_bar_node()
-      && IsEnhancedBookmarksEnabled(profile_->GetPrefs())) {
+      && IsEnhancedBookmarksEnabled()) {
     return l10n_util::GetStringUTF16(IDS_ENHANCED_BOOKMARK_BAR_FOLDER_NAME);
   }
 

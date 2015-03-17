@@ -30,200 +30,35 @@ namespace {
 
 const char kFieldTrialName[] = "EnhancedBookmarks";
 
-// Get extension id from Finch EnhancedBookmarks group parameters.
-std::string GetEnhancedBookmarksExtensionIdFromFinch() {
-  return variations::GetVariationParamValue(kFieldTrialName, "id");
-}
+}  // namespace
 
-// Returns true if enhanced bookmarks experiment is enabled from Finch.
-bool IsEnhancedBookmarksExperimentEnabledFromFinch() {
-  const std::string ext_id = GetEnhancedBookmarksExtensionIdFromFinch();
-#if defined(OS_ANDROID)
-  return !ext_id.empty();
-#else
-  const extensions::FeatureProvider* feature_provider =
-      extensions::FeatureProvider::GetPermissionFeatures();
-  extensions::Feature* feature = feature_provider->GetFeature("metricsPrivate");
-  return feature && feature->IsIdInWhitelist(ext_id);
-#endif
-}
-
-};  // namespace
-
-bool GetBookmarksExperimentExtensionID(const PrefService* user_prefs,
-                                       std::string* extension_id) {
-  BookmarksExperimentState bookmarks_experiment_state =
-      static_cast<BookmarksExperimentState>(user_prefs->GetInteger(
-          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
-  if (bookmarks_experiment_state == BOOKMARKS_EXPERIMENT_ENABLED_FROM_FINCH) {
-    *extension_id = GetEnhancedBookmarksExtensionIdFromFinch();
-    return !extension_id->empty();
-  }
-  if (bookmarks_experiment_state == BOOKMARKS_EXPERIMENT_ENABLED) {
-    *extension_id = user_prefs->GetString(
-        sync_driver::prefs::kEnhancedBookmarksExtensionId);
-    return !extension_id->empty();
-  }
-
-  return false;
-}
-
-void UpdateBookmarksExperimentState(
-    PrefService* user_prefs,
-    PrefService* local_state,
-    bool user_signed_in,
-    BookmarksExperimentState experiment_enabled_from_sync) {
- PrefService* flags_storage = local_state;
-#if defined(OS_CHROMEOS)
-  // Chrome OS is using user prefs for flags storage.
-  flags_storage = user_prefs;
-#endif
-
-  BookmarksExperimentState bookmarks_experiment_state_before =
-      static_cast<BookmarksExperimentState>(user_prefs->GetInteger(
-          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
-  // If user signed out, clear possible previous state.
-  if (!user_signed_in) {
-    bookmarks_experiment_state_before = BOOKMARKS_EXPERIMENT_NONE;
-    ForceFinchBookmarkExperimentIfNeeded(flags_storage,
-        BOOKMARKS_EXPERIMENT_NONE);
-  }
+bool GetBookmarksExperimentExtensionID(std::string* extension_id) {
+  *extension_id = variations::GetVariationParamValue(kFieldTrialName, "id");
+  if (extension_id->empty())
+    return false;
 
   // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
   // "0" - user opted out.
   bool opt_out = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                     switches::kEnhancedBookmarksExperiment) == "0";
+      switches::kEnhancedBookmarksExperiment) == "0";
 
-  BookmarksExperimentState bookmarks_experiment_new_state =
-      BOOKMARKS_EXPERIMENT_NONE;
-
-  if (IsEnhancedBookmarksExperimentEnabledFromFinch() && !user_signed_in) {
-    if (opt_out) {
-      // Experiment enabled but user opted out.
-      bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_OPT_OUT_FROM_FINCH;
-    } else {
-      // Experiment enabled.
-      bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_ENABLED_FROM_FINCH;
-    }
-  } else if (experiment_enabled_from_sync == BOOKMARKS_EXPERIMENT_ENABLED) {
-    // Experiment enabled from Chrome sync.
-    if (opt_out) {
-      // Experiment enabled but user opted out.
-      bookmarks_experiment_new_state =
-          BOOKMARKS_EXPERIMENT_ENABLED_USER_OPT_OUT;
-    } else {
-      // Experiment enabled.
-      bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_ENABLED;
-    }
-  } else if (experiment_enabled_from_sync == BOOKMARKS_EXPERIMENT_NONE) {
-    // Experiment is not enabled from Chrome sync.
-    bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_NONE;
-  } else if (bookmarks_experiment_state_before ==
-             BOOKMARKS_EXPERIMENT_ENABLED) {
-    if (opt_out) {
-      // Experiment enabled but user opted out.
-      bookmarks_experiment_new_state =
-          BOOKMARKS_EXPERIMENT_ENABLED_USER_OPT_OUT;
-    } else {
-      bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_ENABLED;
-    }
-  } else if (bookmarks_experiment_state_before ==
-             BOOKMARKS_EXPERIMENT_ENABLED_USER_OPT_OUT) {
-    if (opt_out) {
-      bookmarks_experiment_new_state =
-          BOOKMARKS_EXPERIMENT_ENABLED_USER_OPT_OUT;
-    } else {
-      // User opted in again.
-      bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_ENABLED;
-    }
-  }
+  if (opt_out)
+    return false;
 
 #if defined(OS_ANDROID)
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <=
-      base::android::SdkVersion::SDK_VERSION_ICE_CREAM_SANDWICH_MR1) {
-    opt_out = true;
-    bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_NONE;
-  }
-  bool opt_in = !opt_out &&
-                base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                    switches::kEnhancedBookmarksExperiment) == "1";
-  if (opt_in && bookmarks_experiment_new_state == BOOKMARKS_EXPERIMENT_NONE)
-    bookmarks_experiment_new_state = BOOKMARKS_EXPERIMENT_ENABLED;
-#endif
-
-  UMA_HISTOGRAM_ENUMERATION("EnhancedBookmarks.SyncExperimentState",
-                            bookmarks_experiment_new_state,
-                            BOOKMARKS_EXPERIMENT_ENUM_SIZE);
-  user_prefs->SetInteger(
-      sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
-      bookmarks_experiment_new_state);
-  ForceFinchBookmarkExperimentIfNeeded(flags_storage,
-                                       bookmarks_experiment_new_state);
-}
-
-void InitBookmarksExperimentState(Profile* profile) {
-  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
-  bool is_signed_in = signin && signin->IsAuthenticated();
-  UpdateBookmarksExperimentState(
-      profile->GetPrefs(),
-      g_browser_process->local_state(),
-      is_signed_in,
-      BOOKMARKS_EXPERIMENT_ENABLED_FROM_SYNC_UNKNOWN);
-}
-
-void ForceFinchBookmarkExperimentIfNeeded(
-    PrefService* flags_storage,
-    BookmarksExperimentState bookmarks_experiment_state) {
-  if (!flags_storage)
-    return;
-  ListPrefUpdate update(flags_storage, prefs::kEnabledLabsExperiments);
-  base::ListValue* experiments_list = update.Get();
-  if (!experiments_list)
-    return;
-  size_t index;
-  if (bookmarks_experiment_state == BOOKMARKS_EXPERIMENT_NONE) {
-    experiments_list->Remove(
-        base::StringValue(switches::kManualEnhancedBookmarks), &index);
-    experiments_list->Remove(
-        base::StringValue(switches::kManualEnhancedBookmarksOptout), &index);
-  } else if (bookmarks_experiment_state == BOOKMARKS_EXPERIMENT_ENABLED) {
-    experiments_list->Remove(
-        base::StringValue(switches::kManualEnhancedBookmarksOptout), &index);
-    experiments_list->AppendIfNotPresent(
-        new base::StringValue(switches::kManualEnhancedBookmarks));
-  } else if (bookmarks_experiment_state ==
-                 BOOKMARKS_EXPERIMENT_ENABLED_USER_OPT_OUT) {
-    experiments_list->Remove(
-        base::StringValue(switches::kManualEnhancedBookmarks), &index);
-    experiments_list->AppendIfNotPresent(
-        new base::StringValue(switches::kManualEnhancedBookmarksOptout));
-  }
-}
-
-bool IsEnhancedBookmarksExperimentEnabled(
-    about_flags::FlagsStorage* flags_storage) {
-#if defined(OS_CHROMEOS)
-  // We are not setting command line flags on Chrome OS to avoid browser restart
-  // but still have flags in flags_storage. So check flags_storage instead.
-  const std::set<std::string> flags = flags_storage->GetFlags();
-  if (flags.find(switches::kManualEnhancedBookmarks) != flags.end())
-    return true;
-  if (flags.find(switches::kManualEnhancedBookmarksOptout) != flags.end())
-    return true;
+  return base::android::BuildInfo::GetInstance()->sdk_int() >
+         base::android::SdkVersion::SDK_VERSION_ICE_CREAM_SANDWICH_MR1;
 #else
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kManualEnhancedBookmarks) ||
-      command_line->HasSwitch(switches::kManualEnhancedBookmarksOptout)) {
-    return true;
-  }
+  const extensions::FeatureProvider* feature_provider =
+      extensions::FeatureProvider::GetPermissionFeatures();
+  extensions::Feature* feature = feature_provider->GetFeature("metricsPrivate");
+  return feature && feature->IsIdInWhitelist(*extension_id);
 #endif
-
-  return IsEnhancedBookmarksExperimentEnabledFromFinch();
 }
 
 #if defined(OS_ANDROID)
 bool IsEnhancedBookmarkImageFetchingEnabled(const PrefService* user_prefs) {
-  if (IsEnhancedBookmarksEnabled(user_prefs))
+  if (IsEnhancedBookmarksEnabled())
     return true;
 
   // Salient images are collected from visited bookmarked pages even if the
@@ -236,12 +71,9 @@ bool IsEnhancedBookmarkImageFetchingEnabled(const PrefService* user_prefs) {
   return disable_fetching.empty();
 }
 
-bool IsEnhancedBookmarksEnabled(const PrefService* user_prefs) {
-  BookmarksExperimentState bookmarks_experiment_state =
-      static_cast<BookmarksExperimentState>(user_prefs->GetInteger(
-          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
-  return bookmarks_experiment_state == BOOKMARKS_EXPERIMENT_ENABLED ||
-      bookmarks_experiment_state == BOOKMARKS_EXPERIMENT_ENABLED_FROM_FINCH;
+bool IsEnhancedBookmarksEnabled() {
+  std::string extension_id;
+  return GetBookmarksExperimentExtensionID(&extension_id);
 }
 #endif
 

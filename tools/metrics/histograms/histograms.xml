@@ -6819,6 +6819,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="EnhancedBookmarks.SyncExperimentState"
     enum="BookmarksExperimentState">
+  <obsolete>
+    Removed 3/2015 along with the enhanced bookmarks sync experiment.
+  </obsolete>
   <owner>noyau@chromium.org</owner>
   <owner>yefim@chromium.org</owner>
   <summary>

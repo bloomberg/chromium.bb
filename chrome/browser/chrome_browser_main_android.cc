@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/trace_event/trace_event.h"
-#include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/google/google_search_counter_android.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -62,7 +61,6 @@ int ChromeBrowserMainPartsAndroid::PreCreateThreads() {
 void ChromeBrowserMainPartsAndroid::PostProfileInit() {
   Profile* main_profile = profile();
   search_counter_.reset(new GoogleSearchCounterAndroid(main_profile));
-  InitBookmarksExperimentState(main_profile);
 
   ChromeBrowserMainParts::PostProfileInit();
 }

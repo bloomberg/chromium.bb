@@ -22,16 +22,13 @@ void EnhancedBookmarkTabHelper::DocumentOnLoadCompletedInMainFrame() {
   if (profile->IsOffTheRecord())
     return;
 
-  bool is_enhanced_bookmarks_enabled =
-      IsEnhancedBookmarksEnabled(profile->GetPrefs());
-  if (!is_enhanced_bookmarks_enabled)
+  if (!IsEnhancedBookmarksEnabled())
     return;
 
   BookmarkImageServiceAndroid* storage =
       static_cast<BookmarkImageServiceAndroid*>(
           BookmarkImageServiceFactory::GetForBrowserContext(profile));
-  storage->FinishSuccessfulPageLoadForTab(web_contents(),
-                                          is_enhanced_bookmarks_enabled);
+  storage->FinishSuccessfulPageLoadForTab(web_contents(), true);
 }
 
 EnhancedBookmarkTabHelper::EnhancedBookmarkTabHelper(

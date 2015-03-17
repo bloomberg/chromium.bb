@@ -65,13 +65,9 @@ void ExternalComponentLoader::StartLoading() {
                       extension_urls::GetWebstoreUpdateUrl().spec());
   }
 
-  InitBookmarksExperimentState(profile_);
-
   {
     std::string extension_id;
-    if (GetBookmarksExperimentExtensionID(profile_->GetPrefs(),
-                                          &extension_id) &&
-        !extension_id.empty()) {
+    if (GetBookmarksExperimentExtensionID(&extension_id)) {
       prefs_->SetString(extension_id + ".external_update_url",
                         extension_urls::GetWebstoreUpdateUrl().spec());
     }

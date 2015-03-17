@@ -766,11 +766,6 @@ const char kLoadExtension[]                 = "load-extension";
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 
-// Use to opt-in user into Finch experiment groups.
-const char kManualEnhancedBookmarks[] = "manual-enhanced-bookmarks";
-const char kManualEnhancedBookmarksOptout[] =
-    "manual-enhanced-bookmarks-optout";
-
 // Use to opt-in to marking HTTP as non-secure.
 const char kMarkNonSecureAs[]               = "mark-non-secure-as";
 const char kMarkNonSecureAsNeutral[]        = "neutral";

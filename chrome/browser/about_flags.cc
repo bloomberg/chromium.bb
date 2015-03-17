@@ -18,7 +18,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
-#include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/flags_storage.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
@@ -1675,20 +1674,6 @@ const Experiment kExperiments[] = {
         switches::kEnhancedBookmarksExperiment, "1",
         switches::kEnhancedBookmarksExperiment, "0")
   },
-  {
-    "manual-enhanced-bookmarks",
-    IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_NAME,
-    IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION,
-    kOsDesktop | kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kManualEnhancedBookmarks)
-  },
-  {
-    "manual-enhanced-bookmarks-optout",
-    IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_NAME,
-    IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION,
-    kOsDesktop | kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kManualEnhancedBookmarksOptout)
-  },
 #if defined(OS_ANDROID)
   {
     "enable-zero-suggest-experiment",
@@ -2382,12 +2367,6 @@ void GetSanitizedEnabledFlags(
 
 bool SkipConditionalExperiment(const Experiment& experiment,
                                FlagsStorage* flags_storage) {
-  if ((experiment.internal_name == std::string("manual-enhanced-bookmarks")) ||
-      (experiment.internal_name ==
-           std::string("manual-enhanced-bookmarks-optout"))) {
-    return true;
-  }
-
 #if defined(OS_ANDROID) || defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
 #endif
@@ -2739,14 +2718,6 @@ void FlagsState::ConvertFlagsToSwitches(FlagsStorage* flags_storage,
       NOTREACHED();
       continue;
     }
-
-#if defined(OS_CHROMEOS)
-    // On Chrome OS setting command line flag may make browser to restart on
-    // user login. As this flag eventually will be set to a significant number
-    // of users skip manual-enhanced-bookmarks to avoid restart.
-    if (experiment_name == "manual-enhanced-bookmarks")
-      continue;
-#endif
 
     const std::pair<std::string, std::string>&
         switch_and_value_pair = name_to_switch_it->second;
