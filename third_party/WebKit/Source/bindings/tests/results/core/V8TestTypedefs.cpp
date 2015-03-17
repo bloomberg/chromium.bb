@@ -60,7 +60,7 @@ static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, cons
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "uLongLongAttribute", "TestTypedefs", holder, info.GetIsolate());
     TestTypedefs* impl = V8TestTypedefs::toImpl(holder);
-    unsigned long long cppValue = toUInt64(v8Value, exceptionState);
+    unsigned long long cppValue = toUInt64(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setULongLongAttribute(cppValue);
@@ -123,7 +123,7 @@ static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8:
     float floatArg;
     V8StringResource<> stringArg;
     {
-        floatArg = toRestrictedFloat(info[0], exceptionState);
+        floatArg = toRestrictedFloat(info.GetIsolate(), info[0], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
         stringArg = info[1];

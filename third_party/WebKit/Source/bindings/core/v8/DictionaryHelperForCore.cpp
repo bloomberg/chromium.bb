@@ -430,90 +430,90 @@ struct IntegralTypeTraits {
 
 template <>
 struct IntegralTypeTraits<uint8_t> {
-    static inline uint8_t toIntegral(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline uint8_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
-        return toUInt8(value, configuration, exceptionState);
+        return toUInt8(isolate, value, configuration, exceptionState);
     }
     static const String typeName() { return "UInt8"; }
 };
 
 template <>
 struct IntegralTypeTraits<int8_t> {
-    static inline int8_t toIntegral(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline int8_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
-        return toInt8(value, configuration, exceptionState);
+        return toInt8(isolate, value, configuration, exceptionState);
     }
     static const String typeName() { return "Int8"; }
 };
 
 template <>
 struct IntegralTypeTraits<unsigned short> {
-    static inline uint16_t toIntegral(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline uint16_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
-        return toUInt16(value, configuration, exceptionState);
+        return toUInt16(isolate, value, configuration, exceptionState);
     }
     static const String typeName() { return "UInt16"; }
 };
 
 template <>
 struct IntegralTypeTraits<short> {
-    static inline int16_t toIntegral(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline int16_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
-        return toInt16(value, configuration, exceptionState);
+        return toInt16(isolate, value, configuration, exceptionState);
     }
     static const String typeName() { return "Int16"; }
 };
 
 template <>
 struct IntegralTypeTraits<unsigned> {
-    static inline uint32_t toIntegral(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline uint32_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
-        return toUInt32(value, configuration, exceptionState);
+        return toUInt32(isolate, value, configuration, exceptionState);
     }
     static const String typeName() { return "UInt32"; }
 };
 
 template <>
 struct IntegralTypeTraits<unsigned long> {
-    static inline uint32_t toIntegral(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline uint32_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
-        return toUInt32(value, configuration, exceptionState);
+        return toUInt32(isolate, value, configuration, exceptionState);
     }
     static const String typeName() { return "UInt32"; }
 };
 
 template <>
 struct IntegralTypeTraits<int> {
-    static inline int32_t toIntegral(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline int32_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
-        return toInt32(value, configuration, exceptionState);
+        return toInt32(isolate, value, configuration, exceptionState);
     }
     static const String typeName() { return "Int32"; }
 };
 
 template <>
 struct IntegralTypeTraits<long> {
-    static inline int32_t toIntegral(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline int32_t toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
-        return toInt32(value, configuration, exceptionState);
+        return toInt32(isolate, value, configuration, exceptionState);
     }
     static const String typeName() { return "Int32"; }
 };
 
 template <>
 struct IntegralTypeTraits<unsigned long long> {
-    static inline unsigned long long toIntegral(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline unsigned long long toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
-        return toUInt64(value, configuration, exceptionState);
+        return toUInt64(isolate, value, configuration, exceptionState);
     }
     static const String typeName() { return "UInt64"; }
 };
 
 template <>
 struct IntegralTypeTraits<long long> {
-    static inline long long toIntegral(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+    static inline long long toIntegral(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
     {
-        return toInt64(value, configuration, exceptionState);
+        return toInt64(isolate, value, configuration, exceptionState);
     }
     static const String typeName() { return "Int64"; }
 };
@@ -527,7 +527,7 @@ bool DictionaryHelper::convert(const Dictionary& dictionary, Dictionary::Convers
     if (!dictionary.get(key, v8Value))
         return true;
 
-    value = IntegralTypeTraits<T>::toIntegral(v8Value, NormalConversion, context.exceptionState());
+    value = IntegralTypeTraits<T>::toIntegral(dictionary.isolate(), v8Value, NormalConversion, context.exceptionState());
     if (context.exceptionState().throwIfNeeded())
         return false;
 

@@ -374,78 +374,78 @@ enum IntegerConversionConfiguration {
 // Convert a value to a 8-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-byte
-int8_t toInt8(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
-inline int8_t toInt8(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+int8_t toInt8(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline int8_t toInt8(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    return toInt8(value, NormalConversion, exceptionState);
+    return toInt8(isolate, value, NormalConversion, exceptionState);
 }
 
 // Convert a value to a 8-bit integer assuming the conversion cannot fail.
-int8_t toInt8(v8::Handle<v8::Value>);
+int8_t toInt8(v8::Isolate*, v8::Handle<v8::Value>);
 
 // Convert a value to a 8-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-octet
-uint8_t toUInt8(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
-inline uint8_t toUInt8(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+uint8_t toUInt8(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline uint8_t toUInt8(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    return toUInt8(value, NormalConversion, exceptionState);
+    return toUInt8(isolate, value, NormalConversion, exceptionState);
 }
 
 // Convert a value to a 8-bit unsigned integer assuming the conversion cannot fail.
-uint8_t toUInt8(v8::Handle<v8::Value>);
+uint8_t toUInt8(v8::Isolate*, v8::Handle<v8::Value>);
 
 // Convert a value to a 16-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-short
-int16_t toInt16(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
-inline int16_t toInt16(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+int16_t toInt16(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline int16_t toInt16(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    return toInt16(value, NormalConversion, exceptionState);
+    return toInt16(isolate, value, NormalConversion, exceptionState);
 }
 
 // Convert a value to a 16-bit integer assuming the conversion cannot fail.
-int16_t toInt16(v8::Handle<v8::Value>);
+int16_t toInt16(v8::Isolate*, v8::Handle<v8::Value>);
 
 // Convert a value to a 16-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-unsigned-short
-uint16_t toUInt16(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
-inline uint16_t toUInt16(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+uint16_t toUInt16(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline uint16_t toUInt16(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    return toUInt16(value, NormalConversion, exceptionState);
+    return toUInt16(isolate, value, NormalConversion, exceptionState);
 }
 
 // Convert a value to a 16-bit unsigned integer assuming the conversion cannot fail.
-uint16_t toUInt16(v8::Handle<v8::Value>);
+uint16_t toUInt16(v8::Isolate*, v8::Handle<v8::Value>);
 
 
-CORE_EXPORT int32_t toInt32Slow(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT int32_t toInt32Slow(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 
 // Convert a value to a 32-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-long
-inline int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+inline int32_t toInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     // Fast case. The value is already a 32-bit integer.
     if (value->IsInt32())
         return value->Int32Value();
-    return toInt32Slow(value, configuration, exceptionState);
+    return toInt32Slow(isolate, value, configuration, exceptionState);
 }
 
-inline int32_t toInt32(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+inline int32_t toInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    return toInt32(value, NormalConversion, exceptionState);
+    return toInt32(isolate, value, NormalConversion, exceptionState);
 }
 
 // Convert a value to a 32-bit integer assuming the conversion cannot fail.
-int32_t toInt32(v8::Handle<v8::Value>);
+int32_t toInt32(v8::Isolate*, v8::Handle<v8::Value>);
 
 // Convert a value to a 32-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-unsigned-long
-CORE_EXPORT uint32_t toUInt32Slow(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
-inline uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+CORE_EXPORT uint32_t toUInt32Slow(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+inline uint32_t toUInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     // Fast case. The value is already a 32-bit unsigned integer.
     if (value->IsUint32())
@@ -455,23 +455,23 @@ inline uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfigura
     if (value->IsInt32() && configuration == NormalConversion)
         return value->Int32Value();
 
-    return toUInt32Slow(value, configuration, exceptionState);
+    return toUInt32Slow(isolate, value, configuration, exceptionState);
 }
 
-inline uint32_t toUInt32(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+inline uint32_t toUInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    return toUInt32(value, NormalConversion, exceptionState);
+    return toUInt32(isolate, value, NormalConversion, exceptionState);
 }
 
 // Convert a value to a 32-bit unsigned integer assuming the conversion cannot fail.
-uint32_t toUInt32(v8::Handle<v8::Value>);
+uint32_t toUInt32(v8::Isolate*, v8::Handle<v8::Value>);
 
-CORE_EXPORT int64_t toInt64Slow(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT int64_t toInt64Slow(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 
 // Convert a value to a 64-bit signed integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-long-long
-inline int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+inline int64_t toInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     // Clamping not supported for int64_t/long long int. See Source/wtf/MathExtras.h.
     ASSERT(configuration != Clamp);
@@ -480,23 +480,23 @@ inline int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfigurati
     if (value->IsInt32())
         return value->Int32Value();
 
-    return toInt64Slow(value, configuration, exceptionState);
+    return toInt64Slow(isolate, value, configuration, exceptionState);
 }
 
-inline int64_t toInt64(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+inline int64_t toInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    return toInt64(value, NormalConversion, exceptionState);
+    return toInt64(isolate, value, NormalConversion, exceptionState);
 }
 
 // Convert a value to a 64-bit integer assuming the conversion cannot fail.
-int64_t toInt64(v8::Handle<v8::Value>);
+int64_t toInt64(v8::Isolate*, v8::Handle<v8::Value>);
 
-CORE_EXPORT uint64_t toUInt64Slow(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+CORE_EXPORT uint64_t toUInt64Slow(v8::Isolate*, v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
 
 // Convert a value to a 64-bit unsigned integer. The conversion fails if the
 // value cannot be converted to a number or the range violated per WebIDL:
 // http://www.w3.org/TR/WebIDL/#es-unsigned-long-long
-inline uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+inline uint64_t toUInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     // Fast case. The value is a 32-bit unsigned integer.
     if (value->IsUint32())
@@ -505,51 +505,51 @@ inline uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfigura
     if (value->IsInt32() && configuration == NormalConversion)
         return value->Int32Value();
 
-    return toUInt64Slow(value, configuration, exceptionState);
+    return toUInt64Slow(isolate, value, configuration, exceptionState);
 }
 
-inline uint64_t toUInt64(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+inline uint64_t toUInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    return toUInt64(value, NormalConversion, exceptionState);
+    return toUInt64(isolate, value, NormalConversion, exceptionState);
 }
 
 // Convert a value to a 64-bit unsigned integer assuming the conversion cannot fail.
-uint64_t toUInt64(v8::Handle<v8::Value>);
+uint64_t toUInt64(v8::Isolate*, v8::Handle<v8::Value>);
 
 // Convert a value to a double precision float, which might fail.
-CORE_EXPORT double toDoubleSlow(v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT double toDoubleSlow(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
 
-inline double toDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+inline double toDouble(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     if (value->IsNumber())
         return value->NumberValue();
-    return toDoubleSlow(value, exceptionState);
+    return toDoubleSlow(isolate, value, exceptionState);
 }
 
 // Convert a value to a double precision float, throwing on non-finite values.
-CORE_EXPORT double toRestrictedDouble(v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT double toRestrictedDouble(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
 
 // Convert a value to a single precision float, which might fail.
-inline float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+inline float toFloat(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    return static_cast<float>(toDouble(value, exceptionState));
+    return static_cast<float>(toDouble(isolate, value, exceptionState));
 }
 
 // Convert a value to a single precision float, throwing on non-finite values.
-CORE_EXPORT float toRestrictedFloat(v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT float toRestrictedFloat(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
 
 // Converts a value to a String, throwing if any code unit is outside 0-255.
-CORE_EXPORT String toByteString(v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT String toByteString(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
 
 // Converts a value to a String, replacing unmatched UTF-16 surrogates with replacement characters.
-CORE_EXPORT String toUSVString(v8::Handle<v8::Value>, ExceptionState&);
+CORE_EXPORT String toUSVString(v8::Isolate*, v8::Handle<v8::Value>, ExceptionState&);
 
 inline v8::Handle<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
 {
     return value ? v8::True(isolate) : v8::False(isolate);
 }
 
-inline double toCoreDate(v8::Handle<v8::Value> object)
+inline double toCoreDate(v8::Isolate* isolate, v8::Handle<v8::Value> object)
 {
     if (object->IsDate())
         return v8::Handle<v8::Date>::Cast(object)->ValueOf();
@@ -854,7 +854,7 @@ template<>
 struct NativeValueTraits<int> {
     static inline int nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
     {
-        return toInt32(value, exceptionState);
+        return toInt32(isolate, value, exceptionState);
     }
 };
 
@@ -862,7 +862,7 @@ template<>
 struct NativeValueTraits<unsigned> {
     static inline unsigned nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
     {
-        return toUInt32(value, exceptionState);
+        return toUInt32(isolate, value, exceptionState);
     }
 };
 
@@ -870,7 +870,7 @@ template<>
 struct NativeValueTraits<float> {
     static inline float nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
     {
-        return toFloat(value, exceptionState);
+        return toFloat(isolate, value, exceptionState);
     }
 };
 
@@ -878,7 +878,7 @@ template<>
 struct NativeValueTraits<double> {
     static inline double nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
     {
-        return toDouble(value, exceptionState);
+        return toDouble(isolate, value, exceptionState);
     }
 };
 

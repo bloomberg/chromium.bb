@@ -48,7 +48,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor4", info.Holder(), info.GetIsolate());
     V8StringResource<> usvStringArg;
     {
-        usvStringArg = toUSVString(info[0], exceptionState);
+        usvStringArg = toUSVString(info.GetIsolate(), info[0], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

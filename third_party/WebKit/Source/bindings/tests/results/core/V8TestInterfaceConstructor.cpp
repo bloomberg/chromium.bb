@@ -61,7 +61,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     Dictionary optionalDictionaryArg;
     TestInterfaceEmpty* optionalTestInterfaceEmptyArg;
     {
-        doubleArg = toRestrictedDouble(info[0], exceptionState);
+        doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
         stringArg = info[1];

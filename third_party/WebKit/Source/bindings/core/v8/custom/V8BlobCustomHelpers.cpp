@@ -98,7 +98,7 @@ bool ParsedProperties::parseBlobPropertyBag(v8::Isolate* isolate, v8::Local<v8::
     v8::Local<v8::Value> lastModified;
     TONATIVE_DEFAULT(bool, containsLastModified, DictionaryHelper::get(dictionary, "lastModified", lastModified), false);
     if (containsLastModified) {
-        TONATIVE_DEFAULT(long long, lastModifiedInt, toInt64(lastModified), false);
+        TONATIVE_DEFAULT(long long, lastModifiedInt, toInt64(isolate, lastModified), false);
         setLastModified(static_cast<double>(lastModifiedInt));
     } else {
         setDefaultLastModified();

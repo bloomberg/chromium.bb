@@ -224,7 +224,7 @@ void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Loc
     }
 
     if (v8Value->IsNumber()) {
-        double cppValue = toDouble(v8Value, exceptionState);
+        double cppValue = toDouble(isolate, v8Value, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setUnrestrictedDouble(cppValue);
@@ -316,7 +316,7 @@ void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         return;
 
     if (v8Value->IsNumber()) {
-        double cppValue = toRestrictedDouble(v8Value, exceptionState);
+        double cppValue = toRestrictedDouble(isolate, v8Value, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setDouble(cppValue);
@@ -615,7 +615,7 @@ void V8StringOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         return;
 
     if (v8Value->IsNumber()) {
-        double cppValue = toRestrictedDouble(v8Value, exceptionState);
+        double cppValue = toRestrictedDouble(isolate, v8Value, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setDouble(cppValue);
@@ -800,7 +800,7 @@ void V8TestEnumOrDouble::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Val
         return;
 
     if (v8Value->IsNumber()) {
-        double cppValue = toRestrictedDouble(v8Value, exceptionState);
+        double cppValue = toRestrictedDouble(isolate, v8Value, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setDouble(cppValue);
@@ -1081,7 +1081,7 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
     }
 
     if (v8Value->IsNumber()) {
-        int cppValue = toInt32(v8Value, exceptionState);
+        int cppValue = toInt32(isolate, v8Value, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setLong(cppValue);
@@ -1089,7 +1089,7 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
     }
 
     {
-        int cppValue = toInt32(v8Value, exceptionState);
+        int cppValue = toInt32(isolate, v8Value, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setLong(cppValue);
@@ -1354,7 +1354,7 @@ void V8UnrestrictedDoubleOrString::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
         return;
 
     if (v8Value->IsNumber()) {
-        double cppValue = toDouble(v8Value, exceptionState);
+        double cppValue = toDouble(isolate, v8Value, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setUnrestrictedDouble(cppValue);

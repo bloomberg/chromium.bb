@@ -77,7 +77,7 @@ static void doNotCheckSecurityLongAttributeAttributeSetter(v8::Local<v8::Value> 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "doNotCheckSecurityLongAttribute", "TestInterfaceCheckSecurity", holder, info.GetIsolate());
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
-    int cppValue = toInt32(v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setDoNotCheckSecurityLongAttribute(cppValue);
@@ -124,7 +124,7 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8::Local<v8:
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "doNotCheckSecurityOnSetterLongAttribute", "TestInterfaceCheckSecurity", holder, info.GetIsolate());
     TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toImpl(holder);
-    int cppValue = toInt32(v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setDoNotCheckSecurityOnSetterLongAttribute(cppValue);

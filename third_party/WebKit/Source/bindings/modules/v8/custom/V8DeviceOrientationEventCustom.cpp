@@ -34,12 +34,13 @@ namespace blink {
 
 void V8DeviceOrientationEvent::initDeviceOrientationEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "initDeviceOrientationEvent", "DeviceOrientationEvent", info.Holder(), info.GetIsolate());
+    v8::Isolate* isolate = info.GetIsolate();
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "initDeviceOrientationEvent", "DeviceOrientationEvent", info.Holder(), isolate);
     DeviceOrientationEvent* impl = V8DeviceOrientationEvent::toImpl(info.Holder());
     V8StringResource<> type(info[0]);
     if (!type.prepare())
         return;
-    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
     bool bubbles;
     V8_CALL(bubbles, info[1], BooleanValue(context), return);
     bool cancelable;
@@ -49,21 +50,21 @@ void V8DeviceOrientationEvent::initDeviceOrientationEventMethodCustom(const v8::
     bool alphaProvided = !isUndefinedOrNull(info[3]);
     double alpha = 0;
     if (alphaProvided) {
-        alpha = toRestrictedDouble(info[3], exceptionState);
+        alpha = toRestrictedDouble(isolate, info[3], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
     bool betaProvided = !isUndefinedOrNull(info[4]);
     double beta = 0;
     if (betaProvided) {
-        beta = toRestrictedDouble(info[4], exceptionState);
+        beta = toRestrictedDouble(isolate, info[4], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
     bool gammaProvided = !isUndefinedOrNull(info[5]);
     double gamma = 0;
     if (gammaProvided) {
-        gamma = toRestrictedDouble(info[5], exceptionState);
+        gamma = toRestrictedDouble(isolate, info[5], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

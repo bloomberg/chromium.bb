@@ -468,23 +468,23 @@ def set_component_dirs(new_component_dirs):
 
 V8_VALUE_TO_CPP_VALUE = {
     # Basic
-    'Date': 'toCoreDate({v8_value})',
+    'Date': 'toCoreDate({isolate}, {v8_value})',
     'DOMString': '{v8_value}',
-    'ByteString': 'toByteString({arguments})',
-    'USVString': 'toUSVString({arguments})',
+    'ByteString': 'toByteString({isolate}, {arguments})',
+    'USVString': 'toUSVString({isolate}, {arguments})',
     'boolean': '{v8_value}->BooleanValue()',
-    'float': 'toRestrictedFloat({arguments})',
-    'unrestricted float': 'toFloat({arguments})',
-    'double': 'toRestrictedDouble({arguments})',
-    'unrestricted double': 'toDouble({arguments})',
-    'byte': 'toInt8({arguments})',
-    'octet': 'toUInt8({arguments})',
-    'short': 'toInt16({arguments})',
-    'unsigned short': 'toUInt16({arguments})',
-    'long': 'toInt32({arguments})',
-    'unsigned long': 'toUInt32({arguments})',
-    'long long': 'toInt64({arguments})',
-    'unsigned long long': 'toUInt64({arguments})',
+    'float': 'toRestrictedFloat({isolate}, {arguments})',
+    'unrestricted float': 'toFloat({isolate}, {arguments})',
+    'double': 'toRestrictedDouble({isolate}, {arguments})',
+    'unrestricted double': 'toDouble({isolate}, {arguments})',
+    'byte': 'toInt8({isolate}, {arguments})',
+    'octet': 'toUInt8({isolate}, {arguments})',
+    'short': 'toInt16({isolate}, {arguments})',
+    'unsigned short': 'toUInt16({isolate}, {arguments})',
+    'long': 'toInt32({isolate}, {arguments})',
+    'unsigned long': 'toUInt32({isolate}, {arguments})',
+    'long long': 'toInt64({isolate}, {arguments})',
+    'unsigned long long': 'toUInt64({isolate}, {arguments})',
     # Interface types
     'Dictionary': 'Dictionary({v8_value}, {isolate}, exceptionState)',
     'EventTarget': 'toEventTarget({isolate}, {v8_value})',
@@ -549,7 +549,6 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         arguments = ', '.join([v8_value, 'exceptionState'])
     else:
         arguments = v8_value
-
     if base_idl_type in V8_VALUE_TO_CPP_VALUE:
         cpp_expression_format = V8_VALUE_TO_CPP_VALUE[base_idl_type]
     elif idl_type.is_array_buffer_or_view:

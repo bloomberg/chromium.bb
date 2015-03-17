@@ -129,7 +129,7 @@ void V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(const v8::FunctionCa
     bool intervalProvided = !isUndefinedOrNull(info[6]);
     double interval = 0;
     if (intervalProvided) {
-        interval = toRestrictedDouble(info[6], exceptionState);
+        interval = toRestrictedDouble(isolate, info[6], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

@@ -110,7 +110,7 @@ static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "doubleAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
-    double cppValue = toRestrictedDouble(v8Value, exceptionState);
+    double cppValue = toRestrictedDouble(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setDoubleAttribute(cppValue);
@@ -142,7 +142,7 @@ static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "floatAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
-    float cppValue = toRestrictedFloat(v8Value, exceptionState);
+    float cppValue = toRestrictedFloat(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setFloatAttribute(cppValue);
@@ -174,7 +174,7 @@ static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Va
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedDoubleAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
-    double cppValue = toDouble(v8Value, exceptionState);
+    double cppValue = toDouble(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setUnrestrictedDoubleAttribute(cppValue);
@@ -206,7 +206,7 @@ static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Val
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedFloatAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
-    float cppValue = toFloat(v8Value, exceptionState);
+    float cppValue = toFloat(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setUnrestrictedFloatAttribute(cppValue);
@@ -265,7 +265,7 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "alwaysExposedAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
-    int cppValue = toInt32(v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setAlwaysExposedAttribute(cppValue);
@@ -297,7 +297,7 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "workerExposedAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
-    int cppValue = toInt32(v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setWorkerExposedAttribute(cppValue);
@@ -329,7 +329,7 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "windowExposedAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
-    int cppValue = toInt32(v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setWindowExposedAttribute(cppValue);
@@ -379,10 +379,10 @@ static void voidMethodDoubleArgFloatArgMethod(const v8::FunctionCallbackInfo<v8:
     double doubleArg;
     float floatArg;
     {
-        doubleArg = toRestrictedDouble(info[0], exceptionState);
+        doubleArg = toRestrictedDouble(info.GetIsolate(), info[0], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        floatArg = toRestrictedFloat(info[1], exceptionState);
+        floatArg = toRestrictedFloat(info.GetIsolate(), info[1], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -408,10 +408,10 @@ static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::
     double unrestrictedDoubleArg;
     float unrestrictedFloatArg;
     {
-        unrestrictedDoubleArg = toDouble(info[0], exceptionState);
+        unrestrictedDoubleArg = toDouble(info.GetIsolate(), info[0], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
-        unrestrictedFloatArg = toFloat(info[1], exceptionState);
+        unrestrictedFloatArg = toFloat(info.GetIsolate(), info[1], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

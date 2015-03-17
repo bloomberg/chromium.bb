@@ -80,7 +80,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     } else if (doubleOrNullMemberValue->IsNull()) {
         impl.setDoubleOrNullMemberToNull();
     } else {
-        double doubleOrNullMember = toRestrictedDouble(doubleOrNullMemberValue, exceptionState);
+        double doubleOrNullMember = toRestrictedDouble(isolate, doubleOrNullMemberValue, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setDoubleOrNullMember(doubleOrNullMember);
@@ -176,7 +176,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     if (longMemberValue.IsEmpty() || longMemberValue->IsUndefined()) {
         // Do nothing.
     } else {
-        int longMember = toInt32(longMemberValue, exceptionState);
+        int longMember = toInt32(isolate, longMemberValue, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setLongMember(longMember);
@@ -239,7 +239,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     if (restrictedDoubleMemberValue.IsEmpty() || restrictedDoubleMemberValue->IsUndefined()) {
         // Do nothing.
     } else {
-        double restrictedDoubleMember = toRestrictedDouble(restrictedDoubleMemberValue, exceptionState);
+        double restrictedDoubleMember = toRestrictedDouble(isolate, restrictedDoubleMemberValue, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setRestrictedDoubleMember(restrictedDoubleMember);
@@ -444,7 +444,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     if (unrestrictedDoubleMemberValue.IsEmpty() || unrestrictedDoubleMemberValue->IsUndefined()) {
         // Do nothing.
     } else {
-        double unrestrictedDoubleMember = toDouble(unrestrictedDoubleMemberValue, exceptionState);
+        double unrestrictedDoubleMember = toDouble(isolate, unrestrictedDoubleMemberValue, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setUnrestrictedDoubleMember(unrestrictedDoubleMember);

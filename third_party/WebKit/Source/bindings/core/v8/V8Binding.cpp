@@ -173,7 +173,7 @@ struct IntTypeLimits<uint16_t> {
 };
 
 template <typename T>
-static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, const char* typeName, ExceptionState& exceptionState)
+static inline T toSmallerInt(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, const char* typeName, ExceptionState& exceptionState)
 {
     typedef IntTypeLimits<T> LimitsTrait;
 
@@ -196,7 +196,6 @@ static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfi
     if (value->IsNumber()) {
         numberObject = value.As<v8::Number>();
     } else {
-        v8::Isolate* isolate = v8::Isolate::GetCurrent();
         // Can the value be converted to a number?
         v8::TryCatch block(isolate);
         numberObject = value->ToNumber(isolate);
@@ -227,7 +226,7 @@ static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfi
 }
 
 template <typename T>
-static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, const char* typeName, ExceptionState& exceptionState)
+static inline T toSmallerUInt(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, const char* typeName, ExceptionState& exceptionState)
 {
     typedef IntTypeLimits<T> LimitsTrait;
 
@@ -249,7 +248,6 @@ static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConf
     if (value->IsNumber()) {
         numberObject = value.As<v8::Number>();
     } else {
-        v8::Isolate* isolate = v8::Isolate::GetCurrent();
         // Can the value be converted to a number?
         v8::TryCatch block(isolate);
         numberObject = value->ToNumber(isolate);
@@ -278,54 +276,53 @@ static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConf
     return static_cast<T>(fmod(numberValue, LimitsTrait::numberOfValues));
 }
 
-int8_t toInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+int8_t toInt8(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
-    return toSmallerInt<int8_t>(value, configuration, "byte", exceptionState);
+    return toSmallerInt<int8_t>(isolate, value, configuration, "byte", exceptionState);
 }
 
-int8_t toInt8(v8::Handle<v8::Value> value)
-{
-    NonThrowableExceptionState exceptionState;
-    return toInt8(value, NormalConversion, exceptionState);
-}
-
-uint8_t toUInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
-{
-    return toSmallerUInt<uint8_t>(value, configuration, "octet", exceptionState);
-}
-
-uint8_t toUInt8(v8::Handle<v8::Value> value)
+int8_t toInt8(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
     NonThrowableExceptionState exceptionState;
-    return toUInt8(value, NormalConversion, exceptionState);
+    return toInt8(isolate, value, NormalConversion, exceptionState);
 }
 
-int16_t toInt16(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+uint8_t toUInt8(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
-    return toSmallerInt<int16_t>(value, configuration, "short", exceptionState);
+    return toSmallerUInt<uint8_t>(isolate, value, configuration, "octet", exceptionState);
 }
 
-int16_t toInt16(v8::Handle<v8::Value> value)
-{
-    NonThrowableExceptionState exceptionState;
-    return toInt16(value, NormalConversion, exceptionState);
-}
-
-uint16_t toUInt16(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
-{
-    return toSmallerUInt<uint16_t>(value, configuration, "unsigned short", exceptionState);
-}
-
-uint16_t toUInt16(v8::Handle<v8::Value> value)
+uint8_t toUInt8(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
     NonThrowableExceptionState exceptionState;
-    return toUInt16(value, NormalConversion, exceptionState);
+    return toUInt8(isolate, value, NormalConversion, exceptionState);
 }
 
-int32_t toInt32Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+int16_t toInt16(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+{
+    return toSmallerInt<int16_t>(isolate, value, configuration, "short", exceptionState);
+}
+
+int16_t toInt16(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    NonThrowableExceptionState exceptionState;
+    return toInt16(isolate, value, NormalConversion, exceptionState);
+}
+
+uint16_t toUInt16(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+{
+    return toSmallerUInt<uint16_t>(isolate, value, configuration, "unsigned short", exceptionState);
+}
+
+uint16_t toUInt16(v8::Isolate* isolate, v8::Handle<v8::Value> value)
+{
+    NonThrowableExceptionState exceptionState;
+    return toUInt16(isolate, value, NormalConversion, exceptionState);
+}
+
+int32_t toInt32Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     ASSERT(!value->IsInt32());
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Can the value be converted to a number?
     v8::TryCatch block(isolate);
     v8::Local<v8::Number> numberObject = value->ToNumber(isolate);
@@ -352,13 +349,13 @@ int32_t toInt32Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguration 
     return numberObject->Int32Value();
 }
 
-int32_t toInt32(v8::Handle<v8::Value> value)
+int32_t toInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
     NonThrowableExceptionState exceptionState;
-    return toInt32(value, NormalConversion, exceptionState);
+    return toInt32(isolate, value, NormalConversion, exceptionState);
 }
 
-uint32_t toUInt32Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+uint32_t toUInt32Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     ASSERT(!value->IsUint32());
     if (value->IsInt32()) {
@@ -374,7 +371,6 @@ uint32_t toUInt32Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguratio
         return clampTo<uint32_t>(result);
     }
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Can the value be converted to a number?
     v8::TryCatch block(isolate);
     v8::Local<v8::Number> numberObject = value->ToNumber(isolate);
@@ -401,18 +397,17 @@ uint32_t toUInt32Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguratio
     return numberObject->Uint32Value();
 }
 
-uint32_t toUInt32(v8::Handle<v8::Value> value)
+uint32_t toUInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
     NonThrowableExceptionState exceptionState;
-    return toUInt32(value, NormalConversion, exceptionState);
+    return toUInt32(isolate, value, NormalConversion, exceptionState);
 }
 
-int64_t toInt64Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+int64_t toInt64Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     ASSERT(!value->IsInt32());
 
     v8::Local<v8::Number> numberObject;
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Can the value be converted to a number?
     v8::TryCatch block(isolate);
     numberObject = value->ToNumber(isolate);
@@ -436,13 +431,13 @@ int64_t toInt64Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguration 
     return integer;
 }
 
-int64_t toInt64(v8::Handle<v8::Value> value)
+int64_t toInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
     NonThrowableExceptionState exceptionState;
-    return toInt64(value, NormalConversion, exceptionState);
+    return toInt64(isolate, value, NormalConversion, exceptionState);
 }
 
-uint64_t toUInt64Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+uint64_t toUInt64Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     ASSERT(!value->IsUint32());
     if (value->IsInt32()) {
@@ -459,7 +454,6 @@ uint64_t toUInt64Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguratio
     }
 
     v8::Local<v8::Number> numberObject;
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Can the value be converted to a number?
     v8::TryCatch block(isolate);
     numberObject = value->ToNumber(isolate);
@@ -489,15 +483,15 @@ uint64_t toUInt64Slow(v8::Handle<v8::Value> value, IntegerConversionConfiguratio
     return integer;
 }
 
-uint64_t toUInt64(v8::Handle<v8::Value> value)
+uint64_t toUInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
     NonThrowableExceptionState exceptionState;
-    return toUInt64(value, NormalConversion, exceptionState);
+    return toUInt64(isolate, value, NormalConversion, exceptionState);
 }
 
-float toRestrictedFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+float toRestrictedFloat(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    float numberValue = toFloat(value, exceptionState);
+    float numberValue = toFloat(isolate, value, exceptionState);
     if (exceptionState.hadException())
         return 0;
     if (!std::isfinite(numberValue)) {
@@ -507,10 +501,9 @@ float toRestrictedFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionSt
     return numberValue;
 }
 
-double toDoubleSlow(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+double toDoubleSlow(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     ASSERT(!value->IsNumber());
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::TryCatch block(isolate);
     double doubleValue = value->NumberValue();
     if (block.HasCaught()) {
@@ -520,9 +513,9 @@ double toDoubleSlow(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     return doubleValue;
 }
 
-double toRestrictedDouble(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+double toRestrictedDouble(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
-    double numberValue = toDouble(value, exceptionState);
+    double numberValue = toDouble(isolate, value, exceptionState);
     if (exceptionState.hadException())
         return 0;
     if (!std::isfinite(numberValue)) {
@@ -532,7 +525,7 @@ double toRestrictedDouble(v8::Handle<v8::Value> value, ExceptionState& exception
     return numberValue;
 }
 
-String toByteString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+String toByteString(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     // Handle null default value.
     if (value.IsEmpty())
@@ -547,7 +540,6 @@ String toByteString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     if (value->IsString()) {
         stringObject = value.As<v8::String>();
     } else {
-        v8::Isolate* isolate = v8::Isolate::GetCurrent();
         v8::TryCatch block(isolate);
         stringObject = value->ToString(isolate);
         if (block.HasCaught()) {
@@ -673,7 +665,7 @@ static String replaceUnmatchedSurrogates(const String& string)
     return u.toString();
 }
 
-String toUSVString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+String toUSVString(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
 {
     // http://heycam.github.io/webidl/#es-USVString
     if (value.IsEmpty())
@@ -683,7 +675,6 @@ String toUSVString(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     if (value->IsString()) {
         stringObject = value.As<v8::String>();
     } else {
-        v8::Isolate* isolate = v8::Isolate::GetCurrent();
         v8::TryCatch block(isolate);
         stringObject = value->ToString(isolate);
         if (block.HasCaught()) {

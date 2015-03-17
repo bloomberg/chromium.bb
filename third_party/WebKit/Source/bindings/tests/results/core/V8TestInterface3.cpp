@@ -94,7 +94,7 @@ static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& 
             exceptionState.throwIfNeeded();
             return;
         }
-        d = toRestrictedDouble(info[1], exceptionState);
+        d = toRestrictedDouble(info.GetIsolate(), info[1], exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

@@ -76,15 +76,15 @@ TEST_F(V8BindingTest, toImplArray)
         NonThrowableExceptionState exceptionState;
         Vector<v8::Local<v8::Value>> v8HandleVector = toImplArray<v8::Local<v8::Value>>(v8Array, 0, m_scope.isolate(), exceptionState);
         EXPECT_EQ(3U, v8HandleVector.size());
-        EXPECT_EQ("Vini, vidi, vici.", toUSVString(v8HandleVector[0], exceptionState));
-        EXPECT_EQ(65535U, toUInt32(v8HandleVector[1]));
+        EXPECT_EQ("Vini, vidi, vici.", toUSVString(m_scope.isolate(), v8HandleVector[0], exceptionState));
+        EXPECT_EQ(65535U, toUInt32(m_scope.isolate(), v8HandleVector[1]));
 
         Vector<ScriptValue> scriptValueVector = toImplArray<ScriptValue>(v8Array, 0, m_scope.isolate(), exceptionState);
         EXPECT_EQ(3U, scriptValueVector.size());
         String reportOnZela;
         EXPECT_TRUE(scriptValueVector[0].toString(reportOnZela));
         EXPECT_EQ("Vini, vidi, vici.", reportOnZela);
-        EXPECT_EQ(65535U, toUInt32(scriptValueVector[1].v8Value()));
+        EXPECT_EQ(65535U, toUInt32(m_scope.isolate(), scriptValueVector[1].v8Value()));
     }
     {
         v8::Handle<v8::Array> v8StringArray1 = v8::Array::New(m_scope.isolate(), 2);

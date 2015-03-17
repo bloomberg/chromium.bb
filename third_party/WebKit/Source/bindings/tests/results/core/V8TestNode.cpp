@@ -148,7 +148,7 @@ static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "hrefByteString", "TestNode", holder, info.GetIsolate());
     TestNode* impl = V8TestNode::toImpl(holder);
-    V8StringResource<> cppValue = toByteString(v8Value, exceptionState);
+    V8StringResource<> cppValue = toByteString(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setHrefByteString(cppValue);

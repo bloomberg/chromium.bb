@@ -340,7 +340,7 @@ bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPr
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
     if (v8Value.IsEmpty())
         return false;
-    int cppValue = toInt16(v8Value, exceptionState);
+    int cppValue = toInt16(scriptState->isolate(), v8Value, exceptionState);
     if (exceptionState.throwIfNeeded())
         return false;
     *result = cppValue;

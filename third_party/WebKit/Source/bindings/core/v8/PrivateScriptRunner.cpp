@@ -242,7 +242,7 @@ void rethrowExceptionInPrivateScript(v8::Isolate* isolate, v8::TryCatch& block, 
         RELEASE_ASSERT(!code.IsEmpty() && code->IsInt32());
         ScriptState::Scope scope(scriptStateInUserScript);
         ExceptionState exceptionState(errorContext, propertyName, interfaceName, scriptStateInUserScript->context()->Global(), scriptStateInUserScript->isolate());
-        exceptionState.throwDOMException(toInt32(code), messageString);
+        exceptionState.throwDOMException(toInt32(isolate, code), messageString);
         exceptionState.throwIfNeeded();
         return;
     }
