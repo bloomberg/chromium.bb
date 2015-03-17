@@ -364,8 +364,21 @@ template("grit") {
   action(grit_custom_target) {
     script = "//tools/grit/grit.py"
     inputs = grit_inputs
-    outputs = grit_outputs
-    depfile = "$output_dir/${grit_output_name}.d"
+
+    # TODO(knn): Remove this once grit has rolled to recognize the flag.
+    depend_on_stamp =
+        defined(invoker.depend_on_stamp) && invoker.depend_on_stamp
+    if (depend_on_stamp) {
+      # Need this for migrating existing targets without clobbering.
+      depfile = "$output_dir/${grit_output_name}_stamp.d"
+      outputs = [
+        "${depfile}.stamp",
+      ]
+    } else {
+      depfile = "$output_dir/${grit_output_name}.d"
+      outputs = []
+    }
+    outputs += grit_outputs
 
     args = [
       "-i",
@@ -379,14 +392,18 @@ template("grit") {
       ]
     }
     args += [
-              "-o",
-              rebased_output_dir,
-              "--depdir",
-              ".",
-              "--depfile",
-              rebase_path(depfile, root_build_dir),
-              "--write-only-new=1",
-            ] + grit_defines
+      "-o",
+      rebased_output_dir,
+      "--depdir",
+      ".",
+      "--depfile",
+      rebase_path(depfile, root_build_dir),
+      "--write-only-new=1",
+    ]
+    if (depend_on_stamp) {
+      args += [ "--depend-on-stamp" ]
+    }
+    args += grit_defines
 
     # Add extra defines with -D flags.
     if (defined(invoker.defines)) {
