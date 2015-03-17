@@ -32,7 +32,9 @@ bool PasswordForm::IsPublicSuffixMatch() const {
 }
 
 bool PasswordForm::operator==(const PasswordForm& form) const {
-  return signon_realm == form.signon_realm &&
+  return scheme == form.scheme &&
+      signon_realm == form.signon_realm &&
+      original_signon_realm == form.original_signon_realm &&
       origin == form.origin &&
       action == form.action &&
       submit_element == form.submit_element &&
@@ -67,6 +69,7 @@ bool PasswordForm::operator!=(const PasswordForm& form) const {
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form) {
   return os << "scheme: " << form.scheme
             << " signon_realm: " << form.signon_realm
+            << " original_signon_realm: " << form.original_signon_realm
             << " origin: " << form.origin
             << " action: " << form.action
             << " submit_element: " << base::UTF16ToUTF8(form.submit_element)

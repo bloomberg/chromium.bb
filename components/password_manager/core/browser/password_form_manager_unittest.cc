@@ -399,6 +399,8 @@ TEST_F(PasswordFormManagerTest, PSLMatchedCredentialsMetadataUpdated) {
   expected_saved_form.other_possible_usernames.clear();
   expected_saved_form.form_data = saved_match()->form_data;
   expected_saved_form.origin = saved_match()->origin;
+  expected_saved_form.original_signon_realm =
+      saved_match()->original_signon_realm;
   PasswordForm actual_saved_form;
 
   EXPECT_CALL(*(client_with_store.mock_driver()->mock_autofill_manager()),
