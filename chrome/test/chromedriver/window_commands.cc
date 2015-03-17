@@ -21,6 +21,7 @@
 #include "chrome/test/chromedriver/chrome/geoposition.h"
 #include "chrome/test/chromedriver/chrome/javascript_dialog_manager.h"
 #include "chrome/test/chromedriver/chrome/js.h"
+#include "chrome/test/chromedriver/chrome/network_conditions.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/chrome/web_view.h"
@@ -874,44 +875,57 @@ Status ExecuteSetNetworkConditions(
     WebView* web_view,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
+  std::string network_name;
   const base::DictionaryValue* conditions = NULL;
-  NetworkConditions network_conditions;
-  // |latency| is required.
-  if (!params.GetDictionary("network_conditions", &conditions) ||
-      !conditions->GetDouble("latency", &network_conditions.latency))
-    return Status(kUnknownError, "missing or invalid 'network_conditions'");
-
-  // Either |throughput| or the pair |download_throughput| and
-  // |upload_throughput| is required.
-  if (conditions->HasKey("throughput")) {
-    if (!conditions->GetDouble("throughput",
-                                &network_conditions.download_throughput))
-      return Status(kUnknownError, "invalid 'throughput'");
-    conditions->GetDouble("throughput", &network_conditions.upload_throughput);
-  } else if (conditions->HasKey("download_throughput") &&
-             conditions->HasKey("upload_throughput")) {
-    if (!conditions->GetDouble("download_throughput",
-                                &network_conditions.download_throughput) ||
-        !conditions->GetDouble("upload_throughput",
-                                &network_conditions.upload_throughput))
+  scoped_ptr<NetworkConditions> network_conditions(new NetworkConditions());
+  if (params.GetString("network_name", &network_name)) {
+    // Get conditions from preset list.
+    Status status = FindPresetNetwork(network_name, network_conditions.get());
+    if (status.IsError())
+      return status;
+  } else if (params.GetDictionary("network_conditions", &conditions)) {
+    // |latency| is required.
+    if (!conditions->GetDouble("latency", &network_conditions->latency))
       return Status(kUnknownError,
-                    "invalid 'download_throughput' or 'upload_throughput'");
+                    "invalid 'network_conditions' is missing 'latency'");
+
+    // Either |throughput| or the pair |download_throughput| and
+    // |upload_throughput| is required.
+    if (conditions->HasKey("throughput")) {
+      if (!conditions->GetDouble("throughput",
+                                 &network_conditions->download_throughput))
+        return Status(kUnknownError, "invalid 'throughput'");
+      conditions->GetDouble("throughput",
+                            &network_conditions->upload_throughput);
+    } else if (conditions->HasKey("download_throughput") &&
+               conditions->HasKey("upload_throughput")) {
+      if (!conditions->GetDouble("download_throughput",
+                                 &network_conditions->download_throughput) ||
+          !conditions->GetDouble("upload_throughput",
+                                 &network_conditions->upload_throughput))
+        return Status(kUnknownError,
+                      "invalid 'download_throughput' or 'upload_throughput'");
+    } else {
+      return Status(kUnknownError,
+                    "invalid 'network_conditions' is missing 'throughput' or "
+                    "'download_throughput'/'upload_throughput' pair");
+    }
+
+    // |offline| is optional.
+    if (conditions->HasKey("offline")) {
+      if (!conditions->GetBoolean("offline", &network_conditions->offline))
+        return Status(kUnknownError, "invalid 'offline'");
+    } else {
+      network_conditions->offline = false;
+    }
   } else {
     return Status(kUnknownError,
-                  "invalid 'network_conditions' is missing 'throughput' or "
-                  "'download_throughput'/'upload_throughput' pair");
-  }
-
-  // |offline| is optional.
-  if (conditions->HasKey("offline")) {
-    if (!conditions->GetBoolean("offline", &network_conditions.offline))
-      return Status(kUnknownError, "invalid 'offline'");
-  } else {
-    network_conditions.offline = false;
+                  "either 'network_conditions' or 'network_name' must be "
+                  "supplied");
   }
 
   session->overridden_network_conditions.reset(
-      new NetworkConditions(network_conditions));
+      network_conditions.release());
   return web_view->OverrideNetworkConditions(
       *session->overridden_network_conditions);
 }

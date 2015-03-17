@@ -5,11 +5,24 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CHROME_NETWORK_CONDITIONS_H_
 #define CHROME_TEST_CHROMEDRIVER_CHROME_NETWORK_CONDITIONS_H_
 
+#include <string>
+#include "base/memory/scoped_ptr.h"
+
+class Status;
+
 struct NetworkConditions {
+  NetworkConditions();
+  NetworkConditions(bool offline, double latency,
+                    double download_throughput, double upload_throughput);
+  ~NetworkConditions();
   bool offline;
   double latency;
   double download_throughput;
   double upload_throughput;
 };
+
+Status FindPresetNetwork(
+    std::string network_name,
+    NetworkConditions* network_conditions);
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_NETWORK_CONDITIONS_H_

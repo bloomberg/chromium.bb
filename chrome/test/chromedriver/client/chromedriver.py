@@ -372,6 +372,10 @@ class ChromeDriver(object):
     }
     self.ExecuteCommand(Command.SET_NETWORK_CONDITIONS, params)
 
+  def SetNetworkConditionsName(self, network_name):
+    self.ExecuteCommand(
+        Command.SET_NETWORK_CONDITIONS, {'network_name': network_name})
+
   def GetNetworkConditions(self):
     conditions = self.ExecuteCommand(Command.GET_NETWORK_CONDITIONS)
     return {
