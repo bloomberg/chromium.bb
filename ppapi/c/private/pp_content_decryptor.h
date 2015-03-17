@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/pp_content_decryptor.idl modified Wed Jan  7 18:40:14 2015. */
+/* From private/pp_content_decryptor.idl modified Fri Mar 13 14:53:18 2015. */
 
 #ifndef PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
 #define PPAPI_C_PRIVATE_PP_CONTENT_DECRYPTOR_H_
@@ -491,7 +491,9 @@ typedef enum {
   PP_CDMKEYSTATUS_USABLE = 0,
   PP_CDMKEYSTATUS_INVALID = 1,
   PP_CDMKEYSTATUS_EXPIRED = 2,
-  PP_CDMKEYSTATUS_OUTPUTNOTALLOWED = 3
+  PP_CDMKEYSTATUS_OUTPUTNOTALLOWED = 3,
+  PP_CDMKEYSTATUS_OUTPUTDOWNSCALED = 4,
+  PP_CDMKEYSTATUS_STATUSPENDING = 5
 } PP_CdmKeyStatus;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_CdmKeyStatus, 4);
 /**

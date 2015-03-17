@@ -171,6 +171,8 @@ static media::MediaKeys::SessionType ConvertSessionType(
 }
 
 cdm::KeyStatus ConvertKeyStatus(media::CdmKeyInformation::KeyStatus status) {
+  // TODO(jrummell): Update OUTPUT_DOWNSCALED and KEY_STATUS_PENDING once CDM
+  // interface supports them. http://crbug.com/450861
   switch (status) {
     case media::CdmKeyInformation::KeyStatus::USABLE:
       return cdm::kUsable;
@@ -180,6 +182,10 @@ cdm::KeyStatus ConvertKeyStatus(media::CdmKeyInformation::KeyStatus status) {
       return cdm::kExpired;
     case media::CdmKeyInformation::KeyStatus::OUTPUT_NOT_ALLOWED:
       return cdm::kOutputNotAllowed;
+    case media::CdmKeyInformation::KeyStatus::OUTPUT_DOWNSCALED:
+      return cdm::kInternalError;
+    case media::CdmKeyInformation::KeyStatus::KEY_STATUS_PENDING:
+      return cdm::kInternalError;
   }
   NOTIMPLEMENTED();
   return cdm::kInternalError;

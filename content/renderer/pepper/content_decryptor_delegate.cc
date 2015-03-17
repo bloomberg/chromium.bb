@@ -302,6 +302,10 @@ media::CdmKeyInformation::KeyStatus PpCdmKeyStatusToCdmKeyInformationKeyStatus(
       return media::CdmKeyInformation::EXPIRED;
     case PP_CDMKEYSTATUS_OUTPUTNOTALLOWED:
       return media::CdmKeyInformation::OUTPUT_NOT_ALLOWED;
+    case PP_CDMKEYSTATUS_OUTPUTDOWNSCALED:
+      return media::CdmKeyInformation::OUTPUT_DOWNSCALED;
+    case PP_CDMKEYSTATUS_STATUSPENDING:
+      return media::CdmKeyInformation::KEY_STATUS_PENDING;
     default:
       NOTREACHED();
       return media::CdmKeyInformation::INTERNAL_ERROR;
