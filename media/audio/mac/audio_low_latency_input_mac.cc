@@ -496,7 +496,14 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
   if (result) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Media.AudioInputCbErrorMac", result);
     OSSTATUS_DLOG(ERROR, result) << "AudioUnitRender() failed ";
-    audio_input->HandleError(result);
+    if (result != kAudioUnitErr_TooManyFramesToProcess) {
+      // We avoid stopping the stream for kAudioUnitErr_TooManyFramesToProcess
+      // since it has been observed that some USB headsets can cause this error
+      // but only for a few initial frames at startup and then then the stream
+      // returns to a stable state again.
+      // See b/19524368 for details.
+      audio_input->HandleError(result);
+    }
     return result;
   }
 
