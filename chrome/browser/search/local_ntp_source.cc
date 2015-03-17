@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -76,6 +77,21 @@ bool DefaultSearchProviderIsGoogle(Profile* profile) {
       (TemplateURLPrepopulateData::GetEngineType(
           *default_provider, template_url_service->search_terms_data()) ==
        SEARCH_ENGINE_GOOGLE);
+}
+
+// Returns whether we are in the Fast NTP experiment or not.
+bool IsLocalNTPFastEnabled() {
+  return StartsWithASCII(base::FieldTrialList::FindFullName("LocalNTPFast"),
+                         "Enabled", true);
+}
+
+// Serves a particular resource.
+// Used for bypassing the default resources when we are in an experiment.
+void SendResource(int resource_id,
+                  const content::URLDataSource::GotDataCallback& callback) {
+  scoped_refptr<base::RefCountedStaticMemory> response(
+      ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id));
+  callback.Run(response.get());
 }
 
 // Adds a localized string keyed by resource id to the dictionary.
@@ -165,6 +181,15 @@ void LocalNtpSource::StartDataRequest(
     callback.Run(base::RefCountedString::TakeString(&config_data_js));
     return;
   }
+  if (IsLocalNTPFastEnabled()) {
+    if (stripped_path == "local-ntp.html") {
+      return SendResource(IDR_LOCAL_NTP_FAST_HTML, callback);
+    } else if (stripped_path == "local-ntp.js") {
+      return SendResource(IDR_LOCAL_NTP_FAST_JS, callback);
+    } else if (stripped_path == "local-ntp.css") {
+      return SendResource(IDR_LOCAL_NTP_FAST_CSS, callback);
+    }
+  }
   float scale = 1.0f;
   std::string filename;
   webui::ParsePathAndScale(
@@ -184,12 +209,9 @@ void LocalNtpSource::StartDataRequest(
 
 std::string LocalNtpSource::GetMimeType(
     const std::string& path) const {
-  const std::string& stripped_path = StripParameters(path);
-  std::string filename;
-  webui::ParsePathAndScale(GURL(GetLocalNtpPath() + stripped_path), &filename,
-                           NULL);
+  const std::string stripped_path = StripParameters(path);
   for (size_t i = 0; i < arraysize(kResources); ++i) {
-    if (filename == kResources[i].filename)
+    if (stripped_path == kResources[i].filename)
       return kResources[i].mime_type;
   }
   return std::string();
