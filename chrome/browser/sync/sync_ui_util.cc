@@ -99,7 +99,7 @@ base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
         return l10n_util::GetStringFUTF16(
             IDS_SYNC_ACCOUNT_SYNCING_TO_USER_WITH_MANAGE_LINK_NEW,
             user_name,
-            base::ASCIIToUTF16(chrome::kSyncChromeDashboardURL));
+            base::ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
       }
       return l10n_util::GetStringFUTF16(
           IDS_SYNC_ACCOUNT_SYNCING_TO_USER_WITH_MANAGE_LINK,

@@ -367,8 +367,6 @@ const char kExtensionResourceInvalidRequestURL[] =
 
 const char kSyncGoogleDashboardURL[] =
     "https://www.google.com/settings/chrome/sync/";
-const char kSyncChromeDashboardURL[] =
-    "https://chrome.com/sync/";
 
 const char kPasswordManagerLearnMoreURL[] =
 #if defined(OS_CHROMEOS)
