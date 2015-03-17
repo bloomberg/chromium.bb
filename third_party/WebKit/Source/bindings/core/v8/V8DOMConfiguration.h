@@ -57,10 +57,10 @@ public:
     // the instance or the prototype ObjectTemplate, based on |instanceOrPrototypeConfiguration|.
     struct AttributeConfiguration {
         const char* const name;
-        v8::AccessorGetterCallback getter;
-        v8::AccessorSetterCallback setter;
-        v8::AccessorGetterCallback getterForMainWorld;
-        v8::AccessorSetterCallback setterForMainWorld;
+        v8::AccessorNameGetterCallback getter;
+        v8::AccessorNameSetterCallback setter;
+        v8::AccessorNameGetterCallback getterForMainWorld;
+        v8::AccessorNameSetterCallback setterForMainWorld;
         const WrapperTypeInfo* data;
         v8::AccessControl settings;
         v8::PropertyAttribute attribute;
@@ -127,7 +127,7 @@ public:
 
     static void installConstant(v8::Isolate*, v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototypeTemplate, const ConstantConfiguration&);
 
-    static void installConstantWithGetter(v8::Isolate*, v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototypeTemplate, const char* name, v8::AccessorGetterCallback);
+    static void installConstantWithGetter(v8::Isolate*, v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototypeTemplate, const char* name, v8::AccessorNameGetterCallback);
 
     // MethodConfiguration translates into calls to Set() for setting up an
     // object's callbacks. It sets the method on both the FunctionTemplate or

@@ -54,7 +54,7 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% block replaceable_attribute_setter_and_callback %}
 {% if has_replaceable_attributes or has_constructor_attributes %}
 template<class CallbackInfo>
-static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
+static void {{cpp_class}}ForceSetAttributeOnThis(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const CallbackInfo& info)
 {
     {% if is_check_security %}
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());

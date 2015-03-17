@@ -149,7 +149,7 @@ static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(
 {%- if attribute.is_expose_js_accessors %}
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- else %}
-v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
+v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info
 {%- endif %})
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
@@ -187,7 +187,7 @@ static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(
 {%- if attribute.is_expose_js_accessors %}
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- else %}
-v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info
+v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info
 {%- endif %})
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
@@ -309,7 +309,7 @@ static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(
 {%- if attribute.is_expose_js_accessors %}
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- else %}
-v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
+v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
 {%- endif %})
 {
     {% if attribute.is_expose_js_accessors %}

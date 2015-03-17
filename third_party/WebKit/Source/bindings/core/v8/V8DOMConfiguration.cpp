@@ -43,8 +43,8 @@ void installAttributeInternal(v8::Isolate* isolate, v8::Handle<ObjectOrTemplate>
         && !world.isPrivateScriptIsolatedWorld())
         return;
 
-    v8::AccessorGetterCallback getter = attribute.getter;
-    v8::AccessorSetterCallback setter = attribute.setter;
+    v8::AccessorNameGetterCallback getter = attribute.getter;
+    v8::AccessorNameSetterCallback setter = attribute.setter;
     if (world.isMainWorld()) {
         if (attribute.getterForMainWorld)
             getter = attribute.getterForMainWorld;
@@ -205,7 +205,7 @@ void V8DOMConfiguration::installConstant(v8::Isolate* isolate, v8::Handle<v8::Fu
     installConstantInternal(isolate, functionDescriptor, prototypeTemplate, constant);
 }
 
-void V8DOMConfiguration::installConstantWithGetter(v8::Isolate* isolate, v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototypeTemplate, const char* name, v8::AccessorGetterCallback getter)
+void V8DOMConfiguration::installConstantWithGetter(v8::Isolate* isolate, v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototypeTemplate, const char* name, v8::AccessorNameGetterCallback getter)
 {
     v8::Handle<v8::String> constantName = v8AtomicString(isolate, name);
     v8::PropertyAttribute attributes =

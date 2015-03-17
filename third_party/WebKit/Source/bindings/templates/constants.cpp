@@ -1,7 +1,7 @@
 {##############################################################################}
 {% macro constant_getter_callback(constant) %}
 {% filter conditional(constant.conditional_string) %}
-static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
     {% if constant.deprecate_as %}

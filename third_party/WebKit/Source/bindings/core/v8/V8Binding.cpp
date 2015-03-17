@@ -1021,7 +1021,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isol
     return InspectorFunctionCallEvent::data(context, info.scriptId(), info.resourceName(), info.lineNumber());
 }
 
-void v8ConstructorAttributeGetterAsProperty(v8::Local<v8::String> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info)
+void v8ConstructorAttributeGetterAsProperty(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8ConstructorAttributeGetter(info);
 }
