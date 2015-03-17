@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebElementCollection.h"
 #include "ui/gfx/geometry/rect.h"
@@ -29,12 +30,6 @@ namespace autofill {
 struct FormData;
 struct FormFieldData;
 struct WebElementDescriptor;
-
-// A bit field mask for form or form element requirements.
-enum RequirementsMask {
-  REQUIRE_NONE         = 0,  // No requirements.
-  REQUIRE_AUTOCOMPLETE = 1,  // Require that autocomplete != off.
-};
 
 // A bit field mask to extract data from WebFormControlElement.
 enum ExtractMask {

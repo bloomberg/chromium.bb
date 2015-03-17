@@ -475,6 +475,8 @@
           ],
           'dependencies': [
             'autofill_core_browser',
+            'autofill_core_common',
+            'autofill_ios_injected_js',
             '../ios/provider/ios_provider_web.gyp:ios_provider_web',
             '../ios/web/ios_web.gyp:ios_web',
           ],
@@ -482,6 +484,29 @@
             'autofill/ios/browser/autofill_driver_ios.h',
             'autofill/ios/browser/autofill_driver_ios.mm',
             'autofill/ios/browser/autofill_driver_ios_bridge.h',
+            'autofill/ios/browser/form_suggestion.h',
+            'autofill/ios/browser/form_suggestion.mm',
+            'autofill/ios/browser/js_autofill_manager.h',
+            'autofill/ios/browser/js_autofill_manager.mm',
+            'autofill/ios/browser/js_suggestion_manager.h',
+            'autofill/ios/browser/js_suggestion_manager.mm',
+          ],
+        },
+        {
+          'target_name': 'autofill_ios_injected_js',
+          'type': 'none',
+          'sources': [
+            'autofill/ios/browser/resources/autofill_controller.js',
+            'autofill/ios/browser/resources/suggestion_controller.js',
+          ],
+          'link_settings': {
+            'mac_bundle_resources': [
+              '<(SHARED_INTERMEDIATE_DIR)/autofill_controller.js',
+              '<(SHARED_INTERMEDIATE_DIR)/suggestion_controller.js',
+            ],
+          },
+          'includes': [
+            '../ios/web/js_compile.gypi',
           ],
         },
       ],
