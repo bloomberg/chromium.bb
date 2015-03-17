@@ -22,7 +22,7 @@
 #ifndef SVGPathSegMovetoAbs_h
 #define SVGPathSegMovetoAbs_h
 
-#include "core/svg/SVGPathSegWithContext.h"
+#include "core/svg/SVGPathSeg.h"
 
 namespace blink {
 

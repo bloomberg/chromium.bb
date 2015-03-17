@@ -3392,7 +3392,6 @@
             'svg/SVGPathSegListTearOff.h',
             'svg/SVGPathSegMovetoAbs.h',
             'svg/SVGPathSegMovetoRel.h',
-            'svg/SVGPathSegWithContext.h',
             'svg/SVGPathSource.h',
             'svg/SVGPathStringBuilder.cpp',
             'svg/SVGPathStringBuilder.h',

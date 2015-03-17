@@ -22,7 +22,7 @@
 #ifndef SVGPathSegCurvetoQuadraticSmoothRel_h
 #define SVGPathSegCurvetoQuadraticSmoothRel_h
 
-#include "core/svg/SVGPathSegWithContext.h"
+#include "core/svg/SVGPathSeg.h"
 
 namespace blink {
 

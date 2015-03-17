@@ -132,6 +132,35 @@ private:
     RawPtrWillBeMember<SVGElement> m_contextElement;
 };
 
+class SVGPathSegSingleCoordinate : public SVGPathSeg {
+public:
+    float x() const { return m_x; }
+    void setX(float x)
+    {
+        m_x = x;
+        commitChange();
+    }
+
+    float y() const { return m_y; }
+    void setY(float y)
+    {
+        m_y = y;
+        commitChange();
+    }
+
+protected:
+    SVGPathSegSingleCoordinate(SVGPathElement* element, float x, float y)
+        : SVGPathSeg(element)
+        , m_x(x)
+        , m_y(y)
+    {
+    }
+
+private:
+    float m_x;
+    float m_y;
+};
+
 } // namespace blink
 
 #endif // SVGPathSeg_h

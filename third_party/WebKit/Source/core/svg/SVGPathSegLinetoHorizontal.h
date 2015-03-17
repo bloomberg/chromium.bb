@@ -21,14 +21,14 @@
 #ifndef SVGPathSegLinetoHorizontal_h
 #define SVGPathSegLinetoHorizontal_h
 
-#include "core/svg/SVGPathSegWithContext.h"
+#include "core/svg/SVGPathSeg.h"
 
 namespace blink {
 
-class SVGPathSegLinetoHorizontal : public SVGPathSegWithContext {
+class SVGPathSegLinetoHorizontal : public SVGPathSeg {
 public:
     SVGPathSegLinetoHorizontal(SVGPathElement* element, float x)
-        : SVGPathSegWithContext(element)
+        : SVGPathSeg(element)
         , m_x(x)
     {
     }

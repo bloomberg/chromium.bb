@@ -21,14 +21,14 @@
 #ifndef SVGPathSegCurvetoCubic_h
 #define SVGPathSegCurvetoCubic_h
 
-#include "core/svg/SVGPathSegWithContext.h"
+#include "core/svg/SVGPathSeg.h"
 
 namespace blink {
 
-class SVGPathSegCurvetoCubic : public SVGPathSegWithContext {
+class SVGPathSegCurvetoCubic : public SVGPathSeg {
 public:
     SVGPathSegCurvetoCubic(SVGPathElement* element, float x, float y, float x1, float y1, float x2, float y2)
-        : SVGPathSegWithContext(element)
+        : SVGPathSeg(element)
         , m_x(x)
         , m_y(y)
         , m_x1(x1)

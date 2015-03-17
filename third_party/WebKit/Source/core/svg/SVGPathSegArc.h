@@ -21,14 +21,14 @@
 #ifndef SVGPathSegArc_h
 #define SVGPathSegArc_h
 
-#include "core/svg/SVGPathSegWithContext.h"
+#include "core/svg/SVGPathSeg.h"
 
 namespace blink {
 
-class SVGPathSegArc : public SVGPathSegWithContext {
+class SVGPathSegArc : public SVGPathSeg {
 public:
     SVGPathSegArc(SVGPathElement* element, float x, float y, float r1, float r2, float angle, bool largeArcFlag, bool sweepFlag)
-        : SVGPathSegWithContext(element)
+        : SVGPathSeg(element)
         , m_x(x)
         , m_y(y)
         , m_r1(r1)

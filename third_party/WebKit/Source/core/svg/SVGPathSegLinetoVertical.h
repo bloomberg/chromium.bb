@@ -21,14 +21,14 @@
 #ifndef SVGPathSegLinetoVertical_h
 #define SVGPathSegLinetoVertical_h
 
-#include "core/svg/SVGPathSegWithContext.h"
+#include "core/svg/SVGPathSeg.h"
 
 namespace blink {
 
-class SVGPathSegLinetoVertical : public SVGPathSegWithContext {
+class SVGPathSegLinetoVertical : public SVGPathSeg {
 public:
     SVGPathSegLinetoVertical(SVGPathElement* element, float y)
-        : SVGPathSegWithContext(element)
+        : SVGPathSeg(element)
         , m_y(y)
     {
     }
