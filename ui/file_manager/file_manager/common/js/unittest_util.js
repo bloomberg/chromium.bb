@@ -138,6 +138,17 @@ TestCallRecorder.prototype.getLastArguments = function() {
 };
 
 /**
+ * @param {number} index Index of which args to return.
+ * @return {?Arguments} Returns the {@code Arguments} for the call specified
+ *    by indexd.
+ */
+TestCallRecorder.prototype.getArguments = function(index) {
+  return (index < this.calls_.length) ?
+      this.calls_[index] :
+      null;
+};
+
+/**
  * @constructor
  * @struct
  */

@@ -35,7 +35,7 @@ var testLogger;
 /** @type {!importer.RecordStorage|undefined} */
 var storage;
 
-/** @type {!Promise.<!importer.PersistentImportHistory>|undefined} */
+/** @type {!Promise<!importer.PersistentImportHistory>|undefined} */
 var historyProvider;
 
 /** @type {Promise} */
@@ -235,14 +235,15 @@ function testHistoryObserver_Unsubscribe(callback) {
 }
 
 function testRecordStorage_RemembersPreviouslyWrittenRecords(callback) {
-  testPromise = createRealStorage('recordStorageTest.data')
+  var recorder = new TestCallRecorder();
+  testPromise = createRealStorage(['recordStorageTest.data'])
       .then(
           function(storage) {
             return storage.write(['abc', '123']).then(
                 function() {
-                  return storage.readAll().then(
-                      function(records) {
-                        assertEquals(1, records.length);
+                  return storage.readAll(recorder.callback).then(
+                      function() {
+                        recorder.assertCallCount(1);
                       });
                 });
           });
@@ -250,17 +251,66 @@ function testRecordStorage_RemembersPreviouslyWrittenRecords(callback) {
   reportPromise(testPromise, callback);
 }
 
+function testRecordStorage_LoadsRecordsFromMultipleHistoryFiles(callback) {
+  var recorder = new TestCallRecorder();
+
+  var remoteData = createRealStorage(['multiStorage-1.data'])
+      .then(
+          function(storage) {
+            return storage.write(['remote-data', '98765432']);
+          });
+  var moreRemoteData = createRealStorage(['multiStorage-2.data'])
+      .then(
+          function(storage) {
+            return storage.write(['antarctica-data', '777777777777']);
+          });
+
+  testPromise = Promise.all([remoteData, moreRemoteData]).then(
+    function() {
+      return createRealStorage([
+        'multiStorage-0.data',
+        'multiStorage-1.data',
+        'multiStorage-2.data'])
+        .then(
+            function(storage) {
+              var writePromises = [
+                storage.write(['local-data', '111'])
+              ];
+              return Promise.all(writePromises)
+                  .then(
+                      function() {
+                        return storage.readAll(recorder.callback).then(
+                            function() {
+                              recorder.assertCallCount(3);
+                              assertEquals(
+                                  'local-data',
+                                  recorder.getArguments(0)[0][0]);
+                              assertEquals(
+                                  'remote-data',
+                                  recorder.getArguments(1)[0][0]);
+                              assertEquals(
+                                  'antarctica-data',
+                                  recorder.getArguments(2)[0][0]);
+                            });
+                      });
+            });
+    });
+
+  reportPromise(testPromise, callback);
+}
+
 function testRecordStorage_SerializingOperations(callback) {
-  testPromise = createRealStorage('recordStorageTestForSerializing.data')
+  var recorder = new TestCallRecorder();
+  testPromise = createRealStorage(['recordStorageTestForSerializing.data'])
       .then(
           function(storage) {
             var writePromises = [];
             var WRITES_COUNT = 20;
             for (var i = 0; i < WRITES_COUNT; i++)
               writePromises.push(storage.write(['abc', '123']));
-            var readAllPromise = storage.readAll().then(
-              function(records) {
-                assertEquals(WRITES_COUNT, records.length);
+            var readAllPromise = storage.readAll(recorder.callback).then(
+              function() {
+                recorder.assertCallCount(WRITES_COUNT);
               });
             // Write an extra record, which must be executed afte reading is
             // completed.
@@ -282,9 +332,6 @@ function setupChromeApis() {
     addListener: function() {}
   };
   chrome.syncFileSystem = {};
-  chrome.syncFileSystem.onFileStatusChanged = {
-    addListener: function() {}
-  };
 }
 
 /**
@@ -298,14 +345,15 @@ function installTestLogger() {
 }
 
 /**
- * @param {string} fileName
- * @return {!Promise.<!FileEntry>}
+ * @param {!Array<string>} fileNames
+ * @return {!Promise<!importer.RecordStorage>}
  */
-function createRealStorage(fileName) {
-  return createFileEntry(fileName)
+function createRealStorage(fileNames) {
+  var filePromises = fileNames.map(createFileEntry);
+  return Promise.all(filePromises)
       .then(
-          function(fileEntry) {
-            return new importer.FileEntryRecordStorage(fileEntry);
+          function(fileEntries) {
+            return new importer.FileBasedRecordStorage(fileEntries);
           });
 }
 
@@ -313,7 +361,7 @@ function createRealStorage(fileName) {
  * Creates a *real* FileEntry in the DOM filesystem.
  *
  * @param {string} fileName
- * @return {!Promise.<FileEntry>}
+ * @return {!Promise<!FileEntry>}
  */
 function createFileEntry(fileName) {
   return new Promise(
@@ -349,7 +397,7 @@ var TestRecordStorage = function() {
   var timeStamp = importer.toSecondsFromEpoch(
         FILE_LAST_MODIFIED);
   // Pre-populate the store with some "previously written" data <wink>.
-  /** @private {!Array.<!Array.<string>>} */
+  /** @private {!Array<!Array<string>>} */
   this.records_ = [
     [1,
       timeStamp + '_' + FILE_SIZE, GOOGLE_DRIVE],
@@ -365,7 +413,8 @@ var TestRecordStorage = function() {
    * @override
    * @this {TestRecordStorage}
    */
-  this.readAll = function() {
+  this.readAll = function(recordCallback) {
+    this.records_.forEach(recordCallback);
     return Promise.resolve(this.records_);
   };
 

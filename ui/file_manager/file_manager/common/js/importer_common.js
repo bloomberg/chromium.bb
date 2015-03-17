@@ -43,7 +43,7 @@ importer.ScanObserver;
 
 /**
  * Volume types eligible for the affections of Cloud Import.
- * @private @const {!Array.<!VolumeManagerCommon.VolumeType>}
+ * @private @const {!Array<!VolumeManagerCommon.VolumeType>}
  */
 importer.ELIGIBLE_VOLUME_TYPES_ = [
   VolumeManagerCommon.VolumeType.MTP,
@@ -144,7 +144,7 @@ importer.isMediaDirectory = function(entry, volumeInfoProvider) {
 };
 
 /**
- * @return {!Promise.<boolean>} Resolves with true when Cloud Import feature
+ * @return {!Promise<boolean>} Resolves with true when Cloud Import feature
  *     is enabled.
  */
 importer.importEnabled = function() {
@@ -182,7 +182,7 @@ importer.handlePhotosAppMessage = function(message) {
 };
 
 /**
- * @return {!Promise.<boolean>} Resolves with true when Cloud Import feature
+ * @return {!Promise<boolean>} Resolves with true when Cloud Import feature
  *     is enabled.
  */
 importer.isPhotosAppImportEnabled = function() {
@@ -211,7 +211,7 @@ importer.getDirectoryNameForDate = function(date) {
 };
 
 /**
- * @return {!Promise.<number>} Resolves with an integer that is probably
+ * @return {!Promise<number>} Resolves with an integer that is probably
  *     relatively unique to this machine (among a users machines).
  */
 importer.getMachineId = function() {
@@ -232,7 +232,7 @@ importer.getMachineId = function() {
 };
 
 /**
- * @return {!Promise.<string>} Resolves with the filename of this
+ * @return {!Promise<string>} Resolves with the filename of this
  *     machines history file.
  */
 importer.getHistoryFilename = function() {
@@ -244,7 +244,7 @@ importer.getHistoryFilename = function() {
 
 /**
  * @param {number} logId
- * @return {!Promise.<string>} Resolves with the filename of this
+ * @return {!Promise<string>} Resolves with the filename of this
  *     machines debug log file.
  */
 importer.getDebugLogFilename = function(logId) {
@@ -280,7 +280,7 @@ importer.Resolver = function() {
   /** @private {function(*=)} */
   this.reject_;
 
-  /** @private {!Promise.<T>} */
+  /** @private {!Promise<T>} */
   this.promise_ = new Promise(
       function(resolve, reject) {
         this.resolve_ = resolve;
@@ -310,7 +310,7 @@ importer.Resolver.prototype = /** @struct */ {
     return this.reject_;
   },
   /**
-   * @return {!Promise.<T>}
+   * @return {!Promise<T>}
    * @template T
    */
   get promise() {
@@ -358,8 +358,19 @@ importer.PromisingFileEntry = function(fileEntry) {
 };
 
 /**
+ * Convenience method for creating new instances. Can, for example,
+ * be passed to Array.map.
+ *
+ * @param {!FileEntry} entry
+ * @return {!importer.PromisingFileEntry}
+ */
+importer.PromisingFileEntry.create = function(entry) {
+  return new importer.PromisingFileEntry(entry);
+};
+
+/**
  * A "Promisary" wrapper around entry.getWriter.
- * @return {!Promise.<!FileWriter>}
+ * @return {!Promise<!FileWriter>}
  */
 importer.PromisingFileEntry.prototype.createWriter = function() {
   return new Promise(this.fileEntry_.createWriter.bind(this.fileEntry_));
@@ -367,14 +378,14 @@ importer.PromisingFileEntry.prototype.createWriter = function() {
 
 /**
  * A "Promisary" wrapper around entry.file.
- * @return {!Promise.<!File>}
+ * @return {!Promise<!File>}
  */
 importer.PromisingFileEntry.prototype.file = function() {
   return new Promise(this.fileEntry_.file.bind(this.fileEntry_));
 };
 
 /**
- * @return {!Promise.<!Object>}
+ * @return {!Promise<!Object>}
  */
 importer.PromisingFileEntry.prototype.getMetadata = function() {
   return new Promise(this.fileEntry_.getMetadata.bind(this.fileEntry_));
@@ -420,7 +431,7 @@ importer.inflateAppUrl = function(deflated) {
 
 /**
  * @param {!FileEntry} fileEntry
- * @return {!Promise.<string>} Resolves with a "hashcode" consisting of
+ * @return {!Promise<string>} Resolves with a "hashcode" consisting of
  *     just the last modified time and the file size.
  */
 importer.createMetadataHashcode = function(fileEntry) {
@@ -436,7 +447,7 @@ importer.createMetadataHashcode = function(fileEntry) {
             .then(
                 /**
                  * @param {!Object} metadata
-                 * @return {!Promise.<string>}
+                 * @return {!Promise<string>}
                  * @this {importer.PersistentImportHistory}
                  */
                 function(metadata) {
@@ -469,95 +480,21 @@ importer.toSecondsFromEpoch = function(date) {
 };
 
 /**
- * Factory interface for creating/accessing synced {@code FileEntry}
- * instances and listening to sync events on those files.
- *
- * @interface
+ * Namespace for ChromeSyncFilesystem related stuffs.
  */
-importer.SyncFileEntryProvider = function() {};
-
-/**
- * Provides accsess to the sync FileEntry owned/managed by this class.
- *
- * @return {!Promise.<!FileEntry>}
- */
-importer.SyncFileEntryProvider.prototype.getSyncFileEntry;
-
-/**
- * Factory for synchronized files based on chrome.syncFileSystem.
- *
- * @constructor
- * @implements {importer.SyncFileEntryProvider}
- * @struct
- *
- * @param {string} fileName
- */
-importer.ChromeSyncFileEntryProvider = function(fileName) {
-
-  /** @private {string} */
-  this.fileName_ = fileName;
-
-  /** @private {!Array.<function()>} */
-  this.syncListeners_ = [];
-
-  /** @private {Promise.<!FileEntry>} */
-  this.fileEntryPromise_ = null;
-};
-
-/**
- * Returns a sync FileEntry. Convenience method for class that just want
- * a file, but don't need to monitor changes.
- * @param {!Promise.<string>} fileNamePromise
- * @return {!Promise.<!FileEntry>}
- */
-importer.ChromeSyncFileEntryProvider.getFileEntry =
-    function(fileNamePromise) {
-  return fileNamePromise.then(
-      function(fileName) {
-        return new importer.ChromeSyncFileEntryProvider(fileName)
-          .getSyncFileEntry();
-      });
-};
-
-/** @override */
-importer.ChromeSyncFileEntryProvider.prototype.getSyncFileEntry = function() {
-  if (this.fileEntryPromise_) {
-    return /** @type {!Promise.<!FileEntry>} */ (this.fileEntryPromise_);
-  };
-
-  this.fileEntryPromise_ = this.getFileSystem_()
-      .then(
-          /**
-           * @param {!FileSystem} fileSystem
-           * @return {!Promise.<!FileEntry>}
-           * @this {importer.ChromeSyncFileEntryProvider}
-           */
-          function(fileSystem) {
-            return this.getFileEntry_(fileSystem);
-          }.bind(this));
-
-  return /** @type {!Promise.<!FileEntry>} */ (this.fileEntryPromise_);
-};
+importer.ChromeSyncFilesystem = {};
 
 /**
  * Wraps chrome.syncFileSystem in a Promise.
  *
- * @return {!Promise.<!FileSystem>}
+ * @return {!Promise<!FileSystem>}
  * @private
  */
-importer.ChromeSyncFileEntryProvider.prototype.getFileSystem_ = function() {
+importer.ChromeSyncFilesystem.getFileSystem_ = function() {
   return new Promise(
-      /**
-       * @param {function()} resolve
-       * @param {function()} reject
-       * @this {importer.ChromeSyncFileEntryProvider}
-       */
       function(resolve, reject) {
         chrome.syncFileSystem.requestFileSystem(
-            /**
-              * @param {FileSystem} fileSystem
-              * @this {importer.ChromeSyncFileEntryProvider}
-              */
+            /** @param {FileSystem} fileSystem */
             function(fileSystem) {
               if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError.message);
@@ -565,86 +502,42 @@ importer.ChromeSyncFileEntryProvider.prototype.getFileSystem_ = function() {
                 resolve(/** @type {!FileSystem} */ (fileSystem));
               }
             });
-      }.bind(this));
+      });
 };
 
 /**
- * @param {!FileSystem} fileSystem
- * @return {!Promise.<!FileEntry>}
- * @private
+ * Returns a sync file entry for the named file, creating it as needed.
+ *
+ * @param {!Promise<string>} fileNamePromise
+ * @return {!Promise<!FileEntry>}
  */
-importer.ChromeSyncFileEntryProvider.prototype.getFileEntry_ =
-    function(fileSystem) {
-  return new Promise(
-      /**
-       * @param {function()} resolve
-       * @param {function()} reject
-       * @this {importer.ChromeSyncFileEntryProvider}
-       */
-      function(resolve, reject) {
-        fileSystem.root.getFile(
-            this.fileName_,
-            {
-              create: true,
-              exclusive: false
-            },
-            resolve,
-            reject);
-      }.bind(this));
-};
+importer.ChromeSyncFilesystem.getOrCreateFileEntry = function(fileNamePromise) {
+  var promise = importer.ChromeSyncFilesystem.getFileSystem_()
+      .then(
+          /**
+           * @param {!FileSystem} fileSystem
+           * @return {!Promise<!FileEntry>}
+           */
+          function(fileSystem) {
+            fileNamePromise.then(
+                /** @param {string} fileName */
+                function(fileName) {
+                  return new Promise(
+                      function(resolve, reject) {
+                        fileSystem.root.getFile(
+                            fileName,
+                            {
+                              create: true,
+                              exclusive: false
+                            },
+                            resolve,
+                            reject);
+                      });
 
-/**
- * Handles sync events. Checks to see if the event is for the file
- * we track, and sync-direction, and if so, notifies syncListeners.
- *
- * @see https://developer.chrome.com/apps/syncFileSystem
- *     #event-onFileStatusChanged
- *
- * @param {!Object} event Having a structure not unlike: {
- *     fileEntry: Entry,
- *     status: string,
- *     action: (string|undefined),
- *     direction: (string|undefined)}
- *
- * @private
- */
-importer.ChromeSyncFileEntryProvider.prototype.handleSyncEvent_ =
-    function(event) {
-  if (!this.fileEntryPromise_) {
-    return;
-  }
+                });
+          });
 
-  this.fileEntryPromise_.then(
-      /**
-       * @param {!FileEntry} fileEntry
-       * @this {importer.ChromeSyncFileEntryProvider}
-       */
-      function(fileEntry) {
-        if (event['fileEntry'].fullPath !== fileEntry.fullPath) {
-          return;
-        }
-
-        if (event.direction && event.direction !== 'remote_to_local') {
-          return;
-        }
-
-        if (event.action && event.action !== 'updated') {
-          console.warn(
-              'Unusual sync event action for sync file: ' + event.action);
-          return;
-        }
-
-        this.syncListeners_.forEach(
-            /**
-             * @param {function()} listener
-             * @this {importer.ChromeSyncFileEntryProvider}
-             */
-            function(listener) {
-              // Notify by way of a promise so that it is fully asynchronous
-              // (which can rationalize testing).
-              Promise.resolve().then(listener);
-            }.bind(this));
-      }.bind(this));
+  return /** @type {!Promise<!FileEntry>} */ (promise);
 };
 
 /**
@@ -684,19 +577,19 @@ importer.Logger.prototype.catcher;
  * @struct
  * @final
  *
- * @param {!Promise.<!FileEntry>} fileEntryPromise
- * @param {!Promise.<!analytics.Tracker>} trackerPromise
+ * @param {!Promise<!FileEntry>} fileEntryPromise
+ * @param {!Promise<!analytics.Tracker>} trackerPromise
  */
 importer.RuntimeLogger = function(fileEntryPromise, trackerPromise) {
 
-  /** @private {!Promise.<!importer.PromisingFileEntry>} */
+  /** @private {!Promise<!importer.PromisingFileEntry>} */
   this.fileEntryPromise_ = fileEntryPromise.then(
       /** @param {!FileEntry} fileEntry */
       function(fileEntry) {
         return new importer.PromisingFileEntry(fileEntry);
       });
 
-  /** @private {!Promise.<!analytics.Tracker>} */
+  /** @private {!Promise<!analytics.Tracker>} */
   this.trackerPromise_ = trackerPromise;
 };
 
@@ -805,13 +698,14 @@ importer.logger_ = null;
  */
 importer.getLogger = function() {
   if (!importer.logger_) {
+
     var nextLogId = importer.getNextDebugLogId_();
 
     /** @return {!Promise} */
     var rotator = function() {
       return importer.rotateLogs(
           nextLogId,
-          importer.ChromeSyncFileEntryProvider.getFileEntry);
+          importer.ChromeSyncFilesystem.getOrCreateFileEntry);
     };
 
     // This is a sligtly odd arrangement in service of two goals.
@@ -824,8 +718,8 @@ importer.getLogger = function() {
     // produces the name of the file to load. That method
     // (getDebugLogFilename) returns promise. We exploit this.
     importer.logger_ = new importer.RuntimeLogger(
-        importer.ChromeSyncFileEntryProvider.getFileEntry(
-            /** @type {!Promise.<string>} */ (rotator().then(
+        importer.ChromeSyncFilesystem.getOrCreateFileEntry(
+            /** @type {!Promise<string>} */ (rotator().then(
                 importer.getDebugLogFilename.bind(null, nextLogId)))),
         importer.getTracker_());
   }
@@ -835,7 +729,7 @@ importer.getLogger = function() {
 
 /**
  * Fetch analytics.Tracker from background page.
- * @return {!Promise.<!analytics.Tracker>}
+ * @return {!Promise<!analytics.Tracker>}
  * @private
  */
 importer.getTracker_ = function() {
@@ -946,7 +840,7 @@ importer.ChromeLocalStorage.prototype.set = function(key, value) {
 /**
  * @param {string} key
  * @param {T=} opt_default
- * @return {!Promise.<T>} Resolves with the value, or {@code opt_default} when
+ * @return {!Promise<T>} Resolves with the value, or {@code opt_default} when
  *     no value entry existis, or {@code undefined}.
  * @template T
  */
