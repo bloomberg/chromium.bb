@@ -117,7 +117,9 @@ class WeakNSProtocol {
   }
 
   WeakNSProtocol& operator=(const WeakNSProtocol<NST>& that) {
-    DCHECK(checker_.CalledOnValidThread());
+    // A WeakNSProtocol object can be copied on one thread and used on
+    // another.
+    checker_.DetachFromThread();
     container_ = that.container_;
     return *this;
   }

@@ -109,8 +109,12 @@ void TouchWeakData(const WeakNSObject<NSMutableData>& weak_data) {
 // the weak object on its original thread.
 void CopyWeakNSObjectAndPost(const WeakNSObject<NSMutableData>& weak_object,
                              scoped_refptr<SingleThreadTaskRunner> runner) {
-  WeakNSObject<NSMutableData> weak_copy(weak_object);
-  runner->PostTask(FROM_HERE, Bind(&TouchWeakData, weak_copy));
+  // Copy using constructor.
+  WeakNSObject<NSMutableData> weak_copy1(weak_object);
+  runner->PostTask(FROM_HERE, Bind(&TouchWeakData, weak_copy1));
+  // Copy using assignment operator.
+  WeakNSObject<NSMutableData> weak_copy2 = weak_object;
+  runner->PostTask(FROM_HERE, Bind(&TouchWeakData, weak_copy2));
 }
 
 // Tests that the weak object can be copied on a different thread.
@@ -128,8 +132,8 @@ TEST(WeakNSObjectTest, WeakNSObjectCopyOnOtherThread) {
   other_thread.Stop();
   loop.RunUntilIdle();
 
-  // Check that TouchWeakData was called.
-  EXPECT_EQ(1u, [data length]);
+  // Check that TouchWeakData was called and the object touched twice.
+  EXPECT_EQ(2u, [data length]);
 }
 
 }  // namespace
