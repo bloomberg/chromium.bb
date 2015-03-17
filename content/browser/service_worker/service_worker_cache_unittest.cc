@@ -174,7 +174,7 @@ class ServiceWorkerCacheTest : public testing::Test {
  public:
   ServiceWorkerCacheTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        callback_error_(ServiceWorkerCache::ErrorTypeOK),
+        callback_error_(ServiceWorkerCache::ERROR_TYPE_OK),
         callback_closed_(false) {}
 
   void SetUp() override {
@@ -295,7 +295,7 @@ class ServiceWorkerCacheTest : public testing::Test {
     // thread.
     loop->Run();
 
-    return callback_error_ == ServiceWorkerCache::ErrorTypeOK;
+    return callback_error_ == ServiceWorkerCache::ERROR_TYPE_OK;
   }
 
   bool Match(const ServiceWorkerFetchRequest& request) {
@@ -307,7 +307,7 @@ class ServiceWorkerCacheTest : public testing::Test {
                              base::Unretained(loop.get())));
     loop->Run();
 
-    return callback_error_ == ServiceWorkerCache::ErrorTypeOK;
+    return callback_error_ == ServiceWorkerCache::ERROR_TYPE_OK;
   }
 
   bool Delete(const ServiceWorkerFetchRequest& request) {
@@ -319,7 +319,7 @@ class ServiceWorkerCacheTest : public testing::Test {
                               base::Unretained(loop.get())));
     loop->Run();
 
-    return callback_error_ == ServiceWorkerCache::ErrorTypeOK;
+    return callback_error_ == ServiceWorkerCache::ERROR_TYPE_OK;
   }
 
   bool Keys() {
@@ -330,7 +330,7 @@ class ServiceWorkerCacheTest : public testing::Test {
                             base::Unretained(loop.get())));
     loop->Run();
 
-    return callback_error_ == ServiceWorkerCache::ErrorTypeOK;
+    return callback_error_ == ServiceWorkerCache::ERROR_TYPE_OK;
   }
 
   bool Close() {
@@ -371,7 +371,7 @@ class ServiceWorkerCacheTest : public testing::Test {
     callback_error_ = error;
     callback_response_ = response.Pass();
     callback_response_data_.reset();
-    if (error == ServiceWorkerCache::ErrorTypeOK &&
+    if (error == ServiceWorkerCache::ERROR_TYPE_OK &&
         !callback_response_->blob_uuid.empty()) {
       callback_response_data_ = body_handle.Pass();
     }
@@ -516,7 +516,7 @@ TEST_F(ServiceWorkerCacheTest, PutBodyDropBlobRef) {
   blob_handle_.reset();
   loop->Run();
 
-  EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
+  EXPECT_EQ(ServiceWorkerCache::ERROR_TYPE_OK, callback_error_);
 }
 
 TEST_P(ServiceWorkerCacheTestP, PutReplace) {

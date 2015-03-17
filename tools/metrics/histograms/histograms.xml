@@ -33707,6 +33707,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ServiceWorkerCache.CreateCacheStorageResult"
+    enum="BooleanCreated">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    Whether a new ServiceWorkerCacheStorage and its directory were successfully
+    created on disk.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorkerCache.InitBackendResult"
+    enum="ServiceWorkerCacheErrorType">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    The result of opening the backend in the ServiceWorker Cache API.
+  </summary>
+</histogram>
+
 <histogram name="Session.TotalDuration" units="milliseconds">
   <owner>mariakhomenko@chromium.org</owner>
   <owner>fqian@chromium.org</owner>
@@ -44984,6 +45001,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanCovered" type="int">
   <int value="0" label="Not Covered"/>
   <int value="1" label="Covered"/>
+</enum>
+
+<enum name="BooleanCreated" type="int">
+  <int value="0" label="Not created"/>
+  <int value="1" label="Created"/>
 </enum>
 
 <enum name="BooleanCredentialsLost" type="int">
@@ -58631,6 +58653,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="9" label="SERVICE_UTILITY_SEMANTIC_CAPS_SUCCEEDED"/>
   <int value="10" label="SERVICE_UTILITY_SEMANTIC_CAPS_FAILED"/>
   <int value="11" label="SERVICE_UTILITY_FAILED_TO_START"/>
+</enum>
+
+<enum name="ServiceWorkerCacheErrorType" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Exists Error"/>
+  <int value="2" label="Storage Error"/>
+  <int value="3" label="Not Found Error"/>
 </enum>
 
 <enum name="ServiceWorkerDatabaseStatus" type="int">

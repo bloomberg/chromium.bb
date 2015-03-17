@@ -40,11 +40,14 @@ class TestServiceWorkerCache;
 class CONTENT_EXPORT ServiceWorkerCache
     : public base::RefCounted<ServiceWorkerCache> {
  public:
+  // This enum is used in histograms, so do not change the ordering and always
+  // append new types to the end.
   enum ErrorType {
-    ErrorTypeOK = 0,
-    ErrorTypeExists,
-    ErrorTypeStorage,
-    ErrorTypeNotFound
+    ERROR_TYPE_OK = 0,
+    ERROR_TYPE_EXISTS,
+    ERROR_TYPE_STORAGE,
+    ERROR_TYPE_NOT_FOUND,
+    ERROR_TYPE_LAST = ERROR_TYPE_NOT_FOUND
   };
 
   enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY };
@@ -69,19 +72,19 @@ class CONTENT_EXPORT ServiceWorkerCache
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
 
-  // Returns ErrorTypeNotFound if not found.
+  // Returns ERROR_TYPE_NOT_FOUND if not found.
   void Match(scoped_ptr<ServiceWorkerFetchRequest> request,
              const ResponseCallback& callback);
 
   // Puts the request and response object in the cache. The response body (if
   // present) is stored in the cache, but not the request body. Returns
-  // ErrorTypeOK on success.
+  // ERROR_TYPE_OK on success.
   void Put(scoped_ptr<ServiceWorkerFetchRequest> request,
            scoped_ptr<ServiceWorkerResponse> response,
            const ResponseCallback& callback);
 
   // Returns ErrorNotFound if not found. Otherwise deletes and returns
-  // ErrorTypeOK.
+  // ERROR_TYPE_OK.
   void Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
               const ErrorCallback& callback);
 

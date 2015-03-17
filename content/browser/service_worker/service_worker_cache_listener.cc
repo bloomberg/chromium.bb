@@ -51,16 +51,16 @@ WebServiceWorkerCacheError ToWebServiceWorkerCacheError(
 WebServiceWorkerCacheError CacheErrorToWebServiceWorkerCacheError(
     ServiceWorkerCache::ErrorType err) {
   switch (err) {
-    case ServiceWorkerCache::ErrorTypeOK:
+    case ServiceWorkerCache::ERROR_TYPE_OK:
       NOTREACHED();
       return blink::WebServiceWorkerCacheErrorNotImplemented;
-    case ServiceWorkerCache::ErrorTypeExists:
+    case ServiceWorkerCache::ERROR_TYPE_EXISTS:
       return blink::WebServiceWorkerCacheErrorExists;
-    case ServiceWorkerCache::ErrorTypeStorage:
+    case ServiceWorkerCache::ERROR_TYPE_STORAGE:
       // TODO(jkarlin): Change this to CACHE_STORAGE_ERROR_STORAGE once that's
       // added.
       return blink::WebServiceWorkerCacheErrorNotFound;
-    case ServiceWorkerCache::ErrorTypeNotFound:
+    case ServiceWorkerCache::ERROR_TYPE_NOT_FOUND:
       return blink::WebServiceWorkerCacheErrorNotFound;
   }
   NOTREACHED();
@@ -385,7 +385,7 @@ void ServiceWorkerCacheListener::OnCacheStorageMatchCallback(
     ServiceWorkerCache::ErrorType error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
-  if (error != ServiceWorkerCache::ErrorTypeOK) {
+  if (error != ServiceWorkerCache::ERROR_TYPE_OK) {
     Send(ServiceWorkerMsg_CacheStorageMatchError(
         request_id, CacheErrorToWebServiceWorkerCacheError(error)));
     return;
@@ -403,7 +403,7 @@ void ServiceWorkerCacheListener::OnCacheMatchCallback(
     ServiceWorkerCache::ErrorType error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
-  if (error != ServiceWorkerCache::ErrorTypeOK) {
+  if (error != ServiceWorkerCache::ERROR_TYPE_OK) {
     Send(ServiceWorkerMsg_CacheMatchError(
         request_id, CacheErrorToWebServiceWorkerCacheError(error)));
     return;
@@ -420,7 +420,7 @@ void ServiceWorkerCacheListener::OnCacheKeysCallback(
     const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCache::ErrorType error,
     scoped_ptr<ServiceWorkerCache::Requests> requests) {
-  if (error != ServiceWorkerCache::ErrorTypeOK) {
+  if (error != ServiceWorkerCache::ERROR_TYPE_OK) {
     Send(ServiceWorkerMsg_CacheKeysError(
         request_id, CacheErrorToWebServiceWorkerCacheError(error)));
     return;
@@ -443,7 +443,7 @@ void ServiceWorkerCacheListener::OnCacheDeleteCallback(
     int request_id,
     const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCache::ErrorType error) {
-  if (error != ServiceWorkerCache::ErrorTypeOK) {
+  if (error != ServiceWorkerCache::ERROR_TYPE_OK) {
     Send(ServiceWorkerMsg_CacheBatchError(
         request_id, CacheErrorToWebServiceWorkerCacheError(error)));
     return;
@@ -459,7 +459,7 @@ void ServiceWorkerCacheListener::OnCachePutCallback(
     ServiceWorkerCache::ErrorType error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
-  if (error != ServiceWorkerCache::ErrorTypeOK) {
+  if (error != ServiceWorkerCache::ERROR_TYPE_OK) {
     Send(ServiceWorkerMsg_CacheBatchError(
         request_id, CacheErrorToWebServiceWorkerCacheError(error)));
     return;

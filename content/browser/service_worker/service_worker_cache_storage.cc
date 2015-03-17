@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -613,6 +614,9 @@ void ServiceWorkerCacheStorage::CreateCacheDidCreateCache(
     return;
   }
 
+  UMA_HISTOGRAM_BOOLEAN("ServiceWorkerCache.CreateCacheStorageResult",
+                        cache != nullptr);
+
   cache_map_.insert(std::make_pair(cache_name, cache->AsWeakPtr()));
   ordered_cache_names_.push_back(cache_name);
 
@@ -630,6 +634,8 @@ void ServiceWorkerCacheStorage::CreateCacheDidWriteIndex(
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(cache.get());
+
+  // TODO(jkarlin): Handle !success.
 
   callback.Run(cache, CACHE_STORAGE_ERROR_NO_ERROR);
 }
@@ -717,7 +723,7 @@ void ServiceWorkerCacheStorage::MatchCacheImpl(
   scoped_refptr<ServiceWorkerCache> cache = GetLoadedCache(cache_name);
 
   if (!cache.get()) {
-    callback.Run(ServiceWorkerCache::ErrorTypeNotFound,
+    callback.Run(ServiceWorkerCache::ERROR_TYPE_NOT_FOUND,
                  scoped_ptr<ServiceWorkerResponse>(),
                  scoped_ptr<storage::BlobDataHandle>());
     return;
@@ -770,7 +776,8 @@ void ServiceWorkerCacheStorage::MatchAllCachesDidMatch(
     ServiceWorkerCache::ErrorType error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> handle) {
-  if (callback->is_null() || error == ServiceWorkerCache::ErrorTypeNotFound) {
+  if (callback->is_null() ||
+      error == ServiceWorkerCache::ERROR_TYPE_NOT_FOUND) {
     barrier_closure.Run();
     return;
   }
@@ -783,7 +790,7 @@ void ServiceWorkerCacheStorage::MatchAllCachesDidMatch(
 void ServiceWorkerCacheStorage::MatchAllCachesDidMatchAll(
     scoped_ptr<ServiceWorkerCache::ResponseCallback> callback) {
   if (!callback->is_null()) {
-    callback->Run(ServiceWorkerCache::ErrorTypeNotFound,
+    callback->Run(ServiceWorkerCache::ERROR_TYPE_NOT_FOUND,
                   scoped_ptr<ServiceWorkerResponse>(),
                   scoped_ptr<storage::BlobDataHandle>());
   }
