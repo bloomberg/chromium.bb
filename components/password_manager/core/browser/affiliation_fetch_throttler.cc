@@ -75,15 +75,14 @@ const int64_t AffiliationFetchThrottler::kGracePeriodAfterReconnectMs =
 AffiliationFetchThrottler::AffiliationFetchThrottler(
     AffiliationFetchThrottlerDelegate* delegate,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    scoped_ptr<base::TickClock> tick_clock)
+    base::TickClock* tick_clock)
     : delegate_(delegate),
       task_runner_(task_runner),
+      tick_clock_(tick_clock),
       state_(IDLE),
       has_network_connectivity_(false),
       is_fetch_scheduled_(false),
-      tick_clock_(tick_clock.Pass()),
-      exponential_backoff_(
-          new BackoffEntryImpl(&kBackoffPolicy, tick_clock_.get())),
+      exponential_backoff_(new BackoffEntryImpl(&kBackoffPolicy, tick_clock_)),
       weak_ptr_factory_(this) {
   DCHECK(delegate);
   // Start observing before querying the current connectivity state, so that if

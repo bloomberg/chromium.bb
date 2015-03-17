@@ -51,11 +51,11 @@ class AffiliationFetchThrottler
  public:
   // Creates an instance that will use |tick_clock| as its tick source, and will
   // post to |task_runner| to call the |delegate|'s OnSendNetworkRequest(). The
-  // |delegate| should outlive the throttler.
+  // |delegate| and |tick_clock| should outlive the throttler.
   AffiliationFetchThrottler(
       AffiliationFetchThrottlerDelegate* delegate,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      scoped_ptr<base::TickClock> tick_clock);
+      base::TickClock* tick_clock);
   ~AffiliationFetchThrottler() override;
 
   // Signals to the throttling logic that a network request is needed, and that
@@ -66,11 +66,14 @@ class AffiliationFetchThrottler
   // needed or while a request is in flight. To signal that another request will
   // be needed right away after the current one, call this method after calling
   // InformOfNetworkRequestComplete().
-  void SignalNetworkRequestNeeded();
+  virtual void SignalNetworkRequestNeeded();
 
   // Informs the back-off logic that the in-flight network request has been
   // completed, either with |success| or not.
-  void InformOfNetworkRequestComplete(bool success);
+  virtual void InformOfNetworkRequestComplete(bool success);
+
+ protected:
+  AffiliationFetchThrottlerDelegate* delegate_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AffiliationFetchThrottlerTest, FailedRequests);
@@ -112,12 +115,11 @@ class AffiliationFetchThrottler
   void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
-  AffiliationFetchThrottlerDelegate* delegate_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::TickClock* tick_clock_;
   State state_;
   bool has_network_connectivity_;
   bool is_fetch_scheduled_;
-  scoped_ptr<base::TickClock> tick_clock_;
   scoped_ptr<net::BackoffEntry> exponential_backoff_;
 
   base::WeakPtrFactory<AffiliationFetchThrottler> weak_ptr_factory_;

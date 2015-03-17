@@ -60,6 +60,14 @@ void ScopedFakeAffiliationAPI::ServeNextRequest() {
   fetcher->SimulateSuccess(fake_response.Pass());
 }
 
+void ScopedFakeAffiliationAPI::FailNextRequest() {
+  if (!fake_fetcher_factory_.has_pending_fetchers())
+    return;
+
+  FakeAffiliationFetcher* fetcher = fake_fetcher_factory_.PopNextFetcher();
+  fetcher->SimulateFailure();
+}
+
 void ScopedFakeAffiliationAPI::IgnoreNextRequest() {
   if (!fake_fetcher_factory_.has_pending_fetchers())
     return;

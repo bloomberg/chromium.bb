@@ -43,8 +43,8 @@ class AffiliationServiceTest : public testing::Test {
  public:
   AffiliationServiceTest()
       : main_task_runner_(new base::TestSimpleTaskRunner),
-        background_task_runner_(new base::TestMockTimeTaskRunner),
-        main_task_runner_handle_(main_task_runner_) {}
+        main_task_runner_handle_(main_task_runner_),
+        background_task_runner_(new base::TestMockTimeTaskRunner) {}
   ~AffiliationServiceTest() override {}
 
  protected:
@@ -86,11 +86,12 @@ class AffiliationServiceTest : public testing::Test {
     background_task_runner_->RunUntilIdle();
   }
 
+  scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
+  base::ThreadTaskRunnerHandle main_task_runner_handle_;
+  scoped_refptr<base::TestMockTimeTaskRunner> background_task_runner_;
+
   ScopedFakeAffiliationAPI fake_affiliation_api_;
   MockAffiliationConsumer mock_consumer_;
-  scoped_refptr<base::TestSimpleTaskRunner> main_task_runner_;
-  scoped_refptr<base::TestMockTimeTaskRunner> background_task_runner_;
-  base::ThreadTaskRunnerHandle main_task_runner_handle_;
 
   scoped_ptr<AffiliationService> service_;
 
@@ -141,11 +142,10 @@ TEST_F(AffiliationServiceTest, GetAffiliations) {
 TEST_F(AffiliationServiceTest, ShutdownWhileTasksArePosted) {
   service()->GetAffiliations(FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1),
                              false, mock_consumer()->GetResultCallback());
-  DestroyService();
+  EXPECT_TRUE(background_task_runner()->HasPendingTask());
 
+  DestroyService();
   background_task_runner()->RunUntilIdle();
-  ASSERT_TRUE(fake_affiliation_api()->HasPendingRequest());
-  fake_affiliation_api()->IgnoreNextRequest();
 
   mock_consumer()->ExpectFailure();
   main_task_runner()->RunUntilIdle();

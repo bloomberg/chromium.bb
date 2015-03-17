@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "components/password_manager/core/browser/affiliation_backend.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -36,8 +37,12 @@ void AffiliationService::Initialize(
     const base::FilePath& db_path) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!backend_);
-  backend_ = new AffiliationBackend(request_context_getter,
-                                    make_scoped_ptr(new base::DefaultClock));
+  backend_ =
+      new AffiliationBackend(request_context_getter, backend_task_runner_,
+                             make_scoped_ptr(new base::DefaultClock),
+                             make_scoped_ptr(new base::DefaultTickClock));
+
+  scoped_ptr<base::TickClock> tick_clock(new base::DefaultTickClock);
   backend_task_runner_->PostTask(
       FROM_HERE, base::Bind(&AffiliationBackend::Initialize,
                             base::Unretained(backend_), db_path));

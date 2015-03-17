@@ -35,6 +35,9 @@ class ScopedFakeAffiliationAPI {
   // with success.
   void ServeNextRequest();
 
+  // Completes the next pending fetch, if any, with failure.
+  void FailNextRequest();
+
   // Ignores the next pending request, if any, without completing it.
   void IgnoreNextRequest();
 
