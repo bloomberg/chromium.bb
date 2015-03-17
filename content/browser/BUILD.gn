@@ -183,6 +183,8 @@ source_set("browser") {
       ]
       if (use_aura) {
         sources += [
+          "media/capture/aura_window_capture_machine.cc",
+          "media/capture/aura_window_capture_machine.h",
           "media/capture/desktop_capture_device_aura.cc",
           "media/capture/desktop_capture_device_aura.h",
         ]

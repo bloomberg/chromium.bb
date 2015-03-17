@@ -1771,8 +1771,6 @@
       'sources': [
         'browser/media/capture/desktop_capture_device.cc',
         'browser/media/capture/desktop_capture_device.h',
-        'browser/media/capture/desktop_capture_device_aura.cc',
-        'browser/media/capture/desktop_capture_device_aura.h',
         'browser/media/capture/desktop_capture_device_uma_types.cc',
         'browser/media/capture/desktop_capture_device_uma_types.h',
       ],
@@ -1781,6 +1779,14 @@
       ],
       'defines': [
         'ENABLE_SCREEN_CAPTURE=1',
+      ],
+    }],
+    ['enable_webrtc==1 and use_aura==1', {
+      'sources': [
+        "browser/media/capture/aura_window_capture_machine.cc",
+        "browser/media/capture/aura_window_capture_machine.h",
+        'browser/media/capture/desktop_capture_device_aura.cc',
+        'browser/media/capture/desktop_capture_device_aura.h',
       ],
     }],
     ['enable_webrtc==1 and (OS=="linux" or OS=="mac")', {

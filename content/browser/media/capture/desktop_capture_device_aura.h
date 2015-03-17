@@ -37,7 +37,7 @@ class CONTENT_EXPORT DesktopCaptureDeviceAura
  private:
   DesktopCaptureDeviceAura(const DesktopMediaID& source);
 
-  const scoped_ptr<class ContentVideoCaptureDeviceCore> core_;
+  scoped_ptr<class ContentVideoCaptureDeviceCore> core_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDeviceAura);
 };
