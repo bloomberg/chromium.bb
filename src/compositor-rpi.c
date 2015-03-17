@@ -344,6 +344,7 @@ rpi_output_create(struct rpi_compositor *compositor, uint32_t transform)
 	output->base.subpixel = WL_OUTPUT_SUBPIXEL_UNKNOWN;
 	output->base.make = "unknown";
 	output->base.model = "unknown";
+	output->base.name = strdup("rpi");
 
 	/* guess 96 dpi */
 	mm_width  = modeinfo.width * (25.4f / 96.0f);
