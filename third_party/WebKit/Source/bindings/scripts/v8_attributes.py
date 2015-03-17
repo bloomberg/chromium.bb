@@ -191,9 +191,11 @@ def getter_context(interface, attribute, context):
             release = idl_type.release
 
     def v8_set_return_value_statement(for_main_world=False):
-        if context['is_keep_alive_for_gc']:
-            return 'v8SetReturnValue(info, wrapper)'
-        return idl_type.v8_set_return_value(cpp_value, extended_attributes=extended_attributes, script_wrappable='impl', release=release, for_main_world=for_main_world)
+        if context['is_keep_alive_for_gc'] or 'CachedAttribute' in extended_attributes:
+            return 'v8SetReturnValue(info, v8Value)'
+        return idl_type.v8_set_return_value(
+            cpp_value, extended_attributes=extended_attributes, script_wrappable='impl',
+            release=release, for_main_world=for_main_world)
 
     context.update({
         'cpp_value': cpp_value,
@@ -203,7 +205,6 @@ def getter_context(interface, attribute, context):
         'v8_set_return_value_for_main_world': v8_set_return_value_statement(for_main_world=True),
         'v8_set_return_value': v8_set_return_value_statement(),
     })
-
 
 def getter_expression(interface, attribute, context):
     arguments = []

@@ -156,10 +156,10 @@ static void readonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::Propert
     RefPtr<TestInterfaceEmpty> cppValue(impl->readonlyTestInterfaceEmptyAttribute());
     if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue.get()))
         return;
-    v8::Local<v8::Value> wrapper = toV8(cppValue.get(), holder, info.GetIsolate());
-    if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "readonlyTestInterfaceEmptyAttribute"), wrapper);
-        v8SetReturnValue(info, wrapper);
+    v8::Local<v8::Value> v8Value(toV8(cppValue.get(), holder, info.GetIsolate()));
+    if (!v8Value.IsEmpty()) {
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "readonlyTestInterfaceEmptyAttribute"), v8Value);
+        v8SetReturnValue(info, v8Value);
     }
 }
 
@@ -2174,8 +2174,9 @@ static void cachedAttributeAnyAttributeAttributeGetter(const v8::PropertyCallbac
         }
     }
     ScriptValue cppValue(impl->cachedAttributeAnyAttribute());
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, cppValue.v8Value());
-    v8SetReturnValue(info, cppValue.v8Value());
+    v8::Local<v8::Value> v8Value(cppValue.v8Value());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, v8Value);
+    v8SetReturnValue(info, v8Value);
 }
 
 static void cachedAttributeAnyAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2214,8 +2215,9 @@ static void cachedArrayAttributeAttributeGetter(const v8::PropertyCallbackInfo<v
         }
     }
     Vector<String> cppValue(impl->cachedArrayAttribute());
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, toV8(cppValue, info.Holder(), info.GetIsolate()));
-    v8SetReturnValue(info, toV8(cppValue, info.Holder(), info.GetIsolate()));
+    v8::Local<v8::Value> v8Value(toV8(cppValue, info.Holder(), info.GetIsolate()));
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, v8Value);
+    v8SetReturnValue(info, v8Value);
 }
 
 static void cachedArrayAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2257,8 +2259,9 @@ static void cachedStringOrNoneAttributeAttributeGetter(const v8::PropertyCallbac
         }
     }
     String cppValue(impl->cachedStringOrNoneAttribute());
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, cppValue.isNull() ? v8::Local<v8::Value>(v8::Null(info.GetIsolate())) : v8String(info.GetIsolate(), cppValue));
-    v8SetReturnValueStringOrNull(info, cppValue, info.GetIsolate());
+    v8::Local<v8::Value> v8Value(cppValue.isNull() ? v8::Local<v8::Value>(v8::Null(info.GetIsolate())) : v8String(info.GetIsolate(), cppValue));
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, v8Value);
+    v8SetReturnValue(info, v8Value);
 }
 
 static void cachedStringOrNoneAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -2874,10 +2877,10 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(c
     RefPtr<TestInterfaceEmpty> cppValue(impl->perWorldBindingsReadonlyTestInterfaceEmptyAttribute());
     if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue.get()))
         return;
-    v8::Local<v8::Value> wrapper = toV8(cppValue.get(), holder, info.GetIsolate());
-    if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), wrapper);
-        v8SetReturnValue(info, wrapper);
+    v8::Local<v8::Value> v8Value(toV8(cppValue.get(), holder, info.GetIsolate()));
+    if (!v8Value.IsEmpty()) {
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), v8Value);
+        v8SetReturnValue(info, v8Value);
     }
 }
 
@@ -2895,10 +2898,10 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterFo
     RefPtr<TestInterfaceEmpty> cppValue(impl->perWorldBindingsReadonlyTestInterfaceEmptyAttribute());
     if (cppValue && DOMDataStore::setReturnValueForMainWorld(info.GetReturnValue(), cppValue.get()))
         return;
-    v8::Local<v8::Value> wrapper = toV8(cppValue.get(), holder, info.GetIsolate());
-    if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), wrapper);
-        v8SetReturnValue(info, wrapper);
+    v8::Local<v8::Value> v8Value(toV8(cppValue.get(), holder, info.GetIsolate()));
+    if (!v8Value.IsEmpty()) {
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), v8Value);
+        v8SetReturnValue(info, v8Value);
     }
 }
 
@@ -3453,10 +3456,10 @@ static void locationGarbageCollectedAttributeGetter(const v8::PropertyCallbackIn
     RawPtr<TestInterfaceGarbageCollected> cppValue(impl->locationGarbageCollected());
     if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue.get()))
         return;
-    v8::Local<v8::Value> wrapper = toV8(cppValue.get(), holder, info.GetIsolate());
-    if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "locationGarbageCollected"), wrapper);
-        v8SetReturnValue(info, wrapper);
+    v8::Local<v8::Value> v8Value(toV8(cppValue.get(), holder, info.GetIsolate()));
+    if (!v8Value.IsEmpty()) {
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "locationGarbageCollected"), v8Value);
+        v8SetReturnValue(info, v8Value);
     }
 }
 
@@ -3492,10 +3495,10 @@ static void locationWillBeGarbageCollectedAttributeGetter(const v8::PropertyCall
     RefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> cppValue(impl->locationWillBeGarbageCollected());
     if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue.get()))
         return;
-    v8::Local<v8::Value> wrapper = toV8(cppValue.get(), holder, info.GetIsolate());
-    if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "locationWillBeGarbageCollected"), wrapper);
-        v8SetReturnValue(info, wrapper);
+    v8::Local<v8::Value> v8Value(toV8(cppValue.get(), holder, info.GetIsolate()));
+    if (!v8Value.IsEmpty()) {
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "locationWillBeGarbageCollected"), v8Value);
+        v8SetReturnValue(info, v8Value);
     }
 }
 
@@ -3681,8 +3684,9 @@ static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(cons
     ScriptValue cppValue(impl->cachedAttributeRaisesExceptionGetterAnyAttribute(exceptionState));
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, cppValue.v8Value());
-    v8SetReturnValue(info, cppValue.v8Value());
+    v8::Local<v8::Value> v8Value(cppValue.v8Value());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, v8Value);
+    v8SetReturnValue(info, v8Value);
 }
 
 static void cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -4768,8 +4772,9 @@ static void cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeGett
         }
     }
     String cppValue(impl->cachedTreatReturnedNullStringAsUndefinedStringAttribute());
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, cppValue.isNull() ? v8Undefined() : v8String(info.GetIsolate(), cppValue));
-    v8SetReturnValueStringOrUndefined(info, cppValue, info.GetIsolate());
+    v8::Local<v8::Value> v8Value(cppValue.isNull() ? v8Undefined() : v8String(info.GetIsolate(), cppValue));
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, v8Value);
+    v8SetReturnValue(info, v8Value);
 }
 
 static void cachedTreatReturnedNullStringAsUndefinedStringAttributeAttributeGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)

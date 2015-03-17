@@ -84,15 +84,16 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     }
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, {{attribute.cpp_value_to_v8_value}});
+    v8::Local<v8::Value> v8Value({{attribute.cpp_value_to_v8_value}});
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, v8Value);
     {% endif %}
     {# v8SetReturnValue #}
     {% if attribute.is_keep_alive_for_gc %}
     if ({{attribute.cpp_value}} && DOMDataStore::setReturnValue{{world_suffix}}(info.GetReturnValue(), {{attribute.cpp_value}}.get()))
         return;
-    v8::Local<v8::Value> wrapper = toV8({{attribute.cpp_value}}.get(), holder, info.GetIsolate());
-    if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), wrapper);
+    v8::Local<v8::Value> v8Value(toV8({{attribute.cpp_value}}.get(), holder, info.GetIsolate()));
+    if (!v8Value.IsEmpty()) {
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), v8Value);
         {{attribute.v8_set_return_value}};
     }
     {% elif world_suffix %}
