@@ -20,5 +20,5 @@ ScopedGaiaAuthExtension::~ScopedGaiaAuthExtension() {
   extensions::GaiaAuthExtensionLoader* loader =
       extensions::GaiaAuthExtensionLoader::Get(browser_context_);
   if (loader)
-    loader->UnloadIfNeeded();
+    loader->UnloadIfNeededAsync();
 }

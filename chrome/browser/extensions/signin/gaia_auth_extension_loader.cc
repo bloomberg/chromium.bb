@@ -8,6 +8,8 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -86,7 +88,11 @@ void UnloadGaiaAuthExtension(BrowserContext* context) {
 namespace extensions {
 
 GaiaAuthExtensionLoader::GaiaAuthExtensionLoader(BrowserContext* context)
-    : browser_context_(context), load_count_(0), last_data_id_(0) {}
+    : browser_context_(context),
+      load_count_(0),
+      last_data_id_(0),
+      weak_ptr_factory_(this) {
+}
 
 GaiaAuthExtensionLoader::~GaiaAuthExtensionLoader() {
   DCHECK_EQ(0, load_count_);
@@ -96,6 +102,13 @@ void GaiaAuthExtensionLoader::LoadIfNeeded() {
   if (load_count_ == 0)
     LoadGaiaAuthExtension(browser_context_);
   ++load_count_;
+}
+
+void GaiaAuthExtensionLoader::UnloadIfNeededAsync() {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&GaiaAuthExtensionLoader::UnloadIfNeeded,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GaiaAuthExtensionLoader::UnloadIfNeeded() {

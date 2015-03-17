@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 
 namespace content {
@@ -31,6 +32,7 @@ class GaiaAuthExtensionLoader : public BrowserContextKeyedAPI {
   void LoadIfNeeded();
   // Unload the gaia auth extension if no pending reference.
   void UnloadIfNeeded();
+  void UnloadIfNeededAsync();
 
   // Add a string data for gaia auth extension. Returns an ID that
   // could be used to get the data. All strings are cleared when gaia auth
@@ -64,6 +66,8 @@ class GaiaAuthExtensionLoader : public BrowserContextKeyedAPI {
 
   int last_data_id_;
   std::map<int, std::string> data_;
+
+  base::WeakPtrFactory<GaiaAuthExtensionLoader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaAuthExtensionLoader);
 };
