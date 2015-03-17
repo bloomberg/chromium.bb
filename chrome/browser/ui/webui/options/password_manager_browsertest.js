@@ -19,7 +19,8 @@ PasswordManagerWebUITest.prototype = {
 };
 
 // Test opening the password manager has correct location.
-TEST_F('PasswordManagerWebUITest', 'testOpenPasswordManager',
+// Fails on Linux and Windows.  http://crbug.com/467916
+TEST_F('PasswordManagerWebUITest', 'DISABLED_testOpenPasswordManager',
        function() {
          assertEquals(this.browsePreload, document.location.href);
        });
