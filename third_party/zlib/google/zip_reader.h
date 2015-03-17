@@ -23,6 +23,21 @@
 
 namespace zip {
 
+// A delegate interface used to stream out an entry; see
+// ZipReader::ExtractCurrentEntry.
+class WriterDelegate {
+ public:
+  virtual ~WriterDelegate() {}
+
+  // Invoked once before any data is streamed out to pave the way (e.g., to open
+  // the output file). Return false on failure to cancel extraction.
+  virtual bool PrepareOutput() = 0;
+
+  // Invoked to write the next chunk of data. Return false on failure to cancel
+  // extraction.
+  virtual bool WriteBytes(const char* data, int num_bytes) = 0;
+};
+
 // This class is used for reading zip files. A typical use case of this
 // class is to scan entries in a zip file and extract them. The code will
 // look like:
@@ -141,6 +156,9 @@ class ZipReader {
   // success. On failure, current_entry_info() becomes NULL.
   bool LocateAndOpenEntry(const base::FilePath& path_in_zip);
 
+  // Extracts the current entry in chunks to |delegate|.
+  bool ExtractCurrentEntry(WriterDelegate* delegate) const;
+
   // Extracts the current entry to the given output file path. If the
   // current file is a directory, just creates a directory
   // instead. Returns true on success. OpenCurrentEntryInZip() must be
@@ -148,7 +166,8 @@ class ZipReader {
   //
   // This function preserves the timestamp of the original entry. If that
   // timestamp is not valid, the timestamp will be set to the current time.
-  bool ExtractCurrentEntryToFilePath(const base::FilePath& output_file_path);
+  bool ExtractCurrentEntryToFilePath(
+      const base::FilePath& output_file_path) const;
 
   // Asynchronously extracts the current entry to the given output file path.
   // If the current entry is a directory it just creates the directory
@@ -174,13 +193,11 @@ class ZipReader {
   // This function preserves the timestamp of the original entry. If that
   // timestamp is not valid, the timestamp will be set to the current time.
   bool ExtractCurrentEntryIntoDirectory(
-      const base::FilePath& output_directory_path);
+      const base::FilePath& output_directory_path) const;
 
-#if defined(OS_POSIX)
-  // Extracts the current entry by writing directly to a file descriptor.
-  // Does not close the file descriptor. Returns true on success.
-  bool ExtractCurrentEntryToFd(int fd);
-#endif
+  // Extracts the current entry by writing directly to a platform file.
+  // Does not close the file. Returns true on success.
+  bool ExtractCurrentEntryToFile(base::File* file) const;
 
   // Extracts the current entry into memory. If the current entry is a directory
   // the |output| parameter is set to the empty string. If the current entry is
@@ -230,6 +247,30 @@ class ZipReader {
   base::WeakPtrFactory<ZipReader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ZipReader);
+};
+
+// A writer delegate that writes to a given File.
+class FileWriterDelegate : public WriterDelegate {
+ public:
+  explicit FileWriterDelegate(base::File* file);
+
+  // Truncates the file to the number of bytes written.
+  ~FileWriterDelegate() override;
+
+  // WriterDelegate methods:
+
+  // Seeks to the beginning of the file, returning false if the seek fails.
+  bool PrepareOutput() override;
+
+  // Writes |num_bytes| bytes of |data| to the file, returning false on error or
+  // if not all bytes could be written.
+  bool WriteBytes(const char* data, int num_bytes) override;
+
+ private:
+  base::File* file_;
+  int64_t file_length_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileWriterDelegate);
 };
 
 }  // namespace zip
