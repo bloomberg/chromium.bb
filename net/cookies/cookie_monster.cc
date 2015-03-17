@@ -163,6 +163,20 @@ bool LRACookieSorter(const CookieMonster::CookieMap::iterator& it1,
   return it1->second->CreationDate() < it2->second->CreationDate();
 }
 
+// Compare cookies using name, domain and path, so that "equivalent" cookies
+// (per RFC 2965) are equal to each other.
+bool PartialDiffCookieSorter(const net::CanonicalCookie& a,
+                             const net::CanonicalCookie& b) {
+  return a.PartialCompare(b);
+}
+
+// This is a stricter ordering than PartialDiffCookieOrdering, where all fields
+// are used.
+bool FullDiffCookieSorter(const net::CanonicalCookie& a,
+                          const net::CanonicalCookie& b) {
+  return a.FullCompare(b);
+}
+
 // Our strategy to find duplicates is:
 // (1) Build a map from (cookiename, cookiepath) to
 //     {list of cookies with this signature, sorted by creation time}.
@@ -764,6 +778,49 @@ void CookieMonster::SetCookieWithOptionsTask::Run() {
   }
 }
 
+// Task class for SetAllCookies call.
+class CookieMonster::SetAllCookiesTask : public CookieMonsterTask {
+ public:
+  SetAllCookiesTask(CookieMonster* cookie_monster,
+                    const CookieList& list,
+                    const SetCookiesCallback& callback)
+      : CookieMonsterTask(cookie_monster), list_(list), callback_(callback) {}
+
+  // CookieMonsterTask:
+  void Run() override;
+
+ protected:
+  ~SetAllCookiesTask() override {}
+
+ private:
+  CookieList list_;
+  SetCookiesCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SetAllCookiesTask);
+};
+
+void CookieMonster::SetAllCookiesTask::Run() {
+  CookieList positive_diff;
+  CookieList negative_diff;
+  CookieList old_cookies = this->cookie_monster()->GetAllCookies();
+  this->cookie_monster()->ComputeCookieDiff(&old_cookies, &list_,
+                                            &positive_diff, &negative_diff);
+
+  for (CookieList::const_iterator it = negative_diff.begin();
+       it != negative_diff.end(); ++it) {
+    this->cookie_monster()->DeleteCanonicalCookie(*it);
+  }
+
+  bool result = true;
+  if (positive_diff.size() > 0)
+    result = this->cookie_monster()->SetCanonicalCookies(list_);
+
+  if (!callback_.is_null()) {
+    this->InvokeCallback(base::Bind(&SetCookiesCallback::Run,
+                                    base::Unretained(&callback_), result));
+  }
+}
+
 // Task class for GetCookiesWithOptions call.
 class CookieMonster::GetCookiesWithOptionsTask : public CookieMonsterTask {
  public:
@@ -982,6 +1039,13 @@ void CookieMonster::DeleteCanonicalCookieAsync(
   scoped_refptr<DeleteCanonicalCookieTask> task =
       new DeleteCanonicalCookieTask(this, cookie, callback);
 
+  DoCookieTask(task);
+}
+
+void CookieMonster::SetAllCookiesAsync(const CookieList& list,
+                                       const SetCookiesCallback& callback) {
+  scoped_refptr<SetAllCookiesTask> task =
+      new SetAllCookiesTask(this, list, callback);
   DoCookieTask(task);
 }
 
@@ -1843,6 +1907,21 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
   return true;
 }
 
+bool CookieMonster::SetCanonicalCookies(const CookieList& list) {
+  base::AutoLock autolock(lock_);
+
+  net::CookieOptions options;
+  options.set_include_httponly();
+
+  for (CookieList::const_iterator it = list.begin(); it != list.end(); ++it) {
+    scoped_ptr<CanonicalCookie> canonical_cookie(new CanonicalCookie(*it));
+    if (!SetCanonicalCookie(&canonical_cookie, it->CreationDate(), options))
+      return false;
+  }
+
+  return true;
+}
+
 void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc,
                                                    const Time& current) {
   lock_.AssertAcquired();
@@ -2224,6 +2303,39 @@ void CookieMonster::InitializeHistograms() {
 Time CookieMonster::CurrentTime() {
   return std::max(Time::Now(), Time::FromInternalValue(
                                    last_time_seen_.ToInternalValue() + 1));
+}
+
+void CookieMonster::ComputeCookieDiff(CookieList* old_cookies,
+                                      CookieList* new_cookies,
+                                      CookieList* cookies_to_add,
+                                      CookieList* cookies_to_delete) {
+  DCHECK(old_cookies);
+  DCHECK(new_cookies);
+  DCHECK(cookies_to_add);
+  DCHECK(cookies_to_delete);
+  DCHECK(cookies_to_add->empty());
+  DCHECK(cookies_to_delete->empty());
+
+  // Sort both lists.
+  // A set ordered by FullDiffCookieSorter is also ordered by
+  // PartialDiffCookieSorter.
+  std::sort(old_cookies->begin(), old_cookies->end(), FullDiffCookieSorter);
+  std::sort(new_cookies->begin(), new_cookies->end(), FullDiffCookieSorter);
+
+  // Select any old cookie for deletion if no new cookie has the same name,
+  // domain, and path.
+  std::set_difference(
+      old_cookies->begin(), old_cookies->end(), new_cookies->begin(),
+      new_cookies->end(),
+      std::inserter(*cookies_to_delete, cookies_to_delete->begin()),
+      PartialDiffCookieSorter);
+
+  // Select any new cookie for addition (or update) if no old cookie is exactly
+  // equivalent.
+  std::set_difference(new_cookies->begin(), new_cookies->end(),
+                      old_cookies->begin(), old_cookies->end(),
+                      std::inserter(*cookies_to_add, cookies_to_add->begin()),
+                      FullDiffCookieSorter);
 }
 
 scoped_ptr<CookieStore::CookieChangedSubscription>

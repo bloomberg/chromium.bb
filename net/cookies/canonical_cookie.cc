@@ -102,6 +102,21 @@ std::string CanonPathWithString(const GURL& url,
   return url_path.substr(0, idx);
 }
 
+// Compares cookies using name, domain and path, so that "equivalent" cookies
+// (per RFC 2965) are equal to each other.
+int PartialCookieOrdering(const net::CanonicalCookie& a,
+                          const net::CanonicalCookie& b) {
+  int diff = a.Name().compare(b.Name());
+  if (diff != 0)
+    return diff;
+
+  diff = a.Domain().compare(b.Domain());
+  if (diff != 0)
+    return diff;
+
+  return a.Path().compare(b.Path());
+}
+
 }  // namespace
 
 CanonicalCookie::CanonicalCookie()
@@ -408,6 +423,41 @@ std::string CanonicalCookie::DebugString() const {
       name_.c_str(), value_.c_str(),
       domain_.c_str(), path_.c_str(),
       static_cast<int64>(creation_date_.ToTimeT()));
+}
+
+bool CanonicalCookie::PartialCompare(const CanonicalCookie& other) const {
+  return PartialCookieOrdering(*this, other) < 0;
+}
+
+bool CanonicalCookie::FullCompare(const CanonicalCookie& other) const {
+  // Do the partial comparison first.
+  int diff = PartialCookieOrdering(*this, other);
+  if (diff != 0)
+    return diff < 0;
+
+  DCHECK(IsEquivalent(other));
+
+  // Compare other fields.
+  diff = Value().compare(other.Value());
+  if (diff != 0)
+    return diff < 0;
+
+  if (CreationDate() != other.CreationDate())
+    return CreationDate() < other.CreationDate();
+
+  if (ExpiryDate() != other.ExpiryDate())
+    return ExpiryDate() < other.ExpiryDate();
+
+  if (LastAccessDate() != other.LastAccessDate())
+    return LastAccessDate() < other.LastAccessDate();
+
+  if (IsSecure() != other.IsSecure())
+    return IsSecure();
+
+  if (IsHttpOnly() != other.IsHttpOnly())
+    return IsHttpOnly();
+
+  return Priority() < other.Priority();
 }
 
 }  // namespace net

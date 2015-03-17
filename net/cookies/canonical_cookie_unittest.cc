@@ -407,4 +407,67 @@ TEST(CanonicalCookieTest, IncludeFirstPartyForFirstPartyURL) {
   EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
 }
 
+TEST(CanonicalCookieTest, PartialCompare) {
+  GURL url("http://www.example.com");
+  base::Time creation_time = base::Time::Now();
+  CookieOptions options;
+  scoped_ptr<CanonicalCookie> cookie(
+      CanonicalCookie::Create(url, "a=b", creation_time, options));
+  scoped_ptr<CanonicalCookie> cookie_different_path(
+      CanonicalCookie::Create(url, "a=b; path=/foo", creation_time, options));
+  scoped_ptr<CanonicalCookie> cookie_different_value(
+      CanonicalCookie::Create(url, "a=c", creation_time, options));
+
+  // Cookie is equivalent to itself.
+  EXPECT_FALSE(cookie->PartialCompare(*cookie));
+
+  // Changing the path affects the ordering.
+  EXPECT_TRUE(cookie->PartialCompare(*cookie_different_path));
+  EXPECT_FALSE(cookie_different_path->PartialCompare(*cookie));
+
+  // Changing the value does not affect the ordering.
+  EXPECT_FALSE(cookie->PartialCompare(*cookie_different_value));
+  EXPECT_FALSE(cookie_different_value->PartialCompare(*cookie));
+
+  // Cookies identical for PartialCompare() are equivalent.
+  EXPECT_TRUE(cookie->IsEquivalent(*cookie_different_value));
+  EXPECT_TRUE(cookie->IsEquivalent(*cookie));
+}
+
+TEST(CanonicalCookieTest, FullCompare) {
+  GURL url("http://www.example.com");
+  base::Time creation_time = base::Time::Now();
+  CookieOptions options;
+  scoped_ptr<CanonicalCookie> cookie(
+      CanonicalCookie::Create(url, "a=b", creation_time, options));
+  scoped_ptr<CanonicalCookie> cookie_different_path(
+      CanonicalCookie::Create(url, "a=b; path=/foo", creation_time, options));
+  scoped_ptr<CanonicalCookie> cookie_different_value(
+      CanonicalCookie::Create(url, "a=c", creation_time, options));
+
+  // Cookie is equivalent to itself.
+  EXPECT_FALSE(cookie->FullCompare(*cookie));
+
+  // Changing the path affects the ordering.
+  EXPECT_TRUE(cookie->FullCompare(*cookie_different_path));
+  EXPECT_FALSE(cookie_different_path->FullCompare(*cookie));
+
+  // Changing the value affects the ordering.
+  EXPECT_TRUE(cookie->FullCompare(*cookie_different_value));
+  EXPECT_FALSE(cookie_different_value->FullCompare(*cookie));
+
+  // FullCompare() implies PartialCompare().
+  auto check_consistency =
+      [](const CanonicalCookie& a, const CanonicalCookie& b) {
+        if (a.FullCompare(b))
+          EXPECT_FALSE(b.PartialCompare(a));
+        else if (b.FullCompare(a))
+          EXPECT_FALSE(a.PartialCompare(b));
+      };
+
+  check_consistency(*cookie, *cookie_different_path);
+  check_consistency(*cookie, *cookie_different_value);
+  check_consistency(*cookie_different_path, *cookie_different_value);
+}
+
 }  // namespace net

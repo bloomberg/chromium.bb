@@ -234,6 +234,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // to the thread you actually want to be notified on.
   void FlushStore(const base::Closure& callback);
 
+  // Replaces all the cookies by |list|. This method does not flush the backend.
+  void SetAllCookiesAsync(const CookieList& list,
+                          const SetCookiesCallback& callback);
+
   // CookieStore implementation.
 
   // Sets the cookies specified by |cookie_list| returned from |url|
@@ -322,6 +326,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   class GetAllCookiesForURLWithOptionsTask;
   class GetAllCookiesTask;
   class GetCookiesWithOptionsTask;
+  class SetAllCookiesTask;
   class SetCookieWithDetailsTask;
   class SetCookieWithOptionsTask;
   class DeleteSessionCookiesTask;
@@ -349,6 +354,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // For FindCookiesForKey.
   FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, ShortLivedSessionCookies);
+
+  // For ComputeCookieDiff.
+  FRIEND_TEST_ALL_PREFIXES(CookieMonsterTest, ComputeCookieDiff);
 
   // Internal reasons for deletion, used to populate informative histograms
   // and to provide a public cause for onCookieChange notifications.
@@ -544,6 +552,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
                           const base::Time& creation_time,
                           const CookieOptions& options);
 
+  // Helper function calling SetCanonicalCookie() for all cookies in |list|.
+  bool SetCanonicalCookies(const CookieList& list);
+
   void InternalUpdateCookieAccessTime(CanonicalCookie* cc,
                                       const base::Time& current_time);
 
@@ -607,6 +618,16 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // are loaded.
   void DoCookieTaskForURL(const scoped_refptr<CookieMonsterTask>& task_item,
                           const GURL& url);
+
+  // Computes the difference between |old_cookies| and |new_cookies|, and writes
+  // the result in |cookies_to_add| and |cookies_to_delete|.
+  // This function has the side effect of changing the order of |old_cookies|
+  // and |new_cookies|. |cookies_to_add| and |cookies_to_delete| must be empty,
+  // and none of the arguments can be null.
+  void ComputeCookieDiff(CookieList* old_cookies,
+                         CookieList* new_cookies,
+                         CookieList* cookies_to_add,
+                         CookieList* cookies_to_delete);
 
   // Run all cookie changed callbacks that are monitoring |cookie|.
   // |removed| is true if the cookie was deleted.

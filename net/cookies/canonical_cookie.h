@@ -136,6 +136,18 @@ class NET_EXPORT CanonicalCookie {
                                     const base::Time& current,
                                     const base::Time& server_time);
 
+  // Cookie ordering methods.
+
+  // Returns true if the cookie is less than |other|, considering only name,
+  // domain and path. In particular, two equivalent cookies (see IsEquivalent())
+  // are identical for PartialCompare().
+  bool PartialCompare(const CanonicalCookie& other) const;
+
+  // Returns true if the cookie is less than |other|, considering all fields.
+  // FullCompare() is consistent with PartialCompare(): cookies sorted using
+  // FullCompare() are also sorted with respect to PartialCompare().
+  bool FullCompare(const CanonicalCookie& other) const;
+
  private:
   // The source member of a canonical cookie is the origin of the URL that tried
   // to set this cookie, minus the port number if any.  This field is not
