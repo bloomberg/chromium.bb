@@ -405,9 +405,9 @@ bool SVGPathParser::parsePathDataFromSource(PathParsingMode pathParsingMode, boo
 // This works by converting the SVG arc to "simple" beziers.
 // Partly adapted from Niko's code in kdelibs/kdecore/svgicons.
 // See also SVG implementation notes: http://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
-bool SVGPathParser::decomposeArcToCubic(float angle, float rx, float ry, FloatPoint& point1, FloatPoint& point2, bool largeArcFlag, bool sweepFlag)
+bool SVGPathParser::decomposeArcToCubic(float angle, float rx, float ry, const FloatPoint& start, const FloatPoint& end, bool largeArcFlag, bool sweepFlag)
 {
-    FloatSize midPointDistance = point1 - point2;
+    FloatSize midPointDistance = start - end;
     midPointDistance.scale(0.5f);
 
     AffineTransform pointTransform;
@@ -431,8 +431,8 @@ bool SVGPathParser::decomposeArcToCubic(float angle, float rx, float ry, FloatPo
     pointTransform.scale(1 / rx, 1 / ry);
     pointTransform.rotate(-angle);
 
-    point1 = pointTransform.mapPoint(point1);
-    point2 = pointTransform.mapPoint(point2);
+    FloatPoint point1 = pointTransform.mapPoint(start);
+    FloatPoint point2 = pointTransform.mapPoint(end);
     FloatSize delta = point2 - point1;
 
     float d = delta.width() * delta.width() + delta.height() * delta.height();

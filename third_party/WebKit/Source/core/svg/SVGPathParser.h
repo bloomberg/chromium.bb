@@ -48,7 +48,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    bool decomposeArcToCubic(float, float, float, FloatPoint&, FloatPoint&, bool largeArcFlag, bool sweepFlag);
+    bool decomposeArcToCubic(float, float, float, const FloatPoint&, const FloatPoint&, bool largeArcFlag, bool sweepFlag);
     void parseClosePathSegment();
     bool parseMoveToSegment();
     bool parseLineToSegment();
