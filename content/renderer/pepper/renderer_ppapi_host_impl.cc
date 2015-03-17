@@ -259,11 +259,19 @@ void RendererPpapiHostImpl::CreateBrowserResourceHosts(
 }
 
 GURL RendererPpapiHostImpl::GetDocumentURL(PP_Instance instance) const {
-  PepperPluginInstanceImpl* instance_object = GetAndValidateInstance(instance);
-  if (!instance_object || !instance_object->container())
+  blink::WebPluginContainer* container = GetContainerForInstance(instance);
+  if (!container)
     return GURL();
 
-  return instance_object->container()->element().document().url();
+  blink::WebElement element = container->element();
+  if (element.isNull())
+    return GURL();
+
+  blink::WebDocument document = element.document();
+  if (document.isNull())
+    return GURL();
+
+  return document.url();
 }
 
 PepperPluginInstanceImpl* RendererPpapiHostImpl::GetAndValidateInstance(
