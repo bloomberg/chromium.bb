@@ -321,17 +321,10 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
 }
 
 size_t ChromeCrashReporterClient::RegisterCrashKeys() {
-  // Note: On Windows this only affects the EXE. A separate invocation from
-  // child_process_logging_win.cc registers crash keys for Chrome.dll.
-#if defined(COMPONENT_BUILD)
-  // On Windows, this is not called in a component build, as in that case a
-  // single copy of 'base' is shared by the EXE and the various DLLs, and that
-  // copy is configured by child_process_logging_win.cc.
-  NOTREACHED();
-  return 0;
-#else
+  // Note: This is not called on Windows because Breakpad is initialized in the
+  // EXE module, but code that uses crash keys is in the DLL module.
+  // RegisterChromeCrashKeys() will be called after the DLL is loaded.
   return crash_keys::RegisterChromeCrashKeys();
-#endif
 }
 
 bool ChromeCrashReporterClient::IsRunningUnattended() {
