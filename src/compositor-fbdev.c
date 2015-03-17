@@ -127,57 +127,36 @@ fbdev_output_repaint_pixman(struct weston_output *base, pixman_region32_t *damag
 	struct fbdev_output *output = to_fbdev_output(base);
 	struct weston_compositor *ec = output->base.compositor;
 	pixman_box32_t *rects;
-	int nrects, i, src_x, src_y, x1, y1, x2, y2, width, height;
+	int nrects, i;
 
 	/* Repaint the damaged region onto the back buffer. */
 	pixman_renderer_output_set_buffer(base, output->shadow_surface);
 	ec->renderer->repaint_output(base, damage);
 
 	/* Transform and composite onto the frame buffer. */
-	width = pixman_image_get_width(output->shadow_surface);
-	height = pixman_image_get_height(output->shadow_surface);
 	rects = pixman_region32_rectangles(damage, &nrects);
 
 	for (i = 0; i < nrects; i++) {
-		switch (base->transform) {
-		default:
-		case WL_OUTPUT_TRANSFORM_NORMAL:
-			x1 = rects[i].x1;
-			x2 = rects[i].x2;
-			y1 = rects[i].y1;
-			y2 = rects[i].y2;
-			break;
-		case WL_OUTPUT_TRANSFORM_180:
-			x1 = width - rects[i].x2;
-			x2 = width - rects[i].x1;
-			y1 = height - rects[i].y2;
-			y2 = height - rects[i].y1;
-			break;
-		case WL_OUTPUT_TRANSFORM_90:
-			x1 = height - rects[i].y2;
-			x2 = height - rects[i].y1;
-			y1 = rects[i].x1;
-			y2 = rects[i].x2;
-			break;
-		case WL_OUTPUT_TRANSFORM_270:
-			x1 = rects[i].y1;
-			x2 = rects[i].y2;
-			y1 = width - rects[i].x2;
-			y2 = width - rects[i].x1;
-			break;
-		}
-		src_x = x1;
-		src_y = y1;
+		pixman_box32_t transformed_rect;
+		int width, height;
 
+		transformed_rect = weston_transformed_rect(base->width,
+							   base->height,
+							   base->transform,
+							   1, rects[i]);
+		width = transformed_rect.x2 - transformed_rect.x1;
+		height = transformed_rect.y2 - transformed_rect.y1;
 		pixman_image_composite32(PIXMAN_OP_SRC,
 			output->shadow_surface, /* src */
 			NULL /* mask */,
 			output->hw_surface, /* dest */
-			src_x, src_y, /* src_x, src_y */
+			transformed_rect.x1, /* src_x */
+			transformed_rect.y1, /* src_y */
 			0, 0, /* mask_x, mask_y */
-			x1, y1, /* dest_x, dest_y */
-			x2 - x1, /* width */
-			y2 - y1 /* height */);
+			transformed_rect.x1, /* dest_x */
+			transformed_rect.y1, /* dest_y */
+			width, /* width */
+			height /* height */);
 	}
 
 	/* Update the damage region. */
@@ -502,10 +481,8 @@ fbdev_output_create(struct fbdev_compositor *compositor,
                     const char *device)
 {
 	struct fbdev_output *output;
-	pixman_transform_t transform;
 	struct weston_config_section *section;
 	int fb_fd;
-	int shadow_width, shadow_height;
 	int width, height;
 	unsigned int bytes_per_pixel;
 	struct wl_event_loop *loop;
@@ -570,67 +547,20 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 	                   config_transform,
 			   1);
 
-	width = output->fb_info.x_resolution;
-	height = output->fb_info.y_resolution;
-
-	pixman_transform_init_identity(&transform);
-	switch (output->base.transform) {
-	default:
-	case WL_OUTPUT_TRANSFORM_NORMAL:
-		shadow_width = width;
-		shadow_height = height;
-		pixman_transform_rotate(&transform,
-			NULL, 0, 0);
-		pixman_transform_translate(&transform, NULL,
-			0, 0);
-		break;
-	case WL_OUTPUT_TRANSFORM_180:
-		shadow_width = width;
-		shadow_height = height;
-		pixman_transform_rotate(&transform,
-			NULL, -pixman_fixed_1, 0);
-		pixman_transform_translate(NULL, &transform,
-			pixman_int_to_fixed(shadow_width),
-			pixman_int_to_fixed(shadow_height));
-		break;
-	case WL_OUTPUT_TRANSFORM_270:
-		shadow_width = height;
-		shadow_height = width;
-		pixman_transform_rotate(&transform,
-			NULL, 0, pixman_fixed_1);
-		pixman_transform_translate(&transform,
-			NULL,
-			pixman_int_to_fixed(shadow_width),
-			0);
-		break;
-	case WL_OUTPUT_TRANSFORM_90:
-		shadow_width = height;
-		shadow_height = width;
-		pixman_transform_rotate(&transform,
-			NULL, 0, -pixman_fixed_1);
-		pixman_transform_translate(&transform,
-			NULL,
-			0,
-			pixman_int_to_fixed(shadow_height));
-		break;
-	}
-
+	width = output->mode.width;
+	height = output->mode.height;
 	bytes_per_pixel = output->fb_info.bits_per_pixel / 8;
 
 	output->shadow_buf = malloc(width * height * bytes_per_pixel);
 	output->shadow_surface =
 		pixman_image_create_bits(output->fb_info.pixel_format,
-		                         shadow_width, shadow_height,
+		                         width, height,
 		                         output->shadow_buf,
-		                         shadow_width * bytes_per_pixel);
+		                         width * bytes_per_pixel);
 	if (output->shadow_buf == NULL || output->shadow_surface == NULL) {
 		weston_log("Failed to create surface for frame buffer.\n");
 		goto out_hw_surface;
 	}
-
-	/* No need in transform for normal output */
-	if (output->base.transform != WL_OUTPUT_TRANSFORM_NORMAL)
-		pixman_image_set_transform(output->shadow_surface, &transform);
 
 	if (compositor->use_pixman) {
 		if (pixman_renderer_output_create(&output->base) < 0)
