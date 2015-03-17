@@ -334,6 +334,7 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
     return;
   }
 
+  bool key_added = false;
   for (KeyIdAndKeyPairs::iterator it = keys.begin(); it != keys.end(); ++it) {
     if (it->second.length() !=
         static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
@@ -341,6 +342,12 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
       promise->reject(INVALID_ACCESS_ERROR, 0, "Invalid key length.");
       return;
     }
+
+    // If this key_id doesn't currently exist in this session,
+    // a new key is added.
+    if (!HasKey(session_id, it->first))
+      key_added = true;
+
     if (!AddDecryptionKey(session_id, it->first, it->second)) {
       promise->reject(INVALID_ACCESS_ERROR, 0, "Unable to add key.");
       return;
@@ -374,9 +381,7 @@ void AesDecryptor::UpdateSession(const std::string& session_id,
     }
   }
 
-  // Assume that at least 1 new key has been successfully added and thus
-  // sending true for |has_additional_usable_key|. http://crbug.com/448219.
-  session_keys_change_cb_.Run(session_id, true, keys_info.Pass());
+  session_keys_change_cb_.Run(session_id, key_added, keys_info.Pass());
 }
 
 void AesDecryptor::CloseSession(const std::string& session_id,
@@ -544,6 +549,16 @@ AesDecryptor::DecryptionKey* AesDecryptor::GetKey(
 
   // Return the key from the "latest" session_id entry.
   return key_id_found->second->LatestDecryptionKey();
+}
+
+bool AesDecryptor::HasKey(const std::string& session_id,
+                          const std::string& key_id) {
+  base::AutoLock auto_lock(key_map_lock_);
+  KeyIdToSessionKeysMap::const_iterator key_id_found = key_map_.find(key_id);
+  if (key_id_found == key_map_.end())
+    return false;
+
+  return key_id_found->second->Contains(session_id);
 }
 
 void AesDecryptor::DeleteKeysForSession(const std::string& session_id) {

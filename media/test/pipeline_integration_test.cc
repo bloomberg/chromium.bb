@@ -302,6 +302,12 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   void OnEncryptedMediaInitData(const std::string& init_data_type,
                                 const std::vector<uint8>& init_data,
                                 AesDecryptor* decryptor) override {
+    // Since only 1 session is created, skip the request if the |init_data|
+    // has been seen before (no need to add the same key again).
+    if (init_data == prev_init_data_)
+      return;
+    prev_init_data_ = init_data;
+
     if (current_session_id_.empty()) {
       if (init_data_type == kCencInitDataType) {
         // Since the 'cenc' files are not created with proper 'pssh' boxes,
@@ -340,6 +346,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
   }
 
   std::string current_session_id_;
+  std::vector<uint8> prev_init_data_;
 };
 
 class RotatingKeyProvidingApp : public KeyProvidingApp {
