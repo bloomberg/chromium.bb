@@ -955,7 +955,7 @@ static const struct wl_callback_listener sync_listener = {
  * \param queue The queue on which to run the roundtrip
  * \return The number of dispatched events on success or -1 on failure
  *
- * Blocks until the server process all currently issued requests and
+ * Blocks until the server processes all currently issued requests and
  * sends out pending events on the event queue.
  *
  * \note This function uses wl_display_dispatch_queue() internally. If you
