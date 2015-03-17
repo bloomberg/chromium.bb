@@ -834,7 +834,7 @@ class CONTENT_EXPORT RenderViewImpl
   bool suppress_dialogs_until_swap_out_;
 
   // Holds state pertaining to a navigation that we initiated.  This is held by
-  // the WebDataSource::ExtraData attribute.  We use pending_navigation_state_
+  // the WebDataSource::ExtraData attribute.  We use pending_navigation_params_
   // as a temporary holder for the state until the WebDataSource corresponding
   // to the new navigation is created.  See DidCreateDataSource.
   // TODO(nasko): Move to RenderFrame, as this is per-frame state.

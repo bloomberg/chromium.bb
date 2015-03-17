@@ -3962,7 +3962,8 @@ void RenderFrameImpl::OnCommitNavigation(
 
   GetContentClient()->SetActiveURL(common_params.url);
 
-  // TODO(clamy): reset the pending navigation parameters in RenderView.
+  render_view_->pending_navigation_params_.reset(new NavigationParams(
+      common_params, StartNavigationParams(), commit_params, history_params));
 
   if (!common_params.base_url_for_data_url.is_empty() ||
       common_params.url.SchemeIs(url::kDataScheme)) {
