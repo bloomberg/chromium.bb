@@ -197,7 +197,16 @@ template("idl_impl") {
     idl_files_list = "$target_gen_dir/${target_name}_file_list.tmp"
     write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
 
-    inputs = [ idl_files_list ] + invoker.sources
+    inputs =
+      idl_lexer_parser_files +  # to be explicit (covered by parsetab)
+      idl_compiler_files
+    inputs += [
+      "$bindings_scripts_output_dir/lextab.py",
+      "$bindings_scripts_output_dir/parsetab.pickle",
+      "$bindings_scripts_output_dir/cached_jinja_templates.stamp",
+      "$bindings_dir/IDLExtendedAttributes.txt",
+    ]
+    inputs += [ idl_files_list ] + invoker.sources
     outputs = invoker.outputs
 
     args = [
