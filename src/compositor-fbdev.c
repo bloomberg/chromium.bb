@@ -550,6 +550,7 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 	output->base.subpixel = WL_OUTPUT_SUBPIXEL_UNKNOWN;
 	output->base.make = "unknown";
 	output->base.model = output->fb_info.id;
+	output->base.name = strdup("fbdev");
 
 	weston_output_init(&output->base, &compositor->base,
 	                   0, 0, output->fb_info.width_mm,
