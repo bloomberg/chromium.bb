@@ -201,7 +201,20 @@
     {
       'package_name': 'libdbus-1-3',
       'dependencies=': [],
-      'extra_configure_flags': ['--disable-static'],
+      'extra_configure_flags': [
+        '--disable-static',
+        # From debian/rules.
+        '--disable-libaudit',
+        '--enable-apparmor',
+        '--enable-systemd',
+        '--libexecdir=/lib/dbus-1.0',
+        '--with-systemdsystemunitdir=/lib/systemd/system',
+        '--disable-tests',
+        '--exec-prefix=/',
+        # From dh_auto_configure.
+        '--prefix=/usr',
+        '--localstatedir=/var',
+      ],
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
