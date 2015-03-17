@@ -342,7 +342,7 @@ static const char* const common_media_types[] = {
   "audio/x-wav",
 
 #if defined(OS_ANDROID)
-  // HLS. Supported by Android ICS and above.
+  // HLS.
   "application/vnd.apple.mpegurl",
   "application/x-mpegurl",
 #endif
@@ -485,16 +485,6 @@ static bool IsCodecSupportedOnAndroid(MimeUtil::Codec codec) {
   }
 
   return false;
-}
-
-static bool IsMimeTypeSupportedOnAndroid(const std::string& mimeType) {
-  // HLS codecs are supported in ICS and above (API level 14)
-  if ((!mimeType.compare("application/vnd.apple.mpegurl") ||
-      !mimeType.compare("application/x-mpegurl")) &&
-      base::android::BuildInfo::GetInstance()->sdk_int() < 14) {
-    return false;
-  }
-  return true;
 }
 #endif
 
@@ -645,10 +635,6 @@ void MimeUtil::InitializeMimeTypeMaps() {
   for (size_t i = 0; i < arraysize(supported_javascript_types); ++i)
     non_image_map_.insert(supported_javascript_types[i]);
   for (size_t i = 0; i < arraysize(common_media_types); ++i) {
-#if defined(OS_ANDROID)
-    if (!IsMimeTypeSupportedOnAndroid(common_media_types[i]))
-      continue;
-#endif
     non_image_map_.insert(common_media_types[i]);
   }
 #if defined(USE_PROPRIETARY_CODECS)
@@ -660,10 +646,6 @@ void MimeUtil::InitializeMimeTypeMaps() {
 
   // Initialize the supported media types.
   for (size_t i = 0; i < arraysize(common_media_types); ++i) {
-#if defined(OS_ANDROID)
-    if (!IsMimeTypeSupportedOnAndroid(common_media_types[i]))
-      continue;
-#endif
     media_map_.insert(common_media_types[i]);
   }
 #if defined(USE_PROPRIETARY_CODECS)
