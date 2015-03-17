@@ -1537,6 +1537,27 @@ class DeviceUtilsSetChargingTest(DeviceUtilsTest):
       self.device.SetCharging(False)
 
 
+class DeviceUtilsSetBatteryMeasurementTest(DeviceUtilsTest):
+
+  def testBatteryMeasurement(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            mock.ANY, retries=0, single_line=True,
+            timeout=10, check_return=True), '22'),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'batterystats', '--reset'], check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'batterystats', '--charged', '--checkin'],
+            check_return=True), []),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'usb', '0'], check_return=True), []),
+        (self.call.device.GetCharging(), False),
+        (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'reset'], check_return=True), []),
+        (self.call.device.GetCharging(), True)):
+      with self.device.BatteryMeasurement():
+        pass
+
 
 class DeviceUtilsStrTest(DeviceUtilsTest):
 

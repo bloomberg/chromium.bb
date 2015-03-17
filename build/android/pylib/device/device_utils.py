@@ -9,6 +9,7 @@ Eventually, this will be based on adb_wrapper.
 # pylint: disable=unused-argument
 
 import collections
+import contextlib
 import itertools
 import logging
 import multiprocessing
@@ -70,7 +71,6 @@ _CONTROL_CHARGING_COMMANDS = [
         'echo 0 > /sys/class/power_supply/usb/online'),
   },
 ]
-
 
 @decorators.WithExplicitTimeoutAndRetries(
     _DEFAULT_TIMEOUT, _DEFAULT_RETRIES)
@@ -1453,8 +1453,16 @@ class DeviceUtils(object):
     # Skip the first line, which is just a header.
     for line in self.RunShellCommand(
         ['dumpsys', 'battery'], check_return=True)[1:]:
-      k, v = line.split(': ', 1)
-      result[k.strip()] = v.strip()
+      # If usb charging has been disabled, an extra line of header exists.
+      if 'UPDATES STOPPED' in line:
+        logging.warning('Dumpsys battery not receiving updates. '
+                        'Run dumpsys battery reset if this is in error.')
+      elif ':' not in line:
+        logging.warning('Unknown line found in dumpsys battery.')
+        logging.warning(line)
+      else:
+        k, v = line.split(': ', 1)
+        result[k.strip()] = v.strip()
     return result
 
   @decorators.WithTimeoutAndRetriesFromInstance()
@@ -1503,6 +1511,79 @@ class DeviceUtils(object):
       return self.GetCharging() == enabled
 
     timeout_retry.WaitFor(set_and_verify_charging, wait_period=1)
+
+  # TODO(rnephew): Make private when all use cases can use the context manager.
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def DisableBatteryUpdates(self, timeout=None, retries=None):
+    """ Resets battery data and makes device appear like it is not
+    charging so that it will collect power data since last charge.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+    """
+    def battery_updates_disabled():
+      return self.GetCharging() is False
+
+    self.RunShellCommand(
+        ['dumpsys', 'batterystats', '--reset'], check_return=True)
+    battery_data = self.RunShellCommand(
+        ['dumpsys', 'batterystats', '--charged', '--checkin'],
+        check_return=True)
+    ROW_TYPE_INDEX = 3
+    PWI_POWER_INDEX = 5
+    for line in battery_data:
+      l = line.split(',')
+      if (len(l) > PWI_POWER_INDEX and l[ROW_TYPE_INDEX] == 'pwi'
+          and l[PWI_POWER_INDEX] != 0):
+        raise device_errors.CommandFailedError(
+            'Non-zero pmi value found after reset.')
+    self.RunShellCommand(['dumpsys', 'battery', 'set', 'usb', '0'],
+                         check_return=True)
+    timeout_retry.WaitFor(battery_updates_disabled, wait_period=1)
+
+  # TODO(rnephew): Make private when all use cases can use the context manager.
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def EnableBatteryUpdates(self, timeout=None, retries=None):
+    """ Restarts device charging so that dumpsys no longer collects power data.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+    """
+    def battery_updates_enabled():
+      return self.GetCharging() is True
+
+    self.RunShellCommand(['dumpsys', 'battery', 'reset'], check_return=True)
+    timeout_retry.WaitFor(battery_updates_enabled, wait_period=1)
+
+  @contextlib.contextmanager
+  def BatteryMeasurement(self, timeout=None, retries=None):
+    """Context manager that enables battery data collection. It makes
+    the device appear to stop charging so that dumpsys will start collecting
+    power data since last charge. Once the with block is exited, charging is
+    resumed and power data since last charge is no longer collected.
+
+    Only for devices L and higher.
+
+    Example usage:
+      with BatteryMeasurement():
+        browser_actions()
+        get_power_data() # report usage within this block
+      after_measurements() # Anything that runs after power
+                           # measurements are collected
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+    """
+    if self.build_version_sdk < constants.ANDROID_SDK_VERSION_CODES.LOLLIPOP:
+      raise device_errors.CommandFailedError('Device must be L or higher.')
+    try:
+      self.DisableBatteryUpdates(timeout=timeout, retries=retries)
+      yield
+    finally:
+      self.EnableBatteryUpdates(timeout=timeout, retries=retries)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def GetDevicePieWrapper(self, timeout=None, retries=None):
