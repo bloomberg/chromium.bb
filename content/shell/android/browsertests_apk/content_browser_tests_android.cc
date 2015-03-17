@@ -87,7 +87,7 @@ static void RunTests(JNIEnv* env,
       base::android::ConvertJavaStringToUTF8(env, jfiles_dir));
   base::FilePath fifo_path(files_dir.Append(base::FilePath("test.fifo")));
   base::android::CreateFIFO(fifo_path, 0666);
-  base::android::RedirectStream(stdout, fifo_path, "w");
+  base::android::RedirectStream(stdout, fifo_path, "w+");
   dup2(STDOUT_FILENO, STDERR_FILENO);
 
   ScopedMainEntryLogger scoped_main_entry_logger;
