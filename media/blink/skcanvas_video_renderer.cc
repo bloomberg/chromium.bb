@@ -400,7 +400,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
   }
 
   paint.setXfermodeMode(mode);
-  paint.setFilterLevel(SkPaint::kLow_FilterLevel);
+  paint.setFilterQuality(kLow_SkFilterQuality);
 
   bool need_transform =
       video_rotation != VIDEO_ROTATION_0 ||

@@ -38,7 +38,7 @@ void ProportionalImageView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawImageInt(image_, draw_bounds.x(), draw_bounds.y());
   } else {
     SkPaint paint;
-    paint.setFilterLevel(SkPaint::kLow_FilterLevel);
+    paint.setFilterQuality(kLow_SkFilterQuality);
 
     // This call resizes the image while drawing into the canvas.
     canvas->DrawImageInt(

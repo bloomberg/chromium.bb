@@ -244,12 +244,13 @@ scoped_ptr<base::Value> AsValue(const SkPaint& paint) {
     val->SetString("Flags", builder.str());
   }
 
-  if (paint.getFilterLevel() != default_paint.getFilterLevel()) {
-    static const char* gFilterLevelStrings[] =
-        { "None", "Low", "Medium", "High" };
-    DCHECK_LT(static_cast<size_t>(paint.getFilterLevel()),
-              SK_ARRAY_COUNT(gFilterLevelStrings));
-    val->SetString("FilterLevel", gFilterLevelStrings[paint.getFilterLevel()]);
+  if (paint.getFilterQuality() != default_paint.getFilterQuality()) {
+    static const char* gFilterQualityStrings[] = {
+        "None", "Low", "Medium", "High"};
+    DCHECK_LT(static_cast<size_t>(paint.getFilterQuality()),
+              SK_ARRAY_COUNT(gFilterQualityStrings));
+    val->SetString("FilterLevel",
+                   gFilterQualityStrings[paint.getFilterQuality()]);
   }
 
   if (paint.getTextSize() != default_paint.getTextSize())

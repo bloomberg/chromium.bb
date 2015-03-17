@@ -1129,7 +1129,7 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackText(
 
   SkPaint paint;
   paint.setAntiAlias(true);
-  paint.setFilterLevel(SkPaint::kHigh_FilterLevel);
+  paint.setFilterQuality(kHigh_SkFilterQuality);
   paint.setColor(SK_ColorWHITE);
   paint.setTypeface(SkTypeface::CreateFromName("sans", SkTypeface::kBold));
   paint.setTextSize(kTextSize);

@@ -2314,7 +2314,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
   scoped_ptr<FakePicturePile> recording =
       FakePicturePile::CreateFilledPile(pile_tile_size, viewport.size());
   SkPaint paint;
-  paint.setFilterLevel(SkPaint::kLow_FilterLevel);
+  paint.setFilterQuality(kLow_SkFilterQuality);
   recording->add_draw_bitmap_with_paint(bitmap, gfx::Point(), paint);
   recording->RerecordPile();
   scoped_refptr<FakePicturePileImpl> pile =
@@ -2366,7 +2366,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   scoped_ptr<FakePicturePile> recording =
       FakePicturePile::CreateFilledPile(pile_tile_size, viewport.size());
   SkPaint paint;
-  paint.setFilterLevel(SkPaint::kLow_FilterLevel);
+  paint.setFilterQuality(kLow_SkFilterQuality);
   recording->add_draw_bitmap_with_paint(bitmap, gfx::Point(), paint);
   recording->RerecordPile();
   scoped_refptr<FakePicturePileImpl> pile =

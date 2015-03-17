@@ -18,7 +18,7 @@ bool OpacityDrawFilter::filter(SkPaint* paint, Type type) {
   if (alpha_ < 255)
     paint->setAlpha(alpha_);
   if (disable_image_filtering_)
-    paint->setFilterLevel(SkPaint::kNone_FilterLevel);
+    paint->setFilterQuality(kNone_SkFilterQuality);
   return true;
 }
 

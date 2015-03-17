@@ -632,8 +632,7 @@ void Canvas::DrawImageIntHelper(const ImageSkia& image,
   // Set up our paint to use the shader & release our reference (now just owned
   // by the paint).
   SkPaint p(paint);
-  p.setFilterLevel(filter ? SkPaint::kLow_FilterLevel
-                          : SkPaint::kNone_FilterLevel);
+  p.setFilterQuality(filter ? kLow_SkFilterQuality : kNone_SkFilterQuality);
   p.setShader(shader.get());
 
   // The rect will be filled by the bitmap.

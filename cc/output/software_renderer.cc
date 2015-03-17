@@ -266,7 +266,7 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame,
     if (settings_->allow_antialiasing &&
         (settings_->force_antialiasing || all_four_edges_are_exterior))
       current_paint_.setAntiAlias(true);
-    current_paint_.setFilterLevel(SkPaint::kLow_FilterLevel);
+    current_paint_.setFilterQuality(kLow_SkFilterQuality);
   }
 
   if (quad->ShouldDrawWithBlending() ||
@@ -487,9 +487,8 @@ void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
       QuadVertexRect(), quad->rect, quad->visible_rect);
 
   SkRect uv_rect = gfx::RectFToSkRect(visible_tex_coord_rect);
-  current_paint_.setFilterLevel(quad->nearest_neighbor
-                                    ? SkPaint::kNone_FilterLevel
-                                    : SkPaint::kLow_FilterLevel);
+  current_paint_.setFilterQuality(
+      quad->nearest_neighbor ? kNone_SkFilterQuality : kLow_SkFilterQuality);
   current_canvas_->drawBitmapRectToRect(
       *lock.sk_bitmap(),
       &uv_rect,
