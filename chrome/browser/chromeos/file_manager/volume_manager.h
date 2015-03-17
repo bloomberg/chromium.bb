@@ -176,7 +176,8 @@ class VolumeManager : public KeyedService,
   // type. Assumes that the mount point is already registered.
   void AddVolumeInfoForTesting(const base::FilePath& path,
                                VolumeType volume_type,
-                               chromeos::DeviceType device_type);
+                               chromeos::DeviceType device_type,
+                               bool read_only);
 
   // drive::DriveIntegrationServiceObserver overrides.
   void OnFileSystemMounted() override;

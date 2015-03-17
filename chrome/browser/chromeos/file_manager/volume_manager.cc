@@ -153,7 +153,8 @@ VolumeInfo CreateDownloadsVolumeInfo(const base::FilePath& downloads_path) {
 
 VolumeInfo CreateTestingVolumeInfo(const base::FilePath& path,
                                    VolumeType volume_type,
-                                   chromeos::DeviceType device_type) {
+                                   chromeos::DeviceType device_type,
+                                   bool read_only) {
   VolumeInfo volume_info;
   volume_info.type = volume_type;
   volume_info.device_type = device_type;
@@ -161,7 +162,7 @@ VolumeInfo CreateTestingVolumeInfo(const base::FilePath& path,
   volume_info.mount_path = path;
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
   volume_info.is_parent = false;
-  volume_info.is_read_only = false;
+  volume_info.is_read_only = read_only;
   volume_info.has_media = false;
   volume_info.volume_id = GenerateVolumeId(volume_info);
   return volume_info;
@@ -390,10 +391,12 @@ bool VolumeManager::RegisterDownloadsDirectoryForTesting(
 
 void VolumeManager::AddVolumeInfoForTesting(const base::FilePath& path,
                                             VolumeType volume_type,
-                                            chromeos::DeviceType device_type) {
+                                            chromeos::DeviceType device_type,
+                                            bool read_only) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
-               CreateTestingVolumeInfo(path, volume_type, device_type));
+  DoMountEvent(
+      chromeos::MOUNT_ERROR_NONE,
+      CreateTestingVolumeInfo(path, volume_type, device_type, read_only));
 }
 
 void VolumeManager::OnFileSystemMounted() {

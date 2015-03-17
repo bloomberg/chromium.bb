@@ -424,9 +424,9 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, ContentChecksum) {
                       kLocalMountPointName, storage::kFileSystemTypeNativeLocal,
                       storage::FileSystemMountOption(), mount_point_dir));
   file_manager::VolumeManager::Get(browser()->profile())
-      ->AddVolumeInfoForTesting(mount_point_dir,
-                                file_manager::VOLUME_TYPE_TESTING,
-                                chromeos::DEVICE_TYPE_UNKNOWN);
+      ->AddVolumeInfoForTesting(
+          mount_point_dir, file_manager::VOLUME_TYPE_TESTING,
+          chromeos::DEVICE_TYPE_UNKNOWN, false /* read_only */);
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/content_checksum_test"));
 }

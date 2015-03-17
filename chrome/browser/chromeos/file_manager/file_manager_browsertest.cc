@@ -333,7 +333,7 @@ class FakeTestVolume : public LocalTestVolume {
       return false;
 
     VolumeManager::Get(profile)->AddVolumeInfoForTesting(
-        root_path(), volume_type_, device_type_);
+        root_path(), volume_type_, device_type_, false /* read_only */);
     return true;
   }
 

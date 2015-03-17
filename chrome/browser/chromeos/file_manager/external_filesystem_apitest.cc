@@ -452,8 +452,10 @@ class LocalFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
                                          storage::kFileSystemTypeNativeLocal,
                                          storage::FileSystemMountOption(),
                                          mount_point_dir_));
-    VolumeManager::Get(browser()->profile())->AddVolumeInfoForTesting(
-        mount_point_dir_, VOLUME_TYPE_TESTING, chromeos::DEVICE_TYPE_UNKNOWN);
+    VolumeManager::Get(browser()->profile())
+        ->AddVolumeInfoForTesting(mount_point_dir_, VOLUME_TYPE_TESTING,
+                                  chromeos::DEVICE_TYPE_UNKNOWN,
+                                  false /* read_only */);
   }
 
  private:
@@ -483,8 +485,10 @@ class RestrictedFileSystemExtensionApiTest
                                  storage::kFileSystemTypeRestrictedNativeLocal,
                                  storage::FileSystemMountOption(),
                                  mount_point_dir_));
-    VolumeManager::Get(browser()->profile())->AddVolumeInfoForTesting(
-        mount_point_dir_, VOLUME_TYPE_TESTING, chromeos::DEVICE_TYPE_UNKNOWN);
+    VolumeManager::Get(browser()->profile())
+        ->AddVolumeInfoForTesting(mount_point_dir_, VOLUME_TYPE_TESTING,
+                                  chromeos::DEVICE_TYPE_UNKNOWN,
+                                  false /* read_only */);
   }
 
  private:
@@ -683,9 +687,9 @@ class LocalAndDriveFileSystemExtensionApiTest
                                          storage::FileSystemMountOption(),
                                          local_mount_point_dir_));
     VolumeManager::Get(browser()->profile())
-        ->AddVolumeInfoForTesting(local_mount_point_dir_,
-                                  VOLUME_TYPE_TESTING,
-                                  chromeos::DEVICE_TYPE_UNKNOWN);
+        ->AddVolumeInfoForTesting(local_mount_point_dir_, VOLUME_TYPE_TESTING,
+                                  chromeos::DEVICE_TYPE_UNKNOWN,
+                                  false /* read_only */);
     test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
   }
 
