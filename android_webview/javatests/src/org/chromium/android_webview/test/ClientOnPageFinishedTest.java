@@ -359,4 +359,21 @@ public class ClientOnPageFinishedTest extends AwTestBase {
         assertEquals(syncUrl, onPageFinishedHelper.getUrl());
         assertEquals(onPageFinishedCallCount + 1, onPageFinishedHelper.getCallCount());
     }
+
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testOnPageFinishedCalledAfter204Reply() throws Throwable {
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            final String url = webServer.setResponseWithNoContentStatus("/page.html");
+            TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
+                    mContentsClient.getOnPageFinishedHelper();
+            int currentCallCount = onPageFinishedHelper.getCallCount();
+            loadUrlAsync(mAwContents, url);
+            onPageFinishedHelper.waitForCallback(currentCallCount);
+            assertEquals(url, onPageFinishedHelper.getUrl());
+        } finally {
+            webServer.shutdown();
+        }
+    }
 }

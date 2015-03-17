@@ -24,6 +24,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_status.h"
 #include "url/url_constants.h"
 
 using android_webview::AwContentsIoThreadClient;
@@ -239,6 +240,23 @@ void AwResourceDispatcherHostDelegate::OnRequestRedirected(
     content::ResourceContext* resource_context,
     content::ResourceResponse* response) {
   AddExtraHeadersIfNeeded(request, resource_context);
+}
+
+void AwResourceDispatcherHostDelegate::RequestComplete(
+    net::URLRequest* request) {
+  if (request && !request->status().is_success()) {
+    const content::ResourceRequestInfo* request_info =
+        content::ResourceRequestInfo::ForRequest(request);
+    scoped_ptr<AwContentsIoThreadClient> io_client =
+        AwContentsIoThreadClient::FromID(request_info->GetChildID(),
+                                         request_info->GetRenderFrameID());
+    if (io_client) {
+      io_client->OnReceivedError(request);
+    } else {
+      DLOG(WARNING) << "io_client is null, onReceivedError dropped for " <<
+          request->url();
+    }
+  }
 }
 
 

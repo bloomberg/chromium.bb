@@ -36,7 +36,6 @@ AwRequestInterceptor::~AwRequestInterceptor() {
 
 scoped_ptr<AwWebResourceResponse>
 AwRequestInterceptor::QueryForAwWebResourceResponse(
-    const GURL& location,
     net::URLRequest* request) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   int render_process_id, render_frame_id;
@@ -50,7 +49,7 @@ AwRequestInterceptor::QueryForAwWebResourceResponse(
   if (!io_thread_client.get())
     return scoped_ptr<AwWebResourceResponse>();
 
-  return io_thread_client->ShouldInterceptRequest(location, request).Pass();
+  return io_thread_client->ShouldInterceptRequest(request).Pass();
 }
 
 net::URLRequestJob* AwRequestInterceptor::MaybeInterceptRequest(
@@ -71,7 +70,7 @@ net::URLRequestJob* AwRequestInterceptor::MaybeInterceptRequest(
                        new base::SupportsUserData::Data());
 
   scoped_ptr<AwWebResourceResponse> aw_web_resource_response =
-      QueryForAwWebResourceResponse(request->url(), request);
+      QueryForAwWebResourceResponse(request);
 
   if (!aw_web_resource_response)
     return NULL;

@@ -43,6 +43,9 @@ public abstract class AwContentsIoThreadClient {
     public abstract AwWebResourceResponse shouldInterceptRequest(
             AwContentsClient.AwWebResourceRequest request);
 
+    public abstract void onReceivedError(AwContentsClient.AwWebResourceRequest request,
+            AwContentsClient.AwWebResourceError error);
+
     public abstract void onReceivedHttpError(AwContentsClient.AwWebResourceRequest request,
             AwWebResourceResponse response);
 
@@ -63,6 +66,29 @@ public abstract class AwContentsIoThreadClient {
             request.requestHeaders.put(requestHeaderNames[i], requestHeaderValues[i]);
         }
         return shouldInterceptRequest(request);
+    }
+
+    @CalledByNative
+    protected void onReceivedError(
+            // WebResourceRequest
+            String url, boolean isMainFrame, boolean hasUserGesture, String method,
+            String[] requestHeaderNames, String[] requestHeaderValues,
+            // WebResourceError
+            int errorCode, String description) {
+        AwContentsClient.AwWebResourceRequest request =
+                new AwContentsClient.AwWebResourceRequest();
+        request.url = url;
+        request.isMainFrame = isMainFrame;
+        request.hasUserGesture = hasUserGesture;
+        request.method = method;
+        request.requestHeaders = new HashMap<String, String>(requestHeaderNames.length);
+        for (int i = 0; i < requestHeaderNames.length; ++i) {
+            request.requestHeaders.put(requestHeaderNames[i], requestHeaderValues[i]);
+        }
+        AwContentsClient.AwWebResourceError error = new AwContentsClient.AwWebResourceError();
+        error.errorCode = errorCode;
+        error.description = description;
+        onReceivedError(request, error);
     }
 
     @CalledByNative

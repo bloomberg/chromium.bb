@@ -48,7 +48,6 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   bool PendingAssociation() const override;
   CacheMode GetCacheMode() const override;
   scoped_ptr<AwWebResourceResponse> ShouldInterceptRequest(
-      const GURL& location,
       const net::URLRequest* request) override;
   bool ShouldBlockContentUrls() const override;
   bool ShouldBlockFileUrls() const override;
@@ -62,6 +61,7 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   void NewLoginRequest(const std::string& realm,
                        const std::string& account,
                        const std::string& args) override;
+  void OnReceivedError(const net::URLRequest* request) override;
   void OnReceivedHttpError(
       const net::URLRequest* request,
       const net::HttpResponseHeaders* response_headers) override;

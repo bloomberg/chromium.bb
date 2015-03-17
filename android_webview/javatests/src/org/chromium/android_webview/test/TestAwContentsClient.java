@@ -29,6 +29,7 @@ public class TestAwContentsClient extends NullContentsClient {
     private final OnPageFinishedHelper mOnPageFinishedHelper;
     private final OnPageCommitVisibleHelper mOnPageCommitVisibleHelper;
     private final OnReceivedErrorHelper mOnReceivedErrorHelper;
+    private final OnReceivedError2Helper mOnReceivedError2Helper;
     private final OnReceivedHttpErrorHelper mOnReceivedHttpErrorHelper;
     private final CallbackHelper mOnReceivedSslErrorHelper;
     private final OnDownloadStartHelper mOnDownloadStartHelper;
@@ -47,6 +48,7 @@ public class TestAwContentsClient extends NullContentsClient {
         mOnPageFinishedHelper = new OnPageFinishedHelper();
         mOnPageCommitVisibleHelper = new OnPageCommitVisibleHelper();
         mOnReceivedErrorHelper = new OnReceivedErrorHelper();
+        mOnReceivedError2Helper = new OnReceivedError2Helper();
         mOnReceivedHttpErrorHelper = new OnReceivedHttpErrorHelper();
         mOnReceivedSslErrorHelper = new CallbackHelper();
         mOnDownloadStartHelper = new OnDownloadStartHelper();
@@ -75,6 +77,10 @@ public class TestAwContentsClient extends NullContentsClient {
 
     public OnReceivedErrorHelper getOnReceivedErrorHelper() {
         return mOnReceivedErrorHelper;
+    }
+
+    public OnReceivedError2Helper getOnReceivedError2Helper() {
+        return mOnReceivedError2Helper;
     }
 
     public OnReceivedHttpErrorHelper getOnReceivedHttpErrorHelper() {
@@ -174,6 +180,11 @@ public class TestAwContentsClient extends NullContentsClient {
     @Override
     public void onReceivedError(int errorCode, String description, String failingUrl) {
         mOnReceivedErrorHelper.notifyCalled(errorCode, description, failingUrl);
+    }
+
+    @Override
+    public void onReceivedError2(AwWebResourceRequest request, AwWebResourceError error) {
+        mOnReceivedError2Helper.notifyCalled(request, error);
     }
 
     @Override
@@ -458,6 +469,27 @@ public class TestAwContentsClient extends NullContentsClient {
     @Override
     public void doUpdateVisitedHistory(String url, boolean isReload) {
         getDoUpdateVisitedHistoryHelper().notifyCalled(url, isReload);
+    }
+
+    /**
+     * CallbackHelper for OnReceivedError2.
+     */
+    public static class OnReceivedError2Helper extends CallbackHelper {
+        private AwWebResourceRequest mRequest;
+        private AwWebResourceError mError;
+        public void notifyCalled(AwWebResourceRequest request, AwWebResourceError error) {
+            mRequest = request;
+            mError = error;
+            notifyCalled();
+        }
+        public AwWebResourceRequest getRequest() {
+            assert getCallCount() > 0;
+            return mRequest;
+        }
+        public AwWebResourceError getError() {
+            assert getCallCount() > 0;
+            return mError;
+        }
     }
 
     /**

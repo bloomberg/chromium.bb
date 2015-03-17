@@ -42,6 +42,8 @@ public abstract class ErrorCodeConversionHelper {
     public static final int ERROR_FILE_NOT_FOUND = -14;
     // Too many requests during this load
     public static final int ERROR_TOO_MANY_REQUESTS = -15;
+    // Request blocked by the browser
+    public static final int ERROR_BLOCKED = -16;
 
     static int convertErrorCode(int netError) {
         // Note: many NetError.Error constants don't have an obvious mapping.

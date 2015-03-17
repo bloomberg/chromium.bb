@@ -60,6 +60,8 @@ class AwResourceDispatcherHostDelegate
                            content::ResourceContext* resource_context,
                            content::ResourceResponse* response) override;
 
+  void RequestComplete(net::URLRequest* request) override;
+
   void RemovePendingThrottleOnIoThread(IoThreadClientThrottle* throttle);
 
   static void OnIoThreadClientReady(int new_render_process_id,

@@ -64,6 +64,10 @@ public class AwContentsStatics {
     }
 
     public static String getUnreachableWebDataUrl() {
+        // Note that this method may be called from both IO and UI threads,
+        // but as it only retrieves a value of a constant from native, even if
+        // two calls will be running at the same time, this should not cause
+        // any harm.
         if (sUnreachableWebDataUrl == null) {
             sUnreachableWebDataUrl = nativeGetUnreachableWebDataUrl();
         }

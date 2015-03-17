@@ -36,7 +36,6 @@ class AwRequestInterceptor : public net::URLRequestInterceptor {
 
  private:
   scoped_ptr<AwWebResourceResponse> QueryForAwWebResourceResponse(
-      const GURL& location,
       net::URLRequest* request) const;
 
   DISALLOW_COPY_AND_ASSIGN(AwRequestInterceptor);

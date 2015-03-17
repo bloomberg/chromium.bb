@@ -62,6 +62,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.navigation_controller.LoadURLType;
 import org.chromium.content_public.browser.navigation_controller.UserAgentOverrideOption;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.net.NetError;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -416,6 +417,31 @@ public class AwContents implements SmartClipProvider,
         @Override
         public void newLoginRequest(String realm, String account, String args) {
             mContentsClient.getCallbackHelper().postOnReceivedLoginRequest(realm, account, args);
+        }
+
+        @Override
+        public void onReceivedError(AwContentsClient.AwWebResourceRequest request,
+                AwContentsClient.AwWebResourceError error) {
+            String unreachableWebDataUrl = AwContentsStatics.getUnreachableWebDataUrl();
+            boolean isErrorUrl =
+                    unreachableWebDataUrl != null && unreachableWebDataUrl.equals(request.url);
+            if (!isErrorUrl && error.errorCode != NetError.ERR_ABORTED) {
+                // NetError.ERR_ABORTED error code is generated for the following reasons:
+                // - WebView.stopLoading is called;
+                // - the navigation is intercepted by the embedder via shouldOverrideUrlLoading;
+                // - server returned 204 status (no content).
+                //
+                // Android WebView does not notify the embedder of these situations using
+                // this error code with the WebViewClient.onReceivedError callback.
+                error.errorCode = ErrorCodeConversionHelper.convertErrorCode(error.errorCode);
+                mContentsClient.getCallbackHelper().postOnReceivedError(request, error);
+                if (request.isMainFrame) {
+                    // Need to call onPageFinished after onReceivedError for backwards compatibility
+                    // with the classic webview. See also AwWebContentsObserver.didFailLoad which is
+                    // used when we want to send onPageFinished alone.
+                    mContentsClient.getCallbackHelper().postOnPageFinished(request.url);
+                }
+            }
         }
 
         @Override
