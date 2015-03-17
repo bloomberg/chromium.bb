@@ -44,7 +44,7 @@ class GSPathTest(cros_test_lib.TestCase):
   def _ParseCommandLine(argv):
     parser = commandline.OptionParser()
     parser.add_option('-g', '--gs-path', type='gs_path',
-                      help=('GS path that contains the chrome to deploy.'))
+                      help='GS path that contains the chrome to deploy.')
     return parser.parse_args(argv)
 
   def _RunGSPathTestCase(self, raw, parsed):
@@ -85,6 +85,37 @@ class GSPathTest(cros_test_lib.TestCase):
       self.assertRaises2(
           SystemExit, self._RunGSPathTestCase, 'http://badhost.com/path', '',
           check_attrs={'code': 2})
+
+
+class BoolTest(cros_test_lib.TestCase):
+  """Test type='bool' functionality."""
+
+  @staticmethod
+  def _ParseCommandLine(argv):
+    parser = commandline.ArgumentParser()
+    parser.add_argument('-e', '--enable', type='bool',
+                        help='Boolean Argument.')
+    return parser.parse_args(argv)
+
+  def _RunBoolTestCase(self, enable, expected):
+    options = self._ParseCommandLine(['--enable', enable])
+    self.assertEquals(options.enable, expected)
+
+  def testBoolTrue(self):
+    """Test case setting the value to true."""
+    self._RunBoolTestCase('True', True)
+    self._RunBoolTestCase('1', True)
+    self._RunBoolTestCase('true', True)
+    self._RunBoolTestCase('yes', True)
+    self._RunBoolTestCase('TrUe', True)
+
+  def testBoolFalse(self):
+    """Test case setting the value to false."""
+    self._RunBoolTestCase('False', False)
+    self._RunBoolTestCase('0', False)
+    self._RunBoolTestCase('false', False)
+    self._RunBoolTestCase('no', False)
+    self._RunBoolTestCase('FaLse', False)
 
 
 class DeviceParseTest(cros_test_lib.TestCase):

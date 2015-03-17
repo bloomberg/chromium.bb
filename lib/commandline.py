@@ -143,6 +143,24 @@ def NormalizeLocalOrGSPath(value):
   return VALID_TYPES[ptype](value)
 
 
+def ParseBool(value):
+  """Parse bool argument into a bool value.
+
+  For the existing type=bool functionality, the parser uses the built-in bool(x)
+  function to determine the value.  This function will only return false if x
+  is False or omitted.  Even with this type specified, however, arguments that
+  are generated from a command line initially get parsed as a string, and for
+  any string value passed in to bool(x), it will always return True.
+
+  Args:
+    value: String representing a boolean value.
+
+  Returns:
+    True or False.
+  """
+  return cros_build_lib.BooleanShellValue(value, False)
+
+
 def ParseDate(value):
   """Parse date argument into a datetime.date object.
 
@@ -332,6 +350,7 @@ def OptparseWrapCheck(desc, check_f, _option, opt, value):
 
 
 VALID_TYPES = {
+    'bool': ParseBool,
     'date': ParseDate,
     'path': osutils.ExpandPath,
     'gs_path': NormalizeGSPath,
