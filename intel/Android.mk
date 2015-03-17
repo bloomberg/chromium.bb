@@ -34,7 +34,6 @@ LOCAL_SRC_FILES := $(LIBDRM_INTEL_FILES)
 LOCAL_EXPORT_C_INCLUDE_DIRS := $(LOCAL_PATH)
 
 LOCAL_C_INCLUDES := \
-	$(LIBDRM_TOP)/intel \
 	external/libpciaccess/include
 
 LOCAL_CFLAGS := \
