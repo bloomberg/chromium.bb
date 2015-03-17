@@ -116,15 +116,6 @@ bool CSSValueList::equals(const CSSValueList& other) const
     return m_valueListSeparator == other.m_valueListSeparator && compareCSSValueVector(m_values, other.m_values);
 }
 
-bool CSSValueList::equals(const CSSValue& other) const
-{
-    if (m_values.size() != 1)
-        return false;
-
-    const RefPtrWillBeMember<CSSValue>& value = m_values[0];
-    return value && value->equals(other);
-}
-
 bool CSSValueList::hasFailedOrCanceledSubresources() const
 {
     for (unsigned i = 0; i < m_values.size(); ++i) {

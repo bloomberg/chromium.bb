@@ -1549,14 +1549,8 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
         computedFont->family = valueForFontFamily(style);
         return computedFont.release();
     }
-    case CSSPropertyFontFamily: {
-        RefPtrWillBeRawPtr<CSSValueList> fontFamilyList = valueForFontFamily(style);
-        // If there's only a single family, return that as a CSSPrimitiveValue.
-        // NOTE: Gecko always returns this as a comma-separated CSSPrimitiveValue string.
-        if (fontFamilyList->length() == 1)
-            return fontFamilyList->item(0);
-        return fontFamilyList.release();
-    }
+    case CSSPropertyFontFamily:
+        return valueForFontFamily(style);
     case CSSPropertyFontSize:
         return valueForFontSize(style);
     case CSSPropertyFontSizeAdjust:
@@ -1883,21 +1877,15 @@ PassRefPtrWillBeRawPtr<CSSValue> LayoutStyleCSSValueMapping::get(CSSPropertyID p
         }
         }
     case CSSPropertyTextIndent: {
-        // If RuntimeEnabledFeatures::css3TextEnabled() returns false or text-indent has only one value(<length> | <percentage>),
-        // getPropertyCSSValue() returns CSSValue.
-        // If RuntimeEnabledFeatures::css3TextEnabled() returns true and text-indent has each-line or hanging,
-        // getPropertyCSSValue() returns CSSValueList.
-        RefPtrWillBeRawPtr<CSSValue> textIndent = zoomAdjustedPixelValueForLength(style.textIndent(), style);
+        RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+        list->append(zoomAdjustedPixelValueForLength(style.textIndent(), style));
         if (RuntimeEnabledFeatures::css3TextEnabled() && (style.textIndentLine() == TextIndentEachLine || style.textIndentType() == TextIndentHanging)) {
-            RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-            list->append(textIndent.release());
             if (style.textIndentLine() == TextIndentEachLine)
                 list->append(cssValuePool().createIdentifierValue(CSSValueEachLine));
             if (style.textIndentType() == TextIndentHanging)
                 list->append(cssValuePool().createIdentifierValue(CSSValueHanging));
-            return list.release();
         }
-        return textIndent.release();
+        return list.release();
     }
     case CSSPropertyTextShadow:
         return valueForShadowList(style.textShadow(), style, false);

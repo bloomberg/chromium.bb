@@ -56,7 +56,6 @@ public:
 
     String customCSSText() const;
     bool equals(const CSSValueList&) const;
-    bool equals(const CSSValue&) const;
 
     bool hasFailedOrCanceledSubresources() const;
 

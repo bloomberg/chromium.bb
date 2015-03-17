@@ -157,10 +157,7 @@ bool CSSValue::equals(const CSSValue& other) const
             ASSERT_NOT_REACHED();
             return false;
         }
-    } else if (m_classType == ValueListClass && other.m_classType != ValueListClass)
-        return toCSSValueList(this)->equals(other);
-    else if (m_classType != ValueListClass && other.m_classType == ValueListClass)
-        return static_cast<const CSSValueList&>(other).equals(*this);
+    }
     return false;
 }
 
