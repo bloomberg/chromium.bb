@@ -274,26 +274,10 @@ WebServiceWorkerImpl* ServiceWorkerDispatcher::GetServiceWorker(
 }
 
 WebServiceWorkerRegistrationImpl*
-ServiceWorkerDispatcher::FindServiceWorkerRegistration(
-    const ServiceWorkerRegistrationObjectInfo& info,
-    bool adopt_handle) {
-  RegistrationObjectMap::iterator registration =
-      registrations_.find(info.handle_id);
-  if (registration == registrations_.end())
-    return NULL;
-  if (adopt_handle) {
-    // We are instructed to adopt a handle but we already have one, so
-    // adopt and destroy a handle ref.
-    ServiceWorkerRegistrationHandleReference::Adopt(info, sender_.get());
-  }
-  return registration->second;
-}
-
-WebServiceWorkerRegistrationImpl*
 ServiceWorkerDispatcher::CreateServiceWorkerRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     bool adopt_handle) {
-  DCHECK(!FindServiceWorkerRegistration(info, adopt_handle));
+  DCHECK(!ContainsKey(registrations_, info.handle_id));
   if (info.handle_id == kInvalidServiceWorkerRegistrationHandleId)
     return NULL;
 
@@ -683,20 +667,21 @@ WebServiceWorkerRegistrationImpl*
 ServiceWorkerDispatcher::FindOrCreateRegistration(
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
-  WebServiceWorkerRegistrationImpl* registration =
-      FindServiceWorkerRegistration(info, true);
-  if (!registration) {
-    registration = CreateServiceWorkerRegistration(info, true);
-    registration->SetInstalling(GetServiceWorker(attrs.installing, true));
-    registration->SetWaiting(GetServiceWorker(attrs.waiting, true));
-    registration->SetActive(GetServiceWorker(attrs.active, true));
-  } else {
-    // |registration| must already have version attributes, so adopt and destroy
-    // handle refs for them.
+  RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
+  if (found != registrations_.end()) {
+    ServiceWorkerRegistrationHandleReference::Adopt(info, sender_.get());
     ServiceWorkerHandleReference::Adopt(attrs.installing, sender_.get());
     ServiceWorkerHandleReference::Adopt(attrs.waiting, sender_.get());
     ServiceWorkerHandleReference::Adopt(attrs.active, sender_.get());
+    return found->second;
   }
+
+  bool adopt_handle = true;
+  WebServiceWorkerRegistrationImpl* registration =
+      CreateServiceWorkerRegistration(info, adopt_handle);
+  registration->SetInstalling(GetServiceWorker(attrs.installing, adopt_handle));
+  registration->SetWaiting(GetServiceWorker(attrs.waiting, adopt_handle));
+  registration->SetActive(GetServiceWorker(attrs.active, adopt_handle));
   return registration;
 }
 

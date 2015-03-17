@@ -112,14 +112,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
       const ServiceWorkerObjectInfo& info,
       bool adopt_handle);
 
-  // Finds a WebServiceWorkerRegistrationImpl for the specified registration.
-  // If it's not found, returns NULL. If |adopt_handle| is true,
-  // a ServiceWorkerRegistrationHandleReference will be adopted for the
-  // registration.
-  WebServiceWorkerRegistrationImpl* FindServiceWorkerRegistration(
-      const ServiceWorkerRegistrationObjectInfo& info,
-      bool adopt_handle);
-
   // Creates a WebServiceWorkerRegistrationImpl for the specified registration
   // and transfers its ownership to the caller. If |adopt_handle| is true, a
   // ServiceWorkerRegistrationHandleReference will be adopted for the
@@ -234,6 +226,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcher
   void RemoveServiceWorkerRegistration(
       int registration_handle_id);
 
+  // Returns an existing registration or new one filled in with version
+  // attributes. This function assumes given |info| and |attrs| retain handle
+  // references and always adopts them.
+  // TODO(nhiroki): This assumption seems to impair readability. We could
+  // explictly pass ServiceWorker(Registration)HandleReference instead.
   WebServiceWorkerRegistrationImpl* FindOrCreateRegistration(
       const ServiceWorkerRegistrationObjectInfo& info,
       const ServiceWorkerVersionAttributes& attrs);
