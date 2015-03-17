@@ -40,7 +40,8 @@ public:
     virtual void setTiming(ErrorString*, const String& playerId, double duration, double delay) override;
 
     // API for InspectorInstrumentation
-    void didCreateAnimationPlayer(AnimationPlayer&);
+    void didCreateAnimationPlayer(AnimationPlayer*);
+    void didCancelAnimationPlayer(AnimationPlayer*);
 
     // API for InspectorFrontend
     virtual void enable(ErrorString*) override;

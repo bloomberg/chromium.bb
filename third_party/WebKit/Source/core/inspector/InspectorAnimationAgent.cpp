@@ -259,9 +259,9 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
     timing->setDelay(delay);
 }
 
-void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer& player)
+void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer* player)
 {
-    const String& playerId = String::number(player.sequenceNumber());
+    const String& playerId = String::number(player->sequenceNumber());
     if (m_idToAnimationPlayer.get(playerId))
         return;
 
@@ -271,13 +271,21 @@ void InspectorAnimationAgent::didCreateAnimationPlayer(AnimationPlayer& player)
         latestStartTime = max(latestStartTime, p->startTime());
 
     bool reset = false;
-    if (player.startTime() - latestStartTime > 1000) {
+    if (player->startTime() - latestStartTime > 1000) {
         reset = true;
         m_idToAnimationPlayer.clear();
     }
 
-    m_idToAnimationPlayer.set(playerId, &player);
-    frontend()->animationPlayerCreated(buildObjectForAnimationPlayer(player), reset);
+    m_idToAnimationPlayer.set(playerId, player);
+    frontend()->animationPlayerCreated(buildObjectForAnimationPlayer(*player), reset);
+}
+
+void InspectorAnimationAgent::didCancelAnimationPlayer(AnimationPlayer* player)
+{
+    const String& playerId = String::number(player->sequenceNumber());
+    if (!m_idToAnimationPlayer.get(playerId))
+        return;
+    frontend()->animationPlayerCanceled(playerId);
 }
 
 AnimationPlayer* InspectorAnimationAgent::assertAnimationPlayer(ErrorString* errorString, const String& id)

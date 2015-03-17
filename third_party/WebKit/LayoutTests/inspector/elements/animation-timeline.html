@@ -4,14 +4,21 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
+var player;
+
 function startAnimationWithDelay()
 {
-    var player = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 200, delay: 100 });
+    player = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 200, delay: 100 });
 }
 
 function startAnimationWithEndDelay()
 {
-    node.animate([{ width: "100px" }, { width: "200px" }], { duration: 200, delay: 100, endDelay: 200 });
+    player = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 20000, delay: 100, endDelay: 200 });
+}
+
+function cancelAnimation()
+{
+    player.cancel();
 }
 
 function test()
@@ -22,7 +29,7 @@ function test()
     sidebarPane.expand();
     InspectorTest.animationModel.ensureEnabled();
     // Override timeline width for testing
-    WebInspector.AnimationTimeline.prototype.width = function() { return 500; }
+    WebInspector.AnimationTimeline.prototype.width = function() { return 1000; }
     // Override animation color for testing
     // FIXME: Set animation name of Web Animation instead; not supported yet
     WebInspector.AnimationUI.prototype._color = function() { return "black"; }
@@ -45,6 +52,16 @@ function test()
     function step3()
     {
         InspectorTest.addResult(">>>> Animation with start and end delay");
+        InspectorTest.dumpAnimationTimeline();
+        InspectorTest.addSniffer(WebInspector.AnimationTimeline.prototype, "cancelAnimation", step4);
+        InspectorTest.evaluateInPage("cancelAnimation()");
+    }
+
+    function step4()
+    {
+        InspectorTest.addResult(">>>> Animation canceled");
+        // Force redraw since the draw is async scheduled
+        sidebarPane._timeline._redraw();
         InspectorTest.dumpAnimationTimeline();
         InspectorTest.completeTest();
     }

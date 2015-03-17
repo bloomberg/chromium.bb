@@ -808,6 +808,8 @@ void AnimationPlayer::cancel()
     // the transition is captured through getAnimationPlayers then played.
     if (m_content && m_content->isAnimation())
         toAnimation(m_content.get())->downgradeToNormalAnimation();
+
+    InspectorInstrumentation::didCancelAnimationPlayer(timeline()->document(), this);
 }
 
 void AnimationPlayer::beginUpdatingState()
@@ -904,7 +906,7 @@ AnimationPlayer::PlayStateUpdateScope::~PlayStateUpdateScope()
     m_player->endUpdatingState();
 
     if (oldPlayState != newPlayState && newPlayState == Running)
-        InspectorInstrumentation::didCreateAnimationPlayer(m_player->timeline()->document(), *m_player);
+        InspectorInstrumentation::didCreateAnimationPlayer(m_player->timeline()->document(), m_player);
 }
 
 bool AnimationPlayer::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
