@@ -941,8 +941,8 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
   } else if (profile == media::VP8PROFILE_ANY ||
              profile == media::VP9PROFILE_ANY) {
     base::FilePath dll_path;
-    RETURN_ON_FAILURE(PathService::Get(base::DIR_PROGRAM_FILES, &dll_path),
-        "failed to get path for DIR_PROGRAM_FILES", false);
+    RETURN_ON_FAILURE(PathService::Get(base::DIR_PROGRAM_FILES6432, &dll_path),
+        "failed to get path for DIR_PROGRAM_FILES6432", false);
     dll_path = dll_path.Append(kVPXDecoderDLLPath);
     if (profile == media::VP8PROFILE_ANY) {
       codec_ = media::kCodecVP8;
