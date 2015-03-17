@@ -482,7 +482,9 @@
       <message name="IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION" desc="Message when attempting to activate a mobile network that requires a connection">
         Activation of '<ph name="name">$1<ex>Generic Wireless</ex></ph>' requires a network connection.
       </message>
-
+      <message name="IDS_NETWORK_VPN_BUILT_IN_PROVIDER" desc="The name of the built-in VPN provider that supports OpenVPN and L2TP over IPsec.">
+        OpenVPN / L2TP
+      </message>
     </messages>
   </release>
 </grit>

@@ -282,4 +282,8 @@ void SystemTrayDelegate::ShouldRebootOnShutdown(
     const RebootOnShutdownCallback& callback) {
 }
 
+VPNDelegate* SystemTrayDelegate::GetVPNDelegate() const {
+  return nullptr;
+}
+
 }  // namespace ash

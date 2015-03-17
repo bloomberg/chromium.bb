@@ -39,6 +39,10 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/chromeos/ime/input_method_menu_manager.h"
 
+namespace ash {
+class VPNDelegate;
+}
+
 namespace user_manager {
 class User;
 }
@@ -142,6 +146,7 @@ class SystemTrayDelegateChromeOS
       ash::ShutdownPolicyObserver* observer) override;
   void ShouldRebootOnShutdown(
       const ash::RebootOnShutdownCallback& callback) override;
+  ash::VPNDelegate* GetVPNDelegate() const override;
 
   // Overridden from user_manager::UserManager::UserSessionStateObserver:
   void UserAddedToSession(const user_manager::User* active_user) override;
@@ -293,6 +298,7 @@ class SystemTrayDelegateChromeOS
   base::ScopedPtrHashMap<std::string, ash::tray::UserAccountsDelegate>
       accounts_delegates_;
   scoped_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
+  scoped_ptr<ash::VPNDelegate> vpn_delegate_;
 
   ObserverList<ash::CustodianInfoTrayObserver>
       custodian_info_changed_observers_;

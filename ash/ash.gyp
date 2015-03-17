@@ -295,6 +295,8 @@
       'system/chromeos/network/tray_sms.h',
       'system/chromeos/network/tray_vpn.cc',
       'system/chromeos/network/tray_vpn.h',
+      'system/chromeos/network/vpn_delegate.cc',
+      'system/chromeos/network/vpn_delegate.h',
       'system/chromeos/power/power_event_observer.cc',
       'system/chromeos/power/power_event_observer.h',
       'system/chromeos/power/power_status.cc',

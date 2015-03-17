@@ -73,6 +73,7 @@
 #include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
 #include "chrome/browser/ui/ash/user_accounts_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
+#include "chrome/browser/ui/ash/vpn_delegate_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -197,6 +198,7 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
           kSystemUse24HourClock,
           base::Bind(&SystemTrayDelegateChromeOS::UpdateClockType,
                      base::Unretained(this)))),
+      vpn_delegate_(new VPNDelegateChromeOS),
       weak_ptr_factory_(this) {
   // Register notifications on construction so that events such as
   // PROFILE_CREATED do not get missed if they happen before Initialize().
@@ -857,6 +859,10 @@ void SystemTrayDelegateChromeOS::RemoveShutdownPolicyObserver(
 void SystemTrayDelegateChromeOS::ShouldRebootOnShutdown(
     const ash::RebootOnShutdownCallback& callback) {
   shutdown_policy_handler_->CheckIfRebootOnShutdown(callback);
+}
+
+ash::VPNDelegate* SystemTrayDelegateChromeOS::GetVPNDelegate() const {
+  return vpn_delegate_.get();
 }
 
 void SystemTrayDelegateChromeOS::UserAddedToSession(

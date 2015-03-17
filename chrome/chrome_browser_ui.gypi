@@ -1250,6 +1250,8 @@
       'browser/ui/ash/user_accounts_delegate_chromeos.h',
       'browser/ui/ash/volume_controller_chromeos.cc',
       'browser/ui/ash/volume_controller_chromeos.h',
+      'browser/ui/ash/vpn_delegate_chromeos.cc',
+      'browser/ui/ash/vpn_delegate_chromeos.h',
       'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.cc',
       'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h',
       'browser/ui/views/touch_uma/touch_uma_ash.cc',

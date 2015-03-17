@@ -165,6 +165,26 @@ bool NetworkState::PropertyChanged(const std::string& key,
       NET_LOG(ERROR) << "Failed to parse " << path() << "." << key;
     }
     return true;
+  } else if (key == shill::kProviderProperty) {
+    const base::DictionaryValue* dict;
+    std::string provider_type;
+    if (!value.GetAsDictionary(&dict) ||
+        !dict->GetStringWithoutPathExpansion(shill::kTypeProperty,
+                                             &provider_type)) {
+      return false;
+    }
+
+    if (provider_type != shill::kProviderThirdPartyVpn) {
+      // If the network uses the built-in OpenVPN and L2TP support, set the
+      // provider extension ID to an empty string.
+      vpn_provider_extension_id_.clear();
+      return true;
+    }
+
+    // If the network uses a third-party VPN provider, copy over the provider's
+    // extension ID, which is held in |shill::kHostProperty|.
+    return dict->GetStringWithoutPathExpansion(shill::kHostProperty,
+                                               &vpn_provider_extension_id_);
   }
   return false;
 }

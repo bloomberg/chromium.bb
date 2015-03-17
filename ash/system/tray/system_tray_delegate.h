@@ -99,6 +99,7 @@ struct ASH_EXPORT UpdateInfo {
 using IMEInfoList = std::vector<IMEInfo>;
 
 class NetworkingConfigDelegate;
+class VPNDelegate;
 
 using RebootOnShutdownCallback = base::Callback<void(bool)>;
 
@@ -332,6 +333,9 @@ class ASH_EXPORT SystemTrayDelegate {
   // specified by the device policy |DeviceRebootOnShutdown|. This function
   // asynchronously calls |callback| once a trusted policy becomes available.
   virtual void ShouldRebootOnShutdown(const RebootOnShutdownCallback& callback);
+
+  // Returns VPNDelegate. May return nullptr.
+  virtual VPNDelegate* GetVPNDelegate() const;
 };
 
 }  // namespace ash
