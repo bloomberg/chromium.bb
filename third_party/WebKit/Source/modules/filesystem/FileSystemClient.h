@@ -39,7 +39,7 @@ namespace blink {
 
 class ExecutionContext;
 class LocalFrame;
-class PermissionCallbacks;
+class ContentSettingCallbacks;
 class WorkerClients;
 
 class FileSystemClient {
@@ -49,7 +49,7 @@ public:
     virtual ~FileSystemClient() { }
 
     virtual bool requestFileSystemAccessSync(ExecutionContext*) = 0;
-    virtual void requestFileSystemAccessAsync(ExecutionContext*, PassOwnPtr<PermissionCallbacks>) = 0;
+    virtual void requestFileSystemAccessAsync(ExecutionContext*, PassOwnPtr<ContentSettingCallbacks>) = 0;
 };
 
 void provideLocalFileSystemTo(LocalFrame&, PassOwnPtr<FileSystemClient>);
