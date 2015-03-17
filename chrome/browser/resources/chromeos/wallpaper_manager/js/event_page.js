@@ -349,3 +349,9 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 chrome.alarms.onAlarm.addListener(function() {
   SurpriseWallpaper.getInstance().next();
 });
+
+chrome.wallpaperPrivate.onWallpaperChangedBy3rdParty.addListener(function() {
+  WallpaperUtil.saveToStorage(Constants.AccessSurpriseMeEnabledKey,
+                              false, true);
+  SurpriseWallpaper.getInstance().disable();
+});

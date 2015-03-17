@@ -203,12 +203,16 @@ function WallpaperManager(dialogDom) {
       if (chrome.runtime.lastError == null) {
           if (shouldEnable) {
             checkbox.classList.add('checked');
+            // Hides the wallpaper set by message if there is any.
+            $('wallpaper-set-by-message').textContent = '';
           } else {
             // Unchecking the "Surprise me" checkbox falls back to the previous
             // wallpaper before "Surprise me" was turned on.
-            self.setSelectedWallpaper_(self.wallpaperGrid_.activeItem_);
-            self.onWallpaperChanged_(self.wallpaperGrid_.activeItem_,
-                                     self.currentWallpaper_);
+            if (self.wallpaperGrid_.activeItem) {
+              self.setSelectedWallpaper_(self.wallpaperGrid_.activeItem);
+              self.onWallpaperChanged_(self.wallpaperGrid_.activeItem,
+                                       self.currentWallpaper_);
+            }
             checkbox.classList.remove('checked');
           }
           $('categories-list').disabled = shouldEnable;

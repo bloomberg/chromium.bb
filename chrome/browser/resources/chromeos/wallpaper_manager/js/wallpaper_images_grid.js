@@ -223,6 +223,10 @@ cr.define('wallpapers', function() {
       }
     },
 
+    get activeItem() {
+      return this.activeItem_;
+    },
+
     /**
      * A unique ID that assigned to each set dataModel operation. Note that this
      * id wont increase if the new dataModel is null or empty.

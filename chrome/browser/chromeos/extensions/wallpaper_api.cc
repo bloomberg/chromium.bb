@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
@@ -22,6 +23,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/wallpaper/wallpaper_layout.h"
+#include "extensions/browser/event_router.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -177,6 +179,18 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     }
     SendResponse(true);
   }
+
+  // Inform the native Wallpaper Picker Application that the current wallpaper
+  // has been modified by a third party application.
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
+  scoped_ptr<base::ListValue> event_args(new base::ListValue());
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(extensions::api::wallpaper_private::
+                                OnWallpaperChangedBy3rdParty::kEventName,
+                            event_args.Pass()));
+  event_router->DispatchEventToExtension(extension_misc::kWallpaperManagerId,
+                                         event.Pass());
 }
 
 void WallpaperSetWallpaperFunction::GenerateThumbnail(

@@ -256,6 +256,13 @@
           }
         ]
       }
+    ],
+    "events": [
+      {
+        "name": "onWallpaperChangedBy3rdParty",
+        "type": "function",
+        "description": "This event is sent when the current wallpaper was set by a third party application."
+      }
     ]
   }
 ]
