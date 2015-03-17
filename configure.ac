@@ -215,65 +215,56 @@ if test "x$drm_cv_atomic_primitives" = "xlibatomic-ops"; then
 	AC_DEFINE(HAVE_LIB_ATOMIC_OPS, 1, [Enable if you have libatomic-ops-dev installed])
 fi
 
-if test "x$INTEL" != "xno" -o \
-	"x$RADEON" != "xno" -o \
-	"x$NOUVEAU" != "xno" -o \
-	"x$OMAP" != "xno" -o \
-	"x$FREEDRENO" != "xno" -o \
-	"x$TEGRA" != "xno"; then
-	if test "x$drm_cv_atomic_primitives" = "xnone"; then
-		if test "x$INTEL" != "xauto"; then
-			if test "x$INTEL" != "xno"; then
-				AC_MSG_ERROR([libdrm_intel depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for Intel GPUs by passing --disable-intel to ./configure])
-			fi
-		else
-			AC_MSG_WARN([Disabling libdrm_intel. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.])
-			INTEL=no
-		fi
-		if test "x$RADEON" != "xauto"; then
-			if test "x$RADEON" != "xno"; then
-				AC_MSG_ERROR([libdrm_radeon depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for Radeon GPUs by passing --disable-radeon to ./configure])
-			fi
-		else
-			AC_MSG_WARN([Disabling libdrm_radeon. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.])
-			RADEON=no
-		fi
-		if test "x$NOUVEAU" != "xauto"; then
-			if test "x$NOUVEAU" != "xno"; then
-				AC_MSG_ERROR([libdrm_nouveau depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for NVIDIA GPUs by passing --disable-nouveau to ./configure])
-			fi
-		else
-			AC_MSG_WARN([Disabling libdrm_nouveau. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.])
-			NOUVEAU=no
-		fi
-		if test "x$OMAP" != "xauto"; then
-			AC_MSG_ERROR([libdrm_omap depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for OMAP GPUs by passing --disable-omap-experimental-api to ./configure])
-		fi
-		if test "x$FREEDRENO" != "xauto"; then
-			AC_MSG_ERROR([libdrm_freedreno depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for QCOM's Adreno GPUs by passing --disable-freedreno to ./configure])
-		fi
-		if test "x$TEGRA" != "xauto"; then
-			AC_MSG_ERROR([libdrm_tegra depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for NVIDIA's Tegra GPUs by passing --disable-tegra-experimental-api to ./configure])
-		fi
-	else
-		if test "x$INTEL" != "xno"; then
-			case $host_cpu in
-				i?86|x86_64) INTEL=yes ;;
-				*) INTEL=no ;;
-			esac
-		fi
-		if test "x$RADEON" != "xno"; then
-			RADEON=yes
-		fi
-		if test "x$NOUVEAU" != "xno"; then
-			NOUVEAU=yes
-		fi
-		if test "x$FREEDRENO" != "xno"; then
-			case $host_cpu in
-				arm*|aarch64)	FREEDRENO=yes ;;
-				*)		FREEDRENO=no ;;
-			esac
-		fi
+dnl Print out the approapriate message considering the value set be the
+dnl respective in $1.
+dnl $1 - value to be evaluated. Eg. $INTEL, $NOUVEAU, ...
+dnl $2 - libdrm shortname. Eg. intel, freedreno, ...
+dnl $3 - GPU name/brand. Eg. Intel, NVIDIA Tegra, ...
+dnl $4 - Configure switch. Eg. intel, omap-experimental-api, ...
+AC_DEFUN([LIBDRM_ATOMICS_NOT_FOUND_MSG], [
+	case "x$1" in
+		xyes)	AC_MSG_ERROR([libdrm_$2 depends upon atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package, or, failing both of those, disable support for $3 GPUs by passing --disable-$4 to ./configure]) ;;
+		xauto)	AC_MSG_WARN([Disabling $2. It depends on atomic operations, which were not found for your compiler/cpu. Try compiling with -march=native, or install the libatomics-op-dev package.]) ;;
+		*)	;;
+	esac
+])
+
+if test "x$drm_cv_atomic_primitives" = "xnone"; then
+	LIBDRM_ATOMICS_NOT_FOUND_MSG($INTEL, intel, Intel, intel)
+	INTEL=no
+
+	LIBDRM_ATOMICS_NOT_FOUND_MSG($RADEON, radeon, Radeon, radeon)
+	RADEON=no
+
+	LIBDRM_ATOMICS_NOT_FOUND_MSG($NOUVEAU, nouveau, NVIDIA, nouveau)
+	NOUVEAU=no
+
+	LIBDRM_ATOMICS_NOT_FOUND_MSG($OMAP, omap, OMAP, omap-experimental-api)
+	OMAP=no
+
+	LIBDRM_ATOMICS_NOT_FOUND_MSG($FREEDRENO, freedreno, Qualcomm Adreno, freedreno)
+	FREEDRENO=no
+
+	LIBDRM_ATOMICS_NOT_FOUND_MSG($TEGRA, tegra, NVIDIA Tegra, tegra-experimental-api)
+	TEGRA=no
+else
+	if test "x$INTEL" = xauto; then
+		case $host_cpu in
+			i?86|x86_64)	INTEL=yes ;;
+			*)		INTEL=no ;;
+		esac
+	fi
+	if test "x$RADEON" = xauto; then
+		RADEON=yes
+	fi
+	if test "x$NOUVEAU" = xauto; then
+		NOUVEAU=yes
+	fi
+	if test "x$FREEDRENO" = xauto; then
+		case $host_cpu in
+			arm*|aarch64)	FREEDRENO=yes ;;
+			*)		FREEDRENO=no ;;
+		esac
 	fi
 fi
 
