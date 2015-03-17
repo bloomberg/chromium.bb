@@ -415,6 +415,8 @@ void TabLoader::Observe(int type,
           got_first_paint_ = true;
           base::TimeDelta time_to_paint =
               base::TimeTicks::Now() - restore_started_;
+          // TODO(danduong): to remove this with 467680, to make sure we
+          // don't forget to clean this up.
           UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.ForegroundTabFirstPaint",
                                      time_to_paint,
                                      base::TimeDelta::FromMilliseconds(10),
@@ -432,6 +434,23 @@ void TabLoader::Observe(int type,
                   100,
                   base::Histogram::kUmaTargetedHistogramFlag);
           counter_for_count->AddTime(time_to_paint);
+          UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.ForegroundTabFirstPaint2",
+                                     time_to_paint,
+                                     base::TimeDelta::FromMilliseconds(100),
+                                     base::TimeDelta::FromMinutes(16),
+                                     50);
+          // Record a time for the number of tabs, to help track down
+          // contention.
+          std::string time_for_count2 = base::StringPrintf(
+              "SessionRestore.ForegroundTabFirstPaint2_%d", tab_count_);
+          base::HistogramBase* counter_for_count2 =
+              base::Histogram::FactoryTimeGet(
+                  time_for_count2,
+                  base::TimeDelta::FromMilliseconds(100),
+                  base::TimeDelta::FromMinutes(16),
+                  50,
+                  base::Histogram::kUmaTargetedHistogramFlag);
+          counter_for_count2->AddTime(time_to_paint);
         } else if (render_widget_hosts_loading_.find(render_widget_host) ==
             render_widget_hosts_loading_.end()) {
           // If this is a host for a tab we're not loading some other tab

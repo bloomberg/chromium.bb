@@ -33749,6 +33749,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>jeremy@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
+    Deprecated 2015-03-13 in favor of SessionRestore.ForegroundTabFirstPaint2.
+  </summary>
+</histogram>
+
+<histogram name="SessionRestore.ForegroundTabFirstPaint2" units="milliseconds">
+  <owner>jeremy@chromium.org</owner>
+  <owner>sky@chromium.org</owner>
+  <summary>
     The time from SessionRestore start until a visible tab's first paint.
   </summary>
 </histogram>
@@ -65267,6 +65275,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SessionRestore.FirstTabPainted"/>
   <affected-histogram name="SessionRestore.ForegroundTabFirstLoaded"/>
   <affected-histogram name="SessionRestore.ForegroundTabFirstPaint"/>
+  <affected-histogram name="SessionRestore.ForegroundTabFirstPaint2"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ShillWiFiRememberedNetworkSecurityMode" separator=".">
