@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/notifications/platform_notification_context.h"
-
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "content/browser/notifications/notification_database_data.h"
+#include "content/browser/notifications/platform_notification_context_impl.h"
+#include "content/public/browser/notification_database_data.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -38,12 +37,12 @@ class PlatformNotificationContextTest : public ::testing::Test {
   }
 
  protected:
-  // Creates a new PlatformNotificationContext instance. When using this method,
-  // the underlying database will always be created in memory. The current
-  // message loop proxy will be used as the task runner.
-  PlatformNotificationContext* CreatePlatformNotificationContext() {
-    PlatformNotificationContext* context =
-        new PlatformNotificationContext(base::FilePath());
+  // Creates a new PlatformNotificationContextImpl instance. When using this
+  // method, the underlying database will always be created in memory. The
+  // current message loop proxy will be used as the task runner.
+  PlatformNotificationContextImpl* CreatePlatformNotificationContext() {
+    PlatformNotificationContextImpl* context =
+        new PlatformNotificationContextImpl(base::FilePath());
 
     context->SetTaskRunnerForTesting(base::MessageLoopProxy::current());
     return context;
@@ -70,7 +69,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
 };
 
 TEST_F(PlatformNotificationContextTest, ReadNonExistentNotification) {
-  scoped_refptr<PlatformNotificationContext> context =
+  scoped_refptr<PlatformNotificationContextImpl> context =
       CreatePlatformNotificationContext();
 
   context->ReadNotificationData(
@@ -86,7 +85,7 @@ TEST_F(PlatformNotificationContextTest, ReadNonExistentNotification) {
 }
 
 TEST_F(PlatformNotificationContextTest, WriteReadNotification) {
-  scoped_refptr<PlatformNotificationContext> context =
+  scoped_refptr<PlatformNotificationContextImpl> context =
       CreatePlatformNotificationContext();
 
   GURL origin("https://example.com");
@@ -121,7 +120,7 @@ TEST_F(PlatformNotificationContextTest, WriteReadNotification) {
 }
 
 TEST_F(PlatformNotificationContextTest, DeleteInvalidNotification) {
-  scoped_refptr<PlatformNotificationContext> context =
+  scoped_refptr<PlatformNotificationContextImpl> context =
       CreatePlatformNotificationContext();
 
   context->DeleteNotificationData(
@@ -139,7 +138,7 @@ TEST_F(PlatformNotificationContextTest, DeleteInvalidNotification) {
 }
 
 TEST_F(PlatformNotificationContextTest, DeleteNotification) {
-  scoped_refptr<PlatformNotificationContext> context =
+  scoped_refptr<PlatformNotificationContextImpl> context =
       CreatePlatformNotificationContext();
 
   GURL origin("https://example.com");

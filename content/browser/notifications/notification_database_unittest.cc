@@ -7,7 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/notifications/notification_database_data.h"
+#include "content/public/browser/notification_database_data.h"
 #include "content/public/common/platform_notification_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"

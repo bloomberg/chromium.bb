@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "content/browser/notifications/notification_database_data.h"
+#include "content/browser/notifications/notification_database_data_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
@@ -125,8 +125,10 @@ NotificationDatabase::Status NotificationDatabase::ReadNotificationData(
   if (status != STATUS_OK)
     return status;
 
-  if (notification_database_data->ParseFromString(serialized_data))
+  if (DeserializeNotificationDatabaseData(serialized_data,
+                                          notification_database_data)) {
     return STATUS_OK;
+  }
 
   DLOG(ERROR) << "Unable to deserialize data for notification "
               << notification_id << " belonging to " << origin << ".";
@@ -143,7 +145,8 @@ NotificationDatabase::Status NotificationDatabase::WriteNotificationData(
   DCHECK(origin.is_valid());
 
   std::string serialized_data;
-  if (!notification_database_data.SerializeToString(&serialized_data)) {
+  if (!SerializeNotificationDatabaseData(notification_database_data,
+                                         &serialized_data)) {
     DLOG(ERROR) << "Unable to serialize data for a notification belonging "
                 << "to: " << origin;
     return STATUS_ERROR_FAILED;

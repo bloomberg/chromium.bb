@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/notifications/platform_notification_context.h"
+#include "content/browser/notifications/platform_notification_context_impl.h"
 
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/notifications/notification_database.h"
-#include "content/browser/notifications/notification_database_data.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_database_data.h"
 
 namespace content {
 
@@ -16,12 +16,12 @@ namespace content {
 const base::FilePath::CharType kPlatformNotificationsDirectory[] =
     FILE_PATH_LITERAL("Platform Notifications");
 
-PlatformNotificationContext::PlatformNotificationContext(
+PlatformNotificationContextImpl::PlatformNotificationContextImpl(
     const base::FilePath& path)
     : path_(path) {
 }
 
-PlatformNotificationContext::~PlatformNotificationContext() {
+PlatformNotificationContextImpl::~PlatformNotificationContextImpl() {
   // If the database has been initialized, it must be deleted on the task runner
   // thread as closing it may cause file I/O.
   if (database_) {
@@ -30,18 +30,18 @@ PlatformNotificationContext::~PlatformNotificationContext() {
   }
 }
 
-void PlatformNotificationContext::ReadNotificationData(
+void PlatformNotificationContextImpl::ReadNotificationData(
     int64_t notification_id,
     const GURL& origin,
     const ReadResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LazyInitialize(
-       base::Bind(&PlatformNotificationContext::DoReadNotificationData,
+       base::Bind(&PlatformNotificationContextImpl::DoReadNotificationData,
                   this, notification_id, origin, callback),
        base::Bind(callback, false /* success */, NotificationDatabaseData()));
 }
 
-void PlatformNotificationContext::DoReadNotificationData(
+void PlatformNotificationContextImpl::DoReadNotificationData(
     int64_t notification_id,
     const GURL& origin,
     const ReadResultCallback& callback) {
@@ -71,18 +71,18 @@ void PlatformNotificationContext::DoReadNotificationData(
       base::Bind(callback, false /* success */, NotificationDatabaseData()));
 }
 
-void PlatformNotificationContext::WriteNotificationData(
+void PlatformNotificationContextImpl::WriteNotificationData(
     const GURL& origin,
     const NotificationDatabaseData& database_data,
     const WriteResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LazyInitialize(
-       base::Bind(&PlatformNotificationContext::DoWriteNotificationData,
+       base::Bind(&PlatformNotificationContextImpl::DoWriteNotificationData,
                   this, origin, database_data, callback),
        base::Bind(callback, false /* success */, 0 /* notification_id */));
 }
 
-void PlatformNotificationContext::DoWriteNotificationData(
+void PlatformNotificationContextImpl::DoWriteNotificationData(
     const GURL& origin,
     const NotificationDatabaseData& database_data,
     const WriteResultCallback& callback) {
@@ -114,18 +114,18 @@ void PlatformNotificationContext::DoWriteNotificationData(
       base::Bind(callback, false /* success */, 0 /* notification_id */));
 }
 
-void PlatformNotificationContext::DeleteNotificationData(
+void PlatformNotificationContextImpl::DeleteNotificationData(
     int64_t notification_id,
     const GURL& origin,
     const DeleteResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LazyInitialize(
-       base::Bind(&PlatformNotificationContext::DoDeleteNotificationData,
+       base::Bind(&PlatformNotificationContextImpl::DoDeleteNotificationData,
                   this, notification_id, origin, callback),
        base::Bind(callback, false /* success */));
 }
 
-void PlatformNotificationContext::DoDeleteNotificationData(
+void PlatformNotificationContextImpl::DoDeleteNotificationData(
     int64_t notification_id,
     const GURL& origin,
     const DeleteResultCallback& callback) {
@@ -144,7 +144,7 @@ void PlatformNotificationContext::DoDeleteNotificationData(
                           base::Bind(callback, success));
 }
 
-void PlatformNotificationContext::LazyInitialize(
+void PlatformNotificationContextImpl::LazyInitialize(
     const base::Closure& success_closure,
     const base::Closure& failure_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -158,11 +158,11 @@ void PlatformNotificationContext::LazyInitialize(
 
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&PlatformNotificationContext::OpenDatabase,
+      base::Bind(&PlatformNotificationContextImpl::OpenDatabase,
                  this, success_closure, failure_closure));
 }
 
-void PlatformNotificationContext::OpenDatabase(
+void PlatformNotificationContextImpl::OpenDatabase(
     const base::Closure& success_closure,
     const base::Closure& failure_closure) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
@@ -191,14 +191,14 @@ void PlatformNotificationContext::OpenDatabase(
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, failure_closure);
 }
 
-base::FilePath PlatformNotificationContext::GetDatabasePath() const {
+base::FilePath PlatformNotificationContextImpl::GetDatabasePath() const {
   if (path_.empty())
     return path_;
 
   return path_.Append(kPlatformNotificationsDirectory);
 }
 
-void PlatformNotificationContext::SetTaskRunnerForTesting(
+void PlatformNotificationContextImpl::SetTaskRunnerForTesting(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   task_runner_ = task_runner;
 }

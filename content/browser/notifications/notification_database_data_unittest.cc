@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/notifications/notification_database_data.h"
-
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/notifications/notification_database_data.pb.h"
+#include "content/browser/notifications/notification_database_data_conversions.h"
+#include "content/public/browser/notification_database_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -40,12 +40,14 @@ TEST(NotificationDatabaseDataTest, SerializeAndDeserializeData) {
   std::string serialized_data;
 
   // Serialize the data in |notification_data| to the string |serialized_data|.
-  ASSERT_TRUE(database_data.SerializeToString(&serialized_data));
+  ASSERT_TRUE(SerializeNotificationDatabaseData(database_data,
+                                                &serialized_data));
 
   NotificationDatabaseData copied_data;
 
   // Deserialize the data in |serialized_data| to |copied_data|.
-  ASSERT_TRUE(copied_data.ParseFromString(serialized_data));
+  ASSERT_TRUE(DeserializeNotificationDatabaseData(serialized_data,
+                                                  &copied_data));
 
   EXPECT_EQ(database_data.notification_id, copied_data.notification_id);
   EXPECT_EQ(database_data.origin, copied_data.origin);
