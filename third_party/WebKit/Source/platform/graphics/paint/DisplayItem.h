@@ -123,14 +123,18 @@ public:
         EndScrollFirst,
         EndScrollLast = EndScrollFirst + ScrollLast - ScrollFirst,
 
+        Transform3DFirst,
+        Transform3DElementTransform = Transform3DFirst,
+        Transform3DLast = Transform3DElementTransform,
+        EndTransform3DFirst,
+        EndTransform3DLast = EndTransform3DFirst + Transform3DLast - Transform3DFirst,
+
         BeginFilter,
         EndFilter,
         BeginCompositing,
         EndCompositing,
         BeginTransform,
         EndTransform,
-        BeginTransform3D,
-        EndTransform3D,
         BeginClipPath,
         EndClipPath,
 
@@ -221,6 +225,8 @@ public:
 
     DEFINE_PAIRED_CATEGORY_METHODS(Scroll, scroll)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(Scroll)
+
+    DEFINE_PAIRED_CATEGORY_METHODS(Transform3D, transform3D);
 
     DEFINE_CATEGORY_METHODS(SubtreeCached)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(SubtreeCached)

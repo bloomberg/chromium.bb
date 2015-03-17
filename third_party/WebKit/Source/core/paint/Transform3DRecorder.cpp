@@ -12,10 +12,12 @@
 
 namespace blink {
 
-Transform3DRecorder::Transform3DRecorder(GraphicsContext& context, DisplayItemClient client, const TransformationMatrix& transform)
+Transform3DRecorder::Transform3DRecorder(GraphicsContext& context, DisplayItemClient client, DisplayItem::Type type, const TransformationMatrix& transform)
     : m_context(context)
     , m_client(client)
+    , m_type(type)
 {
+    ASSERT(DisplayItem::isTransform3DType(type));
     m_skipRecordingForIdentityTransform = transform.isIdentity();
 
     if (m_skipRecordingForIdentityTransform)
@@ -23,9 +25,9 @@ Transform3DRecorder::Transform3DRecorder(GraphicsContext& context, DisplayItemCl
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
-        m_context.displayItemList()->add(BeginTransform3DDisplayItem::create(m_client, transform));
+        m_context.displayItemList()->add(BeginTransform3DDisplayItem::create(m_client, m_type, transform));
     } else {
-        BeginTransform3DDisplayItem beginTransform(m_client, transform);
+        BeginTransform3DDisplayItem beginTransform(m_client, m_type, transform);
         beginTransform.replay(&m_context);
     }
 }
@@ -35,11 +37,12 @@ Transform3DRecorder::~Transform3DRecorder()
     if (m_skipRecordingForIdentityTransform)
         return;
 
+    DisplayItem::Type endType = DisplayItem::transform3DTypeToEndTransform3DType(m_type);
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         ASSERT(m_context.displayItemList());
-        m_context.displayItemList()->add(EndTransform3DDisplayItem::create(m_client));
+        m_context.displayItemList()->add(EndTransform3DDisplayItem::create(m_client, endType));
     } else {
-        EndTransform3DDisplayItem endTransform(m_client);
+        EndTransform3DDisplayItem endTransform(m_client, endType);
         endTransform.replay(&m_context);
     }
 }

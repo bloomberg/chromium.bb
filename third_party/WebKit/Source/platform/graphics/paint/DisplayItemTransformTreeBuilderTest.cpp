@@ -36,10 +36,13 @@ protected:
     DisplayItemClient processBeginTransform3D(const TransformationMatrix& transform)
     {
         DisplayItemClient client = newDummyClient();
-        processDisplayItem(BeginTransform3DDisplayItem::create(client, transform));
+        processDisplayItem(BeginTransform3DDisplayItem::create(client, DisplayItem::Transform3DElementTransform, transform));
         return client;
     }
-    void processEndTransform3D(DisplayItemClient client) { processDisplayItem(EndTransform3DDisplayItem::create(client)); }
+    void processEndTransform3D(DisplayItemClient client)
+    {
+        processDisplayItem(EndTransform3DDisplayItem::create(client, DisplayItem::transform3DTypeToEndTransform3DType(DisplayItem::Transform3DElementTransform)));
+    }
 
 private:
     struct DummyClient { };

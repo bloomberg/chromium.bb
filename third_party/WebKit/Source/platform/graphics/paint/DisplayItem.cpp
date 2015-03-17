@@ -97,6 +97,16 @@ static WTF::String clipTypeAsDebugString(DisplayItem::Type type)
     }
 }
 
+static String transform3DTypeAsDebugString(DisplayItem::Type type)
+{
+    switch (type) {
+    case DisplayItem::Transform3DElementTransform: return "Transform3DElementTransform";
+    default:
+        ASSERT_NOT_REACHED();
+        return "Unknown";
+    }
+}
+
 WTF::String DisplayItem::typeAsDebugString(Type type)
 {
     if (isDrawingType(type))
@@ -116,6 +126,11 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     if (isEndScrollType(type))
         return "End" + typeAsDebugString(endScrollTypeToScrollType(type));
 
+    if (isTransform3DType(type))
+        return transform3DTypeAsDebugString(type);
+    if (isEndTransform3DType(type))
+        return "End" + transform3DTypeAsDebugString(endTransform3DTypeToTransform3DType(type));
+
     PAINT_PHASE_BASED_DEBUG_STRINGS(SubtreeCached);
     PAINT_PHASE_BASED_DEBUG_STRINGS(BeginSubtree);
     PAINT_PHASE_BASED_DEBUG_STRINGS(EndSubtree);
@@ -127,8 +142,6 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
     case EndCompositing: return "EndCompositing";
     case BeginTransform: return "BeginTransform";
     case EndTransform: return "EndTransform";
-    case BeginTransform3D: return "BeginTransform3D";
-    case EndTransform3D: return "EndTransform3D";
     case BeginClipPath: return "BeginClipPath";
     case EndClipPath: return "EndClipPath";
     default:

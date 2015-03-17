@@ -395,7 +395,7 @@ void LayerPainter::paintFragmentByApplyingTransform(GraphicsContext* context, co
     transform.translateRight(roundedDelta.x(), roundedDelta.y());
     LayoutSize adjustedSubPixelAccumulation = paintingInfo.subPixelAccumulation + (delta - roundedDelta);
 
-    Transform3DRecorder transform3DRecorder(*context, m_renderLayer.layoutObject()->displayItemClient(), transform);
+    Transform3DRecorder transform3DRecorder(*context, m_renderLayer.layoutObject()->displayItemClient(), DisplayItem::Transform3DElementTransform, transform);
 
     // Now do a paint with the root layer shifted to be us.
     LayerPaintingInfo transformedPaintingInfo(&m_renderLayer, LayoutRect(enclosingIntRect(transform.inverse().mapRect(paintingInfo.paintDirtyRect))), paintingInfo.paintBehavior,
@@ -586,7 +586,7 @@ void LayerPainter::paintChildLayerIntoColumns(GraphicsContext* context, const La
                 TransformationMatrix transform;
                 transform.translateRight(roundToInt(childOffset.x() + offset.width()), roundToInt(childOffset.y() + offset.height()));
 
-                Transform3DRecorder transform3DRecorder(*context, m_renderLayer.layoutObject()->displayItemClient(), transform);
+                Transform3DRecorder transform3DRecorder(*context, m_renderLayer.layoutObject()->displayItemClient(), DisplayItem::Transform3DElementTransform, transform);
 
                 // Now do a paint with the root layer shifted to be the next multicol block.
                 LayerPaintingInfo columnPaintingInfo(paintingInfo);

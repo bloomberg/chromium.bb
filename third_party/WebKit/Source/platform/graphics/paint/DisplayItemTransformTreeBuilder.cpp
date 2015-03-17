@@ -44,7 +44,7 @@ static BeginDisplayItemClassification classifyBeginItem(const DisplayItem& begin
 {
     ASSERT(beginDisplayItem.isBegin());
 
-    if (beginDisplayItem.type() == DisplayItem::BeginTransform3D) {
+    if (DisplayItem::isTransform3DType(beginDisplayItem.type())) {
         const auto& begin3D = static_cast<const BeginTransform3DDisplayItem&>(beginDisplayItem);
         *transform = begin3D.transform();
         if (transform->isIdentityOr2DTranslation())

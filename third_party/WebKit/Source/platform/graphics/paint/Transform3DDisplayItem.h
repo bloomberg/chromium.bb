@@ -7,6 +7,7 @@
 
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/transforms/TransformationMatrix.h"
+#include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -14,14 +15,17 @@ namespace blink {
 class PLATFORM_EXPORT BeginTransform3DDisplayItem : public PairedBeginDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<BeginTransform3DDisplayItem> create(DisplayItemClient client, const TransformationMatrix& transform)
+    static PassOwnPtr<BeginTransform3DDisplayItem> create(DisplayItemClient client, DisplayItem::Type type, const TransformationMatrix& transform)
     {
-        return adoptPtr(new BeginTransform3DDisplayItem(client, transform));
+        return adoptPtr(new BeginTransform3DDisplayItem(client, type, transform));
     }
 
-    BeginTransform3DDisplayItem(DisplayItemClient client, const TransformationMatrix& transform)
-        : PairedBeginDisplayItem(client, BeginTransform3D)
-        , m_transform(transform) { }
+    BeginTransform3DDisplayItem(DisplayItemClient client, DisplayItem::Type type, const TransformationMatrix& transform)
+        : PairedBeginDisplayItem(client, type)
+        , m_transform(transform)
+    {
+        ASSERT(DisplayItem::isTransform3DType(type));
+    }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
@@ -36,20 +40,26 @@ private:
 class PLATFORM_EXPORT EndTransform3DDisplayItem : public PairedEndDisplayItem {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<EndTransform3DDisplayItem> create(DisplayItemClient client)
+    static PassOwnPtr<EndTransform3DDisplayItem> create(DisplayItemClient client, DisplayItem::Type type)
     {
-        return adoptPtr(new EndTransform3DDisplayItem(client));
+        return adoptPtr(new EndTransform3DDisplayItem(client, type));
     }
 
-    EndTransform3DDisplayItem(DisplayItemClient client)
-        : PairedEndDisplayItem(client, EndTransform3D) { }
+    EndTransform3DDisplayItem(DisplayItemClient client, DisplayItem::Type type)
+        : PairedEndDisplayItem(client, type)
+    {
+        ASSERT(DisplayItem::isEndTransform3DType(type));
+    }
 
     virtual void replay(GraphicsContext*) override;
     virtual void appendToWebDisplayItemList(WebDisplayItemList*) const override;
 
 private:
 #if ENABLE(ASSERT)
-    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final { return other.type() == BeginTransform3D; }
+    virtual bool isEndAndPairedWith(const DisplayItem& other) const override final
+    {
+        return DisplayItem::transform3DTypeToEndTransform3DType(other.type()) == type();
+    }
 #endif
 };
 
