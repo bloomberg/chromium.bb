@@ -86,20 +86,19 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void SetHTTP11Required(const HostPortPair& server) override;
   void MaybeForceHTTP11(const HostPortPair& server,
                         SSLConfig* ssl_config) override;
-  AlternateProtocolInfo GetAlternateProtocol(
-      const HostPortPair& server) override;
-  void SetAlternateProtocol(const HostPortPair& server,
+  AlternativeService GetAlternativeService(const HostPortPair& origin) override;
+  void SetAlternateProtocol(const HostPortPair& origin,
                             uint16 alternate_port,
                             AlternateProtocol alternate_protocol,
                             double alternate_probability) override;
-  void SetBrokenAlternateProtocol(const HostPortPair& server) override;
+  void SetBrokenAlternateProtocol(const HostPortPair& origin) override;
   void MarkAlternativeServiceRecentlyBroken(
       const AlternativeService& alternative_service) override;
   bool IsAlternativeServiceBroken(
       const AlternativeService& alternative_service) override;
-  bool WasAlternateProtocolRecentlyBroken(const HostPortPair& server) override;
-  void ConfirmAlternateProtocol(const HostPortPair& server) override;
-  void ClearAlternateProtocol(const HostPortPair& server) override;
+  bool WasAlternateProtocolRecentlyBroken(const HostPortPair& origin) override;
+  void ConfirmAlternateProtocol(const HostPortPair& origin) override;
+  void ClearAlternateProtocol(const HostPortPair& origin) override;
   const AlternateProtocolMap& alternate_protocol_map() const override;
   void SetAlternateProtocolProbabilityThreshold(double threshold) override;
   const SettingsMap& GetSpdySettings(

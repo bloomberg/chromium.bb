@@ -178,8 +178,9 @@ bool HttpServerPropertiesImpl::SupportsRequestPriority(
   if (spdy_host_port != spdy_servers_map_.end() && spdy_host_port->second)
     return true;
 
-  const AlternateProtocolInfo info = GetAlternateProtocol(host_port_pair);
-  return info.protocol == QUIC;
+  const AlternativeService alternative_service =
+      GetAlternativeService(host_port_pair);
+  return alternative_service.protocol == QUIC;
 }
 
 void HttpServerPropertiesImpl::SetSupportsSpdy(
@@ -237,28 +238,30 @@ std::string HttpServerPropertiesImpl::GetCanonicalSuffix(
   return std::string();
 }
 
-AlternateProtocolInfo HttpServerPropertiesImpl::GetAlternateProtocol(
-    const HostPortPair& server) {
+AlternativeService HttpServerPropertiesImpl::GetAlternativeService(
+    const HostPortPair& origin) {
   AlternateProtocolMap::const_iterator it =
-      GetAlternateProtocolIterator(server);
+      GetAlternateProtocolIterator(origin);
   if (it != alternate_protocol_map_.end() &&
       it->second.probability >= alternate_protocol_probability_threshold_)
-    return it->second;
+    return AlternativeService(it->second.protocol, origin.host(),
+                              it->second.port);
 
   if (g_forced_alternate_protocol)
-    return *g_forced_alternate_protocol;
+    return AlternativeService(g_forced_alternate_protocol->protocol,
+                              origin.host(), g_forced_alternate_protocol->port);
 
-  AlternateProtocolInfo uninitialized_alternate_protocol;
-  return uninitialized_alternate_protocol;
+  AlternativeService uninitialize_alternative_service;
+  return uninitialize_alternative_service;
 }
 
 void HttpServerPropertiesImpl::SetAlternateProtocol(
-    const HostPortPair& server,
+    const HostPortPair& origin,
     uint16 alternate_port,
     AlternateProtocol alternate_protocol,
     double alternate_probability) {
   const AlternativeService alternative_service(alternate_protocol,
-                                               server.host(), alternate_port);
+                                               origin.host(), alternate_port);
   if (IsAlternativeServiceBroken(alternative_service)) {
     DVLOG(1) << "Ignore alternative service since it is known to be broken.";
     return;
@@ -267,20 +270,19 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
   const AlternateProtocolInfo alternate(alternate_port, alternate_protocol,
                                         alternate_probability);
   AlternateProtocolMap::const_iterator it =
-      GetAlternateProtocolIterator(server);
+      GetAlternateProtocolIterator(origin);
   if (it != alternate_protocol_map_.end()) {
     const AlternateProtocolInfo existing_alternate = it->second;
 
     if (!existing_alternate.Equals(alternate)) {
       LOG(WARNING) << "Changing the alternate protocol for: "
-                   << server.ToString()
+                   << origin.ToString()
                    << " from [Port: " << existing_alternate.port
                    << ", Protocol: " << existing_alternate.protocol
                    << ", Probability: " << existing_alternate.probability
                    << "] to [Port: " << alternate_port
                    << ", Protocol: " << alternate_protocol
-                   << ", Probability: " << alternate_probability
-                   << "].";
+                   << ", Probability: " << alternate_probability << "].";
     }
   } else {
     if (alternate_probability >= alternate_protocol_probability_threshold_) {
@@ -291,29 +293,27 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
     }
   }
 
-  alternate_protocol_map_.Put(server, alternate);
+  alternate_protocol_map_.Put(origin, alternate);
 
   // If this host ends with a canonical suffix, then set it as the
   // canonical host.
   for (size_t i = 0; i < canonical_suffixes_.size(); ++i) {
     std::string canonical_suffix = canonical_suffixes_[i];
-    if (EndsWith(server.host(), canonical_suffixes_[i], false)) {
-      HostPortPair canonical_host(canonical_suffix, server.port());
-      canonical_host_to_origin_map_[canonical_host] = server;
+    if (EndsWith(origin.host(), canonical_suffixes_[i], false)) {
+      HostPortPair canonical_host(canonical_suffix, origin.port());
+      canonical_host_to_origin_map_[canonical_host] = origin;
       break;
     }
   }
 }
 
 void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
-    const HostPortPair& server) {
-  const AlternateProtocolInfo alternate = GetAlternateProtocol(server);
-  if (alternate.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
+    const HostPortPair& origin) {
+  const AlternativeService alternative_service = GetAlternativeService(origin);
+  if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
     LOG(DFATAL) << "Trying to mark unknown alternate protocol broken.";
     return;
   }
-  const AlternativeService alternative_service(alternate.protocol,
-                                               server.host(), alternate.port);
   int count = ++recently_broken_alternative_services_[alternative_service];
   base::TimeDelta delay =
       base::TimeDelta::FromSeconds(kBrokenAlternateProtocolDelaySecs);
@@ -327,7 +327,7 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
 
   // Do not leave this host as canonical so that we don't infer the other
   // hosts are also broken without testing them first.
-  RemoveCanonicalHost(server);
+  RemoveCanonicalHost(origin);
 
   // If this is the only entry in the list, schedule an expiration task.
   // Otherwise it will be rescheduled automatically when the pending task runs.
@@ -348,32 +348,28 @@ bool HttpServerPropertiesImpl::IsAlternativeServiceBroken(
 }
 
 bool HttpServerPropertiesImpl::WasAlternateProtocolRecentlyBroken(
-    const HostPortPair& server) {
-  const AlternateProtocolInfo alternate_protocol = GetAlternateProtocol(server);
-  if (alternate_protocol.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+    const HostPortPair& origin) {
+  const AlternativeService alternative_service = GetAlternativeService(origin);
+  if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
     return false;
-  const AlternativeService alternative_service(
-      alternate_protocol.protocol, server.host(), alternate_protocol.port);
   return ContainsKey(recently_broken_alternative_services_,
                      alternative_service);
 }
 
 void HttpServerPropertiesImpl::ConfirmAlternateProtocol(
-    const HostPortPair& server) {
-  const AlternateProtocolInfo alternate_protocol = GetAlternateProtocol(server);
-  if (alternate_protocol.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+    const HostPortPair& origin) {
+  const AlternativeService alternative_service = GetAlternativeService(origin);
+  if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
     return;
-  const AlternativeService alternative_service(
-      alternate_protocol.protocol, server.host(), alternate_protocol.port);
   broken_alternative_services_.erase(alternative_service);
   recently_broken_alternative_services_.erase(alternative_service);
 }
 
 void HttpServerPropertiesImpl::ClearAlternateProtocol(
-    const HostPortPair& server) {
-  RemoveCanonicalHost(server);
+    const HostPortPair& origin) {
+  RemoveCanonicalHost(origin);
 
-  AlternateProtocolMap::iterator it = alternate_protocol_map_.Peek(server);
+  AlternateProtocolMap::iterator it = alternate_protocol_map_.Peek(origin);
   if (it == alternate_protocol_map_.end()) {
     return;
   }

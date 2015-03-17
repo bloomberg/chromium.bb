@@ -205,20 +205,20 @@ class NET_EXPORT HttpServerProperties {
   virtual void MaybeForceHTTP11(const HostPortPair& server,
                                 SSLConfig* ssl_config) = 0;
 
-  // Returns the AlternateProtocol for |server| if it has probability equal to
+  // Returns the alternative service for |origin| if it has probability equal to
   // or exceeding threshold, or else the forced AlternateProtocol if there is
   // one, or else one with UNINITIALIZED_ALTERNATE_PROTOCOL.
-  virtual AlternateProtocolInfo GetAlternateProtocol(
-      const HostPortPair& server) = 0;
+  virtual AlternativeService GetAlternativeService(
+      const HostPortPair& origin) = 0;
 
   // Sets the Alternate-Protocol for |server|.
-  virtual void SetAlternateProtocol(const HostPortPair& server,
+  virtual void SetAlternateProtocol(const HostPortPair& origin,
                                     uint16 alternate_port,
                                     AlternateProtocol alternate_protocol,
                                     double probability) = 0;
 
   // Sets the Alternate-Protocol for |server| to be BROKEN.
-  virtual void SetBrokenAlternateProtocol(const HostPortPair& server) = 0;
+  virtual void SetBrokenAlternateProtocol(const HostPortPair& origin) = 0;
 
   // Marks |alternative_service| as recently broken.
   virtual void MarkAlternativeServiceRecentlyBroken(
@@ -230,13 +230,13 @@ class NET_EXPORT HttpServerProperties {
 
   // Returns true if Alternate-Protocol for |server| was recently BROKEN.
   virtual bool WasAlternateProtocolRecentlyBroken(
-      const HostPortPair& server) = 0;
+      const HostPortPair& origin) = 0;
 
   // Confirms that Alternate-Protocol for |server| is working.
-  virtual void ConfirmAlternateProtocol(const HostPortPair& server) = 0;
+  virtual void ConfirmAlternateProtocol(const HostPortPair& origin) = 0;
 
   // Clears the Alternate-Protocol for |server|.
-  virtual void ClearAlternateProtocol(const HostPortPair& server) = 0;
+  virtual void ClearAlternateProtocol(const HostPortPair& origin) = 0;
 
   // Returns all Alternate-Protocol mappings.
   virtual const AlternateProtocolMap& alternate_protocol_map() const = 0;

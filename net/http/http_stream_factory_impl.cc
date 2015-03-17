@@ -186,18 +186,21 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceRequestFor(
   HostPortPair origin = HostPortPair::FromURL(original_url);
   HttpServerProperties& http_server_properties =
       *session_->http_server_properties();
-  const AlternateProtocolInfo alternate =
-      http_server_properties.GetAlternateProtocol(origin);
+  const AlternativeService alternative_service =
+      http_server_properties.GetAlternativeService(origin);
 
-  if (alternate.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+  if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
     return kNoAlternativeService;
-  const AlternativeService alternative_service(alternate.protocol,
-                                               origin.host(), alternate.port);
+  // TODO(bnc):  Make sure that callers connect to the specified host, and that
+  // certificate requirements are enforced.  Then remove the following two
+  // lines.
+  if (alternative_service.host != origin.host())
+    return kNoAlternativeService;
   if (http_server_properties.IsAlternativeServiceBroken(alternative_service)) {
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN);
     return kNoAlternativeService;
   }
-  if (!IsAlternateProtocolValid(alternate.protocol)) {
+  if (!IsAlternateProtocolValid(alternative_service.protocol)) {
     NOTREACHED();
     return kNoAlternativeService;
   }
@@ -210,22 +213,22 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceRequestFor(
   // allow protocol upgrades to user-controllable ports.
   const int kUnrestrictedPort = 1024;
   if (!session_->params().enable_user_alternate_protocol_ports &&
-      (alternate.port >= kUnrestrictedPort &&
+      (alternative_service.port >= kUnrestrictedPort &&
        origin.port() < kUnrestrictedPort))
     return kNoAlternativeService;
 
-  origin.set_port(alternate.port);
-  if (alternate.protocol >= NPN_SPDY_MINIMUM_VERSION &&
-      alternate.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
+  origin.set_port(alternative_service.port);
+  if (alternative_service.protocol >= NPN_SPDY_MINIMUM_VERSION &&
+      alternative_service.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
     if (!HttpStreamFactory::spdy_enabled())
       return kNoAlternativeService;
 
     if (session_->HasSpdyExclusion(origin))
       return kNoAlternativeService;
 
-    *alternate_url = UpgradeUrlToHttps(original_url, alternate.port);
+    *alternate_url = UpgradeUrlToHttps(original_url, alternative_service.port);
   } else {
-    DCHECK_EQ(QUIC, alternate.protocol);
+    DCHECK_EQ(QUIC, alternative_service.protocol);
     if (!session_->params().enable_quic)
       return kNoAlternativeService;
 
@@ -235,7 +238,7 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceRequestFor(
     // the alternate request will be going via UDP to a different port.
     *alternate_url = original_url;
   }
-  return AlternativeService(alternate.protocol, origin.host(), alternate.port);
+  return alternative_service;
 }
 
 void HttpStreamFactoryImpl::OrphanJob(Job* job, const Request* request) {

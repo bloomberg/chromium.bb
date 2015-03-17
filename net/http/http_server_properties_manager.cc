@@ -180,27 +180,27 @@ void HttpServerPropertiesManager::MaybeForceHTTP11(const HostPortPair& server,
   http_server_properties_impl_->MaybeForceHTTP11(server, ssl_config);
 }
 
-AlternateProtocolInfo HttpServerPropertiesManager::GetAlternateProtocol(
-    const HostPortPair& server) {
+AlternativeService HttpServerPropertiesManager::GetAlternativeService(
+    const HostPortPair& origin) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  return http_server_properties_impl_->GetAlternateProtocol(server);
+  return http_server_properties_impl_->GetAlternativeService(origin);
 }
 
 void HttpServerPropertiesManager::SetAlternateProtocol(
-    const HostPortPair& server,
+    const HostPortPair& origin,
     uint16 alternate_port,
     AlternateProtocol alternate_protocol,
     double alternate_probability) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   http_server_properties_impl_->SetAlternateProtocol(
-      server, alternate_port, alternate_protocol, alternate_probability);
+      origin, alternate_port, alternate_protocol, alternate_probability);
   ScheduleUpdatePrefsOnNetworkThread();
 }
 
 void HttpServerPropertiesManager::SetBrokenAlternateProtocol(
-    const HostPortPair& server) {
+    const HostPortPair& origin) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  http_server_properties_impl_->SetBrokenAlternateProtocol(server);
+  http_server_properties_impl_->SetBrokenAlternateProtocol(origin);
   ScheduleUpdatePrefsOnNetworkThread();
 }
 
@@ -220,23 +220,23 @@ bool HttpServerPropertiesManager::IsAlternativeServiceBroken(
 }
 
 bool HttpServerPropertiesManager::WasAlternateProtocolRecentlyBroken(
-    const HostPortPair& server) {
+    const HostPortPair& origin) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   return http_server_properties_impl_->WasAlternateProtocolRecentlyBroken(
-      server);
+      origin);
 }
 
 void HttpServerPropertiesManager::ConfirmAlternateProtocol(
-    const HostPortPair& server) {
+    const HostPortPair& origin) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  http_server_properties_impl_->ConfirmAlternateProtocol(server);
+  http_server_properties_impl_->ConfirmAlternateProtocol(origin);
   ScheduleUpdatePrefsOnNetworkThread();
 }
 
 void HttpServerPropertiesManager::ClearAlternateProtocol(
-    const HostPortPair& server) {
+    const HostPortPair& origin) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  http_server_properties_impl_->ClearAlternateProtocol(server);
+  http_server_properties_impl_->ClearAlternateProtocol(origin);
   ScheduleUpdatePrefsOnNetworkThread();
 }
 

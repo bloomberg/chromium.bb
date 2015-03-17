@@ -8734,9 +8734,9 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
   HostPortPair http_host_port_pair("www.google.com", 80);
   HttpServerProperties& http_server_properties =
       *session->http_server_properties();
-  AlternateProtocolInfo alternate =
-      http_server_properties.GetAlternateProtocol(http_host_port_pair);
-  EXPECT_EQ(alternate.protocol, UNINITIALIZED_ALTERNATE_PROTOCOL);
+  AlternativeService alternative_service =
+      http_server_properties.GetAlternativeService(http_host_port_pair);
+  EXPECT_EQ(alternative_service.protocol, UNINITIALIZED_ALTERNATE_PROTOCOL);
 
   EXPECT_EQ(OK, callback.WaitForResult());
 
@@ -8751,10 +8751,11 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  alternate = http_server_properties.GetAlternateProtocol(http_host_port_pair);
-  EXPECT_EQ(443, alternate.port);
-  EXPECT_EQ(AlternateProtocolFromNextProto(GetParam()), alternate.protocol);
-  EXPECT_EQ(1.0, alternate.probability);
+  alternative_service =
+      http_server_properties.GetAlternativeService(http_host_port_pair);
+  EXPECT_EQ(443, alternative_service.port);
+  EXPECT_EQ(AlternateProtocolFromNextProto(GetParam()),
+            alternative_service.protocol);
 }
 
 TEST_P(HttpNetworkTransactionTest,
@@ -8808,11 +8809,9 @@ TEST_P(HttpNetworkTransactionTest,
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  const AlternateProtocolInfo alternate =
-      http_server_properties->GetAlternateProtocol(host_port_pair);
-  EXPECT_NE(UNINITIALIZED_ALTERNATE_PROTOCOL, alternate.protocol);
-  const AlternativeService alternative_service(
-      alternate.protocol, host_port_pair.host(), alternate.port);
+  const AlternativeService alternative_service =
+      http_server_properties->GetAlternativeService(host_port_pair);
+  EXPECT_NE(UNINITIALIZED_ALTERNATE_PROTOCOL, alternative_service.protocol);
   EXPECT_TRUE(
       http_server_properties->IsAlternativeServiceBroken(alternative_service));
 }
