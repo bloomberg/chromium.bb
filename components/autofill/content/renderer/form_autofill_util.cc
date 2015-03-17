@@ -134,9 +134,9 @@ bool SatisfiesRequireAutocomplete(const WebInputElement& input_element) {
   return input_element.autoComplete();
 }
 
-// Returns the colspan for a <td>. Defaults to 1.
+// Returns the colspan for a <td> / <th>. Defaults to 1.
 size_t CalculateTableCellColumnSpan(const WebElement& element) {
-  DCHECK(element.hasHTMLTagName("td"));
+  DCHECK(element.hasHTMLTagName("td") || element.hasHTMLTagName("th"));
 
   size_t span = 1;
   if (element.hasAttribute("colspan")) {

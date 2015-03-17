@@ -3126,6 +3126,10 @@ TEST_F(FormAutofillTest, LabelsInferredFromTableRow) {
   names.push_back(ASCIIToUTF16("phone3"));
   values.push_back(ASCIIToUTF16("7890"));
 
+  labels.push_back(ASCIIToUTF16("Credit Card Number"));
+  names.push_back(ASCIIToUTF16("ccnumber"));
+  values.push_back(ASCIIToUTF16("4444555544445555"));
+
   ExpectLabels(
       "<FORM name='TestForm' action='http://cnn.com' method='post'>"
       "<TABLE>"
@@ -3169,6 +3173,16 @@ TEST_F(FormAutofillTest, LabelsInferredFromTableRow) {
       "    </TD>"
       "    <TD>"
       "      <INPUT type='text' id='phone3' value='7890'/>"
+      "    </TD>"
+      "  </TR>"
+      "  <TR>"
+      "    <TH>"
+      "      Credit Card Number"
+      "    </TH>"
+      "  </TR>"
+      "  <TR>"
+      "    <TD>"
+      "      <INPUT type='text' name='ccnumber' value='4444555544445555'/>"
       "    </TD>"
       "  </TR>"
       "  <TR>"
