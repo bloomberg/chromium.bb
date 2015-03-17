@@ -121,6 +121,11 @@ void RecordSAMLScrapingVerificationResultInHistogram(bool success) {
   UMA_HISTOGRAM_BOOLEAN("ChromeOS.SAML.Scraping.VerificationResult", success);
 }
 
+void RecordGAIAFlowTypeHistogram() {
+  UMA_HISTOGRAM_BOOLEAN("ChromeOS.GAIA.WebViewFlow",
+                        StartupUtils::IsWebviewSigninEnabled());
+}
+
 // The Task posted to PostTaskAndReply in StartClearingDnsCache on the IO
 // thread.
 void ClearDnsCache(IOThread* io_thread) {
@@ -422,6 +427,8 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
   if (!Delegate())
     return;
 
+  RecordGAIAFlowTypeHistogram();
+
   DCHECK(!email.empty());
   DCHECK(!gaia_id.empty());
   const std::string sanitized_email = gaia::SanitizeEmail(email);
@@ -437,6 +444,8 @@ void GaiaScreenHandler::HandleCompleteAuthenticationAuthCodeOnly(
     const std::string& auth_code) {
   if (!Delegate())
     return;
+
+  RecordGAIAFlowTypeHistogram();
 
   UserContext user_context;
   user_context.SetAuthFlow(UserContext::AUTH_FLOW_EASY_BOOTSTRAP);
@@ -579,6 +588,7 @@ void GaiaScreenHandler::DoCompleteLogin(const std::string& gaia_id,
 
   if (using_saml && !using_saml_api_)
     RecordSAMLScrapingVerificationResultInHistogram(true);
+  RecordGAIAFlowTypeHistogram();
 
   DCHECK(!typed_email.empty());
   DCHECK(!gaia_id.empty());

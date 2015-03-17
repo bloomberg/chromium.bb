@@ -2782,6 +2782,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.GAIA.WebViewFlow" enum="BooleanGAIAWebViewFlow">
+  <owner>ginkage@chromium.org</owner>
+  <summary>
+    Whether a user signed in using the new WebView-based GAIA flow. This value
+    is sent after the GAIA screen has completed user authentication.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.MachineIdRegen.AgeSeconds" units="seconds">
   <owner>zeuthen@chromium.org</owner>
   <summary>
@@ -45021,6 +45029,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanForceDisabled" type="int">
   <int value="0" label="Not Force Disabled"/>
   <int value="1" label="Force Disabled"/>
+</enum>
+
+<enum name="BooleanGAIAWebViewFlow" type="int">
+  <int value="0" label="iframe-based flow"/>
+  <int value="1" label="WebView-based flow"/>
 </enum>
 
 <enum name="BooleanHadBlankText" type="int">
