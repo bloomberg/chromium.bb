@@ -8,5 +8,5 @@
     Exposed=(Window, ServiceWorker),
     RuntimeEnabled=ServiceWorkerNotifications
 ] partial interface ServiceWorkerRegistration {
-    [CallWith=ScriptState] Promise showNotification(DOMString title, optional NotificationOptions options);
+    [CallWith=ScriptState, RaisesException] Promise showNotification(DOMString title, optional NotificationOptions options);
 };

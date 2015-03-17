@@ -48,6 +48,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSerializedOrigin.h"
+#include "public/platform/WebString.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationManager.h"
 
@@ -121,6 +122,11 @@ Notification* Notification::create(ExecutionContext* context, const String& pers
     if (!data.icon.isEmpty())
         notification->setIconUrl(data.icon);
 
+    if (!data.data.isEmpty()) {
+        notification->setSerializedData(SerializedScriptValueFactory::instance().createFromWire(data.data));
+        notification->serializedData()->registerMemoryAllocatedWithCurrentScriptContext();
+    }
+
     notification->setState(NotificationStateShowing);
     notification->suspendIfNeeded();
     return notification;
@@ -162,7 +168,11 @@ void Notification::show()
 
     // FIXME: Do CSP checks on the associated notification icon.
     WebNotificationData::Direction dir = m_dir == "rtl" ? WebNotificationData::DirectionRightToLeft : WebNotificationData::DirectionLeftToRight;
-    WebNotificationData notificationData(m_title, dir, m_lang, m_body, m_tag, m_iconUrl, m_silent);
+
+    // The lifetime and availability of non-persistent notifications is tied to the page
+    // they were created by, and thus the data doesn't have to be known to the embedder.
+    String emptyDataAsWireString;
+    WebNotificationData notificationData(m_title, dir, m_lang, m_body, m_tag, m_iconUrl, m_silent, emptyDataAsWireString);
     notificationManager()->show(WebSerializedOrigin(*origin), notificationData, this);
 
     m_state = NotificationStateShowing;

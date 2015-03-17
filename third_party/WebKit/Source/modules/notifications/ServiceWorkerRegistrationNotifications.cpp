@@ -6,7 +6,10 @@
 #include "modules/notifications/ServiceWorkerRegistrationNotifications.h"
 
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
@@ -21,7 +24,7 @@
 
 namespace blink {
 
-ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptState* scriptState, ServiceWorkerRegistration& serviceWorkerRegistration, const String& title, const NotificationOptions& options)
+ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptState* scriptState, ServiceWorkerRegistration& serviceWorkerRegistration, const String& title, const NotificationOptions& options, ExceptionState& exceptionState)
 {
     ExecutionContext* executionContext = scriptState->executionContext();
 
@@ -32,6 +35,15 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     // If permission for notification's origin is not "granted", reject promise with a TypeError exception, and terminate these substeps.
     if (Notification::checkPermission(executionContext) != WebNotificationPermissionAllowed)
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "No notification permission has been granted for this origin."));
+
+    // FIXME: Unify the code path here with the Notification.create() function.
+    String dataAsWireString;
+    if (options.hasData()) {
+        RefPtr<SerializedScriptValue> data = SerializedScriptValueFactory::instance().create(options.data(), nullptr, exceptionState, options.data().isolate());
+        if (exceptionState.hadException())
+            return exceptionState.reject(scriptState);
+        dataAsWireString = data->toWireString();
+    }
 
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
@@ -46,7 +58,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     }
 
     WebNotificationData::Direction dir = options.dir() == "rtl" ? WebNotificationData::DirectionRightToLeft : WebNotificationData::DirectionLeftToRight;
-    WebNotificationData notification(title, dir, options.lang(), options.body(), options.tag(), iconUrl, options.silent());
+    WebNotificationData notification(title, dir, options.lang(), options.body(), options.tag(), iconUrl, options.silent(), dataAsWireString);
     WebNotificationShowCallbacks* callbacks = new CallbackPromiseAdapter<void, void>(resolver);
 
     SecurityOrigin* origin = executionContext->securityOrigin();
