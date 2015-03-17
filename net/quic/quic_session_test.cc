@@ -184,8 +184,9 @@ class TestSession : public QuicSession {
 class QuicSessionTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicSessionTest()
-      : connection_(new MockConnection(Perspective::IS_SERVER,
-                                       SupportedVersions(GetParam()))),
+      : connection_(
+            new StrictMock<MockConnection>(Perspective::IS_SERVER,
+                                           SupportedVersions(GetParam()))),
         session_(connection_) {
     session_.config()->SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
@@ -232,13 +233,14 @@ class QuicSessionTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   void CloseStream(QuicStreamId id) {
+    EXPECT_CALL(*connection_, SendRstStream(id, _, _));
     session_.CloseStream(id);
     closed_streams_.insert(id);
   }
 
   QuicVersion version() const { return connection_->version(); }
 
-  MockConnection* connection_;
+  StrictMock<MockConnection>* connection_;
   TestSession session_;
   set<QuicStreamId> closed_streams_;
   SpdyHeaderBlock headers_;
@@ -338,15 +340,13 @@ TEST_P(QuicSessionTest, DecompressionError) {
 
 TEST_P(QuicSessionTest, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
   TestStream* stream2 = session_.CreateOutgoingDataStream();
-  // Close the stream.
-  stream2->Reset(QUIC_BAD_APPLICATION_PAYLOAD);
-  // TODO(rtenneti): enable when chromium supports EXPECT_DEBUG_DFATAL.
-  /*
   QuicStreamId kClosedStreamId = stream2->id();
+  // Close the stream.
+  EXPECT_CALL(*connection_, SendRstStream(kClosedStreamId, _, _));
+  stream2->Reset(QUIC_BAD_APPLICATION_PAYLOAD);
   EXPECT_DEBUG_DFATAL(
       session_.MarkWriteBlocked(kClosedStreamId, kSomeMiddlePriority),
       "Marking unknown stream 2 blocked.");
-  */
 }
 
 TEST_P(QuicSessionTest, DebugDFatalIfMarkWriteBlockedCalledWithWrongPriority) {
@@ -354,12 +354,9 @@ TEST_P(QuicSessionTest, DebugDFatalIfMarkWriteBlockedCalledWithWrongPriority) {
 
   TestStream* stream2 = session_.CreateOutgoingDataStream();
   EXPECT_NE(kDifferentPriority, stream2->EffectivePriority());
-  // TODO(rtenneti): enable when chromium supports EXPECT_DEBUG_DFATAL.
-  /*
   EXPECT_DEBUG_DFATAL(
       session_.MarkWriteBlocked(stream2->id(), kDifferentPriority),
       "Priorities do not match.  Got: 0 Expected: 3");
-  */
 }
 
 TEST_P(QuicSessionTest, OnCanWrite) {
@@ -594,6 +591,7 @@ TEST_P(QuicSessionTest, RstStreamBeforeHeadersDecompressed) {
   session_.OnStreamFrames(frames);
   EXPECT_EQ(1u, session_.GetNumOpenStreams());
 
+  EXPECT_CALL(*connection_, SendRstStream(kClientDataStreamId1, _, _));
   QuicRstStreamFrame rst1(kClientDataStreamId1, QUIC_STREAM_NO_ERROR, 0);
   session_.OnRstStream(rst1);
   EXPECT_EQ(0u, session_.GetNumOpenStreams());
@@ -642,6 +640,8 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {
   EXPECT_FALSE(stream2->flow_controller()->IsBlocked());
   EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
+  EXPECT_CALL(*connection_, SendBlocked(stream2->id()));
+  EXPECT_CALL(*connection_, SendBlocked(0));
   stream2->SendBody(body, false);
   EXPECT_TRUE(stream2->flow_controller()->IsBlocked());
   EXPECT_TRUE(session_.IsConnectionFlowControlBlocked());
@@ -675,6 +675,7 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedCryptoStream) {
   EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   // Write until the crypto stream is flow control blocked.
+  EXPECT_CALL(*connection_, SendBlocked(kCryptoStreamId));
   int i = 0;
   while (!crypto_stream->flow_controller()->IsBlocked() && i < 1000) {
     EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
@@ -721,6 +722,7 @@ TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedHeadersStream) {
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   QuicStreamId stream_id = 5;
   // Write until the header stream is flow control blocked.
+  EXPECT_CALL(*connection_, SendBlocked(kHeadersStreamId));
   SpdyHeaderBlock headers;
   while (!headers_stream->flow_controller()->IsBlocked() && stream_id < 2000) {
     EXPECT_FALSE(session_.IsConnectionFlowControlBlocked());
@@ -771,6 +773,7 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstOutOfOrder) {
               SendWindowUpdate(0, kInitialSessionFlowControlWindowForTest +
                                       kByteOffset)).Times(1);
 
+  EXPECT_CALL(*connection_, SendRstStream(stream->id(), _, _));
   QuicRstStreamFrame rst_frame(stream->id(), QUIC_STREAM_CANCELLED,
                                kByteOffset);
   session_.OnRstStream(rst_frame);
@@ -787,18 +790,20 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAndLocalReset) {
   TestStream* stream = session_.CreateOutgoingDataStream();
 
   const QuicStreamOffset kByteOffset =
-      1 + kInitialSessionFlowControlWindowForTest / 2;
+      kInitialSessionFlowControlWindowForTest / 2;
   QuicStreamFrame frame(stream->id(), true, kByteOffset, IOVector());
   vector<QuicStreamFrame> frames;
   frames.push_back(frame);
   session_.OnStreamFrames(frames);
   session_.PostProcessAfterData();
+  EXPECT_TRUE(connection_->connected());
 
   EXPECT_EQ(0u, stream->flow_controller()->bytes_consumed());
   EXPECT_EQ(kByteOffset,
             stream->flow_controller()->highest_received_byte_offset());
 
   // Reset stream locally.
+  EXPECT_CALL(*connection_, SendRstStream(stream->id(), _, _));
   stream->Reset(QUIC_STREAM_CANCELLED);
   EXPECT_EQ(kByteOffset, session_.flow_controller()->bytes_consumed());
 }
@@ -820,6 +825,7 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingFinAfterRst) {
 
   // Reset our stream: this results in the stream being closed locally.
   TestStream* stream = session_.CreateOutgoingDataStream();
+  EXPECT_CALL(*connection_, SendRstStream(stream->id(), _, _));
   stream->Reset(QUIC_STREAM_CANCELLED);
 
   // Now receive a response from the peer with a FIN. We should handle this by
@@ -859,6 +865,7 @@ TEST_P(QuicSessionTest, ConnectionFlowControlAccountingRstAfterRst) {
 
   // Reset our stream: this results in the stream being closed locally.
   TestStream* stream = session_.CreateOutgoingDataStream();
+  EXPECT_CALL(*connection_, SendRstStream(stream->id(), _, _));
   stream->Reset(QUIC_STREAM_CANCELLED);
 
   // Now receive a RST from the peer. We should handle this by adjusting the
@@ -909,6 +916,7 @@ TEST_P(QuicSessionTest, FlowControlWithInvalidFinalOffset) {
 
   // Check that stream frame + FIN results in connection close.
   TestStream* stream = session_.CreateOutgoingDataStream();
+  EXPECT_CALL(*connection_, SendRstStream(stream->id(), _, _));
   stream->Reset(QUIC_STREAM_CANCELLED);
   QuicStreamFrame frame(stream->id(), true, kLargeOffset, IOVector());
   vector<QuicStreamFrame> frames;
@@ -964,6 +972,7 @@ TEST_P(QuicSessionTest, TooManyUnfinishedStreamsCauseConnectionClose) {
     frames.push_back(data1);
     session_.OnStreamFrames(frames);
     EXPECT_EQ(1u, session_.GetNumOpenStreams());
+    EXPECT_CALL(*connection_, SendRstStream(i, _, _));
     session_.CloseStream(i);
   }
 
