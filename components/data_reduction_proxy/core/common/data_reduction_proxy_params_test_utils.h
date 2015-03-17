@@ -39,19 +39,6 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
                                unsigned int has_definitions);
   bool init_result() const;
 
-  // Overrides from DataReductionProxyParams.
-  bool IsBypassedByDataReductionProxyLocalRules(
-      const net::URLRequest& request,
-      const net::ProxyConfig& data_reduction_proxy_config) const override;
-  bool AreDataReductionProxiesBypassed(
-      const net::URLRequest& request,
-      const net::ProxyConfig& data_reduction_proxy_config,
-      base::TimeDelta* min_retry_delay) const override;
-
-  // Once called, the mocked method will repeatedly return |return_value|.
-  void MockIsBypassedByDataReductionProxyLocalRules(bool return_value);
-  void MockAreDataReductionProxiesBypassed(bool return_value);
-
   // Test values to replace the values specified in preprocessor defines.
   static std::string DefaultDevOrigin();
   static std::string DefaultDevFallbackOrigin();
@@ -95,11 +82,6 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
 
   unsigned int has_definitions_;
   bool init_result_;
-
-  bool mock_is_bypassed_by_data_reduction_proxy_local_rules_;
-  bool mock_are_data_reduction_proxies_bypassed_;
-  bool is_bypassed_by_data_reduction_proxy_local_rules_return_value_;
-  bool are_data_reduction_proxies_bypassed_return_value_;
 };
 }  // namespace data_reduction_proxy
 #endif  // COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_PARAMS_TEST_UTILS_H_

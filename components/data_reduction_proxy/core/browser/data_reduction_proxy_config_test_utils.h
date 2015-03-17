@@ -93,8 +93,15 @@ class MockDataReductionProxyConfig : public TestDataReductionProxyConfig {
   MOCK_CONST_METHOD2(WasDataReductionProxyUsed,
                      bool(const net::URLRequest*,
                           DataReductionProxyTypeInfo* proxy_info));
-  MOCK_METHOD1(ContainsDataReductionProxy,
-               bool(const net::ProxyConfig::ProxyRules& proxy_rules));
+  MOCK_CONST_METHOD1(ContainsDataReductionProxy,
+                     bool(const net::ProxyConfig::ProxyRules& proxy_rules));
+  MOCK_CONST_METHOD2(IsBypassedByDataReductionProxyLocalRules,
+                     bool(const net::URLRequest& request,
+                          const net::ProxyConfig& data_reduction_proxy_config));
+  MOCK_CONST_METHOD3(AreDataReductionProxiesBypassed,
+                     bool(const net::URLRequest& request,
+                          const net::ProxyConfig& data_reduction_proxy_config,
+                          base::TimeDelta* min_retry_delay));
 
   // UpdateConfigurator should always call LogProxyState exactly once.
   void UpdateConfigurator(bool enabled,

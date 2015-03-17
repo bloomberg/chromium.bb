@@ -427,7 +427,7 @@ TEST_F(DataReductionProxySettingsTest, CheckQUICFieldTrials) {
                    base::Unretained(this)));
 
     EXPECT_EQ(enable_quic,
-              test_context_->config()->Origin().is_quic()) << i;
+              test_context_->config()->test_params()->origin().is_quic()) << i;
   }
 }
 

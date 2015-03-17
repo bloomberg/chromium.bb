@@ -19,6 +19,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -69,6 +70,7 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
         DataReductionProxyTestContext::Builder()
             .WithParamsFlags(DataReductionProxyParams::kAllowed)
             .WithParamsDefinitions(TestDataReductionProxyParams::HAS_EVERYTHING)
+            .WithMockConfig()
             .Build();
     request_ = context_.CreateRequest(GURL("http://www.google.com/"), net::IDLE,
                                       &delegate_, NULL);
@@ -90,8 +92,8 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
   }
 
  protected:
-  TestDataReductionProxyParams* params() const {
-    return test_context_->config()->test_params();
+  MockDataReductionProxyConfig* config() const {
+    return test_context_->mock_config();
   }
 
   TestDataReductionProxyDebugResourceThrottle* throttle() const {
@@ -121,20 +123,40 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
 // on the client (even when the proxy has already been bypassed by the server).
 TEST_F(DataReductionProxyDebugResourceThrottleTest, WillStartUsingNetwork) {
   bool defer = false;
-  params()->MockAreDataReductionProxiesBypassed(false);
+  EXPECT_CALL(
+      *config(), AreDataReductionProxiesBypassed(
+          testing::_, testing::_, testing::_))
+      .Times(1)
+      .WillOnce(testing::Return(false));
   throttle()->WillStartUsingNetwork(&defer);
   EXPECT_FALSE(defer);
 
-  params()->MockAreDataReductionProxiesBypassed(true);
-  params()->MockIsBypassedByDataReductionProxyLocalRules(false);
+  EXPECT_CALL(
+      *config(), AreDataReductionProxiesBypassed(
+          testing::_, testing::_, testing::_))
+      .Times(1)
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(
+      *config(), IsBypassedByDataReductionProxyLocalRules(
+          testing::_, testing::_))
+      .Times(1)
+      .WillOnce(testing::Return(false));
   throttle()->WillStartUsingNetwork(&defer);
   EXPECT_TRUE(defer);
 
   // Must be tested last because this sets |state_| of |resource_throttle_|
   // to LOCAL_BYPASS.
   defer = false;
-  params()->MockAreDataReductionProxiesBypassed(true);
-  params()->MockIsBypassedByDataReductionProxyLocalRules(true);
+  EXPECT_CALL(
+      *config(), AreDataReductionProxiesBypassed(
+          testing::_, testing::_, testing::_))
+      .Times(1)
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(
+      *config(), IsBypassedByDataReductionProxyLocalRules(
+          testing::_, testing::_))
+      .Times(1)
+      .WillOnce(testing::Return(true));
   throttle()->WillStartUsingNetwork(&defer);
   EXPECT_FALSE(defer);
 }

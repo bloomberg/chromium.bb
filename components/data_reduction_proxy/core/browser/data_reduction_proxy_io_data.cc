@@ -42,12 +42,13 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   DCHECK(ui_task_runner_.get());
   scoped_ptr<DataReductionProxyParams> params(
       new DataReductionProxyParams(param_flags));
+  params->EnableQuic(enable_quic);
   event_store_.reset(new DataReductionProxyEventStore(ui_task_runner));
   configurator_.reset(new DataReductionProxyConfigurator(
       io_task_runner, net_log, event_store_.get()));
   config_.reset(new DataReductionProxyConfig(
       io_task_runner_, ui_task_runner_, net_log, params.Pass(),
-      configurator_.get(), event_store_.get(), enable_quic));
+      configurator_.get(), event_store_.get()));
   request_options_.reset(new DataReductionProxyRequestOptions(
       client_, config_.get(), io_task_runner_));
   request_options_->Init();

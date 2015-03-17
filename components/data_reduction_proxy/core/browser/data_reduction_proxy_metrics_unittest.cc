@@ -681,7 +681,8 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest,
 
   net::ProxyConfig data_reduction_proxy_config;
   data_reduction_proxy_config.proxy_rules().ParseFromString(
-      "http=" + config->Origin().host_port_pair().ToString() + ",direct://");
+      "http=" + config->test_params()->origin().host_port_pair().ToString() +
+          ",direct://");
   data_reduction_proxy_config.proxy_rules().bypass_rules.ParseFromString(
       "localbypass.com");
 
@@ -695,7 +696,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest,
   };
   const TestCase test_cases[] = {
     { GURL("http://foo.com"),
-      config->Origin(),
+      config->test_params()->origin(),
       base::TimeDelta(),
       net::LOAD_NORMAL,
       "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n",

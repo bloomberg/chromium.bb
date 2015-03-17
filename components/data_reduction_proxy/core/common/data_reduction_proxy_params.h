@@ -7,13 +7,8 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
-#include "base/gtest_prod_util.h"
-#include "base/memory/scoped_ptr.h"
-#include "net/base/host_port_pair.h"
-#include "net/proxy/proxy_config.h"
-#include "net/proxy/proxy_retry_info.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "net/proxy/proxy_server.h"
 #include "url/gurl.h"
 
@@ -22,8 +17,8 @@ class TimeDelta;
 }
 
 namespace net {
+class HostPortPair;
 class ProxyServer;
-class URLRequest;
 }
 
 namespace data_reduction_proxy {
@@ -46,7 +41,7 @@ struct DataReductionProxyTypeInfo {
 // constants otherwise. The DataReductionProxySettings class and others use this
 // class to determine the necessary DNS names to configure use of the Data
 // Reduction Proxy.
-class DataReductionProxyParams {
+class DataReductionProxyParams : public DataReductionProxyConfigValues {
  public:
   // Flags used during construction that specify if the data reduction proxy
   // is allowed to be used, if the fallback proxy is allowed to be used, if
@@ -60,8 +55,6 @@ class DataReductionProxyParams {
       kFallbackAllowed | kAlternativeAllowed | kAlternativeFallbackAllowed;
   static const unsigned int kPromoAllowed = (1 << 4);
   static const unsigned int kHoldback = (1 << 5);
-
-  typedef std::vector<net::ProxyServer> DataReductionProxyList;
 
   // Returns true if this client is part of field trial to use an alternative
   // configuration for the data reduction proxy.
@@ -133,166 +126,41 @@ class DataReductionProxyParams {
   // fallback proxy for HTTP traffic, and an SSL proxy.
   explicit DataReductionProxyParams(int flags);
 
-  virtual ~DataReductionProxyParams();
-
-  // Returns true if the specified |host_port_pair| matches a data reduction
-  // proxy. If true, |proxy_info.proxy_servers.first| will contain the name of
-  // the proxy that matches. |proxy_info.proxy_servers.second| will contain the
-  // name of the data reduction proxy server that would be used if
-  // |proxy_info.proxy_server.first| is bypassed, if one exists. In addition,
-  // |proxy_info| will note if the proxy was a fallback, an alternative, or a
-  // proxy for ssl; these are not mutually exclusive. |proxy_info| can be NULL
-  // if the caller isn't interested in its values. Virtual for testing.
-  virtual bool IsDataReductionProxy(
-      const net::HostPortPair& host_port_pair,
-      DataReductionProxyTypeInfo* proxy_info) const;
-
- protected:
-  // Returns true if this request would be bypassed by the data request proxy
-  // based on applying the |data_reduction_proxy_config| param rules to the
-  // request URL. Virutal for testing.
-  virtual bool IsBypassedByDataReductionProxyLocalRules(
-      const net::URLRequest& request,
-      const net::ProxyConfig& data_reduction_proxy_config) const;
-
-  // Checks if all configured data reduction proxies are in the retry map.
-  // Returns true if the request is bypassed by all configured data reduction
-  // proxies that apply to the request scheme. If all possible data reduction
-  // proxies are bypassed, returns the minimum retry delay of the bypassed data
-  // reduction proxies in min_retry_delay (if not NULL). If there are no
-  // bypassed data reduction proxies for the request scheme, returns false and
-  // does not assign min_retry_delay. Virtual for testing.
-  virtual bool AreDataReductionProxiesBypassed(
-      const net::URLRequest& request,
-      const net::ProxyConfig& data_reduction_proxy_config,
-      base::TimeDelta* min_retry_delay) const;
-
- private:
-  // TODO(jeremyim) Remove these temporary friends.
-  friend class DataReductionProxyConfig;
-  friend class DataReductionProxyParamsTest;
-  friend class TestDataReductionProxyConfig;
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
-                           TestGetDataReductionProxies);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyParamsTest,
-                           AreProxiesBypassed);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyParamsTest,
-                           AreProxiesBypassedRetryDelay);
+  ~DataReductionProxyParams() override;
 
   // If true, uses QUIC instead of SPDY to connect to proxies that use TLS.
   void EnableQuic(bool enable);
 
-  // Returns true if a data reduction proxy was used for the given |request|.
-  // If true, |proxy_info.proxy_servers.first| will contain the name of the
-  // proxy that was used. |proxy_info.proxy_servers.second| will contain the
-  // name of the data reduction proxy server that would be used if
-  // |proxy_info.proxy_server.first| is bypassed, if one exists. In addition,
-  // |proxy_info| will note if the proxy used was a fallback, an alternative,
-  // or a proxy for ssl; these are not mutually exclusive. |proxy_info| can be
-  // NULL if the caller isn't interested in its values.
-  virtual bool WasDataReductionProxyUsed(
-      const net::URLRequest* request,
-      DataReductionProxyTypeInfo* proxy_info) const;
+  // Overrides of |DataReductionProxyConfigValues|
+  bool UsingHTTPTunnel(const net::HostPortPair& proxy_server) const override;
 
-  // Checks if all configured data reduction proxies are in the retry map.
-  // Returns true if the request is bypassed by all configured data reduction
-  // proxies that apply to the request scheme. If all possible data reduction
-  // proxies are bypassed, returns the minimum retry delay of the bypassed data
-  // reduction proxies in min_retry_delay (if not NULL). If there are no
-  // bypassed data reduction proxies for the request scheme, returns false and
-  // does not assign min_retry_delay.
-  bool AreProxiesBypassed(const net::ProxyRetryInfoMap& retry_map,
-                          const net::ProxyConfig::ProxyRules& proxy_rules,
-                          bool is_https,
-                          base::TimeDelta* min_retry_delay) const;
+  bool IsDataReductionProxy(
+      const net::HostPortPair& host_port_pair,
+      DataReductionProxyTypeInfo* proxy_info) const override;
 
-  // Returns true if the proxy is on the retry map and the retry delay is not
-  // expired. If proxy is bypassed, retry_delay (if not NULL) returns the delay
-  // of proxy_server. If proxy is not bypassed, retry_delay is not assigned.
-  bool IsProxyBypassed(const net::ProxyRetryInfoMap& retry_map,
-                       const net::ProxyServer& proxy_server,
-                       base::TimeDelta* retry_delay) const;
+  const net::ProxyServer& origin() const override;
 
-  // Returns the data reduction proxy primary origin.
-  const net::ProxyServer& origin() const {
-    return origin_;
-  }
+  const net::ProxyServer& fallback_origin() const override;
 
-  // Returns the data reduction proxy fallback origin.
-  const net::ProxyServer& fallback_origin() const {
-    return fallback_origin_;
-  }
+  const net::ProxyServer& ssl_origin() const override;
 
-  // Returns the data reduction proxy ssl origin that is used with the
-  // alternative proxy configuration.
-  const net::ProxyServer& ssl_origin() const {
-    return ssl_origin_;
-  }
+  const net::ProxyServer& alt_origin() const override;
 
-  // Returns the alternative data reduction proxy primary origin.
-  const net::ProxyServer& alt_origin() const {
-    return alt_origin_;
-  }
+  const net::ProxyServer& alt_fallback_origin() const override;
 
-  // Returns the alternative data reduction proxy fallback origin.
-  const net::ProxyServer& alt_fallback_origin() const {
-    return alt_fallback_origin_;
-  }
+  const GURL& secure_proxy_check_url() const override;
 
-  // Returns the URL to check to decide if the secure proxy origin should be
-  // used.
-  const GURL& secure_proxy_check_url() const {
-    return secure_proxy_check_url_;
-  }
+  bool allowed() const override;
 
-  // Returns the URL to fetch to warm the data reduction proxy connection.
-  const GURL& warmup_url() const {
-    return warmup_url_;
-  }
+  bool fallback_allowed() const override;
 
-  // Returns true if the data reduction proxy configuration may be used.
-  bool allowed() const {
-    return allowed_;
-  }
+  bool alternative_allowed() const override;
 
-  // Returns true if the fallback proxy may be used.
-  bool fallback_allowed() const {
-    return fallback_allowed_;
-  }
+  bool alternative_fallback_allowed() const override;
 
-  // Returns true if the alternative data reduction proxy configuration may be
-  // used.
-  bool alternative_allowed() const {
-    return alt_allowed_;
-  }
+  bool promo_allowed() const override;
 
-  // Returns true if the alternative fallback data reduction proxy
-  // configuration may be used.
-  bool alternative_fallback_allowed() const {
-    return alt_fallback_allowed_;
-  }
-
-  // Returns true if the data reduction proxy promo may be shown.
-  // This is idependent of whether the data reduction proxy is allowed.
-  // TODO(bengr): maybe tie to whether proxy is allowed.
-  bool promo_allowed() const {
-    return promo_allowed_;
-  }
-
-  // Returns true if the data reduction proxy should not actually use the
-  // proxy if enabled.
-  bool holdback() const {
-    return holdback_;
-  }
-
-  // Given |allowed_|, |fallback_allowed_|, and |alt_allowed_|, returns the
-  // list of data reduction proxies that may be used.
-  DataReductionProxyList GetAllowedProxies() const;
-
-  // Returns true if any proxy origins are set on the command line.
-  bool is_configured_on_command_line() const {
-    return configured_on_command_line_;
-  }
+  bool holdback() const override;
 
  protected:
   // Test constructor that optionally won't call Init();
@@ -323,21 +191,10 @@ class DataReductionProxyParams {
   virtual std::string GetDefaultSecureProxyCheckURL() const;
   virtual std::string GetDefaultWarmupURL() const;
 
- protected:
   net::ProxyServer origin_;
   net::ProxyServer fallback_origin_;
 
  private:
-  // Checks if the primary and fallback data reduction proxies are in the retry
-  // map. Returns true if the request is bypassed by both data reduction
-  // proxies and returns the shortest bypass delay in delay_seconds (if not
-  // NULL). If the fallback proxy is not valid, returns true if primary proxy
-  // was bypassed and returns its bypass delay.
-  bool ArePrimaryAndFallbackBypassed(const net::ProxyRetryInfoMap& retry_map,
-                                     const net::ProxyServer& primary,
-                                     const net::ProxyServer& fallback,
-                                     base::TimeDelta* min_retry_delay) const;
-
   net::ProxyServer ssl_origin_;
   net::ProxyServer alt_origin_;
   net::ProxyServer alt_fallback_origin_;

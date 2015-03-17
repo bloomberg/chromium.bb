@@ -94,10 +94,10 @@ class CountingURLRequestInterceptor : public net::URLRequestInterceptor {
 class TestURLRequestContextWithDataReductionProxy
     : public net::TestURLRequestContext {
  public:
-  TestURLRequestContextWithDataReductionProxy(DataReductionProxyConfig* config,
-                                              net::NetworkDelegate* delegate)
+  TestURLRequestContextWithDataReductionProxy(
+      TestDataReductionProxyConfig* config, net::NetworkDelegate* delegate)
       : net::TestURLRequestContext(true) {
-    std::string proxy = config->Origin().ToURI();
+    std::string proxy = config->test_params()->origin().ToURI();
     context_storage_.set_proxy_service(net::ProxyService::CreateFixed(proxy));
     set_network_delegate(delegate);
   }
@@ -210,7 +210,7 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
     test_context_->config()->test_params()->set_origin(
         net::ProxyServer::FromURI(spec, net::ProxyServer::SCHEME_HTTP));
     std::string proxy_name =
-        test_context_->config()->Origin().ToURI();
+        test_context_->config()->test_params()->origin().ToURI();
     proxy_service_.reset(
         net::ProxyService::CreateFixedFromPacResult(
             "PROXY " + proxy_name + "; DIRECT"));
@@ -324,7 +324,7 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
     return &mock_socket_factory_;
   }
 
-  DataReductionProxyConfig* config() const {
+  TestDataReductionProxyConfig* config() const {
     return drp_test_context_->config();
   }
 
@@ -355,7 +355,7 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, ResponseWithoutRetry) {
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
   EXPECT_EQ(200, request->GetResponseCode());
   EXPECT_EQ(kBody, delegate().data_received());
-  EXPECT_EQ(config()->Origin().host_port_pair().ToString(),
+  EXPECT_EQ(config()->test_params()->origin().host_port_pair().ToString(),
             request->proxy_server().ToString());
 }
 
@@ -389,7 +389,7 @@ TEST_F(DataReductionProxyInterceptorEndToEndTest, RedirectWithoutRetry) {
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
   EXPECT_EQ(200, request->GetResponseCode());
   EXPECT_EQ(kBody, delegate().data_received());
-  EXPECT_EQ(config()->Origin().host_port_pair().ToString(),
+  EXPECT_EQ(config()->test_params()->origin().host_port_pair().ToString(),
             request->proxy_server().ToString());
   // The redirect should have been processed and followed normally.
   EXPECT_EQ(1, delegate().received_redirect_count());

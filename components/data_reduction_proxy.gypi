@@ -137,6 +137,7 @@
       'sources': [
         # Note: sources list duplicated in GN build.
         'data_reduction_proxy/core/common/data_reduction_proxy_bypass_type_list.h',
+        'data_reduction_proxy/core/common/data_reduction_proxy_config_values.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_event_store.cc',
         'data_reduction_proxy/core/common/data_reduction_proxy_event_store.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_headers.cc',

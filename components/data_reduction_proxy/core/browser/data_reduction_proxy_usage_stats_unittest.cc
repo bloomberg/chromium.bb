@@ -641,7 +641,7 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     return drp_test_context_->settings();
   }
 
-  DataReductionProxyConfig* config() const {
+  TestDataReductionProxyConfig* config() const {
     return drp_test_context_->config();
   }
 
@@ -905,7 +905,7 @@ TEST_F(DataReductionProxyUsageStatsEndToEndTest, BypassedBytesNetErrorOther) {
   // Make the data reduction proxy host fail to resolve.
   scoped_ptr<net::MockHostResolver> host_resolver(new net::MockHostResolver());
   host_resolver->rules()->AddSimulatedFailure(
-      config()->Origin().host_port_pair().host());
+      config()->test_params()->origin().host_port_pair().host());
   set_host_resolver(host_resolver.get());
   InitializeContext();
 

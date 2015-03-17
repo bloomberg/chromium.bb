@@ -31,9 +31,9 @@ class URLRequestStatus;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyConfigValues;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventStore;
-class DataReductionProxyParams;
 class DataReductionProxyService;
 struct DataReductionProxyTypeInfo;
 
@@ -76,10 +76,9 @@ class DataReductionProxyConfig
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       net::NetLog* net_log,
-      scoped_ptr<DataReductionProxyParams> params,
+      scoped_ptr<DataReductionProxyConfigValues> config_values,
       DataReductionProxyConfigurator* configurator,
-      DataReductionProxyEventStore* event_store,
-      bool enable_quic);
+      DataReductionProxyEventStore* event_store);
   ~DataReductionProxyConfig() override;
 
   void SetDataReductionProxyService(
@@ -118,7 +117,8 @@ class DataReductionProxyConfig
   // Returns true if this request would be bypassed by the Data Reduction Proxy
   // based on applying the |data_reduction_proxy_config| param rules to the
   // request URL.
-  bool IsBypassedByDataReductionProxyLocalRules(
+  // Virtualized for mocking.
+  virtual bool IsBypassedByDataReductionProxyLocalRules(
       const net::URLRequest& request,
       const net::ProxyConfig& data_reduction_proxy_config) const;
 
@@ -129,7 +129,8 @@ class DataReductionProxyConfig
   // reduction proxies in min_retry_delay (if not NULL). If there are no
   // bypassed data reduction proxies for the request scheme, returns false and
   // does not assign min_retry_delay.
-  bool AreDataReductionProxiesBypassed(
+  // Virtualized for mocking.
+  virtual bool AreDataReductionProxiesBypassed(
       const net::URLRequest& request,
       const net::ProxyConfig& data_reduction_proxy_config,
       base::TimeDelta* min_retry_delay) const;
@@ -143,24 +144,21 @@ class DataReductionProxyConfig
 
   // Check whether the |proxy_rules| contain any of the data reduction proxies.
   virtual bool ContainsDataReductionProxy(
-      const net::ProxyConfig::ProxyRules& proxy_rules);
+      const net::ProxyConfig::ProxyRules& proxy_rules) const;
 
   // Returns true if the proxy was using the HTTP tunnel for a HTTPS origin.
   bool UsingHTTPTunnel(const net::HostPortPair& proxy_server) const;
 
-  // Returns the Data Reduction Proxy primary origin.
-  const net::ProxyServer& Origin();
-
   // Returns true if the Data Reduction Proxy configuration may be used.
-  bool allowed();
+  bool allowed() const;
 
   // Returns true if the alternative Data Reduction Proxy configuration may be
   // used.
-  bool alternative_allowed();
+  bool alternative_allowed() const;
 
   // Returns true if the Data Reduction Proxy promo may be shown. This is not
   // tied to whether the Data Reduction Proxy is enabled.
-  bool promo_allowed();
+  bool promo_allowed() const;
 
  protected:
   // Sets the proxy configs, enabling or disabling the proxy according to
@@ -196,6 +194,10 @@ class DataReductionProxyConfig
                            TestOnIPAddressChanged);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            TestSetProxyConfigsHoldback);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
+                           AreProxiesBypassed);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
+                           AreProxiesBypassedRetryDelay);
 
   // NetworkChangeNotifier::IPAddressObserver:
   void OnIPAddressChanged() override;
@@ -227,6 +229,19 @@ class DataReductionProxyConfig
   // Data Reduction Proxy has been disabled.
   bool DisableIfVPN();
 
+  // Checks if all configured data reduction proxies are in the retry map.
+  // Returns true if the request is bypassed by all configured data reduction
+  // proxies that apply to the request scheme. If all possible data reduction
+  // proxies are bypassed, returns the minimum retry delay of the bypassed data
+  // reduction proxies in min_retry_delay (if not NULL). If there are no
+  // bypassed data reduction proxies for the request scheme, returns false and
+  // does not assign min_retry_delay.
+  bool AreProxiesBypassed(
+      const net::ProxyRetryInfoMap& retry_map,
+      const net::ProxyConfig::ProxyRules& proxy_rules,
+      bool is_https,
+      base::TimeDelta* min_retry_delay) const;
+
   bool restricted_by_carrier_;
   bool disabled_on_vpn_;
   bool unreachable_;
@@ -234,7 +249,7 @@ class DataReductionProxyConfig
   bool alternative_enabled_by_user_;
 
   // Contains the configuration data being used.
-  scoped_ptr<DataReductionProxyParams> params_;
+  scoped_ptr<DataReductionProxyConfigValues> config_values_;
 
   // |io_task_runner_| should be the task runner for running operations on the
   // IO thread.

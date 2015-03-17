@@ -12,11 +12,10 @@
 #include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_store.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "net/base/load_flags.h"
 #include "net/proxy/proxy_server.h"
-#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -51,16 +50,15 @@ DataReductionProxyConfig::DataReductionProxyConfig(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     net::NetLog* net_log,
-    scoped_ptr<DataReductionProxyParams> params,
+    scoped_ptr<DataReductionProxyConfigValues> config_values,
     DataReductionProxyConfigurator* configurator,
-    DataReductionProxyEventStore* event_store,
-    bool enable_quic)
+    DataReductionProxyEventStore* event_store)
     : restricted_by_carrier_(false),
       disabled_on_vpn_(false),
       unreachable_(false),
       enabled_by_user_(false),
       alternative_enabled_by_user_(false),
-      params_(params.release()),
+      config_values_(config_values.Pass()),
       io_task_runner_(io_task_runner),
       ui_task_runner_(ui_task_runner),
       net_log_(net_log),
@@ -70,7 +68,6 @@ DataReductionProxyConfig::DataReductionProxyConfig(
   DCHECK(ui_task_runner);
   DCHECK(configurator);
   DCHECK(event_store);
-  params_->EnableQuic(enable_quic);
   InitOnIOThread();
 }
 
@@ -96,39 +93,118 @@ void DataReductionProxyConfig::SetProxyPrefs(bool enabled,
 bool DataReductionProxyConfig::WasDataReductionProxyUsed(
     const net::URLRequest* request,
     DataReductionProxyTypeInfo* proxy_info) const {
-  return params_->WasDataReductionProxyUsed(request, proxy_info);
+  DCHECK(request);
+  return IsDataReductionProxy(request->proxy_server(), proxy_info);
 }
 
 bool DataReductionProxyConfig::IsDataReductionProxy(
     const net::HostPortPair& host_port_pair,
     DataReductionProxyTypeInfo* proxy_info) const {
-  return params_->IsDataReductionProxy(host_port_pair, proxy_info);
+  return config_values_->IsDataReductionProxy(host_port_pair, proxy_info);
 }
 
 bool DataReductionProxyConfig::IsBypassedByDataReductionProxyLocalRules(
     const net::URLRequest& request,
     const net::ProxyConfig& data_reduction_proxy_config) const {
-  return params_->IsBypassedByDataReductionProxyLocalRules(
-      request, data_reduction_proxy_config);
+  DCHECK(request.context());
+  DCHECK(request.context()->proxy_service());
+  net::ProxyInfo result;
+  data_reduction_proxy_config.proxy_rules().Apply(
+      request.url(), &result);
+  if (!result.proxy_server().is_valid())
+    return true;
+  if (result.proxy_server().is_direct())
+    return true;
+  return !IsDataReductionProxy(result.proxy_server().host_port_pair(), NULL);
 }
 
 bool DataReductionProxyConfig::AreDataReductionProxiesBypassed(
     const net::URLRequest& request,
     const net::ProxyConfig& data_reduction_proxy_config,
     base::TimeDelta* min_retry_delay) const {
-  return params_->AreDataReductionProxiesBypassed(
-      request, data_reduction_proxy_config, min_retry_delay);
+  if (request.context() != NULL &&
+      request.context()->proxy_service() != NULL) {
+    return AreProxiesBypassed(
+        request.context()->proxy_service()->proxy_retry_info(),
+        data_reduction_proxy_config.proxy_rules(),
+        request.url().SchemeIs(url::kHttpsScheme),
+        min_retry_delay);
+  }
+
+  return false;
+}
+
+bool DataReductionProxyConfig::AreProxiesBypassed(
+    const net::ProxyRetryInfoMap& retry_map,
+    const net::ProxyConfig::ProxyRules& proxy_rules,
+    bool is_https,
+    base::TimeDelta* min_retry_delay) const {
+  // Data reduction proxy config is TYPE_PROXY_PER_SCHEME.
+  if (proxy_rules.type != net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME)
+    return false;
+
+  const net::ProxyList* proxies = is_https ?
+      proxy_rules.MapUrlSchemeToProxyList(url::kHttpsScheme) :
+      proxy_rules.MapUrlSchemeToProxyList(url::kHttpScheme);
+
+  if (!proxies)
+    return false;
+
+  scoped_ptr<base::ListValue> proxy_list =
+      scoped_ptr<base::ListValue>(proxies->ToValue());
+
+  base::TimeDelta min_delay = base::TimeDelta::Max();
+  base::TimeDelta delay;
+  bool bypassed = false;
+  std::string proxy;
+  net::HostPortPair host_port_pair;
+
+  for (size_t i = 0; i < proxy_list->GetSize(); ++i) {
+    proxy_list->GetString(i, &proxy);
+    host_port_pair =  net::HostPortPair::FromString(std::string());
+    net::ProxyServer proxy_server =
+        net::ProxyServer::FromURI(proxy, net::ProxyServer::SCHEME_HTTP);
+    if (proxy_server.is_valid() && !proxy_server.is_direct())
+      host_port_pair = proxy_server.host_port_pair();
+
+    if (IsDataReductionProxy(host_port_pair, NULL)) {
+      if (!IsProxyBypassed(
+          retry_map,
+          net::ProxyServer::FromURI(proxy, net::ProxyServer::SCHEME_HTTP),
+          &delay))
+        return false;
+      if (delay < min_delay)
+        min_delay = delay;
+      bypassed = true;
+    }
+  }
+
+  if (min_retry_delay && bypassed)
+    *min_retry_delay = min_delay;
+
+  return bypassed;
 }
 
 bool DataReductionProxyConfig::IsProxyBypassed(
     const net::ProxyRetryInfoMap& retry_map,
     const net::ProxyServer& proxy_server,
     base::TimeDelta* retry_delay) const {
-  return params_->IsProxyBypassed(retry_map, proxy_server, retry_delay);
+  net::ProxyRetryInfoMap::const_iterator found =
+      retry_map.find(proxy_server.ToURI());
+
+  if (found == retry_map.end() ||
+      found->second.bad_until < base::TimeTicks::Now()) {
+    return false;
+  }
+
+  if (retry_delay)
+     *retry_delay = found->second.current_delay;
+
+  return true;
 }
 
 bool DataReductionProxyConfig::ContainsDataReductionProxy(
-    const net::ProxyConfig::ProxyRules& proxy_rules) {
+    const net::ProxyConfig::ProxyRules& proxy_rules) const {
   // Data Reduction Proxy configurations are always TYPE_PROXY_PER_SCHEME.
   if (proxy_rules.type != net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME)
     return false;
@@ -137,8 +213,7 @@ bool DataReductionProxyConfig::ContainsDataReductionProxy(
       proxy_rules.MapUrlSchemeToProxyList("https");
   if (https_proxy_list && !https_proxy_list->IsEmpty() &&
       // Sufficient to check only the first proxy.
-      params_->IsDataReductionProxy(https_proxy_list->Get().host_port_pair(),
-                                    NULL)) {
+      IsDataReductionProxy(https_proxy_list->Get().host_port_pair(), NULL)) {
     return true;
   }
 
@@ -146,8 +221,7 @@ bool DataReductionProxyConfig::ContainsDataReductionProxy(
       proxy_rules.MapUrlSchemeToProxyList("http");
   if (http_proxy_list && !http_proxy_list->IsEmpty() &&
       // Sufficient to check only the first proxy.
-      params_->IsDataReductionProxy(http_proxy_list->Get().host_port_pair(),
-                                    NULL)) {
+      IsDataReductionProxy(http_proxy_list->Get().host_port_pair(), NULL)) {
     return true;
   }
 
@@ -156,29 +230,24 @@ bool DataReductionProxyConfig::ContainsDataReductionProxy(
 
 bool DataReductionProxyConfig::UsingHTTPTunnel(
     const net::HostPortPair& proxy_server) const {
-  return params_->ssl_origin().is_valid() &&
-         params_->ssl_origin().host_port_pair().Equals(proxy_server);
-}
-
-const net::ProxyServer& DataReductionProxyConfig::Origin() {
-  return params_->origin();
+  return config_values_->UsingHTTPTunnel(proxy_server);
 }
 
 // Returns true if the Data Reduction Proxy configuration may be used.
-bool DataReductionProxyConfig::allowed() {
-  return params_->allowed();
+bool DataReductionProxyConfig::allowed() const {
+  return config_values_->allowed();
 }
 
 // Returns true if the alternative Data Reduction Proxy configuration may be
 // used.
-bool DataReductionProxyConfig::alternative_allowed() {
-  return params_->alternative_allowed();
+bool DataReductionProxyConfig::alternative_allowed() const {
+  return config_values_->alternative_allowed();
 }
 
 // Returns true if the Data Reduction Proxy promo may be shown. This is not
 // tied to whether the Data Reduction Proxy is enabled.
-bool DataReductionProxyConfig::promo_allowed() {
-  return params_->promo_allowed();
+bool DataReductionProxyConfig::promo_allowed() const {
+  return config_values_->promo_allowed();
 }
 
 void DataReductionProxyConfig::SetProxyConfigOnIOThread(
@@ -190,7 +259,8 @@ void DataReductionProxyConfig::SetProxyConfigOnIOThread(
 
   // Check if the proxy has been restricted explicitly by the carrier.
   if (enabled &&
-      !(alternative_enabled && !params_->alternative_fallback_allowed())) {
+      !(alternative_enabled &&
+        !config_values_->alternative_fallback_allowed())) {
     ui_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DataReductionProxyConfig::StartSecureProxyCheck,
                               base::Unretained(this)));
@@ -206,16 +276,17 @@ void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
   LogProxyState(enabled, restricted, at_startup);
   // The alternative is only configured if the standard configuration is
   // is enabled.
-  if (enabled & !params_->holdback()) {
+  if (enabled & !config_values_->holdback()) {
     if (alternative_enabled) {
       configurator_->Enable(restricted,
-                            !params_->alternative_fallback_allowed(),
-                            params_->alt_origin().ToURI(), std::string(),
-                            params_->ssl_origin().ToURI());
+                            !config_values_->alternative_fallback_allowed(),
+                            config_values_->alt_origin().ToURI(), std::string(),
+                            config_values_->ssl_origin().ToURI());
     } else {
-      configurator_->Enable(restricted, !params_->fallback_allowed(),
-                            params_->origin().ToURI(),
-                            params_->fallback_origin().ToURI(), std::string());
+      configurator_->Enable(restricted, !config_values_->fallback_allowed(),
+                            config_values_->origin().ToURI(),
+                            config_values_->fallback_origin().ToURI(),
+                            std::string());
     }
   } else {
     configurator_->Disable();
@@ -306,12 +377,12 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponseOnIOThread(
 void DataReductionProxyConfig::OnIPAddressChanged() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (enabled_by_user_) {
-    DCHECK(params_->allowed());
+    DCHECK(config_values_->allowed());
     RecordNetworkChangeEvent(IP_CHANGED);
     if (DisableIfVPN())
       return;
     if (alternative_enabled_by_user_ &&
-        !params_->alternative_fallback_allowed()) {
+        !config_values_->alternative_fallback_allowed()) {
       return;
     }
 
@@ -329,7 +400,7 @@ void DataReductionProxyConfig::InitOnIOThread() {
     return;
   }
 
-  if (!params_->allowed())
+  if (!config_values_->allowed())
     return;
 
   AddDefaultProxyBypassRules();
@@ -374,12 +445,12 @@ void DataReductionProxyConfig::StartSecureProxyCheck() {
       net_log_, net::NetLog::SOURCE_DATA_REDUCTION_PROXY);
   if (data_reduction_proxy_service_) {
     if (event_store_) {
-      event_store_->BeginSecureProxyCheck(bound_net_log_,
-                                          params_->secure_proxy_check_url());
+      event_store_->BeginSecureProxyCheck(
+          bound_net_log_, config_values_->secure_proxy_check_url());
     }
 
     data_reduction_proxy_service_->SecureProxyCheck(
-        params_->secure_proxy_check_url(),
+        config_values_->secure_proxy_check_url(),
         base::Bind(&DataReductionProxyConfig::HandleSecureProxyCheckResponse,
                    base::Unretained(this)));
   }
