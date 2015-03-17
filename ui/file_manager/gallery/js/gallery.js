@@ -172,9 +172,6 @@ function Gallery(volumeManager) {
   this.slideMode_.addEventListener('image-displayed', function() {
     cr.dispatchSimpleEvent(this, 'image-displayed');
   }.bind(this));
-  this.slideMode_.addEventListener('image-saved', function() {
-    cr.dispatchSimpleEvent(this, 'image-saved');
-  }.bind(this));
 
   this.deleteButton_ = this.initToolbarButton_('delete', 'GALLERY_DELETE');
   this.deleteButton_.addEventListener('click', this.delete_.bind(this));

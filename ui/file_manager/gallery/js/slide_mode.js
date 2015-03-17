@@ -1266,11 +1266,7 @@ SlideMode.prototype.saveCurrentImage_ = function(item, callback) {
       this.imageView_.getCanvas(),
       this.shouldOverwriteOriginal_());
 
-  savedPromise.catch(function(error) {
-    // TODO(hirono): Implement write error handling.
-    // Until then pretend that the save succeeded.
-    console.error(error.stack || error);
-  }).then(function() {
+  savedPromise.then(function() {
     this.showSpinner_(false);
     this.flashSavedLabel_();
 
@@ -1285,10 +1281,14 @@ SlideMode.prototype.saveCurrentImage_ = function(item, callback) {
       ImageUtil.metrics.recordUserAction(ImageUtil.getMetricName('Edit'));
 
     callback();
-    cr.dispatchSimpleEvent(this, 'image-saved');
   }.bind(this)).catch(function(error) {
     console.error(error.stack || error);
-  });
+
+    this.showSpinner_(false);
+    this.errorBanner_.show('GALLERY_SAVE_FAILED');
+
+    callback();
+  }.bind(this));
 };
 
 /**

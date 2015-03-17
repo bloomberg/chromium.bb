@@ -306,9 +306,11 @@ Gallery.Item.prototype.saveToFile = function(
     }).then(onSuccess.bind(null, fileEntry))
     .catch(function(error) {
       onError(error);
-      // Disable all callbacks on the first error.
-      fileWriter.onerror = null;
-      fileWriter.onwriteend = null;
+      if (fileWriter) {
+        // Disable all callbacks on the first error.
+        fileWriter.onerror = null;
+        fileWriter.onwriteend = null;
+      }
     });
   }.bind(this);
 
