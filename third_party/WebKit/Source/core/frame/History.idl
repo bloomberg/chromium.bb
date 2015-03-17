@@ -27,7 +27,7 @@
     WillBeGarbageCollected,
 ] interface History {
     readonly attribute unsigned long length;
-    [Custom=Getter] readonly attribute SerializedScriptValue state;
+    [CachedAttribute=stateChanged] readonly attribute SerializedScriptValue state;
 
     [CallWith=ExecutionContext] void back();
     [CallWith=ExecutionContext] void forward();

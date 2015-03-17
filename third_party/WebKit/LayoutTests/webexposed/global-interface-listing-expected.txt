@@ -2794,6 +2794,7 @@ interface Headers
     method values
 interface History
     getter length
+    getter state
     method back
     method constructor
     method forward

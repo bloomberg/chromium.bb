@@ -42,24 +42,6 @@
 
 namespace blink {
 
-void V8History::stateAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    History* history = V8History::toImpl(info.Holder());
-
-    v8::Handle<v8::Value> value = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::state(info.GetIsolate()));
-
-    if (!value.IsEmpty() && !history->stateChanged()) {
-        v8SetReturnValue(info, value);
-        return;
-    }
-
-    RefPtr<SerializedScriptValue> serialized = history->state();
-    value = serialized ? serialized->deserialize(info.GetIsolate()) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::state(info.GetIsolate()), value);
-
-    v8SetReturnValue(info, value);
-}
-
 void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "pushState", "History", info.Holder(), info.GetIsolate());
