@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/discardable_memory.h"
 #include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
@@ -30,23 +31,21 @@ class ChildDiscardableSharedMemoryManagerBrowserTest
 
   static void AllocateLockedMemory(
       size_t size,
-      scoped_ptr<base::DiscardableMemoryShmemChunk>* memory) {
+      scoped_ptr<base::DiscardableMemory>* memory) {
     *memory = ChildThreadImpl::current()
                   ->discardable_shared_memory_manager()
                   ->AllocateLockedDiscardableMemory(size);
   }
 
-  static void LockMemory(base::DiscardableMemoryShmemChunk* memory,
-                         bool* result) {
+  static void LockMemory(base::DiscardableMemory* memory, bool* result) {
     *result = memory->Lock();
   }
 
-  static void UnlockMemory(base::DiscardableMemoryShmemChunk* memory) {
+  static void UnlockMemory(base::DiscardableMemory* memory) {
     memory->Unlock();
   }
 
-  static void FreeMemory(scoped_ptr<base::DiscardableMemoryShmemChunk> memory) {
-  }
+  static void FreeMemory(scoped_ptr<base::DiscardableMemory> memory) {}
 };
 
 IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
@@ -55,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  scoped_ptr<base::DiscardableMemoryShmemChunk> memory;
+  scoped_ptr<base::DiscardableMemory> memory;
   PostTaskToInProcessRendererAndWait(base::Bind(
       &ChildDiscardableSharedMemoryManagerBrowserTest::AllocateLockedMemory,
       kSize, &memory));
@@ -91,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  scoped_ptr<base::DiscardableMemoryShmemChunk> instances[kNumberOfInstances];
+  scoped_ptr<base::DiscardableMemory> instances[kNumberOfInstances];
   for (auto& memory : instances) {
     PostTaskToInProcessRendererAndWait(base::Bind(
         &ChildDiscardableSharedMemoryManagerBrowserTest::AllocateLockedMemory,
@@ -117,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
 
   NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
-  scoped_ptr<base::DiscardableMemoryShmemChunk> memory;
+  scoped_ptr<base::DiscardableMemory> memory;
   PostTaskToInProcessRendererAndWait(base::Bind(
       &ChildDiscardableSharedMemoryManagerBrowserTest::AllocateLockedMemory,
       kSize, &memory));

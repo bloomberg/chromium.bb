@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/memory/discardable_memory_shmem_allocator.h"
+#include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
@@ -21,12 +21,11 @@
 namespace content {
 typedef int32_t DiscardableSharedMemoryId;
 
-// Implementation of DiscardableMemoryShmemAllocator that allocates and
-// manages discardable memory segments for the browser process and child
-// processes. This class is thread-safe and instances can safely be used
-// on any thread.
+// Implementation of DiscardableMemoryAllocator that allocates and manages
+// discardable memory segments for the browser process and child processes.
+// This class is thread-safe and instances can safely be used on any thread.
 class CONTENT_EXPORT HostDiscardableSharedMemoryManager
-    : public base::DiscardableMemoryShmemAllocator {
+    : public base::DiscardableMemoryAllocator {
  public:
   HostDiscardableSharedMemoryManager();
   ~HostDiscardableSharedMemoryManager() override;
@@ -34,8 +33,8 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
   // Returns a singleton instance.
   static HostDiscardableSharedMemoryManager* current();
 
-  // Overridden from base::DiscardableMemoryShmemAllocator:
-  scoped_ptr<base::DiscardableMemoryShmemChunk> AllocateLockedDiscardableMemory(
+  // Overridden from base::DiscardableMemoryAllocator:
+  scoped_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(
       size_t size) override;
 
   // This allocates a discardable memory segment for |process_handle|.

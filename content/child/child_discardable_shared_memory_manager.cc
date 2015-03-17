@@ -7,6 +7,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
+#include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process_metrics.h"
@@ -28,29 +29,46 @@ const size_t kAllocationSize = 4 * 1024 * 1024;
 // Global atomic to generate unique discardable shared memory IDs.
 base::StaticAtomicSequenceNumber g_next_discardable_shared_memory_id;
 
-class DiscardableMemoryShmemChunkImpl
-    : public base::DiscardableMemoryShmemChunk {
+class DiscardableMemoryImpl : public base::DiscardableMemory {
  public:
-  DiscardableMemoryShmemChunkImpl(
-      ChildDiscardableSharedMemoryManager* manager,
-      scoped_ptr<DiscardableSharedMemoryHeap::Span> span)
-      : manager_(manager), span_(span.Pass()) {}
-  ~DiscardableMemoryShmemChunkImpl() override {
+  DiscardableMemoryImpl(ChildDiscardableSharedMemoryManager* manager,
+                        scoped_ptr<DiscardableSharedMemoryHeap::Span> span)
+      : manager_(manager), span_(span.Pass()), is_locked_(true) {}
+
+  ~DiscardableMemoryImpl() override {
+    if (is_locked_)
+      manager_->UnlockSpan(span_.get());
+
     manager_->ReleaseSpan(span_.Pass());
   }
 
-  // Overridden from DiscardableMemoryShmemChunk:
-  bool Lock() override { return manager_->LockSpan(span_.get()); }
-  void Unlock() override { manager_->UnlockSpan(span_.get()); }
+  // Overridden from base::DiscardableMemory:
+  bool Lock() override {
+    DCHECK(!is_locked_);
+
+    if (!manager_->LockSpan(span_.get()))
+      return false;
+
+    is_locked_ = true;
+    return true;
+  }
+  void Unlock() override {
+    DCHECK(is_locked_);
+
+    manager_->UnlockSpan(span_.get());
+    is_locked_ = false;
+  }
   void* Memory() const override {
+    DCHECK(is_locked_);
     return reinterpret_cast<void*>(span_->start() * base::GetPageSize());
   }
 
  private:
-  ChildDiscardableSharedMemoryManager* manager_;
+  ChildDiscardableSharedMemoryManager* const manager_;
   scoped_ptr<DiscardableSharedMemoryHeap::Span> span_;
+  bool is_locked_;
 
-  DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryShmemChunkImpl);
+  DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryImpl);
 };
 
 }  // namespace
@@ -70,7 +88,7 @@ ChildDiscardableSharedMemoryManager::~ChildDiscardableSharedMemoryManager() {
     MemoryUsageChanged(0, 0);
 }
 
-scoped_ptr<base::DiscardableMemoryShmemChunk>
+scoped_ptr<base::DiscardableMemory>
 ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     size_t size) {
   base::AutoLock lock(lock_);
@@ -124,8 +142,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     // at least one span from the free lists.
     MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 
-    return make_scoped_ptr(
-        new DiscardableMemoryShmemChunkImpl(this, free_span.Pass()));
+    return make_scoped_ptr(new DiscardableMemoryImpl(this, free_span.Pass()));
   }
 
   // Release purged memory to free up the address space before we attempt to
@@ -167,8 +184,7 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
 
   MemoryUsageChanged(heap_.GetSize(), heap_.GetSizeOfFreeLists());
 
-  return make_scoped_ptr(
-      new DiscardableMemoryShmemChunkImpl(this, new_span.Pass()));
+  return make_scoped_ptr(new DiscardableMemoryImpl(this, new_span.Pass()));
 }
 
 void ChildDiscardableSharedMemoryManager::ReleaseFreeMemory() {

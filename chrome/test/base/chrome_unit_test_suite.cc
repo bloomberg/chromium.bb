@@ -111,8 +111,7 @@ void ChromeUnitTestSuite::Initialize() {
   // intialization which calls base's which initializes ICU.
   InitializeResourceBundle();
 
-  base::DiscardableMemoryShmemAllocator::SetInstance(
-      &discardable_memory_allocator_);
+  base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
 }
 
 void ChromeUnitTestSuite::Shutdown() {

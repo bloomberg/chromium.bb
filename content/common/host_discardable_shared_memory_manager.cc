@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
+#include "base/memory/discardable_memory.h"
 #include "base/numerics/safe_math.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,23 +21,22 @@
 namespace content {
 namespace {
 
-class DiscardableMemoryShmemChunkImpl
-    : public base::DiscardableMemoryShmemChunk {
+class DiscardableMemoryImpl : public base::DiscardableMemory {
  public:
-  DiscardableMemoryShmemChunkImpl(
-      scoped_ptr<base::DiscardableSharedMemory> shared_memory,
-      const base::Closure& deleted_callback)
+  DiscardableMemoryImpl(scoped_ptr<base::DiscardableSharedMemory> shared_memory,
+                        const base::Closure& deleted_callback)
       : shared_memory_(shared_memory.Pass()),
         deleted_callback_(deleted_callback),
         is_locked_(true) {}
-  ~DiscardableMemoryShmemChunkImpl() override {
+
+  ~DiscardableMemoryImpl() override {
     if (is_locked_)
       shared_memory_->Unlock(0, 0);
 
     deleted_callback_.Run();
   }
 
-  // Overridden from base::DiscardableMemoryShmemChunk:
+  // Overridden from base::DiscardableMemory:
   bool Lock() override {
     DCHECK(!is_locked_);
 
@@ -62,7 +62,7 @@ class DiscardableMemoryShmemChunkImpl
   const base::Closure deleted_callback_;
   bool is_locked_;
 
-  DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryShmemChunkImpl);
+  DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryImpl);
 };
 
 base::LazyInstance<HostDiscardableSharedMemoryManager>
@@ -107,7 +107,7 @@ HostDiscardableSharedMemoryManager::current() {
   return g_discardable_shared_memory_manager.Pointer();
 }
 
-scoped_ptr<base::DiscardableMemoryShmemChunk>
+scoped_ptr<base::DiscardableMemory>
 HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     size_t size) {
   DiscardableSharedMemoryId new_id =
@@ -123,7 +123,7 @@ HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory(handle));
   CHECK(memory->Map(size));
-  return make_scoped_ptr(new DiscardableMemoryShmemChunkImpl(
+  return make_scoped_ptr(new DiscardableMemoryImpl(
       memory.Pass(),
       base::Bind(
           &HostDiscardableSharedMemoryManager::DeletedDiscardableSharedMemory,

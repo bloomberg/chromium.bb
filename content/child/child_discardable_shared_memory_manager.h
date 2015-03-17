@@ -5,7 +5,7 @@
 #ifndef CONTENT_CHILD_CHILD_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
 #define CONTENT_CHILD_CHILD_DISCARDABLE_SHARED_MEMORY_MANAGER_H_
 
-#include "base/memory/discardable_memory_shmem_allocator.h"
+#include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
@@ -16,16 +16,16 @@
 
 namespace content {
 
-// Implementation of DiscardableMemoryShmemAllocator that allocates
+// Implementation of DiscardableMemoryAllocator that allocates
 // discardable memory segments through the browser process.
 class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
-    : public base::DiscardableMemoryShmemAllocator {
+    : public base::DiscardableMemoryAllocator {
  public:
   explicit ChildDiscardableSharedMemoryManager(ThreadSafeSender* sender);
   ~ChildDiscardableSharedMemoryManager() override;
 
-  // Overridden from base::DiscardableMemoryShmemAllocator:
-  scoped_ptr<base::DiscardableMemoryShmemChunk> AllocateLockedDiscardableMemory(
+  // Overridden from base::DiscardableMemoryAllocator:
+  scoped_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(
       size_t size) override;
 
   // Release memory and associated resources that have been purged.

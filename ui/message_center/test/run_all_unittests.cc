@@ -7,7 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
-#include "base/test/test_discardable_memory_shmem_allocator.h"
+#include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_suite.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -39,7 +39,7 @@ class MessageCenterTestSuite : public base::TestSuite {
     ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
     ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
-    base::DiscardableMemoryShmemAllocator::SetInstance(
+    base::DiscardableMemoryAllocator::SetInstance(
         &discardable_memory_allocator_);
   }
 
@@ -49,7 +49,7 @@ class MessageCenterTestSuite : public base::TestSuite {
   }
 
  private:
-  base::TestDiscardableMemoryShmemAllocator discardable_memory_allocator_;
+  base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterTestSuite);
 };

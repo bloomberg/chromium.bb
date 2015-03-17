@@ -461,7 +461,7 @@ void BrowserMainLoop::EarlyInitialization() {
       gfx::GpuMemoryBuffer::SCANOUT);
 #endif
 
-  base::DiscardableMemoryShmemAllocator::SetInstance(
+  base::DiscardableMemoryAllocator::SetInstance(
       HostDiscardableSharedMemoryManager::current());
 
   if (parts_)

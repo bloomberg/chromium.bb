@@ -13,8 +13,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/discardable_memory.h"
-#include "base/memory/discardable_memory_shmem_allocator.h"
+#include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -659,7 +658,7 @@ void RenderThreadImpl::Init() {
   // In single process, browser main loop set up the discardable memory
   // allocator.
   if (!command_line.HasSwitch(switches::kSingleProcess)) {
-    base::DiscardableMemoryShmemAllocator::SetInstance(
+    base::DiscardableMemoryAllocator::SetInstance(
         ChildThreadImpl::discardable_shared_memory_manager());
   }
 

@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/test/test_discardable_memory_shmem_allocator.h"
+#include "base/test/test_discardable_memory_allocator.h"
 #include "chrome/test/base/chrome_test_suite.h"
 
 // Test suite for unit tests. Creates additional stub services that are not
@@ -29,7 +29,7 @@ class ChromeUnitTestSuite : public ChromeTestSuite {
   static void InitializeResourceBundle();
 
  private:
-  base::TestDiscardableMemoryShmemAllocator discardable_memory_allocator_;
+  base::TestDiscardableMemoryAllocator discardable_memory_allocator_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeUnitTestSuite);
 };
