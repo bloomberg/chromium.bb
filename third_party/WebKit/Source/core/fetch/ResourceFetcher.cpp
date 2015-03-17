@@ -1009,7 +1009,7 @@ bool ResourceFetcher::scheduleArchiveLoad(Resource* resource, const ResourceRequ
 void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength)
 {
     TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
-    RefPtr<ResourceFetcher> protect(this);
+    RefPtrWillBeRawPtr<ResourceFetcher> protect(this);
     willTerminateResourceLoader(resource->loader());
 
     if (resource && resource->response().isHTTP() && resource->response().httpStatusCode() < 400) {
