@@ -18,15 +18,13 @@ struct WebServiceWorkerError;
 
 struct WebServiceWorkerClientInfo {
     WebServiceWorkerClientInfo()
-        : clientID(0)
-        , pageVisibilityState(WebPageVisibilityStateLast)
+        : pageVisibilityState(WebPageVisibilityStateLast)
         , isFocused(false)
         , frameType(WebURLRequest::FrameTypeNone)
         , clientType(WebServiceWorkerClientTypeWindow)
     {
     }
 
-    int clientID; // FIXME: Deprecate this when we switch to UUID.
     WebString uuid;
 
     WebPageVisibilityState pageVisibilityState;

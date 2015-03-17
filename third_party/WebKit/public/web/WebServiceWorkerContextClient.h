@@ -173,8 +173,6 @@ public:
 
     // Callee receives ownership of the passed vector.
     // FIXME: Blob refs should be passed to maintain ref counts. crbug.com/351753
-    // FIXME: Deprecate the one that takes integer clientID once we switch to uuid.
-    virtual void postMessageToClient(int clientID, const WebString&, WebMessagePortChannelArray*) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void postMessageToClient(const WebString& uuid, const WebString&, WebMessagePortChannelArray*) { BLINK_ASSERT_NOT_REACHED(); }
 
     // Callee receives ownership of the passed vector.
@@ -191,8 +189,6 @@ public:
 
     // Ownership of the passed callbacks is transferred to the callee, callee
     // should delete the callback after calling either onSuccess or onError.
-    // FIXME: Deprecate the one that takes integer clientID once we switch to uuid.
-    virtual void focus(int cliendID, WebServiceWorkerClientCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
     virtual void focus(const WebString& uuid, WebServiceWorkerClientCallbacks*) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
