@@ -30,27 +30,22 @@ namespace blink {
 
 void SVGPathBuilder::moveTo(const FloatPoint& targetPoint, bool closed, PathCoordinateMode mode)
 {
-    m_current = mode == AbsoluteCoordinates ? targetPoint : m_current + targetPoint;
+    ASSERT(mode == AbsoluteCoordinates);
     if (closed && !m_path.isEmpty())
         m_path.closeSubpath();
-    m_path.moveTo(m_current);
+    m_path.moveTo(targetPoint);
 }
 
 void SVGPathBuilder::lineTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
 {
-    m_current = mode == AbsoluteCoordinates ? targetPoint : m_current + targetPoint;
-    m_path.addLineTo(m_current);
+    ASSERT(mode == AbsoluteCoordinates);
+    m_path.addLineTo(targetPoint);
 }
 
 void SVGPathBuilder::curveToCubic(const FloatPoint& point1, const FloatPoint& point2, const FloatPoint& targetPoint, PathCoordinateMode mode)
 {
-    if (mode == RelativeCoordinates) {
-        m_path.addBezierCurveTo(m_current + point1, m_current + point2, m_current + targetPoint);
-        m_current += targetPoint;
-    } else {
-        m_current = targetPoint;
-        m_path.addBezierCurveTo(point1, point2, m_current);
-    }
+    ASSERT(mode == AbsoluteCoordinates);
+    m_path.addBezierCurveTo(point1, point2, targetPoint);
 }
 
 void SVGPathBuilder::closePath()

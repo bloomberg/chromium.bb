@@ -54,7 +54,6 @@ private:
     virtual void arcTo(float, float, float, bool, bool, const FloatPoint&, PathCoordinateMode) override { ASSERT_NOT_REACHED(); }
 
     Path& m_path;
-    FloatPoint m_current;
 };
 
 } // namespace blink
