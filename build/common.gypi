@@ -1951,9 +1951,7 @@
             'win_use_allocator_shim%': 0,
           }],
           ['syzyasan==1', {
-            # Uncomment the following line to enable Kasko for
-            # SyzyASAN-instrumented releases.
-            # 'kasko%': 1,
+            'kasko%': 1,
           }],
           ['component=="shared_library" and "<(GENERATOR)"=="ninja"', {
             # Only enabled by default for ninja because it's buggy in VS.
