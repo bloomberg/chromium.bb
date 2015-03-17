@@ -738,12 +738,6 @@ void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host, FrameOwner* owner,
     m_frame->tree().setName(name, nullAtom);
 }
 
-// FIXME(alexmos): remove once Chrome side is updated to use sandbox flags.
-WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, WebRemoteFrameClient* client)
-{
-    return createRemoteChild(name, WebSandboxFlags::None, client);
-}
-
 WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(const WebString& name, WebSandboxFlags sandboxFlags, WebRemoteFrameClient* client)
 {
     WebRemoteFrameImpl* child = toWebRemoteFrameImpl(WebRemoteFrame::create(client));

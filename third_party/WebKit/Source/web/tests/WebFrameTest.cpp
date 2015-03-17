@@ -6625,7 +6625,7 @@ TEST_F(WebFrameSwapTest, SwapMainFrame)
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(&client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
     remoteFrame->swap(localFrame);
 
     // Finally, make sure an embedder triggered load in the local frame swapped
@@ -6658,7 +6658,7 @@ TEST_F(WebFrameSwapTest, SwapFirstChild)
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(&client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
     swapAndVerifyFirstChildConsistency("remote->local", mainFrame(), localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -6696,7 +6696,7 @@ TEST_F(WebFrameSwapTest, SwapMiddleChild)
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(&client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
     swapAndVerifyMiddleChildConsistency("remote->local", mainFrame(), localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -6731,7 +6731,7 @@ TEST_F(WebFrameSwapTest, SwapLastChild)
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(&client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
     swapAndVerifyLastChildConsistency("remote->local", mainFrame(), localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -6775,7 +6775,7 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren)
 
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(&client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
     swapAndVerifySubframeConsistency("remote->local", targetFrame, localFrame);
 
     // FIXME: This almost certainly fires more load events on the iframe element
@@ -6830,7 +6830,7 @@ TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext)
     // Now check that remote -> local works too, since it goes through a different code path.
     FrameTestHelpers::TestWebFrameClient client;
     WebLocalFrame* localFrame = WebLocalFrame::create(&client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
     remoteFrame->swap(localFrame);
     v8::Local<v8::Value> localWindow = mainFrame()->executeScriptAndReturnValue(WebScriptSource(
         "document.querySelector('#frame2').contentWindow;"));
@@ -6918,7 +6918,7 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterRemoteToLocalSwap)
 
     RemoteToLocalSwapWebFrameClient client(remoteFrame);
     WebLocalFrame* localFrame = WebLocalFrame::create(&client);
-    localFrame->initializeToReplaceRemoteFrame(remoteFrame);
+    localFrame->initializeToReplaceRemoteFrame(remoteFrame, "", WebSandboxFlags::None);
     FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
     EXPECT_EQ(WebStandardCommit, client.historyCommitType());
 
@@ -7080,7 +7080,7 @@ TEST_F(WebFrameTest, DetachRemoteFrame)
     WebView* view = WebView::create(&viewClient);
     view->setMainFrame(WebRemoteFrame::create(&remoteClient));
     FrameTestHelpers::TestWebRemoteFrameClient childFrameClient;
-    WebRemoteFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createRemoteChild("", &childFrameClient);
+    WebRemoteFrame* childFrame = view->mainFrame()->toWebRemoteFrame()->createRemoteChild("", WebSandboxFlags::None, &childFrameClient);
     childFrame->detach();
     view->close();
 }

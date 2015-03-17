@@ -19,8 +19,6 @@ public:
 
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebSandboxFlags, WebFrameClient*) = 0;
 
-    // FIXME(alexmos): remove once Chrome side is updated to use sandbox flags.
-    virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebRemoteFrameClient*) = 0;
     virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebSandboxFlags, WebRemoteFrameClient*) = 0;
 
     // Transfer initial drawing parameters from a local frame.

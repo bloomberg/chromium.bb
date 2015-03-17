@@ -169,8 +169,6 @@ public:
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const override;
 
     virtual WebLocalFrame* createLocalChild(const WebString& name, WebSandboxFlags, WebFrameClient*) override;
-    // FIXME(alexmos): remove once Chrome side is updated to use sandbox flags.
-    virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebRemoteFrameClient*) override;
     virtual WebRemoteFrame* createRemoteChild(const WebString& name, WebSandboxFlags, WebRemoteFrameClient*) override;
 
     void initializeCoreFrame(FrameHost*, FrameOwner*, const AtomicString& name);

@@ -224,8 +224,6 @@ public:
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const override;
 
     // WebLocalFrame methods:
-    // FIXME(alexmos): Remove when Chromium side is updated to pass name and sandbox flags.
-    virtual void initializeToReplaceRemoteFrame(WebRemoteFrame*) override;
     virtual void initializeToReplaceRemoteFrame(WebRemoteFrame*, const WebString& name, WebSandboxFlags) override;
     virtual void setAutofillClient(WebAutofillClient*) override;
     virtual WebAutofillClient* autofillClient() override;

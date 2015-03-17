@@ -1861,12 +1861,6 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url)
         frame()->loader().replaceDocumentWhileExecutingJavaScriptURL(scriptResult, ownerDocument.get());
 }
 
-// FIXME(alexmos): Remove when Chromium side is updated to pass name and sandbox flags.
-void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame)
-{
-    initializeToReplaceRemoteFrame(oldWebFrame, "", WebSandboxFlags::None);
-}
-
 void WebLocalFrameImpl::initializeToReplaceRemoteFrame(WebRemoteFrame* oldWebFrame, const WebString& name, WebSandboxFlags flags)
 {
     Frame* oldFrame = toCoreFrame(oldWebFrame);

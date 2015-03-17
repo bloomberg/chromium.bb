@@ -46,8 +46,6 @@ public:
     // Used when we might swap from a remote frame to a local frame.
     // Creates a provisional, semi-attached frame that will be fully
     // swapped into the frame tree if it commits.
-    // FIXME(alexmos): Remove when Chromium side is updated to pass name and sandbox flags.
-    virtual void initializeToReplaceRemoteFrame(WebRemoteFrame*) = 0;
     virtual void initializeToReplaceRemoteFrame(WebRemoteFrame*, const WebString& name, WebSandboxFlags) = 0;
 
     virtual void setAutofillClient(WebAutofillClient*) = 0;
