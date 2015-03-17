@@ -406,12 +406,14 @@ GURL DevToolsUIBindings::ApplyThemeToURL(Profile* profile,
 
 DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
     : profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+      android_bridge_(DevToolsAndroidBridge::Factory::GetForProfile(profile_)),
       web_contents_(web_contents),
       delegate_(new DefaultBindingsDelegate(web_contents_)),
       device_count_updates_enabled_(false),
       devices_updates_enabled_(false),
       frontend_loaded_(false),
       weak_factory_(this) {
+  DCHECK(android_bridge_);
   g_instances.Get().push_back(this);
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
   web_contents_->GetMutableRendererPrefs()->can_accept_load_drops = false;
@@ -777,6 +779,26 @@ void DevToolsUIBindings::RecordActionUMA(const std::string& name, int action) {
     UMA_HISTOGRAM_ENUMERATION(name, action, kDevToolsActionTakenBoundary);
   else if (name == kDevToolsPanelShownHistogram)
     UMA_HISTOGRAM_ENUMERATION(name, action, kDevToolsPanelShownBoundary);
+}
+
+void DevToolsUIBindings::SendJsonRequest(const DispatchCallback& callback,
+                                         const std::string& browser_id,
+                                         const std::string& url) {
+  android_bridge_->SendJsonRequest(browser_id, url,
+      base::Bind(&DevToolsUIBindings::JsonReceived,
+                 weak_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void DevToolsUIBindings::JsonReceived(const DispatchCallback& callback,
+                                      int result,
+                                      const std::string& message) {
+  if (result != net::OK) {
+    callback.Run(nullptr);
+    return;
+  }
+  base::StringValue message_value(message);
+  callback.Run(&message_value);
 }
 
 void DevToolsUIBindings::OnURLFetchComplete(const net::URLFetcher* source) {

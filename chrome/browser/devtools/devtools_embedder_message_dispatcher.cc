@@ -195,5 +195,7 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
   d->RegisterHandler("sendMessageToBrowser",
                      &Delegate::SendMessageToBrowser, delegate);
   d->RegisterHandler("recordActionUMA", &Delegate::RecordActionUMA, delegate);
+  d->RegisterHandlerWithCallback("sendJsonRequest",
+                                 &Delegate::SendJsonRequest, delegate);
   return d;
 }

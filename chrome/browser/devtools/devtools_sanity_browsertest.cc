@@ -9,11 +9,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
+#include "chrome/browser/devtools/device/self_device_provider.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -86,6 +88,8 @@ const char kReloadSharedWorkerTestPage[] =
     "files/workers/debug_shared_worker_initialization.html";
 const char kReloadSharedWorkerTestWorker[] =
     "files/workers/debug_shared_worker_initialization.js";
+
+const int kRemoteDebuggingPort = 9225;
 
 void RunTestFunction(DevToolsWindow* window, const char* test_name) {
   std::string result;
@@ -926,7 +930,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAgentHostTest, TestAgentHostReleased) {
       << "DevToolsAgentHost is not released when the tab is closed";
 }
 
-class RemoteDebuggingTest: public ExtensionApiTest {
+class RemoteDebuggingTest : public ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort, "9222");
@@ -965,4 +969,20 @@ IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, PolicyTrue) {
   DevToolsWindow::OpenDevToolsWindow(web_contents);
   DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(agent.get());
   ASSERT_FALSE(window);
+}
+
+class RemoteWebSocketTest : public DevToolsSanityTest {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DevToolsSanityTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort,
+        base::IntToString(kRemoteDebuggingPort));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(RemoteWebSocketTest, TestWebSocket) {
+  AndroidDeviceManager::DeviceProviders device_providers;
+  device_providers.push_back(new SelfAsDeviceProvider(kRemoteDebuggingPort));
+  DevToolsAndroidBridge::Factory::GetForProfile(browser()->profile())->
+      set_device_providers_for_test(device_providers);
+  RunTest("testRemoteWebSocket", "about:blank");
 }

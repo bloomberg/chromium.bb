@@ -71,6 +71,16 @@ bool IsWebRTCDeviceProviderEnabled() {
       switches::kEnableDevToolsExperiments);
 }
 
+bool BrowserIdFromString(const std::string& browser_id_str,
+                         DevToolsAndroidBridge::BrowserId* browser_id) {
+  size_t colon_pos = browser_id_str.find(':');
+  if (colon_pos == std::string::npos)
+    return false;
+  browser_id->first = browser_id_str.substr(0, colon_pos);
+  browser_id->second = browser_id_str.substr(colon_pos + 1);
+  return true;
+}
+
 }  // namespace
 
 // DiscoveryRequest -----------------------------------------------------
@@ -676,6 +686,18 @@ DevToolsAndroidBridge::GetBrowserAgentHost(
       browser->browser_id_,
       kBrowserTargetSocket,
       browser->IsWebView());
+}
+
+void DevToolsAndroidBridge::SendJsonRequest(
+    const std::string& browser_id_str,
+    const std::string& url,
+    const JsonRequestCallback& callback) {
+  BrowserId browser_id;
+  if (!BrowserIdFromString(browser_id_str, &browser_id)) {
+    callback.Run(net::ERR_FAILED, std::string());
+    return;
+  }
+  SendJsonRequest(browser_id, url, callback);
 }
 
 scoped_refptr<AndroidDeviceManager::Device> DevToolsAndroidBridge::FindDevice(

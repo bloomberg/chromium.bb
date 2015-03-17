@@ -223,6 +223,10 @@ class DevToolsAndroidBridge : public KeyedService {
   scoped_refptr<content::DevToolsAgentHost> GetBrowserAgentHost(
       scoped_refptr<RemoteBrowser> browser);
 
+  void SendJsonRequest(const std::string& browser_id_str,
+                       const std::string& url,
+                       const JsonRequestCallback& callback);
+
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;

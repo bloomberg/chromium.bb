@@ -71,6 +71,9 @@ class DevToolsEmbedderMessageDispatcher {
     virtual void SetDevicesUpdatesEnabled(bool enabled) = 0;
     virtual void SendMessageToBrowser(const std::string& message) = 0;
     virtual void RecordActionUMA(const std::string& name, int action) = 0;
+    virtual void SendJsonRequest(const DispatchCallback& callback,
+                                 const std::string& browser_id,
+                                 const std::string& url) = 0;
   };
 
   using DispatchCallback = Delegate::DispatchCallback;

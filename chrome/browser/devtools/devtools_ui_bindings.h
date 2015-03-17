@@ -24,6 +24,7 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "ui/gfx/geometry/size.h"
 
+class DevToolsAndroidBridge;
 class InfoBarService;
 class Profile;
 
@@ -135,6 +136,9 @@ class DevToolsUIBindings : public content::NotificationObserver,
   void SetDevicesUpdatesEnabled(bool enabled) override;
   void SendMessageToBrowser(const std::string& message) override;
   void RecordActionUMA(const std::string& name, int action) override;
+  void SendJsonRequest(const DispatchCallback& callback,
+                       const std::string& browser_id,
+                       const std::string& url) override;
 
   // net::URLFetcherDelegate overrides.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -154,6 +158,10 @@ class DevToolsUIBindings : public content::NotificationObserver,
   void DocumentOnLoadCompletedInMainFrame();
   void DidNavigateMainFrame();
   void FrontendLoaded();
+
+  void JsonReceived(const DispatchCallback& callback,
+                    int result,
+                    const std::string& message);
 
   // DevToolsFileHelper callbacks.
   void FileSavedAs(const std::string& url);
@@ -185,6 +193,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
   scoped_ptr<FrontendWebContentsObserver> frontend_contents_observer_;
 
   Profile* profile_;
+  DevToolsAndroidBridge* android_bridge_;
   content::WebContents* web_contents_;
   scoped_ptr<Delegate> delegate_;
   scoped_refptr<content::DevToolsAgentHost> agent_host_;
