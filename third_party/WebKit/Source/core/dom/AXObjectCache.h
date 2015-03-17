@@ -26,6 +26,7 @@
 #ifndef AXObjectCache_h
 #define AXObjectCache_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Document.h"
 
 typedef unsigned AXID;
@@ -37,7 +38,7 @@ class LayoutMenuList;
 class Page;
 class Widget;
 
-class AXObjectCache {
+class CORE_EXPORT AXObjectCache {
     WTF_MAKE_NONCOPYABLE(AXObjectCache); WTF_MAKE_FAST_ALLOCATED;
 public:
     static AXObjectCache* create(Document&);

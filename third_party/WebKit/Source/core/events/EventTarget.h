@@ -33,6 +33,7 @@
 #define EventTarget_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/events/EventListenerMap.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "platform/heap/Handle.h"
@@ -101,7 +102,7 @@ public:
 //
 // Optionally, add a FooEvent.idl class, but that's outside the scope of this
 // comment (and much more straightforward).
-class EventTarget : public NoBaseWillBeGarbageCollectedFinalized<EventTarget>, public ScriptWrappable {
+class CORE_EXPORT EventTarget : public NoBaseWillBeGarbageCollectedFinalized<EventTarget>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~EventTarget();
@@ -177,7 +178,7 @@ private:
     friend class EventListenerIterator;
 };
 
-class EventTargetWithInlineData : public EventTarget {
+class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
 protected:
     virtual EventTargetData* eventTargetData() override final { return &m_eventTargetData; }
     virtual EventTargetData& ensureEventTargetData() override final { return m_eventTargetData; }

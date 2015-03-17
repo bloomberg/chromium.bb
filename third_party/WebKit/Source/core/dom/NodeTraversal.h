@@ -26,6 +26,7 @@
 #ifndef NodeTraversal_h
 #define NodeTraversal_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Node.h"
 
@@ -75,8 +76,8 @@ public:
     static Node* nextIncludingPseudo(const Node&, const Node* stayWithin = 0);
     static Node* nextIncludingPseudoSkippingChildren(const Node&, const Node* stayWithin = 0);
 
-    static Node* nextAncestorSibling(const Node&);
-    static Node* nextAncestorSibling(const Node&, const Node* stayWithin);
+    CORE_EXPORT static Node* nextAncestorSibling(const Node&);
+    CORE_EXPORT static Node* nextAncestorSibling(const Node&, const Node* stayWithin);
     static Node& highestAncestorOrSelf(Node&);
 
     // Children traversal.

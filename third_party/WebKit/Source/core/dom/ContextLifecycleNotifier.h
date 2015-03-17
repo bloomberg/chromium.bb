@@ -28,7 +28,9 @@
 #ifndef ContextLifecycleNotifier_h
 #define ContextLifecycleNotifier_h
 
+#include "core/CoreExport.h"
 #include "platform/LifecycleNotifier.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
@@ -36,7 +38,8 @@ class ActiveDOMObject;
 class ContextLifecycleObserver;
 class ExecutionContext;
 
-class ContextLifecycleNotifier : public LifecycleNotifier<ExecutionContext, ContextLifecycleObserver> {
+class CORE_EXPORT ContextLifecycleNotifier : public LifecycleNotifier<ExecutionContext, ContextLifecycleObserver> {
+    WTF_MAKE_NONCOPYABLE(ContextLifecycleNotifier);
 public:
     void addObserver(ContextLifecycleObserver*);
 
@@ -48,6 +51,13 @@ public:
     bool hasPendingActivity() const;
 
 protected:
+    // Need a default constructor to link core and modules separately.
+    // If no default constructor, we will see an error: "constructor for
+    // 'blink::ExecutionContext' must explicitly initialize the base class
+    // 'blink::ContextLifecycleNotifier' which does not have a default
+    // constructor ExecutionContext::ExecutionContext()".
+    ContextLifecycleNotifier() { }
+
 #if ENABLE(ASSERT)
     bool contains(ActiveDOMObject*) const;
 #endif

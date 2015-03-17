@@ -25,6 +25,7 @@
 #define Event_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/events/EventInitDictionary.h"
 #include "core/events/EventPath.h"
@@ -46,7 +47,7 @@ public:
     bool cancelable;
 };
 
-class Event : public RefCountedWillBeGarbageCollectedFinalized<Event>,  public ScriptWrappable {
+class CORE_EXPORT Event : public RefCountedWillBeGarbageCollectedFinalized<Event>,  public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum PhaseType {

@@ -27,7 +27,9 @@
 #ifndef SecurityContext_h
 #define SecurityContext_h
 
+#include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -38,7 +40,8 @@ class SecurityOrigin;
 class ContentSecurityPolicy;
 class KURL;
 
-class SecurityContext {
+class CORE_EXPORT SecurityContext {
+    WTF_MAKE_NONCOPYABLE(SecurityContext);
 public:
     // The ordering here is important: 'Upgrade' overrides 'DoNotUpgrade'.
     enum InsecureRequestsPolicy {

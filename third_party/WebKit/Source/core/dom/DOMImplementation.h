@@ -24,6 +24,7 @@
 #ifndef DOMImplementation_h
 #define DOMImplementation_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "wtf/PassRefPtr.h"
 
@@ -38,7 +39,7 @@ class HTMLDocument;
 class KURL;
 class XMLDocument;
 
-class DOMImplementation final : public NoBaseWillBeGarbageCollected<DOMImplementation>, public ScriptWrappable {
+class CORE_EXPORT DOMImplementation final : public NoBaseWillBeGarbageCollected<DOMImplementation>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:

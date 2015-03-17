@@ -297,6 +297,7 @@
       'exported/WebMediaStreamSource.cpp',
       'exported/WebMediaStreamTrack.cpp',
       'exported/WebMediaStreamTrackSourcesRequest.cpp',
+      'exported/WebMessagePortChannelClient.cpp',
       'exported/WebPermissionCallbacks.cpp',
       'exported/WebPrerender.cpp',
       'exported/WebPrerenderingSupport.cpp',

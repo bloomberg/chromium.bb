@@ -27,6 +27,7 @@
 #ifndef MessagePort_h
 #define MessagePort_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventTarget.h"
@@ -54,7 +55,7 @@ typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
 // Not to be confused with WebMessagePortChannelArray; this one uses Vector and OwnPtr instead of WebVector and raw pointers.
 typedef Vector<OwnPtr<WebMessagePortChannel>, 1> MessagePortChannelArray;
 
-class MessagePort final
+class CORE_EXPORT MessagePort final
     : public EventTargetWithInlineData
     , public RefCountedWillBeNoBase<MessagePort>
     , public ActiveDOMObject

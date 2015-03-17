@@ -28,6 +28,7 @@
 #define DOMURL_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMURLUtils.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -60,7 +61,7 @@ public:
     static String createObjectURL(ExecutionContext*, Blob*, ExceptionState&);
     static void revokeObjectURL(ExecutionContext*, const String&);
 
-    static String createPublicURL(ExecutionContext*, URLRegistrable*, const String& uuid = String());
+    CORE_EXPORT static String createPublicURL(ExecutionContext*, URLRegistrable*, const String& uuid = String());
     static void revokeObjectUUID(ExecutionContext*, const String&);
 
     virtual KURL url() const override { return m_url; }

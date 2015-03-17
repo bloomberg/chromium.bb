@@ -27,6 +27,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/RangeBoundaryPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
@@ -47,7 +48,7 @@ class Node;
 class NodeWithIndex;
 class Text;
 
-class Range final
+class CORE_EXPORT Range final
 #ifndef NDEBUG
     : public RefCountedWillBeGarbageCollectedFinalized<Range>
 #else

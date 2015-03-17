@@ -27,6 +27,7 @@
 #define DOMError_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
@@ -34,7 +35,7 @@
 
 namespace blink {
 
-class DOMError : public GarbageCollectedFinalized<DOMError>, public ScriptWrappable {
+class CORE_EXPORT DOMError : public GarbageCollectedFinalized<DOMError>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMError* create(const String& name)

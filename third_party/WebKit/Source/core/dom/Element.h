@@ -26,6 +26,7 @@
 #define Element_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
@@ -81,7 +82,7 @@ enum ElementFlags {
     NumberOfElementFlags = 6, // Required size of bitfield used to store the flags.
 };
 
-class Element : public ContainerNode {
+class CORE_EXPORT Element : public ContainerNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Element> create(const QualifiedName&, Document*);

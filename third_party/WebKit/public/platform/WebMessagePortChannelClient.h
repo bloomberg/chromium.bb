@@ -31,6 +31,7 @@
 #ifndef WebMessagePortChannelClient_h
 #define WebMessagePortChannelClient_h
 
+#include "WebCommon.h"
 #include <v8.h>
 
 namespace blink {
@@ -38,7 +39,7 @@ namespace blink {
 // Provides an interface for users of WebMessagePortChannel to be notified
 // when messages are available. This also gives users of WebMessagePortChannel
 // access to the V8 Context this message port lives in.
-class WebMessagePortChannelClient {
+class BLINK_PLATFORM_EXPORT WebMessagePortChannelClient {
 public:
     // Alerts that new messages have arrived, which are retrieved by calling
     // WebMessagePortChannel::tryGetMessage. Note that this may be called
@@ -60,7 +61,8 @@ public:
     virtual v8::Local<v8::Context> scriptContextForMessageConversion() = 0;
 
 protected:
-    ~WebMessagePortChannelClient() { }
+    WebMessagePortChannelClient();
+    ~WebMessagePortChannelClient();
 };
 
 } // namespace blink

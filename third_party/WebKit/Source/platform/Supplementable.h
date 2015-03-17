@@ -29,6 +29,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -167,7 +168,9 @@ protected:
 
 template<typename T>
 class SupplementableTracing<T, false> {
+    WTF_MAKE_NONCOPYABLE(SupplementableTracing);
 protected:
+    SupplementableTracing() { }
     typedef HashMap<const char*, OwnPtr<SupplementBase<T, false>>, PtrHash<const char*>> SupplementMap;
     SupplementMap m_supplements;
 };

@@ -27,12 +27,13 @@
 #ifndef ActiveDOMObject_h
 #define ActiveDOMObject_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
 
-class ActiveDOMObject : public ContextLifecycleObserver {
+class CORE_EXPORT ActiveDOMObject : public ContextLifecycleObserver {
 public:
     ActiveDOMObject(ExecutionContext*);
 

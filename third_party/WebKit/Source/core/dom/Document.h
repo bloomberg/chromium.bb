@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "core/CoreExport.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/CompositorPendingAnimations.h"
 #include "core/dom/ContainerNode.h"
@@ -220,7 +221,7 @@ private:
     RawPtrWillBeMember<Document> m_document;
 };
 
-class Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext
+class CORE_EXPORT Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext
     , public DocumentSupplementable, public DocumentLifecycleNotifier {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Document);

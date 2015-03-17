@@ -28,6 +28,7 @@
 #ifndef ExecutionContext_h
 #define ExecutionContext_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/SecurityContext.h"
@@ -35,6 +36,7 @@
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -52,8 +54,9 @@ class PublicURLManager;
 class SecurityOrigin;
 class ScriptCallStack;
 
-class ExecutionContext
+class CORE_EXPORT ExecutionContext
     : public ContextLifecycleNotifier, public WillBeHeapSupplementable<ExecutionContext> {
+    WTF_MAKE_NONCOPYABLE(ExecutionContext);
 public:
     DECLARE_VIRTUAL_TRACE();
 

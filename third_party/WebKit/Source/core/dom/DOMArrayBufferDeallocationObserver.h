@@ -5,13 +5,14 @@
 #ifndef DOMArrayBufferDeallocationObserver_h
 #define DOMArrayBufferDeallocationObserver_h
 
+#include "core/CoreExport.h"
 #include "wtf/ArrayBufferDeallocationObserver.h"
 
 namespace blink {
 
 class DOMArrayBufferDeallocationObserver final : public WTF::ArrayBufferDeallocationObserver {
 public:
-    static DOMArrayBufferDeallocationObserver& instance();
+    CORE_EXPORT static DOMArrayBufferDeallocationObserver& instance();
 
     virtual void arrayBufferDeallocated(unsigned sizeInBytes) override;
 

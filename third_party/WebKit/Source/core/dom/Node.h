@@ -26,6 +26,7 @@
 #define Node_h
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "core/CoreExport.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/SimulatedClickOptions.h"
 #include "core/dom/StyleChangeReason.h"
@@ -123,7 +124,7 @@ WILL_HAVE_ALL_INSTANCES_ON_SAME_GC_HEAP(Node);
 #define NODE_BASE_CLASSES public EventTarget, public TreeShared<Node>
 #endif
 
-class Node : NODE_BASE_CLASSES {
+class CORE_EXPORT Node : NODE_BASE_CLASSES {
     DEFINE_EVENT_TARGET_REFCOUNTING_WILL_BE_REMOVED(TreeShared<Node>);
     DEFINE_WRAPPERTYPEINFO();
     friend class TreeScope;

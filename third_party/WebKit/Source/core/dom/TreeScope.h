@@ -27,6 +27,7 @@
 #ifndef TreeScope_h
 #define TreeScope_h
 
+#include "core/CoreExport.h"
 #include "core/dom/DocumentOrderedMap.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
@@ -48,7 +49,7 @@ class Node;
 // A class which inherits both Node and TreeScope must call clearRareData() in its destructor
 // so that the Node destructor no longer does problematic NodeList cache manipulation in
 // the destructor.
-class TreeScope : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT TreeScope : public WillBeGarbageCollectedMixin {
 public:
     TreeScope* parentTreeScope() const { return m_parentTreeScope; }
 

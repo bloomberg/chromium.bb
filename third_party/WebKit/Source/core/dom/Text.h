@@ -23,6 +23,7 @@
 #ifndef Text_h
 #define Text_h
 
+#include "core/CoreExport.h"
 #include "core/dom/CharacterData.h"
 
 namespace blink {
@@ -47,7 +48,7 @@ public:
 
     // DOM Level 3: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-1312295772
 
-    String wholeText() const;
+    CORE_EXPORT String wholeText() const;
     PassRefPtrWillBeRawPtr<Text> replaceWholeText(const String&);
 
     void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);

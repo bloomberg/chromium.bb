@@ -27,6 +27,7 @@
 #define DOMStringList_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -37,7 +38,7 @@ namespace blink {
 
 // FIXME: Some consumers of this class may benefit from lazily fetching items rather
 //        than creating the list statically as is currently the only option.
-class DOMStringList final : public RefCountedWillBeGarbageCollectedFinalized<DOMStringList>, public ScriptWrappable {
+class CORE_EXPORT DOMStringList final : public RefCountedWillBeGarbageCollectedFinalized<DOMStringList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<DOMStringList> create()

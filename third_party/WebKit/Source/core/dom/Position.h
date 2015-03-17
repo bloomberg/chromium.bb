@@ -26,6 +26,7 @@
 #ifndef Position_h
 #define Position_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ContainerNode.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/TextAffinity.h"
@@ -50,7 +51,7 @@ enum PositionMoveType {
     BackwardDeletion // Subject to platform conventions.
 };
 
-class Position {
+class CORE_EXPORT Position {
     DISALLOW_ALLOCATION();
 public:
     enum AnchorType {
@@ -233,7 +234,7 @@ private:
     // and m_offset > 0 as "after the anchor node".  See parentAnchoredEquivalent for more info.
     int m_offset;
     unsigned m_anchorType : 3;
-    bool m_isLegacyEditingPosition : 1;
+    unsigned m_isLegacyEditingPosition : 1;
 };
 
 inline Position createLegacyEditingPosition(PassRefPtrWillBeRawPtr<Node> node, int offset)
