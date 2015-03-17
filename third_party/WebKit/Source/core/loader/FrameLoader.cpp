@@ -44,6 +44,7 @@
 #include "core/dom/ViewportDescription.h"
 #include "core/editing/Editor.h"
 #include "core/editing/UndoStack.h"
+#include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/PageTransitionEvent.h"
@@ -748,6 +749,10 @@ static NavigationPolicy navigationPolicyForRequest(const FrameLoadRequest& reque
         // The click is simulated when triggering the keypress event.
         KeyboardEvent* keyEvent = toKeyboardEvent(event);
         navigationPolicyFromMouseEvent(0, keyEvent->ctrlKey(), keyEvent->shiftKey(), keyEvent->altKey(), keyEvent->metaKey(), &policy);
+    } else if (event->isGestureEvent()) {
+        // The click is simulated when triggering the gesture-tap event
+        GestureEvent* gestureEvent = toGestureEvent(event);
+        navigationPolicyFromMouseEvent(0, gestureEvent->ctrlKey(), gestureEvent->shiftKey(), gestureEvent->altKey(), gestureEvent->metaKey(), &policy);
     }
     return policy;
 }

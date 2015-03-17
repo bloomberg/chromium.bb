@@ -477,8 +477,10 @@ void FrameLoaderClientImpl::dispatchDidChangeThemeColor()
 
 static bool allowCreatingBackgroundTabs()
 {
+
     const WebInputEvent* inputEvent = WebViewImpl::currentInputEvent();
-    if (!inputEvent || (inputEvent->type != WebInputEvent::MouseUp && (inputEvent->type != WebInputEvent::RawKeyDown && inputEvent->type != WebInputEvent::KeyDown)))
+    if (!inputEvent || (inputEvent->type != WebInputEvent::MouseUp && (inputEvent->type != WebInputEvent::RawKeyDown && inputEvent->type != WebInputEvent::KeyDown)
+        && inputEvent->type != WebInputEvent::GestureTap))
         return false;
 
     unsigned short buttonNumber;
