@@ -69,6 +69,10 @@ class HTMLDocument : public blink::WebViewClient,
   virtual ~HTMLDocument();
 
  private:
+  // Updates the size and scale factor of the webview and related classes from
+  // |root_|.
+  void UpdateWebviewSizeFromViewSize();
+
   // WebViewClient methods:
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
 

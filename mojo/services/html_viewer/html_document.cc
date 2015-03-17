@@ -41,6 +41,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkDevice.h"
+#include "ui/gfx/geometry/dip_util.h"
 
 using mojo::AxProvider;
 using mojo::Rect;
@@ -135,10 +136,7 @@ void HTMLDocument::OnEmbed(
   root_ = root;
   embedder_service_provider_ = exposed_services.Pass();
   navigator_host_.set_service_provider(embedder_service_provider_.get());
-
-  blink::WebSize root_size(root_->bounds().width, root_->bounds().height);
-  web_view_->resize(root_size);
-  web_layer_tree_view_impl_->setViewportSize(root_size);
+  UpdateWebviewSizeFromViewSize();
   web_layer_tree_view_impl_->set_view(root_);
   root_->AddObserver(this);
 }
@@ -172,6 +170,16 @@ void HTMLDocument::Load(URLResponsePtr response) {
   web_request.setExtraData(extra_data);
 
   web_view_->mainFrame()->loadRequest(web_request);
+}
+
+void HTMLDocument::UpdateWebviewSizeFromViewSize() {
+  web_view_->setDeviceScaleFactor(root_->viewport_metrics().device_pixel_ratio);
+  const gfx::Size size_in_pixels(root_->bounds().width, root_->bounds().height);
+  const gfx::Size size_in_dips = gfx::ConvertSizeToDIP(
+      root_->viewport_metrics().device_pixel_ratio, size_in_pixels);
+  web_view_->resize(
+      blink::WebSize(size_in_dips.width(), size_in_dips.height()));
+  web_layer_tree_view_impl_->setViewportSize(size_in_pixels);
 }
 
 blink::WebStorageNamespace* HTMLDocument::createSessionStorageNamespace() {
@@ -303,8 +311,7 @@ void HTMLDocument::OnViewBoundsChanged(View* view,
                                        const Rect& old_bounds,
                                        const Rect& new_bounds) {
   DCHECK_EQ(view, root_);
-  web_view_->resize(
-      blink::WebSize(view->bounds().width, view->bounds().height));
+  UpdateWebviewSizeFromViewSize();
 }
 
 void HTMLDocument::OnViewDestroyed(View* view) {

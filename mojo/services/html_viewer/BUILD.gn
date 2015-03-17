@@ -98,6 +98,7 @@ source_set("lib") {
     "//third_party/mojo_services/src/input_events/public/interfaces",
     "//third_party/mojo_services/src/navigation/public/interfaces",
     "//third_party/mojo_services/src/surfaces/public/interfaces",
+    "//ui/gfx/geometry",
     "//ui/native_theme",
     "//url",
   ]
