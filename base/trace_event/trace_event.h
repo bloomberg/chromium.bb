@@ -681,16 +681,20 @@
 // events.
 // - category and name strings must have application lifetime (statics or
 //   literals). They may not include " chars.
-// - |id| is used to match the NESTABLE_ASYNC_BEGIN event with the
-//   NESTABLE_ASYNC_END event. Events are considered to match if their
-//   category_group, name and id values all match. |id| must either be a
-//   pointer or an integer value up to 64 bits. If it's a pointer, the bits
-//   will be xored with a hash of the process ID so that the same pointer on two
-//   different processes will not collide.
+// - A pair of NESTABLE_ASYNC_BEGIN event and NESTABLE_ASYNC_END event is
+//   considered as a match if their category_group, name and id all match.
+// - |id| must either be a pointer or an integer value up to 64 bits.
+//   If it's a pointer, the bits will be xored with a hash of the process ID so
+//   that the same pointer on two different processes will not collide.
+// - |id| is used to match a child NESTABLE_ASYNC event with its parent
+//   NESTABLE_ASYNC event. Therefore, events in the same nested event tree must
+//   be logged using the same id and category_group.
 //
-// Unmatched NESTABLE_ASYNC_END event will be parsed as an instant event,
-// and unmatched NESTABLE_ASYNC_BEGIN event will be parsed as an event that
-// ends at the last NESTABLE_ASYNC_END event of that |id|.
+// Unmatched NESTABLE_ASYNC_END event will be parsed as an event that starts
+// at the first NESTABLE_ASYNC event of that id, and unmatched
+// NESTABLE_ASYNC_BEGIN event will be parsed as an event that ends at the last
+// NESTABLE_ASYNC event of that id. Corresponding warning messages for
+// unmatched events will be shown in the analysis view.
 
 // Records a single NESTABLE_ASYNC_BEGIN event called "name" immediately, with 2
 // associated arguments. If the category is not enabled, then this does nothing.
