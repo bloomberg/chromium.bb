@@ -128,9 +128,9 @@ class BASE_EXPORT File {
 
   // Used to hold information about a given file.
   // If you add more fields to this structure (platform-specific fields are OK),
-  // make sure to update all functions that use it in file_util_{win|posix}.cc
-  // too, and the ParamTraits<base::PlatformFileInfo> implementation in
-  // chrome/common/common_param_traits.cc.
+  // make sure to update all functions that use it in file_util_{win|posix}.cc,
+  // too, and the ParamTraits<base::File::Info> implementation in
+  // ipc/ipc_message_utils.cc.
   struct BASE_EXPORT Info {
     Info();
     ~Info();
@@ -145,7 +145,8 @@ class BASE_EXPORT File {
     // True if the file corresponds to a directory.
     bool is_directory;
 
-    // True if the file corresponds to a symbolic link.
+    // True if the file corresponds to a symbolic link.  For Windows currently
+    // not supported and thus always false.
     bool is_symbolic_link;
 
     // The last modified time of a file.
