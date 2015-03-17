@@ -13,12 +13,8 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.SwipeView');
 
-goog.require('goog.array');
-goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
-goog.require('goog.events.EventType');
-goog.require('goog.math.Coordinate');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Accents');
 goog.require('i18n.input.chrome.inputview.Css');
@@ -31,7 +27,6 @@ goog.require('i18n.input.chrome.inputview.handler.PointerHandler');
 goog.require('i18n.input.chrome.inputview.util');
 goog.require('i18n.input.chrome.message.ContextType');
 
-
 goog.scope(function() {
 var ContextType = i18n.input.chrome.message.ContextType;
 var Css = i18n.input.chrome.inputview.Css;
@@ -40,6 +35,7 @@ var EventType = i18n.input.chrome.inputview.events.EventType;
 var KeyCodes = i18n.input.chrome.inputview.events.KeyCodes;
 var content = i18n.input.chrome.inputview.elements.content;
 var util = i18n.input.chrome.inputview.util;
+
 
 
 /**
@@ -62,20 +58,12 @@ i18n.input.chrome.inputview.elements.content.SwipeView = function(
    */
   this.adapter_ = adapter;
 
-
   /**
    * The swipe elements.
    *
    * @private {!Array.<!Element>}
    */
   this.trackElements_ = [];
-
-  /**
-   * The window that shows the swipe field.
-   *
-   * @private {Object}
-   */
-  this.trackWindow_ = null;
 
   /**
    * The text before the current focus.
@@ -108,8 +96,7 @@ i18n.input.chrome.inputview.elements.content.SwipeView = function(
   /**
    * The pointer handler.
    *
-   * @type {!i18n.input.chrome.inputview.handler.PointerHandler}
-   * @private
+   * @private {!i18n.input.chrome.inputview.handler.PointerHandler}
    */
   this.pointerHandler_ = new i18n.input.chrome.inputview.handler.
       PointerHandler();
@@ -123,8 +110,8 @@ var SwipeView = i18n.input.chrome.inputview.elements.content.SwipeView;
 /**
  * The number of swipe elements.
  *
- * @type {number}
- * @private
+ * @private {number}
+ * @const
  */
 SwipeView.LENGTH_ = 7;
 
@@ -133,8 +120,8 @@ SwipeView.LENGTH_ = 7;
  * Index of highlighted accent. Use this index to represent no highlighted
  * accent.
  *
- * @type {number}
- * @private
+ * @private {number}
+ * @const
  */
 SwipeView.INVALIDINDEX_ = -1;
 
@@ -143,10 +130,37 @@ SwipeView.INVALIDINDEX_ = -1;
  * The distance between finger to track view which will cancel the track
  * view.
  *
- * @type {number}
- * @private
+ * @private {number}
+ * @const
  */
 SwipeView.FINGER_DISTANCE_TO_CANCEL_SWIPE_ = 20;
+
+
+/**
+ * The width of a regular track segment.
+ *
+ * @private {number}
+ * @const
+ */
+SwipeView.SEGMENT_WIDTH_ = 70;
+
+
+/**
+ * The width of a large track segment
+ *
+ * @private {number}
+ * @const
+ */
+SwipeView.LARGE_SEGMENT_WIDTH_ = 100;
+
+
+/**
+ * The maximum surrounding text length that's provided.
+ *
+ * @private {number}
+ * @const
+ */
+SwipeView.MAX_SURROUNDING_TEXT_LENGTH_ = 100;
 
 
 /**
@@ -154,8 +168,7 @@ SwipeView.FINGER_DISTANCE_TO_CANCEL_SWIPE_ = 20;
  * Note: The reason we use a separate cover element instead of the view is
  * because of the opacity. We can not reassign the opacity in child element.
  *
- * @type {!Element}
- * @private
+ * @private {!Element}
  */
 SwipeView.prototype.coverElement_;
 
@@ -163,8 +176,7 @@ SwipeView.prototype.coverElement_;
 /**
  * The index of the alternative element which is highlighted.
  *
- * @type {number}
- * @private
+ * @private {number}
  */
 SwipeView.prototype.highlightIndex_ = SwipeView.INVALIDINDEX_;
 
@@ -180,8 +192,7 @@ SwipeView.prototype.triggeredBy;
 /**
  * Whether finger movement is being tracked.
  *
- * @type {boolean}
- * @private
+ * @private {boolean}
  */
 SwipeView.prototype.tracking_ = false;
 
@@ -189,8 +200,7 @@ SwipeView.prototype.tracking_ = false;
 /**
  * Whether to deploy the tracker on swipe events.
  *
- * @type {boolean}
- * @private
+ * @private {boolean}
  */
 SwipeView.prototype.armed_ = false;
 
@@ -240,14 +250,14 @@ SwipeView.prototype.onSurroundingTextChanged_ = function(e) {
         this.deletedWords_.push(lastDelete.slice(1));
       }
     }
-  } else if (e.text.length == 100 || oldText.length == 100) {
+  } else if (e.text.length == SwipeView.MAX_SURROUNDING_TEXT_LENGTH_ ||
+      oldText.length == SwipeView.MAX_SURROUNDING_TEXT_LENGTH_) {
     // Check if a word was deleted from oldText.
-      var candidate = oldText.trim().split(' ').pop();
-      if (util.isPossibleDelete(oldText, text, candidate)) {
-        var location = oldText.lastIndexOf(candidate);
-        var intersectingText = oldText.slice(0, location);
-        diff = oldText.slice(location);
-      }
+    var candidate = oldText.trim().split(' ').pop();
+    if (util.isPossibleDelete(oldText, text, candidate)) {
+      var location = oldText.lastIndexOf(candidate);
+      diff = oldText.slice(location);
+    }
   } else {
     diff = oldText.substring(text.length);
   }
@@ -285,8 +295,9 @@ SwipeView.prototype.handleSwipeAction_ = function(e) {
           // Swiped right, cancel the deletion.
           if (direction & i18n.input.chrome.inputview.SwipeDirection.RIGHT) {
             word = this.deletedWords_.pop();
-              if (word)
-                this.adapter_.commitText(word);
+            if (word) {
+              this.adapter_.commitText(word);
+            }
           }
         }
         return;
@@ -297,7 +308,7 @@ SwipeView.prototype.handleSwipeAction_ = function(e) {
             '\u0008', KeyCodes.BACKSPACE, undefined, undefined, {
               ctrl: true,
               shift: false
-        });
+            });
       } else if (direction & i18n.input.chrome.inputview.SwipeDirection.RIGHT) {
         var word = this.deletedWords_.pop();
         if (word)
@@ -341,14 +352,14 @@ SwipeView.prototype.handleSwipeAction_ = function(e) {
         // Do not move carat at all, as this will either have no effect or cause
         // us to splice the word.
         if (!selectWord) {
-         return;
+          return;
         }
       }
       this.adapter_.sendKeyDownAndUpEvent(
           '', code, undefined, undefined, {
-              ctrl: selectWord,
-              shift: selectWord
-      });
+            ctrl: selectWord,
+            shift: selectWord
+          });
       return;
     }
     return;
@@ -422,6 +433,7 @@ SwipeView.prototype.handlePointerAction_ = function(e) {
   }
 };
 
+
 /** @override */
 SwipeView.prototype.createDom = function() {
   goog.base(this, 'createDom');
@@ -442,17 +454,17 @@ SwipeView.prototype.createDom = function() {
 SwipeView.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
   this.getHandler().
-    listen(this.adapter_,
-        i18n.input.chrome.inputview.events.EventType.
-            SURROUNDING_TEXT_CHANGED,
-        this.onSurroundingTextChanged_).
-    listen(this.pointerHandler_, [
-      EventType.SWIPE], this.handleSwipeAction_).
-    listen(this.pointerHandler_, [
-          EventType.LONG_PRESS,
-          EventType.POINTER_UP,
-          EventType.POINTER_DOWN,
-          EventType.POINTER_OUT], this.handlePointerAction_);
+      listen(this.adapter_,
+          i18n.input.chrome.inputview.events.EventType.
+              SURROUNDING_TEXT_CHANGED,
+          this.onSurroundingTextChanged_).
+      listen(this.pointerHandler_, [
+        EventType.SWIPE], this.handleSwipeAction_).
+      listen(this.pointerHandler_, [
+        EventType.LONG_PRESS,
+        EventType.POINTER_UP,
+        EventType.POINTER_DOWN,
+        EventType.POINTER_OUT], this.handlePointerAction_);
   goog.style.setElementShown(this.getElement(), false);
 };
 
@@ -582,14 +594,14 @@ SwipeView.prototype.showDeletionTrack = function(key) {
   var coordinate = goog.style.getClientPosition(key.getElement());
   if (key.type == ElementType.BACKSPACE_KEY) {
     this.showDeletionTrack_(
-      coordinate.x + key.availableWidth,
-      coordinate.y,
-      70,
-      key.availableHeight,
-      key.availableWidth,
-      100,
-      undefined,
-      Css.BACKSPACE_ICON);
+        coordinate.x + key.availableWidth,
+        coordinate.y,
+        SwipeView.SEGMENT_WIDTH_,
+        key.availableHeight,
+        key.availableWidth,
+        SwipeView.LARGE_SEGMENT_WIDTH_,
+        undefined,
+        Css.BACKSPACE_ICON);
   }
 };
 
@@ -602,13 +614,15 @@ SwipeView.prototype.showDeletionTrack = function(key) {
  */
 SwipeView.prototype.showSelectionTrack = function(x, y) {
   var ltr = x <= (screen.width / 2);
-
+  // Center track on finger but force containment.
+  var width = Math.max(y - (SwipeView.SEGMENT_WIDTH_ / 2),
+      SwipeView.SEGMENT_WIDTH_ / 2);
   this.showSelectionTrack_(
-    ltr ? 0 : screen.width,
-    Math.max(y - 35, 35), // Center track on finger press but force containment.
-    70,
-    70,
-    x > (screen.width / 2) ? '<' : '>');
+      ltr ? 0 : screen.width,
+      width,
+      SwipeView.SEGMENT_WIDTH_,
+      SwipeView.SEGMENT_WIDTH_,
+      x > (screen.width / 2) ? '<' : '>');
 };
 
 

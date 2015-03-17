@@ -71,7 +71,7 @@ material.SpaceRow.create = function() {
   });
   var spaceKeyRow = material.util.createLinearLayout({
         'id': 'spaceKeyrow',
-        'children': [globeKey, menuKey, ctrlKey, altKey, spaceKey,
+        'children': [ctrlKey, altKey, globeKey, menuKey, spaceKey,
       enSwitcher, altGrKey, leftKey, rightKey, hideKeyboardKey]
       });
   return spaceKeyRow;

@@ -16,7 +16,6 @@ goog.provide('i18n.input.chrome.inputview.Accents');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
-goog.require('goog.math.Coordinate');
 goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.util');
@@ -61,7 +60,7 @@ Accents.highlightItem_ = function(x, y, offset) {
   if (Accents.highlightedItem_ != highlightedItem) {
     if (Accents.highlightedItem_) {
       goog.dom.classlist.remove(Accents.highlightedItem_,
-        i18n.input.chrome.inputview.Css.ELEMENT_HIGHLIGHT);
+          i18n.input.chrome.inputview.Css.ELEMENT_HIGHLIGHT);
     }
     Accents.highlightedItem_ = highlightedItem;
     if (Accents.highlightedItem_ &&
@@ -78,6 +77,7 @@ Accents.highlightItem_ = function(x, y, offset) {
  * @param {number} x The x position of finger in screen coordinate system.
  * @param {number} y The y position of finger in screen coordinate system.
  * @param {number} offset The offset to cancel highlight.
+ * @return {Element} .
  * @private
  */
 Accents.getHighlightedItem_ = function(x, y, offset) {
@@ -130,9 +130,6 @@ Accents.setAccents_ = function(accents, numOfColumns, numOfRows, width,
   var TagName = goog.dom.TagName;
   var dom = goog.dom.getDomHelper();
   var container = dom.createDom(TagName.DIV, Css.ACCENT_CONTAINER);
-  goog.dom.setProperties(container, {
-    'id' : 'container'
-  });
   container.id = 'container';
 
   var orderedAccents = Accents.reorderAccents_(accents, numOfColumns, numOfRows,
@@ -179,6 +176,7 @@ Accents.setAccents_ = function(accents, numOfColumns, numOfRows, width,
  * @param {!number} numOfColumns The number of colums of this accents window.
  * @param {!number} numOfRows The number of rows of this accents window.
  * @param {number} startKeyIndex The index of the start key in bottom row.
+ * @return {!Array.<string>} .
  * @private
  */
 Accents.reorderAccents_ = function(accents, numOfColumns, numOfRows,

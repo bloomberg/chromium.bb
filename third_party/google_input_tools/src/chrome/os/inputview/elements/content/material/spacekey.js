@@ -184,7 +184,7 @@ SpaceKey.prototype.resize = function(width, height) {
 
   goog.style.setSize(this.wrapper_, width, SpaceKey.HEIGHT);
   // Positions the wrapper in the middle.
-  this.wrapper_.style.top = (height - SpaceKey.HEIGHT) / 2 + 'px';
+  this.wrapper_.style.top = (this.availableHeight - SpaceKey.HEIGHT) / 2 + 'px';
 };
 
 });  // goog.scope

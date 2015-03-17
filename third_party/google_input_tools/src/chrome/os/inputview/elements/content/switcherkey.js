@@ -76,7 +76,7 @@ SwitcherKey.prototype.createDom = function() {
   this.setAriaLabel(this.getChromeVoxMessage());
 
   if (this.textElem) {
-    goog.dom.classlist.add(this.getElement(), Css.SWITCHER_KEY_NAME);
+    goog.dom.classlist.add(this.textElem, Css.SWITCHER_KEY_NAME);
   }
 };
 

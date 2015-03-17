@@ -90,6 +90,9 @@ Candidate.prototype.createDom = function() {
   if (this.candidate['isEmoji']) {
     goog.dom.classlist.add(elem, Css.EMOJI_FONT);
   }
+  if (this.candidateType == Candidate.Type.NUMBER) {
+    goog.dom.classlist.add(elem, Css.CANDIDATE_NUMBER);
+  }
   this.wrapper_ = dom.createDom('div', {
     'class': Css.CANDIDATE_INTERNAL_WRAPPER
   }, this.candidate[Name.CANDIDATE]);

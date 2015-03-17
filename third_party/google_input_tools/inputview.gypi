@@ -114,6 +114,7 @@
       'src/chrome/os/message/contexttype.js',
       'src/chrome/os/message/event.js',
       'src/chrome/os/message/name.js',
+      'src/chrome/os/message/source.js',
       'src/chrome/os/message/type.js',
       'src/chrome/os/sounds/soundcontroller.js',
       'src/chrome/os/sounds/sounds.js',

@@ -35,6 +35,7 @@ i18n.input.chrome.inputview.Css = {
   BACK_TO_KEYBOARD_ICON: goog.getCssName('inputview-back-to-keyboard'),
   BOLD_ICON: goog.getCssName('inputview-bold-icon'),
   CANDIDATE: goog.getCssName('inputview-candidate'),
+  CANDIDATE_NUMBER: goog.getCssName('inputview-candidate-number'),
   CANDIDATES_LINE: goog.getCssName('inputview-candidates-line'),
   CANDIDATES_TOP_LINE: goog.getCssName('inputview-candidates-top-line'),
   CANDIDATE_AUTOCORRECT: goog.getCssName('inputview-candidate-autocorrect'),

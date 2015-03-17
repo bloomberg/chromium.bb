@@ -87,6 +87,40 @@ Statistics.prototype.charactersBetweenBackspaces_ = 0;
 
 
 /**
+ * Maximum pause duration in milliseconds.
+ *
+ * @private {number}
+ * @const
+ */
+Statistics.prototype.MAX_PAUSE_DURATION_ = 3000;
+
+
+/**
+ * Minimum words typed before committing the WPM statistic.
+ *
+ * @private {number}
+ * @const
+ */
+Statistics.prototype.MIN_WORDS_FOR_WPM_ = 10;
+
+
+/**
+ * Timestamp of last activity.
+ *
+ * @private {number}
+ */
+Statistics.prototype.lastActivityTimeStamp_ = 0;
+
+
+/**
+ * Time spent typing.
+ *
+ * @private {number}
+ */
+Statistics.prototype.typingDuration_ = 0;
+
+
+/**
  * Whether recording for physical keyboard specially.
  *
  * @private {boolean}
@@ -108,6 +142,14 @@ Statistics.prototype.lastCommitLength_ = 0;
  * @private {number}
  */
 Statistics.prototype.charactersCommitted_ = 0;
+
+
+/**
+ * The number of characters to ignore when calculating WPM.
+ *
+ * @private {number}
+ */
+Statistics.prototype.droppedKeys_ = 0;
 
 
 /**
@@ -175,11 +217,20 @@ Statistics.prototype.recordSessionEnd = function() {
   // excudes the focus loss-gain on the new tab page from being counted.
   if (this.charactersCommitted_ > 0) {
     this.recordValue('InputMethod.VirtualKeyboard.CharactersCommitted',
-          this.charactersCommitted_, 16384, 50);
-    // TODO: Add WPM metrics.
+        this.charactersCommitted_, 16384, 50);
+    var words = (this.charactersCommitted_ - this.droppedKeys_) / 5;
+    if (this.typingDuration_ > 0 && words > this.MIN_WORDS_FOR_WPM_) {
+      // Milliseconds to minutes.
+      var minutes = this.typingDuration_ / 60000;
+      this.recordValue('InputMethod.VirtualKeyboard.WordsPerMinute',
+        Math.round(words / minutes), 100, 100);
+    }
   }
+  this.droppedKeys_ = 0;
   this.charactersCommitted_ = 0;
   this.lastCommitLength_ = 0;
+  this.typingDuration_ = 0;
+  this.lastActivityTimeStamp_ = 0;
 };
 
 
@@ -363,6 +414,19 @@ Statistics.prototype.recordValue = function(
  * Records a key down.
  */
 Statistics.prototype.recordCharacterKey = function() {
+  var now = Date.now();
+  if (this.lastActivityTimeStamp_) {
+    if (now < (this.lastActivityTimeStamp_ + this.MAX_PAUSE_DURATION_)) {
+      this.typingDuration_ += (now - this.lastActivityTimeStamp_);
+    } else {
+      // Exceeded pause duration. Ignore this character.
+      this.droppedKeys_++;
+    }
+  } else {
+    // Ignore the first character in the new session.
+    this.droppedKeys_++;
+  }
+  this.lastActivityTimeStamp_ = now;
   this.charactersBetweenBackspaces_++;
 };
 

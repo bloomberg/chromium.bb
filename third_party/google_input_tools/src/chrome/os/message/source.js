@@ -11,18 +11,23 @@
 // you may not use this file except in compliance with the License.
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
-goog.provide('i18n.input.chrome.inputview.FeatureName');
+goog.provide('i18n.input.chrome.message.Source');
+
 
 /**
- * All features.
+ * Define the message source.
  *
  * @enum {string}
  */
-i18n.input.chrome.inputview.FeatureName = {
-  // List all features.
-  GESTURE_SELECTION: 'gestureselection',
-  GESTURE_DELETION: 'gesturedeletion',
-  GESTURE_TYPING: 'gesturetyping',
-  OPTIMIZED_LAYOUTS: 'optimized-layouts',
-  EXPERIMENTAL: 'experimental'
+i18n.input.chrome.message.Source = {
+  BG_BG: 'bg->bg',
+  BG_VK: 'bg->vk',
+  BG_OP: 'bg->op',
+  VK_BG: 'vk->bg',
+  VK_OP: 'vk->op',
+  VK_VK: 'vk->vk',
+  OP_BG: 'op->bg',
+  OP_VK: 'op->vk',
+  OP_OP: 'op->op',
+  UNKNOWN: 'unknown'
 };

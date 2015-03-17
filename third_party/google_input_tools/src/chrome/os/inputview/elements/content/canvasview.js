@@ -108,7 +108,7 @@ CanvasView.INK_WIDTH_ = 6;
  * @type {string}
  * @private
  */
-CanvasView.INK_COLOR_ = '#111111';
+CanvasView.INK_COLOR_ = '#37474f';
 
 
 /**
