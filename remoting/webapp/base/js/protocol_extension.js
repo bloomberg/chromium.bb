@@ -21,12 +21,12 @@ var remoting = remoting || {};
 remoting.ProtocolExtension = function() {};
 
 /**
- * The string that identifies the type of the extension.
- * All extension messages with this type will be sent to the extension.
+ * Return a list of the extension message types that this class can handle.
+ * All extension messages that match these types will be sent to the extension.
  *
- * @return {string}
+ * @return {Array<string>}
  */
-remoting.ProtocolExtension.prototype.getType = function() {};
+remoting.ProtocolExtension.prototype.getExtensionTypes = function() {};
 
 /**
  * Called when the connection has been established to start the extension.
@@ -34,13 +34,15 @@ remoting.ProtocolExtension.prototype.getType = function() {};
  * @param {function(string,string)} sendMessageToHost Callback to send a message
  *     to the host.
  */
-remoting.ProtocolExtension.prototype.start =
+remoting.ProtocolExtension.prototype.startExtension =
     function(sendMessageToHost) {};
 
 /**
  * Called when an extension message of a matching type is received.
  *
- * @param {string} message
+ * @param {string} type The message type.
+ * @param {Object} message The parsed extension message data.
+ * @return {boolean} True if the extension message was handled.
  */
-remoting.ProtocolExtension.prototype.onMessage =
-    function(message) {};
+remoting.ProtocolExtension.prototype.onExtensionMessage =
+    function(type, message) {};

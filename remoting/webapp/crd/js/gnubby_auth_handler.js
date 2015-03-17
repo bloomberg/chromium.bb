@@ -22,16 +22,20 @@ remoting.GnubbyAuthHandler = function() {
   this.sendMessageToHostCallback_ = null;
 };
 
-/** @return {string} */
-remoting.GnubbyAuthHandler.prototype.getType = function() {
-  return 'gnubby-auth';
+/** @private {string} */
+remoting.GnubbyAuthHandler.EXTENSION_TYPE = 'gnubby-auth';
+
+/** @return {Array<string>} */
+remoting.GnubbyAuthHandler.prototype.getExtensionTypes = function() {
+  return [remoting.GnubbyAuthHandler.EXTENSION_TYPE];
 };
 
 /**
  * @param {function(string,string)} sendMessageToHost Callback to send a message
  *     to the host.
  */
-remoting.GnubbyAuthHandler.prototype.start = function(sendMessageToHost) {
+remoting.GnubbyAuthHandler.prototype.startExtension =
+    function(sendMessageToHost) {
   this.sendMessageToHostCallback_ = sendMessageToHost;
 
   this.sendMessageToHost_({
@@ -45,15 +49,19 @@ remoting.GnubbyAuthHandler.prototype.start = function(sendMessageToHost) {
  * @private
  */
 remoting.GnubbyAuthHandler.prototype.sendMessageToHost_ = function(data) {
-  this.sendMessageToHostCallback_(this.getType(), JSON.stringify(data));
+  this.sendMessageToHostCallback_(remoting.GnubbyAuthHandler.EXTENSION_TYPE,
+                                  JSON.stringify(data));
 }
 
 /**
  * Processes gnubby-auth messages.
- * @param {string} data The gnubby-auth message data.
+ *
+ * @param {string} type The message type.
+ * @param {Object} message The parsed extension message data.
+ * @return {boolean} True if the extension message was handled.
  */
-remoting.GnubbyAuthHandler.prototype.onMessage = function(data) {
-  var message = getJsonObjectFromString(data);
+remoting.GnubbyAuthHandler.prototype.onExtensionMessage =
+    function(type, message) {
   var messageType = getStringAttr(message, 'type');
   if (messageType == 'data') {
     this.sendMessageToGnubbyd_({
@@ -62,7 +70,9 @@ remoting.GnubbyAuthHandler.prototype.onMessage = function(data) {
     }, this.callback_.bind(this, getNumberAttr(message, 'connectionId')));
   } else {
     console.error('Invalid gnubby-auth message: ' + messageType);
+    return false;
   }
+  return true;
 };
 
 /**

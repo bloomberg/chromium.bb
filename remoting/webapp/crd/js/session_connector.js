@@ -121,9 +121,6 @@ remoting.SessionConnectorFactory = function() {};
  * @param {function(remoting.ConnectionInfo):void} onConnected Callback on
  *     success.
  * @param {function(!remoting.Error):void} onError Callback on error.
- * @param {function(string, string):boolean} appProtocolExtensionHandler The
- *     handler for the application's protocol extension messages. Returns true
- *     if a message is recognized; false otherwise.
  * @param {function(!remoting.Error):void} onConnectionFailed Callback for when
  *     the connection fails.
  * @param {Array<string>} requiredCapabilities Connector capabilities
@@ -133,7 +130,7 @@ remoting.SessionConnectorFactory = function() {};
  * @return {remoting.SessionConnector}
  */
 remoting.SessionConnectorFactory.prototype.createConnector =
-    function(clientContainer, onConnected, onError, appProtocolExtensionHandler,
+    function(clientContainer, onConnected, onError,
              onConnectionFailed, requiredCapabilities, defaultRemapKeys) {};
 
 /**

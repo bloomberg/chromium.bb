@@ -41,9 +41,12 @@ remoting.CastExtensionHandler = function() {
   this.sendMessageToHostCallback_ = null;
 };
 
-/** @return {string} */
-remoting.CastExtensionHandler.prototype.getType = function() {
-  return 'cast_message';
+/** @private {string} */
+remoting.CastExtensionHandler.EXTENSION_TYPE = 'cast_message';
+
+/** @return {Array<string>} */
+remoting.CastExtensionHandler.prototype.getExtensionTypes = function() {
+  return [remoting.CastExtensionHandler.EXTENSION_TYPE];
 };
 
 /**
@@ -58,7 +61,8 @@ remoting.CastExtensionHandler.prototype.SCRIPT_NODE_ID_ = 'cast-script-node';
  * @param {function(string,string)} sendMessageToHost Callback to send a message
  *     to the host.
  */
-remoting.CastExtensionHandler.prototype.start = function(sendMessageToHost) {
+remoting.CastExtensionHandler.prototype.startExtension =
+    function(sendMessageToHost) {
   this.sendMessageToHostCallback_ = sendMessageToHost;
 
   var node = document.getElementById(this.SCRIPT_NODE_ID_);
@@ -90,11 +94,13 @@ remoting.CastExtensionHandler.prototype.start = function(sendMessageToHost) {
 
 /**
  * Process Cast Extension Messages from the Chromoting host.
- * @param {string} msgString The extension message's data.
+ *
+ * @param {string} type The message type.
+ * @param {Object} message The parsed extension message data.
+ * @return {boolean} True if the extension message was handled.
  */
-remoting.CastExtensionHandler.prototype.onMessage = function(msgString) {
-  var message = getJsonObjectFromString(msgString);
-
+remoting.CastExtensionHandler.prototype.onExtensionMessage =
+    function(type, message) {
   // Save messages to send after a session is established.
   this.messageQueue_.push(message);
   // Trigger the sending of pending messages, followed by the one just
@@ -102,6 +108,7 @@ remoting.CastExtensionHandler.prototype.onMessage = function(msgString) {
   if (this.session_) {
     this.sendPendingMessages_();
   }
+  return true;
 };
 
 /**
@@ -111,7 +118,8 @@ remoting.CastExtensionHandler.prototype.onMessage = function(msgString) {
  * @private
  */
 remoting.CastExtensionHandler.prototype.sendMessageToHost_ = function(data) {
-  this.sendMessageToHostCallback_(this.getType(), JSON.stringify(data));
+  this.sendMessageToHostCallback_(remoting.CastExtensionHandler.EXTENSION_TYPE,
+                                  JSON.stringify(data));
 };
 
 /**

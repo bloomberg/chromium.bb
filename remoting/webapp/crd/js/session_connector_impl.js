@@ -31,9 +31,6 @@ remoting.desktopConnectedView = null;
  * @param {function(remoting.ConnectionInfo):void} onConnected Callback on
  *     success.
  * @param {function(!remoting.Error):void} onError Callback on error.
- * @param {function(string, string):boolean} appProtocolExtensionHandler The
- *     handler for the application's protocol extension messages. Returns true
- *     if a message is recognized; false otherwise.
  * @param {function(!remoting.Error):void} onConnectionFailed Callback for when
  *     the connection fails.
  * @param {Array<string>} requiredCapabilities Connector capabilities
@@ -44,7 +41,6 @@ remoting.desktopConnectedView = null;
  * @implements {remoting.SessionConnector}
  */
 remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
-                                         appProtocolExtensionHandler,
                                          onConnectionFailed,
                                          requiredCapabilities,
                                          defaultRemapKeys) {
@@ -56,9 +52,6 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
 
   /** @private {function(!remoting.Error):void} */
   this.onError_ = onError;
-
-  /** @private {function(string, string):boolean} */
-  this.appProtocolExtensionHandler_ = appProtocolExtensionHandler;
 
   /** @private {function(!remoting.Error):void} */
   this.onConnectionFailed_ = onConnectionFailed;
@@ -118,6 +111,14 @@ remoting.SessionConnectorImpl.prototype.resetConnection_ = function() {
 
   /** @private {Object<string,remoting.ProtocolExtension>} */
   this.protocolExtensions_ = {};
+
+  /**
+   * True once a session has been created and we've started the extensions.
+   * This is used to immediately start any extensions that are registered
+   * after the CONNECTED state change.
+   * @private {boolean}
+   */
+  this.protocolExtensionsStarted_ = false;
 };
 
 /**
@@ -405,22 +406,43 @@ remoting.SessionConnectorImpl.prototype.removePlugin_ = function() {
  */
 remoting.SessionConnectorImpl.prototype.registerProtocolExtension =
     function(extension) {
-  var type = extension.getType();
-  if (type in this.protocolExtensions_) {
-    console.error(
-        'Attempt to register multiple extensions with the same type: ', type);
-    return;
+  var types = extension.getExtensionTypes();
+
+  // Make sure we don't have an extension of that type already registered.
+  for (var i=0, len=types.length; i < len; i++) {
+    if (types[i] in this.protocolExtensions_) {
+      console.error(
+          'Attempt to register multiple extensions of the same type: ', type);
+      return;
+    }
   }
-  this.protocolExtensions_[type] = extension;
+
+  for (var i=0, len=types.length; i < len; i++) {
+    var type = types[i];
+    this.protocolExtensions_[type] = extension;
+    if (this.protocolExtensionsStarted_) {
+      this.startProtocolExtension_(type);
+    }
+  }
 };
 
 /** @private */
 remoting.SessionConnectorImpl.prototype.initProtocolExtensions_ = function() {
+  base.debug.assert(!this.protocolExtensionsStarted_);
   for (var type in this.protocolExtensions_) {
-    /** @type {remoting.ProtocolExtension} */
-    var extension = this.protocolExtensions_[type];
-    extension.start(this.plugin_.sendClientMessage.bind(this.plugin_));
+    this.startProtocolExtension_(type);
   }
+  this.protocolExtensionsStarted_ = true;
+};
+
+/**
+ * @param {string} type
+ * @private
+ */
+remoting.SessionConnectorImpl.prototype.startProtocolExtension_ =
+    function(type) {
+  var extension = this.protocolExtensions_[type];
+  extension.startExtension(this.plugin_.sendClientMessage.bind(this.plugin_));
 };
 
 /**
@@ -437,20 +459,33 @@ remoting.SessionConnectorImpl.prototype.onProtocolExtensionMessage_ =
     console.log('Got echo reply: ' + data);
     return true;
   }
-  for (var type in this.protocolExtensions_) {
+
+  var message = base.jsonParseSafe(data);
+  if (typeof message != 'object') {
+    console.error('Error parsing extension json data: ' + data);
+    return false;
+  }
+
+  if (type in this.protocolExtensions_) {
     /** @type {remoting.ProtocolExtension} */
     var extension = this.protocolExtensions_[type];
-    if (type == extension.getType()) {
-      try {
-        extension.onMessage(data);
-      } catch (/** @type {*} */ err) {
-        console.error('Failed to process protocol extension ', type,
-                      ' message: ', err);
-      }
+    var handled = false;
+    try {
+      handled = extension.onExtensionMessage(type, message);
+    } catch (/** @type {*} */ err) {
+      console.error('Failed to process protocol extension ' + type +
+                    ' message: ' + err);
+    }
+    if (handled) {
       return true;
     }
   }
-  return this.appProtocolExtensionHandler_(type, data);
+
+  if (remoting.desktopConnectedView) {
+    return remoting.desktopConnectedView.handleExtensionMessage(type, message);
+  }
+
+  return false;
 };
 
 /**
@@ -542,9 +577,6 @@ remoting.DefaultSessionConnectorFactory = function() {};
  * @param {function(remoting.ConnectionInfo):void} onConnected Callback on
  *     success.
  * @param {function(!remoting.Error):void} onError Callback on error.
- * @param {function(string, string):boolean} appProtocolExtensionHandler The
- *     handler for the application's protocol extension messages. Returns true
- *     if a message is recognized; false otherwise.
  * @param {function(!remoting.Error):void} onConnectionFailed Callback for when
  *     the connection fails.
  * @param {Array<string>} requiredCapabilities Connector capabilities
@@ -555,11 +587,9 @@ remoting.DefaultSessionConnectorFactory = function() {};
  */
 remoting.DefaultSessionConnectorFactory.prototype.createConnector =
     function(clientContainer, onConnected, onError,
-             appProtocolExtensionHandler,
              onConnectionFailed, requiredCapabilities, defaultRemapKeys) {
   return new remoting.SessionConnectorImpl(clientContainer, onConnected,
                                            onError,
-                                           appProtocolExtensionHandler,
                                            onConnectionFailed,
                                            requiredCapabilities,
                                            defaultRemapKeys);

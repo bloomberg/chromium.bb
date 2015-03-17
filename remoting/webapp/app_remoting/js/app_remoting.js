@@ -17,6 +17,7 @@ var remoting = remoting || {};
  * @param {remoting.Application} app The main app that owns this delegate.
  * @constructor
  * @implements {remoting.Application.Delegate}
+ * @implements {remoting.ProtocolExtension}
  */
 remoting.AppRemoting = function(app) {
   app.setDelegate(this);
@@ -232,6 +233,8 @@ remoting.AppRemoting.prototype.handleConnected = function(connectionInfo) {
             JSON.stringify({fullName: userInfo.name}));
       });
 
+  remoting.app.getSessionConnector().registerProtocolExtension(this);
+
   var clientSession = connectionInfo.session();
   // Set up a ping at 10-second intervals to test the connection speed.
   var CONNECTION_SPEED_PING_INTERVAL = 10 * 1000;
@@ -276,15 +279,25 @@ remoting.AppRemoting.prototype.handleVideoStreamingStarted = function() {
   remoting.LoadingWindow.close();
 };
 
+
+/** @return {Array<string>} */
+remoting.AppRemoting.prototype.getExtensionTypes = function() {
+  return ['openURL', 'onWindowRemoved', 'onWindowAdded',
+          'onAllWindowsMinimized', 'setKeyboardLayouts', 'pingResponse'];
+};
+
 /**
- * Called when an extension message needs to be handled.
- *
- * @param {string} type The type of the extension message.
- * @param {Object} message The parsed extension message data.
- * @return {boolean} True if the extension message was recognized.
+ * @param {function(string,string)} sendMessageToHost Callback to send a message
+ *     to the host.
  */
-remoting.AppRemoting.prototype.handleExtensionMessage = function(
-    type, message) {
+remoting.AppRemoting.prototype.startExtension = function(sendMessageToHost) {
+};
+
+/**
+ * @param {string} type The message type.
+ * @param {Object} message The parsed extension message data.
+ */
+remoting.AppRemoting.prototype.onExtensionMessage = function(type, message) {
   switch (type) {
 
     case 'openURL':

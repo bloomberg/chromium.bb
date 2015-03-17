@@ -294,16 +294,6 @@ remoting.DesktopRemoting.prototype.handleVideoStreamingStarted = function() {
 };
 
 /**
- * @param {string} type The type of the extension message.
- * @param {Object} message The parsed extension message data.
- * @return {boolean} Return true if the extension message was recognized.
- */
-remoting.DesktopRemoting.prototype.handleExtensionMessage = function(
-    type, message) {
-  return false;
-};
-
-/**
  * Called when an error needs to be displayed to the user.
  *
  * @param {!remoting.Error} error The error to be localized and displayed.
