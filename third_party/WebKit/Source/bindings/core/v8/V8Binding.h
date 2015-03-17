@@ -1044,19 +1044,6 @@ private:
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isolate*, ExecutionContext*, v8::Handle<v8::Function>);
 
-class V8RethrowTryCatchScope final {
-public:
-    explicit V8RethrowTryCatchScope(v8::TryCatch& block) : m_block(block) { }
-    ~V8RethrowTryCatchScope()
-    {
-        // ReThrow() is a no-op if no exception has been caught, so always call.
-        m_block.ReThrow();
-    }
-
-private:
-    v8::TryCatch& m_block;
-};
-
 // Callback functions used by generated code.
 CORE_EXPORT void v8ConstructorAttributeGetterAsProperty(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>&);
 void v8ConstructorAttributeGetterAsAccessor(const v8::FunctionCallbackInfo<v8::Value>&);
