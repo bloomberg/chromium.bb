@@ -503,11 +503,14 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 {
 	struct fbdev_output *output;
 	pixman_transform_t transform;
+	struct weston_config_section *section;
 	int fb_fd;
 	int shadow_width, shadow_height;
 	int width, height;
 	unsigned int bytes_per_pixel;
 	struct wl_event_loop *loop;
+	uint32_t config_transform;
+	char *s;
 
 	weston_log("Creating fbdev output.\n");
 
@@ -552,10 +555,19 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 	output->base.model = output->fb_info.id;
 	output->base.name = strdup("fbdev");
 
+	section = weston_config_get_section(compositor->base.config,
+					    "output", "name",
+					    output->base.name);
+	weston_config_section_get_string(section, "transform", &s, "normal");
+	if (weston_parse_transform(s, &config_transform) < 0)
+		weston_log("Invalid transform \"%s\" for output %s\n",
+			   s, output->base.name);
+	free(s);
+
 	weston_output_init(&output->base, &compositor->base,
 	                   0, 0, output->fb_info.width_mm,
 	                   output->fb_info.height_mm,
-	                   WL_OUTPUT_TRANSFORM_NORMAL,
+	                   config_transform,
 			   1);
 
 	width = output->fb_info.x_resolution;
