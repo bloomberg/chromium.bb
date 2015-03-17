@@ -112,6 +112,21 @@ test-25fps.vp8.md5:
   MD5 of RGB thumbnail rendered version of test-25fps.vp8 decoded with V4L2VDA
   on Exynos. Written out by video_decode_accelerator_unittest.
 
+test-25fps.vp9:
+  avconv 9.16-6:9.16-0ubuntu0.14.04.1, vpxenc v1.3.0
+  avconv -i test-25fps.h264 -c:v rawvideo -pix_fmt yuv420p test-25fps_i420.yuv
+  vpxenc test-25fps_i420.yuv -o test-25fps.vp9 --codec=vp9 -w 320 -h 240 --ivf \
+      --profile=0 --kf-min-dist=0 --kf-max-dist=150 --lag-in-frames=24 \
+      --drop-frame=0 --target-bitrate=140 --cq-level=23 --min-q=4 --max-q=56 \
+      --static-thresh=1000 --arnr-maxframes=7 --arnr-strength=5 --arnr-type=3 \
+      --cpu-used=1 --good --tile-columns=1 --passes=2 --threads=1 --fps=25/1 \
+      --end-usage=cq --auto-alt-ref=1 --bias-pct=50 --minsection-pct=0 \
+      --maxsection-pct=2000 --undershoot-pct=100
+
+test-25fps.vp9.md5:
+  MD5 of RGB thumbnail rendered version of test-25fps.vp9. Written out by
+  video_decode_accelerator_unittest.
+
 // VDA test files: bear
 bear.h264:
   Using ffmpeg version 0.8.6-4:0.8.6-0ubuntu0.12.04.1, generated with
