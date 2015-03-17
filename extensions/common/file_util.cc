@@ -17,9 +17,12 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
@@ -49,6 +52,42 @@ bool ValidateFilePath(const base::FilePath& path) {
   }
 
   return true;
+}
+
+// Returns true if the extension installation should flush all files and the
+// directory.
+bool UseSafeInstallation() {
+  const char kFieldTrialName[] = "ExtensionUseSafeInstallation";
+  const char kEnable[] = "Enable";
+  return base::FieldTrialList::FindFullName(kFieldTrialName) == kEnable;
+}
+
+enum FlushOneOrAllFiles {
+   ONE_FILE_ONLY,
+   ALL_FILES
+};
+
+// Flush all files in a directory or just one.  When flushing all files, it
+// makes sure every file is on disk.  When flushing one file only, it ensures
+// all parent directories are on disk.
+void FlushFilesInDir(const base::FilePath& path,
+                     FlushOneOrAllFiles one_or_all_files) {
+  if (!UseSafeInstallation()) {
+    return;
+  }
+  base::FileEnumerator temp_traversal(path,
+                                      true,  // recursive
+                                      base::FileEnumerator::FILES);
+  for (base::FilePath current = temp_traversal.Next(); !current.empty();
+      current = temp_traversal.Next()) {
+    base::File currentFile(current,
+                           base::File::FLAG_OPEN | base::File::FLAG_WRITE);
+    currentFile.Flush();
+    currentFile.Close();
+    if (one_or_all_files == ONE_FILE_ONLY) {
+      break;
+    }
+  }
 }
 
 }  // namespace
@@ -102,11 +141,32 @@ base::FilePath InstallExtension(const base::FilePath& unpacked_source_dir,
     return base::FilePath();
   }
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
+  // Flush the source dir completely before moving to make sure everything is
+  // on disk. Otherwise a sudden power loss could cause the newly installed
+  // extension to be in a corrupted state. Note that empty sub-directories
+  // may still be lost.
+  FlushFilesInDir(crx_temp_source, ALL_FILES);
+
+  // The target version_dir does not exists yet, so base::Move() is using
+  // rename() on POSIX systems. It is atomic in the sense that it will
+  // either complete successfully or in the event of data loss be reverted.
   if (!base::Move(crx_temp_source, version_dir)) {
     LOG(ERROR) << "Installing extension from : " << crx_temp_source.value()
                << " into : " << version_dir.value() << " failed.";
     return base::FilePath();
   }
+
+  // Flush one file in the new version_dir to make sure the dir move above is
+  // persisted on disk. This is guaranteed on POSIX systems. ExtensionPrefs
+  // is going to be updated with the new version_dir later. In the event of
+  // data loss ExtensionPrefs should be pointing to the previous version which
+  // is still fine.
+  FlushFilesInDir(version_dir, ONE_FILE_ONLY);
+
+  UMA_HISTOGRAM_TIMES("Extensions.FileInstallation",
+                      base::TimeTicks::Now() - start_time);
 
   return version_dir;
 }

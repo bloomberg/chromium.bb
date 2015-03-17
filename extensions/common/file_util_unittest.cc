@@ -70,6 +70,10 @@ TEST_F(FileUtilTest, InstallUninstallGarbageCollect) {
   base::FilePath src = temp.path().AppendASCII(extension_id);
   ASSERT_TRUE(base::CreateDirectory(src));
 
+  base::FilePath extension_content;
+  base::CreateTemporaryFileInDir(src, &extension_content);
+  ASSERT_TRUE(base::PathExists(extension_content));
+
   // Create a extensions tree.
   base::FilePath all_extensions = temp.path().AppendASCII("extensions");
   ASSERT_TRUE(base::CreateDirectory(all_extensions));
@@ -81,6 +85,7 @@ TEST_F(FileUtilTest, InstallUninstallGarbageCollect) {
       version_1.value(),
       all_extensions.AppendASCII(extension_id).AppendASCII("1.0_0").value());
   ASSERT_TRUE(base::DirectoryExists(version_1));
+  ASSERT_TRUE(base::PathExists(version_1.Append(extension_content.BaseName())));
 
   // Should have moved the source.
   ASSERT_FALSE(base::DirectoryExists(src));

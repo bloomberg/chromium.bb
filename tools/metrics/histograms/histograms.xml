@@ -8927,6 +8927,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.FileInstallation" units="milliseconds">
+  <owner>xiaohuic@chromium.org</owner>
+  <summary>
+    Record the time taken to physically move the extention files from temporary
+    location to the final installation directory. It includes the time to flush
+    the file system if ExtensionUseSafeInstallation field trial is enabled. This
+    is recorded once per extension install/update.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.FromWebstoreInconsistency"
     enum="ExtensionFromWebstoreInconcistencyEnum">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -9970,6 +9980,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Extensions.UpdateType" enum="ExtensionType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Updates grouped by Extension::HistogramType.</summary>
+</histogram>
+
+<histogram name="Extensions.WebstoreDownload.FileDownload" units="milliseconds">
+  <owner>xiaohuic@chromium.org</owner>
+  <summary>
+    The time spent to download the crx file from the webstore to local disk.
+    This is recorded once per successful download.
+  </summary>
 </histogram>
 
 <histogram name="Extensions.WebstoreDownload.InterruptReason"
