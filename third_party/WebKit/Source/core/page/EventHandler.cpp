@@ -1509,7 +1509,7 @@ void EventHandler::invalidateClick()
     m_clickNode = nullptr;
 }
 
-static Node* parentForClickEvent(const Node& node)
+static ContainerNode* parentForClickEvent(const Node& node)
 {
     // IE doesn't dispatch click events for mousedown/mouseup events across form
     // controls.

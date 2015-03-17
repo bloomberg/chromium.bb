@@ -869,7 +869,7 @@ bool Node::containsIncludingHostElements(const Node& node) const
     return false;
 }
 
-Node* Node::commonAncestor(const Node& other, Node* (*parent)(const Node&))
+Node* Node::commonAncestor(const Node& other, ContainerNode* (*parent)(const Node&))
 {
     if (this == other)
         return this;
