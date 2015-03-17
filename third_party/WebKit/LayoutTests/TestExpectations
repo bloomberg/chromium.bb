@@ -112,6 +112,13 @@ crbug.com/339118 virtual/slimmingpaint/fast/events/touch/compositor-touch-hit-re
 crbug.com/430980 [ Mac ] fast/events/hit-test-counts.html [ Failure Pass ]
 crbug.com/430980 [ Mac ] virtual/slimmingpaint/fast/events/hit-test-counts.html [ Failure Pass ]
 
+crbug.com/465096 fast/block/basic/quirk-percent-height-table-cell.html [ NeedsRebaseline ]
+crbug.com/465096 fast/table/colspan-with-all-percent-cells.html [ NeedsRebaseline ]
+crbug.com/465096 fast/html/details-writing-mode.html [ NeedsRebaseline ]
+crbug.com/465096 virtual/slimmingpaint/fast/table/colspan-with-all-percent-cells.html [ NeedsRebaseline ]
+crbug.com/465096 virtual/slimmingpaint/fast/html/details-writing-mode.html [ NeedsRebaseline ]
+crbug.com/465096 virtual/slimmingpaint/fast/block/basic/quirk-percent-height-table-cell.html [ NeedsRebaseline ]
+
 # The result here is flaky. So a rebaseline won't make these [ Pass Timeout ].
 crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order-preload.html [ Failure ]
 crbug.com/66751 [ Linux Mac ] http/tests/local/link-stylesheet-load-order.html [ Failure ]
