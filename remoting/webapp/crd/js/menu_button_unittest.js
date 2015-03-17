@@ -13,8 +13,8 @@ var onHide = null;
 /** @type {remoting.MenuButton} */
 var menuButton = null;
 
-module('MenuButton', {
-  setup: function() {
+QUnit.module('MenuButton', {
+  beforeEach: function() {
     var fixture = document.getElementById('qunit-fixture');
     fixture.innerHTML =
         '<span class="menu-button" id="menu-button-container">' +
@@ -30,28 +30,29 @@ module('MenuButton', {
         /** @type {function():void} */ (onShow),
         /** @type {function():void} */ (onHide));
   },
-  teardown: function() {
+  afterEach: function() {
     onShow = null;
     onHide = null;
     menuButton = null;
   }
 });
 
-test('should display on click', function() {
+QUnit.test('should display on click', function(assert) {
   var menu = menuButton.menu();
-  ok(menu.offsetWidth == 0 && menu.offsetHeight == 0);
+  assert.ok(menu.offsetWidth == 0 && menu.offsetHeight == 0);
   menuButton.button().click();
-  ok(menu.offsetWidth != 0 && menu.offsetHeight != 0);
+  assert.ok(menu.offsetWidth != 0 && menu.offsetHeight != 0);
 });
 
-test('should dismiss when the menu is clicked', function() {
+QUnit.test('should dismiss when the menu is clicked', function(assert) {
   var menu = menuButton.menu();
   menuButton.button().click();
   menu.click();
-  ok(menu.offsetWidth == 0 && menu.offsetHeight == 0);
+  assert.ok(menu.offsetWidth == 0 && menu.offsetHeight == 0);
 });
 
-test('should dismiss when anything outside the menu is clicked', function() {
+QUnit.test('should dismiss when anything outside the menu is clicked',
+    function(assert) {
   var menu = menuButton.menu();
   menuButton.button().click();
   var x = menu.offsetRight + 1;
@@ -59,36 +60,36 @@ test('should dismiss when anything outside the menu is clicked', function() {
   var notMenu = document.elementFromPoint(x, y);
   base.debug.assert(notMenu != menu);
   notMenu.click();
-  ok(menu.offsetWidth == 0 && menu.offsetHeight == 0);
+  assert.ok(menu.offsetWidth == 0 && menu.offsetHeight == 0);
 });
 
-test('should dismiss when menu item is clicked', function() {
+QUnit.test('should dismiss when menu item is clicked', function(assert) {
   var menu = menuButton.menu();
   menuButton.button().click();
   var element = document.getElementById('menu-option-1');
   element.click();
-  ok(menu.offsetWidth == 0 && menu.offsetHeight == 0);
+  assert.ok(menu.offsetWidth == 0 && menu.offsetHeight == 0);
 });
 
-test('should invoke callbacks', function() {
-  ok(!onShow.called);
+QUnit.test('should invoke callbacks', function(assert) {
+  assert.ok(!onShow.called);
   menuButton.button().click();
-  ok(onShow.called);
-  ok(!onHide.called);
+  assert.ok(onShow.called);
+  assert.ok(!onHide.called);
   menuButton.menu().click();
-  ok(onHide.called);
+  assert.ok(onHide.called);
 });
 
-test('select method should set/unset background image', function() {
+QUnit.test('select method should set/unset background image', function(assert) {
   var element = document.getElementById('menu-option-1');
   var style = window.getComputedStyle(element);
-  ok(style.backgroundImage == 'none');
+  assert.ok(style.backgroundImage == 'none');
   remoting.MenuButton.select(element, true);
   style = window.getComputedStyle(element);
-  ok(style.backgroundImage != 'none');
+  assert.ok(style.backgroundImage != 'none');
   remoting.MenuButton.select(element, false);
   style = window.getComputedStyle(element);
-  ok(style.backgroundImage == 'none');
+  assert.ok(style.backgroundImage == 'none');
 });
 
 }());

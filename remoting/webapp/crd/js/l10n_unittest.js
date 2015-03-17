@@ -6,46 +6,47 @@
 
 'use strict';
 
-module('l10n', {
-  setup: function() {
+QUnit.module('l10n', {
+  beforeEach: function() {
     sinon.stub(chrome.i18n, 'getMessage');
   },
-  teardown: function() {
+  afterEach: function() {
     $testStub(chrome.i18n.getMessage).restore();
   }
 });
 
-test('getTranslationOrError(tag) should return tag on error', function() {
+QUnit.test('getTranslationOrError(tag) should return tag on error',
+    function(assert) {
   var translation = l10n.getTranslationOrError('non_existent_tag');
-  equal(translation, 'non_existent_tag');
+  assert.equal(translation, 'non_existent_tag');
 });
 
-test('localizeElementFromTag() should replace innerText by default',
-  function() {
+QUnit.test('localizeElementFromTag() should replace innerText by default',
+  function(assert) {
     var element = document.createElement('div');
     $testStub(chrome.i18n.getMessage).withArgs('tag')
           .returns('<b>Hello World</b>');
 
     l10n.localizeElementFromTag(element, 'tag');
 
-    equal(element.innerHTML, '&lt;b&gt;Hello World&lt;/b&gt;');
+    assert.equal(element.innerHTML, '&lt;b&gt;Hello World&lt;/b&gt;');
 });
 
-test('localizeElementFromTag() should replace innerHTML if flag is set',
-  function() {
+QUnit.test('localizeElementFromTag() should replace innerHTML if flag is set',
+  function(assert) {
     var element = document.createElement('div');
     $testStub(chrome.i18n.getMessage).withArgs('tag')
           .returns('<b>Hello World</b>');
 
     l10n.localizeElementFromTag(element, 'tag', null, true);
 
-    equal(element.innerHTML, '<b>Hello World</b>');
+    assert.equal(element.innerHTML, '<b>Hello World</b>');
 });
 
-test(
+QUnit.test(
   'localizeElement() should replace innerText using the "i18n-content" ' +
   'attribute as the tag',
-  function() {
+  function(assert) {
     var element = document.createElement('div');
     element.setAttribute('i18n-content', 'tag');
     $testStub(chrome.i18n.getMessage).withArgs('tag')
@@ -53,13 +54,13 @@ test(
 
     l10n.localizeElement(element);
 
-    equal(element.innerHTML, '&lt;b&gt;Hello World&lt;/b&gt;');
+    assert.equal(element.innerHTML, '&lt;b&gt;Hello World&lt;/b&gt;');
 });
 
-test(
+QUnit.test(
   'localize() should replace element title using the "i18n-title" ' +
   'attribute as the tag',
-  function() {
+  function(assert) {
     var fixture = document.getElementById('qunit-fixture');
     fixture.innerHTML = '<div class="target" i18n-title="tag"></div>';
     $testStub(chrome.i18n.getMessage)
@@ -69,10 +70,10 @@ test(
     l10n.localize();
 
     var target = document.querySelector('.target');
-    equal(target.title, 'localized title');
+    assert.equal(target.title, 'localized title');
 });
 
-test('localize() should support string substitutions', function() {
+QUnit.test('localize() should support string substitutions', function(assert) {
   var fixture = document.getElementById('qunit-fixture');
   fixture.innerHTML =
   '<div class="target" ' +
@@ -87,10 +88,10 @@ test('localize() should support string substitutions', function() {
   l10n.localize();
 
   var target = document.querySelector('.target');
-  equal(target.innerText, 'localized');
+  assert.equal(target.innerText, 'localized');
 });
 
-test('localize() should support tag substitutions', function() {
+QUnit.test('localize() should support tag substitutions', function(assert) {
   var fixture = document.getElementById('qunit-fixture');
   fixture.innerHTML =
       '<div class="target" i18n-content="tag"' +
@@ -105,7 +106,7 @@ test('localize() should support tag substitutions', function() {
   l10n.localize();
 
   var target = document.querySelector('.target');
-  equal(target.innerText, 'localized');
+  assert.equal(target.innerText, 'localized');
 });
 
 })();

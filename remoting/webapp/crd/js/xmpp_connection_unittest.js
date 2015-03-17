@@ -24,19 +24,23 @@ function onStateChange(/** remoting.SignalStrategy.State */ state) {
   stateChangeHandler(state)
 };
 
-/** @returns {Promise} */
-function expectNextState(/** remoting.SignalStrategy.State */ expectedState) {
+/**
+ * @param {QUnit.Assert} assert
+ * @param {remoting.SignalStrategy.State} expectedState
+ * @returns {Promise}
+ */
+function expectNextState(assert, expectedState) {
   return new Promise(function(resolve, reject) {
     stateChangeHandler = function(/** remoting.SignalStrategy.State */ state) {
-      QUnit.equal(state, expectedState);
-      QUnit.equal(connection.getState(), expectedState);
+      assert.equal(state, expectedState);
+      assert.equal(connection.getState(), expectedState);
       resolve(0);
     }
   });
 }
 
-module('XmppConnection', {
-  setup: function() {
+QUnit.module('XmppConnection', {
+  beforeEach: function() {
     onStanzaStr = sinon.spy();
     /** @param {Element} stanza */
     function onStanza(stanza) {
@@ -53,30 +57,34 @@ module('XmppConnection', {
   }
 });
 
-QUnit.asyncTest('should go to FAILED state when failed to connect', function() {
+QUnit.test('should go to FAILED state when failed to connect',
+    function(assert) {
+  var done = assert.async();
   $testStub(socket.connect).withArgs("xmpp.example.com", 123)
       .returns(new Promise(function(resolve, reject) { reject(-1); }));
 
   var deferredSend = new base.Deferred();
   $testStub(socket.send).onFirstCall().returns(deferredSend.promise());
 
-  expectNextState(remoting.SignalStrategy.State.CONNECTING).then(onConnecting);
+  expectNextState(assert, remoting.SignalStrategy.State.CONNECTING)
+      .then(onConnecting);
   connection.connect('xmpp.example.com:123', 'testUsername@gmail.com',
                      'testToken');
 
   function onConnecting() {
-    expectNextState(remoting.SignalStrategy.State.FAILED).then(onFailed);
+    expectNextState(assert, remoting.SignalStrategy.State.FAILED)
+        .then(onFailed);
   }
 
   function onFailed() {
     sinon.assert.calledWith(socket.dispose);
-    QUnit.ok(connection.getError().hasTag(remoting.Error.Tag.NETWORK_FAILURE));
-
-    QUnit.start();
+    assert.ok(connection.getError().hasTag(remoting.Error.Tag.NETWORK_FAILURE));
+    done();
   }
 });
 
-QUnit.asyncTest('should use XmppLoginHandler for handshake', function() {
+QUnit.test('should use XmppLoginHandler for handshake', function(assert) {
+
   $testStub(socket.connect).withArgs("xmpp.example.com", 123)
       .returns(new Promise(function(resolve, reject) { resolve(0) }));
 
@@ -86,24 +94,17 @@ QUnit.asyncTest('should use XmppLoginHandler for handshake', function() {
   var parser = new remoting.XmppStreamParser();
   var parserMock = sinon.mock(parser);
   var setCallbacksCalled = parserMock.expects('setCallbacks').once();
+  var State = remoting.SignalStrategy.State;
 
-  expectNextState(remoting.SignalStrategy.State.CONNECTING).then(onConnecting);
-  connection.connect(
-      'xmpp.example.com:123', 'testUsername@gmail.com', 'testToken');
-
-  function onConnecting() {
-    expectNextState(remoting.SignalStrategy.State.HANDSHAKE).then(onHandshake);
-  }
-
-  function onHandshake() {
+  var promise = expectNextState(assert, State.CONNECTING).then(function() {
+    return expectNextState(assert, State.HANDSHAKE);
+  }).then(function() {
     var handshakeDoneCallback =
         connection.loginHandler_.getHandshakeDoneCallbackForTesting();
-
-    expectNextState(remoting.SignalStrategy.State.CONNECTED).then(onConnected);
+    var onConnected = expectNextState(assert, State.CONNECTED);
     handshakeDoneCallback('test@example.com/123123', parser);
-  }
-
-  function onConnected() {
+    return onConnected;
+  }).then(function() {
     setCallbacksCalled.verify();
 
     // Simulate read() callback with |data|. It should be passed to
@@ -114,9 +115,11 @@ QUnit.asyncTest('should use XmppLoginHandler for handshake', function() {
         parserMock.expects('appendData').once().withArgs(data);
     $testStub(socket.startReceiving).getCall(0).args[0](data);
     appendDataCalled.verify();
+  });
 
-    QUnit.start();
-  }
+  connection.connect(
+      'xmpp.example.com:123', 'testUsername@gmail.com', 'testToken');
+  return promise;
 });
 
 })();

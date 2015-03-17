@@ -9,22 +9,12 @@
 /** @type {base.Ipc} */
 var ipc_;
 
-function pass() {
-  ok(true);
-  QUnit.start();
-}
-
-function fail() {
-  ok(false);
-  QUnit.start();
-}
-
-module('base.Ipc', {
-  setup: function() {
+QUnit.module('base.Ipc', {
+  beforeEach: function() {
     chromeMocks.activate(['runtime']);
     ipc_ = base.Ipc.getInstance();
   },
-  teardown: function() {
+  afterEach: function() {
     base.Ipc.deleteInstance();
     ipc_ = null;
     chromeMocks.restore();
@@ -33,16 +23,16 @@ module('base.Ipc', {
 
 QUnit.test(
   'register() should return false if the request type was already registered',
-  function() {
+  function(assert) {
     var handler1 = function() {};
     var handler2 = function() {};
-    QUnit.equal(true, ipc_.register('foo', handler1));
-    QUnit.equal(false, ipc_.register('foo', handler2));
+    assert.equal(true, ipc_.register('foo', handler1));
+    assert.equal(false, ipc_.register('foo', handler2));
 });
 
-QUnit.asyncTest(
+QUnit.test(
   'send() should invoke a registered handler with the correct arguments',
-  function() {
+  function(assert) {
     var handler = sinon.spy();
     var argArray = [1, 2, 3];
     var argDict = {
@@ -51,68 +41,72 @@ QUnit.asyncTest(
     };
 
     ipc_.register('foo', handler);
-    base.Ipc.invoke('foo', 1, false, 'string', argArray, argDict).then(
+    return base.Ipc.invoke('foo', 1, false, 'string', argArray, argDict).then(
       function() {
         sinon.assert.calledWith(handler, 1, false, 'string', argArray, argDict);
-        pass();
-    }, fail);
+    });
 });
 
-QUnit.asyncTest(
+QUnit.test(
   'send() should not invoke a handler that is unregistered',
-  function() {
+  function(assert) {
     var handler = sinon.spy();
     ipc_.register('foo', handler);
     ipc_.unregister('foo');
-    base.Ipc.invoke('foo', 'hello', 'world').then(fail, function(error) {
+    return base.Ipc.invoke('foo', 'hello', 'world').then(function() {
+      assert.ok(false, 'Invoking an unregistered handler should fail.');
+    }).catch(function(error) {
       sinon.assert.notCalled(handler);
-      QUnit.equal(error, base.Ipc.Error.UNSUPPORTED_REQUEST_TYPE);
-      pass();
+      assert.equal(error, base.Ipc.Error.UNSUPPORTED_REQUEST_TYPE);
     });
 });
 
-QUnit.asyncTest(
+QUnit.test(
   'send() should raise exceptions on unknown request types',
-  function() {
+  function(assert) {
     var handler = sinon.spy();
     ipc_.register('foo', handler);
-    base.Ipc.invoke('bar', 'hello', 'world').then(fail, function(error) {
-      QUnit.equal(error, base.Ipc.Error.UNSUPPORTED_REQUEST_TYPE);
-      pass();
+    return base.Ipc.invoke('bar', 'hello', 'world').then(function() {
+      assert.ok(false, 'Invoking unknown request types should fail.');
+    }).catch(function(error) {
+      assert.equal(error, base.Ipc.Error.UNSUPPORTED_REQUEST_TYPE);
     });
 });
 
-QUnit.asyncTest(
+QUnit.test(
   'send() should raise exceptions on request from another extension',
-  function() {
+  function(assert) {
     var handler = sinon.spy();
     var oldId = chrome.runtime.id;
     ipc_.register('foo', handler);
     chrome.runtime.id = 'foreign-extension';
-    base.Ipc.invoke('foo', 'hello', 'world').then(fail, function(error) {
-      QUnit.equal(error, base.Ipc.Error.INVALID_REQUEST_ORIGIN);
-      pass();
+    var promise = base.Ipc.invoke('foo', 'hello', 'world').then(function() {
+      assert.ok(false, 'Requests from another extension should fail.');
+    }).catch(function(error) {
+      assert.equal(error, base.Ipc.Error.INVALID_REQUEST_ORIGIN);
     });
     chrome.runtime.id = oldId;
+    return promise;
 });
 
 
-QUnit.asyncTest(
+QUnit.test(
   'send() should pass exceptions raised by the handler to the caller',
-  function() {
+  function(assert) {
     var handler = function() {
       throw new Error('Whatever can go wrong, will go wrong.');
     };
     ipc_.register('foo', handler);
-    base.Ipc.invoke('foo').then(fail, function(error) {
-      QUnit.equal(error, 'Whatever can go wrong, will go wrong.');
-      pass();
+    return base.Ipc.invoke('foo').then(function() {
+      assert.ok(false, 'Exceptions expected.');
+    }).catch(function(error) {
+      assert.equal(error, 'Whatever can go wrong, will go wrong.');
     });
 });
 
-QUnit.asyncTest(
+QUnit.test(
   'send() should pass the return value of the handler to the caller',
-  function() {
+  function(assert) {
     var handlers = {
       'boolean': function() { return false; },
       'number': function() { return 12; },
@@ -127,14 +121,13 @@ QUnit.asyncTest(
       testCases.push(base.Ipc.invoke(ipcName));
     }
 
-    Promise.all(testCases).then(function(results){
-      QUnit.equal(results[0], false);
-      QUnit.equal(results[1], 12);
-      QUnit.equal(results[2], 'string');
-      QUnit.deepEqual(results[3], [1,2]);
-      QUnit.deepEqual(results[4], {key1: 'value1', key2: 'value2'});
-      pass();
-    }, fail);
+    return Promise.all(testCases).then(function(results){
+      assert.equal(results[0], false);
+      assert.equal(results[1], 12);
+      assert.equal(results[2], 'string');
+      assert.deepEqual(results[3], [1,2]);
+      assert.deepEqual(results[4], {key1: 'value1', key2: 'value2'});
+    });
 });
 
 })();

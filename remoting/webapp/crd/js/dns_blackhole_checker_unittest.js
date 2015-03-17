@@ -25,8 +25,8 @@ var checker = null;
 var signalStrategy = null;
 var fakeXhrs;
 
-module('dns_blackhole_checker', {
-  setup: function() {
+QUnit.module('dns_blackhole_checker', {
+  beforeEach: function(assert) {
     fakeXhrs = [];
     sinon.useFakeXMLHttpRequest().onCreate = function(xhr) {
       fakeXhrs.push(xhr);
@@ -46,12 +46,12 @@ module('dns_blackhole_checker', {
     sinon.assert.calledWith(signalStrategy.connect, 'server', 'username',
                             'authToken');
 
-    QUnit.equal(fakeXhrs.length, 1, 'exactly one XHR is issued');
-    QUnit.equal(
+    assert.equal(fakeXhrs.length, 1, 'exactly one XHR is issued');
+    assert.equal(
         fakeXhrs[0].url, remoting.DnsBlackholeChecker.URL_TO_REQUEST_,
         'the correct URL is requested');
   },
-  teardown: function() {
+  afterEach: function() {
     base.dispose(checker);
     sinon.assert.calledWith(onStateChange,
                             remoting.SignalStrategy.State.CLOSED);
@@ -62,8 +62,8 @@ module('dns_blackhole_checker', {
   },
 });
 
-test('success',
-  function() {
+QUnit.test('success',
+  function(assert) {
     fakeXhrs[0].respond(200);
     sinon.assert.notCalled(onStateChange);
 
@@ -74,20 +74,20 @@ test('success',
     ].forEach(function(state) {
       signalStrategy.setStateForTesting(state);
       sinon.assert.calledWith(onStateChange, state);
-      equal(checker.getState(), state);
+      assert.equal(checker.getState(), state);
     });
   }
 );
 
-test('http response after connected',
-  function() {
+QUnit.test('http response after connected',
+  function(assert) {
     [
       remoting.SignalStrategy.State.CONNECTING,
       remoting.SignalStrategy.State.HANDSHAKE,
     ].forEach(function(state) {
       signalStrategy.setStateForTesting(state);
       sinon.assert.calledWith(onStateChange, state);
-      equal(checker.getState(), state);
+      assert.equal(checker.getState(), state);
     });
     onStateChange.reset();
 
@@ -95,7 +95,7 @@ test('http response after connected',
     // signal strategy has connected.
     signalStrategy.setStateForTesting(remoting.SignalStrategy.State.CONNECTED);
     sinon.assert.notCalled(onStateChange);
-    equal(checker.getState(), remoting.SignalStrategy.State.HANDSHAKE);
+    assert.equal(checker.getState(), remoting.SignalStrategy.State.HANDSHAKE);
 
     // Verify that DnsBlackholeChecker goes to CONNECTED state after the
     // the HTTP request has succeeded.
@@ -105,8 +105,8 @@ test('http response after connected',
   }
 );
 
-test('connect failed',
-  function() {
+QUnit.test('connect failed',
+  function(assert) {
     fakeXhrs[0].respond(200);
     sinon.assert.notCalled(onStateChange);
 
@@ -120,12 +120,13 @@ test('connect failed',
 }
 );
 
-test('blocked',
-  function() {
+QUnit.test('blocked',
+  function(assert) {
     fakeXhrs[0].respond(400);
     sinon.assert.calledWith(onStateChange,
                             remoting.SignalStrategy.State.FAILED);
-    equal(checker.getError().getTag(), remoting.Error.Tag.NOT_AUTHORIZED);
+    assert.equal(checker.getError().getTag(),
+                 remoting.Error.Tag.NOT_AUTHORIZED);
     onStateChange.reset();
 
     [
@@ -135,20 +136,20 @@ test('blocked',
     ].forEach(function(state) {
       signalStrategy.setStateForTesting(state);
       sinon.assert.notCalled(onStateChange);
-      equal(checker.getState(), remoting.SignalStrategy.State.FAILED);
+      assert.equal(checker.getState(), remoting.SignalStrategy.State.FAILED);
     });
   }
 );
 
-test('blocked after connected',
-  function() {
+QUnit.test('blocked after connected',
+  function(assert) {
     [
       remoting.SignalStrategy.State.CONNECTING,
       remoting.SignalStrategy.State.HANDSHAKE,
     ].forEach(function(state) {
       signalStrategy.setStateForTesting(state);
       sinon.assert.calledWith(onStateChange, state);
-      equal(checker.getState(), state);
+      assert.equal(checker.getState(), state);
     });
     onStateChange.reset();
 
@@ -156,14 +157,14 @@ test('blocked after connected',
     // signal strategy has connected.
     signalStrategy.setStateForTesting(remoting.SignalStrategy.State.CONNECTED);
     sinon.assert.notCalled(onStateChange);
-    equal(checker.getState(), remoting.SignalStrategy.State.HANDSHAKE);
+    assert.equal(checker.getState(), remoting.SignalStrategy.State.HANDSHAKE);
 
     // Verify that DnsBlackholeChecker goes to FAILED state after it gets the
     // blocked HTTP response.
     fakeXhrs[0].respond(400);
     sinon.assert.calledWith(onStateChange,
                             remoting.SignalStrategy.State.FAILED);
-    ok(checker.getError().hasTag(remoting.Error.Tag.NOT_AUTHORIZED));
+    assert.ok(checker.getError().hasTag(remoting.Error.Tag.NOT_AUTHORIZED));
   }
 );
 

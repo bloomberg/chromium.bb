@@ -13,18 +13,21 @@
 'use strict';
 
 /** @constructor */
-var MockLogToServer = function() {
+var MockLogToServer = function(/** QUnit.Assert */ assert) {
   /** @type {(sinon.Spy|Function)} */
   this.logSignalStrategyProgress = sinon.spy();
+  this.assert_ = assert;
 };
 
 /** @type {function(...)} */
 MockLogToServer.prototype.assertProgress = function() {
-  equal(this.logSignalStrategyProgress.callCount * 2, arguments.length);
+  this.assert_.equal(this.logSignalStrategyProgress.callCount * 2,
+                     arguments.length);
   for (var i = 0; i < this.logSignalStrategyProgress.callCount; ++i) {
-    equal(this.logSignalStrategyProgress.getCall(i).args[0], arguments[2 * i]);
-    equal(this.logSignalStrategyProgress.getCall(i).args[1],
-          arguments[2 * i + 1]);
+    this.assert_.equal(
+        this.logSignalStrategyProgress.getCall(i).args[0], arguments[2 * i]);
+    this.assert_.equal(this.logSignalStrategyProgress.getCall(i).args[1],
+                arguments[2 * i + 1]);
   }
 };
 
@@ -47,25 +50,26 @@ var secondary = null;
 var logToServer = null;
 
 /**
+ * @param {QUnit.Assert} assert
  * @param {remoting.MockSignalStrategy} baseSignalStrategy
  * @param {remoting.SignalStrategy.State} state
  * @param {boolean} expectCallback
  */
-function setState(baseSignalStrategy, state, expectCallback) {
+function setState(assert, baseSignalStrategy, state, expectCallback) {
   onStateChange.reset();
   baseSignalStrategy.setStateForTesting(state);
 
   if (expectCallback) {
-    equal(onStateChange.callCount, 1);
-    ok(onStateChange.calledWith(state));
-    equal(strategy.getState(), state);
+    assert.equal(onStateChange.callCount, 1);
+    assert.ok(onStateChange.calledWith(state));
+    assert.equal(strategy.getState(), state);
   } else {
-    ok(!onStateChange.called);
+    assert.ok(!onStateChange.called);
   }
-};
+}
 
-module('fallback_signal_strategy', {
-  setup: function() {
+QUnit.module('fallback_signal_strategy', {
+  beforeEach: function(/** QUnit.Assert */ assert) {
     onStateChange = sinon.spy();
     onIncomingStanzaCallback = sinon.spy();
     strategy = new remoting.FallbackSignalStrategy(
@@ -77,9 +81,9 @@ module('fallback_signal_strategy', {
     strategy.setIncomingStanzaCallback(onIncomingStanzaCallback);
     primary = strategy.primary_;
     secondary = strategy.secondary_;
-    logToServer = new MockLogToServer();
+    logToServer = new MockLogToServer(assert);
   },
-  teardown: function() {
+  afterEach: function() {
     onStateChange = null;
     onIncomingStanzaCallback = null;
     strategy = null;
@@ -89,66 +93,69 @@ module('fallback_signal_strategy', {
   },
 });
 
-test('primary succeeds; send & receive routed to it',
-  function() {
-    ok(!onStateChange.called);
-    ok(!primary.connect.called);
+QUnit.test('primary succeeds; send & receive routed to it',
+  function(assert) {
+    assert.ok(!onStateChange.called);
+    assert.ok(!primary.connect.called);
     strategy.connect('server', 'username', 'authToken');
-    ok(primary.connect.calledWith('server', 'username', 'authToken'));
+    assert.ok(primary.connect.calledWith('server', 'username', 'authToken'));
 
-    setState(primary, remoting.SignalStrategy.State.NOT_CONNECTED, true);
-    setState(primary, remoting.SignalStrategy.State.CONNECTING, true);
-    setState(primary, remoting.SignalStrategy.State.HANDSHAKE, true);
+    setState(assert, primary, remoting.SignalStrategy.State.NOT_CONNECTED,
+             true);
+    setState(assert, primary, remoting.SignalStrategy.State.CONNECTING, true);
+    setState(assert, primary, remoting.SignalStrategy.State.HANDSHAKE, true);
 
-    setState(primary, remoting.SignalStrategy.State.CONNECTED, true);
-    equal(strategy.getJid(), 'primary-jid');
+    setState(assert, primary, remoting.SignalStrategy.State.CONNECTED, true);
+    assert.equal(strategy.getJid(), 'primary-jid');
 
     strategy.sendConnectionSetupResults(logToServer);
     logToServer.assertProgress(
         remoting.SignalStrategy.Type.XMPP,
         remoting.FallbackSignalStrategy.Progress.SUCCEEDED);
 
-    ok(!onIncomingStanzaCallback.called);
+    assert.ok(!onIncomingStanzaCallback.called);
     primary.onIncomingStanzaCallback_('test-receive-primary');
     secondary.onIncomingStanzaCallback_('test-receive-secondary');
-    ok(onIncomingStanzaCallback.calledOnce);
-    ok(onIncomingStanzaCallback.calledWith('test-receive-primary'));
+    assert.ok(onIncomingStanzaCallback.calledOnce);
+    assert.ok(onIncomingStanzaCallback.calledWith('test-receive-primary'));
 
-    ok(!primary.sendMessage.called);
+    assert.ok(!primary.sendMessage.called);
     strategy.sendMessage('test-send');
-    ok(primary.sendMessage.calledOnce);
-    ok(primary.sendMessage.calledWith('test-send'));
+    assert.ok(primary.sendMessage.calledOnce);
+    assert.ok(primary.sendMessage.calledWith('test-send'));
 
-    ok(!primary.dispose.called);
-    ok(!secondary.dispose.called);
-    setState(primary, remoting.SignalStrategy.State.CLOSED, true);
+    assert.ok(!primary.dispose.called);
+    assert.ok(!secondary.dispose.called);
+    setState(assert, primary, remoting.SignalStrategy.State.CLOSED, true);
     strategy.dispose();
-    ok(primary.dispose.calledOnce);
-    ok(secondary.dispose.calledOnce);
+    assert.ok(primary.dispose.calledOnce);
+    assert.ok(secondary.dispose.calledOnce);
   }
 );
 
-test('primary fails; secondary succeeds; send & receive routed to it',
-  function() {
-    ok(!onStateChange.called);
-    ok(!primary.connect.called);
+QUnit.test('primary fails; secondary succeeds; send & receive routed to it',
+  function(assert) {
+    assert.ok(!onStateChange.called);
+    assert.ok(!primary.connect.called);
     strategy.connect('server', 'username', 'authToken');
-    ok(primary.connect.calledWith('server', 'username', 'authToken'));
+    assert.ok(primary.connect.calledWith('server', 'username', 'authToken'));
 
-    setState(primary, remoting.SignalStrategy.State.NOT_CONNECTED,
-                               true);
-    setState(primary, remoting.SignalStrategy.State.CONNECTING, true);
+    setState(assert, primary, remoting.SignalStrategy.State.NOT_CONNECTED,
+             true);
+    setState(assert, primary, remoting.SignalStrategy.State.CONNECTING, true);
 
-    ok(!secondary.connect.called);
-    setState(primary, remoting.SignalStrategy.State.FAILED, false);
-    ok(secondary.connect.calledWith('server', 'username', 'authToken'));
+    assert.ok(!secondary.connect.called);
+    setState(assert, primary, remoting.SignalStrategy.State.FAILED, false);
+    assert.ok(secondary.connect.calledWith('server', 'username', 'authToken'));
 
-    setState(secondary, remoting.SignalStrategy.State.NOT_CONNECTED, false);
-    setState(secondary, remoting.SignalStrategy.State.CONNECTING, false);
-    setState(secondary, remoting.SignalStrategy.State.HANDSHAKE, true);
+    setState(assert, secondary, remoting.SignalStrategy.State.NOT_CONNECTED,
+             false);
+    setState(assert, secondary, remoting.SignalStrategy.State.CONNECTING,
+             false);
+    setState(assert, secondary, remoting.SignalStrategy.State.HANDSHAKE, true);
 
-    setState(secondary, remoting.SignalStrategy.State.CONNECTED, true);
-    equal(strategy.getJid(), 'secondary-jid');
+    setState(assert, secondary, remoting.SignalStrategy.State.CONNECTED, true);
+    assert.equal(strategy.getJid(), 'secondary-jid');
 
     strategy.sendConnectionSetupResults(logToServer);
     logToServer.assertProgress(
@@ -157,60 +164,64 @@ test('primary fails; secondary succeeds; send & receive routed to it',
         remoting.SignalStrategy.Type.WCS,
         remoting.FallbackSignalStrategy.Progress.SUCCEEDED);
 
-    ok(!onIncomingStanzaCallback.called);
+    assert.ok(!onIncomingStanzaCallback.called);
     primary.onIncomingStanzaCallback_('test-receive-primary');
     secondary.onIncomingStanzaCallback_('test-receive-secondary');
-    ok(onIncomingStanzaCallback.calledOnce);
-    ok(onIncomingStanzaCallback.calledWith('test-receive-secondary'));
+    assert.ok(onIncomingStanzaCallback.calledOnce);
+    assert.ok(onIncomingStanzaCallback.calledWith('test-receive-secondary'));
 
-    ok(!secondary.sendMessage.called);
+    assert.ok(!secondary.sendMessage.called);
     strategy.sendMessage('test-send');
-    ok(!primary.sendMessage.called);
-    ok(secondary.sendMessage.calledOnce);
-    ok(secondary.sendMessage.calledWith('test-send'));
+    assert.ok(!primary.sendMessage.called);
+    assert.ok(secondary.sendMessage.calledOnce);
+    assert.ok(secondary.sendMessage.calledWith('test-send'));
   }
 );
 
-test('primary fails; secondary fails',
-  function() {
-    ok(!onStateChange.called);
-    ok(!primary.connect.called);
+QUnit.test('primary fails; secondary fails',
+  function(assert) {
+    assert.ok(!onStateChange.called);
+    assert.ok(!primary.connect.called);
     strategy.connect('server', 'username', 'authToken');
-    ok(primary.connect.calledWith('server', 'username', 'authToken'));
+    assert.ok(primary.connect.calledWith('server', 'username', 'authToken'));
 
-    setState(primary, remoting.SignalStrategy.State.NOT_CONNECTED, true);
-    ok(!secondary.connect.called);
-    setState(primary, remoting.SignalStrategy.State.CONNECTING, true);
-    setState(primary, remoting.SignalStrategy.State.FAILED, false);
-    ok(secondary.connect.calledWith('server', 'username', 'authToken'));
-    setState(secondary, remoting.SignalStrategy.State.NOT_CONNECTED, false);
-    setState(primary, remoting.SignalStrategy.State.CONNECTING, false);
-    setState(secondary, remoting.SignalStrategy.State.FAILED, true);
+    setState(assert, primary, remoting.SignalStrategy.State.NOT_CONNECTED,
+             true);
+    assert.ok(!secondary.connect.called);
+    setState(assert, primary, remoting.SignalStrategy.State.CONNECTING, true);
+    setState(assert, primary, remoting.SignalStrategy.State.FAILED, false);
+    assert.ok(secondary.connect.calledWith('server', 'username', 'authToken'));
+    setState(assert, secondary, remoting.SignalStrategy.State.NOT_CONNECTED,
+             false);
+    setState(assert, primary, remoting.SignalStrategy.State.CONNECTING, false);
+    setState(assert, secondary, remoting.SignalStrategy.State.FAILED, true);
   }
 );
 
-test('primary times out; secondary succeeds',
-  function() {
-    ok(!onStateChange.called);
-    ok(!primary.connect.called);
+QUnit.test('primary times out; secondary succeeds',
+  function(assert) {
+    assert.ok(!onStateChange.called);
+    assert.ok(!primary.connect.called);
     strategy.connect('server', 'username', 'authToken');
-    ok(primary.connect.calledWith('server', 'username', 'authToken'));
+    assert.ok(primary.connect.calledWith('server', 'username', 'authToken'));
 
-    setState(primary, remoting.SignalStrategy.State.NOT_CONNECTED,
+    setState(assert, primary, remoting.SignalStrategy.State.NOT_CONNECTED,
                                true);
-    setState(primary, remoting.SignalStrategy.State.CONNECTING, true);
+    setState(assert, primary, remoting.SignalStrategy.State.CONNECTING, true);
     this.clock.tick(strategy.PRIMARY_CONNECT_TIMEOUT_MS_ - 1);
-    ok(!secondary.connect.called);
+    assert.ok(!secondary.connect.called);
     this.clock.tick(1);
-    ok(secondary.connect.calledWith('server', 'username', 'authToken'));
-    setState(secondary, remoting.SignalStrategy.State.NOT_CONNECTED, false);
-    setState(secondary, remoting.SignalStrategy.State.CONNECTING, false);
-    setState(secondary, remoting.SignalStrategy.State.HANDSHAKE, true);
-    setState(secondary, remoting.SignalStrategy.State.CONNECTED, true);
+    assert.ok(secondary.connect.calledWith('server', 'username', 'authToken'));
+    setState(assert, secondary, remoting.SignalStrategy.State.NOT_CONNECTED,
+             false);
+    setState(assert, secondary, remoting.SignalStrategy.State.CONNECTING,
+             false);
+    setState(assert, secondary, remoting.SignalStrategy.State.HANDSHAKE, true);
+    setState(assert, secondary, remoting.SignalStrategy.State.CONNECTED, true);
     strategy.sendConnectionSetupResults(logToServer);
 
-    setState(secondary, remoting.SignalStrategy.State.CLOSED, true);
-    setState(primary, remoting.SignalStrategy.State.FAILED, false);
+    setState(assert, secondary, remoting.SignalStrategy.State.CLOSED, true);
+    setState(assert, primary, remoting.SignalStrategy.State.FAILED, false);
 
     logToServer.assertProgress(
         remoting.SignalStrategy.Type.XMPP,
@@ -222,46 +233,50 @@ test('primary times out; secondary succeeds',
   }
 );
 
-test('primary times out; secondary fails',
-  function() {
-    ok(!onStateChange.called);
-    ok(!primary.connect.called);
+QUnit.test('primary times out; secondary fails',
+  function(assert) {
+    assert.ok(!onStateChange.called);
+    assert.ok(!primary.connect.called);
     strategy.connect('server', 'username', 'authToken');
-    ok(primary.connect.calledWith('server', 'username', 'authToken'));
+    assert.ok(primary.connect.calledWith('server', 'username', 'authToken'));
 
-    setState(primary, remoting.SignalStrategy.State.NOT_CONNECTED,
+    setState(assert, primary, remoting.SignalStrategy.State.NOT_CONNECTED,
                                true);
-    setState(primary, remoting.SignalStrategy.State.CONNECTING, true);
+    setState(assert, primary, remoting.SignalStrategy.State.CONNECTING, true);
     this.clock.tick(strategy.PRIMARY_CONNECT_TIMEOUT_MS_ - 1);
-    ok(!secondary.connect.called);
+    assert.ok(!secondary.connect.called);
     this.clock.tick(1);
-    ok(secondary.connect.calledWith('server', 'username', 'authToken'));
-    setState(secondary, remoting.SignalStrategy.State.NOT_CONNECTED, false);
-    setState(secondary, remoting.SignalStrategy.State.CONNECTING, false);
-    setState(secondary, remoting.SignalStrategy.State.FAILED, true);
+    assert.ok(secondary.connect.calledWith('server', 'username', 'authToken'));
+    setState(assert, secondary, remoting.SignalStrategy.State.NOT_CONNECTED,
+             false);
+    setState(assert, secondary, remoting.SignalStrategy.State.CONNECTING,
+             false);
+    setState(assert, secondary, remoting.SignalStrategy.State.FAILED, true);
   }
 );
 
-test('primary times out; secondary succeeds; primary succeeds late',
-  function() {
-    ok(!onStateChange.called);
-    ok(!primary.connect.called);
+QUnit.test('primary times out; secondary succeeds; primary succeeds late',
+  function(assert) {
+    assert.ok(!onStateChange.called);
+    assert.ok(!primary.connect.called);
     strategy.connect('server', 'username', 'authToken');
-    ok(primary.connect.calledWith('server', 'username', 'authToken'));
+    assert.ok(primary.connect.calledWith('server', 'username', 'authToken'));
 
-    setState(primary, remoting.SignalStrategy.State.NOT_CONNECTED,
+    setState(assert, primary, remoting.SignalStrategy.State.NOT_CONNECTED,
                                true);
-    setState(primary, remoting.SignalStrategy.State.CONNECTING, true);
+    setState(assert, primary, remoting.SignalStrategy.State.CONNECTING, true);
     this.clock.tick(strategy.PRIMARY_CONNECT_TIMEOUT_MS_);
-    ok(secondary.connect.calledWith('server', 'username', 'authToken'));
-    setState(secondary, remoting.SignalStrategy.State.NOT_CONNECTED, false);
-    setState(secondary, remoting.SignalStrategy.State.CONNECTING, false);
-    setState(secondary, remoting.SignalStrategy.State.HANDSHAKE, true);
-    setState(secondary, remoting.SignalStrategy.State.CONNECTED, true);
+    assert.ok(secondary.connect.calledWith('server', 'username', 'authToken'));
+    setState(assert, secondary, remoting.SignalStrategy.State.NOT_CONNECTED,
+             false);
+    setState(assert, secondary, remoting.SignalStrategy.State.CONNECTING,
+             false);
+    setState(assert, secondary, remoting.SignalStrategy.State.HANDSHAKE, true);
+    setState(assert, secondary, remoting.SignalStrategy.State.CONNECTED, true);
     strategy.sendConnectionSetupResults(logToServer);
 
-    setState(primary, remoting.SignalStrategy.State.HANDSHAKE, false);
-    setState(primary, remoting.SignalStrategy.State.CONNECTED, false);
+    setState(assert, primary, remoting.SignalStrategy.State.HANDSHAKE, false);
+    setState(assert, primary, remoting.SignalStrategy.State.CONNECTED, false);
 
     logToServer.assertProgress(
         remoting.SignalStrategy.Type.XMPP,

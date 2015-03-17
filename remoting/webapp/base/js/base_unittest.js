@@ -6,19 +6,19 @@
 
 'use strict';
 
-module('base');
+QUnit.module('base');
 
-test('mix(dest, src) should copy properties from |src| to |dest|',
-  function() {
+QUnit.test('mix(dest, src) should copy properties from |src| to |dest|',
+  function(assert) {
     var src = { a: 'a', b: 'b'};
     var dest = { c: 'c'};
 
     base.mix(dest, src);
-    deepEqual(dest, {a: 'a', b: 'b', c: 'c'});
+    assert.deepEqual(dest, {a: 'a', b: 'b', c: 'c'});
 });
 
-test('mix(dest, src) should assert if properties are overwritten',
-  function() {
+QUnit.test('mix(dest, src) should assert if properties are overwritten',
+  function(assert) {
     var src = { a: 'a', b: 'b'};
     var dest = { a: 'a'};
 
@@ -33,45 +33,45 @@ test('mix(dest, src) should assert if properties are overwritten',
     }
 });
 
-test('values(obj) should return an array containing the values of |obj|',
-  function() {
+QUnit.test('values(obj) should return an array containing the values of |obj|',
+  function(assert) {
     var output = base.values({ a: 'a', b: 'b'});
 
-    notEqual(output.indexOf('a'), -1, '"a" should be in the output');
-    notEqual(output.indexOf('b'), -1, '"b" should be in the output');
+    assert.notEqual(output.indexOf('a'), -1, '"a" should be in the output');
+    assert.notEqual(output.indexOf('b'), -1, '"b" should be in the output');
 });
 
-test('deepCopy(obj) should return null on NaN and undefined',
-  function() {
-    QUnit.equal(base.deepCopy(NaN), null);
-    QUnit.equal(base.deepCopy(undefined), null);
+QUnit.test('deepCopy(obj) should return null on NaN and undefined',
+  function(assert) {
+    assert.equal(base.deepCopy(NaN), null);
+    assert.equal(base.deepCopy(undefined), null);
 });
 
-test('deepCopy(obj) should copy primitive types recursively',
-  function() {
-    QUnit.equal(base.deepCopy(1), 1);
-    QUnit.equal(base.deepCopy('hello'), 'hello');
-    QUnit.equal(base.deepCopy(false), false);
-    QUnit.equal(base.deepCopy(null), null);
-    QUnit.deepEqual(base.deepCopy([1, 2]), [1, 2]);
-    QUnit.deepEqual(base.deepCopy({'key': 'value'}), {'key': 'value'});
-    QUnit.deepEqual(base.deepCopy(
+QUnit.test('deepCopy(obj) should copy primitive types recursively',
+  function(assert) {
+    assert.equal(base.deepCopy(1), 1);
+    assert.equal(base.deepCopy('hello'), 'hello');
+    assert.equal(base.deepCopy(false), false);
+    assert.equal(base.deepCopy(null), null);
+    assert.deepEqual(base.deepCopy([1, 2]), [1, 2]);
+    assert.deepEqual(base.deepCopy({'key': 'value'}), {'key': 'value'});
+    assert.deepEqual(base.deepCopy(
       {'key': {'key_nested': 'value_nested'}}),
       {'key': {'key_nested': 'value_nested'}}
     );
-    QUnit.deepEqual(base.deepCopy([1, [2, [3]]]), [1, [2, [3]]]);
+    assert.deepEqual(base.deepCopy([1, [2, [3]]]), [1, [2, [3]]]);
 });
 
-test('modify the original after deepCopy(obj) should not affect the copy',
-  function() {
+QUnit.test('modify the original after deepCopy(obj) should not affect the copy',
+  function(assert) {
     var original = [1, 2, 3, 4];
     var copy = base.deepCopy(original);
     original[2] = 1000;
-    QUnit.deepEqual(copy, [1, 2, 3, 4]);
+    assert.deepEqual(copy, [1, 2, 3, 4]);
 });
 
-test('dispose(obj) should invoke the dispose method on |obj|',
-  function() {
+QUnit.test('dispose(obj) should invoke the dispose method on |obj|',
+  function(assert) {
     /**
      * @constructor
      * @implements {base.Disposable}
@@ -84,51 +84,51 @@ test('dispose(obj) should invoke the dispose method on |obj|',
     sinon.assert.called(obj.dispose);
 });
 
-test('dispose(obj) should not crash if |obj| is null',
-  function() {
-    expect(0);
+QUnit.test('dispose(obj) should not crash if |obj| is null',
+  function(assert) {
+    assert.expect(0);
     base.dispose(null);
 });
 
-test('urljoin(url, opt_param) should return url if |opt_param| is missing',
-  function() {
-    QUnit.equal(
+QUnit.test(
+  'urljoin(url, opt_param) should return url if |opt_param| is missing',
+  function(assert) {
+    assert.equal(
         base.urlJoin('http://www.chromium.org'), 'http://www.chromium.org');
 });
 
-test('urljoin(url, opt_param) should urlencode |opt_param|',
-  function() {
+QUnit.test('urljoin(url, opt_param) should urlencode |opt_param|',
+  function(assert) {
     var result = base.urlJoin('http://www.chromium.org', {
       a: 'a',
       foo: 'foo',
       escapist: ':/?#[]@$&+,;='
     });
-    QUnit.equal(
+    assert.equal(
         result,
         'http://www.chromium.org?a=a&foo=foo' +
         '&escapist=%3A%2F%3F%23%5B%5D%40%24%26%2B%2C%3B%3D');
 });
 
-test('escapeHTML(str) should escape special characters', function() {
-  QUnit.equal(
+QUnit.test('escapeHTML(str) should escape special characters', function(assert){
+  assert.equal(
     base.escapeHTML('<script>alert("hello")</script>'),
     '&lt;script&gt;alert("hello")&lt;/script&gt;');
 });
 
-QUnit.asyncTest('Promise.sleep(delay) should fulfill the promise after |delay|',
+QUnit.test('Promise.sleep(delay) should fulfill the promise after |delay|',
   /**
    * 'this' is not defined for jscompile, so it can't figure out the type of
    * this.clock.
    * @suppress {reportUnknownTypes|checkVars|checkTypes}
    */
-  function() {
+  function(assert) {
     var isCalled = false;
     var clock = /** @type {QUnit.Clock} */ (this.clock);
 
-    base.Promise.sleep(100).then(function(){
+    var promise = base.Promise.sleep(100).then(function(){
       isCalled = true;
-      ok(true, 'Promise.sleep() is fulfilled after delay.');
-      QUnit.start();
+      assert.ok(true, 'Promise.sleep() is fulfilled after delay.');
     });
 
     // Tick the clock for 2 seconds and check if the promise is fulfilled.
@@ -137,28 +137,33 @@ QUnit.asyncTest('Promise.sleep(delay) should fulfill the promise after |delay|',
     // Promise fulfillment always occur on a new stack.  Therefore, we will run
     // the verification in a requestAnimationFrame.
     window.requestAnimationFrame(function(){
-      ok(!isCalled, 'Promise.sleep() should not be fulfilled prematurely.');
+      assert.ok(
+          !isCalled, 'Promise.sleep() should not be fulfilled prematurely.');
       clock.tick(101);
     });
+
+    return promise;
 });
 
-QUnit.asyncTest('Promise.negate should fulfill iff the promise does not.',
-  function() {
-
-    base.Promise.negate(Promise.reject()).then(
-        QUnit.ok.bind(null, true),
-        /** @type {Function} */ (QUnit.ok.bind(null, false)));
-    base.Promise.negate(Promise.resolve()).then(
-        QUnit.ok.bind(null, false),
-        /** @type {Function} */ (QUnit.ok.bind(null, true)));
-    window.requestAnimationFrame(function(){
-      QUnit.start();
+QUnit.test('Promise.negate should fulfill iff the promise does not.',
+  function(assert) {
+    return base.Promise.negate(Promise.reject())
+    .then(function() {
+      assert.ok(true);
+    }).catch(function() {
+      assert.ok(false);
+    }).then(function() {
+      return base.Promise.negate(Promise.resolve());
+    }).then(function() {
+      assert.ok(false);
+    }).catch(function() {
+      assert.ok(true);
     });
 });
 
-module('base.Deferred');
+QUnit.module('base.Deferred');
 
-QUnit.asyncTest('resolve() should fulfill the underlying promise.', function() {
+QUnit.test('resolve() should fulfill the underlying promise.', function(assert){
   /** @returns {Promise} */
   function async() {
     var deferred = new base.Deferred();
@@ -166,17 +171,14 @@ QUnit.asyncTest('resolve() should fulfill the underlying promise.', function() {
     return deferred.promise();
   }
 
-  async().then(
-      /** @param {string} value */
-      function(value){
-          QUnit.equal(value, 'bar');
-          QUnit.start();
-      }, function() {
-          QUnit.ok(false, 'The reject handler should not be invoked.');
-      });
+  return async().then(function(/** string */ value){
+    assert.equal(value, 'bar');
+  }, function() {
+    assert.ok(false, 'The reject handler should not be invoked.');
+  });
 });
 
-QUnit.asyncTest('reject() should fail the underlying promise.', function() {
+QUnit.test('reject() should fail the underlying promise.', function(assert) {
   /** @returns {Promise} */
   function async() {
     var deferred = new base.Deferred();
@@ -184,11 +186,10 @@ QUnit.asyncTest('reject() should fail the underlying promise.', function() {
     return deferred.promise();
   }
 
-  async().then(function(){
-    QUnit.ok(false, 'The then handler should not be invoked.');
+  return async().then(function(){
+    assert.ok(false, 'The then handler should not be invoked.');
   }, function(value) {
-    QUnit.equal(value, 'bar');
-    QUnit.start();
+    assert.equal(value, 'bar');
   });
 });
 
@@ -197,26 +198,27 @@ QUnit.asyncTest('reject() should fail the underlying promise.', function() {
 var source = null;
 var listener = null;
 
-module('base.EventSource', {
-  setup: function() {
+QUnit.module('base.EventSource', {
+  beforeEach: function() {
     source = new base.EventSourceImpl();
     source.defineEvents(['foo', 'bar']);
     listener = sinon.spy();
     source.addEventListener('foo', listener);
   },
-  teardown: function() {
+  afterEach: function() {
     source = null;
     listener = null;
   }
 });
 
-test('raiseEvent() should invoke the listener', function() {
+QUnit.test('raiseEvent() should invoke the listener', function() {
   source.raiseEvent('foo');
   sinon.assert.called(listener);
 });
 
-test('raiseEvent() should invoke the listener with the correct event data',
-  function() {
+QUnit.test(
+  'raiseEvent() should invoke the listener with the correct event data',
+  function(assert) {
     var data = {
       field: 'foo'
     };
@@ -224,26 +226,26 @@ test('raiseEvent() should invoke the listener with the correct event data',
     sinon.assert.calledWith(listener, data);
 });
 
-test(
+QUnit.test(
   'raiseEvent() should not invoke listeners that are added during raiseEvent',
-  function() {
+  function(assert) {
     source.addEventListener('foo', function() {
       source.addEventListener('foo', function() {
-        ok(false);
+        assert.ok(false);
       });
-      ok(true);
+     assert.ok(true);
     });
     source.raiseEvent('foo');
 });
 
-test('raiseEvent() should not invoke listeners of a different event',
-  function() {
+QUnit.test('raiseEvent() should not invoke listeners of a different event',
+  function(assert) {
     source.raiseEvent('bar');
     sinon.assert.notCalled(listener);
 });
 
-test('raiseEvent() should assert when undeclared events are raised',
-  function() {
+QUnit.test('raiseEvent() should assert when undeclared events are raised',
+  function(assert) {
     sinon.stub(base.debug, 'assert');
     try {
       source.raiseEvent('undefined');
@@ -254,10 +256,10 @@ test('raiseEvent() should assert when undeclared events are raised',
     }
 });
 
-test(
+QUnit.test(
   'removeEventListener() should not invoke the listener in subsequent ' +
   'calls to |raiseEvent|',
-  function() {
+  function(assert) {
     source.raiseEvent('foo');
     sinon.assert.calledOnce(listener);
 
@@ -266,9 +268,9 @@ test(
     sinon.assert.calledOnce(listener);
 });
 
-test('removeEventListener() should work even if the listener ' +
+QUnit.test('removeEventListener() should work even if the listener ' +
   'is removed during |raiseEvent|',
-  function() {
+  function(assert) {
     var sink = {};
     sink.listener = sinon.spy(function() {
       source.removeEventListener('foo', sink.listener);
@@ -282,7 +284,7 @@ test('removeEventListener() should work even if the listener ' +
     sinon.assert.calledOnce(sink.listener);
 });
 
-test('encodeUtf8() can encode UTF8 strings', function() {
+QUnit.test('encodeUtf8() can encode UTF8 strings', function(assert) {
   /** @type {function(ArrayBuffer):Array} */
   function toJsArray(arrayBuffer) {
     var result = [];
@@ -294,25 +296,25 @@ test('encodeUtf8() can encode UTF8 strings', function() {
   }
 
   // ASCII.
-  QUnit.deepEqual(toJsArray(base.encodeUtf8("ABC")), [0x41, 0x42, 0x43]);
+  assert.deepEqual(toJsArray(base.encodeUtf8("ABC")), [0x41, 0x42, 0x43]);
 
   // Some arbitrary characters from the basic Unicode plane.
-  QUnit.deepEqual(
+  assert.deepEqual(
       toJsArray(base.encodeUtf8("挂Ѓф")),
       [/* 挂 */ 0xE6, 0x8C, 0x82, /* Ѓ */ 0xD0, 0x83, /* ф */ 0xD1, 0x84]);
 
   // Unicode surrogate pair for U+1F603.
-  QUnit.deepEqual(toJsArray(base.encodeUtf8("😃")),
+  assert.deepEqual(toJsArray(base.encodeUtf8("😃")),
                   [0xF0, 0x9F, 0x98, 0x83]);
 });
 
-test('decodeUtf8() can decode UTF8 strings', function() {
+QUnit.test('decodeUtf8() can decode UTF8 strings', function(assert) {
   // ASCII.
-  QUnit.equal(base.decodeUtf8(new Uint8Array([0x41, 0x42, 0x43]).buffer),
+  assert.equal(base.decodeUtf8(new Uint8Array([0x41, 0x42, 0x43]).buffer),
               "ABC");
 
   // Some arbitrary characters from the basic Unicode plane.
-  QUnit.equal(
+  assert.equal(
       base.decodeUtf8(
           new Uint8Array([/* 挂 */ 0xE6, 0x8C, 0x82,
                           /* Ѓ */ 0xD0, 0x83,
@@ -320,7 +322,7 @@ test('decodeUtf8() can decode UTF8 strings', function() {
       "挂Ѓф");
 
   // Unicode surrogate pair for U+1F603.
-  QUnit.equal(base.decodeUtf8(new Uint8Array([0xF0, 0x9F, 0x98, 0x83]).buffer),
+  assert.equal(base.decodeUtf8(new Uint8Array([0xF0, 0x9F, 0x98, 0x83]).buffer),
               "😃");
 });
 

@@ -10,195 +10,197 @@
 (function() {
 
 'use strict';
+QUnit.module('xhr');
 
-module('xhr', {
-  setup: function() {
-  },
-  teardown: function() {
-  }
-});
-
-test('urlencodeParamHash', function() {
-  QUnit.equal(
+QUnit.test('urlencodeParamHash', function(assert) {
+  assert.equal(
       remoting.xhr.urlencodeParamHash({}),
       '');
-  QUnit.equal(
+  assert.equal(
       remoting.xhr.urlencodeParamHash({'key': 'value'}),
       'key=value');
-  QUnit.equal(
+  assert.equal(
       remoting.xhr.urlencodeParamHash({'key /?=&': 'value /?=&'}),
       'key%20%2F%3F%3D%26=value%20%2F%3F%3D%26');
-  QUnit.equal(
+  assert.equal(
       remoting.xhr.urlencodeParamHash({'k1': 'v1', 'k2': 'v2'}),
       'k1=v1&k2=v2');
 });
 
-asyncTest('basic GET', function() {
+QUnit.test('basic GET', function(assert) {
   sinon.useFakeXMLHttpRequest();
+  var done = assert.async();
   var request = remoting.xhr.start({
     method: 'GET',
     url: 'http://foo.com',
     onDone: function(xhr) {
-      QUnit.ok(xhr === request);
-      QUnit.equal(xhr.status, 200);
-      QUnit.equal(xhr.responseText, 'body');
-      QUnit.start();
+      assert.ok(xhr === request);
+      assert.equal(xhr.status, 200);
+      assert.equal(xhr.responseText, 'body');
+      done();
     }
   });
-  QUnit.equal(request.method, 'GET');
-  QUnit.equal(request.url, 'http://foo.com');
-  QUnit.equal(request.withCredentials, false);
-  QUnit.equal(request.requestBody, null);
-  QUnit.ok(!('Content-type' in request.requestHeaders));
+  assert.equal(request.method, 'GET');
+  assert.equal(request.url, 'http://foo.com');
+  assert.equal(request.withCredentials, false);
+  assert.equal(request.requestBody, null);
+  assert.ok(!('Content-type' in request.requestHeaders));
   request.respond(200, {}, 'body');
 });
 
-asyncTest('GET with param string', function() {
+QUnit.test('GET with param string', function(assert) {
+  var done = assert.async();
   sinon.useFakeXMLHttpRequest();
   var request = remoting.xhr.start({
     method: 'GET',
     url: 'http://foo.com',
     onDone: function(xhr) {
-      QUnit.ok(xhr === request);
-      QUnit.equal(xhr.status, 200);
-      QUnit.equal(xhr.responseText, 'body');
-      QUnit.start();
+      assert.ok(xhr === request);
+      assert.equal(xhr.status, 200);
+      assert.equal(xhr.responseText, 'body');
+      done();
     },
     urlParams: 'the_param_string'
   });
-  QUnit.equal(request.method, 'GET');
-  QUnit.equal(request.url, 'http://foo.com?the_param_string');
-  QUnit.equal(request.withCredentials, false);
-  QUnit.equal(request.requestBody, null);
-  QUnit.ok(!('Content-type' in request.requestHeaders));
+  assert.equal(request.method, 'GET');
+  assert.equal(request.url, 'http://foo.com?the_param_string');
+  assert.equal(request.withCredentials, false);
+  assert.equal(request.requestBody, null);
+  assert.ok(!('Content-type' in request.requestHeaders));
   request.respond(200, {}, 'body');
 });
 
-asyncTest('GET with param object', function() {
+QUnit.test('GET with param object', function(assert) {
+  var done = assert.async();
   sinon.useFakeXMLHttpRequest();
   var request = remoting.xhr.start({
     method: 'GET',
     url: 'http://foo.com',
     onDone: function(xhr) {
-      QUnit.ok(xhr === request);
-      QUnit.equal(xhr.status, 200);
-      QUnit.equal(xhr.responseText, 'body');
-      QUnit.start();
+      assert.ok(xhr === request);
+      assert.equal(xhr.status, 200);
+      assert.equal(xhr.responseText, 'body');
+      done();
     },
     urlParams: {'a': 'b', 'c': 'd'}
   });
-  QUnit.equal(request.method, 'GET');
-  QUnit.equal(request.url, 'http://foo.com?a=b&c=d');
-  QUnit.equal(request.withCredentials, false);
-  QUnit.equal(request.requestBody, null);
-  QUnit.ok(!('Content-type' in request.requestHeaders));
+  assert.equal(request.method, 'GET');
+  assert.equal(request.url, 'http://foo.com?a=b&c=d');
+  assert.equal(request.withCredentials, false);
+  assert.equal(request.requestBody, null);
+  assert.ok(!('Content-type' in request.requestHeaders));
   request.respond(200, {}, 'body');
 });
 
-asyncTest('GET with headers', function() {
+QUnit.test('GET with headers', function(assert) {
   sinon.useFakeXMLHttpRequest();
+  var done = assert.async();
   var request = remoting.xhr.start({
     method: 'GET',
     url: 'http://foo.com',
     onDone: function(xhr) {
-      QUnit.ok(xhr === request);
-      QUnit.equal(xhr.status, 200);
-      QUnit.equal(xhr.responseText, 'body');
-      QUnit.start();
+      assert.ok(xhr === request);
+      assert.equal(xhr.status, 200);
+      assert.equal(xhr.responseText, 'body');
+      done();
     },
     headers: {'Header1': 'headerValue1', 'Header2': 'headerValue2'}
   });
-  QUnit.equal(request.method, 'GET');
-  QUnit.equal(request.url, 'http://foo.com');
-  QUnit.equal(request.withCredentials, false);
-  QUnit.equal(request.requestBody, null);
-  QUnit.equal(
+  assert.equal(request.method, 'GET');
+  assert.equal(request.url, 'http://foo.com');
+  assert.equal(request.withCredentials, false);
+  assert.equal(request.requestBody, null);
+  assert.equal(
       request.requestHeaders['Header1'],
       'headerValue1');
-  QUnit.equal(
+  assert.equal(
       request.requestHeaders['Header2'],
       'headerValue2');
-  QUnit.ok(!('Content-type' in request.requestHeaders));
+  assert.ok(!('Content-type' in request.requestHeaders));
   request.respond(200, {}, 'body');
 });
 
 
-asyncTest('GET with credentials', function() {
+QUnit.test('GET with credentials', function(assert) {
   sinon.useFakeXMLHttpRequest();
+  var done = assert.async();
   var request = remoting.xhr.start({
     method: 'GET',
     url: 'http://foo.com',
     onDone: function(xhr) {
-      QUnit.ok(xhr === request);
-      QUnit.equal(xhr.status, 200);
-      QUnit.equal(xhr.responseText, 'body');
-      QUnit.start();
+      assert.ok(xhr === request);
+      assert.equal(xhr.status, 200);
+      assert.equal(xhr.responseText, 'body');
+      done();
     },
     withCredentials: true
   });
-  QUnit.equal(request.method, 'GET');
-  QUnit.equal(request.url, 'http://foo.com');
-  QUnit.equal(request.withCredentials, true);
-  QUnit.equal(request.requestBody, null);
-  QUnit.ok(!('Content-type' in request.requestHeaders));
+  assert.equal(request.method, 'GET');
+  assert.equal(request.url, 'http://foo.com');
+  assert.equal(request.withCredentials, true);
+  assert.equal(request.requestBody, null);
+  assert.ok(!('Content-type' in request.requestHeaders));
   request.respond(200, {}, 'body');
 });
 
-asyncTest('POST with text content', function() {
+QUnit.test('POST with text content', function(assert) {
   sinon.useFakeXMLHttpRequest();
+  var done = assert.async();
   var request = remoting.xhr.start({
     method: 'POST',
     url: 'http://foo.com',
     onDone: function(xhr) {
-      QUnit.ok(xhr === request);
-      QUnit.equal(xhr.status, 200);
-      QUnit.equal(xhr.responseText, 'body');
-      QUnit.start();
+      assert.ok(xhr === request);
+      assert.equal(xhr.status, 200);
+      assert.equal(xhr.responseText, 'body');
+      done();
     },
     textContent: 'the_content_string'
   });
-  QUnit.equal(request.method, 'POST');
-  QUnit.equal(request.url, 'http://foo.com');
-  QUnit.equal(request.withCredentials, false);
-  QUnit.equal(request.requestBody, 'the_content_string');
-  QUnit.ok(!('Content-type' in request.requestHeaders));
+  assert.equal(request.method, 'POST');
+  assert.equal(request.url, 'http://foo.com');
+  assert.equal(request.withCredentials, false);
+  assert.equal(request.requestBody, 'the_content_string');
+  assert.ok(!('Content-type' in request.requestHeaders));
   request.respond(200, {}, 'body');
 });
 
-asyncTest('POST with form content', function() {
+QUnit.test('POST with form content', function(assert) {
   sinon.useFakeXMLHttpRequest();
+  var done = assert.async();
   var request = remoting.xhr.start({
     method: 'POST',
     url: 'http://foo.com',
     onDone: function(xhr) {
-      QUnit.ok(xhr === request);
-      QUnit.equal(xhr.status, 200);
-      QUnit.equal(xhr.responseText, 'body');
-      QUnit.start();
+      assert.ok(xhr === request);
+      assert.equal(xhr.status, 200);
+      assert.equal(xhr.responseText, 'body');
+      done();
     },
     formContent: {'a': 'b', 'c': 'd'}
   });
-  QUnit.equal(request.method, 'POST');
-  QUnit.equal(request.url, 'http://foo.com');
-  QUnit.equal(request.withCredentials, false);
-  QUnit.equal(request.requestBody, 'a=b&c=d');
-  QUnit.equal(
+  assert.equal(request.method, 'POST');
+  assert.equal(request.url, 'http://foo.com');
+  assert.equal(request.withCredentials, false);
+  assert.equal(request.requestBody, 'a=b&c=d');
+  assert.equal(
       request.requestHeaders['Content-type'],
       'application/x-www-form-urlencoded');
   request.respond(200, {}, 'body');
 });
 
-asyncTest('defaultResponse 200', function() {
+QUnit.test('defaultResponse 200', function(assert) {
   sinon.useFakeXMLHttpRequest();
+  var done = assert.async();
 
   var onDone = function() {
-    QUnit.ok(true);
-    QUnit.start();
+    assert.ok(true);
+    done();
   };
 
   var onError = function(error) {
-    QUnit.ok(false);
-    QUnit.start();
+    assert.ok(false);
+    done();
   };
 
   var request = remoting.xhr.start({
@@ -210,17 +212,17 @@ asyncTest('defaultResponse 200', function() {
 });
 
 
-asyncTest('defaultResponse 404', function() {
+QUnit.test('defaultResponse 404', function(assert) {
   sinon.useFakeXMLHttpRequest();
-
+  var done = assert.async();
   var onDone = function() {
-    QUnit.ok(false);
-    QUnit.start();
+    assert.ok(false);
+    done();
   };
 
   var onError = function(error) {
-    QUnit.ok(true);
-    QUnit.start();
+    assert.ok(true);
+    done();
   };
 
   var request = remoting.xhr.start({

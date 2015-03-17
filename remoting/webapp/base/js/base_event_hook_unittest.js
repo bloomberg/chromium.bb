@@ -48,15 +48,15 @@ function raiseAllEvents() {
   eventSource.raiseEvent('customEvent');
 }
 
-module('base.EventHook', {
-  setup: function() {
+QUnit.module('base.EventHook', {
+  beforeEach: function() {
     domElement = /** @type {HTMLElement} */ (document.createElement('div'));
     eventSource = new base.EventSourceImpl();
     eventSource.defineEvents(['customEvent']);
     myChromeEvent = new chromeMocks.Event();
     listener = new Listener(domElement);
   },
-  tearDown: function() {
+  afterEach: function() {
     domElement = null;
     eventSource = null;
     myChromeEvent = null;
@@ -64,7 +64,7 @@ module('base.EventHook', {
   }
 });
 
-test('EventHook should hook events when constructed', function() {
+QUnit.test('EventHook should hook events when constructed', function() {
   raiseAllEvents();
   sinon.assert.calledOnce(listener.onClickEvent);
   sinon.assert.calledOnce(listener.onChromeEvent);
@@ -72,7 +72,7 @@ test('EventHook should hook events when constructed', function() {
   listener.dispose();
 });
 
-test('EventHook should unhook events when disposed', function() {
+QUnit.test('EventHook should unhook events when disposed', function() {
   listener.dispose();
   raiseAllEvents();
   sinon.assert.notCalled(listener.onClickEvent);

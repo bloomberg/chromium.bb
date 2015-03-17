@@ -12,8 +12,8 @@ var onConnect_ = null;
 var onRename_ = null;
 var onDelete_ = null;
 
-module('HostTableEntry', {
-  setup: function() {
+QUnit.module('HostTableEntry', {
+  beforeEach: function() {
     onConnect_ = /** @type {function(string)} */ (sinon.spy());
     onRename_ = /** @type {function(remoting.HostTableEntry)} */ (sinon.spy());
     onDelete_ = /** @type {function(remoting.HostTableEntry)} */ (sinon.spy());
@@ -32,7 +32,7 @@ module('HostTableEntry', {
       return tag;
     });
   },
-  teardown: function() {
+  afterEach: function() {
     hostTableEntry_.dispose();
     hostTableEntry_ = null;
     $testStub(chrome.i18n.getMessage).restore();
@@ -59,23 +59,25 @@ function setHost(hostName, status, opt_offlineReason) {
 function sendKeydown(/** HTMLElement */ target, /** number */ keyCode) {
   var event = document.createEvent('KeyboardEvent');
   Object.defineProperty(
-      event, 'which', {get: function() { return keyCode; }});
+      event, 'which', {get: function(assert) { return keyCode; }});
   event.initKeyboardEvent("keydown", true, true, document.defaultView,
                           false, false, false, false, keyCode, keyCode);
   target.dispatchEvent(event);
 }
 
 function verifyVisible(
+  /** QUnit.Assert */ assert,
   /** HTMLElement*/ element,
   /** boolean */ isVisible,
   /** string= */ opt_name) {
   var expectedVisibility = (isVisible) ? 'visible' : 'hidden';
-  QUnit.equal(element.hidden, !isVisible,
+  assert.equal(element.hidden, !isVisible,
               'Element ' + opt_name + ' should be ' + expectedVisibility);
 }
 
-test('Clicking on the confirm button in the confirm dialog deletes the host',
-  function() {
+QUnit.test(
+  'Clicking on the confirm button in the confirm dialog deletes the host',
+  function(assert) {
   // Setup.
   sinon.stub(remoting, 'setMode', function(/** remoting.AppMode */ mode) {
     if (mode === remoting.AppMode.CONFIRM_HOST_DELETE) {
@@ -93,9 +95,9 @@ test('Clicking on the confirm button in the confirm dialog deletes the host',
   $testStub(remoting.setMode).restore();
 });
 
-test(
+QUnit.test(
   'Clicking on the cancel button in the confirm dialog cancels host deletion',
-  function() {
+  function(assert) {
   // Setup.
   sinon.stub(remoting, 'setMode', function(/** remoting.AppMode */ mode) {
     if (mode === remoting.AppMode.CONFIRM_HOST_DELETE) {
@@ -113,7 +115,8 @@ test(
   $testStub(remoting.setMode).restore();
 });
 
-test('Clicking on the rename button shows the input field.', function() {
+QUnit.test('Clicking on the rename button shows the input field.',
+    function(assert) {
   // Invoke.
   hostTableEntry_.element().querySelector('.rename-button').click();
 
@@ -121,24 +124,24 @@ test('Clicking on the rename button shows the input field.', function() {
   var inputField =
       hostTableEntry_.element().querySelector('.host-rename-input');
 
-  verifyVisible(inputField, true, 'inputField');
-  QUnit.equal(document.activeElement, inputField);
+  verifyVisible(assert, inputField, true, 'inputField');
+  assert.equal(document.activeElement, inputField);
 });
 
-test('Host renaming is canceled on ESCAPE key.', function() {
+QUnit.test('Host renaming is canceled on ESCAPE key.', function(assert) {
   // Invoke.
   var inputField =
       hostTableEntry_.element().querySelector('.host-rename-input');
   hostTableEntry_.element().querySelector('.rename-button').click();
 
   // Verify.
-  verifyVisible(inputField, true, 'inputField');
-  QUnit.equal(document.activeElement, inputField);
+  verifyVisible(assert, inputField, true, 'inputField');
+  assert.equal(document.activeElement, inputField);
   sendKeydown(inputField, 27 /* ESCAPE */);
-  verifyVisible(inputField, false, 'inputField');
+  verifyVisible(assert, inputField, false, 'inputField');
 });
 
-test('Host renaming commits on ENTER.', function() {
+QUnit.test('Host renaming commits on ENTER.', function(assert) {
   // Invoke.
   var inputField =
       hostTableEntry_.element().querySelector('.host-rename-input');
@@ -147,49 +150,51 @@ test('Host renaming commits on ENTER.', function() {
   sendKeydown(inputField, 13 /* ENTER */);
 
   // Verify
-  verifyVisible(inputField, false, 'inputField');
+  verifyVisible(assert, inputField, false, 'inputField');
   sinon.assert.called(onRename_);
-  QUnit.equal(hostTableEntry_.host.hostName, 'Renamed Host');
+  assert.equal(hostTableEntry_.host.hostName, 'Renamed Host');
 
   // Renaming shouldn't trigger a connection request.
   sinon.assert.notCalled(onConnect_);
 });
 
-test('HostTableEntry renders the host name correctly.', function() {
+QUnit.test('HostTableEntry renders the host name correctly.', function(assert) {
   var label = hostTableEntry_.element().querySelector('.host-name-label');
-  QUnit.equal(label.innerText, 'LocalHost');
+  assert.equal(label.innerText, 'LocalHost');
 });
 
-test('HostTableEntry renders an offline host correctly.', function() {
+QUnit.test('HostTableEntry renders an offline host correctly.',
+    function(assert) {
   setHost('LocalHost', 'OFFLINE', 'INITIALIZATION_FAILED');
   var label = hostTableEntry_.element().querySelector('.host-name-label');
-  QUnit.equal(label.innerText, 'OFFLINE');
-  QUnit.equal(label.title, 'OFFLINE_REASON_INITIALIZATION_FAILED');
+  assert.equal(label.innerText, 'OFFLINE');
+  assert.equal(label.title, 'OFFLINE_REASON_INITIALIZATION_FAILED');
 });
 
-test('HostTableEntry renders an out-of-date host correctly', function() {
+QUnit.test('HostTableEntry renders an out-of-date host correctly',
+    function(assert) {
   sinon.stub(remoting.Host, 'needsUpdate').returns(true);
   setHost('LocalHost', 'ONLINE');
   var warningOverlay =
       hostTableEntry_.element().querySelector('.warning-overlay');
   var label = hostTableEntry_.element().querySelector('.host-name-label');
-  verifyVisible(warningOverlay, true, 'warning overlay');
-  QUnit.equal(label.innerText, 'UPDATE_REQUIRED');
+  verifyVisible(assert, warningOverlay, true, 'warning overlay');
+  assert.equal(label.innerText, 'UPDATE_REQUIRED');
 });
 
-test('Clicking on an online host connects it', function() {
+QUnit.test('Clicking on an online host connects it', function(assert) {
   hostTableEntry_.element().querySelector('.host-name-label').click();
   sinon.assert.calledWith(onConnect_,
                           encodeURIComponent(hostTableEntry_.host.hostId));
 });
 
-test('Clicking on an offline host should be a no-op', function() {
+QUnit.test('Clicking on an offline host should be a no-op', function(assert) {
   setHost('LocalHost', 'OFFLINE');
   hostTableEntry_.element().querySelector('.host-name-label').click();
   sinon.assert.notCalled(onConnect_);
 });
 
-test('HostTableEntry handles host that is null', function() {
+QUnit.test('HostTableEntry handles host that is null', function(assert) {
   hostTableEntry_.setHost(null);
   hostTableEntry_.element().querySelector('.host-name-label').click();
   sinon.assert.notCalled(onConnect_);

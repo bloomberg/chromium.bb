@@ -6,104 +6,99 @@
 
 'use strict';
 
-QUnit.module('error', {
-  setup: function() {
-  },
-  teardown: function() {
-  }
-});
+QUnit.module('error');
 
-QUnit.test('error constructor 1', function() {
+QUnit.test('error constructor 1', function(assert) {
   var error = new remoting.Error(remoting.Error.Tag.HOST_OVERLOAD);
-  QUnit.equal(error.getTag(), remoting.Error.Tag.HOST_OVERLOAD);
-  QUnit.equal(error.toString(), remoting.Error.Tag.HOST_OVERLOAD);
+  assert.equal(error.getTag(), remoting.Error.Tag.HOST_OVERLOAD);
+  assert.equal(error.toString(), remoting.Error.Tag.HOST_OVERLOAD);
 });
 
-QUnit.test('error constructor 2', function() {
+QUnit.test('error constructor 2', function(assert) {
   var error = new remoting.Error(
       remoting.Error.Tag.HOST_IS_OFFLINE,
       'detail');
-  QUnit.equal(error.getTag(), remoting.Error.Tag.HOST_IS_OFFLINE);
-  QUnit.ok(error.toString().indexOf(remoting.Error.Tag.HOST_IS_OFFLINE) != -1);
-  QUnit.ok(error.toString().indexOf('detail') != -1);
+  assert.equal(error.getTag(), remoting.Error.Tag.HOST_IS_OFFLINE);
+  assert.ok(error.toString().indexOf(remoting.Error.Tag.HOST_IS_OFFLINE) != -1);
+  assert.ok(error.toString().indexOf('detail') != -1);
 });
 
-QUnit.test('hasTag', function() {
+QUnit.test('hasTag', function(assert) {
   var error = new remoting.Error(remoting.Error.Tag.HOST_OVERLOAD);
-  QUnit.ok(error.hasTag(remoting.Error.Tag.HOST_OVERLOAD));
-  QUnit.ok(error.hasTag(
+  assert.ok(error.hasTag(remoting.Error.Tag.HOST_OVERLOAD));
+  assert.ok(error.hasTag(
     remoting.Error.Tag.HOST_OVERLOAD,
     remoting.Error.Tag.HOST_IS_OFFLINE));
-  QUnit.ok(!error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE));
+  assert.ok(!error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE));
 });
 
-QUnit.test('constructor methods', function() {
-  QUnit.ok(remoting.Error.none().hasTag(remoting.Error.Tag.NONE));
-  QUnit.ok(remoting.Error.unexpected().hasTag(remoting.Error.Tag.UNEXPECTED));
+QUnit.test('constructor methods', function(assert) {
+  assert.ok(remoting.Error.none().hasTag(remoting.Error.Tag.NONE));
+  assert.ok(remoting.Error.unexpected().hasTag(remoting.Error.Tag.UNEXPECTED));
 });
 
-QUnit.test('isNone', function() {
-  QUnit.ok(remoting.Error.none().isNone());
-  QUnit.ok(!remoting.Error.unexpected().isNone());
-  QUnit.ok(!new remoting.Error(remoting.Error.Tag.CANCELLED).isNone());
+QUnit.test('isNone', function(assert) {
+  assert.ok(remoting.Error.none().isNone());
+  assert.ok(!remoting.Error.unexpected().isNone());
+  assert.ok(!new remoting.Error(remoting.Error.Tag.CANCELLED).isNone());
 });
 
 
-QUnit.test('fromHttpStatus', function() {
-  QUnit.ok(remoting.Error.fromHttpStatus(200).isNone());
-  QUnit.ok(remoting.Error.fromHttpStatus(201).isNone());
-  QUnit.ok(!remoting.Error.fromHttpStatus(500).isNone());
-  QUnit.equal(
+QUnit.test('fromHttpStatus', function(assert) {
+  assert.ok(remoting.Error.fromHttpStatus(200).isNone());
+  assert.ok(remoting.Error.fromHttpStatus(201).isNone());
+  assert.ok(!remoting.Error.fromHttpStatus(500).isNone());
+  assert.equal(
       remoting.Error.fromHttpStatus(0).getTag(),
       remoting.Error.Tag.NETWORK_FAILURE);
-  QUnit.equal(
+  assert.equal(
       remoting.Error.fromHttpStatus(100).getTag(),
       remoting.Error.Tag.UNEXPECTED);
-  QUnit.equal(
+  assert.equal(
       remoting.Error.fromHttpStatus(200).getTag(),
       remoting.Error.Tag.NONE);
-  QUnit.equal(
+  assert.equal(
       remoting.Error.fromHttpStatus(201).getTag(),
       remoting.Error.Tag.NONE);
-  QUnit.equal(
+  assert.equal(
       remoting.Error.fromHttpStatus(400).getTag(),
       remoting.Error.Tag.AUTHENTICATION_FAILED);
-  QUnit.equal(
+  assert.equal(
       remoting.Error.fromHttpStatus(401).getTag(),
       remoting.Error.Tag.AUTHENTICATION_FAILED);
-  QUnit.equal(
+  assert.equal(
       remoting.Error.fromHttpStatus(402).getTag(),
       remoting.Error.Tag.UNEXPECTED);
-  QUnit.equal(
+  assert.equal(
       remoting.Error.fromHttpStatus(403).getTag(),
       remoting.Error.Tag.NOT_AUTHORIZED);
-  QUnit.equal(
+  assert.equal(
       remoting.Error.fromHttpStatus(404).getTag(),
       remoting.Error.Tag.NOT_FOUND);
-  QUnit.equal(
+  assert.equal(
       remoting.Error.fromHttpStatus(500).getTag(),
       remoting.Error.Tag.SERVICE_UNAVAILABLE);
-  QUnit.equal(
+  assert.equal(
       remoting.Error.fromHttpStatus(501).getTag(),
       remoting.Error.Tag.SERVICE_UNAVAILABLE);
-  QUnit.equal(
+  assert.equal(
       remoting.Error.fromHttpStatus(600).getTag(),
       remoting.Error.Tag.UNEXPECTED);
 });
 
-QUnit.test('handler 1', function() {
+QUnit.test('handler 1', function(assert) {
   /** @type {!remoting.Error} */
   var reportedError;
   var onError = function(/** !remoting.Error */ arg) {
     reportedError = arg;
   };
   remoting.Error.handler(onError)('not a real tag');
-  QUnit.ok(reportedError instanceof remoting.Error);
-  QUnit.equal(reportedError.getTag(), remoting.Error.Tag.UNEXPECTED);
+  assert.ok(reportedError instanceof remoting.Error);
+  assert.equal(reportedError.getTag(), remoting.Error.Tag.UNEXPECTED);
 });
 
 
-QUnit.test('handler 2', function() {
+QUnit.test('handler 2', function(assert) {
   /** @type {!remoting.Error} */
   var reportedError;
   var onError = function(/** !remoting.Error */ arg) {
@@ -111,7 +106,7 @@ QUnit.test('handler 2', function() {
   };
   var origError = new remoting.Error(remoting.Error.Tag.HOST_IS_OFFLINE);
   remoting.Error.handler(onError)(origError);
-  QUnit.equal(reportedError, origError);
+  assert.equal(reportedError, origError);
 });
 
 })();

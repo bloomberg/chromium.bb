@@ -32,8 +32,8 @@ var onError = function(error, message) {};
 /** @type {remoting.XmppLoginHandler} */
 var loginHandler = null;
 
-module('XmppLoginHandler', {
-  setup: function() {
+QUnit.module('XmppLoginHandler', {
+  beforeEach: function() {
     sendMessage_spy = sinon.spy();
     sendMessage = /** @type {function(string):void} */ (sendMessage_spy);
     startTls_spy = sinon.spy();
@@ -85,7 +85,7 @@ function handshakeBase() {
         '</stream:features>'));
 }
 
-test('should authenticate', function() {
+QUnit.test('should authenticate', function() {
   handshakeBase();
 
   loginHandler.onDataReceived(
@@ -122,7 +122,7 @@ test('should authenticate', function() {
   sinon.assert.calledWith(onHandshakeDone);
 });
 
-test('use <starttls> handshake', function() {
+QUnit.test('use <starttls> handshake', function() {
   loginHandler = new remoting.XmppLoginHandler(
       'google.com', testUsername, testToken, true, sendMessage,
       startTls, onHandshakeDone, onError);
@@ -155,8 +155,9 @@ test('use <starttls> handshake', function() {
   sinon.assert.calledWith(startTls);
 });
 
-test('should return AUTHENTICATION_FAILED error when failed to authenticate',
-     function() {
+QUnit.test(
+    'should return AUTHENTICATION_FAILED error when failed to authenticate',
+    function() {
   handshakeBase();
 
   loginHandler.onDataReceived(
@@ -166,7 +167,7 @@ test('should return AUTHENTICATION_FAILED error when failed to authenticate',
       remoting.Error.Tag.AUTHENTICATION_FAILED));
 });
 
-test('should return UNEXPECTED error when failed to parse stream',
+QUnit.test('should return UNEXPECTED error when failed to parse stream',
      function() {
   handshakeBase();
   loginHandler.onDataReceived(

@@ -4,7 +4,6 @@
 
 /**
  * @fileoverview
- * @suppress {checkTypes|checkVars|reportUnknownTypes|visibility}
  */
 
 (function() {
@@ -14,16 +13,6 @@
 /** @type {sinon.TestStub} */
 var mockIsAppsV2 = null;
 var mockChromeStorage = {};
-
-function pass() {
-  ok(true);
-  QUnit.start();
-}
-
-function fail() {
-  ok(false);
-  QUnit.start();
-}
 
 /**
  * @param {string} v1UserName
@@ -56,64 +45,65 @@ function setMigrationData_(v1UserName, v1UserEmail, v1HasHosts) {
   }
 }
 
-module('AppsV2Migration', {
-  setup: function() {
+QUnit.module('AppsV2Migration', {
+  beforeEach: function() {
     chromeMocks.activate(['storage']);
     mockIsAppsV2 = sinon.stub(base, 'isAppsV2');
     remoting.identity = new remoting.Identity();
   },
-  teardown: function() {
+  afterEach: function() {
     chromeMocks.restore();
     mockIsAppsV2.restore();
     remoting.identity = null;
   }
 });
 
-QUnit.asyncTest(
+QUnit.test(
   'hasHostsInV1App() should reject the promise if v1 user has same identity',
-  function() {
+  function(assert) {
+    assert.expect(0);
     setMigrationData_('v1userName', 'v2user@gmail.com', true);
     mockIsAppsV2.returns(true);
-    remoting.AppsV2Migration.hasHostsInV1App().then(fail, pass);
+    return base.Promise.negate(remoting.AppsV2Migration.hasHostsInV1App());
 });
 
-QUnit.asyncTest(
+QUnit.test(
   'hasHostsInV1App() should reject the promise if v1 user has no hosts',
-  function() {
+  function(assert) {
+    assert.expect(0);
     setMigrationData_('v1userName', 'v1user@gmail.com', false);
     mockIsAppsV2.returns(true);
-    remoting.AppsV2Migration.hasHostsInV1App().then(fail, pass);
+    return base.Promise.negate(remoting.AppsV2Migration.hasHostsInV1App());
 });
 
-QUnit.asyncTest(
-  'hasHostsInV1App() should reject the promise in v1', function() {
-    setMigrationData_('v1userName', 'v1user@gmail.com', true);
-    mockIsAppsV2.returns(false);
-    remoting.AppsV2Migration.hasHostsInV1App().then(fail, pass);
+QUnit.test('hasHostsInV1App() should reject the promise in v1',
+    function(assert) {
+  assert.expect(0);
+  setMigrationData_('v1userName', 'v1user@gmail.com', true);
+  mockIsAppsV2.returns(false);
+  return base.Promise.negate(remoting.AppsV2Migration.hasHostsInV1App());
 });
 
-QUnit.asyncTest(
+QUnit.test(
   'hasHostsInV1App() should return v1 identity if v1 user has hosts',
-  function() {
+  function(assert) {
     setMigrationData_('v1userName', 'v1user@gmail.com', true);
     mockIsAppsV2.returns(true);
-    remoting.AppsV2Migration.hasHostsInV1App().then(
-      /** @param {{email:string, name:string}} result */
-      function(result) {
-        QUnit.equal(result.email, 'v1user@gmail.com');
-        QUnit.equal(result.fullName, 'v1userName');
-        pass();
-      }, fail
-    );
+    return remoting.AppsV2Migration.hasHostsInV1App().then(
+      function(/** {email:string, fullName:string} */ result) {
+        assert.equal(result.email, 'v1user@gmail.com');
+        assert.equal(result.fullName, 'v1userName');
+    });
 });
 
-QUnit.asyncTest(
+QUnit.test(
   'saveUserInfo() should clear the preferences on v2',
-  function() {
+  function(assert) {
+    assert.expect(0);
     setMigrationData_('v1userName', 'v1user@gmail.com', true);
     mockIsAppsV2.returns(true);
     remoting.AppsV2Migration.saveUserInfo();
-    remoting.AppsV2Migration.hasHostsInV1App().then(fail, pass);
+    return base.Promise.negate(remoting.AppsV2Migration.hasHostsInV1App());
 });
 
 })();

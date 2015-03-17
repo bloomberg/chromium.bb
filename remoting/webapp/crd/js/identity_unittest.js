@@ -16,22 +16,25 @@ var getAuthToken = null;
 var identity = null;
 
 /**
+ * @param {QUnit.Assert} assert
  * @constructor
  * @implements {remoting.Identity.ConsentDialog}
  */
-var MockConsent = function() {
+var MockConsent = function(assert) {
   /** @type {boolean} */
   this.grantConsent = true;
   /** @type {Array<string> | undefined} */
   this.scopes = undefined;
+  /** @private {QUnit.Assert} */
+  this.assert_ = assert;
 };
 
 MockConsent.prototype.show = function() {
   // The consent dialog should only be shown if a previous call to getAuthToken
   // with {interactive: false} failed, and it should occur before any call with
   // {interactive: true}.
-  ok(getAuthToken.calledOnce);
-  ok(getAuthToken.calledWith({'interactive': false}));
+  this.assert_.ok(getAuthToken.calledOnce);
+  this.assert_.ok(getAuthToken.calledWith({'interactive': false}));
   getAuthToken.reset();
 
   if (this.grantConsent) {
@@ -40,28 +43,28 @@ MockConsent.prototype.show = function() {
   return Promise.resolve();
 };
 
-module('Identity', {
-  setup: function() {
+QUnit.module('Identity', {
+  beforeEach: function(/** QUnit.Assert*/ assert) {
     chromeMocks.identity.mock$clearToken();
     chromeMocks.activate(['identity', 'runtime']);
-    consentDialog = new MockConsent();
+    consentDialog = new MockConsent(assert);
     promptForConsent = sinon.spy(consentDialog, 'show');
     identity = new remoting.Identity(consentDialog);
     getAuthToken = sinon.spy(chromeMocks.identity, 'getAuthToken');
   },
-  teardown: function() {
+  afterEach: function() {
     chromeMocks.restore();
     getAuthToken.restore();
   }
 });
 
-test('consent is requested only on first invocation', function() {
-  ok(!promptForConsent.called);
+QUnit.test('consent is requested only on first invocation', function(assert) {
+  assert.ok(!promptForConsent.called);
   return identity.getToken().then(
       function(/** string */ token) {
-        ok(promptForConsent.called);
-        ok(getAuthToken.calledOnce);
-        ok(getAuthToken.calledWith({'interactive': true}));
+        assert.ok(promptForConsent.called);
+        assert.ok(getAuthToken.calledOnce);
+        assert.ok(getAuthToken.calledWith({'interactive': true}));
 
         // Request another token.
         promptForConsent.reset();
@@ -69,33 +72,33 @@ test('consent is requested only on first invocation', function() {
         return identity.getToken();
 
       }).then(function(/** string */ token) {
-        ok(!promptForConsent.called);
-        ok(getAuthToken.calledOnce);
-        ok(getAuthToken.calledWith({'interactive': true}));
-        equal(token, 'token');
+        assert.ok(!promptForConsent.called);
+        assert.ok(getAuthToken.calledOnce);
+        assert.ok(getAuthToken.calledWith({'interactive': true}));
+        assert.equal(token, 'token');
       });
 });
 
-test('cancellations are reported correctly', function() {
+QUnit.test('cancellations are reported correctly', function(assert) {
   consentDialog.grantConsent = false;
   chromeMocks.runtime.lastError.message = 'The user did not approve access.';
   return identity.getToken().then(
       function(/** string */ token) {
-        ok(false, 'expected getToken() to fail');
+        assert.ok(false, 'expected getToken() to fail');
       }).catch(function(/** remoting.Error */ error) {
-        equal(error.getTag(), remoting.Error.Tag.CANCELLED);
+        assert.equal(error.getTag(), remoting.Error.Tag.CANCELLED);
       });
 });
 
 
-test('other errors are reported correctly', function() {
+QUnit.test('other errors are reported correctly', function(assert) {
   consentDialog.grantConsent = false;
   chromeMocks.runtime.lastError.message = '<some other error message>';
   return identity.getToken().then(
       function(/** string */ token) {
-        ok(false, 'expected getToken() to fail');
+        assert.ok(false, 'expected getToken() to fail');
       }).catch(function(/** remoting.Error */ error) {
-        equal(error.getTag(), remoting.Error.Tag.NOT_AUTHENTICATED);
+        assert.equal(error.getTag(), remoting.Error.Tag.NOT_AUTHENTICATED);
       });
 });
 

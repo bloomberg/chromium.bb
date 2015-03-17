@@ -22,60 +22,6 @@ QUnit.Clock = function() {};
 /** @param {number} ticks */
 QUnit.Clock.prototype.tick = function(ticks) {};
 
-
-/**
- * @param {string} desc
- * @param {Function} f
- */
-QUnit.asyncTest = function(desc, f) {};
-
-/**
- * @param {*} a
- * @param {*} b
- * @param {string=} opt_message
- */
-QUnit.deepEqual = function(a, b, opt_message) {};
-
-/**
- * @param {*} a
- * @param {*} b
- * @param {string=} opt_message
- */
-QUnit.equal = function(a, b, opt_message) {};
-
-/**
- * @param {*} a
- */
-QUnit.expect = function(a) {};
-
-/**
- * @param {string} desc
- * @param {Object=} dict
- */
-QUnit.module = function(desc, dict) {};
-
-/**
- * @param {*} a
- * @param {*} b
- * @param {string=} opt_desc
- */
-QUnit.notEqual = function(a, b, opt_desc) {};
-
-/**
- * @param {boolean} cond
- * @param {string=} desc
- * @return {boolean}
- */
-QUnit.ok = function(cond, desc) {};
-
-QUnit.start = function() {};
-
-/**
- * @param {string} desc
- * @param {Function} f
- */
-QUnit.test = function(desc, f) {};
-
 /** @param {Function} f */
 QUnit.testStart = function(f) {};
 
@@ -89,10 +35,55 @@ QUnit.Assert = function() {};
  */
 QUnit.Assert.prototype.async = function() {};
 
-var deepEqual = QUnit.deepEqual;
-var equal = QUnit.equal;
-var expect = QUnit.expect;
-var module = QUnit.module;
-var notEqual = QUnit.notEqual;
-var ok = QUnit.ok;
-var test = QUnit.test;
+/**
+ * @param {*} a
+ * @param {*} b
+ * @param {string=} opt_desc
+ */
+QUnit.Assert.prototype.notEqual = function(a, b, opt_desc) {};
+
+/**
+ * @param {boolean} cond
+ * @param {string=} desc
+ * @return {boolean}
+ */
+QUnit.Assert.prototype.ok = function(cond, desc) {};
+
+/**
+ * @param {*} a
+ * @param {*} b
+ * @param {string=} opt_message
+ */
+QUnit.Assert.prototype.deepEqual = function(a, b, opt_message) {};
+
+/**
+ * @param {*} a
+ * @param {*} b
+ * @param {string=} opt_message
+ */
+QUnit.Assert.prototype.equal = function(a, b, opt_message) {};
+
+/**
+ * @param {number} assertionCount
+ */
+QUnit.Assert.prototype.expect = function(assertionCount) {};
+
+/**
+ * @typedef {{
+ *   beforeEach: (function(QUnit.Assert=) | undefined),
+ *   afterEach: (function(QUnit.Assert=) | undefined)
+ * }}
+ */
+QUnit.ModuleArgs;
+
+/**
+ * @param {string} desc
+ * @param {QUnit.ModuleArgs=} opt_args=
+ */
+QUnit.module = function(desc, opt_args) {};
+
+/**
+ * @param {string} desc
+ * @param {function(QUnit.Assert)} f
+ */
+QUnit.test = function(desc, f) {};
