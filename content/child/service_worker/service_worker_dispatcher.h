@@ -28,7 +28,7 @@ class Message;
 
 namespace content {
 
-class ServiceWorkerMessageFilter;
+class ServiceWorkerMessageSender;
 class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 class WebServiceWorkerImpl;
@@ -41,7 +41,8 @@ struct TransferredMessagePort;
 // This class manages communication with the browser process about
 // registration of the service worker, exposed to renderer and worker
 // scripts through methods like navigator.registerServiceWorker().
-class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
+class CONTENT_EXPORT ServiceWorkerDispatcher
+    : public WorkerTaskRunner::Observer {
  public:
   typedef blink::WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks
       WebServiceWorkerRegistrationCallbacks;
@@ -55,11 +56,10 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
       WebServiceWorkerGetRegistrationForReadyCallbacks
           WebServiceWorkerGetRegistrationForReadyCallbacks;
 
-  explicit ServiceWorkerDispatcher(ThreadSafeSender* thread_safe_sender);
+  explicit ServiceWorkerDispatcher(ServiceWorkerMessageSender* sender);
   ~ServiceWorkerDispatcher() override;
 
   void OnMessageReceived(const IPC::Message& msg);
-  bool Send(IPC::Message* msg);
 
   // Corresponds to navigator.serviceWorker.register()
   void RegisterServiceWorker(
@@ -128,10 +128,10 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
       const ServiceWorkerRegistrationObjectInfo& info,
       bool adopt_handle);
 
-  // |thread_safe_sender| needs to be passed in because if the call leads to
-  // construction it will be needed.
+  // |sender| needs to be passed in because if the call leads to construction
+  // it will be needed.
   static ServiceWorkerDispatcher* GetOrCreateThreadSpecificInstance(
-      ThreadSafeSender* thread_safe_sender);
+      ServiceWorkerMessageSender* sender);
 
   // Unlike GetOrCreateThreadSpecificInstance() this doesn't create a new
   // instance if thread-local instance doesn't exist.
@@ -155,6 +155,7 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   typedef std::map<int, WebServiceWorkerRegistrationImpl*>
       RegistrationObjectMap;
 
+  friend class ServiceWorkerDispatcherTest;
   friend class WebServiceWorkerImpl;
   friend class WebServiceWorkerRegistrationImpl;
 
@@ -252,7 +253,7 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   // (e.g. as .current).
   WorkerToProviderMap worker_to_provider_;
 
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  scoped_refptr<ServiceWorkerMessageSender> sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDispatcher);
 };

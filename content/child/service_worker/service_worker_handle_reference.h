@@ -11,7 +11,7 @@
 
 namespace content {
 
-class ThreadSafeSender;
+class ServiceWorkerMessageSender;
 
 // Automatically increments and decrements ServiceWorkerHandle's ref-count
 // (in the browser side) in ctor and dtor.
@@ -20,7 +20,7 @@ class ServiceWorkerHandleReference {
   // Creates a new ServiceWorkerHandleReference and increments ref-count.
   static scoped_ptr<ServiceWorkerHandleReference> Create(
       const ServiceWorkerObjectInfo& info,
-      ThreadSafeSender* sender);
+      ServiceWorkerMessageSender* sender);
 
   // Creates a new ServiceWorkerHandleReference by adopting a
   // ref-count. ServiceWorkerHandleReferences created this way must
@@ -29,7 +29,7 @@ class ServiceWorkerHandleReference {
   // the browser side.
   static scoped_ptr<ServiceWorkerHandleReference> Adopt(
       const ServiceWorkerObjectInfo& info,
-      ThreadSafeSender* sender);
+      ServiceWorkerMessageSender* sender);
 
   ~ServiceWorkerHandleReference();
 
@@ -41,11 +41,14 @@ class ServiceWorkerHandleReference {
   int64 version_id() const { return info_.version_id; }
 
  private:
-  ServiceWorkerHandleReference(const ServiceWorkerObjectInfo& info,
-                               ThreadSafeSender* sender,
-                               bool increment_ref_in_ctor);
+  ServiceWorkerHandleReference(
+      const ServiceWorkerObjectInfo& info,
+      ServiceWorkerMessageSender* sender,
+      bool increment_ref_in_ctor);
+
   ServiceWorkerObjectInfo info_;
-  scoped_refptr<ThreadSafeSender> sender_;
+  scoped_refptr<ServiceWorkerMessageSender> sender_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandleReference);
 };
 

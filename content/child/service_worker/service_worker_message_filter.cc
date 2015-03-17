@@ -5,6 +5,7 @@
 #include "content/child/service_worker/service_worker_message_filter.h"
 
 #include "content/child/service_worker/service_worker_dispatcher.h"
+#include "content/child/service_worker/service_worker_message_sender.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -17,7 +18,7 @@ namespace {
 // Sends a ServiceWorkerObjectDestroyed message to the browser so it can delete
 // the ServiceWorker handle.
 void SendServiceWorkerObjectDestroyed(
-    ThreadSafeSender* sender,
+    ServiceWorkerMessageSender* sender,
     int handle_id) {
   if (handle_id == kInvalidServiceWorkerHandleId)
     return;
@@ -26,7 +27,7 @@ void SendServiceWorkerObjectDestroyed(
 }
 
 void SendRegistrationObjectDestroyed(
-    ThreadSafeSender* sender,
+    ServiceWorkerMessageSender* sender,
     int handle_id) {
   if (handle_id == kInvalidServiceWorkerRegistrationHandleId)
     return;
@@ -37,7 +38,8 @@ void SendRegistrationObjectDestroyed(
 }  // namespace
 
 ServiceWorkerMessageFilter::ServiceWorkerMessageFilter(ThreadSafeSender* sender)
-    : WorkerThreadMessageFilter(sender) {
+    : WorkerThreadMessageFilter(sender),
+      sender_(new ServiceWorkerMessageSender(sender)) {
 }
 
 ServiceWorkerMessageFilter::~ServiceWorkerMessageFilter() {}
@@ -50,7 +52,7 @@ bool ServiceWorkerMessageFilter::ShouldHandleMessage(
 void ServiceWorkerMessageFilter::OnFilteredMessageReceived(
     const IPC::Message& msg) {
   ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-      thread_safe_sender())->OnMessageReceived(msg);
+     sender_.get())->OnMessageReceived(msg);
 }
 
 bool ServiceWorkerMessageFilter::GetWorkerThreadIdForMessage(
@@ -78,13 +80,10 @@ void ServiceWorkerMessageFilter::OnStaleRegistered(
     int request_id,
     const ServiceWorkerRegistrationObjectInfo& info,
     const ServiceWorkerVersionAttributes& attrs) {
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   attrs.installing.handle_id);
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   attrs.waiting.handle_id);
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   attrs.active.handle_id);
-  SendRegistrationObjectDestroyed(thread_safe_sender(), info.handle_id);
+  SendServiceWorkerObjectDestroyed(sender_.get(), attrs.installing.handle_id);
+  SendServiceWorkerObjectDestroyed(sender_.get(), attrs.waiting.handle_id);
+  SendServiceWorkerObjectDestroyed(sender_.get(), attrs.active.handle_id);
+  SendRegistrationObjectDestroyed(sender_.get(), info.handle_id);
 }
 
 void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
@@ -93,12 +92,9 @@ void ServiceWorkerMessageFilter::OnStaleSetVersionAttributes(
     int registration_handle_id,
     int changed_mask,
     const ServiceWorkerVersionAttributes& attrs) {
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   attrs.installing.handle_id);
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   attrs.waiting.handle_id);
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(),
-                                   attrs.active.handle_id);
+  SendServiceWorkerObjectDestroyed(sender_.get(), attrs.installing.handle_id);
+  SendServiceWorkerObjectDestroyed(sender_.get(), attrs.waiting.handle_id);
+  SendServiceWorkerObjectDestroyed(sender_.get(), attrs.active.handle_id);
   // Don't have to decrement registration refcount because the sender of the
   // SetVersionAttributes message doesn't increment it.
 }
@@ -108,7 +104,7 @@ void ServiceWorkerMessageFilter::OnStaleSetControllerServiceWorker(
     int provider_id,
     const ServiceWorkerObjectInfo& info,
     bool should_notify_controllerchange) {
-  SendServiceWorkerObjectDestroyed(thread_safe_sender(), info.handle_id);
+  SendServiceWorkerObjectDestroyed(sender_.get(), info.handle_id);
 }
 
 }  // namespace content

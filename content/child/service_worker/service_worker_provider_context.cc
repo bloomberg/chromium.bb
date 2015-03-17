@@ -10,6 +10,7 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
+#include "content/child/service_worker/service_worker_message_sender.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
@@ -22,10 +23,10 @@ ServiceWorkerProviderContext::ServiceWorkerProviderContext(int provider_id)
       main_thread_loop_proxy_(base::MessageLoopProxy::current()) {
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
-  thread_safe_sender_ = ChildThreadImpl::current()->thread_safe_sender();
+  sender_ = new ServiceWorkerMessageSender(
+      ChildThreadImpl::current()->thread_safe_sender());
   ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-          thread_safe_sender_.get());
+      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender_.get());
   DCHECK(dispatcher);
   dispatcher->AddProviderContext(this);
 }
@@ -69,15 +70,15 @@ void ServiceWorkerProviderContext::SetVersionAttributes(
 
   if (mask.installing_changed()) {
     installing_ = ServiceWorkerHandleReference::Adopt(
-        attrs.installing, thread_safe_sender_.get());
+        attrs.installing, sender_.get());
   }
   if (mask.waiting_changed()) {
     waiting_ = ServiceWorkerHandleReference::Adopt(
-        attrs.waiting, thread_safe_sender_.get());
+        attrs.waiting, sender_.get());
   }
   if (mask.active_changed()) {
     active_ = ServiceWorkerHandleReference::Adopt(
-        attrs.active, thread_safe_sender_.get());
+        attrs.active, sender_.get());
   }
 }
 
@@ -90,14 +91,12 @@ void ServiceWorkerProviderContext::OnAssociateRegistration(
   DCHECK_NE(kInvalidServiceWorkerRegistrationId, info.registration_id);
   DCHECK_NE(kInvalidServiceWorkerRegistrationHandleId, info.handle_id);
 
-  registration_ = ServiceWorkerRegistrationHandleReference::Adopt(
-      info, thread_safe_sender_.get());
-  installing_ = ServiceWorkerHandleReference::Adopt(
-      attrs.installing, thread_safe_sender_.get());
-  waiting_ = ServiceWorkerHandleReference::Adopt(
-      attrs.waiting, thread_safe_sender_.get());
-  active_ = ServiceWorkerHandleReference::Adopt(
-      attrs.active, thread_safe_sender_.get());
+  registration_ =
+      ServiceWorkerRegistrationHandleReference::Adopt(info, sender_.get());
+  installing_ =
+      ServiceWorkerHandleReference::Adopt(attrs.installing, sender_.get());
+  waiting_ = ServiceWorkerHandleReference::Adopt(attrs.waiting, sender_.get());
+  active_ = ServiceWorkerHandleReference::Adopt(attrs.active, sender_.get());
 }
 
 void ServiceWorkerProviderContext::OnDisassociateRegistration() {
@@ -144,8 +143,7 @@ void ServiceWorkerProviderContext::OnSetControllerServiceWorker(
 
   // This context is is the primary owner of this handle, keeps the
   // initial reference until it goes away.
-  controller_ =
-      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
+  controller_ = ServiceWorkerHandleReference::Adopt(info, sender_.get());
 
   // TODO(kinuko): We can forward the message to other threads here
   // when we support navigator.serviceWorker in dedicated workers.

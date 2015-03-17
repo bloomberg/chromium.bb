@@ -21,8 +21,8 @@ class WebServiceWorkerProxy;
 namespace content {
 
 class ServiceWorkerHandleReference;
+class ServiceWorkerMessageSender;
 struct ServiceWorkerObjectInfo;
-class ThreadSafeSender;
 
 // Each instance corresponds to one ServiceWorker object in JS context, and
 // is held by ServiceWorker object in blink's c++ layer, e.g. created one
@@ -36,7 +36,7 @@ class WebServiceWorkerImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorker) {
  public:
   WebServiceWorkerImpl(scoped_ptr<ServiceWorkerHandleReference> handle_ref,
-                       ThreadSafeSender* thread_safe_sender);
+                       ServiceWorkerMessageSender* sender);
   virtual ~WebServiceWorkerImpl();
 
   void OnStateChanged(blink::WebServiceWorkerState new_state);
@@ -52,7 +52,7 @@ class WebServiceWorkerImpl
  private:
   scoped_ptr<ServiceWorkerHandleReference> handle_ref_;
   blink::WebServiceWorkerState state_;
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  scoped_refptr<ServiceWorkerMessageSender> sender_;
   blink::WebServiceWorkerProxy* proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerImpl);

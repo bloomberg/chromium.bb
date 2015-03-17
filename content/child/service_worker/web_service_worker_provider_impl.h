@@ -18,6 +18,7 @@ class WebServiceWorkerProviderClient;
 namespace content {
 
 class ServiceWorkerDispatcher;
+class ServiceWorkerMessageSender;
 class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 
@@ -53,7 +54,7 @@ class WebServiceWorkerProviderImpl
   void RemoveProviderClient();
   ServiceWorkerDispatcher* GetDispatcher();
 
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
+  scoped_refptr<ServiceWorkerMessageSender> sender_;
   scoped_refptr<ServiceWorkerProviderContext> context_;
   const int provider_id_;
 

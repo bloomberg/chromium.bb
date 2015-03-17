@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
+#include "content/child/service_worker/service_worker_message_sender.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
@@ -24,7 +25,7 @@ namespace content {
 WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
     ThreadSafeSender* thread_safe_sender,
     ServiceWorkerProviderContext* context)
-    : thread_safe_sender_(thread_safe_sender),
+    : sender_(new ServiceWorkerMessageSender(thread_safe_sender)),
       context_(context),
       provider_id_(context->provider_id()) {
 }
@@ -98,7 +99,7 @@ void WebServiceWorkerProviderImpl::RemoveProviderClient() {
 
 ServiceWorkerDispatcher* WebServiceWorkerProviderImpl::GetDispatcher() {
   return ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-      thread_safe_sender_.get());
+      sender_.get());
 }
 
 }  // namespace content

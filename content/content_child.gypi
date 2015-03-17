@@ -196,6 +196,8 @@
       'child/service_worker/service_worker_handle_reference.h',
       'child/service_worker/service_worker_message_filter.cc',
       'child/service_worker/service_worker_message_filter.h',
+      'child/service_worker/service_worker_message_sender.cc',
+      'child/service_worker/service_worker_message_sender.h',
       'child/service_worker/service_worker_network_provider.cc',
       'child/service_worker/service_worker_network_provider.h',
       'child/service_worker/service_worker_provider_context.cc',

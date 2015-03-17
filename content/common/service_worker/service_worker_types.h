@@ -181,7 +181,7 @@ struct CONTENT_EXPORT ServiceWorkerObjectInfo {
   int64 version_id;
 };
 
-struct ServiceWorkerRegistrationObjectInfo {
+struct CONTENT_EXPORT ServiceWorkerRegistrationObjectInfo {
   ServiceWorkerRegistrationObjectInfo();
   int handle_id;
   GURL scope;

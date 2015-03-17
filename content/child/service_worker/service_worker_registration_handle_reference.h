@@ -12,7 +12,7 @@
 
 namespace content {
 
-class ThreadSafeSender;
+class ServiceWorkerMessageSender;
 
 class ServiceWorkerRegistrationHandleReference {
  public:
@@ -20,13 +20,13 @@ class ServiceWorkerRegistrationHandleReference {
   // ref-count.
   static scoped_ptr<ServiceWorkerRegistrationHandleReference> Create(
       const ServiceWorkerRegistrationObjectInfo& info,
-      ThreadSafeSender* sender);
+      ServiceWorkerMessageSender* sender);
 
   // Creates a new ServiceWorkerRegistrationHandleReference by adopting a
   // ref-count.
   static scoped_ptr<ServiceWorkerRegistrationHandleReference> Adopt(
       const ServiceWorkerRegistrationObjectInfo& info,
-      ThreadSafeSender* sender);
+      ServiceWorkerMessageSender* sender);
 
   ~ServiceWorkerRegistrationHandleReference();
 
@@ -38,11 +38,11 @@ class ServiceWorkerRegistrationHandleReference {
  private:
   ServiceWorkerRegistrationHandleReference(
       const ServiceWorkerRegistrationObjectInfo& info,
-      ThreadSafeSender* sender,
+      ServiceWorkerMessageSender* sender,
       bool increment_ref_in_ctor);
 
   ServiceWorkerRegistrationObjectInfo info_;
-  scoped_refptr<ThreadSafeSender> sender_;
+  scoped_refptr<ServiceWorkerMessageSender> sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistrationHandleReference);
 };
