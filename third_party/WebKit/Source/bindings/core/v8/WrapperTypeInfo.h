@@ -182,6 +182,7 @@ struct WrapperTypeInfo {
     const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
     InstallConditionallyEnabledMethodsFunction installConditionallyEnabledMethodsFunction;
     const InstallConditionallyEnabledPropertiesFunction installConditionallyEnabledPropertiesFunction;
+    const char* const interfaceName;
     const WrapperTypeInfo* parentClass;
     const unsigned wrapperTypePrototype : 1; // WrapperTypePrototype
     const unsigned wrapperClassId : 2; // WrapperClassId

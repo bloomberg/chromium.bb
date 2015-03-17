@@ -198,11 +198,7 @@ v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info
     {% if attribute.measure_as %}
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('ConstructorGetter')}});
     {% endif %}
-    {% if attribute.is_expose_js_accessors %}
-    v8ConstructorAttributeGetterAsAccessor(info);
-    {% else %}
-    v8ConstructorAttributeGetterAsProperty(property, info);
-    {% endif %}
+    v8ConstructorAttributeGetter(property, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 {% endfilter %}
@@ -405,27 +401,27 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
 
 {##############################################################################}
 {% macro attribute_configuration(attribute) %}
+{% if attribute.constructor_type %}
 {% set getter_callback =
-       '%sV8Internal::%sAttributeGetterCallback' %
-           (cpp_class_or_partial, attribute.name)
-       if not attribute.constructor_type else (
-       '%sV8Internal::%sConstructorGetterCallback' %
-           (cpp_class_or_partial, attribute.name)
-       if attribute.needs_constructor_getter_callback else (
-       'v8ConstructorAttributeGetterAsAccessor'
-       if attribute.is_expose_js_accessors else (
-       'v8ConstructorAttributeGetterAsProperty'))) %}
-{% set getter_callback_for_main_world =
-       '%sV8Internal::%sAttributeGetterCallbackForMainWorld' %
-           (cpp_class_or_partial, attribute.name)
-       if attribute.is_per_world_bindings else '0' %}
+       '%sV8Internal::%sConstructorGetterCallback' % (cpp_class_or_partial, attribute.name)
+       if attribute.needs_constructor_getter_callback else
+       'v8ConstructorAttributeGetter' %}
 {% set setter_callback =
-       '%sV8Internal::%sAttributeSetterCallback' %
+       '%sV8Internal::%sAttributeSetterCallback' % (cpp_class_or_partial, attribute.name)
+       if attribute.needs_constructor_setter_callback else
+       '%sV8Internal::%sConstructorAttributeSetterCallback' % (cpp_class_or_partial, cpp_class) %}
+{% else %}{# regular attributes #}
+{% set getter_callback = '%sV8Internal::%sAttributeGetterCallback' %
+           (cpp_class_or_partial, attribute.name) %}
+{% set setter_callback = '%sV8Internal::%sAttributeSetterCallback' %
            (cpp_class_or_partial, attribute.name)
        if attribute.has_setter else '0' %}
+{% endif %}
+{% set getter_callback_for_main_world =
+       '%sForMainWorld' % getter_callback
+       if attribute.is_per_world_bindings else '0' %}
 {% set setter_callback_for_main_world =
-       '%sV8Internal::%sAttributeSetterCallbackForMainWorld' %
-           (cpp_class_or_partial, attribute.name)
+       '%sForMainWorld' % setter_callback
        if attribute.is_per_world_bindings and attribute.has_setter else '0' %}
 {% set wrapper_type_info =
        'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' %
@@ -435,7 +431,10 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
                         ' | '.join(attribute.access_control_list) %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
-{% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if attribute.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
+{% set only_exposed_to_private_script =
+       'V8DOMConfiguration::OnlyExposedToPrivateScript'
+       if attribute.only_exposed_to_private_script else
+       'V8DOMConfiguration::ExposedToAllScripts' %}
 {% set on_prototype = 'V8DOMConfiguration::OnPrototype'
        if interface_name == 'Window' and attribute.idl_type == 'EventHandler'
        else 'V8DOMConfiguration::OnInstance' %}

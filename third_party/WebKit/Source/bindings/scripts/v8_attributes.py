@@ -141,7 +141,7 @@ def attribute_context(interface, attribute):
     }
 
     if is_constructor_attribute(attribute):
-        constructor_getter_context(interface, attribute, context)
+        update_constructor_attribute_context(interface, attribute, context)
     if not has_custom_getter(attribute):
         getter_context(interface, attribute, context)
     if not has_custom_setter(attribute) and has_setter(attribute):
@@ -517,5 +517,10 @@ def is_constructor_attribute(attribute):
     return attribute.idl_type.name.endswith('Constructor')
 
 
-def constructor_getter_context(interface, attribute, context):
+def update_constructor_attribute_context(interface, attribute, context):
     context['needs_constructor_getter_callback'] = context['measure_as'] or context['deprecate_as']
+    # When the attribute name is the same as the interface name, do not generate
+    # callback functions for each attribute and use
+    # {{cpp_class}}ConstructorAttributeSetterCallback.  Otherwise, generate
+    # a callback function in order to hard-code the attribute name.
+    context['needs_constructor_setter_callback'] = context['name'] != context['constructor_type']

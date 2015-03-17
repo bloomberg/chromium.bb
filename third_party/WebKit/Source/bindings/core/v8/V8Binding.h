@@ -1032,8 +1032,7 @@ private:
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(v8::Isolate*, ExecutionContext*, v8::Handle<v8::Function>);
 
 // Callback functions used by generated code.
-CORE_EXPORT void v8ConstructorAttributeGetterAsProperty(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>&);
-void v8ConstructorAttributeGetterAsAccessor(const v8::FunctionCallbackInfo<v8::Value>&);
+void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>&);
 
 typedef void (*InstallTemplateFunction)(v8::Local<v8::FunctionTemplate>, v8::Isolate*);
 

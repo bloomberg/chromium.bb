@@ -52,6 +52,8 @@
 
     [Measure] attribute TestInterface testInterfaceAttribute; // Self-referential interface type with [ImplementedAs]
     attribute TestInterfaceConstructor testInterfaceConstructorAttribute;
+    attribute TestInterfaceConstructor TestInterface;
+    attribute TestInterface2Constructor TestInterface2;
     attribute double doubleAttribute;
     attribute float floatAttribute;
     attribute unrestricted double unrestrictedDoubleAttribute;
