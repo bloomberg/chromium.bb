@@ -61,12 +61,12 @@ AC_ARG_ENABLE([udev],
 
 AC_ARG_ENABLE(libkms,
 	      AS_HELP_STRING([--disable-libkms],
-	      [Disable KMS mm abstraction library (default: auto, enabled on x86]),
+	      [Disable KMS mm abstraction library (default: auto, enabled on supported platforms)]),
 	      [LIBKMS=$enableval], [LIBKMS=auto])
 
 AC_ARG_ENABLE(intel,
 	      AS_HELP_STRING([--disable-intel],
-	      [Enable support for intel's KMS API (default: auto)]),
+	      [Enable support for intel's KMS API (default: auto, enabled on x86)]),
 	      [INTEL=$enableval], [INTEL=auto])
 
 AC_ARG_ENABLE(radeon,
