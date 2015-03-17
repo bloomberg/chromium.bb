@@ -69,6 +69,10 @@ class OverscrollGlow {
   // Whether the effect is active, either being pulled or receding.
   bool IsActive() const;
 
+  // The maximum alpha value (in the range [0,1]) of any animated edge layers.
+  // If the effect is inactive, this will be 0.
+  float GetVisibleAlpha() const;
+
  private:
   enum Axis { AXIS_X, AXIS_Y };
 

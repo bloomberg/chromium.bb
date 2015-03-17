@@ -38,6 +38,7 @@ class EdgeEffectBase {
 
   virtual void Finish() = 0;
   virtual bool IsFinished() const = 0;
+  virtual float GetAlpha() const = 0;
 
   virtual void ApplyToLayers(const gfx::SizeF& size,
                              const gfx::Transform& transform) = 0;

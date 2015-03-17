@@ -305,6 +305,10 @@ bool EdgeEffect::Update(base::TimeTicks current_time) {
   return !IsFinished();
 }
 
+float EdgeEffect::GetAlpha() const {
+  return IsFinished() ? 0.f : std::max(glow_alpha_, edge_alpha_);
+}
+
 void EdgeEffect::ApplyToLayers(const gfx::SizeF& size,
                                const gfx::Transform& transform) {
   if (IsFinished())

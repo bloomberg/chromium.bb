@@ -102,6 +102,15 @@ bool OverscrollGlow::IsActive() const {
   return false;
 }
 
+float OverscrollGlow::GetVisibleAlpha() const {
+  float max_alpha = 0;
+  for (size_t i = 0; i < EDGE_COUNT; ++i) {
+    if (!edge_effects_[i]->IsFinished())
+      max_alpha = std::max(max_alpha, edge_effects_[i]->GetAlpha());
+  }
+  return std::min(max_alpha, 1.f);
+}
+
 bool OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
                                     gfx::Vector2dF accumulated_overscroll,
                                     gfx::Vector2dF overscroll_delta,

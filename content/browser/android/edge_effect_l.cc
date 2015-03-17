@@ -211,6 +211,10 @@ bool EdgeEffectL::Update(base::TimeTicks current_time) {
   return !IsFinished() || one_last_frame;
 }
 
+float EdgeEffectL::GetAlpha() const {
+  return IsFinished() ? 0.f : glow_alpha_;
+}
+
 void EdgeEffectL::ApplyToLayers(const gfx::SizeF& size,
                                 const gfx::Transform& transform) {
   if (IsFinished())

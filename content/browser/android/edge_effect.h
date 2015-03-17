@@ -37,6 +37,7 @@ class EdgeEffect : public EdgeEffectBase {
 
   void Finish() override;
   bool IsFinished() const override;
+  float GetAlpha() const override;
 
   void ApplyToLayers(const gfx::SizeF& size,
                      const gfx::Transform& transform) override;
