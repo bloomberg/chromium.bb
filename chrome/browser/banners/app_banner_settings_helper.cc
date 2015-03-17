@@ -180,11 +180,6 @@ bool AppBannerSettingsHelper::ShouldShowBanner(
     const GURL& origin_url,
     const std::string& package_name_or_start_url,
     base::Time time) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kBypassAppBannerEngagementChecks)) {
-    return true;
-  }
-
   // Don't show if it has been added to the homescreen.
   base::Time added_time =
       GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
@@ -192,6 +187,12 @@ bool AppBannerSettingsHelper::ShouldShowBanner(
   if (!added_time.is_null()) {
     banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
     return false;
+  }
+
+  // Otherwise, ignore all checks if the flag to do so is set.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kBypassAppBannerEngagementChecks)) {
+    return true;
   }
 
   base::Time blocked_time =
