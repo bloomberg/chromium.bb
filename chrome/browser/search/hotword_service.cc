@@ -786,14 +786,11 @@ void HotwordService::SetAudioHistoryHandler(
 
 void HotwordService::DisableHotwordPreferences() {
   if (IsSometimesOnEnabled()) {
-    if (profile_->GetPrefs()->HasPrefPath(prefs::kHotwordSearchEnabled))
-      profile_->GetPrefs()->SetBoolean(prefs::kHotwordSearchEnabled, false);
-  } else if (IsAlwaysOnEnabled()) {
-    if (profile_->GetPrefs()->HasPrefPath(
-            prefs::kHotwordAlwaysOnSearchEnabled)) {
-      profile_->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled,
-                                       false);
-    }
+    profile_->GetPrefs()->SetBoolean(prefs::kHotwordSearchEnabled, false);
+  }
+  if (IsAlwaysOnEnabled()) {
+    profile_->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled,
+                                     false);
   }
 }
 
