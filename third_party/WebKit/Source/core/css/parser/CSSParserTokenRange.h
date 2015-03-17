@@ -43,18 +43,10 @@ public:
         return *m_first++;
     }
 
-    const CSSParserToken& consumeIncludingComments()
+    const CSSParserToken& consumeIncludingWhitespace()
     {
         const CSSParserToken& result = consume();
-        while (peek().type() == CommentToken)
-            ++m_first;
-        return result;
-    }
-
-    const CSSParserToken& consumeIncludingWhitespaceAndComments()
-    {
-        const CSSParserToken& result = consume();
-        consumeWhitespaceAndComments();
+        consumeWhitespace();
         return result;
     }
 
@@ -62,8 +54,12 @@ public:
     CSSParserTokenRange consumeBlock();
 
     void consumeComponentValue();
-    void consumeComments();
-    void consumeWhitespaceAndComments();
+
+    void consumeWhitespace()
+    {
+        while (peek().type() == WhitespaceToken)
+            ++m_first;
+    }
 
     static void initStaticEOFToken();
 

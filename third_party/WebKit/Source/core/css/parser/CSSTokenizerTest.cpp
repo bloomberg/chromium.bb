@@ -135,7 +135,6 @@ DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, leftBrace, (LeftBraceToken));
 DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, rightBrace, (RightBraceToken));
 DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, badString, (BadStringToken));
 DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, badUrl, (BadUrlToken));
-DEFINE_STATIC_LOCAL_NOASSERT(CSSParserToken, comment, (CommentToken));
 
 String fromUChar32(UChar32 c)
 {
@@ -420,16 +419,14 @@ TEST(CSSTokenizerTest, UnicodeRangeToken)
 
 TEST(CSSTokenizerTest, CommentToken)
 {
-    TEST_TOKENS("/*comment*/", comment);
-    TEST_TOKENS("/**\\2f**/", comment);
-    TEST_TOKENS("/**y*a*y**/", comment);
-    TEST_TOKENS("/* \n :) \n */", comment);
-    TEST_TOKENS("/*/*/", comment);
-    TEST_TOKENS("/**/*", comment, delim('*'));
-    // FIXME: Should an EOF-terminated comment get a token?
-    // TEST_TOKENS("/******", comment);
+    TEST_TOKENS("/*comment*/a", ident("a"));
+    TEST_TOKENS("/**\\2f**//", delim('/'));
+    TEST_TOKENS("/**y*a*y**/ ", whitespace);
+    TEST_TOKENS(",/* \n :) \n */)", comma, rightParenthesis);
+    TEST_TOKENS(":/*/*/", colon);
+    TEST_TOKENS("/**/*", delim('*'));
+    TEST_TOKENS(";/******", semicolon);
 }
-
 
 typedef struct {
     const char* input;

@@ -49,7 +49,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
         switch (token.type()) {
         case FunctionToken: {
             if (token.valueEqualsIgnoringCase("url")) {
-                const CSSParserToken& next = range.consumeIncludingWhitespaceAndComments();
+                const CSSParserToken& next = range.consumeIncludingWhitespace();
                 if (next.type() == BadStringToken || range.consume().type() != RightParenthesisToken) {
                     destroyAndClear();
                     return;
@@ -202,8 +202,8 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
             value.setFromOperator('}');
             break;
         case WhitespaceToken:
-        case CommentToken:
             continue;
+        case CommentToken:
         case EOFToken:
             ASSERT_NOT_REACHED();
         case CDOToken:

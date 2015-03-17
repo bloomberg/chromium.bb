@@ -72,7 +72,7 @@ bool SizesAttributeParser::parse(CSSParserTokenRange range)
             lengthTokenStart = &range.peek();
             range.consumeComponentValue();
             lengthTokenEnd = &range.peek();
-            range.consumeWhitespaceAndComments();
+            range.consumeWhitespace();
         }
         range.consume();
 

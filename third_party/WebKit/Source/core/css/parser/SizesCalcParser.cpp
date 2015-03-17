@@ -126,10 +126,11 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range)
             // Pop the left parenthesis from the stack, but not onto the output queue.
             stack.removeLast();
             break;
-        case CommentToken:
         case WhitespaceToken:
         case EOFToken:
             break;
+        case CommentToken:
+            ASSERT_NOT_REACHED();
         case CDOToken:
         case CDCToken:
         case AtKeywordToken:

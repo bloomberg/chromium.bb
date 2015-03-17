@@ -58,16 +58,4 @@ void CSSParserTokenRange::consumeComponentValue()
     } while (nestingLevel && m_first < m_last);
 }
 
-void CSSParserTokenRange::consumeComments()
-{
-    while (peek().type() == CommentToken)
-        ++m_first;
-}
-
-void CSSParserTokenRange::consumeWhitespaceAndComments()
-{
-    while (peek().type() == WhitespaceToken || peek().type() == CommentToken)
-        ++m_first;
-}
-
 } // namespace blink

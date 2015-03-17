@@ -210,7 +210,7 @@ void MediaQueryParser::processToken(const CSSParserToken& token)
     m_blockWatcher.handleToken(token);
 
     // Call the function that handles current state
-    if (type != WhitespaceToken && type != CommentToken)
+    if (type != WhitespaceToken)
         ((this)->*(m_state))(type, token);
 }
 

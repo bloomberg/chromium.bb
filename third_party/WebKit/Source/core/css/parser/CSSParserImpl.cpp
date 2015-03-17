@@ -104,7 +104,7 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& str
     CSSParserImpl parser(context);
     CSSTokenizer::Scope scope(string);
     CSSParserTokenRange range = scope.tokenRange();
-    range.consumeWhitespaceAndComments();
+    range.consumeWhitespace();
     if (range.atEnd())
         return nullptr; // Parse error, empty rule
     RefPtrWillBeRawPtr<StyleRuleBase> rule;
@@ -114,7 +114,7 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::parseRule(const String& str
         rule = parser.consumeQualifiedRule(range, allowedRules);
     if (!rule)
         return nullptr; // Parse error, failed to consume rule
-    range.consumeWhitespaceAndComments();
+    range.consumeWhitespace();
     if (!rule || !range.atEnd())
         return nullptr; // Parse error, trailing garbage
     return rule;
@@ -176,8 +176,7 @@ void CSSParserImpl::consumeRuleList(CSSParserTokenRange range, RuleListType rule
     while (!range.atEnd()) {
         switch (range.peek().type()) {
         case WhitespaceToken:
-        case CommentToken:
-            range.consumeWhitespaceAndComments();
+            range.consumeWhitespace();
             break;
         case AtKeywordToken:
             if (PassRefPtrWillBeRawPtr<StyleRuleBase> rule = consumeAtRule(range, allowedRules)) {
@@ -277,13 +276,13 @@ static AtomicString consumeStringOrURI(CSSParserTokenRange& range)
     const CSSParserToken& token = range.peek();
 
     if (token.type() == StringToken || token.type() == UrlToken)
-        return range.consumeIncludingWhitespaceAndComments().value();
+        return range.consumeIncludingWhitespace().value();
 
     if (token.type() != FunctionToken || !token.valueEqualsIgnoringCase("url"))
         return AtomicString();
 
     CSSParserTokenRange contents = range.consumeBlock();
-    const CSSParserToken& uri = contents.consumeIncludingWhitespaceAndComments();
+    const CSSParserToken& uri = contents.consumeIncludingWhitespace();
     ASSERT(uri.type() == StringToken);
     if (!contents.atEnd())
         return AtomicString();
@@ -292,7 +291,7 @@ static AtomicString consumeStringOrURI(CSSParserTokenRange& range)
 
 PassRefPtrWillBeRawPtr<StyleRuleImport> CSSParserImpl::consumeImportRule(CSSParserTokenRange prelude)
 {
-    prelude.consumeWhitespaceAndComments();
+    prelude.consumeWhitespace();
     AtomicString uri(consumeStringOrURI(prelude));
     if (uri.isNull())
         return nullptr; // Parse error, expected string or URI
@@ -301,13 +300,13 @@ PassRefPtrWillBeRawPtr<StyleRuleImport> CSSParserImpl::consumeImportRule(CSSPars
 
 PassRefPtrWillBeRawPtr<StyleRuleNamespace> CSSParserImpl::consumeNamespaceRule(CSSParserTokenRange prelude)
 {
-    prelude.consumeWhitespaceAndComments();
+    prelude.consumeWhitespace();
     AtomicString namespacePrefix;
     if (prelude.peek().type() == IdentToken)
-        namespacePrefix = prelude.consumeIncludingWhitespaceAndComments().value();
+        namespacePrefix = prelude.consumeIncludingWhitespace().value();
 
     AtomicString uri(consumeStringOrURI(prelude));
-    prelude.consumeWhitespaceAndComments();
+    prelude.consumeWhitespace();
     if (uri.isNull() || !prelude.atEnd())
         return nullptr; // Parse error, expected string or URI
 
@@ -344,7 +343,7 @@ PassRefPtrWillBeRawPtr<StyleRuleViewport> CSSParserImpl::consumeViewportRule(CSS
     if (!RuntimeEnabledFeatures::cssViewportEnabled() && !isUASheetBehavior(m_context.mode()))
         return nullptr;
 
-    prelude.consumeWhitespaceAndComments();
+    prelude.consumeWhitespace();
     if (!prelude.atEnd())
         return nullptr; // Parser error; @viewport prelude should be empty
     consumeDeclarationList(block, StyleRule::Viewport);
@@ -356,7 +355,7 @@ PassRefPtrWillBeRawPtr<StyleRuleViewport> CSSParserImpl::consumeViewportRule(CSS
 
 PassRefPtrWillBeRawPtr<StyleRuleFontFace> CSSParserImpl::consumeFontFaceRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
-    prelude.consumeWhitespaceAndComments();
+    prelude.consumeWhitespace();
     if (!prelude.atEnd())
         return nullptr; // Parse error; @font-face prelude should be empty
     consumeDeclarationList(block, StyleRule::FontFace);
@@ -383,8 +382,8 @@ PassRefPtrWillBeRawPtr<StyleRuleFontFace> CSSParserImpl::consumeFontFaceRule(CSS
 
 PassRefPtrWillBeRawPtr<StyleRuleKeyframes> CSSParserImpl::consumeKeyframesRule(bool webkitPrefixed, CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
-    prelude.consumeWhitespaceAndComments();
-    const CSSParserToken& nameToken = prelude.consumeIncludingWhitespaceAndComments();
+    prelude.consumeWhitespace();
+    const CSSParserToken& nameToken = prelude.consumeIncludingWhitespace();
     if (!prelude.atEnd())
         return nullptr; // Parse error; expected single non-whitespace token in @keyframes header
 
@@ -411,20 +410,20 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframes> CSSParserImpl::consumeKeyframesRule(b
 PassRefPtrWillBeRawPtr<StyleRulePage> CSSParserImpl::consumePageRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
     // We only support a small subset of the css-page spec.
-    prelude.consumeWhitespaceAndComments();
+    prelude.consumeWhitespace();
     AtomicString typeSelector;
     if (prelude.peek().type() == IdentToken)
-        typeSelector = prelude.consumeIncludingComments().value();
+        typeSelector = prelude.consume().value();
 
     AtomicString pseudo;
     if (prelude.peek().type() == ColonToken) {
-        prelude.consumeIncludingComments();
+        prelude.consume();
         if (prelude.peek().type() != IdentToken)
             return nullptr; // Parse error; expected ident token following colon in @page header
-        pseudo = prelude.consumeIncludingComments().value();
+        pseudo = prelude.consume().value();
     }
 
-    prelude.consumeWhitespaceAndComments();
+    prelude.consumeWhitespace();
     if (!prelude.atEnd())
         return nullptr; // Parse error; extra tokens in @page header
 
@@ -491,7 +490,6 @@ void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, StyleRule:
 
     while (!range.atEnd()) {
         switch (range.peek().type()) {
-        case CommentToken:
         case WhitespaceToken:
         case SemicolonToken:
             range.consume();
@@ -515,7 +513,7 @@ void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range, StyleRule:
 void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Type ruleType)
 {
     ASSERT(range.peek().type() == IdentToken);
-    CSSPropertyID id = range.consumeIncludingWhitespaceAndComments().parseAsCSSPropertyID();
+    CSSPropertyID id = range.consumeIncludingWhitespace().parseAsCSSPropertyID();
     if (id == CSSPropertyInvalid)
         return;
     if (range.consume().type() != ColonToken)
@@ -523,11 +521,11 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
 
     // FIXME: We shouldn't allow !important in @keyframes or @font-face
     const CSSParserToken* last = range.end() - 1;
-    while (last->type() == WhitespaceToken || last->type() == CommentToken)
+    while (last->type() == WhitespaceToken)
         --last;
     if (last->type() == IdentToken && last->valueEqualsIgnoringCase("important")) {
         --last;
-        while (last->type() == WhitespaceToken || last->type() == CommentToken)
+        while (last->type() == WhitespaceToken)
             --last;
         if (last->type() == DelimiterToken && last->delimiter() == '!') {
             consumeDeclarationValue(range.makeSubRange(&range.peek(), last), id, true, ruleType);
@@ -553,8 +551,8 @@ PassOwnPtr<Vector<double>> CSSParserImpl::consumeKeyframeKeyList(CSSParserTokenR
 {
     OwnPtr<Vector<double>> result = adoptPtr(new Vector<double>);
     while (true) {
-        range.consumeWhitespaceAndComments();
-        const CSSParserToken& token = range.consumeIncludingWhitespaceAndComments();
+        range.consumeWhitespace();
+        const CSSParserToken& token = range.consumeIncludingWhitespace();
         if (token.type() == PercentageToken && token.numericValue() >= 0 && token.numericValue() <= 100)
             result->append(token.numericValue() / 100);
         else if (token.type() == IdentToken && token.valueEqualsIgnoringCase("from"))

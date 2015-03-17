@@ -39,6 +39,8 @@ CSSTokenizer::Scope::Scope(const String& string)
     CSSTokenizer tokenizer(input, *this);
     while (true) {
         CSSParserToken token = tokenizer.nextToken();
+        if (token.type() == CommentToken)
+            continue;
         if (token.type() == EOFToken)
             return;
         m_tokens.append(token);

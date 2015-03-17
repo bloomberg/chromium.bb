@@ -13,7 +13,7 @@ CSSSupportsParser::SupportsResult CSSSupportsParser::supportsCondition(CSSParser
 {
     // FIXME: The spec allows leading whitespace in @supports but not CSS.supports,
     // but major browser vendors allow it in CSS.supports also.
-    range.consumeWhitespaceAndComments();
+    range.consumeWhitespace();
     return CSSSupportsParser(parser).consumeCondition(range);
 }
 
@@ -39,15 +39,14 @@ CSSSupportsParser::SupportsResult CSSSupportsParser::consumeCondition(CSSParserT
         else
             result |= nextSupported;
 
-        range.consumeComments();
         if (range.atEnd())
             break;
-        if (range.consumeIncludingWhitespaceAndComments().type() != WhitespaceToken)
+        if (range.consumeIncludingWhitespace().type() != WhitespaceToken)
             return Invalid;
         if (range.atEnd())
             break;
 
-        const CSSParserToken& token = range.consumeIncludingComments();
+        const CSSParserToken& token = range.consume();
         if (token.type() != IdentToken)
             return Invalid;
         if (clauseType == Unresolved)
@@ -56,7 +55,7 @@ CSSSupportsParser::SupportsResult CSSSupportsParser::consumeCondition(CSSParserT
             || (clauseType == Disjunction && !equalIgnoringCase(token.value(), "or")))
             return Invalid;
 
-        if (range.consumeIncludingWhitespaceAndComments().type() != WhitespaceToken)
+        if (range.consumeIncludingWhitespace().type() != WhitespaceToken)
             return Invalid;
     }
     return result ? Supported : Unsupported;
@@ -65,12 +64,12 @@ CSSSupportsParser::SupportsResult CSSSupportsParser::consumeCondition(CSSParserT
 CSSSupportsParser::SupportsResult CSSSupportsParser::consumeNegation(CSSParserTokenRange range)
 {
     ASSERT(range.peek().type() == IdentToken);
-    if (!equalIgnoringCase(range.consumeIncludingComments().value(), "not"))
+    if (!equalIgnoringCase(range.consume().value(), "not"))
         return Invalid;
-    if (range.consumeIncludingWhitespaceAndComments().type() != WhitespaceToken)
+    if (range.consumeIncludingWhitespace().type() != WhitespaceToken)
         return Invalid;
     SupportsResult result = consumeConditionInParenthesis(range);
-    range.consumeWhitespaceAndComments();
+    range.consumeWhitespace();
     if (!range.atEnd() || result == Invalid)
         return Invalid;
     return result ? Unsupported : Supported;
@@ -85,7 +84,7 @@ CSSSupportsParser::SupportsResult CSSSupportsParser::consumeConditionInParenthes
     if (range.peek().type() != LeftParenthesisToken)
         return Invalid;
     CSSParserTokenRange innerRange = range.consumeBlock();
-    innerRange.consumeWhitespaceAndComments();
+    innerRange.consumeWhitespace();
     SupportsResult result = consumeCondition(innerRange);
     if (result != Invalid)
         return result;
