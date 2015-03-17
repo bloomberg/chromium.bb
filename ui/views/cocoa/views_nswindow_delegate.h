@@ -47,6 +47,11 @@ class BridgedNativeWidget;
 // Notify when -[NSWindow display] is being called on the window.
 - (void)onWindowWillDisplay;
 
+// Called on the delegate of a modal sheet when its modal session ends.
+- (void)sheetDidEnd:(NSWindow*)sheet
+         returnCode:(NSInteger)returnCode
+        contextInfo:(void*)contextInfo;
+
 @end
 
 #endif  // UI_VIEWS_COCOA_VIEWS_NSWINDOW_DELEGATE_H_

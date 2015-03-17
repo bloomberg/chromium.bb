@@ -1470,6 +1470,7 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/ui_base.gyp:ui_base_test_support',
+        '../ui/resources/ui_resources.gyp:ui_test_pak',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs_test_support',
         # Runtime dependencies
         '../third_party/mesa/mesa.gyp:osmesa',

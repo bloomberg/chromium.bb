@@ -30,6 +30,7 @@ class VIEWS_EXAMPLES_EXPORT WidgetExample : public ExampleBase,
   enum Command {
     POPUP,        // Show a popup widget.
     DIALOG,       // Show a dialog widget.
+    MODAL_DIALOG, // Show a modal dialog widget.
     CHILD,        // Show a child widget.
     CLOSE_WIDGET, // Close the sender button's widget.
   };

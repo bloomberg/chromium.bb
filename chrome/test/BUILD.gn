@@ -250,6 +250,7 @@ if (!is_android) {
       "//third_party/npapi",
       "//third_party/zlib",
       "//ui/base:test_support",
+      "//ui/resources:ui_test_pak",
       "//ui/web_dialogs:test_support",
     ]
 

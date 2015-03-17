@@ -87,6 +87,15 @@ BridgedNativeWidget::~BridgedNativeWidget() {
   SetRootView(NULL);
   DestroyCompositor();
   if ([window_ delegate]) {
+    // If the delegate is still set on a modal dialog, it means it was not
+    // closed via [NSApplication endSheet:]. This is probably OK if the widget
+    // was never shown. But Cocoa ignores close() calls on open sheets. Calling
+    // endSheet: here would work, but it messes up assumptions elsewhere. E.g.
+    // DialogClientView assumes its delegate is alive when closing, which isn't
+    // true after endSheet: synchronously calls OnNativeWidgetDestroyed().
+    // So ban it. Modal dialogs should be closed via Widget::Close().
+    DCHECK(!native_widget_mac_->GetWidget()->IsModal());
+
     // If the delegate is still set, it means OnWindowWillClose has not been
     // called and the window is still open. Calling -[NSWindow close] will
     // synchronously call OnWindowWillClose and notify NativeWidgetMac.
@@ -180,6 +189,13 @@ void BridgedNativeWidget::SetBounds(const gfx::Rect& new_bounds) {
   // due to unpredictable OSX treatment.
   DCHECK(!new_bounds.IsEmpty()) << "Zero-sized windows not supported on Mac";
 
+  if (native_widget_mac_->GetWidget()->IsModal()) {
+    // Modal dialogs are positioned by Cocoa. Just update the size.
+    [window_
+        setContentSize:NSMakeSize(new_bounds.width(), new_bounds.height())];
+    return;
+  }
+
   gfx::Rect actual_new_bounds(new_bounds);
 
   if (parent_ &&
@@ -237,6 +253,18 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
        ancestor = ancestor->parent()) {
     if (!ancestor->window_visible_)
       return;
+  }
+
+  if (native_widget_mac_->GetWidget()->IsModal()) {
+    NSWindow* parent_window = parent_->ns_window();
+    DCHECK(parent_window);
+
+    [NSApp beginSheet:window_
+        modalForWindow:parent_window
+         modalDelegate:[window_ delegate]
+        didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
+           contextInfo:nullptr];
+    return;
   }
 
   if (new_state == SHOW_AND_ACTIVATE_WINDOW) {
@@ -450,10 +478,13 @@ void BridgedNativeWidget::OnWindowKeyStatusChangedTo(bool is_key) {
   // The contentView is the BridgedContentView hosting the views::RootView. The
   // focus manager will already know if a native subview has focus.
   if ([window_ contentView] == [window_ firstResponder]) {
-    if (is_key)
+    if (is_key) {
+      widget->OnNativeFocus();
       widget->GetFocusManager()->RestoreFocusedView();
-    else
+    } else {
+      widget->OnNativeBlur();
       widget->GetFocusManager()->StoreFocusedView(true);
+    }
   }
 }
 

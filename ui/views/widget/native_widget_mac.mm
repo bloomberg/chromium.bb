@@ -251,7 +251,13 @@ void NativeWidgetMac::SetWindowIcons(const gfx::ImageSkia& window_icon,
 }
 
 void NativeWidgetMac::InitModalType(ui::ModalType modal_type) {
-  NOTIMPLEMENTED();
+  if (modal_type == ui::MODAL_TYPE_NONE)
+    return;
+
+  // System modal windows not implemented (or used) on Mac.
+  DCHECK_NE(ui::MODAL_TYPE_SYSTEM, modal_type);
+  DCHECK(bridge_->parent());
+  // Everyhing happens upon show.
 }
 
 gfx::Rect NativeWidgetMac::GetWindowBoundsInScreen() const {
@@ -298,6 +304,17 @@ void NativeWidgetMac::SetShape(gfx::NativeRegion shape) {
 void NativeWidgetMac::Close() {
   if (!bridge_)
     return;
+
+  if (delegate_->IsModal()) {
+    // Sheets can't be closed normally. This starts the sheet closing. Once the
+    // sheet has finished animating, it will call sheetDidEnd: on the parent
+    // window's delegate. Note it still needs to be asynchronous, since code
+    // calling Widget::Close() doesn't expect things to be deleted upon return.
+    [NSApp performSelector:@selector(endSheet:)
+                withObject:GetNativeWindow()
+                afterDelay:0];
+    return;
+  }
 
   // Clear the view early to suppress repaints.
   bridge_->SetRootView(NULL);

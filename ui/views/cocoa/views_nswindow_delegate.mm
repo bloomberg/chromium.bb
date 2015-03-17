@@ -47,6 +47,13 @@
   parent_->OnVisibilityChangedTo(true);
 }
 
+- (void)sheetDidEnd:(NSWindow*)sheet
+         returnCode:(NSInteger)returnCode
+        contextInfo:(void*)contextInfo {
+  [sheet orderOut:nil];
+  parent_->OnWindowWillClose();
+}
+
 // NSWindowDelegate implementation.
 
 - (void)windowDidFailToEnterFullScreen:(NSWindow*)window {
