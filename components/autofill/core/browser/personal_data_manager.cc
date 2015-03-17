@@ -511,12 +511,16 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
   if (credit_card) {
     credit_card->RecordUse();
 
-    if (credit_card->record_type() == CreditCard::LOCAL_CARD)
+    if (credit_card->record_type() == CreditCard::LOCAL_CARD) {
       database_->UpdateCreditCard(*credit_card);
-    else if (credit_card->record_type() == CreditCard::FULL_SERVER_CARD)
+    } else if (credit_card->record_type() == CreditCard::FULL_SERVER_CARD) {
       database_->UpdateUnmaskedCardUsageStats(*credit_card);
-    else
-      NOTREACHED() << " A MASKED_SERVER_CARD can't be used.";
+    } else {
+      // It's possible to get a masked server card here if the user decides not
+      // to store a card while verifying it. We don't currently track usage
+      // of masked cards, so no-op.
+      return;
+    }
 
     Refresh();
     return;
