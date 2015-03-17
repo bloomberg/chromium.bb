@@ -79,7 +79,7 @@ PassRefPtrWillBeRawPtr<ImmutableStylePropertySet> CSSParserImpl::parseInlineStyl
     CSSParserContext context = CSSParserContext(document.elementSheet().contents()->parserContext(), UseCounter::getFrom(&document));
     CSSParserMode mode = element->isHTMLElement() && !document.inQuirksMode() ? HTMLStandardMode : HTMLQuirksMode;
     context.setMode(mode);
-    CSSParserImpl parser(context);
+    CSSParserImpl parser(context, document.elementSheet().contents());
     CSSTokenizer::Scope scope(string);
     parser.consumeDeclarationList(scope.tokenRange(), StyleRule::Style);
     return createStylePropertySet(parser.m_parsedProperties, mode);
@@ -539,9 +539,12 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
 
 void CSSParserImpl::consumeDeclarationValue(CSSParserTokenRange range, CSSPropertyID propertyID, bool important, StyleRule::Type ruleType)
 {
-    CSSParserValueList valueList(range);
+    bool usesRemUnits;
+    CSSParserValueList valueList(range, usesRemUnits);
     if (!valueList.size())
         return; // Parser error
+    if (usesRemUnits && m_styleSheet)
+        m_styleSheet->parserSetUsesRemUnits(true);
     bool inViewport = ruleType == StyleRule::Viewport;
     CSSPropertyParser::parseValue(propertyID, important, &valueList, m_context, inViewport, m_parsedProperties, ruleType);
 }
