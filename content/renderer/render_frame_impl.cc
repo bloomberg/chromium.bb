@@ -2104,17 +2104,15 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
 
   bool is_subframe = !!frame->parent();
 
-  Send(new FrameHostMsg_Detach(routing_id_));
-
-  // The |is_detaching_| flag disables Send(). FrameHostMsg_Detach must be
-  // sent before setting |is_detaching_| to true. In contrast, Observers
-  // should only be notified afterwards so they cannot call back into here and
-  // have IPCs fired off.
-  is_detaching_ = true;
-
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FrameDetached());
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
                     FrameDetached(frame));
+
+  Send(new FrameHostMsg_Detach(routing_id_));
+
+  // The |is_detaching_| flag disables Send(). FrameHostMsg_Detach must be
+  // sent before setting |is_detaching_| to true.
+  is_detaching_ = true;
 
   // We need to clean up subframes by removing them from the map and deleting
   // the RenderFrameImpl.  In contrast, the main frame is owned by its

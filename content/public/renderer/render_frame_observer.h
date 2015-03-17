@@ -63,8 +63,8 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
 
   // Called before FrameWillClose, when this frame has been detached from the
   // view, but has not been closed yet. This *will* be called when parent frames
-  // are closing. NB: IPCs to the browser will fail silently by the time this
-  // notification is sent.
+  // are closing. Since the frame is already detached from the DOM at this time
+  // it should not be inspected.
   virtual void FrameDetached() {}
 
   // Called when the frame will soon be closed. This is the last opportunity to
