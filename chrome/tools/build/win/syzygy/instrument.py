@@ -75,6 +75,10 @@ def _InstrumentBinary(syzygy_dir, mode, executable, symbol, dst_dir,
 
   if mode == "asan":
     cmd.append('--no-augment-pdb')
+    # Disable some of the new SysyASAN features. We're seeing an increase in
+    # crash rates and are wondering if they are to blame.
+    cmd.append(
+        '--asan-rtl-options="--disable_ctmalloc --disable_large_block_heap"')
 
   # If any filters were specified then pass them on to the instrumenter.
   if filter_file:
