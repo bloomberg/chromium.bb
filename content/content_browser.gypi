@@ -515,6 +515,8 @@
       'browser/devtools/protocol/devtools_protocol_handler.h',
       'browser/devtools/protocol/dom_handler.cc',
       'browser/devtools/protocol/dom_handler.h',
+      'browser/devtools/protocol/emulation_handler.cc',
+      'browser/devtools/protocol/emulation_handler.h',
       'browser/devtools/protocol/frame_recorder.cc',
       'browser/devtools/protocol/frame_recorder.h',
       'browser/devtools/protocol/input_handler.cc',
