@@ -84,7 +84,7 @@ namespace networking.config {
     // |result|: The result of the authentication attempt.
     // |callback|: Called back when this operation is finished.
     void finishAuthentication(DOMString GUID, AuthenticationResult result,
-                              FinishAuthenticationCallback callback);
+                              optional FinishAuthenticationCallback callback);
   };
 
   interface Events {
