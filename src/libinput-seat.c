@@ -82,7 +82,8 @@ device_added(struct udev_input *input, struct libinput_device *libinput_device)
 	if (output_name) {
 		device->output_name = strdup(output_name);
 		wl_list_for_each(output, &c->output_list, link)
-			if (strcmp(output->name, device->output_name) == 0)
+			if (output->name &&
+			    strcmp(output->name, device->output_name) == 0)
 				evdev_device_set_output(device, output);
 	} else if (device->output == NULL && !wl_list_empty(&c->output_list)) {
 		output = container_of(c->output_list.next,
