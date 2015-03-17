@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/debug/stack_trace.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/mac/sdk_forward_declarations.h"
@@ -205,10 +206,19 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
 
   CGFloat bubble_width = NSWidth([window_ frame]);
   if (state_ == kBubbleHidden) {
-    DCHECK_EQ(ui::kWindowSizeDeterminedLater.size.width,
-              [window_ frame].size.width);
-    DCHECK_EQ(ui::kWindowSizeDeterminedLater.size.height,
-              [window_ frame].size.height);
+    // TODO(rohitrao): The window size is expected to be (1,1) whenever the
+    // window is hidden, but the GPU bots are hitting cases where this is not
+    // true.  Instead of enforcing this invariant with a DCHECK, add temporary
+    // logging to try and debug it and fix up the window size if needed.
+    // This logging is temporary and should be removed: crbug.com/467998
+    NSRect frame = [window_ frame];
+    if (!CGSizeEqualToSize(frame.size, ui::kWindowSizeDeterminedLater.size)) {
+      LOG(ERROR) << "Window size should be (1,1), but is instead ("
+                 << frame.size.width << "," << frame.size.height << ")";
+      LOG(ERROR) << base::debug::StackTrace().ToString();
+      frame.size = ui::kWindowSizeDeterminedLater.size;
+      [window_ setFrame:frame display:NO];
+    }
     bubble_width = NSWidth(CalculateWindowFrame(/*expand=*/false));
   }
 
@@ -759,10 +769,19 @@ void StatusBubbleMac::UpdateSizeAndPosition() {
   if (state_ == kBubbleHidden) {
     // Verify that hidden bubbles always have size equal to
     // ui::kWindowSizeDeterminedLater.
-    DCHECK_EQ(ui::kWindowSizeDeterminedLater.size.width,
-              [window_ frame].size.width);
-    DCHECK_EQ(ui::kWindowSizeDeterminedLater.size.height,
-              [window_ frame].size.height);
+
+    // TODO(rohitrao): The GPU bots are hitting cases where this is not true.
+    // Instead of enforcing this invariant with a DCHECK, add temporary logging
+    // to try and debug it and fix up the window size if needed.
+    // This logging is temporary and should be removed: crbug.com/467998
+    NSRect frame = [window_ frame];
+    if (!CGSizeEqualToSize(frame.size, ui::kWindowSizeDeterminedLater.size)) {
+      LOG(ERROR) << "Window size should be (1,1), but is instead ("
+                 << frame.size.width << "," << frame.size.height << ")";
+      LOG(ERROR) << base::debug::StackTrace().ToString();
+      frame.size = ui::kWindowSizeDeterminedLater.size;
+      [window_ setFrame:frame display:YES];
+    }
     return;
   }
 
