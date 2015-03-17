@@ -118,6 +118,8 @@ void WebPluginContainerImpl::paint(GraphicsContext* context, const IntRect& rect
     if (drawingRecorder.canUseCachedDrawing())
         return;
 
+    context->save();
+
     ASSERT(parent()->isFrameView());
     FrameView* view =  toFrameView(parent());
 
@@ -130,6 +132,8 @@ void WebPluginContainerImpl::paint(GraphicsContext* context, const IntRect& rect
 
     IntRect windowRect = view->contentsToWindow(rect);
     m_webPlugin->paint(canvas, windowRect);
+
+    context->restore();
 }
 
 void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
