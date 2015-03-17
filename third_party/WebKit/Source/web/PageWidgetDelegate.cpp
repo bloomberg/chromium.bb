@@ -86,22 +86,24 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
     float scaleFactor = page.deviceScaleFactor();
     graphicsContext->setDeviceScaleFactor(scaleFactor);
 
-    AffineTransform scale;
-    scale.scale(scaleFactor);
-    TransformRecorder scaleRecorder(*graphicsContext, root.displayItemClient(), scale);
+    {
+        AffineTransform scale;
+        scale.scale(scaleFactor);
+        TransformRecorder scaleRecorder(*graphicsContext, root.displayItemClient(), scale);
 
-    IntRect dirtyRect(rect);
-    FrameView* view = root.view();
-    if (view) {
-        ClipRecorder clipRecorder(root.displayItemClient(), graphicsContext.get(), DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
+        IntRect dirtyRect(rect);
+        FrameView* view = root.view();
+        if (view) {
+            ClipRecorder clipRecorder(root.displayItemClient(), graphicsContext.get(), DisplayItem::PageWidgetDelegateClip, LayoutRect(dirtyRect));
 
-        view->paint(graphicsContext.get(), dirtyRect);
-        if (overlays)
-            overlays->paintWebFrame(*graphicsContext);
-    } else {
-        DrawingRecorder drawingRecorder(graphicsContext.get(), root.displayItemClient(), DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
-        if (!drawingRecorder.canUseCachedDrawing())
-            graphicsContext->fillRect(dirtyRect, Color::white);
+            view->paint(graphicsContext.get(), dirtyRect);
+            if (overlays)
+                overlays->paintWebFrame(*graphicsContext);
+        } else {
+            DrawingRecorder drawingRecorder(graphicsContext.get(), root.displayItemClient(), DisplayItem::PageWidgetDelegateBackgroundFallback, dirtyRect);
+            if (!drawingRecorder.canUseCachedDrawing())
+                graphicsContext->fillRect(dirtyRect, Color::white);
+        }
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
