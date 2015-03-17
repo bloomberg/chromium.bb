@@ -766,14 +766,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
 
 // Tests that pressing 'Pause' will pause script execution if the script
 // is already running.
-// Disabled because it fails on all trunk official build bots.
-// http://crbug.com/467072
-// Previous condition:
-// defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on linux ARM bot: https://crbug/238453
 #define MAYBE_TestPauseWhenScriptIsRunning DISABLED_TestPauseWhenScriptIsRunning
+#else
+#define MAYBE_TestPauseWhenScriptIsRunning TestPauseWhenScriptIsRunning
+#endif
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       DISABLED_TestPauseWhenScriptIsRunning) {
+                       MAYBE_TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 
@@ -873,9 +873,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
   CloseDevToolsWindow();
 }
 
-// Disabled because it fails on all trunk official build bots.
-// http://crbug.com/467072
-IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, DISABLED_InspectSharedWorker) {
+IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, InspectSharedWorker) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
