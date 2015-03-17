@@ -93,6 +93,7 @@ HTMLImportChild* HTMLImportTreeRoot::find(const KURL& url) const
 void HTMLImportTreeRoot::recalcTimerFired(Timer<HTMLImportTreeRoot>*)
 {
     ASSERT(m_document);
+    RefPtrWillBeRawPtr<Document> protect(m_document);
 
     do {
         m_recalcTimer.stop();
