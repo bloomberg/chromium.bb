@@ -45,6 +45,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/editing/markup.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -1661,6 +1662,11 @@ static String extractSelectedText(const FrameSelection& selection, TextIteratorB
 {
     // We remove '\0' characters because they are not visibly rendered to the user.
     return plainText(selection.toNormalizedRange().get(), behavior).replace(0, "");
+}
+
+String FrameSelection::selectedHTMLForClipboard() const
+{
+    return createMarkup(m_selection.toNormalizedRange().get(), AnnotateForInterchange, false, ResolveNonLocalURLs);
 }
 
 String FrameSelection::selectedText() const

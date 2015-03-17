@@ -204,6 +204,7 @@ public:
     void setTypingStyle(PassRefPtrWillBeRawPtr<EditingStyle>);
     void clearTypingStyle();
 
+    String selectedHTMLForClipboard() const;
     String selectedText() const;
     String selectedTextForClipboard() const;
 
