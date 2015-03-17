@@ -1910,7 +1910,7 @@ void CompositedLayerMapping::updateImageContents()
     // This is a no-op if the layer doesn't have an inner layer for the image.
     m_graphicsLayer->setContentsToImage(image);
 
-    m_graphicsLayer->setFilterLevel(layoutObject()->style()->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);
+    m_graphicsLayer->setFilterQuality(layoutObject()->style()->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality);
 
     // Prevent double-drawing: https://bugs.webkit.org/show_bug.cgi?id=58632
     updateDrawsContent();

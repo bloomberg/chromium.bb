@@ -148,12 +148,12 @@ LayoutObject* HTMLCanvasElement::createLayoutObject(const LayoutStyle& style)
 
 void HTMLCanvasElement::didRecalcStyle(StyleRecalcChange)
 {
-    SkPaint::FilterLevel filterLevel = computedStyle()->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel;
+    SkFilterQuality filterQuality = computedStyle()->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality;
     if (is3D()) {
-        toWebGLRenderingContextBase(m_context.get())->setFilterLevel(filterLevel);
+        toWebGLRenderingContextBase(m_context.get())->setFilterQuality(filterQuality);
         setNeedsCompositingUpdate();
     } else if (hasImageBuffer()) {
-        m_imageBuffer->setFilterLevel(filterLevel);
+        m_imageBuffer->setFilterQuality(filterQuality);
     }
 }
 
@@ -252,7 +252,7 @@ void HTMLCanvasElement::getContext(const String& type, const CanvasContextCreati
             }
             LayoutStyle* style = computedStyle();
             if (style && m_context)
-                toWebGLRenderingContextBase(m_context.get())->setFilterLevel(style->imageRendering() == ImageRenderingPixelated ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);
+                toWebGLRenderingContextBase(m_context.get())->setFilterQuality(style->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality);
             setNeedsCompositingUpdate();
             updateExternallyAllocatedMemory();
         } else if (!m_context->is3d()) {
@@ -662,7 +662,7 @@ void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface>
 
     document().updateRenderTreeIfNeeded();
     LayoutStyle* style = computedStyle();
-    m_imageBuffer->setFilterLevel((style && (style->imageRendering() == ImageRenderingPixelated)) ? SkPaint::kNone_FilterLevel : SkPaint::kLow_FilterLevel);
+    m_imageBuffer->setFilterQuality((style && (style->imageRendering() == ImageRenderingPixelated)) ? kNone_SkFilterQuality : kLow_SkFilterQuality);
 
     m_didFailToCreateImageBuffer = false;
 

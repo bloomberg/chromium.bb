@@ -385,7 +385,7 @@ public:
         DECLARE_TRACE();
     };
 
-    void setFilterLevel(SkPaint::FilterLevel);
+    void setFilterQuality(SkFilterQuality);
 
 protected:
     friend class WebGLDrawBuffers;

@@ -188,7 +188,7 @@ public:
 
     void setFilters(const FilterOperations&);
 
-    void setFilterLevel(SkPaint::FilterLevel);
+    void setFilterQuality(SkFilterQuality);
 
     // Some GraphicsLayers paint only the foreground or the background content
     void setPaintingPhase(GraphicsLayerPaintingPhase);

@@ -63,11 +63,11 @@ SkColor PLATFORM_EXPORT scaleAlpha(SkColor, float);
 // alpha is in the range [0, 256].
 SkColor PLATFORM_EXPORT scaleAlpha(SkColor, int);
 
-inline SkPaint::FilterLevel WebCoreInterpolationQualityToSkFilterLevel(InterpolationQuality quality)
+inline SkFilterQuality WebCoreInterpolationQualityToSkFilterQuality(InterpolationQuality quality)
 {
     // FIXME: this reflects existing client mappings, but should probably
     // be expanded to map higher level interpolations more accurately.
-    return quality != InterpolationNone ? SkPaint::kLow_FilterLevel : SkPaint::kNone_FilterLevel;
+    return quality != InterpolationNone ? kLow_SkFilterQuality : kNone_SkFilterQuality;
 }
 
 // Skia has problems when passed infinite, etc floats, filter them to 0.

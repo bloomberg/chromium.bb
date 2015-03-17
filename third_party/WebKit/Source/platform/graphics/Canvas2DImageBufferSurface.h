@@ -63,7 +63,7 @@ public:
     WebLayer* layer() const override { return m_layerBridge->layer(); }
     Platform3DObject getBackingTexture() const override { return m_layerBridge->getBackingTexture(); }
     bool isAccelerated() const override { return m_layerBridge->isAccelerated(); }
-    void setFilterLevel(SkPaint::FilterLevel filterLevel) override { m_layerBridge->setFilterLevel(filterLevel); };
+    void setFilterQuality(SkFilterQuality filterQuality) override { m_layerBridge->setFilterQuality(filterQuality); };
     void setIsHidden(bool hidden) override { m_layerBridge->setIsHidden(hidden); }
     void setImageBuffer(ImageBuffer* imageBuffer) override { m_layerBridge->setImageBuffer(imageBuffer); }
 

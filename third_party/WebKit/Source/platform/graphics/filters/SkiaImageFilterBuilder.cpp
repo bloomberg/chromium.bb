@@ -187,7 +187,7 @@ void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
 
 PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::buildTransform(const AffineTransform& transform, SkImageFilter* input)
 {
-    return adoptRef(SkMatrixImageFilter::Create(affineTransformToSkMatrix(transform), SkPaint::kHigh_FilterLevel, input));
+    return adoptRef(SkMatrixImageFilter::Create(affineTransformToSkMatrix(transform), kHigh_SkFilterQuality, input));
 }
 
 } // namespace blink

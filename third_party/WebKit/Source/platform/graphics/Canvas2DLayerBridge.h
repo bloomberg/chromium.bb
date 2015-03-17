@@ -75,7 +75,7 @@ public:
     WebLayer* layer() const;
     Platform3DObject getBackingTexture();
     bool isAccelerated() const { return true; }
-    void setFilterLevel(SkPaint::FilterLevel);
+    void setFilterQuality(SkFilterQuality);
     void setIsHidden(bool);
     void setImageBuffer(ImageBuffer* imageBuffer) { m_imageBuffer = imageBuffer; }
 
@@ -111,7 +111,7 @@ protected:
     int m_framesSinceMailboxRelease;
     bool m_destructionInProgress;
     bool m_rateLimitingEnabled;
-    SkPaint::FilterLevel m_filterLevel;
+    SkFilterQuality m_filterQuality;
     bool m_isHidden;
 
     friend class WTF::DoublyLinkedListNode<Canvas2DLayerBridge>;

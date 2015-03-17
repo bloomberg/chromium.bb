@@ -78,7 +78,7 @@ public:
     virtual const SkBitmap& cachedBitmap() const;
     virtual void invalidateCachedBitmap() { }
     virtual void updateCachedBitmapIfNeeded() { }
-    virtual void setFilterLevel(SkPaint::FilterLevel) { }
+    virtual void setFilterQuality(SkFilterQuality) { }
     virtual void setIsHidden(bool) { }
     virtual void setImageBuffer(ImageBuffer*) { }
     virtual PassRefPtr<SkPicture> getPicture();

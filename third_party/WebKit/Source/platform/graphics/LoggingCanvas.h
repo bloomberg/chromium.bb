@@ -114,7 +114,7 @@ private:
     String stringForSkColor(const SkColor&);
     void appendFlagToString(String* flagsString, bool isSet, const String& name);
     String stringForSkPaintFlags(const SkPaint&);
-    String filterLevelName(SkPaint::FilterLevel);
+    String filterQualityName(SkFilterQuality);
     String textAlignName(SkPaint::Align);
     String strokeCapName(SkPaint::Cap);
     String strokeJoinName(SkPaint::Join);

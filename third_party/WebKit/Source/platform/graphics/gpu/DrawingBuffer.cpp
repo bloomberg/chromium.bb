@@ -149,7 +149,7 @@ DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context,
     , m_packAlignment(4)
     , m_destructionInProgress(false)
     , m_isHidden(false)
-    , m_filterLevel(SkPaint::kLow_FilterLevel)
+    , m_filterQuality(kLow_SkFilterQuality)
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
     TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation");
@@ -203,12 +203,12 @@ void DrawingBuffer::setIsHidden(bool hidden)
         freeRecycledMailboxes();
 }
 
-void DrawingBuffer::setFilterLevel(SkPaint::FilterLevel filterLevel)
+void DrawingBuffer::setFilterQuality(SkFilterQuality filterQuality)
 {
-    if (m_filterLevel != filterLevel) {
-        m_filterLevel = filterLevel;
+    if (m_filterQuality != filterQuality) {
+        m_filterQuality = filterQuality;
         if (m_layer)
-            m_layer->setNearestNeighbor(filterLevel == SkPaint::kNone_FilterLevel);
+            m_layer->setNearestNeighbor(filterQuality == kNone_SkFilterQuality);
     }
 }
 
@@ -525,7 +525,7 @@ WebLayer* DrawingBuffer::platformLayer()
         m_layer->setOpaque(!m_actualAttributes.alpha);
         m_layer->setBlendBackgroundColor(m_actualAttributes.alpha);
         m_layer->setPremultipliedAlpha(m_actualAttributes.premultipliedAlpha);
-        m_layer->setNearestNeighbor(m_filterLevel == SkPaint::kNone_FilterLevel);
+        m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
         GraphicsLayer::registerContentsLayer(m_layer->layer());
     }
 

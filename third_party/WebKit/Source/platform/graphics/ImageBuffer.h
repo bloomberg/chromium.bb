@@ -95,7 +95,7 @@ public:
     bool restoreSurface() const;
     void didDraw(const FloatRect& rect) const { m_surface->didDraw(rect); }
 
-    void setFilterLevel(SkPaint::FilterLevel filterLevel) { m_surface->setFilterLevel(filterLevel); }
+    void setFilterQuality(SkFilterQuality filterQuality) { m_surface->setFilterQuality(filterQuality); }
     void setIsHidden(bool hidden) { m_surface->setIsHidden(hidden); }
 
     // Called by subclasses of ImageBufferSurface to install a new canvas object
