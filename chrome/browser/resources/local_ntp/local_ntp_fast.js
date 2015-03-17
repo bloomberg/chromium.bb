@@ -16,7 +16,7 @@ function LocalNTP() {
   'use strict';
 
 <include src="../../../../ui/webui/resources/js/util.js">
-<include src='local_ntp_design.js'>
+<include src="local_ntp_design.js">
 
 /**
  * Enum for classnames.
@@ -383,7 +383,6 @@ function reloadTiles() {
   var pages = ntpApiHandle.mostVisited;
   var iframe = $('mv-single').contentWindow;
 
-  tiles = [];
   for (var i = 0; i < Math.min(MAX_NUM_TILES_TO_SHOW, pages.length); ++i) {
     iframe.postMessage({cmd: 'tile', rid: pages[i].rid}, '*');
   }
@@ -762,6 +761,9 @@ function init() {
   if (searchboxApiHandle.rtl) {
     args.push('rtl=1');
   }
+
+  args.push('removeTooltip=' +
+      encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));
 
   iframe.src = '//most-visited/single.html?' + args.join('&');
   $(IDS.TILES).appendChild(iframe);

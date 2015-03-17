@@ -171,6 +171,14 @@ body.fakebox-focused #cursor {
   margin-top: 0;
 }
 
+#mv-tiles {
+  height: calc(2 * 146px);
+  line-height: 146px;
+  margin: 0;
+  position: relative;
+  text-align: -webkit-auto;
+}
+
 #mv-notice-x {
   -webkit-mask-image: -webkit-image-set(
       url(chrome-search://local-ntp/images/close_3_mask.png) 1x,

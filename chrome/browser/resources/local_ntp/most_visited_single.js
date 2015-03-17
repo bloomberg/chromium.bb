@@ -75,6 +75,13 @@ var tiles = null;
 
 
 /**
+ * List of parameters passed by query args.
+ * @type {Object}
+ */
+var queryArgs = {};
+
+
+/**
  * Log an event on the NTP.
  * @param {number} eventType Event from LOG_TYPE.
  */
@@ -209,10 +216,10 @@ var renderTile = function(data) {
 
   tile.className = 'mv-tile';
   tile.setAttribute('data-rid', data.rid);
+  var tooltip = queryArgs['removeTooltip'] || '';
   tile.innerHTML = '<div class="mv-favicon"></div>' +
     '<div class="mv-title"></div><div class="mv-thumb"></div>' +
-    '<div title="' + configData['removeThumbnailTooltip'] +
-    '" class="mv-x"></div>';
+    '<div title="' + tooltip + '" class="mv-x"></div>';
 
   tile.href = data.url;
   tile.title = data.title;
@@ -254,7 +261,7 @@ var renderTile = function(data) {
   var favicon = tile.querySelector('.mv-favicon');
   if (data.faviconUrl) {
     var fi = document.createElement('img');
-    fi.src = '../' + data.faviconUrl;
+    fi.src = data.faviconUrl;
     // Set the title to empty so screen readers won't say the image name.
     fi.title = '';
     loadedCounter += 1;
@@ -271,8 +278,8 @@ var renderTile = function(data) {
   var mvx = tile.querySelector('.mv-x');
   mvx.addEventListener('click', function(ev) {
     blacklistTile(tile);
+    ev.preventDefault();
     ev.stopPropagation();
-    return false;
   });
 
   return tile;
@@ -288,15 +295,15 @@ var init = function() {
 
   // Parse query arguments.
   var query = window.location.search.substring(1).split('&');
-  var args = {};
+  queryArgs = {};
   for (var i = 0; i < query.length; ++i) {
     var val = query[i].split('=');
     if (val[0] == '') continue;
-    args[decodeURIComponent(val[0])] = decodeURIComponent(val[1]);
+    queryArgs[decodeURIComponent(val[0])] = decodeURIComponent(val[1]);
   }
 
   // Enable RTL.
-  if (args['rtl'] == '1') {
+  if (queryArgs['rtl'] == '1') {
     var html = document.querySelector('html');
     html.dir = 'rtl';
   }
