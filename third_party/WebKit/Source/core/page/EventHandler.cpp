@@ -52,8 +52,10 @@
 #include "core/events/WheelEvent.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/EventHandlerRegistry.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/html/HTMLFrameElementBase.h"
@@ -2351,10 +2353,17 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
         swallowMouseUpEvent = handleMouseReleaseEvent(MouseEventWithHitTestResults(fakeMouseUp, currentHitTest));
 
     bool swallowed = swallowMouseDownEvent | swallowMouseUpEvent | swallowClickEvent;
-    if (!swallowed && tappedNode) {
+    if (!swallowed && tappedNode && m_frame->page()) {
         bool domTreeChanged = preDispatchDomTreeVersion != m_frame->document()->domTreeVersion();
         bool styleChanged = preDispatchStyleVersion != m_frame->document()->styleVersion();
-        m_frame->chromeClient().showUnhandledTapUIIfNeeded(tappedPosition, tappedNode.get(), domTreeChanged || styleChanged);
+
+        // FIXME: This will be replaced with a standard conversion method once crbug.com/371902 lands.
+        PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();
+        IntPoint tappedPositionInViewport = tappedPosition;
+        tappedPositionInViewport.moveBy(-flooredIntPoint(pinchViewport.location()));
+        tappedPositionInViewport.scale(pinchViewport.scale(), pinchViewport.scale());
+
+        m_frame->chromeClient().showUnhandledTapUIIfNeeded(tappedPositionInViewport, tappedNode.get(), domTreeChanged || styleChanged);
     }
     return swallowed;
 }

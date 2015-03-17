@@ -35,8 +35,10 @@
 #include "core/dom/Element.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/EventHandlerRegistry.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PinchViewport.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -1195,10 +1197,16 @@ static bool tapElementById(WebView* webView, WebInputEvent::Type type, const Web
     element->scrollIntoViewIfNeeded();
     IntPoint center = element->screenRect().center();
 
+    // FIXME: This will be unnecessary since screenRect() will be fixed once crbug.com/371902 lands.
+    PinchViewport& pinchViewport = element->document().frameHost()->pinchViewport();
+    IntPoint centerInViewport = center;
+    centerInViewport.moveBy(-flooredIntPoint(pinchViewport.location()));
+    centerInViewport.scale(pinchViewport.scale(), pinchViewport.scale());
+
     WebGestureEvent event;
     event.type = type;
-    event.x = center.x();
-    event.y = center.y();
+    event.x = centerInViewport.x();
+    event.y = centerInViewport.y();
 
     webView->handleInputEvent(event);
     runPendingTasks();
@@ -2378,6 +2386,15 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeeded)
     EXPECT_TRUE(client.getWebNode().isTextNode());
     // Make sure the returned text node has the parent element that was our target.
     EXPECT_EQ(webView->mainFrame()->document().getElementById("target"), client.getWebNode().parentNode());
+
+    // Test correct conversion of coordinates to viewport space under pinch-zoom.
+    webView->setPageScaleFactor(2);
+    webView->setPinchViewportOffset(WebFloatPoint(50, 20));
+    client.reset();
+    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureTap, WebString::fromUTF8("target")));
+    EXPECT_TRUE(client.getWasCalled());
+    EXPECT_EQ(188, client.getTappedXPos());
+    EXPECT_EQ(124, client.getTappedYPos());
 
     m_webViewHelper.reset(); // Remove dependency on locally scoped client.
 }
