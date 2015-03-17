@@ -31,54 +31,26 @@
 #ifndef ViewportAnchor_h
 #define ViewportAnchor_h
 
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/IntPoint.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/heap/Handle.h"
-#include "wtf/RefCounted.h"
-
 namespace blink {
 
-class EventHandler;
 class FrameView;
-class Node;
+class PinchViewport;
 
-// ViewportAnchor provides a way to anchor a viewport origin to a DOM node.
-// In particular, the user supplies the current viewport (in CSS coordinates)
-// and an anchor point (in view coordinates, e.g., (0, 0) == viewport origin,
-// (0.5, 0) == viewport top center). The anchor point tracks the underlying DOM
-// node; as the node moves or the view is resized, the viewport anchor maintains
-// its orientation relative to the node, and the viewport origin maintains its
-// orientation relative to the anchor.
+// Use this class to "anchor" the viewport to a location, perform some operation
+// that may move the viewport around, then restore the viewport to the original
+// location. We support two kinds of anchors, a rotation anchor and a resize
+// anchor.
 class ViewportAnchor {
-    STACK_ALLOCATED();
 public:
-    explicit ViewportAnchor(EventHandler*);
+    ViewportAnchor(FrameView& rootFrameView, PinchViewport&);
+    virtual ~ViewportAnchor() { }
 
-    void setAnchor(const IntRect& outerViewRect, const IntRect& innerViewRect, const FloatSize& anchorInViewCoords);
+    virtual void setAnchor() = 0;
+    virtual void restoreToAnchor() = 0;
 
-    void computeOrigins(const FrameView&, const FloatSize& innerSize,
-        IntPoint& mainFrameOffset, FloatPoint& pinchViewportOffset) const;
-
-private:
-    FloatPoint getInnerOrigin(const FloatSize& innerSize) const;
-
-private:
-    RawPtrWillBeMember<EventHandler> m_eventHandler;
-
-    // Inner viewport origin in the reference frame of the document in CSS pixels
-    FloatPoint m_pinchViewportInDocument;
-
-    // Inner viewport origin in the reference frame of the outer viewport
-    // normalized to the outer viewport size.
-    FloatSize m_normalizedPinchViewportOffset;
-
-    RefPtrWillBeMember<Node> m_anchorNode;
-    LayoutRect m_anchorNodeBounds;
-
-    FloatSize m_anchorInInnerViewCoords;
-    FloatSize m_anchorInNodeCoords;
+protected:
+    FrameView& m_rootFrameView;
+    PinchViewport& m_pinchViewport;
 };
 
 } // namespace blink

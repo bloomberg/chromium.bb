@@ -148,6 +148,8 @@
 #include "web/NavigatorContentUtilsClientImpl.h"
 #include "web/PopupContainer.h"
 #include "web/PrerendererClientImpl.h"
+#include "web/ResizeViewportAnchor.h"
+#include "web/RotationViewportAnchor.h"
 #include "web/SpeechRecognitionClientProxy.h"
 #include "web/StorageQuotaClientImpl.h"
 #include "web/ValidationMessageClientImpl.h"
@@ -189,8 +191,8 @@ static const double multipleTargetsZoomAnimationDurationInSeconds = 0.25;
 static const double findInPageAnimationDurationInSeconds = 0;
 
 // Constants for viewport anchoring on resize.
-static const float viewportAnchorXCoord = 0.5f;
-static const float viewportAnchorYCoord = 0;
+static const float viewportAnchorCoordX = 0.5f;
+static const float viewportAnchorCoordY = 0;
 
 // Constants for zooming in on a focused text field.
 static const double scrollAndScaleAnimationDurationInSeconds = 0.2;
@@ -1828,20 +1830,18 @@ void WebViewImpl::resize(const WebSize& newSize)
     if (!view)
         return;
 
-    bool shouldAnchorAndRescaleViewport = settings()->mainFrameResizesAreOrientationChanges()
-        && m_size.width && contentsSize().width() && newSize.width != m_size.width && !m_fullscreenController->isFullscreen();
-    float oldPageScaleFactor = pageScaleFactor();
-    float oldMinimumPageScaleFactor = minimumPageScaleFactor();
+    PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
 
+    bool isRotation = settings()->mainFrameResizesAreOrientationChanges()
+        && m_size.width && contentsSize().width() && newSize.width != m_size.width && !m_fullscreenController->isFullscreen();
     m_size = newSize;
 
-    ViewportAnchor viewportAnchor(&mainFrameImpl()->frame()->eventHandler());
-    if (shouldAnchorAndRescaleViewport) {
-        viewportAnchor.setAnchor(
-            view->visibleContentRect(),
-            visibleRectInDocument(),
-            FloatSize(viewportAnchorXCoord, viewportAnchorYCoord));
-    }
+    FloatSize viewportAnchorCoords(viewportAnchorCoordX, viewportAnchorCoordY);
+    OwnPtr<ViewportAnchor> viewportAnchor = isRotation
+        ? adoptPtr<ViewportAnchor>(new RotationViewportAnchor(*view, pinchViewport, viewportAnchorCoords, m_pageScaleConstraintsSet))
+        : adoptPtr<ViewportAnchor>(new ResizeViewportAnchor(*view, pinchViewport));
+
+    viewportAnchor->setAnchor();
 
     // FIXME: TextAutosizer does not yet support out-of-process frames.
     if (mainFrameImpl() && mainFrameImpl()->frame()->isLocalFrame())
@@ -1855,31 +1855,11 @@ void WebViewImpl::resize(const WebSize& newSize)
 
     m_fullscreenController->updateSize();
 
-    if (settings()->viewportEnabled()) {
-        PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
-        FloatPoint viewportOffsetBeforeResize = pinchViewport.visibleRectInDocument().location();
+    // Relayout immediately to recalculate the minimum scale limit for rotation anchoring.
+    if (view->needsLayout())
+        view->layout();
 
-        // Relayout immediately to recalculate the minimum scale limit.
-        if (view->needsLayout())
-            view->layout();
-
-        if (shouldAnchorAndRescaleViewport) {
-            float newPageScaleFactor = oldPageScaleFactor / oldMinimumPageScaleFactor * minimumPageScaleFactor();
-            newPageScaleFactor = clampPageScaleFactorToLimits(newPageScaleFactor);
-
-            FloatSize pinchViewportSize = FloatSize(newSize);
-            pinchViewportSize.scale(1 / newPageScaleFactor);
-
-            IntPoint mainFrameOrigin;
-            FloatPoint pinchViewportOrigin;
-            viewportAnchor.computeOrigins(*view, pinchViewportSize,
-                mainFrameOrigin, pinchViewportOrigin);
-            scrollAndRescaleViewports(newPageScaleFactor, mainFrameOrigin, pinchViewportOrigin);
-        } else {
-            FloatSize deltaFromResize = viewportOffsetBeforeResize - pinchViewport.visibleRectInDocument().location();
-            pinchViewport.move(FloatPoint(deltaFromResize));
-        }
-    }
+    viewportAnchor->restoreToAnchor();
 
     sendResizeEventAndRepaint();
 }

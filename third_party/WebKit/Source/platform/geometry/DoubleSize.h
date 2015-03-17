@@ -16,6 +16,7 @@ public:
     DoubleSize() : m_width(0), m_height(0) { }
     DoubleSize(double width, double height) : m_width(width), m_height(height) { }
     DoubleSize(const IntSize& p) : m_width(p.width()), m_height(p.height()) { }
+    DoubleSize(const FloatSize& s) : m_width(s.width()), m_height(s.height()) { }
 
     double width() const { return m_width; }
     double height() const { return m_height; }

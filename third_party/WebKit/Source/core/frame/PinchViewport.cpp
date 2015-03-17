@@ -197,6 +197,11 @@ void PinchViewport::move(const FloatPoint& delta)
     setLocation(m_offset + delta);
 }
 
+void PinchViewport::move(const FloatSize& delta)
+{
+    setLocation(m_offset + delta);
+}
+
 void PinchViewport::setScale(float scale)
 {
     setScaleAndLocation(scale, m_offset);

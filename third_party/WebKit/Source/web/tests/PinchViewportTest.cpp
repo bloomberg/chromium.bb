@@ -32,6 +32,12 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#define ASSERT_POINT_EQ(expected, actual) \
+    do { \
+        ASSERT_EQ((expected).x(), (actual).x()); \
+        ASSERT_EQ((expected).y(), (actual).y()); \
+    } while (false)
+
 #define EXPECT_POINT_EQ(expected, actual) \
     do { \
         EXPECT_EQ((expected).x(), (actual).x()); \
@@ -204,6 +210,47 @@ TEST_F(PinchViewportTest, TestResize)
     EXPECT_SIZE_EQ(webViewSize, IntSize(webViewImpl()->size()));
     EXPECT_SIZE_EQ(newViewportSize, pinchViewport.size());
 }
+
+// This tests that shrinking the WebView while the page is fully scrolled
+// doesn't move the viewport up/left, it should keep the visible viewport
+// unchanged from the user's perspective (shrinking the FrameView will clamp
+// the PinchViewport so we need to counter scroll the FrameView to make it
+// appear to stay still). This caused bugs like crbug.com/453859.
+TEST_F(PinchViewportTest, TestResizeAtFullyScrolledPreservesViewportLocation)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(800, 600));
+
+    registerMockedHttpURLLoad("content-width-1000.html");
+    navigateTo(m_baseURL + "content-width-1000.html");
+
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+
+    pinchViewport.setScale(2);
+
+    // Fully scroll both viewports.
+    frameView.setScrollPosition(DoublePoint(10000, 10000));
+    pinchViewport.move(FloatSize(10000, 10000));
+
+    // Sanity check.
+    ASSERT_POINT_EQ(FloatPoint(400, 300), pinchViewport.location());
+    ASSERT_POINT_EQ(DoublePoint(200, 1400), frameView.scrollPositionDouble());
+
+    FloatPoint expectedLocation = pinchViewport.visibleRectInDocument().location();
+
+    // Shrink the WebView, this should cause both viewports to shrink and
+    // WebView should do whatever it needs to do to preserve the visible
+    // location.
+    webViewImpl()->resize(IntSize(700, 550));
+
+    EXPECT_POINT_EQ(expectedLocation, pinchViewport.visibleRectInDocument().location());
+
+    webViewImpl()->resize(IntSize(800, 600));
+
+    EXPECT_POINT_EQ(expectedLocation, pinchViewport.visibleRectInDocument().location());
+}
+
 
 // Test that the PinchViewport works as expected in case of a scaled
 // and scrolled viewport - scroll down.
