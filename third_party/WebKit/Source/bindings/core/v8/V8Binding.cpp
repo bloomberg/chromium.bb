@@ -952,29 +952,6 @@ PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate* isolate, v8::Handle<v8::Value> 
     return nullptr;
 }
 
-V8TestingScope::V8TestingScope(v8::Isolate* isolate)
-    : m_handleScope(isolate)
-    , m_contextScope(v8::Context::New(isolate))
-    // We reuse the main world since the main world is guaranteed to be registered to ScriptController.
-    , m_scriptState(ScriptStateForTesting::create(isolate->GetCurrentContext(), &DOMWrapperWorld::mainWorld()))
-{
-}
-
-V8TestingScope::~V8TestingScope()
-{
-    m_scriptState->disposePerContextData();
-}
-
-ScriptState* V8TestingScope::scriptState() const
-{
-    return m_scriptState.get();
-}
-
-v8::Isolate* V8TestingScope::isolate() const
-{
-    return m_scriptState->isolate();
-}
-
 void DevToolsFunctionInfo::ensureInitialized() const
 {
     if (m_function.IsEmpty())

@@ -31,6 +31,7 @@
 #include "config.h"
 
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8TestingScope.h"
 #include "core/page/Page.h"
 #include "core/page/PageSerializer.h"
 #include "core/testing/URLTestHelpers.h"

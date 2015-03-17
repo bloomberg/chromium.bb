@@ -199,6 +199,8 @@
             'ToV8Test.cpp',
             'V8BindingTest.cpp',
             'V8ScriptRunnerTest.cpp',
+            'V8TestingScope.cpp',
+            'V8TestingScope.h',
         ],
     },
 }

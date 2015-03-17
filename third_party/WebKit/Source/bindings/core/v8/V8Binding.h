@@ -999,19 +999,6 @@ private:
     v8::Isolate* m_isolate;
 };
 
-class V8TestingScope {
-public:
-    explicit V8TestingScope(v8::Isolate*);
-    ScriptState* scriptState() const;
-    v8::Isolate* isolate() const;
-    ~V8TestingScope();
-
-private:
-    v8::HandleScope m_handleScope;
-    v8::Context::Scope m_contextScope;
-    RefPtr<ScriptState> m_scriptState;
-};
-
 class DevToolsFunctionInfo final {
 public:
     explicit DevToolsFunctionInfo(v8::Handle<v8::Function>& function)

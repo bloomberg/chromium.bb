@@ -6,6 +6,7 @@
 #include "core/animation/TimingInput.h"
 
 #include "bindings/core/v8/V8AnimationTimingProperties.h"
+#include "bindings/core/v8/V8TestingScope.h"
 #include "core/animation/AnimationNodeTiming.h"
 #include "core/animation/AnimationTestHelper.h"
 #include <gtest/gtest.h>

@@ -9,6 +9,7 @@
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8File.h"
+#include "bindings/core/v8/V8TestingScope.h"
 #include "core/fileapi/File.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"

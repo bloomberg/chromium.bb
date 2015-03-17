@@ -6,6 +6,7 @@
 #include "bindings/core/v8/ToV8.h"
 
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8TestingScope.h"
 #include "core/testing/GarbageCollectedScriptWrappable.h"
 #include "core/testing/RefCountedScriptWrappable.h"
 #include "platform/heap/Heap.h"

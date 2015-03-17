@@ -6,6 +6,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8TestingScope.h"
 #include "core/fetch/CachedMetadataHandler.h"
 #include "core/fetch/ScriptResource.h"
 #include "platform/heap/Handle.h"

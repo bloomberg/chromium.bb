@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "bindings/core/v8/V8TestingScope.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
