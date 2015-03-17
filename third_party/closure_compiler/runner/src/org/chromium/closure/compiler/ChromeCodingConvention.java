@@ -10,9 +10,9 @@ import com.google.common.collect.Sets;
 import com.google.javascript.jscomp.ClosureCodingConvention.AssertInstanceofSpec;
 import com.google.javascript.jscomp.CodingConvention;
 import com.google.javascript.jscomp.CodingConventions;
-import com.google.javascript.rhino.FunctionTypeI;
+import com.google.javascript.rhino.jstype.FunctionType;
+import com.google.javascript.rhino.jstype.ObjectType;
 import com.google.javascript.rhino.Node;
-import com.google.javascript.rhino.ObjectTypeI;
 
 import java.util.Collection;
 import java.util.Set;
@@ -46,8 +46,8 @@ public class ChromeCodingConvention extends CodingConventions.Proxy {
   }
 
   @Override
-  public void applySingletonGetter(FunctionTypeI functionType,
-      FunctionTypeI getterType, ObjectTypeI objectType) {
+  public void applySingletonGetter(FunctionType functionType,
+      FunctionType getterType, ObjectType objectType) {
     super.applySingletonGetter(functionType, getterType, objectType);
     functionType.defineDeclaredProperty("getInstance", getterType,
         functionType.getSource());
