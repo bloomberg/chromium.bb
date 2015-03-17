@@ -108,14 +108,18 @@ bool AXTableCell::isTableCell() const
     return true;
 }
 
-static AccessibilityRole decideRoleFromSibling(Node* siblingNode)
+static AccessibilityRole decideRoleFromSibling(LayoutTableCell* siblingCell)
 {
-    if (!siblingNode)
+    if (!siblingCell)
         return CellRole;
-    if (siblingNode->hasTagName(thTag))
-        return ColumnHeaderRole;
-    if (siblingNode->hasTagName(tdTag))
-        return RowHeaderRole;
+
+    if (Node* siblingNode = siblingCell->node()) {
+        if (siblingNode->hasTagName(thTag))
+            return ColumnHeaderRole;
+        if (siblingNode->hasTagName(tdTag))
+            return RowHeaderRole;
+    }
+
     return CellRole;
 }
 
@@ -137,20 +141,14 @@ AccessibilityRole AXTableCell::scanToDecideHeaderRole()
 
     // if header is preceded by header cells on the same row, then it is a
     // column header. If it is preceded by other cells then it's a row header.
-    if (LayoutTableCell* cell = layoutCell->previousCell()) {
-        Node* siblingNode = cell->node();
-        headerRole = decideRoleFromSibling(siblingNode);
-        if (headerRole != CellRole)
-            return headerRole;
-    }
+    if ((headerRole = decideRoleFromSibling(layoutCell->previousCell())) != CellRole)
+        return headerRole;
+
     // if header is followed by header cells on the same row, then it is a
     // column header. If it is followed by other cells then it's a row header.
-    if (LayoutTableCell* cell = layoutCell->nextCell()) {
-        Node* siblingNode = cell->node();
-        headerRole = decideRoleFromSibling(siblingNode);
-        if (headerRole != CellRole)
-            return headerRole;
-    }
+    if ((headerRole = decideRoleFromSibling(layoutCell->nextCell())) != CellRole)
+        return headerRole;
+
     // If there are no other cells on that row, then it is a column header.
     return ColumnHeaderRole;
 }
