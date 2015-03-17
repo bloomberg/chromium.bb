@@ -6,7 +6,7 @@
 
 var remoting = remoting || {};
 
-/** @typedef {{id: string, secret: string}} */
+/** @typedef {{clientId: string, sharedSecret: string}} */
 remoting.PairingInfo;
 
 /** @typedef {{token: string, secret: string}} */
@@ -60,7 +60,7 @@ remoting.CredentialsProvider.prototype.getAccessCode_ = function(
 
 /** @returns {remoting.PairingInfo}  */
 remoting.CredentialsProvider.prototype.getPairingInfo = function() {
-  return this.pairingInfo_ || { id: '', secret: ''};
+  return this.pairingInfo_ || { clientId: '', sharedSecret: ''};
 };
 
 /**

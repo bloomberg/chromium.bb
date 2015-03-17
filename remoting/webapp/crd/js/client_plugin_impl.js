@@ -478,8 +478,8 @@ remoting.ClientPluginImpl.prototype.connect =
         authenticationMethods: methods,
         authenticationTag: host.hostId,
         capabilities: this.capabilities_.join(" "),
-        clientPairingId: credentialsProvider.getPairingInfo().id,
-        clientPairedSecret: credentialsProvider.getPairingInfo().secret,
+        clientPairingId: credentialsProvider.getPairingInfo().clientId,
+        clientPairedSecret: credentialsProvider.getPairingInfo().sharedSecret,
         keyFilter: keyFilter,
         enableVideoDecodeRenderer: enableVideoDecodeRenderer
       }

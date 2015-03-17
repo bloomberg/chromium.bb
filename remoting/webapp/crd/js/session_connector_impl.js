@@ -141,7 +141,7 @@ remoting.SessionConnectorImpl.prototype.connectMe2Me =
   this.logHostOfflineErrors_ = false;
   var credentialsProvider = new remoting.CredentialsProvider({
     fetchPin: fetchPin,
-    pairingInfo: { id: clientPairingId, secret: clientPairedSecret },
+    pairingInfo: {clientId: clientPairingId, sharedSecret: clientPairedSecret},
     fetchThirdPartyToken: fetchThirdPartyToken
   });
   this.connect(
@@ -194,8 +194,8 @@ remoting.SessionConnectorImpl.prototype.connectMe2App =
 remoting.SessionConnectorImpl.prototype.updatePairingInfo =
     function(clientId, sharedSecret) {
   var pairingInfo = this.credentialsProvider_.getPairingInfo();
-  pairingInfo.id = clientId;
-  pairingInfo.secret = sharedSecret;
+  pairingInfo.clientId = clientId;
+  pairingInfo.sharedSecret = sharedSecret;
 };
 
 /**

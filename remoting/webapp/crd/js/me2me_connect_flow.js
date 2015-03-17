@@ -10,6 +10,75 @@ var remoting = remoting || {};
 'use strict';
 
 /**
+ * @param {remoting.SessionConnector} sessionConnector
+ * @param {remoting.Host} host
+ *
+ * @constructor
+ */
+remoting.Me2MeConnectFlow = function(sessionConnector, host) {
+  /** @private */
+  this.host_ = host;
+  /** @private */
+  this.connector_ = sessionConnector;
+};
+
+remoting.Me2MeConnectFlow.prototype.start = function() {
+  var webappVersion = chrome.runtime.getManifest().version;
+  var needsUpdateDialog = new remoting.HostNeedsUpdateDialog(
+      document.getElementById('host-needs-update-dialog'), this.host_);
+  var that = this;
+
+  needsUpdateDialog.showIfNecessary(webappVersion).then(function() {
+    return that.host_.options.load();
+  }).then(function() {
+    that.connect_();
+  }).catch(function(/** remoting.Error */ error) {
+    if (error.hasTag(remoting.Error.Tag.CANCELLED)) {
+      remoting.setMode(remoting.AppMode.HOME);
+    }
+  });
+};
+
+/** @private */
+remoting.Me2MeConnectFlow.prototype.connect_ = function() {
+  remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
+  var host = this.host_;
+
+  /**
+   * @param {string} tokenUrl Token-issue URL received from the host.
+   * @param {string} hostPublicKey Host public key (DER and Base64 encoded).
+   * @param {string} scope OAuth scope to request the token for.
+   * @param {function(string, string):void} onThirdPartyTokenFetched Callback.
+   */
+  var fetchThirdPartyToken = function(
+      tokenUrl, hostPublicKey, scope, onThirdPartyTokenFetched) {
+    var thirdPartyTokenFetcher = new remoting.ThirdPartyTokenFetcher(
+        tokenUrl, hostPublicKey, scope, host.tokenUrlPatterns,
+        onThirdPartyTokenFetched);
+    thirdPartyTokenFetcher.fetchToken();
+  };
+
+  /**
+   * @param {boolean} supportsPairing
+   * @param {function(string):void} onPinFetched
+   */
+  var requestPin = function(supportsPairing, onPinFetched) {
+    var pinDialog =
+        new remoting.PinDialog(document.getElementById('pin-dialog'), host);
+    pinDialog.show(supportsPairing).then(function(/** string */ pin) {
+      onPinFetched(pin);
+      /** @type {boolean} */
+      remoting.pairingRequested = pinDialog.pairingRequested();
+    });
+  };
+
+  var pairingInfo = host.options.pairingInfo;
+  this.connector_.connectMe2Me(host, requestPin, fetchThirdPartyToken,
+                               pairingInfo.clientId, pairingInfo.sharedSecret);
+};
+
+
+/**
  * @param {HTMLElement} rootElement
  * @param {remoting.Host} host
  * @constructor
@@ -97,6 +166,7 @@ remoting.PinDialog = function(rootElement, host) {
   /** @private */
   this.host_ = host;
 };
+
 
 /**
  * @param {boolean} supportsPairing

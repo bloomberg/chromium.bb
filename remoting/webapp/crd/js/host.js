@@ -62,6 +62,8 @@ remoting.Host.Options = function(hostId) {
   this.remapKeys = '';
   /** @type {number} */
   this.desktopScale = 1;
+  /** @type {remoting.PairingInfo} */
+  this.pairingInfo = {clientId: '', sharedSecret: ''};
 };
 
 remoting.Host.Options.prototype.save = function() {
@@ -88,6 +90,9 @@ remoting.Host.Options.prototype.load = function() {
       that.shrinkToFit = getBooleanAttr(options, 'shrinkToFit', true);
       that.desktopScale = getNumberAttr(options, 'desktopScale', 1);
       that.remapKeys = getStringAttr(options, 'remapKeys', '');
+      that.pairingInfo =
+          /** @type {remoting.PairingInfo} */ (
+              getObjectAttr(options, 'pairingInfo', that.pairingInfo));
     });
 };
 

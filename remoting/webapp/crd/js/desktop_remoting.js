@@ -209,14 +209,11 @@ remoting.DesktopRemoting.prototype.handleConnected = function(connectionInfo) {
      * @param {string} sharedSecret
      */
     var onPairingComplete = function(clientId, sharedSecret) {
-      var pairingInfo = {
-        pairingInfo: {
-          clientId: clientId,
-          sharedSecret: sharedSecret
-        }
-      };
       var connector = remoting.app.getSessionConnector();
-      remoting.HostSettings.save(connector.getHostId(), pairingInfo);
+      var host = remoting.hostList.getHostForId(connector.getHostId());
+      host.options.pairingInfo.clientId = clientId;
+      host.options.pairingInfo.sharedSecret = sharedSecret;
+      host.options.save();
       connector.updatePairingInfo(clientId, sharedSecret);
     };
     // Use the platform name as a proxy for the local computer name.
