@@ -591,7 +591,9 @@ void ThreadState::performIdleGC(double deadlineSeconds)
         return;
 
     double idleDeltaInSeconds = deadlineSeconds - Platform::current()->monotonicallyIncreasingTime();
-    if (idleDeltaInSeconds <= Heap::estimatedMarkingTime()) {
+    if (idleDeltaInSeconds <= Heap::estimatedMarkingTime() && !Scheduler::shared()->canExceedIdleDeadlineIfRequired()) {
+        // If marking is estimated to take longer than the deadline and we can't
+        // exceed the deadline, then reschedule for the next idle period.
         scheduleIdleGC();
         return;
     }

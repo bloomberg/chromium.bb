@@ -53,6 +53,16 @@ public:
     // Must be called on the main thread.
     bool shouldYieldForHighPriorityWork() const;
 
+    // Returns true if a currently running idle task could exceed its deadline
+    // without impacting user experience too much. This should only be used if
+    // there is a task which cannot be pre-empted and is likely to take longer
+    // than the largest expected idle task deadline. It should NOT be polled to
+    // check whether more work can be performed on the current idle task after
+    // its deadline has expired - post a new idle task for the continuation of
+    // the work in this case.
+    // Must be called from the main thread.
+    bool canExceedIdleDeadlineIfRequired() const;
+
 protected:
     Scheduler(WebScheduler*);
     virtual ~Scheduler();

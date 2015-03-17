@@ -95,4 +95,11 @@ bool Scheduler::shouldYieldForHighPriorityWork() const
     return false;
 }
 
+bool Scheduler::canExceedIdleDeadlineIfRequired() const
+{
+    if (m_webScheduler)
+        return m_webScheduler->canExceedIdleDeadlineIfRequired();
+    return false;
+}
+
 } // namespace blink
