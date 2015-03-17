@@ -94,7 +94,6 @@ static_library("browser") {
     "//components/enhanced_bookmarks",
     "//components/favicon_base",
     "//components/favicon/core/browser",
-    "//components/feedback",
     "//components/gcm_driver",
     "//components/google/core/browser",
     "//components/handoff",
@@ -586,6 +585,7 @@ static_library("browser") {
                            ".",
                            "//chrome")
     deps += [
+      "//components/feedback",
       "//device/core",
       "//device/usb",
     ]
@@ -605,7 +605,6 @@ static_library("browser") {
     ]
     deps -= [
       "//third_party/libaddressinput",
-      "//components/feedback",
       "//components/storage_monitor",
       "//components/web_modal",
     ]

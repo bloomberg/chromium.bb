@@ -28,7 +28,6 @@
     'enhanced_bookmarks.gypi',
     'error_page.gypi',
     'favicon_base.gypi',
-    'feedback.gypi',
     'google.gypi',
     'handoff.gypi',
     'infobars.gypi',
@@ -92,6 +91,7 @@
       'includes': [
         'audio_modem.gypi',
         'copresence.gypi',
+        'feedback.gypi',
         'proximity_auth.gypi',
         'storage_monitor.gypi',
       ]

@@ -589,9 +589,6 @@
             '<@(domain_reliability_unittest_sources)',
             '<@(enhanced_bookmarks_unittest_sources)',
             '<@(favicon_base_unittest_sources)',
-            # This should be in the !android && !ios list, but has to be here
-            # due to a test bug making them order-dependent. crbug.com/462352
-            '<@(feedback_unittest_sources)',
             '<@(gcm_driver_unittest_sources)',
             '<@(google_unittest_sources)',
             '<@(history_unittest_sources)',
@@ -679,7 +676,6 @@
             'components.gyp:enhanced_bookmarks',
             'components.gyp:enhanced_bookmarks_test_support',
             'components.gyp:favicon_base',
-            'components.gyp:feedback_component',
             'components.gyp:gcm_driver',
             'components.gyp:gcm_driver_test_support',
             'components.gyp:google_core_browser',
@@ -811,9 +807,6 @@
               'sources!': [
                 'metrics/gpu/gpu_metrics_provider_unittest.cc',
                 'signin/core/browser/mutable_profile_oauth2_token_service_unittest.cc',
-                # This shouldn't be necessary, but the tests have to be in the main list
-                # due to a test bug making them order-dependent. crbug.com/462352
-                '<@(feedback_unittest_sources)',
               ],
               'sources/': [
                 # Exclude all tests that depends on //content (based on layered-
@@ -880,9 +873,6 @@
                 'invalidation/invalidation_service_android_unittest.cc',
               ],
               'sources!': [
-                # This shouldn't be necessary, but the tests have to be in the main list
-                # due to a test bug making them order-dependent. crbug.com/462352
-                '<@(feedback_unittest_sources)',
                 'gcm_driver/gcm_account_mapper_unittest.cc',
                 'gcm_driver/gcm_channel_status_request_unittest.cc',
                 'gcm_driver/gcm_client_impl_unittest.cc',
@@ -901,7 +891,6 @@
                 '../testing/android/native_test.gyp:native_test_native_code',
               ],
               'dependencies!': [
-                'components.gyp:feedback_component',
                 'components.gyp:storage_monitor',
                 'components.gyp:storage_monitor_test_support',
                 'components.gyp:web_modal',
@@ -917,6 +906,7 @@
               'sources': [
                 '<@(audio_modem_unittest_sources)',
                 '<@(copresence_unittest_sources)',
+                '<@(feedback_unittest_sources)',
                 '<@(proximity_auth_unittest_sources)',
               ],
               'dependencies': [
@@ -928,6 +918,7 @@
                 'components.gyp:copresence',
                 'components.gyp:copresence_test_support',
                 'components.gyp:cryptauth',
+                'components.gyp:feedback_component',
                 'components.gyp:proximity_auth',
               ],
             }],
