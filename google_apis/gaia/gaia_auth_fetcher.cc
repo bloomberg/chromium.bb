@@ -445,7 +445,6 @@ std::string GaiaAuthFetcher::MakeListIDPSessionsBody(
   static const char getTokenResponseBodyFormat[] =
     "action=listSessions&"
     "client_id=%s&"
-    "e=3100087&"  // temporarily enable the experiment.
     "origin=%s&"
     "scope=%s";
   std::string encoded_client_id = net::EscapeUrlEncodedData(
@@ -465,7 +464,6 @@ std::string GaiaAuthFetcher::MakeGetTokenResponseBody(
     "client_id=%s&"
     "login_hint=%s&"
     "origin=%s&"
-    "e=3100087&"  // temporarily enable the experiment.
     "response_type=token&"
     "scope=%s";
   std::string encoded_client_id = net::EscapeUrlEncodedData(
