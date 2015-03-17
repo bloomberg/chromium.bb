@@ -51,7 +51,6 @@ public:
         StyleChange,
         ViewportDescriptionChange,
         ViewportRuleChange,
-        MediaTypeChange,
         DNSPrefetchingChange,
         MultisamplingChange,
         ImageLoadingChange,

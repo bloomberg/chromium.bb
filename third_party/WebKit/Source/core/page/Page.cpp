@@ -464,12 +464,6 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         if (mainFrame() && mainFrame()->isLocalFrame())
             deprecatedLocalMainFrame()->document()->updateViewportDescription();
         break;
-    case SettingsDelegate::MediaTypeChange:
-        if (m_mainFrame->isLocalFrame()) {
-            deprecatedLocalMainFrame()->view()->setMediaType(AtomicString(settings().mediaTypeOverride()));
-            setNeedsRecalcStyleInAllFrames();
-        }
-        break;
     case SettingsDelegate::DNSPrefetchingChange:
         for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
             if (frame->isLocalFrame())

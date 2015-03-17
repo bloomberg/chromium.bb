@@ -410,8 +410,7 @@ void InspectorPageAgent::restore()
         enable(&error);
         bool scriptExecutionDisabled = m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled);
         setScriptExecutionDisabled(0, scriptExecutionDisabled);
-        String emulatedMedia = m_state->getString(PageAgentState::pageAgentEmulatedMedia);
-        setEmulatedMedia(0, emulatedMedia);
+        setEmulatedMedia(nullptr, m_state->getString(PageAgentState::pageAgentEmulatedMedia));
 
         updateTouchEventEmulationInPage(m_state->getBoolean(PageAgentState::touchEventEmulationEnabled));
     }
@@ -1087,19 +1086,7 @@ void InspectorPageAgent::setEmulatedMedia(ErrorString*, const String& media)
         return;
 
     m_state->setString(PageAgentState::pageAgentEmulatedMedia, media);
-    Document* document = inspectedFrame()->document();
-    if (document) {
-        document->mediaQueryAffectingValueChanged();
-        document->styleResolverChanged();
-        document->updateLayout();
-    }
-}
-
-void InspectorPageAgent::applyEmulatedMedia(String* media)
-{
-    String emulatedMedia = m_state->getString(PageAgentState::pageAgentEmulatedMedia);
-    if (!emulatedMedia.isEmpty())
-        *media = emulatedMedia;
+    inspectedFrame()->host()->settings().setMediaTypeOverride(media);
 }
 
 bool InspectorPageAgent::compositingEnabled(ErrorString* errorString)

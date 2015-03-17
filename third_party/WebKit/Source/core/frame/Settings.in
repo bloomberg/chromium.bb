@@ -244,8 +244,8 @@ rubberBandingOnCompositorThread initial=false
 # Font scale factor for accessibility, applied as part of text autosizing.
 accessibilityFontScaleFactor type=double, initial=1.0, invalidate=TextAutosizing
 
-# Only set by Layout Tests.
-mediaTypeOverride type=String, initial="screen", invalidate=MediaType
+# Only used by Layout Tests and inspector emulation.
+mediaTypeOverride type=String, initial="", invalidate=MediaQuery
 displayModeOverride type=WebDisplayMode, initial=WebDisplayModeUndefined, invalidate=MediaQuery
 
 # loadsImagesAutomatically only suppresses the network load of

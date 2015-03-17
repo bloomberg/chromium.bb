@@ -236,9 +236,6 @@ interface InspectorInstrumentation {
     [Resource, Inline=FastReturn]
     void applyUserAgentOverride(LocalFrame*, String* userAgent);
 
-    [Page, Inline=FastReturn]
-    void applyEmulatedMedia(LocalFrame*, String* media);
-
     [Resource]
     void willSendRequest(LocalFrame*, unsigned long identifier, DocumentLoader*, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
 

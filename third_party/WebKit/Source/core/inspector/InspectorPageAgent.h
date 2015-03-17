@@ -137,7 +137,6 @@ public:
     void frameClearedScheduledNavigation(LocalFrame*);
     void willRunJavaScriptDialog(const String& message);
     void didRunJavaScriptDialog();
-    void applyEmulatedMedia(String*);
     void didLayout();
     void didScroll();
     void didResizeMainFrame();
@@ -196,7 +195,6 @@ private:
     HashMap<DocumentLoader*, String> m_loaderToIdentifier;
     bool m_enabled;
     bool m_viewportNotificationsEnabled;
-
     bool m_embedderScriptEnabled;
     bool m_reloading;
 

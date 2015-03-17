@@ -1207,10 +1207,8 @@ void FrameView::setMediaType(const AtomicString& mediaType)
 AtomicString FrameView::mediaType() const
 {
     // See if we have an override type.
-    String overrideType;
-    InspectorInstrumentation::applyEmulatedMedia(m_frame.get(), &overrideType);
-    if (!overrideType.isNull())
-        return AtomicString(overrideType);
+    if (m_frame->settings() && !m_frame->settings()->mediaTypeOverride().isEmpty())
+        return AtomicString(m_frame->settings()->mediaTypeOverride());
     return m_mediaType;
 }
 
