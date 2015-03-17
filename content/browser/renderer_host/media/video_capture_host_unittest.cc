@@ -139,14 +139,14 @@ class MockVideoCaptureHost : public VideoCaptureHost {
                     int buffer_id,
                     const gfx::Size& coded_size,
                     const gfx::Rect& visible_rect,
-                    base::TimeTicks timestamp,
+                    const base::TimeTicks& timestamp,
                     const base::DictionaryValue& metadata));
   MOCK_METHOD6(OnMailboxBufferFilled,
                void(int device_id,
                     int buffer_id,
                     const gpu::MailboxHolder& mailbox_holder,
                     const gfx::Size& packed_frame_size,
-                    base::TimeTicks timestamp,
+                    const base::TimeTicks& timestamp,
                     const base::DictionaryValue& metadata));
   MOCK_METHOD2(OnStateChanged, void(int device_id, VideoCaptureState state));
 

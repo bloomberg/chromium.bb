@@ -77,7 +77,7 @@ void ReturnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
 }  // anonymous namespace
 
 struct VideoCaptureController::ControllerClient {
-  ControllerClient(const VideoCaptureControllerID& id,
+  ControllerClient(VideoCaptureControllerID id,
                    VideoCaptureControllerEventHandler* handler,
                    base::ProcessHandle render_process,
                    media::VideoCaptureSessionId session_id,
@@ -159,13 +159,13 @@ VideoCaptureController::NewDeviceClient(
 }
 
 void VideoCaptureController::AddClient(
-    const VideoCaptureControllerID& id,
+    VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* event_handler,
     base::ProcessHandle render_process,
     media::VideoCaptureSessionId session_id,
     const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "VideoCaptureController::AddClient, id " << id.device_id
+  DVLOG(1) << "VideoCaptureController::AddClient, id " << id
            << ", " << params.requested_format.frame_size.ToString()
            << ", " << params.requested_format.frame_rate
            << ", " << session_id
@@ -196,22 +196,18 @@ void VideoCaptureController::AddClient(
 }
 
 int VideoCaptureController::RemoveClient(
-    const VideoCaptureControllerID& id,
+    VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* event_handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "VideoCaptureController::RemoveClient, id " << id.device_id;
+  DVLOG(1) << "VideoCaptureController::RemoveClient, id " << id;
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
   if (!client)
     return kInvalidMediaCaptureSessionId;
 
   // Take back all buffers held by the |client|.
-  for (ControllerClient::ActiveBufferMap::iterator buffer_it =
-           client->active_buffers.begin();
-       buffer_it != client->active_buffers.end();
-       ++buffer_it) {
-    buffer_pool_->RelinquishConsumerHold(buffer_it->first, 1);
-  }
+  for (const auto& buffer : client->active_buffers)
+    buffer_pool_->RelinquishConsumerHold(buffer.first, 1);
   client->active_buffers.clear();
 
   int session_id = client->session_id;
@@ -222,12 +218,12 @@ int VideoCaptureController::RemoveClient(
 }
 
 void VideoCaptureController::PauseOrResumeClient(
-    const VideoCaptureControllerID& id,
+    VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* event_handler,
     bool pause) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureController::PauseOrResumeClient, id "
-           << id.device_id << ", " << pause;
+           << id << ", " << pause;
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
   if (!client)
@@ -250,7 +246,7 @@ void VideoCaptureController::StopSession(int session_id) {
 }
 
 void VideoCaptureController::ReturnBuffer(
-    const VideoCaptureControllerID& id,
+    VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* event_handler,
     int buffer_id,
     uint32 sync_point) {
@@ -376,12 +372,9 @@ void VideoCaptureController::DoErrorOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state_ = VIDEO_CAPTURE_STATE_ERROR;
 
-  for (ControllerClients::iterator client_it = controller_clients_.begin();
-       client_it != controller_clients_.end(); ++client_it) {
-    ControllerClient* client = *client_it;
+  for (const auto* client : controller_clients_) {
     if (client->session_closed)
        continue;
-
     client->event_handler->OnError(client->controller_id);
   }
 }
@@ -395,9 +388,7 @@ void VideoCaptureController::DoBufferDestroyedOnIOThread(
     int buffer_id_to_drop) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  for (ControllerClients::iterator client_it = controller_clients_.begin();
-       client_it != controller_clients_.end(); ++client_it) {
-    ControllerClient* client = *client_it;
+  for (auto* client : controller_clients_) {
     if (client->session_closed)
       continue;
 
@@ -408,30 +399,23 @@ void VideoCaptureController::DoBufferDestroyedOnIOThread(
   }
 }
 
-VideoCaptureController::ControllerClient*
-VideoCaptureController::FindClient(
-    const VideoCaptureControllerID& id,
+VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(
+    VideoCaptureControllerID id,
     VideoCaptureControllerEventHandler* handler,
     const ControllerClients& clients) {
-  for (ControllerClients::const_iterator client_it = clients.begin();
-       client_it != clients.end(); ++client_it) {
-    if ((*client_it)->controller_id == id &&
-        (*client_it)->event_handler == handler) {
-      return *client_it;
-    }
+  for (auto* client : clients) {
+    if (client->controller_id == id && client->event_handler == handler)
+      return client;
   }
   return NULL;
 }
 
-VideoCaptureController::ControllerClient*
-VideoCaptureController::FindClient(
+VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(
     int session_id,
     const ControllerClients& clients) {
-  for (ControllerClients::const_iterator client_it = clients.begin();
-       client_it != clients.end(); ++client_it) {
-    if ((*client_it)->session_id == session_id) {
-      return *client_it;
-    }
+  for (auto client : clients) {
+    if (client->session_id == session_id)
+      return client;
   }
   return NULL;
 }

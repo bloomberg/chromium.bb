@@ -1159,7 +1159,6 @@
       'browser/renderer_host/media/video_capture_buffer_pool.h',
       'browser/renderer_host/media/video_capture_controller.cc',
       'browser/renderer_host/media/video_capture_controller.h',
-      'browser/renderer_host/media/video_capture_controller_event_handler.cc',
       'browser/renderer_host/media/video_capture_controller_event_handler.h',
       'browser/renderer_host/media/video_capture_device_client.cc',
       'browser/renderer_host/media/video_capture_device_client.h',

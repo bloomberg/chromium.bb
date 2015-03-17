@@ -152,7 +152,6 @@ VideoCaptureManager::CaptureDeviceStartRequest::CaptureDeviceStartRequest(
       abort_start_(false) {
 }
 
-
 VideoCaptureManager::VideoCaptureManager(
     scoped_ptr<media::VideoCaptureDeviceFactory> factory)
     : listener_(NULL),

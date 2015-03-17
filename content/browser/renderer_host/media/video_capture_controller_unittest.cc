@@ -44,31 +44,31 @@ class MockVideoCaptureControllerEventHandler
 
   // These mock methods are delegated to by our fake implementation of
   // VideoCaptureControllerEventHandler, to be used in EXPECT_CALL().
-  MOCK_METHOD1(DoBufferCreated, void(const VideoCaptureControllerID&));
-  MOCK_METHOD1(DoBufferDestroyed, void(const VideoCaptureControllerID&));
-  MOCK_METHOD1(DoBufferReady, void(const VideoCaptureControllerID&));
-  MOCK_METHOD1(DoMailboxBufferReady, void(const VideoCaptureControllerID&));
-  MOCK_METHOD1(DoEnded, void(const VideoCaptureControllerID&));
-  MOCK_METHOD1(DoError, void(const VideoCaptureControllerID&));
+  MOCK_METHOD1(DoBufferCreated, void(VideoCaptureControllerID));
+  MOCK_METHOD1(DoBufferDestroyed, void(VideoCaptureControllerID));
+  MOCK_METHOD1(DoBufferReady, void(VideoCaptureControllerID));
+  MOCK_METHOD1(DoMailboxBufferReady, void(VideoCaptureControllerID));
+  MOCK_METHOD1(DoEnded, void(VideoCaptureControllerID));
+  MOCK_METHOD1(DoError, void(VideoCaptureControllerID));
 
-  virtual void OnError(const VideoCaptureControllerID& id) override {
+  virtual void OnError(VideoCaptureControllerID id) override {
     DoError(id);
   }
-  virtual void OnBufferCreated(const VideoCaptureControllerID& id,
+  virtual void OnBufferCreated(VideoCaptureControllerID id,
                                base::SharedMemoryHandle handle,
                                int length, int buffer_id) override {
     DoBufferCreated(id);
   }
-  virtual void OnBufferDestroyed(const VideoCaptureControllerID& id,
+  virtual void OnBufferDestroyed(VideoCaptureControllerID id,
                                  int buffer_id) override {
     DoBufferDestroyed(id);
   }
   virtual void OnBufferReady(
-      const VideoCaptureControllerID& id,
+      VideoCaptureControllerID id,
       int buffer_id,
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
-      base::TimeTicks timestamp,
+      const base::TimeTicks& timestamp,
       scoped_ptr<base::DictionaryValue> metadata) override {
     DoBufferReady(id);
     base::MessageLoop::current()->PostTask(
@@ -81,11 +81,11 @@ class MockVideoCaptureControllerEventHandler
                    0));
   }
   virtual void OnMailboxBufferReady(
-      const VideoCaptureControllerID& id,
+      VideoCaptureControllerID id,
       int buffer_id,
       const gpu::MailboxHolder& mailbox_holder,
       const gfx::Size& packed_frame_size,
-      base::TimeTicks timestamp,
+      const base::TimeTicks& timestamp,
       scoped_ptr<base::DictionaryValue> metadata) override {
     DoMailboxBufferReady(id);
     base::MessageLoop::current()->PostTask(
@@ -97,7 +97,7 @@ class MockVideoCaptureControllerEventHandler
                    buffer_id,
                    mailbox_holder.sync_point));
   }
-  virtual void OnEnded(const VideoCaptureControllerID& id) override {
+  virtual void OnEnded(VideoCaptureControllerID id) override {
     DoEnded(id);
     // OnEnded() must respond by (eventually) unregistering the client.
     base::MessageLoop::current()->PostTask(FROM_HERE,

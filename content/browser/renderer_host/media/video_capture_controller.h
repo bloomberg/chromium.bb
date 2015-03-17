@@ -78,7 +78,7 @@ class CONTENT_EXPORT VideoCaptureController {
   // Start video capturing and try to use the resolution specified in |params|.
   // Buffers will be shared to the client as necessary. The client will continue
   // to receive frames from the device until RemoveClient() is called.
-  void AddClient(const VideoCaptureControllerID& id,
+  void AddClient(VideoCaptureControllerID id,
                  VideoCaptureControllerEventHandler* event_handler,
                  base::ProcessHandle render_process,
                  media::VideoCaptureSessionId session_id,
@@ -88,11 +88,11 @@ class CONTENT_EXPORT VideoCaptureController {
   // |event_handler|, and |event_handler| shouldn't use those buffers any more.
   // Returns the session_id of the stopped client, or
   // kInvalidMediaCaptureSessionId if the indicated client was not registered.
-  int RemoveClient(const VideoCaptureControllerID& id,
+  int RemoveClient(VideoCaptureControllerID id,
                    VideoCaptureControllerEventHandler* event_handler);
 
   // Pause or resume the video capture for specified client.
-  void PauseOrResumeClient(const VideoCaptureControllerID& id,
+  void PauseOrResumeClient(VideoCaptureControllerID id,
                            VideoCaptureControllerEventHandler* event_handler,
                            bool pause);
 
@@ -110,7 +110,7 @@ class CONTENT_EXPORT VideoCaptureController {
   // buffer was backed by a texture, |sync_point| will be waited on before
   // destroying or recycling the texture, to synchronize with texture users in
   // the renderer process.
-  void ReturnBuffer(const VideoCaptureControllerID& id,
+  void ReturnBuffer(VideoCaptureControllerID id,
                     VideoCaptureControllerEventHandler* event_handler,
                     int buffer_id,
                     uint32 sync_point);
@@ -133,7 +133,7 @@ class CONTENT_EXPORT VideoCaptureController {
   typedef std::list<ControllerClient*> ControllerClients;
 
   // Find a client of |id| and |handler| in |clients|.
-  ControllerClient* FindClient(const VideoCaptureControllerID& id,
+  ControllerClient* FindClient(VideoCaptureControllerID id,
                                VideoCaptureControllerEventHandler* handler,
                                const ControllerClients& clients);
 

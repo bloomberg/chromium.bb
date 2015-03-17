@@ -44,28 +44,28 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
 // Needed as an input argument to StartCaptureForClient().
 class MockFrameObserver : public VideoCaptureControllerEventHandler {
  public:
-  MOCK_METHOD1(OnError, void(const VideoCaptureControllerID& id));
+  MOCK_METHOD1(OnError, void(VideoCaptureControllerID id));
 
-  virtual void OnBufferCreated(const VideoCaptureControllerID& id,
+  virtual void OnBufferCreated(VideoCaptureControllerID id,
                                base::SharedMemoryHandle handle,
                                int length, int buffer_id) override {}
-  virtual void OnBufferDestroyed(const VideoCaptureControllerID& id,
+  virtual void OnBufferDestroyed(VideoCaptureControllerID id,
                                int buffer_id) override {}
   virtual void OnBufferReady(
-      const VideoCaptureControllerID& id,
+      VideoCaptureControllerID id,
       int buffer_id,
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
-      base::TimeTicks timestamp,
+      const base::TimeTicks& timestamp,
       scoped_ptr<base::DictionaryValue> metadata) override {}
   virtual void OnMailboxBufferReady(
-      const VideoCaptureControllerID& id,
+      VideoCaptureControllerID id,
       int buffer_id,
       const gpu::MailboxHolder& mailbox_holder,
       const gfx::Size& packed_frame_size,
-      base::TimeTicks timestamp,
+      const base::TimeTicks& timestamp,
       scoped_ptr<base::DictionaryValue> metadata) override {}
-  virtual void OnEnded(const VideoCaptureControllerID& id) override {}
+  virtual void OnEnded(VideoCaptureControllerID id) override {}
 
   void OnGotControllerCallback(VideoCaptureControllerID) {}
 };
