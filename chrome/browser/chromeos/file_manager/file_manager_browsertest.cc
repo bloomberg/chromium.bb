@@ -868,6 +868,20 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatMultipleFileDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
+// Fails on official build. http://crbug.com/429294
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
+#define MAYBE_OpenImageFiles DISABLED_OpenImageFiles
+#else
+#define MAYBE_OpenImageFiles OpenImageFiles
+#endif
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_OpenImageFiles,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(IN_GUEST_MODE, "imageOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "imageOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "imageOpenDrive")));
+
+// Slow tests are disabled on debug build. http://crbug.com/327719
 #if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_CreateNewFolder DISABLED_CreateNewFolder
 #else

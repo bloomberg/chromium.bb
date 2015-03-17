@@ -220,7 +220,7 @@ var ENTRIES = {
   image2: new TestEntryInfo(
       EntryType.FILE, 'image2.png', 'image2.png',
       'image/png', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
-      'image2.png', '272 bytes', 'PNG image'),
+      'image2.png', '4 KB', 'PNG image'),
 
   image3: new TestEntryInfo(
       EntryType.FILE, 'image3.jpg', 'image3.jpg',

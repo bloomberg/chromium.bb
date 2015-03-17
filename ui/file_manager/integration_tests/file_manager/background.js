@@ -14,6 +14,15 @@ var FILE_MANAGER_EXTENSIONS_ID = 'hhaomjibdihmijegdhdafkllkbggdgoj';
 var remoteCall = new RemoteCallFilesApp(FILE_MANAGER_EXTENSIONS_ID);
 
 /**
+ * Extension ID of Gallery.
+ * @type {string}
+ * @const
+ */
+var GALLERY_APP_ID = 'nlkncpkkdoccmpiclbokaimcnedabhhm';
+
+var galleryApp = new RemoteCallGallery(GALLERY_APP_ID);
+
+/**
  * Extension ID of Audio Player.
  * @type {string}
  * @const
