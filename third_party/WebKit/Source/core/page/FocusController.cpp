@@ -713,6 +713,13 @@ static Node* previousFocusableNode(const FocusNavigationScope& scope, Node* star
     return previousNodeWithLowerTabIndex(last, startingTabIndex);
 }
 
+Node* FocusController::findFocusableNode(WebFocusType type, Node& node)
+{
+    // FIXME: No spacial navigation code yet.
+    ASSERT(type == WebFocusTypeForward || type == WebFocusTypeBackward);
+    return findFocusableNodeAcrossFocusScopes(type, FocusNavigationScope::focusNavigationScopeOf(node), &node);
+}
+
 Node* FocusController::findFocusableNode(WebFocusType type, const FocusNavigationScope& scope, Node* node)
 {
     return type == WebFocusTypeForward ? nextFocusableNode(scope, node) : previousFocusableNode(scope, node);

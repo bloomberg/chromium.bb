@@ -57,6 +57,7 @@ public:
 
     bool setInitialFocus(WebFocusType);
     bool advanceFocus(WebFocusType type) { return advanceFocus(type, false); }
+    Node* findFocusableNode(WebFocusType, Node&);
 
     bool setFocusedElement(Element*, PassRefPtrWillBeRawPtr<Frame>, WebFocusType = WebFocusTypeNone);
 

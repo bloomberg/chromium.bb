@@ -1945,6 +1945,8 @@ bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targeted
         // clear swallowEvent if the page already set it (e.g., by canceling
         // default behavior).
         if (element) {
+            if (slideFocusOnShadowHostIfNecessary(*element))
+                return true;
             if (!page->focusController().setFocusedElement(element, m_frame, WebFocusTypeMouse))
                 return true;
         } else {
@@ -1957,6 +1959,31 @@ bool EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targeted
         }
     }
 
+    return false;
+}
+
+bool EventHandler::slideFocusOnShadowHostIfNecessary(const Element& element)
+{
+    if (element.shadowRoot() && !element.isTabStop()) {
+        Document* doc = m_frame->document();
+        if (element.containsIncludingShadowDOM(doc->focusedElement())) {
+            // If the inner element is already focused, do nothing.
+            return true;
+        }
+
+        // If the host has a focusable inner element, focus it. Otherwise, the host takes focus.
+        Page* page = m_frame->page();
+        ASSERT(page);
+        Node* next = page->focusController().findFocusableNode(WebFocusTypeForward, *element.shadowRoot());
+        if (next && next->isElementNode() && element.containsIncludingShadowDOM(next)) {
+            if (doc != next->document())
+                doc->setFocusedElement(nullptr);
+            page->focusController().setFocusedFrame(next->document().frame());
+            // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the focus has slided.
+            toElement(next)->focus(false, WebFocusTypeForward);
+            return true;
+        }
+    }
     return false;
 }
 

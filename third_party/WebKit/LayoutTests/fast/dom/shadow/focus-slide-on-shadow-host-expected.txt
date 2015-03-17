@@ -1,0 +1,30 @@
+Click inside focusable shadow host should focus the host.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+click on inner div should focus shadow host
+PASS innermost active element is shadowHost
+PASS innermost active element is shadowHost/inputA
+PASS innermost active element is shadowHost
+PASS innermost active element is shadowHost
+click on inner div should focus inner focusable (with isTabStop = false)
+PASS innermost active element is shadowHost/inputA
+PASS inputA.selectionStart is 0
+PASS inputA.selectionEnd is 9
+PASS innermost active element is shadowHost/inputA
+PASS inputA.selectionStart is 0
+PASS inputA.selectionEnd is 9
+PASS innermost active element is shadowHost/inputA
+PASS innermost active element is shadowHost/inputA
+PASS inputA.selectionStart is 1
+PASS inputA.selectionEnd is 1
+PASS innermost active element is shadowHost/inputB
+PASS innermost active element is shadowHost/inputB
+PASS inputB.selectionStart is 1
+PASS inputB.selectionEnd is 1
+
+
