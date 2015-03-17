@@ -28,7 +28,6 @@ AM_CFLAGS = \
 	$(WARN_CFLAGS) \
 	$(VISIBILITY_CFLAGS) \
 	-I$(top_srcdir) \
-	-I$(top_srcdir)/intel \
 	$(PTHREADSTUBS_CFLAGS) \
 	$(PCIACCESS_CFLAGS) \
 	$(VALGRIND_CFLAGS) \

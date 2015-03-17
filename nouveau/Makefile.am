@@ -4,7 +4,6 @@ AM_CFLAGS = \
 	$(WARN_CFLAGS) \
 	$(VISIBILITY_CFLAGS) \
 	-I$(top_srcdir) \
-	-I$(top_srcdir)/nouveau \
 	$(PTHREADSTUBS_CFLAGS) \
 	-I$(top_srcdir)/include/drm \
 	-DDEBUG
