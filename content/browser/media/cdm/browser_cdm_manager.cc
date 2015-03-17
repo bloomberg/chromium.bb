@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
@@ -18,12 +17,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "media/base/browser_cdm.h"
 #include "media/base/browser_cdm_factory.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/limits.h"
-#include "media/base/media_switches.h"
 
 namespace content {
 
@@ -365,16 +362,6 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
                       "Invalid init data type.");
       return;
   }
-
-#if defined(OS_ANDROID)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableInfobarForProtectedMediaIdentifier)) {
-    CreateSessionAndGenerateRequestIfPermitted(
-        render_frame_id, cdm_id, eme_init_data_type, init_data, promise.Pass(),
-        true /* allowed */);
-    return;
-  }
-#endif
 
   BrowserCdm* cdm = GetCdm(render_frame_id, cdm_id);
   if (!cdm) {

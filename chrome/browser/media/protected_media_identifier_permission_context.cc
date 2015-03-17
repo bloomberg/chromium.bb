@@ -22,8 +22,11 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ui/views/widget/widget.h"
-
-using chromeos::attestation::PlatformVerificationDialog;
+#elif defined(OS_ANDROID)
+#include "base/command_line.h"
+#include "media/base/media_switches.h"
+#else
+#error This file currently only supports Chrome OS and Android.
 #endif
 
 ProtectedMediaIdentifierPermissionContext::
@@ -42,6 +45,8 @@ ProtectedMediaIdentifierPermissionContext::
 }
 
 #if defined(OS_CHROMEOS)
+using chromeos::attestation::PlatformVerificationDialog;
+
 // static
 void ProtectedMediaIdentifierPermissionContext::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
@@ -98,6 +103,8 @@ void ProtectedMediaIdentifierPermissionContext::RequestPermission(
   pending_requests_.insert(
       std::make_pair(web_contents, std::make_pair(widget, id)));
 #else
+  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableInfobarForProtectedMediaIdentifier));
   PermissionContextBase::RequestPermission(web_contents, id, requesting_origin,
                                            user_gesture, callback);
 #endif
@@ -121,14 +128,20 @@ ContentSetting ProtectedMediaIdentifierPermissionContext::GetPermissionStatus(
          content_setting == CONTENT_SETTING_ASK);
 
 #if defined(OS_CHROMEOS)
-  if (content_setting == CONTENT_SETTING_ALLOW) {
-    // Check kRAConsentGranted here because it's possible that user dismissed
-    // the dialog triggered by RequestPermission() and the content setting is
-    // set to "allow" by server sync. In this case, we should still "ask".
-    if (profile()->GetPrefs()->GetBoolean(prefs::kRAConsentGranted))
-      return CONTENT_SETTING_ALLOW;
-    else
-      return CONTENT_SETTING_ASK;
+  // Check kRAConsentGranted here because it's possible that user dismissed
+  // the dialog triggered by RequestPermission() and the content setting is
+  // set to "allow" by server sync. In this case, we should still "ask".
+  if (content_setting == CONTENT_SETTING_ALLOW &&
+      !profile()->GetPrefs()->GetBoolean(prefs::kRAConsentGranted)) {
+    content_setting = CONTENT_SETTING_ASK;
+  }
+#elif defined(OS_ANDROID)
+  // When kDisableInfobarForProtectedMediaIdentifier is enabled, do not "ask"
+  // the user and always "allow".
+  if (content_setting == CONTENT_SETTING_ASK &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableInfobarForProtectedMediaIdentifier)) {
+    content_setting = CONTENT_SETTING_ALLOW;
   }
 #endif
 
@@ -224,8 +237,7 @@ void ProtectedMediaIdentifierPermissionContext::
         const GURL& requesting_origin,
         const GURL& embedding_origin,
         const BrowserPermissionCallback& callback,
-        chromeos::attestation::PlatformVerificationDialog::ConsentResponse
-            response) {
+        PlatformVerificationDialog::ConsentResponse response) {
   // The request may have been canceled. Drop the callback in that case.
   PendingRequestMap::iterator request = pending_requests_.find(web_contents);
   if (request == pending_requests_.end())
