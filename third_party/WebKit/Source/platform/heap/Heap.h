@@ -1077,16 +1077,33 @@ private:
     friend class ThreadState;
 };
 
+// We use sized heaps for normal pages to improve memory locality.
+// It seems that the same type of objects are likely to be accessed together,
+// which means that we want to group objects by type. That's why we provide
+// dedicated heaps for popular types (e.g., Node, CSSValue), but it's not
+// practical to prepare dedicated heaps for all types. Thus we group objects
+// by their sizes, hoping that it will approximately group objects
+// by their types.
 template<typename T>
 struct HeapIndexTrait {
-    static int index() { return NormalPageHeapIndex; };
+    static int index(size_t size)
+    {
+        if (size < 64) {
+            if (size < 32)
+                return NormalPage1HeapIndex;
+            return NormalPage2HeapIndex;
+        }
+        if (size < 128)
+            return NormalPage3HeapIndex;
+        return NormalPage4HeapIndex;
+    };
 };
 
 // FIXME: The forward declaration is layering violation.
 #define DEFINE_TYPED_HEAP_TRAIT(Type)                   \
     class Type;                                         \
     template <> struct HeapIndexTrait<class Type> {     \
-        static int index() { return Type##HeapIndex; }; \
+        static int index(size_t) { return Type##HeapIndex; }; \
     };
 FOR_EACH_TYPED_HEAP(DEFINE_TYPED_HEAP_TRAIT)
 #undef DEFINE_TYPED_HEAP_TRAIT
@@ -1428,7 +1445,7 @@ template<typename T>
 Address Heap::allocate(size_t size)
 {
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    return Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::index(), GCInfoTrait<T>::index());
+    return Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::index(size), GCInfoTrait<T>::index());
 }
 
 template<typename T>
@@ -1440,7 +1457,7 @@ Address Heap::reallocate(void* previous, size_t size)
         return nullptr;
     }
     ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
-    Address address = Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::index(), GCInfoTrait<T>::index());
+    Address address = Heap::allocateOnHeapIndex(state, size, HeapIndexTrait<T>::index(size), GCInfoTrait<T>::index());
     if (!previous) {
         // This is equivalent to malloc(size).
         return address;

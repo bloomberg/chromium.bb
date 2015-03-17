@@ -178,7 +178,10 @@ template<typename U> class ThreadingTrait<const U> : public ThreadingTrait<U> { 
 #define TypedHeapEnumName(Type) Type##HeapIndex,
 
 enum HeapIndices {
-    NormalPageHeapIndex = 0,
+    NormalPage1HeapIndex = 0,
+    NormalPage2HeapIndex,
+    NormalPage3HeapIndex,
+    NormalPage4HeapIndex,
     Vector1HeapIndex,
     Vector2HeapIndex,
     Vector3HeapIndex,

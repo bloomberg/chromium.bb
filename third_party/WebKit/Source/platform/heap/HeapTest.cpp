@@ -757,7 +757,7 @@ private:
 // and avoid running into this problem - http://crbug.com/425381
 template<>
 struct HeapIndexTrait<IntNode> {
-    static int index() { return NodeHeapIndex; }
+    static int index(size_t) { return NodeHeapIndex; }
 };
 
 class Bar : public GarbageCollectedFinalized<Bar> {
@@ -1651,7 +1651,7 @@ TEST(HeapTest, BasicFunctionality)
 
         CheckWithSlack(baseLevel + total, Heap::objectPayloadSizeForTesting(), slack);
         if (testPagesAllocated)
-            EXPECT_EQ(Heap::allocatedSpace(), blinkPageSize);
+            EXPECT_EQ(Heap::allocatedSpace(), blinkPageSize * 2);
 
         EXPECT_EQ(alloc32->get(0), 40);
         EXPECT_EQ(alloc32->get(31), 40);
