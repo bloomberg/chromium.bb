@@ -2084,8 +2084,7 @@ bool CSSPropertyParser::parsePage(CSSPropertyID propId, bool important)
         return false;
 
     CSSParserValue* value = m_valueList->current();
-    if (!value)
-        return false;
+    ASSERT(value);
 
     if (value->id == CSSValueAuto) {
         addProperty(propId, cssValuePool().createIdentifierValue(value->id), important);
@@ -2106,8 +2105,7 @@ bool CSSPropertyParser::parseSize(CSSPropertyID propId, bool important)
         return false;
 
     CSSParserValue* value = m_valueList->current();
-    if (!value)
-        return false;
+    ASSERT(value);
 
     RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
 
@@ -4113,8 +4111,7 @@ bool CSSPropertyParser::parseLegacyPosition(CSSPropertyID propId, bool important
     // [ legacy && [ left | right | center ]
 
     CSSParserValue* value = m_valueList->current();
-    if (!value)
-        return false;
+    ASSERT(value);
 
     if (value->id == CSSValueLegacy) {
         value = m_valueList->next();
@@ -4190,8 +4187,7 @@ bool CSSPropertyParser::parseItemPositionOverflowPosition(CSSPropertyID propId, 
     // <overflow-position> = true | safe
 
     CSSParserValue* value = m_valueList->current();
-    if (!value)
-        return false;
+    ASSERT(value);
 
     if (value->id == CSSValueAuto || value->id == CSSValueStretch || isBaselinePositionKeyword(value->id)) {
         if (m_valueList->next())
@@ -7912,8 +7908,7 @@ bool CSSPropertyParser::isSystemColor(int id)
 bool CSSPropertyParser::parseSVGValue(CSSPropertyID propId, bool important)
 {
     CSSParserValue* value = m_valueList->current();
-    if (!value)
-        return false;
+    ASSERT(value);
 
     CSSValueID id = value->id;
 
@@ -8213,8 +8208,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parsePaintOrder() const
         return nullptr;
 
     CSSParserValue* value = m_valueList->current();
-    if (!value)
-        return nullptr;
+    ASSERT(value);
 
     RefPtrWillBeRawPtr<CSSValueList> parsedValues = CSSValueList::createSpaceSeparated();
 
