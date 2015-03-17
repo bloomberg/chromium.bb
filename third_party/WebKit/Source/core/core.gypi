@@ -1608,6 +1608,8 @@
             'inspector/InspectorFrontendChannel.h',
             'inspector/InspectorHeapProfilerAgent.cpp',
             'inspector/InspectorHeapProfilerAgent.h',
+            'inspector/InspectorHighlight.cpp',
+            'inspector/InspectorHighlight.h',
             'inspector/InspectorHistory.cpp',
             'inspector/InspectorHistory.h',
             'inspector/InspectorInputAgent.cpp',

@@ -66,6 +66,7 @@
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
+#include "core/inspector/InspectorHighlight.h"
 #include "core/inspector/InspectorHistory.h"
 #include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorOverlay.h"
@@ -1366,14 +1367,14 @@ void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode
         hideHighlight(errorString);
 }
 
-PassOwnPtr<HighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObject(ErrorString* errorString, JSONObject* highlightInspectorObject)
+PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObject(ErrorString* errorString, JSONObject* highlightInspectorObject)
 {
     if (!highlightInspectorObject) {
         *errorString = "Internal error: highlight configuration parameter is missing";
         return nullptr;
     }
 
-    OwnPtr<HighlightConfig> highlightConfig = adoptPtr(new HighlightConfig());
+    OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
     bool showInfo = false; // Default: false (do not show a tooltip).
     highlightInspectorObject->getBoolean("showInfo", &showInfo);
     highlightConfig->showInfo = showInfo;
@@ -1421,7 +1422,7 @@ void InspectorDOMAgent::highlightQuad(ErrorString* errorString, const RefPtr<JSO
 
 void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor)
 {
-    OwnPtr<HighlightConfig> highlightConfig = adoptPtr(new HighlightConfig());
+    OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
     highlightConfig->content = parseColor(color);
     highlightConfig->contentOutline = parseColor(outlineColor);
     m_overlay->highlightQuad(quad, *highlightConfig);
@@ -1443,7 +1444,7 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSO
     if (!node)
         return;
 
-    OwnPtr<HighlightConfig> highlightConfig = highlightConfigFromInspectorObject(errorString, highlightInspectorObject.get());
+    OwnPtr<InspectorHighlightConfig> highlightConfig = highlightConfigFromInspectorObject(errorString, highlightInspectorObject.get());
     if (!highlightConfig)
         return;
 
@@ -1459,7 +1460,7 @@ void InspectorDOMAgent::highlightFrame(
     LocalFrame* frame = m_pageAgent->frameForId(frameId);
     // FIXME: Inspector doesn't currently work cross process.
     if (frame && frame->deprecatedLocalOwner()) {
-        OwnPtr<HighlightConfig> highlightConfig = adoptPtr(new HighlightConfig());
+        OwnPtr<InspectorHighlightConfig> highlightConfig = adoptPtr(new InspectorHighlightConfig());
         highlightConfig->showInfo = true; // Always show tooltips for frames.
         highlightConfig->content = parseColor(color);
         highlightConfig->contentOutline = parseColor(outlineColor);
@@ -1594,10 +1595,9 @@ void InspectorDOMAgent::getBoxModel(ErrorString* errorString, int nodeId, RefPtr
     if (!node)
         return;
 
-    bool result = m_overlay->getBoxModel(node, model);
+    bool result = InspectorHighlight::getBoxModel(node, model);
     if (!result)
         *errorString = "Could not compute box model.";
-
 }
 
 void InspectorDOMAgent::getNodeForLocation(ErrorString* errorString, int x, int y, int* nodeId)
@@ -2310,7 +2310,8 @@ void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int 
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
-    result = m_overlay->highlightJSONForNode(node);
+    OwnPtrWillBeRawPtr<InspectorHighlight> highlight = InspectorHighlight::create(node, InspectorHighlight::defaultConfig(), true);
+    result = highlight->asJSONObject();
 }
 
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)

@@ -64,7 +64,7 @@ class PlatformTouchEvent;
 class InspectorRevalidateDOMTask;
 class ShadowRoot;
 
-struct HighlightConfig;
+struct InspectorHighlightConfig;
 
 typedef String ErrorString;
 
@@ -223,7 +223,7 @@ private:
     void innerEnable();
 
     void setSearchingForNode(ErrorString*, SearchMode, JSONObject* highlightConfig);
-    PassOwnPtr<HighlightConfig> highlightConfigFromInspectorObject(ErrorString*, JSONObject* highlightInspectorObject);
+    PassOwnPtr<InspectorHighlightConfig> highlightConfigFromInspectorObject(ErrorString*, JSONObject* highlightInspectorObject);
 
     // Node-related methods.
     typedef WillBeHeapHashMap<RefPtrWillBeMember<Node>, int> NodeToIdMap;
@@ -274,7 +274,7 @@ private:
     SearchResults m_searchResults;
     OwnPtrWillBeMember<InspectorRevalidateDOMTask> m_revalidateTask;
     SearchMode m_searchingForNode;
-    OwnPtr<HighlightConfig> m_inspectModeHighlightConfig;
+    OwnPtr<InspectorHighlightConfig> m_inspectModeHighlightConfig;
     OwnPtrWillBeMember<InspectorHistory> m_history;
     OwnPtrWillBeMember<DOMEditor> m_domEditor;
     bool m_suppressAttributeModifiedEvent;

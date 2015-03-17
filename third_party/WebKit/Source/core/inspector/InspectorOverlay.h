@@ -30,6 +30,7 @@
 #define InspectorOverlay_h
 
 #include "core/InspectorTypeBuilder.h"
+#include "core/inspector/InspectorHighlight.h"
 #include "platform/Timer.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
@@ -54,22 +55,7 @@ class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 class PlatformTouchEvent;
 
-struct HighlightConfig {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    Color content;
-    Color contentOutline;
-    Color padding;
-    Color border;
-    Color margin;
-    Color eventTarget;
-    Color shape;
-    Color shapeMargin;
-
-    bool showInfo;
-    bool showRulers;
-    bool showExtensionLines;
-};
+struct InspectorHighlightConfig;
 
 class InspectorOverlay final : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlay> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
@@ -93,7 +79,6 @@ public:
     void update();
     void hide();
     void paint(GraphicsContext&);
-    void drawOutline(GraphicsContext*, const LayoutRect&, const Color&);
     bool handleGestureEvent(const PlatformGestureEvent&);
     bool handleMouseEvent(const PlatformMouseEvent&);
     bool handleTouchEvent(const PlatformTouchEvent&);
@@ -103,13 +88,11 @@ public:
     void setInspectModeEnabled(bool);
 
     void hideHighlight();
-    void highlightNode(Node*, Node* eventTarget, const HighlightConfig&, bool omitTooltip);
-    void highlightQuad(PassOwnPtr<FloatQuad>, const HighlightConfig&);
+    void highlightNode(Node*, Node* eventTarget, const InspectorHighlightConfig&, bool omitTooltip);
+    void highlightQuad(PassOwnPtr<FloatQuad>, const InspectorHighlightConfig&);
     void showAndHideViewSize(bool showGrid);
 
     Node* highlightedNode() const;
-    bool getBoxModel(Node*, RefPtr<TypeBuilder::DOM::BoxModel>&);
-    PassRefPtr<JSONObject> highlightJSONForNode(Node*);
 
     void freePage();
 
@@ -142,12 +125,12 @@ private:
     bool m_inspectModeEnabled;
     RefPtrWillBeMember<Node> m_highlightNode;
     RefPtrWillBeMember<Node> m_eventTargetNode;
-    HighlightConfig m_nodeHighlightConfig;
+    InspectorHighlightConfig m_nodeHighlightConfig;
     OwnPtr<FloatQuad> m_highlightQuad;
     OwnPtrWillBeMember<Page> m_overlayPage;
     OwnPtr<EmptyChromeClient> m_overlayChromeClient;
     RefPtrWillBeMember<InspectorOverlayHost> m_overlayHost;
-    HighlightConfig m_quadHighlightConfig;
+    InspectorHighlightConfig m_quadHighlightConfig;
     bool m_drawViewSize;
     bool m_drawViewSizeWithGrid;
     bool m_omitTooltip;
