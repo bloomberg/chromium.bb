@@ -66,5 +66,9 @@ const char kEnableDataReductionProxyLoFi[] =
 const char kEnableDataReductionProxyBypassWarning[] =
     "enable-data-reduction-proxy-bypass-warning";
 
+// Clear data savings on Chrome startup.
+const char kClearDataReductionProxyDataSavings[] =
+    "clear-data-reduction-proxy-data-savings";
+
 }  // namespace switches
 }  // namespace data_reduction_proxy

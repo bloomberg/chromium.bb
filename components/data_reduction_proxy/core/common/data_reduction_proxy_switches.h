@@ -27,7 +27,7 @@ extern const char kEnableDataReductionProxy[];
 extern const char kEnableDataReductionProxyAlt[];
 extern const char kEnableDataReductionProxyLoFi[];
 extern const char kEnableDataReductionProxyBypassWarning[];
-
+extern const char kClearDataReductionProxyDataSavings[];
 
 }  // namespace switches
 }  // namespace data_reduction_proxy

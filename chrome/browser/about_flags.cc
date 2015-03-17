@@ -2202,6 +2202,14 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
                       kEnableDataReductionProxyLoFi)
   },
+  {
+    "clear-data-reduction-proxy-data-savings",
+    IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_NAME,
+    IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
+                      kClearDataReductionProxyDataSavings)
+  },
 #if defined(ENABLE_DATA_REDUCTION_PROXY_DEBUGGING)
   {
     "enable-data-reduction-proxy-bypass-warnings",

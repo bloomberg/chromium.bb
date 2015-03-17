@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/prefs/pref_change_registrar.h"
@@ -14,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 
 namespace data_reduction_proxy {
 
@@ -69,6 +71,11 @@ void DataReductionProxyStatisticsPrefs::Init() {
                kDailyOriginalContentLengthViaDataReductionProxy);
   InitListPref(data_reduction_proxy::prefs::
                kDailyOriginalContentLengthWithDataReductionProxyEnabled);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      data_reduction_proxy::switches::kClearDataReductionProxyDataSavings)) {
+    ClearDataSavingStatistics();
+  }
 
   pref_change_registrar_->Init(pref_service_);
   pref_change_registrar_->Add(prefs::kUpdateDailyReceivedContentLengths,
@@ -197,6 +204,32 @@ int64 DataReductionProxyStatisticsPrefs::GetListPrefInt64Value(
   bool rv = base::StringToInt64(string_value, &value);
   DCHECK(rv);
   return value;
+}
+
+void DataReductionProxyStatisticsPrefs::ClearDataSavingStatistics() {
+  list_pref_map_.get(data_reduction_proxy::prefs::
+      kDailyContentLengthHttpsWithDataReductionProxyEnabled)->Clear();
+  list_pref_map_.get(data_reduction_proxy::prefs::
+      kDailyContentLengthLongBypassWithDataReductionProxyEnabled)->Clear();
+  list_pref_map_.get(data_reduction_proxy::prefs::
+      kDailyContentLengthShortBypassWithDataReductionProxyEnabled)->Clear();
+  list_pref_map_.get(data_reduction_proxy::prefs::
+      kDailyContentLengthUnknownWithDataReductionProxyEnabled)->Clear();
+  list_pref_map_.get(
+      data_reduction_proxy::prefs::kDailyContentLengthViaDataReductionProxy)->
+          Clear();
+  list_pref_map_.get(data_reduction_proxy::prefs::
+      kDailyContentLengthWithDataReductionProxyEnabled)->Clear();
+  list_pref_map_.get(data_reduction_proxy::prefs::
+      kDailyHttpOriginalContentLength)->Clear();
+  list_pref_map_.get(data_reduction_proxy::prefs::
+      kDailyHttpReceivedContentLength)->Clear();
+  list_pref_map_.get(data_reduction_proxy::prefs::
+      kDailyOriginalContentLengthViaDataReductionProxy)->Clear();
+  list_pref_map_.get(data_reduction_proxy::prefs::
+      kDailyOriginalContentLengthWithDataReductionProxyEnabled)->Clear();
+
+  WritePrefs();
 }
 
 base::WeakPtr<DataReductionProxyStatisticsPrefs>

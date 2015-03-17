@@ -98,6 +98,9 @@ private:
   // index.
   int64 GetListPrefInt64Value(const base::ListValue& list_update, size_t index);
 
+  // Clears all data saving statistics.
+  void ClearDataSavingStatistics();
+
   PrefService* pref_service_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const base::TimeDelta delay_;

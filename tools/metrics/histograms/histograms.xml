@@ -8895,9 +8895,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Extensions.FeatureProviderStaticInitTime" units="milliseconds">
   <owner>rkaplow@chromium.org</owner>
   <summary>
-    The amount of time that elapsed during
-    extensions::FeatureProvider::Static. Only measured while in the browser
-    process.
+    The amount of time that elapsed during extensions::FeatureProvider::Static.
+    Only measured while in the browser process.
   </summary>
 </histogram>
 
@@ -19607,8 +19606,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     enum="QuicSessionLocations">
   <owner>rch@chromium.org</owner>
   <summary>
-    The location in quic_client_session.cc where a session is unexpectedly
-    not going away.
+    The location in quic_client_session.cc where a session is unexpectedly not
+    going away.
   </summary>
 </histogram>
 
@@ -52683,6 +52682,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1267958145" label="disable-pdf-material-ui"/>
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
+  <int value="-1216837777" label="clear-data-reduction-proxy-data-savings"/>
   <int value="-1212273428" label="enable-experimental-app-list"/>
   <int value="-1203742042" label="enable-gesture-selection"/>
   <int value="-1201183153" label="enable-centered-app-list"/>

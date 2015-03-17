@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
@@ -12,6 +13,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -219,6 +221,44 @@ TEST_F(DataReductionProxyStatisticsPrefsTest,
   stats_value.reset(statistics_prefs_->HistoricNetworkStatsInfoToValue());
   EXPECT_TRUE(stats_value->GetAsDictionary(&dict));
   VerifyPrefs(dict);
+}
+
+TEST_F(DataReductionProxyStatisticsPrefsTest,
+       ClearPrefsOnRestartEnabled) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(
+      data_reduction_proxy::switches::kClearDataReductionProxyDataSavings);
+
+  base::ListValue list_value;
+  list_value.Insert(0, new base::StringValue(base::Int64ToString(1234)));
+  simple_pref_service_.Set(prefs::kDailyHttpOriginalContentLength, list_value);
+
+  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+      &simple_pref_service_,
+      task_runner_,
+      base::TimeDelta::FromMinutes(kWriteDelayMinutes)));
+
+  const base::ListValue* value = simple_pref_service_.GetList(
+      prefs::kDailyHttpOriginalContentLength);
+  EXPECT_EQ(0u, value->GetSize());
+}
+
+TEST_F(DataReductionProxyStatisticsPrefsTest,
+       ClearPrefsOnRestartDisabled) {
+  base::ListValue list_value;
+  list_value.Insert(0, new base::StringValue(base::Int64ToString(1234)));
+  simple_pref_service_.Set(prefs::kDailyHttpOriginalContentLength, list_value);
+
+  statistics_prefs_.reset(new DataReductionProxyStatisticsPrefs(
+      &simple_pref_service_,
+      task_runner_,
+      base::TimeDelta::FromMinutes(kWriteDelayMinutes)));
+
+  const base::ListValue* value = simple_pref_service_.GetList(
+      prefs::kDailyHttpOriginalContentLength);
+  std::string string_value;
+  value->GetString(0, &string_value);
+  EXPECT_EQ("1234", string_value);
 }
 
 }  // namespace data_reduction_proxy
