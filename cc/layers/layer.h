@@ -526,6 +526,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // Sets new frame timing requests for this layer.
   void SetFrameTimingRequests(const std::vector<FrameTimingRequest>& requests);
 
+  void DidBeginTracing();
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;

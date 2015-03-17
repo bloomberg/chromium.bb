@@ -6,6 +6,12 @@
 
 namespace cc {
 namespace frame_viewer_instrumentation {
+
+const char kCategoryLayerTree[] =
+    TRACE_DISABLED_BY_DEFAULT("cc.debug") ","
+    TRACE_DISABLED_BY_DEFAULT("cc.debug.quads") ","
+    TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers");
+
 namespace {
 
 const char kCategory[] = "cc," TRACE_DISABLED_BY_DEFAULT("devtools.timeline");
@@ -58,6 +64,12 @@ ScopedRasterTask::ScopedRasterTask(const void* tile_id,
 
 ScopedRasterTask::~ScopedRasterTask() {
   TRACE_EVENT_END0(kCategory, kRasterTask);
+}
+
+bool IsTracingLayerTreeSnapshots() {
+  bool category_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(kCategoryLayerTree, &category_enabled);
+  return category_enabled;
 }
 
 }  // namespace frame_viewer_instrumentation

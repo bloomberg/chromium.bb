@@ -24,6 +24,7 @@
 #include "cc/debug/debug_rect_history.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/frame_rate_counter.h"
+#include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/debug/paint_time_counter.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/debug/traced_value.h"
@@ -1528,12 +1529,8 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   {
     TRACE_EVENT0("cc", "DrawLayers.FrameViewerTracing");
     TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
-       TRACE_DISABLED_BY_DEFAULT("cc.debug") ","
-       TRACE_DISABLED_BY_DEFAULT("cc.debug.quads") ","
-       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.layers"),
-       "cc::LayerTreeHostImpl",
-       id_,
-       AsValueWithFrame(frame));
+        frame_viewer_instrumentation::kCategoryLayerTree,
+        "cc::LayerTreeHostImpl", id_, AsValueWithFrame(frame));
   }
 
   const DrawMode draw_mode = GetDrawMode();

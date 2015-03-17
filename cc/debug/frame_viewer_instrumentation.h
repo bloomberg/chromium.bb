@@ -11,6 +11,8 @@
 namespace cc {
 namespace frame_viewer_instrumentation {
 
+extern const char kCategoryLayerTree[];
+
 class ScopedAnalyzeTask {
  public:
   ScopedAnalyzeTask(const void* tile_id,
@@ -34,6 +36,8 @@ class ScopedRasterTask {
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedRasterTask);
 };
+
+bool IsTracingLayerTreeSnapshots();
 
 }  // namespace frame_viewer_instrumentation
 }  // namespace cc

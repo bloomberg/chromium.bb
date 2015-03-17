@@ -18,6 +18,7 @@
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/base/simple_enclosed_region.h"
+#include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/scrollbar_layer_interface.h"
@@ -897,12 +898,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetContentBounds(content_bounds());
   layer->SetContentsScale(contents_scale_x(), contents_scale_y());
 
-  bool is_tracing;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug") "," TRACE_DISABLED_BY_DEFAULT(
-          "devtools.timeline.layers"),
-      &is_tracing);
-  if (is_tracing)
+  if (frame_viewer_instrumentation::IsTracingLayerTreeSnapshots())
     layer->SetDebugInfo(TakeDebugInfo());
 
   layer->SetDoubleSided(double_sided_);
@@ -1352,6 +1348,14 @@ void Layer::SetFrameTimingRequests(
   frame_timing_requests_ = requests;
   frame_timing_requests_dirty_ = true;
   SetNeedsCommit();
+}
+
+void Layer::DidBeginTracing() {
+  // We'll be dumping layer trees as part of trace, so make sure
+  // PushPropertiesTo() propagates layer debug info to the impl
+  // side -- otherwise this won't happen for the the layers that
+  // remain unchanged since tracing started.
+  SetNeedsPushProperties();
 }
 
 }  // namespace cc

@@ -21,6 +21,7 @@
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/devtools_instrumentation.h"
+#include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/page_scale_animation.h"
@@ -266,6 +267,15 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     contents_texture_manager_->UpdateBackingsState(
         host_impl->resource_provider());
     contents_texture_manager_->ReduceMemory(host_impl->resource_provider());
+  }
+
+  bool is_new_trace;
+  TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
+  if (is_new_trace &&
+      frame_viewer_instrumentation::IsTracingLayerTreeSnapshots() &&
+      root_layer()) {
+    LayerTreeHostCommon::CallFunctionForSubtree(
+        root_layer(), [](Layer* layer) { layer->DidBeginTracing(); });
   }
 
   LayerTreeImpl* sync_tree = host_impl->sync_tree();
