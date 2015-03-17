@@ -49,6 +49,7 @@ function doSetVersion(version)
   };
   openreq.onupgradeneeded = function(e) {
     openreq.transaction.oncomplete = function(e2) {
+      db = openreq.result;
       result('setVersion(' + version + ') complete');
     };
   };
