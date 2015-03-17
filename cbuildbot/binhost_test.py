@@ -7,60 +7,15 @@
 from __future__ import print_function
 
 import collections
-import tempfile
+import os
 import warnings
 
 from chromite.cbuildbot import binhost
 from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import parallel
-
-
-class CompatIdFetcher(object):
-  """Class for calculating compat ids in parallel."""
-
-  def __init__(self, caching=False):
-    """Create a new CompatIdFetcher object.
-
-    Args:
-      caching: Whether to cache setup from run to run. See
-        PrebuiltCompatibilityTest.CACHING for details.
-    """
-    self.compat_ids = None
-    if caching:
-      # This import occurs here rather than at the top of the file because we
-      # don't want to force developers to install joblib. The caching argument
-      # is only set to True if PrebuiltCompatibilityTest.CACHING is hand-edited
-      # (for testing purposes).
-      # pylint: disable=import-error
-      from joblib import Memory
-      memory = Memory(cachedir=tempfile.gettempdir(), verbose=0)
-      self._FetchRawCompatIds = memory.cache(self._FetchRawCompatIds)
-
-  def _FetchCompatId(self, board, extra_useflags):
-    try:
-      self.compat_ids[(board, extra_useflags)] = \
-          binhost.CalculateCompatId(board, extra_useflags)
-    except cros_build_lib.RunCommandError:
-      cros_build_lib.Warning(
-          'Ignoring error in board: %s', board, exc_info=True)
-
-  def _FetchRawCompatIds(self):
-    # pylint: disable=method-hidden
-    cros_build_lib.Info('Fetching CompatId objects. This takes about 30s...')
-    with parallel.Manager() as manager:
-      self.compat_ids = manager.dict()
-      inputs = set()
-      for config in cbuildbot_config.config.values():
-        for board in config.boards:
-          inputs.add(binhost.GetBoardKey(config, board))
-      parallel.RunTasksInProcessPool(self._FetchCompatId, inputs)
-      return dict(self.compat_ids)
-
-  def FetchAllCompatIds(self):
-    """Generate a dict mapping BoardKeys to their associated CompatId."""
-    return self._FetchRawCompatIds()
+from chromite.lib import osutils
 
 
 class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
@@ -81,12 +36,12 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
   @classmethod
   def setUpClass(cls):
     assert cros_build_lib.IsInsideChroot()
-    cros_build_lib.Info('Generating board configs. This takes 8.5m...')
+    cros_build_lib.Info('Generating board configs. This takes about 10m...')
     for key in sorted(binhost.GetAllBoardKeys()):
       binhost.GenConfigsForBoard(key.board, regen=not cls.CACHING,
                                  error_code_ok=True)
-    fetcher = CompatIdFetcher(caching=cls.CACHING)
-    cls.COMPAT_IDS = fetcher.FetchAllCompatIds()
+    fetcher = binhost.CompatIdFetcher(caching=cls.CACHING)
+    cls.COMPAT_IDS = fetcher.FetchCompatIds(binhost.GetAllBoardKeys())
 
   def setUp(self):
     self.complaints = []
@@ -130,21 +85,18 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       assert expected == actual
       return 'no differences'
 
-  def AssertChromePrebuilts(self, pfq_by_compat_id, pfq_by_arch_useflags,
-                            config):
+  def AssertChromePrebuilts(self, pfq_configs, config):
     """Verify that the specified config has Chrome prebuilts.
 
     Args:
-      pfq_by_compat_id: A dict mapping CompatIds to sets of BoardKey objects.
-      pfq_by_arch_useflags: A dict mapping (arch, useflags) tuples to sets of
-        BoardKey objects.
+      pfq_configs: A PrebuiltMapping object.
       config: The config to check.
     """
     compat_id = self.GetCompatId(config)
-    pfqs = pfq_by_compat_id.get(compat_id, set())
+    pfqs = pfq_configs.by_compat_id.get(compat_id, set())
     if not pfqs:
       arch_useflags = (compat_id.arch, compat_id.useflags)
-      for key in pfq_by_arch_useflags[arch_useflags]:
+      for key in pfq_configs.by_arch_useflags[arch_useflags]:
         # If there wasn't an exact match for this CompatId, but there
         # was an (arch, useflags) match, then we'll be using mismatched
         # Chrome prebuilts. Complain.
@@ -161,7 +113,6 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       msg = '%s cannot find Chrome prebuilts -- %s'
       self.Complain(msg % (config.name, compat_id),
                     fatal=pre_cq or config.important)
-    return pfqs
 
   def GetCompatId(self, config, board=None):
     """Get the CompatId for a config.
@@ -184,18 +135,20 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       self.COMPAT_IDS[board_key] = compat_id
     return compat_id
 
-  def testChromePrebuiltsPresent(self):
-    """Verify Chrome prebuilts exist for all configs that build Chrome."""
-    pfq_by_compat_id = collections.defaultdict(set)
-    pfq_by_arch_useflags = collections.defaultdict(set)
-    for key in binhost.GetChromePrebuiltConfigs():
-      compat_id = self.COMPAT_IDS[key]
-      pfqs = pfq_by_compat_id[compat_id]
-      pfqs.add(key)
-      partial_compat_id = (compat_id.arch, compat_id.useflags)
-      pfq_by_arch_useflags[partial_compat_id].add(key)
+  def testChromePrebuiltsPresent(self, filename=None):
+    """Verify Chrome prebuilts exist for all configs that build Chrome.
 
-    for compat_id, pfqs in pfq_by_compat_id.items():
+    Args:
+      filename: Filename to load our PFQ mappings from. By default, generate
+        the PFQ mappings based on the current config.
+    """
+    if filename is not None:
+      pfq_configs = binhost.PrebuiltMapping.Load(filename)
+    else:
+      keys = binhost.GetChromePrebuiltConfigs().keys()
+      pfq_configs = binhost.PrebuiltMapping.Get(keys, self.COMPAT_IDS)
+
+    for compat_id, pfqs in pfq_configs.by_compat_id.items():
       if len(pfqs) > 1:
         msg = 'The following Chrome PFQs produce identical prebuilts: %s -- %s'
         self.Complain(msg % (', '.join(str(x) for x in pfqs), compat_id),
@@ -210,8 +163,18 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       pre_cq = (config.build_type == cbuildbot_config.CONFIG_TYPE_PRECQ)
       if ((config.usepkg_build_packages and not config.chrome_rev) and
           (config.active_waterfall or pre_cq)):
-        self.AssertChromePrebuilts(pfq_by_compat_id, pfq_by_arch_useflags,
-                                   config)
+        self.AssertChromePrebuilts(pfq_configs, config)
+
+  def testCurrentChromePrebuiltsEnough(self):
+    """Verify Chrome prebuilts exist for all configs that build Chrome.
+
+    This loads the list of Chrome prebuilts that were generated during the last
+    Chrome PFQ run from disk and verifies that it is sufficient.
+    """
+    filename = binhost.PrebuiltMapping.GetFilename(constants.SOURCE_ROOT,
+                                                   'chrome')
+    if os.path.exists(filename):
+      self.testChromePrebuiltsPresent(filename)
 
   def testReleaseGroupSharing(self):
     """Verify that the boards built in release groups have compatible settings.
@@ -249,3 +212,16 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
         err = self.GetCompatIdDiff(ids[0], ids[1])
         msg %= (config.name, err)
         self.Complain(msg, fatal=fatal)
+
+  def testDumping(self):
+    """Verify Chrome prebuilts exist for all configs that build Chrome.
+
+    This loads the list of Chrome prebuilts that were generated during the last
+    Chrome PFQ run from disk and verifies that it is sufficient.
+    """
+    with osutils.TempDir() as tempdir:
+      keys = binhost.GetChromePrebuiltConfigs().keys()
+      pfq_configs = binhost.PrebuiltMapping.Get(keys, self.COMPAT_IDS)
+      filename = os.path.join(tempdir, 'foo.json')
+      pfq_configs.Dump(filename)
+      self.assertEqual(pfq_configs, binhost.PrebuiltMapping.Load(filename))

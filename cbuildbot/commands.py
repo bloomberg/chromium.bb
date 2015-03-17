@@ -397,6 +397,26 @@ def VerifyBinpkg(buildroot, board, pkg, packages, extra_env=None):
     raise MissingBinpkg(msg)
 
 
+def RunBinhostTest(buildroot):
+  """Test prebuilts for all boards, making sure everybody gets Chrome prebuilts.
+
+  Args:
+    buildroot: The buildroot of the current build.
+  """
+  cmd = ['../cbuildbot/binhost_test']
+  RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
+
+
+def UpdateBinhostJson(buildroot):
+  """Test prebuilts for all boards, making sure everybody gets Chrome prebuilts.
+
+  Args:
+    buildroot: The buildroot of the current build.
+  """
+  cmd = ['../cbuildbot/update_binhost_json']
+  RunBuildScript(buildroot, cmd, chromite_cmd=True, enter_chroot=True)
+
+
 def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
           packages=(), skip_chroot_upgrade=True, noworkon=False,
           extra_env=None, chrome_root=None):

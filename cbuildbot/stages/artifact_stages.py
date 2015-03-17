@@ -698,6 +698,10 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
           extra_args=generated_args + private_args,
           **common_kwargs)
 
+    # If we're the Chrome PFQ master, update our binhost JSON file.
+    if self._run.config.build_type == constants.CHROME_PFQ_TYPE:
+      commands.UpdateBinhostJson(self._build_root)
+
 
 class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
   """Stage that uploads DevInstaller prebuilts."""
@@ -714,6 +718,15 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
         buildroot=self._build_root,
         board=self._current_board,
         extra_args=generated_args)
+
+
+# TODO(davidjames): Mark as non-forgiving once this stage is proven.
+class BinhostTestStage(generic_stages.ForgivingBuilderStage):
+  """Stage that verifies Chrome prebuilts."""
+
+  def PerformStage(self):
+    # Verify our binhosts.
+    commands.RunBinhostTest(self._build_root)
 
 
 class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
