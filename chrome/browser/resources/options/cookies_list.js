@@ -734,6 +734,8 @@ cr.define('options', function() {
      */
     handleKeyLeftRight_: function(e) {
       var id = e.keyIdentifier;
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)
+        return;
       if ((id == 'Left' || id == 'Right') && this.expandedItem) {
         var cs = this.ownerDocument.defaultView.getComputedStyle(this);
         var rtl = cs.direction == 'rtl';
