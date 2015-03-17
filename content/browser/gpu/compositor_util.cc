@@ -318,7 +318,7 @@ bool UseSurfacesEnabled() {
   return false;
 #endif
   bool enabled = false;
-#if (defined(USE_AURA) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+#if defined(USE_AURA) || defined(OS_MACOSX)
   enabled = true;
 #endif
 
