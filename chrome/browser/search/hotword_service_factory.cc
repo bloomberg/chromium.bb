@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/common/chrome_version_info.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #endif
 
@@ -47,11 +48,12 @@ bool HotwordServiceFactory::IsHotwordAllowed(BrowserContext* context) {
 
 // static
 bool HotwordServiceFactory::IsAlwaysOnAvailable() {
-// Temporarily disabling hotword hardware check for M42. Will be
-// re-enabled for M43.
-#if 0
 #if defined(OS_CHROMEOS)
-  if (chromeos::CrasAudioHandler::IsInitialized()) {
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if ((channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
+       channel == chrome::VersionInfo::CHANNEL_CANARY ||
+       channel == chrome::VersionInfo::CHANNEL_DEV) &&
+      chromeos::CrasAudioHandler::IsInitialized()) {
     chromeos::AudioDeviceList devices;
     chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
     for (size_t i = 0; i < devices.size(); ++i) {
@@ -62,7 +64,6 @@ bool HotwordServiceFactory::IsAlwaysOnAvailable() {
     }
   }
 #endif
-#endif  // 0
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kEnableExperimentalHotwordHardware);
 }
