@@ -41,7 +41,7 @@ class AffiliationBackend;
 //       is acceptable from the privacy and/or performance perspective.
 //
 //       This mode of operation is achieved by invoking GetAffiliations() with
-//       |cached_only| set to false.
+//       StrategyOnCacheMiss::FETCH_OVER_NETWORK.
 //
 //   2.) Proactive fetching: For the compound query that is concerned with
 //       checking, over time, whether or not each element in a sequence of
@@ -69,10 +69,11 @@ class AffiliationBackend;
 //         ~ExampleAffiliatedCredentialFiller() { cancel_handle_.Run(); }
 //
 //         void ShouldFillInto(const FacetURI& wi, FillDelegate* delegate) {
-//           service_->GetAffiliations(wi, false, base::Bind(
-//               &ExampleAffiliatedCredentialFiller::OnAffiliationResult,
-//               AsWeakPtr(),
-//               delegate));
+//           service_->GetAffiliations(wi, StrategyOnCacheMiss::FAIL,
+//               base::Bind(
+//                   &ExampleAffiliatedCredentialFiller::OnAffiliationResult,
+//                   AsWeakPtr(),
+//                   delegate));
 //         }
 //
 //         void OnAffiliationResult(FillDelegate* delegate,
@@ -92,6 +93,9 @@ class AffiliationService : public KeyedService {
   typedef base::Callback<void(const AffiliatedFacets& /* results */,
                               bool /* success */)> ResultCallback;
 
+  // Controls whether to send a network request or fail on a cache miss.
+  enum class StrategyOnCacheMiss { FETCH_OVER_NETWORK, FAIL };
+
   // The |backend_task_runner| should be a task runner corresponding to a thread
   // that can take blocking I/O, and is normally Chrome's DB thread.
   AffiliationService(
@@ -103,12 +107,15 @@ class AffiliationService : public KeyedService {
   void Initialize(net::URLRequestContextGetter* request_context_getter,
                   const base::FilePath& db_path);
 
-  // Looks up facets affiliated with the facet identified by |facet_uri|. If
-  // |cached_only| is true, the results will be based solely on prefetched
-  // information already stored in the cache. Otherwise, on-demand network
-  // requests will be issued if there is no up-to-date data in the cache.
+  // Looks up facets affiliated with the facet identified by |facet_uri|, and
+  // invokes |result_callback| with the results.
+  //
+  // If the local cache contains fresh affiliation information for |facet_uri|,
+  // the request will be served from cache. Otherwise, |cache_miss_policy|
+  // controls whether to issue an on-demand network request, or to fail the
+  // request without fetching.
   virtual void GetAffiliations(const FacetURI& facet_uri,
-                               bool cached_only,
+                               StrategyOnCacheMiss cache_miss_strategy,
                                const ResultCallback& result_callback);
 
   // Prefetches affiliation information for the facet identified by |facet_uri|,

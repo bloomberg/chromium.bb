@@ -22,6 +22,8 @@ namespace password_manager {
 
 namespace {
 
+using StrategyOnCacheMiss = AffiliationService::StrategyOnCacheMiss;
+
 class MockAffiliationService : public testing::StrictMock<AffiliationService> {
  public:
   MockAffiliationService() : testing::StrictMock<AffiliationService>(nullptr) {
@@ -31,32 +33,32 @@ class MockAffiliationService : public testing::StrictMock<AffiliationService> {
   ~MockAffiliationService() override {}
 
   MOCK_METHOD2(OnGetAffiliationsCalled,
-               AffiliatedFacets(const FacetURI&, bool));
+               AffiliatedFacets(const FacetURI&, StrategyOnCacheMiss));
   MOCK_METHOD2(Prefetch, void(const FacetURI&, const base::Time&));
   MOCK_METHOD2(CancelPrefetch, void(const FacetURI&, const base::Time&));
 
   void GetAffiliations(const FacetURI& facet_uri,
-                       bool cached_only,
+                       StrategyOnCacheMiss cache_miss_strategy,
                        const ResultCallback& result_callback) override {
     AffiliatedFacets affiliation =
-        OnGetAffiliationsCalled(facet_uri, cached_only);
+        OnGetAffiliationsCalled(facet_uri, cache_miss_strategy);
     result_callback.Run(affiliation, !affiliation.empty());
   }
 
   void ExpectCallToGetAffiliationsAndSucceedWithResult(
       const FacetURI& expected_facet_uri,
-      bool expected_cached_only,
+      StrategyOnCacheMiss expected_cache_miss_strategy,
       const AffiliatedFacets& affiliations_to_return) {
     EXPECT_CALL(*this, OnGetAffiliationsCalled(expected_facet_uri,
-                                               expected_cached_only))
+                                               expected_cache_miss_strategy))
         .WillOnce(testing::Return(affiliations_to_return));
   }
 
   void ExpectCallToGetAffiliationsAndEmulateFailure(
       const FacetURI& expected_facet_uri,
-      bool expected_cached_only) {
+      StrategyOnCacheMiss expected_cache_miss_strategy) {
     EXPECT_CALL(*this, OnGetAffiliationsCalled(expected_facet_uri,
-                                               expected_cached_only))
+                                               expected_cache_miss_strategy))
         .WillOnce(testing::Return(std::vector<FacetURI>()));
   }
 
@@ -282,7 +284,7 @@ class AffiliatedMatchHelperTest : public testing::Test {
 TEST_F(AffiliatedMatchHelperTest, GetAffiliatedAndroidRealmsYieldsResults) {
   mock_affiliation_service()->ExpectCallToGetAffiliationsAndSucceedWithResult(
       FacetURI::FromCanonicalSpec(kTestWebFacetURIBeta1),
-      true /* cached_only */, GetTestEquivalenceClassBeta());
+      StrategyOnCacheMiss::FAIL, GetTestEquivalenceClassBeta());
   autofill::PasswordForm web_observed_form(
       GetTestObservedWebForm(kTestWebRealmBeta1));
   EXPECT_THAT(GetAffiliatedAndroidRealms(web_observed_form),
@@ -294,7 +296,7 @@ TEST_F(AffiliatedMatchHelperTest,
        GetAffiliatedAndroidRealmsYieldsOnlyAndroidApps) {
   mock_affiliation_service()->ExpectCallToGetAffiliationsAndSucceedWithResult(
       FacetURI::FromCanonicalSpec(kTestWebFacetURIAlpha1),
-      true /* cached_only */, GetTestEquivalenceClassAlpha());
+      StrategyOnCacheMiss::FAIL, GetTestEquivalenceClassAlpha());
   autofill::PasswordForm web_observed_form(
       GetTestObservedWebForm(kTestWebRealmAlpha1));
   // This verifies that |kTestWebRealmAlpha2| is not returned.
@@ -341,7 +343,7 @@ TEST_F(AffiliatedMatchHelperTest,
        GetAffiliatedAndroidRealmsYieldsEmptyResultsWhenNoPrefetch) {
   mock_affiliation_service()->ExpectCallToGetAffiliationsAndEmulateFailure(
       FacetURI::FromCanonicalSpec(kTestWebFacetURIAlpha1),
-      true /* cached_only */);
+      StrategyOnCacheMiss::FAIL);
   autofill::PasswordForm web_observed_form(
       GetTestObservedWebForm(kTestWebRealmAlpha1));
   EXPECT_THAT(GetAffiliatedAndroidRealms(web_observed_form),

@@ -50,14 +50,14 @@ void AffiliationService::Initialize(
 
 void AffiliationService::GetAffiliations(
     const FacetURI& facet_uri,
-    bool cached_only,
+    StrategyOnCacheMiss cache_miss_strategy,
     const ResultCallback& result_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(backend_);
   backend_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&AffiliationBackend::GetAffiliations,
-                 base::Unretained(backend_), facet_uri, cached_only,
+                 base::Unretained(backend_), facet_uri, cache_miss_strategy,
                  result_callback, base::ThreadTaskRunnerHandle::Get()));
 }
 

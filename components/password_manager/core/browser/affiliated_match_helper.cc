@@ -63,7 +63,7 @@ void AffiliatedMatchHelper::GetAffiliatedAndroidRealms(
   if (observed_form.scheme == autofill::PasswordForm::SCHEME_HTML &&
       observed_form.ssl_valid && facet_uri.IsValidWebFacetURI()) {
     affiliation_service_->GetAffiliations(
-        facet_uri, true /* cached_only */,
+        facet_uri, AffiliationService::StrategyOnCacheMiss::FAIL,
         base::Bind(&AffiliatedMatchHelper::OnGetAffiliationsResults,
                    weak_ptr_factory_.GetWeakPtr(), facet_uri, result_callback));
   } else {

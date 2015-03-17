@@ -110,7 +110,7 @@ FacetManager::~FacetManager() {
 }
 
 void FacetManager::GetAffiliations(
-    bool cached_only,
+    StrategyOnCacheMiss cache_miss_strategy,
     const AffiliationService::ResultCallback& callback,
     const scoped_refptr<base::TaskRunner>& callback_task_runner) {
   RequestInfo request_info;
@@ -124,11 +124,11 @@ void FacetManager::GetAffiliations(
     }
     DCHECK_EQ(affiliation.last_update_time, last_update_time_) << facet_uri_;
     ServeRequestWithSuccess(request_info, affiliation.facets);
-  } else if (cached_only) {
-    ServeRequestWithFailure(request_info);
-  } else {
+  } else if (cache_miss_strategy == StrategyOnCacheMiss::FETCH_OVER_NETWORK) {
     pending_requests_.push_back(request_info);
     backend_->SignalNeedNetworkRequest();
+  } else {
+    ServeRequestWithFailure(request_info);
   }
 }
 

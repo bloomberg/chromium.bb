@@ -24,6 +24,8 @@ namespace password_manager {
 
 namespace {
 
+using StrategyOnCacheMiss = AffiliationService::StrategyOnCacheMiss;
+
 const char kTestFacetURIAlpha1[] = "https://one.alpha.example.com";
 const char kTestFacetURIAlpha2[] = "https://two.alpha.example.com";
 const char kTestFacetURIAlpha3[] = "https://three.alpha.example.com";
@@ -102,7 +104,7 @@ TEST_F(AffiliationServiceTest, GetAffiliations) {
   // The first request allows on-demand fetching, and should trigger a fetch.
   // Then, it should succeed after the fetch is complete.
   service()->GetAffiliations(FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1),
-                             false /* cached_only */,
+                             StrategyOnCacheMiss::FETCH_OVER_NETWORK,
                              mock_consumer()->GetResultCallback());
 
   background_task_runner()->RunUntilIdle();
@@ -115,7 +117,7 @@ TEST_F(AffiliationServiceTest, GetAffiliations) {
 
   // The second request should be (and can be) served from cache.
   service()->GetAffiliations(FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1),
-                             true /* cached_only */,
+                             StrategyOnCacheMiss::FAIL,
                              mock_consumer()->GetResultCallback());
 
   background_task_runner()->RunUntilIdle();
@@ -128,7 +130,7 @@ TEST_F(AffiliationServiceTest, GetAffiliations) {
   // The third request is also restricted to the cache, but cannot be served
   // from cache, thus it should fail.
   service()->GetAffiliations(FacetURI::FromCanonicalSpec(kTestFacetURIBeta1),
-                             true /* cached_only */,
+                             StrategyOnCacheMiss::FAIL,
                              mock_consumer()->GetResultCallback());
 
   background_task_runner()->RunUntilIdle();
@@ -141,7 +143,8 @@ TEST_F(AffiliationServiceTest, GetAffiliations) {
 
 TEST_F(AffiliationServiceTest, ShutdownWhileTasksArePosted) {
   service()->GetAffiliations(FacetURI::FromCanonicalSpec(kTestFacetURIAlpha1),
-                             false, mock_consumer()->GetResultCallback());
+                             StrategyOnCacheMiss::FETCH_OVER_NETWORK,
+                             mock_consumer()->GetResultCallback());
   EXPECT_TRUE(background_task_runner()->HasPendingTask());
 
   DestroyService();

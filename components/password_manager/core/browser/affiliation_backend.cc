@@ -53,14 +53,15 @@ void AffiliationBackend::Initialize(const base::FilePath& db_path) {
 
 void AffiliationBackend::GetAffiliations(
     const FacetURI& facet_uri,
-    bool cached_only,
+    StrategyOnCacheMiss cache_miss_strategy,
     const AffiliationService::ResultCallback& callback,
     const scoped_refptr<base::TaskRunner>& callback_task_runner) {
   DCHECK(thread_checker_ && thread_checker_->CalledOnValidThread());
 
   FacetManager* facet_manager = GetOrCreateFacetManager(facet_uri);
   DCHECK(facet_manager);
-  facet_manager->GetAffiliations(cached_only, callback, callback_task_runner);
+  facet_manager->GetAffiliations(cache_miss_strategy, callback,
+                                 callback_task_runner);
 
   if (facet_manager->CanBeDiscarded())
     facet_managers_.erase(facet_uri);

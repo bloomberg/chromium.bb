@@ -50,6 +50,8 @@ class AffiliationBackend : public FacetManagerHost,
                            public AffiliationFetcherDelegate,
                            public AffiliationFetchThrottlerDelegate {
  public:
+  using StrategyOnCacheMiss = AffiliationService::StrategyOnCacheMiss;
+
   // Constructs an instance that will use |request_context_getter| for all
   // network requests, use |task_runner| for asynchronous tasks, and will rely
   // on |time_source| and |time_tick_source| to tell the current time/ticks.
@@ -69,7 +71,7 @@ class AffiliationBackend : public FacetManagerHost,
   // are not documented here again. See affiliation_service.h for details:
   void GetAffiliations(
       const FacetURI& facet_uri,
-      bool cached_only,
+      StrategyOnCacheMiss cache_miss_strategy,
       const AffiliationService::ResultCallback& callback,
       const scoped_refptr<base::TaskRunner>& callback_task_runner);
   void Prefetch(const FacetURI& facet_uri, const base::Time& keep_fresh_until);
