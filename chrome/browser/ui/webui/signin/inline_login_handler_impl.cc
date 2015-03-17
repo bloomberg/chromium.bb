@@ -694,8 +694,7 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
 
   AboutSigninInternals* about_signin_internals =
       AboutSigninInternalsFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-  about_signin_internals->OnAuthenticationResultReceived(
-      "GAIA Auth Successful");
+  about_signin_internals->OnAuthenticationResultReceived("Successful");
 
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartitionForSite(

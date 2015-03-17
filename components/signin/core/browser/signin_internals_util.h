@@ -27,7 +27,9 @@ enum {
 };
 
 enum UntimedSigninStatusField {
-  USERNAME = UNTIMED_FIELDS_BEGIN,
+  ACCOUNT_ID = UNTIMED_FIELDS_BEGIN,
+  GAIA_ID,
+  USERNAME,
   UNTIMED_FIELDS_END
 };
 
@@ -37,12 +39,10 @@ enum {
 };
 
 enum TimedSigninStatusField {
-  SIGNIN_TYPE = TIMED_FIELDS_BEGIN,
-  AUTHENTICATION_RESULT_RECEIVED,
+  AUTHENTICATION_RESULT_RECEIVED = TIMED_FIELDS_BEGIN,
   REFRESH_TOKEN_RECEIVED,
-  GET_USER_INFO_STATUS,
-  UBER_TOKEN_STATUS,
-  MERGE_SESSION_STATUS,
+  SIGNIN_STARTED,
+  SIGNIN_COMPLETED,
   TIMED_FIELDS_END
 };
 
@@ -65,8 +65,6 @@ std::string SigninStatusFieldToString(TimedSigninStatusField field);
 class SigninDiagnosticsObserver {
  public:
   // Credentials and signin related changes.
-  virtual void NotifySigninValueChanged(const UntimedSigninStatusField& field,
-                                        const std::string& value) {}
   virtual void NotifySigninValueChanged(const TimedSigninStatusField& field,
                                         const std::string& value) {}
   // OAuth tokens related changes.

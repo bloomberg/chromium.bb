@@ -131,10 +131,7 @@ class SigninManagerBase : public KeyedService {
   // Makes sure list is empty on destruction.
   ObserverList<Observer, true> observer_list_;
 
-  // Helper methods to notify all registered diagnostics observers with.
-  void NotifyDiagnosticsObservers(
-      const signin_internals_util::UntimedSigninStatusField& field,
-      const std::string& value);
+  // Helper method to notify all registered diagnostics observers with.
   void NotifyDiagnosticsObservers(
       const signin_internals_util::TimedSigninStatusField& field,
       const std::string& value);

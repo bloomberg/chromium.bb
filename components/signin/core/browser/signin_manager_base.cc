@@ -94,7 +94,6 @@ void SigninManagerBase::SetAuthenticatedUsername(const std::string& username) {
                                                      username,
                                                      username);
   client_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, username);
-  NotifyDiagnosticsObservers(USERNAME, username);
 
   // Go ahead and update the last signed in username here as well. Once a
   // user is signed in the two preferences should match. Doing it here as
@@ -134,14 +133,6 @@ void SigninManagerBase::AddSigninDiagnosticsObserver(
 void SigninManagerBase::RemoveSigninDiagnosticsObserver(
     SigninDiagnosticsObserver* observer) {
   signin_diagnostics_observers_.RemoveObserver(observer);
-}
-
-void SigninManagerBase::NotifyDiagnosticsObservers(
-    const UntimedSigninStatusField& field,
-    const std::string& value) {
-  FOR_EACH_OBSERVER(SigninDiagnosticsObserver,
-                    signin_diagnostics_observers_,
-                    NotifySigninValueChanged(field, value));
 }
 
 void SigninManagerBase::NotifyDiagnosticsObservers(

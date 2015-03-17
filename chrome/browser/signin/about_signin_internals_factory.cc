@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -23,9 +24,10 @@ AboutSigninInternalsFactory::AboutSigninInternalsFactory()
     : BrowserContextKeyedServiceFactory(
         "AboutSigninInternals",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(SigninManagerFactory::GetInstance());
-  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(SigninManagerFactory::GetInstance());
 }
 
 AboutSigninInternalsFactory::~AboutSigninInternalsFactory() {}
@@ -45,6 +47,10 @@ AboutSigninInternalsFactory* AboutSigninInternalsFactory::GetInstance() {
 void AboutSigninInternalsFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
   // SigninManager information for about:signin-internals.
+
+  // TODO(rogerta): leaving untimed fields here for now because legacy
+  // profiles still have these prefs.  In three or four version from M43
+  // we can probably remove them.
   for (int i = UNTIMED_FIELDS_BEGIN; i < UNTIMED_FIELDS_END; ++i) {
     const std::string pref_path = SigninStatusFieldToString(
         static_cast<UntimedSigninStatusField>(i));
@@ -53,6 +59,7 @@ void AboutSigninInternalsFactory::RegisterProfilePrefs(
         std::string(),
         user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   }
+
   for (int i = TIMED_FIELDS_BEGIN; i < TIMED_FIELDS_END; ++i) {
     const std::string value = SigninStatusFieldToString(
         static_cast<TimedSigninStatusField>(i)) + ".value";
@@ -74,6 +81,7 @@ KeyedService* AboutSigninInternalsFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   AboutSigninInternals* service = new AboutSigninInternals(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      AccountTrackerServiceFactory::GetForProfile(profile),
       SigninManagerFactory::GetForProfile(profile));
   service->Initialize(ChromeSigninClientFactory::GetForProfile(profile));
   return service;

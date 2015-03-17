@@ -21,6 +21,8 @@ const char kTokenPrefPrefix[] = "google.services.signin.tokens.";
 #define ENUM_CASE(x) case x: return (std::string(kSigninPrefPrefix) + #x)
 std::string SigninStatusFieldToString(UntimedSigninStatusField field) {
   switch (field) {
+    ENUM_CASE(ACCOUNT_ID);
+    ENUM_CASE(GAIA_ID);
     ENUM_CASE(USERNAME);
     case UNTIMED_FIELDS_END:
       NOTREACHED();
@@ -33,12 +35,10 @@ std::string SigninStatusFieldToString(UntimedSigninStatusField field) {
 
 std::string SigninStatusFieldToString(TimedSigninStatusField field) {
   switch (field) {
-    ENUM_CASE(SIGNIN_TYPE);
     ENUM_CASE(AUTHENTICATION_RESULT_RECEIVED);
     ENUM_CASE(REFRESH_TOKEN_RECEIVED);
-    ENUM_CASE(GET_USER_INFO_STATUS);
-    ENUM_CASE(UBER_TOKEN_STATUS);
-    ENUM_CASE(MERGE_SESSION_STATUS);
+    ENUM_CASE(SIGNIN_STARTED);
+    ENUM_CASE(SIGNIN_COMPLETED);
     case TIMED_FIELDS_END:
       NOTREACHED();
       return std::string();

@@ -105,7 +105,7 @@ std::string SigninManager::SigninTypeToString(SigninManager::SigninType type) {
     case SIGNIN_TYPE_NONE:
       return "No Signin";
     case SIGNIN_TYPE_WITH_REFRESH_TOKEN:
-      return "Signin with refresh token";
+      return "With refresh token";
   }
 
   NOTREACHED();
@@ -137,7 +137,7 @@ bool SigninManager::PrepareForSignin(SigninType type,
   password_.assign(password);
   signin_manager_signed_in_ = false;
   user_info_fetched_by_account_tracker_ = false;
-  NotifyDiagnosticsObservers(SIGNIN_TYPE, SigninTypeToString(type));
+  NotifyDiagnosticsObservers(SIGNIN_STARTED, SigninTypeToString(type));
   return true;
 }
 
@@ -155,8 +155,6 @@ void SigninManager::StartSignInWithRefreshToken(
   // Store our callback and token.
   temp_refresh_token_ = refresh_token;
   possibly_invalid_username_ = username;
-
-  NotifyDiagnosticsObservers(GET_USER_INFO_STATUS, "Successful");
 
   if (!callback.is_null() && !temp_refresh_token_.empty()) {
     callback.Run(temp_refresh_token_);
@@ -228,9 +226,6 @@ void SigninManager::SignOut(
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
   client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
   client_->OnSignedOut();
-
-  // Erase (now) stale information from AboutSigninInternals.
-  NotifyDiagnosticsObservers(USERNAME, "");
 
   // Determine the duration the user was logged in and log that to UMA.
   if (!signin_time.is_null()) {
@@ -389,6 +384,8 @@ void SigninManager::MergeSigninCredentialIntoCookieJar() {
 }
 
 void SigninManager::CompletePendingSignin() {
+  NotifyDiagnosticsObservers(SIGNIN_COMPLETED, "Successful");
+
   DCHECK(!possibly_invalid_username_.empty());
   OnSignedIn(possibly_invalid_username_);
 
