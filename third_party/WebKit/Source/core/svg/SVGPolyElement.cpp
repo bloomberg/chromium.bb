@@ -40,11 +40,6 @@ DEFINE_TRACE(SVGPolyElement)
     SVGGeometryElement::trace(visitor);
 }
 
-void SVGPolyElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (attrName != SVGNames::pointsAttr) {

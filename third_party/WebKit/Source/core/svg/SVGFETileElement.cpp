@@ -43,11 +43,6 @@ DEFINE_TRACE(SVGFETileElement)
 
 DEFINE_NODE_FACTORY(SVGFETileElement)
 
-void SVGFETileElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGFETileElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (attrName == SVGNames::inAttr) {

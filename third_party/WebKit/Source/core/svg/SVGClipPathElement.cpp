@@ -42,11 +42,6 @@ DEFINE_TRACE(SVGClipPathElement)
 
 DEFINE_NODE_FACTORY(SVGClipPathElement)
 
-void SVGClipPathElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGClipPathElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (attrName != SVGNames::clipPathUnitsAttr) {

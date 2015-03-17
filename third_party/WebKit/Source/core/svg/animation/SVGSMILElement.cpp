@@ -551,7 +551,7 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicStrin
     } else if (name == SVGNames::onrepeatAttr) {
         setAttributeEventListener(EventTypeNames::repeatEvent, createAttributeEventListener(this, name, value, eventParameterName()));
     } else {
-        SVGElement::parseAttributeNew(name, value);
+        SVGElement::parseAttribute(name, value);
     }
 }
 

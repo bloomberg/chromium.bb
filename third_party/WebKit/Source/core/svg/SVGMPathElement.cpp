@@ -97,11 +97,6 @@ void SVGMPathElement::removedFrom(ContainerNode* rootParent)
         clearResourceReferences();
 }
 
-void SVGMPathElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGMPathElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (SVGURIReference::isKnownAttribute(attrName)) {

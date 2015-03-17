@@ -83,11 +83,6 @@ String SVGAElement::title() const
     return SVGElement::title();
 }
 
-void SVGAElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGAElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     // Unlike other SVG*Element classes, SVGAElement only listens to SVGURIReference changes

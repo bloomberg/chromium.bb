@@ -68,7 +68,6 @@ private:
     virtual void removedFrom(ContainerNode*) override;
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
     virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;

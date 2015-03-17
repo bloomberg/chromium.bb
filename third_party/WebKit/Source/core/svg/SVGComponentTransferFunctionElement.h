@@ -51,7 +51,6 @@ protected:
     SVGComponentTransferFunctionElement(const QualifiedName&, Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override final;
     virtual void svgAttributeChanged(const QualifiedName&) override final;
 
     virtual bool layoutObjectIsNeeded(const LayoutStyle&) override final { return false; }

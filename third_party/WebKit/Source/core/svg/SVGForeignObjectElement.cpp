@@ -67,11 +67,6 @@ bool SVGForeignObjectElement::isSupportedAttribute(const QualifiedName& attrName
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-void SVGForeignObjectElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 bool SVGForeignObjectElement::isPresentationAttribute(const QualifiedName& name) const
 {
     if (name == SVGNames::xAttr || name == SVGNames::yAttr

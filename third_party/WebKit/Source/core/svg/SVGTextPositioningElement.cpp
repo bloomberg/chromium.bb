@@ -67,11 +67,6 @@ bool SVGTextPositioningElement::isSupportedAttribute(const QualifiedName& attrNa
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-void SVGTextPositioningElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {

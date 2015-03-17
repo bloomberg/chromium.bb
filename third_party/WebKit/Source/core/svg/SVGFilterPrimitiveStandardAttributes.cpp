@@ -76,11 +76,6 @@ bool SVGFilterPrimitiveStandardAttributes::isSupportedAttribute(const QualifiedN
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-void SVGFilterPrimitiveStandardAttributes::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 bool SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(FilterEffect*, const QualifiedName&)
 {
     // When all filters support this method, it will be changed to a pure virtual method.

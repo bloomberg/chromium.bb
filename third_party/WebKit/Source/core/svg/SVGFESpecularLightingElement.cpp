@@ -70,11 +70,6 @@ bool SVGFESpecularLightingElement::isSupportedAttribute(const QualifiedName& att
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-void SVGFESpecularLightingElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 bool SVGFESpecularLightingElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FESpecularLighting* specularLighting = static_cast<FESpecularLighting*>(effect);

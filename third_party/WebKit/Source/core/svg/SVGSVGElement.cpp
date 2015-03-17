@@ -244,7 +244,7 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
         document().setWindowAttributeEventListener(EventTypeNames::error, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
     } else if (SVGZoomAndPan::parseAttribute(name, value)) {
     } else {
-        parseAttributeNew(name, value);
+        SVGElement::parseAttribute(name, value);
     }
 }
 

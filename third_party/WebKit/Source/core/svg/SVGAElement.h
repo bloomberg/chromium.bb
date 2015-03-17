@@ -43,7 +43,6 @@ private:
 
     virtual String title() const override;
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
     virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;

@@ -47,7 +47,7 @@ void SVGViewElement::parseAttribute(const QualifiedName& name, const AtomicStrin
     if (SVGZoomAndPan::parseAttribute(name, value))
         return;
 
-    parseAttributeNew(name, value);
+    SVGElement::parseAttribute(name, value);
 }
 
 } // namespace blink

@@ -40,11 +40,6 @@ DEFINE_TRACE(SVGStopElement)
 
 DEFINE_NODE_FACTORY(SVGStopElement)
 
-void SVGStopElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGStopElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (attrName == SVGNames::offsetAttr) {

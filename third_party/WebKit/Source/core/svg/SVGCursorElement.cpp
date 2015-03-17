@@ -62,11 +62,6 @@ bool SVGCursorElement::isSupportedAttribute(const QualifiedName& attrName)
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-void SVGCursorElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGCursorElement::addClient(SVGElement* element)
 {
     m_clients.add(element);

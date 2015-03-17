@@ -47,7 +47,6 @@ private:
 
     virtual bool needsPendingResourceHandling() const override { return false; }
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
     virtual void childrenChanged(const ChildrenChange&) override;
 

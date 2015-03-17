@@ -69,11 +69,6 @@ bool SVGLinearGradientElement::isSupportedAttribute(const QualifiedName& attrNam
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-void SVGLinearGradientElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGLinearGradientElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {

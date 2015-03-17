@@ -41,11 +41,6 @@ DEFINE_TRACE(SVGFEMergeNodeElement)
 
 DEFINE_NODE_FACTORY(SVGFEMergeNodeElement)
 
-void SVGFEMergeNodeElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGFEMergeNodeElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (attrName == SVGNames::inAttr) {

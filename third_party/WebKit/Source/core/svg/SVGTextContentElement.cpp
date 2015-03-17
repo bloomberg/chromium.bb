@@ -235,11 +235,6 @@ void SVGTextContentElement::collectStyleForPresentationAttribute(const Qualified
     }
 }
 
-void SVGTextContentElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGTextContentElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {

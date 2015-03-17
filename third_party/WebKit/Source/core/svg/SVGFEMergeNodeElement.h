@@ -39,7 +39,6 @@ public:
 private:
     explicit SVGFEMergeNodeElement(Document&);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
     virtual bool layoutObjectIsNeeded(const LayoutStyle&) override { return false; }

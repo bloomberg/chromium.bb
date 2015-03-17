@@ -58,11 +58,6 @@ bool SVGCircleElement::isSupportedAttribute(const QualifiedName& attrName)
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-void SVGCircleElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 bool SVGCircleElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
     if (attrName == SVGNames::cxAttr || attrName == SVGNames::cyAttr

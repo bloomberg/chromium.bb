@@ -66,11 +66,6 @@ bool SVGFEDiffuseLightingElement::isSupportedAttribute(const QualifiedName& attr
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-void SVGFEDiffuseLightingElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 bool SVGFEDiffuseLightingElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FEDiffuseLighting* diffuseLighting = static_cast<FEDiffuseLighting*>(effect);

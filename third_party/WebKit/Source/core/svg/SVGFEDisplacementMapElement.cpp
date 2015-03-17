@@ -79,11 +79,6 @@ bool SVGFEDisplacementMapElement::isSupportedAttribute(const QualifiedName& attr
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-void SVGFEDisplacementMapElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 bool SVGFEDisplacementMapElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FEDisplacementMap* displacementMap = static_cast<FEDisplacementMap*>(effect);

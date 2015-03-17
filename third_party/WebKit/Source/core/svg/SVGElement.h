@@ -199,11 +199,6 @@ protected:
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
 
-    // FIXME: |parseAttributeNew| is a new implementation of parseAttribute
-    // which maps attribute using |m_attributeToPropertyMap|.
-    // This is to replace |parseAttribute()| after all derived class switch to call this.
-    void parseAttributeNew(const QualifiedName&, const AtomicString&);
-
     virtual void attributeChanged(const QualifiedName&, const AtomicString&, AttributeModificationReason = ModifiedDirectly) override;
 
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;

@@ -50,7 +50,7 @@ void SVGScriptElement::parseAttribute(const QualifiedName& name, const AtomicStr
     if (name == HTMLNames::onerrorAttr)
         setAttributeEventListener(EventTypeNames::error, createAttributeEventListener(this, name, value, eventParameterName()));
     else
-        parseAttributeNew(name, value);
+        SVGElement::parseAttribute(name, value);
 }
 
 void SVGScriptElement::svgAttributeChanged(const QualifiedName& attrName)

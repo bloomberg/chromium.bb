@@ -110,11 +110,6 @@ void SVGMaskElement::collectStyleForPresentationAttribute(const QualifiedName& n
         SVGElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
-void SVGMaskElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGMaskElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {

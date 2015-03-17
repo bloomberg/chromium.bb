@@ -70,11 +70,6 @@ bool SVGRectElement::isSupportedAttribute(const QualifiedName& attrName)
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-void SVGRectElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 bool SVGRectElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
     if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr

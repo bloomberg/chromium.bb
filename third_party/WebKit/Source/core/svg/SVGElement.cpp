@@ -578,6 +578,15 @@ bool SVGElement::inUseShadowTree() const
 
 void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
+    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
+    if (property) {
+        SVGParsingError parseError = NoError;
+        property->setBaseValueAsString(value, parseError);
+        reportAttributeParsingError(parseError, name, value);
+
+        return;
+    }
+
     if (name == HTMLNames::classAttr) {
         // SVG animation has currently requires special storage of values so we set
         // the className here. svgAttributeChanged actually causes the resulting
@@ -597,20 +606,6 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
         else
             Element::parseAttribute(name, value);
     }
-}
-
-void SVGElement::parseAttributeNew(const QualifiedName& name, const AtomicString& value)
-{
-    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
-    if (property) {
-        SVGParsingError parseError = NoError;
-        property->setBaseValueAsString(value, parseError);
-        reportAttributeParsingError(parseError, name, value);
-
-        return;
-    }
-
-    SVGElement::parseAttribute(name, value);
 }
 
 typedef HashMap<QualifiedName, AnimatedPropertyType> AttributeToPropertyTypeMap;

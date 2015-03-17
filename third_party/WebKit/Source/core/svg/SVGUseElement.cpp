@@ -103,11 +103,6 @@ bool SVGUseElement::isSupportedAttribute(const QualifiedName& attrName)
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-void SVGUseElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 #if ENABLE(ASSERT)
 static inline bool isWellFormedDocument(Document* document)
 {

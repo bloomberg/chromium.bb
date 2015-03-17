@@ -41,11 +41,6 @@ DEFINE_TRACE(SVGSymbolElement)
 
 DEFINE_NODE_FACTORY(SVGSymbolElement)
 
-void SVGSymbolElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGSymbolElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (SVGFitToViewBox::isKnownAttribute(attrName))

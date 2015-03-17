@@ -121,11 +121,6 @@ void SVGImageElement::collectStyleForPresentationAttribute(const QualifiedName& 
         SVGGraphicsElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
-void SVGImageElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {

@@ -72,11 +72,6 @@ bool SVGFEColorMatrixElement::isSupportedAttribute(const QualifiedName& attrName
     return supportedAttributes.contains<SVGAttributeHashTranslator>(attrName);
 }
 
-void SVGFEColorMatrixElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    parseAttributeNew(name, value);
-}
-
 bool SVGFEColorMatrixElement::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
     FEColorMatrix* colorMatrix = static_cast<FEColorMatrix*>(effect);

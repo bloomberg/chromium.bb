@@ -39,7 +39,6 @@ public:
 private:
     explicit SVGSymbolElement(Document&);
 
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
     virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
