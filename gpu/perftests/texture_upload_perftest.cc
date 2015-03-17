@@ -44,9 +44,12 @@ SHADER(
     v_texCoord = a_texCoord;
   }
 );
-const char kFragmentShader[] =
+const char kShaderDefaultFloatPrecision[] =
 SHADER(
   precision mediump float;
+);
+const char kFragmentShader[] =
+SHADER(
   uniform sampler2D a_texture;
   varying vec2 v_texCoord;
   void main() {
@@ -187,7 +190,12 @@ class TextureUploadPerfTest : public testing::Test {
     // Prepare a simple program and a vertex buffer that will be
     // used to draw a quad on the offscreen surface.
     vertex_shader_ = LoadShader(GL_VERTEX_SHADER, kVertexShader);
-    fragment_shader_ = LoadShader(GL_FRAGMENT_SHADER, kFragmentShader);
+
+    bool is_gles = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+    fragment_shader_ = LoadShader(
+        GL_FRAGMENT_SHADER,
+        base::StringPrintf("%s%s", is_gles ? kShaderDefaultFloatPrecision : "",
+                           kFragmentShader).c_str());
     program_object_ = glCreateProgram();
     CHECK_NE(0u, program_object_);
 
