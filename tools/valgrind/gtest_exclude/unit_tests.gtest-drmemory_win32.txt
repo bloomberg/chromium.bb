@@ -79,3 +79,6 @@ TranslateManagerRenderViewHostTest.*
 SafeBrowsingModuleVerifierWinTest.VerifyModuleExportModified
 SafeBrowsingModuleVerifierWinTest.VerifyModuleModified
 SafeBrowsingModuleVerifierWinTest.VerifyModuleUnmodified
+
+# http://crbug.com/467004
+SigninErrorNotifierTest.NoErrorAuthStatusProviders
