@@ -23,7 +23,6 @@ sysroot_path = None
 binary_name_filter = None
 fix_filename_patterns = None
 logfile = sys.stdin
-allow_system_symbolizer = True
 
 # FIXME: merge the code that calls fix_filename().
 def fix_filename(file_name):
@@ -393,8 +392,6 @@ class SymbolizationLoop(object):
           [BreakpadSymbolizerFactory(binary), self.llvm_symbolizers[binary]])
     result = symbolizers[binary].symbolize(addr, binary, offset)
     if result is None:
-      if not allow_system_symbolizer:
-        raise Exception('Failed to launch or use llvm-symbolizer.')
       # Initialize system symbolizer only if other symbolizers failed.
       symbolizers[binary].append_symbolizer(
           SystemSymbolizerFactory(self.system, addr, binary))

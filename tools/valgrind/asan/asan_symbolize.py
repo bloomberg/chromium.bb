@@ -246,9 +246,6 @@ def main():
 
   disable_buffering()
   set_symbolizer_path()
-  # Disallow fallback to addr2line/atos if llvm-symbolizer is not present. Those
-  # are slow and we don't want to use them ever.
-  asan_symbolize.allow_system_symbolizer = False
   asan_symbolize.demangle = True
   asan_symbolize.fix_filename_patterns = args.strip_path_prefix
   # Most source paths for Chromium binaries start with
