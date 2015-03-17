@@ -35,6 +35,8 @@
 #include "content/child/navigator_connect/navigator_connect_provider.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/notifications/notification_manager.h"
+#include "content/child/permissions/permission_manager.h"
+#include "content/child/permissions/permission_manager_thread_proxy.h"
 #include "content/child/push_messaging/push_dispatcher.h"
 #include "content/child/push_messaging/push_provider.h"
 #include "content/child/thread_safe_sender.h"
@@ -442,6 +444,8 @@ void BlinkPlatformImpl::InternalInit() {
     notification_dispatcher_ =
         ChildThreadImpl::current()->notification_dispatcher();
     push_dispatcher_ = ChildThreadImpl::current()->push_dispatcher();
+    permission_client_.reset(new PermissionManager(
+        ChildThreadImpl::current()->service_registry()));
   }
 
   if (main_thread_task_runner_.get()) {
@@ -1023,13 +1027,10 @@ blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
     blink::WebGestureDevice device_source,
     const blink::WebFloatPoint& velocity,
     const blink::WebSize& cumulative_scroll) {
-  bool is_main_thread =
-      main_thread_task_runner_.get() &&
-      main_thread_task_runner_->BelongsToCurrentThread();
   return WebGestureCurveImpl::CreateFromDefaultPlatformCurve(
              gfx::Vector2dF(velocity.x, velocity.y),
              gfx::Vector2dF(cumulative_scroll.width, cumulative_scroll.height),
-             is_main_thread).release();
+             IsMainThread()).release();
 }
 
 void BlinkPlatformImpl::didStartWorkerRunLoop() {
@@ -1080,6 +1081,17 @@ BlinkPlatformImpl::navigatorConnectProvider() {
 
   return NavigatorConnectProvider::ThreadSpecificInstance(
       thread_safe_sender_.get(), main_thread_task_runner_);
+}
+
+blink::WebPermissionClient* BlinkPlatformImpl::permissionClient() {
+  if (!permission_client_.get())
+    return nullptr;
+
+  if (IsMainThread())
+    return permission_client_.get();
+
+  return PermissionManagerThreadProxy::GetThreadInstance(
+      main_thread_task_runner_.get(), permission_client_.get());
 }
 
 WebThemeEngine* BlinkPlatformImpl::themeEngine() {
@@ -1232,6 +1244,11 @@ BlinkPlatformImpl::MainTaskRunnerForCurrentThread() {
   } else {
     return base::MessageLoopProxy::current();
   }
+}
+
+bool BlinkPlatformImpl::IsMainThread() const {
+  return main_thread_task_runner_.get() &&
+         main_thread_task_runner_->BelongsToCurrentThread();
 }
 
 WebString BlinkPlatformImpl::domCodeStringFromEnum(int dom_code) {

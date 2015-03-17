@@ -8,8 +8,9 @@ import "content/public/common/permission_status.mojom";
 
 enum PermissionName {
   GEOLOCATION,
-  MIDI_SYSEX,
   NOTIFICATIONS,
+  PUSH_NOTIFICATIONS,
+  MIDI_SYSEX,
   PROTECTED_MEDIA_IDENTIFIER,
 };
 

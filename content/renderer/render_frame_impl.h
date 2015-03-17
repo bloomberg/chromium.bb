@@ -84,6 +84,7 @@ class MidiDispatcher;
 class NotificationPermissionDispatcher;
 class PageState;
 class PepperPluginInstanceImpl;
+class PermissionManager;
 class PresentationDispatcher;
 class PushMessagingDispatcher;
 class RendererAccessibility;
@@ -518,9 +519,10 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didChangeDefaultPresentation(blink::WebLocalFrame*);
   virtual bool enterFullscreen();
   virtual bool exitFullscreen();
-  void suddenTerminationDisablerChanged(
+  virtual void suddenTerminationDisablerChanged(
       bool present,
-      blink::WebFrameClient::SuddenTerminationDisablerType type) override;
+      blink::WebFrameClient::SuddenTerminationDisablerType type);
+  virtual blink::WebPermissionClient* permissionClient();
 
   // WebMediaPlayerDelegate implementation:
   void DidPlay(blink::WebMediaPlayer* player) override;
@@ -877,6 +879,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // Only valid if |accessibility_mode_| is anything other than
   // AccessibilityModeOff.
   RendererAccessibility* renderer_accessibility_;
+
+  scoped_ptr<PermissionManager> permission_client_;
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   // The external popup for the currently showing select popup.

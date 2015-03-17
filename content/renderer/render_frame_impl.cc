@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "cc/base/switches.h"
 #include "content/child/appcache/appcache_dispatcher.h"
+#include "content/child/permissions/permission_manager.h"
 #include "content/child/plugin_messages.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/request_extra_data.h"
@@ -3655,6 +3656,13 @@ void RenderFrameImpl::suddenTerminationDisablerChanged(
     default:
       NOTREACHED();
   }
+}
+
+blink::WebPermissionClient* RenderFrameImpl::permissionClient() {
+  if (!permission_client_)
+    permission_client_.reset(new PermissionManager(GetServiceRegistry()));
+
+  return permission_client_.get();
 }
 
 void RenderFrameImpl::DidPlay(blink::WebMediaPlayer* player) {

@@ -34,6 +34,7 @@ class MessageLoop;
 namespace content {
 class FlingCurveConfiguration;
 class NotificationDispatcher;
+class PermissionManager;
 class PushDispatcher;
 class ThreadSafeSender;
 class WebBluetoothImpl;
@@ -157,6 +158,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual blink::WebNotificationManager* notificationManager();
   virtual blink::WebPushProvider* pushProvider();
   virtual blink::WebNavigatorConnectProvider* navigatorConnectProvider();
+  virtual blink::WebPermissionClient* permissionClient();
 
   void SuspendSharedTimer();
   void ResumeSharedTimer();
@@ -176,6 +178,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
   void InternalInit();
   void UpdateWebThreadTLS(blink::WebThread* thread);
 
+  bool IsMainThread() const;
+
   scoped_refptr<base::SingleThreadTaskRunner> MainTaskRunnerForCurrentThread();
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
@@ -194,6 +198,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
   scoped_refptr<PushDispatcher> push_dispatcher_;
+  scoped_ptr<PermissionManager> permission_client_;
 };
 
 }  // namespace content
