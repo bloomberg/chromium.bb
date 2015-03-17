@@ -264,50 +264,6 @@ void OnMicroBenchmarkCompleted(
   }
 }
 
-void OnSnapshotCompleted(CallbackAndContext* callback_and_context,
-                         const gfx::Size& size,
-                         const std::vector<unsigned char>& png) {
-  v8::Isolate* isolate = callback_and_context->isolate();
-  v8::HandleScope scope(isolate);
-  v8::Handle<v8::Context> context = callback_and_context->GetContext();
-  v8::Context::Scope context_scope(context);
-  WebLocalFrame* frame = WebLocalFrame::frameForContext(context);
-  if (frame) {
-    v8::Handle<v8::Value> result;
-
-    if (!size.IsEmpty()) {
-      v8::Handle<v8::Object> result_object;
-      result_object = v8::Object::New(isolate);
-
-      result_object->Set(v8::String::NewFromUtf8(isolate, "width"),
-                         v8::Number::New(isolate, size.width()));
-      result_object->Set(v8::String::NewFromUtf8(isolate, "height"),
-                         v8::Number::New(isolate, size.height()));
-
-      std::string base64_png;
-      base::Base64Encode(
-          base::StringPiece(reinterpret_cast<const char*>(&*png.begin()),
-                            png.size()),
-          &base64_png);
-
-      result_object->Set(v8::String::NewFromUtf8(isolate, "data"),
-                         v8::String::NewFromUtf8(isolate,
-                                                 base64_png.c_str(),
-                                                 v8::String::kNormalString,
-                                                 base64_png.size()));
-
-      result = result_object;
-    } else {
-      result = v8::Null(isolate);
-    }
-
-    v8::Handle<v8::Value> argv[] = {result};
-
-    frame->callFunctionEvenIfScriptDisabled(
-        callback_and_context->GetCallback(), v8::Object::New(isolate), 1, argv);
-  }
-}
-
 void OnSyntheticGestureCompleted(CallbackAndContext* callback_and_context) {
   v8::Isolate* isolate = callback_and_context->isolate();
   v8::HandleScope scope(isolate);
@@ -488,8 +444,6 @@ gin::ObjectTemplateBuilder GpuBenchmarking::GetObjectTemplateBuilder(
       .SetValue("newPinchInterface", true)
       .SetMethod("pinchBy", &GpuBenchmarking::PinchBy)
       .SetMethod("tap", &GpuBenchmarking::Tap)
-      .SetMethod("beginWindowSnapshotPNG",
-                 &GpuBenchmarking::BeginWindowSnapshotPNG)
       .SetMethod("clearImageCache", &GpuBenchmarking::ClearImageCache)
       .SetMethod("runMicroBenchmark", &GpuBenchmarking::RunMicroBenchmark)
       .SetMethod("sendMessageToMicroBenchmark",
@@ -827,22 +781,6 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
       base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
 
   return true;
-}
-
-void GpuBenchmarking::BeginWindowSnapshotPNG(
-    v8::Isolate* isolate,
-    v8::Handle<v8::Function> callback) {
-  GpuBenchmarkingContext context;
-  if (!context.Init(false))
-    return;
-
-  scoped_refptr<CallbackAndContext> callback_and_context =
-      new CallbackAndContext(isolate,
-                             callback,
-                             context.web_frame()->mainWorldScriptContext());
-
-  context.render_view_impl()->GetWindowSnapshot(
-      base::Bind(&OnSnapshotCompleted, callback_and_context));
 }
 
 void GpuBenchmarking::ClearImageCache() {

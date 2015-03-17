@@ -259,8 +259,7 @@ void AddLatencyInfoComponentIds(LatencyInfo* latency,
   auto lc = latency->latency_components.begin();
   while (lc != latency->latency_components.end()) {
     ui::LatencyComponentType component_type = lc->first.first;
-    if (component_type == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT ||
-        component_type == ui::WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
+    if (component_type == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT) {
       // Generate a new component entry with the correct component ID
       auto key = std::make_pair(component_type, latency_component_id);
       new_components[key] = lc->second;

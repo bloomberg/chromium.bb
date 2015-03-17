@@ -50,8 +50,6 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   bool ScrollBounce(gin::Arguments* args);
   bool PinchBy(gin::Arguments* args);
   bool Tap(gin::Arguments* args);
-  void BeginWindowSnapshotPNG(v8::Isolate* isolate,
-                              v8::Handle<v8::Function> callback);
   void ClearImageCache();
   int RunMicroBenchmark(gin::Arguments* args);
   bool SendMessageToMicroBenchmark(int id, v8::Handle<v8::Object> message);

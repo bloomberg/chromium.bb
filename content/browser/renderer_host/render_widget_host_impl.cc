@@ -2000,12 +2000,6 @@ void RenderWidgetHostImpl::DetachDelegate() {
 
 void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
   ui::LatencyInfo::LatencyComponent window_snapshot_component;
-  if (latency_info.FindLatency(ui::WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                               GetLatencyComponentId(),
-                               &window_snapshot_component)) {
-    WindowOldSnapshotReachedScreen(
-        static_cast<int>(window_snapshot_component.sequence_number));
-  }
   if (latency_info.FindLatency(ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT,
                                GetLatencyComponentId(),
                                &window_snapshot_component)) {
@@ -2032,59 +2026,6 @@ void RenderWidgetHostImpl::FrameSwapped(const ui::LatencyInfo& latency_info) {
 
 void RenderWidgetHostImpl::DidReceiveRendererFrame() {
   view_->DidReceiveRendererFrame();
-}
-
-void RenderWidgetHostImpl::WindowSnapshotAsyncCallback(
-    int routing_id,
-    int snapshot_id,
-    gfx::Size snapshot_size,
-    scoped_refptr<base::RefCountedBytes> png_data) {
-  if (!png_data.get()) {
-    std::vector<unsigned char> png_vector;
-    Send(new ViewMsg_WindowSnapshotCompleted(
-        routing_id, snapshot_id, gfx::Size(), png_vector));
-    return;
-  }
-
-  Send(new ViewMsg_WindowSnapshotCompleted(
-      routing_id, snapshot_id, snapshot_size, png_data->data()));
-}
-
-void RenderWidgetHostImpl::WindowOldSnapshotReachedScreen(int snapshot_id) {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
-
-  std::vector<unsigned char> png;
-
-  // This feature is behind the kEnableGpuBenchmarking command line switch
-  // because it poses security concerns and should only be used for testing.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking)) {
-    Send(new ViewMsg_WindowSnapshotCompleted(
-        GetRoutingID(), snapshot_id, gfx::Size(), png));
-    return;
-  }
-
-  gfx::Rect view_bounds = GetView()->GetViewBounds();
-  gfx::Rect snapshot_bounds(view_bounds.size());
-  gfx::Size snapshot_size = snapshot_bounds.size();
-
-  if (ui::GrabViewSnapshot(
-          GetView()->GetNativeView(), &png, snapshot_bounds)) {
-    Send(new ViewMsg_WindowSnapshotCompleted(
-        GetRoutingID(), snapshot_id, snapshot_size, png));
-    return;
-  }
-
-  ui::GrabViewSnapshotAsync(
-      GetView()->GetNativeView(),
-      snapshot_bounds,
-      base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&RenderWidgetHostImpl::WindowSnapshotAsyncCallback,
-                 weak_factory_.GetWeakPtr(),
-                 GetRoutingID(),
-                 snapshot_id,
-                 snapshot_size));
 }
 
 void RenderWidgetHostImpl::WindowSnapshotReachedScreen(int snapshot_id) {
@@ -2145,7 +2086,6 @@ void RenderWidgetHostImpl::CompositorFrameDrawn(
          ++b) {
       if (b->first.first == ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT ||
           b->first.first == ui::WINDOW_SNAPSHOT_FRAME_NUMBER_COMPONENT ||
-          b->first.first == ui::WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT ||
           b->first.first == ui::TAB_SHOW_COMPONENT) {
         // Matches with GetLatencyComponentId
         int routing_id = b->first.second & 0xffffffff;

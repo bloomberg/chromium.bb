@@ -925,12 +925,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_TempCrashWithData,
 IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupBitmap,
                     cc::SharedBitmapId /* id */)
 
-// Notifies the renderer that a snapshot has been retrieved.
-IPC_MESSAGE_ROUTED3(ViewMsg_WindowSnapshotCompleted,
-                    int /* snapshot_id */,
-                    gfx::Size /* size */,
-                    std::vector<unsigned char> /* png */)
-
 // Fetches complete rendered content of a web page as plain text.
 IPC_MESSAGE_ROUTED0(ViewMsg_GetRenderedText)
 

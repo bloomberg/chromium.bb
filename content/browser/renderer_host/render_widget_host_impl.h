@@ -480,12 +480,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Don't check whether we expected a resize ack during layout tests.
   static void DisableResizeAckCheckForTesting();
 
-  void WindowSnapshotAsyncCallback(
-      int routing_id,
-      int snapshot_id,
-      gfx::Size snapshot_size,
-      scoped_refptr<base::RefCountedBytes> png_data);
-
   InputRouter* input_router() { return input_router_.get(); }
 
   // Get the BrowserAccessibilityManager for the root of the frame tree,
@@ -688,8 +682,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called when there is a new auto resize (using a post to avoid a stack
   // which may get in recursive loops).
   void DelayedAutoResized();
-
-  void WindowOldSnapshotReachedScreen(int snapshot_id);
 
   void WindowSnapshotReachedScreen(int snapshot_id);
 

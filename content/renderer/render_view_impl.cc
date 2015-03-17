@@ -660,7 +660,6 @@ RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
 #endif
       enumeration_completion_id_(0),
       session_storage_namespace_id_(params.session_storage_namespace_id),
-      next_snapshot_id_(0),
       page_scale_factor_is_one_(true),
       debug_info_(params.debug_info) {
 }
@@ -1341,8 +1340,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(ViewMsg_ReleaseDisambiguationPopupBitmap,
                         OnReleaseDisambiguationPopupBitmap)
-    IPC_MESSAGE_HANDLER(ViewMsg_WindowSnapshotCompleted,
-                        OnWindowSnapshotCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_ForceRedraw, OnForceRedraw)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectWordAroundCaret, OnSelectWordAroundCaret)
 #if defined(OS_ANDROID)
@@ -1502,21 +1499,6 @@ bool RenderViewImpl::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
   return Send(message);
 }
 
-void RenderViewImpl::GetWindowSnapshot(const WindowSnapshotCallback& callback) {
-  int id = next_snapshot_id_++;
-  pending_snapshots_.insert(std::make_pair(id, callback));
-  ui::LatencyInfo latency_info;
-  latency_info.AddLatencyNumber(ui::WINDOW_OLD_SNAPSHOT_FRAME_NUMBER_COMPONENT,
-                                0,
-                                id);
-  scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
-  if (RenderWidgetCompositor* rwc = compositor()) {
-    latency_info_swap_promise_monitor =
-        rwc->CreateLatencyInfoSwapPromiseMonitor(&latency_info).Pass();
-  }
-  ScheduleCompositeWithForcedRedraw();
-}
-
 void RenderViewImpl::OnForceRedraw(int id) {
   ui::LatencyInfo latency_info;
   if (id) {
@@ -1530,22 +1512,6 @@ void RenderViewImpl::OnForceRedraw(int id) {
         rwc->CreateLatencyInfoSwapPromiseMonitor(&latency_info).Pass();
   }
   ScheduleCompositeWithForcedRedraw();
-}
-
-void RenderViewImpl::OnWindowSnapshotCompleted(const int snapshot_id,
-    const gfx::Size& size, const std::vector<unsigned char>& png) {
-
-  // Any pending snapshots with a lower ID than the one received are considered
-  // to be implicitly complete, and returned the same snapshot data.
-  PendingSnapshotMap::iterator it = pending_snapshots_.begin();
-  while(it != pending_snapshots_.end()) {
-      if (it->first <= snapshot_id) {
-        it->second.Run(size, png);
-        pending_snapshots_.erase(it++);
-      } else {
-        ++it;
-      }
-  }
 }
 
 // blink::WebViewClient ------------------------------------------------------

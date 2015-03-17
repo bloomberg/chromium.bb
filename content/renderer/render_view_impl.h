@@ -287,13 +287,6 @@ class CONTENT_EXPORT RenderViewImpl
   // supported PPAPI plugins.
   bool HasIMETextFocus();
 
-  // Callback for use with GetWindowSnapshot.
-  typedef base::Callback<void(
-      const gfx::Size&, const std::vector<unsigned char>&)>
-      WindowSnapshotCallback;
-
-  void GetWindowSnapshot(const WindowSnapshotCallback& callback);
-
   // Dispatches the current navigation state to the browser. Called on a
   // periodic timer so we don't send too many messages.
   void SyncNavigationState();
@@ -685,8 +678,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnResetPageScale();
   void OnZoom(PageZoom zoom);
   void OnEnableViewSourceMode();
-  void OnWindowSnapshotCompleted(const int snapshot_id,
-      const gfx::Size& size, const std::vector<unsigned char>& png);
   void OnForceRedraw(int request_id);
   void OnSelectWordAroundCaret();
 #if defined(OS_ANDROID)
@@ -1025,11 +1016,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   scoped_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
-
-  // State associated with the GetWindowSnapshot function.
-  int next_snapshot_id_;
-  typedef std::map<int, WindowSnapshotCallback> PendingSnapshotMap;
-  PendingSnapshotMap pending_snapshots_;
 
   // This field stores drag/drop related info for the event that is currently
   // being handled. If the current event results in starting a drag/drop
