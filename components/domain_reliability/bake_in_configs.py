@@ -461,7 +461,7 @@ const char* const kBakedInJsonConfigs[] = {
 """
 
 
-CC_FOOTER = """  NULL
+CC_FOOTER = """  nullptr
 };
 
 }  // namespace domain_reliability

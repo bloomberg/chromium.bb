@@ -156,10 +156,10 @@ void DomainReliabilityScheduler::OnUploadComplete(
   MaybeScheduleUpload();
 }
 
-base::Value* DomainReliabilityScheduler::GetWebUIData() const {
+scoped_ptr<base::Value> DomainReliabilityScheduler::GetWebUIData() const {
   base::TimeTicks now = time_->NowTicks();
 
-  base::DictionaryValue* data = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
 
   data->SetBoolean("upload_pending", upload_pending_);
   data->SetBoolean("upload_scheduled", upload_scheduled_);
@@ -171,27 +171,27 @@ base::Value* DomainReliabilityScheduler::GetWebUIData() const {
   data->SetInteger("collector_index", static_cast<int>(collector_index_));
 
   if (last_upload_finished_) {
-    base::DictionaryValue* last = new base::DictionaryValue();
+    scoped_ptr<base::DictionaryValue> last(new base::DictionaryValue());
     last->SetInteger("start_time", (now - last_upload_start_time_).InSeconds());
     last->SetInteger("end_time", (now - last_upload_end_time_).InSeconds());
     last->SetInteger("collector_index",
         static_cast<int>(last_upload_collector_index_));
     last->SetBoolean("success", last_upload_success_);
-    data->Set("last_upload", last);
+    data->Set("last_upload", last.Pass());
   }
 
-  base::ListValue* collectors = new base::ListValue();
-  for (size_t i = 0; i < collectors_.size(); ++i) {
-    const net::BackoffEntry* backoff = collectors_[i];
-    base::DictionaryValue* value = new base::DictionaryValue();
-    value->SetInteger("failures", backoff->failure_count());
+  scoped_ptr<base::ListValue> collectors_value(new base::ListValue());
+  for (const auto& collector : collectors_) {
+    scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+    value->SetInteger("failures", collector->failure_count());
     value->SetInteger("next_upload",
-        (backoff->GetReleaseTime() - now).InSeconds());
-    collectors->Append(value);
+        (collector->GetReleaseTime() - now).InSeconds());
+    // Using release instead of Pass because Pass can't implicitly upcast.
+    collectors_value->Append(value.release());
   }
-  data->Set("collectors", collectors);
+  data->Set("collectors", collectors_value.Pass());
 
-  return data;
+  return data.Pass();
 }
 
 void DomainReliabilityScheduler::MakeDeterministicForTesting() {

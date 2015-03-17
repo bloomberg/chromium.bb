@@ -57,7 +57,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
                  pref_task_runner_,
                  network_task_runner_,
                  scoped_ptr<MockableTime>(time_)),
-        context_(NULL) {
+        context_(nullptr) {
     monitor_.MoveToNetworkThread();
     monitor_.InitURLRequestContext(url_request_context_getter_);
     monitor_.SetDiscardUploads(false);
@@ -156,7 +156,7 @@ TEST_F(DomainReliabilityMonitorTest, NetworkFailure) {
   request.url = GURL("http://example/always_report");
   request.status.set_status(net::URLRequestStatus::FAILED);
   request.status.set_error(net::ERR_CONNECTION_RESET);
-  request.response_info.headers = NULL;
+  request.response_info.headers = nullptr;
   OnRequestLegComplete(request);
 
   EXPECT_EQ(1u, CountPendingBeacons());
@@ -288,7 +288,7 @@ TEST_F(DomainReliabilityMonitorTest, NoCachedIPFromFailedRevalidationRequest) {
 }
 
 TEST_F(DomainReliabilityMonitorTest, AtLeastOneBakedInConfig) {
-  DCHECK(kBakedInJsonConfigs[0] != NULL);
+  DCHECK(kBakedInJsonConfigs[0] != nullptr);
 }
 
 // Will fail when baked-in configs expire, as a reminder to update them.

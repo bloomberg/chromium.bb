@@ -42,7 +42,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContextManager {
   // the process).
   void RemoveAllContexts();
 
-  base::Value* GetWebUIData() const;
+  scoped_ptr<base::Value> GetWebUIData() const;
 
   size_t contexts_size_for_testing() const { return contexts_.size(); }
 

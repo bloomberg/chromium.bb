@@ -187,9 +187,9 @@ void DomainReliabilityMonitor::ClearBrowsingData(
 scoped_ptr<base::Value> DomainReliabilityMonitor::GetWebUIData() const {
   DCHECK(OnNetworkThread());
 
-  base::DictionaryValue* data_value = new base::DictionaryValue();
+  scoped_ptr<base::DictionaryValue> data_value(new base::DictionaryValue());
   data_value->Set("contexts", context_manager_.GetWebUIData());
-  return scoped_ptr<base::Value>(data_value);
+  return data_value.Pass();
 }
 
 DomainReliabilityContext* DomainReliabilityMonitor::AddContextForTesting(

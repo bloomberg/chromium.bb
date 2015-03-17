@@ -48,11 +48,11 @@ void DomainReliabilityContextManager::RemoveAllContexts() {
   contexts_.clear();
 }
 
-base::Value* DomainReliabilityContextManager::GetWebUIData() const {
-  base::ListValue* contexts_value = new base::ListValue();
+scoped_ptr<base::Value> DomainReliabilityContextManager::GetWebUIData() const {
+  scoped_ptr<base::ListValue> contexts_value(new base::ListValue());
   for (const auto& context_entry : contexts_)
     contexts_value->Append(context_entry.second->GetWebUIData().release());
-  return contexts_value;
+  return contexts_value.Pass();
 }
 
 DomainReliabilityContext* DomainReliabilityContextManager::GetContextForHost(
@@ -70,7 +70,7 @@ DomainReliabilityContext* DomainReliabilityContextManager::GetContextForHost(
 
   size_t dot_pos = host.find('.');
   if (dot_pos == std::string::npos)
-    return NULL;
+    return nullptr;
 
   // TODO(ttuttle): Make sure parent is not in PSL before using.
 
@@ -79,7 +79,7 @@ DomainReliabilityContext* DomainReliabilityContextManager::GetContextForHost(
   if (context_it != contexts_.end())
     return context_it->second;
 
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace domain_reliability

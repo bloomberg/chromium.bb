@@ -40,9 +40,8 @@ DomainReliabilityConfig::Resource::~Resource() {}
 bool DomainReliabilityConfig::Resource::MatchesUrl(const GURL& url) const {
   const std::string& spec = url.spec();
 
-  ScopedVector<std::string>::const_iterator it;
-  for (it = url_patterns.begin(); it != url_patterns.end(); it++) {
-    if (MatchPattern(spec, **it))
+  for (const auto& url_pattern : url_patterns) {
+    if (MatchPattern(spec, *url_pattern))
       return true;
   }
 
@@ -113,13 +112,13 @@ bool DomainReliabilityConfig::IsValid() const {
     return false;
   }
 
-  for (size_t i = 0; i < resources.size(); ++i) {
-    if (!resources[i]->IsValid())
+  for (auto& resource : resources) {
+    if (!resource->IsValid())
       return false;
   }
 
-  for (size_t i = 0; i < collectors.size(); ++i) {
-    if (!collectors[i]->IsValid())
+  for (auto& collector : collectors) {
+    if (!collector->IsValid())
       return false;
   }
 

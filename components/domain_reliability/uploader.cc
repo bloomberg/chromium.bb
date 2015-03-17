@@ -108,7 +108,7 @@ class DomainReliabilityUploaderImpl
     {
       std::string retry_after_string;
       if (fetcher->GetResponseHeaders() &&
-          fetcher->GetResponseHeaders()->EnumerateHeader(NULL,
+          fetcher->GetResponseHeaders()->EnumerateHeader(nullptr,
                                                          "Retry-After",
                                                          &retry_after_string)) {
         net::HttpUtil::ParseRetryAfterHeader(retry_after_string,
@@ -164,7 +164,7 @@ scoped_ptr<DomainReliabilityUploader> DomainReliabilityUploader::Create(
 // static
 bool DomainReliabilityUploader::URLRequestIsUpload(
     const net::URLRequest& request) {
-  return request.GetUserData(UploadUserData::kUserDataKey) != NULL;
+  return request.GetUserData(UploadUserData::kUserDataKey) != nullptr;
 }
 
 }  // namespace domain_reliability
