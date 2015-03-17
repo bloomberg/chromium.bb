@@ -321,6 +321,11 @@ if test "x$FREEDRENO" = xyes; then
 	AC_DEFINE(HAVE_FREEDRENO, 1, [Have freedreno support])
 fi
 
+if test "x$FREEDRENO_KGSL" = xyes; then
+	if test "x$FREEDRENO" != xyes; then
+		AC_MSG_ERROR([Cannot enable freedreno KGSL interface if freedreno is disabled])
+	fi
+fi
 AM_CONDITIONAL(HAVE_FREEDRENO_KGSL, [test "x$FREEDRENO_KGSL" = xyes])
 if test "x$FREEDRENO_KGSL" = xyes; then
 	AC_DEFINE(HAVE_FREEDRENO_KGSL, 1, [Have freedreno support for KGSL kernel interface])
