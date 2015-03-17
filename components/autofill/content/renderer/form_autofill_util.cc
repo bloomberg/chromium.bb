@@ -535,6 +535,9 @@ base::string16 InferLabelFromTableRow(const WebFormControlElement& element) {
 // a surrounding div table,
 // e.g. <div>Some Text<span><input ...></span></div>
 // e.g. <div>Some Text</div><div><input ...></div>
+//
+// Because this is already traversing the <div> structure, if it finds a <label>
+// sibling along the way, infer from that <label>.
 base::string16 InferLabelFromDivTable(const WebFormControlElement& element) {
   WebNode node = element.parentNode();
   bool looking_for_parent = true;
@@ -545,6 +548,7 @@ base::string16 InferLabelFromDivTable(const WebFormControlElement& element) {
   CR_DEFINE_STATIC_LOCAL(WebString, kDiv, ("div"));
   CR_DEFINE_STATIC_LOCAL(WebString, kTable, ("table"));
   CR_DEFINE_STATIC_LOCAL(WebString, kFieldSet, ("fieldset"));
+  CR_DEFINE_STATIC_LOCAL(WebString, kLabel, ("label"));
   while (inferred_label.empty() && !node.isNull()) {
     if (HasTagName(node, kDiv)) {
       if (looking_for_parent)
@@ -565,6 +569,10 @@ base::string16 InferLabelFromDivTable(const WebFormControlElement& element) {
       }
 
       looking_for_parent = false;
+    } else if (!looking_for_parent && HasTagName(node, kLabel)) {
+      WebLabelElement label_element = node.to<WebLabelElement>();
+      if (label_element.correspondingControl().isNull())
+        inferred_label = FindChildText(node);
     } else if (looking_for_parent &&
                (HasTagName(node, kTable) || HasTagName(node, kFieldSet))) {
       // If the element is in a table or fieldset, its label most likely is too.

@@ -10,7 +10,7 @@ PHONE_HOME_WHOLE_NUMBER | billing_phonenum | Contact Phone: |  | billing_firstna
 EMAIL_ADDRESS | email_Txt | Email |  | billing_firstname_1-default
 EMAIL_ADDRESS | re_Email_Txt | Confirm Email Address |  | billing_firstname_1-default
 UNKNOWN_TYPE | emailOutPutStatus | Yes, sign me up for Sale Alerts. (optional) | true | billing_firstname_1-default
-CREDIT_CARD_TYPE | paymentType |  |  | paymentType_1-cc
+CREDIT_CARD_TYPE | paymentType | Card Type |  | paymentType_1-cc
 CREDIT_CARD_NAME | nameOnCard | Name on Card |  | paymentType_1-cc
 CREDIT_CARD_NUMBER | cardNumber | Card Number |  | paymentType_1-cc
 CREDIT_CARD_EXP_MONTH | expMonth | Expiration Month: |  | paymentType_1-cc

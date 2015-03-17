@@ -3411,6 +3411,27 @@ TEST_F(FormAutofillTest, LabelsInferredFromDivSiblingTable) {
       "</FORM>");
 }
 
+TEST_F(FormAutofillTest, LabelsInferredFromLabelInDivTable) {
+  ExpectJohnSmithLabels(
+      "<FORM name='TestForm' action='http://cnn.com' method='post'>"
+      "<LABEL>First name:</LABEL>"
+      "<LABEL for='lastname'>Last name:</LABEL>"
+      "<DIV>"
+      "  <INPUT type='text' id='firstname' value='John'>"
+      "</DIV>"
+      "<DIV>"
+      "  <INPUT type='text' id='lastname' value='Smith'>"
+      "</DIV>"
+      "<LABEL>Email:</LABEL>"
+      "<DIV>"
+      "  <SPAN>"
+      "    <INPUT type='text' id='email' value='john@example.com'>"
+      "  </SPAN>"
+      "</DIV>"
+      "<input type='submit' name='reply-send' value='Send'>"
+      "</FORM>");
+}
+
 TEST_F(FormAutofillTest, LabelsInferredFromDefinitionListRatherThanDivTable) {
   ExpectJohnSmithLabels(
       "<FORM name='TestForm' action='http://cnn.com' method='post'>"
