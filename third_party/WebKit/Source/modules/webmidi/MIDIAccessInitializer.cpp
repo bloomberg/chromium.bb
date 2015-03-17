@@ -27,14 +27,12 @@ MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState, const MID
     , m_sysexPermissionResolved(false)
 {
 #if ENABLE(OILPAN)
-    // A prefinalizer has already been registered (as a LifecycleObserver);
-    // remove it and register a combined one, as the infrastructure doesn't
+#if ENABLE(ASSERT)
+    // A prefinalizer has already been registered for ScriptPromiseResolver;
+    // remove it and register a combined one as the infrastructure doesn't
     // support multiple prefinalizers for an object.
-    //
-    // FIXME: Oilpan: remove LifecycleObserver's need for a prefinalizer,
-    // and as a consequence, this unregistration step. If the former is independently
-    // removed, the unregisterPreFinalizer() call will assert.
-    ThreadState::current()->unregisterPreFinalizer(*static_cast<LifecycleObserver*>(this));
+    ThreadState::current()->unregisterPreFinalizer(*static_cast<ScriptPromiseResolver*>(this));
+#endif
     ThreadState::current()->registerPreFinalizer(*this);
 #endif
     if (options.hasSysex())
@@ -51,6 +49,7 @@ MIDIAccessInitializer::~MIDIAccessInitializer()
 void MIDIAccessInitializer::contextDestroyed()
 {
     dispose();
+    LifecycleObserver::contextDestroyed();
 }
 
 void MIDIAccessInitializer::dispose()
@@ -70,10 +69,8 @@ void MIDIAccessInitializer::dispose()
     }
 
     m_hasBeenDisposed = true;
-
-#if ENABLE(OILPAN)
-    // Delegate to LifecycleObserver's prefinalizer.
-    LifecycleObserver::dispose();
+#if ENABLE(OILPAN) && ENABLE(ASSERT)
+    ScriptPromiseResolver::dispose();
 #endif
 }
 

@@ -48,7 +48,12 @@ public:
     // is still valid and safe to use during the notification.
     virtual void notifyContextDestroyed();
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+#if ENABLE(OILPAN)
+        visitor->trace(m_observers);
+#endif
+    }
 
     bool isIteratingOverObservers() const { return m_iterating != IteratingNone; }
 
@@ -68,8 +73,12 @@ protected:
     IterationType m_iterating;
 
 protected:
-    using ObserverSet = HashSet<Observer*>;
+    using ObserverSet = WillBeHeapHashSet<RawPtrWillBeWeakMember<Observer>>;
 
+    // FIXME: Oilpan: make LifecycleNotifier<> a GC mixin, somehow. ExecutionContext
+    // is the problematic case, as it would then be a class with two GC mixin
+    // bases, but cannot itself derive from a GC base class also.
+    GC_PLUGIN_IGNORE("467502")
     ObserverSet m_observers;
 
 #if ENABLE(ASSERT)

@@ -52,7 +52,9 @@ ActiveDOMObject::~ActiveDOMObject()
         return;
 
     ASSERT(m_suspendIfNeededCalled);
+#if !ENABLE(OILPAN)
     ASSERT(executionContext()->isContextThread());
+#endif
 }
 
 void ActiveDOMObject::suspendIfNeeded()

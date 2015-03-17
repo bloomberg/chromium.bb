@@ -117,11 +117,6 @@ private:
         // This function cannot be run in the destructor if
         // ScriptPromiseResolver is on-heap.
         ASSERT(m_state == ResolvedOrRejected || !m_isPromiseCalled || !executionContext() || executionContext()->activeDOMObjectsAreStopped());
-
-#if ENABLE(OILPAN)
-        // Delegate to LifecycleObserver's prefinalizer.
-        LifecycleObserver::dispose();
-#endif
     }
 #endif
 
