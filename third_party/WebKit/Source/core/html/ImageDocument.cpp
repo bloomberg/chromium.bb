@@ -290,6 +290,9 @@ void ImageDocument::imageUpdated()
         // Force resizing of the image
         windowSizeChanged(ScaleOnlyUnzoomedDocument);
     }
+
+    // Update layout as soon as image size is known. This enables large image files to render progressively or to animate.
+    updateLayout();
 }
 
 void ImageDocument::restoreImageSize(ScaleType type)
