@@ -52,9 +52,9 @@ class TestBootstrapBrilloCmd(cros_test_lib.MockTestCase):
 
   def _verifyLocateBrilloCommandSpecialSdkHandling(self):
     # We should always use the bootstrap brillo command for 'sdk'.
-    self.assertEqual('/bootstrap/chromite/bin/brillo',
+    self.assertEqual('/bootstrap/bin/brillo',
                      brillo.LocateBrilloCommand(['sdk']))
-    self.assertEqual('/bootstrap/chromite/bin/brillo',
+    self.assertEqual('/bootstrap/bin/brillo',
                      brillo.LocateBrilloCommand(['sdk', '--help']))
 
   def testCommandLookupActiveWorkspace(self):
@@ -146,7 +146,7 @@ class TestBootstrapBrilloCmd(cros_test_lib.MockTestCase):
 
     brillo.main(['sdk', '--help'])
 
-    expected_cmd = '/bootstrap/chromite/bin/brillo'
+    expected_cmd = '/bootstrap/bin/brillo'
 
     self.assertEqual(
         [mock.call(expected_cmd, [expected_cmd, 'sdk', '--help'])],

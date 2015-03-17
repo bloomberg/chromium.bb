@@ -22,24 +22,26 @@ from chromite.lib import workspace_lib
 
 
 def LocateBrilloCommand(args):
-  relative_cmd = os.path.join('chromite', 'bin', 'brillo')
   bootstrap_path = bootstrap_lib.FindBootstrapPath()
 
   if len(args) >= 1 and args[0] == 'sdk':
     # Run 'brillo sdk' from the repository containing this command.
-    return os.path.join(bootstrap_path, relative_cmd)
+    return os.path.join(bootstrap_path, 'bin', 'brillo')
 
   # If we are in a workspace, and the workspace has an associated SDK, use it.
   workspace_path = workspace_lib.WorkspacePath()
   if workspace_path:
     sdk_path = bootstrap_lib.GetActiveSdkPath(bootstrap_path, workspace_path)
+    if not sdk_path:
+      return None
+
     # Use SDK associated with workspace, or nothing.
-    return os.path.join(sdk_path, relative_cmd) if sdk_path else None
+    return os.path.join(sdk_path, 'chromite', 'bin', 'brillo')
 
   # Run all other commands from 'brillo' wrapper in repo detected via CWD.
   repo_root = git.FindRepoCheckoutRoot(os.getcwd())
   if repo_root:
-    return os.path.join(repo_root, relative_cmd)
+    return os.path.join(repo_root, 'chromite', 'bin', 'brillo')
 
   # Couldn't find the real brillo command to run.
   return None
