@@ -328,25 +328,25 @@ For example, some websites may respond to this request by showing you ads that a
         Clear browsing data
       </message>
       <message name="IDS_CLEAR_CACHE_TITLE" desc="Title for Clear Cache in Clear Browsing Data dialog">
-        Clear the cache
+        Cache
       </message>
       <message name="IDS_CLEAR_HISTORY_TITLE" desc="Title for Clear History in Clear Browsing Data dialog">
-        Clear browsing history
+        Browsing history
       </message>
       <message name="IDS_CLEAR_COOKIES_AND_SITE_DATA_TITLE" desc="Title for Clear Cookies and site data in Clear Browsing Data dialog">
-        Clear cookies, site data
+        Cookies, site data
       </message>
       <message name="IDS_CLEAR_COOKIES_NO_SIGN_OUT_SUMMARY" desc="Text at the bottom of the Clear Browsing Data dialog informing that clearing cookies wouldn't sign the user out of Google Accounts. Dialog also contains a link which opens the Account Management screen.">
         You won't be signed out of your <ph name="BEGIN_LINK">&lt;link&gt;</ph>Google Accounts<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
       <message name="IDS_CLEAR_PASSWORDS_TITLE" desc="Title for Clear Passwords in Clear Browsing Data preference">
-        Clear saved passwords
+        Saved passwords
       </message>
       <message name="IDS_CLEAR_FORMDATA_TITLE" desc="Title for Clear Form Data in Clear Browsing Data preference">
-        Clear autofill data
+        Autofill data
       </message>
       <message name="IDS_CLEAR_BOOKMARKS_TITLE" desc="Title for Clear Bookmarks data in Clear Synced Data dialog">
-        Clear bookmarks
+        Bookmarks
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_PROGRESS_TITLE" desc='Title for the progress dialog used when waiting for "clear browsing data" to complete.'>
         Clearing browsing data
