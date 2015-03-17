@@ -52,7 +52,7 @@ BaseDownloadsWebUITest.prototype = {
     var timestamp = new Date(2008, 9, 2, 1, 0).getTime();
     var list = [];
     for (var i = 0; i < TOTAL_RESULT_COUNT; ++i) {
-      list.push(this.createDownload_(i, timestamp));
+      list.push(this.createDownload(i, timestamp));
       timestamp += 2 * 60 * 1000;  // Next visit is two minutes later.
     }
     downloads.Manager.updateAll(list);
@@ -65,9 +65,8 @@ BaseDownloadsWebUITest.prototype = {
    * @param {number} A unique ID for the download.
    * @param {number} The time the download purportedly started.
    * @return {!Object} A fake download object.
-   * @private
    */
-  createDownload_: function(id, timestamp) {
+  createDownload: function(id, timestamp) {
     return {
       id: id,
       started: timestamp,

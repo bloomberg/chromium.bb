@@ -23,6 +23,25 @@ cr.define('downloads', function() {
     focusRow.addFocusableElements_();
   };
 
+  /**
+   * Determines if element should be focusable.
+   * @param {Element} element
+   * @return {boolean}
+   */
+  FocusRow.shouldFocus = function(element) {
+    if (!element)
+      return false;
+
+    // Hidden elements are not focusable.
+    var style = window.getComputedStyle(element);
+    if (style.visibility == 'hidden' || style.display == 'none')
+      return false;
+
+    // Verify all ancestors are focusable.
+    return !element.parentElement ||
+           FocusRow.shouldFocus(element.parentElement);
+  };
+
   FocusRow.prototype = {
     __proto__: cr.ui.FocusRow.prototype,
 
@@ -56,28 +75,9 @@ cr.define('downloads', function() {
       var possiblyFocusableElements = this.querySelectorAll('[column-type]');
       for (var i = 0; i < possiblyFocusableElements.length; ++i) {
         var possiblyFocusableElement = possiblyFocusableElements[i];
-        if (this.shouldFocus_(possiblyFocusableElement))
+        if (FocusRow.shouldFocus(possiblyFocusableElement))
           this.addFocusableElement(possiblyFocusableElement);
       }
-    },
-
-    /**
-     * Determines if element should be focusable.
-     * @param {Element} element
-     * @return {boolean}
-     * @private
-     */
-    shouldFocus_: function(element) {
-      if (!element)
-        return false;
-
-      // Hidden elements are not focusable.
-      var style = window.getComputedStyle(element);
-      if (style.visibility == 'hidden' || style.display == 'none')
-        return false;
-
-      // Verify all ancestors are focusable.
-      return !element.parentElement || this.shouldFocus_(element.parentElement);
     },
   };
 

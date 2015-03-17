@@ -10,7 +10,6 @@ TEST_F('BaseDownloadsWebUITest', 'DeleteAllowed', function() {
   this.expectDeleteControlsVisible(true);
   // TODO(pamg): Mock out the back-end calls, so we can also test removing a
   // single item.
-  testDone();
 });
 
 TEST_F('BaseDownloadsWebUITest', 'NoResultsHiddenWhenDownloads', function() {
@@ -41,6 +40,36 @@ TEST_F('BaseDownloadsWebUITest', 'NoDownloadsAfterClearAll', function() {
 
   expectTrue($('downloads-display').hidden);
   this.checkShowing(noResults, loadTimeData.getString('no_downloads'));
+});
+
+TEST_F('BaseDownloadsWebUITest', 'PauseResumeFocus', function() {
+  var manager = downloads.Manager.getInstance();
+  assertGE(manager.size(), 0);
+
+  var lastId = manager.items_.slice(-1)[0].view.id_;
+  var freshData = this.createDownload(lastId, Date.now());
+  freshData.state = downloads.Item.States.IN_PROGRESS;
+  freshData.resume = false;
+  downloads.Manager.updateItem(freshData);
+
+  var node = manager.idMap_[lastId].view.node;
+  var pause = node.querySelector('.pause');
+  var resume = node.querySelector('.resume');
+
+  expectFalse(pause.hidden);
+  expectTrue(resume.hidden);
+  // Move the focus to "Pause" then pretend the download was resumed. The focus
+  // should move to the equivalent button ("Resume" in this case).
+  pause.focus();
+  assertEquals(document.activeElement, pause);
+
+  freshData.state = downloads.Item.States.PAUSED;
+  freshData.resume = true;
+  downloads.Manager.updateItem(freshData);
+
+  expectTrue(pause.hidden);
+  expectFalse(resume.hidden);
+  expectEquals(document.activeElement, resume);
 });
 
 /**
@@ -95,7 +124,6 @@ TEST_F('DownloadsWebUIDeleteProhibitedTest', 'DeleteProhibited', function() {
   this.expectDeleteControlsVisible(false);
   // TODO(pamg): Mock out the back-end calls, so we can also test removing a
   // single item.
-  testDone();
 });
 
 TEST_F('DownloadsWebUIDeleteProhibitedTest', 'ClearLeavesSearch', function() {

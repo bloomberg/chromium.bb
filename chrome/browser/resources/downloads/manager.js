@@ -108,8 +108,10 @@ cr.define('downloads', function() {
       item.render(data);
       var focusRow = this.decorateItem_(item);
 
-      if (activeElement != document.activeElement)
+      if (focusRow.contains(activeElement) &&
+          !downloads.FocusRow.shouldFocus(activeElement)) {
         focusRow.getEquivalentElement(activeElement).focus();
+      }
     },
 
     /**
@@ -127,8 +129,8 @@ cr.define('downloads', function() {
         var focusRow = this.decorateItem_(item);
         this.focusGrid_.addRow(focusRow);
 
-        if (activeElement != document.activeElement &&
-            focusRow.contains(activeElement)) {
+        if (focusRow.contains(activeElement) &&
+            !downloads.FocusRow.shouldFocus(activeElement)) {
           focusRow.getEquivalentElement(activeElement).focus();
         }
       }, this);
