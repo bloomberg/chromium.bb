@@ -33,11 +33,13 @@ class DistillerPageIOS : public DistillerPage {
   explicit DistillerPageIOS(web::BrowserState* browser_state);
   ~DistillerPageIOS() override;
 
+ protected:
+  bool StringifyOutput() override;
+  bool CreateNewContext() override;
+  void DistillPageImpl(const GURL& url, const std::string& script) override;
+
  private:
   friend class DistillerWebStateObserver;
-
-  // DistillerPage implementation:
-  void DistillPageImpl(const GURL& url, const std::string& script) override;
 
   // Called by |web_state_observer_| once the page has finished loading.
   void OnLoadURLDone(web::PageLoadCompletionStatus load_completion_status);

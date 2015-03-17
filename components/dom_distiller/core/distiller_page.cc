@@ -23,9 +23,13 @@ namespace dom_distiller {
 namespace {
 
 const char* kOptionsPlaceholder = "$$OPTIONS";
+const char* kStringifyPlaceholder = "$$STRINGIFY";
+const char* kNewContextPlaceholder = "$$NEW_CONTEXT";
 
 std::string GetDistillerScriptWithOptions(
-    const dom_distiller::proto::DomDistillerOptions& options) {
+    const dom_distiller::proto::DomDistillerOptions& options,
+    bool stringify_output,
+    bool create_new_context) {
   std::string script = ResourceBundle::GetSharedInstance()
                            .GetRawDataResource(IDR_DISTILLER_JS)
                            .as_string();
@@ -45,6 +49,25 @@ std::string GetDistillerScriptWithOptions(
             script.find(kOptionsPlaceholder, options_offset + 1));
   script =
       script.replace(options_offset, strlen(kOptionsPlaceholder), options_json);
+
+  std::string stringify = stringify_output ? "true" : "false";
+  size_t stringify_offset = script.find(kStringifyPlaceholder);
+  DCHECK_NE(std::string::npos, stringify_offset);
+  DCHECK_EQ(std::string::npos,
+            script.find(kStringifyPlaceholder, stringify_offset + 1));
+  script = script.replace(stringify_offset,
+                          strlen(kStringifyPlaceholder),
+                          stringify);
+
+  std::string new_context = create_new_context ? "true" : "false";
+  size_t new_context_offset = script.find(kNewContextPlaceholder);
+  DCHECK_NE(std::string::npos, new_context_offset);
+  DCHECK_EQ(std::string::npos,
+            script.find(kNewContextPlaceholder, new_context_offset + 1));
+  script = script.replace(new_context_offset,
+                          strlen(kNewContextPlaceholder),
+                          new_context);
+
   return script;
 }
 
@@ -65,7 +88,9 @@ void DistillerPage::DistillPage(
   // the callback to OnDistillationDone happens.
   ready_ = false;
   distiller_page_callback_ = callback;
-  DistillPageImpl(gurl, GetDistillerScriptWithOptions(options));
+  DistillPageImpl(gurl, GetDistillerScriptWithOptions(options,
+                                                      StringifyOutput(),
+                                                      CreateNewContext()));
 }
 
 void DistillerPage::OnDistillationDone(const GURL& page_url,

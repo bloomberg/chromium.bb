@@ -51,6 +51,19 @@ DistillerPageIOS::DistillerPageIOS(web::BrowserState* browser_state)
 DistillerPageIOS::~DistillerPageIOS() {
 }
 
+bool DistillerPageIOS::StringifyOutput() {
+ // UIWebView requires JavaScript to return a single string value.
+ return true;
+}
+
+bool DistillerPageIOS::CreateNewContext() {
+  // UIWebView's JavaScript engine has a bug that causes crashes when
+  // creating a separate window object, so allow the script to run directly
+  // in the window until a better solution is created.
+  // TODO(kkhorimoto): investigate whether this is necessary for WKWebView.
+ return false;
+}
+
 void DistillerPageIOS::DistillPageImpl(const GURL& url,
                                        const std::string& script) {
   if (!url.is_valid() || !script.length())

@@ -71,6 +71,14 @@ DistillerPageWebContents::~DistillerPageWebContents() {
     web_contents_->SetDelegate(NULL);
 }
 
+bool DistillerPageWebContents::StringifyOutput() {
+ return false;
+}
+
+bool DistillerPageWebContents::CreateNewContext() {
+ return true;
+}
+
 void DistillerPageWebContents::DistillPageImpl(const GURL& url,
                                                const std::string& script) {
   DCHECK(browser_context_);

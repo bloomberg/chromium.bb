@@ -69,6 +69,8 @@ class DistillerPageWebContents : public DistillerPage,
                    const base::string16& error_description) override;
 
  protected:
+  bool StringifyOutput() override;
+  bool CreateNewContext() override;
   void DistillPageImpl(const GURL& url, const std::string& script) override;
 
  private:

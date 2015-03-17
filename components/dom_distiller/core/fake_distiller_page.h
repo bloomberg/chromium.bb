@@ -30,6 +30,8 @@ class MockDistillerPage : public DistillerPage {
  public:
   MockDistillerPage();
   virtual ~MockDistillerPage();
+  bool StringifyOutput() override { return false; };
+  bool CreateNewContext() override { return false; };
   MOCK_METHOD2(DistillPageImpl,
                void(const GURL& gurl, const std::string& script));
 };
