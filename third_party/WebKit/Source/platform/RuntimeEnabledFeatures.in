@@ -158,6 +158,7 @@ Touch status=stable
 TouchIconLoading
 UnsafeES3APIs
 UserSelectAll status=experimental
+VRDevice depends_on=GeometryInterfaces
 WebAnimationsAPI status=experimental
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental

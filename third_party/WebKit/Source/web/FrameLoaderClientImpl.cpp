@@ -57,6 +57,7 @@
 #include "modules/gamepad/NavigatorGamepad.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/storage/DOMWindowStorageController.h"
+#include "modules/vr/NavigatorVRDevice.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
@@ -132,6 +133,8 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
             if (RuntimeEnabledFeatures::serviceWorkerEnabled())
                 NavigatorServiceWorker::from(*document);
             DOMWindowStorageController::from(*document);
+            if (RuntimeEnabledFeatures::vRDeviceEnabled())
+                NavigatorVRDevice::from(*document);
         }
     }
     // FIXME: when extensions go out of process, this whole concept stops working.

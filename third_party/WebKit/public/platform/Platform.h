@@ -48,12 +48,16 @@
 #include "WebGraphicsContext3D.h"
 #include "WebLocalizedString.h"
 #include "WebPlatformEventType.h"
+#include "WebSize.h"
 #include "WebSpeechSynthesizer.h"
 #include "WebStorageQuotaCallbacks.h"
 #include "WebStorageQuotaType.h"
 #include "WebString.h"
 #include "WebURLError.h"
+#include "WebVR.h"
 #include "WebVector.h"
+
+#include <vector>
 
 class GrContext;
 
@@ -218,6 +222,20 @@ public:
 
     virtual void sampleGamepads(WebGamepads& into) { into.length = 0; }
 
+
+    // WebVR -------------------------------------------------------------
+
+    virtual void getVRDevices(WebVector<blink::WebVRDevice>* devices) { };
+
+    virtual void getHMDSensorState(unsigned index, blink::WebHMDSensorState& into) { }
+
+    virtual void resetVRSensor(unsigned index) { }
+
+    virtual void getVRRenderTargetRects(unsigned index,
+        blink::WebVRFieldOfView leftFov,
+        blink::WebVRFieldOfView rightFov,
+        blink::WebVRVector4* leftRect,
+        blink::WebVRVector4* rightRect) { };
 
     // History -------------------------------------------------------------
 

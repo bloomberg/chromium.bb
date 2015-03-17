@@ -156,6 +156,7 @@ public:
 
     BLINK_EXPORT static void enableUnsafeES3APIs(bool);
 
+    BLINK_EXPORT static void enableVRDevice(bool);
 private:
     WebRuntimeFeatures();
 };

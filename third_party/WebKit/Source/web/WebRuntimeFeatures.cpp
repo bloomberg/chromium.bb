@@ -328,4 +328,9 @@ void WebRuntimeFeatures::enableUnsafeES3APIs(bool enable)
     RuntimeEnabledFeatures::setUnsafeES3APIsEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableVRDevice(bool enable)
+{
+    RuntimeEnabledFeatures::setVRDeviceEnabled(enable);
+}
+
 } // namespace blink
