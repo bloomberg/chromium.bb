@@ -3,66 +3,10 @@
 <head>
   <meta charset="utf-8">
   <title>Settings</title>
-  <link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
-  <link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
-  <link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
-  <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
-  <link rel="import" href="chrome://resources/cr_elements/cr_collapse/cr_collapse.html">
-  <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
-  <link rel="import" href="chrome://resources/cr_elements/cr_toggle_button/cr_toggle_button.html">
-  <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
-  <link rel="import" href="chrome://resources/cr_elements/cr_dropdown_menu/cr_dropdown_menu.html">
+  <link rel="import" href="chrome://md-settings/settings.html">
   <link rel="stylesheet" href="md_settings.css">
 </head>
 <body>
-  <header>
-    <h1>Settings</h1>
-  </header>
-  <div class="main">
-    <section>
-      <h3>cr-toggle-button</h3>
-      <cr-toggle-button></cr-toggle-button>
-      <cr-toggle-button checked></cr-toggle-button>
-    </section>
-    <section>
-      <h3>cr-checkbox</h3>
-      <cr-checkbox></cr-checkbox>
-      <cr-checkbox checked></cr-checkbox>
-    </section>
-    <section>
-      <h3>cr-dropdown-menu</h3>
-      <cr-dropdown-menu>
-        <core-menu class="menu">
-          <paper-item>Chrome</paper-item>
-          <paper-item>IE</paper-item>
-          <paper-item>Firefox</paper-item>
-        </core-menu>
-      </cr-dropdown-menu>
-    </section>
-    <section>
-      <h3>cr-collapse</h3>
-      <paper-button id="manage-button" raised onclick="toggleCollapse();">
-        Toggle Collapse
-      </paper-button>
-      <cr-collapse id="collapse">
-        <div>collapsed content</div>
-      </cr-collapse>
-    </section>
-    <section>
-      <h3>cr-button</h3>
-      <cr-button>Flat button</cr-button>
-      <cr-button raised>Raised Button</cr-button>
-    </section>
-    <section>
-      <h3>cr-input</h3>
-      <cr-input label="Enter Something!"></cr-input>
-    </section>
-  </div>
-  <script>
-    var collapse = document.getElementById('collapse');
-    function toggleCollapse() {
-      collapse.toggle();
-    }
-  </script>
+  <cr-settings></cr-settings>
 </body>
 </html>

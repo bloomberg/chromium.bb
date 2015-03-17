@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/polymer/core-animated-pages/core-animated-pages.html">
 <link rel="import" href="chrome://resources/polymer/core-transition/core-transition.html">
 <link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
+<link rel="import" href="chrome://md-settings/dummy_page/dummy_page.html">
 
 <polymer-element name="cr-settings-main">
   <template>
@@ -11,7 +12,7 @@
         <content select="core-icon-button"></content>
         <core-animated-pages id="pageContainer" selected="{{selectedPageId}}"
             valueattr="PAGE_ID" transitions="cross-fade">
-          <cr-settings-a11y-page prefs="{{prefs}}"></cr-settings-a11y-page>
+          <cr-settings-dummy-page prefs="{{prefs}}"></cr-settings-dummy-page>
         </core-animated-pages>
       </paper-shadow>
     </div>
