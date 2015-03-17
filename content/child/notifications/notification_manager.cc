@@ -141,11 +141,6 @@ void NotificationManager::closePersistent(
       base::UTF16ToUTF8(persistent_notification_id)));
 }
 
-void NotificationManager::closePersistent(
-    const blink::WebString& persistent_notification_id) {
-  closePersistent(blink::WebSerializedOrigin(), persistent_notification_id);
-}
-
 void NotificationManager::notifyDelegateDestroyed(
     blink::WebNotificationDelegate* delegate) {
   if (pending_notifications_.CancelPageNotificationFetches(delegate))
