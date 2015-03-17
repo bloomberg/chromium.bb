@@ -90,11 +90,15 @@ class EasyUnlockService::BluetoothDetector
   explicit BluetoothDetector(EasyUnlockService* service)
       : service_(service),
         weak_ptr_factory_(this) {
+    apps::AppLifetimeMonitorFactory::GetForProfile(service_->profile())
+        ->AddObserver(this);
   }
 
   ~BluetoothDetector() override {
     if (adapter_.get())
       adapter_->RemoveObserver(this);
+    apps::AppLifetimeMonitorFactory::GetForProfile(service_->profile())
+        ->RemoveObserver(this);
   }
 
   void Initialize() {
