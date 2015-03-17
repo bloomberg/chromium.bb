@@ -477,7 +477,11 @@ void WebHistoryService::AudioHistoryCompletionCallback(
     if (response_value)
       response_value->GetBoolean("history_recording_enabled", &enabled_value);
   }
-  callback.Run(success, enabled_value);
+
+  // If there is no response_value, then for our purposes, the request has
+  // failed, despite receiving a true |success| value. This can happen if
+  // the user is offline.
+  callback.Run(success && response_value, enabled_value);
 }
 
 }  // namespace history
