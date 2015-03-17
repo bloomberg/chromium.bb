@@ -1852,9 +1852,6 @@ crbug.com/453781 fast/hidpi/image-srcset-src-selection-2x.html [ Pass Failure ]
 
 crbug.com/455134 [ Mac ] http/tests/navigation/anchor-basic.html [ Crash Timeout Pass ]
 
-crbug.com/400725 [ Mac Win ] svg/W3C-SVG-1.1/coords-units-03-b.svg [ NeedsRebaseline ]
-crbug.com/400725 [ Mac ] svg/W3C-SVG-1.1-SE/coords-units-03-b.svg [ NeedsRebaseline ]
-
 crbug.com/466200 svg/custom/repaint-on-constant-size-change.svg [ Failure ]
 
 # Minor failure only on Mac 10.6 Debug.
