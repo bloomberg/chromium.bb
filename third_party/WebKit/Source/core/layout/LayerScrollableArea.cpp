@@ -633,6 +633,8 @@ void LayerScrollableArea::scrollToOffset(const DoubleSize& scrollOffset, ScrollO
 
 void LayerScrollableArea::updateAfterLayout()
 {
+    ASSERT(box().hasOverflowClip());
+
     m_scrollDimensionsDirty = true;
     DoubleSize originalScrollOffset = adjustedScrollOffset();
 

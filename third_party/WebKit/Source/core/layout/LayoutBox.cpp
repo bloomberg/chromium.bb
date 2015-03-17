@@ -608,11 +608,11 @@ LayoutUnit LayoutBox::constrainContentBoxLogicalHeightByMinMax(LayoutUnit logica
 
 void LayoutBox::setLocationAndUpdateOverflowControlsIfNeeded(const LayoutPoint& location)
 {
-    if (LayerScrollableArea* scrollableArea = this->scrollableArea()) {
+    if (hasOverflowClip()) {
         IntSize oldPixelSnappedBorderRectSize = pixelSnappedBorderBoxRect().size();
         setLocation(location);
         if (pixelSnappedBorderBoxRect().size() != oldPixelSnappedBorderRectSize)
-            scrollableArea->updateAfterLayout();
+            scrollableArea()->updateAfterLayout();
         return;
     }
 
