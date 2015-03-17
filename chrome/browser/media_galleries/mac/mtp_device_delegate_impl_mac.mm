@@ -223,6 +223,15 @@ void MTPDeviceDelegateImplMac::CopyFileLocal(
   NOTREACHED();
 }
 
+void MTPDeviceDelegateImplMac::MoveFileLocal(
+    const base::FilePath& source_file_path,
+    const base::FilePath& device_file_path,
+    const CreateTemporaryFileCallback& create_temporary_file_callback,
+    const MoveFileLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
 void MTPDeviceDelegateImplMac::CopyFileFromLocal(
     const base::FilePath& source_file_path,
     const base::FilePath& device_file_path,

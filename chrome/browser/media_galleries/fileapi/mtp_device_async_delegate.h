@@ -71,6 +71,9 @@ class MTPDeviceAsyncDelegate {
   // A callback to be called when CopyFileLocal method call succeeds.
   typedef base::Closure CopyFileLocalSuccessCallback;
 
+  // A callback to be called when MoveFileLocal method call succeeds.
+  typedef base::Closure MoveFileLocalSuccessCallback;
+
   // A callback to be called when CopyFileFromLocal method call succeeds.
   typedef base::Closure CopyFileFromLocalSuccessCallback;
 
@@ -130,6 +133,15 @@ class MTPDeviceAsyncDelegate {
       const CreateTemporaryFileCallback& create_temporary_file_callback,
       const CopyFileProgressCallback& progress_callback,
       const CopyFileLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) = 0;
+
+  // Moves a file |source_file_path| to |device_file_path|.
+  // |create_temporary_file_callback| can be used to create a temporary file.
+  virtual void MoveFileLocal(
+      const base::FilePath& source_file_path,
+      const base::FilePath& device_file_path,
+      const CreateTemporaryFileCallback& create_temporary_file_callback,
+      const MoveFileLocalSuccessCallback& success_callback,
       const ErrorCallback& error_callback) = 0;
 
   // Copies a file from |source_file_path| to |device_file_path|.

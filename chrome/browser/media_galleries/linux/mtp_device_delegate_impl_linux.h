@@ -102,6 +102,12 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const CopyFileProgressCallback& progress_callback,
       const CopyFileLocalSuccessCallback& success_callback,
       const ErrorCallback& error_callback) override;
+  void MoveFileLocal(
+      const base::FilePath& source_file_path,
+      const base::FilePath& device_file_path,
+      const CreateTemporaryFileCallback& create_temporary_file_callback,
+      const MoveFileLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback) override;
   void CopyFileFromLocal(
       const base::FilePath& source_file_path,
       const base::FilePath& device_file_path,
@@ -135,6 +141,13 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       net::IOBuffer* buf, int64 offset, int buf_len,
       const ReadBytesSuccessCallback& success_callback,
       const ErrorCallback& error_callback);
+  virtual void MoveFileLocalInternal(
+      const base::FilePath& source_file_path,
+      const base::FilePath& device_file_path,
+      const CreateTemporaryFileCallback& create_temporary_file_callback,
+      const MoveFileLocalSuccessCallback& success_callback,
+      const ErrorCallback& error_callback,
+      const base::File::Info& source_file_info);
   virtual void CopyFileFromLocalInternal(
       const base::FilePath& device_file_path,
       const CopyFileFromLocalSuccessCallback& success_callback,

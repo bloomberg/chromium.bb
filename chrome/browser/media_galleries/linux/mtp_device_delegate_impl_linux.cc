@@ -283,6 +283,10 @@ void DeleteTemporaryFile(const base::FilePath& file_path) {
                             false /* not recursive*/));
 }
 
+// A fake callback to be passed as CopyFileProgressCallback.
+void FakeCopyFileProgressCallback(int64 size) {
+}
+
 }  // namespace
 
 MTPDeviceDelegateImplLinux::PendingTaskInfo::PendingTaskInfo(
@@ -563,6 +567,29 @@ void MTPDeviceDelegateImplLinux::CopyFileLocal(
           progress_callback, success_callback, error_callback));
 }
 
+void MTPDeviceDelegateImplLinux::MoveFileLocal(
+    const base::FilePath& source_file_path,
+    const base::FilePath& device_file_path,
+    const CreateTemporaryFileCallback& create_temporary_file_callback,
+    const MoveFileLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK(!source_file_path.empty());
+  DCHECK(!device_file_path.empty());
+
+  // Get file info to move file on local.
+  const GetFileInfoSuccessCallback success_callback_wrapper = base::Bind(
+      &MTPDeviceDelegateImplLinux::MoveFileLocalInternal,
+      weak_ptr_factory_.GetWeakPtr(), source_file_path, device_file_path,
+      create_temporary_file_callback, success_callback, error_callback);
+  const base::Closure closure =
+      base::Bind(&MTPDeviceDelegateImplLinux::GetFileInfoInternal,
+                 weak_ptr_factory_.GetWeakPtr(), source_file_path,
+                 success_callback_wrapper, error_callback);
+  EnsureInitAndRunTask(PendingTaskInfo(
+      source_file_path, content::BrowserThread::IO, FROM_HERE, closure));
+}
+
 void MTPDeviceDelegateImplLinux::CopyFileFromLocal(
     const base::FilePath& source_file_path,
     const base::FilePath& device_file_path,
@@ -775,6 +802,41 @@ void MTPDeviceDelegateImplLinux::ReadBytesInternal(
   } else {
     error_callback.Run(base::File::FILE_ERROR_NOT_FOUND);
   }
+  PendingRequestDone();
+}
+
+void MTPDeviceDelegateImplLinux::MoveFileLocalInternal(
+    const base::FilePath& source_file_path,
+    const base::FilePath& device_file_path,
+    const CreateTemporaryFileCallback& create_temporary_file_callback,
+    const MoveFileLocalSuccessCallback& success_callback,
+    const ErrorCallback& error_callback,
+    const base::File::Info& source_file_info) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (source_file_info.is_directory) {
+    error_callback.Run(base::File::FILE_ERROR_NOT_A_FILE);
+    PendingRequestDone();
+    return;
+  }
+
+  if (source_file_path.DirName() == device_file_path.DirName()) {
+    // If a file is moved in a same directory, rename the file.
+    // TODO(yawano) Implement rename operation.
+    error_callback.Run(base::File::FILE_ERROR_SECURITY);
+  } else {
+    // If a file is moved to a different directory, create a copy to the
+    // destination path, and remove source file.
+    const CopyFileLocalSuccessCallback& success_callback_wrapper =
+        base::Bind(&MTPDeviceDelegateImplLinux::DeleteFileInternal,
+                   weak_ptr_factory_.GetWeakPtr(), source_file_path,
+                   success_callback, error_callback, source_file_info);
+    CopyFileLocal(source_file_path, device_file_path,
+                  create_temporary_file_callback,
+                  base::Bind(&FakeCopyFileProgressCallback),
+                  success_callback_wrapper, error_callback);
+  }
+
   PendingRequestDone();
 }
 

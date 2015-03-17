@@ -86,6 +86,13 @@ void OnCopyFileLocalError(const AsyncFileUtil::StatusCallback& callback,
   callback.Run(error);
 }
 
+// Called when MoveFileLocal method call failed.
+void OnMoveFileLocalError(const AsyncFileUtil::StatusCallback& callback,
+                          base::File::Error error) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  callback.Run(error);
+}
+
 // Called when CopyInForeignFile method call failed.
 void OnCopyInForeignFileError(const AsyncFileUtil::StatusCallback& callback,
                               base::File::Error error) {
@@ -423,8 +430,23 @@ void DeviceMediaAsyncFileUtil::MoveFileLocal(
     CopyOrMoveOption option,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_SECURITY);
+
+  MTPDeviceAsyncDelegate* delegate = GetMTPDeviceDelegate(dest_url);
+  if (!delegate) {
+    OnMoveFileLocalError(callback, base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+  if (delegate->IsReadOnly()) {
+    OnMoveFileLocalError(callback, base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  delegate->MoveFileLocal(
+      src_url.path(), dest_url.path(),
+      base::Bind(&CreateSnapshotFileOnBlockingPool, profile_path_),
+      base::Bind(&DeviceMediaAsyncFileUtil::OnDidMoveFileLocal,
+                 weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&OnMoveFileLocalError, callback));
 }
 
 void DeviceMediaAsyncFileUtil::CopyInForeignFile(
@@ -592,6 +614,13 @@ void DeviceMediaAsyncFileUtil::OnDidReadDirectory(
 }
 
 void DeviceMediaAsyncFileUtil::OnDidCopyFileLocal(
+    const StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  callback.Run(base::File::FILE_OK);
+}
+
+void DeviceMediaAsyncFileUtil::OnDidMoveFileLocal(
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
