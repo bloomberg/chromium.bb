@@ -116,16 +116,16 @@ static void updatePathFromRectElement(SVGElement* element, Path& path)
     ASSERT(rect->layoutObject());
 
     SVGLengthContext lengthContext(element);
-    float width = rect->width()->currentValue()->value(lengthContext);
+    const LayoutStyle& style = rect->layoutObject()->styleRef();
+    float width = lengthContext.valueForLength(style.width(), style, SVGLengthMode::Width);
     if (width < 0)
         return;
-    float height = rect->height()->currentValue()->value(lengthContext);
+    float height = lengthContext.valueForLength(style.height(), style, SVGLengthMode::Height);
     if (height < 0)
         return;
     if (!width && !height)
         return;
 
-    const LayoutStyle& style = rect->layoutObject()->styleRef();
     float x = lengthContext.valueForLength(style.svgStyle().x(), style, SVGLengthMode::Width);
     float y = lengthContext.valueForLength(style.svgStyle().y(), style, SVGLengthMode::Height);
     float rx = lengthContext.valueForLength(style.svgStyle().rx(), style, SVGLengthMode::Width);

@@ -54,7 +54,9 @@ void LayoutSVGRect::updateShapeFromElement()
     ASSERT(rect);
 
     SVGLengthContext lengthContext(rect);
-    FloatSize boundingBoxSize(rect->width()->currentValue()->value(lengthContext), rect->height()->currentValue()->value(lengthContext));
+    FloatSize boundingBoxSize(
+        lengthContext.valueForLength(styleRef().width(), styleRef(), SVGLengthMode::Width),
+        lengthContext.valueForLength(styleRef().height(), styleRef(), SVGLengthMode::Height));
 
     // Spec: "A negative value is an error."
     if (boundingBoxSize.width() < 0 || boundingBoxSize.height() < 0)
@@ -64,8 +66,8 @@ void LayoutSVGRect::updateShapeFromElement()
     if (!boundingBoxSize.isEmpty()) {
         // Fallback to LayoutSVGShape and path-based hit detection if the rect
         // has rounded corners or a non-scaling or non-simple stroke.
-        if (lengthContext.valueForLength(style()->svgStyle().rx(), styleRef(), SVGLengthMode::Width) > 0
-            || lengthContext.valueForLength(style()->svgStyle().ry(), styleRef(), SVGLengthMode::Height) > 0
+        if (lengthContext.valueForLength(styleRef().svgStyle().rx(), styleRef(), SVGLengthMode::Width) > 0
+            || lengthContext.valueForLength(styleRef().svgStyle().ry(), styleRef(), SVGLengthMode::Height) > 0
             || hasNonScalingStroke()
             || !definitelyHasSimpleStroke()) {
             LayoutSVGShape::updateShapeFromElement();

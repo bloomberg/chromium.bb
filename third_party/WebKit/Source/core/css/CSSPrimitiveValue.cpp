@@ -152,6 +152,11 @@ StringToUnitTable& unitTable()
 
 } // namespace
 
+float CSSPrimitiveValue::clampToCSSLengthRange(double value)
+{
+    return clampTo<float>(value, minValueForCssLength, maxValueForCssLength);
+}
+
 void CSSPrimitiveValue::initUnitTable()
 {
     // Make sure we initialize this during blink initialization
@@ -586,7 +591,7 @@ template<> unsigned CSSPrimitiveValue::computeLength(const CSSToLengthConversion
 
 template<> Length CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
 {
-    return Length(clampTo<float>(computeLengthDouble(conversionData), minValueForCssLength, maxValueForCssLength), Fixed);
+    return Length(clampToCSSLengthRange(computeLengthDouble(conversionData)), Fixed);
 }
 
 template<> short CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)

@@ -92,14 +92,18 @@ bool LayoutSVGImage::updateImageViewport()
     FloatRect oldBoundaries = m_objectBoundingBox;
 
     SVGLengthContext lengthContext(image);
-    m_objectBoundingBox = FloatRect(image->x()->currentValue()->value(lengthContext), image->y()->currentValue()->value(lengthContext), image->width()->currentValue()->value(lengthContext), image->height()->currentValue()->value(lengthContext));
+    m_objectBoundingBox = FloatRect(
+        lengthContext.valueForLength(styleRef().svgStyle().x(), styleRef(), SVGLengthMode::Width),
+        lengthContext.valueForLength(styleRef().svgStyle().y(), styleRef(), SVGLengthMode::Height),
+        lengthContext.valueForLength(styleRef().width(), styleRef(), SVGLengthMode::Width),
+        lengthContext.valueForLength(styleRef().height(), styleRef(), SVGLengthMode::Height));
     bool boundsChanged = oldBoundaries != m_objectBoundingBox;
 
     bool updatedViewport = false;
     ImageResource* cachedImage = m_imageResource->cachedImage();
     if (cachedImage && cachedImage->usesImageContainerSize()) {
         FloatSize imageViewportSize = computeImageViewportSize(*cachedImage);
-        if (LayoutSize(imageViewportSize) != m_imageResource->imageSize(style()->effectiveZoom())
+        if (LayoutSize(imageViewportSize) != m_imageResource->imageSize(styleRef().effectiveZoom())
             || !containerSizeIsSetForRenderer(*cachedImage, this)) {
             m_imageResource->setContainerSizeForRenderer(roundedIntSize(imageViewportSize));
             updatedViewport = true;

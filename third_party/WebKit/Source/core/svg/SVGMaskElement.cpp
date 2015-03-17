@@ -87,14 +87,16 @@ bool SVGMaskElement::isSupportedAttribute(const QualifiedName& attrName)
 
 bool SVGMaskElement::isPresentationAttribute(const QualifiedName& attrName) const
 {
-    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr)
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr
+        || attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr)
         return true;
     return SVGElement::isPresentationAttribute(attrName);
 }
 
 bool SVGMaskElement::isPresentationAttributeWithSVGDOM(const QualifiedName& attrName) const
 {
-    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr)
+    if (attrName == SVGNames::xAttr || attrName == SVGNames::yAttr
+        || attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr)
         return true;
     return SVGElement::isPresentationAttributeWithSVGDOM(attrName);
 }
@@ -106,6 +108,10 @@ void SVGMaskElement::collectStyleForPresentationAttribute(const QualifiedName& n
         addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyX, *m_x->currentValue());
     else if (property == m_y)
         addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyY, *m_y->currentValue());
+    else if (property == m_width)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyWidth, *m_width->currentValue());
+    else if (property == m_height)
+        addSVGLengthPropertyToPresentationAttributeStyle(style, CSSPropertyHeight, *m_height->currentValue());
     else
         SVGElement::collectStyleForPresentationAttribute(name, value, style);
 }
@@ -120,17 +126,14 @@ void SVGMaskElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGElement::InvalidationGuard invalidationGuard(this);
 
     if (attrName == SVGNames::xAttr
-        || attrName == SVGNames::yAttr) {
+        || attrName == SVGNames::yAttr
+        || attrName == SVGNames::widthAttr
+        || attrName == SVGNames::heightAttr) {
         invalidateSVGPresentationAttributeStyle();
         setNeedsStyleRecalc(LocalStyleChange,
             StyleChangeReasonForTracing::fromAttribute(attrName));
-    }
-
-    if (attrName == SVGNames::xAttr
-        || attrName == SVGNames::yAttr
-        || attrName == SVGNames::widthAttr
-        || attrName == SVGNames::heightAttr)
         updateRelativeLengthsInformation();
+    }
 
     LayoutSVGResourceContainer* renderer = toLayoutSVGResourceContainer(this->layoutObject());
     if (renderer)

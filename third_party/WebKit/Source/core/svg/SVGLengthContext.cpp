@@ -24,6 +24,7 @@
 #include "core/svg/SVGLengthContext.h"
 
 #include "core/css/CSSHelper.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/svg/SVGSVGElement.h"
@@ -48,7 +49,7 @@ static inline float dimensionForLengthMode(SVGLengthMode mode, const FloatSize& 
 
 static float convertValueFromPercentageToUserUnits(const SVGLength& value, const FloatSize& viewportSize)
 {
-    return value.scaleByPercentage(dimensionForLengthMode(value.unitMode(), viewportSize));
+    return CSSPrimitiveValue::clampToCSSLengthRange(value.scaleByPercentage(dimensionForLengthMode(value.unitMode(), viewportSize)));
 }
 
 SVGLengthContext::SVGLengthContext(const SVGElement* context)
@@ -131,37 +132,51 @@ float SVGLengthContext::valueForLength(const Length& length, float zoom, float d
 
 float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode, SVGLengthType fromUnit) const
 {
+    float userUnits = value;
     switch (fromUnit) {
     case LengthTypeUnknown:
         return 0;
-    case LengthTypeNumber:
-        return value;
     case LengthTypePX:
-        return value;
+    case LengthTypeNumber:
+        userUnits = value;
+        break;
     case LengthTypePercentage: {
         FloatSize viewportSize;
         if (!determineViewport(viewportSize))
             return 0;
-        return value * dimensionForLengthMode(mode, viewportSize) / 100;
+        userUnits = value * dimensionForLengthMode(mode, viewportSize) / 100;
+        break;
     }
     case LengthTypeEMS:
-        return convertValueFromEMSToUserUnits(value);
+        userUnits = convertValueFromEMSToUserUnits(value);
+        break;
     case LengthTypeEXS:
-        return convertValueFromEXSToUserUnits(value);
+        userUnits = convertValueFromEXSToUserUnits(value);
+        break;
     case LengthTypeCM:
-        return value * cssPixelsPerCentimeter;
+        userUnits = value * cssPixelsPerCentimeter;
+        break;
     case LengthTypeMM:
-        return value * cssPixelsPerMillimeter;
+        userUnits = value * cssPixelsPerMillimeter;
+        break;
     case LengthTypeIN:
-        return value * cssPixelsPerInch;
+        userUnits = value * cssPixelsPerInch;
+        break;
     case LengthTypePT:
-        return value * cssPixelsPerPoint;
+        userUnits = value * cssPixelsPerPoint;
+        break;
     case LengthTypePC:
-        return value * cssPixelsPerPica;
+        userUnits = value * cssPixelsPerPica;
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+        break;
     }
 
-    ASSERT_NOT_REACHED();
-    return 0;
+    // Since we mix css <length> values with svg's length values we need to
+    // clamp values to the narrowest range, otherwise it can result in
+    // rendering issues.
+    return CSSPrimitiveValue::clampToCSSLengthRange(userUnits);
 }
 
 float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mode, SVGLengthType toUnit) const

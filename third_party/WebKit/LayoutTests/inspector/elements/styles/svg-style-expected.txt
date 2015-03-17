@@ -10,6 +10,9 @@ rect  { (svg-style.xhtml:38 -> svg-style.xhtml:38:10)
   fill: red;
 
 [expanded] 
+svg:rect[Attributes Style]  { ()
+
+[expanded] 
 *  { (user agent stylesheet)
   -webkit-transform-origin: 0px 0px 0px;
 

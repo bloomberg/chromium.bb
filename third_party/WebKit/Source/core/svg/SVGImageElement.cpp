@@ -154,13 +154,11 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
     if (!renderer)
         return;
 
-    if (isLengthAttribute) {
-        if (toLayoutSVGImage(renderer)->updateImageViewport())
-            markForLayoutAndParentResourceInvalidation(renderer);
-        return;
-    }
-
-    if (attrName == SVGNames::preserveAspectRatioAttr) {
+    if (isLengthAttribute || attrName == SVGNames::preserveAspectRatioAttr) {
+        // FIXME: if isLengthAttribute then we should avoid this
+        // call if the viewport didn't change, however since we don't
+        // have the computed style yet we can't use updateImageViewport.
+        // See http://crbug.com/466200.
         markForLayoutAndParentResourceInvalidation(renderer);
         return;
     }

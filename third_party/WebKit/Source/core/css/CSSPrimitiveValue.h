@@ -166,6 +166,7 @@ public:
         UOther
     };
     static UnitCategory unitCategory(UnitType);
+    static float clampToCSSLengthRange(double);
 
     static void initUnitTable();
 
