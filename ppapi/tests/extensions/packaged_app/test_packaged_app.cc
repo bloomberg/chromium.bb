@@ -22,11 +22,11 @@ namespace {
 std::string g_last_error;
 pp::Instance* g_instance = NULL;
 
-// This should be the same as FileDescriptorSet::kMaxDescriptorsPerMessage in
-// ipc/file_descriptor_set_posix.h.
+// This should be the same as MessageAttachmentSet::kMaxDescriptorsPerMessage in
+// ipc/ipc_message_attachment_set.h.
 // TODO(yusukes): Once all the NaCl toolchains support C++11, Add
 // #include "ipc/file_descriptor_set_posix.h" and remove the constant.
-const size_t kMaxDescriptorsPerMessage = 7;
+const size_t kMaxDescriptorsPerMessage = 128;
 
 // Returns true if the resource file whose name is |key| exists and its content
 // matches |content|.

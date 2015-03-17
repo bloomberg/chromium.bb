@@ -14,6 +14,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -25,9 +26,15 @@ namespace nacl {
 namespace {
 
 // The maximum number of resource file handles NaClProcessMsg_Start message
-// can have.
-// TODO(yusukes): Increase the number.
-const size_t kMaxPreOpenResourceFiles = 2;
+// can have. Currently IPC::MessageAttachmentSet::kMaxDescriptorsPerMessage
+// is 128 and NaCl sends 5 handles for other purposes, hence 123.
+const size_t kMaxPreOpenResourceFiles = 123;
+
+#if defined(OS_POSIX)
+static_assert(kMaxPreOpenResourceFiles ==
+              IPC::MessageAttachmentSet::kMaxDescriptorsPerMessage - 5,
+              "kMaxPreOpenResourceFiles is not up to date");
+#endif
 
 ppapi::PpapiPermissions GetNaClPermissions(
     uint32 permission_bits,

@@ -65,7 +65,7 @@ class IPC_EXPORT MessageAttachmentSet
   //
   // In debugging mode, it's a fatal error to try and add more than this number
   // of descriptors to a MessageAttachmentSet.
-  static const size_t kMaxDescriptorsPerMessage = 7;
+  static const size_t kMaxDescriptorsPerMessage = 128;
 
   // ---------------------------------------------------------------------------
   // Interfaces for transmission...

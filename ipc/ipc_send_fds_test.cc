@@ -33,8 +33,8 @@ extern "C" {
 
 namespace {
 
-const unsigned kNumFDsToSend = 7;  // per message
-const unsigned kNumMessages = 20;
+const unsigned kNumFDsToSend = 128;  // per message
+const unsigned kNumMessages = 3;
 const char* kDevZeroPath = "/dev/zero";
 
 #if defined(OS_POSIX)

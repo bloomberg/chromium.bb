@@ -37,7 +37,7 @@ bool ReadDataOnReaderThread(int pipe, MessageContents* contents) {
     return false;
 
   contents->data.resize(Channel::kReadBufferSize);
-  contents->fds.resize(MessageAttachmentSet::kMaxDescriptorsPerMessage);
+  contents->fds.resize(NACL_ABI_IMC_DESC_MAX);
 
   NaClAbiNaClImcMsgIoVec iov = { &contents->data[0], contents->data.size() };
   NaClAbiNaClImcMsgHdr msg = {
