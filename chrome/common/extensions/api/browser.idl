@@ -16,10 +16,10 @@ namespace browser {
   interface Functions {
     // Opens a new tab in a browser window associated with the current
     // application and Chrome profile. If no browser window for the Chrome
-    // profile is opened, a new one is opened prior to creating the new tab. The
-    // initial URL of the new tab is specified in |options|.
-    // |options|  : The $(ref:OpenTabOptions) for this function.
-    // |callback| : Called to indicate success or failure.
+    // profile is opened, a new one is opened prior to creating the new tab.
+    // |options| - Configures how the tab should be opened.
+    // |callback| - Called when the tab was successfully created, or failed to
+    // be created. If failed, $(ref:runtime.lastError) will be set.
     static void openTab(OpenTabOptions options,
                         optional Callback callback);
   };
