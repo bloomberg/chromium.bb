@@ -56,17 +56,15 @@ public:
 
     ~FrameFetchContext();
 
-    LocalFrame* frame() const override; // Can be null
-    Document* document() const override { return m_document; } // Can be null
+    Document* document() const { return m_document; } // Can be null
     void setDocument(Document* document) { m_document = document; }
-    DocumentLoader* documentLoader() const override { return m_documentLoader; }
     void clearDocumentLoader() { m_documentLoader = nullptr; }
 
     void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType) override;
     void setFirstPartyForCookies(ResourceRequest&) override;
     CachePolicy cachePolicy() const override;
-    ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type) const;
-    void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue);
+    ResourceRequestCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type) const override;
+    void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) override;
     void dispatchWillSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo()) override;
     void dispatchDidLoadResourceFromMemoryCache(const ResourceRequest&, const ResourceResponse&) override;
     void dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse&, ResourceLoader* = 0) override;
@@ -108,6 +106,7 @@ private:
     explicit FrameFetchContext(DocumentLoader*);
     inline DocumentLoader* ensureLoaderForNotifications();
 
+    LocalFrame* frame() const; // Can be null
     void printAccessDeniedMessage(const KURL&) const;
 
     // FIXME: Oilpan: Ideally this should just be a traced Member but that will

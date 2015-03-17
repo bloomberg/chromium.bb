@@ -29,7 +29,6 @@
 
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/FetchInitiatorTypeNames.h"
-#include "core/dom/Document.h"
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/DocumentResource.h"
@@ -44,8 +43,6 @@
 #include "core/fetch/SubstituteData.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/fetch/XSLStyleSheetResource.h"
-#include "core/frame/LocalFrame.h"
-#include "core/loader/DocumentLoader.h"
 #include "core/timing/ResourceTimingInfo.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -244,7 +241,6 @@ Resource* ResourceFetcher::cachedResource(const KURL& resourceURL) const
 
 ResourcePtr<Resource> ResourceFetcher::fetchSynchronously(FetchRequest& request)
 {
-    ASSERT(document());
     request.mutableResourceRequest().setTimeoutInterval(10);
     ResourceLoaderOptions options(request.options());
     options.synchronousPolicy = RequestSynchronously;
@@ -331,7 +327,6 @@ ResourcePtr<DocumentResource> ResourceFetcher::fetchSVGDocument(FetchRequest& re
 
 ResourcePtr<Resource> ResourceFetcher::fetchLinkResource(Resource::Type type, FetchRequest& request)
 {
-    ASSERT(frame());
     ASSERT(type == Resource::LinkPrefetch || type == Resource::LinkSubresource);
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(type == Resource::LinkPrefetch ? WebURLRequest::RequestContextPrefetch : WebURLRequest::RequestContextSubresource);
@@ -403,7 +398,7 @@ bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sour
         return true;
 
     String errorDescription;
-    if (!resource->passesAccessControlCheck(document(), sourceOrigin, errorDescription)) {
+    if (!resource->passesAccessControlCheck(context().executionContext(), sourceOrigin, errorDescription)) {
         if (resource->type() == Resource::Font)
             toFontResource(resource)->setCORSFailed();
         if (!forPreload && (logErrorsDecision == ShouldLogAccessControlErrors)) {
@@ -899,7 +894,7 @@ void ResourceFetcher::garbageCollectDocumentResources()
 
 void ResourceFetcher::notifyLoadedFromMemoryCache(Resource* resource)
 {
-    if (!frame() || !frame()->page() || resource->status() != Resource::Cached || m_validatedURLs.contains(resource->url()))
+    if (resource->status() != Resource::Cached || m_validatedURLs.contains(resource->url()))
         return;
 
     ResourceRequest request(resource->url());
@@ -954,10 +949,8 @@ void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const 
 #endif
 }
 
-bool ResourceFetcher::isPreloaded(const String& urlString) const
+bool ResourceFetcher::isPreloaded(const KURL& url) const
 {
-    const KURL& url = document()->completeURL(urlString);
-
     if (m_preloads) {
         for (Resource* resource : *m_preloads) {
             if (resource->url() == url)
@@ -1016,11 +1009,10 @@ bool ResourceFetcher::scheduleArchiveLoad(Resource* resource, const ResourceRequ
 void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength)
 {
     TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource);
-    RefPtrWillBeRawPtr<Document> protectDocument(document());
-    RefPtr<DocumentLoader> protectDocumentLoader(documentLoader());
+    RefPtr<ResourceFetcher> protect(this);
     willTerminateResourceLoader(resource->loader());
 
-    if (resource && resource->response().isHTTP() && resource->response().httpStatusCode() < 400 && document()) {
+    if (resource && resource->response().isHTTP() && resource->response().httpStatusCode() < 400) {
         ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
         if (it != m_resourceTimingInfoMap.end()) {
             RefPtr<ResourceTimingInfo> info = it->value;

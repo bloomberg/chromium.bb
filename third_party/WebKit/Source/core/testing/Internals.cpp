@@ -321,7 +321,7 @@ unsigned Internals::hitTestCount(Document* doc, ExceptionState& exceptionState) 
 bool Internals::isPreloaded(const String& url)
 {
     Document* document = contextDocument();
-    return document->fetcher()->isPreloaded(url);
+    return document->fetcher()->isPreloaded(document->completeURL(url));
 }
 
 bool Internals::isLoadingFromMemoryCache(const String& url)

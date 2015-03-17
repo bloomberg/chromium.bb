@@ -244,7 +244,7 @@ void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, con
 
     MixedContentChecker::checkMixedPrivatePublic(frame(), response.remoteIPAddress());
     LinkLoader::loadLinkFromHeader(response.httpHeaderField("Link"), frame()->document());
-    if (documentLoader() == frame()->loader().provisionalDocumentLoader())
+    if (m_documentLoader == frame()->loader().provisionalDocumentLoader())
         handleAcceptClientHintsHeader(response.httpHeaderField("accept-ch"), frame());
 
     frame()->loader().progress().incrementProgress(identifier, response);
@@ -304,6 +304,9 @@ void FrameFetchContext::dispatchDidFail(unsigned long identifier, const Resource
 
 void FrameFetchContext::sendRemainingDelegateMessages(unsigned long identifier, const ResourceResponse& response, int dataLength)
 {
+    if (!frame())
+        return;
+
     InspectorInstrumentation::markResourceAsCached(frame(), identifier);
     if (!response.isNull())
         dispatchDidReceiveResponse(identifier, response);
@@ -380,8 +383,8 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
         return true;
 
     SecurityOrigin* securityOrigin = options.securityOrigin.get();
-    if (!securityOrigin && document())
-        securityOrigin = document()->securityOrigin();
+    if (!securityOrigin && m_document)
+        securityOrigin = m_document->securityOrigin();
 
     if (originRestriction != FetchRequest::NoOriginRestriction && securityOrigin && !securityOrigin->canDisplay(url)) {
         if (!forPreload)
@@ -639,7 +642,7 @@ void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
         if (request.frameType() == WebURLRequest::FrameTypeNone
             || request.frameType() == WebURLRequest::FrameTypeNested
             || request.requestContext() == WebURLRequest::RequestContextForm
-            || url.host() == document()->securityOrigin()->host())
+            || url.host() == m_document->securityOrigin()->host())
         {
             url.setProtocol("https");
             if (url.port() == 80)

@@ -52,9 +52,6 @@ class RawResource;
 class ScriptResource;
 class SubstituteData;
 class XSLStyleSheetResource;
-class Document;
-class DocumentLoader;
-class LocalFrame;
 class KURL;
 class ResourceTimingInfo;
 class ResourceLoaderSet;
@@ -108,16 +105,11 @@ public:
 
     FetchContext& context() const { return *m_context.get(); }
 
-    // DEPRECATED: ResourceFetcher should proxy all usage of major core/ objects through FetchContext.
-    LocalFrame* frame() const { return context().frame(); }
-    Document* document() const { return context().document(); }
-    DocumentLoader* documentLoader() const { return context().documentLoader(); }
-
     void garbageCollectDocumentResources();
 
     int requestCount() const;
 
-    bool isPreloaded(const String& urlString) const;
+    bool isPreloaded(const KURL&) const;
     void clearPreloads();
     void preload(Resource::Type, FetchRequest&, const String& charset);
     void printPreloadStats();
@@ -170,8 +162,6 @@ public:
 
 private:
     friend class ResourceCacheValidationSuppressor;
-    friend class ResourceFetcherUpgradeTest;
-    friend class ResourceFetcherHintsTest;
 
     explicit ResourceFetcher(PassOwnPtrWillBeRawPtr<FetchContext>);
 
