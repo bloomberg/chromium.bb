@@ -311,6 +311,8 @@ void BrowserCdmManager::OnSetServerCertificate(
     int cdm_id,
     uint32_t promise_id,
     const std::vector<uint8_t>& certificate) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   scoped_ptr<SimplePromise> promise(
       new SimplePromise(this, render_frame_id, cdm_id, promise_id));
 
@@ -335,6 +337,8 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
     uint32_t promise_id,
     CdmHostMsg_CreateSession_InitDataType init_data_type,
     const std::vector<uint8>& init_data) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   scoped_ptr<NewSessionPromise> promise(
       new NewSessionPromise(this, render_frame_id, cdm_id, promise_id));
 
@@ -365,9 +369,9 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
 #if defined(OS_ANDROID)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableInfobarForProtectedMediaIdentifier)) {
-    GenerateRequestIfPermitted(
-        render_frame_id, cdm_id, eme_init_data_type,
-        init_data, promise.Pass(), PERMISSION_STATUS_GRANTED);
+    CreateSessionAndGenerateRequestIfPermitted(
+        render_frame_id, cdm_id, eme_init_data_type, init_data, promise.Pass(),
+        true /* allowed */);
     return;
   }
 #endif
@@ -379,17 +383,11 @@ void BrowserCdmManager::OnCreateSessionAndGenerateRequest(
     return;
   }
 
-  std::map<uint64, GURL>::const_iterator iter =
-      cdm_security_origin_map_.find(GetId(render_frame_id, cdm_id));
-  if (iter == cdm_security_origin_map_.end()) {
-    NOTREACHED();
-    promise->reject(MediaKeys::INVALID_STATE_ERROR, 0, "CDM not found.");
-    return;
-  }
-  GURL security_origin = iter->second;
-
-  RequestSessionPermission(render_frame_id, security_origin, cdm_id,
-                           eme_init_data_type, init_data, promise.Pass());
+  CheckPermissionStatus(
+      render_frame_id, cdm_id,
+      base::Bind(&BrowserCdmManager::CreateSessionAndGenerateRequestIfPermitted,
+                 this, render_frame_id, cdm_id, eme_init_data_type, init_data,
+                 base::Passed(&promise)));
 }
 
 void BrowserCdmManager::OnUpdateSession(int render_frame_id,
@@ -397,6 +395,8 @@ void BrowserCdmManager::OnUpdateSession(int render_frame_id,
                                         uint32_t promise_id,
                                         const std::string& session_id,
                                         const std::vector<uint8>& response) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   scoped_ptr<SimplePromise> promise(
       new SimplePromise(this, render_frame_id, cdm_id, promise_id));
 
@@ -425,6 +425,8 @@ void BrowserCdmManager::OnCloseSession(int render_frame_id,
                                        int cdm_id,
                                        uint32_t promise_id,
                                        const std::string& session_id) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
   scoped_ptr<SimplePromise> promise(
       new SimplePromise(this, render_frame_id, cdm_id, promise_id));
 
@@ -438,6 +440,7 @@ void BrowserCdmManager::OnCloseSession(int render_frame_id,
 }
 
 void BrowserCdmManager::OnDestroyCdm(int render_frame_id, int cdm_id) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   RemoveCdm(GetId(render_frame_id, cdm_id));
 }
 
@@ -490,52 +493,70 @@ void BrowserCdmManager::RemoveCdm(uint64 id) {
 
   cdm_map_.erase(id);
   cdm_security_origin_map_.erase(id);
-  if (cdm_cancel_permission_map_.count(id)) {
-    cdm_cancel_permission_map_[id].Run();
-    cdm_cancel_permission_map_.erase(id);
-  }
 }
 
-void BrowserCdmManager::RequestSessionPermission(
+void BrowserCdmManager::CheckPermissionStatus(
     int render_frame_id,
-    const GURL& security_origin,
     int cdm_id,
-    media::EmeInitDataType init_data_type,
-    const std::vector<uint8>& init_data,
-    scoped_ptr<media::NewSessionCdmPromise> promise) {
+    const PermissionStatusCB& permission_status_cb) {
+  // Always called on |task_runner_|, which may not be on the UI thread.
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+  GURL security_origin;
+  std::map<uint64, GURL>::const_iterator iter =
+      cdm_security_origin_map_.find(GetId(render_frame_id, cdm_id));
+  DCHECK(iter != cdm_security_origin_map_.end());
+  if (iter != cdm_security_origin_map_.end())
+    security_origin = iter->second;
+
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&BrowserCdmManager::RequestSessionPermission, this,
-                   render_frame_id, security_origin, cdm_id, init_data_type,
-                   init_data, base::Passed(&promise)));
-    return;
+        base::Bind(&BrowserCdmManager::CheckPermissionStatusOnUIThread, this,
+                   render_frame_id, security_origin, permission_status_cb));
+  } else {
+    CheckPermissionStatusOnUIThread(render_frame_id, security_origin,
+                                    permission_status_cb);
   }
+}
+
+// Note: This function runs on the UI thread, which may be different from
+// |task_runner_|. Be careful about thread safety!
+void BrowserCdmManager::CheckPermissionStatusOnUIThread(
+    int render_frame_id,
+    const GURL& security_origin,
+    const base::Callback<void(bool)>& permission_status_cb) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RenderFrameHost* rfh =
       RenderFrameHost::FromID(render_process_id_, render_frame_id);
   WebContents* web_contents = WebContents::FromRenderFrameHost(rfh);
-  DCHECK(web_contents);
-  GetContentClient()->browser()->RequestPermission(
-      content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER, web_contents,
-      0,  // bridge id
-      security_origin,
-      // Only implemented for Android infobars which do not support
-      // user gestures.
-      true, base::Bind(&BrowserCdmManager::GenerateRequestIfPermitted, this,
-                       render_frame_id, cdm_id, init_data_type, init_data,
-                       base::Passed(&promise)));
+  GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
+
+  PermissionStatus permission_status =
+      GetContentClient()->browser()->GetPermissionStatus(
+          content::PERMISSION_PROTECTED_MEDIA_IDENTIFIER,
+          web_contents->GetBrowserContext(), security_origin, embedding_origin);
+
+  bool allowed = (permission_status == PERMISSION_STATUS_GRANTED);
+  if (!task_runner_->RunsTasksOnCurrentThread()) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(permission_status_cb, allowed));
+  } else {
+    permission_status_cb.Run(allowed);
+  }
 }
 
-void BrowserCdmManager::GenerateRequestIfPermitted(
+void BrowserCdmManager::CreateSessionAndGenerateRequestIfPermitted(
     int render_frame_id,
     int cdm_id,
     media::EmeInitDataType init_data_type,
     const std::vector<uint8>& init_data,
     scoped_ptr<media::NewSessionCdmPromise> promise,
-    PermissionStatus permission) {
-  cdm_cancel_permission_map_.erase(GetId(render_frame_id, cdm_id));
-  if (permission != PERMISSION_STATUS_GRANTED) {
+    bool permission_was_allowed) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+  if (!permission_was_allowed) {
     promise->reject(MediaKeys::NOT_SUPPORTED_ERROR, 0, "Permission denied.");
     return;
   }

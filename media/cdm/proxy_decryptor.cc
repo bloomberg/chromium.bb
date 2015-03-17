@@ -133,15 +133,13 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& init_data_type,
     return true;
   }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   media_permission_->RequestPermission(
       MediaPermission::PROTECTED_MEDIA_IDENTIFIER, security_origin_,
       base::Bind(&ProxyDecryptor::OnPermissionStatus,
                  weak_ptr_factory_.GetWeakPtr(), session_type, init_data_type,
                  init_data_vector, base::Passed(&promise)));
 #else
-  // TODO(xhwang): Fix the Android path by requesting permission for key systems
-  // that don't use AesDecryptor in M43.
   OnPermissionStatus(session_type, init_data_type, init_data_vector,
                      promise.Pass(), true /* granted */);
 #endif
@@ -157,8 +155,8 @@ void ProxyDecryptor::OnPermissionStatus(
     bool granted) {
   // ProxyDecryptor is only used by Prefixed EME, where RequestPermission() is
   // only for triggering the permission UI. Later CheckPermission() will be
-  // called (e.g. in PlatformVerificationFlow) and the permission status will be
-  // evaluated there.
+  // called (e.g. in PlatformVerificationFlow on ChromeOS; in BrowserCdmManager
+  // on Android) and the permission status will be evaluated then.
   DVLOG_IF(1, !granted) << "Permission request rejected.";
 
   const uint8* init_data_vector_data =

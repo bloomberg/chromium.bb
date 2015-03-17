@@ -144,27 +144,30 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
   // Removes the CDM with the specified id.
   void RemoveCdm(uint64 id);
 
-  // Requests permission for the given protected-media session (infobar).
-  void RequestSessionPermission(
+  using PermissionStatusCB = base::Callback<void(bool)>;
+
+  // Checks protected media identifier permission for the given
+  // |render_frame_id| and |cdm_id|.
+  void CheckPermissionStatus(int render_frame_id,
+                             int cdm_id,
+                             const PermissionStatusCB& permission_status_cb);
+
+  // Checks permission status on Browser UI thread. Runs |permission_status_cb|
+  // on the |task_runner_| with the permission status.
+  void CheckPermissionStatusOnUIThread(
       int render_frame_id,
       const GURL& security_origin,
-      int cdm_id,
-      media::EmeInitDataType init_data_type,
-      const std::vector<uint8>& init_data,
-      scoped_ptr<media::NewSessionCdmPromise> promise);
+      const PermissionStatusCB& permission_status_cb);
 
-  // If |permitted| is false, it does nothing but send
-  // |CdmMsg_LegacySessionError| IPC message.
-  // The primary use case is infobar permission callback, i.e., when infobar
-  // can decide user's intention either from interacting with the actual info
-  // bar or from the saved preference.
-  void GenerateRequestIfPermitted(
+  // Calls CreateSessionAndGenerateRequest() on the CDM if
+  // |permission_was_allowed| is true. Otherwise rejects the |promise|.
+  void CreateSessionAndGenerateRequestIfPermitted(
       int render_frame_id,
       int cdm_id,
       media::EmeInitDataType init_data_type,
       const std::vector<uint8>& init_data,
       scoped_ptr<media::NewSessionCdmPromise> promise,
-      PermissionStatus permission);
+      bool permission_was_allowed);
 
   const int render_process_id_;
 
@@ -181,9 +184,6 @@ class CONTENT_EXPORT BrowserCdmManager : public BrowserMessageFilter {
 
   // Map of CDM's security origin.
   std::map<uint64, GURL> cdm_security_origin_map_;
-
-  // Map of callbacks to cancel the permission request.
-  std::map<uint64, base::Closure> cdm_cancel_permission_map_;
 
   base::WeakPtrFactory<BrowserCdmManager> weak_ptr_factory_;
 
