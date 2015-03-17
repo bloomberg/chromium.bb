@@ -102,16 +102,15 @@ dev_list="apache2.2-bin bison cdbs curl dpkg-dev elfutils devscripts fakeroot
           language-pack-fr language-pack-he language-pack-zh-hant
           libapache2-mod-php5 libasound2-dev libbrlapi-dev libav-tools
           libbz2-dev libcairo2-dev libcap-dev libcups2-dev libcurl4-gnutls-dev
-          libdrm-dev libelf-dev libexif-dev libgconf2-dev libgl1-mesa-dev
-          libglib2.0-dev libglu1-mesa-dev libgnome-keyring-dev libgtk2.0-dev
-          libkrb5-dev libnspr4-dev libnss3-dev libpam0g-dev libpci-dev
-          libpulse-dev libsctp-dev libspeechd-dev libsqlite3-dev libssl-dev
-          libudev-dev libwww-perl libxslt1-dev libxss-dev libxt-dev libxtst-dev
-          mesa-common-dev openbox patch perl php5-cgi pkg-config python
-          python-cherrypy3 python-crypto python-dev python-numpy python-opencv
-          python-openssl python-psutil rpm ruby subversion ttf-dejavu-core
-          ttf-indic-fonts ttf-kochi-gothic ttf-kochi-mincho wdiff xfonts-mathml
-          zip $chromeos_dev_list"
+          libdrm-dev libelf-dev libexif-dev libgconf2-dev libglib2.0-dev
+          libglu1-mesa-dev libgnome-keyring-dev libgtk2.0-dev libkrb5-dev
+          libnspr4-dev libnss3-dev libpam0g-dev libpci-dev libpulse-dev
+          libsctp-dev libspeechd-dev libsqlite3-dev libssl-dev libudev-dev
+          libwww-perl libxslt1-dev libxss-dev libxt-dev libxtst-dev openbox
+          patch perl php5-cgi pkg-config python python-cherrypy3 python-crypto
+          python-dev python-numpy python-opencv python-openssl python-psutil
+          rpm ruby subversion ttf-dejavu-core ttf-indic-fonts ttf-kochi-gothic
+          ttf-kochi-mincho wdiff xfonts-mathml zip $chromeos_dev_list"
 
 # 64-bit systems need a minimum set of 32-bit compat packages for the pre-built
 # NaCl binaries.
@@ -164,14 +163,16 @@ nacl_list="g++-mingw-w64-i686 lib32z1-dev
 # it depends on mesa, and only one version of mesa can exists on the system.
 # Hence we must match the same version or this entire script will fail.
 mesa_variant=""
-for variant in "-lts-quantal" "-lts-raring" "-lts-saucy" "-lts-trusty"; do
+for variant in "-lts-quantal" "-lts-raring" "-lts-saucy" "-lts-trusty" \
+               "-lts-utopic"; do
   if $(dpkg-query -Wf'${Status}' libgl1-mesa-glx${variant} 2>/dev/null | \
        grep -q " ok installed"); then
     mesa_variant="${variant}"
   fi
 done
 dev_list="${dev_list} libgbm-dev${mesa_variant}
-          libgles2-mesa-dev${mesa_variant}"
+          libgles2-mesa-dev${mesa_variant} libgl1-mesa-dev${mesa_variant}
+          mesa-common-dev${mesa_variant}"
 nacl_list="${nacl_list} libgl1-mesa-glx${mesa_variant}:i386"
 
 # Some package names have changed over time
