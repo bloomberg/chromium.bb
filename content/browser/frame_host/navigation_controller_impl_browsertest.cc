@@ -170,6 +170,73 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 namespace {
 
+class NoNavigationsObserver : public WebContentsObserver {
+ public:
+  // Observes navigation for the specified |web_contents|.
+  explicit NoNavigationsObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+ private:
+  void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
+                           const LoadCommittedDetails& details,
+                           const FrameNavigateParams& params) override {
+    FAIL() << "No navigations should occur";
+  }
+};
+
+}  // namespace
+
+// Some pages create a popup, then write an iframe into it. This causes a
+// subframe navigation without having any committed entry. Such navigations
+// just get thrown on the ground, but we shouldn't crash.
+//
+// This test actually hits NAVIGATION_TYPE_NAV_IGNORE three times. Two of them,
+// the initial window.open() and the iframe creation, don't try to create
+// navigation entries, and the third, the new navigation, tries to.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, SubframeOnEmptyPage) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  // Pop open a new window.
+  ShellAddedObserver new_shell_observer;
+  std::string script = "window.open()";
+  EXPECT_TRUE(content::ExecuteScript(root->current_frame_host(), script));
+  Shell* new_shell = new_shell_observer.GetShell();
+  ASSERT_NE(new_shell->web_contents(), shell()->web_contents());
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())->
+          GetFrameTree()->root();
+
+  // Make a new iframe in it.
+  NoNavigationsObserver observer(new_shell->web_contents());
+  script = "var iframe = document.createElement('iframe');"
+           "iframe.src = 'data:text/html,<p>some page</p>';"
+           "document.body.appendChild(iframe);";
+  EXPECT_TRUE(content::ExecuteScript(new_root->current_frame_host(), script));
+  // The success check is of the last-committed entry, and there is none.
+  WaitForLoadStopWithoutSuccessCheck(new_shell->web_contents());
+
+  ASSERT_EQ(1U, new_root->child_count());
+  ASSERT_NE(nullptr, new_root->child_at(0));
+
+  // Navigate it.
+  GURL frame_url = embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_2.html");
+  script = "location.assign('" + frame_url.spec() + "')";
+  EXPECT_TRUE(content::ExecuteScript(
+      new_root->child_at(0)->current_frame_host(), script));
+
+  // Success is not crashing, and not navigating.
+  EXPECT_EQ(nullptr,
+            new_shell->web_contents()->GetController().GetLastCommittedEntry());
+}
+
+namespace {
+
 class FrameNavigateParamsCapturer : public WebContentsObserver {
  public:
   // Observes navigation for the specified |node|.
@@ -315,7 +382,7 @@ class LoadCommittedCapturer : public WebContentsObserver {
 // classified.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        NavigationTypeClassification_NewPage) {
-  NavigateToURL(shell(), GURL("about:blank"));
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
 
   FrameTreeNode* root =
       static_cast<WebContentsImpl*>(shell()->web_contents())->
@@ -760,7 +827,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // classified.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        NavigationTypeClassification_ClientSideRedirect) {
-  NavigateToURL(shell(), GURL("about:blank"));
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   FrameTreeNode* root =

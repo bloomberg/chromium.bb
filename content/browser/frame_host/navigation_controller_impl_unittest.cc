@@ -1961,31 +1961,6 @@ TEST_F(NavigationControllerTest, NewSubframe) {
   EXPECT_EQ(params.page_id, details.entry->GetPageID());
 }
 
-// Some pages create a popup, then write an iframe into it. This causes a
-// subframe navigation without having any committed entry. Such navigations
-// just get thrown on the ground, but we shouldn't crash.
-TEST_F(NavigationControllerTest, SubframeOnEmptyPage) {
-  NavigationControllerImpl& controller = controller_impl();
-  TestNotificationTracker notifications;
-  RegisterForAllNavNotifications(&notifications, &controller);
-
-  // Navigation controller currently has no entries.
-  const GURL url("http://foo2");
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.page_id = 1;
-  params.url = url;
-  params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
-  params.should_update_history = false;
-  params.gesture = NavigationGestureAuto;
-  params.is_post = false;
-  params.page_state = PageState::CreateFromURL(url);
-
-  LoadCommittedDetails details;
-  EXPECT_FALSE(controller.RendererDidNavigate(main_test_rfh(), params,
-                                              &details));
-  EXPECT_EQ(0U, notifications.size());
-}
-
 // Auto subframes are ones the page loads automatically like ads. They should
 // not create new navigation entries.
 TEST_F(NavigationControllerTest, AutoSubframe) {
