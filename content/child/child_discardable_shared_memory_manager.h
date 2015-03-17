@@ -7,6 +7,7 @@
 
 #include "base/memory/discardable_memory_shmem_allocator.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
@@ -38,12 +39,14 @@ class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
   scoped_ptr<base::DiscardableSharedMemory>
   AllocateLockedDiscardableSharedMemory(size_t size,
                                         DiscardableSharedMemoryId id);
+  void DeletedDiscardableSharedMemory(DiscardableSharedMemoryId id);
   void MemoryUsageChanged(size_t new_bytes_allocated,
                           size_t new_bytes_free) const;
 
   mutable base::Lock lock_;
   DiscardableSharedMemoryHeap heap_;
   scoped_refptr<ThreadSafeSender> sender_;
+  base::WeakPtrFactory<ChildDiscardableSharedMemoryManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildDiscardableSharedMemoryManager);
 };
