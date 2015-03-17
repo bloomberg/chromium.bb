@@ -635,9 +635,13 @@
             '../display/display.gyp:display_util',
           ],
         }],
-        ['OS=="linux" and chromeos==0', {
+        ['OS=="linux" and chromeos==0 and use_ozone==0', {
           'dependencies': [
             '../../build/linux/system.gyp:atk',
+           ],
+        }],
+        ['OS=="linux" and chromeos==0', {
+          'dependencies': [
             '../shell_dialogs/shell_dialogs.gyp:shell_dialogs',
           ],
           'sources!': [
