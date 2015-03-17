@@ -83,6 +83,9 @@ sinon.Spy.prototype.callCount;
 /** @type {boolean} */
 sinon.Spy.prototype.called = false;
 
+/** @type {boolean} */
+sinon.Spy.prototype.calledOnce = false;
+
 /** @type {function(...):boolean} */
 sinon.Spy.prototype.calledWith = function() {};
 
@@ -90,6 +93,8 @@ sinon.Spy.prototype.calledWith = function() {};
 sinon.Spy.prototype.getCall = function(index) {};
 
 sinon.Spy.prototype.reset = function() {};
+
+sinon.Spy.prototype.restore = function() {};
 
 /**
  * @param {Object} obj

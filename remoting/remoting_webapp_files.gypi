@@ -74,6 +74,7 @@
       'webapp/crd/js/error_unittest.js',
       'webapp/crd/js/fallback_signal_strategy_unittest.js',
       'webapp/crd/js/host_table_entry_unittest.js',
+      'webapp/crd/js/identity_unittest.js',
       'webapp/crd/js/l10n_unittest.js',
       'webapp/crd/js/menu_button_unittest.js',
       'webapp/crd/js/xhr_unittest.js',

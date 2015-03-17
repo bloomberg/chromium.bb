@@ -104,7 +104,11 @@ chromeMocks.runtime.sendMessage = function(extensionId, message,
 chromeMocks.runtime.id = 'extensionId';
 
 /** @type {Object} */
-chromeMocks.storage = {};
+chromeMocks.runtime.lastError = {
+  /** @type {string|undefined} */
+  message: undefined
+};
+
 
 // Sample implementation of chrome.StorageArea according to
 // https://developer.chrome.com/apps/storage#type-StorageArea
@@ -170,8 +174,40 @@ chromeMocks.StorageArea.prototype.clear = function() {
   this.storage_ = null;
 };
 
+/** @type {Object} */
+chromeMocks.storage = {};
+
 /** @type {chromeMocks.StorageArea} */
 chromeMocks.storage.local = new chromeMocks.StorageArea();
+
+
+/** @constructor */
+chromeMocks.Identity = function() {
+  /** @private {string|undefined} */
+  this.token_ = undefined;
+};
+
+/**
+ * @param {Object} options
+ * @param {function(string=):void} callback
+ */
+chromeMocks.Identity.prototype.getAuthToken = function(options, callback) {
+  // Don't use setTimeout because sinon mocks it.
+  window.requestAnimationFrame(callback.bind(null, this.token_));
+};
+
+/** @param {string} token */
+chromeMocks.Identity.prototype.mock$setToken = function(token) {
+  this.token_ = token;
+};
+
+chromeMocks.Identity.prototype.mock$clearToken = function() {
+  this.token_ = undefined;
+};
+
+/** @type {chromeMocks.Identity} */
+chromeMocks.identity = new chromeMocks.Identity();
+
 
 var originals_ = null;
 
