@@ -209,6 +209,8 @@
         'browser/chromeos/extensions/device_local_account_external_policy_loader.h',
         'browser/chromeos/extensions/device_local_account_management_policy_provider.cc',
         'browser/chromeos/extensions/device_local_account_management_policy_provider.h',
+        'browser/chromeos/extensions/dictionary_event_router.cc',
+        'browser/chromeos/extensions/dictionary_event_router.h',
         'browser/chromeos/extensions/extension_system_event_observer.cc',
         'browser/chromeos/extensions/extension_system_event_observer.h',
         'browser/chromeos/extensions/external_cache.cc',

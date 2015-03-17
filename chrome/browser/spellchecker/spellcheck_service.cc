@@ -74,6 +74,10 @@ SpellcheckService::~SpellcheckService() {
   pref_change_registrar_.RemoveAll();
 }
 
+base::WeakPtr<SpellcheckService> SpellcheckService::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 // static
 int SpellcheckService::GetSpellCheckLanguages(
     content::BrowserContext* context,

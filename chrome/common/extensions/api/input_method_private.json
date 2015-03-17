@@ -171,6 +171,32 @@
             }
           }
         ]
+      }, {
+        "name": "onDictionaryLoaded",
+        "type": "function",
+        "description": "Fired when the custom spelling dictionary is loaded.",
+        "parameters": []
+      }, {
+        "name": "onDictionaryChanged",
+        "type": "function",
+        "description": "Fired when words are added or removed from the custom spelling dictionary.",
+        "parameters": [
+          {
+            "name": "added",
+            "type": "array",
+            "description": "List of added words.",
+            "items": {
+              "type": "string"
+            }
+          }, {
+            "name": "removed",
+            "type": "array",
+            "description": "List of removed words.",
+            "items": {
+              "type": "string"
+            }
+          }
+        ]
       }
     ]
   }

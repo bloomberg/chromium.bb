@@ -8,7 +8,8 @@ var kInvalidInputMethod = 'xx::xxx';
 
 var testParams = {
   initialInputMethod: '',
-  newInputMethod: ''
+  newInputMethod: '',
+  dictionaryLoaded: null,
 };
 
 // The tests needs to be executed in order.
@@ -99,36 +100,100 @@ function getListTest() {
   });
 }
 
-function initDictionaryNotLoadedTest() {
-  // This test must come first because the dictionary is only lazy loaded after
-  // this call is made.
-  chrome.inputMethodPrivate.fetchAllDictionaryWords(function(words) {
-    chrome.test.assertTrue(words === undefined);
-    chrome.test.assertTrue(!!chrome.runtime.lastError);
-    chrome.test.succeed();
+// Helper function
+function getFetchPromise() {
+  return new Promise(function(resolve, reject) {
+    chrome.inputMethodPrivate.fetchAllDictionaryWords(function(words) {
+      if (!!chrome.runtime.lastError) {
+        reject(Error(chrome.runtime.lastError));
+      } else {
+        resolve(words);
+      }
+    });
   });
 }
 
-function initDictionaryTests() {
-  chrome.inputMethodPrivate.fetchAllDictionaryWords(function(words) {
-    chrome.test.assertTrue(words !== undefined);
-    chrome.test.assertTrue(words.length === 0);
-    chrome.test.succeed();
+// Helper function
+function getAddPromise(word) {
+  return new Promise(function(resolve, reject) {
+    chrome.inputMethodPrivate.addWordToDictionary(word, function() {
+      if (!!chrome.runtime.lastError) {
+        reject(Error(chrome.runtime.lastError));
+      } else {
+        resolve();
+      }
+    });
   });
+}
+
+function loadDictionaryAsyncTest() {
+  testParams.dictionaryLoaded = new Promise(function(resolve, reject) {
+    var message = 'before';
+    chrome.inputMethodPrivate.onDictionaryLoaded.addListener(
+        function listener() {
+          chrome.inputMethodPrivate.onDictionaryLoaded.removeListener(listener);
+          chrome.test.assertEq(message, 'after');
+          resolve();
+        });
+    message = 'after';
+  });
+  // We don't need to wait for the promise to resolve before continuing since
+  // promises are async wrappers.
+  chrome.test.succeed();
+}
+
+function fetchDictionaryTest() {
+  testParams.dictionaryLoaded
+      .then(function () {
+        return getFetchPromise();
+      })
+      .then(function confirmFetch(words) {
+        chrome.test.assertTrue(words !== undefined);
+        chrome.test.assertTrue(words.length === 0);
+        chrome.test.succeed();
+      });
 }
 
 function addWordToDictionaryTest() {
-  chrome.inputMethodPrivate.addWordToDictionary('helloworld', function() {
-    chrome.inputMethodPrivate.fetchAllDictionaryWords(function(words) {
-      chrome.test.assertTrue(words.length === 1);
-      chrome.test.assertEq(words[0], 'helloworld');
-      chrome.test.succeed();
-    });
-  });
+  var wordToAdd = 'helloworld';
+  testParams.dictionaryLoaded
+      .then(function() {
+        return getAddPromise(wordToAdd);
+      })
+      // Adding the same word results in an error.
+      .then(function() {
+        return getAddPromise(wordToAdd);
+      })
+      .catch(function(error) {
+        chrome.test.assertTrue(!!error.message);
+        return getFetchPromise();
+      })
+      .then(function(words) {
+        chrome.test.assertTrue(words.length === 1);
+        chrome.test.assertEq(words[0], wordToAdd);
+        chrome.test.succeed();
+      });
+}
+
+function dictionaryChangedTest() {
+  var wordToAdd = 'helloworld2';
+  testParams.dictionaryLoaded
+      .then(function() {
+        chrome.inputMethodPrivate.onDictionaryChanged.addListener(
+            function(added, removed) {
+              chrome.test.assertTrue(added.length === 1);
+              chrome.test.assertTrue(removed.length === 0);
+              chrome.test.assertEq(added[0], wordToAdd);
+              chrome.test.succeed();
+            });
+      })
+      .then(function() {
+        return getAddPromise(wordToAdd);
+      });
 }
 
 chrome.test.sendMessage('ready');
 chrome.test.runTests(
     [initTests, setTest, getTest, observeTest, setInvalidTest, getListTest,
-     initDictionaryNotLoadedTest, initDictionaryTests,
-     addWordToDictionaryTest]);
+     loadDictionaryAsyncTest, fetchDictionaryTest, addWordToDictionaryTest,
+     dictionaryChangedTest]);

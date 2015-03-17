@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/extensions/dictionary_event_router.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
@@ -156,12 +157,22 @@ ExtensionFunction::ResponseAction AddWordToDictionaryFunction::Run() {
 }
 
 // static
+const char InputMethodAPI::kOnDictionaryChanged[] =
+    "inputMethodPrivate.onDictionaryChanged";
+
+// static
+const char InputMethodAPI::kOnDictionaryLoaded[] =
+    "inputMethodPrivate.onDictionaryLoaded";
+
+// static
 const char InputMethodAPI::kOnInputMethodChanged[] =
     "inputMethodPrivate.onChanged";
 
 InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
     : context_(context) {
   EventRouter::Get(context_)->RegisterObserver(this, kOnInputMethodChanged);
+  EventRouter::Get(context_)->RegisterObserver(this, kOnDictionaryChanged);
+  EventRouter::Get(context_)->RegisterObserver(this, kOnDictionaryLoaded);
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<GetInputMethodConfigFunction>();
@@ -185,17 +196,26 @@ std::string InputMethodAPI::GetInputMethodForXkb(const std::string& xkb_id) {
 }
 
 void InputMethodAPI::Shutdown() {
-  // UnregisterObserver may have already been called in OnListenerAdded,
-  // but it is safe to call it more than once.
   EventRouter::Get(context_)->UnregisterObserver(this);
 }
 
 void InputMethodAPI::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
-  DCHECK(!input_method_event_router_.get());
-  input_method_event_router_.reset(
-      new chromeos::ExtensionInputMethodEventRouter(context_));
-  EventRouter::Get(context_)->UnregisterObserver(this);
+  if (details.event_name == kOnInputMethodChanged) {
+    if (!input_method_event_router_.get()) {
+      input_method_event_router_.reset(
+          new chromeos::ExtensionInputMethodEventRouter(context_));
+    }
+  } else if (details.event_name == kOnDictionaryChanged ||
+             details.event_name == kOnDictionaryLoaded) {
+    if (!dictionary_event_router_.get()) {
+      dictionary_event_router_.reset(
+          new chromeos::ExtensionDictionaryEventRouter(context_));
+    }
+    if (details.event_name == kOnDictionaryLoaded) {
+      dictionary_event_router_->DispatchLoadedEventIfLoaded();
+    }
+  }
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<InputMethodAPI> >

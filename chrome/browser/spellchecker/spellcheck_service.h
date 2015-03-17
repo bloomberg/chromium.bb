@@ -54,6 +54,8 @@ class SpellcheckService : public KeyedService,
   explicit SpellcheckService(content::BrowserContext* context);
   ~SpellcheckService() override;
 
+  base::WeakPtr<SpellcheckService> GetWeakPtr();
+
   // This function computes a vector of strings which are to be displayed in
   // the context menu over a text area for changing spell check languages. It
   // returns the index of the current spell check language in the vector.
