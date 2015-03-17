@@ -70,8 +70,6 @@ const unsigned int kGeolocationPollIntervalSeconds = 30 * 60;
 // How often, in seconds, to sample the hardware state.
 static const unsigned int kHardwareStatusSampleIntervalSeconds = 120;
 
-const int64 kMillisecondsPerDay = Time::kMicrosecondsPerDay / 1000;
-
 // Keys for the geolocation status dictionary in local state.
 const char kLatitude[] = "latitude";
 const char kLongitude[] = "longitude";
@@ -518,7 +516,7 @@ void DeviceStatusCollector::GetActivityTimes(
         it.value().GetAsInteger(&activity_milliseconds)) {
       // This is correct even when there are leap seconds, because when a leap
       // second occurs, two consecutive seconds have the same timestamp.
-      int64 end_timestamp = start_timestamp + kMillisecondsPerDay;
+      int64 end_timestamp = start_timestamp + Time::kMillisecondsPerDay;
 
       em::ActiveTimePeriod* active_period = request->add_active_period();
       em::TimePeriod* period = active_period->mutable_time_period();

@@ -233,13 +233,16 @@ BASE_EXPORT std::ostream& operator<<(std::ostream& os, TimeDelta time_delta);
 // Represents a wall clock time in UTC.
 class BASE_EXPORT Time {
  public:
+  static const int64 kHoursPerDay = 24;
   static const int64 kMillisecondsPerSecond = 1000;
+  static const int64 kMillisecondsPerDay = kMillisecondsPerSecond * 60 * 60 *
+                                           kHoursPerDay;
   static const int64 kMicrosecondsPerMillisecond = 1000;
   static const int64 kMicrosecondsPerSecond = kMicrosecondsPerMillisecond *
                                               kMillisecondsPerSecond;
   static const int64 kMicrosecondsPerMinute = kMicrosecondsPerSecond * 60;
   static const int64 kMicrosecondsPerHour = kMicrosecondsPerMinute * 60;
-  static const int64 kMicrosecondsPerDay = kMicrosecondsPerHour * 24;
+  static const int64 kMicrosecondsPerDay = kMicrosecondsPerHour * kHoursPerDay;
   static const int64 kMicrosecondsPerWeek = kMicrosecondsPerDay * 7;
   static const int64 kNanosecondsPerMicrosecond = 1000;
   static const int64 kNanosecondsPerSecond = kNanosecondsPerMicrosecond *

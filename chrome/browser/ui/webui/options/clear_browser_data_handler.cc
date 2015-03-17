@@ -67,9 +67,8 @@ void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
   base::Time lastClearBrowsingDataTime = base::Time::FromInternalValue(
       profile->GetPrefs()->GetInt64(prefs::kLastClearBrowsingDataTime));
 
-  const int64 kHoursPerDay = 24;
   bool visible = (base::Time::Now() - lastClearBrowsingDataTime) <=
-      base::TimeDelta::FromHours(kHoursPerDay);
+      base::TimeDelta::FromHours(base::Time::kHoursPerDay);
 
   base::ListValue args;
   args.AppendBoolean(visible);
