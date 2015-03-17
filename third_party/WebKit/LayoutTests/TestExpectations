@@ -1387,11 +1387,6 @@ crbug.com/392046 [ Win ] fast/ruby/select-ruby.html [ Pass Failure ]
 crbug.com/392046 [ Win ] scrollbars/rtl/overflow-scroll-rtl.html [ Pass ImageOnlyFailure ]
 crbug.com/392046 [ Win ] fast/parser/fonts.html [ Pass Failure ]
 
-# Needed for pending Skia roll (reed)
-crbug.com/467060             svg/custom/oversized-pattern-scale.svg [ NeedsManualRebaseline ]
-crbug.com/467060             svg/custom/pattern-in-defs.svg         [ NeedsManualRebaseline ]
-crbug.com/467060 [ Release ] svg/custom/massive-coordinates.svg     [ NeedsManualRebaseline ]
-
 crbug.com/392095 webaudio/realtimeanalyser-fft-scaling.html [ Pass Failure ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
