@@ -30,6 +30,14 @@ namespace {
 // realtime messages with respect to sysex.
 const size_t kSendBufferSize = 256;
 
+// Minimum client id for which we will have ALSA card devices for. When we
+// are searching for card devices (used to get the path, id, and manufacturer),
+// we don't want to get confused by kernel clients that do not have a card.
+// See seq_clientmgr.c in the ALSA code for this.
+// TODO(agoode): Add proper client -> card export from the kernel to avoid
+//               hardcoding.
+const int kMinimumClientIdForCards = 16;
+
 // Constants for the capabilities we search for in inputs and outputs.
 // See http://www.alsa-project.org/alsa-doc/alsa-lib/seq.html.
 const unsigned int kRequiredInputPortCaps =
@@ -58,6 +66,38 @@ MidiManagerAlsa::MidiManagerAlsa()
   // Initialize decoder.
   snd_midi_event_new(0, &decoder_);
   snd_midi_event_no_status(decoder_, 1);
+}
+
+MidiManagerAlsa::~MidiManagerAlsa() {
+  // Tell the event thread it will soon be time to shut down. This gives
+  // us assurance the thread will stop in case the SND_SEQ_EVENT_CLIENT_EXIT
+  // message is lost.
+  {
+    base::AutoLock lock(shutdown_lock_);
+    event_thread_shutdown_ = true;
+  }
+
+  // Stop the send thread.
+  send_thread_.Stop();
+
+  // Close the out client. This will trigger the event thread to stop,
+  // because of SND_SEQ_EVENT_CLIENT_EXIT.
+  if (out_client_)
+    snd_seq_close(out_client_);
+
+  // Wait for the event thread to stop.
+  event_thread_.Stop();
+
+  // Close the in client.
+  if (in_client_)
+    snd_seq_close(in_client_);
+
+  // Free the decoder.
+  snd_midi_event_free(decoder_);
+
+  // Free the encoders.
+  for (EncoderList::iterator i = encoders_.begin(); i != encoders_.end(); ++i)
+    snd_midi_event_free(*i);
 }
 
 void MidiManagerAlsa::StartInitialization() {
@@ -118,278 +158,14 @@ void MidiManagerAlsa::StartInitialization() {
     return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
   }
 
-  // Extract the list of manufacturers for the hardware MIDI
-  // devices. This won't work for all devices. It is also brittle until
-  // hotplug is implemented. (See http://crbug.com/431489.)
-  ScopedVector<CardInfo> cards;
-  snd_ctl_card_info_t* card;
-  snd_rawmidi_info_t* midi_out;
-  snd_rawmidi_info_t* midi_in;
-  snd_ctl_card_info_alloca(&card);
-  snd_rawmidi_info_alloca(&midi_out);
-  snd_rawmidi_info_alloca(&midi_in);
-  for (int card_index = -1; !snd_card_next(&card_index) && card_index >= 0; ) {
-    const std::string id = base::StringPrintf("hw:CARD=%i", card_index);
-    snd_ctl_t* handle;
-    int err = snd_ctl_open(&handle, id.c_str(), 0);
-    if (err != 0) {
-      VLOG(1) << "snd_ctl_open fails: " << snd_strerror(err);
-      continue;
-    }
-    err = snd_ctl_card_info(handle, card);
-    if (err != 0) {
-      VLOG(1) << "snd_ctl_card_info fails: " << snd_strerror(err);
-      snd_ctl_close(handle);
-      continue;
-    }
-    // Enumerate any rawmidi devices (not subdevices) and extract CardInfo.
-    for (int device = -1;
-         !snd_ctl_rawmidi_next_device(handle, &device) && device >= 0; ) {
-      bool output;
-      bool input;
-      snd_rawmidi_info_set_device(midi_out, device);
-      snd_rawmidi_info_set_subdevice(midi_out, 0);
-      snd_rawmidi_info_set_stream(midi_out, SND_RAWMIDI_STREAM_OUTPUT);
-      output = snd_ctl_rawmidi_info(handle, midi_out) == 0;
-      snd_rawmidi_info_set_device(midi_in, device);
-      snd_rawmidi_info_set_subdevice(midi_in, 0);
-      snd_rawmidi_info_set_stream(midi_in, SND_RAWMIDI_STREAM_INPUT);
-      input = snd_ctl_rawmidi_info(handle, midi_in) == 0;
-      if (!output && !input)
-        continue;
-
-      // Compute and save Alsa and udev properties.
-      snd_rawmidi_info_t* midi = midi_out ? midi_out : midi_in;
-      cards.push_back(new CardInfo(
-          this,
-          snd_rawmidi_info_get_name(midi),
-          snd_ctl_card_info_get_longname(card),
-          snd_ctl_card_info_get_driver(card),
-          card_index));
-    }
-    snd_ctl_close(handle);
-  }
-
-  // Enumerate all ports in all clients.
-  snd_seq_client_info_t* client_info;
-  snd_seq_client_info_alloca(&client_info);
-  snd_seq_port_info_t* port_info;
-  snd_seq_port_info_alloca(&port_info);
-
-  snd_seq_client_info_set_client(client_info, -1);
-  // Enumerate clients.
-  uint32 current_input = 0;
-  unsigned int current_card = 0;
-  while (!snd_seq_query_next_client(in_client_, client_info)) {
-    int client_id = snd_seq_client_info_get_client(client_info);
-    if ((client_id == in_client_id) || (client_id == out_client_id_)) {
-      // Skip our own clients.
-      continue;
-    }
-    const std::string client_name = snd_seq_client_info_get_name(client_info);
-    snd_seq_port_info_set_client(port_info, client_id);
-    snd_seq_port_info_set_port(port_info, -1);
-
-    std::string manufacturer;
-    std::string driver;
-    // In the current Alsa kernel implementation, hardware clients match the
-    // cards in the same order.
-    if ((snd_seq_client_info_get_type(client_info) == SND_SEQ_KERNEL_CLIENT) &&
-        (current_card < cards.size())) {
-      const CardInfo* info = cards[current_card];
-      if (info->alsa_name() == client_name) {
-        manufacturer = info->manufacturer();
-        driver = info->alsa_driver();
-        current_card++;
-      }
-    }
-    // Enumerate ports.
-    while (!snd_seq_query_next_port(in_client_, port_info)) {
-      unsigned int port_type = snd_seq_port_info_get_type(port_info);
-      if (port_type & SND_SEQ_PORT_TYPE_MIDI_GENERIC) {
-        const snd_seq_addr_t* addr = snd_seq_port_info_get_addr(port_info);
-        const std::string name = snd_seq_port_info_get_name(port_info);
-        const std::string id = base::StringPrintf("%d:%d %s",
-                                                  addr->client,
-                                                  addr->port,
-                                                  name.c_str());
-        std::string version;
-        if (!driver.empty()) {
-          version = driver + " / ";
-        }
-        version += base::StringPrintf("ALSA library version %d.%d.%d",
-                                      SND_LIB_MAJOR,
-                                      SND_LIB_MINOR,
-                                      SND_LIB_SUBMINOR);
-        unsigned int caps = snd_seq_port_info_get_capability(port_info);
-        if ((caps & kRequiredInputPortCaps) == kRequiredInputPortCaps) {
-          // Subscribe to this port.
-          const snd_seq_addr_t* sender = snd_seq_port_info_get_addr(port_info);
-          snd_seq_addr_t dest;
-          dest.client = snd_seq_client_id(in_client_);
-          dest.port = in_port_;
-          snd_seq_port_subscribe_set_sender(subs, sender);
-          snd_seq_port_subscribe_set_dest(subs, &dest);
-          err = snd_seq_subscribe_port(in_client_, subs);
-          if (err != 0) {
-            VLOG(1) << "snd_seq_subscribe_port fails: " << snd_strerror(err);
-          } else {
-            source_map_[AddrToInt(sender)] = current_input++;
-            AddInputPort(MidiPortInfo(
-                id, manufacturer, name, version, MIDI_PORT_OPENED));
-          }
-        }
-        if ((caps & kRequiredOutputPortCaps) == kRequiredOutputPortCaps) {
-          // Create a port for us to send on.
-          int out_port =
-              snd_seq_create_simple_port(out_client_, NULL,
-                                         SND_SEQ_PORT_CAP_READ |
-                                         SND_SEQ_PORT_CAP_NO_EXPORT,
-                                         SND_SEQ_PORT_TYPE_MIDI_GENERIC |
-                                         SND_SEQ_PORT_TYPE_APPLICATION);
-          if (out_port < 0) {
-            VLOG(1) << "snd_seq_create_simple_port fails: "
-                    << snd_strerror(out_port);
-            // Skip this output port for now.
-            continue;
-          }
-
-          // Activate port subscription.
-          snd_seq_addr_t sender;
-          const snd_seq_addr_t* dest = snd_seq_port_info_get_addr(port_info);
-          sender.client = snd_seq_client_id(out_client_);
-          sender.port = out_port;
-          snd_seq_port_subscribe_set_sender(subs, &sender);
-          snd_seq_port_subscribe_set_dest(subs, dest);
-          err = snd_seq_subscribe_port(out_client_, subs);
-          if (err != 0) {
-            VLOG(1) << "snd_seq_subscribe_port fails: " << snd_strerror(err);
-            snd_seq_delete_simple_port(out_client_, out_port);
-          } else {
-            snd_midi_event_t* encoder;
-            snd_midi_event_new(kSendBufferSize, &encoder);
-            encoders_.push_back(encoder);
-            out_ports_.push_back(out_port);
-            AddOutputPort(MidiPortInfo(
-                id, manufacturer, name, version, MIDI_PORT_OPENED));
-          }
-        }
-      }
-    }
-  }
+  EnumeratePorts();
 
   event_thread_.Start();
   event_thread_.message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&MidiManagerAlsa::EventReset, base::Unretained(this)));
+      base::Bind(&MidiManagerAlsa::ScheduleEventLoop, base::Unretained(this)));
 
   CompleteInitialization(MIDI_OK);
-}
-
-MidiManagerAlsa::~MidiManagerAlsa() {
-  // Tell the event thread it will soon be time to shut down. This gives
-  // us assurance the thread will stop in case the SND_SEQ_EVENT_CLIENT_EXIT
-  // message is lost.
-  {
-    base::AutoLock lock(shutdown_lock_);
-    event_thread_shutdown_ = true;
-  }
-
-  // Stop the send thread.
-  send_thread_.Stop();
-
-  // Close the out client. This will trigger the event thread to stop,
-  // because of SND_SEQ_EVENT_CLIENT_EXIT.
-  if (out_client_)
-    snd_seq_close(out_client_);
-
-  // Wait for the event thread to stop.
-  event_thread_.Stop();
-
-  // Close the in client.
-  if (in_client_)
-    snd_seq_close(in_client_);
-
-  // Free the decoder.
-  snd_midi_event_free(decoder_);
-
-  // Free the encoders.
-  for (EncoderList::iterator i = encoders_.begin(); i != encoders_.end(); ++i)
-    snd_midi_event_free(*i);
-}
-
-MidiManagerAlsa::CardInfo::CardInfo(
-    const MidiManagerAlsa* outer,
-    const std::string& alsa_name, const std::string& alsa_longname,
-    const std::string& alsa_driver, int card_index)
-    : alsa_name_(alsa_name), alsa_driver_(alsa_driver) {
-  // Get udev properties if available.
-  std::string udev_id_vendor;
-  std::string udev_id_vendor_id;
-  std::string udev_id_vendor_from_database;
-
-#if defined(USE_UDEV)
-  const std::string sysname = base::StringPrintf("card%i", card_index);
-  device::ScopedUdevDevicePtr udev_device(
-      device::udev_device_new_from_subsystem_sysname(
-          outer->udev_.get(), "sound", sysname.c_str()));
-  udev_id_vendor = device::UdevDecodeString(device::UdevDeviceGetPropertyValue(
-      udev_device.get(), "ID_VENDOR_ENC"));
-  udev_id_vendor_id = device::UdevDeviceGetPropertyValue(
-      udev_device.get(), "ID_VENDOR_ID");
-  udev_id_vendor_from_database = device::UdevDeviceGetPropertyValue(
-      udev_device.get(), "ID_VENDOR_FROM_DATABASE");
-
-  udev_id_path_ = device::UdevDeviceGetPropertyValue(
-      udev_device.get(), "ID_PATH");
-  udev_id_id_ = device::UdevDeviceGetPropertyValue(
-      udev_device.get(), "ID_ID");
-#endif  // defined(USE_UDEV)
-
-  manufacturer_ = ExtractManufacturerString(
-      udev_id_vendor, udev_id_vendor_id, udev_id_vendor_from_database,
-      alsa_name, alsa_longname);
-}
-
-MidiManagerAlsa::CardInfo::~CardInfo() {
-}
-
-const std::string MidiManagerAlsa::CardInfo::alsa_name() const {
-  return alsa_name_;
-}
-
-const std::string MidiManagerAlsa::CardInfo::manufacturer() const {
-  return manufacturer_;
-}
-
-const std::string MidiManagerAlsa::CardInfo::alsa_driver() const {
-  return alsa_driver_;
-}
-
-const std::string MidiManagerAlsa::CardInfo::udev_id_path() const {
-  return udev_id_path_;
-}
-
-const std::string MidiManagerAlsa::CardInfo::udev_id_id() const {
-  return udev_id_id_;
-}
-
-void MidiManagerAlsa::SendMidiData(uint32 port_index,
-                                   const std::vector<uint8>& data) {
-  DCHECK(send_thread_.message_loop_proxy()->BelongsToCurrentThread());
-
-  snd_midi_event_t* encoder = encoders_[port_index];
-  for (unsigned int i = 0; i < data.size(); i++) {
-    snd_seq_event_t event;
-    int result = snd_midi_event_encode_byte(encoder, data[i], &event);
-    if (result == 1) {
-      // Full event, send it.
-      snd_seq_ev_set_source(&event, out_ports_[port_index]);
-      snd_seq_ev_set_subs(&event);
-      snd_seq_ev_set_direct(&event);
-      snd_seq_event_output_direct(out_client_, &event);
-    }
-  }
 }
 
 void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
@@ -407,87 +183,79 @@ void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
   if (timestamp != 0.0) {
     base::TimeTicks time_to_send =
         base::TimeTicks() + base::TimeDelta::FromMicroseconds(
-            timestamp * base::Time::kMicrosecondsPerSecond);
+                                timestamp * base::Time::kMicrosecondsPerSecond);
     delay = std::max(time_to_send - base::TimeTicks::Now(), base::TimeDelta());
   }
 
   send_thread_.message_loop()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&MidiManagerAlsa::SendMidiData, base::Unretained(this),
-                 port_index, data), delay);
+      FROM_HERE, base::Bind(&MidiManagerAlsa::SendMidiData,
+                            base::Unretained(this), port_index, data),
+      delay);
 
   // Acknowledge send.
   send_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&MidiManagerClient::AccumulateMidiBytesSent,
-                 base::Unretained(client), data.size()));
+      FROM_HERE, base::Bind(&MidiManagerClient::AccumulateMidiBytesSent,
+                            base::Unretained(client), data.size()));
 }
 
-void MidiManagerAlsa::EventReset() {
-  event_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&MidiManagerAlsa::EventLoop, base::Unretained(this)));
+MidiManagerAlsa::MidiDevice::MidiDevice(const MidiManagerAlsa* outer,
+                                        const std::string& alsa_name,
+                                        const std::string& alsa_longname,
+                                        const std::string& alsa_driver,
+                                        int card_index)
+    : alsa_name_(alsa_name), alsa_driver_(alsa_driver) {
+  // Get udev properties if available.
+  std::string udev_id_vendor;
+  std::string udev_id_vendor_id;
+  std::string udev_id_vendor_from_database;
+
+#if defined(USE_UDEV)
+  const std::string sysname = base::StringPrintf("card%i", card_index);
+  device::ScopedUdevDevicePtr udev_device(
+      device::udev_device_new_from_subsystem_sysname(outer->udev_.get(),
+                                                     "sound", sysname.c_str()));
+  udev_id_vendor = device::UdevDecodeString(
+      device::UdevDeviceGetPropertyValue(udev_device.get(), "ID_VENDOR_ENC"));
+  udev_id_vendor_id =
+      device::UdevDeviceGetPropertyValue(udev_device.get(), "ID_VENDOR_ID");
+  udev_id_vendor_from_database = device::UdevDeviceGetPropertyValue(
+      udev_device.get(), "ID_VENDOR_FROM_DATABASE");
+
+  udev_id_path_ =
+      device::UdevDeviceGetPropertyValue(udev_device.get(), "ID_PATH");
+  udev_id_id_ = device::UdevDeviceGetPropertyValue(udev_device.get(), "ID_ID");
+#endif  // defined(USE_UDEV)
+
+  manufacturer_ = ExtractManufacturerString(udev_id_vendor, udev_id_vendor_id,
+                                            udev_id_vendor_from_database,
+                                            alsa_name, alsa_longname);
 }
 
-void MidiManagerAlsa::EventLoop() {
-  // Read available incoming MIDI data.
-  snd_seq_event_t* event;
-  int err = snd_seq_event_input(in_client_, &event);
-  double timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-  if (err == -ENOSPC) {
-    VLOG(1) << "snd_seq_event_input detected buffer overrun";
+MidiManagerAlsa::MidiDevice::~MidiDevice() {
+}
 
-      // We've lost events: check another way to see if we need to shut down.
-      base::AutoLock lock(shutdown_lock_);
-      if (event_thread_shutdown_) {
-        return;
-      }
-  } else if (err < 0) {
-      VLOG(1) << "snd_seq_event_input fails: " << snd_strerror(err);
-      return;
-  } else {
-    // Check for disconnection of out client. This means "shut down".
-    if (event->source.client == SND_SEQ_CLIENT_SYSTEM &&
-        event->source.port == SND_SEQ_PORT_SYSTEM_ANNOUNCE &&
-        event->type == SND_SEQ_EVENT_CLIENT_EXIT &&
-        event->data.addr.client == out_client_id_) {
-      return;
-    }
+const std::string MidiManagerAlsa::MidiDevice::alsa_name() const {
+  return alsa_name_;
+}
 
-    std::map<int, uint32>::iterator source_it =
-        source_map_.find(AddrToInt(&event->source));
-    if (source_it != source_map_.end()) {
-      uint32 source = source_it->second;
-      if (event->type == SND_SEQ_EVENT_SYSEX) {
-        // Special! Variable-length sysex.
-        ReceiveMidiData(source, static_cast<const uint8*>(event->data.ext.ptr),
-                        event->data.ext.len,
-                        timestamp);
-      } else {
-        // Otherwise, decode this and send that on.
-        unsigned char buf[12];
-        long count = snd_midi_event_decode(decoder_, buf, sizeof(buf), event);
-        if (count <= 0) {
-          if (count != -ENOENT) {
-            // ENOENT means that it's not a MIDI message, which is not an
-            // error, but other negative values are errors for us.
-            VLOG(1) << "snd_midi_event_decoder fails " << snd_strerror(count);
-          }
-        } else {
-          ReceiveMidiData(source, buf, count, timestamp);
-        }
-      }
-    }
-  }
+const std::string MidiManagerAlsa::MidiDevice::manufacturer() const {
+  return manufacturer_;
+}
 
-  // Do again.
-  event_thread_.message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&MidiManagerAlsa::EventLoop, base::Unretained(this)));
+const std::string MidiManagerAlsa::MidiDevice::alsa_driver() const {
+  return alsa_driver_;
+}
+
+const std::string MidiManagerAlsa::MidiDevice::udev_id_path() const {
+  return udev_id_path_;
+}
+
+const std::string MidiManagerAlsa::MidiDevice::udev_id_id() const {
+  return udev_id_id_;
 }
 
 // static
-std::string MidiManagerAlsa::CardInfo::ExtractManufacturerString(
+std::string MidiManagerAlsa::MidiDevice::ExtractManufacturerString(
     const std::string& udev_id_vendor,
     const std::string& udev_id_vendor_id,
     const std::string& udev_id_vendor_from_database,
@@ -523,6 +291,287 @@ std::string MidiManagerAlsa::CardInfo::ExtractManufacturerString(
 
   // Failure.
   return "";
+}
+
+ScopedVector<MidiManagerAlsa::MidiDevice> MidiManagerAlsa::AllMidiDevices() {
+  ScopedVector<MidiDevice> devices;
+  snd_ctl_card_info_t* card;
+  snd_rawmidi_info_t* midi_out;
+  snd_rawmidi_info_t* midi_in;
+  snd_ctl_card_info_alloca(&card);
+  snd_rawmidi_info_alloca(&midi_out);
+  snd_rawmidi_info_alloca(&midi_in);
+  for (int card_index = -1; !snd_card_next(&card_index) && card_index >= 0;) {
+    const std::string id = base::StringPrintf("hw:CARD=%i", card_index);
+    snd_ctl_t* handle;
+    int err = snd_ctl_open(&handle, id.c_str(), 0);
+    if (err != 0) {
+      VLOG(1) << "snd_ctl_open fails: " << snd_strerror(err);
+      continue;
+    }
+    err = snd_ctl_card_info(handle, card);
+    if (err != 0) {
+      VLOG(1) << "snd_ctl_card_info fails: " << snd_strerror(err);
+      snd_ctl_close(handle);
+      continue;
+    }
+    // Enumerate any rawmidi devices (not subdevices) and extract MidiDevice.
+    for (int device = -1;
+         !snd_ctl_rawmidi_next_device(handle, &device) && device >= 0;) {
+      bool output;
+      bool input;
+      snd_rawmidi_info_set_device(midi_out, device);
+      snd_rawmidi_info_set_subdevice(midi_out, 0);
+      snd_rawmidi_info_set_stream(midi_out, SND_RAWMIDI_STREAM_OUTPUT);
+      output = snd_ctl_rawmidi_info(handle, midi_out) == 0;
+      snd_rawmidi_info_set_device(midi_in, device);
+      snd_rawmidi_info_set_subdevice(midi_in, 0);
+      snd_rawmidi_info_set_stream(midi_in, SND_RAWMIDI_STREAM_INPUT);
+      input = snd_ctl_rawmidi_info(handle, midi_in) == 0;
+      if (!output && !input)
+        continue;
+
+      // Compute and save ALSA and udev properties.
+      snd_rawmidi_info_t* midi = midi_out ? midi_out : midi_in;
+      devices.push_back(new MidiDevice(this, snd_rawmidi_info_get_name(midi),
+                                       snd_ctl_card_info_get_longname(card),
+                                       snd_ctl_card_info_get_driver(card),
+                                       card_index));
+    }
+    snd_ctl_close(handle);
+  }
+
+  return devices.Pass();
+}
+
+void MidiManagerAlsa::EnumeratePorts() {
+  ScopedVector<MidiDevice> devices = AllMidiDevices();
+
+  snd_seq_port_subscribe_t* subs;
+  snd_seq_port_subscribe_alloca(&subs);
+
+  int in_client_id = snd_seq_client_id(in_client_);
+
+  // Enumerate all clients.
+  snd_seq_client_info_t* client_info;
+  snd_seq_client_info_alloca(&client_info);
+  snd_seq_port_info_t* port_info;
+  snd_seq_port_info_alloca(&port_info);
+
+  // Enumerate clients.
+  snd_seq_client_info_set_client(client_info, -1);
+  uint32 current_input = 0;
+  unsigned int current_device = 0;
+  while (!snd_seq_query_next_client(in_client_, client_info)) {
+    int client_id = snd_seq_client_info_get_client(client_info);
+    if ((client_id == in_client_id) || (client_id == out_client_id_)) {
+      // Skip our own clients.
+      continue;
+    }
+
+    // Get client metadata.
+    const std::string client_name = snd_seq_client_info_get_name(client_info);
+    snd_seq_port_info_set_client(port_info, client_id);
+    snd_seq_port_info_set_port(port_info, -1);
+
+    std::string manufacturer;
+    std::string driver;
+    std::string udev_id_path;
+    std::string udev_id_id;
+
+    // Join kernel clients against the list of MidiDevices.
+    // In the current ALSA kernel implementation, kernel clients match the
+    // kernel devices in the same order, for devices with client_id over
+    // kMinimumClientIdForCards.
+    if ((snd_seq_client_info_get_type(client_info) == SND_SEQ_KERNEL_CLIENT) &&
+        (current_device < devices.size()) &&
+        (client_id >= kMinimumClientIdForCards)) {
+      const MidiDevice* device = devices[current_device];
+      manufacturer = device->manufacturer();
+      driver = device->alsa_driver();
+      udev_id_path = device->udev_id_path();
+      udev_id_id = device->udev_id_id();
+      current_device++;
+    }
+    // Enumerate ports.
+    while (!snd_seq_query_next_port(in_client_, port_info)) {
+      unsigned int port_type = snd_seq_port_info_get_type(port_info);
+      if (port_type & SND_SEQ_PORT_TYPE_MIDI_GENERIC) {
+        const snd_seq_addr_t* addr = snd_seq_port_info_get_addr(port_info);
+        const std::string name = snd_seq_port_info_get_name(port_info);
+        const std::string id_suffix =
+            base::StringPrintf("%d:%d/%s/%s", addr->client, addr->port,
+                               udev_id_path.c_str(), udev_id_id.c_str());
+        std::string version;
+        if (!driver.empty()) {
+          version = driver + " / ";
+        }
+        version += base::StringPrintf("ALSA library version %d.%d.%d",
+                                      SND_LIB_MAJOR,
+                                      SND_LIB_MINOR,
+                                      SND_LIB_SUBMINOR);
+        unsigned int caps = snd_seq_port_info_get_capability(port_info);
+        if ((caps & kRequiredInputPortCaps) == kRequiredInputPortCaps) {
+          // Subscribe to this port.
+          const snd_seq_addr_t* sender = snd_seq_port_info_get_addr(port_info);
+          snd_seq_addr_t dest;
+          dest.client = snd_seq_client_id(in_client_);
+          dest.port = in_port_;
+          snd_seq_port_subscribe_set_sender(subs, sender);
+          snd_seq_port_subscribe_set_dest(subs, &dest);
+          int err = snd_seq_subscribe_port(in_client_, subs);
+          if (err != 0) {
+            VLOG(1) << "snd_seq_subscribe_port fails: " << snd_strerror(err);
+          } else {
+            source_map_[AddrToInt(sender)] = current_input++;
+            AddInputPort(
+                MidiPortInfo(base::StringPrintf("input/%s", id_suffix.c_str()),
+                             manufacturer, name, version, MIDI_PORT_OPENED));
+          }
+        }
+        if ((caps & kRequiredOutputPortCaps) == kRequiredOutputPortCaps) {
+          // Create a port for us to send on.
+          int out_port =
+              snd_seq_create_simple_port(out_client_, NULL,
+                                         SND_SEQ_PORT_CAP_READ |
+                                         SND_SEQ_PORT_CAP_NO_EXPORT,
+                                         SND_SEQ_PORT_TYPE_MIDI_GENERIC |
+                                         SND_SEQ_PORT_TYPE_APPLICATION);
+          if (out_port < 0) {
+            VLOG(1) << "snd_seq_create_simple_port fails: "
+                    << snd_strerror(out_port);
+            // Skip this output port for now.
+            continue;
+          }
+
+          // Activate port subscription.
+          snd_seq_addr_t sender;
+          const snd_seq_addr_t* dest = snd_seq_port_info_get_addr(port_info);
+          sender.client = snd_seq_client_id(out_client_);
+          sender.port = out_port;
+          snd_seq_port_subscribe_set_sender(subs, &sender);
+          snd_seq_port_subscribe_set_dest(subs, dest);
+          int err = snd_seq_subscribe_port(out_client_, subs);
+          if (err != 0) {
+            VLOG(1) << "snd_seq_subscribe_port fails: " << snd_strerror(err);
+            snd_seq_delete_simple_port(out_client_, out_port);
+          } else {
+            snd_midi_event_t* encoder;
+            snd_midi_event_new(kSendBufferSize, &encoder);
+            encoders_.push_back(encoder);
+            out_ports_.push_back(out_port);
+            AddOutputPort(
+                MidiPortInfo(base::StringPrintf("output/%s", id_suffix.c_str()),
+                             manufacturer, name, version, MIDI_PORT_OPENED));
+          }
+        }
+      }
+    }
+  }
+}
+
+void MidiManagerAlsa::SendMidiData(uint32 port_index,
+                                   const std::vector<uint8>& data) {
+  DCHECK(send_thread_.message_loop_proxy()->BelongsToCurrentThread());
+
+  snd_midi_event_t* encoder = encoders_[port_index];
+  for (unsigned int i = 0; i < data.size(); i++) {
+    snd_seq_event_t event;
+    int result = snd_midi_event_encode_byte(encoder, data[i], &event);
+    if (result == 1) {
+      // Full event, send it.
+      snd_seq_ev_set_source(&event, out_ports_[port_index]);
+      snd_seq_ev_set_subs(&event);
+      snd_seq_ev_set_direct(&event);
+      snd_seq_event_output_direct(out_client_, &event);
+    }
+  }
+}
+
+void MidiManagerAlsa::ScheduleEventLoop() {
+  event_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&MidiManagerAlsa::EventLoop, base::Unretained(this)));
+}
+
+void MidiManagerAlsa::EventLoop() {
+  // Read available incoming MIDI data.
+  snd_seq_event_t* event;
+  int err = snd_seq_event_input(in_client_, &event);
+  double timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+
+  // Handle errors.
+  if (err == -ENOSPC) {
+    VLOG(1) << "snd_seq_event_input detected buffer overrun";
+    // We've lost events: check another way to see if we need to shut down.
+    base::AutoLock lock(shutdown_lock_);
+    if (!event_thread_shutdown_)
+      ScheduleEventLoop();
+    return;
+  } else if (err < 0) {
+    VLOG(1) << "snd_seq_event_input fails: " << snd_strerror(err);
+    // TODO(agoode): Use RecordAction() or similar to log this.
+    return;
+  }
+
+  // Handle announce events.
+  if (event->source.client == SND_SEQ_CLIENT_SYSTEM &&
+      event->source.port == SND_SEQ_PORT_SYSTEM_ANNOUNCE) {
+    switch (event->type) {
+      case SND_SEQ_EVENT_CLIENT_START:
+        // TODO(agoode): rescan hardware devices.
+        break;
+
+      case SND_SEQ_EVENT_CLIENT_EXIT:
+        // Check for disconnection of our "out" client. This means "shut down".
+        if (event->data.addr.client == out_client_id_)
+          return;
+
+        // TODO(agoode): remove all ports for a client.
+        break;
+
+      case SND_SEQ_EVENT_PORT_START:
+        // TODO(agoode): add port.
+        break;
+
+      case SND_SEQ_EVENT_PORT_EXIT:
+        // TODO(agoode): remove port.
+        break;
+    }
+  }
+
+  ProcessSingleEvent(event, timestamp);
+
+  // Do again.
+  ScheduleEventLoop();
+}
+
+void MidiManagerAlsa::ProcessSingleEvent(snd_seq_event_t* event,
+                                         double timestamp) {
+  std::map<int, uint32>::iterator source_it =
+      source_map_.find(AddrToInt(&event->source));
+  if (source_it != source_map_.end()) {
+    uint32 source = source_it->second;
+    if (event->type == SND_SEQ_EVENT_SYSEX) {
+      // Special! Variable-length sysex.
+      ReceiveMidiData(source, static_cast<const uint8*>(event->data.ext.ptr),
+                      event->data.ext.len, timestamp);
+    } else {
+      // Otherwise, decode this and send that on.
+      unsigned char buf[12];
+      long count = snd_midi_event_decode(decoder_, buf, sizeof(buf), event);
+      if (count <= 0) {
+        if (count != -ENOENT) {
+          // ENOENT means that it's not a MIDI message, which is not an
+          // error, but other negative values are errors for us.
+          VLOG(1) << "snd_midi_event_decoder fails " << snd_strerror(count);
+          // TODO(agoode): Record this failure.
+        }
+      } else {
+        ReceiveMidiData(source, buf, count, timestamp);
+      }
+    }
+  }
 }
 
 MidiManager* MidiManager::Create() {

@@ -36,14 +36,15 @@ class MEDIA_EXPORT MidiManagerAlsa : public MidiManager {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MidiManagerAlsaTest, ExtractManufacturer);
-  FRIEND_TEST_ALL_PREFIXES(MidiManagerAlsaTest, UdevEscape);
 
-  class CardInfo {
+  class MidiDevice {
    public:
-    CardInfo(const MidiManagerAlsa* outer,
-             const std::string& alsa_name, const std::string& alsa_longname,
-             const std::string& alsa_driver, int card_index);
-    ~CardInfo();
+    MidiDevice(const MidiManagerAlsa* outer,
+               const std::string& alsa_name,
+               const std::string& alsa_longname,
+               const std::string& alsa_driver,
+               int card_index);
+    ~MidiDevice();
 
     const std::string alsa_name() const;
     const std::string manufacturer() const;
@@ -53,7 +54,6 @@ class MEDIA_EXPORT MidiManagerAlsa : public MidiManager {
 
    private:
     FRIEND_TEST_ALL_PREFIXES(MidiManagerAlsaTest, ExtractManufacturer);
-    FRIEND_TEST_ALL_PREFIXES(MidiManagerAlsaTest, UdevEscape);
 
     // Extracts the manufacturer using heuristics and a variety of sources.
     static std::string ExtractManufacturerString(
@@ -68,16 +68,25 @@ class MEDIA_EXPORT MidiManagerAlsa : public MidiManager {
     std::string alsa_driver_;
     std::string udev_id_path_;
     std::string udev_id_id_;
+
+    DISALLOW_COPY_AND_ASSIGN(MidiDevice);
   };
+
+  // Returns an ordered vector of all the rawmidi devices on the system.
+  ScopedVector<MidiDevice> AllMidiDevices();
+
+  // Enumerate all the ports for initial setup.
+  void EnumeratePorts();
 
   // An internal callback that runs on MidiSendThread.
   void SendMidiData(uint32 port_index,
                     const std::vector<uint8>& data);
 
-  void EventReset();
+  void ScheduleEventLoop();
   void EventLoop();
+  void ProcessSingleEvent(snd_seq_event_t* event, double timestamp);
 
-  // Alsa seq handles.
+  // ALSA seq handles.
   snd_seq_t* in_client_;
   snd_seq_t* out_client_;
   int out_client_id_;
@@ -86,11 +95,11 @@ class MEDIA_EXPORT MidiManagerAlsa : public MidiManager {
   int in_port_;
   std::vector<int> out_ports_;
 
-  // Mapping from Alsa client:port to our index.
+  // Mapping from ALSA client:port to our index.
   typedef std::map<int, uint32> SourceMap;
   SourceMap source_map_;
 
-  // Alsa event <-> MIDI coders.
+  // ALSA event <-> MIDI coders.
   snd_midi_event_t* decoder_;
   typedef std::vector<snd_midi_event_t*> EncoderList;
   EncoderList encoders_;
