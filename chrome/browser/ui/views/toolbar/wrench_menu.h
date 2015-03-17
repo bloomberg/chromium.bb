@@ -138,7 +138,7 @@ class WrenchMenu : public views::MenuDelegate,
 
   // Invoked from the cut/copy/paste menus. Cancels the current active menu and
   // activates the menu item in |model| at |index|.
-  void CancelAndEvaluate(ui::MenuModel* model, int index);
+  void CancelAndEvaluate(ui::ButtonMenuItemModel* model, int index);
 
   // Creates the bookmark menu if necessary. Does nothing if already created or
   // the bookmark model isn't loaded.
@@ -164,7 +164,7 @@ class WrenchMenu : public views::MenuDelegate,
   // If |selected_menu_model_| is non-null after the menu completes
   // ActivatedAt is invoked. This is done so that ActivatedAt isn't invoked
   // while the message loop is nested.
-  ui::MenuModel* selected_menu_model_;
+  ui::ButtonMenuItemModel* selected_menu_model_;
   int selected_index_;
 
   // Used for managing the bookmark menu items.

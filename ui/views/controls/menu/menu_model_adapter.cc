@@ -66,6 +66,7 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
 
   switch (menu_type) {
     case ui::MenuModel::TYPE_COMMAND:
+    case ui::MenuModel::TYPE_BUTTON_ITEM:
       type = MenuItemView::NORMAL;
       label = model->GetLabelAt(model_index);
       sublabel = model->GetSublabelAt(model_index);

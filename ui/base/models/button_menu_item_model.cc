@@ -88,6 +88,15 @@ bool ButtonMenuItemModel::IsItemDynamicAt(int index) const {
   return false;
 }
 
+bool ButtonMenuItemModel::GetAcceleratorAt(int index,
+                                           ui::Accelerator* accelerator) const {
+  if (delegate_) {
+    return delegate_->GetAcceleratorForCommandId(GetCommandIdAt(index),
+                                                 accelerator);
+  }
+  return false;
+}
+
 base::string16 ButtonMenuItemModel::GetLabelAt(int index) const {
   if (IsItemDynamicAt(index))
     return delegate_->GetLabelForCommandId(GetCommandIdAt(index));
@@ -106,9 +115,9 @@ bool ButtonMenuItemModel::PartOfGroup(int index) const {
   return items_[index].part_of_group;
 }
 
-void ButtonMenuItemModel::ActivatedCommand(int command_id) {
+void ButtonMenuItemModel::ActivatedAt(int index) {
   if (delegate_)
-    delegate_->ExecuteCommand(command_id, 0);
+    delegate_->ExecuteCommand(GetCommandIdAt(index), 0);
 }
 
 bool ButtonMenuItemModel::IsEnabledAt(int index) const {

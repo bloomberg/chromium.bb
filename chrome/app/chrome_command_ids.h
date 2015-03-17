@@ -214,6 +214,7 @@
 #define IDC_SHOW_SRT_BUBBLE             40246
 #define IDC_ELEVATED_RECOVERY_DIALOG    40247
 #define IDC_TAKE_SCREENSHOT             40248
+#define IDC_MORE_TOOLS_MENU             40249
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

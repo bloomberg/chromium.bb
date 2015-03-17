@@ -12,6 +12,8 @@
 
 namespace ui {
 
+class Accelerator;
+
 // A model representing the rows of buttons that should be inserted in a button
 // containing menu item.
 class UI_BASE_EXPORT ButtonMenuItemModel {
@@ -33,6 +35,11 @@ class UI_BASE_EXPORT ButtonMenuItemModel {
     virtual void ExecuteCommand(int command_id, int event_flags) = 0;
     virtual bool IsCommandIdEnabled(int command_id) const;
     virtual bool DoesCommandIdDismissMenu(int command_id) const;
+
+    // Gets the accelerator for the specified command id. Returns true if the
+    // command id has a valid accelerator, false otherwise.
+    virtual bool GetAcceleratorForCommandId(int command_id,
+                                            ui::Accelerator* accelerator) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -68,6 +75,10 @@ class UI_BASE_EXPORT ButtonMenuItemModel {
   // Whether the label for item |index| changes.
   bool IsItemDynamicAt(int index) const;
 
+  // Gets the accelerator information for the specified index, returning true if
+  // there is a shortcut accelerator for the item, false otherwise.
+  bool GetAcceleratorAt(int index, ui::Accelerator* accelerator) const;
+
   // Returns the current label value for the button at |index|.
   base::string16 GetLabelAt(int index) const;
 
@@ -79,8 +90,8 @@ class UI_BASE_EXPORT ButtonMenuItemModel {
   // other items that have their PartOfGroup bit set.
   bool PartOfGroup(int index) const;
 
-  // Called from implementations.
-  void ActivatedCommand(int command_id);
+  // Called when the item at the specified index has been activated.
+  void ActivatedAt(int index);
 
   // Returns the enabled state of the button at |index|.
   bool IsEnabledAt(int index) const;

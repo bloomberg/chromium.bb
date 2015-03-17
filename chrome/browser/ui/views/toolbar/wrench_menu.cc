@@ -64,6 +64,7 @@
 using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
 using content::WebContents;
+using ui::ButtonMenuItemModel;
 using ui::MenuModel;
 using views::CustomButton;
 using views::ImageButton;
@@ -238,7 +239,7 @@ class InMenuButtonBackground : public views::Background {
 };
 
 base::string16 GetAccessibleNameForWrenchMenuItem(
-      MenuModel* model, int item_index, int accessible_string_id) {
+    ButtonMenuItemModel* model, int item_index, int accessible_string_id) {
   base::string16 accessible_name =
       l10n_util::GetStringUTF16(accessible_string_id);
   base::string16 accelerator_text;
@@ -314,7 +315,7 @@ class WrenchMenuView : public views::View,
                        public views::ButtonListener,
                        public WrenchMenuObserver {
  public:
-  WrenchMenuView(WrenchMenu* menu, MenuModel* menu_model)
+  WrenchMenuView(WrenchMenu* menu, ButtonMenuItemModel* menu_model)
       : menu_(menu),
         menu_model_(menu_model) {
     menu_->AddObserver(this);
@@ -373,7 +374,7 @@ class WrenchMenuView : public views::View,
 
  protected:
   WrenchMenu* menu() { return menu_; }
-  MenuModel* menu_model() { return menu_model_; }
+  ButtonMenuItemModel* menu_model() { return menu_model_; }
 
  private:
   // Hosting WrenchMenu.
@@ -382,7 +383,7 @@ class WrenchMenuView : public views::View,
 
   // The menu model containing the increment/decrement/reset items.
   // WARNING: this may be NULL during shutdown.
-  MenuModel* menu_model_;
+  ButtonMenuItemModel* menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(WrenchMenuView);
 };
@@ -430,7 +431,7 @@ class HoveredImageSource : public gfx::ImageSkiaSource {
 class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
  public:
   CutCopyPasteView(WrenchMenu* menu,
-                   MenuModel* menu_model,
+                   ButtonMenuItemModel* menu_model,
                    int cut_index,
                    int copy_index,
                    int paste_index)
@@ -484,7 +485,7 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
 class WrenchMenu::ZoomView : public WrenchMenuView {
  public:
   ZoomView(WrenchMenu* menu,
-           MenuModel* menu_model,
+           ButtonMenuItemModel* menu_model,
            int decrement_index,
            int increment_index,
            int fullscreen_index)
@@ -851,8 +852,9 @@ void WrenchMenu::RunMenu(views::MenuButton* host) {
     if (model)
       model->RemoveObserver(this);
   }
-  if (selected_menu_model_)
+  if (selected_menu_model_) {
     selected_menu_model_->ActivatedAt(selected_index_);
+  }
 }
 
 void WrenchMenu::CloseMenu() {
@@ -995,7 +997,8 @@ bool WrenchMenu::IsCommandEnabled(int command_id) const {
   // The items representing the cut menu (cut/copy/paste), zoom menu
   // (increment/decrement/reset) and extension toolbar view are always enabled.
   // The child views of these items enabled state updates appropriately.
-  if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS ||
+  if (command_id == IDC_EDIT_MENU || command_id == IDC_ZOOM_MENU ||
+      command_id == IDC_MORE_TOOLS_MENU ||
       command_id == IDC_EXTENSIONS_OVERFLOW_MENU)
     return true;
 
@@ -1013,7 +1016,8 @@ void WrenchMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
     return;
   }
 
-  if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS ||
+  if (command_id == IDC_EDIT_MENU || command_id == IDC_ZOOM_MENU ||
+      command_id == IDC_MORE_TOOLS_MENU ||
       command_id == IDC_EXTENSIONS_OVERFLOW_MENU) {
     // These items are represented by child views. If ExecuteCommand is invoked
     // it means the user clicked on the area around the buttons and we should
@@ -1030,7 +1034,8 @@ bool WrenchMenu::GetAccelerator(int command_id,
   if (IsBookmarkCommand(command_id))
     return false;
 
-  if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS ||
+  if (command_id == IDC_EDIT_MENU || command_id == IDC_ZOOM_MENU ||
+      command_id == IDC_MORE_TOOLS_MENU ||
       command_id == IDC_EXTENSIONS_OVERFLOW_MENU) {
     // These have special child views; don't show the accelerator for them.
     return false;
@@ -1101,8 +1106,9 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
     MenuItemView* item =
         AddMenuItem(parent, menu_index, model, i, model->GetTypeAt(i));
 
-    if (model->GetCommandIdAt(i) == IDC_CUT ||
-        model->GetCommandIdAt(i) == IDC_ZOOM_MINUS) {
+    if (model->GetCommandIdAt(i) == IDC_EDIT_MENU ||
+        model->GetCommandIdAt(i) == IDC_ZOOM_MENU ||
+        model->GetCommandIdAt(i) == IDC_MORE_TOOLS_MENU) {
       const MenuConfig& config = item->GetMenuConfig();
       int top_margin = config.item_top_margin + config.separator_height / 2;
       int bottom_margin =
@@ -1131,25 +1137,25 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
         break;
       }
 
-      case IDC_CUT:
-        DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(i));
-        DCHECK_LT(i + 2, max);
-        DCHECK_EQ(IDC_COPY, model->GetCommandIdAt(i + 1));
-        DCHECK_EQ(IDC_PASTE, model->GetCommandIdAt(i + 2));
+      case IDC_EDIT_MENU: {
+        ui::ButtonMenuItemModel* submodel = model->GetButtonMenuItemAt(i);
+        DCHECK_EQ(IDC_CUT, submodel->GetCommandIdAt(0));
+        DCHECK_EQ(IDC_COPY, submodel->GetCommandIdAt(1));
+        DCHECK_EQ(IDC_PASTE, submodel->GetCommandIdAt(2));
         item->SetTitle(l10n_util::GetStringUTF16(IDS_EDIT2));
-        item->AddChildView(new CutCopyPasteView(this, model,
-                                                i, i + 1, i + 2));
-        i += 2;
+        item->AddChildView(new CutCopyPasteView(this, submodel, 0, 1, 2));
         break;
+      }
 
-      case IDC_ZOOM_MINUS:
-        DCHECK_EQ(MenuModel::TYPE_COMMAND, model->GetTypeAt(i));
-        DCHECK_EQ(IDC_ZOOM_PLUS, model->GetCommandIdAt(i + 1));
-        DCHECK_EQ(IDC_FULLSCREEN, model->GetCommandIdAt(i + 2));
+      case IDC_ZOOM_MENU: {
+        ui::ButtonMenuItemModel* submodel = model->GetButtonMenuItemAt(i);
+        DCHECK_EQ(IDC_ZOOM_MINUS, submodel->GetCommandIdAt(0));
+        DCHECK_EQ(IDC_ZOOM_PLUS, submodel->GetCommandIdAt(1));
+        DCHECK_EQ(IDC_FULLSCREEN, submodel->GetCommandIdAt(2));
         item->SetTitle(l10n_util::GetStringUTF16(IDS_ZOOM_MENU2));
-        item->AddChildView(new ZoomView(this, model, i, i + 1, i + 2));
-        i += 2;
+        item->AddChildView(new ZoomView(this, submodel, 0, 1, 2));
         break;
+      }
 
       case IDC_BOOKMARKS_MENU:
         DCHECK(!bookmark_menu_);
@@ -1223,7 +1229,7 @@ MenuItemView* WrenchMenu::AddMenuItem(MenuItemView* parent,
   return menu_item;
 }
 
-void WrenchMenu::CancelAndEvaluate(MenuModel* model, int index) {
+void WrenchMenu::CancelAndEvaluate(ButtonMenuItemModel* model, int index) {
   selected_menu_model_ = model;
   selected_index_ = index;
   root_->Cancel();

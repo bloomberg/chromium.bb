@@ -955,7 +955,7 @@ void WrenchMenuModel::Build() {
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddSubMenuWithStringId(
-      IDC_ZOOM_MENU, IDS_MORE_TOOLS_MENU, tools_menu_model_.get());
+      IDC_MORE_TOOLS_MENU, IDS_MORE_TOOLS_MENU, tools_menu_model_.get());
 
   bool show_exit_menu = browser_defaults::kShowExitMenuItem;
 #if defined(OS_WIN)
@@ -1027,22 +1027,14 @@ void WrenchMenuModel::CreateExtensionToolbarOverflowMenu() {
 void WrenchMenuModel::CreateCutCopyPasteMenu() {
   AddSeparator(ui::LOWER_SEPARATOR);
 
-#if defined(OS_MACOSX)
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
-  // layout for this menu item in Toolbar.xib. It does, however, use the
+  // layout for this menu item in WrenchMenu.xib. It does, however, use the
   // command_id value from AddButtonItem() to identify this special item.
   edit_menu_item_model_.reset(new ui::ButtonMenuItemModel(IDS_EDIT, this));
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_CUT, IDS_CUT);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_COPY, IDS_COPY);
   edit_menu_item_model_->AddGroupItemWithStringId(IDC_PASTE, IDS_PASTE);
   AddButtonItem(IDC_EDIT_MENU, edit_menu_item_model_.get());
-#else
-  // WARNING: views/wrench_menu assumes these items are added in this order. If
-  // you change the order you'll need to update wrench_menu as well.
-  AddItemWithStringId(IDC_CUT, IDS_CUT);
-  AddItemWithStringId(IDC_COPY, IDS_COPY);
-  AddItemWithStringId(IDC_PASTE, IDS_PASTE);
-#endif
 
   AddSeparator(ui::UPPER_SEPARATOR);
 }
@@ -1051,29 +1043,18 @@ void WrenchMenuModel::CreateZoomMenu() {
   // This menu needs to be enclosed by separators.
   AddSeparator(ui::LOWER_SEPARATOR);
 
-#if defined(OS_MACOSX)
   // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
-  // layout for this menu item in Toolbar.xib. It does, however, use the
+  // layout for this menu item in WrenchMenu.xib. It does, however, use the
   // command_id value from AddButtonItem() to identify this special item.
   zoom_menu_item_model_.reset(
       new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
-  zoom_menu_item_model_->AddGroupItemWithStringId(
-      IDC_ZOOM_MINUS, IDS_ZOOM_MINUS2);
-  zoom_menu_item_model_->AddButtonLabel(IDC_ZOOM_PERCENT_DISPLAY,
-                                        IDS_ZOOM_PLUS2);
-  zoom_menu_item_model_->AddGroupItemWithStringId(
-      IDC_ZOOM_PLUS, IDS_ZOOM_PLUS2);
-  zoom_menu_item_model_->AddSpace();
-  zoom_menu_item_model_->AddItemWithImage(
-      IDC_FULLSCREEN, IDR_FULLSCREEN_MENU_BUTTON);
+  zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_MINUS,
+                                                  IDS_ZOOM_MINUS2);
+  zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_PLUS,
+                                                  IDS_ZOOM_PLUS2);
+  zoom_menu_item_model_->AddItemWithImage(IDC_FULLSCREEN,
+                                          IDR_FULLSCREEN_MENU_BUTTON);
   AddButtonItem(IDC_ZOOM_MENU, zoom_menu_item_model_.get());
-#else
-  // WARNING: views/wrench_menu assumes these items are added in this order. If
-  // you change the order you'll need to update wrench_menu as well.
-  AddItemWithStringId(IDC_ZOOM_MINUS, IDS_ZOOM_MINUS);
-  AddItemWithStringId(IDC_ZOOM_PLUS, IDS_ZOOM_PLUS);
-  AddItemWithStringId(IDC_FULLSCREEN, IDS_FULLSCREEN);
-#endif
 
   AddSeparator(ui::UPPER_SEPARATOR);
 }
