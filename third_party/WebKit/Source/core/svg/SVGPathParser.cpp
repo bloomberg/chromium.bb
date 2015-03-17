@@ -266,23 +266,17 @@ bool SVGPathParser::parseArcToSegment()
     // path. This ensures continuity in animations.
     rx = fabsf(rx);
     ry = fabsf(ry);
-    bool arcIsZeroLength = false;
+
     if (m_mode == RelativeCoordinates)
-        arcIsZeroLength = targetPoint == FloatPoint::zero();
-    else
-        arcIsZeroLength = targetPoint == m_currentPoint;
-    if (!rx || !ry || arcIsZeroLength) {
-        if (m_mode == RelativeCoordinates)
-            m_currentPoint += targetPoint;
-        else
-            m_currentPoint = targetPoint;
-        m_consumer->lineTo(m_currentPoint, AbsoluteCoordinates);
+        targetPoint += m_currentPoint;
+
+    if (!rx || !ry || targetPoint == m_currentPoint) {
+        m_consumer->lineTo(targetPoint, AbsoluteCoordinates);
+        m_currentPoint = targetPoint;
         return true;
     }
 
     FloatPoint point1 = m_currentPoint;
-    if (m_mode == RelativeCoordinates)
-        targetPoint += m_currentPoint;
     m_currentPoint = targetPoint;
     return decomposeArcToCubic(angle, rx, ry, point1, targetPoint, largeArc, sweep);
 }
