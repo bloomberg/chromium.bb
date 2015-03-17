@@ -451,15 +451,6 @@ class WebWidgetLockTarget : public MouseLockDispatcher::LockTarget {
   blink::WebWidget* webwidget_;
 };
 
-bool TouchEnabled() {
-// Based on the definition of chrome::kEnableTouchIcon.
-#if defined(OS_ANDROID)
-  return true;
-#else
-  return false;
-#endif
-}
-
 WebDragData DropDataToWebDragData(const DropData& drop_data) {
   std::vector<WebDragData::Item> item_list;
 
@@ -2269,9 +2260,6 @@ void RenderViewImpl::didChangeIcon(WebLocalFrame* frame,
   if (frame->parent())
     return;
 
-  if (!TouchEnabled() && icon_type != WebIconURL::TypeFavicon)
-    return;
-
   WebVector<WebIconURL> icon_urls = frame->iconURLs(icon_type);
   std::vector<FaviconURL> urls;
   for (size_t i = 0; i < icon_urls.size(); i++) {
@@ -3976,9 +3964,8 @@ void RenderViewImpl::SendUpdateFaviconURL(const std::vector<FaviconURL>& urls) {
 }
 
 void RenderViewImpl::DidStopLoadingIcons() {
-  int icon_types = WebIconURL::TypeFavicon;
-  if (TouchEnabled())
-    icon_types |= WebIconURL::TypeTouchPrecomposed | WebIconURL::TypeTouch;
+  int icon_types = WebIconURL::TypeFavicon | WebIconURL::TypeTouchPrecomposed |
+      WebIconURL::TypeTouch;
 
   // Favicons matter only for the top-level frame. If it is a WebRemoteFrame,
   // just return early.
