@@ -1278,10 +1278,27 @@ DEFINE_TRACE(Position)
 
 void Position::debugPosition(const char* msg) const
 {
-    if (isNull())
+    static const char* const anchorTypes[] = {
+        "OffsetInAnchor",
+        "BeforeAnchor",
+        "AfterAnchor",
+        "BeforeChildren",
+        "AfterChildren",
+        "Invalid",
+    };
+
+    if (isNull()) {
         fprintf(stderr, "Position [%s]: null\n", msg);
-    else
-        fprintf(stderr, "Position [%s]: %s [%p] at %d\n", msg, deprecatedNode()->nodeName().utf8().data(), deprecatedNode(), m_offset);
+        return;
+    }
+
+    const char* anchorType = anchorTypes[std::min(static_cast<size_t>(m_anchorType), WTF_ARRAY_LENGTH(anchorTypes) - 1)];
+    if (m_anchorNode->isTextNode()) {
+        fprintf(stderr, "Position [%s]: %s%s [%p] %s, (%s) at %d\n", msg, m_isLegacyEditingPosition ? "LEGACY, " : "", deprecatedNode()->nodeName().utf8().data(), deprecatedNode(), anchorType, m_anchorNode->nodeValue().utf8().data(), m_offset);
+        return;
+    }
+
+    fprintf(stderr, "Position [%s]: %s%s [%p] %s at %d\n", msg, m_isLegacyEditingPosition ? "LEGACY, " : "", deprecatedNode()->nodeName().utf8().data(), deprecatedNode(), anchorType, m_offset);
 }
 
 #ifndef NDEBUG

@@ -682,12 +682,11 @@ int VisiblePosition::lineDirectionPointForBlockDirectionNavigation() const
 
 void VisiblePosition::debugPosition(const char* msg) const
 {
-    if (isNull())
+    if (isNull()) {
         fprintf(stderr, "Position [%s]: null\n", msg);
-    else {
-        fprintf(stderr, "Position [%s]: %s, ", msg, m_deepPosition.deprecatedNode()->nodeName().utf8().data());
-        m_deepPosition.showAnchorTypeAndOffset();
+        return;
     }
+    m_deepPosition.debugPosition(msg);
 }
 
 void VisiblePosition::formatForDebugger(char* buffer, unsigned length) const
