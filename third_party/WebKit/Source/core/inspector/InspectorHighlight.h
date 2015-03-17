@@ -33,7 +33,7 @@ public:
     bool showExtensionLines;
 };
 
-class InspectorHighlight : public NoBaseWillBeGarbageCollected<InspectorHighlight> {
+class InspectorHighlight : public NoBaseWillBeGarbageCollectedFinalized<InspectorHighlight> {
 public:
     ~InspectorHighlight();
 
@@ -50,6 +50,8 @@ public:
     void appendQuad(const FloatQuad&, const Color& fillColor, const Color& outlineColor = Color::transparent);
     void appendEventTargetQuads(Node* eventTargetNode, const InspectorHighlightConfig&);
     PassRefPtr<JSONObject> asJSONObject() const;
+
+    DEFINE_INLINE_TRACE() { }
 
 private:
     InspectorHighlight();
