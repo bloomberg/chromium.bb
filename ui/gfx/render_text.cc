@@ -939,6 +939,17 @@ void RenderText::SetDisplayOffset(int horizontal_offset) {
   cursor_bounds_ = GetCursorBounds(selection_model_, insert_mode_);
 }
 
+Vector2d RenderText::GetLineOffset(size_t line_number) {
+  Vector2d offset = display_rect().OffsetFromOrigin();
+  // TODO(ckocagil): Apply the display offset for multiline scrolling.
+  if (!multiline())
+    offset.Add(GetUpdatedDisplayOffset());
+  else
+    offset.Add(Vector2d(0, lines_[line_number].preceding_heights));
+  offset.Add(GetAlignmentOffset(line_number));
+  return offset;
+}
+
 RenderText::RenderText()
     : horizontal_alignment_(base::i18n::IsRTL() ? ALIGN_RIGHT : ALIGN_LEFT),
       directionality_mode_(DIRECTIONALITY_FROM_TEXT),
@@ -1065,17 +1076,6 @@ void RenderText::UndoCompositionAndSelectionStyles() {
   colors_ = saved_colors_;
   styles_[UNDERLINE] = saved_underlines_;
   composition_and_selection_styles_applied_ = false;
-}
-
-Vector2d RenderText::GetLineOffset(size_t line_number) {
-  Vector2d offset = display_rect().OffsetFromOrigin();
-  // TODO(ckocagil): Apply the display offset for multiline scrolling.
-  if (!multiline())
-    offset.Add(GetUpdatedDisplayOffset());
-  else
-    offset.Add(Vector2d(0, lines_[line_number].preceding_heights));
-  offset.Add(GetAlignmentOffset(line_number));
-  return offset;
 }
 
 Point RenderText::ToTextPoint(const Point& point) {

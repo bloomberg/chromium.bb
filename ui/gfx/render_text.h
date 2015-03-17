@@ -461,6 +461,10 @@ class GFX_EXPORT RenderText {
   const Vector2d& GetUpdatedDisplayOffset();
   void SetDisplayOffset(int horizontal_offset);
 
+  // Returns the line offset from the origin after applying the text alignment
+  // and the display offset.
+  Vector2d GetLineOffset(size_t line_number);
+
  protected:
   RenderText();
 
@@ -568,10 +572,6 @@ class GFX_EXPORT RenderText {
   // Apply (and undo) temporary composition underlines and selection colors.
   void ApplyCompositionAndSelectionStyles();
   void UndoCompositionAndSelectionStyles();
-
-  // Returns the line offset from the origin after applying the text alignment
-  // and the display offset.
-  Vector2d GetLineOffset(size_t line_number);
 
   // Convert points from the text space to the view space and back. Handles the
   // display area, display offset, application LTR/RTL mode and multiline.

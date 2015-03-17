@@ -11,6 +11,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
+#include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
@@ -19,6 +20,24 @@ using base::ASCIIToUTF16;
 namespace views {
 
 typedef ViewsTestBase LabelTest;
+
+class LabelFocusTest : public FocusManagerTest {
+ public:
+  LabelFocusTest() {}
+  ~LabelFocusTest() override {}
+
+ protected:
+  views::Label* label() { return label_; }
+
+ private:
+  // FocusManagerTest:
+  void InitContentView() override {
+    label_ = new views::Label();
+    GetContentsView()->AddChildView(label_);
+  }
+
+  views::Label* label_;
+};
 
 // All text sizing measurements (width and height) should be greater than this.
 const int kMinTextDimension = 4;
@@ -547,5 +566,55 @@ TEST_F(LabelTest, MultilineSupportedRenderText) {
   EXPECT_EQ(1u, label.lines_.size());
 }
 #endif
+
+TEST_F(LabelFocusTest, FocusBounds) {
+  label()->SetText(ASCIIToUTF16("Example"));
+  gfx::Size normal_size = label()->GetPreferredSize();
+
+  label()->SetFocusable(true);
+  label()->RequestFocus();
+  gfx::Size focusable_size = label()->GetPreferredSize();
+  // Focusable label requires larger size to paint the focus rectangle.
+  EXPECT_GT(focusable_size.width(), normal_size.width());
+  EXPECT_GT(focusable_size.height(), normal_size.height());
+
+  label()->SizeToPreferredSize();
+  gfx::Rect focus_bounds = label()->GetFocusBounds();
+  EXPECT_EQ(label()->GetLocalBounds().ToString(), focus_bounds.ToString());
+
+  label()->SetBounds(
+      0, 0, focusable_size.width() * 2, focusable_size.height() * 2);
+  label()->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  focus_bounds = label()->GetFocusBounds();
+  EXPECT_EQ(0, focus_bounds.x());
+  EXPECT_LT(0, focus_bounds.y());
+  EXPECT_GT(label()->bounds().bottom(), focus_bounds.bottom());
+  EXPECT_EQ(focusable_size.ToString(), focus_bounds.size().ToString());
+
+  label()->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
+  focus_bounds = label()->GetFocusBounds();
+  EXPECT_LT(0, focus_bounds.x());
+  EXPECT_EQ(label()->bounds().right(), focus_bounds.right());
+  EXPECT_LT(0, focus_bounds.y());
+  EXPECT_GT(label()->bounds().bottom(), focus_bounds.bottom());
+  EXPECT_EQ(focusable_size.ToString(), focus_bounds.size().ToString());
+
+  label()->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label()->SetElideBehavior(gfx::FADE_TAIL);
+  label()->SetBounds(0, 0, focusable_size.width() / 2, focusable_size.height());
+  focus_bounds = label()->GetFocusBounds();
+  EXPECT_EQ(0, focus_bounds.x());
+  EXPECT_EQ(focusable_size.width() / 2, focus_bounds.width());
+}
+
+TEST_F(LabelFocusTest, EmptyLabel) {
+  label()->SetFocusable(true);
+  label()->RequestFocus();
+  label()->SizeToPreferredSize();
+
+  gfx::Rect focus_bounds = label()->GetFocusBounds();
+  EXPECT_FALSE(focus_bounds.IsEmpty());
+  EXPECT_LT(label()->font_list().GetHeight(), focus_bounds.height());
+}
 
 }  // namespace views

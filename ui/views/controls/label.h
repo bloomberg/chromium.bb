@@ -150,6 +150,8 @@ class VIEWS_EXPORT Label : public View {
   FRIEND_TEST_ALL_PREFIXES(LabelTest, ResetRenderTextData);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, MultilineSupportedRenderText);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, TextChangeWithoutLayout);
+  FRIEND_TEST_ALL_PREFIXES(LabelFocusTest, FocusBounds);
+  FRIEND_TEST_ALL_PREFIXES(LabelFocusTest, EmptyLabel);
 
   void Init(const base::string16& text, const gfx::FontList& font_list);
 
@@ -164,6 +166,8 @@ class VIEWS_EXPORT Label : public View {
 
   // Set up |lines_| to actually be painted.
   void MaybeBuildRenderTextLines();
+
+  gfx::Rect GetFocusBounds();
 
   // Get the text broken into lines as needed to fit the given |width|.
   std::vector<base::string16> GetLinesForWidth(int width) const;

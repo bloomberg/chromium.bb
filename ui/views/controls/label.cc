@@ -354,11 +354,8 @@ void Label::OnPaint(gfx::Canvas* canvas) {
 
     PaintText(canvas);
   }
-  if (HasFocus()) {
-    gfx::Rect focus_bounds = GetLocalBounds();
-    focus_bounds.Inset(-kFocusBorderPadding, -kFocusBorderPadding);
-    canvas->DrawFocusRect(focus_bounds);
-  }
+  if (HasFocus())
+    canvas->DrawFocusRect(GetFocusBounds());
 }
 
 void Label::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -433,6 +430,8 @@ void Label::MaybeBuildRenderTextLines() {
     return;
 
   gfx::Rect rect = GetContentsBounds();
+  if (focusable())
+    rect.Inset(kFocusBorderPadding, kFocusBorderPadding);
   if (rect.IsEmpty())
     return;
 
@@ -477,6 +476,25 @@ void Label::MaybeBuildRenderTextLines() {
       lines_.back()->SetText(lines_.back()->text() + lines[i]);
   }
   RecalculateColors();
+}
+
+gfx::Rect Label::GetFocusBounds() {
+  MaybeBuildRenderTextLines();
+
+  gfx::Rect focus_bounds;
+  if (lines_.empty()) {
+    focus_bounds = gfx::Rect(GetTextSize());
+  } else {
+    for (size_t i = 0; i < lines_.size(); ++i) {
+      gfx::Point origin;
+      origin += lines_[i]->GetLineOffset(0);
+      focus_bounds.Union(gfx::Rect(origin, lines_[i]->GetStringSize()));
+    }
+  }
+
+  focus_bounds.Inset(-kFocusBorderPadding, -kFocusBorderPadding);
+  focus_bounds.Intersect(GetLocalBounds());
+  return focus_bounds;
 }
 
 std::vector<base::string16> Label::GetLinesForWidth(int width) const {
