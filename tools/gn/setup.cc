@@ -341,7 +341,7 @@ bool Setup::FillArgsFromArgsInputFile() {
   }
 
   Scope arg_scope(&empty_settings_);
-  args_root_->AsBlock()->ExecuteBlockInScope(&arg_scope, &err);
+  args_root_->Execute(&arg_scope, &err);
   if (err.has_error()) {
     err.PrintToStdout();
     return false;
@@ -527,7 +527,7 @@ bool Setup::RunConfigFile() {
     return false;
   }
 
-  dotfile_root_->AsBlock()->ExecuteBlockInScope(&dotfile_scope_, &err);
+  dotfile_root_->Execute(&dotfile_scope_, &err);
   if (err.has_error()) {
     err.PrintToStdout();
     return false;

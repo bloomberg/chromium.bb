@@ -309,7 +309,7 @@ Value RunDeclareArgs(Scope* scope,
                      BlockNode* block,
                      Err* err) {
   Scope block_scope(scope);
-  block->ExecuteBlockInScope(&block_scope, err);
+  block->Execute(&block_scope, err);
   if (err->has_error())
     return Value();
 
@@ -798,7 +798,7 @@ Value RunFunction(Scope* scope,
     }
 
     Scope block_scope(scope);
-    block->ExecuteBlockInScope(&block_scope, err);
+    block->Execute(&block_scope, err);
     if (err->has_error())
       return Value();
 

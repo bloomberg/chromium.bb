@@ -302,9 +302,8 @@ void LoaderImpl::BackgroundLoadBuildConfig(
       settings->build_settings()->build_config_file().value());
   trace.SetToolchain(settings->toolchain_label());
 
-  const BlockNode* root_block = root->AsBlock();
   Err err;
-  root_block->ExecuteBlockInScope(base_config, &err);
+  root->Execute(base_config, &err);
 
   // Clear all private variables left in the scope. We want the root build
   // config to be like a .gni file in that variables beginning with an

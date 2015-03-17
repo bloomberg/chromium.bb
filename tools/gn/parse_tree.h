@@ -211,8 +211,7 @@ class BinaryOpNode : public ParseNode {
 
 class BlockNode : public ParseNode {
  public:
-  // Set has_scope if this block introduces a nested scope.
-  explicit BlockNode(bool has_scope);
+  BlockNode();
   ~BlockNode() override;
 
   const BlockNode* AsBlock() const override;
@@ -232,12 +231,7 @@ class BlockNode : public ParseNode {
     statements_.push_back(s.release());
   }
 
-  // Doesn't create a nested scope.
-  Value ExecuteBlockInScope(Scope* our_scope, Err* err) const;
-
  private:
-  bool has_scope_;
-
   // Tokens corresponding to { and }, if any (may be NULL). The end is stored
   // in a custom parse node so that it can have comments hung off of it.
   Token begin_token_;

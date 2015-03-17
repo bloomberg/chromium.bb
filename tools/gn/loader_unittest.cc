@@ -98,7 +98,7 @@ bool MockInputFileManager::HasTwoPending(const SourceFile& f1,
 }
 
 void MockInputFileManager::IssueAllPending() {
-  BlockNode block(false);  // Default response.
+  BlockNode block;  // Default response.
 
   for (const auto& cur : pending_) {
     CannedResponseMap::const_iterator found = canned_responses_.find(cur.first);

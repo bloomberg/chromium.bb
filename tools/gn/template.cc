@@ -41,7 +41,7 @@ Value Template::Invoke(Scope* scope,
                             invocation->function().value().as_string(),
                             block, args, invocation_scope.get(), err))
     return Value();
-  block->ExecuteBlockInScope(invocation_scope.get(), err);
+  block->Execute(invocation_scope.get(), err);
   if (err->has_error())
     return Value();
 
@@ -80,7 +80,7 @@ Value Template::Invoke(Scope* scope,
 
   // Actually run the template code.
   Value result =
-      definition_->block()->ExecuteBlockInScope(&template_scope, err);
+      definition_->block()->Execute(&template_scope, err);
   if (err->has_error()) {
     // If there was an error, append the caller location so the error message
     // displays a stack trace of how it got here.

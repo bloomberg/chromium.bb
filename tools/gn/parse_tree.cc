@@ -255,7 +255,7 @@ void BinaryOpNode::Print(std::ostream& out, int indent) const {
 
 // BlockNode ------------------------------------------------------------------
 
-BlockNode::BlockNode(bool has_scope) : has_scope_(has_scope) {
+BlockNode::BlockNode() {
 }
 
 BlockNode::~BlockNode() {
@@ -266,18 +266,20 @@ const BlockNode* BlockNode::AsBlock() const {
   return this;
 }
 
-Value BlockNode::Execute(Scope* containing_scope, Err* err) const {
-  if (has_scope_) {
-    Scope our_scope(containing_scope);
-    Value ret = ExecuteBlockInScope(&our_scope, err);
-    if (err->has_error())
+Value BlockNode::Execute(Scope* scope, Err* err) const {
+  for (size_t i = 0; i < statements_.size() && !err->has_error(); i++) {
+    // Check for trying to execute things with no side effects in a block.
+    const ParseNode* cur = statements_[i];
+    if (cur->AsList() || cur->AsLiteral() || cur->AsUnaryOp() ||
+        cur->AsIdentifier()) {
+      *err = cur->MakeErrorDescribing(
+          "This statement has no effect.",
+          "Either delete it or do something with the result.");
       return Value();
-
-    // Check for unused vars in the scope.
-    our_scope.CheckForUnusedVars(err);
-    return ret;
+    }
+    cur->Execute(scope, err);
   }
-  return ExecuteBlockInScope(containing_scope, err);
+  return Value();
 }
 
 LocationRange BlockNode::GetRange() const {
@@ -303,22 +305,6 @@ void BlockNode::Print(std::ostream& out, int indent) const {
     statement->Print(out, indent + 1);
   if (end_ && end_->comments())
     end_->Print(out, indent + 1);
-}
-
-Value BlockNode::ExecuteBlockInScope(Scope* our_scope, Err* err) const {
-  for (size_t i = 0; i < statements_.size() && !err->has_error(); i++) {
-    // Check for trying to execute things with no side effects in a block.
-    const ParseNode* cur = statements_[i];
-    if (cur->AsList() || cur->AsLiteral() || cur->AsUnaryOp() ||
-        cur->AsIdentifier()) {
-      *err = cur->MakeErrorDescribing(
-          "This statement has no effect.",
-          "Either delete it or do something with the result.");
-      return Value();
-    }
-    cur->Execute(our_scope, err);
-  }
-  return Value();
 }
 
 // ConditionNode --------------------------------------------------------------
@@ -348,17 +334,10 @@ Value ConditionNode::Execute(Scope* scope, Err* err) const {
   }
 
   if (condition_result.boolean_value()) {
-    if_true_->ExecuteBlockInScope(scope, err);
+    if_true_->Execute(scope, err);
   } else if (if_false_) {
-    // The else block is optional. It's either another condition (for an
-    // "else if" and we can just Execute it and the condition will handle
-    // the scoping) or it's a block indicating an "else" in which ase we
-    // need to be sure it inherits our scope.
-    const BlockNode* if_false_block = if_false_->AsBlock();
-    if (if_false_block)
-      if_false_block->ExecuteBlockInScope(scope, err);
-    else
-      if_false_->Execute(scope, err);
+    // The else block is optional.
+    if_false_->Execute(scope, err);
   }
 
   return Value();

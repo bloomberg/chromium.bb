@@ -77,7 +77,7 @@ Value RunSetDefaults(Scope* scope,
 
   // Run the block for the rule invocation.
   Scope block_scope(scope);
-  block->ExecuteBlockInScope(&block_scope, err);
+  block->Execute(&block_scope, err);
   if (err->has_error())
     return Value();
 

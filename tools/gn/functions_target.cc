@@ -38,7 +38,7 @@ Value ExecuteGenericTarget(const char* target_type,
                             args, &block_scope, err))
     return Value();
 
-  block->ExecuteBlockInScope(&block_scope, err);
+  block->Execute(&block_scope, err);
   if (err->has_error())
     return Value();
 

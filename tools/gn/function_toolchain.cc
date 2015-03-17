@@ -302,7 +302,7 @@ Value RunToolchain(Scope* scope,
 
   Scope block_scope(scope);
   block_scope.SetProperty(&kToolchainPropertyKey, toolchain.get());
-  block->ExecuteBlockInScope(&block_scope, err);
+  block->Execute(&block_scope, err);
   block_scope.SetProperty(&kToolchainPropertyKey, nullptr);
   if (err->has_error())
     return Value();
@@ -741,7 +741,7 @@ Value RunTool(Scope* scope,
 
   // Run the tool block.
   Scope block_scope(scope);
-  block->ExecuteBlockInScope(&block_scope, err);
+  block->Execute(&block_scope, err);
   if (err->has_error())
     return Value();
 
@@ -906,7 +906,7 @@ Value RunToolchainArgs(Scope* scope,
   // This function makes a new scope with various variable sets on it, which
   // we then save on the toolchain to use when re-invoking the build.
   Scope block_scope(scope);
-  block->ExecuteBlockInScope(&block_scope, err);
+  block->Execute(&block_scope, err);
   if (err->has_error())
     return Value();
 

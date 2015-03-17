@@ -99,7 +99,7 @@ Value RunForEach(Scope* scope,
 
   for (const auto& cur : list) {
     scope->SetValue(loop_var, cur, function);
-    block->ExecuteBlockInScope(scope, err);
+    block->Execute(scope, err);
     if (err->has_error())
       return Value();
   }

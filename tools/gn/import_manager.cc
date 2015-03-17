@@ -21,8 +21,6 @@ Scope* UncachedImport(const Settings* settings,
       node_for_err->GetRange(), settings->build_settings(), file, err);
   if (!node)
     return nullptr;
-  const BlockNode* block = node->AsBlock();
-  CHECK(block);
 
   scoped_ptr<Scope> scope(new Scope(settings->base_config()));
   scope->set_source_dir(file.GetDir());
@@ -33,7 +31,7 @@ Scope* UncachedImport(const Settings* settings,
   ScopePerFileProvider per_file_provider(scope.get(), false);
 
   scope->SetProcessingImport();
-  block->ExecuteBlockInScope(scope.get(), err);
+  node->Execute(scope.get(), err);
   if (err->has_error())
     return nullptr;
   scope->ClearProcessingImport();

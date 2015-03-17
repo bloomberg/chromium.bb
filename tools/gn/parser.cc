@@ -422,7 +422,7 @@ scoped_ptr<ListNode> Parser::ParseList(Token start_token,
 }
 
 scoped_ptr<ParseNode> Parser::ParseFile() {
-  scoped_ptr<BlockNode> file(new BlockNode(false));
+  scoped_ptr<BlockNode> file(new BlockNode);
   for (;;) {
     if (at_end())
       break;
@@ -471,7 +471,7 @@ scoped_ptr<BlockNode> Parser::ParseBlock() {
       Consume(Token::LEFT_BRACE, "Expected '{' to start a block.");
   if (has_error())
     return scoped_ptr<BlockNode>();
-  scoped_ptr<BlockNode> block(new BlockNode(true));
+  scoped_ptr<BlockNode> block(new BlockNode);
   block->set_begin_token(begin_token);
 
   for (;;) {
