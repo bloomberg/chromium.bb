@@ -8,6 +8,9 @@ import("//testing/test.gni")
 if (current_cpu == "arm") {
   import("//build/config/arm.gni")
 }
+if (current_cpu == "mipsel" || current_cpu == "mips64el") {
+  import("//build/config/mips.gni")
+}
 
 skia_support_gpu = !is_ios
 skia_support_pdf = !is_ios && (enable_basic_printing || enable_print_preview)
@@ -48,26 +51,30 @@ gypi_skia_core =
                 [ "//third_party/skia/gyp/core.gypi" ])
 
 # The list of Skia gpu sources that are to be set for chromium.
-gypi_skia_gpu =
-    exec_script("//build/gypi_to_gn.py",
-                [
-                  rebase_path("//third_party/skia/gyp/gpu.gypi"),
-                  "--replace=<(skia_include_path)=//third_party/skia/include",
-                  "--replace=<(skia_src_path)=//third_party/skia/src",
-                ],
-                "scope",
-                [ "//third_party/skia/gyp/gpu.gypi" ])
+if (skia_support_gpu) {
+  gypi_skia_gpu =
+      exec_script("//build/gypi_to_gn.py",
+                  [
+                    rebase_path("//third_party/skia/gyp/gpu.gypi"),
+                    "--replace=<(skia_include_path)=//third_party/skia/include",
+                    "--replace=<(skia_src_path)=//third_party/skia/src",
+                  ],
+                  "scope",
+                  [ "//third_party/skia/gyp/gpu.gypi" ])
+}
 
 # The list of Skia pdf sources that are to be set for chromium.
-gypi_skia_pdf =
-    exec_script("//build/gypi_to_gn.py",
-                [
-                  rebase_path("//third_party/skia/gyp/pdf.gypi"),
-                  "--replace=<(skia_include_path)=//third_party/skia/include",
-                  "--replace=<(skia_src_path)=//third_party/skia/src",
-                ],
-                "scope",
-                [ "//third_party/skia/gyp/pdf.gypi" ])
+if (skia_support_pdf) {
+  gypi_skia_pdf =
+      exec_script("//build/gypi_to_gn.py",
+                  [
+                    rebase_path("//third_party/skia/gyp/pdf.gypi"),
+                    "--replace=<(skia_include_path)=//third_party/skia/include",
+                    "--replace=<(skia_src_path)=//third_party/skia/src",
+                  ],
+                  "scope",
+                  [ "//third_party/skia/gyp/pdf.gypi" ])
+}
 
 # The list of Skia effects that are to be set for chromium.
 gypi_skia_effects =
@@ -550,6 +557,7 @@ source_set("skia_opts") {
               [
                 # Chrome-specific.
                 "ext/convolver_SSE2.cc",
+                "ext/convolver_SSE2.h",
               ]
 
     if (is_linux || is_mac) {
@@ -577,7 +585,19 @@ source_set("skia_opts") {
     }
   } else if (current_cpu == "mipsel") {
     cflags += [ "-fomit-frame-pointer" ]
-    sources = gypi_skia_opts.none_sources
+
+    if (mips_dsp_rev >= 1) {
+      sources = gypi_skia_opts.mips_dsp_sources
+      if (mips_dsp_rev >= 2) {
+        sources += [
+          # Chrome-specific.
+          "ext/convolver_mips_dspr2.cc",
+          "ext/convolver_mips_dspr2.h",
+        ]
+      }
+    } else {
+      sources = gypi_skia_opts.none_sources
+    }
   } else {
     assert(false, "Need to port cpu specific stuff from skia_library_opts.gyp")
   }
