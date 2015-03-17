@@ -101,6 +101,60 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
         fail("IllegalArgumentException must be thrown");
     }
 
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testConfigUserAgent() throws Throwable {
+        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
+        String userAgentName = "User-Agent";
+        String userAgentValue = "User-Agent-Value";
+        config.setUserAgent(userAgentValue);
+        config.setLibraryName("cronet_tests");
+        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(
+                getInstrumentation().getTargetContext(), config);
+        assertTrue(NativeTestServer.startNativeTestServer(
+                getInstrumentation().getTargetContext()));
+        String url = NativeTestServer.getEchoHeaderURL(userAgentName);
+        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
+        HashMap<String, String> headers = new HashMap<String, String>();
+        HttpUrlRequest request = factory.createRequest(
+                url, 0, headers, listener);
+        request.start();
+        listener.blockForComplete();
+        assertEquals(userAgentValue, listener.mResponseAsString);
+        NativeTestServer.shutdownNativeTestServer();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    public void testConfigUserAgentLegacy() throws Throwable {
+        HttpUrlRequestFactoryConfig config = new HttpUrlRequestFactoryConfig();
+        String userAgentName = "User-Agent";
+        String userAgentValue = "User-Agent-Value";
+        config.setUserAgent(userAgentValue);
+        config.enableLegacyMode(true);
+        HttpUrlRequestFactory factory = HttpUrlRequestFactory.createFactory(
+                getInstrumentation().getTargetContext(), config);
+        assertTrue("Factory should be HttpUrlConnection/n.n.n.n@r but is "
+                           + factory.getName(),
+                   Pattern.matches(
+                           "HttpUrlConnection/\\d+\\.\\d+\\.\\d+\\.\\d+@\\w+",
+                           factory.getName()));
+        // Load test library for starting the native test server.
+        System.loadLibrary("cronet_tests");
+
+        assertTrue(NativeTestServer.startNativeTestServer(
+                getInstrumentation().getTargetContext()));
+        String url = NativeTestServer.getEchoHeaderURL(userAgentName);
+        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
+        HashMap<String, String> headers = new HashMap<String, String>();
+        HttpUrlRequest request = factory.createRequest(
+                url, 0, headers, listener);
+        request.start();
+        listener.blockForComplete();
+        assertEquals(userAgentValue, listener.mResponseAsString);
+        NativeTestServer.shutdownNativeTestServer();
+    }
+
     /**
      * Returns the path for the test storage (http cache, QUIC server info).
      */

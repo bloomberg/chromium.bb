@@ -17,10 +17,16 @@ import java.util.Map;
 class HttpUrlConnectionUrlRequestFactory extends HttpUrlRequestFactory {
 
     private final Context mContext;
+    private final String mDefaultUserAgent;
 
     public HttpUrlConnectionUrlRequestFactory(
             Context context, UrlRequestContextConfig config) {
         mContext = context;
+        String userAgent = config.userAgent();
+        if (userAgent.isEmpty()) {
+            userAgent = UserAgent.from(mContext);
+        }
+        mDefaultUserAgent = userAgent;
     }
 
     @Override
@@ -36,16 +42,16 @@ class HttpUrlConnectionUrlRequestFactory extends HttpUrlRequestFactory {
     @Override
     public HttpUrlRequest createRequest(String url, int requestPriority,
             Map<String, String> headers, HttpUrlRequestListener listener) {
-        return new HttpUrlConnectionUrlRequest(mContext, url, requestPriority,
-                headers, listener);
+        return new HttpUrlConnectionUrlRequest(mContext, mDefaultUserAgent, url,
+                requestPriority, headers, listener);
     }
 
     @Override
     public HttpUrlRequest createRequest(String url, int requestPriority,
             Map<String, String> headers, WritableByteChannel channel,
             HttpUrlRequestListener listener) {
-        return new HttpUrlConnectionUrlRequest(mContext, url, requestPriority,
-                headers, channel, listener);
+        return new HttpUrlConnectionUrlRequest(mContext, mDefaultUserAgent, url,
+                requestPriority, headers, channel, listener);
     }
 
     @Override

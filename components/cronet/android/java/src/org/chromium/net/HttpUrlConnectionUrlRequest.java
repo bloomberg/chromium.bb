@@ -41,6 +41,8 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
 
     private final Context mContext;
 
+    private final String mDefaultUserAgent;
+
     private final String mUrl;
 
     private final Map<String, String> mHeaders;
@@ -95,15 +97,15 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
 
     private static final Object sExecutorServiceLock = new Object();
 
-    HttpUrlConnectionUrlRequest(Context context, String url,
-            int requestPriority, Map<String, String> headers,
+    HttpUrlConnectionUrlRequest(Context context, String defaultUserAgent,
+            String url, int requestPriority, Map<String, String> headers,
             HttpUrlRequestListener listener) {
-        this(context, url, requestPriority, headers,
+        this(context, defaultUserAgent, url, requestPriority, headers,
                 new ChunkedWritableByteChannel(), listener);
     }
 
-    HttpUrlConnectionUrlRequest(Context context, String url,
-            int requestPriority, Map<String, String> headers,
+    HttpUrlConnectionUrlRequest(Context context, String defaultUserAgent,
+            String url, int requestPriority, Map<String, String> headers,
             WritableByteChannel sink, HttpUrlRequestListener listener) {
         if (context == null) {
             throw new NullPointerException("Context is required");
@@ -112,6 +114,7 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
             throw new NullPointerException("URL is required");
         }
         mContext = context;
+        mDefaultUserAgent = defaultUserAgent;
         mUrl = url;
         mHeaders = headers;
         mSink = sink;
@@ -240,8 +243,7 @@ class HttpUrlConnectionUrlRequest implements HttpUrlRequest {
             }
 
             if (mConnection.getRequestProperty("User-Agent") == null) {
-                mConnection.setRequestProperty("User-Agent",
-                        UserAgent.from(mContext));
+                mConnection.setRequestProperty("User-Agent", mDefaultUserAgent);
             }
 
             if (mPostData != null || mPostDataChannel != null) {

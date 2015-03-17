@@ -23,8 +23,12 @@ public class ChromiumUrlRequestFactory extends HttpUrlRequestFactory {
     public ChromiumUrlRequestFactory(
             Context context, UrlRequestContextConfig config) {
         if (isEnabled()) {
-            mRequestContext =
-                    new ChromiumUrlRequestContext(context, UserAgent.from(context), config);
+            String userAgent = config.userAgent();
+            if (userAgent.isEmpty()) {
+                userAgent = UserAgent.from(context);
+            }
+            mRequestContext = new ChromiumUrlRequestContext(context,
+                    userAgent, config);
         }
     }
 
