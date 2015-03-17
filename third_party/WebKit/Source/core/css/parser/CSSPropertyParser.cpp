@@ -1151,21 +1151,20 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         validPrimitive = validUnit(value, FLength);
         break;
     case CSSPropertyPerspective:
-        if (id == CSSValueNone) {
+        if (id == CSSValueNone)
             validPrimitive = true;
-        } else if (validUnit(value, FLength | FNonNeg)) {
-            addProperty(propId, createPrimitiveNumericValue(value), important);
-            return true;
-        }
+        else if (validUnit(value, FLength) && (m_parsedCalculation || value->fValue > 0))
+            validPrimitive = true;
+        else
+            return false;
         break;
     case CSSPropertyWebkitPerspective:
-        if (id == CSSValueNone) {
+        if (id == CSSValueNone)
             validPrimitive = true;
-        } else if (validUnit(value, FNumber | FLength | FNonNeg)) {
-            // Accepting valueless numbers is a quirk of the -webkit prefixed version of the property.
-            addProperty(propId, createPrimitiveNumericValue(value), important);
-            return true;
-        }
+        else if (validUnit(value, FNumber | FLength) && (m_parsedCalculation || value->fValue > 0))
+            validPrimitive = true;
+        else
+            return false;
         break;
     case CSSPropertyPerspectiveOrigin:
     case CSSPropertyWebkitPerspectiveOrigin: {

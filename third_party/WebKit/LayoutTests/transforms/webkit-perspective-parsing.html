@@ -4,7 +4,7 @@
 <div id="target"></div>
 <script src="resources/parsing-test-helper.js"></script>
 <script>
-expect = expect.bind(this, 'perspective', 'perspective');
+expect = expect.bind(this, '-webkit-perspective', 'webkitPerspective');
 
 expect('initial').parsesAs('initial').isComputedTo('none');
 expect('inherit').parsesAs('inherit');
@@ -14,11 +14,14 @@ expect('1px').parsesAs('1px').isComputedTo('1px');
 
 expect('0').isInvalid();
 expect('0px').isInvalid();
-expect('5').isInvalid();
+expect('5').parsesAs('5');
 expect('-1px').isInvalid();
 expect('50%').isInvalid();
 expect('calc(-1px)').parsesAs('calc(-1px)');
 expect('calc(0px)').parsesAs('calc(0px)');
 expect('calc(1px)').parsesAs('calc(1px)');
+expect('calc(-1)').parsesAs('calc(-1)');
+expect('calc(0)').parsesAs('calc(0)');
+expect('calc(1)').parsesAs('calc(1)');
 expect('calc(10em - 10px)').parsesAs('calc(10em - 10px)');
 </script>
