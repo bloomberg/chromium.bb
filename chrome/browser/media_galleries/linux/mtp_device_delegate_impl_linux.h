@@ -310,6 +310,11 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const CopyFileFromLocalSuccessCallback success_callback,
       const base::FilePath& temporary_file_path);
 
+  // Called when MoveFileLocal() succeeds with rename operation.
+  void OnDidMoveFileLocalWithRename(
+      const MoveFileLocalSuccessCallback& success_callback,
+      const uint32 file_id);
+
   // Called when CopyFileFromLocal() succeeds.
   void OnDidCopyFileFromLocal(
       const CopyFileFromLocalSuccessCallback& success_callback,

@@ -40,6 +40,10 @@ class TestMediaTransferProtocolManagerLinux
   void GetFileInfo(const std::string& storage_handle,
                    uint32 file_id,
                    const GetFileInfoCallback& callback) override;
+  void RenameObject(const std::string& storage_handle,
+                    const uint32 object_id,
+                    const std::string& new_name,
+                    const RenameObjectCallback& callback) override;
   void CopyFileFromLocal(const std::string& storage_handle,
                          const int source_file_descriptor,
                          const uint32 parent_id,

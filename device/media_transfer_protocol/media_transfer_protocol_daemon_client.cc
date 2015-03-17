@@ -171,6 +171,22 @@ class MediaTransferProtocolDaemonClientImpl
                    error_callback));
   }
 
+  void RenameObject(const std::string& handle,
+                    const uint32 object_id,
+                    const std::string& new_name,
+                    const RenameObjectCallback& callback,
+                    const ErrorCallback& error_callback) override {
+    dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kRenameObject);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(handle);
+    writer.AppendUint32(object_id);
+    writer.AppendString(new_name);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnRenameObject,
+                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+  }
+
   void CopyFileFromLocal(const std::string& handle,
                          const int source_file_descriptor,
                          const uint32 parent_id,
@@ -383,6 +399,17 @@ class MediaTransferProtocolDaemonClientImpl
     }
     std::string data(reinterpret_cast<const char*>(data_bytes), data_length);
     callback.Run(data);
+  }
+
+  void OnRenameObject(const RenameObjectCallback& callback,
+                      const ErrorCallback& error_callback,
+                      dbus::Response* response) {
+    if (!response) {
+      error_callback.Run();
+      return;
+    }
+
+    callback.Run();
   }
 
   void OnCopyFileFromLocal(const CopyFileFromLocalCallback& callback,

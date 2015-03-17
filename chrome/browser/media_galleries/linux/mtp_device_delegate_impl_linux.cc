@@ -189,6 +189,31 @@ void ReadBytesOnUIThread(
   task_helper->ReadBytes(request);
 }
 
+// Renames |object_id| to |new_name|.
+//
+// |storage_name| specifies the name of the storage device.
+// |read_only| specifies the mode of the storage device.
+// |object_id| is an id of object to be renamed.
+// |new_name| is new name of the object.
+// |success_callback| is called when the object is renamed successfully.
+// |error_callback| is called when it fails to rename the object.
+// |success_callback| and |error_callback| runs on the IO thread.
+void RenameObjectOnUIThread(
+    const std::string& storage_name,
+    const bool read_only,
+    const uint32 object_id,
+    const std::string& new_name,
+    const MTPDeviceTaskHelper::RenameObjectSuccessCallback& success_callback,
+    const MTPDeviceTaskHelper::ErrorCallback& error_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  MTPDeviceTaskHelper* task_helper =
+      GetDeviceTaskHelperForStorage(storage_name, read_only);
+  if (!task_helper)
+    return;
+  task_helper->RenameObject(object_id, new_name, success_callback,
+                            error_callback);
+}
+
 // Copies the file |source_file_descriptor| to |file_name| in |parent_id|.
 //
 // |storage_name| specifies the name of the storage device.
@@ -822,8 +847,24 @@ void MTPDeviceDelegateImplLinux::MoveFileLocalInternal(
 
   if (source_file_path.DirName() == device_file_path.DirName()) {
     // If a file is moved in a same directory, rename the file.
-    // TODO(yawano) Implement rename operation.
-    error_callback.Run(base::File::FILE_ERROR_SECURITY);
+    uint32 file_id;
+    if (CachedPathToId(source_file_path, &file_id)) {
+      const MTPDeviceTaskHelper::RenameObjectSuccessCallback
+          success_callback_wrapper = base::Bind(
+              &MTPDeviceDelegateImplLinux::OnDidMoveFileLocalWithRename,
+              weak_ptr_factory_.GetWeakPtr(), success_callback, file_id);
+      const MTPDeviceTaskHelper::ErrorCallback error_callback_wrapper =
+          base::Bind(&MTPDeviceDelegateImplLinux::HandleDeviceFileError,
+                     weak_ptr_factory_.GetWeakPtr(), error_callback, file_id);
+      const base::Closure closure =
+          base::Bind(&RenameObjectOnUIThread, storage_name_, read_only_,
+                     file_id, device_file_path.BaseName().value(),
+                     success_callback_wrapper, error_callback_wrapper);
+      EnsureInitAndRunTask(PendingTaskInfo(
+          base::FilePath(), content::BrowserThread::UI, FROM_HERE, closure));
+    } else {
+      error_callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    }
   } else {
     // If a file is moved to a different directory, create a copy to the
     // destination path, and remove source file.
@@ -1312,6 +1353,16 @@ void MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocalOfCopyFileLocal(
 
   DeleteTemporaryFile(temporary_file_path);
   success_callback.Run();
+}
+
+void MTPDeviceDelegateImplLinux::OnDidMoveFileLocalWithRename(
+    const MoveFileLocalSuccessCallback& success_callback,
+    const uint32 file_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  EvictCachedPathToId(file_id);
+  success_callback.Run();
+  PendingRequestDone();
 }
 
 void MTPDeviceDelegateImplLinux::OnDidCopyFileFromLocal(

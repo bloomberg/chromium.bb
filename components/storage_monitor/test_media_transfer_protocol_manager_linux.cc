@@ -67,6 +67,14 @@ void TestMediaTransferProtocolManagerLinux::GetFileInfo(
   callback.Run(MtpFileEntry(), true);
 }
 
+void TestMediaTransferProtocolManagerLinux::RenameObject(
+    const std::string& storage_handle,
+    const uint32 object_id,
+    const std::string& new_name,
+    const RenameObjectCallback& callback) {
+  callback.Run(true /* error */);
+}
+
 void TestMediaTransferProtocolManagerLinux::CopyFileFromLocal(
     const std::string& storage_handle,
     const int source_file_descriptor,

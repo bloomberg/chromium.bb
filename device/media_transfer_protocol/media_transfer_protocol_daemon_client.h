@@ -68,6 +68,9 @@ class MediaTransferProtocolDaemonClient {
   // The argument is a string containing the file data.
   typedef base::Callback<void(const std::string& data)> ReadFileCallback;
 
+  // A callback to handle the result of RenameObject.
+  typedef base::Closure RenameObjectCallback;
+
   // A callback to handle the result of CopyFileFromLocal.
   typedef base::Closure CopyFileFromLocalCallback;
 
@@ -142,6 +145,16 @@ class MediaTransferProtocolDaemonClient {
                              uint32 bytes_to_read,
                              const ReadFileCallback& callback,
                              const ErrorCallback& error_callback) = 0;
+
+  // Calls RenameObject method. |callback| is called after the method call
+  // succeeds, otherwise, |error_callback| is called.
+  // |object_is| is an id of object to be renamed.
+  // |new_name| is new name of the object.
+  virtual void RenameObject(const std::string& handle,
+                            const uint32 object_id,
+                            const std::string& new_name,
+                            const RenameObjectCallback& callback,
+                            const ErrorCallback& error_callback) = 0;
 
   // Calls CopyFileFromLocal method. |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.

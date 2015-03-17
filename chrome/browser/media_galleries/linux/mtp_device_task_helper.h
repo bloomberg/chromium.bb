@@ -36,6 +36,8 @@ class MTPDeviceTaskHelper {
   typedef base::Callback<void(const storage::AsyncFileUtil::EntryList& entries,
                               bool has_more)> ReadDirectorySuccessCallback;
 
+  typedef base::Closure RenameObjectSuccessCallback;
+
   typedef base::Closure CopyFileFromLocalSuccessCallback;
 
   typedef base::Closure DeleteObjectSuccessCallback;
@@ -100,6 +102,12 @@ class MTPDeviceTaskHelper {
   // byte range, and the callbacks. The callbacks specified within |request| are
   // called on the IO thread to notify the caller about success or failure.
   void ReadBytes(const MTPDeviceAsyncDelegate::ReadBytesRequest& request);
+
+  // Forwards RenameObject request to the MediaTransferProtocolManager.
+  void RenameObject(const uint32 object_id,
+                    const std::string& new_name,
+                    const RenameObjectSuccessCallback& success_callback,
+                    const ErrorCallback& error_callback);
 
   // Forwards CopyFileFromLocal request to the MediaTransferProtocolManager.
   void CopyFileFromLocal(
@@ -178,6 +186,11 @@ class MTPDeviceTaskHelper {
       const base::File::Info& file_info,
       const std::string& data,
       bool error) const;
+
+  // Called when RenameObject completes.
+  void OnRenameObject(const RenameObjectSuccessCallback& success_callback,
+                      const ErrorCallback& error_callback,
+                      const bool error) const;
 
   // Called when CopyFileFromLocal completes.
   void OnCopyFileFromLocal(

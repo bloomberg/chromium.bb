@@ -138,6 +138,20 @@ void MTPDeviceTaskHelper::ReadBytes(
                  weak_ptr_factory_.GetWeakPtr(), request));
 }
 
+void MTPDeviceTaskHelper::RenameObject(
+    const uint32 object_id,
+    const std::string& new_name,
+    const RenameObjectSuccessCallback& success_callback,
+    const ErrorCallback& error_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  GetMediaTransferProtocolManager()->RenameObject(
+      device_handle_, object_id, new_name,
+      base::Bind(&MTPDeviceTaskHelper::OnRenameObject,
+                 weak_ptr_factory_.GetWeakPtr(), success_callback,
+                 error_callback));
+}
+
 // TODO(yawano) storage_name is not used, delete it.
 void MTPDeviceTaskHelper::CopyFileFromLocal(
     const std::string& storage_name,
@@ -298,6 +312,22 @@ void MTPDeviceTaskHelper::OnDidReadBytes(
                                               file_info, data.length()));
 }
 
+void MTPDeviceTaskHelper::OnRenameObject(
+    const RenameObjectSuccessCallback& success_callback,
+    const ErrorCallback& error_callback,
+    const bool error) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (error) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(error_callback, base::File::FILE_ERROR_FAILED));
+    return;
+  }
+
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                   success_callback);
+}
+
 void MTPDeviceTaskHelper::OnCopyFileFromLocal(
     const CopyFileFromLocalSuccessCallback& success_callback,
     const ErrorCallback& error_callback,
@@ -311,7 +341,7 @@ void MTPDeviceTaskHelper::OnCopyFileFromLocal(
   }
 
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                   base::Bind(success_callback));
+                                   success_callback);
 }
 
 void MTPDeviceTaskHelper::OnDeleteObject(

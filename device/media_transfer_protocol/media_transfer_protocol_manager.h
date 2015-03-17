@@ -59,6 +59,10 @@ class MediaTransferProtocolManager {
   typedef base::Callback<void(const MtpFileEntry& file_entry,
                               bool error)> GetFileInfoCallback;
 
+  // A callback to handle the result of RenameObject.
+  // The first argument is true if there was an error.
+  typedef base::Callback<void(bool error)> RenameObjectCallback;
+
   // A callback to handle the result of CopyFileFromLocal.
   // The first argument is true if there was an error.
   typedef base::Callback<void(bool error)> CopyFileFromLocalCallback;
@@ -123,6 +127,12 @@ class MediaTransferProtocolManager {
   virtual void GetFileInfo(const std::string& storage_handle,
                            uint32 file_id,
                            const GetFileInfoCallback& callback) = 0;
+
+  // Renames |object_id| to |new_name|.
+  virtual void RenameObject(const std::string& storage_handle,
+                            const uint32 object_id,
+                            const std::string& new_name,
+                            const RenameObjectCallback& callback) = 0;
 
   // Copies the file from |source_file_descriptor| to |file_name| on
   // |parent_id|.

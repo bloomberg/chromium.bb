@@ -223,6 +223,24 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
+  void RenameObject(const std::string& storage_handle,
+                    const uint32 object_id,
+                    const std::string& new_name,
+                    const RenameObjectCallback& callback) override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    if (!ContainsKey(handles_, storage_handle) || !mtp_client_) {
+      callback.Run(true /* error */);
+      return;
+    }
+    rename_object_callbacks_.push(callback);
+    mtp_client_->RenameObject(
+        storage_handle, object_id, new_name,
+        base::Bind(&MediaTransferProtocolManagerImpl::OnRenameObject,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&MediaTransferProtocolManagerImpl::OnRenameObjectError,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+
   void CopyFileFromLocal(const std::string& storage_handle,
                          const int source_file_descriptor,
                          const uint32 parent_id,
@@ -271,6 +289,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   typedef std::queue<ReadDirectoryCallback> ReadDirectoryCallbackQueue;
   typedef std::queue<ReadFileCallback> ReadFileCallbackQueue;
   typedef std::queue<GetFileInfoCallback> GetFileInfoCallbackQueue;
+  typedef std::queue<RenameObjectCallback> RenameObjectCallbackQueue;
   typedef std::queue<CopyFileFromLocalCallback> CopyFileFromLocalCallbackQueue;
   typedef std::queue<DeleteObjectCallback> DeleteObjectCallbackQueue;
 
@@ -487,6 +506,18 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
     get_file_info_callbacks_.pop();
   }
 
+  void OnRenameObject() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    rename_object_callbacks_.front().Run(false /* no error */);
+    rename_object_callbacks_.pop();
+  }
+
+  void OnRenameObjectError() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    rename_object_callbacks_.front().Run(true /* error */);
+    rename_object_callbacks_.pop();
+  }
+
   void OnCopyFileFromLocal() {
     DCHECK(thread_checker_.CalledOnValidThread());
     copy_file_from_local_callbacks_.front().Run(false /* no error */);
@@ -592,6 +623,7 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   ReadDirectoryCallbackQueue read_directory_callbacks_;
   ReadFileCallbackQueue read_file_callbacks_;
   GetFileInfoCallbackQueue get_file_info_callbacks_;
+  RenameObjectCallbackQueue rename_object_callbacks_;
   CopyFileFromLocalCallbackQueue copy_file_from_local_callbacks_;
   DeleteObjectCallbackQueue delete_object_callbacks_;
 
