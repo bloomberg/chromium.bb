@@ -4,6 +4,7 @@
 
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
 
+#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task_runner.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -67,10 +69,15 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
     return false;
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+
  protected:
   void RunFetcher(const GURL& url,
                   bool expected_manifest_valid,
-                  bool expected_outcome) {
+                  bool expected_to_show) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     scoped_refptr<AppBannerDataFetcher> fetcher(
@@ -85,7 +92,7 @@ class AppBannerDataFetcherBrowserTest : public InProcessBrowserTest,
     run_loop.Run();
 
     EXPECT_EQ(expected_manifest_valid, !manifest_was_invalid_);
-    EXPECT_EQ(expected_outcome, observer->will_show());
+    EXPECT_EQ(expected_to_show, observer->will_show());
     ASSERT_FALSE(fetcher->is_active());
   }
 
@@ -132,6 +139,21 @@ IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, NoManifest) {
   AppBannerDataFetcher::SetTimeDeltaForTesting(1);
   LoadURLAndWaitForServiceWorker(test_url);
   RunFetcher(web_contents->GetURL(), false, false);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBannerDataFetcherBrowserTest, CancelBanner) {
+  std::string valid_page = "/banners/cancel_test_page.html";
+  GURL test_url = embedded_test_server()->GetURL(valid_page);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  LoadURLAndWaitForServiceWorker(test_url);
+  RunFetcher(web_contents->GetURL(), true, false);
+
+  // Advance by a day, then visit the page again.  Still shouldn't see a banner.
+  AppBannerDataFetcher::SetTimeDeltaForTesting(1);
+  LoadURLAndWaitForServiceWorker(test_url);
+  RunFetcher(web_contents->GetURL(), true, false);
 }
 
 }  // namespace banners

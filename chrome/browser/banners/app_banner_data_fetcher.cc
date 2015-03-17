@@ -140,7 +140,6 @@ void AppBannerDataFetcher::OnBannerPromptReply(
     Cancel();
     return;
   }
-  is_active_ = false;
 
   // The renderer might have requested the prompt to be canceled.
   if (reply == blink::WebAppBannerPromptReply::Cancel) {
@@ -159,6 +158,7 @@ void AppBannerDataFetcher::OnBannerPromptReply(
     InfoBarService::FromWebContents(web_contents)->AddInfoBar(
         make_scoped_ptr(infobar));
   }
+  is_active_ = false;
 }
 
 AppBannerDataFetcher::~AppBannerDataFetcher() {
