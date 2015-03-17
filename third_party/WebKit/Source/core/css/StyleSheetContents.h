@@ -66,8 +66,8 @@ public:
     const AtomicString& determineNamespace(const AtomicString& prefix);
 
     void parseAuthorStyleSheet(const CSSStyleSheetResource*, const SecurityOrigin*);
-    bool parseString(const String&);
-    bool parseStringAtPosition(const String&, const TextPosition&, bool);
+    void parseString(const String&);
+    void parseStringAtPosition(const String&, const TextPosition&, bool);
 
     bool isCacheable() const;
 

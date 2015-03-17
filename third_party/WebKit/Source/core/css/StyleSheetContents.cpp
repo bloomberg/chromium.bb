@@ -311,17 +311,15 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
     }
 }
 
-bool StyleSheetContents::parseString(const String& sheetText)
+void StyleSheetContents::parseString(const String& sheetText)
 {
-    return parseStringAtPosition(sheetText, TextPosition::minimumPosition(), false);
+    parseStringAtPosition(sheetText, TextPosition::minimumPosition(), false);
 }
 
-bool StyleSheetContents::parseStringAtPosition(const String& sheetText, const TextPosition& startPosition, bool createdByParser)
+void StyleSheetContents::parseStringAtPosition(const String& sheetText, const TextPosition& startPosition, bool createdByParser)
 {
     CSSParserContext context(parserContext(), UseCounter::getFrom(this));
     CSSParser::parseSheet(context, this, sheetText, startPosition, 0, createdByParser);
-
-    return true;
 }
 
 bool StyleSheetContents::isLoading() const
