@@ -18,6 +18,10 @@
 
 class HistoryQuickProviderTest;
 
+namespace bookmarks {
+class BookmarkModel;
+}
+
 namespace in_memory_url_index {
 class InMemoryURLIndexCacheItem;
 }
@@ -67,7 +71,7 @@ class URLIndexPrivateData
       size_t cursor_position,
       size_t max_matches,
       const std::string& languages,
-      const ScoredHistoryMatch::Builder& builder);
+      bookmarks::BookmarkModel* bookmark_model);
 
   // Adds the history item in |row| to the index if it does not already already
   // exist and it meets the minimum 'quick' criteria. If the row already exists
@@ -190,12 +194,12 @@ class URLIndexPrivateData
   // history URL match, inserting accepted matches into |scored_matches_|.
   class AddHistoryMatch : public std::unary_function<HistoryID, void> {
    public:
-    AddHistoryMatch(const URLIndexPrivateData& private_data,
+    AddHistoryMatch(bookmarks::BookmarkModel* bookmark_model,
+                    const URLIndexPrivateData& private_data,
                     const std::string& languages,
                     const base::string16& lower_string,
                     const String16Vector& lower_terms,
-                    const base::Time now,
-                    const ScoredHistoryMatch::Builder& builder);
+                    const base::Time now);
     ~AddHistoryMatch();
 
     void operator()(const HistoryID history_id);
@@ -203,9 +207,9 @@ class URLIndexPrivateData
     ScoredHistoryMatches ScoredMatches() const { return scored_matches_; }
 
    private:
+    bookmarks::BookmarkModel* bookmark_model_;
     const URLIndexPrivateData& private_data_;
     const std::string& languages_;
-    const ScoredHistoryMatch::Builder& builder_;
     ScoredHistoryMatches scored_matches_;
     const base::string16& lower_string_;
     const String16Vector& lower_terms_;

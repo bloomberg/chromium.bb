@@ -31,6 +31,10 @@ namespace base {
 class Time;
 }
 
+namespace bookmarks {
+class BookmarkModel;
+}
+
 namespace in_memory_url_index {
 class InMemoryURLIndexCacheItem;
 }
@@ -95,7 +99,8 @@ class InMemoryURLIndex : public KeyedService,
   // transaction journals will be stored. |languages| gives a list of language
   // encodings by which URLs and omnibox searches are broken down into words and
   // characters.
-  InMemoryURLIndex(history::HistoryService* history_service,
+  InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
+                   history::HistoryService* history_service,
                    const base::FilePath& history_dir,
                    const std::string& languages);
   ~InMemoryURLIndex() override;
@@ -112,11 +117,9 @@ class InMemoryURLIndex : public KeyedService,
   // function doesn't do anything special with the cursor; this is equivalent
   // to the cursor being at the end.  In total, |max_matches| of items will be
   // returned in the |ScoredHistoryMatches| vector.
-  ScoredHistoryMatches HistoryItemsForTerms(
-      const base::string16& term_string,
-      size_t cursor_position,
-      size_t max_matches,
-      const ScoredHistoryMatch::Builder& builder);
+  ScoredHistoryMatches HistoryItemsForTerms(const base::string16& term_string,
+                                            size_t cursor_position,
+                                            size_t max_matches);
 
   // Deletes the index entry, if any, for the given |url|.
   void DeleteURL(const GURL& url);
@@ -260,6 +263,9 @@ class InMemoryURLIndex : public KeyedService,
 
   // Returns the set of whitelisted schemes. For unit testing only.
   const std::set<std::string>& scheme_whitelist() { return scheme_whitelist_; }
+
+  // The BookmarkModel; may be null when testing.
+  bookmarks::BookmarkModel* bookmark_model_;
 
   // The HistoryService; may be null when testing.
   history::HistoryService* history_service_;

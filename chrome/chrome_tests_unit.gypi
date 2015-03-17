@@ -27,7 +27,7 @@
       'browser/autocomplete/history_quick_provider_unittest.cc',
       'browser/autocomplete/history_url_provider_unittest.cc',
       'browser/autocomplete/in_memory_url_index_unittest.cc',
-      'browser/autocomplete/scored_history_match_builder_impl_unittest.cc',
+      'browser/autocomplete/scored_history_match_unittest.cc',
       'browser/autocomplete/search_provider_unittest.cc',
       'browser/autocomplete/shortcuts_backend_unittest.cc',
       'browser/autocomplete/shortcuts_database_unittest.cc',

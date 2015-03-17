@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/in_memory_url_index.h"
+#include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_db_task.h"
@@ -38,7 +39,7 @@ using in_memory_url_index::InMemoryURLIndexCacheItem;
 
 namespace {
 static const size_t kMaxVisitsToStoreInCache = 10u;
-}  // anonymous namespace
+}
 
 typedef in_memory_url_index::InMemoryURLIndexCacheItem_WordListItem
     WordListItem;
@@ -152,7 +153,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     size_t cursor_position,
     size_t max_matches,
     const std::string& languages,
-    const ScoredHistoryMatch::Builder& builder) {
+    bookmarks::BookmarkModel* bookmark_model) {
   // If cursor position is set and useful (not at either end of the
   // string), allow the search string to be broken at cursor position.
   // We do this by pretending there's a space where the cursor is.
@@ -246,8 +247,8 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   scored_items =
       std::for_each(
           history_id_set.begin(), history_id_set.end(),
-          AddHistoryMatch(*this, languages, lower_raw_string, lower_raw_terms,
-                          base::Time::Now(), builder)).ScoredMatches();
+          AddHistoryMatch(bookmark_model, *this, languages, lower_raw_string,
+                          lower_raw_terms, base::Time::Now())).ScoredMatches();
 
   // Select and sort only the top |max_matches| results.
   if (scored_items.size() > max_matches) {
@@ -1254,28 +1255,27 @@ bool URLIndexPrivateData::URLSchemeIsWhitelisted(
 URLIndexPrivateData::SearchTermCacheItem::SearchTermCacheItem(
     const WordIDSet& word_id_set,
     const HistoryIDSet& history_id_set)
-    : word_id_set_(word_id_set),
-      history_id_set_(history_id_set),
-      used_(true) {}
+    : word_id_set_(word_id_set), history_id_set_(history_id_set), used_(true) {
+}
 
-URLIndexPrivateData::SearchTermCacheItem::SearchTermCacheItem()
-    : used_(true) {}
+URLIndexPrivateData::SearchTermCacheItem::SearchTermCacheItem() : used_(true) {
+}
 
-URLIndexPrivateData::SearchTermCacheItem::~SearchTermCacheItem() {}
-
+URLIndexPrivateData::SearchTermCacheItem::~SearchTermCacheItem() {
+}
 
 // URLIndexPrivateData::AddHistoryMatch ----------------------------------------
 
 URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
+    bookmarks::BookmarkModel* bookmark_model,
     const URLIndexPrivateData& private_data,
     const std::string& languages,
     const base::string16& lower_string,
     const String16Vector& lower_terms,
-    const base::Time now,
-    const ScoredHistoryMatch::Builder& builder)
-    : private_data_(private_data),
+    const base::Time now)
+    : bookmark_model_(bookmark_model),
+      private_data_(private_data),
       languages_(languages),
-      builder_(builder),
       lower_string_(lower_string),
       lower_terms_(lower_terms),
       now_(now) {
@@ -1297,7 +1297,8 @@ URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
   }
 }
 
-URLIndexPrivateData::AddHistoryMatch::~AddHistoryMatch() {}
+URLIndexPrivateData::AddHistoryMatch::~AddHistoryMatch() {
+}
 
 void URLIndexPrivateData::AddHistoryMatch::operator()(
     const HistoryID history_id) {
@@ -1309,9 +1310,11 @@ void URLIndexPrivateData::AddHistoryMatch::operator()(
     WordStartsMap::const_iterator starts_pos =
         private_data_.word_starts_map_.find(history_id);
     DCHECK(starts_pos != private_data_.word_starts_map_.end());
-    ScoredHistoryMatch match = builder_.Build(
+    ScoredHistoryMatch match(
         hist_item, visits, languages_, lower_string_, lower_terms_,
-        lower_terms_to_word_starts_offsets_, starts_pos->second, now_);
+        lower_terms_to_word_starts_offsets_, starts_pos->second,
+        bookmark_model_ && bookmark_model_->IsBookmarked(hist_item.url()),
+        now_);
     if (match.raw_score > 0)
       scored_matches_.push_back(match);
   }
@@ -1325,7 +1328,8 @@ URLIndexPrivateData::HistoryItemFactorGreater::HistoryItemFactorGreater(
     : history_info_map_(history_info_map) {
 }
 
-URLIndexPrivateData::HistoryItemFactorGreater::~HistoryItemFactorGreater() {}
+URLIndexPrivateData::HistoryItemFactorGreater::~HistoryItemFactorGreater() {
+}
 
 bool URLIndexPrivateData::HistoryItemFactorGreater::operator()(
     const HistoryID h1,

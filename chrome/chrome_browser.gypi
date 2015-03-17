@@ -1217,8 +1217,6 @@
       'browser/autocomplete/in_memory_url_index_types.h',
       'browser/autocomplete/scored_history_match.cc',
       'browser/autocomplete/scored_history_match.h',
-      'browser/autocomplete/scored_history_match_builder_impl.cc',
-      'browser/autocomplete/scored_history_match_builder_impl.h',
       'browser/autocomplete/shortcuts_backend.cc',
       'browser/autocomplete/shortcuts_backend.h',
       'browser/autocomplete/shortcuts_backend_factory.cc',

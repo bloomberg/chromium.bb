@@ -17,7 +17,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_types.h"
-#include "chrome/browser/autocomplete/scored_history_match_builder_impl.h"
+#include "chrome/browser/autocomplete/scored_history_match.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -715,10 +715,9 @@ ACMatchClassifications HistoryURLProvider::ClassifyDescription(
   // If HistoryURL retrieves any matches (and hence we reach this code), we
   // are guaranteed that the beginning of input_text must be a word break.
   WordStarts offsets(1, 0u);
-  description_matches =
-      ScoredHistoryMatchBuilderImpl::FilterTermMatchesByWordStarts(
-          description_matches, offsets, description_word_starts, 0,
-          std::string::npos);
+  description_matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      description_matches, offsets, description_word_starts, 0,
+      std::string::npos);
   return SpansFromTermMatch(
       description_matches, clean_description.length(), false);
 }

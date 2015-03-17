@@ -21,7 +21,6 @@
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/in_memory_url_index.h"
 #include "chrome/browser/autocomplete/in_memory_url_index_types.h"
-#include "chrome/browser/autocomplete/scored_history_match_builder_impl.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,16 +44,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/url_parse.h"
 #include "url/url_util.h"
-
-namespace {
-
-// Returns whether |url| is bookmarked in |bookmark_model| (which can be null
-// during testing). Used for ScoredHistoryMatchBuilderImpl.
-bool IsBookmarked(bookmarks::BookmarkModel* bookmark_model, const GURL& url) {
-  return bookmark_model && bookmark_model->IsBookmarked(url);
-}
-
-}  // namespace
 
 bool HistoryQuickProvider::disabled_ = false;
 
@@ -97,19 +86,14 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
   }
 }
 
-HistoryQuickProvider::~HistoryQuickProvider() {}
+HistoryQuickProvider::~HistoryQuickProvider() {
+}
 
 void HistoryQuickProvider::DoAutocomplete() {
   // Get the matching URLs from the DB.
-  ScoredHistoryMatches matches;
-  {
-    ScoredHistoryMatchBuilderImpl builder(base::Bind(
-        &IsBookmarked,
-        base::Unretained(BookmarkModelFactory::GetForProfile(profile_))));
-    matches = in_memory_url_index_->HistoryItemsForTerms(
-        autocomplete_input_.text(), autocomplete_input_.cursor_position(),
-        AutocompleteProvider::kMaxMatches, builder);
-  }
+  ScoredHistoryMatches matches = in_memory_url_index_->HistoryItemsForTerms(
+      autocomplete_input_.text(), autocomplete_input_.cursor_position(),
+      AutocompleteProvider::kMaxMatches);
   if (matches.empty())
     return;
 

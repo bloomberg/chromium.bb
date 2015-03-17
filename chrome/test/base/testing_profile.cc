@@ -232,6 +232,7 @@ KeyedService* BuildHistoryService(content::BrowserContext* context) {
 KeyedService* BuildInMemoryURLIndex(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   InMemoryURLIndex* in_memory_url_index = new InMemoryURLIndex(
+      BookmarkModelFactory::GetForProfile(profile),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS),
       profile->GetPath(),

@@ -7,6 +7,7 @@
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/autocomplete/in_memory_url_index.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,6 +30,7 @@ InMemoryURLIndexFactory::InMemoryURLIndexFactory()
     : BrowserContextKeyedServiceFactory(
           "InMemoryURLIndex",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
 }
 
@@ -40,6 +42,7 @@ KeyedService* InMemoryURLIndexFactory::BuildServiceInstanceFor(
   // Do not force creation of the HistoryService if saving history is disabled.
   Profile* profile = Profile::FromBrowserContext(context);
   InMemoryURLIndex* in_memory_url_index = new InMemoryURLIndex(
+      BookmarkModelFactory::GetForProfile(profile),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS),
       profile->GetPath(),

@@ -38,9 +38,11 @@ void InitializeSchemeWhitelist(std::set<std::string>* whitelist) {
 
 // Restore/SaveCacheObserver ---------------------------------------------------
 
-InMemoryURLIndex::RestoreCacheObserver::~RestoreCacheObserver() {}
+InMemoryURLIndex::RestoreCacheObserver::~RestoreCacheObserver() {
+}
 
-InMemoryURLIndex::SaveCacheObserver::~SaveCacheObserver() {}
+InMemoryURLIndex::SaveCacheObserver::~SaveCacheObserver() {
+}
 
 // RebuildPrivateDataFromHistoryDBTask -----------------------------------------
 
@@ -77,10 +79,12 @@ InMemoryURLIndex::RebuildPrivateDataFromHistoryDBTask::
 
 // InMemoryURLIndex ------------------------------------------------------------
 
-InMemoryURLIndex::InMemoryURLIndex(history::HistoryService* history_service,
+InMemoryURLIndex::InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
+                                   history::HistoryService* history_service,
                                    const base::FilePath& history_dir,
                                    const std::string& languages)
-    : history_service_(history_service),
+    : bookmark_model_(bookmark_model),
+      history_service_(history_service),
       history_dir_(history_dir),
       languages_(languages),
       private_data_(new URLIndexPrivateData),
@@ -124,10 +128,9 @@ bool InMemoryURLIndex::GetCacheFilePath(base::FilePath* file_path) {
 ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
     const base::string16& term_string,
     size_t cursor_position,
-    size_t max_matches,
-    const ScoredHistoryMatch::Builder& builder) {
-  return private_data_->HistoryItemsForTerms(term_string, cursor_position,
-                                             max_matches, languages_, builder);
+    size_t max_matches) {
+  return private_data_->HistoryItemsForTerms(
+      term_string, cursor_position, max_matches, languages_, bookmark_model_);
 }
 
 // Updating --------------------------------------------------------------------
