@@ -47,6 +47,11 @@ static void assertV8RecursionScope()
 {
     ASSERT(V8RecursionScope::properlyUsed(v8::Isolate::GetCurrent()));
 }
+
+static bool runningUnitTest()
+{
+    return blink::Platform::current()->unitTestSupport();
+}
 #endif
 
 static void useCounterCallback(v8::Isolate* isolate, v8::Isolate::UseCounterFeature feature)
@@ -82,8 +87,7 @@ V8PerIsolateData::V8PerIsolateData()
     // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
     isolate()->Enter();
 #if ENABLE(ASSERT)
-    // currentThread will always be non-null in production, but can be null in Chromium unit tests.
-    if (blink::Platform::current()->currentThread())
+    if (!runningUnitTest())
         isolate()->AddCallCompletedCallback(&assertV8RecursionScope);
 #endif
     if (isMainThread())
@@ -136,7 +140,7 @@ void V8PerIsolateData::willBeDestroyed(v8::Isolate* isolate)
 void V8PerIsolateData::destroy(v8::Isolate* isolate)
 {
 #if ENABLE(ASSERT)
-    if (blink::Platform::current()->currentThread())
+    if (!runningUnitTest())
         isolate->RemoveCallCompletedCallback(&assertV8RecursionScope);
 #endif
     V8PerIsolateData* data = from(isolate);
