@@ -26,8 +26,6 @@
       'browser/geolocation/mock_location_arbitrator.h',
       'browser/geolocation/mock_location_provider.cc',
       'browser/geolocation/mock_location_provider.h',
-      'browser/renderer_host/media/mock_media_observer.cc',
-      'browser/renderer_host/media/mock_media_observer.h',
       'public/test/async_file_test_helper.cc',
       'public/test/async_file_test_helper.h',
       'public/test/browser_test.h',
