@@ -122,8 +122,6 @@ public:
         ASSERT(isMainThread());
         worldOfInitializingWindow = world;
     }
-    // FIXME: Remove this method once we fix crbug.com/345014.
-    static bool windowIsBeingInitialized() { return !!worldOfInitializingWindow; }
 
 private:
     class DOMObjectHolderBase {

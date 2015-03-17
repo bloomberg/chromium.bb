@@ -137,12 +137,6 @@ static String extractMessageForConsole(v8::Isolate* isolate, v8::Handle<v8::Valu
 static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Handle<v8::Value> data)
 {
     ASSERT(isMainThread());
-    // It's possible that messageHandlerInMainThread() is invoked while we're initializing a window.
-    // In that half-baked situation, we don't have a valid context nor a valid world,
-    // so just return immediately.
-    if (DOMWrapperWorld::windowIsBeingInitialized())
-        return;
-
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // If called during context initialization, there will be no entered window.
     LocalDOMWindow* enteredWindow = enteredDOMWindow(isolate);
@@ -203,30 +197,14 @@ void V8Initializer::reportRejectedPromisesOnMainThread()
 static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
 {
     ASSERT(isMainThread());
-
     if (data.GetEvent() != v8::kPromiseRejectWithNoHandler)
         return;
-
-    // It's possible that promiseRejectHandlerInMainThread() is invoked while we're initializing a window.
-    // In that half-baked situation, we don't have a valid context nor a valid world,
-    // so just return immediately.
-    if (DOMWrapperWorld::windowIsBeingInitialized())
-        return;
-
     v8::Handle<v8::Promise> promise = data.GetPromise();
 
-    // Bail out if called during context initialization.
     v8::Isolate* isolate = promise->GetIsolate();
-    v8::Handle<v8::Context> context = isolate->GetCurrentContext();
-    if (context.IsEmpty())
-        return;
-    v8::Handle<v8::Value> global = V8Window::findInstanceInPrototypeChain(context->Global(), context->GetIsolate());
-    if (global.IsEmpty())
-        return;
-
     // There is no entered window during microtask callbacks from V8,
     // thus we call toDOMWindow() instead of enteredDOMWindow().
-    LocalDOMWindow* window = toLocalDOMWindow(toDOMWindow(context));
+    LocalDOMWindow* window = currentDOMWindow(isolate);
     if (!window || !window->isCurrentlyDisplayedInFrame())
         return;
 
@@ -263,7 +241,7 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage data)
     if (!messageForConsole.isEmpty())
         errorMessage = "Uncaught " + messageForConsole;
 
-    ScriptState* scriptState = ScriptState::from(context);
+    ScriptState* scriptState = ScriptState::current(isolate);
     rejectedPromisesOnMainThread().add(scriptState, data, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack);
 }
 
