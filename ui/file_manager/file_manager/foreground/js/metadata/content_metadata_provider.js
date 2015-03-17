@@ -167,7 +167,7 @@ ContentMetadataProvider.prototype.onMessage_ = function(event) {
 
 /**
  * Handles the 'initialized' message from the metadata reader Worker.
- * @param {Object} regexp Regexp of supported urls.
+ * @param {RegExp} regexp Regexp of supported urls.
  * @private
  */
 ContentMetadataProvider.prototype.onInitialized_ = function(regexp) {
