@@ -10,10 +10,8 @@
  * @externs
  */
 
-
 /** @constructor @extends {HTMLElement} */
 var CrOncDataElement = function() {};
-
 
 /** @type {CrOnc.NetworkConfigType} */
 CrOncDataElement.prototype.data;

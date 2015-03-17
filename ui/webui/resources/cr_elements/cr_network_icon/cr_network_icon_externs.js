@@ -13,14 +13,11 @@
 /** @constructor @extends {HTMLElement} */
 var CrNetworkIconElement = function() {};
 
-
 /** @type {CrOncDataElement} */
 CrNetworkIconElement.prototype.networkState;
 
-
 /** @type {CrOnc.Type} */
 CrNetworkIconElement.prototype.networkType;
-
 
 /** @type {boolean} */
 CrNetworkIconElement.prototype.isListItem;

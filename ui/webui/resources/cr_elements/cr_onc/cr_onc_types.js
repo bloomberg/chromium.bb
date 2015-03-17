@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 /**
  * @fileoverview Typedefs for CrOncDataElement.data. Note: These 'types' define
  * a subset of ONC properties in the ONC data dictionary. The first letter is
