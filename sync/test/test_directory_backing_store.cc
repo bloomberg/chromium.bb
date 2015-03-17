@@ -24,15 +24,14 @@ TestDirectoryBackingStore::~TestDirectoryBackingStore() {
 DirOpenResult TestDirectoryBackingStore::Load(
     Directory::MetahandlesMap* handles_map,
     JournalIndex* delete_journals,
+    MetahandleSet* metahandles_to_purge,
     Directory::KernelLoadInfo* kernel_load_info) {
   DCHECK(db_->is_open());
 
   if (!InitializeTables())
     return FAILED_OPEN_DATABASE;
 
-  if (!DropDeletedEntries())
-    return FAILED_DATABASE_CORRUPT;
-  if (!LoadEntries(handles_map))
+  if (!LoadEntries(handles_map, metahandles_to_purge))
     return FAILED_DATABASE_CORRUPT;
   if (!LoadDeleteJournals(delete_journals))
     return FAILED_DATABASE_CORRUPT;
@@ -42,6 +41,11 @@ DirOpenResult TestDirectoryBackingStore::Load(
     return FAILED_DATABASE_CORRUPT;
 
   return OPENED;
+}
+
+bool TestDirectoryBackingStore::DeleteEntries(const MetahandleSet& handles) {
+  return DirectoryBackingStore::DeleteEntries(
+      DirectoryBackingStore::METAS_TABLE, handles);
 }
 
 }  // namespace syncable

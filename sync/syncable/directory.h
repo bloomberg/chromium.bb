@@ -599,11 +599,12 @@ class SYNC_EXPORT Directory {
   // processed |snapshot| failed, for example, due to no disk space.
   void HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot);
 
-  // Used by CheckTreeInvariants
+  // Used by CheckTreeInvariants.
   void GetAllMetaHandles(BaseTransaction* trans, MetahandleSet* result);
+
+  // Used by VacuumAfterSaveChanges.
   bool SafeToPurgeFromMemory(WriteTransaction* trans,
                              const EntryKernel* const entry) const;
-
   // A helper used by GetTotalNodeCount.
   void GetChildSetForKernel(
       BaseTransaction*,

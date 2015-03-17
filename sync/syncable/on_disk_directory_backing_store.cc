@@ -37,6 +37,7 @@ OnDiskDirectoryBackingStore::~OnDiskDirectoryBackingStore() { }
 DirOpenResult OnDiskDirectoryBackingStore::TryLoad(
     Directory::MetahandlesMap* handles_map,
     JournalIndex* delete_journals,
+    MetahandleSet* metahandles_to_purge,
     Directory::KernelLoadInfo* kernel_load_info) {
   DCHECK(CalledOnValidThread());
   if (!db_->is_open()) {
@@ -47,9 +48,7 @@ DirOpenResult OnDiskDirectoryBackingStore::TryLoad(
   if (!InitializeTables())
     return FAILED_OPEN_DATABASE;
 
-  if (!DropDeletedEntries())
-    return FAILED_DATABASE_CORRUPT;
-  if (!LoadEntries(handles_map))
+  if (!LoadEntries(handles_map, metahandles_to_purge))
     return FAILED_DATABASE_CORRUPT;
   if (!LoadDeleteJournals(delete_journals))
     return FAILED_DATABASE_CORRUPT;
@@ -65,9 +64,10 @@ DirOpenResult OnDiskDirectoryBackingStore::TryLoad(
 DirOpenResult OnDiskDirectoryBackingStore::Load(
     Directory::MetahandlesMap* handles_map,
     JournalIndex* delete_journals,
+    MetahandleSet* metahandles_to_purge,
     Directory::KernelLoadInfo* kernel_load_info) {
   DirOpenResult result = TryLoad(handles_map, delete_journals,
-                                 kernel_load_info);
+                                 metahandles_to_purge, kernel_load_info);
   if (result == OPENED) {
     UMA_HISTOGRAM_ENUMERATION(
         "Sync.DirectoryOpenResult", FIRST_TRY_SUCCESS, RESULT_COUNT);
@@ -89,7 +89,8 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
   db_->set_histogram_tag("SyncDirectory");
   base::DeleteFile(backing_filepath_, false);
 
-  result = TryLoad(handles_map, delete_journals, kernel_load_info);
+  result = TryLoad(handles_map, delete_journals, metahandles_to_purge,
+                   kernel_load_info);
   if (result == OPENED) {
     UMA_HISTOGRAM_ENUMERATION(
         "Sync.DirectoryOpenResult", SECOND_TRY_SUCCESS, RESULT_COUNT);

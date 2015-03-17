@@ -49,16 +49,18 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   virtual ~DirectoryBackingStore();
 
   // Loads and drops all currently persisted meta entries into |handles_map|
-  // and loads appropriate persisted kernel info into |info_bucket|.
+  // and loads appropriate persisted kernel info into |kernel_load_info|.
+  // The function determines which entries can be safely dropped and inserts
+  // their keys into |metahandles_to_purge|. It is up to the caller to
+  // perform the actual cleanup.
   //
-  // This function can perform some cleanup tasks behind the scenes.  It will
-  // clean up unused entries from the database and migrate to the latest
-  // database version.  The caller can safely ignore these details.
+  // This function will migrate to the latest database version.
   //
   // NOTE: On success (return value of OPENED), the buckets are populated with
   // newly allocated items, meaning ownership is bestowed upon the caller.
   virtual DirOpenResult Load(Directory::MetahandlesMap* handles_map,
                              JournalIndex* delete_journals,
+                             MetahandleSet* metahandles_to_purge,
                              Directory::KernelLoadInfo* kernel_load_info) = 0;
 
   // Updates the on-disk store with the input |snapshot| as a database
@@ -90,16 +92,15 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   bool CreateV75ModelsTable();
   bool CreateV81ModelsTable();
 
-  // We don't need to load any synced and applied deleted entries, we can
-  // in fact just purge them forever on startup.
-  bool DropDeletedEntries();
   // Drops a table if it exists, harmless if the table did not already exist.
   bool SafeDropTable(const char* table_name);
 
   // Load helpers for entries and attributes.
-  bool LoadEntries(Directory::MetahandlesMap* handles_map);
+  bool LoadEntries(Directory::MetahandlesMap* handles_map,
+                   MetahandleSet* metahandles_to_purge);
   bool LoadDeleteJournals(JournalIndex* delete_journals);
   bool LoadInfo(Directory::KernelLoadInfo* info);
+  bool SafeToPurgeOnLoading(const EntryKernel& entry) const;
 
   // Save/update helpers for entries.  Return false if sqlite commit fails.
   static bool SaveEntryToDB(sql::Statement* save_statement,

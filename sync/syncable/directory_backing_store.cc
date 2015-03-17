@@ -538,8 +538,8 @@ bool DirectoryBackingStore::RefreshColumns() {
   return true;
 }
 
-bool DirectoryBackingStore::LoadEntries(
-    Directory::MetahandlesMap* handles_map) {
+bool DirectoryBackingStore::LoadEntries(Directory::MetahandlesMap* handles_map,
+                                        MetahandleSet* metahandles_to_purge) {
   string select;
   select.reserve(kUpdateStatementBufferSize);
   select.append("SELECT ");
@@ -555,9 +555,23 @@ bool DirectoryBackingStore::LoadEntries(
       return false;
 
     int64 handle = kernel->ref(META_HANDLE);
-    (*handles_map)[handle] = kernel.release();
+    if (SafeToPurgeOnLoading(*kernel))
+      metahandles_to_purge->insert(handle);
+    else
+      (*handles_map)[handle] = kernel.release();
   }
   return s.Succeeded();
+}
+
+bool DirectoryBackingStore::SafeToPurgeOnLoading(
+    const EntryKernel& entry) const {
+  if (entry.ref(IS_DEL)) {
+    if (!entry.ref(IS_UNSYNCED) && !entry.ref(IS_UNAPPLIED_UPDATE))
+      return true;
+    else if (!entry.ref(ID).ServerKnows())
+      return true;
+  }
+  return false;
 }
 
 bool DirectoryBackingStore::LoadDeleteJournals(
@@ -641,21 +655,6 @@ bool DirectoryBackingStore::SaveEntryToDB(sql::Statement* save_statement,
   save_statement->Reset(true);
   BindFields(entry, save_statement);
   return save_statement->Run();
-}
-
-bool DirectoryBackingStore::DropDeletedEntries() {
-  if (!db_->Execute("DELETE FROM metas "
-                    "WHERE is_del > 0 "
-                    "AND is_unsynced < 1 "
-                    "AND is_unapplied_update < 1")) {
-    return false;
-  }
-  if (!db_->Execute("DELETE FROM metas "
-                    "WHERE is_del > 0 "
-                    "AND id LIKE 'c%'")) {
-    return false;
-  }
-  return true;
 }
 
 bool DirectoryBackingStore::SafeDropTable(const char* table_name) {

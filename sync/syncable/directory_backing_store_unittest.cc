@@ -46,10 +46,11 @@ class MigrationTest : public testing::TestWithParam<int> {
   static bool LoadAndIgnoreReturnedData(DirectoryBackingStore *dbs) {
     Directory::MetahandlesMap tmp_handles_map;
     JournalIndex  delete_journals;
+    MetahandleSet metahandles_to_purge;
     STLValueDeleter<Directory::MetahandlesMap> deleter(&tmp_handles_map);
     Directory::KernelLoadInfo kernel_load_info;
-    return dbs->Load(&tmp_handles_map, &delete_journals, &kernel_load_info) ==
-        OPENED;
+    return dbs->Load(&tmp_handles_map, &delete_journals, &metahandles_to_purge,
+                     &kernel_load_info) == OPENED;
   }
 
   void SetUpVersion67Database(sql::Connection* connection);
@@ -3202,12 +3203,14 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion78To79) {
 
   // Ensure the next_id has been incremented.
   Directory::MetahandlesMap handles_map;
-  JournalIndex  delete_journals;;
+  JournalIndex delete_journals;
+  MetahandleSet metahandles_to_purge;
   STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
   Directory::KernelLoadInfo load_info;
 
   s.Clear();
-  ASSERT_TRUE(dbs->Load(&handles_map, &delete_journals, &load_info));
+  ASSERT_TRUE(dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
+                        &load_info));
   EXPECT_LE(load_info.kernel_info.next_id, kInitialNextId - 65536);
 }
 
@@ -3225,11 +3228,13 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {
 
   // Ensure the bag_of_chips has been set.
   Directory::MetahandlesMap handles_map;
-  JournalIndex  delete_journals;;
+  JournalIndex delete_journals;
+  MetahandleSet metahandles_to_purge;
   STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
   Directory::KernelLoadInfo load_info;
 
-  ASSERT_TRUE(dbs->Load(&handles_map, &delete_journals, &load_info));
+  ASSERT_TRUE(dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
+                        &load_info));
   // Check that the initial value is the serialization of an empty ChipBag.
   sync_pb::ChipBag chip_bag;
   std::string serialized_chip_bag;
@@ -3438,11 +3443,13 @@ TEST_F(DirectoryBackingStoreTest, DetectInvalidPosition) {
 
   // Trying to unpack this entry should signal that the DB is corrupted.
   Directory::MetahandlesMap handles_map;
-  JournalIndex  delete_journals;;
+  JournalIndex delete_journals;
+  MetahandleSet metahandles_to_purge;
   STLValueDeleter<Directory::MetahandlesMap> deleter(&handles_map);
   Directory::KernelLoadInfo kernel_load_info;
   ASSERT_EQ(FAILED_DATABASE_CORRUPT,
-            dbs->Load(&handles_map, &delete_journals, &kernel_load_info));
+            dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
+                      &kernel_load_info));
 }
 
 TEST_P(MigrationTest, ToCurrentVersion) {
@@ -3529,13 +3536,17 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
   syncable::Directory::KernelLoadInfo dir_info;
   Directory::MetahandlesMap handles_map;
-  JournalIndex  delete_journals;;
+  JournalIndex delete_journals;
+  MetahandleSet metahandles_to_purge;
   STLValueDeleter<Directory::MetahandlesMap> index_deleter(&handles_map);
 
   {
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), &connection));
-    ASSERT_EQ(OPENED, dbs->Load(&handles_map, &delete_journals, &dir_info));
+    ASSERT_EQ(OPENED, dbs->Load(&handles_map, &delete_journals,
+                                &metahandles_to_purge, &dir_info));
+    if (!metahandles_to_purge.empty())
+      dbs->DeleteEntries(metahandles_to_purge);
     ASSERT_FALSE(dbs->needs_column_refresh_);
     ASSERT_EQ(kCurrentDBVersion, dbs->GetVersion());
   }
@@ -3903,20 +3914,22 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
       new TestDirectoryBackingStore(GetUsername(), &connection));
   Directory::MetahandlesMap handles_map;
   JournalIndex  delete_journals;
+  MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo kernel_load_info;
   STLValueDeleter<Directory::MetahandlesMap> index_deleter(&handles_map);
 
-  dbs->Load(&handles_map, &delete_journals, &kernel_load_info);
+  dbs->Load(&handles_map, &delete_journals, &metahandles_to_purge,
+            &kernel_load_info);
   size_t initial_size = handles_map.size();
   ASSERT_LT(0U, initial_size) << "Test requires handles_map to delete.";
   int64 first_to_die = handles_map.begin()->second->ref(META_HANDLE);
   MetahandleSet to_delete;
   to_delete.insert(first_to_die);
-  EXPECT_TRUE(dbs->DeleteEntries(TestDirectoryBackingStore::METAS_TABLE,
-                                 to_delete));
+  EXPECT_TRUE(dbs->DeleteEntries(to_delete));
 
   STLDeleteValues(&handles_map);
-  dbs->LoadEntries(&handles_map);
+  metahandles_to_purge.clear();
+  dbs->LoadEntries(&handles_map, &metahandles_to_purge);
 
   EXPECT_EQ(initial_size - 1, handles_map.size());
   bool delete_failed = false;
@@ -3935,11 +3948,11 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
     to_delete.insert(it->first);
   }
 
-  EXPECT_TRUE(dbs->DeleteEntries(TestDirectoryBackingStore::METAS_TABLE,
-                                 to_delete));
+  EXPECT_TRUE(dbs->DeleteEntries(to_delete));
 
   STLDeleteValues(&handles_map);
-  dbs->LoadEntries(&handles_map);
+  metahandles_to_purge.clear();
+  dbs->LoadEntries(&handles_map, &metahandles_to_purge);
   EXPECT_EQ(0U, handles_map.size());
 }
 

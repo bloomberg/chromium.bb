@@ -552,6 +552,87 @@ TEST_F(SyncableDirectoryTest, ManageDeleteJournals) {
   }
 }
 
+TEST_F(SyncableDirectoryTest, TestPurgeDeletedEntriesOnReload) {
+  sync_pb::EntitySpecifics specifics;
+  AddDefaultFieldValue(PREFERENCES, &specifics);
+
+  const int kClientCount = 2;
+  const int kServerCount = 5;
+  const int kTestCount = kClientCount + kServerCount;
+  int64 handles[kTestCount];
+
+  // The idea is to recreate various combinations of IDs, IS_DEL,
+  // IS_UNSYNCED, and IS_UNAPPLIED_UPDATE flags to test all combinations
+  // for DirectoryBackingStore::SafeToPurgeOnLoading.
+  // 0: client ID, IS_DEL, IS_UNSYNCED
+  // 1: client ID, IS_UNSYNCED
+  // 2: server ID, IS_DEL, IS_UNSYNCED, IS_UNAPPLIED_UPDATE
+  // 3: server ID, IS_DEL, IS_UNSYNCED
+  // 4: server ID, IS_DEL, IS_UNAPPLIED_UPDATE
+  // 5: server ID, IS_DEL
+  // 6: server ID
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+
+    for (int i = 0; i < kTestCount; i++) {
+      std::string name = base::StringPrintf("item%d", i);
+      MutableEntry item(&trans, CREATE, PREFERENCES, trans.root_id(), name);
+      ASSERT_TRUE(item.good());
+
+      handles[i] = item.GetMetahandle();
+
+      if (i < kClientCount) {
+        item.PutId(TestIdFactory::FromNumber(i - kClientCount));
+      } else {
+        item.PutId(TestIdFactory::FromNumber(i));
+      }
+
+      item.PutUniqueClientTag(name);
+      item.PutIsUnsynced(true);
+      item.PutSpecifics(specifics);
+      item.PutServerSpecifics(specifics);
+
+      if (i >= kClientCount) {
+        item.PutBaseVersion(10);
+        item.PutServerVersion(10);
+      }
+
+      // Set flags
+      if (i != 1 && i != 6)
+        item.PutIsDel(true);
+
+      if (i >= 4)
+        item.PutIsUnsynced(false);
+
+      if (i == 2 || i == 4)
+        item.PutIsUnappliedUpdate(true);
+    }
+  }
+  ASSERT_EQ(OPENED, SimulateSaveAndReloadDir());
+
+  // Expect items 0 and 5 to be purged according to
+  // DirectoryBackingStore::SafeToPurgeOnLoading:
+  // - Item 0 is an item with IS_DEL flag and client ID.
+  // - Item 5 is an item with IS_DEL flag which has both
+  //   IS_UNSYNCED and IS_UNAPPLIED_UPDATE unset.
+  std::vector<int64> expected_purged;
+  expected_purged.push_back(0);
+  expected_purged.push_back(5);
+
+  std::vector<int64> actually_purged;
+  {
+    ReadTransaction trans(FROM_HERE, dir().get());
+    for (int i = 0; i < kTestCount; i++) {
+      Entry item(&trans, GET_BY_HANDLE, handles[i]);
+      if (!item.good()) {
+        actually_purged.push_back(i);
+      }
+    }
+  }
+
+  EXPECT_EQ(expected_purged, actually_purged);
+}
+
 TEST_F(SyncableDirectoryTest, TestBasicLookupNonExistantID) {
   ReadTransaction rtrans(FROM_HERE, dir().get());
   Entry e(&rtrans, GET_BY_ID, TestIdFactory::FromNumber(-99));

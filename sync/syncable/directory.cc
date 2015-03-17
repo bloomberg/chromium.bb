@@ -77,7 +77,8 @@ Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {
 
 Directory::Kernel::Kernel(
     const std::string& name,
-    const KernelLoadInfo& info, DirectoryChangeDelegate* delegate,
+    const KernelLoadInfo& info,
+    DirectoryChangeDelegate* delegate,
     const WeakHandle<TransactionObserver>& transaction_observer)
     : next_write_transaction_id(0),
       name(name),
@@ -178,12 +179,13 @@ DirOpenResult Directory::OpenImpl(
 
   // Avoids mem leaks on failure.  Harmlessly deletes the empty hash map after
   // the swap in the success case.
-  STLValueDeleter<Directory::MetahandlesMap> deleter(&tmp_handles_map);
+  STLValueDeleter<MetahandlesMap> deleter(&tmp_handles_map);
 
   JournalIndex delete_journals;
+  MetahandleSet metahandles_to_purge;
 
-  DirOpenResult result =
-      store_->Load(&tmp_handles_map, &delete_journals, &info);
+  DirOpenResult result = store_->Load(&tmp_handles_map, &delete_journals,
+                                      &metahandles_to_purge, &info);
   if (OPENED != result)
     return result;
 
@@ -195,6 +197,8 @@ DirOpenResult Directory::OpenImpl(
   // prevent local ID reuse in the case of an early crash.  See the comments in
   // TakeSnapshotForSaveChanges() or crbug.com/142987 for more information.
   kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
+
+  kernel_->metahandles_to_purge.swap(metahandles_to_purge);
   if (!SaveChanges())
     return FAILED_INITIAL_WRITE;
 

@@ -19,6 +19,7 @@ class SYNC_EXPORT_PRIVATE InvalidDirectoryBackingStore
   ~InvalidDirectoryBackingStore() override;
   DirOpenResult Load(Directory::MetahandlesMap* handles_map,
                      JournalIndex* delete_journals,
+                     MetahandleSet* metahandles_to_purge,
                      Directory::KernelLoadInfo* kernel_load_info) override;
 
  private:

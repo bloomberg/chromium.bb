@@ -52,6 +52,7 @@ bool DeferredOnDiskDirectoryBackingStore::SaveChanges(
 DirOpenResult DeferredOnDiskDirectoryBackingStore::Load(
     Directory::MetahandlesMap* handles_map,
     JournalIndex* delete_journals,
+    MetahandleSet* metahandles_to_purge,
     Directory::KernelLoadInfo* kernel_load_info) {
   // Open an in-memory database at first to create initial sync data needed by
   // Directory.
@@ -61,7 +62,7 @@ DirOpenResult DeferredOnDiskDirectoryBackingStore::Load(
 
   if (!InitializeTables())
     return FAILED_OPEN_DATABASE;
-  if (!LoadEntries(handles_map))
+  if (!LoadEntries(handles_map, metahandles_to_purge))
     return FAILED_DATABASE_CORRUPT;
   if (!LoadInfo(kernel_load_info))
     return FAILED_DATABASE_CORRUPT;

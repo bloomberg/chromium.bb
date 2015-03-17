@@ -184,9 +184,9 @@ void MutableEntry::PutIsDel(bool value) {
     // - Ensure that the item is never committed to the server.
     // - Allow any items with the same UNIQUE_CLIENT_TAG created on other
     //   clients to override this entry.
-    // - Let us delete this entry permanently through
-    //   DirectoryBackingStore::DropDeletedEntries() when we next restart sync.
-    //   This will save memory and avoid crbug.com/125381.
+    // - Let us delete this entry permanently when we next restart sync - see
+    //   DirectoryBackingStore::SafeToPurgeOnLoading.
+    //   This will avoid crbug.com/125381.
     // Note: do not unset IsUnsynced if the syncer is in the middle of
     // attempting to commit this entity.
     if (!GetId().ServerKnows() && !GetSyncing()) {
