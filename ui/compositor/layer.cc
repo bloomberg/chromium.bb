@@ -620,8 +620,11 @@ void Layer::SetShowSolidColorContent() {
   RecomputeDrawsContentAndUVRect();
 }
 
-void Layer::UpdateNinePatchLayerBitmap(const SkBitmap& bitmap) {
+void Layer::UpdateNinePatchLayerImage(const gfx::ImageSkia& image) {
   DCHECK(type_ == LAYER_NINE_PATCH && nine_patch_layer_.get());
+  nine_patch_layer_image_ = image;
+  SkBitmap bitmap = nine_patch_layer_image_.GetRepresentation(
+      device_scale_factor_).sk_bitmap();
   SkBitmap bitmap_copy;
   if (bitmap.isImmutable()) {
     bitmap_copy = bitmap;
@@ -633,9 +636,11 @@ void Layer::UpdateNinePatchLayerBitmap(const SkBitmap& bitmap) {
   nine_patch_layer_->SetBitmap(bitmap_copy);
 }
 
-void Layer::UpdateNinePatchLayerAperture(const gfx::Rect& aperture) {
+void Layer::UpdateNinePatchLayerAperture(const gfx::Rect& aperture_in_dip) {
   DCHECK(type_ == LAYER_NINE_PATCH && nine_patch_layer_.get());
-  nine_patch_layer_->SetAperture(aperture);
+  nine_patch_layer_aperture_ = aperture_in_dip;
+  gfx::Rect aperture_in_pixel = ConvertRectToPixel(this, aperture_in_dip);
+  nine_patch_layer_->SetAperture(aperture_in_pixel);
 }
 
 void Layer::UpdateNinePatchLayerBorder(const gfx::Rect& border) {
@@ -709,6 +714,10 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
   device_scale_factor_ = device_scale_factor;
   RecomputeDrawsContentAndUVRect();
   RecomputePosition();
+  if (nine_patch_layer_) {
+    UpdateNinePatchLayerImage(nine_patch_layer_image_);
+    UpdateNinePatchLayerAperture(nine_patch_layer_aperture_);
+  }
   SchedulePaint(gfx::Rect(bounds_.size()));
   if (delegate_)
     delegate_->OnDeviceScaleFactorChanged(device_scale_factor);

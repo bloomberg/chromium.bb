@@ -162,7 +162,7 @@ void Shadow::UpdateImagesForStyle() {
       break;
   }
 
-  shadow_layer_->UpdateNinePatchLayerBitmap(image.AsBitmap());
+  shadow_layer_->UpdateNinePatchLayerImage(image.AsImageSkia());
   image_size_ = image.Size();
   interior_inset_ = GetInteriorInsetForStyle(style_);
 

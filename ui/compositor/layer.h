@@ -28,6 +28,7 @@
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/transform.h"
 
 class SkCanvas;
@@ -300,10 +301,10 @@ class COMPOSITOR_EXPORT Layer
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
   void SetColor(SkColor color);
 
-  // Updates the nine patch layer's bitmap, aperture and border. May only be
+  // Updates the nine patch layer's image, aperture and border. May only be
   // called for LAYER_NINE_PATCH.
-  void UpdateNinePatchLayerBitmap(const SkBitmap& bitmap);
-  void UpdateNinePatchLayerAperture(const gfx::Rect& aperture);
+  void UpdateNinePatchLayerImage(const gfx::ImageSkia& image);
+  void UpdateNinePatchLayerAperture(const gfx::Rect& aperture_in_dip);
   void UpdateNinePatchLayerBorder(const gfx::Rect& border);
 
   // Adds |invalid_rect| to the Layer's pending invalid rect and calls
@@ -511,6 +512,11 @@ class COMPOSITOR_EXPORT Layer
 
   // A cached copy of |Compositor::device_scale_factor()|.
   float device_scale_factor_;
+
+  // A cached copy of the nine patch layer's image and aperture.
+  // These are required for device scale factor change.
+  gfx::ImageSkia nine_patch_layer_image_;
+  gfx::Rect nine_patch_layer_aperture_;
 
   // The mailbox used by texture_layer_.
   cc::TextureMailbox mailbox_;
