@@ -77,4 +77,12 @@ int sys_prlimit64(pid_t pid,
   return syscall(__NR_prlimit64, pid, resource, new_limit, old_limit);
 }
 
+int sys_capget(cap_hdr* hdrp, cap_data* datap) {
+  return syscall(__NR_capget, hdrp, datap);
+}
+
+int sys_capset(cap_hdr* hdrp, const cap_data* datap) {
+  return syscall(__NR_capset, hdrp, datap);
+}
+
 }  // namespace sandbox

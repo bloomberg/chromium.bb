@@ -12,13 +12,22 @@
 #endif  // defined(OS_ANDROID).
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "sandbox/linux/system_headers/capability.h"
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
+
+// For brevity, we only expose enums for the subset of capabilities we use.
+// This can be expanded as the need arises.
+enum class LinuxCapability {
+  kCapSysChroot,
+  kCapSysAdmin,
+};
 
 // This class should be used to manipulate the current process' credentials.
 // It is currently a stub used to manipulate POSIX.1e capabilities as
@@ -26,7 +35,7 @@ namespace sandbox {
 class SANDBOX_EXPORT Credentials {
  public:
   // Drop all capabilities in the effective, inheritable and permitted sets for
-  // the current process. For security reasons, since capabilities are
+  // the current thread. For security reasons, since capabilities are
   // per-thread, the caller is responsible for ensuring it is single-threaded
   // when calling this API.
   // |proc_fd| must be a file descriptor to /proc/ and remains owned by
@@ -34,14 +43,19 @@ class SANDBOX_EXPORT Credentials {
   static bool DropAllCapabilities(int proc_fd) WARN_UNUSED_RESULT;
   // A similar API which assumes that it can open /proc/self/ by itself.
   static bool DropAllCapabilities() WARN_UNUSED_RESULT;
+  // Sets the effective and permitted capability sets for the current thread to
+  // the list of capabiltiies in |caps|. All other capability flags are cleared.
+  static bool SetCapabilities(int proc_fd,
+                              const std::vector<LinuxCapability>& caps)
+      WARN_UNUSED_RESULT;
+
+  // Returns true if the current thread has either the effective, permitted, or
+  // inheritable flag set for the given capability.
+  static bool HasCapability(LinuxCapability cap);
 
   // Return true iff there is any capability in any of the capabilities sets
-  // of the current process.
+  // of the current thread.
   static bool HasAnyCapability();
-  // Returns the capabilities of the current process in textual form, as
-  // documented in libcap2's cap_to_text(3). This is mostly useful for
-  // debugging and tests.
-  static scoped_ptr<std::string> GetCurrentCapString();
 
   // Returns whether the kernel supports CLONE_NEWUSER and whether it would be
   // possible to immediately move to a new user namespace. There is no point

@@ -126,6 +126,9 @@ source_set("sandbox_linux_unittests_sources") {
       "services/namespace_sandbox_unittest.cc",
       "services/namespace_utils_unittest.cc",
     ]
+
+    # For credentials_unittest.cc
+    configs += [ "//build/config/linux:libcap" ]
   }
 }
 
@@ -265,6 +268,10 @@ component("sandbox_services") {
 
   defines = [ "SANDBOX_IMPLEMENTATION" ]
 
+  deps = [
+    "//base",
+  ]
+
   if (compile_credentials) {
     sources += [
       "services/credentials.cc",
@@ -275,13 +282,8 @@ component("sandbox_services") {
       "services/namespace_utils.h",
     ]
 
-    # For capabilities.cc.
-    configs += [ "//build/config/linux:libcap" ]
+    deps += [ ":sandbox_services_headers" ]
   }
-
-  deps = [
-    "//base",
-  ]
 }
 
 source_set("sandbox_services_headers") {

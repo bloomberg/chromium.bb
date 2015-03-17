@@ -266,8 +266,8 @@
             'services/namespace_utils.h',
           ],
           'dependencies': [
-            # for capabilities.cc.
-            '../build/linux/system.gyp:libcap',
+            # for capability.h.
+            'sandbox_services_headers',
           ],
         }],
       ],
@@ -286,6 +286,7 @@
         'system_headers/android_ucontext.h',
         'system_headers/arm64_linux_syscalls.h',
         'system_headers/arm_linux_syscalls.h',
+        'system_headers/capability.h',
         'system_headers/linux_seccomp.h',
         'system_headers/linux_syscalls.h',
         'system_headers/mips_linux_syscalls.h',

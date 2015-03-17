@@ -4,7 +4,6 @@ ld-linux.so.2(GLIBC_2.3)
 libasound.so.2
 libatk-1.0.so.0
 libcairo.so.2
-libcap.so.2
 libc.so.6
 libc.so.6(GLIBC_2.0)
 libc.so.6(GLIBC_2.1)

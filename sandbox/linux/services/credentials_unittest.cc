@@ -7,9 +7,12 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/capability.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -17,12 +20,24 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/services/proc_util.h"
+#include "sandbox/linux/services/syscall_wrappers.h"
+#include "sandbox/linux/system_headers/capability.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
 
 namespace {
+
+struct CapFreeDeleter {
+  inline void operator()(cap_t cap) const {
+    int ret = cap_free(cap);
+    CHECK_EQ(0, ret);
+  }
+};
+
+// Wrapper to manage libcap2's cap_t type.
+typedef scoped_ptr<typeof(*((cap_t)0)), CapFreeDeleter> ScopedCap;
 
 bool WorkingDirectoryIsRoot() {
   char current_dir[PATH_MAX];
@@ -46,12 +61,6 @@ bool WorkingDirectoryIsRoot() {
 SANDBOX_TEST(Credentials, DropAllCaps) {
   CHECK(Credentials::DropAllCapabilities());
   CHECK(!Credentials::HasAnyCapability());
-}
-
-SANDBOX_TEST(Credentials, GetCurrentCapString) {
-  CHECK(Credentials::DropAllCapabilities());
-  const char kNoCapabilityText[] = "=";
-  CHECK(*Credentials::GetCurrentCapString() == kNoCapabilityText);
 }
 
 SANDBOX_TEST(Credentials, MoveToNewUserNS) {
@@ -159,6 +168,70 @@ SANDBOX_TEST(Credentials, DISABLE_ON_ASAN(CannotRegainPrivileges)) {
   // are in a chroot.
   CHECK(!Credentials::CanCreateProcessInNewUserNS());
   CHECK(!Credentials::MoveToNewUserNS());
+}
+
+SANDBOX_TEST(Credentials, SetCapabilities) {
+  // Probably missing kernel support.
+  if (!Credentials::MoveToNewUserNS())
+    return;
+
+  base::ScopedFD proc_fd(ProcUtil::OpenProc());
+
+  CHECK(Credentials::HasCapability(LinuxCapability::kCapSysAdmin));
+  CHECK(Credentials::HasCapability(LinuxCapability::kCapSysChroot));
+
+  const std::vector<LinuxCapability> caps = {LinuxCapability::kCapSysChroot};
+  CHECK(Credentials::SetCapabilities(proc_fd.get(), caps));
+
+  CHECK(!Credentials::HasCapability(LinuxCapability::kCapSysAdmin));
+  CHECK(Credentials::HasCapability(LinuxCapability::kCapSysChroot));
+
+  const std::vector<LinuxCapability> no_caps;
+  CHECK(Credentials::SetCapabilities(proc_fd.get(), no_caps));
+  CHECK(!Credentials::HasAnyCapability());
+}
+
+SANDBOX_TEST(Credentials, SetCapabilitiesAndChroot) {
+  // Probably missing kernel support.
+  if (!Credentials::MoveToNewUserNS())
+    return;
+
+  base::ScopedFD proc_fd(ProcUtil::OpenProc());
+
+  CHECK(Credentials::HasCapability(LinuxCapability::kCapSysChroot));
+  PCHECK(chroot("/") == 0);
+
+  const std::vector<LinuxCapability> caps = {LinuxCapability::kCapSysChroot};
+  CHECK(Credentials::SetCapabilities(proc_fd.get(), caps));
+  PCHECK(chroot("/") == 0);
+
+  CHECK(Credentials::DropAllCapabilities());
+  PCHECK(chroot("/") == -1 && errno == EPERM);
+}
+
+SANDBOX_TEST(Credentials, SetCapabilitiesMatchesLibCap2) {
+  // Probably missing kernel support.
+  if (!Credentials::MoveToNewUserNS())
+    return;
+
+  base::ScopedFD proc_fd(ProcUtil::OpenProc());
+
+  const std::vector<LinuxCapability> caps = {LinuxCapability::kCapSysChroot};
+  CHECK(Credentials::SetCapabilities(proc_fd.get(), caps));
+
+  ScopedCap actual_cap(cap_get_proc());
+  PCHECK(actual_cap != nullptr);
+
+  ScopedCap expected_cap(cap_init());
+  PCHECK(expected_cap != nullptr);
+
+  const cap_value_t allowed_cap = CAP_SYS_CHROOT;
+  for (const cap_flag_t flag : {CAP_EFFECTIVE, CAP_PERMITTED}) {
+    PCHECK(cap_set_flag(expected_cap.get(), flag, 1, &allowed_cap, CAP_SET) ==
+           0);
+  }
+
+  CHECK_EQ(0, cap_compare(expected_cap.get(), actual_cap.get()));
 }
 
 }  // namespace.

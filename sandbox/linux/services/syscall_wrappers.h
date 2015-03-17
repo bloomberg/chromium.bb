@@ -5,12 +5,15 @@
 #ifndef SANDBOX_LINUX_SERVICES_SYSCALL_WRAPPERS_H_
 #define SANDBOX_LINUX_SERVICES_SYSCALL_WRAPPERS_H_
 
+#include <stdint.h>
 #include <sys/types.h>
 
 #include "sandbox/sandbox_export.h"
 
 struct sock_fprog;
 struct rlimit64;
+struct cap_hdr;
+struct cap_data;
 
 namespace sandbox {
 
@@ -46,6 +49,12 @@ SANDBOX_EXPORT int sys_prlimit64(pid_t pid,
                                  int resource,
                                  const struct rlimit64* new_limit,
                                  struct rlimit64* old_limit);
+
+// Some libcs do not expose capget/capset wrappers. We want to use these
+// directly in order to avoid pulling in libcap2.
+SANDBOX_EXPORT int sys_capget(struct cap_hdr* hdrp, struct cap_data* datap);
+SANDBOX_EXPORT int sys_capset(struct cap_hdr* hdrp,
+                              const struct cap_data* datap);
 
 }  // namespace sandbox
 
