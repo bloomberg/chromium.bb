@@ -25,6 +25,7 @@
 #ifndef LiveNodeListBase_h
 #define LiveNodeListBase_h
 
+#include "core/CoreExport.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
@@ -38,7 +39,7 @@ enum NodeListRootType {
     NodeListIsRootedAtDocument
 };
 
-class LiveNodeListBase : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT LiveNodeListBase : public WillBeGarbageCollectedMixin {
 public:
     LiveNodeListBase(ContainerNode& ownerNode, NodeListRootType rootType, NodeListInvalidationType invalidationType,
         CollectionType collectionType)

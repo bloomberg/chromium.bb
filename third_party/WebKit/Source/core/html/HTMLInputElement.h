@@ -25,6 +25,7 @@
 #ifndef HTMLInputElement_h
 #define HTMLInputElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/html/forms/StepRange.h"
 #include "platform/FileChooser.h"
@@ -44,7 +45,7 @@ class ListAttributeTargetObserver;
 class RadioButtonGroupScope;
 struct DateTimeChooserParameters;
 
-class HTMLInputElement : public HTMLTextFormControlElement {
+class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLInputElement> create(Document&, HTMLFormElement*, bool createdByParser);
@@ -367,19 +368,19 @@ private:
     int m_maxLength;
     int m_minLength;
     short m_maxResults;
-    bool m_isChecked : 1;
-    bool m_reflectsCheckedAttribute : 1;
-    bool m_isIndeterminate : 1;
-    bool m_isActivatedSubmit : 1;
+    unsigned m_isChecked : 1;
+    unsigned m_reflectsCheckedAttribute : 1;
+    unsigned m_isIndeterminate : 1;
+    unsigned m_isActivatedSubmit : 1;
     unsigned m_autocomplete : 2; // AutoCompleteSetting
-    bool m_hasNonEmptyList : 1;
-    bool m_stateRestored : 1;
-    bool m_parsingInProgress : 1;
-    bool m_valueAttributeWasUpdatedAfterParsing : 1;
-    bool m_canReceiveDroppedFiles : 1;
-    bool m_hasTouchEventHandler : 1;
-    bool m_shouldRevealPassword : 1;
-    bool m_needsToUpdateViewValue : 1;
+    unsigned m_hasNonEmptyList : 1;
+    unsigned m_stateRestored : 1;
+    unsigned m_parsingInProgress : 1;
+    unsigned m_valueAttributeWasUpdatedAfterParsing : 1;
+    unsigned m_canReceiveDroppedFiles : 1;
+    unsigned m_hasTouchEventHandler : 1;
+    unsigned m_shouldRevealPassword : 1;
+    unsigned m_needsToUpdateViewValue : 1;
     RefPtrWillBeMember<InputType> m_inputType;
     RefPtrWillBeMember<InputTypeView> m_inputTypeView;
     // The ImageLoader must be owned by this element because the loader code assumes

@@ -31,6 +31,7 @@
 #ifndef HTMLMediaSource_h
 #define HTMLMediaSource_h
 
+#include "core/CoreExport.h"
 #include "core/html/URLRegistry.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -44,7 +45,7 @@ namespace blink {
 class HTMLMediaElement;
 class TimeRanges;
 
-class HTMLMediaSource : public URLRegistrable, public WillBeGarbageCollectedMixin {
+class CORE_EXPORT HTMLMediaSource : public URLRegistrable, public WillBeGarbageCollectedMixin {
 public:
     static void setRegistry(URLRegistry*);
     static HTMLMediaSource* lookup(const String& url) { return s_registry ? static_cast<HTMLMediaSource*>(s_registry->lookup(url)) : 0; }

@@ -30,6 +30,7 @@
 #ifndef MediaControlElementTypes_h
 #define MediaControlElementTypes_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/layout/LayoutBlock.h"
@@ -66,7 +67,7 @@ enum MediaControlElementType {
     MediaOverlayCastOnButton,
 };
 
-HTMLMediaElement* toParentMediaElement(Node*);
+CORE_EXPORT HTMLMediaElement* toParentMediaElement(Node*);
 inline HTMLMediaElement* toParentMediaElement(LayoutObject* renderer) { return toParentMediaElement(renderer->node()); }
 
 MediaControlElementType mediaControlElementType(Node*);

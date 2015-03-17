@@ -21,6 +21,7 @@
 #ifndef HTMLProgressElement_h
 #define HTMLProgressElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/LabelableElement.h"
 
 namespace blink {
@@ -28,7 +29,7 @@ namespace blink {
 class ProgressValueElement;
 class LayoutProgress;
 
-class HTMLProgressElement final : public LabelableElement {
+class CORE_EXPORT HTMLProgressElement final : public LabelableElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static const double IndeterminatePosition;

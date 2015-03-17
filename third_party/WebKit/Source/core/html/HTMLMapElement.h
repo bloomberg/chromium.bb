@@ -23,6 +23,7 @@
 #ifndef HTMLMapElement_h
 #define HTMLMapElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {
@@ -30,7 +31,7 @@ namespace blink {
 class HitTestResult;
 class HTMLImageElement;
 
-class HTMLMapElement final : public HTMLElement {
+class CORE_EXPORT HTMLMapElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLMapElement);

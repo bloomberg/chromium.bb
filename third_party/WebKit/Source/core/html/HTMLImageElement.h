@@ -24,6 +24,7 @@
 #ifndef HTMLImageElement_h
 #define HTMLImageElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/canvas/CanvasImageSource.h"
@@ -36,7 +37,7 @@ class HTMLFormElement;
 class ImageCandidate;
 class ShadowRoot;
 
-class HTMLImageElement final : public HTMLElement, public CanvasImageSource {
+class CORE_EXPORT HTMLImageElement final : public HTMLElement, public CanvasImageSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
     class ViewportChangeListener;

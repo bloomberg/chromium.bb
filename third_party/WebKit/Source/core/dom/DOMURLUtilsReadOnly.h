@@ -27,12 +27,13 @@
 #ifndef DOMURLUtilsReadOnly_h
 #define DOMURLUtilsReadOnly_h
 
+#include "core/CoreExport.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
-class DOMURLUtilsReadOnly {
+class CORE_EXPORT DOMURLUtilsReadOnly {
 public:
     virtual KURL url() const = 0;
     virtual String input() const = 0;

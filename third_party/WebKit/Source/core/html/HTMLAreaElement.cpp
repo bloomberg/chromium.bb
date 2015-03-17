@@ -43,6 +43,15 @@ inline HTMLAreaElement::HTMLAreaElement(Document& document)
 {
 }
 
+// An explicit empty destructor should be in HTMLAreaElement.cpp, because
+// if an implicit destructor is used or an empty destructor is defined in
+// HTMLAreaElement.h, when including HTMLAreaElement.h, msvc tries to expand
+// the destructor and causes a compile error because of lack of blink::Path
+// definition.
+HTMLAreaElement::~HTMLAreaElement()
+{
+}
+
 DEFINE_NODE_FACTORY(HTMLAreaElement)
 
 void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

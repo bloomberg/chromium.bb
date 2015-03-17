@@ -24,6 +24,7 @@
 #ifndef HTMLFormControlElement_h
 #define HTMLFormControlElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/FormAssociatedElement.h"
 #include "core/html/LabelableElement.h"
 
@@ -38,7 +39,7 @@ enum CheckValidityEventBehavior { CheckValidityDispatchNoEvent, CheckValidityDis
 // HTMLFormControlElement is the default implementation of FormAssociatedElement,
 // and form-associated element implementations should use HTMLFormControlElement
 // unless there is a special reason.
-class HTMLFormControlElement : public LabelableElement, public FormAssociatedElement {
+class CORE_EXPORT HTMLFormControlElement : public LabelableElement, public FormAssociatedElement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLFormControlElement);
 
 public:

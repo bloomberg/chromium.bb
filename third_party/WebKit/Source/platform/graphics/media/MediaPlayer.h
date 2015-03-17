@@ -39,8 +39,9 @@ class WebInbandTextTrack;
 class WebLayer;
 class WebMediaSource;
 
-class MediaPlayerClient {
+class PLATFORM_EXPORT MediaPlayerClient {
 public:
+    MediaPlayerClient() { }
     virtual ~MediaPlayerClient() { }
 
     // the network state has changed

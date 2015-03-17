@@ -24,13 +24,14 @@
 #ifndef HTMLLabelElement_h
 #define HTMLLabelElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/FormAssociatedElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/LabelableElement.h"
 
 namespace blink {
 
-class HTMLLabelElement final : public HTMLElement, public FormAssociatedElement {
+class CORE_EXPORT HTMLLabelElement final : public HTMLElement, public FormAssociatedElement {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLLabelElement);
 public:

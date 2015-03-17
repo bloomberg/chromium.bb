@@ -24,6 +24,7 @@
 #ifndef HTMLAnchorElement_h
 #define HTMLAnchorElement_h
 
+#include "core/CoreExport.h"
 #include "core/HTMLNames.h"
 #include "core/dom/DOMURLUtils.h"
 #include "core/dom/Document.h"
@@ -55,7 +56,7 @@ enum {
 //     RelationUp          = 0x00020000,
 };
 
-class HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
+class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLAnchorElement> create(Document&);

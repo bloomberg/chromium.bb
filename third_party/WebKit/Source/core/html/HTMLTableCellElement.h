@@ -26,11 +26,12 @@
 #ifndef HTMLTableCellElement_h
 #define HTMLTableCellElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLTablePartElement.h"
 
 namespace blink {
 
-class HTMLTableCellElement final : public HTMLTablePartElement {
+class CORE_EXPORT HTMLTableCellElement final : public HTMLTablePartElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableCellElement);

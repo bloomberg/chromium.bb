@@ -26,6 +26,7 @@
 #ifndef HTMLMediaElement_h
 #define HTMLMediaElement_h
 
+#include "core/CoreExport.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/html/HTMLElement.h"
@@ -68,7 +69,7 @@ class VideoTrackList;
 // But it can't be until the Chromium WebMediaPlayerClientImpl class is fixed so it
 // no longer depends on typecasting a MediaPlayerClient to an HTMLMediaElement.
 
-class HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public MediaPlayerClient, public ActiveDOMObject {
+class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public MediaPlayerClient, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
 public:

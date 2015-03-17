@@ -24,6 +24,7 @@
 #ifndef HTMLCollection_h
 #define HTMLCollection_h
 
+#include "core/CoreExport.h"
 #include "core/dom/LiveNodeListBase.h"
 #include "core/html/CollectionItemsCache.h"
 #include "core/html/CollectionType.h"
@@ -31,7 +32,7 @@
 
 namespace blink {
 
-class HTMLCollection : public RefCountedWillBeGarbageCollectedFinalized<HTMLCollection>, public ScriptWrappable, public LiveNodeListBase {
+class CORE_EXPORT HTMLCollection : public RefCountedWillBeGarbageCollectedFinalized<HTMLCollection>, public ScriptWrappable, public LiveNodeListBase {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(HTMLCollection);
 public:

@@ -26,6 +26,7 @@
 #ifndef HTMLTableElement_h
 #define HTMLTableElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {
@@ -36,7 +37,7 @@ class HTMLTableCaptionElement;
 class HTMLTableRowsCollection;
 class HTMLTableSectionElement;
 
-class HTMLTableElement final : public HTMLElement {
+class CORE_EXPORT HTMLTableElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLTableElement);
@@ -73,6 +74,7 @@ public:
 
 private:
     explicit HTMLTableElement(Document&);
+    ~HTMLTableElement();
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual bool isPresentationAttribute(const QualifiedName&) const override;

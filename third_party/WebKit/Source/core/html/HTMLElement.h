@@ -23,6 +23,7 @@
 #ifndef HTMLElement_h
 #define HTMLElement_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Element.h"
 
 namespace blink {
@@ -38,7 +39,7 @@ enum TranslateAttributeMode {
     TranslateAttributeInherit
 };
 
-class HTMLElement : public Element {
+class CORE_EXPORT HTMLElement : public Element {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLElement);

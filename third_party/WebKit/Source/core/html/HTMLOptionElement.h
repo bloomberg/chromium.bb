@@ -25,6 +25,7 @@
 #ifndef HTMLOptionElement_h
 #define HTMLOptionElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {
@@ -32,8 +33,9 @@ namespace blink {
 class ExceptionState;
 class HTMLDataListElement;
 class HTMLSelectElement;
+class LayoutStyle;
 
-class HTMLOptionElement final : public HTMLElement {
+class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLOptionElement> create(Document&);
@@ -74,6 +76,7 @@ public:
 
 private:
     explicit HTMLOptionElement(Document&);
+    ~HTMLOptionElement();
 
     virtual bool supportsFocus() const override;
     virtual void attach(const AttachContext& = AttachContext()) override;

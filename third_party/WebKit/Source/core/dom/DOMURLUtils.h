@@ -27,6 +27,7 @@
 #ifndef DOMURLUtils_h
 #define DOMURLUtils_h
 
+#include "core/CoreExport.h"
 #include "core/dom/DOMURLUtilsReadOnly.h"
 #include "wtf/Forward.h"
 
@@ -34,7 +35,7 @@ namespace blink {
 
 class KURL;
 
-class DOMURLUtils : public DOMURLUtilsReadOnly {
+class CORE_EXPORT DOMURLUtils : public DOMURLUtilsReadOnly {
 public:
     virtual void setURL(const KURL&) = 0;
     virtual void setInput(const String&) = 0;

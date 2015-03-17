@@ -26,6 +26,7 @@
 #ifndef HTMLSelectElement_h
 #define HTMLSelectElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLContentElement.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 #include "core/html/HTMLOptionsCollection.h"
@@ -40,7 +41,7 @@ class HTMLOptionElement;
 class HTMLOptionElementOrHTMLOptGroupElement;
 class HTMLElementOrLong;
 
-class HTMLSelectElement final : public HTMLFormControlElementWithState, public TypeAheadDataSource {
+class CORE_EXPORT HTMLSelectElement final : public HTMLFormControlElementWithState, public TypeAheadDataSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLSelectElement> create(Document&);

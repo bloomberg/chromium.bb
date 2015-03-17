@@ -34,6 +34,7 @@
 #include "bindings/core/v8/Iterable.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/UnionTypesCore.h"
+#include "core/CoreExport.h"
 #include "core/html/FormDataList.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -52,7 +53,7 @@ class HTMLFormElement;
 // Typedef from FormData.idl:
 typedef FileOrUSVString FormDataEntryValue;
 
-class DOMFormData final : public FormDataList, public ScriptWrappable, public PairIterable<String, FormDataEntryValue> {
+class CORE_EXPORT DOMFormData final : public FormDataList, public ScriptWrappable, public PairIterable<String, FormDataEntryValue> {
     DEFINE_WRAPPERTYPEINFO();
 
 public:

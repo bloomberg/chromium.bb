@@ -25,6 +25,7 @@
 #ifndef HTMLTextFormControlElement_h
 #define HTMLTextFormControlElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 
 namespace blink {
@@ -38,7 +39,7 @@ enum TextFieldSelectionDirection { SelectionHasNoDirection, SelectionHasForwardD
 enum TextFieldEventBehavior { DispatchNoEvent, DispatchChangeEvent, DispatchInputAndChangeEvent };
 enum NeedToDispatchSelectEvent { DispatchSelectEvent, NotDispatchSelectEvent };
 
-class HTMLTextFormControlElement : public HTMLFormControlElementWithState {
+class CORE_EXPORT HTMLTextFormControlElement : public HTMLFormControlElementWithState {
 public:
     // Common flag for HTMLInputElement::tooLong(), HTMLTextAreaElement::tooLong(),
     // HTMLInputElement::tooShort() and HTMLTextAreaElement::tooShort().

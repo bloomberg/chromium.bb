@@ -62,6 +62,15 @@ inline HTMLTableElement::HTMLTableElement(Document& document)
 {
 }
 
+// An explicit empty destructor should be in HTMLTableElement.cpp, because
+// if an implicit destructor is used or an empty destructor is defined in
+// HTMLTableElement.h, when including HTMLTableElement, msvc tries to expand
+// the destructor and causes a compile error because of lack of
+// StylePropertySet definition.
+HTMLTableElement::~HTMLTableElement()
+{
+}
+
 DEFINE_NODE_FACTORY(HTMLTableElement)
 
 HTMLTableCaptionElement* HTMLTableElement::caption() const

@@ -24,6 +24,7 @@
 #ifndef HTMLTextAreaElement_h
 #define HTMLTextAreaElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLTextFormControlElement.h"
 
 namespace blink {
@@ -31,7 +32,7 @@ namespace blink {
 class BeforeTextInsertedEvent;
 class ExceptionState;
 
-class HTMLTextAreaElement final : public HTMLTextFormControlElement {
+class CORE_EXPORT HTMLTextAreaElement final : public HTMLTextFormControlElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLTextAreaElement> create(Document&, HTMLFormElement*);

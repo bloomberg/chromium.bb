@@ -413,7 +413,7 @@ void HTMLInputElement::updateTouchEventHandlerRegistry()
     ASSERT(m_inputTypeView);
 
     bool hasTouchEventHandler = m_inputTypeView->hasTouchEventHandler();
-    if (hasTouchEventHandler == m_hasTouchEventHandler)
+    if (hasTouchEventHandler == !!m_hasTouchEventHandler)
         return;
     // If the Document is being or has been stopped, don't register any handlers.
     if (document().frameHost() && document().lifecycle().state() < DocumentLifecycle::Stopping) {
@@ -1428,7 +1428,7 @@ bool HTMLInputElement::canReceiveDroppedFiles() const
 
 void HTMLInputElement::setCanReceiveDroppedFiles(bool canReceiveDroppedFiles)
 {
-    if (m_canReceiveDroppedFiles == canReceiveDroppedFiles)
+    if (!!m_canReceiveDroppedFiles == canReceiveDroppedFiles)
         return;
     m_canReceiveDroppedFiles = canReceiveDroppedFiles;
     if (layoutObject())
@@ -1869,7 +1869,7 @@ bool HTMLInputElement::supportsInputModeAttribute() const
 
 void HTMLInputElement::setShouldRevealPassword(bool value)
 {
-    if (m_shouldRevealPassword == value)
+    if (!!m_shouldRevealPassword == value)
         return;
     m_shouldRevealPassword = value;
     lazyReattachIfAttached();

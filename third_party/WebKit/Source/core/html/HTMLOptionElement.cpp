@@ -55,6 +55,15 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
     setHasCustomStyleCallbacks();
 }
 
+// An explicit empty destructor should be in HTMLOptionElement.cpp, because
+// if an implicit destructor is used or an empty destructor is defined in
+// HTMLOptionElement.h, when including HTMLOptionElement.h,
+// msvc tries to expand the destructor and causes
+// a compile error because of lack of LayoutStyle definition.
+HTMLOptionElement::~HTMLOptionElement()
+{
+}
+
 PassRefPtrWillBeRawPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
 {
     RefPtrWillBeRawPtr<HTMLOptionElement> option = adoptRefWillBeNoop(new HTMLOptionElement(document));

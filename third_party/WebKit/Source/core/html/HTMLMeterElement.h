@@ -21,6 +21,7 @@
 #ifndef HTMLMeterElement_h
 #define HTMLMeterElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/LabelableElement.h"
 
 namespace blink {
@@ -28,7 +29,7 @@ namespace blink {
 class MeterValueElement;
 class LayoutMeter;
 
-class HTMLMeterElement final : public LabelableElement {
+class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLMeterElement> create(Document&);

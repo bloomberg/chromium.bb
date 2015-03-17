@@ -24,13 +24,14 @@
 #ifndef HTMLFieldSetElement_h
 #define HTMLFieldSetElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLFormControlElement.h"
 
 namespace blink {
 
 class HTMLFormControlsCollection;
 
-class HTMLFieldSetElement final : public HTMLFormControlElement {
+class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLFieldSetElement> create(Document&, HTMLFormElement*);

@@ -24,13 +24,14 @@
 #ifndef HTMLFormControlElementWithState_h
 #define HTMLFormControlElementWithState_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLFormControlElement.h"
 
 namespace blink {
 
 class FormControlState;
 
-class HTMLFormControlElementWithState : public HTMLFormControlElement {
+class CORE_EXPORT HTMLFormControlElementWithState : public HTMLFormControlElement {
 public:
     virtual ~HTMLFormControlElementWithState();
 

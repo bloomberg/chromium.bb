@@ -31,6 +31,7 @@
 #ifndef LabelableElement_h
 #define LabelableElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {
@@ -39,7 +40,7 @@ class LabelsNodeList;
 
 // LabelableElement represents "labelable element" defined in the HTML
 // specification, and provides the implementation of the "labels" attribute.
-class LabelableElement : public HTMLElement {
+class CORE_EXPORT LabelableElement : public HTMLElement {
 public:
     virtual ~LabelableElement();
     PassRefPtrWillBeRawPtr<LabelsNodeList> labels();

@@ -21,6 +21,7 @@
 #ifndef FormDataList_h
 #define FormDataList_h
 
+#include "core/CoreExport.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
 #include "platform/heap/Handle.h"
@@ -31,7 +32,7 @@
 
 namespace blink {
 
-class FormDataList : public RefCountedWillBeGarbageCollected<FormDataList> {
+class CORE_EXPORT FormDataList : public RefCountedWillBeGarbageCollected<FormDataList> {
     DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(FormDataList);
 public:
     class Entry final {
