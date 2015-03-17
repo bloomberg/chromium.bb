@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_DISCARDABLE_SHARED_MEMORY_HEAP_H_
 #define CONTENT_COMMON_DISCARDABLE_SHARED_MEMORY_HEAP_H_
 
+#include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/containers/linked_list.h"
 #include "base/memory/scoped_ptr.h"
@@ -48,9 +49,11 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
 
   // Grow heap using |shared_memory| and return a span for this new memory.
   // |shared_memory| must be aligned to the block size and |size| must be a
-  // multiple of the block size.
+  // multiple of the block size. |deleted_callback| is called when
+  // |shared_memory| has been deleted.
   scoped_ptr<Span> Grow(scoped_ptr<base::DiscardableSharedMemory> shared_memory,
-                        size_t size);
+                        size_t size,
+                        const base::Closure& deleted_callback);
 
   // Merge |span| into the free lists. This will coalesce |span| with
   // neighboring free spans when possible.
@@ -85,7 +88,8 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
    public:
     ScopedMemorySegment(DiscardableSharedMemoryHeap* heap,
                         scoped_ptr<base::DiscardableSharedMemory> shared_memory,
-                        size_t size);
+                        size_t size,
+                        const base::Closure& deleted_callback);
     ~ScopedMemorySegment();
 
     bool IsUsed() const;
@@ -95,6 +99,7 @@ class CONTENT_EXPORT DiscardableSharedMemoryHeap {
     DiscardableSharedMemoryHeap* const heap_;
     scoped_ptr<base::DiscardableSharedMemory> shared_memory_;
     const size_t size_;
+    const base::Closure deleted_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedMemorySegment);
   };

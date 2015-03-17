@@ -4,6 +4,8 @@
 
 #include "content/child/child_discardable_shared_memory_manager.h"
 
+#include "base/atomic_sequence_num.h"
+#include "base/bind.h"
 #include "base/debug/crash_logging.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/metrics/histogram.h"
@@ -22,6 +24,9 @@ const size_t kAllocationSize = 32 * 1024 * 1024;
 #else
 const size_t kAllocationSize = 4 * 1024 * 1024;
 #endif
+
+// Global atomic to generate unique discardable shared memory IDs.
+base::StaticAtomicSequenceNumber g_next_discardable_shared_memory_id;
 
 class DiscardableMemoryShmemChunkImpl
     : public base::DiscardableMemoryShmemChunk {
@@ -47,6 +52,11 @@ class DiscardableMemoryShmemChunkImpl
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryShmemChunkImpl);
 };
+
+void DeletedDiscardableSharedMemory(scoped_refptr<ThreadSafeSender> sender,
+                                    DiscardableSharedMemoryId id) {
+  sender->Send(new ChildProcessHostMsg_DeletedDiscardableSharedMemory(id));
+}
 
 }  // namespace
 
@@ -132,13 +142,17 @@ ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
       std::max(kAllocationSize / base::GetPageSize(), pages);
   size_t allocation_size_in_bytes = pages_to_allocate * base::GetPageSize();
 
+  DiscardableSharedMemoryId new_id =
+      g_next_discardable_shared_memory_id.GetNext();
+
   // Ask parent process to allocate a new discardable shared memory segment.
   scoped_ptr<base::DiscardableSharedMemory> shared_memory(
-      AllocateLockedDiscardableSharedMemory(allocation_size_in_bytes));
+      AllocateLockedDiscardableSharedMemory(allocation_size_in_bytes, new_id));
 
   // Create span for allocated memory.
   scoped_ptr<DiscardableSharedMemoryHeap::Span> new_span(
-      heap_.Grow(shared_memory.Pass(), allocation_size_in_bytes));
+      heap_.Grow(shared_memory.Pass(), allocation_size_in_bytes,
+                 base::Bind(&DeletedDiscardableSharedMemory, sender_, new_id)));
 
   // Unlock and insert any left over memory into free lists.
   if (pages < pages_to_allocate) {
@@ -223,17 +237,17 @@ void ChildDiscardableSharedMemoryManager::ReleaseSpan(
 
 scoped_ptr<base::DiscardableSharedMemory>
 ChildDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
-    size_t size) {
-  TRACE_EVENT1("renderer",
+    size_t size,
+    DiscardableSharedMemoryId id) {
+  TRACE_EVENT2("renderer",
                "ChildDiscardableSharedMemoryManager::"
                "AllocateLockedDiscardableSharedMemory",
-               "size",
-               size);
+               "size", size, "id", id);
 
   base::SharedMemoryHandle handle = base::SharedMemory::NULLHandle();
   sender_->Send(
       new ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory(
-          size, &handle));
+          size, id, &handle));
   CHECK(base::SharedMemory::IsHandleValid(handle));
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory(handle));

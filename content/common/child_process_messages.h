@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "content/common/content_export.h"
+#include "content/common/host_discardable_shared_memory_manager.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -196,7 +197,13 @@ IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
 
 // Asks the browser to create a block of discardable shared memory for the
 // child process.
-IPC_SYNC_MESSAGE_CONTROL1_1(
+IPC_SYNC_MESSAGE_CONTROL2_1(
     ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory,
     uint32 /* size */,
+    content::DiscardableSharedMemoryId,
     base::SharedMemoryHandle)
+
+// Informs the browser that the child deleted a block of discardable shared
+// memory.
+IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_DeletedDiscardableSharedMemory,
+                     content::DiscardableSharedMemoryId)

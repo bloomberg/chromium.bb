@@ -22,6 +22,9 @@ namespace {
 const int kTimeLimitMs = 2000;
 const int kTimeCheckInterval = 8192;
 
+void NullTask() {
+}
+
 TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
   size_t block_size = base::GetPageSize();
   DiscardableSharedMemoryHeap heap(block_size);
@@ -34,7 +37,8 @@ TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
     scoped_ptr<base::DiscardableSharedMemory> memory(
         new base::DiscardableSharedMemory);
     ASSERT_TRUE(memory->CreateAndMap(segment_size));
-    heap.MergeIntoFreeLists(heap.Grow(memory.Pass(), segment_size).Pass());
+    heap.MergeIntoFreeLists(
+        heap.Grow(memory.Pass(), segment_size, base::Bind(NullTask)).Pass());
   }
 
   unsigned kSeed = 1;

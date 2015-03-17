@@ -34,14 +34,17 @@ DiscardableSharedMemoryHeap::Span::~Span() {
 DiscardableSharedMemoryHeap::ScopedMemorySegment::ScopedMemorySegment(
     DiscardableSharedMemoryHeap* heap,
     scoped_ptr<base::DiscardableSharedMemory> shared_memory,
-    size_t size)
-    : heap_(heap), shared_memory_(shared_memory.Pass()), size_(size) {
+    size_t size,
+    const base::Closure& deleted_callback)
+    : heap_(heap),
+      shared_memory_(shared_memory.Pass()),
+      size_(size),
+      deleted_callback_(deleted_callback) {
 }
 
 DiscardableSharedMemoryHeap::ScopedMemorySegment::~ScopedMemorySegment() {
   heap_->ReleaseMemory(shared_memory_.get(), size_);
-  // Purge memory. This has no effect if already purged.
-  shared_memory_->Purge(base::Time::Now());
+  deleted_callback_.Run();
 }
 
 bool DiscardableSharedMemoryHeap::ScopedMemorySegment::IsUsed() const {
@@ -71,7 +74,8 @@ DiscardableSharedMemoryHeap::~DiscardableSharedMemoryHeap() {
 
 scoped_ptr<DiscardableSharedMemoryHeap::Span> DiscardableSharedMemoryHeap::Grow(
     scoped_ptr<base::DiscardableSharedMemory> shared_memory,
-    size_t size) {
+    size_t size,
+    const base::Closure& deleted_callback) {
   // Memory must be aligned to block size.
   DCHECK_EQ(
       reinterpret_cast<size_t>(shared_memory->memory()) & (block_size_ - 1),
@@ -89,8 +93,8 @@ scoped_ptr<DiscardableSharedMemoryHeap::Span> DiscardableSharedMemoryHeap::Grow(
   num_blocks_ += span->length_;
 
   // Start tracking if segment is resident by adding it to |memory_segments_|.
-  memory_segments_.push_back(
-      new ScopedMemorySegment(this, shared_memory.Pass(), size));
+  memory_segments_.push_back(new ScopedMemorySegment(this, shared_memory.Pass(),
+                                                     size, deleted_callback));
 
   return span.Pass();
 }

@@ -37,7 +37,6 @@
 #include "content/common/cookie_data.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
-#include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/media/media_param_traits.h"
 #include "content/common/view_messages.h"
@@ -422,6 +421,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(
         ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory,
         OnAllocateLockedDiscardableSharedMemory)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedDiscardableSharedMemory,
+                        OnDeletedDiscardableSharedMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
@@ -954,10 +955,17 @@ void RenderMessageFilter::OnDeletedSharedBitmap(const cc::SharedBitmapId& id) {
 
 void RenderMessageFilter::OnAllocateLockedDiscardableSharedMemory(
     uint32 size,
+    DiscardableSharedMemoryId id,
     base::SharedMemoryHandle* handle) {
   HostDiscardableSharedMemoryManager::current()
-      ->AllocateLockedDiscardableSharedMemoryForChild(
-          PeerHandle(), size, handle);
+      ->AllocateLockedDiscardableSharedMemoryForChild(PeerHandle(), size, id,
+                                                      handle);
+}
+
+void RenderMessageFilter::OnDeletedDiscardableSharedMemory(
+    DiscardableSharedMemoryId id) {
+  HostDiscardableSharedMemoryManager::current()
+      ->ChildDeletedDiscardableSharedMemory(id, PeerHandle());
 }
 
 net::CookieStore* RenderMessageFilter::GetCookieStoreForURL(

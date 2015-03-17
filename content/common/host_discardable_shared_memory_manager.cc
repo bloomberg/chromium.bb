@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/atomic_sequence_num.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
@@ -21,13 +23,17 @@ namespace {
 class DiscardableMemoryShmemChunkImpl
     : public base::DiscardableMemoryShmemChunk {
  public:
-  explicit DiscardableMemoryShmemChunkImpl(
-      scoped_ptr<base::DiscardableSharedMemory> shared_memory)
-      : shared_memory_(shared_memory.Pass()), is_locked_(true) {}
+  DiscardableMemoryShmemChunkImpl(
+      scoped_ptr<base::DiscardableSharedMemory> shared_memory,
+      const base::Closure& deleted_callback)
+      : shared_memory_(shared_memory.Pass()),
+        deleted_callback_(deleted_callback),
+        is_locked_(true) {}
   ~DiscardableMemoryShmemChunkImpl() override {
     if (is_locked_)
       shared_memory_->Unlock(0, 0);
-    shared_memory_->Purge(base::Time::Now());
+
+    deleted_callback_.Run();
   }
 
   // Overridden from base::DiscardableMemoryShmemChunk:
@@ -53,6 +59,7 @@ class DiscardableMemoryShmemChunkImpl
 
  private:
   scoped_ptr<base::DiscardableSharedMemory> shared_memory_;
+  const base::Closure deleted_callback_;
   bool is_locked_;
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryShmemChunkImpl);
@@ -65,12 +72,14 @@ const int64_t kMaxDefaultMemoryLimit = 512 * 1024 * 1024;
 
 const int kEnforceMemoryPolicyDelayMs = 1000;
 
+// Global atomic to generate unique discardable shared memory IDs.
+base::StaticAtomicSequenceNumber g_next_discardable_shared_memory_id;
+
 }  // namespace
 
 HostDiscardableSharedMemoryManager::MemorySegment::MemorySegment(
-    linked_ptr<base::DiscardableSharedMemory> memory,
-    base::ProcessHandle process_handle)
-    : memory(memory), process_handle(process_handle) {
+    scoped_ptr<base::DiscardableSharedMemory> memory)
+    : memory_(memory.Pass()) {
 }
 
 HostDiscardableSharedMemoryManager::MemorySegment::~MemorySegment() {
@@ -101,51 +110,58 @@ HostDiscardableSharedMemoryManager::current() {
 scoped_ptr<base::DiscardableMemoryShmemChunk>
 HostDiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(
     size_t size) {
+  DiscardableSharedMemoryId new_id =
+      g_next_discardable_shared_memory_id.GetNext();
+  base::ProcessHandle current_process_handle = base::GetCurrentProcessHandle();
+
   // Note: Use DiscardableSharedMemoryHeap for in-process allocation
   // of discardable memory if the cost of each allocation is too high.
   base::SharedMemoryHandle handle;
-  AllocateLockedDiscardableSharedMemory(base::GetCurrentProcessHandle(), size,
+  AllocateLockedDiscardableSharedMemory(current_process_handle, size, new_id,
                                         &handle);
   CHECK(base::SharedMemory::IsHandleValid(handle));
   scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory(handle));
   CHECK(memory->Map(size));
-  return make_scoped_ptr(new DiscardableMemoryShmemChunkImpl(memory.Pass()));
+  return make_scoped_ptr(new DiscardableMemoryShmemChunkImpl(
+      memory.Pass(),
+      base::Bind(
+          &HostDiscardableSharedMemoryManager::DeletedDiscardableSharedMemory,
+          base::Unretained(this), new_id, current_process_handle)));
 }
 
 void HostDiscardableSharedMemoryManager::
     AllocateLockedDiscardableSharedMemoryForChild(
         base::ProcessHandle process_handle,
         size_t size,
+        DiscardableSharedMemoryId id,
         base::SharedMemoryHandle* shared_memory_handle) {
-  AllocateLockedDiscardableSharedMemory(process_handle, size,
+  AllocateLockedDiscardableSharedMemory(process_handle, size, id,
                                         shared_memory_handle);
+}
+
+void HostDiscardableSharedMemoryManager::ChildDeletedDiscardableSharedMemory(
+    DiscardableSharedMemoryId id,
+    base::ProcessHandle process_handle) {
+  DeletedDiscardableSharedMemory(id, process_handle);
 }
 
 void HostDiscardableSharedMemoryManager::ProcessRemoved(
     base::ProcessHandle process_handle) {
   base::AutoLock lock(lock_);
 
-  size_t bytes_allocated_before_purging = bytes_allocated_;
-  for (auto& segment : segments_) {
-    // Skip segments that belong to a different process.
-    if (segment.process_handle != process_handle)
-      continue;
+  ProcessMap::iterator process_it = processes_.find(process_handle);
+  if (process_it == processes_.end())
+    return;
 
-    size_t size = segment.memory->mapped_size();
-    DCHECK_GE(bytes_allocated_, size);
+  size_t bytes_allocated_before_releasing_memory = bytes_allocated_;
 
-    // This will unmap the memory segment and drop our reference. The result
-    // is that the memory will be released to the OS if the child process is
-    // no longer referencing it.
-    // Note: We intentionally leave the segment in the vector to avoid
-    // reconstructing the heap. The element will be removed from the heap
-    // when its last usage time is older than all other segments.
-    segment.memory->Close();
-    bytes_allocated_ -= size;
-  }
+  for (auto& segment_it : process_it->second)
+    ReleaseMemory(segment_it.second->memory());
 
-  if (bytes_allocated_ != bytes_allocated_before_purging)
+  processes_.erase(process_it);
+
+  if (bytes_allocated_ != bytes_allocated_before_releasing_memory)
     BytesAllocatedChanged(bytes_allocated_);
 }
 
@@ -163,9 +179,16 @@ void HostDiscardableSharedMemoryManager::EnforceMemoryPolicy() {
   ReduceMemoryUsageUntilWithinMemoryLimit();
 }
 
+size_t HostDiscardableSharedMemoryManager::GetBytesAllocated() {
+  base::AutoLock lock(lock_);
+
+  return bytes_allocated_;
+}
+
 void HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
     base::ProcessHandle process_handle,
     size_t size,
+    DiscardableSharedMemoryId id,
     base::SharedMemoryHandle* shared_memory_handle) {
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
   // is fixed.
@@ -173,6 +196,14 @@ void HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466405 AllocateLockedDiscardableSharedMemory::Start"));
   base::AutoLock lock(lock_);
+
+  // Make sure |id| is not already in use.
+  MemorySegmentMap& process_segments = processes_[process_handle];
+  if (process_segments.find(id) != process_segments.end()) {
+    LOG(ERROR) << "Invalid discardable shared memory ID";
+    *shared_memory_handle = base::SharedMemory::NULLHandle();
+    return;
+  }
 
   // Memory usage must be reduced to prevent the addition of |size| from
   // taking usage above the limit. Usage should be reduced to 0 in cases
@@ -198,7 +229,7 @@ void HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   tracked_objects::ScopedTracker tracking_profile3(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466405 AllocateLockedDiscardableSharedMemory::NewMemory"));
-  linked_ptr<base::DiscardableSharedMemory> memory(
+  scoped_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory);
   if (!memory->CreateAndMap(size)) {
     *shared_memory_handle = base::SharedMemory::NULLHandle();
@@ -232,7 +263,9 @@ void HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
   bytes_allocated_ = checked_bytes_allocated.ValueOrDie();
   BytesAllocatedChanged(bytes_allocated_);
 
-  segments_.push_back(MemorySegment(memory, process_handle));
+  scoped_refptr<MemorySegment> segment(new MemorySegment(memory.Pass()));
+  process_segments[id] = segment.get();
+  segments_.push_back(segment.get());
   std::push_heap(segments_.begin(), segments_.end(), CompareMemoryUsageTime);
 
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466405
@@ -244,6 +277,29 @@ void HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
           "ScheduleEnforceMemoryPolicy"));
   if (bytes_allocated_ > memory_limit_)
     ScheduleEnforceMemoryPolicy();
+}
+
+void HostDiscardableSharedMemoryManager::DeletedDiscardableSharedMemory(
+    DiscardableSharedMemoryId id,
+    base::ProcessHandle process_handle) {
+  base::AutoLock lock(lock_);
+
+  MemorySegmentMap& process_segments = processes_[process_handle];
+
+  MemorySegmentMap::iterator segment_it = process_segments.find(id);
+  if (segment_it == process_segments.end()) {
+    LOG(ERROR) << "Invalid discardable shared memory ID";
+    return;
+  }
+
+  size_t bytes_allocated_before_releasing_memory = bytes_allocated_;
+
+  ReleaseMemory(segment_it->second->memory());
+
+  process_segments.erase(segment_it);
+
+  if (bytes_allocated_ != bytes_allocated_before_releasing_memory)
+    BytesAllocatedChanged(bytes_allocated_);
 }
 
 void HostDiscardableSharedMemoryManager::OnMemoryPressure(
@@ -266,6 +322,8 @@ void HostDiscardableSharedMemoryManager::OnMemoryPressure(
 
 void
 HostDiscardableSharedMemoryManager::ReduceMemoryUsageUntilWithinMemoryLimit() {
+  lock_.AssertAcquired();
+
   if (bytes_allocated_ <= memory_limit_)
     return;
 
@@ -294,11 +352,11 @@ void HostDiscardableSharedMemoryManager::ReduceMemoryUsageUntilWithinLimit(
       break;
 
     // Stop eviction attempts when the LRU segment is currently in use.
-    if (segments_.front().memory->last_known_usage() >= current_time)
+    if (segments_.front()->memory()->last_known_usage() >= current_time)
       break;
 
     std::pop_heap(segments_.begin(), segments_.end(), CompareMemoryUsageTime);
-    MemorySegment segment = segments_.back();
+    scoped_refptr<MemorySegment> segment = segments_.back();
     segments_.pop_back();
 
     // Attempt to purge and truncate LRU segment. When successful, as much
@@ -306,21 +364,36 @@ void HostDiscardableSharedMemoryManager::ReduceMemoryUsageUntilWithinLimit(
     // released depends on the platform. The child process should perform
     // periodic cleanup to ensure that all memory is release within a
     // reasonable amount of time.
-    if (segment.memory->PurgeAndTruncate(current_time)) {
-      size_t size = segment.memory->mapped_size();
-      DCHECK_GE(bytes_allocated_, size);
-      bytes_allocated_ -= size;
+    if (segment->memory()->PurgeAndTruncate(current_time)) {
+      ReleaseMemory(segment->memory());
       continue;
     }
 
     // Add memory segment (with updated usage timestamp) back on heap after
     // failed attempt to purge it.
-    segments_.push_back(segment);
+    segments_.push_back(segment.get());
     std::push_heap(segments_.begin(), segments_.end(), CompareMemoryUsageTime);
   }
 
   if (bytes_allocated_ != bytes_allocated_before_purging)
     BytesAllocatedChanged(bytes_allocated_);
+}
+
+void HostDiscardableSharedMemoryManager::ReleaseMemory(
+    base::DiscardableSharedMemory* memory) {
+  lock_.AssertAcquired();
+
+  size_t size = memory->mapped_size();
+  DCHECK_GE(bytes_allocated_, size);
+  bytes_allocated_ -= size;
+
+  // This will unmap the memory segment and drop our reference. The result
+  // is that the memory will be released to the OS if the child process is
+  // no longer referencing it.
+  // Note: We intentionally leave the segment in the |segments| vector to
+  // avoid reconstructing the heap. The element will be removed from the heap
+  // when its last usage time is older than all other segments.
+  memory->Close();
 }
 
 void HostDiscardableSharedMemoryManager::BytesAllocatedChanged(
@@ -338,6 +411,8 @@ base::Time HostDiscardableSharedMemoryManager::Now() const {
 }
 
 void HostDiscardableSharedMemoryManager::ScheduleEnforceMemoryPolicy() {
+  lock_.AssertAcquired();
+
   if (enforce_memory_policy_pending_)
     return;
 

@@ -111,4 +111,31 @@ IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(ChildDiscardableSharedMemoryManagerBrowserTest,
+                       DISABLED_ReleaseFreeMemory) {
+  const size_t kSize = 1024 * 1024;  // 1MiB.
+
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  scoped_ptr<base::DiscardableMemoryShmemChunk> memory;
+  PostTaskToInProcessRendererAndWait(base::Bind(
+      &ChildDiscardableSharedMemoryManagerBrowserTest::AllocateLockedMemory,
+      kSize, &memory));
+  PostTaskToInProcessRendererAndWait(
+      base::Bind(&ChildDiscardableSharedMemoryManagerBrowserTest::UnlockMemory,
+                 memory.get()));
+  PostTaskToInProcessRendererAndWait(
+      base::Bind(&ChildDiscardableSharedMemoryManagerBrowserTest::FreeMemory,
+                 base::Passed(&memory)));
+
+  EXPECT_GE(HostDiscardableSharedMemoryManager::current()->GetBytesAllocated(),
+            kSize);
+
+  PostTaskToInProcessRendererAndWait(base::Bind(
+      &ChildDiscardableSharedMemoryManagerBrowserTest::ReleaseFreeMemory));
+
+  EXPECT_EQ(HostDiscardableSharedMemoryManager::current()->GetBytesAllocated(),
+            0u);
+}
+
 }  // content

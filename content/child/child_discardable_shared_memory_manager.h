@@ -11,6 +11,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
 #include "content/common/discardable_shared_memory_heap.h"
+#include "content/common/host_discardable_shared_memory_manager.h"
 
 namespace content {
 
@@ -35,7 +36,8 @@ class CONTENT_EXPORT ChildDiscardableSharedMemoryManager
 
  private:
   scoped_ptr<base::DiscardableSharedMemory>
-  AllocateLockedDiscardableSharedMemory(size_t size);
+  AllocateLockedDiscardableSharedMemory(size_t size,
+                                        DiscardableSharedMemoryId id);
   void MemoryUsageChanged(size_t new_bytes_allocated,
                           size_t new_bytes_free) const;
 

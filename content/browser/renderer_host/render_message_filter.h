@@ -20,6 +20,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap_manager.h"
+#include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/three_d_api_types.h"
@@ -245,7 +246,9 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   // Browser side discardable shared memory allocation.
   void OnAllocateLockedDiscardableSharedMemory(
       uint32 size,
+      DiscardableSharedMemoryId id,
       base::SharedMemoryHandle* handle);
+  void OnDeletedDiscardableSharedMemory(DiscardableSharedMemoryId id);
 
   void OnCacheableMetadataAvailable(const GURL& url,
                                     base::Time expected_response_time,

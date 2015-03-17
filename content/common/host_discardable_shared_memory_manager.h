@@ -7,10 +7,11 @@
 
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/memory/discardable_memory_shmem_allocator.h"
 #include "base/memory/discardable_shared_memory.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_handle.h"
@@ -18,6 +19,7 @@
 #include "content/common/content_export.h"
 
 namespace content {
+typedef int32_t DiscardableSharedMemoryId;
 
 // Implementation of DiscardableMemoryShmemAllocator that allocates and
 // manages discardable memory segments for the browser process and child
@@ -41,7 +43,13 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
   void AllocateLockedDiscardableSharedMemoryForChild(
       base::ProcessHandle process_handle,
       size_t size,
+      DiscardableSharedMemoryId id,
       base::SharedMemoryHandle* shared_memory_handle);
+
+  // Call this to notify the manager that child process associated with
+  // |process_handle| has deleted discardable memory segment with |id|.
+  void ChildDeletedDiscardableSharedMemory(DiscardableSharedMemoryId id,
+                                           base::ProcessHandle process_handle);
 
   // Call this to notify the manager that child process associated with
   // |process_handle| has been removed. The manager will use this to release
@@ -55,30 +63,44 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
   // Reduce memory usage if above current memory limit.
   void EnforceMemoryPolicy();
 
+  // Returns bytes of allocated discardable memory.
+  size_t GetBytesAllocated();
+
  private:
-  struct MemorySegment {
-    MemorySegment(linked_ptr<base::DiscardableSharedMemory> memory,
-                  base::ProcessHandle process_handle);
+  class MemorySegment : public base::RefCountedThreadSafe<MemorySegment> {
+   public:
+    MemorySegment(scoped_ptr<base::DiscardableSharedMemory> memory);
+
+    base::DiscardableSharedMemory* memory() const { return memory_.get(); }
+
+   private:
+    friend class base::RefCountedThreadSafe<MemorySegment>;
+
     ~MemorySegment();
 
-    linked_ptr<base::DiscardableSharedMemory> memory;
-    base::ProcessHandle process_handle;
+    scoped_ptr<base::DiscardableSharedMemory> memory_;
+
+    DISALLOW_COPY_AND_ASSIGN(MemorySegment);
   };
 
-  static bool CompareMemoryUsageTime(const MemorySegment& a,
-                                     const MemorySegment& b) {
+  static bool CompareMemoryUsageTime(const scoped_refptr<MemorySegment>& a,
+                                     const scoped_refptr<MemorySegment>& b) {
     // In this system, LRU memory segment is evicted first.
-    return a.memory->last_known_usage() > b.memory->last_known_usage();
+    return a->memory()->last_known_usage() > b->memory()->last_known_usage();
   }
 
   void AllocateLockedDiscardableSharedMemory(
       base::ProcessHandle process_handle,
       size_t size,
+      DiscardableSharedMemoryId id,
       base::SharedMemoryHandle* shared_memory_handle);
+  void DeletedDiscardableSharedMemory(DiscardableSharedMemoryId id,
+                                      base::ProcessHandle process_handle);
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
   void ReduceMemoryUsageUntilWithinMemoryLimit();
   void ReduceMemoryUsageUntilWithinLimit(size_t limit);
+  void ReleaseMemory(base::DiscardableSharedMemory* memory);
   void BytesAllocatedChanged(size_t new_bytes_allocated) const;
 
   // Virtual for tests.
@@ -86,9 +108,13 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
   virtual void ScheduleEnforceMemoryPolicy();
 
   base::Lock lock_;
+  typedef base::hash_map<DiscardableSharedMemoryId,
+                         scoped_refptr<MemorySegment>> MemorySegmentMap;
+  typedef base::hash_map<base::ProcessHandle, MemorySegmentMap> ProcessMap;
+  ProcessMap processes_;
   // Note: The elements in |segments_| are arranged in such a way that they form
   // a heap. The LRU memory segment always first.
-  typedef std::vector<MemorySegment> MemorySegmentVector;
+  typedef std::vector<scoped_refptr<MemorySegment>> MemorySegmentVector;
   MemorySegmentVector segments_;
   size_t memory_limit_;
   size_t bytes_allocated_;

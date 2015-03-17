@@ -67,7 +67,7 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, AllocateForChild) {
 
   base::SharedMemoryHandle shared_handle;
   manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), kDataSize, &shared_handle);
+      base::GetCurrentProcessHandle(), kDataSize, 0, &shared_handle);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle));
 
   TestDiscardableSharedMemory memory(shared_handle);
@@ -88,7 +88,7 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, Purge) {
 
   base::SharedMemoryHandle shared_handle1;
   manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), kDataSize, &shared_handle1);
+      base::GetCurrentProcessHandle(), kDataSize, 1, &shared_handle1);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle1));
 
   TestDiscardableSharedMemory memory1(shared_handle1);
@@ -97,7 +97,7 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, Purge) {
 
   base::SharedMemoryHandle shared_handle2;
   manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), kDataSize, &shared_handle2);
+      base::GetCurrentProcessHandle(), kDataSize, 2, &shared_handle2);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle2));
 
   TestDiscardableSharedMemory memory2(shared_handle2);
@@ -152,7 +152,7 @@ TEST_F(HostDiscardableSharedMemoryManagerTest, EnforceMemoryPolicy) {
 
   base::SharedMemoryHandle shared_handle;
   manager_->AllocateLockedDiscardableSharedMemoryForChild(
-      base::GetCurrentProcessHandle(), kDataSize, &shared_handle);
+      base::GetCurrentProcessHandle(), kDataSize, 0, &shared_handle);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle));
 
   TestDiscardableSharedMemory memory(shared_handle);
