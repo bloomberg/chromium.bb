@@ -85,9 +85,7 @@ void WebSchedulerImpl::postLoadingTask(
 }
 
 void WebSchedulerImpl::shutdown() {
-  idle_task_runner_ = nullptr;
-  loading_task_runner_ = nullptr;
-  return renderer_scheduler_->Shutdown();
+  // TODO(rmcilroy): Delete this method once the blink side is removed.
 }
 
 }  // namespace content
