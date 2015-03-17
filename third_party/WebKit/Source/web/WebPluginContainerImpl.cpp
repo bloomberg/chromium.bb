@@ -61,7 +61,7 @@
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
-#include "core/plugins/PluginOcclusionSupport.h"
+#include "modules/plugins/PluginOcclusionSupport.h"
 #include "platform/HostWindow.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/PlatformGestureEvent.h"

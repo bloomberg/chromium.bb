@@ -18,12 +18,12 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef DOMPluginArray_h
-#define DOMPluginArray_h
+#ifndef DOMMimeTypeArray_h
+#define DOMMimeTypeArray_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/frame/DOMWindowProperty.h"
-#include "core/plugins/DOMPlugin.h"
+#include "modules/plugins/DOMMimeType.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -34,28 +34,26 @@ namespace blink {
 class LocalFrame;
 class PluginData;
 
-class DOMPluginArray final : public RefCountedWillBeGarbageCollected<DOMPluginArray>, public ScriptWrappable, public DOMWindowProperty {
+class DOMMimeTypeArray final : public RefCountedWillBeGarbageCollected<DOMMimeTypeArray>, public ScriptWrappable, public DOMWindowProperty {
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMPluginArray);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMMimeTypeArray);
 public:
-    static PassRefPtrWillBeRawPtr<DOMPluginArray> create(LocalFrame* frame)
+    static PassRefPtrWillBeRawPtr<DOMMimeTypeArray> create(LocalFrame* frame)
     {
-        return adoptRefWillBeNoop(new DOMPluginArray(frame));
+        return adoptRefWillBeNoop(new DOMMimeTypeArray(frame));
     }
 
     unsigned length() const;
-    PassRefPtrWillBeRawPtr<DOMPlugin> item(unsigned index);
-    PassRefPtrWillBeRawPtr<DOMPlugin> namedItem(const AtomicString& propertyName);
-
-    void refresh(bool reload);
+    PassRefPtrWillBeRawPtr<DOMMimeType> item(unsigned index);
+    PassRefPtrWillBeRawPtr<DOMMimeType> namedItem(const AtomicString& propertyName);
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit DOMPluginArray(LocalFrame*);
-    PluginData* pluginData() const;
+    explicit DOMMimeTypeArray(LocalFrame*);
+    PluginData* getPluginData() const;
 };
 
 } // namespace blink
 
-#endif // PluginArray_h
+#endif // MimeTypeArray_h

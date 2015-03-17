@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/plugins/NavigatorPlugins.h"
+#include "modules/plugins/NavigatorPlugins.h"
 
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "core/frame/Settings.h"
-#include "core/plugins/DOMMimeTypeArray.h"
-#include "core/plugins/DOMPluginArray.h"
+#include "modules/plugins/DOMMimeTypeArray.h"
+#include "modules/plugins/DOMPluginArray.h"
 
 namespace blink {
 

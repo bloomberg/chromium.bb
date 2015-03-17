@@ -17,7 +17,7 @@
  */
 
 #include "config.h"
-#include "core/plugins/DOMPlugin.h"
+#include "modules/plugins/DOMPlugin.h"
 
 #include "platform/plugins/PluginData.h"
 #include "wtf/text/AtomicString.h"

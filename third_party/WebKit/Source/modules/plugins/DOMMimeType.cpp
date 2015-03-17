@@ -17,12 +17,12 @@
  */
 
 #include "config.h"
-#include "core/plugins/DOMMimeType.h"
+#include "modules/plugins/DOMMimeType.h"
 
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Page.h"
-#include "core/plugins/DOMPlugin.h"
+#include "modules/plugins/DOMPlugin.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

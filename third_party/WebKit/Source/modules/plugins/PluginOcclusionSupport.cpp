@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/plugins/PluginOcclusionSupport.h"
+#include "modules/plugins/PluginOcclusionSupport.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"

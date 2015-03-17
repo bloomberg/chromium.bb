@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "core/plugins/DOMMimeTypeArray.h"
+#include "modules/plugins/DOMPluginArray.h"
 
 #include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
@@ -28,56 +28,65 @@
 
 namespace blink {
 
-DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
+DOMPluginArray::DOMPluginArray(LocalFrame* frame)
     : DOMWindowProperty(frame)
 {
 }
 
-DEFINE_TRACE(DOMMimeTypeArray)
+DEFINE_TRACE(DOMPluginArray)
 {
     DOMWindowProperty::trace(visitor);
 }
 
-unsigned DOMMimeTypeArray::length() const
+unsigned DOMPluginArray::length() const
 {
-    PluginData* data = getPluginData();
+    PluginData* data = pluginData();
     if (!data)
         return 0;
-    return data->mimes().size();
+    return data->plugins().size();
 }
 
-PassRefPtrWillBeRawPtr<DOMMimeType> DOMMimeTypeArray::item(unsigned index)
+PassRefPtrWillBeRawPtr<DOMPlugin> DOMPluginArray::item(unsigned index)
 {
-    PluginData* data = getPluginData();
+    PluginData* data = pluginData();
     if (!data)
         return nullptr;
-    const Vector<MimeClassInfo>& mimes = data->mimes();
-    if (index >= mimes.size())
+    const Vector<PluginInfo>& plugins = data->plugins();
+    if (index >= plugins.size())
         return nullptr;
-    return DOMMimeType::create(data, m_frame, index);
+    return DOMPlugin::create(data, m_frame, index);
 }
 
-PassRefPtrWillBeRawPtr<DOMMimeType> DOMMimeTypeArray::namedItem(const AtomicString& propertyName)
+PassRefPtrWillBeRawPtr<DOMPlugin> DOMPluginArray::namedItem(const AtomicString& propertyName)
 {
-    PluginData *data = getPluginData();
+    PluginData* data = pluginData();
     if (!data)
         return nullptr;
-    const Vector<MimeClassInfo>& mimes = data->mimes();
-    for (unsigned i = 0; i < mimes.size(); ++i) {
-        if (mimes[i].type == propertyName)
-            return DOMMimeType::create(data, m_frame, i);
+    const Vector<PluginInfo>& plugins = data->plugins();
+    for (unsigned i = 0; i < plugins.size(); ++i) {
+        if (plugins[i].name == propertyName)
+            return DOMPlugin::create(data, m_frame, i);
     }
     return nullptr;
 }
 
-PluginData* DOMMimeTypeArray::getPluginData() const
+void DOMPluginArray::refresh(bool reload)
+{
+    if (!m_frame)
+        return;
+    Page::refreshPlugins();
+    if (reload)
+        m_frame->reload(NormalReload, ClientRedirect);
+}
+
+PluginData* DOMPluginArray::pluginData() const
 {
     if (!m_frame)
         return nullptr;
-    Page* p = m_frame->page();
-    if (!p)
+    Page* page = m_frame->page();
+    if (!page)
         return nullptr;
-    return p->pluginData();
+    return page->pluginData();
 }
 
 } // namespace blink
