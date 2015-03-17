@@ -343,6 +343,7 @@ void AutofillOptionsHandler::GetLocalizedValues(
     { "editAddressTitle", IDS_AUTOFILL_EDIT_ADDRESS_CAPTION },
     { "addCreditCardTitle", IDS_AUTOFILL_ADD_CREDITCARD_CAPTION },
     { "editCreditCardTitle", IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION },
+    { "autofillWalletOption", IDS_AUTOFILL_USE_WALLET_DATA },
 #if defined(OS_MACOSX)
     { "auxiliaryProfilesEnabled", IDS_AUTOFILL_USE_MAC_ADDRESS_BOOK },
 #endif  // defined(OS_MACOSX)
