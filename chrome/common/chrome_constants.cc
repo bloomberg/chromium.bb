@@ -137,6 +137,8 @@ const base::FilePath::CharType kSystemProfileDir[] = FPL("System Profile");
 const wchar_t kBrowserResourcesDll[] = L"chrome.dll";
 
 // filenames
+const base::FilePath::CharType kAffiliationDatabaseFileName[] =
+    FPL("Affiliation Database");
 const base::FilePath::CharType kCacheDirname[] = FPL("Cache");
 const base::FilePath::CharType kChannelIDFilename[] = FPL("Origin Bound Certs");
 const base::FilePath::CharType kCookieFilename[] = FPL("Cookies");

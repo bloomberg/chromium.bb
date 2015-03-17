@@ -63,6 +63,7 @@ extern const base::FilePath::CharType kSystemProfileDir[];
 extern const wchar_t kBrowserResourcesDll[];
 
 // filenames
+extern const base::FilePath::CharType kAffiliationDatabaseFileName[];
 extern const base::FilePath::CharType kCacheDirname[];
 extern const base::FilePath::CharType kChannelIDFilename[];
 extern const base::FilePath::CharType kCookieFilename[];

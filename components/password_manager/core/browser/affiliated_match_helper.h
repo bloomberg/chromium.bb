@@ -52,7 +52,8 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   typedef base::Callback<void(const std::vector<std::string>&)>
       AffiliatedRealmsCallback;
 
-  // The |password_store| must outlive |this|.
+  // The |password_store| must outlive |this|. Both arguments must be non-NULL,
+  // except in tests which do not Initialize() the object.
   AffiliatedMatchHelper(PasswordStore* password_store,
                         scoped_ptr<AffiliationService> affiliation_service);
   ~AffiliatedMatchHelper() override;
@@ -63,7 +64,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // Retrieves realms of Android applications affiliated with the realm of the
   // |observed_form| if it is web-based. Otherwise, yields the empty list. The
   // |result_callback| will be invoked in both cases, on the same thread.
-  void GetAffiliatedAndroidRealms(
+  virtual void GetAffiliatedAndroidRealms(
       const autofill::PasswordForm& observed_form,
       const AffiliatedRealmsCallback& result_callback);
 
@@ -106,7 +107,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   void OnGetPasswordStoreResults(
       ScopedVector<autofill::PasswordForm> results) override;
 
-  PasswordStore* password_store_;
+  PasswordStore* const password_store_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_waiting_;
 
   // Being the sole consumer of AffiliationService, |this| owns the service.

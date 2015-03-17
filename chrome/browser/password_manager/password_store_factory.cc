@@ -18,6 +18,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/os_crypt/os_crypt_switches.h"
+#include "components/password_manager/core/browser/affiliated_match_helper.h"
+#include "components/password_manager/core/browser/affiliation_service.h"
+#include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
@@ -272,6 +275,24 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
           sync_start_util::GetFlareForSyncableService(profile->GetPath()))) {
     NOTREACHED() << "Could not initialize password manager.";
     return nullptr;
+  }
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (password_manager::IsAffiliationBasedMatchingEnabled(*command_line)) {
+    // The PasswordStore is so far the only consumer of the AffiliationService,
+    // therefore the service is owned by the AffiliatedMatchHelper, which in
+    // turn is owned by the PasswordStore.
+    // TODO(engedy): Double-check which request context we want.
+    scoped_ptr<password_manager::AffiliationService> affiliation_service(
+        new password_manager::AffiliationService(db_thread_runner));
+    affiliation_service->Initialize(
+        profile->GetRequestContext(),
+        profile->GetPath().Append(chrome::kAffiliationDatabaseFileName));
+    scoped_ptr<password_manager::AffiliatedMatchHelper> affiliated_match_helper(
+        new password_manager::AffiliatedMatchHelper(
+            ps.get(), affiliation_service.Pass()));
+    affiliated_match_helper->Initialize();
+    ps->SetAffiliatedMatchHelper(affiliated_match_helper.Pass());
   }
 
   return new PasswordStoreService(ps);

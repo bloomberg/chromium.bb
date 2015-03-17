@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// The passwords in the tests below are all empty because PasswordStoreDefault
+// does not store the actual passwords on OS X (they are stored in the Keychain
+// instead). We could special-case it, but it is easier to just have empty
+// passwords. This will not be needed anymore if crbug.com/466638 is fixed.
+
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
@@ -9,6 +14,8 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
+#include "components/password_manager/core/browser/affiliated_match_helper.h"
+#include "components/password_manager/core/browser/affiliation_service.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_default.h"
@@ -25,6 +32,16 @@ namespace password_manager {
 
 namespace {
 
+const char kTestWebRealm1[] = "https://one.example.com/";
+const char kTestWebOrigin1[] = "https://one.example.com/origin";
+const char kTestWebRealm2[] = "https://two.example.com/";
+const char kTestWebOrigin2[] = "https://two.example.com/origin";
+const char kTestAndroidRealm1[] = "android://hash@com.example.android/";
+const char kTestAndroidRealm2[] = "android://hash@com.example.two.android/";
+const char kTestAndroidRealm3[] = "android://hash@com.example.three.android/";
+const char kTestUnrelatedAndroidRealm[] =
+    "android://hash@com.notexample.android/";
+
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MOCK_METHOD1(OnGetPasswordStoreResultsConstRef,
@@ -34,6 +51,38 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
   void OnGetPasswordStoreResults(ScopedVector<PasswordForm> results) override {
     OnGetPasswordStoreResultsConstRef(results.get());
   }
+};
+
+class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
+ public:
+  MockAffiliatedMatchHelper()
+      : AffiliatedMatchHelper(nullptr,
+                              make_scoped_ptr<AffiliationService>(nullptr)) {}
+
+  // Expects GetAffiliatedAndroidRealms() to be called with the
+  // |expected_observed_form|, and will cause the result callback supplied to
+  // GetAffiliatedAndroidRealms() to be invoked with |results_to_return|.
+  void ExpectCallToGetAffiliatedAndroidRealms(
+      const autofill::PasswordForm& expected_observed_form,
+      const std::vector<std::string>& results_to_return) {
+    EXPECT_CALL(*this,
+                OnGetAffiliatedAndroidRealmsCalled(expected_observed_form))
+        .WillOnce(testing::Return(results_to_return));
+  }
+
+ private:
+  MOCK_METHOD1(OnGetAffiliatedAndroidRealmsCalled,
+               std::vector<std::string>(const PasswordForm&));
+
+  void GetAffiliatedAndroidRealms(
+      const autofill::PasswordForm& observed_form,
+      const AffiliatedRealmsCallback& result_callback) override {
+    std::vector<std::string> affiliated_android_realms =
+        OnGetAffiliatedAndroidRealmsCalled(observed_form);
+    result_callback.Run(affiliated_android_realms);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MockAffiliatedMatchHelper);
 };
 
 class StartSyncFlareMock {
@@ -73,9 +122,6 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
   store->Init(syncer::SyncableService::StartSyncFlare());
 
   const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC
-  // The passwords are all empty because PasswordStoreDefault doesn't store the
-  // actual passwords on OS X (they're stored in the Keychain instead). We could
-  // special-case it, but it's easier to just have empty passwords.
   static const PasswordFormData form_data[] = {
     // A form on https://www.google.com/ older than the cutoff. Will be ignored.
     { PasswordForm::SCHEME_HTML,
@@ -205,6 +251,183 @@ TEST_F(PasswordStoreTest, StartSyncFlare) {
     store->AddLogin(form);
     base::MessageLoop::current()->RunUntilIdle();
   }
+  store->Shutdown();
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+// When no Android applications are actually affiliated with the realm of the
+// observed form, GetLoginsWithAffiliations() should still return the exact and
+// PSL matching results, but not any stored Android credentials.
+TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
+  /* clang-format off */
+  static const PasswordFormData kTestCredentials[] = {
+      // Credential that is an exact match of the observed form.
+      {PasswordForm::SCHEME_HTML,
+       kTestWebRealm1,
+       kTestWebOrigin1,
+       "", L"", L"",  L"",
+       L"username_value_1",
+       L"", true, true, 1},
+      // Credential that is a PSL match of the observed form.
+      {PasswordForm::SCHEME_HTML,
+       kTestWebRealm2,
+       kTestWebOrigin2,
+       "", L"", L"",  L"",
+       L"username_value_2",
+       L"", true, true, 1},
+      // Credential for an unrelated Android application.
+      {PasswordForm::SCHEME_HTML,
+       kTestUnrelatedAndroidRealm,
+       "", "", L"", L"", L"",
+       L"username_value_3",
+       L"", true, true, 1}};
+  /* clang-format on */
+
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
+  store->Init(syncer::SyncableService::StartSyncFlare());
+
+  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
+  store->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+
+  ScopedVector<PasswordForm> all_credentials;
+  for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
+    all_credentials.push_back(
+        CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
+    store->AddLogin(*all_credentials.back());
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
+  PasswordForm observed_form;
+  observed_form.scheme = PasswordForm::SCHEME_HTML;
+  observed_form.origin = GURL(kTestWebOrigin1);
+  observed_form.ssl_valid = true;
+  observed_form.signon_realm = kTestWebRealm1;
+
+  MockPasswordStoreConsumer mock_consumer;
+  ScopedVector<PasswordForm> expected_results;
+  expected_results.push_back(new PasswordForm(*all_credentials[0]));
+  expected_results.push_back(new PasswordForm(*all_credentials[1]));
+  for (PasswordForm* result : expected_results) {
+    if (result->signon_realm == observed_form.signon_realm)
+      continue;
+    result->original_signon_realm = result->signon_realm;
+    result->origin = observed_form.origin;
+    result->signon_realm = observed_form.signon_realm;
+  }
+
+  std::vector<std::string> no_affiliated_android_realms;
+  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
+      observed_form, no_affiliated_android_realms);
+
+  EXPECT_CALL(mock_consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  ContainsSamePasswordForms(expected_results.get())));
+  store->GetLogins(observed_form, PasswordStore::ALLOW_PROMPT, &mock_consumer);
+  store->Shutdown();
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+// There are 3 Android applications affiliated with the realm of the observed
+// form, with the PasswordStore having credentials for two of these (even two
+// credentials for one). GetLoginsWithAffiliations() should return the exact,
+// and PSL matching credentials, and the credentials for these two Android
+// applications, but not for the unaffiliated Android application.
+TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
+  /* clang-format off */
+  static const PasswordFormData kTestCredentials[] = {
+      // Credential that is an exact match of the observed form.
+      {PasswordForm::SCHEME_HTML,
+       kTestWebRealm1,
+       kTestWebOrigin1,
+       "", L"", L"",  L"",
+       L"username_value_1",
+       L"", true, true, 1},
+      // Credential that is a PSL match of the observed form.
+      {PasswordForm::SCHEME_HTML,
+       kTestWebRealm2,
+       kTestWebOrigin2,
+       "", L"", L"",  L"",
+       L"username_value_2",
+       L"", true, true, 1},
+      // Credential for an Android application affiliated with the realm of the
+      // observed from.
+      {PasswordForm::SCHEME_HTML,
+       kTestAndroidRealm1,
+       "", "", L"", L"", L"",
+       L"username_value_3",
+       L"", true, true, 1},
+      // Second credential for the same Android application.
+      {PasswordForm::SCHEME_HTML,
+       kTestAndroidRealm1,
+       "", "", L"", L"", L"",
+       L"username_value_3b",
+       L"", true, true, 1},
+      // Credential for another Android application affiliated with the realm
+      // of the observed from.
+      {PasswordForm::SCHEME_HTML,
+       kTestAndroidRealm2,
+       "", "", L"", L"", L"",
+       L"username_value_4",
+       L"", true, true, 1},
+      // Credential for an unrelated Android application.
+      {PasswordForm::SCHEME_HTML,
+       kTestUnrelatedAndroidRealm,
+       "", "", L"", L"", L"",
+       L"username_value_5",
+       L"", true, true, 1}};
+  /* clang-format on */
+
+  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
+      base::MessageLoopProxy::current(), base::MessageLoopProxy::current(),
+      make_scoped_ptr(new LoginDatabase(test_login_db_file_path()))));
+  store->Init(syncer::SyncableService::StartSyncFlare());
+
+  MockAffiliatedMatchHelper* mock_helper = new MockAffiliatedMatchHelper;
+  store->SetAffiliatedMatchHelper(make_scoped_ptr(mock_helper));
+
+  ScopedVector<PasswordForm> all_credentials;
+  for (size_t i = 0; i < arraysize(kTestCredentials); ++i) {
+    all_credentials.push_back(
+        CreatePasswordFormFromDataForTesting(kTestCredentials[i]));
+    store->AddLogin(*all_credentials.back());
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
+  PasswordForm observed_form;
+  observed_form.scheme = PasswordForm::SCHEME_HTML;
+  observed_form.origin = GURL(kTestWebOrigin1);
+  observed_form.ssl_valid = true;
+  observed_form.signon_realm = kTestWebRealm1;
+
+  MockPasswordStoreConsumer mock_consumer;
+  ScopedVector<PasswordForm> expected_results;
+  expected_results.push_back(new PasswordForm(*all_credentials[0]));
+  expected_results.push_back(new PasswordForm(*all_credentials[1]));
+  expected_results.push_back(new PasswordForm(*all_credentials[2]));
+  expected_results.push_back(new PasswordForm(*all_credentials[3]));
+  expected_results.push_back(new PasswordForm(*all_credentials[4]));
+  for (PasswordForm* result : expected_results) {
+    if (result->signon_realm == observed_form.signon_realm)
+      continue;
+    result->original_signon_realm = result->signon_realm;
+    result->signon_realm = observed_form.signon_realm;
+    if (!result->origin.is_empty())
+      result->origin = observed_form.origin;
+  }
+
+  std::vector<std::string> affiliated_android_realms;
+  affiliated_android_realms.push_back(kTestAndroidRealm1);
+  affiliated_android_realms.push_back(kTestAndroidRealm2);
+  affiliated_android_realms.push_back(kTestAndroidRealm3);
+  mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
+      observed_form, affiliated_android_realms);
+
+  EXPECT_CALL(mock_consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  ContainsSamePasswordForms(expected_results.get())));
+  store->GetLogins(observed_form, PasswordStore::ALLOW_PROMPT, &mock_consumer);
   store->Shutdown();
   base::MessageLoop::current()->RunUntilIdle();
 }

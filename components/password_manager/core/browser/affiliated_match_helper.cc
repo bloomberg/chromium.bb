@@ -39,15 +39,16 @@ AffiliatedMatchHelper::AffiliatedMatchHelper(
       task_runner_for_waiting_(base::ThreadTaskRunnerHandle::Get()),
       affiliation_service_(affiliation_service.Pass()),
       weak_ptr_factory_(this) {
-  DCHECK(affiliation_service_);
-  DCHECK(password_store_);
 }
 
 AffiliatedMatchHelper::~AffiliatedMatchHelper() {
-  password_store_->RemoveObserver(this);
+  if (password_store_)
+    password_store_->RemoveObserver(this);
 }
 
 void AffiliatedMatchHelper::Initialize() {
+  DCHECK(password_store_);
+  DCHECK(affiliation_service_);
   task_runner_for_waiting_->PostDelayedTask(
       FROM_HERE, base::Bind(&AffiliatedMatchHelper::DoDeferredInitialization,
                             weak_ptr_factory_.GetWeakPtr()),
