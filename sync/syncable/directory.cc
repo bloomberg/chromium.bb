@@ -338,7 +338,7 @@ int Directory::GetPositionIndex(
     BaseTransaction* trans,
     EntryKernel* kernel) const {
   const OrderedChildSet* siblings =
-      kernel_->parent_child_index.GetChildren(kernel->ref(PARENT_ID));
+      kernel_->parent_child_index.GetSiblings(kernel);
 
   OrderedChildSet::const_iterator it = siblings->find(kernel);
   return std::distance(siblings->begin(), it);
@@ -1364,13 +1364,11 @@ syncable::Id Directory::GetPredecessorId(EntryKernel* e) {
   ScopedKernelLock lock(this);
 
   DCHECK(ParentChildIndex::ShouldInclude(e));
-  const OrderedChildSet* children =
-      kernel_->parent_child_index.GetChildren(e->ref(PARENT_ID));
-  DCHECK(children && !children->empty());
-  OrderedChildSet::const_iterator i = children->find(e);
-  DCHECK(i != children->end());
+  const OrderedChildSet* siblings = kernel_->parent_child_index.GetSiblings(e);
+  OrderedChildSet::const_iterator i = siblings->find(e);
+  DCHECK(i != siblings->end());
 
-  if (i == children->begin()) {
+  if (i == siblings->begin()) {
     return Id();
   } else {
     i--;
@@ -1382,14 +1380,12 @@ syncable::Id Directory::GetSuccessorId(EntryKernel* e) {
   ScopedKernelLock lock(this);
 
   DCHECK(ParentChildIndex::ShouldInclude(e));
-  const OrderedChildSet* children =
-      kernel_->parent_child_index.GetChildren(e->ref(PARENT_ID));
-  DCHECK(children && !children->empty());
-  OrderedChildSet::const_iterator i = children->find(e);
-  DCHECK(i != children->end());
+  const OrderedChildSet* siblings = kernel_->parent_child_index.GetSiblings(e);
+  OrderedChildSet::const_iterator i = siblings->find(e);
+  DCHECK(i != siblings->end());
 
   i++;
-  if (i == children->end()) {
+  if (i == siblings->end()) {
     return Id();
   } else {
     return (*i)->ref(ID);

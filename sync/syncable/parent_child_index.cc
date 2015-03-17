@@ -120,8 +120,10 @@ bool ParentChildIndex::Contains(EntryKernel *e) const {
   return children->count(e) > 0;
 }
 
-const OrderedChildSet* ParentChildIndex::GetChildren(const syncable::Id& id) {
-  ParentChildrenMap::iterator parent = parent_children_map_.find(id);
+const OrderedChildSet* ParentChildIndex::GetChildren(const Id& id) const {
+  DCHECK(!id.IsNull());
+
+  ParentChildrenMap::const_iterator parent = parent_children_map_.find(id);
   if (parent == parent_children_map_.end()) {
     return NULL;
   }
@@ -129,6 +131,17 @@ const OrderedChildSet* ParentChildIndex::GetChildren(const syncable::Id& id) {
   // A successful lookup implies at least some children exist.
   DCHECK(!parent->second->empty());
   return parent->second;
+}
+
+const OrderedChildSet* ParentChildIndex::GetChildren(EntryKernel* e) const {
+  return GetChildren(e->ref(ID));
+}
+
+const OrderedChildSet* ParentChildIndex::GetSiblings(EntryKernel* e) const {
+  DCHECK(Contains(e));
+  const OrderedChildSet* siblings = GetChildren(GetParentId(e));
+  DCHECK(siblings && !siblings->empty());
+  return siblings;
 }
 
 const Id& ParentChildIndex::GetParentId(EntryKernel* e) const {

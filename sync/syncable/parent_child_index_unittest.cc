@@ -389,9 +389,12 @@ TEST_F(ParentChildIndexTest, NodesWithImplicitParentId) {
   EXPECT_TRUE(index_.Contains(p2));
 
   // Items should appear under the type root
-  const OrderedChildSet* children = index_.GetChildren(type_root_id);
+  const OrderedChildSet* children = index_.GetChildren(type_root);
   ASSERT_TRUE(children);
   EXPECT_EQ(2UL, children->size());
+
+  EXPECT_EQ(2UL, index_.GetSiblings(p1)->size());
+  EXPECT_EQ(2UL, index_.GetSiblings(p2)->size());
 
   index_.Remove(p1);
 
@@ -404,7 +407,7 @@ TEST_F(ParentChildIndexTest, NodesWithImplicitParentId) {
   index_.Remove(p2);
 
   EXPECT_FALSE(index_.Contains(p2));
-  children = index_.GetChildren(type_root_id);
+  children = index_.GetChildren(type_root);
   ASSERT_EQ(nullptr, children);
 
   index_.Remove(type_root);

@@ -1961,6 +1961,51 @@ TEST_F(SyncableDirectoryTest, MutableEntry_ImplicitParentId) {
   }
 }
 
+// Verify that the successor / predecessor navigation still works for
+// directory entries with unset Parent IDs.
+TEST_F(SyncableDirectoryTest, MutableEntry_ImplicitParentId_Siblings) {
+  TestIdFactory id_factory;
+  const Id root_id = TestIdFactory::root();
+  const Id p_root_id = id_factory.NewServerId();
+  const Id item1_id = id_factory.FromNumber(1);
+  const Id item2_id = id_factory.FromNumber(2);
+
+  // Create type root folder for PREFERENCES.
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry p_root(&trans, CREATE, PREFERENCES, root_id, "P");
+    ASSERT_TRUE(p_root.good());
+    p_root.PutIsDir(true);
+    p_root.PutId(p_root_id);
+    p_root.PutBaseVersion(1);
+  }
+
+  // Create two PREFERENCES entries with implicit parent nodes.
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+    MutableEntry item1(&trans, CREATE, PREFERENCES, "P1");
+    item1.PutBaseVersion(1);
+    item1.PutId(item1_id);
+    MutableEntry item2(&trans, CREATE, PREFERENCES, "P2");
+    item2.PutBaseVersion(1);
+    item2.PutId(item2_id);
+  }
+
+  // Verify GetSuccessorId and GetPredecessorId calls for these items.
+  // Please note that items are sorted according to their ID, e.g.
+  // item1 first, then item2.
+  {
+    ReadTransaction trans(FROM_HERE, dir().get());
+    Entry item1(&trans, GET_BY_ID, item1_id);
+    EXPECT_EQ(Id(), item1.GetPredecessorId());
+    EXPECT_EQ(item2_id, item1.GetSuccessorId());
+
+    Entry item2(&trans, GET_BY_ID, item2_id);
+    EXPECT_EQ(item1_id, item2.GetPredecessorId());
+    EXPECT_EQ(Id(), item2.GetSuccessorId());
+  }
+}
+
 }  // namespace syncable
 
 }  // namespace syncer

@@ -49,7 +49,14 @@ class SYNC_EXPORT_PRIVATE ParentChildIndex {
 
   // Returns all children of the entry with the given Id.  Returns NULL if the
   // node has no children or the Id does not identify a valid directory node.
-  const OrderedChildSet* GetChildren(const Id& id);
+  const OrderedChildSet* GetChildren(const Id& id) const;
+
+  // Returns all children of the entry.  Returns NULL if the node has no
+  // children.
+  const OrderedChildSet* GetChildren(EntryKernel* e) const;
+
+  // Returns all siblings of the entry.
+  const OrderedChildSet* GetSiblings(EntryKernel* e) const;
 
  private:
   friend class ParentChildIndexTest;
