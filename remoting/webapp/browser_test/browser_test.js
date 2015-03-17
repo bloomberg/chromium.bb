@@ -249,7 +249,7 @@ browserTest.enterPIN = function(pin, opt_expectError) {
     if (opt_expectError) {
       return browserTest.expectConnectionError(
           remoting.DesktopConnectedView.Mode.ME2ME,
-          remoting.Error.Tag.INVALID_ACCESS_CODE);
+          [remoting.Error.Tag.INVALID_ACCESS_CODE]);
     } else {
       return browserTest.expectConnected();
     }
@@ -258,10 +258,10 @@ browserTest.enterPIN = function(pin, opt_expectError) {
 
 /**
  * @param {remoting.DesktopConnectedView.Mode} connectionMode
- * @param {string} errorTag
+ * @param {Array<remoting.Error.Tag>} errorTags
  * @return {Promise}
  */
-browserTest.expectConnectionError = function(connectionMode, errorTag) {
+browserTest.expectConnectionError = function(connectionMode, errorTags) {
   var AppMode = remoting.AppMode;
   var Timeout = browserTest.Timeout;
 
@@ -285,12 +285,14 @@ browserTest.expectConnectionError = function(connectionMode, errorTag) {
     /** @type {Element} */
     var errorDiv = document.getElementById('connect-error-message');
     var actual = errorDiv.innerText;
-    var expected = l10n.getTranslationOrError(errorTag);
+    var expected = errorTags.map(function(/** string */errorTag) {
+      return l10n.getTranslationOrError(errorTag);
+    });
     browserTest.clickOnControl(finishButton);
 
-    if (actual != expected) {
-      return Promise.reject('Unexpected failure. actual:' + actual +
-                     ' expected:' + expected);
+    if (expected.indexOf(actual) === -1) {
+      return Promise.reject('Unexpected failure. actual: ' + actual +
+                            ' expected: ' + expected.join(','));
     }
   });
 

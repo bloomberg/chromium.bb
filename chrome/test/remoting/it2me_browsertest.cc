@@ -42,6 +42,35 @@ IN_PROC_BROWSER_TEST_F(It2MeBrowserTest, MANUAL_Connect) {
   Cleanup();
 }
 
+IN_PROC_BROWSER_TEST_F(It2MeBrowserTest, MANUAL_CancelShare) {
+  content::WebContents* helpee_content = SetUpTest();
+  LoadScript(helpee_content, FILE_PATH_LITERAL("it2me_browser_test.js"));
+  std::string access_code = GetAccessCode(helpee_content);
+  RunJavaScriptTest(helpee_content, "CancelShare", "{}");
+
+  content::WebContents* helper_content = SetUpHelperInstance();
+  RunJavaScriptTest(helper_content, "InvalidAccessCode", "{"
+    "accessCode: '" + access_code + "'"
+  "}");
+  Cleanup();
+}
+
+IN_PROC_BROWSER_TEST_F(It2MeBrowserTest, MANUAL_VerifyAccessCodeNonReusable) {
+  content::WebContents* helpee_content = SetUpTest();
+  LoadScript(helpee_content, FILE_PATH_LITERAL("it2me_browser_test.js"));
+  std::string access_code = GetAccessCode(helpee_content);
+
+  content::WebContents* helper_content = SetUpHelperInstance();
+  RunJavaScriptTest(helper_content, "ConnectIt2Me", "{"
+    "accessCode: '" + access_code + "'"
+  "}");
+
+  RunJavaScriptTest(helper_content, "InvalidAccessCode", "{"
+    "accessCode: '" + access_code + "'"
+  "}");
+  Cleanup();
+}
+
 IN_PROC_BROWSER_TEST_F(It2MeBrowserTest, MANUAL_InvalidAccessCode) {
   content::WebContents* helpee_content = SetUpTest();
   LoadScript(helpee_content, FILE_PATH_LITERAL("it2me_browser_test.js"));

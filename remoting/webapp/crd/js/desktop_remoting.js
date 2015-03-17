@@ -259,11 +259,8 @@ remoting.DesktopRemoting.prototype.handleDisconnected = function() {
  */
 remoting.DesktopRemoting.prototype.handleConnectionFailed = function(
     connector, error) {
-  /** @type {remoting.DesktopRemoting} */
   var that = this;
-
-  /** @param {boolean} success */
-  var onHostListRefresh = function(success) {
+  var onHostListRefresh = function(/** boolean */ success) {
     if (success) {
       var host = remoting.hostList.getHostForId(connector.getHostId());
       if (host) {
@@ -274,9 +271,12 @@ remoting.DesktopRemoting.prototype.handleConnectionFailed = function(
     that.handleError(error);
   };
 
+  var mode = this.app_.getSessionConnector().getConnectionMode();
   if (error.hasTag(remoting.Error.Tag.HOST_IS_OFFLINE) &&
-      that.refreshHostJidIfOffline_) {
-    that.refreshHostJidIfOffline_ = false;
+      mode === remoting.DesktopConnectedView.Mode.ME2ME &&
+      this.refreshHostJidIfOffline_) {
+    this.refreshHostJidIfOffline_ = false;
+
     // The plugin will be re-created when the host finished refreshing
     remoting.hostList.refresh(onHostListRefresh);
   } else {

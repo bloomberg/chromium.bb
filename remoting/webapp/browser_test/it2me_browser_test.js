@@ -64,9 +64,10 @@ browserTest.InvalidAccessCode.prototype.run = function(data) {
   browserTest.ConnectIt2Me.clickOnAccessButton().then(function() {
     document.getElementById('access-code-entry').value = data.accessCode;
     browserTest.clickOnControl('connect-button');
+    var ErrorTag = remoting.Error.Tag;
     return browserTest.expectConnectionError(
         remoting.DesktopConnectedView.Mode.IT2ME,
-        remoting.Error.Tag.INVALID_ACCESS_CODE);
+        [ErrorTag.INVALID_ACCESS_CODE, ErrorTag.HOST_IS_OFFLINE]);
   }).then(function() {
     browserTest.pass();
   }, function(/** * */reason) {
@@ -97,7 +98,19 @@ browserTest.GetAccessCode.prototype.run = function() {
         Number.isInteger(numericAccessCode) && numericAccessCode > 0,
         "The access code should be a positive integer.");
     browserTest.pass();
-  }, function(/** * */reason) {
-    browserTest.fail(/** @type {Error} */(reason));
+  }).catch(function(/** Error */ reason) {
+    browserTest.fail(reason);
+  });
+};
+
+/** @constructor */
+browserTest.CancelShare = function() {};
+
+browserTest.CancelShare.prototype.run = function() {
+  browserTest.clickOnControl('cancel-share-button');
+  browserTest.onUIMode(remoting.AppMode.HOST_SHARE_FINISHED).then(function() {
+    browserTest.pass();
+  }).catch(function(/** Error */ reason) {
+    browserTest.fail(reason);
   });
 };
