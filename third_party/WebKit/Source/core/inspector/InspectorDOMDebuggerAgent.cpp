@@ -98,6 +98,7 @@ InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent()
 {
 #if !ENABLE(OILPAN)
     ASSERT(!m_debuggerAgent);
+    ASSERT(!m_domAgent);
     ASSERT(!m_instrumentingAgents->inspectorDOMDebuggerAgent());
 #endif
 }
@@ -145,6 +146,8 @@ void InspectorDOMDebuggerAgent::discardAgent()
 {
     m_debuggerAgent->setListener(nullptr);
     m_debuggerAgent = nullptr;
+    m_domAgent->setListener(nullptr);
+    m_domAgent = nullptr;
 }
 
 void InspectorDOMDebuggerAgent::setEventListenerBreakpoint(ErrorString* error, const String& eventName, const String* targetName)
