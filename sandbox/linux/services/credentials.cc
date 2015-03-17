@@ -120,6 +120,7 @@ int LinuxCapabilityToKernelValue(LinuxCapability cap) {
   }
 
   LOG(FATAL) << "Invalid LinuxCapability: " << static_cast<int>(cap);
+  return 0;
 }
 
 }  // namespace.
