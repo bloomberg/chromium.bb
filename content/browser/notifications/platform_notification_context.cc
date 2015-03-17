@@ -114,6 +114,36 @@ void PlatformNotificationContext::DoWriteNotificationData(
       base::Bind(callback, false /* success */, 0 /* notification_id */));
 }
 
+void PlatformNotificationContext::DeleteNotificationData(
+    int64_t notification_id,
+    const GURL& origin,
+    const DeleteResultCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  LazyInitialize(
+       base::Bind(&PlatformNotificationContext::DoDeleteNotificationData,
+                  this, notification_id, origin, callback),
+       base::Bind(callback, false /* success */));
+}
+
+void PlatformNotificationContext::DoDeleteNotificationData(
+    int64_t notification_id,
+    const GURL& origin,
+    const DeleteResultCallback& callback) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+  NotificationDatabase::Status status =
+      database_->DeleteNotificationData(notification_id, origin);
+
+  const bool success = status == NotificationDatabase::STATUS_OK;
+
+  // TODO(peter): Record UMA on |status| for reading from the database.
+  // TODO(peter): Do the DeleteAndStartOver dance for STATUS_ERROR_CORRUPTED.
+
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(callback, success));
+}
+
 void PlatformNotificationContext::LazyInitialize(
     const base::Closure& success_closure,
     const base::Closure& failure_closure) {

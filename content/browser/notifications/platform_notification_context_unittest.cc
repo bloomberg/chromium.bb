@@ -32,6 +32,11 @@ class PlatformNotificationContextTest : public ::testing::Test {
     notification_id_ = notification_id;
   }
 
+  // Callback to provide when deleting notification data from the database.
+  void DidDeleteNotificationData(bool success) {
+    success_ = success;
+  }
+
  protected:
   // Creates a new PlatformNotificationContext instance. When using this method,
   // the underlying database will always be created in memory. The current
@@ -113,6 +118,67 @@ TEST_F(PlatformNotificationContextTest, WriteReadNotification) {
 
   const NotificationDatabaseData& read_database_data = database_data();
   EXPECT_EQ(notification_database_data.origin, read_database_data.origin);
+}
+
+TEST_F(PlatformNotificationContextTest, DeleteInvalidNotification) {
+  scoped_refptr<PlatformNotificationContext> context =
+      CreatePlatformNotificationContext();
+
+  context->DeleteNotificationData(
+      42 /* notification_id */,
+      GURL("https://example.com"),
+      base::Bind(&PlatformNotificationContextTest::DidDeleteNotificationData,
+                 base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+
+  // The notification may not have existed, but since the goal of deleting data
+  // is to make sure that it's gone, the goal has been satisfied. As such,
+  // deleting a non-existent notification is considered to be a success.
+  EXPECT_TRUE(success());
+}
+
+TEST_F(PlatformNotificationContextTest, DeleteNotification) {
+  scoped_refptr<PlatformNotificationContext> context =
+      CreatePlatformNotificationContext();
+
+  GURL origin("https://example.com");
+  NotificationDatabaseData notification_database_data;
+
+  context->WriteNotificationData(
+      origin,
+      notification_database_data,
+      base::Bind(&PlatformNotificationContextTest::DidWriteNotificationData,
+                 base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+
+  // The write operation should have succeeded with a notification id.
+  ASSERT_TRUE(success());
+  EXPECT_GT(notification_id(), 0);
+
+  context->DeleteNotificationData(
+      notification_id(),
+      origin,
+      base::Bind(&PlatformNotificationContextTest::DidDeleteNotificationData,
+                 base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+
+  // The notification existed, so it should have been removed successfully.
+  ASSERT_TRUE(success());
+
+  context->ReadNotificationData(
+      notification_id(),
+      origin,
+      base::Bind(&PlatformNotificationContextTest::DidReadNotificationData,
+                 base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+
+  // The notification was removed, so we shouldn't be able to read it from
+  // the database anymore.
+  EXPECT_FALSE(success());
 }
 
 }  // namespace content

@@ -44,6 +44,8 @@ class CONTENT_EXPORT PlatformNotificationContext
       base::Callback<void(bool /* success */,
                           int64_t /* notification_id */)>;
 
+  using DeleteResultCallback = base::Callback<void(bool /* success */)>;
+
   // Reads the data associated with |notification_id| belonging to |origin|
   // from the database. |callback| will be invoked with the success status
   // and a reference to the notification database data when completed.
@@ -57,6 +59,13 @@ class CONTENT_EXPORT PlatformNotificationContext
   void WriteNotificationData(const GURL& origin,
                              const NotificationDatabaseData& database_data,
                              const WriteResultCallback& callback);
+
+  // Deletes all data associated with |notification_id| belonging to |origin|
+  // from the database. |callback| will be invoked with the success status
+  // when the operation has completed.
+  void DeleteNotificationData(int64_t notification_id,
+                              const GURL& origin,
+                              const DeleteResultCallback& callback);
 
  private:
   friend class base::RefCountedThreadSafe<PlatformNotificationContext>;
@@ -78,18 +87,25 @@ class CONTENT_EXPORT PlatformNotificationContext
                     const base::Closure& failure_closure);
 
   // Actually reads the notification data from the database. Must only be
-  // called on the |task_runner_| thread. Will post a task to |callback| on
-  // the IO thread when the operation has completed.
+  // called on the |task_runner_| thread. |callback| will be invoked on the
+  // IO thread when the operation has completed.
   void DoReadNotificationData(int64_t notification_id,
                               const GURL& origin,
                               const ReadResultCallback& callback);
 
   // Actually writes the notification database to the database. Must only be
-  // called on the |task_runner_| thread. Will post a task to |callback| on
-  // the IO thread when the operation has completed.
+  // called on the |task_runner_| thread. |callback| will be invoked on the
+  // IO thread when the operation has completed.
   void DoWriteNotificationData(const GURL& origin,
                                const NotificationDatabaseData& database_data,
                                const WriteResultCallback& callback);
+
+  // Actually deletes the notification information from the database. Must only
+  // be called on the |task_runner_| thread. |callback| will be invoked on the
+  // IO thread when the operation has completed.
+  void DoDeleteNotificationData(int64_t notification_id,
+                                const GURL& origin,
+                                const DeleteResultCallback& callback);
 
   // Returns the path in which the database should be initialized. May be empty.
   base::FilePath GetDatabasePath() const;
