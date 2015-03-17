@@ -60,7 +60,7 @@ class HttpStreamFactoryImpl::Job {
   // we fail to connect.  |alternate| specifies the alternate protocol to use
   // and alternate port to connect to.
   void MarkAsAlternate(const GURL& original_url,
-                       AlternateProtocolInfo alternate);
+                       AlternativeService alternative_service);
 
   // Tells |this| to wait for |job| to resume it.
   void WaitFor(Job* job);
@@ -276,10 +276,10 @@ class HttpStreamFactoryImpl::Job {
   scoped_ptr<GURL> original_url_;
 
   // AlternateProtocol for this job if this is an alternate job.
-  AlternateProtocolInfo alternate_protocol_;
+  AlternativeService alternative_service_;
 
   // AlternateProtocol for the other job if this is not an alternate job.
-  AlternateProtocolInfo other_job_alternate_protocol_;
+  AlternativeService other_job_alternative_service_;
 
   // This is the Job we're dependent on. It will notify us if/when it's OK to
   // proceed.

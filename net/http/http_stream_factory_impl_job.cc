@@ -167,11 +167,11 @@ LoadState HttpStreamFactoryImpl::Job::GetLoadState() const {
 
 void HttpStreamFactoryImpl::Job::MarkAsAlternate(
     const GURL& original_url,
-    AlternateProtocolInfo alternate) {
+    AlternativeService alternative_service) {
   DCHECK(!original_url_.get());
   original_url_.reset(new GURL(original_url));
-  alternate_protocol_ = alternate;
-  if (alternate.protocol == QUIC) {
+  alternative_service_ = alternative_service;
+  if (alternative_service.protocol == QUIC) {
     DCHECK(session_->params().enable_quic);
     using_quic_ = true;
   }
@@ -1481,7 +1481,7 @@ void HttpStreamFactoryImpl::Job::ReportJobSuccededForRequest() {
 void HttpStreamFactoryImpl::Job::MarkOtherJobComplete(const Job& job) {
   DCHECK_EQ(STATUS_RUNNING, other_job_status_);
   other_job_status_ = job.job_status_;
-  other_job_alternate_protocol_ = job.alternate_protocol_;
+  other_job_alternative_service_ = job.alternative_service_;
   MaybeMarkAlternateProtocolBroken();
 }
 
