@@ -307,17 +307,10 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
 
 void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
     const HostPortPair& server) {
-  AlternateProtocolMap::iterator it = alternate_protocol_map_.Get(server);
   const AlternateProtocolInfo alternate = GetAlternateProtocol(server);
-  if (it == alternate_protocol_map_.end()) {
-    if (alternate.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
-      LOG(DFATAL) << "Trying to mark unknown alternate protocol broken.";
-      return;
-    }
-    // This server's alternate protocol information is coming from a canonical
-    // server. Add an entry in the map for this server explicitly so that
-    // it can be marked as broken.
-    it = alternate_protocol_map_.Put(server, alternate);
+  if (alternate.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
+    LOG(DFATAL) << "Trying to mark unknown alternate protocol broken.";
+    return;
   }
   const AlternativeService alternative_service(alternate.protocol,
                                                server.host(), alternate.port);
