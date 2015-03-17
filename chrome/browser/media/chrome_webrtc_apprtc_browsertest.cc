@@ -232,7 +232,9 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
   base::Process collider_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
+// Disabling while the AppRTC application is being fixed.
+// See crbug.com/467471 for details.
+IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, DISABLED_MANUAL_WorksOnApprtc) {
   // Disabled on Win XP: http://code.google.com/p/webrtc/issues/detail?id=2703.
   if (OnWinXp())
     return;
@@ -263,7 +265,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
 }
 
 #if defined(OS_LINUX)
-#define MAYBE_MANUAL_FirefoxApprtcInteropTest MANUAL_FirefoxApprtcInteropTest
+// Disabling while the AppRTC application is being fixed.
+// See crbug.com/467471 for details.
+#define MAYBE_MANUAL_FirefoxApprtcInteropTest DISABLED_MANUAL_FirefoxApprtcInteropTest
 #else
 // Not implemented yet on Windows and Mac.
 #define MAYBE_MANUAL_FirefoxApprtcInteropTest DISABLED_MANUAL_FirefoxApprtcInteropTest
