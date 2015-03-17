@@ -41,9 +41,10 @@ static const int infinity = -1;
 class GridTrack {
 public:
     GridTrack()
-        : m_baseSize(0)
+        : m_plannedIncrease(0)
+        , m_increaseDuringDistribution(0)
+        , m_baseSize(0)
         , m_growthLimit(0)
-        , m_plannedIncrease(0)
     {
     }
 
@@ -100,22 +101,8 @@ public:
         return (m_growthLimit == infinity) ? m_baseSize : m_growthLimit;
     }
 
-    const LayoutUnit& plannedIncrease() const { return m_plannedIncrease; }
-
-    void growPlannedIncrease(const LayoutUnit& plannedIncrease)
-    {
-        ASSERT(plannedIncrease >= 0);
-        m_plannedIncrease += plannedIncrease;
-    }
-
-    void updateFromPlannedIncrease(LayoutGrid::AccumulatorGrowFunction trackGrowthFunction)
-    {
-        if (m_plannedIncrease == 0)
-            return;
-
-        (this->*trackGrowthFunction)(m_plannedIncrease);
-        m_plannedIncrease = 0;
-    }
+    LayoutUnit m_plannedIncrease;
+    LayoutUnit m_increaseDuringDistribution;
 
 private:
     bool isGrowthLimitBiggerThanBaseSize() const { return growthLimitIsInfinite() || m_growthLimit >= m_baseSize; }
@@ -128,7 +115,6 @@ private:
 
     LayoutUnit m_baseSize;
     LayoutUnit m_growthLimit;
-    LayoutUnit m_plannedIncrease;
 };
 
 struct GridTrackForNormalization {
@@ -250,6 +236,11 @@ public:
     Vector<GridTrack*> filteredTracks;
     Vector<GridItemWithSpan> itemsSortedByIncreasingSpan;
     Vector<GridTrack*> growBeyondGrowthLimitsTracks;
+};
+
+struct GridItemsSpanGroupRange {
+    Vector<GridItemWithSpan>::iterator rangeStart;
+    Vector<GridItemWithSpan>::iterator rangeEnd;
 };
 
 LayoutGrid::LayoutGrid(Element* element)
@@ -447,10 +438,15 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
     const size_t tracksSize = tracks.size();
     if (!hasUndefinedRemainingSpace) {
         Vector<GridTrack*> tracksForDistribution(tracksSize);
-        for (size_t i = 0; i < tracksSize; ++i)
+        for (size_t i = 0; i < tracksSize; ++i) {
             tracksForDistribution[i] = tracks.data() + i;
+            tracksForDistribution[i]->m_plannedIncrease = 0;
+        }
 
-        distributeSpaceToTracks(tracksForDistribution, nullptr, &GridTrack::baseSize, &GridTrack::growBaseSize, sizingData, freeSpace);
+        distributeSpaceToTracks(tracksForDistribution, nullptr, &GridTrack::baseSize, sizingData, freeSpace);
+
+        for (auto* track : tracksForDistribution)
+            track->growBaseSize(track->m_plannedIncrease);
     } else {
         for (auto& track : tracks)
             track.setBaseSize(track.growthLimit());
@@ -743,13 +739,15 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctions(GridTrackSizingDirectio
     }
     std::sort(sizingData.itemsSortedByIncreasingSpan.begin(), sizingData.itemsSortedByIncreasingSpan.end());
 
-    Vector<GridItemWithSpan>::iterator end = sizingData.itemsSortedByIncreasingSpan.end();
-    for (Vector<GridItemWithSpan>::iterator it = sizingData.itemsSortedByIncreasingSpan.begin(); it != end; ++it) {
-        GridItemWithSpan itemWithSpan = *it;
-        resolveContentBasedTrackSizingFunctionsForItems(direction, sizingData, itemWithSpan, &GridTrackSize::hasMinOrMaxContentMinTrackBreadth, &LayoutGrid::minContentForChild, &GridTrack::baseSize, &GridTrack::growBaseSize, &GridTrackSize::hasMinContentMinTrackBreadthAndMinOrMaxContentMaxTrackBreadth);
-        resolveContentBasedTrackSizingFunctionsForItems(direction, sizingData, itemWithSpan, &GridTrackSize::hasMaxContentMinTrackBreadth, &LayoutGrid::maxContentForChild, &GridTrack::baseSize, &GridTrack::growBaseSize, &GridTrackSize::hasMaxContentMinTrackBreadthAndMaxContentMaxTrackBreadth);
-        resolveContentBasedTrackSizingFunctionsForItems(direction, sizingData, itemWithSpan, &GridTrackSize::hasMinOrMaxContentMaxTrackBreadth, &LayoutGrid::minContentForChild, &GridTrack::growthLimitIfNotInfinite, &GridTrack::growGrowthLimit);
-        resolveContentBasedTrackSizingFunctionsForItems(direction, sizingData, itemWithSpan, &GridTrackSize::hasMaxContentMaxTrackBreadth, &LayoutGrid::maxContentForChild, &GridTrack::growthLimitIfNotInfinite, &GridTrack::growGrowthLimit);
+    auto it = sizingData.itemsSortedByIncreasingSpan.begin();
+    auto end = sizingData.itemsSortedByIncreasingSpan.end();
+    while (it != end) {
+        GridItemsSpanGroupRange spanGroupRange = { it, std::upper_bound(it, end, *it) };
+        resolveContentBasedTrackSizingFunctionsForItems(direction, sizingData, spanGroupRange, &GridTrackSize::hasMinOrMaxContentMinTrackBreadth, &LayoutGrid::minContentForChild, &GridTrack::baseSize, &GridTrack::growBaseSize, &GridTrackSize::hasMinContentMinTrackBreadthAndMinOrMaxContentMaxTrackBreadth);
+        resolveContentBasedTrackSizingFunctionsForItems(direction, sizingData, spanGroupRange, &GridTrackSize::hasMaxContentMinTrackBreadth, &LayoutGrid::maxContentForChild, &GridTrack::baseSize, &GridTrack::growBaseSize, &GridTrackSize::hasMaxContentMinTrackBreadthAndMaxContentMaxTrackBreadth);
+        resolveContentBasedTrackSizingFunctionsForItems(direction, sizingData, spanGroupRange, &GridTrackSize::hasMinOrMaxContentMaxTrackBreadth, &LayoutGrid::minContentForChild, &GridTrack::growthLimitIfNotInfinite, &GridTrack::growGrowthLimit);
+        resolveContentBasedTrackSizingFunctionsForItems(direction, sizingData, spanGroupRange, &GridTrackSize::hasMaxContentMaxTrackBreadth, &LayoutGrid::maxContentForChild, &GridTrack::growthLimitIfNotInfinite, &GridTrack::growGrowthLimit);
+        it = spanGroupRange.rangeEnd;
     }
 
     for (const auto& trackIndex : sizingData.contentSizedTracksIndex) {
@@ -775,37 +773,50 @@ void LayoutGrid::resolveContentBasedTrackSizingFunctionsForNonSpanningItems(Grid
         track.setGrowthLimit(std::max(track.growthLimit(), maxContentForChild(gridItem, direction, columnTracks)));
 }
 
-void LayoutGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizingDirection direction, GridSizingData& sizingData, GridItemWithSpan& gridItemWithSpan, FilterFunction filterFunction, SizingFunction sizingFunction, AccumulatorGetter trackGetter, AccumulatorGrowFunction trackGrowthFunction, FilterFunction growAboveMaxBreadthFilterFunction)
+void LayoutGrid::resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizingDirection direction, GridSizingData& sizingData, const GridItemsSpanGroupRange& gridItemsWithSpan, FilterFunction filterFunction, SizingFunction sizingFunction, AccumulatorGetter trackGetter, AccumulatorGrowFunction trackGrowthFunction, FilterFunction growAboveMaxBreadthFilterFunction)
 {
-    ASSERT(gridItemWithSpan.span() > 1);
-    const GridCoordinate coordinate = gridItemWithSpan.coordinate();
-    const GridSpan& itemSpan = (direction == ForColumns) ? coordinate.columns : coordinate.rows;
+    Vector<GridTrack>& tracks = (direction == ForColumns) ? sizingData.columnTracks : sizingData.rowTracks;
+    for (const auto& trackIndex : sizingData.contentSizedTracksIndex)
+        tracks[trackIndex].m_plannedIncrease = 0;
 
-    sizingData.growBeyondGrowthLimitsTracks.shrink(0);
-    sizingData.filteredTracks.shrink(0);
-    LayoutUnit spanningTracksSize;
-    for (const auto& trackPosition : itemSpan) {
-        GridTrackSize trackSize = gridTrackSize(direction, trackPosition.toInt());
-        GridTrack& track = (direction == ForColumns) ? sizingData.columnTracks[trackPosition.toInt()] : sizingData.rowTracks[trackPosition.toInt()];
-        spanningTracksSize += (track.*trackGetter)();
-        if (!(trackSize.*filterFunction)())
+    for (auto it = gridItemsWithSpan.rangeStart; it != gridItemsWithSpan.rangeEnd; ++it) {
+        GridItemWithSpan& gridItemWithSpan = *it;
+        ASSERT(gridItemWithSpan.span() > 1);
+        const GridCoordinate coordinate = gridItemWithSpan.coordinate();
+        const GridSpan& itemSpan = (direction == ForColumns) ? coordinate.columns : coordinate.rows;
+
+        sizingData.growBeyondGrowthLimitsTracks.shrink(0);
+        sizingData.filteredTracks.shrink(0);
+        LayoutUnit spanningTracksSize;
+        for (const auto& trackPosition : itemSpan) {
+            GridTrackSize trackSize = gridTrackSize(direction, trackPosition.toInt());
+            GridTrack& track = (direction == ForColumns) ? sizingData.columnTracks[trackPosition.toInt()] : sizingData.rowTracks[trackPosition.toInt()];
+            spanningTracksSize += (track.*trackGetter)();
+            if (!(trackSize.*filterFunction)())
+                continue;
+
+            sizingData.filteredTracks.append(&track);
+
+            if (!growAboveMaxBreadthFilterFunction || (trackSize.*growAboveMaxBreadthFilterFunction)())
+                sizingData.growBeyondGrowthLimitsTracks.append(&track);
+        }
+
+        if (sizingData.filteredTracks.isEmpty())
             continue;
 
-        sizingData.filteredTracks.append(&track);
-
-        if (!growAboveMaxBreadthFilterFunction || (trackSize.*growAboveMaxBreadthFilterFunction)())
-            sizingData.growBeyondGrowthLimitsTracks.append(&track);
+        // Specs mandate to floor extraSpace to 0. Instead we directly avoid the function call in those cases as it will be
+        // a noop in terms of track sizing.
+        LayoutUnit extraSpace = (this->*sizingFunction)(gridItemWithSpan.gridItem(), direction, sizingData.columnTracks) - spanningTracksSize;
+        if (extraSpace > 0) {
+            Vector<GridTrack*>* tracksToGrowBeyondGrowthLimits = sizingData.growBeyondGrowthLimitsTracks.isEmpty() ? &sizingData.filteredTracks : &sizingData.growBeyondGrowthLimitsTracks;
+            distributeSpaceToTracks(sizingData.filteredTracks, tracksToGrowBeyondGrowthLimits, trackGetter, sizingData, extraSpace);
+        }
     }
 
-    if (sizingData.filteredTracks.isEmpty())
-        return;
-
-    // Specs mandate to floor extraSpace to 0. Instead we directly avoid the function call in those cases as it will be
-    // a noop in terms of track sizing.
-    LayoutUnit extraSpace = (this->*sizingFunction)(gridItemWithSpan.gridItem(), direction, sizingData.columnTracks) - spanningTracksSize;
-    if (extraSpace > 0) {
-        Vector<GridTrack*>* tracksToGrowBeyondGrowthLimits = sizingData.growBeyondGrowthLimitsTracks.isEmpty() ? &sizingData.filteredTracks : &sizingData.growBeyondGrowthLimitsTracks;
-        distributeSpaceToTracks(sizingData.filteredTracks, tracksToGrowBeyondGrowthLimits, trackGetter, trackGrowthFunction, sizingData, extraSpace);
+    for (const auto& trackIndex : sizingData.contentSizedTracksIndex) {
+        GridTrack& track = tracks[trackIndex];
+        if (track.m_plannedIncrease)
+            (track.*trackGrowthFunction)(track.m_plannedIncrease);
     }
 }
 
@@ -822,7 +833,7 @@ static bool sortByGridTrackGrowthPotential(const GridTrack* track1, const GridTr
     return (track1->growthLimit() - track1->baseSize()) < (track2->growthLimit() - track2->baseSize());
 }
 
-void LayoutGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, const Vector<GridTrack*>* growBeyondGrowthLimitsTracks, AccumulatorGetter trackGetter, AccumulatorGrowFunction trackGrowthFunction, GridSizingData& sizingData, LayoutUnit& availableLogicalSpace)
+void LayoutGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, const Vector<GridTrack*>* growBeyondGrowthLimitsTracks, AccumulatorGetter trackGetter, GridSizingData& sizingData, LayoutUnit& availableLogicalSpace)
 {
     ASSERT(availableLogicalSpace > 0);
     std::sort(tracks.begin(), tracks.end(), sortByGridTrackGrowthPotential);
@@ -830,15 +841,12 @@ void LayoutGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, const Vecto
     size_t tracksSize = tracks.size();
     for (size_t i = 0; i < tracksSize; ++i) {
         GridTrack& track = *tracks[i];
-        ASSERT(track.plannedIncrease() == 0);
         LayoutUnit availableLogicalSpaceShare = availableLogicalSpace / (tracksSize - i);
         const LayoutUnit& trackBreadth = (track.*trackGetter)();
         LayoutUnit growthShare = track.growthLimitIsInfinite() ? availableLogicalSpaceShare : std::min(availableLogicalSpaceShare, track.growthLimit() - trackBreadth);
-        // We should never shrink any grid track or else we can't guarantee we abide by our min-sizing function.
-        if (growthShare > 0) {
-            track.growPlannedIncrease(growthShare);
-            availableLogicalSpace -= growthShare;
-        }
+        ASSERT_WITH_MESSAGE(growthShare >= 0, "We must never shrink any grid track or else we can't guarantee we abide by our min-sizing function.");
+        track.m_increaseDuringDistribution = growthShare;
+        availableLogicalSpace -= growthShare;
     }
 
     if (availableLogicalSpace > 0 && growBeyondGrowthLimitsTracks) {
@@ -846,15 +854,13 @@ void LayoutGrid::distributeSpaceToTracks(Vector<GridTrack*>& tracks, const Vecto
         for (size_t i = 0; i < tracksGrowingAboveMaxBreadthSize; ++i) {
             GridTrack* track = growBeyondGrowthLimitsTracks->at(i);
             LayoutUnit growthShare = availableLogicalSpace / (tracksGrowingAboveMaxBreadthSize - i);
-            track->growPlannedIncrease(growthShare);
+            track->m_increaseDuringDistribution += growthShare;
             availableLogicalSpace -= growthShare;
         }
     }
 
-    for (auto* track: tracks) {
-        track->updateFromPlannedIncrease(trackGrowthFunction);
-        ASSERT(track->plannedIncrease() == 0);
-    }
+    for (auto* track : tracks)
+        track->m_plannedIncrease = std::max(track->m_plannedIncrease, track->m_increaseDuringDistribution);
 }
 
 #if ENABLE(ASSERT)
