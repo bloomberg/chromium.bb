@@ -216,9 +216,9 @@ class BuildUpdater(object):
             os.chmod(dest, permissions)
     return True
 
-  def _ClearDir(self, dir):
-    """Clears all files in |dir| except for hidden files and folders."""
-    for root, dirs, files in os.walk(dir):
+  def _ClearDir(self, directory):
+    """Clears all files in |directory| except for hidden files and folders."""
+    for root, dirs, files in os.walk(directory):
       # Skip hidden files and folders (like .svn and .git).
       files = [f for f in files if f[0] != '.']
       dirs[:] = [d for d in dirs if d[0] != '.']
