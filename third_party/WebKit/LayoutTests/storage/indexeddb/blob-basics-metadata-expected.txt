@@ -17,6 +17,7 @@ test_content = 'This is a test. This is only a test.'
 blob = new Blob([test_content])
 
 validateResult(blob):
+PASS blob.size == test_content.length is true
 transaction = db.transaction('storeName', 'readwrite')
 store = transaction.objectStore('storeName')
 store.put(blob, 'blobkey')
@@ -29,6 +30,7 @@ testFile():
 file = fileInput.files[0]
 
 validateResult(file):
+PASS file.name == fileInput.files[0].name is true
 transaction = db.transaction('storeName', 'readwrite')
 store = transaction.objectStore('storeName')
 store.put(file, 'filekey')
@@ -41,6 +43,7 @@ testNewFile():
 newFile = new File([test_content], 'filename', {type:'text/plain'})
 
 validateResult(newFile):
+PASS newFile.name == newFile.name is true
 transaction = db.transaction('storeName', 'readwrite')
 store = transaction.objectStore('storeName')
 store.put(newFile, 'newFilekey')
@@ -53,6 +56,7 @@ testFileList():
 filelist = fileInput.files
 
 validateResult(filelist):
+PASS filelist[1].name == fileInput.files[1].name is true
 transaction = db.transaction('storeName', 'readwrite')
 store = transaction.objectStore('storeName')
 store.put(filelist, 'filelistkey')

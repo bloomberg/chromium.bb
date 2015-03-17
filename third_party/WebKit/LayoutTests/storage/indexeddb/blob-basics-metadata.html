@@ -1,9 +1,6 @@
-<html>
-<head>
+<!DOCTYPE html>
 <script src="../../resources/js-test.js"></script>
 <script src="resources/shared.js"></script>
-</head>
-<body>
 <input type="file" id="fileInput" multiple></input>
 <script>
 
@@ -32,8 +29,7 @@ function prepareDatabase()
 var blobValidation = ".size == test_content.length";
 function testBlob()
 {
-    debug("");
-    debug("testBlob():");
+    preamble();
 
     shouldBeTrue("FileReader != null");
     evalAndLog("test_content = 'This is a test. This is only a test.'");
@@ -44,8 +40,7 @@ function testBlob()
 var fileValidation = ".name == fileInput.files[0].name";
 function testFile()
 {
-    debug("");
-    debug("testFile():");
+    preamble();
     evalAndLog("file = fileInput.files[0]");
     validateResult("file", fileValidation, testNewFile);
 }
@@ -62,8 +57,7 @@ function testNewFile()
 var fileListValidation = "[1].name == fileInput.files[1].name";
 function testFileList()
 {
-    debug("");
-    debug("testFileList():");
+    preamble();
     evalAndLog("filelist = fileInput.files");
     validateResult("filelist",
         fileListValidation, testCursor);
@@ -71,8 +65,7 @@ function testFileList()
 
 function testCursor()
 {
-    debug("");
-    debug("testCursor():");
+    preamble();
     evalAndLog("transaction = db.transaction('storeName', 'readonly')");
     transaction.onerror = unexpectedErrorCallback;
     transaction.onabort = unexpectedAbortCallback;
@@ -112,31 +105,32 @@ function testCursor()
     }
 }
 
-function validateResult(variable, validation, onComplete)
+function validateResult(variable, validation, onSuccess)
 {
     var keyName = variable + "key";
     debug("");
     debug("validateResult(" + variable + "):");
+    shouldBeTrue(variable + validation);
     evalAndLog("transaction = db.transaction('storeName', 'readwrite')");
     evalAndLog("store = transaction.objectStore('storeName')");
     evalAndLog("store.put(" + variable + ", '" + keyName + "')");
     transaction.onerror = unexpectedErrorCallback;
     transaction.onabort = unexpectedAbortCallback;
-    var readTransactionOnComplete = function (e) {
+    var onGetSuccess = function (e) {
       shouldBeTrue("event.target.result" + validation);
-      onComplete();
+      onSuccess();
     }
     transaction.oncomplete = function () {
-      doRead(keyName, readTransactionOnComplete);
+      doRead(keyName, onGetSuccess);
     }
 }
 
-function doRead(keyName, onComplete)
+function doRead(keyName, onSuccess)
 {
     evalAndLog("transaction = db.transaction('storeName', 'readwrite')");
     evalAndLog("store = transaction.objectStore('storeName')");
     evalAndLog("request = store.get('" + keyName + "')");
-    request.onsuccess = onComplete;
+    request.onsuccess = onSuccess;
     transaction.onerror = unexpectedErrorCallback;
     transaction.onabort = unexpectedAbortCallback;
 }
@@ -149,5 +143,3 @@ if (window.eventSender) {
 }
 
 </script>
-</body>
-</html>
