@@ -60,8 +60,6 @@ Scheduler::Scheduler(WebScheduler* webScheduler)
 
 Scheduler::~Scheduler()
 {
-    if (m_webScheduler)
-        m_webScheduler->shutdown();
 }
 
 void Scheduler::postIdleTask(const WebTraceLocation& location, PassOwnPtr<IdleTask> idleTask)

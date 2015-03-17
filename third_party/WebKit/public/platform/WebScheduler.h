@@ -26,10 +26,6 @@ public:
         virtual void run(double deadlineSeconds) = 0;
     };
 
-    // Called during Blink's shutdown to delete any pending tasks from the
-    // scheduler. Must be called on the main thread.
-    virtual void shutdown() { }
-
     // Returns true if there is high priority work pending on the main thread
     // and the caller should yield to let the scheduler service that work.
     // Must be called on the main thread.
