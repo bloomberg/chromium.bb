@@ -5,7 +5,13 @@
 (function() {
   'use strict';
 
-  Polymer('volume-controller', {
+  /**
+   * @constructor
+   * @extends {PolymerElement}
+   */
+  var VolumeControllerElement = function() {};
+
+  VolumeControllerElement.prototype = {
     /**
      * Initializes an element. This method is called automatically when the
      * element is ready.
@@ -14,15 +20,18 @@
       this.style.width = this.width + 'px';
       this.style.height = this.height + 'px';
 
-      this.$.rawValueInput.style.width = this.height + 'px';
-      this.$.rawValueInput.style.height = this.width + 'px';
-      this.$.rawValueInput.style.webkitTransformOrigin =
+      this.rawValueInput = this.$.rawValueInput;
+      this.bar = this.$.bar;
+
+      this.rawValueInput.style.width = this.height + 'px';
+      this.rawValueInput.style.height = this.width + 'px';
+      this.rawValueInput.style.webkitTransformOrigin =
           (this.width / 2) + 'px ' +
           (this.width / 2 - 2) + 'px';
 
       var barLeft = (this.width / 2 - 1);
-      this.$.bar.style.left = barLeft + 'px';
-      this.$.bar.style.right = barLeft + 'px';
+      this.bar.style.left = barLeft + 'px';
+      this.bar.style.right = barLeft + 'px';
 
       this.addEventListener('keydown', this.onKeyDown_.bind(this));
     },
@@ -111,5 +120,7 @@
           break;
       }
     },
-  });
+  };
+
+  Polymer('volume-controller', VolumeControllerElement.prototype);
 })();  // Anonymous closure

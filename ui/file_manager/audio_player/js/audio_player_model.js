@@ -2,20 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function(global) {
+/**
+ * The model class for audio player.
+ * @constructor
+ */
+function AudioPlayerModel() {
   'use strict';
 
   /**
    * List of values to be stored into the model.
-   * @type {Object<string, *>}
+   * @type {!Object<string, *>}
    * @const
    */
-  var VALUES = Object.freeze({
-    shuffle: false,
-    repeat: false,
-    volume: 100,
-    expanded: false,
-  });
+  var VALUES = Object.freeze(
+    /**
+     * They will be used as properties of AudioPlayerModel.
+     * @lends {AudioPlayerModel.prototype}
+     */
+    {
+      shuffle: false,
+      repeat: false,
+      volume: 100,
+      expanded: false,
+    });
 
   /**
    * Prefix of the stored values in the storage.
@@ -57,28 +66,18 @@
     });
   };
 
-  /**
-   * The model class for audio player.
-   * @constructor
-   */
-  function AudioPlayerModel() {
-    // Initializes values.
-    for (var key in VALUES) {
-      this[key] = VALUES[key];
-    }
-    Object.seal(this);
-
-    // Restores the values from the storage
-    var target = this;
-    loadModel(target, function() {
-      // Installs observer to watch changes of the values.
-      Object.observe(target, function(changes) {
-        saveModel(target);
-      });
-    });
+  // Initializes values.
+  for (var key in VALUES) {
+    this[key] = VALUES[key];
   }
+  Object.seal(this);
 
-  // Exports AudioPlayerModel class to the global.
-  global.AudioPlayerModel = AudioPlayerModel;
-
-})(this || window);
+  // Restores the values from the storage
+  var target = this;
+  loadModel(target, function() {
+    // Installs observer to watch changes of the values.
+    Object.observe(target, function(changes) {
+      saveModel(target);
+    });
+  });
+}

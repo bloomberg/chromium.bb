@@ -5,7 +5,13 @@
 (function() {
   'use strict';
 
-  Polymer('track-list', {
+  /**
+   * @constructor
+   * @extends {PolymerElement}
+   */
+  var TrackListElement = function() {};
+
+  TrackListElement.prototype = {
     /**
      * Initializes an element. This method is called automatically when the
      * element is ready.
@@ -106,8 +112,8 @@
 
     /**
      * Invoked when 'tracks' property is changed.
-     * @param {Array.<TrackInfo>} oldValue Old value.
-     * @param {Array.<TrackInfo>} newValue New value.
+     * @param {Array.<AudioPlayer.TrackInfo>} oldValue Old value.
+     * @param {Array.<AudioPlayer.TrackInfo>} newValue New value.
      */
     tracksChanged: function(oldValue, newValue) {
       // Note: Sometimes both oldValue and newValue are null though the actual
@@ -260,7 +266,7 @@
 
     /**
      * Returns the current track.
-     * @param {AudioPlayer.TrackInfo} track TrackInfo of the current track.
+     * @return {AudioPlayer.TrackInfo} track TrackInfo of the current track.
      */
     getCurrentTrack: function() {
       if (this.tracks.length === 0)
@@ -304,5 +310,7 @@
 
       return newTrackIndex;
     },
-  });  // Polymer('track-list') block
+  };  // TrackListElement.prototype for 'track-list'
+
+  Polymer('track-list', TrackListElement.prototype);
 })();  // Anonymous closure

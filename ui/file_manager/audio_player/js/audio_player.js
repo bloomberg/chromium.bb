@@ -5,24 +5,24 @@
 /**
  * Overrided metadata worker's path.
  * @type {string}
- * @const
  */
 ContentMetadataProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
 
 /**
- * @param {HTMLElement} container Container element.
+ * @param {Element} container Container element.
  * @constructor
  */
 function AudioPlayer(container) {
   this.container_ = container;
   this.volumeManager_ = new VolumeManagerWrapper(
       VolumeManagerWrapper.NonNativeVolumeStatus.ENABLED);
-  this.metadataModel_ = new MetadataModel.create(this.volumeManager_);
+  this.metadataModel_ = MetadataModel.create(this.volumeManager_);
   this.selectedEntry_ = null;
+  this.invalidTracks_ = {};
 
   this.model_ = new AudioPlayerModel();
   Object.observe(this.model_, function(changes) {
-    for (var i = 0; i < changes.lenfth; i++) {
+    for (var i = 0; i < changes.length; i++) {
       var change = changes[i];
       if (change.name == 'expanded' && change.type == 'update') {
         this.onModelExpandedChanged(change.oldValue, change.object.expanded);
@@ -45,7 +45,8 @@ function AudioPlayer(container) {
    */
   this.isExpanded_ = null;  // Initial value is null. It'll be set in load().
 
-  this.player_ = document.querySelector('audio-player');
+  this.player_ =
+    /** @type {AudioPlayerElement} */ (document.querySelector('audio-player'));
   // TODO(yoshiki): Move tracks into the model.
   this.player_.tracks = [];
   this.player_.model = this.model_;
@@ -71,7 +72,7 @@ function AudioPlayer(container) {
     var currentWindow = chrome.app.window.current();
     if (currentWindow)
       setTimeout(currentWindow.show.bind(currentWindow), 0);
-  }.bind(this));
+  }.bind(this), 0);
 }
 
 /**
@@ -154,7 +155,7 @@ AudioPlayer.prototype.load = function(playlist) {
           if (i != position)
             this.loadMetadata_(i);
         }
-      }.bind(this));
+      }.bind(this), 0);
     }.bind(this));
   }.bind(this));
 };
@@ -235,12 +236,12 @@ AudioPlayer.prototype.select_ = function(newTrack, time) {
 
       this.selectedEntry_ = entry;
     }.bind(this));
-  }.bind(this));
+  }.bind(this), 0);
 };
 
 /**
  * @param {FileEntry} entry Track file entry.
- * @param {function(object)} callback Callback.
+ * @param {function(Object)} callback Callback.
  * @private
  */
 AudioPlayer.prototype.fetchMetadata_ = function(entry, callback) {
@@ -380,8 +381,8 @@ AudioPlayer.prototype.syncHeight_ = function() {
 /**
  * Create a TrackInfo object encapsulating the information about one track.
  *
- * @param {fileEntry} entry FileEntry to be retrieved the track info from.
- * @param {function} onClick Click handler.
+ * @param {FileEntry} entry FileEntry to be retrieved the track info from.
+ * @param {function(MouseEvent)} onClick Click handler.
  * @constructor
  */
 AudioPlayer.TrackInfo = function(entry, onClick) {
@@ -393,11 +394,6 @@ AudioPlayer.TrackInfo = function(entry, onClick) {
   this.artwork = null;
   this.active = false;
 };
-
-/**
- * @return {HTMLDivElement} The wrapper element for the track.
- */
-AudioPlayer.TrackInfo.prototype.getBox = function() { return this.box_; };
 
 /**
  * @return {string} Default track title (file name extracted from the url).

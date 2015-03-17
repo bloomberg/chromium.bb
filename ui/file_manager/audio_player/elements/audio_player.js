@@ -2,13 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-Polymer('audio-player', {
-  /**
-   * Child Elements
-   */
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ */
+var AudioPlayerElement = function() {};
+
+AudioPlayerElement.prototype = {
+  // Child Elements
   audioController: null,
   audioElement: null,
   trackList: null,
+
+  // Published values
+  playing: true,
+  currenttrackurl: '',
+  playcount: 0,
 
   // Attributes of the element (lower characters only).
   // These values must be used only to data binding and shouldn't be assigned
@@ -244,7 +253,7 @@ Polymer('audio-player', {
   /**
    * Timeout ID of auto advance. Used internally in scheduleAutoAdvance_() and
    *     cancelAutoAdvance_().
-   * @type {number}
+   * @type {number?}
    * @private
    */
   autoAdvanceTimer_: null,
@@ -375,4 +384,6 @@ Polymer('audio-player', {
         break;
     }
   },
-});
+};
+
+Polymer('audio-player', AudioPlayerElement.prototype);
