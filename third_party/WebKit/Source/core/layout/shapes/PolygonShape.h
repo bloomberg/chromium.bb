@@ -60,7 +60,7 @@ private:
 class PolygonShape final : public Shape {
     WTF_MAKE_NONCOPYABLE(PolygonShape);
 public:
-    PolygonShape(PassOwnPtr<Vector<FloatPoint> > vertices, WindRule fillRule)
+    PolygonShape(PassOwnPtr<Vector<FloatPoint>> vertices, WindRule fillRule)
         : Shape()
         , m_polygon(vertices, fillRule)
     {

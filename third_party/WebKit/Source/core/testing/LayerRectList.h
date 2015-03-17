@@ -60,7 +60,7 @@ public:
 private:
     LayerRectList();
 
-    HeapVector<Member<LayerRect> > m_list;
+    HeapVector<Member<LayerRect>> m_list;
 };
 
 } // namespace blink

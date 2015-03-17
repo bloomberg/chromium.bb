@@ -194,7 +194,7 @@ void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& 
     // as being in the top layer.
     const Element* ancestor = topLayerAncestor(element);
     Document* document = parentFrameView->frame().document();
-    const WillBeHeapVector<RefPtrWillBeMember<Element> >& elements = document->topLayerElements();
+    const WillBeHeapVector<RefPtrWillBeMember<Element>>& elements = document->topLayerElements();
     size_t start = ancestor ? elements.find(ancestor) + 1 : 0;
     for (size_t i = start; i < elements.size(); ++i)
         addTreeToOcclusions(elements[i]->layoutObject(), frameRect, occlusions);

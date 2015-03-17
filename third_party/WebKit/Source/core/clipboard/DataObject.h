@@ -108,7 +108,7 @@ private:
     bool internalAddStringItem(PassRefPtrWillBeRawPtr<DataObjectItem>);
     void internalAddFileItem(PassRefPtrWillBeRawPtr<DataObjectItem>);
 
-    WillBeHeapVector<RefPtrWillBeMember<DataObjectItem> > m_itemList;
+    WillBeHeapVector<RefPtrWillBeMember<DataObjectItem>> m_itemList;
 
     // State of Shift/Ctrl/Alt/Meta keys and Left/Right/Middle mouse buttons
     int m_modifiers;

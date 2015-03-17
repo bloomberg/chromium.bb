@@ -63,8 +63,8 @@ public:
 
     unsigned childShadowRootCount() const { return m_childShadowRootCount; }
 
-    const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint> >& descendantInsertionPoints() { return m_descendantInsertionPoints; }
-    void setDescendantInsertionPoints(WillBeHeapVector<RefPtrWillBeMember<InsertionPoint> >& list) { m_descendantInsertionPoints.swap(list); }
+    const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>>& descendantInsertionPoints() { return m_descendantInsertionPoints; }
+    void setDescendantInsertionPoints(WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>>& list) { m_descendantInsertionPoints.swap(list); }
     void clearDescendantInsertionPoints() { m_descendantInsertionPoints.clear(); }
 
     StyleSheetList* styleSheets() { return m_styleSheetList.get(); }
@@ -82,7 +82,7 @@ private:
     unsigned m_descendantShadowElementCount;
     unsigned m_descendantContentElementCount;
     unsigned m_childShadowRootCount;
-    WillBeHeapVector<RefPtrWillBeMember<InsertionPoint> > m_descendantInsertionPoints;
+    WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>> m_descendantInsertionPoints;
     RefPtrWillBeMember<StyleSheetList> m_styleSheetList;
 };
 

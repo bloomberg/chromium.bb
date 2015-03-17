@@ -126,7 +126,7 @@ Blob* DataObjectItem::getAsFile() const
         // method to the blob registry; that way the data is only copied over
         // into the renderer when it's actually read, not when the blob is
         // initially constructed).
-        RefPtr<SharedBuffer> data = static_cast<PassRefPtr<SharedBuffer> >(blink::Platform::current()->clipboard()->readImage(blink::WebClipboard::BufferStandard));
+        RefPtr<SharedBuffer> data = static_cast<PassRefPtr<SharedBuffer>>(blink::Platform::current()->clipboard()->readImage(blink::WebClipboard::BufferStandard));
         OwnPtr<BlobData> blobData = BlobData::create();
         blobData->appendBytes(data->data(), data->size());
         blobData->setContentType(mimeTypeImagePng);

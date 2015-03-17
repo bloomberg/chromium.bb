@@ -71,7 +71,7 @@ private:
     explicit CustomElementCallbackQueue(PassRefPtrWillBeRawPtr<Element>);
 
     RefPtrWillBeMember<Element> m_element;
-    WillBeHeapVector<OwnPtrWillBeMember<CustomElementProcessingStep> > m_queue;
+    WillBeHeapVector<OwnPtrWillBeMember<CustomElementProcessingStep>> m_queue;
     ElementQueueId m_owner;
     size_t m_index;
     bool m_inCreatedCallback;

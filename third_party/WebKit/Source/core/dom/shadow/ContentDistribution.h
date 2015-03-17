@@ -60,12 +60,12 @@ public:
 
     void swap(ContentDistribution& other);
 
-    const WillBeHeapVector<RefPtrWillBeMember<Node> >& nodes() const { return m_nodes; }
+    const WillBeHeapVector<RefPtrWillBeMember<Node>>& nodes() const { return m_nodes; }
 
     DECLARE_TRACE();
 
 private:
-    WillBeHeapVector<RefPtrWillBeMember<Node> > m_nodes;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> m_nodes;
     WillBeHeapHashMap<RawPtrWillBeMember<const Node>, size_t> m_indices;
 };
 

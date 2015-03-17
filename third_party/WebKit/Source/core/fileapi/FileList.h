@@ -57,7 +57,7 @@ public:
 private:
     FileList();
 
-    HeapVector<Member<File> > m_files;
+    HeapVector<Member<File>> m_files;
 };
 
 } // namespace blink

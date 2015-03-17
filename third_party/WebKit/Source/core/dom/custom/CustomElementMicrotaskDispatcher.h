@@ -42,7 +42,7 @@ private:
         DispatchingCallbacks
     } m_phase;
 
-    WillBeHeapVector<RawPtrWillBeMember<CustomElementCallbackQueue> > m_elements;
+    WillBeHeapVector<RawPtrWillBeMember<CustomElementCallbackQueue>> m_elements;
 };
 
 } // namespace blink

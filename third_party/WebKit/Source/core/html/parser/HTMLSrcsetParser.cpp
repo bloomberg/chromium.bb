@@ -287,7 +287,7 @@ static void parseImageCandidatesFromSrcsetAttribute(const String& attribute, con
             if (imageURLStart == imageURLEnd)
                 continue;
         } else {
-            skipWhile<CharType, isHTMLSpace<CharType> >(position, attributeEnd);
+            skipWhile<CharType, isHTMLSpace<CharType>>(position, attributeEnd);
             Vector<DescriptorToken> descriptorTokens;
             tokenizeDescriptors(attributeStart, position, attributeEnd, descriptorTokens);
             // Contrary to spec language - descriptor parsing happens on each candidate.

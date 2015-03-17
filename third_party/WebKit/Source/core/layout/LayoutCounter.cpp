@@ -41,7 +41,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-typedef HashMap<AtomicString, RefPtr<CounterNode> > CounterMap;
+typedef HashMap<AtomicString, RefPtr<CounterNode>> CounterMap;
 typedef HashMap<const LayoutObject*, OwnPtr<CounterMap>> CounterMaps;
 
 static CounterNode* makeCounterNode(LayoutObject&, const AtomicString& identifier, bool alwaysCreateCounter);

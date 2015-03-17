@@ -42,7 +42,7 @@ void CustomElementAsyncImportMicrotaskQueue::enqueue(PassOwnPtrWillBeRawPtr<Cust
 
 void CustomElementAsyncImportMicrotaskQueue::doDispatch()
 {
-    WillBeHeapVector<OwnPtrWillBeMember<CustomElementMicrotaskStep> > remaining;
+    WillBeHeapVector<OwnPtrWillBeMember<CustomElementMicrotaskStep>> remaining;
 
     for (unsigned i = 0; i < m_queue.size(); ++i) {
         if (CustomElementMicrotaskStep::Processing == m_queue[i]->process())

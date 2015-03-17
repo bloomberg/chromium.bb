@@ -62,7 +62,7 @@ protected:
     CustomElementDefinition* find(const CustomElementDescriptor&) const;
 
 private:
-    typedef WillBeHeapHashMap<CustomElementDescriptor, RefPtrWillBeMember<CustomElementDefinition> > DefinitionMap;
+    typedef WillBeHeapHashMap<CustomElementDescriptor, RefPtrWillBeMember<CustomElementDefinition>> DefinitionMap;
     DefinitionMap m_definitions;
     HashSet<AtomicString> m_registeredTypeNames;
     bool m_documentWasDetached;

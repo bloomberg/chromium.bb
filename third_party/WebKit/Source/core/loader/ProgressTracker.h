@@ -78,7 +78,7 @@ private:
     bool m_finalProgressChangedSent;
     double m_progressValue;
 
-    HashMap<unsigned long, OwnPtr<ProgressItem> > m_progressItems;
+    HashMap<unsigned long, OwnPtr<ProgressItem>> m_progressItems;
 };
 
 }

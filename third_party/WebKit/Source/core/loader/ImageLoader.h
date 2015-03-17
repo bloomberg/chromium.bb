@@ -168,7 +168,7 @@ private:
     // for HeapHashMap is not triggered when both of ImageLoader and
     // ImageLoaderClient are unreachable.
     GC_PLUGIN_IGNORE("http://crbug.com/383742")
-    PersistentHeapHashMap<WeakMember<ImageLoaderClient>, OwnPtr<ImageLoaderClientRemover> > m_clients;
+    PersistentHeapHashMap<WeakMember<ImageLoaderClient>, OwnPtr<ImageLoaderClientRemover>> m_clients;
 #else
     HashSet<ImageLoaderClient*> m_clients;
 #endif

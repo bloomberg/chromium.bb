@@ -34,7 +34,7 @@ protected:
     CustomElementMicrotaskQueueBase() : m_inDispatch(false) { }
     virtual void doDispatch() = 0;
 
-    WillBeHeapVector<OwnPtrWillBeMember<CustomElementMicrotaskStep> > m_queue;
+    WillBeHeapVector<OwnPtrWillBeMember<CustomElementMicrotaskStep>> m_queue;
     bool m_inDispatch;
 };
 

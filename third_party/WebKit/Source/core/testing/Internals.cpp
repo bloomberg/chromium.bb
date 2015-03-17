@@ -1371,7 +1371,7 @@ PassRefPtrWillBeRawPtr<StaticNodeList> Internals::nodesFromRect(Document* docume
     if (!request.ignoreClipping() && !frameView->visibleContentRect().intersects(HitTestLocation::rectForPoint(point, topPadding, rightPadding, bottomPadding, leftPadding)))
         return nullptr;
 
-    WillBeHeapVector<RefPtrWillBeMember<Node> > matches;
+    WillBeHeapVector<RefPtrWillBeMember<Node>> matches;
     HitTestResult result(point, topPadding, rightPadding, bottomPadding, leftPadding);
     layoutView->hitTest(request, result);
     copyToVector(result.listBasedTestResult(), matches);

@@ -76,7 +76,7 @@ namespace blink {
     private:
         CrossOriginPreflightResultCache() { }
 
-        typedef HashMap<std::pair<String, KURL>, OwnPtr<CrossOriginPreflightResultCacheItem> > CrossOriginPreflightResultHashMap;
+        typedef HashMap<std::pair<String, KURL>, OwnPtr<CrossOriginPreflightResultCacheItem>> CrossOriginPreflightResultHashMap;
 
         CrossOriginPreflightResultHashMap m_preflightHashMap;
     };

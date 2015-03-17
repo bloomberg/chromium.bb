@@ -37,7 +37,7 @@ namespace blink {
 
 // Maps elements to the observer watching them. At most one per
 // element at a time.
-typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Element>, RawPtrWillBeMember<CustomElementObserver> > ElementObserverMap;
+typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<Element>, RawPtrWillBeMember<CustomElementObserver>> ElementObserverMap;
 
 static ElementObserverMap& elementObservers()
 {
