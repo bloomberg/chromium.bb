@@ -49,7 +49,7 @@ MetadataCacheSet.prototype.createRequests = function(entries, names) {
 MetadataCacheSet.prototype.startRequests = function(requestId, requests) {
   for (var i = 0; i < requests.length; i++) {
     var request = requests[i];
-    var url = requests[i].entry.cachedUrl || requests[i].entry.toURL();
+    var url = requests[i].entry['cachedUrl'] || requests[i].entry.toURL();
     var item = this.items_.peek(url);
     if (!item) {
       item = new MetadataCacheItem();

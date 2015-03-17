@@ -912,7 +912,9 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
   // Caching URL to reduce a number of calls of toURL in sort.
   // This is a temporary solution. We need to fix a root cause of slow toURL.
   // See crbug.com/370908 for detail.
-  entriesFiltered.forEach(function(entry) { entry.cachedUrl = entry.toURL(); });
+  entriesFiltered.forEach(function(entry) {
+    entry['cachedUrl'] = entry.toURL();
+  });
 
   if (entriesFiltered.length === 0)
     return;
