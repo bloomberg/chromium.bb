@@ -133,10 +133,6 @@ class HotwordServiceTest :
 
   void SetUp() override {
     extension_id_ = GetParam();
-    if (extension_id_ == extension_misc::kHotwordExtensionId) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kDisableExperimentalHotwording);
-    }
 #if defined(OS_CHROMEOS)
     // Tests on chromeos need to have the handler initialized.
     chromeos::CrasAudioHandler::InitializeForTesting();
@@ -159,7 +155,6 @@ class HotwordServiceTest :
 INSTANTIATE_TEST_CASE_P(HotwordServiceTests,
                         HotwordServiceTest,
                         ::testing::Values(
-                            extension_misc::kHotwordExtensionId,
                             extension_misc::kHotwordSharedModuleId));
 
 TEST_P(HotwordServiceTest, IsHotwordAllowedDisabledFieldTrial) {

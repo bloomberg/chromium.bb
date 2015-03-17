@@ -35,9 +35,6 @@ class HotwordBrowserTest : public ExtensionBrowserTest {
     // extension.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kForceFieldTrials, "VoiceTrigger/Install/");
-    // This test is only valid with version 1 of hotwording.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableExperimentalHotwording);
     // Load the hotword_helper extension.
     ComponentLoader::EnableBackgroundExtensionsForTesting();
 
@@ -70,7 +67,9 @@ class HotwordBrowserTest : public ExtensionBrowserTest {
 // Test we silently capture an exception from a message handler's response
 // callback. This happens when the caller to chrome.runtime.sendMessage()
 // doesn't specify a response callback.
-IN_PROC_BROWSER_TEST_F(HotwordBrowserTest, MessageSendResponseError) {
+// NOTE(amistry): Test is disabled instead of deleted since the functionality
+// may still be required to implement crbug.com/436681
+IN_PROC_BROWSER_TEST_F(HotwordBrowserTest, DISABLED_MessageSendResponseError) {
   // Enable error reporting for the hotword helper extension.
   error_console()->SetReportingAllForExtension(kHotwordHelperExtensionId, true);
 

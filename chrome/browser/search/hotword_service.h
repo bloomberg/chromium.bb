@@ -60,7 +60,8 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // Returns true if the hotword supports the current system language.
   static bool DoesHotwordSupportLanguage(Profile* profile);
 
-  // Returns true if the "enable-experimental-hotwording" flag is set.
+  // Always returns true.
+  // TODO(amistry): Remove this.
   static bool IsExperimentalHotwordingEnabled();
 
   explicit HotwordService(Profile* profile);

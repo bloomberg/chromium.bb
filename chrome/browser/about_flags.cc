@@ -1935,13 +1935,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "disable-experimental-hotwording",
-    IDS_FLAGS_DISABLE_EXPERIMENTAL_HOTWORDING_NAME,
-    IDS_FLAGS_DISABLE_EXPERIMENTAL_HOTWORDING_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableExperimentalHotwording)
-  },
-  {
     "enable-hotword-hardware",
     IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORD_HARDWARE_NAME,
     IDS_FLAGS_ENABLE_EXPERIMENTAL_HOTWORD_HARDWARE_DESCRIPTION,

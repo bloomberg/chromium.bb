@@ -295,8 +295,7 @@ bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
 
 // static
 bool HotwordService::IsExperimentalHotwordingEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kDisableExperimentalHotwording);
+  return true;
 }
 
 #if defined(OS_CHROMEOS)
