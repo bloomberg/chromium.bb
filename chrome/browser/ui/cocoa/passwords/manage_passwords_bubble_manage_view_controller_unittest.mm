@@ -41,7 +41,6 @@ class ManagePasswordsBubbleManageViewControllerTest
     ManagePasswordsControllerTest::SetUp();
     delegate_.reset(
         [[ManagePasswordsBubbleManageViewTestDelegate alloc] init]);
-    ui_controller()->SetState(password_manager::ui::MANAGE_STATE);
   }
 
   ManagePasswordsBubbleManageViewTestDelegate* delegate() {
@@ -79,14 +78,14 @@ TEST_F(ManagePasswordsBubbleManageViewControllerTest,
 
 TEST_F(ManagePasswordsBubbleManageViewControllerTest,
        ShouldShowNoPasswordsWhenNoPasswordsExistForSite) {
-  EXPECT_TRUE(model()->best_matches().empty());
+  EXPECT_TRUE(model()->local_credentials().empty());
   EXPECT_EQ([NoPasswordsView class], [controller().contentView class]);
 }
 
 TEST_F(ManagePasswordsBubbleManageViewControllerTest,
        ShouldShowAllPasswordItemsWhenPasswordsExistForSite) {
   // Add a few password entries.
-  autofill::ConstPasswordFormMap map;
+  autofill::PasswordFormMap map;
   autofill::PasswordForm form1;
   form1.username_value = base::ASCIIToUTF16("username1");
   form1.password_value = base::ASCIIToUTF16("password1");
@@ -98,11 +97,11 @@ TEST_F(ManagePasswordsBubbleManageViewControllerTest,
   map[base::ASCIIToUTF16("username2")] = &form2;
 
   // Add the entries to the model.
-  ui_controller()->SetPasswordFormMap(map);
+  ui_controller()->OnPasswordAutofilled(map);
   model()->set_state(password_manager::ui::MANAGE_STATE);
 
   // Check the view state.
-  EXPECT_FALSE(model()->best_matches().empty());
+  EXPECT_FALSE(model()->local_credentials().empty());
   EXPECT_EQ([PasswordItemListView class], [controller().contentView class]);
   NSArray* items = base::mac::ObjCCastStrict<PasswordItemListView>(
       controller().contentView).itemViews;

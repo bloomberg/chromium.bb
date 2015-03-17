@@ -36,10 +36,10 @@ void AccountChooserInfoBarDelegateAndroid::ChooseCredential(
   }
   DCHECK(credential_type == CredentialType::CREDENTIAL_TYPE_LOCAL ||
          credential_type == CredentialType::CREDENTIAL_TYPE_FEDERATED);
-  auto& credentials_forms =
+  const auto& credentials_forms =
       (credential_type == CredentialType::CREDENTIAL_TYPE_LOCAL)
-          ? ui_controller_->local_credentials_forms()
-          : ui_controller_->federated_credentials_forms();
+          ? ui_controller_->GetCurrentForms()
+          : ui_controller_->GetFederatedForms();
   if (credential_index < credentials_forms.size()) {
     ui_controller_->ChooseCredential(*credentials_forms[credential_index],
                                      credential_type);

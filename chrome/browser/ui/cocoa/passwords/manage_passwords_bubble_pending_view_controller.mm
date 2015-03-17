@@ -53,7 +53,7 @@ using namespace password_manager::mac::ui;
 }
 
 - (void)onNeverForThisSiteClicked:(id)sender {
-  if (model_->best_matches().empty()) {
+  if (model_->local_credentials().empty()) {
     // Skip confirmation if there are no existing passwords for this site.
     model_->OnNeverForThisSiteClicked();
     [delegate_ viewShouldDismiss];

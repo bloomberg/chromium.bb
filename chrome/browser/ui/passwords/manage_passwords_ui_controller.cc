@@ -41,27 +41,6 @@ password_manager::PasswordStore* GetPasswordStore(
              ServiceAccessType::EXPLICIT_ACCESS).get();
 }
 
-autofill::ConstPasswordFormMap ConstifyMap(
-    const autofill::PasswordFormMap& map) {
-  autofill::ConstPasswordFormMap ret;
-  ret.insert(map.begin(), map.end());
-  return ret;
-}
-
-// Performs a deep copy of the PasswordForm pointers in |map|. The resulting map
-// is returned via |ret|. |deleter| is populated with these new objects.
-void DeepCopyMap(const autofill::PasswordFormMap& map,
-                 autofill::ConstPasswordFormMap* ret,
-                 ScopedVector<autofill::PasswordForm>* deleter) {
-  ConstifyMap(map).swap(*ret);
-  deleter->clear();
-  for (autofill::ConstPasswordFormMap::iterator i = ret->begin();
-       i != ret->end(); ++i) {
-    deleter->push_back(new autofill::PasswordForm(*i->second));
-    i->second = deleter->back();
-  }
-}
-
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ManagePasswordsUIController);
@@ -69,8 +48,9 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ManagePasswordsUIController);
 ManagePasswordsUIController::ManagePasswordsUIController(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      state_(password_manager::ui::INACTIVE_STATE),
       should_pop_up_bubble_(false) {
+  passwords_data_.set_client(
+      ChromePasswordManagerClient::FromWebContents(web_contents));
   password_manager::PasswordStore* password_store =
       GetPasswordStore(web_contents);
   if (password_store)
@@ -84,7 +64,7 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
   // display either the bubble or the icon.
   if (!BrowsingDataHelper::IsWebScheme(
           web_contents()->GetLastCommittedURL().scheme())) {
-    SetState(password_manager::ui::INACTIVE_STATE);
+    passwords_data_.OnInactive();
   }
 
 #if !defined(OS_ANDROID)
@@ -112,10 +92,7 @@ base::TimeDelta ManagePasswordsUIController::Elapsed() const {
 
 void ManagePasswordsUIController::OnPasswordSubmitted(
     scoped_ptr<PasswordFormManager> form_manager) {
-  form_manager_ = form_manager.Pass();
-  password_form_map_ = ConstifyMap(form_manager_->best_matches());
-  origin_ = PendingPassword().origin;
-  SetState(password_manager::ui::PENDING_PASSWORD_STATE);
+  passwords_data_.OnPendingPassword(form_manager.Pass());
   timer_.reset(new base::ElapsedTimer);
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
@@ -126,10 +103,10 @@ bool ManagePasswordsUIController::OnChooseCredentials(
     ScopedVector<autofill::PasswordForm> federated_credentials,
     const GURL& origin,
     base::Callback<void(const password_manager::CredentialInfo&)> callback) {
-  DCHECK(!local_credentials.empty() || !federated_credentials.empty());
-  SaveForms(local_credentials.Pass(), federated_credentials.Pass());
-  origin_ = origin;
-  SetState(password_manager::ui::CREDENTIAL_REQUEST_STATE);
+  DCHECK_IMPLIES(local_credentials.empty(), !federated_credentials.empty());
+  passwords_data_.OnRequestCredentials(local_credentials.Pass(),
+                                       federated_credentials.Pass(),
+                                       origin);
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
 #if defined(OS_ANDROID)
   UpdateAndroidAccountChooserInfoBarVisibility();
@@ -137,18 +114,17 @@ bool ManagePasswordsUIController::OnChooseCredentials(
   UpdateBubbleAndIconVisibility();
 #endif
   if (!should_pop_up_bubble_) {
-    credentials_callback_ = callback;
+    passwords_data_.set_credentials_callback(callback);
     return true;
   }
+  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
   return false;
 }
 
 void ManagePasswordsUIController::OnAutoSignin(
     ScopedVector<autofill::PasswordForm> local_forms) {
   DCHECK(!local_forms.empty());
-  SaveForms(local_forms.Pass(), ScopedVector<autofill::PasswordForm>());
-  origin_ = local_credentials_forms_[0]->origin;
-  SetState(password_manager::ui::AUTO_SIGNIN_STATE);
+  passwords_data_.OnAutoSignin(local_forms.Pass());
   timer_.reset(new base::ElapsedTimer);
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
@@ -156,61 +132,28 @@ void ManagePasswordsUIController::OnAutoSignin(
 
 void ManagePasswordsUIController::OnAutomaticPasswordSave(
     scoped_ptr<PasswordFormManager> form_manager) {
-  form_manager_ = form_manager.Pass();
-  password_form_map_ = ConstifyMap(form_manager_->best_matches());
-  password_form_map_[form_manager_->associated_username()] =
-      &form_manager_->pending_credentials();
-  origin_ = form_manager_->pending_credentials().origin;
-  SetState(password_manager::ui::CONFIRMATION_STATE);
+  passwords_data_.OnAutomaticPasswordSave(form_manager.Pass());
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
   UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::OnPasswordAutofilled(
     const PasswordFormMap& password_form_map) {
-  DeepCopyMap(password_form_map, &password_form_map_, &new_password_forms_);
-  origin_ = password_form_map_.begin()->second->origin;
-  // Don't show the UI for PSL matched passwords. They are not stored for this
-  // page and cannot be deleted.
-  SetState(password_form_map_.begin()->second->IsPublicSuffixMatch()
-               ? password_manager::ui::INACTIVE_STATE
-               : password_manager::ui::MANAGE_STATE);
+  passwords_data_.OnPasswordAutofilled(password_form_map);
   UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::OnBlacklistBlockedAutofill(
     const PasswordFormMap& password_form_map) {
-  DeepCopyMap(password_form_map, &password_form_map_, &new_password_forms_);
-  origin_ = password_form_map_.begin()->second->origin;
-  SetState(password_manager::ui::BLACKLIST_STATE);
+  passwords_data_.OnBlacklistBlockedAutofill(password_form_map);
   UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::OnLoginsChanged(
     const password_manager::PasswordStoreChangeList& changes) {
-  password_manager::ui::State current_state = state_;
-  for (password_manager::PasswordStoreChangeList::const_iterator it =
-           changes.begin();
-       it != changes.end();
-       it++) {
-    const autofill::PasswordForm& changed_form = it->form();
-    if (changed_form.origin != origin_)
-      continue;
-
-    if (it->type() == password_manager::PasswordStoreChange::REMOVE) {
-      password_form_map_.erase(changed_form.username_value);
-      if (changed_form.blacklisted_by_user)
-        SetState(password_manager::ui::MANAGE_STATE);
-    } else {
-      new_password_forms_.push_back(new autofill::PasswordForm(changed_form));
-      password_form_map_[changed_form.username_value] =
-          new_password_forms_.back();
-      if (changed_form.blacklisted_by_user)
-        SetState(password_manager::ui::BLACKLIST_STATE);
-    }
-  }
-  // TODO(vasilii): handle CREDENTIAL_REQUEST_STATE.
-  if (current_state != state_)
+  password_manager::ui::State current_state = state();
+  passwords_data_.ProcessLoginsChanged(changes);
+  if (current_state != state())
     UpdateBubbleAndIconVisibility();
 }
 
@@ -228,15 +171,15 @@ void ManagePasswordsUIController::
 void ManagePasswordsUIController::SavePassword() {
   DCHECK(PasswordPendingUserDecision());
   SavePasswordInternal();
-  SetState(password_manager::ui::MANAGE_STATE);
+  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
   UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::ChooseCredential(
     const autofill::PasswordForm& form,
     password_manager::CredentialType credential_type) {
-  DCHECK_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE, state_);
-  DCHECK(!credentials_callback_.is_null());
+  DCHECK_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE, state());
+  DCHECK(!passwords_data_.credentials_callback().is_null());
 
   // Here, |credential_type| refers to whether the credential was originally
   // passed into ::OnChooseCredentials as part of the |local_credentials| or
@@ -267,25 +210,30 @@ void ManagePasswordsUIController::ChooseCredential(
   }
   password_manager::CredentialInfo info =
       password_manager::CredentialInfo(form, type_to_return);
-  credentials_callback_.Run(info);
-  credentials_callback_.Reset();
+  passwords_data_.credentials_callback().Run(info);
+  passwords_data_.set_credentials_callback(
+      ManagePasswordsState::CredentialsCallback());
 }
 
 void ManagePasswordsUIController::SavePasswordInternal() {
-  DCHECK(form_manager_.get());
-  form_manager_->Save();
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  DCHECK(form_manager);
+  form_manager->Save();
 }
 
 void ManagePasswordsUIController::NeverSavePassword() {
   DCHECK(PasswordPendingUserDecision());
   NeverSavePasswordInternal();
-  SetState(password_manager::ui::BLACKLIST_STATE);
+  passwords_data_.TransitionToState(password_manager::ui::BLACKLIST_STATE);
   UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::NeverSavePasswordInternal() {
-  DCHECK(form_manager_.get());
-  form_manager_->PermanentlyBlacklist();
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  DCHECK(form_manager);
+  form_manager->PermanentlyBlacklist();
 }
 
 void ManagePasswordsUIController::UnblacklistSite() {
@@ -293,17 +241,17 @@ void ManagePasswordsUIController::UnblacklistSite() {
   // by clicking "Never save" in the pending bubble, or the user is visiting
   // a blacklisted site.
   //
-  // Either way, |password_form_map_| has been populated with the relevant
-  // form. We can safely pull it out, send it over to the password store
-  // for removal, and update our internal state.
-  DCHECK(!password_form_map_.empty());
-  DCHECK(password_form_map_.begin()->second);
-  DCHECK(state_ == password_manager::ui::BLACKLIST_STATE);
+  // Either way, |passwords_data_| has been populated with the relevant form. We
+  // can safely pull it out, send it over to the password store for removal, and
+  // update our internal state.
+  DCHECK(!passwords_data_.GetCurrentForms().empty());
+  DCHECK_EQ(password_manager::ui::BLACKLIST_STATE, state());
   password_manager::PasswordStore* password_store =
       GetPasswordStore(web_contents());
+  DCHECK(GetCurrentForms().front()->blacklisted_by_user);
   if (password_store)
-    password_store->RemoveLogin(*password_form_map_.begin()->second);
-  SetState(password_manager::ui::MANAGE_STATE);
+    password_store->RemoveLogin(*GetCurrentForms().front());
+  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
   UpdateBubbleAndIconVisibility();
 }
 
@@ -320,7 +268,7 @@ void ManagePasswordsUIController::DidNavigateMainFrame(
     return;
 
   // Otherwise, reset the password manager and the timer.
-  SetState(password_manager::ui::INACTIVE_STATE);
+  passwords_data_.OnInactive();
   UpdateBubbleAndIconVisibility();
   // This allows the bubble to survive several redirects in case the whole
   // process of navigating to the landing page is longer than 1 second.
@@ -333,23 +281,14 @@ void ManagePasswordsUIController::WasHidden() {
 #endif
 }
 
-void ManagePasswordsUIController::SetState(password_manager::ui::State state) {
-  password_manager::PasswordManagerClient* client =
-      ChromePasswordManagerClient::FromWebContents(web_contents());
-  // |client| might be NULL in tests.
-  if (client && client->IsLoggingActive()) {
-    password_manager::BrowserSavePasswordProgressLogger logger(client);
-    logger.LogNumber(
-        autofill::SavePasswordProgressLogger::STRING_NEW_UI_STATE,
-        state);
-  }
-  state_ = state;
-}
-
 const autofill::PasswordForm& ManagePasswordsUIController::
     PendingPassword() const {
-  DCHECK(form_manager_);
-  return form_manager_->pending_credentials();
+  DCHECK(state() == password_manager::ui::PENDING_PASSWORD_STATE ||
+         state() == password_manager::ui::CONFIRMATION_STATE) << state();
+  password_manager::PasswordFormManager* form_manager =
+      passwords_data_.form_manager();
+  DCHECK(form_manager);
+  return form_manager->pending_credentials();
 }
 
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
@@ -357,10 +296,10 @@ void ManagePasswordsUIController::UpdateIconAndBubbleState(
   if (should_pop_up_bubble_) {
     // We must display the icon before showing the bubble, as the bubble would
     // be otherwise unanchored.
-    icon->SetState(state_);
+    icon->SetState(state());
     ShowBubbleWithoutUserInteraction();
   } else {
-    icon->SetState(state_);
+    icon->SetState(state());
   }
 }
 
@@ -369,16 +308,19 @@ void ManagePasswordsUIController::OnBubbleShown() {
 }
 
 void ManagePasswordsUIController::OnBubbleHidden() {
-  password_manager::ui::State next_state = state_;
-  if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE)
-    next_state = password_manager::ui::INACTIVE_STATE;
-  else if (state_ == password_manager::ui::CONFIRMATION_STATE)
+  password_manager::ui::State next_state = state();
+  if (state() == password_manager::ui::CREDENTIAL_REQUEST_STATE)
     next_state = password_manager::ui::MANAGE_STATE;
-  else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE)
+  else if (state() == password_manager::ui::CONFIRMATION_STATE)
+    next_state = password_manager::ui::MANAGE_STATE;
+  else if (state() == password_manager::ui::AUTO_SIGNIN_STATE)
     next_state = password_manager::ui::INACTIVE_STATE;
 
-  if (next_state != state_) {
-    SetState(next_state);
+  if (next_state != state()) {
+    if (next_state == password_manager::ui::INACTIVE_STATE)
+      passwords_data_.OnInactive();
+    else
+      passwords_data_.TransitionToState(next_state);
     UpdateBubbleAndIconVisibility();
   }
 }
@@ -389,7 +331,7 @@ void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (!browser || browser->toolbar_model()->input_in_progress())
     return;
-  if (state_ == password_manager::ui::PENDING_PASSWORD_STATE &&
+  if (state() == password_manager::ui::PENDING_PASSWORD_STATE &&
       !password_bubble_experiment::ShouldShowBubble(
           browser->profile()->GetPrefs()))
     return;
@@ -398,25 +340,9 @@ void ManagePasswordsUIController::ShowBubbleWithoutUserInteraction() {
 #endif
 }
 
-bool ManagePasswordsUIController::PasswordPendingUserDecision() const {
-  return state_ == password_manager::ui::PENDING_PASSWORD_STATE;
-}
-
 void ManagePasswordsUIController::WebContentsDestroyed() {
   password_manager::PasswordStore* password_store =
       GetPasswordStore(web_contents());
   if (password_store)
     password_store->RemoveObserver(this);
-}
-
-void ManagePasswordsUIController::SaveForms(
-    ScopedVector<autofill::PasswordForm> local_forms,
-    ScopedVector<autofill::PasswordForm> federated_forms) {
-  form_manager_.reset();
-  origin_ = GURL();
-  local_credentials_forms_.swap(local_forms);
-  federated_credentials_forms_.swap(federated_forms);
-  // The map is useless because usernames may overlap.
-  password_form_map_.clear();
-  new_password_forms_.clear();
 }

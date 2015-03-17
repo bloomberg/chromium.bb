@@ -163,7 +163,7 @@ class ManagePasswordsBubbleView::AccountChooserView
   // Adds |password_forms| to the layout remembering their |type|.
   void AddCredentialItemsWithType(
       views::GridLayout* layout,
-      const ScopedVector<autofill::PasswordForm>& password_forms,
+      const ScopedVector<const autofill::PasswordForm>& password_forms,
       password_manager::CredentialType type);
 
   ManagePasswordsBubbleView* parent_;
@@ -188,11 +188,11 @@ ManagePasswordsBubbleView::AccountChooserView::AccountChooserView(
   AddTitleRow(layout, parent_->model());
 
   AddCredentialItemsWithType(
-      layout, parent_->model()->local_pending_credentials(),
+      layout, parent_->model()->local_credentials(),
       password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL);
 
   AddCredentialItemsWithType(
-      layout, parent_->model()->federated_pending_credentials(),
+      layout, parent_->model()->federated_credentials(),
       password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED);
 
   // Button row.
@@ -212,11 +212,11 @@ ManagePasswordsBubbleView::AccountChooserView::~AccountChooserView() {
 
 void ManagePasswordsBubbleView::AccountChooserView::AddCredentialItemsWithType(
     views::GridLayout* layout,
-    const ScopedVector<autofill::PasswordForm>& password_forms,
+    const ScopedVector<const autofill::PasswordForm>& password_forms,
     password_manager::CredentialType type) {
   net::URLRequestContextGetter* request_context =
       parent_->model()->GetProfile()->GetRequestContext();
-  for (autofill::PasswordForm* form : password_forms) {
+  for (const autofill::PasswordForm* form : password_forms) {
     // Add the title to the layout with appropriate padding.
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(new CredentialsItemView(
@@ -511,13 +511,9 @@ ManagePasswordsBubbleView::ManageView::ManageView(
   // If we have a list of passwords to store for the current site, display
   // them to the user for management. Otherwise, render a "No passwords for
   // this site" message.
-  if (!parent_->model()->best_matches().empty()) {
-    std::vector<const autofill::PasswordForm*> password_forms;
-    for (auto password_form : parent_->model()->best_matches()) {
-      password_forms.push_back(password_form.second);
-    }
+  if (!parent_->model()->local_credentials().empty()) {
     ManagePasswordItemsView* item = new ManagePasswordItemsView(
-        parent_->model(), password_forms);
+        parent_->model(), parent_->model()->local_credentials().get());
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(item);
   } else {
@@ -613,9 +609,9 @@ ManagePasswordsBubbleView::ManageAccountsView::ManageAccountsView(
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
   AddTitleRow(layout, parent_->model());
 
-  if (!parent_->model()->local_pending_credentials().empty()) {
+  if (!parent_->model()->local_credentials().empty()) {
     for (const autofill::PasswordForm* form :
-        parent_->model()->local_pending_credentials()) {
+         parent_->model()->local_credentials()) {
       layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
       layout->AddView(new ManageCredentialItemView(parent_->model(), form));
     }
@@ -1017,7 +1013,7 @@ void ManagePasswordsBubbleView::NotifyUndoNeverForThisSite() {
 }
 
 void ManagePasswordsBubbleView::NotifyNeverForThisSiteClicked() {
-  if (model()->best_matches().empty()) {
+  if (model()->local_credentials().empty()) {
     // Skip confirmation if there are no existing passwords for this site.
     NotifyConfirmedNeverForThisSite();
   } else {

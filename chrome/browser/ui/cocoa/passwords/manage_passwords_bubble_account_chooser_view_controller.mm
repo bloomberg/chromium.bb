@@ -221,7 +221,7 @@
 + (NSArray*)credentialItemsForModel:(ManagePasswordsBubbleModel*)model
                            delegate:(id<CredentialItemDelegate>)delegate {
   base::scoped_nsobject<NSMutableArray> items([[NSMutableArray alloc] init]);
-  for (auto form : model->local_pending_credentials()) {
+  for (auto form : model->local_credentials()) {
     base::scoped_nsobject<CredentialItemView> item([[CredentialItemView alloc]
         initWithPasswordForm:*form
               credentialType:password_manager::CredentialType::
@@ -229,7 +229,7 @@
                     delegate:delegate]);
     [items addObject:item];
   }
-  for (auto form : model->federated_pending_credentials()) {
+  for (auto form : model->federated_credentials()) {
     base::scoped_nsobject<CredentialItemView> item([[CredentialItemView alloc]
         initWithPasswordForm:*form
               credentialType:password_manager::CredentialType::

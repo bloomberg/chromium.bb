@@ -69,9 +69,10 @@ void ManagePasswordsTest::SetupAutomaticPassword() {
 }
 
 void ManagePasswordsTest::SetupBlackistedPassword() {
-  base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
+  test_form()->blacklisted_by_user = true;
+  test_form()->username_value.clear();
   autofill::PasswordFormMap map;
-  map[kTestUsername] = test_form();
+  map[test_form()->username_value] = test_form();
   GetController()->OnBlacklistBlockedAutofill(map);
 }
 

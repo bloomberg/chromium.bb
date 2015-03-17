@@ -27,13 +27,12 @@ using namespace password_manager::mac::ui;
     const CGFloat curX = 0;
     CGFloat maxX = 0;
     CGFloat curY = 0;
-    for (autofill::ConstPasswordFormMap::const_reverse_iterator i =
-             model->best_matches().rbegin();
-         i != model->best_matches().rend();
+    for (auto i = model->local_credentials().rbegin();
+         i != model->local_credentials().rend();
          ++i) {
-      autofill::PasswordForm form = *i->second;
+      const autofill::PasswordForm& form = **i;
       password_manager::ui::PasswordItemPosition position =
-          (&(*i) == &(*model->best_matches().begin()))
+          (&(*i) == &(*model->local_credentials().begin()))
               ? password_manager::ui::FIRST_ITEM
               : password_manager::ui::SUBSEQUENT_ITEM;
       base::scoped_nsobject<ManagePasswordItemViewController> item(
@@ -123,7 +122,7 @@ using namespace password_manager::mac::ui;
   // Content. If we have a list of passwords to store for the current site, we
   // display them to the user for management. Otherwise, we show a "No passwords
   // for this site" message.
-  if (model_->best_matches().empty()) {
+  if (model_->local_credentials().empty()) {
     const CGFloat noPasswordsWidth = std::max(
         kDesiredBubbleWidth - 2 * kFramePadding, NSWidth([titleLabel frame]));
     contentView_.reset(

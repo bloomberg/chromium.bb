@@ -61,41 +61,15 @@ base::string16 PendingStateTitleBasedOnSavePasswordPref(
                            : IDS_SAVE_PASSWORD);
 }
 
-class URLCollectionFeedbackSender {
- public:
-  URLCollectionFeedbackSender(content::BrowserContext* context,
-                              const std::string& url);
-  void SendFeedback();
-
- private:
-  static const char kPasswordManagerURLCollectionBucket[];
-  content::BrowserContext* context_;
-  std::string url_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLCollectionFeedbackSender);
-};
-
-const char URLCollectionFeedbackSender::kPasswordManagerURLCollectionBucket[] =
-    "ChromePasswordManagerFailure";
-
-URLCollectionFeedbackSender::URLCollectionFeedbackSender(
-    content::BrowserContext* context,
-    const std::string& url)
-    : context_(context), url_(url) {
-}
-
-void URLCollectionFeedbackSender::SendFeedback() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  scoped_refptr<FeedbackData> feedback_data = new FeedbackData();
-  feedback_data->set_category_tag(kPasswordManagerURLCollectionBucket);
-  feedback_data->set_description("");
-
-  feedback_data->set_image(make_scoped_ptr(new std::string));
-
-  feedback_data->set_page_url(url_);
-  feedback_data->set_user_email("");
-  feedback_data->set_context(context_);
-  feedback_util::SendReport(feedback_data);
+ScopedVector<const autofill::PasswordForm> DeepCopyForms(
+    const std::vector<const autofill::PasswordForm*>& forms) {
+  ScopedVector<const autofill::PasswordForm> result;
+  result.reserve(forms.size());
+  std::transform(forms.begin(), forms.end(), std::back_inserter(result),
+                 [](const autofill::PasswordForm* form) {
+    return new autofill::PasswordForm(*form);
+  });
+  return result.Pass();
 }
 
 }  // namespace
@@ -113,15 +87,16 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   state_ = controller->state();
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
     pending_password_ = controller->PendingPassword();
-    best_matches_ = controller->best_matches();
+    local_credentials_ = DeepCopyForms(controller->GetCurrentForms());
+  } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
+    // We don't need anything.
   } else if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
-    local_pending_credentials_.swap(controller->local_credentials_forms());
-    federated_pending_credentials_.swap(
-        controller->federated_credentials_forms());
+    local_credentials_ = DeepCopyForms(controller->GetCurrentForms());
+    federated_credentials_ = DeepCopyForms(controller->GetFederatedForms());
   } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
-    pending_password_ = *controller->local_credentials_forms()[0];
+    pending_password_ = *controller->GetCurrentForms()[0];
   } else {
-    best_matches_ = controller->best_matches();
+    local_credentials_ = DeepCopyForms(controller->GetCurrentForms());
   }
 
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
@@ -195,17 +170,6 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
       web_contents() ?
           ManagePasswordsUIController::FromWebContents(web_contents())
           : nullptr;
-  if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE &&
-      manage_passwords_ui_controller) {
-    // It's time to run the pending callback if it wasn't called in
-    // OnChooseCredentials().
-    // TODO(vasilii): remove this. It's not a bubble's problem because the
-    // controller is notified anyway about closed bubble.
-    manage_passwords_ui_controller->ChooseCredential(
-        autofill::PasswordForm(),
-        password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);
-    state_ = password_manager::ui::INACTIVE_STATE;
-  }
   if (manage_passwords_ui_controller)
     manage_passwords_ui_controller->OnBubbleHidden();
   if (dismissal_reason_ == metrics_util::NOT_DISPLAYED)

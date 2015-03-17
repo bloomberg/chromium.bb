@@ -95,16 +95,15 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   const autofill::PasswordForm& pending_password() const {
     return pending_password_;
   }
-  const autofill::ConstPasswordFormMap& best_matches() const {
-    return best_matches_;
+  // Returns the available credentials which match the current site.
+  const ScopedVector<const autofill::PasswordForm>& local_credentials() const {
+    return local_credentials_;
   }
-  const ScopedVector<autofill::PasswordForm>& local_pending_credentials()
+  // Return the federated logins which may be used for logging in to the current
+  // site.
+  const ScopedVector<const autofill::PasswordForm>& federated_credentials()
       const {
-    return local_pending_credentials_;
-  }
-  const ScopedVector<autofill::PasswordForm>& federated_pending_credentials()
-      const {
-    return federated_pending_credentials_;
+    return federated_credentials_;
   }
   const base::string16& manage_link() const { return manage_link_; }
   bool never_save_passwords() const { return never_save_passwords_; }
@@ -133,7 +132,7 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   void set_state(password_manager::ui::State state) { state_ = state; }
 #endif
 
-// Upper limits on the size of the username and password fields.
+  // Upper limits on the size of the username and password fields.
   static int UsernameFieldWidth();
   static int PasswordFieldWidth();
 
@@ -143,9 +142,8 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   password_manager::ui::State state_;
   base::string16 title_;
   autofill::PasswordForm pending_password_;
-  autofill::ConstPasswordFormMap best_matches_;
-  ScopedVector<autofill::PasswordForm> local_pending_credentials_;
-  ScopedVector<autofill::PasswordForm> federated_pending_credentials_;
+  ScopedVector<const autofill::PasswordForm> local_credentials_;
+  ScopedVector<const autofill::PasswordForm> federated_credentials_;
   base::string16 manage_link_;
   base::string16 save_confirmation_text_;
   gfx::Range save_confirmation_link_range_;

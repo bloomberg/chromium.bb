@@ -74,20 +74,20 @@ TEST_F(ManagePasswordsBubbleBlacklistViewControllerTest,
 
 TEST_F(ManagePasswordsBubbleBlacklistViewControllerTest,
        ShouldDismissAndUnblacklistWhenUnblacklistClicked) {
-  ui_controller()->SetState(password_manager::ui::BLACKLIST_STATE);
   // Unblacklisting requires passwords to exist for the site.
   autofill::PasswordForm form;
   form.username_value = base::ASCIIToUTF16("username");
   form.password_value = base::ASCIIToUTF16("password");
-  autofill::ConstPasswordFormMap map;
+  form.blacklisted_by_user = true;
+  autofill::PasswordFormMap map;
   map[base::ASCIIToUTF16("username")] = &form;
-  ui_controller()->SetPasswordFormMap(map);
+  ui_controller()->OnBlacklistBlockedAutofill(map);
 
   EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, ui_controller()->state());
   NSButton* undoButton = controller().undoBlacklistButton;
   [undoButton performClick:nil];
   EXPECT_TRUE(delegate().dismissed);
-  EXPECT_NE(password_manager::ui::BLACKLIST_STATE, ui_controller()->state());
+  EXPECT_TRUE(ui_controller()->unblacklist_site());
 }
 
 }  // namespace

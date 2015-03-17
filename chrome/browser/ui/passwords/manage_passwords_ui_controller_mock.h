@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/browser/navigation_details.h"
 
@@ -38,11 +39,14 @@ class ManagePasswordsUIControllerMock
   }
 
   // We don't have a FormManager in tests, so stub these out.
-  void SavePasswordInternal() override;
+  void SavePassword() override;
   bool saved_password() const { return saved_password_; }
 
-  void NeverSavePasswordInternal() override;
+  void NeverSavePassword() override;
   bool never_saved_password() const { return never_saved_password_; }
+
+  void UnblacklistSite() override;
+  bool unblacklist_site() const { return unblacklist_site_; }
 
   void ChooseCredential(const autofill::PasswordForm& form,
                         password_manager::CredentialType form_type) override;
@@ -56,30 +60,27 @@ class ManagePasswordsUIControllerMock
 
   void UpdateAndroidAccountChooserInfoBarVisibility() override;
 
-  base::TimeDelta Elapsed() const override;
+  // Simulate the pending password state. |best_matches| can't be empty.
+  void PretendSubmittedPassword(
+    ScopedVector<autofill::PasswordForm> best_matches);
 
-  // Sneaky setters for testing.
-  void SetPasswordFormMap(const autofill::ConstPasswordFormMap& map) {
-    password_form_map_ = map;
-  }
-  using ManagePasswordsUIController::SetState;
-
-  void SetElapsed(base::TimeDelta elapsed) { elapsed_ = elapsed; }
-
-  // True if this controller is installed on |web_contents()|.
-  bool IsInstalled() const;
-
-  using ManagePasswordsUIController::DidNavigateMainFrame;
+  static scoped_ptr<password_manager::PasswordFormManager> CreateFormManager(
+      password_manager::PasswordManagerClient* client,
+      const autofill::PasswordForm& observed_form,
+      ScopedVector<autofill::PasswordForm> best_matches);
 
  private:
   bool navigated_to_settings_page_;
   bool saved_password_;
   bool never_saved_password_;
+  bool unblacklist_site_;
   bool choose_credential_;
   base::TimeDelta elapsed_;
 
   autofill::PasswordForm chosen_credential_;
   autofill::PasswordForm pending_password_;
+
+  password_manager::StubPasswordManagerClient client_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsUIControllerMock);
 };

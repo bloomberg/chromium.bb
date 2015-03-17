@@ -58,7 +58,6 @@ class ManagePasswordsBubblePendingViewControllerTest
     ManagePasswordsControllerTest::SetUp();
     delegate_.reset(
         [[ManagePasswordsBubblePendingViewTestDelegate alloc] init]);
-    ui_controller()->SetState(password_manager::ui::PENDING_PASSWORD_STATE);
   }
 
   ManagePasswordsBubblePendingViewTestDelegate* delegate() {
@@ -116,10 +115,10 @@ TEST_F(ManagePasswordsBubblePendingViewControllerTest,
   autofill::PasswordForm form;
   form.username_value = base::ASCIIToUTF16("username");
   form.password_value = base::ASCIIToUTF16("password");
-  autofill::ConstPasswordFormMap map;
-  map[base::ASCIIToUTF16("username")] = &form;
-  ui_controller()->SetPasswordFormMap(map);
-  EXPECT_FALSE(model()->best_matches().empty());
+  ScopedVector<autofill::PasswordForm> forms;
+  forms.push_back(new autofill::PasswordForm(form));
+  ui_controller()->PretendSubmittedPassword(forms.Pass());
+  EXPECT_FALSE(model()->local_credentials().empty());
 
   BubbleCombobox* nopeButton = [controller() nopeButton];
   ClickMenuItem(nopeButton,

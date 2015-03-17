@@ -90,7 +90,6 @@ class ManagePasswordsBubbleAccountChooserViewControllerTest
     delegate_.reset(
         [[ManagePasswordsBubbleAccountChooserViewTestDelegate alloc] init]);
     avatar_manager_.reset([[AccountAvatarFetcherTestManager alloc] init]);
-    ui_controller()->SetState(password_manager::ui::CREDENTIAL_REQUEST_STATE);
   }
 
   ManagePasswordsBubbleAccountChooserViewTestDelegate* delegate() {
@@ -122,8 +121,15 @@ class ManagePasswordsBubbleAccountChooserViewControllerTest
 };
 
 TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest, ConfiguresViews) {
-  ui_controller()->local_credentials_forms().push_back(Credential("pizza"));
-  ui_controller()->federated_credentials_forms().push_back(Credential("taco"));
+  ScopedVector<autofill::PasswordForm> local_forms;
+  local_forms.push_back(Credential("pizza"));
+  ScopedVector<autofill::PasswordForm> federated_forms;
+  federated_forms.push_back(Credential("taco"));
+  EXPECT_TRUE(ui_controller()->OnChooseCredentials(
+      local_forms.Pass(),
+      federated_forms.Pass(),
+      GURL("http://example.com"),
+      base::Callback<void(const password_manager::CredentialInfo&)>()));
   // Trigger creation of controller and check the views.
   NSTableView* view = controller().credentialsView;
   EXPECT_EQ(2U, view.numberOfRows);
@@ -144,9 +150,14 @@ TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest, ConfiguresViews) {
 
 TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
        ForwardsAvatarFetchToManager) {
-  scoped_ptr<autofill::PasswordForm> credential(Credential("taco"));
-  credential->avatar_url = GURL("http://foo");
-  ui_controller()->local_credentials_forms().push_back(credential.Pass());
+  ScopedVector<autofill::PasswordForm> local_forms;
+  local_forms.push_back(Credential("taco"));
+  local_forms.back()->avatar_url = GURL("http://foo");
+  EXPECT_TRUE(ui_controller()->OnChooseCredentials(
+      local_forms.Pass(),
+      ScopedVector<autofill::PasswordForm>(),
+      GURL("http://example.com"),
+      base::Callback<void(const password_manager::CredentialInfo&)>()));
   // Trigger creation of the controller and check the fetched URLs.
   controller();
   EXPECT_FALSE(avatar_manager().fetchedAvatars.empty());
@@ -158,15 +169,23 @@ TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
 
 TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
        SelectingCredentialInformsModelAndClosesDialog) {
-  ui_controller()->local_credentials_forms().push_back(Credential("pizza"));
-  ui_controller()->federated_credentials_forms().push_back(Credential("taco"));
+  ScopedVector<autofill::PasswordForm> local_forms;
+  local_forms.push_back(Credential("pizza"));
+  ScopedVector<autofill::PasswordForm> federated_forms;
+  federated_forms.push_back(Credential("taco"));
+  EXPECT_TRUE(ui_controller()->OnChooseCredentials(
+      local_forms.Pass(),
+      federated_forms.Pass(),
+      GURL("http://example.com"),
+      base::Callback<void(const password_manager::CredentialInfo&)>()));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
             ui_controller()->state());
   [controller().credentialsView
           selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
       byExtendingSelection:NO];
   EXPECT_TRUE(delegate().dismissed);
-  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, ui_controller()->state());
+  EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
+            ui_controller()->state());
   EXPECT_TRUE(ui_controller()->choose_credential());
   EXPECT_EQ(base::ASCIIToUTF16("taco"),
             ui_controller()->chosen_credential().username_value);

@@ -31,7 +31,7 @@ class ManagePasswordsState {
   ManagePasswordsState();
   ~ManagePasswordsState();
 
-  // Set the client for logging.
+  // The embedder of this class has to set the client for logging.
   void set_client(password_manager::PasswordManagerClient* client) {
     client_ = client;
   }
