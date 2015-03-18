@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
+#include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/strings/grit/components_strings.h"
 #include "grit/components_strings.h"
@@ -45,6 +46,17 @@ base::string16 ReplaceEmptyUsername(const base::string16& username) {
   return username;
 }
 
+// Returns the prettified version of |signon_realm| to be displayed on the UI.
+base::string16 GetHumanReadableRealm(const std::string& signon_realm) {
+  // For Android application realms, remove the hash component. Otherwise, make
+  // no changes.
+  FacetURI maybe_facet_uri(FacetURI::FromPotentiallyInvalidSpec(signon_realm));
+  if (maybe_facet_uri.IsValidAndroidFacetURI())
+    return base::UTF8ToUTF16("android://" +
+                             maybe_facet_uri.android_package_name() + "/");
+  return base::UTF8ToUTF16(signon_realm);
+}
+
 // This function attempts to fill |suggestions| and |realms| form |fill_data|
 // based on |current_username|. Unless |show_all| is true, it only picks
 // suggestions where the username has |current_username| as a prefix.
@@ -56,7 +68,7 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
       StartsWith(fill_data.username_field.value, current_username, false)) {
     autofill::Suggestion suggestion(
         ReplaceEmptyUsername(fill_data.username_field.value));
-    suggestion.label = base::UTF8ToUTF16(fill_data.preferred_realm);
+    suggestion.label = GetHumanReadableRealm(fill_data.preferred_realm);
     suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
     suggestions->push_back(suggestion);
   }
@@ -64,7 +76,7 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
   for (const auto& login : fill_data.additional_logins) {
     if (show_all || StartsWith(login.first, current_username, false)) {
       autofill::Suggestion suggestion(ReplaceEmptyUsername(login.first));
-      suggestion.label = base::UTF8ToUTF16(login.second.realm);
+      suggestion.label = GetHumanReadableRealm(login.second.realm);
       suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
       suggestions->push_back(suggestion);
     }
@@ -76,7 +88,7 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
           StartsWith(usernames.second[i], current_username, false)) {
         autofill::Suggestion suggestion(
             ReplaceEmptyUsername(usernames.second[i]));
-        suggestion.label = base::UTF8ToUTF16(usernames.first.realm);
+        suggestion.label = GetHumanReadableRealm(usernames.first.realm);
         suggestion.frontend_id = autofill::POPUP_ITEM_ID_PASSWORD_ENTRY;
         suggestions->push_back(suggestion);
       }

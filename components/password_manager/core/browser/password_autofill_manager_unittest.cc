@@ -33,6 +33,7 @@ const char kAlicePassword[] = "password";
 using autofill::Suggestion;
 using autofill::SuggestionVectorIdsAre;
 using autofill::SuggestionVectorValuesAre;
+using autofill::SuggestionVectorLabelsAre;
 using testing::_;
 
 namespace autofill {
@@ -229,12 +230,19 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
 
-  // First, simulate displaying suggestions matching an empty prefix.
+  // First, simulate displaying suggestions matching an empty prefix. Also
+  // verify that both the values and labels are filled correctly. The 'value'
+  // should be the user name; the 'label' should be the realm.
   EXPECT_CALL(*autofill_client,
               ShowAutofillPopup(
                   element_bounds, _,
-                  SuggestionVectorValuesAre(testing::UnorderedElementsAre(
-                      test_username_, additional_username, other_username)),
+                  testing::AllOf(
+                      SuggestionVectorValuesAre(testing::UnorderedElementsAre(
+                          test_username_, additional_username, other_username)),
+                      SuggestionVectorLabelsAre(testing::UnorderedElementsAre(
+                          base::UTF8ToUTF16(data.preferred_realm),
+                          base::UTF8ToUTF16(additional.realm),
+                          base::UTF8ToUTF16(usernames_key.realm)))),
                   _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::string16(), false,
@@ -262,6 +270,46 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("xyz"), true,
       element_bounds);
+}
+
+// Verify that, for Android application credentials, the prettified realms of
+// applications are displayed as the labels of suggestions on the UI (for
+// matches of all levels of preferredness).
+TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
+  scoped_ptr<TestPasswordManagerClient> client(new TestPasswordManagerClient);
+  scoped_ptr<MockAutofillClient> autofill_client(new MockAutofillClient);
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  autofill::PasswordFormFillData data;
+  data.username_field.value = test_username_;
+  data.preferred_realm = "android://hash@com.example1.android/";
+
+  autofill::PasswordAndRealm additional;
+  additional.realm = "android://hash@com.example2.android/";
+  base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
+  data.additional_logins[additional_username] = additional;
+
+  autofill::UsernamesCollectionKey usernames_key;
+  usernames_key.realm = "android://hash@com.example3.android/";
+  std::vector<base::string16> other_names;
+  base::string16 other_username(base::ASCIIToUTF16("John Different"));
+  other_names.push_back(other_username);
+  data.other_possible_usernames[usernames_key] = other_names;
+
+  const int dummy_key = 0;
+  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
+
+  EXPECT_CALL(
+      *autofill_client,
+      ShowAutofillPopup(
+          _, _, SuggestionVectorLabelsAre(testing::UnorderedElementsAre(
+                    base::ASCIIToUTF16("android://com.example1.android/"),
+                    base::ASCIIToUTF16("android://com.example2.android/"),
+                    base::ASCIIToUTF16("android://com.example3.android/"))),
+          _));
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      dummy_key, base::i18n::RIGHT_TO_LEFT, base::string16(), false,
+      gfx::RectF());
 }
 
 TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {

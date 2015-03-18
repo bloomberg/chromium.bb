@@ -62,13 +62,22 @@ SuggestionVectorIdsAre(const EltsAreMatcher& elts_are_matcher) {
           elts_are_matcher, &Suggestion::frontend_id));
 }
 
-// Like SuggestionVectorIdsAre but tests the values instead of ID.
+// Like SuggestionVectorIdsAre above, but tests the values.
 template<class EltsAreMatcher>
 inline testing::Matcher<const std::vector<Suggestion>&>
 SuggestionVectorValuesAre(const EltsAreMatcher& elts_are_matcher) {
   return testing::MakeMatcher(
       new SuggestionVectorMembersAreMatcher<base::string16>(
           elts_are_matcher, &Suggestion::value));
+}
+
+// Like SuggestionVectorIdsAre above, but tests the labels.
+template<class EltsAreMatcher>
+inline testing::Matcher<const std::vector<Suggestion>&>
+SuggestionVectorLabelsAre(const EltsAreMatcher& elts_are_matcher) {
+  return testing::MakeMatcher(
+      new SuggestionVectorMembersAreMatcher<base::string16>(
+          elts_are_matcher, &Suggestion::label));
 }
 
 }  // namespace autofill
