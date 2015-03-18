@@ -378,7 +378,7 @@ HotwordService::HotwordService(Profile* profile)
       IsHotwordAllowed() &&
       IsExperimentalHotwordingEnabled()) {
     // Show the hotword notification in 5 seconds if the experimental flag is
-    // on, or in 30 minutes if not. We need to wait at least a few seconds
+    // on, or in 10 minutes if not. We need to wait at least a few seconds
     // for the hotword extension to be installed.
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kEnableExperimentalHotwordHardware)) {
@@ -393,7 +393,7 @@ HotwordService::HotwordService(Profile* profile)
           FROM_HERE,
           base::Bind(&HotwordService::ShowHotwordNotification,
                      weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMinutes(30));
+          base::TimeDelta::FromMinutes(10));
     }
   }
 
