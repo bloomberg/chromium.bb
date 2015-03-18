@@ -231,6 +231,7 @@ VTTCue::VTTCue(Document& document, double startTime, double endTime, const Strin
     , m_displayTreeShouldChange(true)
 {
     UseCounter::count(document, UseCounter::VTTCue);
+    m_cueBackgroundBox->setShadowPseudoId(cueShadowPseudoId());
 }
 
 VTTCue::~VTTCue()
@@ -252,13 +253,6 @@ String VTTCue::toString() const
     return String::format("%p id=%s interval=%f-->%f cue=%s)", this, id().utf8().data(), startTime(), endTime(), text().utf8().data());
 }
 #endif
-
-VTTCueBox& VTTCue::ensureDisplayTree()
-{
-    if (!m_displayTree)
-        m_displayTree = VTTCueBox::create(document(), this);
-    return *m_displayTree;
-}
 
 void VTTCue::cueDidChange()
 {
@@ -799,48 +793,28 @@ void VTTCue::updateDisplayTree(double movieTime)
 
 PassRefPtrWillBeRawPtr<VTTCueBox> VTTCue::getDisplayTree()
 {
-    RefPtrWillBeRawPtr<VTTCueBox> displayTree(ensureDisplayTree());
-    if (!m_displayTreeShouldChange || !track()->isRendered())
-        return displayTree.release();
+    ASSERT(track() && track()->isRendered() && isActive());
+
+    if (!m_displayTree) {
+        m_displayTree = VTTCueBox::create(document(), this);
+        m_displayTree->appendChild(m_cueBackgroundBox);
+    }
+
+    ASSERT(m_displayTree->firstChild() == m_cueBackgroundBox);
+
+    // Note: It is updateDisplayTree() which actually adds the child
+    // nodes to m_cueBackgroundBox.
+
+    if (!m_displayTreeShouldChange)
+        return m_displayTree;
 
     createVTTNodeTree();
-
-    // 10.1 - 10.10
     VTTDisplayParameters displayParameters = calculateDisplayParameters();
-
-    // 10.11. Apply the terms of the CSS specifications to nodes within the
-    // following constraints, thus obtaining a set of CSS boxes positioned
-    // relative to an initial containing block:
-    displayTree->removeChildren();
-
-    // The document tree is the tree of WebVTT Node Objects rooted at nodes.
-
-    // The children of the nodes must be wrapped in an anonymous box whose
-    // 'display' property has the value 'inline'. This is the WebVTT cue
-    // background box.
-
-    // Note: This is contained by default in m_cueBackgroundBox.
-    m_cueBackgroundBox->setShadowPseudoId(cueShadowPseudoId());
-    displayTree->appendChild(m_cueBackgroundBox);
-
-    // FIXME(BUG 79916): Runs of children of WebVTT Ruby Objects that are not
-    // WebVTT Ruby Text Objects must be wrapped in anonymous boxes whose
-    // 'display' property has the value 'ruby-base'.
-
-    // FIXME(BUG 79916): Text runs must be wrapped according to the CSS
-    // line-wrapping rules, except that additionally, regardless of the value of
-    // the 'white-space' property, lines must be wrapped at the edge of their
-    // containing blocks, even if doing so requires splitting a word where there
-    // is no line breaking opportunity. (Thus, normally text wraps as needed,
-    // but if there is a particularly long word, it does not overflow as it
-    // normally would in CSS, it is instead forcibly wrapped at the box's edge.)
-    displayTree->applyCSSProperties(displayParameters);
+    m_displayTree->applyCSSProperties(displayParameters);
 
     m_displayTreeShouldChange = false;
 
-    // 10.15. Let cue's text track cue display state have the CSS boxes in
-    // boxes.
-    return displayTree.release();
+    return m_displayTree;
 }
 
 void VTTCue::removeDisplayTree(RemovalNotification removalNotification)
@@ -858,6 +832,8 @@ void VTTCue::removeDisplayTree(RemovalNotification removalNotification)
 
 void VTTCue::updateDisplay(HTMLDivElement& container)
 {
+    ASSERT(track() && track()->isRendered() && isActive());
+
     UseCounter::count(document(), UseCounter::VTTCueRender);
 
     if (m_writingDirection != Horizontal)

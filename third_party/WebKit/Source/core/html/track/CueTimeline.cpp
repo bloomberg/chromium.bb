@@ -330,9 +330,7 @@ void CueTimeline::updateActiveCues(double movieTime)
 
     // Update the current active cues.
     m_currentlyActiveCues = currentCues;
-
-    if (activeSetChanged)
-        mediaElement.updateTextTrackDisplay();
+    mediaElement.updateTextTrackDisplay();
 }
 
 void CueTimeline::beginIgnoringUpdateRequests()

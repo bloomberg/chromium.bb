@@ -148,7 +148,6 @@ private:
 
     Document& document() const;
 
-    VTTCueBox& ensureDisplayTree();
     PassRefPtrWillBeRawPtr<VTTCueBox> getDisplayTree();
 
     virtual void cueDidChange() override;
