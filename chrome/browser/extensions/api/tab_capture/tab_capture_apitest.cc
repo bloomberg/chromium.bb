@@ -270,7 +270,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
 
 // Flaky on Windows: http://crbug.com/177163
 // Flaky on Linux ASan: http://crbug.com/468256
-#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(ADDRESS_SANITIZER)
+#if (defined(OS_WIN) && !defined(NDEBUG)) || \
+    (defined(OS_LINUX) && defined(ADDRESS_SANITIZER))
 #define MAYBE_CaptureInSplitIncognitoMode DISABLED_CaptureInSplitIncognitoMode
 #else
 #define MAYBE_CaptureInSplitIncognitoMode CaptureInSplitIncognitoMode
@@ -300,7 +301,8 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
 
 // Flaky on Windows: http://crbug.com/177163
 // Flaky on Linux ASan: http://crbug.com/468256
-#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(ADDRESS_SANITIZER)
+#if (defined(OS_WIN) && !defined(NDEBUG)) || \
+    (defined(OS_LINUX) && defined(ADDRESS_SANITIZER))
 #define MAYBE_TabIndicator DISABLED_TabIndicator
 #else
 #define MAYBE_TabIndicator TabIndicator
