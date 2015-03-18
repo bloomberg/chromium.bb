@@ -13,6 +13,8 @@ import android.util.Base64;
 import android.view.View;
 import android.webkit.WebChromeClient;
 
+import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
+
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.android_webview.AwWebResourceResponse;
@@ -20,7 +22,6 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content.browser.ContentViewCore;
@@ -29,6 +30,8 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.io.ByteArrayInputStream;
+import java.io.FilterInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import java.util.concurrent.CountDownLatch;
@@ -51,28 +54,56 @@ public class VisualStateTest extends AwTestBase {
 
     private TestAwContentsClient mContentsClient = new TestAwContentsClient();
 
-    private static class SlowBlueImage extends AwWebResourceResponse {
+    private static class DelayedInputStream extends FilterInputStream {
         private CountDownLatch mLatch = new CountDownLatch(1);
 
+        DelayedInputStream(InputStream in) {
+            super(in);
+        }
+
+        @Override
+        public int read() throws IOException {
+            try {
+                mLatch.await();
+            } finally {
+                return super.read();
+            }
+        }
+
+        @Override
+        public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
+            try {
+                mLatch.await();
+            } finally {
+                return super.read(buffer, byteOffset, byteCount);
+            }
+        }
+
+        public void allowReads() {
+            mLatch.countDown();
+        }
+    }
+
+    private static class SlowBlueImage extends AwWebResourceResponse {
+        // This image delays returning data for 1 (scaled) second in order to simlate a slow network
+        // connection.
+        public static final long IMAGE_LOADING_DELAY_MS = scaleTimeout(1000);
         public SlowBlueImage() throws Throwable {
-            super("image/png", "utf-8", new ByteArrayInputStream(Base64.decode(
-                                                CommonResources.BLUE_PNG_BASE64, Base64.DEFAULT)));
-            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mLatch.countDown();
-                }
-            }, 1000);
+            super("image/png", "utf-8",
+                    new DelayedInputStream(new ByteArrayInputStream(
+                            Base64.decode(CommonResources.BLUE_PNG_BASE64, Base64.DEFAULT))));
         }
 
         @Override
         public InputStream getData() {
-            try {
-                mLatch.await();
-            } catch (InterruptedException e) {
-                // ignore
-            }
-            return super.getData();
+            final DelayedInputStream stream = (DelayedInputStream) super.getData();
+            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    stream.allowReads();
+                }
+            }, IMAGE_LOADING_DELAY_MS);
+            return stream;
         }
     }
 
@@ -156,9 +187,8 @@ public class VisualStateTest extends AwTestBase {
         assertTrue(testFinishedSignal.await(AwTestBase.WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS));
     }
 
-    // @Feature({"AndroidWebView"})
-    // @SmallTest
-    @DisabledTest
+    @Feature({"AndroidWebView"})
+    @SmallTest
     public void testOnPageCommitVisible() throws Throwable {
         // This test loads a page with a blue background color. It then waits for the DOM tree
         // in blink to contain the contents of the blue page (which happens when the onPageFinished
