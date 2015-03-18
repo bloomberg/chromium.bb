@@ -55,6 +55,7 @@ private:
 
     float blendAnimatedDimensonalFloat(float, float, FloatBlendMode);
     FloatPoint blendAnimatedFloatPoint(const FloatPoint& from, const FloatPoint& to);
+    FloatPoint blendAnimatedFloatPointSameCoordinates(const FloatPoint& from, const FloatPoint& to);
 
     RawPtrWillBeMember<SVGPathSource> m_fromSource;
     RawPtrWillBeMember<SVGPathSource> m_toSource;

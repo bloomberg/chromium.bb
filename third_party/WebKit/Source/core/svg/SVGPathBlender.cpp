@@ -77,17 +77,20 @@ float SVGPathBlender::blendAnimatedDimensonalFloat(float from, float to, FloatBl
     return m_toMode == AbsoluteCoordinates ? animValue + currentValue : animValue - currentValue;
 }
 
-FloatPoint SVGPathBlender::blendAnimatedFloatPoint(const FloatPoint& fromPoint, const FloatPoint& toPoint)
+FloatPoint SVGPathBlender::blendAnimatedFloatPointSameCoordinates(const FloatPoint& fromPoint, const FloatPoint& toPoint)
 {
     if (m_addTypesCount) {
-        ASSERT(m_fromMode == m_toMode);
         FloatPoint repeatedToPoint = toPoint;
         repeatedToPoint.scale(m_addTypesCount, m_addTypesCount);
         return fromPoint + repeatedToPoint;
     }
+    return blendFloatPoint(fromPoint, toPoint, m_progress);
+}
 
+FloatPoint SVGPathBlender::blendAnimatedFloatPoint(const FloatPoint& fromPoint, const FloatPoint& toPoint)
+{
     if (m_fromMode == m_toMode)
-        return blendFloatPoint(fromPoint, toPoint, m_progress);
+        return blendAnimatedFloatPointSameCoordinates(fromPoint, toPoint);
 
     // Transform toPoint to the coordinate mode of fromPoint
     FloatPoint animatedPoint = toPoint;
@@ -255,26 +258,26 @@ bool SVGPathBlender::blendArcToSegment()
         || !m_toSource->parseArcToSegment(toRx, toRy, toAngle, toLargeArc, toSweep, toTargetPoint))
         return false;
 
+    ASSERT(!m_addTypesCount || m_fromMode == m_toMode);
+
+    FloatPoint blendedRadii = blendAnimatedFloatPointSameCoordinates(FloatPoint(fromRx, fromRy), FloatPoint(toRx, toRy));
+    float blendedAngle = blendAnimatedFloatPointSameCoordinates(FloatPoint(fromAngle, 0), FloatPoint(toAngle, 0)).x();
+    bool blendedLargeArc;
+    bool blendedSweep;
+
     if (m_addTypesCount) {
-        ASSERT(m_fromMode == m_toMode);
-        FloatPoint scaledToTargetPoint = toTargetPoint;
-        scaledToTargetPoint.scale(m_addTypesCount, m_addTypesCount);
-        m_consumer->arcTo(fromRx + toRx * m_addTypesCount,
-                          fromRy + toRy * m_addTypesCount,
-                          fromAngle + toAngle * m_addTypesCount,
-                          fromLargeArc || toLargeArc,
-                          fromSweep || toSweep,
-                          fromTargetPoint + scaledToTargetPoint,
-                          m_fromMode);
+        blendedLargeArc = fromLargeArc || toLargeArc;
+        blendedSweep = fromSweep || toSweep;
     } else {
-        m_consumer->arcTo(blend(fromRx, toRx, m_progress),
-                          blend(fromRy, toRy, m_progress),
-                          blend(fromAngle, toAngle, m_progress),
-                          m_isInFirstHalfOfAnimation ? fromLargeArc : toLargeArc,
-                          m_isInFirstHalfOfAnimation ? fromSweep : toSweep,
-                          blendAnimatedFloatPoint(fromTargetPoint, toTargetPoint),
-                          m_isInFirstHalfOfAnimation ? m_fromMode : m_toMode);
+        blendedLargeArc = m_isInFirstHalfOfAnimation ? fromLargeArc : toLargeArc;
+        blendedSweep = m_isInFirstHalfOfAnimation ? fromSweep : toSweep;
     }
+
+    m_consumer->arcTo(
+        blendedRadii.x(), blendedRadii.y(), blendedAngle, blendedLargeArc, blendedSweep,
+        blendAnimatedFloatPoint(fromTargetPoint, toTargetPoint),
+        m_isInFirstHalfOfAnimation ? m_fromMode : m_toMode);
+
     m_fromCurrentPoint = m_fromMode == AbsoluteCoordinates ? fromTargetPoint : m_fromCurrentPoint + fromTargetPoint;
     m_toCurrentPoint = m_toMode == AbsoluteCoordinates ? toTargetPoint : m_toCurrentPoint + toTargetPoint;
     return true;
