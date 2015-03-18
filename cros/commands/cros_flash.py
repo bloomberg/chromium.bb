@@ -99,10 +99,8 @@ class USBImager(object):
       image: Path to the image to copy.
       device: Device to copy to.
     """
-    if not self.board:
-      raise Exception('Couldn\'t determine what board to use')
     cmd = [
-        '%s/usr/sbin/chromeos-install' % cros_build_lib.GetSysroot(self.board),
+        'chromeos-install',
         '--yes',
         '--skip_src_removable',
         '--skip_dst_removable',
