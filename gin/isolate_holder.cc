@@ -10,7 +10,6 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
@@ -269,10 +268,6 @@ void IsolateHolder::Initialize(ScriptMode mode,
   if (mode == gin::IsolateHolder::kStrictMode) {
     static const char use_strict[] = "--use_strict";
     v8::V8::SetFlagsFromString(use_strict, sizeof(use_strict) - 1);
-  }
-  if (base::FieldTrialList::FindFullName("V8VerifyHeap") == "Enabled") {
-    static const char verify_heap[] = "--verify_heap";
-    v8::V8::SetFlagsFromString(verify_heap, sizeof(verify_heap) - 1);
   }
   v8::V8::SetEntropySource(&GenerateEntropy);
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)

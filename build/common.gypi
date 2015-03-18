@@ -1469,10 +1469,6 @@
     # Compile d8 for the host toolset.
     'v8_toolset_for_d8': 'host',
 
-    # Enable the V8 heap verification code. The verification itself is enabled
-    # via a command line option.
-    'v8_enable_verify_heap%': 1,
-
     # Use brlapi from brltty for braille display support.
     'use_brlapi%': 0,
 
