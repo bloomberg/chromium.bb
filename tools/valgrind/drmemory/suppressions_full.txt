@@ -1900,3 +1900,18 @@ name=bug_455417
 *!std::char_traits<>::compare
 ...
 *!*::*URLRequest*::TestBody
+
+UNINITIALIZED READ
+name=bug_468169
+...
+*!vp9_foreach_transformed_block_in_plane
+...
+*!encode_superblock
+*!encode_b_rt
+*!encode_sb_rt
+*!encode_sb_rt
+*!encode_sb_rt
+*!encode_sb_rt
+*!nonrd_select_partition
+*!encode_nonrd_sb_row
+*!vp9_encode_tile
