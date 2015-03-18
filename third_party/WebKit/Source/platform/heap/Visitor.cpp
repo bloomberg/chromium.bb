@@ -59,7 +59,7 @@ void GCInfoTable::ensureGCInfoIndex(const GCInfo* gcInfo, size_t* gcInfoIndexSlo
 
     int index = ++s_gcInfoIndex;
     size_t gcInfoIndex = static_cast<size_t>(index);
-    ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
+    RELEASE_ASSERT(gcInfoIndex < GCInfoTable::maxIndex);
     if (gcInfoIndex >= s_gcInfoTableSize)
         resize();
 

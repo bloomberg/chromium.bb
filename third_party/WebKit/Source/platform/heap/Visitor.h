@@ -1104,7 +1104,12 @@ public:
     static void shutdown();
 
     // The (max + 1) GCInfo index supported.
-    static const size_t maxIndex = 1 << 15;
+    // We assume that 14 bits is enough to represent all possible types: during
+    // telemetry runs, we see about 1000 different types, looking at the output
+    // of the oilpan gc clang plugin, there appear to be at most about 6000
+    // types, so 14 bits should be more than twice as many bits as we will ever
+    // encounter.
+    static const size_t maxIndex = 1 << 14;
 
 private:
     static void resize();

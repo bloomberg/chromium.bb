@@ -98,17 +98,19 @@ class TracedValue;
 
 // HeapObjectHeader is 4 byte (32 bit) that has the following layout:
 //
-// | gcInfoIndex (15 bit) | size (14 bit) | dead bit (1 bit) | freed bit (1 bit) | mark bit (1 bit) |
+// | gcInfoIndex (14 bit) | DOM mark bit (1 bit) | size (14 bit) | dead bit (1 bit) | freed bit (1 bit) | mark bit (1 bit) |
 //
 // - For non-large objects, 14 bit is enough for |size| because the blink
 //   page size is 2^17 byte and each object is guaranteed to be aligned with
 //   2^3 byte.
 // - For large objects, |size| is 0. The actual size of a large object is
 //   stored in LargeObjectPage::m_payloadSize.
-// - 15 bit is enough for gcInfoIndex because there are less than 2^15 types
+// - 1 bit used to mark DOM trees for V8.
+// - 14 bit is enough for gcInfoIndex because there are less than 2^14 types
 //   in Blink.
-const size_t headerGCInfoIndexShift = 17;
-const size_t headerGCInfoIndexMask = (static_cast<size_t>((1 << 15) - 1)) << headerGCInfoIndexShift;
+const size_t headerDOMMarkBitMask = 1u << 17;
+const size_t headerGCInfoIndexShift = 18;
+const size_t headerGCInfoIndexMask = (static_cast<size_t>((1 << 14) - 1)) << headerGCInfoIndexShift;
 const size_t headerSizeMask = (static_cast<size_t>((1 << 14) - 1)) << 3;
 const size_t headerMarkBitMask = 1;
 const size_t headerFreedBitMask = 2;
