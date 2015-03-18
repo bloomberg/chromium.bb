@@ -198,7 +198,6 @@ interface Document : Node {
     readonly attribute VisibilityState visibilityState;
 
     // Non-standard APIs
-    [MeasureAs=DocumentGetOverrideStyle] CSSStyleDeclaration getOverrideStyle();
     [MeasureAs=DocumentCharset, TreatReturnedNullStringAs=Undefined, TreatNullAs=NullString] attribute DOMString charset;
     [MeasureAs=DocumentDefaultCharset, TreatReturnedNullStringAs=Undefined] readonly attribute DOMString defaultCharset;
     [MeasureAs=DocumentCaretRangeFromPoint] Range caretRangeFromPoint([Default=Undefined] optional long x, [Default=Undefined] optional long y);

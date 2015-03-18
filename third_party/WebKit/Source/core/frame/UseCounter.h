@@ -534,7 +534,6 @@ public:
         TextWholeText = 599,
         AttrChildAccess = 600,
         AttrChildChange = 601,
-        DocumentGetOverrideStyle = 602,
         NotificationCloseEvent = 603,
         CSSKeyframesRuleAppendRule = 604,
         CSSKeyframesRuleInsertRule = 605,

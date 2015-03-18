@@ -826,7 +826,6 @@ interface Document
     method getElementsByName
     method getElementsByTagName
     method getElementsByTagNameNS
-    method getOverrideStyle
     method getSelection
     method hasFocus
     method importNode

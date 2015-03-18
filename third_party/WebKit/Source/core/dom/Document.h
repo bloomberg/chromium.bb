@@ -709,8 +709,6 @@ public:
     bool hasMutationObservers() const { return m_mutationObserverTypes; }
     void addMutationObserverTypes(MutationObserverOptions types) { m_mutationObserverTypes |= types; }
 
-    CSSStyleDeclaration* getOverrideStyle() { return 0; }
-
     /**
      * Handles a HTTP header equivalent set by a meta tag using <meta http-equiv="..." content="...">. This is called
      * when a meta tag is encountered during document parsing, and also when a script dynamically changes or adds a meta
