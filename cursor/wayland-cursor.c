@@ -190,6 +190,7 @@ wl_cursor_destroy(struct wl_cursor *cursor)
 	for (i = 0; i < cursor->image_count; i++)
 		wl_cursor_image_destroy(cursor->images[i]);
 
+	free(cursor->images);
 	free(cursor->name);
 	free(cursor);
 }
