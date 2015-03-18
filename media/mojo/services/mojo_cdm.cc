@@ -39,6 +39,7 @@ MojoCdm::MojoCdm(mojo::ContentDecryptionModulePtr remote_cdm,
                  const SessionKeysChangeCB& session_keys_change_cb,
                  const SessionExpirationUpdateCB& session_expiration_update_cb)
     : remote_cdm_(remote_cdm.Pass()),
+      binding_(this),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
       session_error_cb_(session_error_cb),
@@ -52,9 +53,9 @@ MojoCdm::MojoCdm(mojo::ContentDecryptionModulePtr remote_cdm,
   DCHECK(!session_keys_change_cb_.is_null());
   DCHECK(!session_expiration_update_cb_.is_null());
 
-  // TODO(xhwang): Client syntax has been removed, so a new mechanism for client
-  // discovery must be added to this interface.  See http://crbug.com/451321.
-  NOTREACHED();
+  mojo::ContentDecryptionModuleClientPtr client_ptr;
+  binding_.Bind(GetProxy(&client_ptr));
+  remote_cdm_->SetClient(client_ptr.Pass());
 }
 
 MojoCdm::~MojoCdm() {

@@ -22,10 +22,6 @@ MojoCdmService::MojoCdmService(const mojo::String& key_system)
     : weak_factory_(this) {
   base::WeakPtr<MojoCdmService> weak_this = weak_factory_.GetWeakPtr();
 
-  // TODO(xhwang): Client syntax has been removed, so a new mechanism for client
-  // discovery must be added to this interface.  See http://crbug.com/451321.
-  NOTREACHED();
-
   if (CanUseAesDecryptor(key_system)) {
     cdm_.reset(new AesDecryptor(
         base::Bind(&MojoCdmService::OnSessionMessage, weak_this),
@@ -38,6 +34,10 @@ MojoCdmService::MojoCdmService(const mojo::String& key_system)
 }
 
 MojoCdmService::~MojoCdmService() {
+}
+
+void MojoCdmService::SetClient(mojo::ContentDecryptionModuleClientPtr client) {
+  client_ = client.Pass();
 }
 
 // mojo::MediaRenderer implementation.

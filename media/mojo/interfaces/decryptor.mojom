@@ -11,9 +11,6 @@ import "media/mojo/interfaces/media_types.mojom";
 struct AudioBuffer {};
 struct VideoFrame {};
 
-// TODO(xhwang): Client syntax has been removed, so a new mechanism for client
-// discovery must be added to this interface.  See http://crbug.com/451321.
-
 // Interface for decrypting (and decoding) encrypted streams.
 // See media/base/decryptor.h for details.
 interface Decryptor {

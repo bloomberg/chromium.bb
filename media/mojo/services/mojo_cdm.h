@@ -88,6 +88,7 @@ class MojoCdm : public MediaKeys, public mojo::ContentDecryptionModuleClient {
   }
 
   mojo::ContentDecryptionModulePtr remote_cdm_;
+  mojo::Binding<ContentDecryptionModuleClient> binding_;
 
   // Callbacks for firing session events.
   SessionMessageCB session_message_cb_;

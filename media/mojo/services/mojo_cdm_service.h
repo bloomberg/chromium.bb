@@ -23,6 +23,7 @@ class MojoCdmService
   ~MojoCdmService() final;
 
   // mojo::ContentDecryptionModule implementation.
+  void SetClient(mojo::ContentDecryptionModuleClientPtr client) final;
   void SetServerCertificate(
       mojo::Array<uint8_t> certificate_data,
       const mojo::Callback<void(mojo::CdmPromiseResultPtr)>& callback) final;
