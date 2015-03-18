@@ -305,7 +305,8 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, MotionNullTest) {
   fetcher_->stopped_motion_.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, NullTestWithAlert) {
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
+                       DISABLED_NullTestWithAlert) {
   // The test page registers an event handlers for motion/orientation events
   // and expects to get events with null values. The test raises a modal alert
   // dialog with a delay to test that the one-off null-events still propagate
