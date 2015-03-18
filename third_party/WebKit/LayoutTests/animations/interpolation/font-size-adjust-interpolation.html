@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<style type="text/css">
+.container {
+    font-size: 20px;
+    line-height: 1;
+}
+
+@font-face {
+    font-family : 'testFont';
+    src : url('../../resources/opensans/OpenSans-Regular.woff') format("woff");
+}
+
+.target {
+    display: inline-block;
+    font-family: testFont;
+}
+
+.replica {
+  color: green;
+  margin-right: 30px;
+}
+</style>
+
+<template id="target-template">
+    <span class="container">
+        <div class="target">x</span>
+    </div>
+</template>
+<script src="resources/interpolation-test.js"></script>
+<script>
+assertInterpolation({
+    property: 'font-size-adjust',
+    from: '0',
+    to: '1.2'
+}, [
+    {at: -2, is: 'none'},
+    {at: -0.3, is: 'none'},
+    {at: 0, is: 'none'},
+    {at: 0.3, is: 'none'},
+    {at: 0.6, is: '1.2'},
+    {at: 1, is: '1.2'},
+    {at: 1.5, is: '1.2'},
+]);
+
+assertInterpolation({
+    property: 'font-size-adjust',
+    from: 'none',
+    to: '1.2'
+}, [
+    {at: -2, is: 'none'},
+    {at: -0.3, is: 'none'},
+    {at: 0, is: 'none'},
+    {at: 0.3, is: 'none'},
+    {at: 0.6, is: '1.2'},
+    {at: 1, is: '1.2'},
+    {at: 1.5, is: '1.2'},
+]);
+
+assertInterpolation({
+    property: 'font-size-adjust',
+    from: '0.2',
+    to: '1.2'
+}, [
+    {at: -2, is: 'none'},  // CSS font-size-adjust can't be negative.
+    {at: -0.3, is: 'none'},
+    {at: 0, is: '0.2'},
+    {at: 0.3, is: '0.5'},
+    {at: 0.6, is: '0.8'},
+    {at: 1, is: '1.2'},
+    {at: 1.5, is: '1.7'},
+]);
+</script>

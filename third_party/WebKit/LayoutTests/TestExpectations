@@ -1909,3 +1909,6 @@ crbug.com/467450 http/tests/misc/client-hints-invalid-accept.php [ Failure ]
 crbug.com/467450 http/tests/misc/client-hints-no-accept.html [ Failure ]
 
 crbug.com/467871 [ Mac ] compositing/plugins/composited-plugin.html [ ImageOnlyFailure ]
+
+# These need a rebaseline after crbug.com/451346
+crbug.com/451346 [ Android Linux Lion Win ] tables/mozilla/bugs/bug2886-2.html [ NeedsRebaseline ]

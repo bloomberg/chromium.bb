@@ -392,6 +392,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyFontSize:
         state.fontBuilder().setSize(animatableValueToFontSize(value));
         return;
+    case CSSPropertyFontSizeAdjust:
+        state.fontBuilder().setSizeAdjust(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0));
+        return;
     case CSSPropertyFontStretch:
         state.fontBuilder().setStretch(animatableValueToFontStretch(value));
         return;

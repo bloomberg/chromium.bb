@@ -1,0 +1,46 @@
+CSS Animations:
+PASS: font-size-adjust from [0] to [1.2] was [none] at -2
+PASS: font-size-adjust from [0] to [1.2] was [none] at -0.3
+PASS: font-size-adjust from [0] to [1.2] was [none] at 0
+PASS: font-size-adjust from [0] to [1.2] was [none] at 0.3
+PASS: font-size-adjust from [0] to [1.2] was [1.2] at 0.6
+PASS: font-size-adjust from [0] to [1.2] was [1.2] at 1
+PASS: font-size-adjust from [0] to [1.2] was [1.2] at 1.5
+PASS: font-size-adjust from [none] to [1.2] was [none] at -2
+PASS: font-size-adjust from [none] to [1.2] was [none] at -0.3
+PASS: font-size-adjust from [none] to [1.2] was [none] at 0
+PASS: font-size-adjust from [none] to [1.2] was [none] at 0.3
+PASS: font-size-adjust from [none] to [1.2] was [1.2] at 0.6
+PASS: font-size-adjust from [none] to [1.2] was [1.2] at 1
+PASS: font-size-adjust from [none] to [1.2] was [1.2] at 1.5
+PASS: font-size-adjust from [0.2] to [1.2] was [none] at -2
+PASS: font-size-adjust from [0.2] to [1.2] was [none] at -0.3
+PASS: font-size-adjust from [0.2] to [1.2] was [0.2] at 0
+PASS: font-size-adjust from [0.2] to [1.2] was [0.5] at 0.3
+PASS: font-size-adjust from [0.2] to [1.2] was [0.8] at 0.6
+PASS: font-size-adjust from [0.2] to [1.2] was [1.2] at 1
+PASS: font-size-adjust from [0.2] to [1.2] was [1.7] at 1.5
+
+Web Animations API:
+PASS: fontSizeAdjust from [0] to [1.2] was [none] at -2
+PASS: fontSizeAdjust from [0] to [1.2] was [none] at -0.3
+PASS: fontSizeAdjust from [0] to [1.2] was [none] at 0
+PASS: fontSizeAdjust from [0] to [1.2] was [none] at 0.3
+PASS: fontSizeAdjust from [0] to [1.2] was [1.2] at 0.6
+PASS: fontSizeAdjust from [0] to [1.2] was [1.2] at 1
+PASS: fontSizeAdjust from [0] to [1.2] was [1.2] at 1.5
+PASS: fontSizeAdjust from [none] to [1.2] was [none] at -2
+PASS: fontSizeAdjust from [none] to [1.2] was [none] at -0.3
+PASS: fontSizeAdjust from [none] to [1.2] was [none] at 0
+PASS: fontSizeAdjust from [none] to [1.2] was [none] at 0.3
+PASS: fontSizeAdjust from [none] to [1.2] was [1.2] at 0.6
+PASS: fontSizeAdjust from [none] to [1.2] was [1.2] at 1
+PASS: fontSizeAdjust from [none] to [1.2] was [1.2] at 1.5
+PASS: fontSizeAdjust from [0.2] to [1.2] was [none] at -2
+PASS: fontSizeAdjust from [0.2] to [1.2] was [none] at -0.3
+PASS: fontSizeAdjust from [0.2] to [1.2] was [0.2] at 0
+PASS: fontSizeAdjust from [0.2] to [1.2] was [0.5] at 0.3
+PASS: fontSizeAdjust from [0.2] to [1.2] was [0.8] at 0.6
+PASS: fontSizeAdjust from [0.2] to [1.2] was [1.2] at 1
+PASS: fontSizeAdjust from [0.2] to [1.2] was [1.7] at 1.5
+

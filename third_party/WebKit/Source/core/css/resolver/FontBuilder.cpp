@@ -335,6 +335,10 @@ void FontBuilder::updateAdjustedSize(FontDescription& fontDescription, const Lay
         return;
 
     // We need to create a temporal Font to get xHeight of a primary font.
+    // The aspect value is based on the xHeight of the font for the computed font size,
+    // so we need to reset the adjustment.
+    fontDescription.setAdjustedSize(0);
+
     Font font(fontDescription);
     font.update(fontSelector);
     if (!font.fontMetrics().hasXHeight())

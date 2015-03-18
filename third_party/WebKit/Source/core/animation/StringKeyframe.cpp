@@ -111,6 +111,8 @@ InterpolationRange setRange(CSSPropertyID id)
         return RangeOpacityFIXME;
     case CSSPropertyStrokeMiterlimit:
         return RangeGreaterThanOrEqualToOne;
+    case CSSPropertyFontSizeAdjust:
+        return RangeNonNegative;
     default:
         ASSERT_NOT_REACHED();
         return RangeAll;
@@ -213,6 +215,10 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
         if (property == CSSPropertyBaselineShift)
             fallBackToLegacy = true;
 
+        break;
+    case CSSPropertyFontSizeAdjust:
+        // FIXME: Requires special handing for 0.
+        fallBackToLegacy = true;
         break;
     case CSSPropertyOrphans:
     case CSSPropertyWidows:
