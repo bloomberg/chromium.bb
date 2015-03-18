@@ -868,49 +868,57 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
         <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (last online <ph name="DATE_OR_TIME">$2<ex>1/6/2013 or 11:23:32 AM</ex></ph>)
       </message>
       <message desc="Error message indicating that the host is offline, because the host failed to initialize (i.e. failed to generate a host certificate, run out of memory early during startup, failed to set up inter-process communication, etc.)."
-               name="IDS_OFFLINE_REASON_INITIALIZATION_FAILED">
+               name="IDS_OFFLINE_REASON_INITIALIZATION_FAILED" formatter_data="android_java">
         Host initialization failed.
       </message>
       <message desc="Error message indicating that the host is offline, because the host configuration is invalid."
-               name="IDS_OFFLINE_REASON_INVALID_HOST_CONFIGURATION">
+               name="IDS_OFFLINE_REASON_INVALID_HOST_CONFIGURATION" formatter_data="android_java">
         Invalid host configuration.
       </message>
       <message desc="Error message indicating that the host is offline, because the host configuration specifies a host id that is not found in the Chrome Remote Desktop Directory service (possibly because the host entry was deleted by the user)."
-               name="IDS_OFFLINE_REASON_INVALID_HOST_ID">
+               name="IDS_OFFLINE_REASON_INVALID_HOST_ID" formatter_data="android_java">
         Invalid host id.
       </message>
       <message desc="Error message indicating that the host is offline, because the host configuration specifies an OAuth credential that is rejected when the host tries to authenticate itself to Chrome Remote Desktop Directory service."
-               name="IDS_OFFLINE_REASON_INVALID_OAUTH_CREDENTIALS">
+               name="IDS_OFFLINE_REASON_INVALID_OAUTH_CREDENTIALS" formatter_data="android_java">
         Host is configured with invalid OAuth credentials.
       </message>
       <message desc="Error message indicating that the host is offline, because the host is owned by a user from a domain different than the domain mandated by RemoteAccessHostDomain policy."
-               name="IDS_OFFLINE_REASON_INVALID_HOST_DOMAIN">
+               name="IDS_OFFLINE_REASON_INVALID_HOST_DOMAIN" formatter_data="android_java">
         Invalid host owner domain.
       </message>
       <message desc="Error message indicating that the host is offline, because RemoteAccessHostRequireCurtain policy requires curtain mode, which is not supported when 'launchd' runs an instance of the host at the console login screen on a Mac."
-               name="IDS_OFFLINE_REASON_LOGIN_SCREEN_NOT_SUPPORTED">
+               name="IDS_OFFLINE_REASON_LOGIN_SCREEN_NOT_SUPPORTED" formatter_data="android_java">
         Host running at the console logic screen has shutdown to support curtain mode by switching to a host running in a user-specific session.
       </message>
       <message desc="Error message indicating that the host is offline, because the host policy was unreadable (unparseable, inaccessible, mistyped or malformed)."
-               name="IDS_OFFLINE_REASON_POLICY_READ_ERROR">
+               name="IDS_OFFLINE_REASON_POLICY_READ_ERROR" formatter_data="android_java">
         Host failed to read the policy.
       </message>
       <message desc="Error message indicating that the host is temporarily offline, because the host is restarting due to a policy change."
-               name="IDS_OFFLINE_REASON_POLICY_CHANGE_REQUIRES_RESTART">
+               name="IDS_OFFLINE_REASON_POLICY_CHANGE_REQUIRES_RESTART" formatter_data="android_java">
         Host is restarting, to take into account a policy change.
       </message>
       <message desc="Error message indicating that the host is offline, because another process has requested the host to shut down (via a SIGTERM signal)."
-               name="IDS_OFFLINE_REASON_SUCCESS_EXIT">
+               name="IDS_OFFLINE_REASON_SUCCESS_EXIT" formatter_data="android_java">
         Host has shut down.
       </message>
       <message desc="Error message indicating that the host is offline, because RemoteAccessHostMatchUsername policy is enabled and there is a mismatch between the name of the local user (that the host is associated with) and the name of the Google account registered as the host owner (i.e. 'johndoe' if the host is owned by 'johndoe@example.com' Google account)"
-               name="IDS_OFFLINE_REASON_USERNAME_MISMATCH">
+               name="IDS_OFFLINE_REASON_USERNAME_MISMATCH" formatter_data="android_java">
         Invalid host owner.
       </message>
-      <message desc="Description of why host is offline, when client gets a host-offline-reason it doesn't recognize."
-               name="IDS_OFFLINE_REASON_UNKNOWN">
-        Unrecognized host error: <ph name="HOST_OFFLINE_REASON">$1<ex>EXIT_CODE_FROM_HOST_NEWER_THAN_CLIENT</ex></ph>.
-      </message>
+      <if expr="is_android">
+        <message desc="Description of why host is offline, when client gets a host-offline-reason it doesn't recognize."
+                 name="IDS_OFFLINE_REASON_UNKNOWN" formatter_data="android_java">
+          Unrecognized host error: <ph name="HOST_OFFLINE_REASON">%1$s<ex>EXIT_CODE_FROM_HOST_NEWER_THAN_CLIENT</ex></ph>.
+        </message>
+      </if>
+      <if expr="not is_android">
+        <message desc="Description of why host is offline, when client gets a host-offline-reason it doesn't recognize."
+                 name="IDS_OFFLINE_REASON_UNKNOWN">
+          Unrecognized host error: <ph name="HOST_OFFLINE_REASON">$1<ex>EXIT_CODE_FROM_HOST_NEWER_THAN_CLIENT</ex></ph>.
+        </message>
+      </if>
       <message desc="Modified version of the host name shown for hosts that are running an out-of-date version of the Me2Me host software." name="IDS_UPDATE_REQUIRED">
         <ph name="HOSTNAME">$1<ex>My Linux desktop</ex></ph> (out-of-date)
       </message>

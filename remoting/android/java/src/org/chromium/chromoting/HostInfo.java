@@ -17,6 +17,7 @@ public class HostInfo {
     public final String jabberId;
     public final String publicKey;
     public final boolean isOnline;
+    public final String hostOfflineReason;
     private final ArrayList<String> mTokenUrlPatterns;
 
     public HostInfo(String name,
@@ -24,13 +25,15 @@ public class HostInfo {
                     String jabberId,
                     String publicKey,
                     ArrayList<String> tokenUrlPatterns,
-                    boolean isOnline) {
+                    boolean isOnline,
+                    String hostOfflineReason) {
         this.name = name;
         this.id = id;
         this.jabberId = jabberId;
         this.publicKey = publicKey;
         this.mTokenUrlPatterns = tokenUrlPatterns;
         this.isOnline = isOnline;
+        this.hostOfflineReason = hostOfflineReason;
     }
 
     public ArrayList<String> getTokenUrlPatterns() {
@@ -57,6 +60,7 @@ public class HostInfo {
                 json.optString("jabberId"),
                 json.optString("publicKey"),
                 tokenUrlPatterns,
-                json.optString("status").equals("ONLINE"));
+                json.optString("status").equals("ONLINE"),
+                json.optString("hostOfflineReason"));
     }
 }
