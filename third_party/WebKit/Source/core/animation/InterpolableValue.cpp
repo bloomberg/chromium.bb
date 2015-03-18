@@ -14,7 +14,7 @@ void InterpolableNumber::interpolate(const InterpolableValue &to, const double p
     const InterpolableNumber& toNumber = toInterpolableNumber(to);
     InterpolableNumber& resultNumber = toInterpolableNumber(result);
 
-    if (progress == 0)
+    if (progress == 0 || m_value == toNumber.m_value)
         resultNumber.m_value = m_value;
     else if (progress == 1)
         resultNumber.m_value = toNumber.m_value;
