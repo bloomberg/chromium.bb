@@ -311,7 +311,7 @@ ${initializations}\
 tmpl_register = string.Template("""\
   command_handlers_["${Domain}.${command}"] =
       base::Bind(
-          &DevToolsProtocolDispatcher::On${Domain}${Command},
+          &DevToolsProtocolDispatcher::On${TargetDomain}${Command},
           base::Unretained(this));
 """)
 
@@ -450,6 +450,8 @@ type_decls = []
 type_impls = []
 handler_methods = []
 handler_method_impls = []
+domain_maps = []
+redirects = {}
 
 all_domains = blink_protocol["domains"] + browser_protocol["domains"]
 
@@ -638,6 +640,15 @@ for json_domain in all_domains:
       command_map["command"] = json_command["name"]
       command_map["Command"] = Capitalize(json_command["name"])
 
+      if "redirect" in json_command:
+        redirect_domain = json_command["redirect"]
+        if not (redirect_domain in redirects):
+          redirects[redirect_domain] = []
+        command_map["TargetDomain"] = redirect_domain
+        redirects[redirect_domain].append(tmpl_register.substitute(command_map))
+        continue
+
+      command_map["TargetDomain"] = command_map["Domain"]
       prep = []
       args = []
 
@@ -735,9 +746,14 @@ for json_domain in all_domains:
     initializations.append(tmpl_init_client.substitute(domain_map))
     type_impls.append(tmpl_client_impl.substitute(domain_map,
         methods = "\n".join(client_method_impls)))
-  handler_method_impls.append(tmpl_setter_impl.substitute(domain_map,
-      initializations = "".join(initializations)))
+  domain_map["initializations"] = "".join(initializations)
+  domain_maps.append(domain_map)
 
+for domain_map in domain_maps:
+  domain = domain_map["Domain"]
+  if domain in redirects:
+    domain_map["initializations"] += "".join(redirects[domain])
+  handler_method_impls.append(tmpl_setter_impl.substitute(domain_map))
 
 output_h_file = open(output_h_path, "w")
 output_cc_file = open(output_cc_path, "w")
