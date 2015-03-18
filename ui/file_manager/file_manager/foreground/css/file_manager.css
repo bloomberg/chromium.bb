@@ -302,12 +302,13 @@ body.check-select .dialog-header .icon-button paper-ripple {
   rgb(90, 90, 90);
 }
 
-.dialog-header .icon-button:focus:not(.using-mouse),
+.dialog-header .icon-button:focus:not(.using-mouse):not([tabindex='-1']),
 .dialog-header .combobutton:focus {
   background-color: rgba(90, 90, 90, 0.15);
 }
 
-body.check-select .dialog-header .icon-button:focus:not(.using-mouse),
+body.check-select .dialog-header
+    .icon-button:focus:not(.using-mouse):not([tabindex='-1']),
 body.check-select .dialog-header .combobutton:focus {
   background-color: rgba(153, 153, 153, 0.20);
 }

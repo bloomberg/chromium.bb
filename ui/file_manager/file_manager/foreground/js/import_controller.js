@@ -543,6 +543,11 @@ importer.RuntimeCommandWidget.prototype.addClickListener =
 importer.RuntimeCommandWidget.prototype.onButtonClicked_ =
     function(source, event) {
   console.assert(!!this.clickListener_, 'Listener not set.');
+
+  // Clear focus from the toolbar button after it is clicked.
+  if (source === importer.ClickSource.MAIN)
+    this.mainButton_.blur();
+
   switch (source) {
     case importer.ClickSource.MAIN:
     case importer.ClickSource.PANEL:
