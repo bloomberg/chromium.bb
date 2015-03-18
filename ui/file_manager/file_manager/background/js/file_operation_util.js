@@ -330,7 +330,7 @@ fileOperationUtil.listEntries = function(directory, callback) {
 
         var readEntries = function() {
           reader.readEntries (
-              /** @param {!Array<Entry>} entries */
+              /** @param {!Array<!Entry>} entries */
               function(entries) {
                 if (entries.length === 0) {
                   resolve(undefined);
