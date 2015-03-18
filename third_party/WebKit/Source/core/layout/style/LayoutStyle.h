@@ -1166,7 +1166,7 @@ public:
     void setMarginStart(const Length&);
     void setMarginEnd(const Length&);
 
-    void resetPadding() { SET_VAR(surround, padding, LengthBox(Auto)); }
+    void resetPadding() { SET_VAR(surround, padding, LengthBox(Fixed)); }
     void setPaddingBox(const LengthBox& b) { SET_VAR(surround, padding, b); }
     void setPaddingTop(const Length& v) { SET_VAR(surround, padding.m_top, v); }
     void setPaddingBottom(const Length& v) { SET_VAR(surround, padding.m_bottom, v); }
