@@ -4,6 +4,9 @@
 
 #include "content/child/web_discardable_memory_impl.h"
 
+#include "base/memory/discardable_memory.h"
+#include "base/memory/discardable_memory_allocator.h"
+
 namespace content {
 
 WebDiscardableMemoryImpl::~WebDiscardableMemoryImpl() {}
@@ -12,7 +15,8 @@ WebDiscardableMemoryImpl::~WebDiscardableMemoryImpl() {}
 scoped_ptr<WebDiscardableMemoryImpl>
 WebDiscardableMemoryImpl::CreateLockedMemory(size_t size) {
   return make_scoped_ptr(new WebDiscardableMemoryImpl(
-      base::DiscardableMemory::CreateLockedMemory(size)));
+      base::DiscardableMemoryAllocator::GetInstance()
+          ->AllocateLockedDiscardableMemory(size)));
 }
 
 bool WebDiscardableMemoryImpl::lock() {

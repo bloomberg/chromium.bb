@@ -4,15 +4,12 @@
 
 #include "base/memory/discardable_memory.h"
 
-#include "base/memory/discardable_memory_allocator.h"
-
 namespace base {
 
-// static
-scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemory(
-    size_t size) {
-  return DiscardableMemoryAllocator::GetInstance()
-      ->AllocateLockedDiscardableMemory(size);
+DiscardableMemory::DiscardableMemory() {
+}
+
+DiscardableMemory::~DiscardableMemory() {
 }
 
 }  // namespace base

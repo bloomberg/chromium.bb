@@ -6,12 +6,11 @@
 #define CONTENT_CHILD_WEB_DISCARDABLE_MEMORY_IMPL_H_
 
 #include "base/basictypes.h"
-#include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebDiscardableMemory.h"
 
-namespace blink {
-class WebDiscardableMemory;
+namespace base {
+class DiscardableMemory;
 }
 
 namespace content {

@@ -4,6 +4,9 @@
 
 #include "SkDiscardableMemory_chrome.h"
 
+#include "base/memory/discardable_memory.h"
+#include "base/memory/discardable_memory_allocator.h"
+
 SkDiscardableMemoryChrome::~SkDiscardableMemoryChrome() {}
 
 bool SkDiscardableMemoryChrome::lock() {
@@ -25,5 +28,6 @@ SkDiscardableMemoryChrome::SkDiscardableMemoryChrome(
 
 SkDiscardableMemory* SkDiscardableMemory::Create(size_t bytes) {
   return new SkDiscardableMemoryChrome(
-      base::DiscardableMemory::CreateLockedMemory(bytes));
+      base::DiscardableMemoryAllocator::GetInstance()
+          ->AllocateLockedDiscardableMemory(bytes));
 }
