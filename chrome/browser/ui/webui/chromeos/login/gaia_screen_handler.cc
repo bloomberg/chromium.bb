@@ -57,7 +57,7 @@ const char kAuthIframeParentOrigin[] =
 
 // TODO(rsorokin): Get rid of this url before the beta release. Issue tracking
 // that http://crbug/462204.
-const char kStagingGaiaUrl[] = "https://accounts.sandbox.google.com/";
+const char kGaiaSandboxUrlSwitch[] = "gaia-sandbox-url";
 // TODO(rsorokin): Move this to the proper file.
 const char kMinuteMaidPath[] = "ChromeOsEmbeddedSetup";
 
@@ -255,12 +255,16 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
   }
 
   if (!command_line->HasSwitch(::switches::kGaiaUrl) &&
+      command_line->HasSwitch(kGaiaSandboxUrlSwitch) &&
       StartupUtils::IsWebviewSigninEnabled()) {
     // We can't use switch --gaia-url in this case cause we need get
     // auth_code from staging gaia and make all the other auths against prod
     // gaia so user could use all the google services.
+    // Default to production Gaia for MM unless --gaia-url or --gaia-sandbox-url
+    // is specified.
     // TODO(dpolukhin): crbug.com/462204
-    const GURL gaia_url = GURL(kStagingGaiaUrl);
+    const GURL gaia_url =
+        GURL(command_line->GetSwitchValueASCII(kGaiaSandboxUrlSwitch));
     params.SetString("gaiaUrl", gaia_url.spec());
   } else {
     const GURL gaia_url =
