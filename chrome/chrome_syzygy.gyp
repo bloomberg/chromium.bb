@@ -25,6 +25,7 @@
               'destination': '<(dest_dir)',
               'files': [
                 '<(syzygy_exe_dir)/agent_logger.exe',
+                '<(syzygy_exe_dir)/minidump_symbolizer.py',
                 '<(syzygy_exe_dir)/syzyasan_rtl.dll',
                 '<(syzygy_exe_dir)/syzyasan_rtl.dll.pdb',
               ],
