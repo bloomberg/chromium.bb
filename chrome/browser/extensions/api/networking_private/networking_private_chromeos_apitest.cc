@@ -358,6 +358,15 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
         base::StringValue(shill::kProviderOpenVpn));
     profile_test->AddService(kUser1ProfilePath, "stub_vpn1");
 
+    AddService("stub_vpn2", "vpn2", shill::kTypeVPN, shill::kStateOffline);
+    service_test_->SetServiceProperty(
+        "stub_vpn2", shill::kProviderTypeProperty,
+        base::StringValue(shill::kProviderThirdPartyVpn));
+    service_test_->SetServiceProperty(
+        "stub_vpn2", shill::kProviderHostProperty,
+        base::StringValue("third_party_provider_extension_id"));
+    profile_test->AddService(kUser1ProfilePath, "stub_vpn2");
+
     content::RunAllPendingInMessageLoop();
   }
 

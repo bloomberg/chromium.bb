@@ -188,10 +188,28 @@ void LocalTranslator::TranslateIPsec() {
 }
 
 void LocalTranslator::TranslateVPN() {
-  CopyFieldFromONCToShill(::onc::vpn::kHost, shill::kProviderHostProperty);
-  std::string type;
-  if (onc_object_->GetStringWithoutPathExpansion(::onc::vpn::kType, &type))
-    TranslateWithTableAndSet(type, kVPNTypeTable, shill::kProviderTypeProperty);
+  std::string onc_type;
+  if (onc_object_->GetStringWithoutPathExpansion(::onc::vpn::kType,
+                                                 &onc_type)) {
+    TranslateWithTableAndSet(onc_type, kVPNTypeTable,
+                             shill::kProviderTypeProperty);
+  }
+  if (onc_type == ::onc::vpn::kThirdPartyVpn) {
+    // For third-party VPNs, |shill::kProviderHostProperty| is used to store the
+    // provider's extension ID.
+    const base::DictionaryValue* onc_third_party_vpn = nullptr;
+    onc_object_->GetDictionaryWithoutPathExpansion(::onc::vpn::kThirdPartyVpn,
+                                                   &onc_third_party_vpn);
+    std::string onc_extension_id;
+    if (onc_third_party_vpn &&
+        onc_third_party_vpn->GetStringWithoutPathExpansion(
+            ::onc::third_party_vpn::kExtensionID, &onc_extension_id)) {
+      shill_dictionary_->SetStringWithoutPathExpansion(
+          shill::kProviderHostProperty, onc_extension_id);
+    }
+  } else {
+    CopyFieldFromONCToShill(::onc::vpn::kHost, shill::kProviderHostProperty);
+  }
 
   CopyFieldsAccordingToSignature();
 }

@@ -160,6 +160,7 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   bool ValidateVPN(base::DictionaryValue* result);
   bool ValidateIPsec(base::DictionaryValue* result);
   bool ValidateOpenVPN(base::DictionaryValue* result);
+  bool ValidateThirdPartyVPN(base::DictionaryValue* result);
   bool ValidateVerifyX509(base::DictionaryValue* result);
   bool ValidateCertificatePattern(base::DictionaryValue* result);
   bool ValidateProxySettings(base::DictionaryValue* result);

@@ -349,6 +349,10 @@ const char kPassword[] = "Password";
 const char kPasswordAndOTP[] = "PasswordAndOTP";
 }  // openvpn_user_auth_type
 
+namespace third_party_vpn {
+const char kExtensionID[] = "ExtensionID";
+}  // third_party_vpn
+
 namespace verify_x509 {
 const char kName[] = "Name";
 const char kType[] = "Type";

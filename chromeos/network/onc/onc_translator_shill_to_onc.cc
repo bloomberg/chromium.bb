@@ -77,6 +77,7 @@ class ShillToONCTranslator {
   void TranslateEthernet();
   void TranslateOpenVPN();
   void TranslateIPsec();
+  void TranslateThirdPartyVPN();
   void TranslateVPN();
   void TranslateWiFiWithState();
   void TranslateWiMAXWithState();
@@ -159,6 +160,8 @@ ShillToONCTranslator::CreateTranslatedONCObject() {
     TranslateOpenVPN();
   } else if (onc_signature_ == &kIPsecSignature) {
     TranslateIPsec();
+  } else if (onc_signature_ == &kThirdPartyVPNSignature) {
+    TranslateThirdPartyVPN();
   } else if (onc_signature_ == &kWiFiWithStateSignature) {
     TranslateWiFiWithState();
   } else if (onc_signature_ == &kWiMAXWithStateSignature) {
@@ -266,6 +269,18 @@ void ShillToONCTranslator::TranslateIPsec() {
                                              authentication_type);
 }
 
+void ShillToONCTranslator::TranslateThirdPartyVPN() {
+  CopyPropertiesAccordingToSignature();
+
+  // For third-party VPNs, |shill::kProviderHostProperty| is used to store the
+  // provider's extension ID.
+  std::string shill_extension_id;
+  shill_dictionary_->GetStringWithoutPathExpansion(shill::kHostProperty,
+                                                   &shill_extension_id);
+  onc_object_->SetStringWithoutPathExpansion(
+      ::onc::third_party_vpn::kExtensionID, shill_extension_id);
+}
+
 void ShillToONCTranslator::TranslateVPN() {
   CopyPropertiesAccordingToSignature();
 
@@ -285,11 +300,12 @@ void ShillToONCTranslator::TranslateVPN() {
   }
   onc_object_->SetStringWithoutPathExpansion(::onc::vpn::kType,
                                              onc_provider_type);
-  std::string provider_host;
-  if (provider->GetStringWithoutPathExpansion(shill::kHostProperty,
-                                              &provider_host)) {
+  std::string shill_provider_host;
+  if (onc_provider_type != ::onc::vpn::kThirdPartyVpn &&
+      provider->GetStringWithoutPathExpansion(shill::kHostProperty,
+                                              &shill_provider_host)) {
     onc_object_->SetStringWithoutPathExpansion(::onc::vpn::kHost,
-                                               provider_host);
+                                               shill_provider_host);
   }
 
   // Translate the nested dictionary.
@@ -298,13 +314,14 @@ void ShillToONCTranslator::TranslateVPN() {
     TranslateAndAddNestedObject(::onc::vpn::kIPsec, *provider);
     TranslateAndAddNestedObject(::onc::vpn::kL2TP, *provider);
     provider_type_dictionary = ::onc::vpn::kIPsec;
-  } else if (onc_provider_type != ::onc::vpn::kThirdPartyVpn) {
+  } else {
     TranslateAndAddNestedObject(onc_provider_type, *provider);
     provider_type_dictionary = onc_provider_type;
   }
 
   bool save_credentials;
-  if (shill_dictionary_->GetBooleanWithoutPathExpansion(
+  if (onc_provider_type != ::onc::vpn::kThirdPartyVpn &&
+      shill_dictionary_->GetBooleanWithoutPathExpansion(
           shill::kSaveCredentialsProperty, &save_credentials)) {
     SetNestedOncValue(provider_type_dictionary,
                       ::onc::vpn::kSaveCredentials,

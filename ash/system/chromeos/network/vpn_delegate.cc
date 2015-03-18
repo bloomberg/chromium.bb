@@ -24,12 +24,12 @@ bool VPNProvider::Key::MatchesNetwork(
     const chromeos::NetworkState& network) const {
   if (network.type() != shill::kTypeVPN)
     return false;
-  if (third_party)
-    return network.vpn_provider_extension_id() == extension_id;
-  // Currently, all networks with an empty |vpn_provider_extension_id| use a
-  // single built-in VPN providers. In the future, we may distinguish between
-  // multiple built-in providers based on the |Provider.Type| property.
-  return network.vpn_provider_extension_id().empty();
+  const bool network_uses_third_party_provider =
+      network.vpn_provider_type() == shill::kProviderThirdPartyVpn;
+  if (!third_party)
+    return !network_uses_third_party_provider;
+  return network_uses_third_party_provider &&
+         network.third_party_vpn_provider_extension_id() == extension_id;
 }
 
 VPNProvider::VPNProvider(const Key& key, const std::string& name)

@@ -850,6 +850,16 @@
       OpenVPN settings.
     </dd>
 
+    <dt class="field">ThirdPartyVPN</dt>
+    <dd>
+      <span class="field_meta">
+        (required if <span class="field">Type</span> is
+        <span class="value">ThirdPartyVPN</span>, otherwise ignored)
+        <span class="type">ThirdPartyVPN</span>
+      </span>
+      Third-party VPN provider settings.
+    </dd>
+
     <dt class="field">Type</dt>
     <dd>
       <span class="field_meta">
@@ -859,8 +869,9 @@
       <span class="rule">
         <span class="rule_id"></span>
         Allowed values are <span class="value">IPsec</span>,
-        <span class="value">L2TP-IPsec</span>, and
-        <span class="value">OpenVPN</span>.
+        <span class="value">L2TP-IPsec</span>,
+        <span class="value">OpenVPN</span>, and
+        <span class="value">ThirdPartyVPN</span>.
       </span>
       Type of the VPN.
     </dd>
@@ -1580,7 +1591,29 @@
       Determines which of the host's X.509 names will be verified. Allowed values are <span class="value">name</span>, <span class="value">name-prefix</span> and <span class="value">subject</span>. See OpenVPN's documentation for "--verify-x509-name" for the meaning of each value. Defaults to OpenVPN's default if not specified. 
     </dd>
   </dl>
+</section>
 
+<section>
+  <h1>Third-party VPN provider based connections and types</h1>
+  <p>
+    <span class="field">VPN.Type</span> must be
+    <span class="value">ThirdPartyVPN</span>.
+  </p>
+
+  <p>
+    <span class="type">ThirdPartyVPN</span> type contains the following:
+  </p>
+
+  <dl class="field_list">
+    <dt class="field">ExtensionID</dt>
+    <dd>
+      <span class="field_meta">
+        (required)
+        <span class="type">string</span>
+      </span>
+      The extension ID of the third-party VPN provider used by this network.
+    </dd>
+  </dl>
 </section>
 
 </section>

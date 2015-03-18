@@ -151,6 +151,11 @@ const OncFieldSignature openvpn_fields[] = {
     { ::onc::openvpn::kVerifyX509, &kVerifyX509Signature},
     {NULL}};
 
+const OncFieldSignature third_party_vpn_fields[] = {
+    { ::onc::kRecommended, &kRecommendedSignature},
+    { ::onc::third_party_vpn::kExtensionID, &kStringSignature},
+    {NULL}};
+
 const OncFieldSignature verify_x509_fields[] = {
     { ::onc::verify_x509::kName, &kStringSignature},
     { ::onc::verify_x509::kType, &kStringSignature},
@@ -163,6 +168,7 @@ const OncFieldSignature vpn_fields[] = {
     { ::onc::vpn::kIPsec, &kIPsecSignature},
     { ::onc::vpn::kL2TP, &kL2TPSignature},
     { ::onc::vpn::kOpenVPN, &kOpenVPNSignature},
+    { ::onc::vpn::kThirdPartyVpn, &kThirdPartyVPNSignature},
     { ::onc::vpn::kType, &kStringSignature},
     {NULL}};
 
@@ -384,6 +390,9 @@ const OncValueSignature kL2TPSignature = {
 };
 const OncValueSignature kOpenVPNSignature = {
   base::Value::TYPE_DICTIONARY, openvpn_fields, NULL
+};
+const OncValueSignature kThirdPartyVPNSignature = {
+  base::Value::TYPE_DICTIONARY, third_party_vpn_fields, NULL
 };
 const OncValueSignature kVerifyX509Signature = {
   base::Value::TYPE_DICTIONARY, verify_x509_fields, NULL

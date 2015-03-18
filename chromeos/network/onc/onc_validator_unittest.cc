@@ -208,6 +208,9 @@ INSTANTIATE_TEST_CASE_P(
                   false),
         OncParams("openvpn_with_password.onc",
                   &kNetworkConfigurationSignature,
+                  false),
+        OncParams("third_party_vpn.onc",
+                  &kNetworkConfigurationSignature,
                   false)));
 
 namespace {
@@ -346,6 +349,10 @@ INSTANTIATE_TEST_CASE_P(
                                  true),
                        ExpectStrictNotValid("")),
         std::make_pair(OncParams("openvpn-missing-verify-x509-name",
+                                 &kNetworkConfigurationSignature,
+                                 false),
+                       ExpectStrictNotValid("")),
+        std::make_pair(OncParams("third-party-vpn-missing-extension-id",
                                  &kNetworkConfigurationSignature,
                                  false),
                        ExpectStrictNotValid(""))));

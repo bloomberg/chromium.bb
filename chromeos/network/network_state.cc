@@ -4,6 +4,7 @@
 
 #include "chromeos/network/network_state.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -166,25 +167,29 @@ bool NetworkState::PropertyChanged(const std::string& key,
     }
     return true;
   } else if (key == shill::kProviderProperty) {
+    std::string vpn_provider_type;
     const base::DictionaryValue* dict;
-    std::string provider_type;
     if (!value.GetAsDictionary(&dict) ||
         !dict->GetStringWithoutPathExpansion(shill::kTypeProperty,
-                                             &provider_type)) {
+                                             &vpn_provider_type)) {
+      NET_LOG(ERROR) << "Failed to parse " << path() << "." << key;
       return false;
     }
 
-    if (provider_type != shill::kProviderThirdPartyVpn) {
-      // If the network uses the built-in OpenVPN and L2TP support, set the
-      // provider extension ID to an empty string.
-      vpn_provider_extension_id_.clear();
-      return true;
+    if (vpn_provider_type == shill::kProviderThirdPartyVpn) {
+      // If the network uses a third-party VPN provider, copy over the
+      // provider's extension ID, which is held in |shill::kHostProperty|.
+      if (!dict->GetStringWithoutPathExpansion(
+              shill::kHostProperty, &third_party_vpn_provider_extension_id_)) {
+        NET_LOG(ERROR) << "Failed to parse " << path() << "." << key;
+        return false;
+      }
+    } else {
+      third_party_vpn_provider_extension_id_.clear();
     }
 
-    // If the network uses a third-party VPN provider, copy over the provider's
-    // extension ID, which is held in |shill::kHostProperty|.
-    return dict->GetStringWithoutPathExpansion(shill::kHostProperty,
-                                               &vpn_provider_extension_id_);
+    vpn_provider_type_ = vpn_provider_type;
+    return true;
   }
   return false;
 }
@@ -230,6 +235,22 @@ void NetworkState::GetStateProperties(base::DictionaryValue* dictionary) const {
       dictionary->SetStringWithoutPathExpansion(shill::kErrorProperty, error());
     dictionary->SetStringWithoutPathExpansion(shill::kStateProperty,
                                               connection_state());
+  }
+
+  // VPN properties.
+  if (NetworkTypePattern::VPN().MatchesType(type())) {
+    // Shill sends VPN provider properties in a nested dictionary. |dictionary|
+    // must replicate that nested structure.
+    scoped_ptr<base::DictionaryValue> provider_property(
+        new base::DictionaryValue);
+    provider_property->SetStringWithoutPathExpansion(shill::kTypeProperty,
+                                                     vpn_provider_type_);
+    if (vpn_provider_type_ == shill::kProviderThirdPartyVpn) {
+      provider_property->SetStringWithoutPathExpansion(
+          shill::kHostProperty, third_party_vpn_provider_extension_id_);
+    }
+    dictionary->SetWithoutPathExpansion(shill::kProviderProperty,
+                                        provider_property.release());
   }
 
   // Wireless properties

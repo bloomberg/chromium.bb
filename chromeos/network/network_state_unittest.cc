@@ -54,11 +54,14 @@ class NetworkStateTest : public testing::Test {
   }
 
  protected:
+  bool SetProperty(const std::string& key, scoped_ptr<base::Value> value) {
+    const bool result = network_state_.PropertyChanged(key, *value);
+    properties_.SetWithoutPathExpansion(key, value.release());
+    return result;
+  }
+
   bool SetStringProperty(const std::string& key, const std::string& value) {
-    TestStringValue* string_value = new TestStringValue(value);
-    bool res = network_state_.PropertyChanged(key, *string_value);
-    properties_.SetWithoutPathExpansion(key, string_value);
-    return res;
+    return SetProperty(key, make_scoped_ptr(new TestStringValue(value)));
   }
 
   bool SignalInitialPropertiesReceived() {
@@ -211,6 +214,23 @@ TEST_F(NetworkStateTest, CaptivePortalState) {
                     shill::kPortalDetectionStatusFailure);
   SignalInitialPropertiesReceived();
   EXPECT_TRUE(network_state_.is_captive_portal());
+}
+
+// Third-party VPN provider.
+TEST_F(NetworkStateTest, VPNThirdPartyProvider) {
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeVPN));
+  EXPECT_TRUE(SetStringProperty(shill::kNameProperty, "VPN"));
+
+  scoped_ptr<base::DictionaryValue> provider(new base::DictionaryValue);
+  provider->SetStringWithoutPathExpansion(shill::kTypeProperty,
+                                          shill::kProviderThirdPartyVpn);
+  provider->SetStringWithoutPathExpansion(
+      shill::kHostProperty, "third-party-vpn-provider-extension-id");
+  EXPECT_TRUE(SetProperty(shill::kProviderProperty, provider.Pass()));
+  SignalInitialPropertiesReceived();
+  EXPECT_EQ(network_state_.vpn_provider_type(), shill::kProviderThirdPartyVpn);
+  EXPECT_EQ(network_state_.third_party_vpn_provider_extension_id(),
+            "third-party-vpn-provider-extension-id");
 }
 
 }  // namespace chromeos

@@ -367,6 +367,10 @@ ONC_EXPORT extern const char kPassword[];
 ONC_EXPORT extern const char kPasswordAndOTP[];
 }  // openvpn_user_auth_type
 
+namespace third_party_vpn {
+ONC_EXPORT extern const char kExtensionID[];
+}  // third_party_vpn
+
 namespace verify_x509 {
 ONC_EXPORT extern const char kName[];
 ONC_EXPORT extern const char kType[];

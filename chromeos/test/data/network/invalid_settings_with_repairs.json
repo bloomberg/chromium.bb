@@ -396,6 +396,15 @@
         }
       }
     },
+    "third-party-vpn-missing-extension-id": {
+      "GUID": "guid",
+      "Name": "third-party VPN",
+      "Type": "VPN",
+      "VPN": {
+        "Type": "ThirdPartyVPN",
+        "ThirdPartyVPN": { }
+      }
+    },
     "toplevel-empty": {
         "Type": "UnencryptedConfiguration",
         "NetworkConfigurations": [ ]

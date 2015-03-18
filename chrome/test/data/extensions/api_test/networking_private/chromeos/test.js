@@ -231,7 +231,7 @@ var availableTests = [
                     "ConnectionState": "Connected",
                     "GUID": "stub_wimax_guid",
                     "Name": "wimax",
-                    "Source":"User",
+                    "Source": "User",
                     "Type": "WiMAX",
                     "WiMAX": {
                       "SignalStrength": 40
@@ -241,8 +241,24 @@ var availableTests = [
                     "ConnectionState": "Connected",
                     "GUID": "stub_vpn1_guid",
                     "Name": "vpn1",
-                    "Source":"User",
-                    "Type": "VPN"
+                    "Source": "User",
+                    "Type": "VPN",
+                    "VPN": {
+                      "Type":"OpenVPN"
+                    }
+                  },
+                  {
+                    "ConnectionState": "NotConnected",
+                    "GUID": "stub_vpn2_guid",
+                    "Name": "vpn2",
+                    "Source": "User",
+                    "Type": "VPN",
+                    "VPN": {
+                      "ThirdPartyVPN": {
+                        "ExtensionID": "third_party_provider_extension_id"
+                      },
+                      "Type": "ThirdPartyVPN"
+                    }
                   },
                   {
                     "Connectable": true,
@@ -295,6 +311,7 @@ var availableTests = [
                     "stub_wifi1_guid",
                     "stub_wimax_guid",
                     "stub_vpn1_guid",
+                    "stub_vpn2_guid",
                     "stub_wifi2_guid"];
     var done = chrome.test.callbackAdded();
     var listener = new privateHelpers.listListener(expected, done);
@@ -524,7 +541,8 @@ var availableTests = [
                     "stub_wifi2_guid",
                     "stub_wimax_guid",
                     "stub_vpn1_guid",
-                    "stub_wifi1_guid"];
+                    "stub_wifi1_guid",
+                    "stub_vpn2_guid"];
     var done = chrome.test.callbackAdded();
     var listener = new privateHelpers.listListener(expected, done);
     chrome.networkingPrivate.onNetworkListChanged.addListener(

@@ -232,6 +232,7 @@ void Normalizer::NormalizeVPN(base::DictionaryValue* vpn) {
   RemoveEntryUnless(vpn, kOpenVPN, type == kOpenVPN);
   RemoveEntryUnless(vpn, kIPsec, type == kIPsec || type == kTypeL2TP_IPsec);
   RemoveEntryUnless(vpn, kL2TP, type == kTypeL2TP_IPsec);
+  RemoveEntryUnless(vpn, kThirdPartyVpn, type == kThirdPartyVpn);
 }
 
 void Normalizer::NormalizeWiFi(base::DictionaryValue* wifi) {
