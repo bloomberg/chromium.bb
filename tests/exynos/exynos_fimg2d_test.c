@@ -214,7 +214,7 @@ static struct exynos_bo *exynos_create_buffer(struct exynos_device *dev,
 
 /* Allocate buffer and fill it with checkerboard pattern, where the tiles *
  * have a random color. The caller has to free the buffer.                */
-void *create_checkerboard_pattern(unsigned int num_tiles_x,
+static void *create_checkerboard_pattern(unsigned int num_tiles_x,
 						unsigned int num_tiles_y, unsigned int tile_size)
 {
 	unsigned int *buf;
