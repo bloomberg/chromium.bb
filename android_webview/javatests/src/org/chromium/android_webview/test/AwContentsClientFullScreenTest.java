@@ -529,6 +529,8 @@ public class AwContentsClientFullScreenTest extends AwTestBase {
     private void loadTestPage(String videoTestUrl) throws Exception {
         loadUrlSync(mTestContainerView.getAwContents(),
                 mContentsClient.getOnPageFinishedHelper(), videoTestUrl);
+        // As we are loading a non-trivial page, let's wait until we have something displayed.
+        waitForVisualStateCallback(mTestContainerView.getAwContents());
     }
 
     private WebContents getWebContentsOnUiThread() {
