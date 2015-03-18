@@ -2316,6 +2316,16 @@ void Internals::forceBlinkGCWithoutV8GC()
     ThreadState::current()->setGCState(ThreadState::GCScheduledForTesting);
 }
 
+String Internals::selectedHTMLForClipboard()
+{
+    return frame()->selection().selectedHTMLForClipboard();
+}
+
+String Internals::selectedTextForClipboard()
+{
+    return frame()->selection().selectedTextForClipboard();
+}
+
 ValueIterable<int>::IterationSource* Internals::startIteration(ScriptState*, ExceptionState&)
 {
     return new InternalsIterationSource();

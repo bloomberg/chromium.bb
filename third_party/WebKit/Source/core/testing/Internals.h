@@ -341,6 +341,9 @@ public:
     //       Normal LayoutTests should use gc() instead as it would trigger both Blink GC and V8 GC.
     void forceBlinkGCWithoutV8GC();
 
+    String selectedHTMLForClipboard();
+    String selectedTextForClipboard();
+
 private:
     explicit Internals(Document*);
     Document* contextDocument() const;

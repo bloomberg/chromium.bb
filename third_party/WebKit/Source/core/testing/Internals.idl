@@ -300,5 +300,8 @@
 
     void forceBlinkGCWithoutV8GC();
 
+    DOMString selectedHTMLForClipboard();
+    DOMString selectedTextForClipboard();
+
     iterable<long>;
 };
