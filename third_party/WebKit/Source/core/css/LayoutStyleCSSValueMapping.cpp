@@ -476,7 +476,11 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForLineHeight(const Layout
     if (length.isNegative())
         return cssValuePool().createIdentifierValue(CSSValueNormal);
 
-    return zoomAdjustedPixelValue(floatValueForLength(length, style.fontDescription().specifiedSize()), style);
+    float floatValue = floatValueForLength(length, style.fontDescription().specifiedSize());
+    if (length.isPercent())
+        return cssValuePool().createValue(floatValue, CSSPrimitiveValue::CSS_PX);
+
+    return zoomAdjustedPixelValue(floatValue, style);
 }
 
 static CSSValueID identifierForFamily(const AtomicString& family)
