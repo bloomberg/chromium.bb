@@ -10,7 +10,7 @@
   'conditions': [
     # minidump_stackwalk and minidump_dump are tool-type executables that do
     # not build on iOS with Xcode (but do build on iOS with ninja.)
-    ['(OS!="ios" or "<(GENERATOR)"!="xcode") and OS!="win"', {
+    ['(OS!="ios" or "<(GENERATOR)"!="xcode" or "<(GENERATOR_FLAVOR)"=="ninja") and OS!="win"', {
       'targets': [
         {
           # code shared by both {micro,mini}dump_stackwalk
@@ -164,7 +164,7 @@
         },
       ],
     }],
-    ['OS=="mac" or (OS=="ios" and "<(GENERATOR)"!="xcode")', {
+    ['OS=="mac" or (OS=="ios" and ("<(GENERATOR)"!="xcode" or "<(GENERATOR_FLAVOR)"=="ninja"))', {
       'target_defaults': {
         'include_dirs': [
           'src',
@@ -851,7 +851,7 @@
         }
       ]
     }],
-    ['OS=="ios" and "<(GENERATOR)"=="xcode"', {
+    ['OS=="ios" and "<(GENERATOR)"=="xcode" and "<(GENERATOR_FLAVOR)"!="ninja"', {
       'variables': {
         'ninja_output_dir': 'ninja-breakpad',
         'ninja_product_dir':

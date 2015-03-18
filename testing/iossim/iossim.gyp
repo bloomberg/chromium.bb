@@ -4,7 +4,7 @@
 
 {
   'conditions': [
-    ['OS!="ios" or "<(GENERATOR)"=="ninja"', {
+    ['OS!="ios" or "<(GENERATOR)"!="xcode" or "<(GENERATOR_FLAVOR)"=="ninja"', {
       'targets': [
         {
           'target_name': 'iossim',
@@ -126,7 +126,7 @@
           },
         },
       ],
-    }, {  # else, OS=="ios" and "<(GENERATOR)"!="ninja"
+    }, {  # else, OS=="ios" and "<(GENERATOR)"=="xcode" and "<(GENERATOR_FLAVOR)"!="ninja"
       'variables': {
         'ninja_output_dir': 'ninja-iossim',
         'ninja_product_dir':
