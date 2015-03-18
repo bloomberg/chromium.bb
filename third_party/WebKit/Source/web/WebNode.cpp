@@ -48,6 +48,7 @@
 #include "platform/Task.h"
 #include "platform/Widget.h"
 #include "public/platform/WebString.h"
+#include "public/platform/WebSuspendableTask.h"
 #include "public/web/WebAXObject.h"
 #include "public/web/WebDOMEvent.h"
 #include "public/web/WebDocument.h"
@@ -56,7 +57,6 @@
 #include "public/web/WebNodeList.h"
 #include "public/web/WebPluginContainer.h"
 #include "web/FrameLoaderClientImpl.h"
-#include "web/SuspendableTaskRunner.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
 
@@ -64,7 +64,7 @@ namespace blink {
 
 namespace {
 
-class NodeDispatchEventTask: public WebThread::Task {
+class NodeDispatchEventTask: public blink::SuspendableTask {
     WTF_MAKE_NONCOPYABLE(NodeDispatchEventTask);
 public:
     NodeDispatchEventTask(const WebPrivatePtr<Node>& node, WebDOMEvent event)
@@ -85,6 +85,27 @@ public:
 private:
     WebPrivatePtr<Node> m_node;
     WebDOMEvent m_event;
+};
+
+class NodeDispatchSimulatedClickTask: public blink::SuspendableTask {
+    WTF_MAKE_NONCOPYABLE(NodeDispatchSimulatedClickTask);
+public:
+    NodeDispatchSimulatedClickTask(const WebPrivatePtr<Node>& node)
+    {
+        m_node = node;
+    }
+
+    ~NodeDispatchSimulatedClickTask()
+    {
+        m_node.reset();
+    }
+
+    void run() override
+    {
+        m_node->dispatchSimulatedClick(nullptr);
+    }
+private:
+    WebPrivatePtr<Node> m_node;
 };
 
 } // namespace
@@ -205,12 +226,12 @@ bool WebNode::isElementNode() const
 void WebNode::dispatchEvent(const WebDOMEvent& event)
 {
     if (!event.isNull())
-        SuspendableTaskRunner::createAndRun(m_private->executionContext(), adoptPtr(new NodeDispatchEventTask(m_private, event)));
+        m_private->executionContext()->postSuspendableTask(adoptPtr(new NodeDispatchEventTask(m_private, event)));
 }
 
 void WebNode::simulateClick()
 {
-    SuspendableTaskRunner::createAndRun(m_private->executionContext(), adoptPtr(new blink::Task(WTF::bind(&Node::dispatchSimulatedClick, m_private.get(), nullptr, SendNoEvents))));
+    m_private->executionContext()->postSuspendableTask(adoptPtr(new NodeDispatchSimulatedClickTask(m_private)));
 }
 
 WebElementCollection WebNode::getElementsByHTMLTagName(const WebString& tag) const
