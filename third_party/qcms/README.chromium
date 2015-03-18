@@ -57,5 +57,7 @@ google.patch contains the following modifications. Apply with
    - https://code.google.com/p/chromium/issues/detail?id=443863
  - Apply upstream fix reject invalid sizes from
    - https://bugzilla.mozilla.org/show_bug.cgi?id=1132468
+ - lut_inverse_interp16: remove odd whitespace formatting
+   - https://code.google.com/p/chromium/issues/detail?id=458024
 To regenerate google.patch:
   git diff b8456f38 src > google.patch

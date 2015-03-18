@@ -313,7 +313,7 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
 
         NumZeroes = 0;
         while (LutTable[NumZeroes] == 0 && NumZeroes < length-1)
-                        NumZeroes++;
+            NumZeroes++;
 
         // There are no zeros at the beginning and we are trying to find a zero, so
         // return anything. It seems zero would be the less destructive choice
@@ -323,22 +323,22 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
 
         NumPoles = 0;
         while (LutTable[length-1- NumPoles] == 0xFFFF && NumPoles < length-1)
-                        NumPoles++;
+            NumPoles++;
 
         // Does the curve belong to this case?
         if (NumZeroes > 1 || NumPoles > 1)
-        {               
+        {
                 int a, b;
 
-                // Identify if value fall downto 0 or FFFF zone             
+                // Identify if value fall downto 0 or FFFF zone
                 if (Value == 0) return 0;
                // if (Value == 0xFFFF) return 0xFFFF;
 
                 // else restrict to valid zone
 
-                a = ((NumZeroes-1) * 0xFFFF) / (length-1);               
+                a = ((NumZeroes-1) * 0xFFFF) / (length-1);
                 b = ((length-1 - NumPoles) * 0xFFFF) / (length-1);
-                                                                
+
                 l = a - 1;
                 r = b + 1;
         }
@@ -350,12 +350,12 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
 
                 x = (l + r) / 2;
 
-		res = (int) lut_interp_linear16((uint16_fract_t) (x-1), LutTable, length);
+                res = (int) lut_interp_linear16((uint16_fract_t) (x-1), LutTable, length);
 
                 if (res == Value) {
 
-                    // Found exact match. 
-                    
+                    // Found exact match.
+
                     return (uint16_fract_t) (x - 1);
                 }
 
@@ -365,14 +365,14 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
 
         // Not found, should we interpolate?
 
-                
+
         // Get surrounding nodes
-        
+
         val2 = (length-1) * ((double) (x - 1) / 65535.0);
 
         cell0 = (int) floor(val2);
         cell1 = (int) ceil(val2);
-           
+
         if (cell0 == cell1) return (uint16_fract_t) x;
 
         y0 = LutTable[cell0] ;
@@ -391,8 +391,7 @@ uint16_fract_t lut_inverse_interp16(uint16_t Value, uint16_t LutTable[], int len
         if (f < 0.0) return (uint16_fract_t) 0;
         if (f >= 65535.0) return (uint16_fract_t) 0xFFFF;
 
-        return (uint16_fract_t) floor(f + 0.5);                        
-
+        return (uint16_fract_t) floor(f + 0.5);
 }
 
 /*
