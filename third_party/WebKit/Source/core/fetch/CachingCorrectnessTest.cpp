@@ -63,7 +63,7 @@ class MockFetchContext : public FetchContext {
 public:
     static PassOwnPtrWillBeRawPtr<MockFetchContext> create()
     {
-        return adoptPtr(new MockFetchContext);
+        return adoptPtrWillBeNoop(new MockFetchContext);
     }
 
     ~MockFetchContext() { }
