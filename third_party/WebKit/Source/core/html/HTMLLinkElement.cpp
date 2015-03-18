@@ -489,6 +489,7 @@ LinkStyle::LinkStyle(HTMLLinkElement* owner)
     , m_loading(false)
     , m_firedLoad(false)
     , m_loadedSheet(false)
+    , m_fetchFollowingCORS(false)
 {
 }
 
@@ -533,6 +534,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
         m_sheet = CSSStyleSheet::create(restoredSheet, m_owner);
         m_sheet->setMediaQueries(MediaQuerySet::create(m_owner->media()));
         m_sheet->setTitle(m_owner->title());
+        setCrossOriginStylesheetStatus(m_sheet.get());
 
         m_loading = false;
         restoredSheet->checkLoaded();
@@ -547,6 +549,7 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
     m_sheet = CSSStyleSheet::create(styleSheet, m_owner);
     m_sheet->setMediaQueries(MediaQuerySet::create(m_owner->media()));
     m_sheet->setTitle(m_owner->title());
+    setCrossOriginStylesheetStatus(m_sheet.get());
 
     styleSheet->parseAuthorStyleSheet(cachedStyleSheet, m_owner->document().securityOrigin());
 
@@ -673,6 +676,16 @@ void LinkStyle::setDisabledState(bool disabled)
     }
 }
 
+void LinkStyle::setCrossOriginStylesheetStatus(CSSStyleSheet* sheet)
+{
+    if (m_fetchFollowingCORS && resource() && !resource()->errorOccurred()) {
+        // Record the security origin the CORS access check succeeded at, if cross origin.
+        // Only origins that are script accessible to it may access the stylesheet's rules.
+        sheet->setAllowRuleAccessFromOrigin(m_owner->document().securityOrigin());
+    }
+    m_fetchFollowingCORS = false;
+}
+
 void LinkStyle::process()
 {
     ASSERT(m_owner->shouldProcessStyle());
@@ -723,8 +736,10 @@ void LinkStyle::process()
         // Load stylesheets that are not needed for the rendering immediately with low priority.
         FetchRequest request = builder.build(blocking);
         AtomicString crossOriginMode = m_owner->fastGetAttribute(HTMLNames::crossoriginAttr);
-        if (!crossOriginMode.isNull())
+        if (!crossOriginMode.isNull()) {
             request.setCrossOriginAccessControl(document().securityOrigin(), crossOriginMode);
+            setFetchFollowingCORS();
+        }
         setResource(document().fetcher()->fetchCSSStyleSheet(request));
 
         if (!resource()) {

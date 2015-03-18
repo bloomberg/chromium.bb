@@ -104,12 +104,20 @@ private:
     void removePendingSheet();
     Document& document();
 
+    void setCrossOriginStylesheetStatus(CSSStyleSheet*);
+    void setFetchFollowingCORS()
+    {
+        ASSERT(!m_fetchFollowingCORS);
+        m_fetchFollowingCORS = true;
+    }
+
     RefPtrWillBeMember<CSSStyleSheet> m_sheet;
     DisabledState m_disabledState;
     PendingSheetType m_pendingSheetType;
     bool m_loading;
     bool m_firedLoad;
     bool m_loadedSheet;
+    bool m_fetchFollowingCORS;
 };
 
 

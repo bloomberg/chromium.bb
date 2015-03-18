@@ -274,6 +274,8 @@ bool CSSStyleSheet::canAccessRules() const
         return true;
     if (document->securityOrigin()->canRequest(baseURL))
         return true;
+    if (m_allowRuleAccessFromOrigin && document->securityOrigin()->canAccess(m_allowRuleAccessFromOrigin.get()))
+        return true;
     return false;
 }
 
@@ -403,6 +405,11 @@ Document* CSSStyleSheet::ownerDocument() const
     while (root->parentStyleSheet())
         root = root->parentStyleSheet();
     return root->ownerNode() ? &root->ownerNode()->document() : 0;
+}
+
+void CSSStyleSheet::setAllowRuleAccessFromOrigin(PassRefPtr<SecurityOrigin> allowedOrigin)
+{
+    m_allowRuleAccessFromOrigin = allowedOrigin;
 }
 
 void CSSStyleSheet::clearChildRuleCSSOMWrappers()

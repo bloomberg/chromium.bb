@@ -36,6 +36,7 @@ class CSSStyleSheet;
 class Document;
 class ExceptionState;
 class MediaQuerySet;
+class SecurityOrigin;
 class StyleSheetContents;
 
 enum StyleSheetUpdateType {
@@ -87,6 +88,8 @@ public:
     MediaQuerySet* mediaQueries() const { return m_mediaQueries.get(); }
     void setMediaQueries(PassRefPtrWillBeRawPtr<MediaQuerySet>);
     void setTitle(const String& title) { m_title = title; }
+    // Set by LinkStyle iff CORS-enabled fetch of stylesheet succeeded from this origin.
+    void setAllowRuleAccessFromOrigin(PassRefPtr<SecurityOrigin> allowedOrigin);
 
     class RuleMutationScope {
         WTF_MAKE_NONCOPYABLE(RuleMutationScope);
@@ -135,6 +138,8 @@ private:
     bool m_isDisabled;
     String m_title;
     RefPtrWillBeMember<MediaQuerySet> m_mediaQueries;
+
+    RefPtr<SecurityOrigin> m_allowRuleAccessFromOrigin;
 
     RawPtrWillBeMember<Node> m_ownerNode;
     RawPtrWillBeMember<CSSRule> m_ownerRule;
