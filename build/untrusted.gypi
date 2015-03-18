@@ -1449,6 +1449,7 @@
         '-Wno-unused-private-field',
         '-Wno-char-subscripts',
         '-Wno-unused-function',
+        '-std=gnu++11',
       ],
       # IRT compile/link flags to make the binary smaller.
       # Omitted from non-IRT libraries to keep the libraries themselves small.
