@@ -275,6 +275,7 @@ private:
     OwnPtrWillBeMember<InspectorRevalidateDOMTask> m_revalidateTask;
     SearchMode m_searchingForNode;
     OwnPtr<InspectorHighlightConfig> m_inspectModeHighlightConfig;
+    RefPtrWillBeMember<Node> m_hoveredNodeForInspectMode;
     OwnPtrWillBeMember<InspectorHistory> m_history;
     OwnPtrWillBeMember<DOMEditor> m_domEditor;
     bool m_suppressAttributeModifiedEvent;

@@ -220,11 +220,6 @@ void InspectorOverlay::showAndHideViewSize(bool showGrid)
     m_timer.startOneShot(1, FROM_HERE);
 }
 
-Node* InspectorOverlay::highlightedNode() const
-{
-    return m_highlightNode.get();
-}
-
 bool InspectorOverlay::isEmpty()
 {
     if (m_activeProfilerCount)

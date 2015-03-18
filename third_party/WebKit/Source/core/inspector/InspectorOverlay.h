@@ -92,8 +92,6 @@ public:
     void highlightQuad(PassOwnPtr<FloatQuad>, const InspectorHighlightConfig&);
     void showAndHideViewSize(bool showGrid);
 
-    Node* highlightedNode() const;
-
     void freePage();
 
     InspectorOverlayHost* overlayHost() const { return m_overlayHost.get(); }

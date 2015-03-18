@@ -584,7 +584,6 @@ void InspectorDOMAgent::disable(ErrorString* errorString)
     }
     m_state->setBoolean(DOMAgentState::domAgentEnabled, false);
     setSearchingForNode(errorString, NotSearching, nullptr);
-    hideHighlight(errorString);
     m_instrumentingAgents->setInspectorDOMAgent(nullptr);
     m_history.clear();
     m_domEditor.clear();
@@ -1267,8 +1266,9 @@ bool InspectorDOMAgent::handleMousePress()
     if (m_searchingForNode == NotSearching)
         return false;
 
-    if (Node* node = m_overlay->highlightedNode()) {
-        inspect(node);
+    if (m_hoveredNodeForInspectMode) {
+        inspect(m_hoveredNodeForInspectMode.get());
+        m_hoveredNodeForInspectMode.clear();
         return true;
     }
     return false;
@@ -1347,8 +1347,10 @@ bool InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEv
     if (eventTarget == node)
         eventTarget = 0;
 
-    if (node && m_inspectModeHighlightConfig)
+    if (node && m_inspectModeHighlightConfig) {
+        m_hoveredNodeForInspectMode = node;
         m_overlay->highlightNode(node, eventTarget, *m_inspectModeHighlightConfig, event.ctrlKey() || event.metaKey());
+    }
     return true;
 }
 
@@ -1363,8 +1365,10 @@ void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, SearchMode
         m_inspectModeHighlightConfig = highlightConfigFromInspectorObject(errorString, highlightInspectorObject);
         if (!m_inspectModeHighlightConfig)
             return;
-    } else
+    } else {
+        m_hoveredNodeForInspectMode.clear();
         hideHighlight(errorString);
+    }
 }
 
 PassOwnPtr<InspectorHighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObject(ErrorString* errorString, JSONObject* highlightInspectorObject)
@@ -2353,6 +2357,7 @@ DEFINE_TRACE(InspectorDOMAgent)
     visitor->trace(m_revalidateTask);
     visitor->trace(m_searchResults);
 #endif
+    visitor->trace(m_hoveredNodeForInspectMode);
     visitor->trace(m_history);
     visitor->trace(m_domEditor);
     visitor->trace(m_listener);
