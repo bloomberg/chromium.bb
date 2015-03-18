@@ -220,7 +220,7 @@ template<typename T>
 static bool getValueFrom(T indexOrName, v8::Local<v8::Value>& v8Value, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
-    if (!object->Has(indexOrName))
+    if (!v8CallBoolean(object->Has(isolate->GetCurrentContext(), indexOrName)))
         return false;
     v8Value = object->Get(indexOrName);
     return true;

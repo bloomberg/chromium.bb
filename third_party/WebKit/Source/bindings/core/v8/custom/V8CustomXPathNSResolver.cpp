@@ -60,11 +60,9 @@ AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
     v8::Handle<v8::String> lookupNamespaceURIName = v8AtomicString(m_isolate, "lookupNamespaceURI");
 
     // Check if the resolver has a function property named lookupNamespaceURI.
-    if (m_resolver->Has(lookupNamespaceURIName)) {
-        v8::Handle<v8::Value> lookupNamespaceURI = m_resolver->Get(lookupNamespaceURIName);
-        if (lookupNamespaceURI->IsFunction())
-            lookupNamespaceURIFunc = v8::Handle<v8::Function>::Cast(lookupNamespaceURI);
-    }
+    v8::Local<v8::Value> lookupNamespaceURI = m_resolver->Get(lookupNamespaceURIName);
+    if (!lookupNamespaceURI.IsEmpty() && lookupNamespaceURI->IsFunction())
+        lookupNamespaceURIFunc = v8::Local<v8::Function>::Cast(lookupNamespaceURI);
 
     if (lookupNamespaceURIFunc.IsEmpty() && !m_resolver->IsFunction()) {
         LocalFrame* frame = callingDOMWindow(m_isolate)->frame();

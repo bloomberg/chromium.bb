@@ -86,6 +86,12 @@ inline bool getValueFromMaybe(v8::Maybe<T> maybe, T& outVariable)
     return true;
 }
 
+inline bool v8CallBoolean(v8::Maybe<bool> maybe)
+{
+    bool result;
+    return getValueFromMaybe(maybe, result) && result;
+}
+
 // The last "else" is to avoid dangling else problem.
 #define V8_CALL(outVariable, handle, methodCall, failureExpression)                \
     if (handle.IsEmpty() || !getValueFromMaybe(handle->methodCall, outVariable)) { \

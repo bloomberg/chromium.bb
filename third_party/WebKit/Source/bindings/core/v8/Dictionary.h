@@ -125,6 +125,12 @@ public:
     bool getKey(const String& key, v8::Local<v8::Value>&) const;
 
 private:
+    v8::Local<v8::Context> v8Context() const
+    {
+        ASSERT(m_isolate);
+        return m_isolate->GetCurrentContext();
+    }
+
     v8::Handle<v8::Value> m_options;
     v8::Isolate* m_isolate;
     ExceptionState* m_exceptionState;

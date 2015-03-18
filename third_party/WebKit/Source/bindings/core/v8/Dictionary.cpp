@@ -121,10 +121,7 @@ bool Dictionary::hasProperty(const String& key) const
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
     ASSERT(m_exceptionState);
     v8::Handle<v8::String> v8Key = v8String(m_isolate, key);
-    if (!options->Has(v8Key))
-        return false;
-
-    return true;
+    return v8CallBoolean(options->Has(v8Context(), v8Key));
 }
 
 bool Dictionary::getKey(const String& key, v8::Local<v8::Value>& value) const
@@ -138,12 +135,10 @@ bool Dictionary::getKey(const String& key, v8::Local<v8::Value>& value) const
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
     ASSERT(m_exceptionState);
     v8::Handle<v8::String> v8Key = v8String(m_isolate, key);
-    if (!options->Has(v8Key))
+    if (!v8CallBoolean(options->Has(v8Context(), v8Key)))
         return false;
     value = options->Get(v8Key);
-    if (value.IsEmpty())
-        return false;
-    return true;
+    return !value.IsEmpty();
 }
 
 bool Dictionary::get(const String& key, v8::Local<v8::Value>& value) const
@@ -224,7 +219,7 @@ bool Dictionary::getOwnPropertiesAsStringHashMap(HashMap<String, String>& hashMa
         return true;
     for (uint32_t i = 0; i < properties->Length(); ++i) {
         v8::Local<v8::String> key = properties->Get(i)->ToString(m_isolate);
-        if (!options->Has(key))
+        if (!v8CallBoolean(options->Has(v8Context(), key)))
             continue;
 
         v8::Local<v8::Value> value = options->Get(key);
@@ -251,7 +246,7 @@ bool Dictionary::getPropertyNames(Vector<String>& names) const
         return true;
     for (uint32_t i = 0; i < properties->Length(); ++i) {
         v8::Local<v8::String> key = properties->Get(i)->ToString(m_isolate);
-        if (!options->Has(key))
+        if (!v8CallBoolean(options->Has(v8Context(), key)))
             continue;
         TOSTRING_DEFAULT(V8StringResource<>, stringKey, key, false);
         names.append(stringKey);
