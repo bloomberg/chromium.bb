@@ -1221,6 +1221,10 @@ class TLSConnection(TLSRecordLayer):
             ocspResponse=ocspResponse)
         for result in self._handshakeWrapperAsync(handshaker, checker):
             yield result
+        if settings and settings.alertAfterHandshake:
+            for result in self._sendError(AlertDescription.internal_error,
+                                          "Spurious alert"):
+                yield result
 
 
     def _handshakeServerAsyncHelper(self, verifierDB,

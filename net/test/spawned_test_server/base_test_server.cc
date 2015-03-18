@@ -104,7 +104,8 @@ BaseTestServer::SSLOptions::SSLOptions()
       fallback_scsv_enabled(false),
       staple_ocsp_response(false),
       ocsp_server_unavailable(false),
-      enable_npn(false) {
+      enable_npn(false),
+      alert_after_handshake(false) {
 }
 
 BaseTestServer::SSLOptions::SSLOptions(
@@ -121,7 +122,8 @@ BaseTestServer::SSLOptions::SSLOptions(
       fallback_scsv_enabled(false),
       staple_ocsp_response(false),
       ocsp_server_unavailable(false),
-      enable_npn(false) {
+      enable_npn(false),
+      alert_after_handshake(false) {
 }
 
 BaseTestServer::SSLOptions::~SSLOptions() {}
@@ -484,6 +486,8 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     }
     if (ssl_options_.enable_npn)
       arguments->Set("enable-npn", base::Value::CreateNullValue());
+    if (ssl_options_.alert_after_handshake)
+      arguments->Set("alert-after-handshake", base::Value::CreateNullValue());
   }
 
   return GenerateAdditionalArguments(arguments);

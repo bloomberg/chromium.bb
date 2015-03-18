@@ -1482,11 +1482,22 @@ int SSLClientSocketOpenSSL::DoPayloadRead() {
 
     if (client_auth_cert_needed_) {
       *next_result = ERR_SSL_CLIENT_AUTH_CERT_NEEDED;
-    } else if (*next_result < 0) {
+    } else if (*next_result <= 0) {
+      // A zero return from SSL_read may mean any of:
+      // - The underlying BIO_read returned 0.
+      // - The peer sent a close_notify.
+      // - Any arbitrary error. https://crbug.com/466303
+      //
+      // TransportReadComplete converts the first to an ERR_CONNECTION_CLOSED
+      // error, so it does not occur. The second and third are distinguished by
+      // SSL_ERROR_ZERO_RETURN.
       pending_read_ssl_error_ = SSL_get_error(ssl_, *next_result);
-      *next_result = MapOpenSSLErrorWithDetails(pending_read_ssl_error_,
-                                                err_tracer,
-                                                &pending_read_error_info_);
+      if (pending_read_ssl_error_ == SSL_ERROR_ZERO_RETURN) {
+        *next_result = 0;
+      } else {
+        *next_result = MapOpenSSLErrorWithDetails(
+            pending_read_ssl_error_, err_tracer, &pending_read_error_info_);
+      }
 
       // Many servers do not reliably send a close_notify alert when shutting
       // down a connection, and instead terminate the TCP connection. This is

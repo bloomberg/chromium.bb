@@ -51,7 +51,8 @@ struct OpenSSLErrorInfo {
 // Converts an OpenSSL error code into a net error code, walking the OpenSSL
 // error stack if needed. If a value on the stack is used, the error code and
 // associated information are returned in |*out_error_info|. Otherwise its
-// fields are set to 0 and NULL.
+// fields are set to 0 and NULL. This function will never return OK, so
+// SSL_ERROR_ZERO_RETURN must be handled externally.
 //
 // Note that |tracer| is not currently used in the implementation, but is passed
 // in anyway as this ensures the caller will clear any residual codes left on

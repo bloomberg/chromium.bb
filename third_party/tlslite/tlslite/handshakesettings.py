@@ -107,6 +107,10 @@ class HandshakeSettings(object):
     
     @type useExperimentalTackExtension: bool
     @ivar useExperimentalTackExtension: Whether to enabled TACK support.
+
+    @type alertAfterHandshake: bool
+    @ivar alertAfterHandshake: If true, the server will send a fatal
+    alert immediately after the handshake completes.
     
     Note that TACK support is not standardized by IETF and uses a temporary
     TLS Extension number, so should NOT be used in production software.
@@ -124,6 +128,7 @@ class HandshakeSettings(object):
         self.tlsIntolerant = None
         self.tlsIntoleranceType = 'alert'
         self.useExperimentalTackExtension = False
+        self.alertAfterHandshake = False
 
     # Validates the min/max fields, and certificateTypes
     # Filters out unsupported cipherNames and cipherImplementations
@@ -140,6 +145,7 @@ class HandshakeSettings(object):
         other.maxVersion = self.maxVersion
         other.tlsIntolerant = self.tlsIntolerant
         other.tlsIntoleranceType = self.tlsIntoleranceType
+        other.alertAfterHandshake = self.alertAfterHandshake
 
         if not cipherfactory.tripleDESPresent:
             other.cipherNames = [e for e in self.cipherNames if e != "3des"]

@@ -36,3 +36,5 @@ Local Modifications:
 - patches/certificate_request.patch: Fix client auth for TLS 1.2.
 - patches/aes_gcm.patch: Implement AES-GCM and never select TLS 1.2 ciphers
   unless >= TLS 1.2 is negotiated.
+- patches/alert_after_handshake.patch: Add an option to send a fatal alert
+  immediately after the handshake completes.

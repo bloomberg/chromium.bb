@@ -1225,6 +1225,8 @@ TEST_F(SSLClientSocketTest, ConnectClientAuthSendNullCert) {
 //   - Server closes the underlying TCP connection directly.
 //   - Server sends data unexpectedly.
 
+// Tests that the socket can be read from successfully. Also test that a peer's
+// close_notify alert is successfully processed without error.
 TEST_F(SSLClientSocketTest, Read) {
   SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
                                 SpawnedTestServer::kLocalhost,
@@ -1276,6 +1278,9 @@ TEST_F(SSLClientSocketTest, Read) {
     if (rv <= 0)
       break;
   }
+
+  // The peer should have cleanly closed the connection with a close_notify.
+  EXPECT_EQ(0, rv);
 }
 
 // Tests that SSLClientSocket properly handles when the underlying transport
@@ -1816,8 +1821,8 @@ TEST_F(SSLClientSocketTest, Connect_WithZeroReturn) {
   EXPECT_FALSE(sock->IsConnected());
 }
 
-// Tests that SSLClientSocket cleanly returns a Read of size 0 if the
-// underlying socket is cleanly closed.
+// Tests that SSLClientSocket returns a Read of size 0 if the underlying socket
+// is cleanly closed, but the peer does not send close_notify.
 // This is a regression test for https://crbug.com/422246
 TEST_F(SSLClientSocketTest, Read_WithZeroReturn) {
   SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
@@ -1902,6 +1907,28 @@ TEST_F(SSLClientSocketTest, Read_WithAsyncZeroReturn) {
   raw_transport->UnblockReadResult();
   rv = callback.GetResult(rv);
   EXPECT_EQ(0, rv);
+}
+
+// Tests that fatal alerts from the peer are processed. This is a regression
+// test for https://crbug.com/466303.
+TEST_F(SSLClientSocketTest, Read_WithFatalAlert) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.alert_after_handshake = true;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  SSLConfig ssl_config;
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> transport(
+      new TCPClientSocket(addr(), &log_, NetLog::Source()));
+  EXPECT_EQ(OK, callback.GetResult(transport->Connect(callback.callback())));
+  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      transport.Pass(), test_server()->host_port_pair(), ssl_config));
+  EXPECT_EQ(OK, callback.GetResult(sock->Connect(callback.callback())));
+
+  // Receive the fatal alert.
+  scoped_refptr<IOBuffer> buf(new IOBuffer(4096));
+  EXPECT_EQ(ERR_SSL_PROTOCOL_ERROR, callback.GetResult(sock->Read(
+                                        buf.get(), 4096, callback.callback())));
 }
 
 TEST_F(SSLClientSocketTest, Read_SmallChunks) {

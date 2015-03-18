@@ -157,7 +157,8 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
                ssl_bulk_ciphers, ssl_key_exchanges, enable_npn,
                record_resume_info, tls_intolerant,
                tls_intolerance_type, signed_cert_timestamps,
-               fallback_scsv_enabled, ocsp_response):
+               fallback_scsv_enabled, ocsp_response,
+               alert_after_handshake):
     self.cert_chain = tlslite.api.X509CertChain()
     self.cert_chain.parsePemList(pem_cert_and_key)
     # Force using only python implementation - otherwise behavior is different
@@ -202,6 +203,8 @@ class HTTPSServer(tlslite.api.TLSSocketServerMixIn,
     if tls_intolerant != 0:
       self.ssl_handshake_settings.tlsIntolerant = (3, tls_intolerant)
       self.ssl_handshake_settings.tlsIntoleranceType = tls_intolerance_type
+    if alert_after_handshake:
+      self.ssl_handshake_settings.alertAfterHandshake = True
 
     if record_resume_info:
       # If record_resume_info is true then we'll replace the session cache with
@@ -2045,7 +2048,8 @@ class ServerRunner(testserver_base.TestServerRunner):
                              self.options.signed_cert_timestamps_tls_ext.decode(
                                  "base64"),
                              self.options.fallback_scsv,
-                             stapled_ocsp_response)
+                             stapled_ocsp_response,
+                             self.options.alert_after_handshake)
         print 'HTTPS server started on https://%s:%d...' % \
             (host, server.server_port)
       else:
@@ -2278,6 +2282,11 @@ class ServerRunner(testserver_base.TestServerRunner):
                                   help='If set, the OCSP server will return '
                                   'a tryLater status rather than the actual '
                                   'OCSP response.')
+    self.option_parser.add_option('--alert-after-handshake',
+                                  dest='alert_after_handshake',
+                                  default=False, action='store_true',
+                                  help='If set, the server will send a fatal '
+                                  'alert immediately after the handshake.')
 
 
 if __name__ == '__main__':

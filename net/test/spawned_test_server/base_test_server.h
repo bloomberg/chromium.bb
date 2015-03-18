@@ -209,6 +209,9 @@ class BaseTestServer {
 
     // Whether to enable NPN support.
     bool enable_npn;
+
+    // Whether to send a fatal alert immediately after completing the handshake.
+    bool alert_after_handshake;
   };
 
   // Pass as the 'host' parameter during construction to server on 127.0.0.1
