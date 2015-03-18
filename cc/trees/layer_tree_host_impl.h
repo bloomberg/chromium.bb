@@ -533,9 +533,12 @@ class CC_EXPORT LayerTreeHostImpl
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       int id);
 
-
   // Virtual for testing.
   virtual void AnimateLayers(base::TimeTicks monotonic_time);
+
+  bool is_likely_to_require_a_draw() const {
+    return is_likely_to_require_a_draw_;
+  }
 
   LayerTreeHostImplClient* client_;
   Proxy* proxy_;

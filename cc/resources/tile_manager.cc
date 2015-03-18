@@ -366,14 +366,15 @@ void TileManager::PrepareTiles(
     scoped_ptr<RasterTilePriorityQueue> raster_priority_queue(
         client_->BuildRasterQueue(global_state_.tree_priority,
                                   RasterTilePriorityQueue::Type::ALL));
-    // Inform the client that will likely require a draw if the top tile is
-    // required for draw.
-    client_->SetIsLikelyToRequireADraw(
-        !raster_priority_queue->IsEmpty() &&
-        raster_priority_queue->Top()->required_for_draw());
     AssignGpuMemoryToTiles(raster_priority_queue.get(),
                            scheduled_raster_task_limit_,
                            &tiles_that_need_to_be_rasterized);
+
+    // Inform the client that will likely require a draw if the highest priority
+    // tile that will be rasterized is required for draw.
+    client_->SetIsLikelyToRequireADraw(
+        !tiles_that_need_to_be_rasterized.empty() &&
+        (*tiles_that_need_to_be_rasterized.begin())->required_for_draw());
 
     // Schedule tile tasks.
     ScheduleTasks(tiles_that_need_to_be_rasterized);
