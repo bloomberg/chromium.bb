@@ -5,6 +5,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_tooltip_controller.h"
 #include "chrome/browser/ui/cocoa/autofill/card_unmask_prompt_view_bridge.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/browser/ui/chrome_style.h"
@@ -13,6 +14,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -94,6 +96,8 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   base::scoped_nsobject<NSPopUpButton> monthPopup_;
   base::scoped_nsobject<NSPopUpButton> yearPopup_;
   base::scoped_nsobject<NSButton> verifyButton_;
+  base::scoped_nsobject<NSButton> storageCheckbox_;
+  base::scoped_nsobject<AutofillTooltipController> storageTooltip_;
 
   int monthPopupDefaultIndex_;
   int yearPopupDefaultIndex_;
@@ -170,7 +174,8 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   controller->OnUnmaskResponse(
       base::SysNSStringToUTF16([cvcInput_ stringValue]),
       base::SysNSStringToUTF16([monthPopup_ titleOfSelectedItem]),
-      base::SysNSStringToUTF16([yearPopup_ titleOfSelectedItem]), false);
+      base::SysNSStringToUTF16([yearPopup_ titleOfSelectedItem]),
+      [storageCheckbox_ state] == NSOnState);
 }
 
 - (void)onCancel:(id)sender {
@@ -184,6 +189,41 @@ void CardUnmaskPromptViewBridge::PerformClose() {
 // Called when text in CVC input field changes.
 - (void)controlTextDidChange:(NSNotification*)notification {
   [self updateVerifyButtonEnabled];
+}
+
+- (base::scoped_nsobject<NSView>)createStorageViewWithController:
+        (autofill::CardUnmaskPromptController*)controller {
+  base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
+
+  // "Store card on this device" checkbox.
+  storageCheckbox_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
+  [storageCheckbox_ setButtonType:NSSwitchButton];
+  [storageCheckbox_
+      setTitle:base::SysUTF16ToNSString(l10n_util::GetStringUTF16(
+                   IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX))];
+  [storageCheckbox_
+      setState:(controller->GetStoreLocallyStartState() ? NSOnState
+                                                        : NSOffState)];
+  [storageCheckbox_ sizeToFit];
+  [view addSubview:storageCheckbox_];
+
+  // "?" icon with tooltip.
+  storageTooltip_.reset([[AutofillTooltipController alloc]
+      initWithArrowLocation:info_bubble::kTopRight]);
+  [storageTooltip_ setImage:ui::ResourceBundle::GetSharedInstance()
+                                .GetNativeImageNamed(IDR_AUTOFILL_TOOLTIP_ICON)
+                                .ToNSImage()];
+  [storageTooltip_
+      setMessage:base::SysUTF16ToNSString(l10n_util::GetStringUTF16(
+                     IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_TOOLTIP))];
+  [view addSubview:[storageTooltip_ view]];
+  [[storageTooltip_ view]
+      setFrameOrigin:NSMakePoint(NSMaxX([storageCheckbox_ frame]) + kButtonGap,
+                                 0)];
+
+  [CardUnmaskPromptViewCocoa sizeToFitView:view];
+  [CardUnmaskPromptViewCocoa verticallyCenterSubviewsInView:view];
+  return view;
 }
 
 - (void)loadView {
@@ -201,6 +241,10 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   base::scoped_nsobject<NSView> inputRowView(
       [[NSView alloc] initWithFrame:NSZeroRect]);
   [mainView addSubview:inputRowView];
+
+  base::scoped_nsobject<NSView> storageView(
+      [self createStorageViewWithController:controller]);
+  [mainView addSubview:storageView];
 
   // Title label.
   NSTextField* title = constrained_window::CreateLabel();
@@ -310,14 +354,19 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   // Calculate dialog content width.
   CGFloat contentWidth =
       std::max(NSWidth([title frame]), NSWidth([inputRowView frame]));
+  contentWidth = std::max(contentWidth, NSWidth([storageView frame]));
   contentWidth = std::max(contentWidth, kDialogContentMinWidth);
 
   // Layout mainView contents, starting at the bottom and moving up.
 
+  [storageView
+      setFrameOrigin:NSMakePoint(0, chrome_style::kClientBottomPadding)];
+
   // Verify and Cancel buttons.
   [verifyButton_
       setFrameOrigin:NSMakePoint(contentWidth - NSWidth([verifyButton_ frame]),
-                                 chrome_style::kClientBottomPadding)];
+                                 NSMaxY([storageView frame]) +
+                                     chrome_style::kRowPadding)];
 
   [cancelButton
       setFrameOrigin:NSMakePoint(NSMinX([verifyButton_ frame]) - kButtonGap -
