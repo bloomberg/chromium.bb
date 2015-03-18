@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry.page import profile_creator
+from profile_creators import profile_creator
 
 import logging
 import page_sets

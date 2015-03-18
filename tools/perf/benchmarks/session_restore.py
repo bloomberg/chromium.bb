@@ -7,9 +7,9 @@ import tempfile
 
 from measurements import session_restore
 import page_sets
+from profile_creators import profile_generator
 from profile_creators import small_profile_creator
 from telemetry import benchmark
-from telemetry.page import profile_generator
 
 
 class _SessionRestoreTypical25(benchmark.Benchmark):

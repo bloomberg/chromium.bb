@@ -14,10 +14,10 @@ import time
 import urllib2
 import zipfile
 
-from telemetry.page import profile_creator
 
 import page_sets
 
+from profile_creators import profile_creator
 from telemetry import benchmark
 from telemetry.page import page_test
 from telemetry.page import test_expectations

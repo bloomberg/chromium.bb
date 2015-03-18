@@ -7,7 +7,7 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
 
-from telemetry.page import profile_generator
+from profile_creators import profile_generator
 
 if __name__ == '__main__':
   sys.exit(profile_generator.Main())

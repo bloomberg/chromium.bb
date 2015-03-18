@@ -12,13 +12,10 @@ import stat
 import sys
 import tempfile
 
-from telemetry import benchmark
+from profile_creators import profile_creator
 from telemetry.core import browser_options
 from telemetry.core import discover
 from telemetry.core import util
-from telemetry.page import profile_creator
-from telemetry.page import test_expectations
-from telemetry.results import results_options
 from telemetry.user_story import user_story_runner
 
 

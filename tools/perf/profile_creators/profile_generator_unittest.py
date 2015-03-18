@@ -8,7 +8,7 @@ import socket
 import tempfile
 import unittest
 
-from telemetry.page import profile_generator
+from profile_creators import profile_generator
 
 
 class ProfileGeneratorUnitTest(unittest.TestCase):
