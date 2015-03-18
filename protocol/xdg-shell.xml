@@ -132,6 +132,19 @@
       It provides requests to treat surfaces like windows, allowing to set
       properties like maximized, fullscreen, minimized, and to move and resize
       them, and associate metadata like title and app id.
+
+      The client must call wl_surface.commit on the corresponding wl_surface
+      for the xdg_surface state to take effect. Prior to committing the new
+      state, it can set up initial configuration, such as maximizing or setting
+      a window geometry.
+
+      Even without attaching a buffer the compositor must respond to initial
+      committed configuration, for instance sending a configure event with
+      expected window geometry if the client maximized its surface during
+      initialization.
+
+      For a surface to be mapped by the compositor the client must have
+      committed both an xdg_surface state and a buffer.
     </description>
 
     <request name="destroy" type="destructor">
@@ -456,6 +469,12 @@
       The x and y arguments specify where the top left of the popup
       should be placed, relative to the local surface coordinates of the
       parent surface.
+
+      The client must call wl_surface.commit on the corresponding wl_surface
+      for the xdg_popup state to take effect.
+
+      For a surface to be mapped by the compositor the client must have
+      committed both the xdg_popup state and a buffer.
     </description>
 
     <request name="destroy" type="destructor">
