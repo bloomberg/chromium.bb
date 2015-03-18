@@ -615,7 +615,8 @@
 
     // Event handler for when |gSecondConnection| receive a new dataChannel.
     gSecondConnection.ondatachannel = function (event) {
-      var secondDataChannel = event.channel;
+      // Make secondDataChannel global to make sure it's not gc'd.
+      secondDataChannel = event.channel;
 
       // When |secondDataChannel| receive a message, send a message back.
       secondDataChannel.onmessage = function(event) {
@@ -653,7 +654,8 @@
 
     // Event handler for when |gSecondConnection| receive a new dataChannel.
     gSecondConnection.ondatachannel = function (event) {
-      var secondDataChannel = event.channel;
+      // Make secondDataChannel global to make sure it's not gc'd.
+      secondDataChannel = event.channel;
       secondDataChannel.onopen = function() {
         secondDataChannel.send(sendDataString);
       }
