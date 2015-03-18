@@ -1290,6 +1290,16 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
     fallback_families.insert(fallback_families.end(),
         uniscribe_fallbacks.begin(), uniscribe_fallbacks.end());
   }
+
+  // Add Segoe UI and its associated linked fonts to the fallback font list to
+  // ensure that the fallback list covers the basic cases.
+  // http://crbug.com/467459. On some Windows configurations the default font
+  // could be a raster font like System, which would not give us a reasonable
+  // fallback font list.
+  std::vector<std::string> default_fallback_families =
+      GetFallbackFontFamilies("Segoe UI");
+  fallback_families.insert(fallback_families.end(),
+      default_fallback_families.begin(), default_fallback_families.end());
 #endif
 
   // Try shaping with the fallback fonts.
