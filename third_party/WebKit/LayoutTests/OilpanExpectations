@@ -36,3 +36,4 @@ crbug.com/397425 [ Debug ] fast/forms/select/menulist-appearance-basic.html [ Ti
 
 # Times out on the Mac Debug Oilpan bot; widen expectations from [Pass Crash].
 crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
+crbug.com/344239 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Pass Timeout ]

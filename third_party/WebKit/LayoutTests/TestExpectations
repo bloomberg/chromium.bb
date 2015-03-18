@@ -793,7 +793,6 @@ crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass T
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
-crbug.com/344239 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass Timeout ]
 
 crbug.com/313846 http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
 
