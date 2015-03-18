@@ -119,6 +119,11 @@ void SimulateMouseEvent(WebContents* web_contents,
 // Taps the screen at |point|.
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point);
 
+// Taps the screen with modifires at |point|.
+void SimulateTapWithModifiersAt(WebContents* web_contents,
+                                unsigned Modifiers,
+                                const gfx::Point& point);
+
 // Sends a key press asynchronously.
 // The native code of the key event will be set to InvalidNativeKeycode().
 // |key_code| alone is good enough for scenarios that only need the char

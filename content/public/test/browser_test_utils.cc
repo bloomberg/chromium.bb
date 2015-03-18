@@ -408,6 +408,20 @@ void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
   tap.type = blink::WebGestureEvent::GestureTap;
   tap.x = point.x();
   tap.y = point.y();
+  tap.modifiers = blink::WebInputEvent::ControlKey;
+  RenderWidgetHostImpl* widget_host =
+      RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
+  widget_host->ForwardGestureEvent(tap);
+}
+
+void SimulateTapWithModifiersAt(WebContents* web_contents,
+                                unsigned modifiers,
+                                const gfx::Point& point) {
+  blink::WebGestureEvent tap;
+  tap.type = blink::WebGestureEvent::GestureTap;
+  tap.x = point.x();
+  tap.y = point.y();
+  tap.modifiers = modifiers;
   RenderWidgetHostImpl* widget_host =
       RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
   widget_host->ForwardGestureEvent(tap);

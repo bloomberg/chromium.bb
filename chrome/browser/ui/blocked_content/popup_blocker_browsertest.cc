@@ -675,4 +675,33 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CtrlEnterKey) {
   ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
 }
 
+// Tests that the tapping gesture with cntl/cmd key on a link open the
+// backgournd tab.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, TapGestureWithCtrlKey) {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL url(embedded_test_server()->GetURL(
+      "/popup_blocker/popup-simulated-click-on-anchor2.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  content::WindowedNotificationObserver wait_for_new_tab(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+
+#if defined(OS_MACOSX)
+  unsigned modifiers = blink::WebInputEvent::MetaKey;
+#else
+  unsigned modifiers = blink::WebInputEvent::ControlKey;
+#endif
+  content::SimulateTapWithModifiersAt(tab, modifiers, gfx::Point(350, 250));
+
+  wait_for_new_tab.Wait();
+
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  // Check that we create the background tab.
+  ASSERT_EQ(0, browser()->tab_strip_model()->active_index());
+}
+
 }  // namespace
