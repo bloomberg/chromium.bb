@@ -123,6 +123,11 @@ class TtyTest(RegularTest):
         self.assertEqual(buflist, ['foo',
                                      MeteredStream._erasure('foo'), 'bar\n'])
 
+    def test_bytestream(self):
+        self.meter.write('German umlauts: \xe4\xf6\xfc')
+        self.meter.write(u'German umlauts: \xe4\xf6\xfc')
+        self.assertEqual(self.buflist, ['German umlauts: ???', 'German umlauts: ???'])
+
 
 class VerboseTest(RegularTest):
     isatty = False
