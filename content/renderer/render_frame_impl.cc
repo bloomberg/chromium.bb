@@ -692,9 +692,15 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       stack_debug_info[i] = debug_info[i];
     for (int i = 0; i < duplicate_size; i++)
       duplicate_stack_debug_info[i] = duplicate_debug_info[i];
-    (void) stack_debug_info;
-    (void) duplicate_stack_debug_info;
     CHECK(result.second) << "Inserting a duplicate item.";
+    // Make sure the variable is stored on the stack and use it so that the
+    // compiler won't optimize it out.
+    base::debug::Alias(&stack_debug_info);
+    base::debug::Alias(&duplicate_stack_debug_info);
+    for (int i = 0; i < size; i++)
+      LOG(ERROR) << stack_debug_info[i];
+    for (int i = 0; i < duplicate_size; i++)
+      LOG(ERROR) << duplicate_stack_debug_info[i];
   }
 
   RenderThread::Get()->AddRoute(routing_id_, this);
