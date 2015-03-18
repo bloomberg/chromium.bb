@@ -108,6 +108,8 @@ class AX_EXPORT AXTree {
   // for testing and debugging.
   const std::string& error() const { return error_; }
 
+  int size() { return static_cast<int>(id_map_.size()); }
+
  private:
   AXNode* CreateNode(AXNode* parent, int32 id, int32 index_in_parent);
 

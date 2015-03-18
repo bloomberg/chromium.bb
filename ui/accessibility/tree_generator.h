@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 namespace ui {
 
 class AXTree;
 
-// A class to create all possible trees with <n> nodes and the ids [1...n].
+// A class to create all possible trees with up to <n> nodes and the
+// ids [1...n].
 //
 // There are two parts to the algorithm:
 //
@@ -17,11 +20,11 @@ class AXTree;
 // So for node i in (3...n), there are (i - 1) possible choices for its
 // parent, for a total of (n-1)! (n minus 1 factorial) possible trees.
 //
-// The second part is the assignment of ids to the nodes in the tree.
+// The second optional part is the assignment of ids to the nodes in the tree.
 // There are exactly n! (n factorial) permutations of the sequence 1...n,
 // and each of these is assigned to every node in every possible tree.
 //
-// The total number of trees returned for a given <n>, then, is
+// The total number of trees for a given <n>, including permutations of ids, is
 // n! * (n-1)!
 //
 // n = 2: 2 trees
@@ -29,20 +32,31 @@ class AXTree;
 // n = 4: 144 trees
 // n = 5: 2880 trees
 //
-// This grows really fast! Luckily it's very unlikely that there'd be
-// bugs that affect trees with >4 nodes that wouldn't affect a smaller tree
-// too.
+// Note that the generator returns all trees with sizes *up to* <n>, which
+// is a bit larger.
+//
+// This grows really fast! Still, it's very helpful for exhaustively testing
+// tree code on smaller trees at least.
 class TreeGenerator {
  public:
-  TreeGenerator(int node_count);
+  // Will generate all trees with up to |max_node_count| nodes.
+  // If |permutations| is true, will return every possible permutation of
+  // ids, otherwise the root will always have id 1, and so on.
+  TreeGenerator(int max_node_count, bool permutations);
+  ~TreeGenerator();
 
   int UniqueTreeCount() const;
 
   void BuildUniqueTree(int tree_index, AXTree* out_tree) const;
 
  private:
-  int node_count_;
-  int unique_tree_count_;
+  void BuildUniqueTreeWithSize(
+      int node_count, int tree_index, AXTree* out_tree) const;
+
+  int max_node_count_;
+  bool permutations_;
+  int total_unique_tree_count_;
+  std::vector<int> unique_tree_count_by_size_;
 };
 
 }  // namespace ui

@@ -48,11 +48,37 @@ std::string TreeToString(const AXTree& tree) {
 }  // anonymous namespace
 
 // Test the TreeGenerator class by building all possible trees with
-// 3 nodes and the ids [1...3].
-TEST(AXGeneratedTreeTest, TestTreeGenerator) {
+// 3 nodes and the ids [1...3], with no permutations of ids.
+TEST(AXGeneratedTreeTest, TestTreeGeneratorNoPermutations) {
   int tree_size = 3;
-  TreeGenerator generator(tree_size);
+  TreeGenerator generator(tree_size, false);
   const char* EXPECTED_TREES[] = {
+    "(1)",
+    "(1 (2))",
+    "(1 (2 3))",
+    "(1 (2 (3)))",
+  };
+
+  int n = generator.UniqueTreeCount();
+  ASSERT_EQ(static_cast<int>(arraysize(EXPECTED_TREES)), n);
+
+  for (int i = 0; i < n; ++i) {
+    AXTree tree;
+    generator.BuildUniqueTree(i, &tree);
+    std::string str = TreeToString(tree);
+    EXPECT_EQ(EXPECTED_TREES[i], str);
+  }
+}
+
+// Test the TreeGenerator class by building all possible trees with
+// 3 nodes and the ids [1...3] permuted in any order.
+TEST(AXGeneratedTreeTest, TestTreeGeneratorWithPermutations) {
+  int tree_size = 3;
+  TreeGenerator generator(tree_size, true);
+  const char* EXPECTED_TREES[] = {
+    "(1)",
+    "(1 (2))",
+    "(2 (1))",
     "(1 (2 3))",
     "(2 (1 3))",
     "(3 (1 2))",
@@ -92,26 +118,31 @@ TEST(AXGeneratedTreeTest, SerializeGeneratedTrees) {
   // the algorithm you may want to try even larger tree sizes if you
   // can afford the time.
 #ifdef NDEBUG
-  int tree_size = 4;
+  int max_tree_size = 4;
 #else
   LOG(WARNING) << "Debug build, only testing trees with 3 nodes and not 4.";
-  int tree_size = 3;
+  int max_tree_size = 3;
 #endif
 
-  TreeGenerator generator(tree_size);
-  int n = generator.UniqueTreeCount();
+  TreeGenerator generator0(max_tree_size, false);
+  int n0 = generator0.UniqueTreeCount();
 
-  for (int i = 0; i < n; i++) {
+  TreeGenerator generator1(max_tree_size, true);
+  int n1 = generator1.UniqueTreeCount();
+
+  for (int i = 0; i < n0; i++) {
     // Build the first tree, tree0.
     AXSerializableTree tree0;
-    generator.BuildUniqueTree(i, &tree0);
+    generator0.BuildUniqueTree(i, &tree0);
     SCOPED_TRACE("tree0 is " + TreeToString(tree0));
 
-    for (int j = 0; j < n; j++) {
+    for (int j = 0; j < n1; j++) {
       // Build the second tree, tree1.
       AXSerializableTree tree1;
-      generator.BuildUniqueTree(j, &tree1);
-      SCOPED_TRACE("tree1 is " + TreeToString(tree0));
+      generator1.BuildUniqueTree(j, &tree1);
+      SCOPED_TRACE("tree1 is " + TreeToString(tree1));
+
+      int tree_size = tree1.size();
 
       // Now iterate over which node to update first, |k|.
       for (int k = 0; k < tree_size; k++) {

@@ -231,7 +231,7 @@ class TreeSerializationState {
 #else
       : tree_size(2),
 #endif
-        generator(tree_size),
+        generator(tree_size, true),
         num_trees(generator.UniqueTreeCount()),
         tree0_version(0),
         tree1_version(0) {
