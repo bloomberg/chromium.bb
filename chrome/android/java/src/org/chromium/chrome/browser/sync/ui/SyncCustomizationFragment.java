@@ -127,16 +127,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
     private boolean mPasswordSyncConfigurable;
 
     /**
-     * If {@code true}, the user needs to be prompted for a custom passphrase after the next
-     * showConfigure() call, to enable custom encryption.  This would occur when the user asked
-     * to use a custom passphrase to encrypt everything but the user already has password data on
-     * the server, encrypted with their GAIA passphrase.  Under this scenario, we first prompt the
-     * user for their GAIA passphrase, then when this fragment is active again, we prompt for their
-     * new custom passphrase.
-     */
-    private boolean mDoCustomAfterGaia;
-
-    /**
      * Helper object that notifies us once sync startup has completed.
      */
     private SyncStartupHelper mSyncStartupHelper;
@@ -340,10 +330,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
         }
         // Clear out any previous passphrase error.
         updateEncryptionState();
-        if (!mProfileSyncService.isPassphraseRequiredForDecryption() && mDoCustomAfterGaia) {
-            mDoCustomAfterGaia = false;
-            onPassphraseTypeSelected(PassphraseType.CUSTOM_PASSPHRASE);
-        }
 
         // We don't have any previously-saved checkbox states, so let's initialize from
         // the current sync state - does nothing if we already set the states, so we
@@ -545,7 +531,6 @@ public class SyncCustomizationFragment extends PreferenceFragment implements
      */
     @Override
     public void onPassphraseCanceled(boolean isGaia, boolean isUpdate) {
-        mDoCustomAfterGaia = false;
     }
 
     /**
