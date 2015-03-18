@@ -170,8 +170,17 @@ void FrameCaptionButton::OnGestureEvent(ui::GestureEvent* event) {
 void FrameCaptionButton::PaintCentered(gfx::Canvas* canvas,
                                        const gfx::ImageSkia& to_center,
                                        int alpha) {
-  if (!paint_as_active_)
-    alpha *= kInactiveIconAlpha;
+  if (!paint_as_active_) {
+    // Paint icons as active when they are hovered over or pressed.
+    double inactive_alpha = kInactiveIconAlpha;
+    if (hover_animation_->is_animating()) {
+      inactive_alpha =
+          hover_animation_->CurrentValueBetween(inactive_alpha, 1.0f);
+    } else if (state() == STATE_PRESSED || state() == STATE_HOVERED) {
+      inactive_alpha = 1.0f;
+    }
+    alpha *= inactive_alpha;
+  }
 
   SkPaint paint;
   paint.setAlpha(alpha);
