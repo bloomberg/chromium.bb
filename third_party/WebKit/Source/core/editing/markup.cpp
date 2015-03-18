@@ -142,8 +142,6 @@ private:
     void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, const Document&, bool isBlock = false);
     const String& styleNodeCloseTag(bool isBlock = false);
     virtual void appendText(StringBuilder& out, Text&) override;
-    String renderedText(Node&, const Range*);
-    String stringValueForRange(const Node&, const Range*);
     void appendElement(StringBuilder& out, Element&, bool addDisplayInline, RangeFullySelectsNode);
     virtual void appendElement(StringBuilder& out, Element& element, Namespaces*) override { appendElement(out, element, false, DoesFullySelectNode); }
 
@@ -244,7 +242,7 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
         MarkupAccumulator::appendText(out, text);
     else {
         const bool useRenderedText = !enclosingElementWithTag(firstPositionInNode(&text), selectTag);
-        String content = useRenderedText ? renderedText(text, m_range) : stringValueForRange(text, m_range);
+        String content = useRenderedText ? renderedText(text) : stringValueForRange(text);
         StringBuilder buffer;
         appendCharactersReplacingEntities(buffer, content, 0, content.length(), EntityMaskInPCDATA);
         out.append(convertHTMLTextToInterchangeFormat(buffer.toString(), text));
@@ -252,38 +250,6 @@ void StyledMarkupAccumulator::appendText(StringBuilder& out, Text& text)
 
     if (wrappingSpan)
         out.append(styleNodeCloseTag());
-}
-
-String StyledMarkupAccumulator::renderedText(Node& node, const Range* range)
-{
-    if (!node.isTextNode())
-        return String();
-
-    Text& textNode = toText(node);
-    unsigned startOffset = 0;
-    unsigned endOffset = textNode.length();
-
-    if (range && textNode == range->startContainer())
-        startOffset = range->startOffset();
-    if (range && textNode == range->endContainer())
-        endOffset = range->endOffset();
-
-    Position start = createLegacyEditingPosition(&textNode, startOffset);
-    Position end = createLegacyEditingPosition(&textNode, endOffset);
-    return plainText(Range::create(textNode.document(), start, end).get());
-}
-
-String StyledMarkupAccumulator::stringValueForRange(const Node& node, const Range* range)
-{
-    if (!range)
-        return node.nodeValue();
-
-    String str = node.nodeValue();
-    if (node == range->endContainer())
-        str.truncate(range->endOffset());
-    if (node == range->startContainer())
-        str.remove(0, range->startOffset());
-    return str;
 }
 
 void StyledMarkupAccumulator::appendElement(StringBuilder& out, Element& element, bool addDisplayInline, RangeFullySelectsNode rangeFullySelectsNode)

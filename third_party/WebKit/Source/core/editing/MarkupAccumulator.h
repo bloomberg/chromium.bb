@@ -26,6 +26,7 @@
 #ifndef MarkupAccumulator_h
 #define MarkupAccumulator_h
 
+#include "core/dom/Position.h"
 #include "core/editing/markup.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
@@ -67,6 +68,7 @@ class MarkupAccumulator {
     STACK_ALLOCATED();
 public:
     MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>*, EAbsoluteURLs, const Range* = nullptr, SerializationType = AsOwnerDocument);
+    MarkupAccumulator(WillBeHeapVector<RawPtrWillBeMember<Node>>*, EAbsoluteURLs, const Position&, const Position&, SerializationType = AsOwnerDocument);
     virtual ~MarkupAccumulator();
 
     String serializeNodes(Node& targetNode, EChildrenOnly);
@@ -81,6 +83,8 @@ protected:
     virtual void appendEndTag(const Element&);
     static size_t totalLength(const Vector<String>&);
     size_t length() const { return m_markup.length(); }
+    const Position& startPosition() const { return m_start; }
+    const Position& endPosition() const { return m_end; }
     void concatenateMarkup(StringBuilder&);
     void appendAttributeValue(StringBuilder&, const String&, bool);
     virtual void appendCustomAttributes(StringBuilder&, const Element&, Namespaces*);
@@ -103,8 +107,14 @@ protected:
     bool elementCannotHaveEndTag(const Node&);
     void appendEndMarkup(StringBuilder&, const Element&);
 
+    // FIXME: |PageSerializer| uses |m_nodes| for collecting nodes in document
+    // included into serialized text then extracts image, object, etc. The size
+    // of this vector isn't small for large document. It is better to use
+    // callback like functionality.
     RawPtrWillBeMember<WillBeHeapVector<RawPtrWillBeMember<Node>>> const m_nodes;
-    RawPtrWillBeMember<const Range> const m_range;
+
+    String renderedText(Text&);
+    String stringValueForRange(const Node&);
 
 private:
     String resolveURLIfNeeded(const Element&, const String&) const;
@@ -115,6 +125,8 @@ private:
     StringBuilder m_markup;
     const EAbsoluteURLs m_resolveURLsMethod;
     SerializationType m_serializationType;
+    const Position m_start;
+    const Position m_end;
 };
 
 }
