@@ -29,6 +29,9 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/mouse_watcher.h"
+#include "ui/views/mouse_watcher_view_host.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
@@ -374,6 +377,17 @@ std::string GetXWindowName(aura::WindowTreeHost* host) {
   return ret;
 }
 #endif
+
+class TestMouseWatcherListener : public views::MouseWatcherListener {
+ public:
+  TestMouseWatcherListener() {}
+
+ private:
+  // views::MouseWatcherListener:
+  void MouseMovedOutOfHost() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(TestMouseWatcherListener);
+};
 
 }  // namespace
 
@@ -1458,6 +1472,39 @@ TEST_F(DisplayControllerTest,
   EXPECT_EQ("75,75", env->last_mouse_location().ToString());
   EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
   EXPECT_EQ(gfx::Display::ROTATE_90, test_api.GetCurrentCursorRotation());
+}
+
+// GetRootWindowForDisplayId() for removed gfx::Display during
+// OnDisplayRemoved() should not cause crash. See http://crbug.com/415222
+TEST_F(DisplayControllerTest,
+       GetRootWindowForDisplayIdDuringDisplayDisconnection) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("300x300,200x200");
+  aura::Window* root2 =
+      Shell::GetInstance()->display_controller()->GetRootWindowForDisplayId(
+          ScreenUtil::GetSecondaryDisplay().id());
+  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+      nullptr, root2, gfx::Rect(350, 0, 100, 100));
+  views::View* view = new views::View();
+  widget->GetContentsView()->AddChildView(view);
+  view->SetBounds(0, 0, 100, 100);
+  widget->Show();
+
+  TestMouseWatcherListener listener;
+  views::MouseWatcher watcher(
+      new views::MouseWatcherViewHost(view, gfx::Insets()), &listener);
+  watcher.Start();
+
+  ui::test::EventGenerator event_generator(
+      widget->GetNativeWindow()->GetRootWindow());
+  event_generator.MoveMouseToCenterOf(widget->GetNativeWindow());
+
+  UpdateDisplay("300x300");
+  watcher.Stop();
+
+  widget->CloseNow();
 }
 
 }  // namespace ash

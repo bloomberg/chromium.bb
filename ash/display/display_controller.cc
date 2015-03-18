@@ -648,21 +648,25 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   AshWindowTreeHost* host_to_delete = window_tree_hosts_[display.id()];
   CHECK(host_to_delete) << display.ToString();
 
-  // Display for root window will be deleted when the Primary RootWindow
-  // is deleted by the Shell.
-  window_tree_hosts_.erase(display.id());
-
   // When the primary root window's display is removed, move the primary
   // root to the other display.
   if (primary_display_id == display.id()) {
     // Temporarily store the primary root window in
     // |primary_root_window_for_replace_| when replacing the display.
-    if (window_tree_hosts_.size() == 0) {
+    if (window_tree_hosts_.size() == 1) {
       primary_display_id = gfx::Display::kInvalidDisplayID;
       primary_tree_host_for_replace_ = host_to_delete;
+      // Display for root window will be deleted when the Primary RootWindow
+      // is deleted by the Shell.
+      window_tree_hosts_.erase(display.id());
       return;
     }
-    primary_display_id = window_tree_hosts_.begin()->first;
+    for (const auto& pair : window_tree_hosts_) {
+      if (pair.first != display.id()) {
+        primary_display_id = pair.first;
+        break;
+      }
+    }
     CHECK_NE(gfx::Display::kInvalidDisplayID, primary_display_id);
 
     AshWindowTreeHost* primary_host = host_to_delete;
@@ -688,6 +692,11 @@ void DisplayController::OnDisplayRemoved(const gfx::Display& display) {
   // root window itself yet because the stack may be using it.
   controller->Shutdown();
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, controller);
+
+  // The window tree host should be erased at last because some handlers can
+  // access to the host through GetRootWindowForDisplayId() during
+  // MoveWindowsTo(). See http://crbug.com/415222
+  window_tree_hosts_.erase(display.id());
 }
 
 void DisplayController::OnDisplayMetricsChanged(const gfx::Display& display,
