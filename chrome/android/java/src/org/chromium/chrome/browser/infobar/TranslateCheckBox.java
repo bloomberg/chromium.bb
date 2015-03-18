@@ -35,10 +35,6 @@ public class TranslateCheckBox extends CheckBox implements OnCheckedChangeListen
     @Override
     public void onCheckedChanged(CompoundButton view, boolean isChecked) {
         mOptions.toggleAlwaysTranslateLanguageState(isChecked);
-        if (isChecked) {
-            mListener.onPanelClosed(InfoBar.ACTION_TYPE_NONE);
-        } else {
-            mListener.onOptionsChanged();
-        }
+        mListener.onPanelClosed(InfoBar.ACTION_TYPE_NONE);
     }
 }
