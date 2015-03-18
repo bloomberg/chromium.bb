@@ -3398,8 +3398,8 @@ add_popup_grab(struct shell_surface *shsurf,
 	    (!parent ||
 	     (top_surface == NULL && !shell_surface_is_xdg_surface(parent)) ||
 	     (top_surface != NULL && parent != top_surface))) {
-		wl_resource_post_error(shsurf->owner->resource,
-				       XDG_POPUP_ERROR_NOT_THE_TOPMOST_POPUP,
+		wl_resource_post_error(shsurf->owner_resource,
+				       XDG_SHELL_ERROR_NOT_THE_TOPMOST_POPUP,
 				       "xdg_popup was not created on the "
 				       "topmost popup");
 		return -1;
@@ -3449,8 +3449,8 @@ remove_popup_grab(struct shell_surface *shsurf)
 
 	if (shell_surface_is_xdg_popup(shsurf) &&
 	    get_top_popup(shseat) != shsurf) {
-		wl_resource_post_error(shsurf->resource,
-				       XDG_POPUP_ERROR_NOT_THE_TOPMOST_POPUP,
+		wl_resource_post_error(shsurf->owner_resource,
+				       XDG_SHELL_ERROR_NOT_THE_TOPMOST_POPUP,
 				       "xdg_popup was destroyed while it was "
 				       "not the topmost popup.");
 		return;
@@ -4119,21 +4119,7 @@ create_xdg_popup(struct shell_client *owner, void *shell,
 		 uint32_t serial,
 		 int32_t x, int32_t y)
 {
-	struct shell_surface *shsurf, *parent_shsurf;
-
-	/* Verify that we are creating the topmost popup when mapping,
-	 * as it's not until then we know whether it was mapped as most
-	 * top level or not. */
-
-	parent_shsurf = get_shell_surface(parent);
-	if (!parent_shsurf ||
-	    (!shell_surface_is_xdg_popup(parent_shsurf) &&
-	     !shell_surface_is_xdg_surface(parent_shsurf))) {
-		wl_resource_post_error(owner->resource,
-				       XDG_POPUP_ERROR_INVALID_PARENT,
-				       "xdg_popup parent was invalid");
-		return NULL;
-	}
+	struct shell_surface *shsurf;
 
 	shsurf = create_common_surface(owner, shell, surface, client);
 	if (!shsurf)
@@ -4164,6 +4150,7 @@ xdg_get_xdg_popup(struct wl_client *client,
 	struct shell_client *sc = wl_resource_get_user_data(resource);
 	struct desktop_shell *shell = sc->shell;
 	struct shell_surface *shsurf;
+	struct shell_surface *parent_shsurf;
 	struct weston_surface *parent;
 	struct shell_seat *seat;
 
@@ -4188,6 +4175,19 @@ xdg_get_xdg_popup(struct wl_client *client,
 
 	parent = wl_resource_get_user_data(parent_resource);
 	seat = get_shell_seat(wl_resource_get_user_data(seat_resource));;
+
+	/* Verify that we are creating the top most popup when mapping,
+	 * as it's not until then we know whether it was mapped as most
+	 * top level or not. */
+
+	parent_shsurf = get_shell_surface(parent);
+	if (!shell_surface_is_xdg_popup(parent_shsurf) &&
+	    !shell_surface_is_xdg_surface(parent_shsurf)) {
+		wl_resource_post_error(resource,
+				       XDG_SHELL_ERROR_INVALID_POPUP_PARENT,
+				       "xdg_popup parent was invalid");
+		return;
+	}
 
 	shsurf = create_xdg_popup(sc, shell, surface, &xdg_popup_client,
 				  parent, seat, serial, x, y);

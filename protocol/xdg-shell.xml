@@ -50,6 +50,8 @@
     <enum name="error">
       <entry name="role" value="0" summary="given wl_surface has another role"/>
       <entry name="defunct_surfaces" value="1" summary="xdg_shell was destroyed before children"/>
+      <entry name="not_the_topmost_popup" value="2" summary="the client tried to map or destroy a non-topmost popup"/>
+      <entry name="invalid_popup_parent" value="3" summary="the client specified an invalid popup parent surface"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -455,14 +457,6 @@
       should be placed, relative to the local surface coordinates of the
       parent surface.
     </description>
-
-    <enum name="error">
-      <description summary="xdg_popup error values">
-	These errors can be emitted in response to xdg_popup requests.
-      </description>
-      <entry name="not_the_topmost_popup" value="0" summary="The client tried to map or destroy a non-topmost popup"/>
-      <entry name="invalid_parent" value="1" summary="The client specified an invalid parent surface"/>
-    </enum>
 
     <request name="destroy" type="destructor">
       <description summary="remove xdg_popup interface">
