@@ -30,10 +30,6 @@ namespace hotwordPrivate {
     // back to Google.
     boolean audioLoggingEnabled;
 
-    // Whether experimental hotwording functionality is enabled. Mirrors the
-    // "enable-experimental-hotwording" flag.
-    boolean experimentalHotwordEnabled;
-
     // Whether always-on hotwording is enabled.
     boolean alwaysOnEnabled;
 

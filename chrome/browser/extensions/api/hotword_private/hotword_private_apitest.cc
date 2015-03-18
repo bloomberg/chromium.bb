@@ -89,7 +89,7 @@ class MockAudioHistoryHandler : public HotwordAudioHistoryHandler {
 class MockHotwordService : public HotwordService {
  public:
   explicit MockHotwordService(Profile* profile)
-      : HotwordService(profile), service_available_(true) {};
+      : HotwordService(profile), service_available_(true) {}
   ~MockHotwordService() override {}
 
   bool IsServiceAvailable() override { return service_available_; }
@@ -278,24 +278,6 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, AlwaysOnEnabled) {
         << message_;
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
-}
-
-IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, ExperimentalHotwordEnabled) {
-  // Enabled by default.
-  ExtensionTestMessageListener listener("experimentalHotwordEnabled: true",
-                                        false);
-  ASSERT_TRUE(RunComponentExtensionTest("experimentalHotwordEnabled"))
-      << message_;
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-}
-
-IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest,
-                       ExperimentalHotwordEnabled_Enabled) {
-  ExtensionTestMessageListener listener("experimentalHotwordEnabled: true",
-                                        false);
-  ASSERT_TRUE(RunComponentExtensionTest("experimentalHotwordEnabled"))
-      << message_;
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnEnabledChanged) {

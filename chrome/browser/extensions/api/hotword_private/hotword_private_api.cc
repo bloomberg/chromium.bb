@@ -169,8 +169,6 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
 
   PrefService* prefs = GetProfile()->GetPrefs();
   result.enabled_set = prefs->HasPrefPath(prefs::kHotwordSearchEnabled);
-  result.experimental_hotword_enabled =
-      HotwordService::IsExperimentalHotwordingEnabled();
 
   SetResult(result.ToValue().release());
   return true;
