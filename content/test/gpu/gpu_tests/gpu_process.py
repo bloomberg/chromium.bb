@@ -28,10 +28,13 @@ class _GpuProcessValidator(page_test.PageTest):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    has_gpu_process_js = 'chrome.gpuBenchmarking.hasGpuProcess()'
-    has_gpu_process = tab.EvaluateJavaScript(has_gpu_process_js)
-    if not has_gpu_process:
-      raise page_test.Failure('No GPU process detected')
+    if hasattr(page, 'Validate'):
+      page.Validate(tab, results)
+    else:
+      has_gpu_process_js = 'chrome.gpuBenchmarking.hasGpuProcess()'
+      has_gpu_process = tab.EvaluateJavaScript(has_gpu_process_js)
+      if not has_gpu_process:
+        raise page_test.Failure('No GPU process detected')
 
 class GpuProcess(benchmark.Benchmark):
   """Tests that accelerated content triggers the creation of a GPU process"""

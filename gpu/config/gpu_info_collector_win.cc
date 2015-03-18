@@ -506,6 +506,8 @@ void MergeGPUInfo(GPUInfo* basic_gpu_info,
 
   MergeGPUInfoGL(basic_gpu_info, context_gpu_info);
 
+  basic_gpu_info->dx_diagnostics_info_state =
+      context_gpu_info.dx_diagnostics_info_state;
   basic_gpu_info->dx_diagnostics = context_gpu_info.dx_diagnostics;
 }
 

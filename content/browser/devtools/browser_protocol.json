@@ -31,6 +31,7 @@
         "commands": [
             {
                 "name": "getInfo",
+                "async": true,
                 "description": "Returns information about the system.",
                 "returns": [
                     { "name": "gpu", "$ref": "GPUInfo", "description": "Information about the GPUs on the system." },

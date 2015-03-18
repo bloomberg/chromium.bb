@@ -574,9 +574,14 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
   if (use_swiftshader_ || ShouldUseWarp())
     return;
 
+  bool was_info_available = IsCompleteGpuInfoAvailable();
   gpu::MergeGPUInfo(&gpu_info_, gpu_info);
-  if (IsCompleteGpuInfoAvailable())
+  if (IsCompleteGpuInfoAvailable()) {
     complete_gpu_info_already_requested_ = true;
+  } else if (was_info_available) {
+    // Allow future requests to go through properly.
+    complete_gpu_info_already_requested_ = false;
+  }
 
   UpdateGpuInfoHelper();
 }
