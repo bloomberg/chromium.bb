@@ -38,6 +38,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)
 #include "chromecast/browser/android/external_video_surface_container_impl.h"
@@ -145,6 +146,15 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
     if (browser_command_line->HasSwitch(switches::kEnableCmaMediaPipeline))
       command_line->AppendSwitch(switches::kEnableCmaMediaPipeline);
   }
+
+#if defined(OS_LINUX)
+  // Necessary for accelerated 2d canvas.  By default on Linux, Chromium assumes
+  // GLES2 contexts can be lost to a power-save mode, which breaks GPU canvas
+  // apps.
+  if (process_type == switches::kGpuProcess) {
+    command_line->AppendSwitch(switches::kGpuNoContextLost);
+  }
+#endif
 
   PlatformAppendExtraCommandLineSwitches(command_line);
 }
