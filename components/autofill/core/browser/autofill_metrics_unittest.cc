@@ -24,6 +24,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/rappor/test_rappor_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/webdata/common/web_data_results.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -459,6 +460,199 @@ TEST_F(AutofillMetricsTest, QualityMetrics) {
   histogram_tester.ExpectBucketCount(
       "Autofill.Quality.PredictedType.ByFieldType",
       GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MISMATCH), 1);
+}
+
+// Test that we do not log RAPPOR metrics when the number of mismatches is not
+// high enough.
+TEST_F(AutofillMetricsTest, Rappor_LowMismatchRate_NoMetricsReported) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.user_submitted = true;
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  test::CreateTestFormField("Autofilled", "autofilled", "Elvis Aaron Presley",
+                            "text", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FULL);
+
+  test::CreateTestFormField("Autofill Failed", "autofillfailed",
+                            "buddy@gmail.com", "text", &field);
+  field.is_autofilled = false;
+  form.fields.push_back(field);
+  heuristic_types.push_back(EMAIL_ADDRESS);
+  server_types.push_back(NAME_LAST);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "tel", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(EMAIL_ADDRESS);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+
+  // Simulate form submission.
+  autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
+
+  // The number of mismatches did not trigger the RAPPOR metric logging.
+  EXPECT_EQ(0, autofill_client_.test_rappor_service()->GetReportsCount());
+}
+
+// Test that we don't log RAPPOR metrics in the case heuristics and/or server
+// have no data.
+TEST_F(AutofillMetricsTest, Rappor_NoDataServerAndHeuristic_NoMetricsReported) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.user_submitted = true;
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  test::CreateTestFormField("Autofilled", "autofilled", "Elvis Aaron Presley",
+                            "text", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(UNKNOWN_TYPE);
+  server_types.push_back(NO_SERVER_DATA);
+
+  test::CreateTestFormField("Autofill Failed", "autofillfailed",
+                            "buddy@gmail.com", "text", &field);
+  field.is_autofilled = false;
+  form.fields.push_back(field);
+  heuristic_types.push_back(UNKNOWN_TYPE);
+  server_types.push_back(NO_SERVER_DATA);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "tel", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(UNKNOWN_TYPE);
+  server_types.push_back(NO_SERVER_DATA);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+
+  // Simulate form submission.
+  autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
+
+  // No RAPPOR metrics are logged in the case of multiple UNKNOWN_TYPE and
+  // NO_SERVER_DATA for heuristics and server predictions, respectively.
+  EXPECT_EQ(0, autofill_client_.test_rappor_service()->GetReportsCount());
+}
+
+// Test that we log high number of mismatches for the server prediction.
+TEST_F(AutofillMetricsTest, Rappor_HighServerMismatchRate_MetricsReported) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.user_submitted = true;
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  test::CreateTestFormField("Autofilled", "autofilled", "Elvis Aaron Presley",
+                            "text", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FIRST);
+
+  test::CreateTestFormField("Autofill Failed", "autofillfailed",
+                            "buddy@gmail.com", "text", &field);
+  field.is_autofilled = false;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_NUMBER);
+  server_types.push_back(NAME_LAST);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "tel", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(EMAIL_ADDRESS);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+
+  // Simulate form submission.
+  autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
+
+  // The number of mismatches did trigger the RAPPOR metric logging for server
+  // predictions.
+  EXPECT_EQ(1, autofill_client_.test_rappor_service()->GetReportsCount());
+  std::string sample;
+  rappor::RapporType type;
+  EXPECT_FALSE(
+      autofill_client_.test_rappor_service()->GetRecordedSampleForMetric(
+          "Autofill.HighNumberOfHeuristicMismatches", &sample, &type));
+  EXPECT_TRUE(
+      autofill_client_.test_rappor_service()->GetRecordedSampleForMetric(
+          "Autofill.HighNumberOfServerMismatches", &sample, &type));
+  EXPECT_EQ("example.com", sample);
+  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
+}
+
+// Test that we log high number of mismatches for the heuristic predictions.
+TEST_F(AutofillMetricsTest, Rappor_HighHeuristicMismatchRate_MetricsReported) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.user_submitted = true;
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  test::CreateTestFormField("Autofilled", "autofilled", "Elvis Aaron Presley",
+                            "text", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FIRST);
+  server_types.push_back(NAME_FULL);
+
+  test::CreateTestFormField("Autofill Failed", "autofillfailed",
+                            "buddy@gmail.com", "text", &field);
+  field.is_autofilled = false;
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_NUMBER);
+  server_types.push_back(NAME_LAST);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "tel", &field);
+  field.is_autofilled = true;
+  form.fields.push_back(field);
+  heuristic_types.push_back(EMAIL_ADDRESS);
+  server_types.push_back(PHONE_HOME_WHOLE_NUMBER);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+
+  // Simulate form submission.
+  autofill_manager_->WillSubmitForm(form, TimeTicks::Now());
+
+  // The number of mismatches did trigger the RAPPOR metric logging for
+  // heuristic predictions.
+  EXPECT_EQ(1, autofill_client_.test_rappor_service()->GetReportsCount());
+  std::string sample;
+  rappor::RapporType type;
+  EXPECT_FALSE(
+      autofill_client_.test_rappor_service()->GetRecordedSampleForMetric(
+          "Autofill.HighNumberOfServerMismatches", &sample, &type));
+  EXPECT_TRUE(
+      autofill_client_.test_rappor_service()->GetRecordedSampleForMetric(
+          "Autofill.HighNumberOfHeuristicMismatches", &sample, &type));
+  EXPECT_EQ("example.com", sample);
+  EXPECT_EQ(rappor::ETLD_PLUS_ONE_RAPPOR_TYPE, type);
 }
 
 // Verify that when a field is annotated with the autocomplete attribute, its

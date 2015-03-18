@@ -47,6 +47,7 @@ class ChromeAutofillClient
   scoped_refptr<AutofillWebDataService> GetDatabase() override;
   PrefService* GetPrefs() override;
   IdentityProvider* GetIdentityProvider() override;
+  rappor::RapporService* GetRapporService() override;
   void HideRequestAutocompleteDialog() override;
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(const CreditCard& card,

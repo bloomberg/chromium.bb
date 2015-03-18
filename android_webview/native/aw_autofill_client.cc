@@ -70,6 +70,10 @@ IdentityProvider* AwAutofillClient::GetIdentityProvider() {
   return nullptr;
 }
 
+rappor::RapporService* AwAutofillClient::GetRapporService() {
+  return nullptr;
+}
+
 autofill::PersonalDataManager* AwAutofillClient::GetPersonalDataManager() {
   return nullptr;
 }

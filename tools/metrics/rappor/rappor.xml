@@ -89,6 +89,24 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Autofill.HighNumberOfHeuristicMismatches"
+    type="ETLD_PLUS_ONE">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL for which there was a high number of mismatches for the
+    heuristic prediction of the form field types.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Autofill.HighNumberOfServerMismatches"
+    type="ETLD_PLUS_ONE">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The eTLD+1 of a URL for which there was a high number of mismatches for the
+    server prediction of the form field types.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="ContentSettings.MixedScript.DisplayedShield"
     type="ETLD_PLUS_ONE">
   <owner>lgarron@chromium.org</owner>

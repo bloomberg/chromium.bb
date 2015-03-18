@@ -34,6 +34,10 @@ namespace buzz {
 class XmlElement;
 }
 
+namespace rappor {
+class RapporService;
+}
+
 namespace autofill {
 
 struct FormData;
@@ -117,7 +121,8 @@ class FormStructure {
   // a timestamp corresponding to the form's submission.
   void LogQualityMetrics(const base::TimeTicks& load_time,
                          const base::TimeTicks& interaction_time,
-                         const base::TimeTicks& submission_time) const;
+                         const base::TimeTicks& submission_time,
+                         rappor::RapporService* rappor_service) const;
 
   // Classifies each field in |fields_| based upon its |autocomplete| attribute,
   // if the attribute is available.  The association is stored into the field's

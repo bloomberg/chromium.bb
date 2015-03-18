@@ -101,6 +101,7 @@
         'keyed_service_core',
         'os_crypt',
         'pref_registry',
+        'rappor',
         'signin_core_common',
         'webdata_common',
       ],
@@ -272,6 +273,7 @@
         'autofill_core_browser',
         'os_crypt',
         'pref_registry',
+        'rappor',
       ],
       'sources': [
         'autofill/core/browser/autofill_test_utils.cc',

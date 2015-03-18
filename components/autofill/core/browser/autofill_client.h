@@ -24,6 +24,10 @@ class Rect;
 class RectF;
 }
 
+namespace rappor {
+class RapporService;
+}
+
 class GURL;
 class PrefService;
 
@@ -91,6 +95,9 @@ class AutofillClient {
 
   // Gets the IdentityProvider associated with the client (for OAuth2).
   virtual IdentityProvider* GetIdentityProvider() = 0;
+
+  // Gets the RapporService associated with the client (for metrics).
+  virtual rappor::RapporService* GetRapporService() = 0;
 
   // Hides the associated request autocomplete dialog (if it exists).
   virtual void HideRequestAutocompleteDialog() = 0;

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
@@ -118,6 +119,10 @@ IdentityProvider* ChromeAutofillClient::GetIdentityProvider() {
   }
 
   return identity_provider_.get();
+}
+
+rappor::RapporService* ChromeAutofillClient::GetRapporService() {
+  return g_browser_process->rappor_service();
 }
 
 void ChromeAutofillClient::ShowAutofillSettings() {

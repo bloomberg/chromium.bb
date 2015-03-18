@@ -10,7 +10,8 @@ namespace autofill {
 
 TestAutofillClient::TestAutofillClient()
     : token_service_(new FakeOAuth2TokenService()),
-      identity_provider_(new FakeIdentityProvider(token_service_.get())) {
+      identity_provider_(new FakeIdentityProvider(token_service_.get())),
+      rappor_service_(new rappor::TestRapporService()) {
 }
 TestAutofillClient::~TestAutofillClient() {
 }
@@ -29,6 +30,10 @@ PrefService* TestAutofillClient::GetPrefs() {
 
 IdentityProvider* TestAutofillClient::GetIdentityProvider() {
   return identity_provider_.get();
+}
+
+rappor::RapporService* TestAutofillClient::GetRapporService() {
+  return rappor_service_.get();
 }
 
 void TestAutofillClient::HideRequestAutocompleteDialog() {

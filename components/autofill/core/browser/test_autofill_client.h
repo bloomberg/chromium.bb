@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/rappor/test_rappor_service.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 
@@ -26,6 +27,7 @@ class TestAutofillClient : public AutofillClient {
   scoped_refptr<AutofillWebDataService> GetDatabase() override;
   PrefService* GetPrefs() override;
   IdentityProvider* GetIdentityProvider() override;
+  rappor::RapporService* GetRapporService() override;
   void HideRequestAutocompleteDialog() override;
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(const CreditCard& card,
@@ -57,11 +59,16 @@ class TestAutofillClient : public AutofillClient {
 
   void SetPrefs(scoped_ptr<PrefService> prefs) { prefs_ = prefs.Pass(); }
 
+  rappor::TestRapporService* test_rappor_service() {
+    return rappor_service_.get();
+  }
+
  private:
   // NULL by default.
   scoped_ptr<PrefService> prefs_;
   scoped_ptr<FakeOAuth2TokenService> token_service_;
   scoped_ptr<FakeIdentityProvider> identity_provider_;
+  scoped_ptr<rappor::TestRapporService> rappor_service_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);
 };

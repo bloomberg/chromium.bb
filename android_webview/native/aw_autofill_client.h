@@ -60,6 +60,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   scoped_refptr<autofill::AutofillWebDataService> GetDatabase() override;
   PrefService* GetPrefs() override;
   IdentityProvider* GetIdentityProvider() override;
+  rappor::RapporService* GetRapporService() override;
   void HideRequestAutocompleteDialog() override;
   void ShowAutofillSettings() override;
   void ShowUnmaskPrompt(
