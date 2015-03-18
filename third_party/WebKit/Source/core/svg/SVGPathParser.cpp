@@ -153,16 +153,16 @@ bool SVGPathParser::parseCurveToCubicSmoothSegment()
     if (!m_source->parseCurveToCubicSmoothSegment(point2, targetPoint))
         return false;
 
+    if (m_pathParsingMode == UnalteredParsing) {
+        m_consumer->curveToCubicSmooth(point2, targetPoint, m_mode);
+        return true;
+    }
     if (m_lastCommand != PathSegCurveToCubicAbs
         && m_lastCommand != PathSegCurveToCubicRel
         && m_lastCommand != PathSegCurveToCubicSmoothAbs
         && m_lastCommand != PathSegCurveToCubicSmoothRel)
         m_controlPoint = m_currentPoint;
 
-    if (m_pathParsingMode == UnalteredParsing) {
-        m_consumer->curveToCubicSmooth(point2, targetPoint, m_mode);
-        return true;
-    }
     FloatPoint point1 = m_currentPoint;
     point1.scale(2, 2);
     point1.move(-m_controlPoint.x(), -m_controlPoint.y());
@@ -215,16 +215,16 @@ bool SVGPathParser::parseCurveToQuadraticSmoothSegment()
     if (!m_source->parseCurveToQuadraticSmoothSegment(targetPoint))
         return false;
 
+    if (m_pathParsingMode == UnalteredParsing) {
+        m_consumer->curveToQuadraticSmooth(targetPoint, m_mode);
+        return true;
+    }
     if (m_lastCommand != PathSegCurveToQuadraticAbs
         && m_lastCommand != PathSegCurveToQuadraticRel
         && m_lastCommand != PathSegCurveToQuadraticSmoothAbs
         && m_lastCommand != PathSegCurveToQuadraticSmoothRel)
         m_controlPoint = m_currentPoint;
 
-    if (m_pathParsingMode == UnalteredParsing) {
-        m_consumer->curveToQuadraticSmooth(targetPoint, m_mode);
-        return true;
-    }
     FloatPoint cubicPoint = m_currentPoint;
     cubicPoint.scale(2, 2);
     cubicPoint.move(-m_controlPoint.x(), -m_controlPoint.y());
