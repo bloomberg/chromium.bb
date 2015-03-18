@@ -250,7 +250,10 @@ public class ShareHelper {
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, title);
         intent.putExtra(Intent.EXTRA_TEXT, url);
-        if (screenshotUri != null) intent.putExtra(Intent.EXTRA_STREAM, screenshotUri);
+        if (screenshotUri != null) {
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.putExtra(Intent.EXTRA_STREAM, screenshotUri);
+        }
         return intent;
     }
 
