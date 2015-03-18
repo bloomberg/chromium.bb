@@ -24,8 +24,6 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
-LIBDRM_TOP := $(LOCAL_PATH)
-
 # Import variables LIBDRM_{,H_,INCLUDE_H_,INCLUDE_VMWGFX_H_}FILES
 include $(LOCAL_PATH)/Makefile.sources
 
@@ -38,7 +36,7 @@ LOCAL_EXPORT_C_INCLUDE_DIRS := \
 	$(LOCAL_PATH)/include/drm
 
 LOCAL_C_INCLUDES := \
-	$(LIBDRM_TOP)/include/drm
+	$(LOCAL_PATH)/include/drm
 
 LOCAL_CFLAGS := \
 	-DHAVE_LIBDRM_ATOMIC_PRIMITIVES=1
