@@ -9,7 +9,6 @@ from __future__ import print_function
 import logging
 
 from chromite import cros
-from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.lib import bootstrap_lib
@@ -57,8 +56,7 @@ class SdkCommand(cros.CrosCommand):
       manifest_path = constants.PROJECT_MANIFEST
       depth = None
     else:
-      manifest_url = cbuildbot_config.GetManifestVersionsRepoUrl(
-          False, read_only=True)
+      manifest_url = constants.MANIFEST_VERSIONS_GOB_URL
       manifest_path = 'project-sdk/%s.xml' % version
       depth = 1
 

@@ -313,8 +313,12 @@ BRANCHABLE_PROJECTS = {
 }
 
 # TODO(sosa): Move to manifest-versions-external once its created
-MANIFEST_VERSIONS_SUFFIX = '/chromiumos/manifest-versions'
-MANIFEST_VERSIONS_INT_SUFFIX = '/chromeos/manifest-versions'
+MANIFEST_VERSIONS_GOB_URL = EXTERNAL_GOB_URL + '/chromiumos/manifest-versions'
+MANIFEST_VERSIONS_GOB_URL_TEST = MANIFEST_VERSIONS_GOB_URL + '-test'
+
+MANIFEST_VERSIONS_INT_GOB_URL = INTERNAL_GOB_URL + '/chromeos/manifest-versions'
+MANIFEST_VERSIONS_INT_GOB_URL_TEST = MANIFEST_VERSIONS_INT_GOB_URL + '-test'
+
 MANIFEST_VERSIONS_GS_URL = 'gs://chromeos-manifest-versions'
 TRASH_BUCKET = 'gs://chromeos-throw-away-bucket'
 

@@ -144,14 +144,15 @@ def GetManifestVersionsRepoUrl(internal_build, read_only=False, test=False):
   """
   # pylint: disable=W0613
   if internal_build:
-    url = constants.INTERNAL_GOB_URL + constants.MANIFEST_VERSIONS_INT_SUFFIX
+    if test:
+      return constants.MANIFEST_VERSIONS_INT_GOB_URL_TEST
+    else:
+      return constants.MANIFEST_VERSIONS_INT_GOB_URL
   else:
-    url = constants.EXTERNAL_GOB_URL + constants.MANIFEST_VERSIONS_SUFFIX
-
-  if test:
-    url += '-test'
-
-  return url
+    if test:
+      return constants.MANIFEST_VERSIONS_GOB_URL_TEST
+    else:
+      return constants.MANIFEST_VERSIONS_GOB_URL
 
 
 def IsPFQType(b_type):

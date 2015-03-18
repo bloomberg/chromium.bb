@@ -63,8 +63,7 @@ class CrosSdkTest(cros_test_lib.MockTempDirTestCase):
     cros_sdk.SdkCommand._HandleUpdate(None, self.sdk_path, '1.2.3')
 
     # Given the explicit path and version, sync what we expect, and where.
-    expected = [mock.call(constants.EXTERNAL_GOB_URL +
-                          constants.MANIFEST_VERSIONS_SUFFIX,
+    expected = [mock.call(constants.MANIFEST_VERSIONS_GOB_URL,
                           self.sdk_path,
                           depth=1,
                           manifest='project-sdk/1.2.3.xml'),
@@ -76,8 +75,7 @@ class CrosSdkTest(cros_test_lib.MockTempDirTestCase):
     cros_sdk.SdkCommand._HandleUpdate(None, self.sdk_path, 'latest')
 
     # Given the explicit path and version, sync what we expect, and where.
-    expected = [mock.call(constants.EXTERNAL_GOB_URL +
-                          constants.MANIFEST_VERSIONS_SUFFIX,
+    expected = [mock.call(constants.MANIFEST_VERSIONS_GOB_URL,
                           self.sdk_path,
                           depth=1,
                           manifest='project-sdk/latest.xml'),
@@ -101,8 +99,7 @@ class CrosSdkTest(cros_test_lib.MockTempDirTestCase):
     cros_sdk.SdkCommand._HandleUpdate(self.workspace_path, None, '1.2.3')
 
     # Given the explicit path and version, sync what we expect, and where.
-    expected = [mock.call(constants.EXTERNAL_GOB_URL +
-                          constants.MANIFEST_VERSIONS_SUFFIX,
+    expected = [mock.call(constants.MANIFEST_VERSIONS_GOB_URL,
                           os.path.join(self.tempdir,
                                        'bootstrap/sdk_checkouts/1.2.3'),
                           depth=1,
