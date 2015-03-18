@@ -340,9 +340,16 @@ jboolean ProfileSyncServiceAndroid::IsSyncKeystoreMigrationDone(
   return is_status_valid && !status.keystore_migration_time.is_null();
 }
 
-jlong ProfileSyncServiceAndroid::GetEnabledDataTypes(JNIEnv* env,
-                                                     jobject obj) {
+jlong ProfileSyncServiceAndroid::GetActiveDataTypes(
+      JNIEnv* env, jobject obj) {
   syncer::ModelTypeSet types = sync_service_->GetActiveDataTypes();
+  types.PutAll(syncer::ControlTypes());
+  return ModelTypeSetToSelection(types);
+}
+
+jlong ProfileSyncServiceAndroid::GetPreferredDataTypes(
+      JNIEnv* env, jobject obj) {
+  syncer::ModelTypeSet types = sync_service_->GetPreferredDataTypes();
   types.PutAll(syncer::ControlTypes());
   return ModelTypeSetToSelection(types);
 }

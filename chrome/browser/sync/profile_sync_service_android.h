@@ -137,11 +137,17 @@ class ProfileSyncServiceAndroid : public ProfileSyncServiceObserver {
   // Returns true if sync has been migrated.
   jboolean IsSyncKeystoreMigrationDone(JNIEnv* env, jobject obj);
 
-  // Get the set of enabled data types. These are the types currently both
-  // registered and preferred. Note that control types are always included here.
+  // Get the set of active data types. These are the types currently being
+  // synced. Note that control types are always included here.
   // Returns a bit map of the values from
   // profile_sync_service_model_type_selection_android.h.
-  jlong GetEnabledDataTypes(JNIEnv* env, jobject obj);
+  jlong GetActiveDataTypes(JNIEnv* env, jobject obj);
+
+  // Get the set of preferred data types. These are the types that the user
+  // has requested be synced.
+  // Returns a bit map of the values from
+  // profile_sync_service_model_type_selection_android.h.
+  jlong GetPreferredDataTypes(JNIEnv* env, jobject obj);
 
   // Enables the passed data types.
   // If |sync_everything| is true, then all data types are enabled and the

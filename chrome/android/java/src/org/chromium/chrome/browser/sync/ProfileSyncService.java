@@ -317,13 +317,28 @@ public class ProfileSyncService {
     }
 
     /**
-     * Gets the set of data types that are currently enabled to sync.
+     * Gets the set of data types that are currently syncing.
      *
-     * @return Set of enabled types.
+     * This is affected by whether sync is on.
+     *
+     * @return Set of active data types.
+     */
+    public Set<ModelType> getActiveDataTypes() {
+        long modelTypeSelection = nativeGetActiveDataTypes(mNativeProfileSyncServiceAndroid);
+        return modelTypeSelectionToSet(modelTypeSelection);
+    }
+
+    /**
+     * Gets the set of data types that are enabled in sync.
+     *
+     * This is unaffected by whether sync is on.
+     *
+     * @return Set of preferred types.
      */
     public Set<ModelType> getPreferredDataTypes() {
-        long modelTypeSelection =
-                nativeGetEnabledDataTypes(mNativeProfileSyncServiceAndroid);
+        // TODO(maxbogue): Correct this line to GetPreferredDataTypes once
+        // downstream uses are fixed.
+        long modelTypeSelection = nativeGetActiveDataTypes(mNativeProfileSyncServiceAndroid);
         return modelTypeSelectionToSet(modelTypeSelection);
     }
 
@@ -577,7 +592,8 @@ public class ProfileSyncService {
     private native String nativeGetSyncEnterCustomPassphraseBodyText(
             long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncKeystoreMigrationDone(long nativeProfileSyncServiceAndroid);
-    private native long nativeGetEnabledDataTypes(long nativeProfileSyncServiceAndroid);
+    private native long nativeGetActiveDataTypes(long nativeProfileSyncServiceAndroid);
+    private native long nativeGetPreferredDataTypes(long nativeProfileSyncServiceAndroid);
     private native void nativeSetPreferredDataTypes(
             long nativeProfileSyncServiceAndroid, boolean syncEverything, long modelTypeSelection);
     private native void nativeSetSetupInProgress(
