@@ -12,6 +12,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/sequenced_task_runner.h"
 #include "base/tracked_objects.h"
 #include "content/child/mojo/mojo_application.h"
 #include "content/common/content_export.h"
@@ -46,6 +47,7 @@ class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
 class ChildSharedBitmapManager;
 class FileSystemDispatcher;
+class InProcessChildThreadParams;
 class NavigatorConnectDispatcher;
 class NotificationDispatcher;
 class PushDispatcher;
@@ -198,6 +200,9 @@ class CONTENT_EXPORT ChildThreadImpl
   void OnChannelConnected(int32 peer_pid) override;
   void OnChannelError() override;
 
+  bool IsInBrowserProcess() const;
+  scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner();
+
  private:
   class ChildThreadMessageRouter : public MessageRouter {
    public:
@@ -298,7 +303,7 @@ class CONTENT_EXPORT ChildThreadImpl
 
   scoped_refptr<NavigatorConnectDispatcher> navigator_connect_dispatcher_;
 
-  bool in_browser_process_;
+  scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner_;
 
   base::WeakPtrFactory<ChildThreadImpl> channel_connected_factory_;
 
@@ -312,7 +317,7 @@ struct ChildThreadImpl::Options {
 
   std::string channel_name;
   bool use_mojo_channel;
-  bool in_browser_process;
+  scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner;
   std::vector<IPC::MessageFilter*> startup_filters;
 
  private:
@@ -323,7 +328,7 @@ class ChildThreadImpl::Options::Builder {
  public:
   Builder();
 
-  Builder& InBrowserProcess(bool in_browser_process);
+  Builder& InBrowserProcess(const InProcessChildThreadParams& params);
   Builder& UseMojoChannel(bool use_mojo_channel);
   Builder& WithChannelName(const std::string& channel_name);
   Builder& AddStartupFilter(IPC::MessageFilter* filter);

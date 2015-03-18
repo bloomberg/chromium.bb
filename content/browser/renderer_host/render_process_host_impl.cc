@@ -111,6 +111,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/in_process_child_thread_params.h"
 #include "content/common/mojo/channel_init.h"
 #include "content/common/mojo/mojo_messages.h"
 #include "content/common/resource_messages.h"
@@ -628,7 +629,10 @@ bool RenderProcessHostImpl::Init() {
     // thread in the renderer process runs the WebKit code and can sometimes
     // make blocking calls to the UI thread (i.e. this thread), they need to run
     // on separate threads.
-    in_process_renderer_.reset(g_renderer_main_thread_factory(channel_id));
+    in_process_renderer_.reset(
+        g_renderer_main_thread_factory(InProcessChildThreadParams(
+            channel_id, BrowserThread::UnsafeGetMessageLoopForThread(
+                            BrowserThread::IO)->task_runner())));
 
     base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)
@@ -690,9 +694,6 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
   scoped_refptr<base::SequencedTaskRunner> mojo_task_runner =
       BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
             ->task_runner();
-  if (run_renderer_in_process()) {
-    ChannelInit::SetSingleProcessIOTaskRunner(mojo_task_runner);
-  }
   if (ShouldUseMojoChannel()) {
     VLOG(1) << "Mojo Channel is enabled on host";
     if (!channel_mojo_host_) {

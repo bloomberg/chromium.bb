@@ -20,6 +20,7 @@
 #include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/child_process_host_impl.h"
+#include "content/common/in_process_child_thread_params.h"
 #include "content/common/utility_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -211,7 +212,10 @@ bool UtilityProcessHostImpl::StartProcess() {
     DCHECK(g_utility_main_thread_factory);
     // See comment in RenderProcessHostImpl::Init() for the background on why we
     // support single process mode this way.
-    in_process_thread_.reset(g_utility_main_thread_factory(channel_id));
+    in_process_thread_.reset(
+        g_utility_main_thread_factory(InProcessChildThreadParams(
+            channel_id, BrowserThread::UnsafeGetMessageLoopForThread(
+                            BrowserThread::IO)->task_runner())));
     in_process_thread_->Start();
   } else {
     const base::CommandLine& browser_command_line =

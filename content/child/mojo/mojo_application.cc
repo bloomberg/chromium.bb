@@ -13,7 +13,10 @@
 
 namespace content {
 
-MojoApplication::MojoApplication() {
+MojoApplication::MojoApplication(
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
+    : io_task_runner_(io_task_runner) {
+  DCHECK(io_task_runner_);
 }
 
 MojoApplication::~MojoApplication() {
@@ -35,15 +38,9 @@ void MojoApplication::OnActivate(
 #elif defined(OS_WIN)
   base::PlatformFile handle = file;
 #endif
-  scoped_refptr<base::TaskRunner> io_task_runner =
-      ChannelInit::GetSingleProcessIOTaskRunner();
-  if (!io_task_runner) {
-    io_task_runner = ChildProcess::current()->io_message_loop_proxy();
-  }
-  DCHECK(io_task_runner);
 
   mojo::ScopedMessagePipeHandle message_pipe =
-      channel_init_.Init(handle, io_task_runner);
+      channel_init_.Init(handle, io_task_runner_);
   DCHECK(message_pipe.is_valid());
 
   ApplicationSetupPtr application_setup;

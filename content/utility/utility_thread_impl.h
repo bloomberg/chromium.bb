@@ -33,7 +33,7 @@ class UtilityThreadImpl : public UtilityThread,
  public:
   UtilityThreadImpl();
   // Constructor that's used when running in single process mode.
-  explicit UtilityThreadImpl(const std::string& channel_name);
+  explicit UtilityThreadImpl(const InProcessChildThreadParams& params);
   ~UtilityThreadImpl() override;
   void Shutdown() override;
 
@@ -55,9 +55,6 @@ class UtilityThreadImpl : public UtilityThread,
 
   // True when we're running in batch mode.
   bool batch_mode_;
-
-  // True if running in single process mode.
-  bool single_process_;
 
   scoped_ptr<BlinkPlatformImpl> blink_platform_impl_;
 

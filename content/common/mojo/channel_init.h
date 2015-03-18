@@ -39,11 +39,6 @@ class CONTENT_EXPORT ChannelInit {
   // Shuts down the channel. Must be called from the IO thread.
   void ShutdownOnIOThread();
 
-  // Get/Set a shared I/O TaskRunner for children to use in single process mode.
-  static scoped_refptr<base::TaskRunner> GetSingleProcessIOTaskRunner();
-  static void SetSingleProcessIOTaskRunner(
-      scoped_refptr<base::TaskRunner> io_task_runner);
-
  private:
   // Invoked on the thread on which this object lives once the channel has been
   // established. This is a static method that takes a weak pointer to self,

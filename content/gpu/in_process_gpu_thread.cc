@@ -9,9 +9,9 @@
 
 namespace content {
 
-InProcessGpuThread::InProcessGpuThread(const std::string& channel_id)
+InProcessGpuThread::InProcessGpuThread(const InProcessChildThreadParams& params)
     : base::Thread("Chrome_InProcGpuThread"),
-      channel_id_(channel_id),
+      params_(params),
       gpu_process_(NULL) {
 }
 
@@ -23,7 +23,7 @@ void InProcessGpuThread::Init() {
   gpu_process_ = new GpuProcess();
   // The process object takes ownership of the thread object, so do not
   // save and delete the pointer.
-  gpu_process_->set_main_thread(new GpuChildThread(channel_id_));
+  gpu_process_->set_main_thread(new GpuChildThread(params_));
 }
 
 void InProcessGpuThread::CleanUp() {
@@ -31,8 +31,9 @@ void InProcessGpuThread::CleanUp() {
   delete gpu_process_;
 }
 
-base::Thread* CreateInProcessGpuThread(const std::string& channel_id) {
-  return new InProcessGpuThread(channel_id);
+base::Thread* CreateInProcessGpuThread(
+    const InProcessChildThreadParams& params) {
+  return new InProcessGpuThread(params);
 }
 
 }  // namespace content

@@ -42,8 +42,7 @@ class GpuChildThread : public ChildThreadImpl {
                           const gpu::GPUInfo& gpu_info,
                           const DeferredMessages& deferred_messages);
 
-  // For single-process mode.
-  explicit GpuChildThread(const std::string& channel_id);
+  explicit GpuChildThread(const InProcessChildThreadParams& params);
 
   ~GpuChildThread() override;
 

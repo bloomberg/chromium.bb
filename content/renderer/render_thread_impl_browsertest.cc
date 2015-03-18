@@ -8,6 +8,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/common/in_process_child_thread_params.h"
 #include "content/common/resource_messages.h"
 #include "content/common/websocket_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -87,9 +88,9 @@ class TestTaskCounter : public base::SingleThreadTaskRunner {
 
 class RenderThreadImplForTest : public RenderThreadImpl {
  public:
-  RenderThreadImplForTest(const std::string& channel_id,
+  RenderThreadImplForTest(const InProcessChildThreadParams& params,
                           scoped_refptr<TestTaskCounter> test_task_counter)
-      : RenderThreadImpl(channel_id), test_task_counter_(test_task_counter) {}
+      : RenderThreadImpl(params), test_task_counter_(test_task_counter) {}
 
   ~RenderThreadImplForTest() override {}
 
@@ -159,8 +160,10 @@ class RenderThreadImplBrowserTest : public testing::Test {
     cmd->AppendSwitchASCII(switches::kUseImageTextureTarget,
                            base::UintToString(GL_TEXTURE_2D));
 
-    thread_ = new RenderThreadImplForTest(test_helper_->GetChannelId(),
-                                          test_task_counter_);
+    thread_ = new RenderThreadImplForTest(
+        InProcessChildThreadParams(test_helper_->GetChannelId(),
+                                   test_helper_->GetIOTaskRunner()),
+        test_task_counter_);
     cmd->InitFromArgv(old_argv);
 
     thread_->EnsureWebKitInitialized();

@@ -131,10 +131,7 @@ class CONTENT_EXPORT RenderThreadImpl
  public:
   static RenderThreadImpl* current();
 
-  RenderThreadImpl();
-  // Constructor that's used when running in single process mode.
-  explicit RenderThreadImpl(const std::string& channel_name);
-  // Constructor that's used in RendererMain.
+  explicit RenderThreadImpl(const InProcessChildThreadParams& params);
   explicit RenderThreadImpl(scoped_ptr<base::MessageLoop> main_message_loop);
   ~RenderThreadImpl() override;
   void Shutdown() override;

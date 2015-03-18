@@ -12,13 +12,6 @@
 
 namespace content {
 
-namespace {
-
-base::LazyInstance<scoped_refptr<base::TaskRunner>>
-    g_single_process_task_runner = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 ChannelInit::ChannelInit() : channel_info_(nullptr), weak_factory_(this) {}
 
 ChannelInit::~ChannelInit() {
@@ -54,17 +47,6 @@ void ChannelInit::ShutdownOnIOThread() {
     mojo::embedder::DestroyChannelOnIOThread(channel_info_);
   channel_info_ = nullptr;
   ipc_support_.reset();
-}
-
-// static
-scoped_refptr<base::TaskRunner> ChannelInit::GetSingleProcessIOTaskRunner() {
-  return g_single_process_task_runner.Get();
-}
-
-// static
-void ChannelInit::SetSingleProcessIOTaskRunner(
-    scoped_refptr<base::TaskRunner> io_task_runner) {
-  g_single_process_task_runner.Get() = io_task_runner;
 }
 
 // static

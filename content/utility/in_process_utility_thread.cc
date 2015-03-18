@@ -13,8 +13,9 @@ namespace content {
 // are many globals used in the utility process.
 static base::LazyInstance<base::Lock> g_one_utility_thread_lock;
 
-InProcessUtilityThread::InProcessUtilityThread(const std::string& channel_id)
-    : Thread("Chrome_InProcUtilityThread"), channel_id_(channel_id) {
+InProcessUtilityThread::InProcessUtilityThread(
+    const InProcessChildThreadParams& params)
+    : Thread("Chrome_InProcUtilityThread"), params_(params) {
 }
 
 InProcessUtilityThread::~InProcessUtilityThread() {
@@ -44,11 +45,12 @@ void InProcessUtilityThread::CleanUp() {
 void InProcessUtilityThread::InitInternal() {
   g_one_utility_thread_lock.Get().Acquire();
   child_process_.reset(new ChildProcess());
-  child_process_->set_main_thread(new UtilityThreadImpl(channel_id_));
+  child_process_->set_main_thread(new UtilityThreadImpl(params_));
 }
 
-base::Thread* CreateInProcessUtilityThread(const std::string& channel_id) {
-  return new InProcessUtilityThread(channel_id);
+base::Thread* CreateInProcessUtilityThread(
+    const InProcessChildThreadParams& params) {
+  return new InProcessUtilityThread(params);
 }
 
 }  // namespace content

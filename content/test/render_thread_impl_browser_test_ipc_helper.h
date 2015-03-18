@@ -33,6 +33,8 @@ class RenderThreadImplBrowserIPCTestHelper {
 
   const std::string& GetChannelId() const { return channel_id_; }
 
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const;
+
  private:
   class DummyListener;
 

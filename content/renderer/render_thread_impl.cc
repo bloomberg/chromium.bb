@@ -425,30 +425,19 @@ RenderThreadImpl* RenderThreadImpl::current() {
   return lazy_tls.Pointer()->Get();
 }
 
+RenderThreadImpl::RenderThreadImpl(const InProcessChildThreadParams& params)
+    : ChildThreadImpl(Options::Builder()
+                          .InBrowserProcess(params)
+                          .UseMojoChannel(ShouldUseMojoChannel())
+                          .Build()) {
+  Init();
+}
+
 // When we run plugins in process, we actually run them on the render thread,
 // which means that we need to make the render thread pump UI events.
-RenderThreadImpl::RenderThreadImpl()
-    : ChildThreadImpl(Options::Builder()
-                          .InBrowserProcess(true)
-                          .UseMojoChannel(ShouldUseMojoChannel())
-                          .Build()) {
-  Init();
-}
-
-RenderThreadImpl::RenderThreadImpl(const std::string& channel_name)
-    : ChildThreadImpl(Options::Builder()
-                          .InBrowserProcess(true)
-                          .UseMojoChannel(ShouldUseMojoChannel())
-                          .WithChannelName(channel_name)
-                          .Build()) {
-  Init();
-}
-
 RenderThreadImpl::RenderThreadImpl(
     scoped_ptr<base::MessageLoop> main_message_loop)
     : ChildThreadImpl(Options::Builder()
-                          // TODO(skyostil): This should be set to false.
-                          .InBrowserProcess(true)
                           .UseMojoChannel(ShouldUseMojoChannel())
                           .Build()),
       main_message_loop_(main_message_loop.Pass()) {

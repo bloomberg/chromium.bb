@@ -25,6 +25,7 @@
 #include "content/browser/renderer_host/render_widget_resize_helper.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/common/in_process_child_thread_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -503,8 +504,11 @@ bool GpuProcessHost::Init() {
     return false;
 
   if (in_process_) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     DCHECK(g_gpu_main_thread_factory);
-    in_process_gpu_thread_.reset(g_gpu_main_thread_factory(channel_id));
+    in_process_gpu_thread_.reset(
+        g_gpu_main_thread_factory(InProcessChildThreadParams(
+            channel_id, base::MessageLoop::current()->task_runner())));
     base::Thread::Options options;
 #if defined(OS_WIN)
     // WGL needs to create its own window and pump messages on it.

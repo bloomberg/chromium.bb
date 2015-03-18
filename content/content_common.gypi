@@ -388,6 +388,8 @@
       'common/input_messages.h',
       'common/inter_process_time_ticks_converter.cc',
       'common/inter_process_time_ticks_converter.h',
+      'common/in_process_child_thread_params.cc',
+      'common/in_process_child_thread_params.h',
       'common/mac/attributed_string_coder.h',
       'common/mac/attributed_string_coder.mm',
       'common/mac/font_descriptor.h',

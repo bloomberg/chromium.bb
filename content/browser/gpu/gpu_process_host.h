@@ -40,10 +40,12 @@ struct ChannelHandle;
 namespace content {
 class BrowserChildProcessHostImpl;
 class GpuMainThread;
+class InProcessChildThreadParams;
 class RenderWidgetHostViewFrameSubscriber;
 class ShaderDiskCache;
 
-typedef base::Thread* (*GpuMainThreadFactoryFunction)(const std::string& id);
+typedef base::Thread* (*GpuMainThreadFactoryFunction)(
+    const InProcessChildThreadParams&);
 
 class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public IPC::Sender,

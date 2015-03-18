@@ -24,10 +24,11 @@ class Thread;
 
 namespace content {
 class BrowserChildProcessHostImpl;
+class InProcessChildThreadParams;
 class MojoApplicationHost;
 
 typedef base::Thread* (*UtilityMainThreadFactoryFunction)(
-    const std::string& id);
+    const InProcessChildThreadParams&);
 
 class CONTENT_EXPORT UtilityProcessHostImpl
     : public NON_EXPORTED_BASE(UtilityProcessHost),

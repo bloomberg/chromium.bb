@@ -46,6 +46,7 @@ class AudioRendererHost;
 class BrowserCdmManager;
 class BrowserDemuxerAndroid;
 class GpuMessageFilter;
+class InProcessChildThreadParams;
 class MessagePortMessageFilter;
 class MojoApplicationHost;
 class NotificationMessageFilter;
@@ -63,7 +64,7 @@ class StoragePartition;
 class StoragePartitionImpl;
 
 typedef base::Thread* (*RendererMainThreadFactoryFunction)(
-    const std::string& id);
+    const InProcessChildThreadParams& params);
 
 // Implements a concrete RenderProcessHost for the browser process for talking
 // to actual renderer processes (as opposed to mocks).

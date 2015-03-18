@@ -76,10 +76,9 @@ GpuChildThread::GpuChildThread(GpuWatchdogThread* watchdog_thread,
   g_thread_safe_sender.Get() = thread_safe_sender();
 }
 
-GpuChildThread::GpuChildThread(const std::string& channel_id)
-    : ChildThreadImpl(Options::Builder()
-                          .InBrowserProcess(true)
-                          .WithChannelName(channel_id)
+GpuChildThread::GpuChildThread(const InProcessChildThreadParams& params)
+    : ChildThreadImpl(ChildThreadImpl::Options::Builder()
+                          .InBrowserProcess(params)
                           .Build()),
       dead_on_arrival_(false),
       in_browser_process_(true) {

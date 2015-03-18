@@ -10,8 +10,9 @@
 
 namespace content {
 
-InProcessRendererThread::InProcessRendererThread(const std::string& channel_id)
-    : Thread("Chrome_InProcRendererThread"), channel_id_(channel_id) {
+InProcessRendererThread::InProcessRendererThread(
+    const InProcessChildThreadParams& params)
+    : Thread("Chrome_InProcRendererThread"), params_(params) {
 }
 
 InProcessRendererThread::~InProcessRendererThread() {
@@ -20,7 +21,7 @@ InProcessRendererThread::~InProcessRendererThread() {
 
 void InProcessRendererThread::Init() {
   render_process_.reset(new RenderProcessImpl());
-  new RenderThreadImpl(channel_id_);
+  new RenderThreadImpl(params_);
 }
 
 void InProcessRendererThread::CleanUp() {
@@ -38,8 +39,9 @@ void InProcessRendererThread::CleanUp() {
   SetThreadWasQuitProperly(true);
 }
 
-base::Thread* CreateInProcessRendererThread(const std::string& channel_id) {
-  return new InProcessRendererThread(channel_id);
+base::Thread* CreateInProcessRendererThread(
+    const InProcessChildThreadParams& params) {
+  return new InProcessRendererThread(params);
 }
 
 }  // namespace content

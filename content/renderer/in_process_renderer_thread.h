@@ -9,6 +9,7 @@
 
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "content/common/in_process_child_thread_params.h"
 
 namespace content {
 class RenderProcess;
@@ -17,7 +18,7 @@ class RenderProcess;
 // single-process mode.  It's not used in multi-process mode.
 class InProcessRendererThread : public base::Thread {
  public:
-  explicit InProcessRendererThread(const std::string& channel_id);
+  explicit InProcessRendererThread(const InProcessChildThreadParams& params);
   ~InProcessRendererThread() override;
 
  protected:
@@ -25,14 +26,14 @@ class InProcessRendererThread : public base::Thread {
   void CleanUp() override;
 
  private:
-  std::string channel_id_;
+  InProcessChildThreadParams params_;
   scoped_ptr<RenderProcess> render_process_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessRendererThread);
 };
 
 CONTENT_EXPORT base::Thread* CreateInProcessRendererThread(
-    const std::string& channel_id);
+    const InProcessChildThreadParams& params);
 
 }  // namespace content
 

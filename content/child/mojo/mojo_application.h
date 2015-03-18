@@ -9,6 +9,10 @@
 #include "content/common/mojo/service_registry_impl.h"
 #include "ipc/ipc_platform_file.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace IPC {
 class Message;
 }
@@ -21,7 +25,8 @@ namespace content {
 // It makes the ServiceRegistry interface available.
 class MojoApplication {
  public:
-  MojoApplication();
+  explicit MojoApplication(
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   virtual ~MojoApplication();
 
   bool OnMessageReceived(const IPC::Message& msg);
@@ -30,6 +35,8 @@ class MojoApplication {
 
  private:
   void OnActivate(const IPC::PlatformFileForTransit& file);
+
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   ChannelInit channel_init_;
 

@@ -41,7 +41,6 @@ void RenderThreadImplBrowserIPCTestHelper::SetupIpcThread() {
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   ASSERT_TRUE(ipc_thread_->StartWithOptions(options));
-  ChannelInit::SetSingleProcessIOTaskRunner(ipc_thread_->task_runner());
 }
 
 void RenderThreadImplBrowserIPCTestHelper::SetupMojo() {
@@ -62,6 +61,11 @@ void RenderThreadImplBrowserIPCTestHelper::SetupMojo() {
   mojo_application_host_->Activate(channel_.get(),
                                    base::GetCurrentProcessHandle());
   mojo_host_->OnClientLaunched(base::GetCurrentProcessHandle());
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+RenderThreadImplBrowserIPCTestHelper::GetIOTaskRunner() const {
+  return ipc_thread_->task_runner();
 }
 
 }  // namespace content
