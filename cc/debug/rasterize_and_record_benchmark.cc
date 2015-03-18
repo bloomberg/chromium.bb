@@ -225,9 +225,11 @@ void RasterizeAndRecordBenchmark::RunOnDisplayListLayer(
         min_time = duration;
     }
 
-    record_results_.bytes_used += memory_used;
-    record_results_.pixels_recorded +=
-        visible_content_rect.width() * visible_content_rect.height();
+    if (mode_index == RecordingSource::RECORD_NORMALLY) {
+      record_results_.bytes_used += memory_used;
+      record_results_.pixels_recorded +=
+          visible_content_rect.width() * visible_content_rect.height();
+    }
     record_results_.total_best_time[mode_index] += min_time;
   }
 }
