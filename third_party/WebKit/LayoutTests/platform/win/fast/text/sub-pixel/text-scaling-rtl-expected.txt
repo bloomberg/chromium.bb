@@ -3,7 +3,7 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 Font Size Scaling (RTL, Arabic)
-Size of the text should scale smoothly. Reported width should be within 0.01px of that of the highlighted reference row.
+Size of the text should scale smoothly. Reported width should be within 0.02px of that of the highlighted reference row.
 Font SizeWidthNormalizedDiffContent
 10.00154.00184.805.80 أبجد هوَّز حُطّي كلَمُن سَعْفَص قُرِشَت ثَخَدٌ ضَظَغ‎
 10.25154.00180.291.29 أبجد هوَّز حُطّي كلَمُن سَعْفَص قُرِشَت ثَخَدٌ ضَظَغ‎

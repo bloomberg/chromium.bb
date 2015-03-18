@@ -1,4 +1,8 @@
-var TOLERANCE = 0.01;
+// The smallest unit of layout measurement in Chrome is 1/64th of a pixel
+// (one LayoutUnit), which is slightly less than our tolerance of 0.02.  This
+// ensures that rounding errors of one LayoutUnit or less will not cause
+// test failures.
+var TOLERANCE = 0.02;
 
 var FONT_SIZE_START = 10;
 var FONT_SIZE_BASELINE = 12;

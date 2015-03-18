@@ -3,7 +3,7 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 Font Size Scaling (LTR, Latin)
-Size of the text should scale smoothly. Reported width should be within 0.01px of that of the highlighted reference row.
+Size of the text should scale smoothly. Reported width should be within 0.02px of that of the highlighted reference row.
 Font SizeWidthNormalizedDiffContent
 10.00184.00220.804.80Pack my box with five dozen liquor jugs.
 10.25185.00216.590.59Pack my box with five dozen liquor jugs.
