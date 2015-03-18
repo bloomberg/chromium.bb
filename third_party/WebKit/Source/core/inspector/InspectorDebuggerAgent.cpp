@@ -1619,12 +1619,16 @@ void InspectorDebuggerAgent::reset()
 {
     m_scheduledDebuggerStep = NoStep;
     m_scripts.clear();
-    m_editedScripts.clear();
     m_breakpointIdToDebugServerBreakpointIds.clear();
     resetAsyncCallTracker();
     promiseTracker().clear();
     if (frontend())
         frontend()->globalObjectCleared();
+}
+
+void InspectorDebuggerAgent::resetModifiedSources()
+{
+    m_editedScripts.clear();
 }
 
 DEFINE_TRACE(InspectorDebuggerAgent)

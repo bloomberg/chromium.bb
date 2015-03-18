@@ -152,4 +152,9 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     reset();
 }
 
+void PageDebuggerAgent::didCommitLoadForLocalFrame(LocalFrame*)
+{
+    resetModifiedSources();
+}
+
 } // namespace blink
