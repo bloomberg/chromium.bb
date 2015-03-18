@@ -3660,8 +3660,6 @@
             'testing/RefCountedScriptWrappable.cpp',
             'testing/RefCountedScriptWrappable.h',
             'testing/TypeConversions.h',
-            'testing/URLTestHelpers.cpp',
-            'testing/URLTestHelpers.h',
             'testing/UnionTypesTest.cpp',
             'testing/UnionTypesTest.h',
             'testing/v8/WebCoreTestSupport.cpp',
@@ -3804,8 +3802,6 @@
             'streams/ReadableStreamReaderTest.cpp',
             'streams/ReadableStreamTest.cpp',
             'testing/PrivateScriptTestTest.cpp',
-            'testing/UnitTestHelpers.cpp',
-            'testing/UnitTestHelpers.h',
             'xml/parser/SharedBufferReaderTest.cpp',
         ],
     }

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/testing/UnitTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"

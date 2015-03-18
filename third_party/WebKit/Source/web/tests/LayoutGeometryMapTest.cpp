@@ -34,7 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/layout/Layer.h"
 #include "core/layout/LayoutBox.h"
-#include "core/testing/URLTestHelpers.h"
+#include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebUnitTestSupport.h"
 #include "public/web/WebFrameClient.h"

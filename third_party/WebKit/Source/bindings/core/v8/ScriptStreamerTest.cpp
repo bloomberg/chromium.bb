@@ -14,9 +14,9 @@
 #include "core/dom/Element.h"
 #include "core/dom/PendingScript.h"
 #include "core/frame/Settings.h"
-#include "core/testing/UnitTestHelpers.h"
 #include "platform/Task.h"
 #include "platform/heap/Handle.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 
 #include <gtest/gtest.h>

@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "core/testing/URLTestHelpers.h"
+#include "platform/testing/URLTestHelpers.h"
 #include "public/web/WebCache.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebElement.h"

@@ -997,5 +997,11 @@
       'image-decoders/jpeg/JPEGImageDecoderTest.cpp',
       'image-decoders/webp/WEBPImageDecoderTest.cpp',
     ],
+    'platform_unittest_support_files': [
+      'testing/URLTestHelpers.cpp',
+      'testing/URLTestHelpers.h',
+      'testing/UnitTestHelpers.cpp',
+      'testing/UnitTestHelpers.h',
+    ],
   },
 }

@@ -13,8 +13,8 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/page/Page.h"
-#include "core/testing/URLTestHelpers.h"
 #include "platform/graphics/Color.h"
+#include "platform/testing/URLTestHelpers.h"
 #include "web/tests/FrameTestHelpers.h"
 #include <gtest/gtest.h>
 

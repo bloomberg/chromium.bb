@@ -44,7 +44,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
-#include "core/testing/URLTestHelpers.h"
+#include "platform/testing/URLTestHelpers.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSettings.h"
 #include "web/WebViewImpl.h"

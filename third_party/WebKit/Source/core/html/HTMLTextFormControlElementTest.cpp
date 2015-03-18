@@ -20,7 +20,7 @@
 #include "core/loader/EmptyClients.h"
 #include "core/page/SpellCheckerClient.h"
 #include "core/testing/DummyPageHolder.h"
-#include "core/testing/UnitTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "wtf/OwnPtr.h"
 #include <gtest/gtest.h>
 

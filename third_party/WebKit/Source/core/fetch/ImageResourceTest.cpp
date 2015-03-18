@@ -37,12 +37,10 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/UniqueIdentifier.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/testing/DummyPageHolder.h"
-#include "core/testing/URLTestHelpers.h"
-#include "core/testing/UnitTestHelpers.h"
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/Image.h"
+#include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
@@ -133,15 +131,13 @@ TEST(ImageResourceTest, CancelOnDetach)
     KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
     URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
 
-    // Create enough of a mocked world to get a functioning ResourceLoader.
-    OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create();
-    RefPtr<DocumentLoader> documentLoader = DocumentLoader::create(&dummyPageHolder->frame(), ResourceRequest(testURL), SubstituteData());
+    RefPtrWillBeRawPtr<ResourceFetcher> fetcher = ResourceFetcher::create(FetchContext::create());
 
     // Emulate starting a real load.
     ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL));
     cachedImage->setIdentifier(createUniqueIdentifier());
 
-    cachedImage->load(documentLoader->fetcher(), ResourceLoaderOptions());
+    cachedImage->load(fetcher.get(), ResourceLoaderOptions());
     memoryCache()->add(cachedImage.get());
 
     MockImageResourceClient client;

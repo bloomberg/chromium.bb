@@ -31,8 +31,8 @@
 #include "config.h"
 #include "web/tests/FrameTestHelpers.h"
 
-#include "core/testing/URLTestHelpers.h"
-#include "core/testing/UnitTestHelpers.h"
+#include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebString.h"

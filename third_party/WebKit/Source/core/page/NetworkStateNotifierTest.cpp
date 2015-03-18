@@ -32,7 +32,7 @@
 #include "core/page/NetworkStateNotifier.h"
 
 #include "core/dom/Document.h"
-#include "core/testing/UnitTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebConnectionType.h"
 #include "public/platform/WebThread.h"

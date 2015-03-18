@@ -33,10 +33,10 @@
 
 #include "core/dom/Element.h"
 #include "core/events/KeyboardEvent.h"
-#include "core/testing/URLTestHelpers.h"
-#include "core/testing/UnitTestHelpers.h"
 #include "platform/PlatformEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
+#include "platform/testing/URLTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebThread.h"

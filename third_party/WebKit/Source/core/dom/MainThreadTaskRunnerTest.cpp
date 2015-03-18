@@ -30,8 +30,8 @@
 
 #include "core/dom/ExecutionContextTask.h"
 #include "core/testing/NullExecutionContext.h"
-#include "core/testing/UnitTestHelpers.h"
 #include "platform/heap/Handle.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

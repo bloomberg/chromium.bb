@@ -80,6 +80,7 @@
                     ],
                     'sources': [
                         '<@(bindings_unittest_files)',
+                        '<@(platform_unittest_support_files)',
                         '<@(core_unittest_files)',
                         '<@(modules_unittest_files)',
                         '<@(platform_web_unittest_files)',

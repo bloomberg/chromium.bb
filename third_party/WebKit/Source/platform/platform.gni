@@ -13,4 +13,5 @@ _gypi = exec_script(
 
 platform_files = _gypi.platform_files
 platform_test_files = get_path_info(_gypi.platform_test_files, "abspath")
+platform_unittest_support_files = get_path_info(_gypi.platform_unittest_support_files, "abspath")
 platform_web_unittest_files = get_path_info(_gypi.platform_web_unittest_files, "abspath")

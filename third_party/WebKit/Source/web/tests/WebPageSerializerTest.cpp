@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/web/WebPageSerializer.h"
 
-#include "core/testing/URLTestHelpers.h"
+#include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"

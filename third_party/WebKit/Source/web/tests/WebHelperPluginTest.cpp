@@ -5,7 +5,7 @@
 #include "config.h"
 #include "public/web/WebHelperPlugin.h"
 
-#include "core/testing/UnitTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebLocalFrame.h"
 #include "web/tests/FakeWebPlugin.h"

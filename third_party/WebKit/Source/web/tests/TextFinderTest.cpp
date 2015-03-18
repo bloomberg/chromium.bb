@@ -12,7 +12,7 @@
 #include "core/dom/Range.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLElement.h"
-#include "core/testing/UnitTestHelpers.h"
+#include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/web/WebDocument.h"
 #include "web/FindInPageCoordinates.h"
