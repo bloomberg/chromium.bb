@@ -114,11 +114,6 @@ drmDebugPrint(const char *format, va_list ap)
     return vfprintf(stderr, format, ap);
 }
 
-typedef int DRM_PRINTFLIKE(1, 0) (*debug_msg_func_t)(const char *format,
-						     va_list ap);
-
-static debug_msg_func_t drm_debug_print = drmDebugPrint;
-
 void
 drmMsg(const char *format, ...)
 {
@@ -130,16 +125,10 @@ drmMsg(const char *format, ...)
 	if (drm_server_info) {
 	  drm_server_info->debug_print(format,ap);
 	} else {
-	  drm_debug_print(format, ap);
+	  drmDebugPrint(format, ap);
 	}
 	va_end(ap);
     }
-}
-
-void
-drmSetDebugMsgFunction(debug_msg_func_t debug_msg_ptr)
-{
-    drm_debug_print = debug_msg_ptr;
 }
 
 static void *drmHashTable = NULL; /* Context switch callbacks */
