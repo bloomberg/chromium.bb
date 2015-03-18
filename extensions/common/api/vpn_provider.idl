@@ -45,8 +45,13 @@ namespace vpnProvider {
   // The enum is used by the platform to notify the client of the VPN session
   // status.
   enum PlatformMessage {
+    // VPN configuration connected.
     connected,
+    // VPN configuration disconnected.
     disconnected,
+    // An error occurred in VPN connection, for example a timeout. A description
+    // of the error is give as the <ahref="#property-onPlatformMessage-error">
+    // error argument to onPlatformMessage</a>.
     error
   };
 
@@ -54,14 +59,18 @@ namespace vpnProvider {
   // of its current state. This helps provide meaningful messages
   // to the user.
   enum VpnConnectionState {
+    // VPN connection was successful.
     connected,
+    // VPN connection failed.
     failure
   };
 
   // The enum is used by the platform to indicate the event that triggered
   // <code>onUIEvent</code>.
   enum UIEvent {
+    // Request the VPN client to show add configuration dialog to the user.
     showAddDialog,
+    // Request the VPN client to show configuration settings dialog to the user.
     showConfigureDialog
   };
 
