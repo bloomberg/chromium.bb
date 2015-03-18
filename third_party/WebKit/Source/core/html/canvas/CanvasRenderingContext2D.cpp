@@ -388,7 +388,7 @@ void CanvasRenderingContext2D::setStrokeStyle(const StringOrCanvasGradientOrCanv
     ASSERT(!style.isNull());
 
     String colorString;
-    RefPtrWillBeRawPtr<CanvasStyle> canvasStyle;
+    RefPtrWillBeRawPtr<CanvasStyle> canvasStyle = nullptr;
     if (style.isString()) {
         colorString = style.getAsString();
         if (colorString == state().unparsedStrokeColor())
@@ -434,7 +434,7 @@ void CanvasRenderingContext2D::setFillStyle(const StringOrCanvasGradientOrCanvas
     ASSERT(!style.isNull());
     validateStateStack();
     String colorString;
-    RefPtrWillBeRawPtr<CanvasStyle> canvasStyle;
+    RefPtrWillBeRawPtr<CanvasStyle> canvasStyle = nullptr;
     if (style.isString()) {
         colorString = style.getAsString();
         if (colorString == state().unparsedFillColor())
