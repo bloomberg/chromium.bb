@@ -161,6 +161,7 @@ void ContentSecurityPolicy::bindToExecutionContext(ExecutionContext* executionCo
 void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
 {
     ASSERT(m_executionContext);
+    ASSERT(securityOrigin());
     // Ensure that 'self' processes correctly.
     m_selfProtocol = securityOrigin()->protocol();
     m_selfSource = adoptPtr(new CSPSource(this, m_selfProtocol, securityOrigin()->host(), securityOrigin()->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
@@ -176,8 +177,11 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
             document->enforceStrictMixedContentChecking();
         if (didSetReferrerPolicy())
             document->setReferrerPolicy(m_referrerPolicy);
-        if (m_insecureRequestsPolicy > document->insecureRequestsPolicy())
+        if (m_insecureRequestsPolicy > document->insecureRequestsPolicy()) {
             document->setInsecureRequestsPolicy(m_insecureRequestsPolicy);
+            if (!securityOrigin()->host().isNull())
+                document->addInsecureNavigationUpgrade(securityOrigin()->host().impl()->hash());
+        }
 
         for (const auto& consoleMessage : m_consoleMessages)
             m_executionContext->addConsoleMessage(consoleMessage);

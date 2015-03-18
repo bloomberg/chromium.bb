@@ -29,9 +29,11 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/SandboxFlags.h"
+#include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -43,6 +45,8 @@ class KURL;
 class CORE_EXPORT SecurityContext {
     WTF_MAKE_NONCOPYABLE(SecurityContext);
 public:
+    using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
+
     // The ordering here is important: 'Upgrade' overrides 'DoNotUpgrade'.
     enum InsecureRequestsPolicy {
         InsecureRequestsDoNotUpgrade = 0,
@@ -70,6 +74,9 @@ public:
     void setInsecureRequestsPolicy(InsecureRequestsPolicy policy) { m_insecureRequestsPolicy = policy; }
     InsecureRequestsPolicy insecureRequestsPolicy() const { return m_insecureRequestsPolicy; }
 
+    void addInsecureNavigationUpgrade(unsigned hashedHost) { m_insecureNavigationsToUpgrade.add(hashedHost); }
+    InsecureNavigationsSet* insecureNavigationsToUpgrade() { return &m_insecureNavigationsToUpgrade; }
+
 protected:
     SecurityContext();
     virtual ~SecurityContext();
@@ -88,6 +95,7 @@ private:
 
     bool m_hostedInReservedIPRange;
     InsecureRequestsPolicy m_insecureRequestsPolicy;
+    InsecureNavigationsSet m_insecureNavigationsToUpgrade;
 };
 
 } // namespace blink

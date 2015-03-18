@@ -64,6 +64,7 @@ public:
     bool shouldEnforceStrictMixedContentChecking() const;
     bool isHostedInReservedIPRange() const;
     SecurityContext::InsecureRequestsPolicy insecureRequestsPolicy() const;
+    SecurityContext::InsecureNavigationsSet* insecureNavigationsToUpgrade() const;
 
     Document* parent() const { return m_parent.get(); }
     Document* owner() const { return m_owner.get(); }
