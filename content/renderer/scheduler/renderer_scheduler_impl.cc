@@ -38,7 +38,6 @@ RendererSchedulerImpl::RendererSchedulerImpl(
           control_task_runner_),
       current_policy_(Policy::NORMAL),
       idle_period_state_(IdlePeriodState::NOT_IN_IDLE_PERIOD),
-      long_idle_periods_enabled_(false),
       last_input_type_(blink::WebInputEvent::Undefined),
       input_stream_state_(InputStreamState::INACTIVE),
       policy_may_need_update_(&incoming_signals_lock_),
@@ -468,7 +467,7 @@ void RendererSchedulerImpl::InitiateLongIdlePeriod() {
   base::TimeDelta next_long_idle_period_delay;
   IdlePeriodState new_idle_period_state =
       ComputeNewLongIdlePeriodState(now, &next_long_idle_period_delay);
-  if (long_idle_periods_enabled_ && IsInIdlePeriod(new_idle_period_state)) {
+  if (IsInIdlePeriod(new_idle_period_state)) {
     estimated_next_frame_begin_ = now + next_long_idle_period_delay;
     StartIdlePeriod(new_idle_period_state);
   }
@@ -581,12 +580,6 @@ void RendererSchedulerImpl::SetTimeSourceForTesting(
 void RendererSchedulerImpl::SetWorkBatchSizeForTesting(size_t work_batch_size) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   task_queue_manager_->SetWorkBatchSize(work_batch_size);
-}
-
-void RendererSchedulerImpl::SetLongIdlePeriodsEnabledForTesting(
-    bool long_idle_periods_enabled) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  long_idle_periods_enabled_ = long_idle_periods_enabled;
 }
 
 base::TimeTicks RendererSchedulerImpl::Now() const {

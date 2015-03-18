@@ -53,8 +53,6 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
 
   void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
-  // TODO(rmcilroy): Remove this when http://crbug.com/467655 is fixed.
-  void SetLongIdlePeriodsEnabledForTesting(bool long_idle_periods_enabled);
 
  private:
   friend class RendererSchedulerImplTest;
@@ -215,9 +213,6 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   // Don't access current_policy_ directly, instead use SchedulerPolicy().
   Policy current_policy_;
   IdlePeriodState idle_period_state_;
-
-    // TODO(rmcilroy): Remove this when http://crbug.com/467655 is fixed.
-  bool long_idle_periods_enabled_;
 
   base::TimeTicks estimated_next_frame_begin_;
   base::TimeTicks current_policy_expiration_time_;

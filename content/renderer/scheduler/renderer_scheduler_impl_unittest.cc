@@ -57,7 +57,6 @@ class RendererSchedulerImplTest : public testing::Test {
         loading_task_runner_(scheduler_->LoadingTaskRunner()),
         idle_task_runner_(scheduler_->IdleTaskRunner()) {
     scheduler_->SetTimeSourceForTesting(clock_);
-    scheduler_->SetLongIdlePeriodsEnabledForTesting(true);
   }
 
   RendererSchedulerImplTest(base::MessageLoop* message_loop)
@@ -71,7 +70,6 @@ class RendererSchedulerImplTest : public testing::Test {
         loading_task_runner_(scheduler_->LoadingTaskRunner()),
         idle_task_runner_(scheduler_->IdleTaskRunner()) {
     scheduler_->SetTimeSourceForTesting(clock_);
-    scheduler_->SetLongIdlePeriodsEnabledForTesting(true);
   }
   ~RendererSchedulerImplTest() override {}
 
