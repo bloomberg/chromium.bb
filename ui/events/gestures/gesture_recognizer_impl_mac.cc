@@ -45,6 +45,7 @@ class GestureRecognizerImplMac : public GestureRecognizer {
                                         int source_device_id) override {
     return NULL;
   }
+  void CancelActiveTouchesExcept(GestureConsumer* not_cancelled) override {}
   void TransferEventsTo(GestureConsumer* current_consumer,
                         GestureConsumer* new_consumer) override {}
   bool GetLastTouchPointForTarget(GestureConsumer* consumer,

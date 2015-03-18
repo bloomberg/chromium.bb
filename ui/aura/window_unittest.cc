@@ -986,31 +986,26 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   CaptureWindowDelegateImpl d3;
   scoped_ptr<Window> w3(CreateTestWindowWithDelegate(
       &d3, 0, gfx::Rect(0, 0, 100, 101), root_window()));
-  // Set capture on w3. No new events should be received.
-  // Note this difference in behavior between the first and second capture
-  // is confusing and error prone.  http://crbug.com/236930
+  // Set capture on |w3|. All touches have already been cancelled.
   w3->SetCapture();
   EXPECT_EQ(0, d1.touch_event_count());
   EXPECT_EQ(0, d1.gesture_event_count());
-  EXPECT_EQ(0, d2.touch_event_count());
-  EXPECT_EQ(0, d2.gesture_event_count());
+  EXPECT_EQ(1, d2.touch_event_count());
+  EXPECT_EQ(2, d2.gesture_event_count());
   EXPECT_EQ(0, d3.touch_event_count());
   EXPECT_EQ(0, d3.gesture_event_count());
+  d2.ResetCounts();
 
-  // Move touch id originally associated with |w2|. Since capture was transfered
-  // from 2 to 3 only |w3| should get the event.
+  // Move touch id originally associated with |w2|. The touch has been
+  // cancelled, so no events should be dispatched.
   ui::TouchEvent m3(ui::ET_TOUCH_MOVED, gfx::Point(110, 105), 1, getTime());
   DispatchEventUsingWindowDispatcher(&m3);
   EXPECT_EQ(0, d1.touch_event_count());
   EXPECT_EQ(0, d1.gesture_event_count());
   EXPECT_EQ(0, d2.touch_event_count());
   EXPECT_EQ(0, d2.gesture_event_count());
-  // |w3| gets a TOUCH_MOVE, TAP_CANCEL and two scroll related events.
-  EXPECT_EQ(1, d3.touch_event_count());
-  EXPECT_EQ(3, d3.gesture_event_count());
-  d1.ResetCounts();
-  d2.ResetCounts();
-  d3.ResetCounts();
+  EXPECT_EQ(0, d3.touch_event_count());
+  EXPECT_EQ(0, d3.gesture_event_count());
 
   // When we release capture, no touches are canceled.
   w3->ReleaseCapture();
@@ -1021,18 +1016,15 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   EXPECT_EQ(0, d3.touch_event_count());
   EXPECT_EQ(0, d3.gesture_event_count());
 
-  // And when we move the touch again, |w3| still gets the events.
+  // The touch has been cancelled, so no events are dispatched.
   ui::TouchEvent m4(ui::ET_TOUCH_MOVED, gfx::Point(120, 105), 1, getTime());
   DispatchEventUsingWindowDispatcher(&m4);
   EXPECT_EQ(0, d1.touch_event_count());
   EXPECT_EQ(0, d1.gesture_event_count());
   EXPECT_EQ(0, d2.touch_event_count());
   EXPECT_EQ(0, d2.gesture_event_count());
-  EXPECT_EQ(1, d3.touch_event_count());
-  EXPECT_EQ(1, d3.gesture_event_count());
-  d1.ResetCounts();
-  d2.ResetCounts();
-  d3.ResetCounts();
+  EXPECT_EQ(0, d3.touch_event_count());
+  EXPECT_EQ(0, d3.gesture_event_count());
 }
 
 // Changes capture while capture is already ongoing.

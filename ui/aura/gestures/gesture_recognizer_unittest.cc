@@ -3580,8 +3580,7 @@ TEST_F(GestureRecognizerTest, GestureEventConsumedTouchMoveCanFireTapCancel) {
   EXPECT_FALSE(delegate->scroll_end());
 }
 
-TEST_F(GestureRecognizerTest,
-       TransferEventDispatchesTouchCancel) {
+TEST_F(GestureRecognizerTest, CancelAllActiveTouches) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -3595,7 +3594,7 @@ TEST_F(GestureRecognizerTest,
   scoped_ptr<TestEventHandler> handler(new TestEventHandler());
   window->AddPreTargetHandler(handler.get());
 
-  // Start a gesture sequence on |window|. Then transfer the events to NULL.
+  // Start a gesture sequence on |window|. Then cancel all touches.
   // Make sure |window| receives a touch-cancel event.
   delegate->Reset();
   ui::TouchEvent press(
@@ -3624,9 +3623,10 @@ TEST_F(GestureRecognizerTest,
   ui::GestureRecognizer* gesture_recognizer = ui::GestureRecognizer::Get();
   EXPECT_EQ(window.get(),
             gesture_recognizer->GetTouchLockedTarget(press));
-  gesture_recognizer->TransferEventsTo(window.get(), NULL);
-  EXPECT_EQ(NULL,
-            gesture_recognizer->GetTouchLockedTarget(press));
+
+  ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
+
+  EXPECT_EQ(NULL, gesture_recognizer->GetTouchLockedTarget(press));
   EXPECT_4_EVENTS(delegate->events(),
                   ui::ET_GESTURE_PINCH_END,
                   ui::ET_GESTURE_SCROLL_END,

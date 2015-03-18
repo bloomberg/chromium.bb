@@ -40,6 +40,7 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   GestureConsumer* GetTargetForGestureEvent(const GestureEvent& event) override;
   GestureConsumer* GetTargetForLocation(const gfx::PointF& location,
                                         int source_device_id) override;
+  void CancelActiveTouchesExcept(GestureConsumer* not_cancelled) override;
   void TransferEventsTo(GestureConsumer* current_consumer,
                         GestureConsumer* new_consumer) override;
   bool GetLastTouchPointForTarget(GestureConsumer* consumer,

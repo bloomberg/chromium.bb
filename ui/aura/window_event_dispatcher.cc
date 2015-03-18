@@ -338,18 +338,8 @@ void WindowEventDispatcher::OnWindowHidden(Window* invisible,
 }
 
 Window* WindowEventDispatcher::GetGestureTarget(ui::GestureEvent* event) {
-  Window* target = NULL;
-  if (!event->IsEndingEvent()) {
-    // The window that received the start event (e.g. scroll begin) needs to
-    // receive the end event (e.g. scroll end).
-    target = client::GetCaptureWindow(window());
-  }
-  if (!target) {
-    target = ConsumerToWindow(
-        ui::GestureRecognizer::Get()->GetTargetForGestureEvent(*event));
-  }
-
-  return target;
+  return ConsumerToWindow(
+      ui::GestureRecognizer::Get()->GetTargetForGestureEvent(*event));
 }
 
 bool WindowEventDispatcher::is_dispatched_held_event(

@@ -15,8 +15,7 @@ namespace chromeos {
 LockWindow* LockWindow::Create() {
   LockWindowAura* lock_window = new LockWindowAura();
   // Cancel existing touch events when screen is locked.
-  ui::GestureRecognizer::Get()->TransferEventsTo(
-      lock_window->GetNativeWindow(), NULL);
+  ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
   return lock_window;
 }
 

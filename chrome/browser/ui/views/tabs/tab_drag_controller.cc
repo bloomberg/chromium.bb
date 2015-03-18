@@ -586,6 +586,11 @@ TabDragController::DragBrowserToNewTabStrip(
     DetachIntoNewBrowserAndRunMoveLoop(point_in_screen);
     return DRAG_BROWSER_RESULT_STOP;
   }
+
+  ui::GestureRecognizer::Get()->TransferEventsTo(
+      GetAttachedBrowserWidget()->GetNativeView(),
+      target_tabstrip->GetWidget()->GetNativeView());
+
   if (is_dragging_window_) {
     // ReleaseCapture() is going to result in calling back to us (because it
     // results in a move). That'll cause all sorts of problems.  Reset the
@@ -605,17 +610,6 @@ TabDragController::DragBrowserToNewTabStrip(
       browser_widget->ReleaseCapture();
     else
       target_tabstrip->GetWidget()->SetCapture(attached_tabstrip_);
-#if defined(OS_WIN)
-    // The Gesture recognizer does not work well currently when capture changes
-    // while a touch gesture is in progress. So we need to manually transfer
-    // gesture sequence and the GR's touch events queue to the new window. This
-    // should really be done somewhere in capture change code and or inside the
-    // GR. But we currently do not have a consistent way for doing it that would
-    // work in all cases. Hence this hack.
-    ui::GestureRecognizer::Get()->TransferEventsTo(
-        browser_widget->GetNativeView(),
-        target_tabstrip->GetWidget()->GetNativeView());
-#endif
 
     // The window is going away. Since the drag is still on going we don't want
     // that to effect the position of any windows.
@@ -1028,25 +1022,18 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   gfx::Vector2d drag_offset;
   Browser* browser = CreateBrowserForDrag(
       attached_tabstrip_, point_in_screen, &drag_offset, &drag_bounds);
-#if defined(OS_WIN)
-  gfx::NativeView attached_native_view =
-    attached_tabstrip_->GetWidget()->GetNativeView();
-#endif
-  Detach(can_release_capture_ ? RELEASE_CAPTURE : DONT_RELEASE_CAPTURE);
+
   BrowserView* dragged_browser_view =
       BrowserView::GetBrowserViewForBrowser(browser);
   views::Widget* dragged_widget = dragged_browser_view->GetWidget();
-#if defined(OS_WIN)
-    // The Gesture recognizer does not work well currently when capture changes
-    // while a touch gesture is in progress. So we need to manually transfer
-    // gesture sequence and the GR's touch events queue to the new window. This
-    // should really be done somewhere in capture change code and or inside the
-    // GR. But we currently do not have a consistent way for doing it that would
-    // work in all cases. Hence this hack.
-    ui::GestureRecognizer::Get()->TransferEventsTo(
-        attached_native_view,
-        dragged_widget->GetNativeView());
-#endif
+  gfx::NativeView attached_native_view =
+      attached_tabstrip_->GetWidget()->GetNativeView();
+
+  ui::GestureRecognizer::Get()->TransferEventsTo(
+      attached_native_view, dragged_widget->GetNativeView());
+
+  Detach(can_release_capture_ ? RELEASE_CAPTURE : DONT_RELEASE_CAPTURE);
+
   dragged_widget->SetVisibilityChangedAnimationsEnabled(false);
   Attach(dragged_browser_view->tabstrip(), gfx::Point());
   AdjustBrowserAndTabBoundsForDrag(last_tabstrip_width,

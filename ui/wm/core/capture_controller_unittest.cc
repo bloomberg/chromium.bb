@@ -160,11 +160,6 @@ TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
   w2->ReleaseCapture();
   EXPECT_EQ(static_cast<aura::Window*>(NULL), GetCaptureWindow());
   EXPECT_EQ(static_cast<aura::Window*>(NULL), GetSecondCaptureWindow());
-  ui::TouchEvent touch_event(
-      ui::ET_TOUCH_PRESSED, gfx::Point(), 0, 0, ui::EventTimeForNow(), 1.0f,
-      1.0f, 1.0f, 1.0f);
-  EXPECT_EQ(static_cast<ui::GestureConsumer*>(w2.get()),
-            ui::GestureRecognizer::Get()->GetTouchLockedTarget(touch_event));
 }
 
 // Test that native capture is released properly when the window with capture

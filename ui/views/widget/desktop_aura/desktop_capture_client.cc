@@ -40,16 +40,10 @@ void DesktopCaptureClient::SetCapture(aura::Window* new_capture_window) {
 
   aura::Window* old_capture_window = capture_window_;
 
-  // If we're actually starting capture, then cancel any touches/gestures
-  // that aren't already locked to the new window, and transfer any on the
-  // old capture window to the new one.  When capture is released we have no
-  // distinction between the touches/gestures that were in the window all
-  // along (and so shouldn't be canceled) and those that got moved, so
-  // just leave them all where they are.
-  if (new_capture_window) {
-    ui::GestureRecognizer::Get()->TransferEventsTo(old_capture_window,
-        new_capture_window);
-  }
+  // If we're starting a new capture, cancel all touches that aren't
+  // targeted to the capturing window.
+  if (new_capture_window)
+    ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(new_capture_window);
 
   capture_window_ = new_capture_window;
 

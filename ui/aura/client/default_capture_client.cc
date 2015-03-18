@@ -24,10 +24,8 @@ DefaultCaptureClient::~DefaultCaptureClient() {
 void DefaultCaptureClient::SetCapture(Window* window) {
   if (capture_window_ == window)
     return;
-  if (window) {
-    ui::GestureRecognizer::Get()->TransferEventsTo(
-        capture_window_, window);
-  }
+  if (window)
+    ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(window);
 
   Window* old_capture_window = capture_window_;
   capture_window_ = window;
