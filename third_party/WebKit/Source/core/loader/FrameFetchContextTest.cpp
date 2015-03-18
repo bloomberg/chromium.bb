@@ -85,6 +85,11 @@ protected:
         EXPECT_EQ(expectedURL.port(), fetchRequest.resourceRequest().url().port());
         EXPECT_EQ(expectedURL.hasPort(), fetchRequest.resourceRequest().url().hasPort());
         EXPECT_EQ(expectedURL.path(), fetchRequest.resourceRequest().url().path());
+
+        bool expectUpgrade = inputURL != expectedURL;
+
+        EXPECT_STREQ(expectUpgrade ? "1" : "",
+            fetchRequest.resourceRequest().httpHeaderField("Upgraded").utf8().data());
     }
 
     void expectPreferHeader(const char* input, WebURLRequest::FrameType frameType, bool shouldPrefer)
@@ -97,7 +102,7 @@ protected:
 
         fetchContext->upgradeInsecureRequest(fetchRequest);
 
-        EXPECT_STREQ(shouldPrefer ? "return=secure-representation" : "",
+        EXPECT_STREQ(shouldPrefer ? "tls" : "",
             fetchRequest.resourceRequest().httpHeaderField("Prefer").utf8().data());
     }
 

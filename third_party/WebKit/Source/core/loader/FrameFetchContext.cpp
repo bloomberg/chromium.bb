@@ -630,7 +630,7 @@ void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
     // Tack a 'Prefer' header to outgoing navigational requests, as described in
     // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
     if (fetchRequest.resourceRequest().frameType() != WebURLRequest::FrameTypeNone && !SecurityOrigin::isSecure(url))
-        fetchRequest.mutableResourceRequest().addHTTPHeaderField("Prefer", "return=secure-representation");
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("Prefer", "tls");
 
     if (m_document->insecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && url.protocolIs("http")) {
         // We always upgrade subresource requests and nested frames, we always upgrade form
@@ -648,6 +648,7 @@ void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
             if (url.port() == 80)
                 url.setPort(443);
             fetchRequest.mutableResourceRequest().setURL(url);
+            fetchRequest.mutableResourceRequest().addHTTPHeaderField("Upgraded", "1");
         }
     }
 }
