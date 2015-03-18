@@ -47,7 +47,7 @@ class ThreadTimesFastPathMobileSites(_ThreadTimes):
   key mobile sites labeled with fast-path tag.
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   page_set = page_sets.KeyMobileSitesSmoothPageSet
-  options = {'page_label_filter' : 'fastpath'}
+  options = {'story_label_filter' : 'fastpath'}
 
   @classmethod
   def Name(cls):

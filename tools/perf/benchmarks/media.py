@@ -62,7 +62,7 @@ class MediaAndroid(benchmark.Benchmark):
   tag = 'android'
   page_set = page_sets.ToughVideoCasesPageSet
   # Exclude is_4k and 50 fps media files (garden* & crowd*).
-  options = {'page_label_filter_exclude': 'is_4k,is_50fps'}
+  options = {'story_label_filter_exclude': 'is_4k,is_50fps'}
 
   @classmethod
   def Name(cls):
@@ -77,9 +77,9 @@ class MediaChromeOS4kOnly(benchmark.Benchmark):
   tag = 'chromeOS4kOnly'
   page_set = page_sets.ToughVideoCasesPageSet
   options = {
-      'page_label_filter': 'is_4k',
+      'story_label_filter': 'is_4k',
       # Exclude is_50fps test files: crbug/331816
-      'page_label_filter_exclude': 'is_50fps'
+      'story_label_filter_exclude': 'is_50fps'
   }
 
   @classmethod
@@ -98,7 +98,7 @@ class MediaChromeOS(benchmark.Benchmark):
   tag = 'chromeOS'
   page_set = page_sets.ToughVideoCasesPageSet
   # Exclude is_50fps test files: crbug/331816
-  options = {'page_label_filter_exclude': 'is_4k,is_50fps'}
+  options = {'story_label_filter_exclude': 'is_4k,is_50fps'}
 
   @classmethod
   def Name(cls):
