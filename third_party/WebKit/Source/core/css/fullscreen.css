@@ -21,6 +21,7 @@
     width: 100% !important;
     height: 100% !important;
     object-fit: contain !important;
+    transform: none !important;
 }
 
 iframe:-webkit-full-screen {
@@ -28,13 +29,6 @@ iframe:-webkit-full-screen {
 }
 
 /* Anything below are extensions over what the Fullscreen API mandates. */
-
-/* The transform rule is needed to prevent transforms that make sense in the
-   context of the page from messing up the fullscreen rendering. It will likely
-   be added to the spec: https://www.w3.org/Bugs/Public/show_bug.cgi?id=27931 */
-:not(:root):-webkit-full-screen {
-    transform: none !important;
-}
 
 /* FIXME: Remove these rules when moving Fullscreen to top layer.
    (see crbug.com/240576) */
