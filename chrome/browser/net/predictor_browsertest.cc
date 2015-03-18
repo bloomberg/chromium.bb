@@ -30,6 +30,11 @@ namespace {
 
 const char kBlinkPreconnectFeature[] = "LinkPreconnect";
 const char kChromiumHostname[] = "chromium.org";
+const char kInvalidLongHostname[] = "illegally-long-hostname-over-255-"
+    "characters-should-not-send-an-ipc-message-to-the-browser-"
+    "0000000000000000000000000000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000000000000"
+    "000000000000000000000000000000000000000000000000000000.org";
 
 // Records a history of all hostnames for which resolving has been requested,
 // and immediately fails the resolution requests themselves.
@@ -54,7 +59,11 @@ class HostResolutionRequestRecorder : public net::HostResolverProc {
     return net::ERR_NAME_NOT_RESOLVED;
   }
 
-  bool HasHostBeenRequested(const std::string& hostname) {
+  int RequestedHostnameCount() const {
+    return requested_hostnames_.size();
+  }
+
+  bool HasHostBeenRequested(const std::string& hostname) const {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return std::find(requested_hostnames_.begin(),
                      requested_hostnames_.end(),
@@ -210,8 +219,16 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     serializer.Serialize(*list_value);
   }
 
+  bool HasHostBeenRequested(const std::string& hostname) const {
+    return host_resolution_request_recorder_->HasHostBeenRequested(hostname);
+  }
+
   void WaitUntilHostHasBeenRequested(const std::string& hostname) {
     host_resolution_request_recorder_->WaitUntilHostHasBeenRequested(hostname);
+  }
+
+  int RequestedHostnameCount() const {
+    return host_resolution_request_recorder_->RequestedHostnameCount();
   }
 
   const GURL startup_url_;
@@ -254,10 +271,13 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ShutdownStartupCycle) {
 
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, DnsPrefetch) {
   ASSERT_TRUE(test_server()->Start());
+  int hostnames_requested_before_load = RequestedHostnameCount();
   ui_test_utils::NavigateToURL(
       browser(),
       GURL(test_server()->GetURL("files/predictor/dns_prefetch.html")));
   WaitUntilHostHasBeenRequested(kChromiumHostname);
+  ASSERT_FALSE(HasHostBeenRequested(kInvalidLongHostname));
+  ASSERT_EQ(hostnames_requested_before_load + 1, RequestedHostnameCount());
 }
 
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, Preconnect) {

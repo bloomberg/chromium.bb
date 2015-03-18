@@ -130,20 +130,23 @@ void RendererDnsPrefetch::ExtractBufferedNames(size_t size_goal) {
 void RendererDnsPrefetch::DnsPrefetchNames(size_t max_count) {
   // We are on the renderer thread, and just need to send things to the browser.
   NameList names;
+  size_t domains_handled = 0;
   for (DomainUseMap::iterator it = domain_map_.begin();
     it != domain_map_.end();
     ++it) {
     if (0 == (it->second & kLookupRequested)) {
       it->second |= kLookupRequested;
-      names.push_back(it->first);
+      domains_handled++;
+      if (it->first.length() <= network_hints::kMaxDnsHostnameLength)
+        names.push_back(it->first);
       if (0 == max_count) continue;  // Get all, independent of count.
       if (1 == max_count) break;
       --max_count;
       DCHECK_GE(max_count, 1u);
     }
   }
-  DCHECK_GE(new_name_count_, names.size());
-  new_name_count_ -= names.size();
+  DCHECK_GE(new_name_count_, domains_handled);
+  new_name_count_ -= domains_handled;
 
   network_hints::LookupRequest request;
   request.hostname_list = names;
