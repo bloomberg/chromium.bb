@@ -178,7 +178,6 @@ if (!is_component_build) {
   #
   #   out/Debug/mojo_shell mojo:media_test
   #
-  # To get "mojo_shell" you must specify "use_prebuilt_mojo_shell=true" in GN.
   mojo_native_application("media_test") {
     testonly = true
 
