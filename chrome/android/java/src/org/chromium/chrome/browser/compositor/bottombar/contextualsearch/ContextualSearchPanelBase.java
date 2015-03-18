@@ -978,8 +978,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         offset = Math.min(offset, 0.f);
         // If visible, the Toolbar will be hidden. Therefore, we need to adjust
         // the offset to account for this difference.
-        if (mIsToolbarShowing)
-            offset -= TOOLBAR_HEIGHT_DP;
+        if (mIsToolbarShowing) offset -= TOOLBAR_HEIGHT_DP;
         // Make sure the offset is not greater than the expanded height, because
         // there's nothing to render below the Page.
         offset = Math.max(offset, -expandedHeight);

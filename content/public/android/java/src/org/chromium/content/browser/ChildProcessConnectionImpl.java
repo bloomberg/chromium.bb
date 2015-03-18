@@ -121,8 +121,9 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
                     if (commandLine != null) {
                         intent.putExtra(EXTRA_COMMAND_LINE, commandLine);
                     }
-                    if (mLinkerParams != null)
+                    if (mLinkerParams != null) {
                         mLinkerParams.addIntentExtras(intent);
+                    }
                     mBound = mContext.bindService(intent, this, mBindFlags);
                 } finally {
                     TraceEvent.end("ChildProcessConnectionImpl.ChildServiceConnection.bind");

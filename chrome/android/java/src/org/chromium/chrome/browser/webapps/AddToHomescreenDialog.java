@@ -138,8 +138,9 @@ public class AddToHomescreenDialog {
         dialog.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
             public void onShow(DialogInterface d) {
-                if (!shortcutHelper.isInitialized())
+                if (!shortcutHelper.isInitialized()) {
                     dialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
+                }
             }
         });
 

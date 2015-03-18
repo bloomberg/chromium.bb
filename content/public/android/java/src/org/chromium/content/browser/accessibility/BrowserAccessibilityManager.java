@@ -408,10 +408,11 @@ public class BrowserAccessibilityManager {
 
         // Update the cursor or selection based on the traversal. If it's an editable
         // text node, set the real editing cursor too.
-        if (forwards)
+        if (forwards) {
             mSelectionEndIndex = itemEndIndex;
-        else
+        } else {
             mSelectionEndIndex = itemStartIndex;
+        }
         if (!extendSelection) {
             mSelectionStartIndex = mSelectionEndIndex;
         }

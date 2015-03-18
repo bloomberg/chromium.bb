@@ -46,8 +46,7 @@ public class SQLiteCursor extends AbstractCursor {
     @Override
     public int getCount() {
         synchronized (mMoveLock) {
-            if (mCount == -1)
-                mCount = nativeGetCount(mNativeSQLiteCursor);
+            if (mCount == -1) mCount = nativeGetCount(mNativeSQLiteCursor);
         }
         return mCount;
     }

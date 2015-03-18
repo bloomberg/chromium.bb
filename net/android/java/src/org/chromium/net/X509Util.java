@@ -203,8 +203,9 @@ public class X509Util {
                     // Could not load AndroidCAStore. Continue anyway; isKnownRoot will always
                     // return false.
                 }
-                if (!sDisableNativeCodeForTest)
+                if (!sDisableNativeCodeForTest) {
                     nativeRecordCertVerifyCapabilitiesHistogram(sSystemKeyStore != null);
+                }
                 sLoadedSystemKeyStore = true;
             }
             if (sSystemTrustAnchorCache == null) {
@@ -461,8 +462,9 @@ public class X509Util {
 
         synchronized (sLock) {
             // If no trust manager was found, fail without crashing on the null pointer.
-            if (sDefaultTrustManager == null)
+            if (sDefaultTrustManager == null) {
                 return new AndroidCertVerifyResult(CertVerifyStatusAndroid.FAILED);
+            }
 
             List<X509Certificate> verifiedChain;
             try {

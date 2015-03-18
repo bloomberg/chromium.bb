@@ -107,8 +107,9 @@ class SelectFileDialog implements WindowAndroid.IntentCallback {
         Intent getContentIntent = new Intent(Intent.ACTION_GET_CONTENT);
         getContentIntent.addCategory(Intent.CATEGORY_OPENABLE);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && multiple)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && multiple) {
             getContentIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        }
 
         ArrayList<Intent> extraIntents = new ArrayList<Intent>();
         if (!noSpecificType()) {

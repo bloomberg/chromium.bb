@@ -132,14 +132,13 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
     @Override
     public int getPrivateKeyType(AndroidPrivateKey key) {
         PrivateKey javaKey = ((DefaultAndroidPrivateKey) key).getJavaKey();
-        if (javaKey instanceof RSAPrivateKey)
-            return PrivateKeyType.RSA;
-        if (javaKey instanceof DSAPrivateKey)
-            return PrivateKeyType.DSA;
-        if (javaKey instanceof ECPrivateKey)
+        if (javaKey instanceof RSAPrivateKey) return PrivateKeyType.RSA;
+        if (javaKey instanceof DSAPrivateKey) return PrivateKeyType.DSA;
+        if (javaKey instanceof ECPrivateKey) {
             return PrivateKeyType.ECDSA;
-        else
+        } else {
             return PrivateKeyType.INVALID;
+        }
     }
 
     private Object getOpenSSLKeyForPrivateKey(AndroidPrivateKey key) {
@@ -203,8 +202,7 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
     @Override
     public long getOpenSSLHandleForPrivateKey(AndroidPrivateKey key) {
         Object opensslKey = getOpenSSLKeyForPrivateKey(key);
-        if (opensslKey == null)
-            return 0;
+        if (opensslKey == null) return 0;
 
         try {
             // Use reflection to invoke the 'getPkeyContext' method on the
@@ -257,8 +255,7 @@ public class DefaultAndroidKeyStore implements AndroidKeyStore {
         }
 
         Object opensslKey = getOpenSSLKeyForPrivateKey(key);
-        if (opensslKey == null)
-            return null;
+        if (opensslKey == null) return null;
 
         try {
             // Use reflection to invoke the 'getEngine' method on the

@@ -306,8 +306,9 @@ public abstract class CommandLine {
 
             // Append the switch and update the switches/arguments divider mArgsBegin.
             String combinedSwitchString = SWITCH_PREFIX + switchString;
-            if (value != null && !value.isEmpty())
+            if (value != null && !value.isEmpty()) {
                 combinedSwitchString += SWITCH_VALUE_SEPARATOR + value;
+            }
 
             mArgs.add(mArgsBegin++, combinedSwitchString);
         }

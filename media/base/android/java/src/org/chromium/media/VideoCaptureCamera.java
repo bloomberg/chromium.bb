@@ -268,8 +268,7 @@ public abstract class VideoCaptureCamera extends VideoCapture
         stopCapture();
         try {
             mCamera.setPreviewTexture(null);
-            if (mGlTextures != null)
-                GLES20.glDeleteTextures(1, mGlTextures, 0);
+            if (mGlTextures != null) GLES20.glDeleteTextures(1, mGlTextures, 0);
             mCaptureFormat = null;
             mCamera.release();
             mCamera = null;

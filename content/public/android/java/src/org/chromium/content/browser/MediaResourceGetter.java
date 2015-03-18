@@ -98,38 +98,31 @@ class MediaResourceGetter {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
             MediaMetadata other = (MediaMetadata) obj;
-            if (mDurationInMilliseconds != other.mDurationInMilliseconds)
-                return false;
-            if (mHeight != other.mHeight)
-                return false;
-            if (mSuccess != other.mSuccess)
-                return false;
-            if (mWidth != other.mWidth)
-                return false;
+            if (mDurationInMilliseconds != other.mDurationInMilliseconds) return false;
+            if (mHeight != other.mHeight) return false;
+            if (mSuccess != other.mSuccess) return false;
+            if (mWidth != other.mWidth) return false;
             return true;
         }
     }
 
     @CalledByNative
     private static MediaMetadata extractMediaMetadata(final Context context,
-                                                      final String url,
-                                                      final String cookies,
-                                                      final String userAgent) {
+            final String url,
+            final String cookies,
+            final String userAgent) {
         return new MediaResourceGetter().extract(
                 context, url, cookies, userAgent);
     }
 
     @CalledByNative
     private static MediaMetadata extractMediaMetadataFromFd(int fd,
-                                                            long offset,
-                                                            long length) {
+            long offset,
+            long length) {
         return new MediaResourceGetter().extract(fd, offset, length);
     }
 

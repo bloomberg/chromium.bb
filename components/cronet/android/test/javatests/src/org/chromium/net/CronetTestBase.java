@@ -67,8 +67,7 @@ public class CronetTestBase extends
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (url != null)
-            intent.setData(Uri.parse(url));
+        if (url != null) intent.setData(Uri.parse(url));
         intent.setComponent(new ComponentName(
                 getInstrumentation().getTargetContext(),
                 CronetTestActivity.class));

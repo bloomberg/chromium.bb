@@ -1154,8 +1154,9 @@ public class ContentViewCore
                 cancelRequestToScrollFocusedEditableNodeIntoView();
             }
 
-            if (SPenSupport.isSPenSupported(mContext))
+            if (SPenSupport.isSPenSupported(mContext)) {
                 eventAction = SPenSupport.convertSPenEventAction(eventAction);
+            }
             if (!isValidTouchEventActionForNative(eventAction)) return false;
 
             if (mNativeContentViewCore == 0) return false;
@@ -2201,10 +2202,11 @@ public class ContentViewCore
                 break;
 
             case SelectionEventType.INSERTION_TAPPED:
-                if (mWasPastePopupShowingOnInsertionDragStart)
+                if (mWasPastePopupShowingOnInsertionDragStart) {
                     hidePastePopup();
-                else
+                } else {
                     showPastePopup(x, y);
+                }
                 break;
 
             case SelectionEventType.INSERTION_CLEARED:

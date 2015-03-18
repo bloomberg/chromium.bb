@@ -25,8 +25,9 @@ public final class ChildAccountFeedbackReporter {
     public static void reportFeedback(Activity activity,
                                       String description,
                                       String url) {
-        if (sExternalFeedbackReporter != null)
+        if (sExternalFeedbackReporter != null) {
             sExternalFeedbackReporter.reportFeedback(activity, description, url);
+        }
     }
 
     @CalledByNative

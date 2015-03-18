@@ -149,8 +149,7 @@ public class SmartClipProviderTest extends ChromeShellTestBase implements Handle
             for (int i = 0; i < count; ++i) {
                 View c = viewGroup.getChildAt(i);
                 Object found = findSmartClipProvider(c);
-                if (found != null)
-                    return found;
+                if (found != null) return found;
             }
         }
         return null;

@@ -38,8 +38,7 @@ public enum BandwidthType {
      */
     public static BandwidthType getBandwidthFromTitle(String title) {
         for (BandwidthType b : BandwidthType.values()) {
-            if (b.mTitle.equals(title))
-                return b;
+            if (b.mTitle.equals(title)) return b;
         }
         assert false;
         return DEFAULT;

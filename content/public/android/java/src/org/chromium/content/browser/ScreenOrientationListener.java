@@ -107,8 +107,7 @@ public class ScreenOrientationListener {
         public void startAccurateListening() {
             ++mAccurateCount;
 
-            if (mAccurateCount > 1)
-                return;
+            if (mAccurateCount > 1) return;
 
             // Start polling if we went from 0 to 1. The polling will
             // automatically stop when mAccurateCount reaches 0.
@@ -118,8 +117,7 @@ public class ScreenOrientationListener {
                 public void run() {
                     self.onConfigurationChanged(null);
 
-                    if (self.mAccurateCount < 1)
-                        return;
+                    if (self.mAccurateCount < 1) return;
 
                     ThreadUtils.postOnUiThreadDelayed(this,
                             ScreenOrientationConfigurationListener.POLLING_DELAY);

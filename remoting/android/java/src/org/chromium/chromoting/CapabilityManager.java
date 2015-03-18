@@ -86,8 +86,7 @@ public class CapabilityManager {
             for (ClientExtension ext : mClientExtensions) {
                 if (ext.getCapability().equals(capability)) {
                     listener = ext.onActivityAcceptingListener(activity);
-                    if (listener != null)
-                        return listener;
+                    if (listener != null) return listener;
                 }
             }
         }

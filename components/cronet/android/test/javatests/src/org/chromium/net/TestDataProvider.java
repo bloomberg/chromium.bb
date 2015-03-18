@@ -195,8 +195,7 @@ class TestUploadDataProvider implements UploadDataProvider {
 
     private boolean maybeFailRead(int readIndex,
             final UploadDataSink uploadDataSink) {
-        if (readIndex != mReadFailIndex)
-            return false;
+        if (readIndex != mReadFailIndex) return false;
 
         switch (mReadFailMode) {
             case THROWN:

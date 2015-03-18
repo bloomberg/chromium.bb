@@ -279,8 +279,7 @@ public class ChildProcessLauncher {
             sLinkerInitialized = true;
         }
 
-        if (sLinkerLoadAddress == 0)
-            return null;
+        if (sLinkerLoadAddress == 0) return null;
 
         // Always wait for the shared RELROs in service processes.
         final boolean waitForSharedRelros = true;

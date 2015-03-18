@@ -138,8 +138,7 @@ public class TextViewWithClickableSpans extends TextView {
 
     private void openDisambiguationMenu() {
         ClickableSpan[] clickableSpans = getClickableSpans();
-        if (clickableSpans == null || clickableSpans.length == 0)
-            return;
+        if (clickableSpans == null || clickableSpans.length == 0) return;
 
         SpannableString spannable = (SpannableString) getText();
         PopupMenu popup = new PopupMenu(getContext(), this);

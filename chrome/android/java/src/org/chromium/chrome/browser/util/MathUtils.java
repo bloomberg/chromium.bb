@@ -24,8 +24,11 @@ public class MathUtils {
     public static int clamp(int value, int a, int b) {
         int min = (a > b) ? b : a;
         int max = (a > b) ? a : b;
-        if (value < min) value = min;
-        else if (value > max) value = max;
+        if (value < min) {
+            value = min;
+        } else if (value > max) {
+            value = max;
+        }
         return value;
     }
 
@@ -42,8 +45,11 @@ public class MathUtils {
     public static long clamp(long value, long a, long b) {
         long min = (a > b) ? b : a;
         long max = (a > b) ? a : b;
-        if (value < min) value = min;
-        else if (value > max) value = max;
+        if (value < min) {
+            value = min;
+        } else if (value > max) {
+            value = max;
+        }
         return value;
     }
 
@@ -60,8 +66,11 @@ public class MathUtils {
     public static float clamp(float value, float a, float b) {
         float min = (a > b) ? b : a;
         float max = (a > b) ? a : b;
-        if (value < min) value = min;
-        else if (value > max) value = max;
+        if (value < min) {
+            value = min;
+        } else if (value > max) {
+            value = max;
+        }
         return value;
     }
 

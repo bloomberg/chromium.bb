@@ -112,8 +112,7 @@ public class SuggestionPopup implements OnSuggestionsReceivedListener, TextWatch
         int popupHeight = appRect.height() - dropDownItemHeight;
         if (mSuggestionsPopup != null) {
             int height = mSuggestionsPopupItemsCount * dropDownItemHeight;
-            if (height < popupHeight)
-                popupHeight = height;
+            if (height < popupHeight) popupHeight = height;
         }
         return popupHeight;
     }

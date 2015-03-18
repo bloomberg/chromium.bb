@@ -71,8 +71,7 @@ public class TouchDevice {
             // SOURCE_KEYBOARD, SOURCE_TOUCH_NAVIGATION, SOURCE_UNKNOWN
         }
 
-        if (pointerTypesVal == 0)
-            pointerTypesVal = PointerType.NONE;
+        if (pointerTypesVal == 0) pointerTypesVal = PointerType.NONE;
 
         return pointerTypesVal;
     }
@@ -99,8 +98,7 @@ public class TouchDevice {
             // SOURCE_KEYBOARD, SOURCE_TOUCH_NAVIGATION, SOURCE_UNKNOWN
         }
 
-        if (hoverTypesVal == 0)
-            hoverTypesVal = HoverType.NONE;
+        if (hoverTypesVal == 0) hoverTypesVal = HoverType.NONE;
 
         return hoverTypesVal;
     }

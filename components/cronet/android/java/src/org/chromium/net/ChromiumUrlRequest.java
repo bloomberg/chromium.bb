@@ -686,8 +686,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     @CalledByNative
     private int readFromUploadChannel(ByteBuffer dest) {
         try {
-            if (mUploadChannel == null || !mUploadChannel.isOpen())
-                return -1;
+            if (mUploadChannel == null || !mUploadChannel.isOpen()) return -1;
             int result = mUploadChannel.read(dest);
             if (result < 0) {
                 mUploadChannel.close();

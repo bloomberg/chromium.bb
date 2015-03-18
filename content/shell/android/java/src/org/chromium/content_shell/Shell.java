@@ -312,8 +312,11 @@ public class Shell extends LinearLayout {
      */
     @CalledByNative
     private void enableUiControl(int controlId, boolean enabled) {
-        if (controlId == 0) mPrevButton.setEnabled(enabled);
-        else if (controlId == 1) mNextButton.setEnabled(enabled);
+        if (controlId == 0) {
+            mPrevButton.setEnabled(enabled);
+        } else if (controlId == 1) {
+            mNextButton.setEnabled(enabled);
+        }
     }
 
     /**

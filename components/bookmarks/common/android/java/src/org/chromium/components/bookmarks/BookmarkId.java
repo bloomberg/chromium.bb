@@ -56,8 +56,7 @@ public class BookmarkId {
     public static BookmarkId getBookmarkIdFromString(String s) {
         long id = ROOT_FOLDER_ID;
         int type = BookmarkType.NORMAL;
-        if (TextUtils.isEmpty(s))
-            return new BookmarkId(id, type);
+        if (TextUtils.isEmpty(s)) return new BookmarkId(id, type);
         char folderTypeChar = s.charAt(0);
         if (isValidBookmarkTypeFromChar(folderTypeChar)) {
             type = getBookmarkTypeFromChar(folderTypeChar);
@@ -114,8 +113,7 @@ public class BookmarkId {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof BookmarkId))
-            return false;
+        if (!(o instanceof BookmarkId)) return false;
         BookmarkId item = (BookmarkId) o;
         return (item.mId == mId && item.mType == mType);
     }

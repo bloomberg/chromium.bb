@@ -237,9 +237,9 @@ public class Linker {
                     System.loadLibrary(TAG + ".cr");
                 }
                 sRelroSharingSupported = nativeCanUseSharedRelro();
-                if (!sRelroSharingSupported)
+                if (!sRelroSharingSupported) {
                     Log.w(TAG, "This system cannot safely share RELRO sections");
-                else {
+                } else {
                     if (DEBUG) Log.i(TAG, "This system supports safe shared RELRO sections");
                 }
 
@@ -255,8 +255,9 @@ public class Linker {
                     case BROWSER_SHARED_RELRO_CONFIG_LOW_RAM_ONLY:
                         sBrowserUsesSharedRelro =
                                 (sMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW);
-                        if (sBrowserUsesSharedRelro)
+                        if (sBrowserUsesSharedRelro) {
                             Log.w(TAG, "Low-memory device: shared RELROs used in all processes");
+                        }
                         break;
                     case BROWSER_SHARED_RELRO_CONFIG_ALWAYS:
                         Log.w(TAG, "Beware: shared RELROs used in all processes!");
@@ -345,10 +346,11 @@ public class Linker {
             assert memoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW
                    || memoryDeviceConfig == MEMORY_DEVICE_CONFIG_NORMAL;
             if (DEBUG) {
-                if (memoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW)
+                if (memoryDeviceConfig == MEMORY_DEVICE_CONFIG_LOW) {
                     Log.i(TAG, "Simulating a low-memory device");
-                else
+                } else {
                     Log.i(TAG, "Simulating a regular-memory device");
+                }
             }
             sMemoryDeviceConfig = memoryDeviceConfig;
         }
@@ -363,8 +365,7 @@ public class Linker {
         // Only GYP targets that are APKs and have the 'use_chromium_linker' variable
         // defined as 1 will use this linker. For all others (the default), the
         // auto-generated NativeLibraries.sUseLinker variable will be false.
-        if (!NativeLibraries.sUseLinker)
-            return false;
+        if (!NativeLibraries.sUseLinker) return false;
 
         synchronized (Linker.class) {
             ensureInitializedLocked();
@@ -693,8 +694,7 @@ public class Linker {
         }
 
         // In service processes, close all file descriptors from the map now.
-        if (!sInBrowserProcess)
-            closeLibInfoMap(relroMap);
+        if (!sInBrowserProcess) closeLibInfoMap(relroMap);
 
         if (DEBUG) Log.i(TAG, "Linker.useSharedRelrosLocked() exiting");
     }

@@ -623,8 +623,7 @@ public class TransitionPageHelper extends EmptyTabObserver {
                     float topControlsOffsetYPix,
                     float contentOffsetYPix,
                     float overdrawBottomHeightPix) {
-                if (mState != STATE_WAIT_FOR_OUTGOING_UNLOADED)
-                    return;
+                if (mState != STATE_WAIT_FOR_OUTGOING_UNLOADED) return;
 
                 if (mTransitionContentViewCore.getContentWidthCss()
                         == mTab.getContentViewCore().getContentWidthCss()) {

@@ -332,14 +332,11 @@ public class InputDialogContainer {
         }
     }
 
-    protected void setFieldDateTimeValue(int dialogType,
-                                       int year, int month, int monthDay,
-                                       int hourOfDay, int minute, int second, int millis,
-                                       int week) {
+    protected void setFieldDateTimeValue(int dialogType, int year, int month, int monthDay,
+            int hourOfDay, int minute, int second, int millis, int week) {
         // Prevents more than one callback being sent to the native
         // side when the dialog triggers multiple events.
-        if (mDialogAlreadyDismissed)
-            return;
+        if (mDialogAlreadyDismissed) return;
         mDialogAlreadyDismissed = true;
 
         if (dialogType == TextInputType.MONTH) {

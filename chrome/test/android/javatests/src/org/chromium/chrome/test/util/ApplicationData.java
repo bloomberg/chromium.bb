@@ -84,11 +84,9 @@ public final class ApplicationData {
      */
     private static boolean removeAppData(String appDir) {
         File[] files = new File(appDir).listFiles();
-        if (files == null)
-            return true;
+        if (files == null) return true;
         for (File file : files) {
-            if (!file.getAbsolutePath().endsWith("/lib") && !removeFile(file))
-                return false;
+            if (!file.getAbsolutePath().endsWith("/lib") && !removeFile(file)) return false;
         }
         return true;
     }
@@ -103,11 +101,9 @@ public final class ApplicationData {
     private static boolean removeFile(File file) {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
-            if (files == null)
-                return true;
+            if (files == null) return true;
             for (File sub_file : files) {
-                if (!removeFile(sub_file))
-                    return false;
+                if (!removeFile(sub_file)) return false;
             }
         }
         return file.delete();

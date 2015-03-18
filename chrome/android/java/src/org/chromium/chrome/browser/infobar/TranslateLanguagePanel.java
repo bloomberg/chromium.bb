@@ -125,13 +125,15 @@ public class TranslateLanguagePanel
 
         int originalSourceSelection = mSourceSpinner.getSelectedItemPosition();
         int newSourceSelection = getSelectionPosition(LANGUAGE_TYPE_SOURCE);
-        if (originalSourceSelection != newSourceSelection)
+        if (originalSourceSelection != newSourceSelection) {
             mSourceSpinner.setSelection(newSourceSelection);
+        }
 
         int originalTargetSelection = mTargetSpinner.getSelectedItemPosition();
         int newTargetSelection = getSelectionPosition(LANGUAGE_TYPE_TARGET);
-        if (originalTargetSelection != newTargetSelection)
+        if (originalTargetSelection != newTargetSelection) {
             mTargetSpinner.setSelection(newTargetSelection);
+        }
     }
 
     private int getSelectionPosition(int languageType) {

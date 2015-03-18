@@ -74,14 +74,16 @@ public class TranslateOptions {
     }
 
     public String sourceLanguage() {
-        if (checkLanguageBoundaries(mSourceLanguageIndex))
+        if (checkLanguageBoundaries(mSourceLanguageIndex)) {
             return mAllLanguages[mSourceLanguageIndex];
+        }
         return "";
     }
 
     public String targetLanguage() {
-        if (checkLanguageBoundaries(mTargetLanguageIndex))
+        if (checkLanguageBoundaries(mTargetLanguageIndex)) {
             return mAllLanguages[mTargetLanguageIndex];
+        }
         return "";
     }
 
@@ -98,11 +100,11 @@ public class TranslateOptions {
     }
 
     public boolean optionsChanged() {
-        return (mSourceLanguageIndex != mOriginalSourceLanguageIndex) ||
-                (mTargetLanguageIndex != mOriginalTargetLanguageIndex) ||
-                (mOptions[NEVER_LANGUAGE] != mOriginalOptions[NEVER_LANGUAGE]) ||
-                (mOptions[NEVER_DOMAIN] != mOriginalOptions[NEVER_DOMAIN]) ||
-                (mOptions[ALWAYS_LANGUAGE] != mOriginalOptions[ALWAYS_LANGUAGE]);
+        return (mSourceLanguageIndex != mOriginalSourceLanguageIndex)
+                || (mTargetLanguageIndex != mOriginalTargetLanguageIndex)
+                || (mOptions[NEVER_LANGUAGE] != mOriginalOptions[NEVER_LANGUAGE])
+                || (mOptions[NEVER_DOMAIN] != mOriginalOptions[NEVER_DOMAIN])
+                || (mOptions[ALWAYS_LANGUAGE] != mOriginalOptions[ALWAYS_LANGUAGE]);
     }
 
 
@@ -175,8 +177,7 @@ public class TranslateOptions {
     }
 
     private boolean toggleState(int element, boolean newValue) {
-        if (!checkElementBoundaries(element))
-            return false;
+        if (!checkElementBoundaries(element)) return false;
 
         mOptions[element] = newValue;
         return true;
@@ -188,8 +189,7 @@ public class TranslateOptions {
     }
 
     private boolean canSetLanguage(int sourceIndex, int targetIndex) {
-        if (sourceIndex == targetIndex)
-            return false;
+        if (sourceIndex == targetIndex) return false;
         return checkLanguageBoundaries(sourceIndex) && checkLanguageBoundaries(targetIndex);
     }
 

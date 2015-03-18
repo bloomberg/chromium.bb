@@ -394,8 +394,7 @@ public class SigninManager {
             profileSyncService.syncSignIn();
         }
 
-        if (mSignInFlowObserver != null)
-            mSignInFlowObserver.onSigninComplete();
+        if (mSignInFlowObserver != null) mSignInFlowObserver.onSigninComplete();
 
         // All done, cleanup.
         Log.d(TAG, "Signin done");
@@ -453,8 +452,7 @@ public class SigninManager {
     }
 
     private void cancelSignIn() {
-        if (mSignInFlowObserver != null)
-            mSignInFlowObserver.onSigninCancelled();
+        if (mSignInFlowObserver != null) mSignInFlowObserver.onSigninCancelled();
         mSignInActivity = null;
         mSignInFlowObserver = null;
         mSignInAccount = null;

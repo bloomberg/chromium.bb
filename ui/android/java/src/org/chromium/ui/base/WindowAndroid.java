@@ -318,8 +318,7 @@ public class WindowAndroid {
      */
     public void startAnimationOverContent(Animator animation) {
         // We may not need an animation placeholder (eg. Webview doesn't use SurfaceView)
-        if (mAnimationPlaceholderView == null)
-            return;
+        if (mAnimationPlaceholderView == null) return;
         if (animation.isStarted()) throw new IllegalArgumentException("Already started.");
         boolean added = mAnimationsOverContent.add(animation);
         if (!added) throw new IllegalArgumentException("Already Added.");

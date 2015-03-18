@@ -177,8 +177,7 @@ public class ChromeBrowserProviderClient {
         Bundle result = context.getContentResolver().call(getPrivateProviderUri(context),
                 name, null, args);
         android.util.Log.i(TAG, "after executing " + name + " call");
-        if (result == null)
-            return null;
+        if (result == null) return null;
         if (Parcelable.class.isAssignableFrom(returnType)) {
             return (T) result.getParcelable(ChromeBrowserProvider.CLIENT_API_RESULT_KEY);
         } else {

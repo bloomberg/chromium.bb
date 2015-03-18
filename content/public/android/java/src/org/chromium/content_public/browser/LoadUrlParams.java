@@ -274,8 +274,7 @@ public class LoadUrlParams {
             headerBuilder.append(":");
             headerBuilder.append(header.getValue());
         }
-        if (addTerminator)
-            headerBuilder.append(delimiter);
+        if (addTerminator) headerBuilder.append(delimiter);
 
         return headerBuilder.toString();
     }

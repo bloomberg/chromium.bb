@@ -130,8 +130,7 @@ public class ChromeSigninController {
             protected Void doInBackground(Void... arg0) {
                 try {
                     String regId = MultiplexingGcmListener.initializeGcm(mApplicationContext);
-                    if (!regId.isEmpty())
-                        Log.d(TAG, "Already registered with GCM");
+                    if (!regId.isEmpty()) Log.d(TAG, "Already registered with GCM");
                 } catch (IllegalStateException exception) {
                     Log.w(TAG, "Application manifest does not correctly configure GCM; "
                             + "sync notifications will not work", exception);

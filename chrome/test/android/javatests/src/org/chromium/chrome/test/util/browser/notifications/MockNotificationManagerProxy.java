@@ -49,8 +49,7 @@ public class MockNotificationManagerProxy implements NotificationManagerProxy {
      */
     public int getMutationCountAndDecrement() {
         int mutationCount = mMutationCount;
-        if (mutationCount > 0)
-            mMutationCount--;
+        if (mutationCount > 0) mMutationCount--;
 
         return mutationCount;
     }

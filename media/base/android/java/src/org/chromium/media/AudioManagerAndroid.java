@@ -234,8 +234,7 @@ class AudioManagerAndroid {
         checkIfCalledOnValidThread();
         if (DEBUG) logd("init");
         if (DEBUG) logDeviceInfo();
-        if (mIsInitialized)
-            return;
+        if (mIsInitialized) return;
 
         // Check if process has MODIFY_AUDIO_SETTINGS and RECORD_AUDIO
         // permissions. Both are required for full functionality.
@@ -276,8 +275,7 @@ class AudioManagerAndroid {
     private void close() {
         checkIfCalledOnValidThread();
         if (DEBUG) logd("close");
-        if (!mIsInitialized)
-            return;
+        if (!mIsInitialized) return;
 
         stopObservingVolumeChanges();
         unregisterForWiredHeadsetIntentBroadcast();
@@ -373,8 +371,7 @@ class AudioManagerAndroid {
     @CalledByNative
     private boolean setDevice(String deviceId) {
         if (DEBUG) logd("setDevice: " + deviceId);
-        if (!mIsInitialized)
-            return false;
+        if (!mIsInitialized) return false;
         if (!mHasModifyAudioSettingsPermission || !mHasRecordAudioPermission) {
             Log.w(TAG, "Requires MODIFY_AUDIO_SETTINGS and RECORD_AUDIO");
             Log.w(TAG, "Selected device will not be available for recording");
@@ -417,8 +414,7 @@ class AudioManagerAndroid {
     @CalledByNative
     private AudioDeviceName[] getAudioInputDeviceNames() {
         if (DEBUG) logd("getAudioInputDeviceNames");
-        if (!mIsInitialized)
-            return null;
+        if (!mIsInitialized) return null;
         if (!mHasModifyAudioSettingsPermission || !mHasRecordAudioPermission) {
             Log.w(TAG, "Requires MODIFY_AUDIO_SETTINGS and RECORD_AUDIO");
             Log.w(TAG, "No audio device will be available for recording");
@@ -1021,8 +1017,7 @@ class AudioManagerAndroid {
         synchronized (mLock) {
             List<String> devices = new ArrayList<String>();
             for (int i = 0; i < DEVICE_COUNT; ++i) {
-                if (mAudioDevices[i])
-                    devices.add(DEVICE_NAMES[i]);
+                if (mAudioDevices[i]) devices.add(DEVICE_NAMES[i]);
             }
             if (DEBUG) {
                 logd("reportUpdate: requested=" + mRequestedAudioDevice
@@ -1058,8 +1053,7 @@ class AudioManagerAndroid {
     /** Start thread which observes volume changes on the voice stream. */
     private void startObservingVolumeChanges() {
         if (DEBUG) logd("startObservingVolumeChanges");
-        if (mSettingsObserverThread != null)
-            return;
+        if (mSettingsObserverThread != null) return;
         mSettingsObserverThread = new HandlerThread("SettingsObserver");
         mSettingsObserverThread.start();
 
@@ -1094,8 +1088,7 @@ class AudioManagerAndroid {
     /** Quit observer thread and stop listening for volume changes. */
     private void stopObservingVolumeChanges() {
         if (DEBUG) logd("stopObservingVolumeChanges");
-        if (mSettingsObserverThread == null)
-            return;
+        if (mSettingsObserverThread == null) return;
 
         mContentResolver.unregisterContentObserver(mSettingsObserver);
         mSettingsObserver = null;

@@ -174,8 +174,7 @@ public class SpeechRecognition {
      * continuous recognition.
      */
     public static boolean initialize(Context context) {
-        if (!SpeechRecognizer.isRecognitionAvailable(context))
-            return false;
+        if (!SpeechRecognizer.isRecognitionAvailable(context)) return false;
 
         PackageManager pm = context.getPackageManager();
         Intent intent = new Intent(RecognitionService.SERVICE_INTERFACE);
@@ -184,8 +183,7 @@ public class SpeechRecognition {
         for (ResolveInfo resolve : list) {
             ServiceInfo service = resolve.serviceInfo;
 
-            if (!service.packageName.equals(PROVIDER_PACKAGE_NAME))
-                continue;
+            if (!service.packageName.equals(PROVIDER_PACKAGE_NAME)) continue;
 
             int versionCode;
             try {
@@ -238,8 +236,9 @@ public class SpeechRecognition {
             mState = STATE_IDLE;
         }
 
-        if (error != SpeechRecognitionErrorCode.NONE)
+        if (error != SpeechRecognitionErrorCode.NONE) {
             nativeOnRecognitionError(mNativeSpeechRecognizerImplAndroid, error);
+        }
 
         mRecognizer.destroy();
         mRecognizer = null;
@@ -255,8 +254,7 @@ public class SpeechRecognition {
 
     @CalledByNative
     private void startRecognition(String language, boolean continuous, boolean interimResults) {
-        if (mRecognizer == null)
-            return;
+        if (mRecognizer == null) return;
 
         mContinuous = continuous;
         mIntent.putExtra("android.speech.extra.DICTATION_MODE", continuous);
@@ -267,8 +265,7 @@ public class SpeechRecognition {
 
     @CalledByNative
     private void abortRecognition() {
-        if (mRecognizer == null)
-            return;
+        if (mRecognizer == null) return;
 
         mRecognizer.cancel();
         terminate(SpeechRecognitionErrorCode.ABORTED);
@@ -276,8 +273,7 @@ public class SpeechRecognition {
 
     @CalledByNative
     private void stopRecognition() {
-        if (mRecognizer == null)
-            return;
+        if (mRecognizer == null) return;
 
         mContinuous = false;
         mRecognizer.stopListening();
@@ -289,9 +285,9 @@ public class SpeechRecognition {
     private native void nativeOnSoundEnd(long nativeSpeechRecognizerImplAndroid);
     private native void nativeOnAudioEnd(long nativeSpeechRecognizerImplAndroid);
     private native void nativeOnRecognitionResults(long nativeSpeechRecognizerImplAndroid,
-                                                   String[] results,
-                                                   float[] scores,
-                                                   boolean provisional);
+            String[] results,
+            float[] scores,
+            boolean provisional);
     private native void nativeOnRecognitionError(long nativeSpeechRecognizerImplAndroid, int error);
     private native void nativeOnRecognitionEnd(long nativeSpeechRecognizerImplAndroid);
 }
