@@ -1135,10 +1135,9 @@ NSColor* IdentityVerifiedTextColor() {
 }
 
 - (void)setCookieInfo:(const CookieInfoList&)cookieInfoList {
-  // The contents of the permissions view can cause the whole window to get
-  // bigger, but currently permissions are always set before cookie info.
-  // Check to make sure that's still the case.
-  DCHECK_GT([[permissionsView_ subviews] count], 0U);
+  // A result of re-ordering of the permissions (crbug.com/444244) is
+  // that sometimes permissions may not be displayed at all, so it's
+  // incorrect to check they are set before the cookie info.
 
   [cookiesView_ setSubviews:[NSArray array]];
   NSPoint controlOrigin = NSMakePoint(kFramePadding, 0);
