@@ -198,7 +198,6 @@
 #include "public/web/WebPrintParams.h"
 #include "public/web/WebPrintPresetOptions.h"
 #include "public/web/WebRange.h"
-#include "public/web/WebScriptExecutionCallback.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSecurityOrigin.h"
 #include "public/web/WebSerializedScriptValue.h"
@@ -212,6 +211,7 @@
 #include "web/PageOverlay.h"
 #include "web/RemoteBridgeFrameOwner.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
+#include "web/SuspendableScriptExecutor.h"
 #include "web/TextFinder.h"
 #include "web/WebDataSourceImpl.h"
 #include "web/WebDevToolsAgentImpl.h"
@@ -526,53 +526,6 @@ private:
     }
 
     OwnPtr<WebSuspendableTask> m_task;
-};
-
-// WebSuspendableExecuteTask --------------------------------------------------
-
-class WebSuspendableExecuteTask: public SuspendableTask {
-public:
-    static PassOwnPtr<WebSuspendableExecuteTask> create(LocalFrame* frame, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
-    {
-        return adoptPtr(new WebSuspendableExecuteTask(frame, worldID, sources, extensionGroup, userGesture, callback));
-    }
-
-    void run() override
-    {
-        OwnPtr<UserGestureIndicator> indicator;
-        if (m_userGesture)
-            indicator = adoptPtr(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
-
-        v8::HandleScope scope(v8::Isolate::GetCurrent());
-        Vector<v8::Local<v8::Value>> results;
-        if (m_worldID) {
-            m_frame->script().executeScriptInIsolatedWorld(m_worldID, m_sources, m_extensionGroup, &results);
-        } else {
-            v8::Local<v8::Value> scriptValue = m_frame->script().executeScriptInMainWorldAndReturnValue(m_sources.first());
-            results.append(scriptValue);
-        }
-        m_callback->completed(results);
-    }
-
-    void contextDestroyed() override
-    {
-        m_callback->completed(Vector<v8::Local<v8::Value>>());
-    }
-
-private:
-    WebSuspendableExecuteTask(LocalFrame* frame, int worldID, const WillBeHeapVector<ScriptSourceCode>& sources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
-        : m_frame(frame), m_worldID(worldID), m_sources(sources), m_extensionGroup(extensionGroup), m_userGesture(userGesture), m_callback(callback)
-    {
-    }
-
-    // FIXME: Oilpan: move (Suspendable)Task to the heap, so that
-    // this reference can be traced.
-    LocalFrame* m_frame;
-    int m_worldID;
-    WillBePersistentHeapVector<ScriptSourceCode> m_sources;
-    int m_extensionGroup;
-    bool m_userGesture;
-    WebScriptExecutionCallback* m_callback;
 };
 
 // WebFrame -------------------------------------------------------------------
@@ -896,8 +849,8 @@ v8::Local<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValue(const WebScr
 void WebLocalFrameImpl::requestExecuteScriptAndReturnValue(const WebScriptSource& source, bool userGesture, WebScriptExecutionCallback* callback)
 {
     ASSERT(frame());
-    ASSERT(frame()->document());
-    frame()->document()->postSuspendableTask(WebSuspendableExecuteTask::create(frame(), 0, createSourcesVector(&source, 1), 0, userGesture, callback));
+
+    SuspendableScriptExecutor::createAndRun(frame(), 0, createSourcesVector(&source, 1), 0, userGesture, callback);
 }
 
 void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup, WebVector<v8::Local<v8::Value>>* results)
@@ -924,10 +877,10 @@ void WebLocalFrameImpl::executeScriptInIsolatedWorld(int worldID, const WebScrip
 void WebLocalFrameImpl::requestExecuteScriptInIsolatedWorld(int worldID, const WebScriptSource* sourcesIn, unsigned numSources, int extensionGroup, bool userGesture, WebScriptExecutionCallback* callback)
 {
     ASSERT(frame());
-    ASSERT(frame()->document());
     RELEASE_ASSERT(worldID > 0);
     RELEASE_ASSERT(worldID < EmbedderWorldIdLimit);
-    frame()->document()->postSuspendableTask(WebSuspendableExecuteTask::create(frame(), worldID, createSourcesVector(sourcesIn, numSources), extensionGroup, userGesture, callback));
+
+    SuspendableScriptExecutor::createAndRun(frame(), worldID, createSourcesVector(sourcesIn, numSources), extensionGroup, userGesture, callback);
 }
 
 v8::Handle<v8::Value> WebLocalFrameImpl::callFunctionEvenIfScriptDisabled(v8::Handle<v8::Function> function, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> argv[])
