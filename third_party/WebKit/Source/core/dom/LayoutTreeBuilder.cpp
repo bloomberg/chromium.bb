@@ -48,14 +48,14 @@ LayoutTreeBuilderForElement::LayoutTreeBuilderForElement(Element& element, Layou
     , m_style(style)
 {
     if (element.isFirstLetterPseudoElement()) {
-        if (LayoutObject* nextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(element))
-            m_layoutObjectParent = nextRenderer->parent();
+        if (LayoutObject* nextLayoutObject = FirstLetterPseudoElement::firstLetterTextRenderer(element))
+            m_layoutObjectParent = nextLayoutObject->parent();
     } else if (ContainerNode* containerNode = NodeRenderingTraversal::parent(element)) {
         m_layoutObjectParent = containerNode->layoutObject();
     }
 }
 
-LayoutObject* LayoutTreeBuilderForElement::nextRenderer() const
+LayoutObject* LayoutTreeBuilderForElement::nextLayoutObject() const
 {
     ASSERT(m_layoutObjectParent);
 
@@ -65,25 +65,25 @@ LayoutObject* LayoutTreeBuilderForElement::nextRenderer() const
     if (m_node->isFirstLetterPseudoElement())
         return FirstLetterPseudoElement::firstLetterTextRenderer(*m_node);
 
-    return LayoutTreeBuilder::nextRenderer();
+    return LayoutTreeBuilder::nextLayoutObject();
 }
 
-LayoutObject* LayoutTreeBuilderForElement::parentRenderer() const
+LayoutObject* LayoutTreeBuilderForElement::parentLayoutObject() const
 {
-    LayoutObject* parentRenderer = LayoutTreeBuilder::parentRenderer();
+    LayoutObject* parentLayoutObject = LayoutTreeBuilder::parentLayoutObject();
 
-    if (parentRenderer) {
-        // FIXME: Guarding this by parentRenderer isn't quite right as the spec for
+    if (parentLayoutObject) {
+        // FIXME: Guarding this by parentLayoutObject isn't quite right as the spec for
         // top layer only talks about display: none ancestors so putting a <dialog> inside an
         // <optgroup> seems like it should still work even though this check will prevent it.
         if (m_node->isInTopLayer())
             return m_node->document().layoutView();
     }
 
-    return parentRenderer;
+    return parentLayoutObject;
 }
 
-bool LayoutTreeBuilderForElement::shouldCreateRenderer() const
+bool LayoutTreeBuilderForElement::shouldCreateLayoutObject() const
 {
     if (!m_layoutObjectParent)
         return false;
@@ -97,10 +97,10 @@ bool LayoutTreeBuilderForElement::shouldCreateRenderer() const
             return false;
     }
 
-    LayoutObject* parentRenderer = this->parentRenderer();
-    if (!parentRenderer)
+    LayoutObject* parentLayoutObject = this->parentLayoutObject();
+    if (!parentLayoutObject)
         return false;
-    if (!parentRenderer->canHaveChildren())
+    if (!parentLayoutObject->canHaveChildren())
         return false;
 
     return m_node->layoutObjectIsNeeded(style());
@@ -121,53 +121,53 @@ void LayoutTreeBuilderForElement::createLayoutObject()
     if (!newLayoutObject)
         return;
 
-    LayoutObject* parentRenderer = this->parentRenderer();
+    LayoutObject* parentLayoutObject = this->parentLayoutObject();
 
-    if (!parentRenderer->isChildAllowed(newLayoutObject, style)) {
+    if (!parentLayoutObject->isChildAllowed(newLayoutObject, style)) {
         newLayoutObject->destroy();
         return;
     }
 
     // Make sure the LayoutObject already knows it is going to be added to a LayoutFlowThread before we set the style
     // for the first time. Otherwise code using inLayoutFlowThread() in the styleWillChange and styleDidChange will fail.
-    newLayoutObject->setFlowThreadState(parentRenderer->flowThreadState());
+    newLayoutObject->setFlowThreadState(parentLayoutObject->flowThreadState());
 
-    LayoutObject* nextRenderer = this->nextRenderer();
+    LayoutObject* nextLayoutObject = this->nextLayoutObject();
     m_node->setLayoutObject(newLayoutObject);
     newLayoutObject->setStyle(&style); // setStyle() can depend on layoutObject() already being set.
 
     if (Fullscreen::isActiveFullScreenElement(*m_node)) {
-        newLayoutObject = LayoutFullScreen::wrapRenderer(newLayoutObject, parentRenderer, &m_node->document());
+        newLayoutObject = LayoutFullScreen::wrapRenderer(newLayoutObject, parentLayoutObject, &m_node->document());
         if (!newLayoutObject)
             return;
     }
 
     // Note: Adding newLayoutObject instead of layoutObject(). layoutObject() may be a child of newLayoutObject.
-    parentRenderer->addChild(newLayoutObject, nextRenderer);
+    parentLayoutObject->addChild(newLayoutObject, nextLayoutObject);
 }
 
 void LayoutTreeBuilderForText::createLayoutObject()
 {
-    LayoutObject* parentRenderer = this->parentRenderer();
-    LayoutStyle* style = parentRenderer->style();
+    LayoutObject* parentLayoutObject = this->parentLayoutObject();
+    LayoutStyle* style = parentLayoutObject->style();
 
-    ASSERT(m_node->textRendererIsNeeded(*style, *parentRenderer));
+    ASSERT(m_node->textRendererIsNeeded(*style, *parentLayoutObject));
 
     LayoutText* newLayoutObject = m_node->createTextRenderer(style);
-    if (!parentRenderer->isChildAllowed(newLayoutObject, *style)) {
+    if (!parentLayoutObject->isChildAllowed(newLayoutObject, *style)) {
         newLayoutObject->destroy();
         return;
     }
 
     // Make sure the LayoutObject already knows it is going to be added to a LayoutFlowThread before we set the style
     // for the first time. Otherwise code using inLayoutFlowThread() in the styleWillChange and styleDidChange will fail.
-    newLayoutObject->setFlowThreadState(parentRenderer->flowThreadState());
+    newLayoutObject->setFlowThreadState(parentLayoutObject->flowThreadState());
 
-    LayoutObject* nextRenderer = this->nextRenderer();
+    LayoutObject* nextLayoutObject = this->nextLayoutObject();
     m_node->setLayoutObject(newLayoutObject);
     // Parent takes care of the animations, no need to call setAnimatableStyle.
     newLayoutObject->setStyle(style);
-    parentRenderer->addChild(newLayoutObject, nextRenderer);
+    parentLayoutObject->addChild(newLayoutObject, nextLayoutObject);
 }
 
 }

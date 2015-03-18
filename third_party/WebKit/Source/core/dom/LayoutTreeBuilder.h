@@ -58,9 +58,9 @@ protected:
         // which does an updateLayoutIgnorePendingStylesheets.
     }
 
-    LayoutObject* parentRenderer() const { return m_layoutObjectParent; }
+    LayoutObject* parentLayoutObject() const { return m_layoutObjectParent; }
 
-    LayoutObject* nextRenderer() const
+    LayoutObject* nextLayoutObject() const
     {
         ASSERT(m_layoutObjectParent);
 
@@ -81,14 +81,14 @@ public:
 
     void createLayoutObjectIfNeeded()
     {
-        if (shouldCreateRenderer())
+        if (shouldCreateLayoutObject())
             createLayoutObject();
     }
 
 private:
-    LayoutObject* parentRenderer() const;
-    LayoutObject* nextRenderer() const;
-    bool shouldCreateRenderer() const;
+    LayoutObject* parentLayoutObject() const;
+    LayoutObject* nextLayoutObject() const;
+    bool shouldCreateLayoutObject() const;
     LayoutStyle& style() const;
     void createLayoutObject();
 
