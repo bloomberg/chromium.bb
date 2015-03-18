@@ -99,8 +99,26 @@
     "scripts": [
     ]
   },
+  "Mac 10.8 Perf (3)": {
+    "scripts": [
+      {
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["cc_perftests", "--test-launcher-print-test-stdio=always"]
+      }
+    ]
+  },
   "Mac 10.9 Perf (1)": {
     "scripts": [
+    ]
+  },
+  "Mac 10.9 Perf (3)": {
+    "scripts": [
+      {
+        "name": "cc_perftests",
+        "script": "gtest_perf_test.py",
+        "args": ["cc_perftests", "--test-launcher-print-test-stdio=always"]
+      }
     ]
   }
 }
