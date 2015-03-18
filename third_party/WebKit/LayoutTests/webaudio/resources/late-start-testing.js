@@ -4,13 +4,9 @@ function runLateStartTest(audit, context, node) {
   // processing time before calling start(0).
   var osc = context.createOscillator();
   var silent = context.createGain();
-  var convolver = context.createConvolver();
-  var impulse = createImpulseBuffer(context, 1000);
-  convolver.buffer = impulse;
 
   osc.connect(silent);
-  silent.connect(convolver);
-  convolver.connect(context.destination);
+  silent.connect(context.destination);
   silent.gain.setValueAtTime(0.0, 0);
   osc.start();
 

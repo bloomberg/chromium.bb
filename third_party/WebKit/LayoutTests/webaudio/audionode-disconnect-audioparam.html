@@ -14,6 +14,11 @@
 
     var audit = Audit.createTaskRunner();
 
+    // The long render length (20 seconds) test 1 and 2 is to make sure the 
+    // |onstatechange| event gets fired to start the source, which can take
+    // quite a bit of time.
+    var testDuration = 20;
+
     // Task 1: test disconnect(AudioParam) method.
     audit.defineTask('disconnect(AudioParam)', function (done) {
 
@@ -25,7 +30,7 @@
       //  (3) half => gain2.gain
       // This graph should produce the output of 2.25 (= 1 * 1.5 * 1.5). After
       // disconnecting (3), it should produce 1.5.
-      var context = new OfflineAudioContext(1, 44100 * 10, 44100);
+      var context = new OfflineAudioContext(1, 44100 * testDuration, 44100);
       var source = context.createBufferSource();
       var buffer1ch = createTestingAudioBuffer(context, 1, 128);
       var half = context.createGain();
@@ -59,12 +64,9 @@
       // OfflineAudioContext runs faster than real time, the disconnection might
       // happen after the rendering finishes. Then lower the delay and increase 
       // the render length to avoid the test failure.
-      var stateAlreadyChanged = false;
       context.onstatechange = function () {
-        if (!stateAlreadyChanged) {
+        if (context.state === 'running')
           half.disconnect(gain2.gain);
-          stateAlreadyChanged = true;
-        }
       };
 
       context.startRendering().then(function (buffer) {
@@ -98,7 +100,7 @@
       //    (4) splitter#1 => gain2.gain
       // This graph should produce 3 (= 1 * 1.5 * 2) and 6 (= 2 * 1.5 * 2) for 
       // each channel. After disconnecting (4), it should output 1.5 and 3.
-      var context = new OfflineAudioContext(2, 44100 * 10, 44100);
+      var context = new OfflineAudioContext(2, 44100 * testDuration, 44100);
       var source = context.createBufferSource();
       var buffer2ch = createTestingAudioBuffer(context, 2, 128);
       var splitter = context.createChannelSplitter(2);
@@ -130,12 +132,9 @@
 
       // Disconnect after the rendering starts. See the comment in the previous
       // test task.
-      var stateAlreadyChanged = false;
       context.onstatechange = function () {
-        if (!stateAlreadyChanged) {
+        if (context.state === 'running')
           splitter.disconnect(gain2.gain, 1);
-          stateAlreadyChanged = true;
-        }
       };
 
       context.startRendering().then(function (buffer) {
@@ -151,8 +150,6 @@
             expectedValuesCh0.toString() + '] Ch1 = [' + expectedValuesCh1.toString() +
             ']'
           );
-        } else {
-          testFailed('Expected values do not match.');
         }
       }).then(done);
     });
@@ -212,22 +209,21 @@
     //    (4) [3, 3, 3, 7, 7, 7] !== [2.25, 1.5]
     function compareElements(expected, actual) {
       var indexExpected = 0, indexActual = 0;
-        while (indexExpected < expected.length && indexActual < actual.length) {
-          if (expected[indexExpected] === actual[indexActual]) {
-            indexActual++;
-          } else {
-            indexExpected++;
-          }
-        }
-        
-        if (indexExpected < expected.length - 1 || indexActual < actual.length - 1) {
-          // This is for the debugging purpose. Printed out only when failed.
-          console.log('The value ' + actual[indexActual] + ' at index ' + 
-            indexActual + ' was not found in expected values');
-          return false;
+      while (indexExpected < expected.length && indexActual < actual.length) {
+        if (expected[indexExpected] === actual[indexActual]) {
+          indexActual++;
         } else {
-          return true;
+          indexExpected++;
         }
+      }
+      
+      if (indexExpected < expected.length - 1 || indexActual < actual.length - 1) {
+        testFailed('The value ' + actual[indexActual] + ' at index ' + 
+          indexActual + ' was not found in expected values');
+        return false;
+      } else {
+        return true;
+      }
     }
 
     successfullyParsed = true;
