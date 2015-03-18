@@ -2705,6 +2705,57 @@ interface Location
     setter port
     setter protocol
     setter search
+interface MIDIAccess
+    getter inputs
+    getter onstatechange
+    getter outputs
+    getter sysexEnabled
+    method constructor
+    setter onstatechange
+interface MIDIConnectionEvent
+    getter port
+    method constructor
+interface MIDIInput
+    getter onmidimessage
+    method constructor
+    setter onmidimessage
+interface MIDIInputMap
+    getter size
+    method constructor
+    method entries
+    method forEach
+    method get
+    method has
+    method keys
+    method values
+interface MIDIMessageEvent
+    getter data
+    getter receivedTime
+    method constructor
+interface MIDIOutput
+    method constructor
+    method send
+interface MIDIOutputMap
+    getter size
+    method constructor
+    method entries
+    method forEach
+    method get
+    method has
+    method keys
+    method values
+interface MIDIPort
+    getter id
+    getter manufacturer
+    getter name
+    getter onstatechange
+    getter state
+    getter type
+    getter version
+    method close
+    method constructor
+    method open
+    setter onstatechange
 interface Map
     getter size
     method clear
@@ -2955,6 +3006,7 @@ interface Navigator
     method getStorageUpdates
     method javaEnabled
     method registerProtocolHandler
+    method requestMIDIAccess
     method requestMediaKeySystemAccess
     method sendBeacon
     method unregisterProtocolHandler

@@ -163,7 +163,7 @@ WebAnimationsAPI status=experimental
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental
 WebGLImageChromium
-WebMIDI status=test
+WebMIDI status=stable
 WebVTTRegions depends_on=Media, status=experimental
 V8IdleTasks
 XSLT status=stable
