@@ -48,14 +48,9 @@ int GetHistogramValueForFilteringBehavior(
     SupervisedUserURLFilter::FilteringBehavior behavior,
     SupervisedUserURLFilter::FilteringBehaviorReason reason,
     bool uncertain) {
-  // Since we're only interested in statistics about the blacklist and
-  // SafeSites, count everything that got through to the default fallback
-  // behavior as ALLOW (made it through all the filters!).
-  if (reason == SupervisedUserURLFilter::DEFAULT)
-    behavior = SupervisedUserURLFilter::ALLOW;
-
   switch (behavior) {
     case SupervisedUserURLFilter::ALLOW:
+    case SupervisedUserURLFilter::WARN:
       return uncertain ? FILTERING_BEHAVIOR_ALLOW_UNCERTAIN
                        : FILTERING_BEHAVIOR_ALLOW;
     case SupervisedUserURLFilter::BLOCK:
@@ -84,7 +79,8 @@ void RecordFilterResultEvent(
     SupervisedUserURLFilter::FilteringBehaviorReason reason,
     bool uncertain,
     ui::PageTransition transition_type) {
-  DCHECK(reason != SupervisedUserURLFilter::MANUAL);
+  DCHECK(reason == SupervisedUserURLFilter::ASYNC_CHECKER ||
+         reason == SupervisedUserURLFilter::BLACKLIST);
   int value =
       GetHistogramValueForFilteringBehavior(behavior, reason, uncertain) *
           kHistogramFilteringBehaviorSpacing +
@@ -170,7 +166,8 @@ void SupervisedUserResourceThrottle::OnCheckDone(
 
   // If both the static blacklist and SafeSites are enabled, record UMA events.
   if (url_filter_->HasBlacklist() && url_filter_->HasAsyncURLChecker() &&
-      reason < SupervisedUserURLFilter::MANUAL) {
+      (reason == SupervisedUserURLFilter::ASYNC_CHECKER ||
+       reason == SupervisedUserURLFilter::BLACKLIST)) {
     const content::ResourceRequestInfo* info =
         content::ResourceRequestInfo::ForRequest(request_);
     RecordFilterResultEvent(behavior, reason, uncertain,

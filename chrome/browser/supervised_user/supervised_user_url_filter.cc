@@ -326,8 +326,9 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   if (contents_->hash_site_map.count(GetHostnameHash(url)))
     return ALLOW;
 
-  // Check the static blacklist.
-  if (!manual_only && blacklist_ && blacklist_->HasURL(url)) {
+  // Check the static blacklist, unless the default is to block anyway.
+  if (!manual_only && default_behavior_ != BLOCK &&
+      blacklist_ && blacklist_->HasURL(url)) {
     *reason = BLACKLIST;
     return BLOCK;
   }
@@ -342,7 +343,9 @@ bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
     const FilteringBehaviorCallback& callback) const {
   FilteringBehaviorReason reason = DEFAULT;
   FilteringBehavior behavior = GetFilteringBehaviorForURL(url, false, &reason);
-  if (reason != DEFAULT || !async_url_checker_) {
+  // Any non-default reason trumps the async checker.
+  // Also, if we're blocking anyway, then there's no need to check it.
+  if (reason != DEFAULT || behavior == BLOCK || !async_url_checker_) {
     callback.Run(behavior, reason, false);
     return true;
   }
@@ -369,14 +372,9 @@ void SupervisedUserURLFilter::GetSites(
     sites->push_back(&contents_->sites[entry->second]);
   }
 
-  typedef base::hash_multimap<std::string, int>::const_iterator
-      hash_site_map_iterator;
-  std::pair<hash_site_map_iterator, hash_site_map_iterator> bounds =
-      contents_->hash_site_map.equal_range(GetHostnameHash(url));
-  for (hash_site_map_iterator hash_it = bounds.first;
-       hash_it != bounds.second; hash_it++) {
+  auto bounds = contents_->hash_site_map.equal_range(GetHostnameHash(url));
+  for (auto hash_it = bounds.first; hash_it != bounds.second; hash_it++)
     sites->push_back(&contents_->sites[hash_it->second]);
-  }
 }
 
 void SupervisedUserURLFilter::SetDefaultFilteringBehavior(
@@ -474,12 +472,7 @@ void SupervisedUserURLFilter::CheckCallback(
     const GURL& url,
     FilteringBehavior behavior,
     bool uncertain) const {
-  // If we passed the async checker, but the default is to block, fall back to
-  // the default behavior.
-  if (behavior != BLOCK && default_behavior_ == BLOCK) {
-    callback.Run(default_behavior_, DEFAULT, uncertain);
-    return;
-  }
+  DCHECK(default_behavior_ != BLOCK);
 
   callback.Run(behavior, ASYNC_CHECKER, uncertain);
 }
