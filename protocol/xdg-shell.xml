@@ -362,6 +362,9 @@
         portions like drop-shadows which should be ignored for the
         purposes of aligning, placing and constraining windows.
 
+        The window geometry is double buffered, and will be applied at the
+        time wl_surface.commit of the corresponding wl_surface is called.
+
         Once the window geometry of the surface is set once, it is not
         possible to unset it, and it will remain the same until
         set_window_geometry is called again, even if a new subsurface or
