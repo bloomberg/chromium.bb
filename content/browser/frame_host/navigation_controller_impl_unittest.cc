@@ -931,7 +931,10 @@ TEST_F(NavigationControllerTest, LoadURL_BackPreemptsPending) {
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
 
-  // Now make a pending new navigation.
+  // A back navigation comes in from the renderer...
+  controller.GoToOffset(-1);
+
+  // ...while the user tries to navigate to a new page...
   const GURL kNewURL("http://foo/see");
   controller.LoadURL(
       kNewURL, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
@@ -939,13 +942,12 @@ TEST_F(NavigationControllerTest, LoadURL_BackPreemptsPending) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
 
-  // Before that commits, a back navigation from the renderer commits.
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(kExistingURL1, true);
+  // ...and the back navigation commits.
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(0, kExistingURL1);
 
-  // There should no longer be any pending entry, and the back navigation we
-  // just made should be committed.
+  // There should no longer be any pending entry, and the back navigation should
+  // be committed.
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
@@ -1590,8 +1592,9 @@ TEST_F(NavigationControllerTest, Back_OtherBackPending) {
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(2, kUrl3);
 
-  // With nothing pending, say we get a navigation to the second entry.
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(kUrl2, true);
+  // With nothing pending, say we get a renderer back navigation request to the
+  // second entry.
+  controller.GoToOffset(-1);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(1, kUrl2);
 
@@ -1616,9 +1619,9 @@ TEST_F(NavigationControllerTest, Back_OtherBackPending) {
   EXPECT_EQ(1, controller.GetPendingEntryIndex());
   EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
 
-  // Now synthesize a totally new back event to the first page. This will not
-  // match the pending one.
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(kUrl1, true);
+  // Now have the renderer request a navigation back to the first page. This
+  // will not match the pending one.
+  controller.GoToOffset(-2);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(0, kUrl1);
 
@@ -2794,7 +2797,8 @@ TEST_F(NavigationControllerTest, TransientEntry) {
   EXPECT_EQ(url4, controller.GetVisibleEntry()->GetURL());
   EXPECT_EQ(controller.GetEntryCount(), 5);
 
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(url3, false);
+  // Suppose the page requested a history navigation backward.
+  controller.GoToOffset(-1);
   main_test_rfh()->PrepareForCommit();
   main_test_rfh()->SendNavigate(3, url3);
 
