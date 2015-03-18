@@ -33,7 +33,7 @@ base::LazyInstance<RoutingIDFrameProxyMap> g_routing_id_frame_proxy_map =
 // static
 RenderFrameProxyHost* RenderFrameProxyHost::FromID(int process_id,
                                                    int routing_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDFrameProxyMap* frames = g_routing_id_frame_proxy_map.Pointer();
   RoutingIDFrameProxyMap::iterator it = frames->find(
       RenderFrameProxyHostID(process_id, routing_id));

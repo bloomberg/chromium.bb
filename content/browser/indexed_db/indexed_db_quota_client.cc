@@ -40,7 +40,7 @@ void GetAllOriginsOnIndexedDBThread(IndexedDBContextImpl* context,
 
 void DidGetOrigins(const IndexedDBQuotaClient::GetOriginsCallback& callback,
                    const std::set<GURL>* origins) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(*origins);
 }
 

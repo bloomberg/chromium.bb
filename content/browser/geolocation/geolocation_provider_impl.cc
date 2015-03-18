@@ -23,7 +23,7 @@ GeolocationProvider* GeolocationProvider::GetInstance() {
 scoped_ptr<GeolocationProvider::Subscription>
 GeolocationProviderImpl::AddLocationUpdateCallback(
     const LocationUpdateCallback& callback, bool use_high_accuracy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<GeolocationProvider::Subscription> subscription;
   if (use_high_accuracy) {
     subscription = high_accuracy_callbacks_.Add(callback);
@@ -41,7 +41,7 @@ GeolocationProviderImpl::AddLocationUpdateCallback(
 }
 
 void GeolocationProviderImpl::UserDidOptIntoLocationServices() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool was_permission_granted = user_did_opt_into_location_services_;
   user_did_opt_into_location_services_ = true;
   if (IsRunning() && !was_permission_granted)
@@ -50,7 +50,7 @@ void GeolocationProviderImpl::UserDidOptIntoLocationServices() {
 
 void GeolocationProviderImpl::OverrideLocationForTesting(
     const Geoposition& position) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ignore_location_updates_ = true;
   NotifyClients(position);
 }
@@ -67,7 +67,7 @@ void GeolocationProviderImpl::OnLocationUpdate(const Geoposition& position) {
 }
 
 GeolocationProviderImpl* GeolocationProviderImpl::GetInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return Singleton<GeolocationProviderImpl>::get();
 }
 
@@ -76,7 +76,7 @@ GeolocationProviderImpl::GeolocationProviderImpl()
       user_did_opt_into_location_services_(false),
       ignore_location_updates_(false),
       arbitrator_(NULL) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   high_accuracy_callbacks_.set_removal_callback(
       base::Bind(&GeolocationProviderImpl::OnClientsChanged,
                  base::Unretained(this)));
@@ -95,7 +95,7 @@ bool GeolocationProviderImpl::OnGeolocationThread() const {
 }
 
 void GeolocationProviderImpl::OnClientsChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::Closure task;
   if (high_accuracy_callbacks_.empty() && low_accuracy_callbacks_.empty()) {
     DCHECK(IsRunning());
@@ -151,7 +151,7 @@ void GeolocationProviderImpl::InformProvidersPermissionGranted() {
 }
 
 void GeolocationProviderImpl::NotifyClients(const Geoposition& position) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(position.Validate() ||
          position.error_code != Geoposition::ERROR_CODE_NONE);
   position_ = position;

@@ -14,7 +14,7 @@ namespace content {
 PowerProfilerService::PowerProfilerService()
     : status_(UNINITIALIZED),
       data_provider_(PowerDataProvider::Create()) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // No provider supported for current platform.
   if (!data_provider_.get())
@@ -33,7 +33,7 @@ PowerProfilerService::PowerProfilerService(
       status_(UNINITIALIZED),
       sample_period_(sample_period),
       data_provider_(provider.Pass()) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (data_provider_.get())
       status_ = INITIALIZED;

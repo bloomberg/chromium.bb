@@ -405,7 +405,7 @@ void LogResourceRequestTimeOnUI(
     int render_process_id,
     int render_frame_id,
     const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
   if (host != NULL) {
@@ -436,7 +436,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
       filter_(NULL),
       delegate_(NULL),
       allow_cross_origin_auth_prompt_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;
 
@@ -498,7 +498,7 @@ void ResourceDispatcherHostImpl::ResumeResponseDeferredAtStart(
 
 void ResourceDispatcherHostImpl::CancelRequestsForContext(
     ResourceContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context);
 
   CHECK(ContainsKey(active_resource_contexts_, context));
@@ -692,7 +692,7 @@ void ResourceDispatcherHostImpl::ClearLoginDelegateForRequest(
 }
 
 void ResourceDispatcherHostImpl::Shutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
                           base::Bind(&ResourceDispatcherHostImpl::OnShutdown,
@@ -903,7 +903,7 @@ void ResourceDispatcherHostImpl::OnInit() {
 }
 
 void ResourceDispatcherHostImpl::OnShutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   is_shutdown_ = true;
   pending_loaders_.clear();
@@ -2135,7 +2135,7 @@ void ResourceDispatcherHostImpl::UpdateLoadInfoOnUIThread(
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "466285 ResourceDispatcherHostImpl::UpdateLoadInfoOnUIThread"));
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const auto& load_info : *info_map) {
     RenderViewHostImpl* view = RenderViewHostImpl::FromID(
         load_info.first.child_id, load_info.first.route_id);
@@ -2203,7 +2203,7 @@ void ResourceDispatcherHostImpl::UpdateLoadInfo() {
 
 void ResourceDispatcherHostImpl::BlockRequestsForRoute(int child_id,
                                                        int route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GlobalRoutingID key(child_id, route_id);
   DCHECK(blocked_loaders_map_.find(key) == blocked_loaders_map_.end()) <<
       "BlockRequestsForRoute called  multiple time for the same RVH";
@@ -2281,7 +2281,7 @@ bool ResourceDispatcherHostImpl::IsTransferredNavigation(
 
 ResourceLoader* ResourceDispatcherHostImpl::GetLoader(
     const GlobalRequestID& id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   LoaderMap::const_iterator i = pending_loaders_.find(id);
   if (i == pending_loaders_.end())

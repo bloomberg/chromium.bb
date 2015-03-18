@@ -83,7 +83,7 @@ class WebRTCIdentityRequest {
         common_name_(common_name) {}
 
   void Cancel(WebRTCIdentityRequestHandle* handle) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (callbacks_.find(handle) == callbacks_.end())
       return;
     callbacks_.erase(handle);
@@ -104,7 +104,7 @@ class WebRTCIdentityRequest {
   // WebRTCIdentityStoreBackend::FindIdentity, because it needs to live longer
   // than that if the identity does not exist in DB.
   void Post(const WebRTCIdentityRequestResult& result) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     for (CallbackMap::iterator it = callbacks_.begin(); it != callbacks_.end();
          ++it)
       it->second.Run(result.error, result.certificate, result.private_key);
@@ -136,7 +136,7 @@ class WebRTCIdentityRequestHandle {
   // Cancel the request.  Does nothing if the request finished or was already
   // cancelled.
   void Cancel() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (!request_)
       return;
 
@@ -149,7 +149,7 @@ class WebRTCIdentityRequestHandle {
   }
 
   void OnRequestStarted(WebRTCIdentityRequest* request) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(request);
     request_ = request;
   }
@@ -157,7 +157,7 @@ class WebRTCIdentityRequestHandle {
   void OnRequestComplete(int error,
                          const std::string& certificate,
                          const std::string& private_key) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(request_);
     request_ = NULL;
     base::ResetAndReturn(&callback_).Run(error, certificate, private_key);
@@ -184,7 +184,7 @@ base::Closure WebRTCIdentityStore::RequestIdentity(
     const std::string& identity_name,
     const std::string& common_name,
     const CompletionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   WebRTCIdentityRequest* request =
       FindRequest(origin, identity_name, common_name);
   // If there is no identical request in flight, create a new one, queue it,
@@ -220,20 +220,20 @@ base::Closure WebRTCIdentityStore::RequestIdentity(
 void WebRTCIdentityStore::DeleteBetween(base::Time delete_begin,
                                         base::Time delete_end,
                                         const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   backend_->DeleteBetween(delete_begin, delete_end, callback);
 }
 
 void WebRTCIdentityStore::SetValidityPeriodForTesting(
     base::TimeDelta validity_period) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   validity_period_ = validity_period;
   backend_->SetValidityPeriodForTesting(validity_period);
 }
 
 void WebRTCIdentityStore::SetTaskRunnerForTesting(
     const scoped_refptr<base::TaskRunner>& task_runner) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   task_runner_ = task_runner;
 }
 
@@ -241,7 +241,7 @@ void WebRTCIdentityStore::BackendFindCallback(WebRTCIdentityRequest* request,
                                               int error,
                                               const std::string& certificate,
                                               const std::string& private_key) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (error == net::OK) {
     DVLOG(2) << "Identity found in DB.";
     WebRTCIdentityRequestResult result(error, certificate, private_key);
@@ -270,7 +270,7 @@ void WebRTCIdentityStore::BackendFindCallback(WebRTCIdentityRequest* request,
 void WebRTCIdentityStore::GenerateIdentityCallback(
     WebRTCIdentityRequest* request,
     WebRTCIdentityRequestResult* result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (result->error == net::OK) {
     DVLOG(2) << "New identity generated and added to the backend.";
     backend_->AddIdentity(request->origin_,
@@ -285,7 +285,7 @@ void WebRTCIdentityStore::GenerateIdentityCallback(
 void WebRTCIdentityStore::PostRequestResult(
     WebRTCIdentityRequest* request,
     const WebRTCIdentityRequestResult& result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Removes the in flight request from the queue.
   for (size_t i = 0; i < in_flight_requests_.size(); ++i) {
     if (in_flight_requests_[i] == request) {

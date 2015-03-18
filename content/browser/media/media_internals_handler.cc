@@ -24,7 +24,7 @@ MediaInternalsMessageHandler::~MediaInternalsMessageHandler() {
 }
 
 void MediaInternalsMessageHandler::RegisterMessages() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   proxy_->Attach(this);
 
   web_ui()->RegisterMessageCallback("getEverything",

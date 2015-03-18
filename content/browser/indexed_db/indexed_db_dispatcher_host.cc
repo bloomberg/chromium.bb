@@ -221,7 +221,7 @@ uint32 IndexedDBDispatcherHost::TransactionIdToProcessId(
 
 std::string IndexedDBDispatcherHost::HoldBlobData(
     const IndexedDBBlobInfo& blob_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::string uuid = blob_info.uuid();
   storage::BlobStorageContext* context = blob_storage_context_->context();
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
@@ -247,7 +247,7 @@ std::string IndexedDBDispatcherHost::HoldBlobData(
 }
 
 void IndexedDBDispatcherHost::DropBlobData(const std::string& uuid) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BlobDataHandleMap::iterator iter = blob_data_handle_map_.find(uuid);
   if (iter != blob_data_handle_map_.end()) {
     DCHECK_GE(iter->second.second, 1);
@@ -378,7 +378,7 @@ void IndexedDBDispatcherHost::OnPutHelper(
 
 void IndexedDBDispatcherHost::OnAckReceivedBlobs(
     const std::vector<std::string>& uuids) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (const auto& uuid : uuids)
     DropBlobData(uuid);
 }

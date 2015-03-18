@@ -23,7 +23,7 @@ void DidCreateTemporaryFile(
     scoped_ptr<base::FileProxy> file_proxy,
     base::File::Error error_code,
     const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!file_proxy->IsValid()) {
     callback.Run(error_code, scoped_ptr<net::FileStream>(), NULL);
@@ -50,7 +50,7 @@ void DidCreateTemporaryFile(
 
 void CreateTemporaryFileStream(
     const CreateTemporaryFileStreamCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   scoped_ptr<base::FileProxy> file_proxy(new base::FileProxy(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get()));

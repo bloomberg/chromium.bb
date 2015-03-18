@@ -24,7 +24,7 @@ PluginLoaderPosix::PluginLoaderPosix()
 
 void PluginLoaderPosix::GetPlugins(
     const PluginService::GetPluginsCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::vector<WebPluginInfo> cached_plugins;
   if (PluginList::Singleton()->GetPluginsNoRefresh(&cached_plugins)) {
@@ -98,7 +98,7 @@ PluginLoaderPosix::~PluginLoaderPosix() {
 }
 
 void PluginLoaderPosix::GetPluginsToLoad() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   base::TimeTicks start_time(base::TimeTicks::Now());
 
@@ -123,7 +123,7 @@ void PluginLoaderPosix::GetPluginsToLoad() {
 }
 
 void PluginLoaderPosix::LoadPluginsInternal() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Check if the list is empty or all plugins have already been loaded before
   // forking.

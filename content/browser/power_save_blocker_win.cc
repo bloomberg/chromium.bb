@@ -134,7 +134,7 @@ class PowerSaveBlockerImpl::Delegate
 };
 
 void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return ApplySimpleBlock(type_, 1);
 
@@ -142,7 +142,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
 }
 
 void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return ApplySimpleBlock(type_, -1);
 

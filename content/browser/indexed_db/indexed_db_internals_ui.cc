@@ -83,7 +83,7 @@ void IndexedDBInternalsUI::AddContextFromStoragePartition(
 }
 
 void IndexedDBInternalsUI::GetAllOrigins(const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
@@ -116,7 +116,7 @@ void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
 
 void IndexedDBInternalsUI::OnOriginsReady(scoped_ptr<base::ListValue> origins,
                                           const base::FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   web_ui()->CallJavascriptFunction(
       "indexeddb.onOriginsReady", *origins, base::StringValue(path.value()));
 }
@@ -171,7 +171,7 @@ bool IndexedDBInternalsUI::GetOriginContext(
 }
 
 void IndexedDBInternalsUI::DownloadOriginData(const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::FilePath partition_path;
   GURL origin_url;
@@ -190,7 +190,7 @@ void IndexedDBInternalsUI::DownloadOriginData(const base::ListValue* args) {
 }
 
 void IndexedDBInternalsUI::ForceCloseOrigin(const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::FilePath partition_path;
   GURL origin_url;
@@ -290,7 +290,7 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
     const base::FilePath temp_path,
     const base::FilePath zip_path,
     size_t connection_count) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const GURL url = GURL(FILE_PATH_LITERAL("file://") + zip_path.value());
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();

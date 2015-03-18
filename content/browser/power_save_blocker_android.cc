@@ -41,7 +41,7 @@ class PowerSaveBlockerImpl::Delegate
 };
 
 void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_object = j_view_android_.get(env);
   if (j_object.obj())
@@ -49,7 +49,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
 }
 
 void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_object = j_view_android_.get(env);
   if (j_object.obj())

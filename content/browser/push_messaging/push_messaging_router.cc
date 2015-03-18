@@ -22,7 +22,7 @@ void PushMessagingRouter::DeliverMessage(
     int64 service_worker_registration_id,
     const std::string& data,
     const DeliverMessageCallback& deliver_message_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StoragePartition* partition =
       BrowserContext::GetStoragePartitionForSite(browser_context, origin);
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
@@ -46,7 +46,7 @@ void PushMessagingRouter::FindServiceWorkerRegistration(
     const std::string& data,
     const DeliverMessageCallback& deliver_message_callback,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Try to acquire the registration from storage. If it's already live we'll
   // receive it right away. If not, it will be revived from storage.
   service_worker_context->context()->storage()->FindRegistrationForId(
@@ -64,7 +64,7 @@ void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
     ServiceWorkerStatusCode service_worker_status,
     const scoped_refptr<ServiceWorkerRegistration>&
         service_worker_registration) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status == SERVICE_WORKER_OK) {
     // Hold on to the service worker registration in the callback to keep it
     // alive until the callback dies. Otherwise the registration could be
@@ -90,7 +90,7 @@ void PushMessagingRouter::DeliverMessageEnd(
     const DeliverMessageCallback& deliver_message_callback,
     const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
     ServiceWorkerStatusCode service_worker_status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mvanouwerkerk): UMA logging.
   PushDeliveryStatus delivery_status =
       PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR;

@@ -146,7 +146,7 @@ PluginProcessHost::~PluginProcessHost() {
     PostMessage(*window_index, WM_CLOSE, 0, 0);
   }
 #elif defined(OS_MACOSX)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // If the plugin process crashed but had fullscreen windows open at the time,
   // make sure that the menu bar is visible.
   for (size_t i = 0; i < plugin_fullscreen_windows_set_.size(); ++i) {
@@ -273,7 +273,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
 }
 
 void PluginProcessHost::ForceShutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   Send(new PluginProcessMsg_NotifyRenderersOfPendingShutdown());
   process_->ForceShutdown();
 }

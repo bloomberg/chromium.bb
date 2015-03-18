@@ -50,18 +50,18 @@ class HistogramSynchronizer::RequestContext {
   ~RequestContext() {}
 
   void SetReceivedProcessGroupCount(bool done) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     received_process_group_count_ = done;
   }
 
   // Methods for book keeping of processes_pending_.
   void AddProcessesPending(int processes_pending) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     processes_pending_ += processes_pending;
   }
 
   void DecrementProcessesPending() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     --processes_pending_;
   }
 
@@ -70,7 +70,7 @@ class HistogramSynchronizer::RequestContext {
   // |processes_pending_| are zero, then delete the current object by calling
   // Unregister.
   void DeleteIfAllDone() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     if (processes_pending_ <= 0 && received_process_group_count_)
       RequestContext::Unregister(sequence_number_);
@@ -79,7 +79,7 @@ class HistogramSynchronizer::RequestContext {
   // Register |callback| in |outstanding_requests_| map for the given
   // |sequence_number|.
   static void Register(const base::Closure& callback, int sequence_number) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     RequestContext* request = new RequestContext(callback, sequence_number);
     outstanding_requests_.Get()[sequence_number] = request;
@@ -88,7 +88,7 @@ class HistogramSynchronizer::RequestContext {
   // Find the |RequestContext| in |outstanding_requests_| map for the given
   // |sequence_number|.
   static RequestContext* GetRequestContext(int sequence_number) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     RequestContextMap::iterator it =
         outstanding_requests_.Get().find(sequence_number);
@@ -104,7 +104,7 @@ class HistogramSynchronizer::RequestContext {
   // |outstanding_requests_| map. This method is called when all changes have
   // been acquired, or when the wait time expires (whichever is sooner).
   static void Unregister(int sequence_number) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     RequestContextMap::iterator it =
         outstanding_requests_.Get().find(sequence_number);
@@ -190,7 +190,7 @@ void HistogramSynchronizer::FetchHistograms() {
         base::Bind(&HistogramSynchronizer::FetchHistograms));
     return;
   }
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   HistogramSynchronizer* current_synchronizer =
       HistogramSynchronizer::GetInstance();
@@ -229,7 +229,7 @@ void HistogramSynchronizer::FetchHistogramsAsynchronously(
 void HistogramSynchronizer::RegisterAndNotifyAllProcesses(
     ProcessHistogramRequester requester,
     base::TimeDelta wait_time) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   int sequence_number = GetNextAvailableSequenceNumber(requester);
 
@@ -254,7 +254,7 @@ void HistogramSynchronizer::RegisterAndNotifyAllProcesses(
 void HistogramSynchronizer::OnPendingProcesses(int sequence_number,
                                                int pending_processes,
                                                bool end) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RequestContext* request = RequestContext::GetRequestContext(sequence_number);
   if (!request)
@@ -267,7 +267,7 @@ void HistogramSynchronizer::OnPendingProcesses(int sequence_number,
 void HistogramSynchronizer::OnHistogramDataCollected(
     int sequence_number,
     const std::vector<std::string>& pickled_histograms) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::HistogramDeltaSerialization::DeserializeAndAddSamples(
       pickled_histograms);

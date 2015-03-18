@@ -259,7 +259,7 @@ void MediaInternals::MediaInternalsUMAHandler::Observe(
     int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(type, NOTIFICATION_RENDERER_PROCESS_TERMINATED);
   RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
 
@@ -277,7 +277,7 @@ void MediaInternals::MediaInternalsUMAHandler::Observe(
 void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
     const media::MediaLogEvent& event,
     int render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   PlayerInfoMap& player_info = renderer_info_[render_process_id];
   switch (event.type) {
     case media::MediaLogEvent::PIPELINE_ERROR: {
@@ -325,7 +325,7 @@ void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
 
 std::string MediaInternals::MediaInternalsUMAHandler::GetUMANameForAVStream(
     const PipelineInfo& player_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   static const char kPipelineUmaPrefix[] = "Media.PipelineStatus.AudioVideo.";
   std::string uma_name = kPipelineUmaPrefix;
   if (player_info.video_codec_name == "vp8") {
@@ -357,7 +357,7 @@ std::string MediaInternals::MediaInternalsUMAHandler::GetUMANameForAVStream(
 
 void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
     const PipelineInfo& player_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (player_info.has_video && player_info.has_audio) {
     base::LinearHistogram::FactoryGet(
         GetUMANameForAVStream(player_info), 1, media::PIPELINE_STATUS_MAX,
@@ -387,7 +387,7 @@ void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
 
 void MediaInternals::MediaInternalsUMAHandler::LogAndClearPlayersInRenderer(
     int render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto players_it = renderer_info_.find(render_process_id);
   if (players_it == renderer_info_.end())
     return;
@@ -410,7 +410,7 @@ MediaInternals::~MediaInternals() {}
 
 void MediaInternals::OnMediaEvents(
     int render_process_id, const std::vector<media::MediaLogEvent>& events) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Notify observers that |event| has occurred.
   for (auto event = events.begin(); event != events.end(); ++event) {
     base::DictionaryValue dict;
@@ -441,12 +441,12 @@ void MediaInternals::OnMediaEvents(
 }
 
 void MediaInternals::AddUpdateCallback(const UpdateCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   update_callbacks_.push_back(callback);
 }
 
 void MediaInternals::RemoveUpdateCallback(const UpdateCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (size_t i = 0; i < update_callbacks_.size(); ++i) {
     if (update_callbacks_[i].Equals(callback)) {
       update_callbacks_.erase(update_callbacks_.begin() + i);
@@ -467,14 +467,14 @@ void MediaInternals::SendAudioStreamData() {
 }
 
 void MediaInternals::SendVideoCaptureDeviceCapabilities() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SendUpdate(SerializeUpdate("media.onReceiveVideoCaptureCapabilities",
                              &video_capture_capabilities_cached_data_));
 }
 
 void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
     const media::VideoCaptureDeviceInfos& video_capture_device_infos) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   video_capture_capabilities_cached_data_.Clear();
 
   for (const auto& video_capture_device_info : video_capture_device_infos) {

@@ -452,7 +452,7 @@ void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
 void BrowserGpuChannelHostFactory::AddFilterOnIO(
     int host_id,
     scoped_refptr<IPC::MessageFilter> filter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   GpuProcessHost* host = GpuProcessHost::FromID(host_id);
   if (host)
@@ -503,7 +503,7 @@ void BrowserGpuChannelHostFactory::CreateGpuMemoryBuffer(
     int client_id,
     int32 surface_id,
     const CreateGpuMemoryBufferCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
   if (!host) {
@@ -538,7 +538,7 @@ void BrowserGpuChannelHostFactory::DestroyGpuMemoryBufferOnIO(
     gfx::GpuMemoryBufferId id,
     int client_id,
     int32 sync_point) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_host_id_);
   if (!host)
@@ -550,7 +550,7 @@ void BrowserGpuChannelHostFactory::DestroyGpuMemoryBufferOnIO(
 void BrowserGpuChannelHostFactory::OnGpuMemoryBufferCreated(
     uint32 request_id,
     const gfx::GpuMemoryBufferHandle& handle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   CreateGpuMemoryBufferCallbackMap::iterator iter =
       create_gpu_memory_buffer_requests_.find(request_id);

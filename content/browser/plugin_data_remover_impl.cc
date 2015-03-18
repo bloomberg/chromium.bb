@@ -69,7 +69,7 @@ class PluginDataRemoverImpl::Context
         is_removing_(false),
         browser_context_path_(browser_context->GetPath()),
         resource_context_(browser_context->GetResourceContext()) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
   void Init(const std::string& mime_type) {
@@ -95,7 +95,7 @@ class PluginDataRemoverImpl::Context
     if (!plugins.empty())  // May be empty for some tests.
       plugin_path = plugins[0].path;
 
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     remove_start_time_ = base::Time::Now();
     is_removing_ = true;
     // Balanced in On[Ppapi]ChannelOpened or OnError. Exactly one them will
@@ -214,7 +214,7 @@ class PluginDataRemoverImpl::Context
 
   // Connects the client side of a newly opened plugin channel.
   void ConnectToChannel(const IPC::ChannelHandle& handle, bool is_ppapi) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     // If we timed out, don't bother connecting.
     if (!is_removing_)
@@ -264,7 +264,7 @@ class PluginDataRemoverImpl::Context
   // Signals that we are finished with removing data (successful or not). This
   // method is safe to call multiple times.
   void SignalDone() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (!is_removing_)
       return;
     is_removing_ = false;

@@ -479,7 +479,7 @@ void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
 
 void ResourceLoader::CancelSSLRequest(int error,
                                       const net::SSLInfo* ssl_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // The request can be NULL if it was cancelled by the renderer (as the
   // request of the user navigating to a new page from the location bar).
@@ -495,7 +495,7 @@ void ResourceLoader::CancelSSLRequest(int error,
 }
 
 void ResourceLoader::ContinueSSLRequest() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DVLOG(1) << "ContinueSSLRequest() url: " << request_->url().spec();
 

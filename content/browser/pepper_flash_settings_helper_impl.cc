@@ -25,7 +25,7 @@ PepperFlashSettingsHelperImpl::~PepperFlashSettingsHelperImpl() {
 void PepperFlashSettingsHelperImpl::OpenChannelToBroker(
     const base::FilePath& path,
     const OpenChannelCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (callback.is_null())
     return;
@@ -52,7 +52,7 @@ void PepperFlashSettingsHelperImpl::OnPpapiChannelOpened(
     const IPC::ChannelHandle& channel_handle,
     base::ProcessId /* plugin_pid */,
     int /* plugin_child_id */) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback_.is_null());
 
   if (!channel_handle.name.empty())

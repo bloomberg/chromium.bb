@@ -44,7 +44,7 @@ class PowerSaveBlockerImpl::Delegate
       : type_(type), reason_(reason), description_(description), block_id_(0) {}
 
   void ApplyBlock() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!chromeos::PowerPolicyController::IsInitialized())
       return;
 
@@ -64,7 +64,7 @@ class PowerSaveBlockerImpl::Delegate
   }
 
   void RemoveBlock() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!chromeos::PowerPolicyController::IsInitialized())
       return;
 

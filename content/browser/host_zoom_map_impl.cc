@@ -31,7 +31,7 @@ namespace content {
 namespace {
 
 std::string GetHostFromProcessView(int render_process_id, int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderViewHost* render_view_host =
       RenderViewHost::FromID(render_process_id, render_view_id);
   if (!render_view_host)
@@ -125,7 +125,7 @@ void HostZoomMapImpl::CopyFrom(HostZoomMap* copy_interface) {
   //   UI: a.CopyFrom(b);
   //   IO: b.CopyFrom(a);
   // can deadlock.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   HostZoomMapImpl* copy = static_cast<HostZoomMapImpl*>(copy_interface);
   base::AutoLock auto_lock(lock_);
   base::AutoLock copy_auto_lock(copy->lock_);
@@ -227,7 +227,7 @@ HostZoomMap::ZoomLevelVector HostZoomMapImpl::GetAllZoomLevels() const {
 
 void HostZoomMapImpl::SetZoomLevelForHost(const std::string& host,
                                           double level) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   {
     base::AutoLock auto_lock(lock_);
@@ -252,7 +252,7 @@ void HostZoomMapImpl::SetZoomLevelForHost(const std::string& host,
 void HostZoomMapImpl::SetZoomLevelForHostAndScheme(const std::string& scheme,
                                                    const std::string& host,
                                                    double level) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   {
     base::AutoLock auto_lock(lock_);
     scheme_host_zoom_levels_[scheme][host] = level;
@@ -270,12 +270,12 @@ void HostZoomMapImpl::SetZoomLevelForHostAndScheme(const std::string& scheme,
 }
 
 double HostZoomMapImpl::GetDefaultZoomLevel() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return default_zoom_level_;
 }
 
 void HostZoomMapImpl::SetDefaultZoomLevel(double level) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   default_zoom_level_ = level;
 }
 
@@ -395,7 +395,7 @@ double HostZoomMapImpl::GetTemporaryZoomLevel(int render_process_id,
 void HostZoomMapImpl::SetTemporaryZoomLevel(int render_process_id,
                                             int render_view_id,
                                             double level) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   {
     RenderViewKey key(render_process_id, render_view_id);
@@ -491,7 +491,7 @@ void HostZoomMapImpl::SendErrorPageZoomLevelRefresh() {
 }
 
 HostZoomMapImpl::~HostZoomMapImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 }  // namespace content

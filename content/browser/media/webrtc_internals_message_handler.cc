@@ -73,7 +73,7 @@ void WebRTCInternalsMessageHandler::OnDOMLoadDone(
 
 void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,
                                              const base::Value* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::vector<const base::Value*> args_vector;
   if (args)
     args_vector.push_back(args);

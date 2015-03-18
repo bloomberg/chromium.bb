@@ -14,7 +14,7 @@ namespace content {
 namespace {
 
 void CancelRequestOnIOThread(GlobalRequestID global_request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ResourceDispatcherHostImpl::Get()->CancelTransferringNavigation(
       global_request_id);

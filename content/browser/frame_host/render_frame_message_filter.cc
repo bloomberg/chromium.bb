@@ -18,7 +18,7 @@ void CreateChildFrameOnUI(int process_id,
                           const std::string& frame_name,
                           SandboxFlags sandbox_flags,
                           int new_routing_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(process_id, parent_routing_id);
   // Handles the RenderFrameHost being deleted on the UI thread while

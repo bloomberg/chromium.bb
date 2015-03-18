@@ -49,7 +49,7 @@ static void RequestPlatformPathFromBlobURL(
     const GURL& url,
     ResourceContext* resource_context,
     const base::Callback<void(const std::string&)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ChromeBlobStorageContext* blob_storage_context =
       GetChromeBlobStorageContextForResourceContext(resource_context);
 
@@ -81,7 +81,7 @@ static void RequestPlaformPathFromFileSystemURL(
     int render_process_id,
     scoped_refptr<storage::FileSystemContext> file_system_context,
     const base::Callback<void(const std::string&)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::FilePath platform_path;
   SyncGetPlatformPath(file_system_context.get(),
                       render_process_id,
@@ -200,7 +200,7 @@ MediaResourceGetterTask::~MediaResourceGetterTask() {}
 
 net::AuthCredentials MediaResourceGetterTask::RequestAuthCredentials(
     const GURL& url) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::HttpTransactionFactory* factory =
       context_getter_->GetURLRequestContext()->http_transaction_factory();
   if (!factory)
@@ -224,7 +224,7 @@ net::AuthCredentials MediaResourceGetterTask::RequestAuthCredentials(
 void MediaResourceGetterTask::RequestCookies(
     const GURL& url, const GURL& first_party_for_cookies,
     const media::MediaResourceGetter::GetCookieCB& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessCookiesForOrigin(render_process_id_, url)) {
@@ -253,7 +253,7 @@ void MediaResourceGetterTask::CheckPolicyForCookies(
     const GURL& url, const GURL& first_party_for_cookies,
     const media::MediaResourceGetter::GetCookieCB& callback,
     const net::CookieList& cookie_list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (GetContentClient()->browser()->AllowGetCookie(
       url, first_party_for_cookies, cookie_list,
       resource_context_, render_process_id_, render_frame_id_)) {
@@ -283,7 +283,7 @@ MediaResourceGetterImpl::~MediaResourceGetterImpl() {}
 
 void MediaResourceGetterImpl::GetAuthCredentials(
     const GURL& url, const GetAuthCredentialsCB& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<MediaResourceGetterTask> task = new MediaResourceGetterTask(
       browser_context_, 0, 0);
 
@@ -298,7 +298,7 @@ void MediaResourceGetterImpl::GetAuthCredentials(
 void MediaResourceGetterImpl::GetCookies(
     const GURL& url, const GURL& first_party_for_cookies,
     const GetCookieCB& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<MediaResourceGetterTask> task = new MediaResourceGetterTask(
       browser_context_, render_process_id_, render_frame_id_);
 
@@ -316,19 +316,19 @@ void MediaResourceGetterImpl::GetCookies(
 void MediaResourceGetterImpl::GetAuthCredentialsCallback(
     const GetAuthCredentialsCB& callback,
     const net::AuthCredentials& credentials) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback.Run(credentials.username(), credentials.password());
 }
 
 void MediaResourceGetterImpl::GetCookiesCallback(
     const GetCookieCB& callback, const std::string& cookies) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback.Run(cookies);
 }
 
 void MediaResourceGetterImpl::GetPlatformPathFromURL(
     const GURL& url, const GetPlatformPathCB& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(url.SchemeIsFileSystem() || url.SchemeIs(url::kBlobScheme));
 
   GetPlatformPathCB cb =
@@ -355,14 +355,14 @@ void MediaResourceGetterImpl::GetPlatformPathFromURL(
 
 void MediaResourceGetterImpl::GetPlatformPathCallback(
     const GetPlatformPathCB& callback, const std::string& platform_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback.Run(platform_path);
 }
 
 void MediaResourceGetterImpl::ExtractMediaMetadata(
     const std::string& url, const std::string& cookies,
     const std::string& user_agent, const ExtractMediaMetadataCB& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   pool->PostWorkerTask(
       FROM_HERE,
@@ -372,7 +372,7 @@ void MediaResourceGetterImpl::ExtractMediaMetadata(
 void MediaResourceGetterImpl::ExtractMediaMetadata(
     const int fd, const int64 offset, const int64 size,
     const ExtractMediaMetadataCB& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   pool->PostWorkerTask(
       FROM_HERE,

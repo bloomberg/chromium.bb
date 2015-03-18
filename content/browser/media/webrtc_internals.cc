@@ -73,7 +73,7 @@ void WebRTCInternals::OnAddPeerConnection(int render_process_id,
                                           const string& url,
                                           const string& rtc_configuration,
                                           const string& constraints) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   if (!dict)
@@ -93,7 +93,7 @@ void WebRTCInternals::OnAddPeerConnection(int render_process_id,
 }
 
 void WebRTCInternals::OnRemovePeerConnection(ProcessId pid, int lid) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (size_t i = 0; i < peer_connection_data_.GetSize(); ++i) {
     base::DictionaryValue* dict = NULL;
     peer_connection_data_.GetDictionary(i, &dict);
@@ -121,7 +121,7 @@ void WebRTCInternals::OnRemovePeerConnection(ProcessId pid, int lid) {
 
 void WebRTCInternals::OnUpdatePeerConnection(
     ProcessId pid, int lid, const string& type, const string& value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (size_t i = 0; i < peer_connection_data_.GetSize(); ++i) {
     base::DictionaryValue* record = NULL;
@@ -187,7 +187,7 @@ void WebRTCInternals::OnGetUserMedia(int rid,
                                      bool video,
                                      const std::string& audio_constraints,
                                      const std::string& video_constraints) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("rid", rid);
@@ -205,12 +205,12 @@ void WebRTCInternals::OnGetUserMedia(int rid,
 }
 
 void WebRTCInternals::AddObserver(WebRTCInternalsUIObserver *observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.AddObserver(observer);
 }
 
 void WebRTCInternals::RemoveObserver(WebRTCInternalsUIObserver *observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.RemoveObserver(observer);
 
   // Disables the AEC recording if it is enabled and the last webrtc-internals
@@ -220,7 +220,7 @@ void WebRTCInternals::RemoveObserver(WebRTCInternalsUIObserver *observer) {
 }
 
 void WebRTCInternals::UpdateObserver(WebRTCInternalsUIObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (peer_connection_data_.GetSize() > 0)
     observer->OnUpdate("updateAllPeerConnections", &peer_connection_data_);
 
@@ -266,7 +266,7 @@ void WebRTCInternals::DisableAecDump() {
 }
 
 void WebRTCInternals::ResetForTesting() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.Clear();
   peer_connection_data_.Clear();
   CreateOrReleasePowerSaveBlocker();
@@ -285,7 +285,7 @@ void WebRTCInternals::SendUpdate(const string& command, base::Value* value) {
 void WebRTCInternals::Observe(int type,
                               const NotificationSource& source,
                               const NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(type, NOTIFICATION_RENDERER_PROCESS_TERMINATED);
   OnRendererExit(Source<RenderProcessHost>(source)->GetID());
 }
@@ -306,7 +306,7 @@ void WebRTCInternals::FileSelectionCanceled(void* params) {
 }
 
 void WebRTCInternals::OnRendererExit(int render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Iterates from the end of the list to remove the PeerConnections created
   // by the exitting renderer.
@@ -368,7 +368,7 @@ void WebRTCInternals::EnableAecDumpOnAllRenderProcessHosts() {
 #endif
 
 void WebRTCInternals::CreateOrReleasePowerSaveBlocker() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (peer_connection_data_.empty() && power_save_blocker_) {
     DVLOG(1) << ("Releasing the block on application suspension since no "

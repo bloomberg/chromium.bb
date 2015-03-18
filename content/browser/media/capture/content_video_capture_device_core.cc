@@ -35,7 +35,7 @@ namespace {
 
 void DeleteCaptureMachineOnUIThread(
     scoped_ptr<VideoCaptureMachine> capture_machine) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   capture_machine.reset();
 }

@@ -83,7 +83,7 @@ void PluginProcessHost::OnPluginHideWindow(uint32 window_id,
 }
 
 void PluginProcessHost::OnAppActivation() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // If our plugin process has any modal windows up, we need to bring it forward
   // so that they act more like an in-process modal window would.

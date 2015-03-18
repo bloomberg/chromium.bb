@@ -781,8 +781,7 @@ void InterstitialPageImpl::OnNavigatingAwayOrTabClosing() {
 
 void InterstitialPageImpl::TakeActionOnResourceDispatcher(
     ResourceRequestAction action) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI)) <<
-      "TakeActionOnResourceDispatcher should be called on the main thread.";
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (action == CANCEL || action == RESUME) {
     if (resource_dispatcher_host_notified_)

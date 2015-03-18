@@ -17,7 +17,7 @@ namespace {
 
 void SetCaptureSource(AuraWindowCaptureMachine* machine,
                       const DesktopMediaID& source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   aura::Window* window = DesktopMediaID::GetAuraWindowById(source);
   machine->SetWindow(window);

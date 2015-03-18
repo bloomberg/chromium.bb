@@ -157,7 +157,7 @@ void PowerSaveBlockerImpl::Delegate::CleanUp() {
 }
 
 void PowerSaveBlockerImpl::Delegate::InitOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
   api_ = SelectAPI();
   if (enqueue_apply_ && api_ != NO_API) {
@@ -171,7 +171,7 @@ void PowerSaveBlockerImpl::Delegate::InitOnUIThread() {
 }
 
 void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!bus_.get());  // ApplyBlock() should only be called once.
 
   dbus::Bus::Options options;
@@ -251,7 +251,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock(DBusAPI api) {
 }
 
 void PowerSaveBlockerImpl::Delegate::RemoveBlock(DBusAPI api) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(bus_.get());  // RemoveBlock() should only be called once.
 
   scoped_refptr<dbus::ObjectProxy> object_proxy;

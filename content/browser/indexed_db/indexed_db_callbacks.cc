@@ -262,7 +262,7 @@ static void CreateBlobsAndSend(
     scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
     const std::vector<IndexedDBBlobInfo>& blob_info,
     std::vector<IndexedDBMsg_BlobOrFileInfo>* blob_or_file_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (CreateAllBlobs(blob_info, blob_or_file_info, dispatcher_host))
     dispatcher_host->Send(new MsgType(*params));
 }
@@ -271,7 +271,7 @@ static void BlobLookupForCursorPrefetch(
     IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params* params,
     scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
     const std::vector<IndexedDBValue>& values) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(values.size(), params->blob_or_file_infos.size());
 
   std::vector<IndexedDBValue>::const_iterator value_iter;

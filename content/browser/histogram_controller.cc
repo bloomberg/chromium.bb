@@ -30,7 +30,7 @@ HistogramController::~HistogramController() {
 void HistogramController::OnPendingProcesses(int sequence_number,
                                              int pending_processes,
                                              bool end) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (subscriber_)
     subscriber_->OnPendingProcesses(sequence_number, pending_processes, end);
 }
@@ -48,7 +48,7 @@ void HistogramController::OnHistogramDataCollected(
     return;
   }
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (subscriber_) {
     subscriber_->OnHistogramDataCollected(sequence_number,
                                           pickled_histograms);
@@ -56,7 +56,7 @@ void HistogramController::OnHistogramDataCollected(
 }
 
 void HistogramController::Register(HistogramSubscriber* subscriber) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!subscriber_);
   subscriber_ = subscriber;
 }
@@ -69,7 +69,7 @@ void HistogramController::Unregister(
 
 void HistogramController::GetHistogramDataFromChildProcesses(
     int sequence_number) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   int pending_processes = 0;
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
@@ -106,7 +106,7 @@ void HistogramController::GetHistogramDataFromChildProcesses(
 }
 
 void HistogramController::GetHistogramData(int sequence_number) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   int pending_processes = 0;
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());

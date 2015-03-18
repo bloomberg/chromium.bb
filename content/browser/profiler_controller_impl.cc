@@ -33,7 +33,7 @@ ProfilerControllerImpl::~ProfilerControllerImpl() {
 void ProfilerControllerImpl::OnPendingProcesses(int sequence_number,
                                                 int pending_processes,
                                                 bool end) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (subscriber_)
     subscriber_->OnPendingProcesses(sequence_number, pending_processes, end);
 }
@@ -53,7 +53,7 @@ void ProfilerControllerImpl::OnProfilerDataCollected(
     return;
   }
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (subscriber_) {
     subscriber_->OnProfilerDataCollected(sequence_number, profiler_data,
                                          process_type);
@@ -61,7 +61,7 @@ void ProfilerControllerImpl::OnProfilerDataCollected(
 }
 
 void ProfilerControllerImpl::Register(ProfilerSubscriber* subscriber) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!subscriber_);
   subscriber_ = subscriber;
 }
@@ -73,7 +73,7 @@ void ProfilerControllerImpl::Unregister(const ProfilerSubscriber* subscriber) {
 
 void ProfilerControllerImpl::GetProfilerDataFromChildProcesses(
     int sequence_number) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   int pending_processes = 0;
   for (BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
@@ -101,7 +101,7 @@ void ProfilerControllerImpl::GetProfilerDataFromChildProcesses(
 }
 
 void ProfilerControllerImpl::GetProfilerData(int sequence_number) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   int pending_processes = 0;
   for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());

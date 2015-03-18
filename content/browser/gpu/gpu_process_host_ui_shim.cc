@@ -128,7 +128,7 @@ GpuProcessHostUIShim* GpuProcessHostUIShim::Create(int host_id) {
 
 // static
 void GpuProcessHostUIShim::Destroy(int host_id, const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GpuDataManagerImpl::GetInstance()->AddLogMessage(
       logging::LOG_ERROR, "GpuProcessHostUIShim",
@@ -145,7 +145,7 @@ void GpuProcessHostUIShim::Destroy(int host_id, const std::string& message) {
 
 // static
 void GpuProcessHostUIShim::DestroyAll() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   while (!g_hosts_by_id.Pointer()->IsEmpty()) {
     IDMap<GpuProcessHostUIShim>::iterator it(g_hosts_by_id.Pointer());
     delete it.GetCurrentValue();
@@ -154,13 +154,13 @@ void GpuProcessHostUIShim::DestroyAll() {
 
 // static
 GpuProcessHostUIShim* GpuProcessHostUIShim::FromID(int host_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return g_hosts_by_id.Pointer()->Lookup(host_id);
 }
 
 // static
 GpuProcessHostUIShim* GpuProcessHostUIShim::GetOneInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (g_hosts_by_id.Pointer()->IsEmpty())
     return NULL;
   IDMap<GpuProcessHostUIShim>::iterator it(g_hosts_by_id.Pointer());

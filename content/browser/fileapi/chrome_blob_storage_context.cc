@@ -60,13 +60,13 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
 }
 
 void ChromeBlobStorageContext::InitializeOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   context_.reset(new BlobStorageContext());
 }
 
 scoped_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
     const char* data, size_t length) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::string uuid(base::GenerateGUID());
   storage::BlobDataBuilder blob_data_builder(uuid);
@@ -87,7 +87,7 @@ scoped_ptr<BlobHandle> ChromeBlobStorageContext::CreateFileBackedBlob(
     int64_t offset,
     int64_t size,
     const base::Time& expected_modification_time) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::string uuid(base::GenerateGUID());
   storage::BlobDataBuilder blob_data_builder(uuid);

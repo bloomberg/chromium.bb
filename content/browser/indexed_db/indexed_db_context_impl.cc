@@ -559,7 +559,7 @@ void IndexedDBContextImpl::GotUsageAndQuota(const GURL& origin_url,
                                             storage::QuotaStatusCode status,
                                             int64 usage,
                                             int64 quota) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(status == storage::kQuotaStatusOk ||
          status == storage::kQuotaErrorAbort)
       << "status was " << status;
@@ -594,7 +594,7 @@ void IndexedDBContextImpl::QueryAvailableQuota(const GURL& origin_url) {
     }
     return;
   }
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!quota_manager_proxy() || !quota_manager_proxy()->quota_manager())
     return;
   quota_manager_proxy()->quota_manager()->GetUsageAndQuota(

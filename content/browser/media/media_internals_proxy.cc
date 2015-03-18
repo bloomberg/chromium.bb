@@ -33,7 +33,7 @@ MediaInternalsProxy::MediaInternalsProxy() {
 void MediaInternalsProxy::Observe(int type,
                                   const NotificationSource& source,
                                   const NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(type, NOTIFICATION_RENDERER_PROCESS_TERMINATED);
   RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
   CallJavaScriptFunctionOnUIThread("media.onRendererTerminated",
@@ -41,7 +41,7 @@ void MediaInternalsProxy::Observe(int type,
 }
 
 void MediaInternalsProxy::Attach(MediaInternalsMessageHandler* handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   handler_ = handler;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -49,7 +49,7 @@ void MediaInternalsProxy::Attach(MediaInternalsMessageHandler* handler) {
 }
 
 void MediaInternalsProxy::Detach() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   handler_ = NULL;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -58,7 +58,7 @@ void MediaInternalsProxy::Detach() {
 }
 
 void MediaInternalsProxy::GetEverything() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Ask MediaInternals for all its data.
   BrowserThread::PostTask(
@@ -70,7 +70,7 @@ void MediaInternalsProxy::GetEverything() {
 }
 
 void MediaInternalsProxy::OnUpdate(const base::string16& update) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&MediaInternalsProxy::UpdateUIOnUIThread, this, update));
@@ -116,7 +116,7 @@ base::Value* MediaInternalsProxy::GetConstants() {
 }
 
 void MediaInternalsProxy::ObserveMediaInternalsOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   update_callback_ = base::Bind(&MediaInternalsProxy::OnUpdate,
                                 base::Unretained(this));
   MediaInternals::GetInstance()->AddUpdateCallback(update_callback_);
@@ -127,7 +127,7 @@ void MediaInternalsProxy::ObserveMediaInternalsOnIOThread() {
 }
 
 void MediaInternalsProxy::StopObservingMediaInternalsOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaInternals::GetInstance()->RemoveUpdateCallback(update_callback_);
   if (GetContentClient()->browser()->GetNetLog()) {
     net::NetLog* net_log = GetContentClient()->browser()->GetNetLog();
@@ -136,20 +136,20 @@ void MediaInternalsProxy::StopObservingMediaInternalsOnIOThread() {
 }
 
 void MediaInternalsProxy::GetEverythingOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaInternals::GetInstance()->SendAudioStreamData();
   MediaInternals::GetInstance()->SendVideoCaptureDeviceCapabilities();
 }
 
 void MediaInternalsProxy::UpdateUIOnUIThread(const base::string16& update) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Don't forward updates to a destructed UI.
   if (handler_)
     handler_->OnUpdate(update);
 }
 
 void MediaInternalsProxy::AddNetEventOnUIThread(base::Value* entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Send the updates to the page in kMediaInternalsProxyEventDelayMilliseconds
   // if an update is not already pending.
@@ -165,14 +165,14 @@ void MediaInternalsProxy::AddNetEventOnUIThread(base::Value* entry) {
 }
 
 void MediaInternalsProxy::SendNetEventsOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CallJavaScriptFunctionOnUIThread("media.onNetUpdate",
                                    pending_net_updates_.release());
 }
 
 void MediaInternalsProxy::CallJavaScriptFunctionOnUIThread(
     const std::string& function, base::Value* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<base::Value> args_value(args);
   std::vector<const base::Value*> args_vector;
   args_vector.push_back(args_value.get());
