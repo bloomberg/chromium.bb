@@ -355,6 +355,19 @@ IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, ConfigInternalRemove) {
   EXPECT_FALSE(DoesConfigExist(kTestConfig));
 }
 
+IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, CheckEvents) {
+  LoadVpnExtension();
+  AddNetworkProfileForUser();
+  EXPECT_TRUE(RunExtensionTest("expectEvents"));
+  EXPECT_TRUE(DoesConfigExist(kTestConfig));
+
+  extensions::ResultCatcher catcher;
+  service_->SendPlatformError(extension_id_, kTestConfig, "error_message");
+  service_->SendShowAddDialogToExtension(extension_id_);
+  service_->SendShowConfigureDialogToExtension(extension_id_, kTestConfig);
+  EXPECT_TRUE(catcher.GetNextResult());
+}
+
 IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, ConfigPersistence) {
   LoadVpnExtension();
   AddNetworkProfileForUser();

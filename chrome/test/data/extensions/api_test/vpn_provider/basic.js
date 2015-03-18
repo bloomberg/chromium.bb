@@ -249,6 +249,34 @@ var testRoutines = {
       chrome.test.succeed();
     });
   },
+  expectEvents: function() {
+    // The variable |i| is used to verify the order in which events are fired.
+    var i = 0;
+    chrome.vpnProvider.createConfig('testconfig', function() {
+      chrome.test.assertEq(chrome.runtime.lastError, undefined);
+      chrome.test.succeed();
+    });
+    chrome.vpnProvider.onPlatformMessage.addListener(function(config_name,
+                                                              message, error) {
+      chrome.test.assertEq(i, 0);
+      chrome.test.assertEq(config_name, 'testconfig');
+      chrome.test.assertEq(message, 'error');
+      chrome.test.assertEq(error, 'error_message');
+      i++;
+    });
+    chrome.vpnProvider.onUIEvent.addListener(function(event, id) {
+      if (event == 'showAddDialog') {
+        chrome.test.assertEq(i, 1);
+        chrome.test.assertEq(id, '');
+        i++;
+      } else {
+        chrome.test.assertEq(i, 2);
+        chrome.test.assertEq(event, 'showConfigureDialog');
+        chrome.test.assertEq(id, 'testconfig');
+        chrome.test.succeed();
+      }
+    });
+  },
   destroyConfigSuccess: function() {
     chrome.vpnProvider.destroyConfig('testconfig', function() {
       chrome.test.assertEq(chrome.runtime.lastError, undefined);

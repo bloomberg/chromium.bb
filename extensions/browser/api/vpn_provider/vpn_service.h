@@ -72,6 +72,10 @@ class VpnService : public KeyedService,
   void SendShowConfigureDialogToExtension(const std::string& extension_id,
                                           const std::string& configuration_id);
 
+  void SendPlatformError(const std::string& extension_id,
+                         const std::string& configuration_id,
+                         const std::string& error_message);
+
   // NetworkConfigurationObserver:
   void OnConfigurationCreated(const std::string& service_path,
                               const std::string& profile_path,

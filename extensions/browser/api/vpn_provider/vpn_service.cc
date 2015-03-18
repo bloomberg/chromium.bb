@@ -173,6 +173,15 @@ void VpnService::SendShowConfigureDialogToExtension(
                                  configuration_id));
 }
 
+void VpnService::SendPlatformError(const std::string& extension_id,
+                                   const std::string& configuration_id,
+                                   const std::string& error_message) {
+  SendSignalToExtension(
+      extension_id, api_vpn::OnPlatformMessage::kEventName,
+      api_vpn::OnPlatformMessage::Create(
+          configuration_id, api_vpn::PLATFORM_MESSAGE_ERROR, error_message));
+}
+
 std::string VpnService::GetKey(const std::string& extension_id,
                                const std::string& name) {
   const std::string key = crypto::SHA256HashString(extension_id + name);
