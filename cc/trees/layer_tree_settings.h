@@ -9,6 +9,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/output/renderer_settings.h"
+#include "cc/scheduler/scheduler_settings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -84,6 +85,8 @@ class CC_EXPORT LayerTreeSettings {
   bool verify_property_trees;
 
   LayerTreeDebugState initial_debug_state;
+
+  SchedulerSettings ToSchedulerSettings() const;
 };
 
 }  // namespace cc

@@ -5,7 +5,6 @@
 #include "cc/scheduler/scheduler_settings.h"
 
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/trees/layer_tree_settings.h"
 
 namespace cc {
 
@@ -19,23 +18,6 @@ SchedulerSettings::SchedulerSettings()
       throttle_frame_production(true),
       main_thread_should_always_be_low_latency(false),
       background_frame_interval(base::TimeDelta::FromSeconds(1)) {
-}
-
-SchedulerSettings::SchedulerSettings(const LayerTreeSettings& settings)
-    : use_external_begin_frame_source(settings.use_external_begin_frame_source),
-      main_frame_before_activation_enabled(
-          settings.main_frame_before_activation_enabled),
-      impl_side_painting(settings.impl_side_painting),
-      timeout_and_draw_when_animation_checkerboards(
-          settings.timeout_and_draw_when_animation_checkerboards),
-      maximum_number_of_failed_draws_before_draw_is_forced_(
-          settings.maximum_number_of_failed_draws_before_draw_is_forced_),
-      using_synchronous_renderer_compositor(
-          settings.using_synchronous_renderer_compositor),
-      throttle_frame_production(settings.throttle_frame_production),
-      main_thread_should_always_be_low_latency(false),
-      background_frame_interval(base::TimeDelta::FromSecondsD(
-          1.0 / settings.background_animation_rate)) {
 }
 
 SchedulerSettings::~SchedulerSettings() {}

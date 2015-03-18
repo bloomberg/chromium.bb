@@ -1165,7 +1165,8 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
   DCHECK(IsImplThread());
   impl().layer_tree_host_impl =
       layer_tree_host()->CreateLayerTreeHostImpl(this);
-  SchedulerSettings scheduler_settings(layer_tree_host()->settings());
+  SchedulerSettings scheduler_settings(
+      layer_tree_host()->settings().ToSchedulerSettings());
   impl().scheduler = Scheduler::Create(
                          this,
                          scheduler_settings,

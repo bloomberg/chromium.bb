@@ -96,7 +96,8 @@ void SingleThreadProxy::SetLayerTreeHostClientReady() {
   DebugScopedSetImplThread impl(this);
   if (layer_tree_host_->settings().single_thread_proxy_scheduler &&
       !scheduler_on_impl_thread_) {
-    SchedulerSettings scheduler_settings(layer_tree_host_->settings());
+    SchedulerSettings scheduler_settings(
+        layer_tree_host_->settings().ToSchedulerSettings());
     // SingleThreadProxy should run in main thread low latency mode.
     scheduler_settings.main_thread_should_always_be_low_latency = true;
     scheduler_on_impl_thread_ =
