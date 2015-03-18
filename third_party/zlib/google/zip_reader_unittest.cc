@@ -18,13 +18,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/zlib/google/zip_internal.h"
-
-using ::testing::Return;
-using ::testing::_;
 
 namespace {
 
@@ -50,8 +46,6 @@ class FileWrapper {
   ~FileWrapper() {}
 
   base::PlatformFile platform_file() { return file_.GetPlatformFile(); }
-
-  base::File* file() { return &file_; }
 
  private:
   base::File file_;
@@ -97,12 +91,6 @@ class MockUnzipListener : public base::SupportsWeakPtr<MockUnzipListener> {
   int progress_calls_;
 
   int64 current_progress_;
-};
-
-class MockWriterDelegate : public zip::WriterDelegate {
- public:
-  MOCK_METHOD0(PrepareOutput, bool());
-  MOCK_METHOD2(WriteBytes, bool(const char*, int));
 };
 
 }   // namespace
@@ -299,7 +287,8 @@ TEST_F(ZipReaderTest, PlatformFileExtractCurrentEntryToFilePath_RegularFile) {
   EXPECT_LT(static_cast<size_t>(internal::kZipBufSize), output.size());
 }
 
-TEST_F(ZipReaderTest, PlatformFileExtractCurrentEntryToFile_RegularFile) {
+#if defined(OS_POSIX)
+TEST_F(ZipReaderTest, PlatformFileExtractCurrentEntryToFd_RegularFile) {
   ZipReader reader;
   FileWrapper zip_fd_wrapper(test_zip_file_, FileWrapper::READ_ONLY);
   ASSERT_TRUE(reader.OpenFromPlatformFile(zip_fd_wrapper.platform_file()));
@@ -307,16 +296,18 @@ TEST_F(ZipReaderTest, PlatformFileExtractCurrentEntryToFile_RegularFile) {
   base::FilePath out_path = test_dir_.AppendASCII("quux.txt");
   FileWrapper out_fd_w(out_path, FileWrapper::READ_WRITE);
   ASSERT_TRUE(reader.LocateAndOpenEntry(target_path));
-  ASSERT_TRUE(reader.ExtractCurrentEntryToFile(out_fd_w.file()));
+  ASSERT_TRUE(reader.ExtractCurrentEntryToFd(out_fd_w.platform_file()));
   // Read the output file and compute the MD5.
   std::string output;
-  ASSERT_TRUE(base::ReadFileToString(out_path, &output));
+  ASSERT_TRUE(base::ReadFileToString(test_dir_.AppendASCII("quux.txt"),
+                                     &output));
   const std::string md5 = base::MD5String(output);
   EXPECT_EQ(kQuuxExpectedMD5, md5);
   // quux.txt should be larger than kZipBufSize so that we can exercise
   // the loop in ExtractCurrentEntry().
   EXPECT_LT(static_cast<size_t>(internal::kZipBufSize), output.size());
 }
+#endif
 
 TEST_F(ZipReaderTest, ExtractCurrentEntryToFilePath_Directory) {
   ZipReader reader;
@@ -589,99 +580,6 @@ TEST_F(ZipReaderTest, DISABLED_LeakDetectionTest) {
     ZipReader reader;
     ASSERT_TRUE(reader.OpenFromPlatformFile(zip_fd_wrapper.platform_file()));
   }
-}
-
-// Test that when WriterDelegate::PrepareMock returns false, no other methods on
-// the delegate are called and the extraction fails.
-TEST_F(ZipReaderTest, ExtractCurrentEntryPrepareFailure) {
-  testing::StrictMock<MockWriterDelegate> mock_writer;
-
-  EXPECT_CALL(mock_writer, PrepareOutput())
-      .WillOnce(Return(false));
-
-  base::FilePath target_path(FILE_PATH_LITERAL("foo/bar/quux.txt"));
-  ZipReader reader;
-
-  ASSERT_TRUE(reader.Open(test_zip_file_));
-  ASSERT_TRUE(reader.LocateAndOpenEntry(target_path));
-  ASSERT_FALSE(reader.ExtractCurrentEntry(&mock_writer));
-}
-
-// Test that when WriterDelegate::WriteBytes returns false, no other methods on
-// the delegate are called and the extraction fails.
-TEST_F(ZipReaderTest, ExtractCurrentEntryWriteBytesFailure) {
-  testing::StrictMock<MockWriterDelegate> mock_writer;
-
-  EXPECT_CALL(mock_writer, PrepareOutput())
-      .WillOnce(Return(true));
-  EXPECT_CALL(mock_writer, WriteBytes(_, _))
-      .WillOnce(Return(false));
-
-  base::FilePath target_path(FILE_PATH_LITERAL("foo/bar/quux.txt"));
-  ZipReader reader;
-
-  ASSERT_TRUE(reader.Open(test_zip_file_));
-  ASSERT_TRUE(reader.LocateAndOpenEntry(target_path));
-  ASSERT_FALSE(reader.ExtractCurrentEntry(&mock_writer));
-}
-
-// Test that extraction succeeds when the writer delegate reports all is well.
-TEST_F(ZipReaderTest, ExtractCurrentEntrySuccess) {
-  testing::StrictMock<MockWriterDelegate> mock_writer;
-
-  EXPECT_CALL(mock_writer, PrepareOutput())
-      .WillOnce(Return(true));
-  EXPECT_CALL(mock_writer, WriteBytes(_, _))
-      .WillRepeatedly(Return(true));
-
-  base::FilePath target_path(FILE_PATH_LITERAL("foo/bar/quux.txt"));
-  ZipReader reader;
-
-  ASSERT_TRUE(reader.Open(test_zip_file_));
-  ASSERT_TRUE(reader.LocateAndOpenEntry(target_path));
-  ASSERT_TRUE(reader.ExtractCurrentEntry(&mock_writer));
-}
-
-class FileWriterDelegateTest : public ::testing::Test {
- protected:
-  void SetUp() override {
-    ASSERT_TRUE(base::CreateTemporaryFile(&temp_file_path_));
-    file_.Initialize(temp_file_path_, (base::File::FLAG_CREATE_ALWAYS |
-                                       base::File::FLAG_READ |
-                                       base::File::FLAG_WRITE |
-                                       base::File::FLAG_TEMPORARY |
-                                       base::File::FLAG_DELETE_ON_CLOSE));
-    ASSERT_TRUE(file_.IsValid());
-  }
-
-  // Writes data to the file, leaving the current position at the end of the
-  // write.
-  void PopulateFile() {
-    static const char kSomeData[] = "this sure is some data.";
-    static const size_t kSomeDataLen = sizeof(kSomeData) - 1;
-    ASSERT_NE(-1LL, file_.Write(0LL, kSomeData, kSomeDataLen));
-  }
-
-  base::FilePath temp_file_path_;
-  base::File file_;
-};
-
-TEST_F(FileWriterDelegateTest, WriteToStartAndTruncate) {
-  // Write stuff and advance.
-  PopulateFile();
-
-  // This should rewind, write, then truncate.
-  static const char kSomeData[] = "short";
-  static const int kSomeDataLen = sizeof(kSomeData) - 1;
-  {
-    FileWriterDelegate writer(&file_);
-    ASSERT_TRUE(writer.PrepareOutput());
-    ASSERT_TRUE(writer.WriteBytes(kSomeData, kSomeDataLen));
-  }
-  ASSERT_EQ(kSomeDataLen, file_.GetLength());
-  char buf[kSomeDataLen] = {};
-  ASSERT_EQ(kSomeDataLen, file_.Read(0LL, buf, kSomeDataLen));
-  ASSERT_EQ(std::string(kSomeData), std::string(buf, kSomeDataLen));
 }
 
 }  // namespace zip
