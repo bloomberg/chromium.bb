@@ -107,6 +107,7 @@ struct shell_surface {
 	struct wl_resource *resource;
 	struct wl_signal destroy_signal;
 	struct shell_client *owner;
+	struct wl_resource *owner_resource;
 
 	struct weston_surface *surface;
 	struct weston_view *view;
@@ -239,6 +240,7 @@ struct shell_client {
 	struct wl_event_source *ping_timer;
 	uint32_t ping_serial;
 	int unresponsive;
+	struct wl_list surface_list;
 };
 
 static struct desktop_shell *
@@ -3552,6 +3554,7 @@ shell_destroy_shell_surface(struct wl_resource *resource)
 
 	if (!wl_list_empty(&shsurf->popup.grab_link))
 		remove_popup_grab(shsurf);
+	wl_list_remove(wl_resource_get_link(shsurf->resource));
 	shsurf->resource = NULL;
 }
 
@@ -3723,6 +3726,7 @@ shell_get_shell_surface(struct wl_client *client,
 	wl_resource_set_implementation(shsurf->resource,
 				       &shell_surface_implementation,
 				       shsurf, shell_destroy_shell_surface);
+	wl_list_init(wl_resource_get_link(shsurf->resource));
 }
 
 static bool
@@ -3986,6 +3990,21 @@ static void
 xdg_shell_destroy(struct wl_client *client,
 		  struct wl_resource *resource)
 {
+	struct shell_client *sc = wl_resource_get_user_data(resource);
+	struct wl_resource *shsurf_resource;
+	struct shell_surface *shsurf;
+
+	wl_resource_for_each(shsurf_resource, &sc->surface_list) {
+		shsurf = wl_resource_get_user_data(shsurf_resource);
+		if (shsurf->owner_resource == resource) {
+			wl_resource_post_error(
+				resource,
+				XDG_SHELL_ERROR_DEFUNCT_SURFACES,
+				"not all child surface objects destroyed");
+			return;
+		}
+	}
+
 	wl_resource_destroy(resource);
 }
 
@@ -4054,6 +4073,9 @@ xdg_get_xdg_surface(struct wl_client *client,
 	wl_resource_set_implementation(shsurf->resource,
 				       &xdg_surface_implementation,
 				       shsurf, shell_destroy_shell_surface);
+	shsurf->owner_resource = resource;
+	wl_list_insert(&sc->surface_list,
+		       wl_resource_get_link(shsurf->resource));
 }
 
 static bool
@@ -4180,6 +4202,9 @@ xdg_get_xdg_popup(struct wl_client *client,
 	wl_resource_set_implementation(shsurf->resource,
 				       &xdg_popup_implementation,
 				       shsurf, shell_destroy_shell_surface);
+	shsurf->owner_resource = resource;
+	wl_list_insert(&sc->surface_list,
+		       wl_resource_get_link(shsurf->resource));
 }
 
 static void
@@ -5797,6 +5822,7 @@ shell_client_create(struct wl_client *client, struct desktop_shell *shell,
 	sc->shell = shell;
 	sc->destroy_listener.notify = handle_shell_client_destroy;
 	wl_client_add_destroy_listener(client, &sc->destroy_listener);
+	wl_list_init(&sc->surface_list);
 
 	return sc;
 }

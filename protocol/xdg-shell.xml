@@ -49,6 +49,7 @@
 
     <enum name="error">
       <entry name="role" value="0" summary="given wl_surface has another role"/>
+      <entry name="defunct_surfaces" value="1" summary="xdg_shell was destroyed before children"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -56,9 +57,8 @@
         Destroy this xdg_shell object.
 
         Destroying a bound xdg_shell object while there are surfaces
-        still alive with roles from this interface is illegal and will
-        result in a protocol error. Make sure to destroy all surfaces
-        before destroying this object.
+        still alive created by this xdg_shell object instance is illegal
+        and will result in a protocol error.
       </description>
     </request>
 
