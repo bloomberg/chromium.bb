@@ -34,6 +34,11 @@ class AccountChooserInfoBarDelegateAndroid : public infobars::InfoBarDelegate {
     return ui_controller_->GetCurrentForms();
   }
 
+  const std::vector<const autofill::PasswordForm*>&
+  federated_credentials_forms() const {
+    return ui_controller_->GetFederatedForms();
+  }
+
   void ChooseCredential(size_t credential_index,
                         password_manager::CredentialType credential_type);
 
