@@ -4,6 +4,7 @@
 
 #include "content/browser/utility_process_host_impl.h"
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -241,14 +242,20 @@ bool UtilityProcessHostImpl::StartProcess() {
     std::string locale = GetContentClient()->browser()->GetApplicationLocale();
     cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
-    if (no_sandbox_ || browser_command_line.HasSwitch(switches::kNoSandbox))
+    if (no_sandbox_)
       cmd_line->AppendSwitch(switches::kNoSandbox);
+
+    // Browser command-line switches to propagate to the utility process.
+    static const char* const kSwitchNames[] = {
+      switches::kDebugPluginLoading,
+      switches::kNoSandbox,
+      switches::kProfilerTiming,
 #if defined(OS_MACOSX)
-    if (browser_command_line.HasSwitch(switches::kEnableSandboxLogging))
-      cmd_line->AppendSwitch(switches::kEnableSandboxLogging);
+      switches::kEnableSandboxLogging,
 #endif
-    if (browser_command_line.HasSwitch(switches::kDebugPluginLoading))
-      cmd_line->AppendSwitch(switches::kDebugPluginLoading);
+    };
+    cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
+                               arraysize(kSwitchNames));
 
     if (has_cmd_prefix) {
       // Launch the utility child process with some prefix
