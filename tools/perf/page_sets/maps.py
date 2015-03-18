@@ -1,8 +1,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-import logging
+from page_sets import webgl_supported_shared_state
 
 from telemetry.page import page as page_module
 from telemetry.page import page_set as page_set_module
@@ -14,14 +13,10 @@ class MapsPage(page_module.Page):
     super(MapsPage, self).__init__(
       url='http://localhost:10020/tracker.html',
       page_set=page_set,
-      name='Maps.maps_002')
+      name='Maps.maps_002',
+      shared_page_state_class=(
+          webgl_supported_shared_state.WebGLSupportedSharedState))
     self.archive_data_file = 'data/maps.json'
-
-  def CanRunOnBrowser(self, browser_info):
-    if not browser_info.HasWebGLSupport():
-      logging.warning('Browser does not support webgl, skipping test')
-      return False
-    return True
 
   def RunNavigateSteps(self, action_runner):
     super(MapsPage, self).RunNavigateSteps(action_runner)
