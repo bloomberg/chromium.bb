@@ -16,7 +16,7 @@
         android:layout_weight="1"
         android:background="?attr/listChoiceBackgroundIndicator"
         android:gravity="center_vertical"
-        android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+        android:paddingStart="16dp"
         android:paddingEnd="9dp"
         android:singleLine="true"
         android:textAppearance="?android:attr/textAppearanceLargePopupMenu" />
