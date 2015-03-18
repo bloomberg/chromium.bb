@@ -801,7 +801,7 @@ void removeHiddenValueFromArray(v8::Isolate* isolate, v8::Handle<v8::Object> obj
     for (int i = array->Length() - 1; i >= 0; --i) {
         v8::Local<v8::Value> item = array->Get(v8::Integer::New(isolate, i));
         if (item->StrictEquals(value)) {
-            array->Delete(i);
+            array->Delete(isolate->GetCurrentContext(), i);
             return;
         }
     }

@@ -491,7 +491,7 @@ void WindowProxy::namedItemRemoved(HTMLDocument* document, const AtomicString& n
     ASSERT(!m_document.isEmpty());
     v8::Handle<v8::Object> documentHandle = m_document.newLocal(m_isolate);
     checkDocumentWrapper(documentHandle, document);
-    documentHandle->Delete(v8String(m_isolate, name));
+    documentHandle->Delete(m_isolate->GetCurrentContext(), v8String(m_isolate, name));
 }
 
 void WindowProxy::updateSecurityOrigin(SecurityOrigin* origin)

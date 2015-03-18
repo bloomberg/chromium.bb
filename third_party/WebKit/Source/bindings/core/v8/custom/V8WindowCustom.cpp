@@ -123,8 +123,9 @@ void V8Window::frameElementAttributeGetterCustom(const v8::PropertyCallbackInfo<
 
 void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
+    v8::Isolate* isolate = info.GetIsolate();
     LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
-    ExceptionState exceptionState(ExceptionState::SetterContext, "opener", "Window", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "opener", "Window", info.Holder(), isolate);
     if (!BindingSecurity::shouldAllowAccessToFrame(info.GetIsolate(), impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
@@ -141,11 +142,11 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8:
     }
 
     // Delete the accessor from this object.
-    info.Holder()->Delete(v8AtomicString(info.GetIsolate(), "opener"));
+    info.Holder()->Delete(isolate->GetCurrentContext(), v8AtomicString(isolate, "opener"));
 
     // Put property on the front (this) object.
     if (info.This()->IsObject())
-        v8::Handle<v8::Object>::Cast(info.This())->Set(v8AtomicString(info.GetIsolate(), "opener"), value);
+        v8::Handle<v8::Object>::Cast(info.This())->Set(v8AtomicString(isolate, "opener"), value);
 }
 
 static bool isLegacyTargetOriginDesignation(v8::Handle<v8::Value> value)
