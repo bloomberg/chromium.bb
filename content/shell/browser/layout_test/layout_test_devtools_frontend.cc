@@ -19,14 +19,12 @@ LayoutTestDevToolsFrontend* LayoutTestDevToolsFrontend::Show(
     WebContents* inspected_contents,
     const std::string& settings,
     const std::string& frontend_url) {
-  scoped_refptr<DevToolsAgentHost> agent(
-      DevToolsAgentHost::GetOrCreateFor(inspected_contents));
   Shell* shell = Shell::CreateNewWindow(inspected_contents->GetBrowserContext(),
                                         GURL(),
                                         NULL,
                                         gfx::Size());
   LayoutTestDevToolsFrontend* devtools_frontend =
-      new LayoutTestDevToolsFrontend(shell, agent.get());
+      new LayoutTestDevToolsFrontend(shell, inspected_contents);
 
   shell->LoadURL(GetDevToolsPathAsURL(settings, frontend_url));
 
@@ -61,17 +59,16 @@ GURL LayoutTestDevToolsFrontend::GetDevToolsPathAsURL(
   return result;
 }
 
-void LayoutTestDevToolsFrontend::ReuseFrontend(WebContents* inspected_contents,
-                                               const std::string& settings,
+void LayoutTestDevToolsFrontend::ReuseFrontend(const std::string& settings,
                                                const std::string frontend_url) {
-  AttachTo(inspected_contents);
+  DisconnectFromTarget();
   frontend_shell()->LoadURL(GetDevToolsPathAsURL(settings, frontend_url));
 }
 
 LayoutTestDevToolsFrontend::LayoutTestDevToolsFrontend(
     Shell* frontend_shell,
-    DevToolsAgentHost* agent_host)
-    : ShellDevToolsFrontend(frontend_shell, agent_host) {
+    WebContents* inspected_contents)
+    : ShellDevToolsFrontend(frontend_shell, inspected_contents) {
 }
 
 LayoutTestDevToolsFrontend::~LayoutTestDevToolsFrontend() {

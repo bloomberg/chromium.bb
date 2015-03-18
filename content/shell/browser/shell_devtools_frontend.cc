@@ -99,15 +99,13 @@ const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
 // static
 ShellDevToolsFrontend* ShellDevToolsFrontend::Show(
     WebContents* inspected_contents) {
-  scoped_refptr<DevToolsAgentHost> agent(
-      DevToolsAgentHost::GetOrCreateFor(inspected_contents));
   Shell* shell = Shell::CreateNewWindow(inspected_contents->GetBrowserContext(),
                                         GURL(),
                                         NULL,
                                         gfx::Size());
   ShellDevToolsFrontend* devtools_frontend = new ShellDevToolsFrontend(
       shell,
-      agent.get());
+      inspected_contents);
 
   DevToolsHttpHandler* http_handler = ShellContentBrowserClient::Get()
                                           ->shell_browser_main_parts()
@@ -142,10 +140,10 @@ void ShellDevToolsFrontend::DisconnectFromTarget() {
 }
 
 ShellDevToolsFrontend::ShellDevToolsFrontend(Shell* frontend_shell,
-                                             DevToolsAgentHost* agent_host)
+                                             WebContents* inspected_contents)
     : WebContentsObserver(frontend_shell->web_contents()),
       frontend_shell_(frontend_shell),
-      agent_host_(agent_host),
+      inspected_contents_(inspected_contents),
       weak_factory_(this) {
 }
 
@@ -162,11 +160,9 @@ void ShellDevToolsFrontend::RenderViewCreated(
   }
 }
 
-void ShellDevToolsFrontend::DidNavigateMainFrame(
-    const LoadCommittedDetails& details,
-    const FrameNavigateParams& params) {
-  if (agent_host_)
-    agent_host_->AttachClient(this);
+void ShellDevToolsFrontend::DocumentAvailableInMainFrame() {
+  agent_host_ = DevToolsAgentHost::GetOrCreateFor(inspected_contents_);
+  agent_host_->AttachClient(this);
 }
 
 void ShellDevToolsFrontend::WebContentsDestroyed() {
@@ -316,11 +312,6 @@ void ShellDevToolsFrontend::SendMessageAck(int request_id,
   base::FundamentalValue id_value(request_id);
   CallClientFunction("DevToolsAPI.embedderMessageAck",
                      &id_value, arg, nullptr);
-}
-
-void ShellDevToolsFrontend::AttachTo(WebContents* inspected_contents) {
-  DisconnectFromTarget();
-  agent_host_ = DevToolsAgentHost::GetOrCreateFor(inspected_contents);
 }
 
 void ShellDevToolsFrontend::AgentHostClosed(

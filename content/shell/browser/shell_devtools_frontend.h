@@ -47,21 +47,18 @@ class ShellDevToolsFrontend : public WebContentsObserver,
                           const base::Value* arg3);
 
  protected:
-  ShellDevToolsFrontend(Shell* frontend_shell, DevToolsAgentHost* agent_host);
+  ShellDevToolsFrontend(Shell* frontend_shell, WebContents* inspected_contents);
   ~ShellDevToolsFrontend() override;
 
   // content::DevToolsAgentHostClient implementation.
   void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override;
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override;
-  void AttachTo(WebContents* inspected_contents);
 
  private:
   // WebContentsObserver overrides
   void RenderViewCreated(RenderViewHost* render_view_host) override;
-  void DidNavigateMainFrame(
-      const LoadCommittedDetails& details,
-      const FrameNavigateParams& params) override;
+  void DocumentAvailableInMainFrame() override;
   void WebContentsDestroyed() override;
 
   // content::DevToolsFrontendHost::Delegate implementation.
@@ -76,6 +73,7 @@ class ShellDevToolsFrontend : public WebContentsObserver,
                       const base::Value* arg1);
 
   Shell* frontend_shell_;
+  WebContents* inspected_contents_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
   scoped_ptr<DevToolsFrontendHost> frontend_host_;
   using PendingRequestsMap = std::map<const net::URLFetcher*, int>;
