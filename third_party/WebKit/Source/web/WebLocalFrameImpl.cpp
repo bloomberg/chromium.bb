@@ -565,9 +565,11 @@ private:
     {
     }
 
-    RawPtrWillBeMember<LocalFrame> m_frame;
+    // FIXME: Oilpan: move (Suspendable)Task to the heap, so that
+    // this reference can be traced.
+    LocalFrame* m_frame;
     int m_worldID;
-    WillBeHeapVector<ScriptSourceCode> m_sources;
+    WillBePersistentHeapVector<ScriptSourceCode> m_sources;
     int m_extensionGroup;
     bool m_userGesture;
     WebScriptExecutionCallback* m_callback;
