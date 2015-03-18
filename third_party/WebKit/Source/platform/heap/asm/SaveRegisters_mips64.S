@@ -32,7 +32,7 @@ pushAllRegisters:
         // stack pointer to the callback.
         move $t9,$a2
         move $a2,$sp
-        jal $t9
+        jalr $t9
         // Restore return address, adjust stack and return.
         // Note: the copied registers do not need to be reloaded here,
         // because they were preserved by the called routine.

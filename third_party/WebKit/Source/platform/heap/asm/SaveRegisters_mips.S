@@ -55,7 +55,7 @@ pushAllRegisters:
         // stack pointer to the callback.
         move $t9,$a2
         move $a2,$sp
-        jal $t9
+        jalr $t9
         // Restore return address, adjust stack and return. No
         // callee-saved register was changed so we do not have to
         // restore callee-saved registers.
