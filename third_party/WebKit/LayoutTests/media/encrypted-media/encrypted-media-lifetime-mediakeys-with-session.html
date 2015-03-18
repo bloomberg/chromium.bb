@@ -49,22 +49,23 @@
 
                     // Verify MediaKeys are not an ActiveDOMObject.
                     // In non-Oilpan, numActiveDOMObjectsCreate() == 0.
-                    // In Oilpan, numActiveDOMObjectsCreate() <= 2.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 3.
                     // (1 MediaKeysInitializer and
-                    //  1 MediaKeySystemAccessInitializer).
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 2, 'MediaKeys.create()');
+                    //  1 MediaKeySystemAccessInitializer (navigator.requestMediaKeySystemAccess() use above),
+                    //  1 MediaKeySystemAccessInitializer (isInitDataSupported() (via getSupportedInitDataType())))
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 3, 'MediaKeys.create()');
 
                     var mediaKeySession = mediaKeys.createSession();
                     return mediaKeySession.generateRequest(initDataType, initData);
                 }).then(function() {
                     // 1 MediaKeySession.
                     // In non-Oilpan, numActiveDOMObjectsCreate() == 1.
-                    // In Oilpan, numActiveDOMObjectsCreate() <= 4.
+                    // In Oilpan, numActiveDOMObjectsCreate() <= 5.
                     // (1 MediaKeysInitializer,
-                    //  1 MediaKeySystemAccessInitializer,
+                    //  2 MediaKeySystemAccessInitializers,
                     //  1 ContentDecryptionModuleResultPromise and
                     //  1 MediaKeySession).
-                    assert_less_than_equal(numActiveDOMObjectsCreated(), 4, 'MediaKeys.createSession(1)');
+                    assert_less_than_equal(numActiveDOMObjectsCreated(), 5, 'MediaKeys.createSession(1)');
 
                     // Run gc(), should not affect MediaKeys object nor the
                     // session since we still have a reference to it.
