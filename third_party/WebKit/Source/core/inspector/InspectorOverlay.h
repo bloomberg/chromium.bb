@@ -38,7 +38,7 @@ namespace blink {
 
 struct InspectorHighlightConfig;
 
-class InspectorOverlay : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlay> {
+class InspectorOverlay : public WillBeGarbageCollectedMixin {
 public:
     virtual ~InspectorOverlay() { }
 
@@ -51,6 +51,8 @@ public:
     virtual void showAndHideViewSize(bool showGrid) = 0;
     virtual void suspendUpdates() = 0;
     virtual void resumeUpdates() = 0;
+
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
     class Listener : public WillBeGarbageCollectedMixin {
     public:

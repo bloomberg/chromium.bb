@@ -114,6 +114,7 @@ DEFINE_TRACE(InspectorOverlayImpl)
     visitor->trace(m_overlayPage);
     visitor->trace(m_overlayHost);
     visitor->trace(m_listener);
+    InspectorOverlay::trace(visitor);
 }
 
 void InspectorOverlayImpl::paint(GraphicsContext& context)
