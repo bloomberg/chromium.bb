@@ -416,6 +416,17 @@ class One63(WebsiteTest):
     self.FillPasswordInto(".ntes-loginframe-label-ipt[type='password']")
     self.Click(".ntes-loginframe-btn")
 
+class StackExchange(WebsiteTest):
+
+  def Login(self):
+    self.GoTo("https://stackexchange.com/users/login#log-in")
+    iframe_selector = "#affiliate-signin-iframe"
+    self.WaitUntilDisplayed(iframe_selector)
+    frame = self.driver.find_element_by_css_selector(iframe_selector)
+    self.driver.switch_to_frame(frame)
+    self.FillUsernameInto("[name='email']")
+    self.FillPasswordInto("[name='password']")
+    self.Submit("[value='Sign In']")
 
 # http://crbug.com/368690
 class Vube(WebsiteTest):
@@ -477,11 +488,12 @@ def Tests(environment, tests_to_run=None):
     "craigslist": Craigslist("craigslist"), # Too many failed logins per time.
     "dailymotion": Dailymotion("dailymotion"), # Crashes.
     "ebay": Ebay("ebay"), # http://crbug.com/368690
-    "espn": Espn("espn"), # Iframe, password saved but not autofileld.
+    "espn": Espn("espn"), # Iframe, password saved but not autofilled.
     "flipkart": Flipkart("flipkart"), # Fails due to test framework issue.
     "instagram": Instagram("instagram"), # Iframe, pw saved but not autofilled.
     "live": Live("live", username_not_auto=True),  # http://crbug.com/367768
     "163": One63("163"), # http://crbug.com/368690
+    "stackexchange": StackExchange("stackexchange"), # Iframe, not autofilled.
     "vube": Vube("vube"), # http://crbug.com/368690
     "ziddu": Ziddu("ziddu"), # Password not saved.
   }
