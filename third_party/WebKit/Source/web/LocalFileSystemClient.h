@@ -43,7 +43,7 @@ public:
     virtual ~LocalFileSystemClient();
 
     virtual bool requestFileSystemAccessSync(ExecutionContext*) override;
-    virtual void requestFileSystemAccessAsync(ExecutionContext*, PassOwnPtr<ContentSettingCallbacks>) override;
+    virtual void requestFileSystemAccessAsync(ExecutionContext*, PassOwnPtr<PermissionCallbacks>) override;
 
 private:
     LocalFileSystemClient();

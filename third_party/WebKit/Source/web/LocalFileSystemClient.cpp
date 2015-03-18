@@ -33,9 +33,9 @@
 
 #include "core/dom/Document.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "platform/ContentSettingCallbacks.h"
+#include "platform/PermissionCallbacks.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebContentSettingCallbacks.h"
+#include "public/platform/WebPermissionCallbacks.h"
 #include "public/web/WebContentSettingsClient.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WorkerContentSettingsClient.h"
@@ -64,7 +64,7 @@ bool LocalFileSystemClient::requestFileSystemAccessSync(ExecutionContext* contex
     return WorkerContentSettingsClient::from(*toWorkerGlobalScope(context))->requestFileSystemAccessSync();
 }
 
-void LocalFileSystemClient::requestFileSystemAccessAsync(ExecutionContext* context, PassOwnPtr<ContentSettingCallbacks> callbacks)
+void LocalFileSystemClient::requestFileSystemAccessAsync(ExecutionContext* context, PassOwnPtr<PermissionCallbacks> callbacks)
 {
     ASSERT(context);
     if (!context->isDocument()) {

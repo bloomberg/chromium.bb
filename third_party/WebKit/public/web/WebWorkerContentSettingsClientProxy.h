@@ -5,8 +5,11 @@
 #ifndef WebWorkerContentSettingsClientProxy_h
 #define WebWorkerContentSettingsClientProxy_h
 
+#include "public/platform/WebPermissionCallbacks.h"
+
 namespace blink {
 
+class WebPermissionCallbacks;
 class WebString;
 
 // Proxy interface to talk to the document's ContentSettingsClient

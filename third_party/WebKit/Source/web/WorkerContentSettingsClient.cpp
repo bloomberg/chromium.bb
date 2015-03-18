@@ -32,6 +32,7 @@
 #include "web/WorkerContentSettingsClient.h"
 
 #include "core/workers/WorkerGlobalScope.h"
+#include "public/platform/WebPermissionCallbacks.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebWorkerContentSettingsClientProxy.h"
 #include "wtf/PassOwnPtr.h"

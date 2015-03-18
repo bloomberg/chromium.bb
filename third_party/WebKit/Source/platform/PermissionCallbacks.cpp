@@ -30,16 +30,16 @@
 
 #include "config.h"
 
-#include "platform/ContentSettingCallbacks.h"
+#include "platform/PermissionCallbacks.h"
 
 namespace blink {
 
-PassOwnPtr<ContentSettingCallbacks> ContentSettingCallbacks::create(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied)
+PassOwnPtr<PermissionCallbacks> PermissionCallbacks::create(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied)
 {
-    return adoptPtr(new ContentSettingCallbacks(allowed, denied));
+    return adoptPtr(new PermissionCallbacks(allowed, denied));
 }
 
-ContentSettingCallbacks::ContentSettingCallbacks(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied)
+PermissionCallbacks::PermissionCallbacks(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied)
     : m_allowed(allowed)
     , m_denied(denied)
 {
