@@ -80,12 +80,14 @@ bool ContainsForm(const std::vector<autofill::FormData>& forms,
   return false;
 }
 
-void CopyValueToAllInputElements(
-    const blink::WebString value,
+void CopyElementValueToOtherInputElements(
+    const blink::WebInputElement* element,
     std::vector<blink::WebInputElement>* elements) {
   for (std::vector<blink::WebInputElement>::iterator it = elements->begin();
        it != elements->end(); ++it) {
-    it->setValue(value, true /* sendEvents */);
+    if (*element != *it) {
+      it->setValue(element->value(), true /* sendEvents */);
+    }
   }
 }
 
@@ -356,8 +358,8 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
       // User generated a password and then deleted it.
       password_generation::LogPasswordGenerationEvent(
           password_generation::PASSWORD_DELETED);
-      CopyValueToAllInputElements(element.value(),
-                                  &generation_form_data_->password_elements);
+      CopyElementValueToOtherInputElements(&element,
+          &generation_form_data_->password_elements);
     }
 
     // Do not treat the password as generated.
@@ -370,8 +372,8 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
   } else if (password_is_generated_) {
     password_edited_ = true;
     // Mirror edits to any confirmation password fields.
-    CopyValueToAllInputElements(element.value(),
-                                &generation_form_data_->password_elements);
+    CopyElementValueToOtherInputElements(&element,
+        &generation_form_data_->password_elements);
   } else if (element.value().length() > kMaximumOfferSize) {
     // User has rejected the feature and has started typing a password.
     HidePopup();
