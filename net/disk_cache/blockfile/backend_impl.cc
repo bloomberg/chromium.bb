@@ -353,6 +353,9 @@ int BackendImpl::SyncDoomEntry(const std::string& key) {
 }
 
 int BackendImpl::SyncDoomAllEntries() {
+  if (disabled_)
+    return net::ERR_FAILED;
+
   // This is not really an error, but it is an interesting condition.
   ReportError(ERR_CACHE_DOOMED);
   stats_.OnEvent(Stats::DOOM_CACHE);
