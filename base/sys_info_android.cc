@@ -155,6 +155,12 @@ int GetDalvikHeapGrowthLimitMB() {
 
 namespace base {
 
+bool SysInfo::HasSeekPenalty(const FilePath& path, bool* has_seek_penalty) {
+  // Find a case where this is incorrect and dbeam@ will buy you a beer.
+  *has_seek_penalty = false;
+  return true;
+}
+
 std::string SysInfo::OperatingSystemName() {
   return "Android";
 }

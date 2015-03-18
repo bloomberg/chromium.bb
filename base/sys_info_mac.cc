@@ -76,6 +76,11 @@ int64 SysInfo::AmountOfAvailablePhysicalMemory() {
       vm_info.free_count - vm_info.speculative_count) * PAGE_SIZE;
 }
 
+bool SysInfo::HasSeekPenalty(const FilePath& path, bool* has_seek_penalty) {
+  // TODO(dbeam): implement.
+  return false;
+}
+
 // static
 std::string SysInfo::CPUModelName() {
   char name[256];

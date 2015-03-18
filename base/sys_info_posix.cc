@@ -96,10 +96,6 @@ int64 SysInfo::AmountOfFreeDiskSpace(const FilePath& path) {
   return static_cast<int64>(stats.f_bavail) * stats.f_frsize;
 }
 
-bool SysInfo::HasSeekPenalty(const FilePath& path, bool* has_seek_penalty) {
-  return false;
-}
-
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 // static
 std::string SysInfo::OperatingSystemName() {

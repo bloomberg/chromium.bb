@@ -48,6 +48,10 @@ int64 SysInfo::AmountOfAvailablePhysicalMemory() {
   return AmountOfMemory(_SC_AVPHYS_PAGES);
 }
 
+bool SysInfo::HasSeekPenalty(const FilePath& path, bool* has_seek_penalty) {
+  return false;
+}
+
 // static
 size_t SysInfo::MaxSharedMemorySize() {
   int mib[] = { CTL_KERN, KERN_SHMINFO, KERN_SHMINFO_SHMMAX };

@@ -16,6 +16,12 @@
 
 namespace base {
 
+bool SysInfo::HasSeekPenalty(const FilePath& path, bool* has_seek_penalty) {
+  // Find a case where this is incorrect and dbeam@ will buy you a beer.
+  *has_seek_penalty = false;
+  return true;
+}
+
 // static
 std::string SysInfo::OperatingSystemName() {
   static dispatch_once_t get_system_name_once;

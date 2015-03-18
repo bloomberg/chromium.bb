@@ -255,7 +255,7 @@ message SystemProfileProto {
     // Logged on ChromeOS only.
     repeated TouchScreen external_touchscreen = 15;
 
-    // Drive messages are logged on Windows 7+ only for now.
+    // Drive messages are currently logged on Windows 7+, iOS, and Android.
     message Drive {
       // Whether this drive incurs a time penalty when randomly accessed. This
       // should be true for spinning disks but false for SSDs or other

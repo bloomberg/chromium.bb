@@ -169,6 +169,11 @@ ChromeOSVersionInfo& GetChromeOSVersionInfo() {
 
 }  // namespace
 
+bool SysInfo::HasSeekPenalty(const FilePath& path, bool* has_seek_penalty) {
+  // TODO(dbeam): implement. Can we just use boards/models?
+  return false;
+}
+
 // static
 void SysInfo::OperatingSystemVersionNumbers(int32* major_version,
                                             int32* minor_version,

@@ -68,6 +68,13 @@ int64 SysInfo::AmountOfPhysicalMemory() {
   return g_lazy_physical_memory.Get().value();
 }
 
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+bool SysInfo::HasSeekPenalty(const FilePath& path, bool* has_seek_penalty) {
+  // TODO(dbeam): implement.
+  return false;
+}
+#endif
+
 // static
 size_t SysInfo::MaxSharedMemorySize() {
   return g_lazy_max_shared_memory.Get().value();
