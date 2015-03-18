@@ -392,7 +392,7 @@ protected:
         }
 
     private:
-        Platform& ensureFallback()
+        Platform& ensureFallback() const
         {
             ASSERT(m_fallbackPlatform);
             return *m_fallbackPlatform;

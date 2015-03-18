@@ -26,6 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform/graphics/Canvas2DLayerManager.h"
 
 #include "public/platform/Platform.h"
+#include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 
 namespace {
@@ -60,7 +61,8 @@ void Canvas2DLayerManager::init(size_t maxBytesAllocated, size_t targetBytesAllo
     m_maxBytesAllocated = maxBytesAllocated;
     m_targetBytesAllocated = targetBytesAllocated;
     if (m_taskObserverActive) {
-        Platform::current()->currentThread()->removeTaskObserver(this);
+        ASSERT(isMainThread());
+        Platform::current()->mainThread()->removeTaskObserver(this);
         m_taskObserverActive = false;
     }
 }
@@ -79,7 +81,8 @@ void Canvas2DLayerManager::didProcessTask()
 {
     // Called after the script action for the current frame has been processed.
     ASSERT(m_taskObserverActive);
-    Platform::current()->currentThread()->removeTaskObserver(this);
+    ASSERT(isMainThread());
+    Platform::current()->mainThread()->removeTaskObserver(this);
     m_taskObserverActive = false;
     Canvas2DLayerBridge* layer = m_layerList.head();
     while (layer) {
@@ -93,6 +96,7 @@ void Canvas2DLayerManager::didProcessTask()
 
 void Canvas2DLayerManager::layerDidDraw(Canvas2DLayerBridge* layer)
 {
+    ASSERT(isMainThread());
     if (isInList(layer)) {
         if (layer != m_layerList.head()) {
             m_layerList.remove(layer);
@@ -103,7 +107,7 @@ void Canvas2DLayerManager::layerDidDraw(Canvas2DLayerBridge* layer)
     if (!m_taskObserverActive) {
         m_taskObserverActive = true;
         // Schedule a call to didProcessTask() after completion of the current script task.
-        Platform::current()->currentThread()->addTaskObserver(this);
+        Platform::current()->mainThread()->addTaskObserver(this);
     }
 }
 
