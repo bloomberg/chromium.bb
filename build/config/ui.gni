@@ -28,7 +28,7 @@ declare_args() {
   use_aura = is_win || is_linux
 
   # True means the UI is built using the "views" framework.
-  toolkit_views = is_mac || is_win || is_chromeos || use_aura
+  toolkit_views = is_win || is_chromeos || use_aura
 
   # Whether we should use glib, a low level C utility library.
   use_glib = is_linux && !use_ozone
