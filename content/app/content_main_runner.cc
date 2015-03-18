@@ -21,6 +21,7 @@
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"
 #include "base/profiler/alternate_timer.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -567,6 +568,12 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     base::CommandLine::Init(argc, argv);
 
     base::EnableTerminationOnHeapCorruption();
+
+    // TODO(yiyaoliu, vadimt): Remove this once crbug.com/453640 is fixed.
+    // Enable profiler recording right after command line is initialized so that
+    // browser startup can be instrumented.
+    if (delegate_ && delegate_->ShouldEnableProfilerRecording())
+      tracked_objects::ScopedTracker::Enable();
 
 #if !defined(OS_IOS)
     SetProcessTitleFromCommandLine(argv);

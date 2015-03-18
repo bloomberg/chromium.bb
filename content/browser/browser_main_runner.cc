@@ -10,7 +10,9 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/trace_event/trace_event.h"
+#include "base/tracked_objects.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_shutdown_profile_dumper.h"
 #include "content/browser/notification_service_impl.h"
@@ -126,7 +128,14 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
   }
 
   int Initialize(const MainFunctionParams& parameters) override {
+    // TODO(vadimt, yiyaoliu): Remove all tracked_objects references below once
+    // crbug.com/453640 is fixed.
+    tracked_objects::ThreadData::InitializeThreadContext("CrBrowserMain");
+    tracked_objects::ScopedTracker tracking_profile(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "453640 BrowserMainRunnerImpl::Initialize"));
     TRACE_EVENT0("startup", "BrowserMainRunnerImpl::Initialize");
+
     // On Android we normally initialize the browser in a series of UI thread
     // tasks. While this is happening a second request can come from the OS or
     // another application to start the browser. If this happens then we must

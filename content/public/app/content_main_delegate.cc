@@ -50,6 +50,10 @@ void ContentMainDelegate::ZygoteStarting(
 
 #endif
 
+bool ContentMainDelegate::ShouldEnableProfilerRecording() {
+  return false;
+}
+
 ContentBrowserClient* ContentMainDelegate::CreateContentBrowserClient() {
 #if defined(CHROME_MULTIPLE_DLL_CHILD)
   return NULL;

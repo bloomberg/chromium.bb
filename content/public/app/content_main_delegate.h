@@ -76,6 +76,11 @@ class CONTENT_EXPORT ContentMainDelegate {
   virtual void ZygoteForked() {}
 #endif  // OS_MACOSX
 
+  // TODO(vadimt, yiyaoliu): Remove this function once crbug.com/453640 is
+  // fixed.
+  // Returns whether or not profiler recording should be enabled.
+  virtual bool ShouldEnableProfilerRecording();
+
  protected:
   friend class ContentClientInitializer;
 

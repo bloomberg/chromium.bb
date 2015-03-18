@@ -41,6 +41,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
       ScopedVector<content::ZygoteForkDelegate>* delegates) override;
   void ZygoteForked() override;
 #endif
+  bool ShouldEnableProfilerRecording() override;
 
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentPluginClient* CreateContentPluginClient() override;
