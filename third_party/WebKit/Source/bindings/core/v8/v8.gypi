@@ -197,10 +197,10 @@
             'ScriptStreamerTest.cpp',
             'SerializedScriptValueTest.cpp',
             'ToV8Test.cpp',
+            'V8BindingForTesting.cpp',
+            'V8BindingForTesting.h',
             'V8BindingTest.cpp',
             'V8ScriptRunnerTest.cpp',
-            'V8TestingScope.cpp',
-            'V8TestingScope.h',
         ],
     },
 }

@@ -7,8 +7,8 @@
 
 #include "bindings/core/v8/PrivateScriptRunner.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8PrivateScriptTest.h"
-#include "bindings/core/v8/V8TestingScope.h"
 #include "core/testing/DummyPageHolder.h"
 
 #include <gtest/gtest.h>

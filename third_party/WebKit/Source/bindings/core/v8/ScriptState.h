@@ -117,19 +117,6 @@ private:
     Vector<Observer*> m_observers;
 };
 
-class ScriptStateForTesting : public ScriptState {
-public:
-    static PassRefPtr<ScriptStateForTesting> create(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
-
-    virtual ExecutionContext* executionContext() const override;
-    virtual void setExecutionContext(ExecutionContext*) override;
-
-private:
-    ScriptStateForTesting(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
-
-    ExecutionContext* m_executionContext;
-};
-
 // ScriptStateProtectingContext keeps the context associated with the ScriptState alive.
 // You need to call clear() once you no longer need the context. Otherwise, the context will leak.
 class ScriptStateProtectingContext {

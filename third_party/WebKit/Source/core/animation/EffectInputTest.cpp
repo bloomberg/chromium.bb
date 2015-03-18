@@ -6,7 +6,7 @@
 #include "core/animation/EffectInput.h"
 
 #include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/V8TestingScope.h"
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/animation/AnimationTestHelper.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/dom/Document.h"

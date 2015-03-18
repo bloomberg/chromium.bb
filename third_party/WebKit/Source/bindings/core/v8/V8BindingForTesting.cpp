@@ -3,11 +3,35 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "bindings/core/v8/V8TestingScope.h"
+#include "bindings/core/v8/V8BindingForTesting.h"
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 
 namespace blink {
+
+PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::create(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
+{
+    RefPtr<ScriptStateForTesting> scriptState = adoptRef(new ScriptStateForTesting(context, world));
+    // This ref() is for keeping this ScriptState alive as long as the v8::Context is alive.
+    // This is deref()ed in the weak callback of the v8::Context.
+    scriptState->ref();
+    return scriptState;
+}
+
+ScriptStateForTesting::ScriptStateForTesting(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
+    : ScriptState(context, world)
+{
+}
+
+ExecutionContext* ScriptStateForTesting::executionContext() const
+{
+    return m_executionContext;
+}
+
+void ScriptStateForTesting::setExecutionContext(ExecutionContext* executionContext)
+{
+    m_executionContext = executionContext;
+}
 
 V8TestingScope::V8TestingScope(v8::Isolate* isolate)
     : m_handleScope(isolate)

@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8TestingScope.h"
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"

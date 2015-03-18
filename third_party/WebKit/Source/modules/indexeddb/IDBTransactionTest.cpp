@@ -31,7 +31,7 @@
 #include "config.h"
 #include "modules/indexeddb/IDBTransaction.h"
 
-#include "bindings/core/v8/V8TestingScope.h"
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
 #include "modules/indexeddb/IDBDatabase.h"
