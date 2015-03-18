@@ -15,3 +15,17 @@ per-file *_messages*.h=nasko@chromium.org
 per-file *_messages*.h=palmer@chromium.org
 per-file *_messages*.h=tsepez@chromium.org
 per-file *_messages*.h=wfh@chromium.org
+
+# For security review of IPC-to-protobuf bridge.
+per-file *protobuf_message*.h=set noparent
+per-file *protobuf_message*.h=dcheng@chromium.org
+per-file *protobuf_message*.h=inferno@chromium.org
+per-file *protobuf_message*.h=jln@chromium.org
+per-file *protobuf_message*.h=jorgelo@chromium.org
+per-file *protobuf_message*.h=jschuh@chromium.org
+per-file *protobuf_message*.h=kenrb@chromium.org
+per-file *protobuf_message*.h=mkwst@chromium.org
+per-file *protobuf_message*.h=nasko@chromium.org
+per-file *protobuf_message*.h=palmer@chromium.org
+per-file *protobuf_message*.h=tsepez@chromium.org
+per-file *protobuf_message*.h=wfh@chromium.org

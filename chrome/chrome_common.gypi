@@ -207,6 +207,12 @@
     'chrome_common_full_safe_browsing_sources': [
       'common/safe_browsing/download_protection_util.cc',
       'common/safe_browsing/download_protection_util.h',
+      'common/safe_browsing/ipc_protobuf_message_macros.h',
+      'common/safe_browsing/ipc_protobuf_message_null_macros.h',
+      'common/safe_browsing/protobuf_message_log_macros.h',
+      'common/safe_browsing/protobuf_message_param_traits.h',
+      'common/safe_browsing/protobuf_message_read_macros.h',
+      'common/safe_browsing/protobuf_message_write_macros.h',
       'common/safe_browsing/zip_analyzer.cc',
       'common/safe_browsing/zip_analyzer.h',
     ],

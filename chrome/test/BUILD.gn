@@ -213,6 +213,14 @@ source_set("test_support_unit") {
 
 if (!is_android) {
   import("//chrome/chrome_tests.gni")
+  import("//third_party/protobuf/proto_library.gni")
+
+  # GYP version: chrome/chrome_tests_unit.gypi:ipc_protobuf_message_test_proto
+  proto_library("test_proto") {
+    sources = [
+      "../common/safe_browsing/ipc_protobuf_message_test.proto",
+    ]
+  }
 
   test("interactive_ui_tests") {
     sources =
@@ -1432,15 +1440,19 @@ if (!is_android) {
               ".",
               "//chrome")
       defines += [ "FULL_SAFE_BROWSING" ]
+      deps += [ ":test_proto" ]
       if (is_chromeos) {
         sources -= [ "../browser/safe_browsing/download_protection_service_unittest.cc" ]
       } else if (is_android) {
+        deps -= [ ":test_proto" ]
         sources -= [
           # Android doesn't support download feedbacks.
           "../browser/safe_browsing/download_feedback_service_unittest.cc",
           "../browser/safe_browsing/download_feedback_unittest.cc",
           "../browser/safe_browsing/download_protection_service_unittest.cc",
           "../browser/safe_browsing/two_phase_uploader_unittest.cc",
+          "../common/safe_browsing/ipc_protobuf_message_test_messages.h",
+          "../common/safe_browsing/ipc_protobuf_message_unittest.cc",
         ]
       }
     }

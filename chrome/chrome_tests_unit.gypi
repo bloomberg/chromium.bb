@@ -1045,6 +1045,8 @@
       'browser/safe_browsing/safe_browsing_store_unittest.cc',
       'browser/safe_browsing/safe_browsing_util_unittest.cc',
       'browser/safe_browsing/two_phase_uploader_unittest.cc',
+      'common/safe_browsing/ipc_protobuf_message_test_messages.h',
+      'common/safe_browsing/ipc_protobuf_message_unittest.cc',
       'renderer/safe_browsing/features_unittest.cc',
       'renderer/safe_browsing/murmurhash3_util_unittest.cc',
       'renderer/safe_browsing/phishing_term_feature_extractor_unittest.cc',
@@ -2306,6 +2308,9 @@
           # TODO(sgurun): enable tests for safe_browsing==2.
           'sources': [ '<@(chrome_unit_tests_full_safe_browsing_sources)' ],
           'defines': [ 'FULL_SAFE_BROWSING' ],
+          'dependencies': [
+            'ipc_protobuf_message_test_proto',
+          ],
           'conditions': [
             ['chromeos == 1', {
               'sources!': [
@@ -2313,12 +2318,17 @@
               ],
             }],
             ['OS == "android"', {
+              'dependencies!': [
+                'ipc_protobuf_message_test_proto',
+              ],
               'sources!': [
                 # Android doesn't support download feedbacks.
                 'browser/safe_browsing/download_feedback_service_unittest.cc',
                 'browser/safe_browsing/download_feedback_unittest.cc',
                 'browser/safe_browsing/download_protection_service_unittest.cc',
                 'browser/safe_browsing/two_phase_uploader_unittest.cc',
+                'common/safe_browsing/ipc_protobuf_message_test_messages.h',
+                'common/safe_browsing/ipc_protobuf_message_unittest.cc',
               ],
             }],
           ],
@@ -2681,6 +2691,21 @@
           },
         }],
       ],
+    },
+    {
+      # Protobuf compiler / generator for IPC protobuf message tests.
+
+      # GN version: //chrome/test:test_proto
+      'target_name': 'ipc_protobuf_message_test_proto',
+      'type': 'static_library',
+      'sources': [
+        'common/safe_browsing/ipc_protobuf_message_test.proto'
+      ],
+      'variables': {
+        'proto_in_dir': 'common/safe_browsing',
+        'proto_out_dir': 'chrome/common/safe_browsing',
+      },
+      'includes': [ '../build/protoc.gypi' ],
     },
   ],
 
