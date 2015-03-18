@@ -10,15 +10,14 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/base/ui_base_export.h"
-#include "ui/events/event.h"
-#include "ui/events/platform/platform_event_observer.h"
+#include "ui/events/event_handler.h"
 
 namespace ui {
 
 class UserActivityObserver;
 
 // Watches for input events and notifies observers that the user is active.
-class UI_BASE_EXPORT UserActivityDetector : public ui::PlatformEventObserver {
+class UI_BASE_EXPORT UserActivityDetector : public ui::EventHandler {
  public:
   // Minimum amount of time between notifications to observers.
   static const int kNotifyIntervalMs;
@@ -44,18 +43,16 @@ class UI_BASE_EXPORT UserActivityDetector : public ui::PlatformEventObserver {
   // Called when displays are about to be turned on or off.
   void OnDisplayPowerChanging();
 
-  // ui::PlatformEventObserver:
-  void WillProcessEvent(const PlatformEvent& platform_event) override;
-  void DidProcessEvent(const PlatformEvent& platform_event) override {}
+  // ui::EventHandler implementation.
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
-  friend class UserActivityDetectorTest;
-
   // Returns |now_for_test_| if set or base::TimeTicks::Now() otherwise.
   base::TimeTicks GetCurrentTime() const;
-
-  // Processes the event after it has been converted from a PlatformEvent.
-  void ProcessReceivedEvent(const ui::Event* event);
 
   // Updates |last_activity_time_|.  Additionally notifies observers and
   // updates |last_observer_notification_time_| if enough time has passed
