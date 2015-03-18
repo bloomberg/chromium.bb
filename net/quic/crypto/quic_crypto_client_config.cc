@@ -343,11 +343,6 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     const CachedState* cached,
     QuicCryptoNegotiatedParameters* out_params,
     CryptoHandshakeMessage* out) const {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicCryptoClientConfig::FillInchoateClientHello"));
-
   out->set_tag(kCHLO);
   out->set_minimum_size(kClientHelloMinimumSize);
 
@@ -406,7 +401,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     QuicCryptoNegotiatedParameters* out_params,
     CryptoHandshakeMessage* out,
     string* error_details) const {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422516 QuicCryptoClientConfig::FillClientHello"));

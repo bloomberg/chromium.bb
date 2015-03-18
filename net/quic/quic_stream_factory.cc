@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -299,17 +298,7 @@ int QuicStreamFactory::Job::DoLoop(int rv) {
 }
 
 void QuicStreamFactory::Job::OnIOComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::Job::OnIOComplete1"));
-
   rv = DoLoop(rv);
-
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::Job::OnIOComplete2"));
-
   if (rv != ERR_IO_PENDING && !callback_.is_null()) {
     callback_.Run(rv);
   }
@@ -337,11 +326,6 @@ void QuicStreamFactory::Job::CancelWaitForDataReadyCallback() {
 }
 
 int QuicStreamFactory::Job::DoResolveHost() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::Job::DoResolveHost"));
-
   // Start loading the data now, and wait for it after we resolve the host.
   if (server_info_) {
     server_info_->Start();
@@ -357,11 +341,6 @@ int QuicStreamFactory::Job::DoResolveHost() {
 }
 
 int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::Job::DoResolveHostComplete"));
-
   dns_resolution_end_time_ = base::TimeTicks::Now();
   UMA_HISTOGRAM_TIMES("Net.QuicSession.HostResolutionTime",
                       dns_resolution_end_time_ - dns_resolution_start_time_);
@@ -384,11 +363,6 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
 }
 
 int QuicStreamFactory::Job::DoLoadServerInfo() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::Job::DoLoadServerInfo"));
-
   io_state_ = STATE_LOAD_SERVER_INFO_COMPLETE;
 
   DCHECK(server_info_);
@@ -421,11 +395,6 @@ int QuicStreamFactory::Job::DoLoadServerInfo() {
 }
 
 int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::Job::DoLoadServerInfoComplete"));
-
   UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheWaitForDataReadyTime",
                       base::TimeTicks::Now() - dns_resolution_end_time_);
 
@@ -447,11 +416,6 @@ int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
 }
 
 int QuicStreamFactory::Job::DoConnect() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::Job::DoConnect"));
-
   io_state_ = STATE_CONNECT_COMPLETE;
 
   int rv =
@@ -467,11 +431,6 @@ int QuicStreamFactory::Job::DoConnect() {
     return ERR_CONNECTION_CLOSED;
   }
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::Job::DoConnect1"));
-
   session_->StartReading();
   if (!session_->connection()->connected()) {
     return ERR_QUIC_PROTOCOL_ERROR;
@@ -480,11 +439,6 @@ int QuicStreamFactory::Job::DoConnect() {
       factory_->require_confirmation() || is_post_ ||
       was_alternate_protocol_recently_broken_;
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::Job::DoConnect2"));
-
   rv = session_->CryptoConnect(
       require_confirmation,
       base::Bind(&QuicStreamFactory::Job::OnIOComplete, GetWeakPtr()));
@@ -492,11 +446,6 @@ int QuicStreamFactory::Job::DoConnect() {
 }
 
 int QuicStreamFactory::Job::DoResumeConnect() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::Job::DoResumeConnect"));
-
   io_state_ = STATE_CONNECT_COMPLETE;
 
   int rv = session_->ResumeCryptoConnect(
@@ -506,11 +455,6 @@ int QuicStreamFactory::Job::DoResumeConnect() {
 }
 
 int QuicStreamFactory::Job::DoConnectComplete(int rv) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::Job::DoConnectComplete"));
-
   if (rv != OK)
     return rv;
 
@@ -772,11 +716,6 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   }
 
   if (rv == OK) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-    tracked_objects::ScopedTracker tracking_profile1(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422516 QuicStreamFactory::OnJobComplete1"));
-
     if (!always_require_handshake_confirmation_)
       set_require_confirmation(false);
 
@@ -786,11 +725,6 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
       request->set_stream(CreateIfSessionExists(server_id, request->net_log()));
     }
   }
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::OnJobComplete2"));
 
   while (!job_requests_map_[server_id].empty()) {
     RequestSet::iterator it = job_requests_map_[server_id].begin();
@@ -802,11 +736,6 @@ void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
     // profile which can not be deleted via callbacks.
     request->OnRequestComplete(rv);
   }
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::OnJobComplete3"));
 
   for (Job* other_job : active_jobs_[server_id]) {
     if (other_job != job)
@@ -983,11 +912,6 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
                                      base::TimeTicks dns_resolution_end_time,
                                      const BoundNetLog& net_log,
                                      QuicClientSession** session) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession1"));
-
   bool enable_port_selection = enable_port_selection_;
   if (enable_port_selection &&
       ContainsKey(gone_away_aliases_, server_id)) {
@@ -1018,17 +942,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
 #endif
   }
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession2"));
-
   int rv = socket->Connect(addr);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile3(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession3"));
 
   if (rv != OK) {
     HistogramCreateSessionFailure(CREATION_ERROR_CONNECTING_SOCKET);
@@ -1074,93 +988,31 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
         clock_.get(), random_generator_));
   }
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile4(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession4"));
-
   QuicConnection* connection = new QuicConnection(
       connection_id, addr, helper_.get(), packet_writer_factory,
       true /* owns_writer */, Perspective::IS_CLIENT, server_id.is_https(),
       supported_versions_);
   connection->set_max_packet_length(max_packet_length_);
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile5(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession5"));
-
   InitializeCachedStateInCryptoConfig(server_id, server_info);
 
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile51(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession51"));
-
   QuicConfig config = config_;
-
   config.SetSocketReceiveBufferToSend(socket_receive_buffer_size_);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile52(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession52"));
-
   config.set_max_undecryptable_packets(kMaxUndecryptablePackets);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile53(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession53"));
-
   config.SetInitialStreamFlowControlWindowToSend(kInitialReceiveWindowSize);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile54(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession54"));
-
   config.SetInitialSessionFlowControlWindowToSend(kInitialReceiveWindowSize);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile55(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession55"));
-
   int64 srtt = GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile56(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession56"));
-
   if (srtt > 0)
     config.SetInitialRoundTripTimeUsToSend(static_cast<uint32>(srtt));
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile57(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession57"));
-
   config.SetBytesForConnectionIdToSend(0);
 
   if (quic_server_info_factory_ && !server_info) {
-    // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-    tracked_objects::ScopedTracker tracking_profile6(
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(
-            "422516 QuicStreamFactory::CreateSession6"));
-
     // Start the disk cache loading so that we can persist the newer QUIC server
     // information and/or inform the disk cache that we have reused
     // |server_info|.
     server_info.reset(quic_server_info_factory_->GetForServer(server_id));
     server_info->Start();
   }
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile61(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession61"));
 
   *session = new QuicClientSession(
       connection, socket.Pass(), this, transport_security_state_,
@@ -1169,17 +1021,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
       base::MessageLoop::current()->message_loop_proxy().get(),
       net_log.net_log());
 
-  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile62(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession62"));
-
   all_sessions_[*session] = server_id;  // owning pointer
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile7(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::CreateSession7"));
 
   (*session)->InitializeSession(server_id,  &crypto_config_,
                                 quic_crypto_client_stream_factory_);
@@ -1238,11 +1080,6 @@ bool QuicStreamFactory::CryptoConfigCacheIsEmpty(
 void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
     const QuicServerId& server_id,
     const scoped_ptr<QuicServerInfo>& server_info) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile1(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::InitializeCachedStateInCryptoConfig1"));
-
   // |server_info| will be NULL, if a non-empty server config already exists in
   // the memory cache. This is a minor optimization to avoid LookupOrCreate.
   if (!server_info)
@@ -1273,11 +1110,6 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
           server_info->state().server_config.empty());
     }
   }
-
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile2(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 QuicStreamFactory::InitializeCachedStateInCryptoConfig2"));
 
   if (!cached->Initialize(server_info->state().server_config,
                           server_info->state().source_address_token,

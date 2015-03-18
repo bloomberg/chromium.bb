@@ -5,7 +5,6 @@
 #include "net/quic/reliable_quic_stream.h"
 
 #include "base/logging.h"
-#include "base/profiler/scoped_tracker.h"
 #include "net/quic/iovector.h"
 #include "net/quic/quic_flow_controller.h"
 #include "net/quic/quic_session.h"
@@ -226,11 +225,6 @@ void ReliableQuicStream::Reset(QuicRstStreamErrorCode error) {
 }
 
 void ReliableQuicStream::CloseConnection(QuicErrorCode error) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 ReliableQuicStream::CloseConnection"));
-
   session()->connection()->SendConnectionClose(error);
 }
 

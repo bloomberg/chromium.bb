@@ -121,11 +121,6 @@ QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     std::string* error_details,
     scoped_ptr<ProofVerifyDetails>* verify_details,
     ProofVerifierCallback* callback) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 ProofVerifierChromium::Job::VerifyProof"));
-
   DCHECK(error_details);
   DCHECK(verify_details);
   DCHECK(callback);
@@ -240,11 +235,6 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
 }
 
 int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 ProofVerifierChromium::Job::DoVerifyCertComplete"));
-
   verifier_.reset();
 
   const CertVerifyResult& cert_verify_result =
@@ -289,7 +279,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
                                                  const string& signature,
                                                  const string& cert) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
+  // TODO(rtenneti): Remove ScopedTracker below once crbug.com/422516 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "422516 ProofVerifierChromium::Job::VerifySignature"));
@@ -387,11 +377,6 @@ QuicAsyncStatus ProofVerifierChromium::VerifyProof(
     std::string* error_details,
     scoped_ptr<ProofVerifyDetails>* verify_details,
     ProofVerifierCallback* callback) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422516 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "422516 ProofVerifierChromium::VerifyProof"));
-
   if (!verify_context) {
     *error_details = "Missing context";
     return QUIC_FAILURE;
