@@ -2,6 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{
+ *   guid: string,
+ *   label: string,
+ *   sublabel: string,
+ *   isLocal: boolean,
+ *   isCached: boolean
+ * }}
+ * @see chrome/browser/ui/webui/options/autofill_options_handler.cc
+ */
+var AutofillEntityMetadata;
+
 cr.define('options.autofillOptions', function() {
   /** @const */ var DeletableItem = options.DeletableItem;
   /** @const */ var DeletableItemList = options.DeletableItemList;
@@ -30,9 +42,7 @@ cr.define('options.autofillOptions', function() {
     return editButtonEl;
   }
 
-  /**
-   * @return {!HTMLSpanElement}
-   */
+  /** @return {!Element} */
   function CreateGoogleAccountLabel() {
     var label = document.createElement('div');
     label.className = 'deemphasized hides-on-hover';
@@ -42,16 +52,16 @@ cr.define('options.autofillOptions', function() {
 
   /**
    * Creates a new address list item.
-   * @param {Object} entry An object with metadata about an address profile.
    * @constructor
+   * @param {AutofillEntityMetadata} metadata Details about an address profile.
    * @extends {options.DeletableItem}
+   * @see chrome/browser/ui/webui/options/autofill_options_handler.cc
    */
-  function AddressListItem(entry) {
+  function AddressListItem(metadata) {
     var el = cr.doc.createElement('div');
-    for (var key in entry) {
-      el[key] = entry[key];
-    }
     el.__proto__ = AddressListItem.prototype;
+    /** @private */
+    el.metadata_ = metadata;
     el.decorate();
 
     return el;
@@ -66,21 +76,21 @@ cr.define('options.autofillOptions', function() {
 
       var label = this.ownerDocument.createElement('div');
       label.className = 'autofill-list-item';
-      label.textContent = this.label;
+      label.textContent = this.metadata_.label;
       this.contentElement.appendChild(label);
 
       var sublabel = this.ownerDocument.createElement('div');
       sublabel.className = 'deemphasized';
-      sublabel.textContent = this.sublabel;
+      sublabel.textContent = this.metadata_.sublabel;
       this.contentElement.appendChild(sublabel);
 
-      if (!this.isLocal) {
+      if (!this.metadata_.isLocal) {
         this.deletable = false;
         this.contentElement.appendChild(CreateGoogleAccountLabel());
       }
 
       // The 'Edit' button.
-      var guid = this.guid;
+      var guid = this.metadata_.guid;
       var editButtonEl = AutofillEditProfileButton(
           function() { AutofillOptions.loadAddressEditor(guid); });
       this.contentElement.appendChild(editButtonEl);
@@ -89,16 +99,15 @@ cr.define('options.autofillOptions', function() {
 
   /**
    * Creates a new credit card list item.
-   * @param {Object} entry An object with metadata about a credit card.
+   * @param {AutofillEntityMetadata} metadata Details about a credit card.
    * @constructor
    * @extends {options.DeletableItem}
    */
-  function CreditCardListItem(entry) {
+  function CreditCardListItem(metadata) {
     var el = cr.doc.createElement('div');
-    for (var key in entry) {
-      el[key] = entry[key];
-    }
     el.__proto__ = CreditCardListItem.prototype;
+    /** @private */
+    el.metadata_ = metadata;
     el.decorate();
 
     return el;
@@ -113,21 +122,21 @@ cr.define('options.autofillOptions', function() {
 
       var label = this.ownerDocument.createElement('div');
       label.className = 'autofill-list-item';
-      label.textContent = this.label;
+      label.textContent = this.metadata_.label;
       this.contentElement.appendChild(label);
 
       var sublabel = this.ownerDocument.createElement('div');
       sublabel.className = 'deemphasized';
-      sublabel.textContent = this.sublabel;
+      sublabel.textContent = this.metadata_.sublabel;
       this.contentElement.appendChild(sublabel);
 
-      if (!this.isLocal) {
+      if (!this.metadata_.isLocal) {
         this.deletable = false;
         this.contentElement.appendChild(CreateGoogleAccountLabel());
       }
 
-      var guid = this.guid;
-      if (this.isCached) {
+      var guid = this.metadata_.guid;
+      if (this.metadata_.isCached) {
         var localCopyText = this.ownerDocument.createElement('span');
         localCopyText.className = 'hide-until-hover deemphasized';
         localCopyText.textContent =
@@ -404,10 +413,10 @@ cr.define('options.autofillOptions', function() {
 
     /**
      * @override
-     * @param {Array} entry
+     * @param {AutofillEntityMetadata} metadata
      */
-    createItem: function(entry) {
-      return new AddressListItem(entry);
+    createItem: function(metadata) {
+      return new AddressListItem(metadata);
     },
 
     /** @override */
@@ -438,10 +447,10 @@ cr.define('options.autofillOptions', function() {
 
     /**
      * @override
-     * @param {Array} entry
+     * @param {AutofillEntityMetadata} metadata
      */
-    createItem: function(entry) {
-      return new CreditCardListItem(entry);
+    createItem: function(metadata) {
+      return new CreditCardListItem(metadata);
     },
 
     /** @override */
