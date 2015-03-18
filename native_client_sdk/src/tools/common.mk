@@ -480,11 +480,9 @@ CHROME_PATH ?= $(shell $(GETOS) --chrome 2> $(DEV_NULL))
 
 NULL :=
 SPACE := $(NULL) # one space after NULL is required
-ifneq ($(OSNAME),win)
-  CHROME_PATH_ESCAPE := $(subst $(SPACE),\ ,$(CHROME_PATH))
-  SANDBOX_ARGS :=
-else
-  CHROME_PATH_ESCAPE := $(CHROME_PATH)
+CHROME_PATH_ESCAPE := $(subst $(SPACE),\ ,$(CHROME_PATH))
+
+ifeq ($(OSNAME),win)
   SANDBOX_ARGS := --no-sandbox
 endif
 
@@ -504,14 +502,14 @@ PAGE_TC_CONFIG ?= "$(PAGE)?tc=$(TOOLCHAIN)&config=$(CONFIG)"
 .PHONY: run
 run: check_for_chrome all $(PAGE)
 	$(RUN_PY) -C $(CURDIR) -P $(PAGE_TC_CONFIG) \
-	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH_ESCAPE) \
+	    $(addprefix -E ,$(CHROME_ENV)) -- "$(CHROME_PATH)" \
 	    $(CHROME_ARGS) \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
 .PHONY: run_package
 run_package: check_for_chrome all
 	@echo "$(TOOLCHAIN) $(CONFIG)" > $(CURDIR)/run_package_config
-	$(CHROME_PATH_ESCAPE) --load-and-launch-app=$(CURDIR) $(CHROME_ARGS)
+	"$(CHROME_PATH)" --load-and-launch-app=$(CURDIR) $(CHROME_ARGS)
 
 GDB_ARGS += -D $(GDB_PATH)
 # PNaCl's nexe is acquired with "remote get nexe <path>" instead of the NMF.
@@ -524,7 +522,7 @@ endif
 debug: check_for_chrome all $(PAGE)
 	$(RUN_PY) $(GDB_ARGS) \
 	    -C $(CURDIR) -P $(PAGE_TC_CONFIG) \
-	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH_ESCAPE) \
+	    $(addprefix -E ,$(CHROME_ENV)) -- "$(CHROME_PATH)" \
 	    $(CHROME_ARGS) $(SANDBOX_ARGS) --enable-nacl-debug \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
