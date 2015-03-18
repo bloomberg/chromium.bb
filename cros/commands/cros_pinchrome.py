@@ -15,12 +15,12 @@ import tempfile
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
+from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.scripts import cros_mark_as_stable
-from chromite import cros
 
 
 class UprevNotFound(Exception):
@@ -307,8 +307,8 @@ def FindPrivateConfCL(overlay, pkg_dir):
 
 # The main attraction.
 
-@cros.CommandDecorator('pinchrome')
-class PinchromeCommand(cros.CrosCommand):
+@command.CommandDecorator('pinchrome')
+class PinchromeCommand(command.CrosCommand):
   # pylint: disable=docstring-too-many-newlines
   """Pin chrome to an earlier revision.
 

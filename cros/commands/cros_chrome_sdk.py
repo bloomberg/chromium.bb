@@ -13,7 +13,7 @@ import json
 import os
 import distutils.version
 
-from chromite import cros
+from chromite.cli import command
 from chromite.lib import cache
 from chromite.lib import chrome_util
 from chromite.lib import commandline
@@ -385,8 +385,8 @@ class GomaError(Exception):
   """Indicates error with setting up Goma."""
 
 
-@cros.CommandDecorator(COMMAND_NAME)
-class ChromeSDKCommand(cros.CrosCommand):
+@command.CommandDecorator(COMMAND_NAME)
+class ChromeSDKCommand(command.CrosCommand):
   """Set up an environment for building Chrome on Chrome OS.
 
   Pulls down SDK components for building and testing Chrome for Chrome OS,
@@ -522,7 +522,7 @@ class ChromeSDKCommand(cros.CrosCommand):
              '2014/04/%%(target)s-2014.04.23.220740.tar.xz')
 
   def __init__(self, options):
-    cros.CrosCommand.__init__(self, options)
+    super(ChromeSDKCommand, self).__init__(options)
     self.board = options.board
     # Lazy initialized.
     self.sdk = None

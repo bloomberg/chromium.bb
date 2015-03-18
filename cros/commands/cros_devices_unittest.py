@@ -6,13 +6,13 @@
 
 from __future__ import print_function
 
+from chromite.cli import command_unittest
 from chromite.cros.commands import cros_devices
-from chromite.cros.commands import init_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 
 
-class MockDevicesCommand(init_unittest.MockCommand):
+class MockDevicesCommand(command_unittest.MockCommand):
   """Mock out the devices command."""
   TARGET = 'chromite.cros.commands.cros_devices.DevicesCommand'
   TARGET_CLASS = cros_devices.DevicesCommand
@@ -20,7 +20,7 @@ class MockDevicesCommand(init_unittest.MockCommand):
   ATTRS = ('_ListDevices', '_SetAlias', '_FullReset')
 
   def __init__(self, *arg, **kwargs):
-    init_unittest.MockCommand.__init__(self, *arg, **kwargs)
+    command_unittest.MockCommand.__init__(self, *arg, **kwargs)
 
   def _ListDevices(self, _inst, *_args, **_kwargs):
     """Mock out _ListDevices."""
@@ -32,7 +32,7 @@ class MockDevicesCommand(init_unittest.MockCommand):
     """Mock out _FullReset."""
 
   def Run(self, inst):
-    init_unittest.MockCommand.Run(self, inst)
+    command_unittest.MockCommand.Run(self, inst)
 
 
 class DevicesRunThroughTest(cros_test_lib.MockTempDirTestCase):

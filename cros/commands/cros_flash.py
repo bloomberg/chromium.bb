@@ -12,8 +12,8 @@ import shutil
 import tempfile
 import time
 
-from chromite import cros
 from chromite.cbuildbot import constants
+from chromite.cli import command
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -664,8 +664,8 @@ class RemoteDeviceUpdater(object):
       self.Cleanup()
 
 
-@cros.CommandDecorator('flash')
-class FlashCommand(cros.CrosCommand):
+@command.CommandDecorator('flash')
+class FlashCommand(command.CrosCommand):
   """Update the device with an image.
 
   This command updates the device with the image
@@ -786,7 +786,7 @@ Examples:
 
   def __init__(self, options):
     """Initializes cros flash."""
-    cros.CrosCommand.__init__(self, options)
+    super(FlashCommand, self).__init__(options)
     self.any = False
 
   # pylint: disable=E1101

@@ -6,24 +6,24 @@
 
 from __future__ import print_function
 
+from chromite.cli import command_unittest
 from chromite.cros.commands import cros_shell
-from chromite.cros.commands import init_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import remote_access
 
 
-class MockShellCommand(init_unittest.MockCommand):
+class MockShellCommand(command_unittest.MockCommand):
   """Mock out the `cros shell` command."""
   TARGET = 'chromite.cros.commands.cros_shell.ShellCommand'
   TARGET_CLASS = cros_shell.ShellCommand
   COMMAND = 'shell'
 
   def __init__(self, *args, **kwargs):
-    init_unittest.MockCommand.__init__(self, *args, **kwargs)
+    command_unittest.MockCommand.__init__(self, *args, **kwargs)
 
   def Run(self, inst):
-    return init_unittest.MockCommand.Run(self, inst)
+    return command_unittest.MockCommand.Run(self, inst)
 
 
 def _SshConnectError():

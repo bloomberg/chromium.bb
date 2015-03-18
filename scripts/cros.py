@@ -17,7 +17,7 @@ from __future__ import print_function
 
 import sys
 
-from chromite.cros import commands
+from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import stats
@@ -26,7 +26,7 @@ from chromite.lib import stats
 def GetOptions(my_commands):
   """Returns the argparse to use for Cros."""
   parser = commandline.ArgumentParser(caching=True)
-  if not commands:
+  if not command:
     return parser
 
   subparsers = parser.add_subparsers(title='cros commands')
@@ -49,7 +49,7 @@ def _RunSubCommand(subcommand):
 
 def main(argv):
   try:
-    parser = GetOptions(commands.ListCommands())
+    parser = GetOptions(command.ListCommands())
     # Cros currently does nothing without a subcmd. Print help if no args are
     # specified.
     if not argv:

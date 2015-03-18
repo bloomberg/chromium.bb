@@ -6,9 +6,9 @@
 
 from __future__ import print_function
 
-from chromite import cros
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
+from chromite.cli import command
 from chromite.lib import bootstrap_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -17,8 +17,8 @@ from chromite.lib import project_sdk
 from chromite.lib import workspace_lib
 
 
-@cros.CommandDecorator('sdk')
-class SdkCommand(cros.CrosCommand):
+@command.CommandDecorator('sdk')
+class SdkCommand(command.CrosCommand):
   """Manage Project SDK installations."""
 
   @classmethod

@@ -8,8 +8,8 @@ from __future__ import print_function
 
 import os
 
-from chromite import cros
 from chromite.cbuildbot import constants
+from chromite.cli import command
 from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import commandline
@@ -32,8 +32,8 @@ def GetToolchainPackages():
   packages = toolchain.GetTargetPackages('host')
   return [toolchain.GetPortagePackage('host', x) for x in packages]
 
-@cros.CommandDecorator('build')
-class BuildCommand(cros.CrosCommand):
+@command.CommandDecorator('build')
+class BuildCommand(command.CrosCommand):
   """Build the requested packages."""
 
   _BAD_DEPEND_MSG = '\nemerge detected broken ebuilds. See error message above.'
@@ -47,7 +47,7 @@ To just build a single package:
 """
 
   def __init__(self, options):
-    cros.CrosCommand.__init__(self, options)
+    super(BuildCommand, self).__init__(options)
     self.chroot_update = options.chroot_update and options.deps
     if options.chroot_update and not options.deps:
       cros_build_lib.Debug('Skipping chroot update due to --nodeps')

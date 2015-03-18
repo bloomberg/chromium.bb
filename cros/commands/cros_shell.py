@@ -8,7 +8,7 @@ from __future__ import print_function
 
 import argparse
 
-from chromite import cros
+from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -16,8 +16,8 @@ from chromite.lib import osutils
 from chromite.lib import remote_access
 
 
-@cros.CommandDecorator('shell')
-class ShellCommand(cros.CrosCommand):
+@command.CommandDecorator('shell')
+class ShellCommand(command.CrosCommand):
   """Opens a remote shell over SSH on the target device.
 
   Can be used to start an interactive session or execute a command
@@ -57,7 +57,7 @@ Quoting can be tricky; the rules are the same as with ssh:
 
   def __init__(self, options):
     """Initializes ShellCommand."""
-    cros.CrosCommand.__init__(self, options)
+    super(ShellCommand, self).__init__(options)
     # SSH connection settings.
     self.ssh_hostname = None
     self.ssh_port = None

@@ -9,8 +9,8 @@ from __future__ import print_function
 import os
 import sys
 
-from chromite import cros
 from chromite.cbuildbot import constants
+from chromite.cli import command
 from chromite.lib import table
 
 # Needed for the dev.host.lib import below.
@@ -25,8 +25,8 @@ def DisplayValue(key, value):
     raise ValueError('Cannot display an empty value.')
 
 
-@cros.CommandDecorator('payload')
-class PayloadCommand(cros.CrosCommand):
+@command.CommandDecorator('payload')
+class PayloadCommand(command.CrosCommand):
   """Show basic information about an update payload.
 
   This command parses an update payload and displays information from
@@ -44,7 +44,7 @@ Example:
     from dev.host.lib import update_payload
     self._update_payload = update_payload
 
-    cros.CrosCommand.__init__(self, options)
+    super(PayloadCommand, self).__init__(options)
     self.payload = None
 
   @classmethod

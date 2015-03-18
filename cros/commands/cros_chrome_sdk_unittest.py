@@ -12,8 +12,8 @@ import os
 import shutil
 
 from chromite.cbuildbot import constants
+from chromite.cli import command_unittest
 from chromite.cros.commands import cros_chrome_sdk
-from chromite.cros.commands import init_unittest
 from chromite.lib import cache
 from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib_unittest
@@ -27,17 +27,18 @@ from chromite.lib import partial_mock
 # pylint: disable=W0212
 
 
-class MockChromeSDKCommand(init_unittest.MockCommand):
+class MockChromeSDKCommand(command_unittest.MockCommand):
   """Mock out the build command."""
   TARGET = 'chromite.cros.commands.cros_chrome_sdk.ChromeSDKCommand'
   TARGET_CLASS = cros_chrome_sdk.ChromeSDKCommand
   COMMAND = 'chrome-sdk'
-  ATTRS = ('_GOMA_URL', '_SetupEnvironment') + init_unittest.MockCommand.ATTRS
+  ATTRS = (('_GOMA_URL', '_SetupEnvironment') +
+           command_unittest.MockCommand.ATTRS)
 
   _GOMA_URL = 'Invalid URL'
 
   def __init__(self, *args, **kwargs):
-    init_unittest.MockCommand.__init__(self, *args, **kwargs)
+    command_unittest.MockCommand.__init__(self, *args, **kwargs)
     self.env = None
 
   def _SetupEnvironment(self, *args, **kwargs):

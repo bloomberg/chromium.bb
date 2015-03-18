@@ -9,8 +9,8 @@ from __future__ import print_function
 import mock
 import os
 
+from chromite.cli import command_unittest
 from chromite.cros.commands import cros_flash
-from chromite.cros.commands import init_unittest
 from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -20,17 +20,17 @@ from chromite.lib import remote_access
 
 
 # pylint: disable=W0212
-class MockFlashCommand(init_unittest.MockCommand):
+class MockFlashCommand(command_unittest.MockCommand):
   """Mock out the flash command."""
   TARGET = 'chromite.cros.commands.cros_flash.FlashCommand'
   TARGET_CLASS = cros_flash.FlashCommand
   COMMAND = 'flash'
 
   def __init__(self, *args, **kwargs):
-    init_unittest.MockCommand.__init__(self, *args, **kwargs)
+    command_unittest.MockCommand.__init__(self, *args, **kwargs)
 
   def Run(self, inst):
-    init_unittest.MockCommand.Run(self, inst)
+    command_unittest.MockCommand.Run(self, inst)
 
 
 class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):

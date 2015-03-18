@@ -12,8 +12,8 @@ import re
 import shutil
 import urllib2
 
-from chromite import cros
 from chromite.cbuildbot import commands, constants
+from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper
@@ -51,8 +51,8 @@ def GSURLRegexHelper(gsurl):
                   r'(?P<build_name>R\d+-[\d.ab-]+)', gsurl)
 
 
-@cros.CommandDecorator('stage')
-class StageCommand(cros.CrosCommand):
+@command.CommandDecorator('stage')
+class StageCommand(command.CrosCommand):
   """Remotely stages an image onto a MobLab device or into Google Storage.
 
   The image to be staged may be a local custom image built in the chroot or an
@@ -107,7 +107,7 @@ NOTES:
 
   def __init__(self, options):
     """Initializes cros stage."""
-    cros.CrosCommand.__init__(self, options)
+    super(StageCommand, self).__init__(options)
     self.board = None
     # Determine if we are staging a local custom image or an official image.
     if self.options.image.startswith('gs://'):

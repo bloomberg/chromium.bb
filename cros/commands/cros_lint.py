@@ -12,11 +12,10 @@ import os
 import sys
 
 from chromite.cbuildbot import constants
+from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import parallel
-
-from chromite import cros
 
 
 PYTHON_EXTENSIONS = frozenset(['.py'])
@@ -151,8 +150,8 @@ def _Dispatcher(errors, output_format, debug, linter, path):
       errors.value += 1
 
 
-@cros.CommandDecorator('lint')
-class LintCommand(cros.CrosCommand):
+@command.CommandDecorator('lint')
+class LintCommand(command.CrosCommand):
   """Run lint checks on the specified files."""
 
   EPILOG = """

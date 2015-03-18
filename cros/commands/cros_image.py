@@ -9,15 +9,15 @@ from __future__ import print_function
 import os
 
 from chromite.cbuildbot import constants
+from chromite.cli import command
 from chromite.lib import cros_build_lib
-from chromite import cros
 
 
 IMAGE_TYPES = ['base', 'dev', 'test', 'factory_test', 'factory_install', []]
 
 
-@cros.CommandDecorator('image')
-class ImageCommand(cros.CrosCommand):
+@command.CommandDecorator('image')
+class ImageCommand(command.CrosCommand):
   """Create an image
 
   Creates an image from the specified board.

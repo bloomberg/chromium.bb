@@ -12,6 +12,7 @@ import os
 import sys
 
 from chromite.cbuildbot import constants
+from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
@@ -20,7 +21,6 @@ from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import partial_mock
 from chromite.lib import workspace_lib
-from chromite import cros
 
 # pylint: disable=protected-access
 
@@ -554,7 +554,7 @@ class CommandTestRunInsideChroot(cros_test_lib.MockTestCase):
 
   def _verifyRunInsideChroot(self, expectedCmd, expectedChrootArgs):
     """Run RunInsideChroot, and verify it raises with expected values."""
-    cmd = cros.CrosCommand('options')
+    cmd = command.CrosCommand('options')
     with self.assertRaises(commandline.ChrootRequiredError) as cm:
       commandline.RunInsideChroot(cmd)
 
@@ -582,5 +582,5 @@ class CommandTestRunInsideChroot(cros_test_lib.MockTestCase):
     self.mockInsideChroot.return_value = True
 
     # Since we are in the chroot, it should return, doing nothing.
-    cmd = cros.CrosCommand('options')
+    cmd = command.CrosCommand('options')
     commandline.RunInsideChroot(cmd)

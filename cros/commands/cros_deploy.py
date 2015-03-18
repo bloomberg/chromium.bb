@@ -10,7 +10,7 @@ import fnmatch
 import json
 import os
 
-from chromite import cros
+from chromite.cli import command
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -670,8 +670,8 @@ print(json.dumps(pkg_info))
     return sorted_installs, listed_installs, num_updates
 
 
-@cros.CommandDecorator('deploy')
-class DeployCommand(cros.CrosCommand):
+@command.CommandDecorator('deploy')
+class DeployCommand(command.CrosCommand):
   """Deploy the requested packages to the target device.
 
   This command assumes the requested packages are already built in the
@@ -711,7 +711,7 @@ For more information of cros build usage:
 
   def __init__(self, options):
     """Initializes DeployCommand."""
-    cros.CrosCommand.__init__(self, options)
+    super(DeployCommand, self).__init__(options)
     self.emerge = True
     self.strip = True
     self.clean_binpkg = True

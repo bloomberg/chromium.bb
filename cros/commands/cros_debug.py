@@ -8,15 +8,15 @@ from __future__ import print_function
 
 import os
 
-from chromite import cros
+from chromite.cli import command
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import remote_access
 
 
-@cros.CommandDecorator('debug')
-class DebugCommand(cros.CrosCommand):
+@command.CommandDecorator('debug')
+class DebugCommand(command.CrosCommand):
   """Use GDB to debug a process running on the target device.
 
   This command starts a GDB session to debug a remote process running on the
@@ -43,7 +43,7 @@ To debug a process by its pid:
 
   def __init__(self, options):
     """Initialize DebugCommand."""
-    cros.CrosCommand.__init__(self, options)
+    super(DebugCommand, self).__init__(options)
     # SSH connection settings.
     self.ssh_hostname = None
     self.ssh_port = None

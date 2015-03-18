@@ -6,14 +6,14 @@
 
 from __future__ import print_function
 
-from chromite import cros
+from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import remote_access
 
 
-@cros.CommandDecorator('devices')
-class DevicesCommand(cros.CrosCommand):
+@command.CommandDecorator('devices')
+class DevicesCommand(command.CrosCommand):
   """List and configure Brillo devices connected over USB.
 
   This command takes an optional subcommand: "alias" or "full-reset". If no
@@ -43,7 +43,7 @@ class DevicesCommand(cros.CrosCommand):
 
   def __init__(self, options):
     """Initialize DevicesCommand."""
-    cros.CrosCommand.__init__(self, options)
+    super(DevicesCommand, self).__init__(options)
     self.cmd = None
     self.alias_name = None
     self.device = None

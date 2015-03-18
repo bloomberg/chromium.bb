@@ -4,20 +4,57 @@
 
 """Module that contains meta-logic related to Cros Commands.
 
-This module contains two important definitions used by all commands.
-
+This module contains two important definitions used by all commands:
   CrosCommand: The parent class of all cros commands.
   CommandDecorator: Decorator that must be used to ensure that the command shows
     up in _commands and is discoverable by cros.
+
+Commands can be either imported directly or looked up using this module's
+ListCommands() function.
 """
 
 from __future__ import print_function
 
+import glob
+import os
+
+from chromite.cbuildbot import constants
 from chromite.lib import brick_lib
-from chromite.lib import commandline
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_import
+
 
 _commands = dict()
+
+
+def _FindModules(subdir_path):
+  """Returns a list of all the relevant python modules in |sub_dir_path|"""
+  # We only load cros_[!unittest] modules.
+  modules = []
+  for file_path in glob.glob(subdir_path + '/cros_*.py'):
+    if not file_path.endswith('_unittest.py'):
+      modules.append(file_path)
+
+  return modules
+
+
+def _ImportCommands():
+  """Directly imports all cros_[!unittest] python modules.
+
+  This method imports the cros_[!unittest] modules which may contain
+  commands. When these modules are loaded, declared commands (those that use
+  the cros.CommandDecorator) will automatically get added to cros._commands.
+  """
+  subdir_path = os.path.join(constants.CHROMITE_DIR, 'cros', 'commands')
+  for file_path in _FindModules(subdir_path):
+    file_name = os.path.basename(file_path)
+    mod_name = os.path.splitext(file_name)[0]
+    cros_import.ImportModule(('chromite', 'cros', 'commands', mod_name))
+
+
+def ListCommands():
+  """Return a dictionary mapping command names to classes."""
+  _ImportCommands()
+  return _commands.copy()
 
 
 class InvalidCommandError(Exception):

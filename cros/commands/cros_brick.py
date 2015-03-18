@@ -8,13 +8,13 @@ from __future__ import print_function
 
 import os
 
-from chromite import cros
+from chromite.cli import command
 from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 
 
-@cros.CommandDecorator('brick')
-class BrickCommand(cros.CrosCommand):
+@command.CommandDecorator('brick')
+class BrickCommand(command.CrosCommand):
   """Create and manage bricks."""
 
   EPILOG = """
@@ -39,7 +39,7 @@ highest:
 """
 
   def __init__(self, options):
-    cros.CrosCommand.__init__(self, options)
+    super(BrickCommand, self).__init__(options)
     self.brick = options.brick
     self.dependencies = options.dependencies
 

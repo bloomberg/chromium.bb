@@ -6,15 +6,16 @@
 
 from __future__ import print_function
 
+
+from chromite.cli import command_unittest
 from chromite.cros.commands import cros_build
-from chromite.cros.commands import init_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 
 
-class MockBuildCommand(init_unittest.MockCommand):
+class MockBuildCommand(command_unittest.MockCommand):
   """Mock out the build command."""
   TARGET = 'chromite.cros.commands.cros_build.BuildCommand'
   TARGET_CLASS = cros_build.BuildCommand
@@ -23,7 +24,7 @@ class MockBuildCommand(init_unittest.MockCommand):
     packages = cros_build.GetToolchainPackages()
     self.PatchObject(cros_build, 'GetToolchainPackages', return_value=packages)
     with parallel_unittest.ParallelMock():
-      init_unittest.MockCommand.Run(self, inst)
+      command_unittest.MockCommand.Run(self, inst)
 
 
 class BuildCommandTest(cros_test_lib.MockTempDirTestCase):

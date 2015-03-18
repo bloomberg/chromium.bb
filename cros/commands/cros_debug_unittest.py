@@ -8,14 +8,14 @@ from __future__ import print_function
 
 import mock
 
+from chromite.cli import command_unittest
 from chromite.cros.commands import cros_debug
-from chromite.cros.commands import init_unittest
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import remote_access
 
 
-class MockDebugCommand(init_unittest.MockCommand):
+class MockDebugCommand(command_unittest.MockCommand):
   """Mock out the debug command."""
   TARGET = 'chromite.cros.commands.cros_debug.DebugCommand'
   TARGET_CLASS = cros_debug.DebugCommand
@@ -23,7 +23,7 @@ class MockDebugCommand(init_unittest.MockCommand):
   ATTRS = ('_ListProcesses', '_DebugNewProcess', '_DebugRunningProcess')
 
   def __init__(self, *args, **kwargs):
-    init_unittest.MockCommand.__init__(self, *args, **kwargs)
+    command_unittest.MockCommand.__init__(self, *args, **kwargs)
 
   def _ListProcesses(self, _inst, *_args, **_kwargs):
     """Mock out _ListProcesses."""
@@ -35,7 +35,7 @@ class MockDebugCommand(init_unittest.MockCommand):
     """Mock out _DebugRunningProcess."""
 
   def Run(self, inst):
-    init_unittest.MockCommand.Run(self, inst)
+    command_unittest.MockCommand.Run(self, inst)
 
 
 class DebugRunThroughTest(cros_test_lib.MockTempDirTestCase):
