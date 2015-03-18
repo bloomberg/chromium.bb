@@ -5,8 +5,8 @@ PASS: shape-image-threshold from [0.5] to [1] was [0.5] at 0
 PASS: shape-image-threshold from [0.5] to [1] was [0.75] at 0.5
 PASS: shape-image-threshold from [0.5] to [1] was [1] at 1
 PASS: shape-image-threshold from [0.5] to [1] was [1] at 1.5
-FAIL: shape-image-threshold from [2] to [4] was [1] at -1.5, expected [0]
-FAIL: shape-image-threshold from [2] to [4] was [1] at -0.75, expected [0.5]
+PASS: shape-image-threshold from [2] to [4] was [0] at -1.5
+PASS: shape-image-threshold from [2] to [4] was [0.5] at -0.75
 PASS: shape-image-threshold from [2] to [4] was [1] at -0.5
 PASS: shape-image-threshold from [2] to [4] was [1] at 0
 PASS: shape-image-threshold from [2] to [4] was [1] at 0.5

@@ -104,7 +104,7 @@ public:
     // FIXME: This is a hack used to resolve CSSValues to AnimatableValues while we have a valid handle on an element.
     // This should be removed once AnimatableValues are obsolete.
     void forceConversionsToAnimatableValues(Element&, const LayoutStyle* baseStyle);
-    void updateNeutralKeyframeAnimatableValues(CSSPropertyID, PassRefPtrWillBeRawPtr<AnimatableValue>);
+    bool updateNeutralKeyframeAnimatableValues(CSSPropertyID, PassRefPtrWillBeRawPtr<AnimatableValue>);
 
     template<typename T>
     inline void forEachInterpolation(const T& callback) { m_interpolationEffect->forEachInterpolation(callback); }

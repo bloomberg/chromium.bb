@@ -84,12 +84,12 @@ void KeyframeEffectModelBase::snapshotCompositableProperties(Element& element, c
     }
 }
 
-void KeyframeEffectModelBase::updateNeutralKeyframeAnimatableValues(CSSPropertyID property, PassRefPtrWillBeRawPtr<AnimatableValue> value)
+bool KeyframeEffectModelBase::updateNeutralKeyframeAnimatableValues(CSSPropertyID property, PassRefPtrWillBeRawPtr<AnimatableValue> value)
 {
     ASSERT(CompositorAnimations::isCompositableProperty(property));
 
     if (!value)
-        return;
+        return false;
 
     ensureKeyframeGroups();
     auto& keyframes = m_keyframeGroups->get(property)->m_keyframes;
@@ -97,12 +97,12 @@ void KeyframeEffectModelBase::updateNeutralKeyframeAnimatableValues(CSSPropertyI
 
     auto& first = toStringPropertySpecificKeyframe(*keyframes.first());
     auto& last = toStringPropertySpecificKeyframe(*keyframes.last());
-    ASSERT(!first.value() || !last.value());
 
     if (!first.value())
         first.setAnimatableValue(value);
     if (!last.value())
         last.setAnimatableValue(value);
+    return !first.value() || !last.value();
 }
 
 KeyframeEffectModelBase::KeyframeVector KeyframeEffectModelBase::normalizedKeyframes(const KeyframeVector& keyframes)

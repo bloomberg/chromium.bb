@@ -86,23 +86,21 @@ CSSPropertyID propertyForAnimation(CSSPropertyID property)
     return property;
 }
 
-static PassRefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> createKeyframeEffect(StyleResolver* resolver, const Element* animatingElement, Element& element, const LayoutStyle& style, LayoutStyle* parentStyle,
-    const AtomicString& name, TimingFunction* defaultTimingFunction)
+static PassRefPtrWillBeRawPtr<StringKeyframeEffectModel> createKeyframeEffect(StyleResolver* resolver, const Element* animatingElement, Element& element, const LayoutStyle* style, const LayoutStyle* parentStyle, const AtomicString& name, TimingFunction* defaultTimingFunction)
 {
     // When the animating element is null, use its parent for scoping purposes.
     const Element* elementForScoping = animatingElement ? animatingElement : &element;
     const StyleRuleKeyframes* keyframesRule = resolver->findKeyframesRule(elementForScoping, name);
     ASSERT(keyframesRule);
 
-    AnimatableValueKeyframeVector keyframes;
+    StringKeyframeVector keyframes;
     const WillBeHeapVector<RefPtrWillBeMember<StyleRuleKeyframe>>& styleKeyframes = keyframesRule->keyframes();
 
     // Construct and populate the style for each keyframe
     PropertySet specifiedPropertiesForUseCounter;
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
         const StyleRuleKeyframe* styleKeyframe = styleKeyframes[i].get();
-        RefPtr<LayoutStyle> keyframeStyle = resolver->styleForKeyframe(element, style, parentStyle, styleKeyframe, name);
-        RefPtrWillBeRawPtr<AnimatableValueKeyframe> keyframe = AnimatableValueKeyframe::create();
+        RefPtrWillBeRawPtr<StringKeyframe> keyframe = StringKeyframe::create();
         const Vector<double>& offsets = styleKeyframe->keys();
         ASSERT(!offsets.isEmpty());
         keyframe->setOffset(offsets[0]);
@@ -124,13 +122,13 @@ static PassRefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> createKeyframe
                 }
                 keyframe->setEasing(timingFunction.release());
             } else if (CSSPropertyMetadata::isAnimatableProperty(property)) {
-                keyframe->setPropertyValue(property, CSSAnimatableValueFactory::create(property, *keyframeStyle).get());
+                keyframe->setPropertyValue(property, properties.propertyAt(j).value());
             }
         }
         keyframes.append(keyframe);
         // The last keyframe specified at a given offset is used.
         for (size_t j = 1; j < offsets.size(); ++j) {
-            keyframes.append(toAnimatableValueKeyframe(keyframe->cloneWithOffset(offsets[j]).get()));
+            keyframes.append(toStringKeyframe(keyframe->cloneWithOffset(offsets[j]).get()));
         }
     }
 
@@ -155,16 +153,16 @@ static PassRefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> createKeyframe
         keyframes.shrink(targetIndex + 1);
 
     // Add 0% and 100% keyframes if absent.
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> startKeyframe = keyframes.isEmpty() ? nullptr : keyframes[0];
+    RefPtrWillBeRawPtr<StringKeyframe> startKeyframe = keyframes.isEmpty() ? nullptr : keyframes[0];
     if (!startKeyframe || keyframes[0]->offset() != 0) {
-        startKeyframe = AnimatableValueKeyframe::create();
+        startKeyframe = StringKeyframe::create();
         startKeyframe->setOffset(0);
         startKeyframe->setEasing(defaultTimingFunction);
         keyframes.prepend(startKeyframe);
     }
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> endKeyframe = keyframes[keyframes.size() - 1];
+    RefPtrWillBeRawPtr<StringKeyframe> endKeyframe = keyframes[keyframes.size() - 1];
     if (endKeyframe->offset() != 1) {
-        endKeyframe = AnimatableValueKeyframe::create();
+        endKeyframe = StringKeyframe::create();
         endKeyframe->setOffset(1);
         endKeyframe->setEasing(defaultTimingFunction);
         keyframes.append(endKeyframe);
@@ -173,7 +171,7 @@ static PassRefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> createKeyframe
     ASSERT(!keyframes.first()->offset());
     ASSERT(keyframes.last()->offset() == 1);
 
-    // Snapshot current property values for 0% and 100% if missing.
+    // FIXME: This is only used for use counting neutral keyframes running on the compositor.
     PropertySet allProperties;
     for (const auto& keyframe : keyframes) {
         for (CSSPropertyID property : keyframe->properties())
@@ -189,20 +187,16 @@ static PassRefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> createKeyframe
             bool endNeedsValue = missingEndValues && !endKeyframeProperties.contains(property);
             if (!startNeedsValue && !endNeedsValue)
                 continue;
-            RefPtrWillBeRawPtr<AnimatableValue> snapshotValue = CSSAnimatableValueFactory::create(property, style);
-            if (startNeedsValue)
-                startKeyframe->setPropertyValue(property, snapshotValue.get());
-            if (endNeedsValue)
-                endKeyframe->setPropertyValue(property, snapshotValue.get());
-            if (property == CSSPropertyOpacity || property == CSSPropertyTransform)
+            if (CompositorAnimations::isCompositableProperty(property))
                 UseCounter::count(elementForScoping->document(), UseCounter::SyntheticKeyframesInCompositedCSSAnimation);
         }
     }
-    ASSERT(startKeyframe->properties().size() == allProperties.size());
-    ASSERT(endKeyframe->properties().size() == allProperties.size());
 
-    return AnimatableValueKeyframeEffectModel::create(keyframes, &keyframes[0]->easing());
+    RefPtrWillBeRawPtr<StringKeyframeEffectModel> effect = StringKeyframeEffectModel::create(keyframes, &keyframes[0]->easing());
+    effect->forceConversionsToAnimatableValues(element, style);
+    return effect;
 }
+
 } // namespace
 
 CSSAnimations::CSSAnimations()
@@ -288,8 +282,15 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const E
                     if (keyframesRule != runningAnimation->styleRule || keyframesRule->version() != runningAnimation->styleRuleVersion || runningAnimation->specifiedTiming != specifiedTiming) {
                         ASSERT(!isAnimationStyleChange);
                         update->updateAnimation(animationName, player, InertAnimation::create(
-                            createKeyframeEffect(resolver, animatingElement, element, style, parentStyle, animationName, keyframeTimingFunction.get()),
+                            createKeyframeEffect(resolver, animatingElement, element, &style, parentStyle, animationName, keyframeTimingFunction.get()),
                             timing, isPaused, player->unlimitedCurrentTimeInternal()), specifiedTiming, keyframesRule);
+                    } else if (!isAnimationStyleChange && player->source() && player->source()->isAnimation()) {
+                        AnimationEffect* effect = toAnimation(player->source())->effect();
+                        if (effect && effect->isKeyframeEffectModel()) {
+                            KeyframeEffectModelBase* keyframeEffect = toKeyframeEffectModelBase(effect);
+                            if (keyframeEffect->hasSyntheticKeyframes())
+                                update->updateAnimationStyle(player, keyframeEffect, animatingElement->layoutObject(), style);
+                        }
                     }
 
                     if (isPaused != player->paused()) {
@@ -303,7 +304,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, const E
 
             ASSERT(!isAnimationStyleChange);
             update->startAnimation(animationName, InertAnimation::create(
-                createKeyframeEffect(resolver, animatingElement, element, style, parentStyle, animationName, keyframeTimingFunction.get()),
+                createKeyframeEffect(resolver, animatingElement, element, &style, parentStyle, animationName, keyframeTimingFunction.get()),
                 timing, isPaused, 0), specifiedTiming, keyframesRule);
         }
     }
@@ -354,6 +355,25 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         animation->updateSpecifiedTiming(entry.animation->specifiedTiming());
 
         m_animations.find(entry.name)->value->update(entry);
+    }
+
+    for (const auto& styleUpdate : update->animationsWithStyleUpdates()) {
+        styleUpdate.effect->forEachInterpolation([](Interpolation& interpolation) {
+            if (interpolation.isStyleInterpolation() && toStyleInterpolation(interpolation).isDeferredLegacyStyleInterpolation())
+                toDeferredLegacyStyleInterpolation(toStyleInterpolation(interpolation)).underlyingStyleChanged();
+        });
+
+        bool updated = false;
+        if (styleUpdate.snapshot.opacity)
+            updated |= styleUpdate.effect->updateNeutralKeyframeAnimatableValues(CSSPropertyOpacity, styleUpdate.snapshot.opacity);
+        if (styleUpdate.snapshot.transform)
+            updated |= styleUpdate.effect->updateNeutralKeyframeAnimatableValues(CSSPropertyTransform, styleUpdate.snapshot.transform);
+        if (styleUpdate.snapshot.webkitFilter)
+            updated |= styleUpdate.effect->updateNeutralKeyframeAnimatableValues(CSSPropertyWebkitFilter, styleUpdate.snapshot.webkitFilter);
+        if (updated) {
+            styleUpdate.player->setOutdated();
+            styleUpdate.player->setCompositorPending(true);
+        }
     }
 
     for (const auto& entry : update->newAnimations()) {

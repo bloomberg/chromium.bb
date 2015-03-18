@@ -22,10 +22,19 @@ namespace blink {
 void DeferredLegacyStyleInterpolation::apply(StyleResolverState& state) const
 {
     if (m_outdated || !state.element()->elementAnimations() || !state.element()->elementAnimations()->isAnimationStyleChange()) {
-        m_innerInterpolation = LegacyStyleInterpolation::create(
-            StyleResolver::createAnimatableValueSnapshot(state, m_id, m_startCSSValue.get()),
-            StyleResolver::createAnimatableValueSnapshot(state, m_id, m_endCSSValue.get()),
-            m_id);
+        RefPtrWillBeRawPtr<AnimatableValue> startAnimatableValue;
+        RefPtrWillBeRawPtr<AnimatableValue> endAnimatableValue;
+
+        // Snapshot underlying values for neutral keyframes first because non-neutral keyframes will mutate the StyleResolverState.
+        if (!m_endCSSValue) {
+            endAnimatableValue = StyleResolver::createAnimatableValueSnapshot(state, m_id, m_endCSSValue.get());
+            startAnimatableValue = StyleResolver::createAnimatableValueSnapshot(state, m_id, m_startCSSValue.get());
+        } else {
+            startAnimatableValue = StyleResolver::createAnimatableValueSnapshot(state, m_id, m_startCSSValue.get());
+            endAnimatableValue = StyleResolver::createAnimatableValueSnapshot(state, m_id, m_endCSSValue.get());
+        }
+
+        m_innerInterpolation = LegacyStyleInterpolation::create(startAnimatableValue, endAnimatableValue, m_id);
         m_outdated = false;
     }
 

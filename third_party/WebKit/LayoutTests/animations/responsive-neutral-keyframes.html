@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<style>
+  @keyframes anim-missing-from { to { width: 200px; height: 200px; } }
+  @keyframes anim-missing-to { from { left: 100px; } }
+  @keyframes anim-missing-both { 50% { background-color: rgb(200, 100, 40); } }
+  @keyframes anim-missing-compositor { 100% { opacity: 0.0; } }
+  @keyframes anim-missing-ems { from { top: 1em; } }
+
+  .target-before {
+    width: 100px;
+    height: 100px;
+    background-color: rgb(0, 0, 0);
+    left: 20px;
+    top: 1em;
+    font-size: 12px;
+    opacity: 1.0;
+  }
+
+  .target-after {
+    width: 600px;
+    height: 300px;
+    background-color: rgb(120, 160, 200);
+    left: 200px;
+    top: 2em;
+    opacity: 0.5;
+  }
+
+  #target1 { animation: anim-missing-from 4s -1s linear paused; }
+  #target2 { animation: anim-missing-to 4s -1s linear paused; }
+  #target3 { animation: anim-missing-both 4s -1s linear paused; }
+  #target4 { animation: anim-missing-both 0.2s 2 linear paused forwards; }
+  #target5 { animation: anim-missing-compositor 2s -1s linear paused; }
+  #target6 { animation: anim-missing-ems 0.2s 2 linear paused forwards; }
+
+</style>
+<div id="target1" class="target-before"></div>
+<div id="target2" class="target-before"></div>
+<div id="target3" class="target-before"></div>
+<div id="target4" class="target-before"></div>
+<div id="target5" class="target-before"></div>
+<div id="target6" class="target-before"></div>
+<script>
+  var async1 = async_test("Neutral keyframe updates during animation style update");
+  var async2 = async_test("Neutral keyframe specified with ems responds to changes in font size");
+
+  target4.addEventListener('animationiteration', function() {
+      target4.className = 'target-after';
+  });
+
+  target4.addEventListener('animationend', function() {
+    assert_equals(getComputedStyle(target4).backgroundColor, 'rgb(120, 160, 200)');
+    async1.done();
+  });
+
+  target6.addEventListener('animationiteration', function() {
+    target6.style.fontSize = '24px';
+    target6.className = 'target-after';
+  });
+
+  target6.addEventListener('animationend', function() {
+    assert_equals(parseInt(getComputedStyle(target6).top), 48); // 2em at 24px
+    async2.done();
+  });
+
+  test(function() {
+    assert_equals(parseInt(getComputedStyle(target1).width), 125);
+    assert_equals(parseInt(getComputedStyle(target1).height), 125);
+    target1.className = 'target-after';
+    assert_equals(parseInt(getComputedStyle(target1).width), 500);
+    assert_equals(parseInt(getComputedStyle(target1).height), 275);
+  }, "Check that animations missing 'from' keyframes are responsive to underlying style changes");
+
+  test(function() {
+    assert_equals(parseInt(getComputedStyle(target2).left), 80);
+    target2.className = 'target-after';
+    assert_equals(parseInt(getComputedStyle(target2).left), 125);
+  }, "Check that animations missing 'to' keyframes are responsive to underlying style changes");
+
+  test(function() {
+    assert_equals(getComputedStyle(target3).backgroundColor, 'rgb(100, 50, 20)');
+    target3.className = 'target-after';
+    assert_equals(getComputedStyle(target3).backgroundColor, 'rgb(160, 130, 120)');
+  }, "Check that animations missing both 'from' and 'to' keyframes are responsive to underlying style changes");
+
+  test(function() {
+    target4.style.animationPlayState = 'running';
+  }, "Check that running animations with neutral keyframes are responsive to underlying style changes");
+
+  test(function() {
+    assert_approx_equals(parseFloat(getComputedStyle(target5).opacity), 0.5, 0.001);
+    target5.className = 'target-after';
+    assert_approx_equals(parseFloat(getComputedStyle(target5).opacity), 0.25, 0.001);
+  }, "Check that composited animations with neutral keyframes are responsive to underlying style changes");
+
+  test(function() {
+    assert_equals(parseInt(getComputedStyle(target6).top), 12); // 1em at 12px
+    target6.style.animationPlayState = 'running';
+  }, "Check that running animations with neutral keyframes specified using ems are responsive to font size changes");
+</script>

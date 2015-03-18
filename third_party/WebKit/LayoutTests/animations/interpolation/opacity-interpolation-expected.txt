@@ -5,7 +5,7 @@ PASS: opacity from [0] to [1] was [0.3] at 0.3
 PASS: opacity from [0] to [1] was [0.6] at 0.6
 PASS: opacity from [0] to [1] was [1] at 1
 PASS: opacity from [0] to [1] was [1] at 1.5
-FAIL: opacity from [-2] to [-4] was [0] at -1.25, expected [0.5]
+PASS: opacity from [-2] to [-4] was [0.5] at -1.25
 PASS: opacity from [-2] to [-4] was [0] at -0.3
 PASS: opacity from [-2] to [-4] was [0] at 0
 PASS: opacity from [-2] to [-4] was [0] at 0.3
