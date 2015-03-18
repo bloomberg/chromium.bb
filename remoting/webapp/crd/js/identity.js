@@ -31,8 +31,8 @@ remoting.Identity = function(opt_consentDialog) {
   this.email_ = '';
   /** @private {string} */
   this.fullName_ = '';
-  /** @type {base.Deferred<string>} */
-  this.authTokenDeferred_ = null;
+  /** @private {Object<base.Deferred<string>>} */
+  this.authTokensDeferred_ = {};
   /** @private {boolean} */
   this.interactive_ = false;
 };
@@ -55,20 +55,29 @@ remoting.Identity.ConsentDialog.prototype.show = function() {};
 /**
  * Gets an access token.
  *
+ * @param {Array<string>=} opt_scopes Optional OAuth2 scopes to request. If not
+ *     specified, the scopes specified in the manifest will be used. No consent
+ *     prompt will be needed as long as the requested scopes are a subset of
+ *     those already granted (in most cases, the remoting.Application framework
+ *     ensures that the scopes specified in the manifest are already authorized
+ *     before any application code is executed). Callers can request scopes not
+ *     specified in the manifest, but a consent prompt will be shown.
+ *
  * @return {!Promise<string>} A promise resolved with an access token
  *     or rejected with a remoting.Error.
  */
-remoting.Identity.prototype.getToken = function() {
-  /** @const */
-  var that = this;
-
-  if (this.authTokenDeferred_ == null) {
-    this.authTokenDeferred_ = new base.Deferred();
-    chrome.identity.getAuthToken(
-        { 'interactive': this.interactive_ },
-        this.onAuthComplete_.bind(this));
+remoting.Identity.prototype.getToken = function(opt_scopes) {
+  var key = getScopesKey(opt_scopes);
+  if (!this.authTokensDeferred_[key]) {
+    this.authTokensDeferred_[key] = new base.Deferred();
+    var options = {
+      'interactive': this.interactive_,
+      'scopes': opt_scopes
+    };
+    chrome.identity.getAuthToken(options,
+                                 this.onAuthComplete_.bind(this, opt_scopes));
   }
-  return this.authTokenDeferred_.promise();
+  return this.authTokensDeferred_[key].promise();
 };
 
 /**
@@ -167,16 +176,20 @@ remoting.Identity.prototype.getEmail = function() {
 /**
  * Callback for the getAuthToken API.
  *
+ * @param {Array<string>|undefined} scopes The explicit scopes passed to
+ *     getToken, or undefined if no scopes were specified.
  * @param {?string} token The auth token, or null if the request failed.
  * @private
  */
-remoting.Identity.prototype.onAuthComplete_ = function(token) {
-  var authTokenDeferred = this.authTokenDeferred_;
+remoting.Identity.prototype.onAuthComplete_ = function(scopes, token) {
+  var key = getScopesKey(scopes);
+  var authTokenDeferred = this.authTokensDeferred_[key];
 
   // Pass the token to the callback(s) if it was retrieved successfully.
   if (token) {
-    authTokenDeferred.resolve(token);
-    this.authTokenDeferred_ = null;
+    var promise = this.authTokensDeferred_[key];
+    delete this.authTokensDeferred_[key];
+    promise.resolve(token);
     return;
   }
 
@@ -190,8 +203,8 @@ remoting.Identity.prototype.onAuthComplete_ = function(token) {
     var error = (error_message == USER_CANCELLED) ?
         new remoting.Error(remoting.Error.Tag.CANCELLED) :
         new remoting.Error(remoting.Error.Tag.NOT_AUTHENTICATED);
-    authTokenDeferred.reject(error);
-    this.authTokenDeferred_ = null;
+    this.authTokensDeferred_[key].reject(error);
+    delete this.authTokensDeferred_[key];
     return;
   }
 
@@ -202,8 +215,12 @@ remoting.Identity.prototype.onAuthComplete_ = function(token) {
       (this.consentDialog_) ? this.consentDialog_.show() : Promise.resolve();
   showConsentDialog.then(function() {
     that.interactive_ = true;
-    chrome.identity.getAuthToken({'interactive': that.interactive_},
-                                 that.onAuthComplete_.bind(that));
+    var options = {
+      'interactive': that.interactive_,
+      'scopes': scopes
+    };
+    chrome.identity.getAuthToken(options,
+                                 that.onAuthComplete_.bind(that, scopes));
   });
 };
 
@@ -215,5 +232,14 @@ remoting.Identity.prototype.onAuthComplete_ = function(token) {
 remoting.Identity.prototype.isAuthenticated = function() {
   return remoting.identity.email_ !== '';
 };
+
+
+/**
+ * @param {Array<string>=} opt_scopes
+ * @return {string}
+ */
+function getScopesKey(opt_scopes) {
+  return opt_scopes ? JSON.stringify(opt_scopes) : '';
+}
 
 })();

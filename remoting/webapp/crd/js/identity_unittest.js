@@ -23,8 +23,6 @@ var identity = null;
 var MockConsent = function(assert) {
   /** @type {boolean} */
   this.grantConsent = true;
-  /** @type {Array<string> | undefined} */
-  this.scopes = undefined;
   /** @private {QUnit.Assert} */
   this.assert_ = assert;
 };
@@ -34,7 +32,8 @@ MockConsent.prototype.show = function() {
   // with {interactive: false} failed, and it should occur before any call with
   // {interactive: true}.
   this.assert_.ok(getAuthToken.calledOnce);
-  this.assert_.ok(getAuthToken.calledWith({'interactive': false}));
+  this.assert_.ok(getAuthToken.calledWith(
+      {'interactive': false, scopes: undefined}));
   getAuthToken.reset();
 
   if (this.grantConsent) {
@@ -64,7 +63,8 @@ QUnit.test('consent is requested only on first invocation', function(assert) {
       function(/** string */ token) {
         assert.ok(promptForConsent.called);
         assert.ok(getAuthToken.calledOnce);
-        assert.ok(getAuthToken.calledWith({'interactive': true}));
+        assert.ok(getAuthToken.calledWith(
+            {'interactive': true, 'scopes': undefined}));
 
         // Request another token.
         promptForConsent.reset();
@@ -74,8 +74,52 @@ QUnit.test('consent is requested only on first invocation', function(assert) {
       }).then(function(/** string */ token) {
         assert.ok(!promptForConsent.called);
         assert.ok(getAuthToken.calledOnce);
-        assert.ok(getAuthToken.calledWith({'interactive': true}));
+        assert.ok(getAuthToken.calledWith({
+          'interactive': true, 'scopes': undefined}));
         assert.equal(token, 'token');
+      });
+});
+
+QUnit.test('requesting an explicit scope works', function(assert) {
+  assert.ok(!promptForConsent.called);
+  return identity.getToken().then(
+      function() {
+        // Request a token with an explicit scope.
+        promptForConsent.reset();
+        getAuthToken.reset();
+        return identity.getToken(['scope']);
+
+      }).then(function(/** string */ token) {
+        assert.ok(!promptForConsent.called);
+        assert.ok(getAuthToken.calledOnce);
+        assert.ok(getAuthToken.calledWith({
+          'interactive': true, 'scopes': ['scope']}));
+        assert.equal(token, 'token["scope"]');
+      });
+});
+
+QUnit.test('multiple concurrent outstanding requests are handled correctly',
+           function(assert) {
+  assert.ok(!promptForConsent.called);
+  return identity.getToken().then(
+      function() {
+        // Request a token with an explicit scope and another without.
+        promptForConsent.reset();
+        getAuthToken.reset();
+        var withScope = identity.getToken(['scope']);
+        var withoutScope = identity.getToken();
+        return Promise.all([withScope, withoutScope]);
+
+      }).then(function(/** Array<string> */ tokens) {
+        assert.ok(!promptForConsent.called);
+        assert.ok(getAuthToken.calledTwice);
+        assert.ok(getAuthToken.calledWith({
+          'interactive': true, 'scopes': ['scope']}));
+        assert.ok(getAuthToken.calledWith({
+          'interactive': true, 'scopes': undefined}));
+        assert.equal(tokens.length, 2);
+        assert.equal(tokens[0], 'token["scope"]');
+        assert.equal(tokens[1], 'token');
       });
 });
 

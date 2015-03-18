@@ -192,8 +192,13 @@ chromeMocks.Identity = function() {
  * @param {function(string=):void} callback
  */
 chromeMocks.Identity.prototype.getAuthToken = function(options, callback) {
+  // Append the 'scopes' array, if present, to the dummy token.
+  var token = this.token_;
+  if (token !== undefined && options['scopes'] !== undefined) {
+    token += JSON.stringify(options['scopes']);
+  }
   // Don't use setTimeout because sinon mocks it.
-  window.requestAnimationFrame(callback.bind(null, this.token_));
+  window.requestAnimationFrame(callback.bind(null, token));
 };
 
 /** @param {string} token */

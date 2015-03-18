@@ -86,6 +86,9 @@ sinon.Spy.prototype.called = false;
 /** @type {boolean} */
 sinon.Spy.prototype.calledOnce = false;
 
+/** @type {boolean} */
+sinon.Spy.prototype.calledTwice = false;
+
 /** @type {function(...):boolean} */
 sinon.Spy.prototype.calledWith = function() {};
 
