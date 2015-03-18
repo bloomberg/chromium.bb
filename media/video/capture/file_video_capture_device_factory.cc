@@ -40,7 +40,7 @@ void FileVideoCaptureDeviceFactory::GetDeviceNames(
     VideoCaptureDevice::Names* const device_names) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(device_names->empty());
-  base::FilePath command_line_file_path = GetFilePathFromCommandLine();
+  const base::FilePath command_line_file_path = GetFilePathFromCommandLine();
 #if defined(OS_WIN)
   device_names->push_back(VideoCaptureDevice::Name(
       base::SysWideToUTF8(command_line_file_path.value()),
@@ -64,6 +64,8 @@ void FileVideoCaptureDeviceFactory::GetDeviceSupportedFormats(
   DCHECK(thread_checker_.CalledOnValidThread());
   base::File file =
       FileVideoCaptureDevice::OpenFileForRead(GetFilePathFromCommandLine());
+  if (!file.IsValid())
+    return;
   VideoCaptureFormat capture_format;
   FileVideoCaptureDevice::ParseFileAndExtractVideoFormat(&file,
                                                          &capture_format);
