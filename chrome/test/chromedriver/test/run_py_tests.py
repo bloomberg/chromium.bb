@@ -1387,7 +1387,8 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
     temp_dir = util.MakeTempDir()
     process = subprocess.Popen([_CHROME_BINARY,
                                 '--remote-debugging-port=%d' % port,
-                                '--user-data-dir=%s' % temp_dir])
+                                '--user-data-dir=%s' % temp_dir,
+                                '--use-mock-keychain'])
     if process is None:
       raise RuntimeError('Chrome could not be started with debugging port')
     try:
