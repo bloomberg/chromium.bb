@@ -327,11 +327,15 @@ component("gfx") {
 
   if (!use_aura) {
     sources -= [
-      "nine_image_painter.cc",
-      "nine_image_painter.h",
       "path_aura.cc",
       "screen_aura.cc",
     ]
+    if (!toolkit_views) {
+      sources -= [
+        "nine_image_painter.cc",
+        "nine_image_painter.h",
+      ]
+    }
   }
 
   if (use_x11) {

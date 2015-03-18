@@ -25,11 +25,9 @@ component("views") {
     "//skia",
     "//third_party/icu",
     "//ui/accessibility",
-    "//ui/aura",
     "//ui/native_theme",
     "//ui/resources",
     "//ui/strings",
-    "//ui/wm",
     "//url",
   ]
 
@@ -98,6 +96,10 @@ component("views") {
 
   if (use_aura) {
     sources += gypi_values.views_aura_sources
+    deps += [
+      "//ui/aura",
+      "//ui/wm",
+    ]
     if (!is_chromeos) {
       sources += gypi_values.views_desktop_aura_sources
       if (use_x11) {
@@ -131,7 +133,6 @@ static_library("test_support") {
     "//ipc:test_support",
     "//skia",
     "//testing/gtest",
-    "//ui/aura",
     "//ui/base",
     "//ui/base/ime",
     "//ui/compositor",
@@ -142,18 +143,18 @@ static_library("test_support") {
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
-    "//ui/wm",
   ]
 
-  if (is_chromeos || !use_x11) {
-    sources -= [
-      "test/ui_controls_factory_desktop_aurax11.cc",
-      "test/ui_controls_factory_desktop_aurax11.h",
-    ]
-  }
   if (use_aura) {
     sources += gypi_values.views_test_support_aura_sources
-    deps += [ "//ui/aura:test_support" ]
+    deps += [
+      "//ui/aura",
+      "//ui/aura:test_support",
+      "//ui/wm",
+    ]
+    if (use_x11 && !is_chromeos) {
+      sources += gypi_values.views_test_support_desktop_aura_x11_sources
+    }
   }
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
@@ -176,7 +177,6 @@ test("views_unittests") {
     "//testing/gtest",
     "//third_party/icu",
     "//ui/accessibility",
-    "//ui/aura",
     "//ui/base",
     "//ui/base/ime",
     "//ui/base:test_support",
@@ -189,7 +189,6 @@ test("views_unittests") {
     "//ui/gl",
     "//ui/resources",
     "//ui/strings",
-    "//ui/wm",
     "//url",
   ]
 
@@ -228,7 +227,11 @@ test("views_unittests") {
 
   if (use_aura) {
     sources += gypi_values.views_unittests_aura_sources
-    deps += [ "//ui/aura:test_support" ]
+    deps += [
+      "//ui/aura",
+      "//ui/aura:test_support",
+      "//ui/wm",
+    ]
     if (!is_chromeos) {
       sources += gypi_values.views_unittests_desktop_aura_sources
       if (use_x11) {
@@ -276,12 +279,10 @@ if (is_mac) {
       "//base/test:test_support",
       "//skia",
       "//testing/gtest",
-      "//ui/aura",
       "//ui/compositor",
       "//ui/resources",
       "//ui/resources:ui_test_pak",
       "//ui/strings",
-      "//ui/wm",
     ]
   }
 }
