@@ -246,10 +246,19 @@
 	Start an interactive, user-driven move of the surface.
 
 	This request must be used in response to some sort of user action
-	like a button press, key press, or touch down event.
+	like a button press, key press, or touch down event. The passed
+	serial is used to determine the type of interactive move (touch,
+	pointer, etc).
 
 	The server may ignore move requests depending on the state of
-	the surface (e.g. fullscreen or maximized).
+	the surface (e.g. fullscreen or maximized), or if the passed serial
+	is no longer valid.
+
+	If triggered, the surface will lose the focus of the device
+	(wl_pointer, wl_touch, etc) used for the move. It is up to the
+	compositor to visually indicate that the move is taking place, such as
+	updating a pointer cursor, during the move. There is no guarantee
+	that the device focus will return when the move is completed.
       </description>
       <arg name="seat" type="object" interface="wl_seat" summary="the wl_seat of the user event"/>
       <arg name="serial" type="uint" summary="the serial of the user event"/>
