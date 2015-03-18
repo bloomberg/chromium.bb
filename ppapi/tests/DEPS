@@ -23,3 +23,10 @@ include_rules = [
 skip_child_includes = [
    "clang",
 ]
+specific_include_rules = {
+  # extensions/packaged_app/test_packaged_app.cc uses kMaxDescriptorsPerMessage
+  # defined in ipc/ipc_message_attachment_set.h.
+  "test_packaged_app\.cc": [
+    "+ipc/ipc_message_attachment_set.h",
+  ]
+}
