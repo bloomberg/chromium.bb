@@ -330,11 +330,10 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangular) {
   skregion2.op(SkIRect::MakeXYWH(0, 10, 10, 90), SkRegion::kUnion_Op);
   skregion2.op(SkIRect::MakeXYWH(10, 0, 90, 100), SkRegion::kUnion_Op);
   XID xid2 = CreateAndShowXWindow(gfx::Rect(300, 100, 100, 100));
-  REGION* region2 = gfx::CreateRegionFromSkRegion(skregion2);
-  XShapeCombineRegion(xdisplay(), xid2, ShapeBounding, 0, 0, region2,
-      false);
-  XDestroyRegion(region2);
-
+  gfx::XScopedPtr<REGION, gfx::XObjectDeleter<REGION, int, XDestroyRegion>>
+      region2(gfx::CreateRegionFromSkRegion(skregion2));
+  XShapeCombineRegion(xdisplay(), xid2, ShapeBounding, 0, 0, region2.get(),
+                      false);
   XID xids[] = { xid1, xid2 };
   StackingClientListWaiter stack_waiter(xids, arraysize(xids));
   stack_waiter.Wait();

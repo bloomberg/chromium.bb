@@ -259,8 +259,10 @@ DesktopScreenX11::DesktopScreenX11(
 
 std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
   std::vector<gfx::Display> displays;
-  XRRScreenResources* resources =
-      XRRGetScreenResourcesCurrent(xdisplay_, x_root_window_);
+  gfx::XScopedPtr<
+      XRRScreenResources,
+      gfx::XObjectDeleter<XRRScreenResources, void, XRRFreeScreenResources>>
+      resources(XRRGetScreenResourcesCurrent(xdisplay_, x_root_window_));
   if (!resources) {
     LOG(ERROR) << "XRandR returned no displays. Falling back to Root Window.";
     return GetFallbackDisplayList();
@@ -278,19 +280,18 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
   float device_scale_factor = 1.0f;
   for (int i = 0; i < resources->noutput; ++i) {
     RROutput output_id = resources->outputs[i];
-    XRROutputInfo* output_info =
-        XRRGetOutputInfo(xdisplay_, resources, output_id);
+    gfx::XScopedPtr<XRROutputInfo,
+                    gfx::XObjectDeleter<XRROutputInfo, void, XRRFreeOutputInfo>>
+        output_info(XRRGetOutputInfo(xdisplay_, resources.get(), output_id));
 
     bool is_connected = (output_info->connection == RR_Connected);
-    if (!is_connected) {
-      XRRFreeOutputInfo(output_info);
+    if (!is_connected)
       continue;
-    }
 
     if (output_info->crtc) {
-      XRRCrtcInfo *crtc = XRRGetCrtcInfo(xdisplay_,
-                                         resources,
-                                         output_info->crtc);
+      gfx::XScopedPtr<XRRCrtcInfo,
+                      gfx::XObjectDeleter<XRRCrtcInfo, void, XRRFreeCrtcInfo>>
+          crtc(XRRGetCrtcInfo(xdisplay_, resources.get(), output_info->crtc));
 
       int64 display_id = -1;
       if (!ui::GetDisplayId(output_id, static_cast<uint8>(i), &display_id)) {
@@ -336,14 +337,8 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
       }
 
       displays.push_back(display);
-
-      XRRFreeCrtcInfo(crtc);
     }
-
-    XRRFreeOutputInfo(output_info);
   }
-
-  XRRFreeScreenResources(resources);
 
   if (displays.empty())
     return GetFallbackDisplayList();

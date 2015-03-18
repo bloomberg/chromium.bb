@@ -7,6 +7,7 @@
 
 #include <X11/extensions/shape.h>
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include "base/basictypes.h"
 #include "base/cancelable_callback.h"
@@ -321,7 +322,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   ObserverList<DesktopWindowTreeHostObserverX11> observer_list_;
 
   // The window shape if the window is non-rectangular.
-  ::Region window_shape_;
+  gfx::XScopedPtr<_XRegion, gfx::XObjectDeleter<_XRegion, int, XDestroyRegion>>
+      window_shape_;
 
   // Whether |window_shape_| was set via SetShape().
   bool custom_window_shape_;

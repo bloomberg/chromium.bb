@@ -151,7 +151,6 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       desktop_native_widget_aura_(desktop_native_widget_aura),
       content_window_(NULL),
       window_parent_(NULL),
-      window_shape_(NULL),
       custom_window_shape_(false),
       urgency_hint_set_(false),
       close_widget_factory_(this) {
@@ -161,8 +160,6 @@ DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
   window()->ClearProperty(kHostForRootWindow);
   aura::client::SetWindowMoveClient(window(), NULL);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
-  if (window_shape_)
-    XDestroyRegion(window_shape_);
   DestroyDispatcher();
 }
 
@@ -201,7 +198,7 @@ gfx::Rect DesktopWindowTreeHostX11::GetX11RootWindowOuterBounds() const {
 }
 
 ::Region DesktopWindowTreeHostX11::GetWindowShape() const {
-  return window_shape_;
+  return window_shape_.get();
 }
 
 void DesktopWindowTreeHostX11::HandleNativeWidgetActivationChanged(
@@ -486,10 +483,8 @@ gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInScreen() const {
 }
 
 void DesktopWindowTreeHostX11::SetShape(gfx::NativeRegion native_region) {
-  if (window_shape_)
-    XDestroyRegion(window_shape_);
   custom_window_shape_ = false;
-  window_shape_ = NULL;
+  window_shape_.reset();
 
   if (native_region) {
     gfx::Transform transform = GetRootTransform();
@@ -498,12 +493,12 @@ void DesktopWindowTreeHostX11::SetShape(gfx::NativeRegion native_region) {
       if (native_region->getBoundaryPath(&path_in_dip)) {
         SkPath path_in_pixels;
         path_in_dip.transform(transform.matrix(), &path_in_pixels);
-        window_shape_ = gfx::CreateRegionFromSkPath(path_in_pixels);
+        window_shape_.reset(gfx::CreateRegionFromSkPath(path_in_pixels));
       } else {
-        window_shape_ = XCreateRegion();
+        window_shape_.reset(XCreateRegion());
       }
     } else {
-      window_shape_ = gfx::CreateRegionFromSkRegion(*native_region);
+      window_shape_.reset(gfx::CreateRegionFromSkRegion(*native_region));
     }
 
     custom_window_shape_ = true;
@@ -1478,14 +1473,12 @@ void DesktopWindowTreeHostX11::ConvertEventToDifferentHost(
 void DesktopWindowTreeHostX11::ResetWindowRegion() {
   // If a custom window shape was supplied then apply it.
   if (custom_window_shape_) {
-    XShapeCombineRegion(
-        xdisplay_, xwindow_, ShapeBounding, 0, 0, window_shape_, false);
+    XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0,
+                        window_shape_.get(), false);
     return;
   }
 
-  if (window_shape_)
-    XDestroyRegion(window_shape_);
-  window_shape_ = NULL;
+  window_shape_.reset();
 
   if (!IsMaximized() && !IsFullscreen()) {
     gfx::Path window_mask;
@@ -1496,9 +1489,9 @@ void DesktopWindowTreeHostX11::ResetWindowRegion() {
       widget->non_client_view()->GetWindowMask(bounds_in_pixels_.size(),
                                                &window_mask);
       if (window_mask.countPoints() > 0) {
-        window_shape_ = gfx::CreateRegionFromSkPath(window_mask);
-        XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding,
-                            0, 0, window_shape_, false);
+        window_shape_.reset(gfx::CreateRegionFromSkPath(window_mask));
+        XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0,
+                            window_shape_.get(), false);
         return;
       }
     }

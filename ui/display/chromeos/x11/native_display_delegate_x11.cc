@@ -105,7 +105,6 @@ class NativeDisplayDelegateX11::HelperDelegateX11
 NativeDisplayDelegateX11::NativeDisplayDelegateX11()
     : display_(gfx::GetXDisplay()),
       window_(DefaultRootWindow(display_)),
-      screen_(NULL),
       background_color_argb_(0) {}
 
 NativeDisplayDelegateX11::~NativeDisplayDelegateX11() {
@@ -135,14 +134,13 @@ void NativeDisplayDelegateX11::Initialize() {
 void NativeDisplayDelegateX11::GrabServer() {
   CHECK(!screen_) << "Server already grabbed";
   XGrabServer(display_);
-  screen_ = XRRGetScreenResources(display_, window_);
+  screen_.reset(XRRGetScreenResources(display_, window_));
   CHECK(screen_);
 }
 
 void NativeDisplayDelegateX11::UngrabServer() {
   CHECK(screen_) << "Server not grabbed";
-  XRRFreeScreenResources(screen_);
-  screen_ = NULL;
+  screen_.reset();
   XUngrabServer(display_);
   // crbug.com/366125
   XFlush(display_);
@@ -179,7 +177,8 @@ void NativeDisplayDelegateX11::GetDisplays(
   InitModes();
   for (int i = 0; i < screen_->noutput; ++i) {
     RROutput output_id = screen_->outputs[i];
-    XRROutputInfo* output_info = XRRGetOutputInfo(display_, screen_, output_id);
+    XRROutputInfo* output_info =
+        XRRGetOutputInfo(display_, screen_.get(), output_id);
     if (output_info->connection == RR_Connected) {
       DisplaySnapshotX11* output =
           InitDisplaySnapshot(output_id, output_info, &last_used_crtcs, i);
@@ -230,15 +229,8 @@ bool NativeDisplayDelegateX11::ConfigureCrtc(RRCrtc crtc,
   // Xrandr.h is full of lies. XRRSetCrtcConfig() is defined as returning a
   // Status, which is typically 0 for failure and 1 for success. In
   // actuality it returns a RRCONFIGSTATUS, which uses 0 for success.
-  if (XRRSetCrtcConfig(display_,
-                       screen_,
-                       crtc,
-                       CurrentTime,
-                       x,
-                       y,
-                       mode,
-                       RR_Rotate_0,
-                       (output && mode) ? &output : NULL,
+  if (XRRSetCrtcConfig(display_, screen_.get(), crtc, CurrentTime, x, y, mode,
+                       RR_Rotate_0, (output && mode) ? &output : NULL,
                        (output && mode) ? 1 : 0) != RRSetConfigSuccess) {
     LOG(WARNING) << "Unable to configure CRTC " << crtc << ":"
                  << " mode=" << mode << " output=" << output << " x=" << x
@@ -332,7 +324,8 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
   RRMode current_mode_id = None;
   gfx::Point origin;
   if (info->crtc) {
-    XRRCrtcInfo* crtc_info = XRRGetCrtcInfo(display_, screen_, info->crtc);
+    XRRCrtcInfo* crtc_info =
+        XRRGetCrtcInfo(display_, screen_.get(), info->crtc);
     current_mode_id = crtc_info->mode;
     origin.SetPoint(crtc_info->x, crtc_info->y);
     XRRFreeCrtcInfo(crtc_info);

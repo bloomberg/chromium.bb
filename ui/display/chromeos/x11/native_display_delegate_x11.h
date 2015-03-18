@@ -20,23 +20,25 @@
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/x/x11_types.h"
 
 // Forward declarations for Xlib and Xrandr.
 // This is so unused X definitions don't pollute the namespace.
-typedef unsigned long XID;
 typedef XID RROutput;
 typedef XID RRCrtc;
 typedef XID RRMode;
 typedef XID Window;
 
-struct _XDisplay;
-typedef struct _XDisplay Display;
 struct _XRROutputInfo;
 typedef _XRROutputInfo XRROutputInfo;
 struct _XRRScreenResources;
 typedef _XRRScreenResources XRRScreenResources;
 struct _XRRCrtcGamma;
 typedef _XRRCrtcGamma XRRCrtcGamma;
+
+extern "C" {
+void XRRFreeScreenResources(XRRScreenResources* resources);
+}
 
 namespace ui {
 
@@ -128,11 +130,14 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
 
   void DrawBackground();
 
-  Display* display_;
+  XDisplay* display_;
   Window window_;
 
   // Initialized when the server is grabbed and freed when it's ungrabbed.
-  XRRScreenResources* screen_;
+  gfx::XScopedPtr<
+      XRRScreenResources,
+      gfx::XObjectDeleter<XRRScreenResources, void, XRRFreeScreenResources>>
+      screen_;
 
   std::map<RRMode, DisplayModeX11*> modes_;
 
