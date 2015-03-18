@@ -107,6 +107,11 @@ void IOSurfaceStorageProvider::FreeColorBufferStorage() {
 
 void IOSurfaceStorageProvider::SwapBuffers(
     const gfx::Size& size, float scale_factor) {
+  // Ensure that the GPU executes the commands to draw into the IOSurface
+  // before the browser textures out of the IOSurface by flushing before
+  // we send the IOSurface to the browser.
+  glFlush();
+
   // The browser compositor will throttle itself, so we are free to unblock the
   // context immediately. Make sure that the browser is doing its throttling
   // appropriately by ensuring that the previous swap was acknowledged before
