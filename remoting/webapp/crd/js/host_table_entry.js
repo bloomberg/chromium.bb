@@ -90,7 +90,7 @@ remoting.HostTableEntry.prototype.getHTML_ = function() {
       '<span class="warning-overlay"></span>' +
       '<img src="icon_host.webp">' +
     '</div>' +
-    '<div class="box-spacer"">' +
+    '<div class="box-spacer">' +
       '<a class="host-name-label" href="#""></a>' +
       '<input class="host-rename-input" type="text" hidden/>' +
     '</div>' +
@@ -207,6 +207,8 @@ remoting.HostTableEntry.prototype.updateUI_ = function() {
   }
   var clickToConnect = this.isOnline_() && !this.isRenaming_();
   var showOffline = !this.isOnline_();
+  this.rootElement_.querySelector('.box-spacer').id =
+      'host_' + this.host.hostId;
   var connectLabel = chrome.i18n.getMessage(/*i18n-content*/'TOOLTIP_CONNECT',
                                             this.host.hostName);
   this.rootElement_.classList.toggle('clickable', clickToConnect);
