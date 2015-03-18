@@ -439,7 +439,6 @@ void InspectorPageAgent::disable(ErrorString*)
     m_enabled = false;
     m_state->setBoolean(PageAgentState::pageAgentEnabled, false);
     m_state->remove(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
-    m_overlay->hide();
     m_instrumentingAgents->setInspectorPageAgent(0);
     if (m_inspectorResourceContentLoader) {
         m_inspectorResourceContentLoader->dispose();

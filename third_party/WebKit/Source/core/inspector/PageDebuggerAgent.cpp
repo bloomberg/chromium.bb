@@ -57,7 +57,7 @@ PageDebuggerAgent::PageDebuggerAgent(PageScriptDebugServer* pageScriptDebugServe
     , m_overlay(overlay)
     , m_debuggerId(debuggerId)
 {
-    m_overlay->overlayHost()->setListener(this);
+    m_overlay->setListener(this);
 }
 
 PageDebuggerAgent::~PageDebuggerAgent()

@@ -33,7 +33,7 @@
 
 #include "core/inspector/InspectorFrontendChannel.h"
 #include "core/inspector/InspectorInputAgent.h"
-#include "core/inspector/InspectorOverlay.h"
+#include "core/inspector/InspectorOverlayImpl.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorStateClient.h"
 #include "core/inspector/InspectorTracingAgent.h"
@@ -65,7 +65,7 @@ class WebDevToolsAgentImpl final
     , public WebDevToolsAgent
     , public InspectorStateClient
     , public InspectorInputAgent::Client
-    , public InspectorOverlay::Client
+    , public InspectorOverlayImpl::Client
     , public InspectorPageAgent::Client
     , public InspectorTracingAgent::Client
     , public PageRuntimeAgent::Client
@@ -85,7 +85,6 @@ public:
     void dispatchMessageFromFrontend(const String& message);
     InspectorPageAgent* pageAgent() const { return m_pageAgent.get(); }
     void registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
-    InspectorOverlay* overlay() const { return m_overlay.get(); }
 
     // Instrumentation from web/ layer.
     void didCommitLoadForLocalFrame(LocalFrame*);
@@ -115,7 +114,7 @@ private:
     void dispatchKeyEvent(const PlatformKeyboardEvent&) override;
     void dispatchMouseEvent(const PlatformMouseEvent&) override;
 
-    // InspectorOverlay::Client implementation.
+    // InspectorOverlayImpl::Client implementation.
     void highlight() override;
     void hideHighlight() override;
 
@@ -161,7 +160,7 @@ private:
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     OwnPtrWillBeMember<InspectorCompositeState> m_state;
-    OwnPtrWillBeMember<InspectorOverlay> m_overlay;
+    OwnPtrWillBeMember<InspectorOverlayImpl> m_overlay;
     OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;

@@ -33,18 +33,17 @@
 
 #include "bindings/core/v8/PageScriptDebugServer.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
-#include "core/inspector/InspectorOverlayHost.h"
+#include "core/inspector/InspectorOverlay.h"
 
 namespace blink {
 
 class DocumentLoader;
-class InspectorOverlay;
 class InspectorPageAgent;
 class PageScriptDebugServer;
 
 class PageDebuggerAgent final
     : public InspectorDebuggerAgent
-    , public InspectorOverlayHost::Listener {
+    , public InspectorOverlay::Listener {
     WTF_MAKE_NONCOPYABLE(PageDebuggerAgent);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PageDebuggerAgent);
@@ -67,7 +66,7 @@ private:
     void muteConsole() override;
     void unmuteConsole() override;
 
-    // InspectorOverlayHost::Listener implementation.
+    // InspectorOverlay::Listener implementation.
     void overlayResumed() override;
     void overlaySteppedOver() override;
 

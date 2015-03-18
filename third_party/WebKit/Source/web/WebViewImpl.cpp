@@ -356,7 +356,7 @@ void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 {
     if (devToolsClient) {
         m_devToolsAgent = adoptPtrWillBeNoop(new WebDevToolsAgentImpl(this, devToolsClient));
-        m_devToolsAgent->registerAgent(InspectorRenderingAgent::create(this, m_devToolsAgent->overlay()));
+        m_devToolsAgent->registerAgent(InspectorRenderingAgent::create(this));
     } else {
         m_devToolsAgent.clear();
     }

@@ -202,7 +202,7 @@ void InspectorProfilerAgent::start(ErrorString* error)
     }
     m_recordingCPUProfile = true;
     if (m_overlay)
-        m_overlay->startedRecordingProfile();
+        m_overlay->suspendUpdates();
     m_frontendInitiatedProfileId = nextProfileId();
     ScriptProfiler::start(m_frontendInitiatedProfileId);
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, true);
@@ -222,7 +222,7 @@ void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::
     }
     m_recordingCPUProfile = false;
     if (m_overlay)
-        m_overlay->finishedRecordingProfile();
+        m_overlay->resumeUpdates();
     RefPtrWillBeRawPtr<ScriptProfile> scriptProfile = ScriptProfiler::stop(m_frontendInitiatedProfileId);
     m_frontendInitiatedProfileId = String();
     if (scriptProfile && profile)

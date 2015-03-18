@@ -7,7 +7,6 @@
 
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
-#include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorState.h"
 #include "core/page/Page.h"
 #include "web/WebLocalFrameImpl.h"
@@ -23,15 +22,14 @@ static const char showPaintRects[] = "showPaintRects";
 static const char showScrollBottleneckRects[] = "showScrollBottleneckRects";
 }
 
-PassOwnPtrWillBeRawPtr<InspectorRenderingAgent> InspectorRenderingAgent::create(WebViewImpl* webViewImpl, InspectorOverlay* overlay)
+PassOwnPtrWillBeRawPtr<InspectorRenderingAgent> InspectorRenderingAgent::create(WebViewImpl* webViewImpl)
 {
-    return adoptPtrWillBeNoop(new InspectorRenderingAgent(webViewImpl, overlay));
+    return adoptPtrWillBeNoop(new InspectorRenderingAgent(webViewImpl));
 }
 
-InspectorRenderingAgent::InspectorRenderingAgent(WebViewImpl* webViewImpl, InspectorOverlay* overlay)
+InspectorRenderingAgent::InspectorRenderingAgent(WebViewImpl* webViewImpl)
     : InspectorBaseAgent<InspectorRenderingAgent, InspectorFrontend::Rendering>("Rendering")
     , m_webViewImpl(webViewImpl)
-    , m_overlay(overlay)
 {
 }
 
@@ -108,7 +106,6 @@ bool InspectorRenderingAgent::compositingEnabled(ErrorString* errorString)
 
 DEFINE_TRACE(InspectorRenderingAgent)
 {
-    visitor->trace(m_overlay);
     InspectorBaseAgent::trace(visitor);
 }
 
