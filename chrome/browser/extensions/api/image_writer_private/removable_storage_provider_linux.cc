@@ -91,9 +91,9 @@ bool RemovableStorageProvider::PopulateDeviceList(
     linked_ptr<api::image_writer_private::RemovableStorageDevice> device_item(
         new api::image_writer_private::RemovableStorageDevice());
     device_item->vendor =
-        device::udev_device_get_sysattr_value(parent_device, "vendor");
+        device::UdevDeviceGetSysattrValue(parent_device, "vendor");
     device_item->model =
-        device::udev_device_get_sysattr_value(parent_device, "model");
+        device::UdevDeviceGetSysattrValue(parent_device, "model");
     // TODO (smaskell): Don't expose raw device path
     device_item->storage_unit_id =
         device::udev_device_get_devnode(cur_device.get());

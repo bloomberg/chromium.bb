@@ -9,6 +9,14 @@
 
 namespace device {
 
+namespace {
+
+std::string StringOrEmptyIfNull(const char* value) {
+  return value ? value : std::string();
+}
+
+}  // namespace
+
 const char* udev_device_get_action(udev_device* udev_device) {
   return UdevLoader::Get()->udev_device_get_action(udev_device);
 }
@@ -149,8 +157,12 @@ void udev_unref(udev* udev) {
 
 std::string UdevDeviceGetPropertyValue(udev_device* udev_device,
                                        const char* key) {
-  const char* value = device::udev_device_get_property_value(udev_device, key);
-  return value ? value : std::string();
+  return StringOrEmptyIfNull(udev_device_get_property_value(udev_device, key));
+}
+
+std::string UdevDeviceGetSysattrValue(udev_device* udev_device,
+                                      const char* key) {
+  return StringOrEmptyIfNull(udev_device_get_sysattr_value(udev_device, key));
 }
 
 std::string UdevDecodeString(const std::string& encoded) {

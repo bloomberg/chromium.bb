@@ -99,8 +99,8 @@ class ScopedGetDeviceInfoResultRecorder {
 uint64 GetDeviceStorageSize(const base::FilePath& device_path,
                             struct udev_device* device) {
   // sysfs provides the device size in units of 512-byte blocks.
-  const std::string partition_size = device::udev_device_get_sysattr_value(
-      device, kSizeSysAttr);
+  const std::string partition_size =
+      device::UdevDeviceGetSysattrValue(device, kSizeSysAttr);
 
   // Keep track of device size, to see how often this information is
   // unavailable.
