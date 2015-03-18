@@ -691,10 +691,22 @@ cr.define('extensions', function() {
         dependentList.textContent = '';
         var dependentTemplate = $('template-collection').querySelector(
             '.dependent-list-item');
-        extension.dependentExtensions.forEach(function(elem) {
+        extension.dependentExtensions.forEach(function(dependentId) {
+          var dependentExtension = null;
+          for (var i = 0; i < this.extensions_.length; ++i) {
+            if (this.extensions_[i].id == dependentId) {
+              dependentExtension = this.extensions_[i];
+              break;
+            }
+          }
+          if (!dependentExtension)
+            return;
+
           var depNode = dependentTemplate.cloneNode(true);
-          depNode.querySelector('.dep-extension-title').textContent = elem.name;
-          depNode.querySelector('.dep-extension-id').textContent = elem.id;
+          depNode.querySelector('.dep-extension-title').textContent =
+              dependentExtension.name;
+          depNode.querySelector('.dep-extension-id').textContent =
+              dependentExtension.id;
           dependentList.appendChild(depNode);
         });
       });
@@ -839,7 +851,8 @@ cr.define('extensions', function() {
      * @param {Element} panel An element to hold the errors.
      * @param {string} columnType A tag used to identify the column when
      *     changing focus.
-     * @param {Array<RuntimeError>|undefined} errors The errors to be displayed.
+     * @param {Array<RuntimeError|ManifestError>|undefined} errors The errors
+     *     to be displayed.
      * @private
      */
     updateErrors_: function(panel, columnType, errors) {

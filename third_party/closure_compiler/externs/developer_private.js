@@ -4,8 +4,8 @@
 
 /** @fileoverview Externs generated from namespace: developerPrivate */
 
-// Note: hand-modified to change Array to !Array in ItemInfo typedef, and add
-// enum definitions.
+// Note: hand-modified to change Array to !Array and add types to the array,
+// and to add enum definitions.
 
 /**
  * @typedef {string}
@@ -137,7 +137,7 @@ var ManifestError;
  *   renderViewId: number,
  *   renderProcessId: number,
  *   canInspect: boolean,
- *   stackTrace: Array
+ *   stackTrace: !Array<StackFrame>
  * }}
  */
 var RuntimeError;
@@ -182,7 +182,7 @@ var ExtensionView;
  * @typedef {{
  *   actionButtonHidden: boolean,
  *   blacklistText: (string|undefined),
- *   dependentExtensions: Array,
+ *   dependentExtensions: !Array<string>,
  *   description: string,
  *   disableReasons: DisableReasons,
  *   errorCollection: AccessModifier,
@@ -192,11 +192,11 @@ var ExtensionView;
  *   id: string,
  *   incognitoAccess: AccessModifier,
  *   installedByCustodian: boolean,
- *   installWarnings: Array,
+ *   installWarnings: !Array<string>,
  *   launchUrl: (string|undefined),
  *   location: chrome.developerPrivate.Location,
  *   locationText: (string|undefined),
- *   manifestErrors: Array,
+ *   manifestErrors: !Array<ManifestError>,
  *   mustRemainInstalled: boolean,
  *   name: string,
  *   offlineEnabled: boolean,
@@ -205,14 +205,14 @@ var ExtensionView;
  *   policyText: (string|undefined),
  *   prettifiedPath: (string|undefined),
  *   runOnAllUrls: AccessModifier,
- *   runtimeErrors: Array,
- *   runtimeWarnings: Array,
+ *   runtimeErrors: !Array<RuntimeError>,
+ *   runtimeWarnings: !Array<string>,
  *   state: chrome.developerPrivate.ExtensionState,
  *   type: chrome.developerPrivate.ExtensionType,
  *   updateUrl: string,
  *   userMayModify: boolean,
  *   version: string,
- *   views: Array
+ *   views: !Array<ExtensionView>
  * }}
  */
 var ExtensionInfo;
@@ -241,11 +241,11 @@ var ExtensionInfo;
  *   app_launch_url: (string|undefined),
  *   homepage_url: (string|undefined),
  *   update_url: (string|undefined),
- *   install_warnings: !Array,
- *   manifest_errors: !Array,
- *   runtime_errors: !Array,
+ *   install_warnings: !Array<InstallWarning>,
+ *   manifest_errors: !Array<Object>,
+ *   runtime_errors: !Array<Object>,
  *   offline_enabled: boolean,
- *   views: !Array
+ *   views: !Array<ItemInspectView>
  * }}
  */
 var ItemInfo;
