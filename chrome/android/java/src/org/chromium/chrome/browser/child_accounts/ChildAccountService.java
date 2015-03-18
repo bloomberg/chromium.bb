@@ -162,7 +162,6 @@ public class ChildAccountService {
         if (childAccountName != null && account.name.equals(childAccountName)) {
             return CHILD_ACCOUNT_FORCE_ON;
         }
-        if (!isChildAccountDetectionEnabled()) return CHILD_ACCOUNT_FORCE_OFF;
         return CHILD_ACCOUNT_DONT_FORCE;
     }
 
