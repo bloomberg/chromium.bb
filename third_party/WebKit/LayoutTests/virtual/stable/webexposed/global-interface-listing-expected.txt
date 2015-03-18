@@ -32,6 +32,10 @@ interface AnalyserNode
     setter maxDecibels
     setter minDecibels
     setter smoothingTimeConstant
+interface AnimationEvent
+    getter animationName
+    getter elapsedTime
+    method constructor
 interface ApplicationCache
     attribute CHECKING
     attribute DOWNLOADING
@@ -5608,6 +5612,9 @@ interface Window
     attribute PERSISTENT
     attribute TEMPORARY
     attribute onabort
+    attribute onanimationend
+    attribute onanimationiteration
+    attribute onanimationstart
     attribute onbeforeunload
     attribute onblur
     attribute oncancel

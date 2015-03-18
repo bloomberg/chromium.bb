@@ -5,6 +5,15 @@ alignItems
 alignSelf
 alignmentBaseline
 all
+animation
+animationDelay
+animationDirection
+animationDuration
+animationFillMode
+animationIterationCount
+animationName
+animationPlayState
+animationTimingFunction
 backfaceVisibility
 background
 backgroundAttachment
