@@ -74,13 +74,13 @@ GetOriginsTask::GetOriginsTask(
     QuotaManager* quota_manager)
     : ui_callback_(callback),
       quota_manager_(quota_manager) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 GetOriginsTask::~GetOriginsTask() {}
 
 void GetOriginsTask::Run() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -93,7 +93,7 @@ void GetOriginsTask::Run() {
 
 void GetOriginsTask::OnOriginsObtained(const std::set<GURL>& origins,
                                        storage::StorageType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   num_callbacks_to_wait_ = origins.size();
   num_callbacks_received_ = 0u;
 
@@ -114,7 +114,7 @@ void GetOriginsTask::OnUsageAndQuotaObtained(
     storage::QuotaStatusCode status_code,
     int64 usage,
     int64 quota) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (status_code == storage::kQuotaStatusOk) {
     origin_.push_back(origin.spec());
     usage_.push_back(usage);
@@ -126,7 +126,7 @@ void GetOriginsTask::OnUsageAndQuotaObtained(
 }
 
 void GetOriginsTask::CheckDone() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (num_callbacks_received_ == num_callbacks_to_wait_) {
     BrowserThread::PostTask(
         BrowserThread::UI,
@@ -139,7 +139,7 @@ void GetOriginsTask::CheckDone() {
 
 // This method is to avoid copying the 3 vector arguments into a bound callback.
 void GetOriginsTask::DoneOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ui_callback_.Run(origin_, usage_, quota_);
 }
 
@@ -184,7 +184,7 @@ void AwQuotaManagerBridgeImpl::Init(JNIEnv* env, jobject object) {
 }
 
 StoragePartition* AwQuotaManagerBridgeImpl::GetStoragePartition() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // AndroidWebview does not use per-site storage partitions.
   StoragePartition* storage_partition =
@@ -194,7 +194,7 @@ StoragePartition* AwQuotaManagerBridgeImpl::GetStoragePartition() const {
 }
 
 QuotaManager* AwQuotaManagerBridgeImpl::GetQuotaManager() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   QuotaManager* quota_manager = GetStoragePartition()->GetQuotaManager();
   DCHECK(quota_manager);
@@ -207,7 +207,7 @@ void AwQuotaManagerBridgeImpl::DeleteAllData(JNIEnv* env, jobject object) {
 }
 
 void AwQuotaManagerBridgeImpl::DeleteAllDataOnUiThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   GetStoragePartition()->ClearData(
       // Clear all web storage data except cookies.
       StoragePartition::REMOVE_DATA_MASK_APPCACHE |
@@ -231,7 +231,7 @@ void AwQuotaManagerBridgeImpl::DeleteOrigin(
 
 void AwQuotaManagerBridgeImpl::DeleteOriginOnUiThread(
     const base::string16& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StoragePartition* storage_partition = GetStoragePartition();
   storage_partition->ClearDataForOrigin(
       // All (temporary) QuotaClient types.
@@ -253,7 +253,7 @@ void AwQuotaManagerBridgeImpl::GetOrigins(
 }
 
 void AwQuotaManagerBridgeImpl::GetOriginsOnUiThread(jint callback_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const GetOriginsCallback ui_callback = base::Bind(
       &AwQuotaManagerBridgeImpl::GetOriginsCallbackImpl,
@@ -268,7 +268,7 @@ void AwQuotaManagerBridgeImpl::GetOriginsCallbackImpl(
     const std::vector<std::string>& origin,
     const std::vector<int64>& usage,
     const std::vector<int64>& quota) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -290,7 +290,7 @@ void OnUsageAndQuotaObtained(
     storage::QuotaStatusCode status_code,
     int64 usage,
     int64 quota) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (status_code != storage::kQuotaStatusOk) {
     usage = 0;
     quota = 0;
@@ -322,7 +322,7 @@ void AwQuotaManagerBridgeImpl::GetUsageAndQuotaForOriginOnUiThread(
     const base::string16& origin,
     jint callback_id,
     bool is_quota) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const QuotaUsageCallback ui_callback = base::Bind(
       &AwQuotaManagerBridgeImpl::QuotaUsageCallbackImpl,
       weak_factory_.GetWeakPtr(),
@@ -341,7 +341,7 @@ void AwQuotaManagerBridgeImpl::GetUsageAndQuotaForOriginOnUiThread(
 
 void AwQuotaManagerBridgeImpl::QuotaUsageCallbackImpl(
     int jcallback_id, bool is_quota, int64 usage, int64 quota) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())

@@ -38,7 +38,7 @@ void IconHelper::DownloadFaviconCallback(
     const GURL& image_url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_bitmap_sizes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (http_status_code == 404) {
     MarkUnableToDownloadFavicon(image_url);
     return;
@@ -59,7 +59,7 @@ void IconHelper::DownloadFaviconCallback(
 
 void IconHelper::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (std::vector<content::FaviconURL>::const_iterator i = candidates.begin();
        i != candidates.end(); ++i) {
     if (!i->icon_url.is_valid())

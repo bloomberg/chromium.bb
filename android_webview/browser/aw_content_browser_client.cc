@@ -102,7 +102,7 @@ void AwContentsMessageFilter::OnShouldOverrideUrlLoading(
     int render_frame_id,
     const base::string16& url,
     bool* ignore_navigation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   *ignore_navigation = false;
   AwContentsClientBridgeBase* client =
       AwContentsClientBridgeBase::FromID(process_id_, render_frame_id);

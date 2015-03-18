@@ -8,6 +8,8 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
+using content::BrowserThread;
+
 namespace android_webview {
 
 AwResourceContext::AwResourceContext(net::URLRequestContextGetter* getter)
@@ -20,7 +22,7 @@ AwResourceContext::~AwResourceContext() {
 
 void AwResourceContext::SetExtraHeaders(
     const GURL& url, const std::string& headers) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!url.is_valid()) return;
   base::AutoLock scoped_lock(extra_headers_lock_);
   if (!headers.empty())
@@ -30,7 +32,7 @@ void AwResourceContext::SetExtraHeaders(
 }
 
 std::string AwResourceContext::GetExtraHeaders(const GURL& url) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!url.is_valid()) return std::string();
   base::AutoLock scoped_lock(extra_headers_lock_);
   std::map<std::string, std::string>::iterator iter =
@@ -39,12 +41,12 @@ std::string AwResourceContext::GetExtraHeaders(const GURL& url) {
 }
 
 net::HostResolver* AwResourceContext::GetHostResolver() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return getter_->GetURLRequestContext()->host_resolver();
 }
 
 net::URLRequestContext* AwResourceContext::GetRequestContext() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return getter_->GetURLRequestContext();
 }
 

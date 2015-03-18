@@ -93,7 +93,7 @@ IoThreadClientThrottle::IoThreadClientThrottle(int render_process_id,
       request_(request) { }
 
 IoThreadClientThrottle::~IoThreadClientThrottle() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   g_webview_resource_dispatcher_host_delegate.Get().
       RemovePendingThrottleOnIoThread(this);
 }
@@ -103,7 +103,7 @@ const char* IoThreadClientThrottle::GetNameForLogging() const {
 }
 
 void IoThreadClientThrottle::WillStartRequest(bool* defer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (render_frame_id_ < 1)
     return;
   DCHECK(render_process_id_);
@@ -130,7 +130,7 @@ void IoThreadClientThrottle::WillRedirectRequest(
 
 void IoThreadClientThrottle::OnIoThreadClientReady(int new_render_process_id,
                                                    int new_render_frame_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!MaybeBlockRequest()) {
     controller()->Resume();
@@ -353,7 +353,7 @@ void AwResourceDispatcherHostDelegate::OnResponseStarted(
 
 void AwResourceDispatcherHostDelegate::RemovePendingThrottleOnIoThread(
     IoThreadClientThrottle* throttle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   PendingThrottleMap::iterator it = pending_throttles_.find(
       FrameRouteIDPair(throttle->render_process_id(),
                        throttle->render_frame_id()));
@@ -391,7 +391,7 @@ void AwResourceDispatcherHostDelegate::AddPendingThrottleOnIoThread(
     int render_process_id,
     int render_frame_id_id,
     IoThreadClientThrottle* pending_throttle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   pending_throttles_.insert(
       std::pair<FrameRouteIDPair, IoThreadClientThrottle*>(
           FrameRouteIDPair(render_process_id, render_frame_id_id),
@@ -401,7 +401,7 @@ void AwResourceDispatcherHostDelegate::AddPendingThrottleOnIoThread(
 void AwResourceDispatcherHostDelegate::OnIoThreadClientReadyInternal(
     int new_render_process_id,
     int new_render_frame_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   PendingThrottleMap::iterator it = pending_throttles_.find(
       FrameRouteIDPair(new_render_process_id, new_render_frame_id));
 

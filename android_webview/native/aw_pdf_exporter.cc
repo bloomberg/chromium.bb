@@ -45,7 +45,7 @@ void AwPdfExporter::ExportToPdf(JNIEnv* env,
                                 jobject obj,
                                 int fd,
                                 jobject cancel_signal) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CreatePdfSettings(env, obj);
   PrintManager* print_manager =
       PrintManager::CreateForWebContents(

@@ -49,7 +49,7 @@ AwFormDatabaseService::~AwFormDatabaseService() {
 }
 
 void AwFormDatabaseService::Shutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(result_map_.empty());
   // TODO(sgurun) we don't run into this logic right now,
   // but if we do, then we need to implement cancellation
@@ -107,7 +107,7 @@ void AwFormDatabaseService::OnWebDataServiceRequestDone(
     WebDataServiceBase::Handle h,
     const WDTypedResult* result) {
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   bool has_form_data = false;
   if (result) {
     DCHECK_EQ(AUTOFILL_VALUE_RESULT, result->GetType());

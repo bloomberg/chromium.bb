@@ -55,7 +55,7 @@ int AwNetworkDelegate::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int render_process_id, render_frame_id;
   if (original_response_headers->response_code() >= 400 &&
       content::ResourceRequestInfo::GetRenderFrameForRequest(

@@ -257,7 +257,7 @@ bool AwContentsIoThreadClientImpl::PendingAssociation() const {
 
 AwContentsIoThreadClient::CacheMode
 AwContentsIoThreadClientImpl::GetCacheMode() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return AwContentsIoThreadClient::LOAD_DEFAULT;
 
@@ -270,7 +270,7 @@ AwContentsIoThreadClientImpl::GetCacheMode() const {
 scoped_ptr<AwWebResourceResponse>
 AwContentsIoThreadClientImpl::ShouldInterceptRequest(
     const net::URLRequest* request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return scoped_ptr<AwWebResourceResponse>();
 
@@ -296,7 +296,7 @@ AwContentsIoThreadClientImpl::ShouldInterceptRequest(
 }
 
 bool AwContentsIoThreadClientImpl::ShouldBlockContentUrls() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return false;
 
@@ -306,7 +306,7 @@ bool AwContentsIoThreadClientImpl::ShouldBlockContentUrls() const {
 }
 
 bool AwContentsIoThreadClientImpl::ShouldBlockFileUrls() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return false;
 
@@ -316,7 +316,7 @@ bool AwContentsIoThreadClientImpl::ShouldBlockFileUrls() const {
 }
 
 bool AwContentsIoThreadClientImpl::ShouldAcceptThirdPartyCookies() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return false;
 
@@ -326,7 +326,7 @@ bool AwContentsIoThreadClientImpl::ShouldAcceptThirdPartyCookies() const {
 }
 
 bool AwContentsIoThreadClientImpl::ShouldBlockNetworkLoads() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return false;
 
@@ -341,7 +341,7 @@ void AwContentsIoThreadClientImpl::NewDownload(
     const string& content_disposition,
     const string& mime_type,
     int64 content_length) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return;
 
@@ -368,7 +368,7 @@ void AwContentsIoThreadClientImpl::NewDownload(
 void AwContentsIoThreadClientImpl::NewLoginRequest(const string& realm,
                                                    const string& account,
                                                    const string& args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return;
 
@@ -413,7 +413,7 @@ void AwContentsIoThreadClientImpl::OnReceivedError(
 void AwContentsIoThreadClientImpl::OnReceivedHttpError(
     const net::URLRequest* request,
     const net::HttpResponseHeaders* response_headers) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (java_object_.is_null())
     return;
 

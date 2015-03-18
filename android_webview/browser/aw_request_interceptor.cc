@@ -37,7 +37,7 @@ AwRequestInterceptor::~AwRequestInterceptor() {
 scoped_ptr<AwWebResourceResponse>
 AwRequestInterceptor::QueryForAwWebResourceResponse(
     net::URLRequest* request) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   int render_process_id, render_frame_id;
   if (!ResourceRequestInfo::GetRenderFrameForRequest(
       request, &render_process_id, &render_frame_id))
@@ -55,7 +55,7 @@ AwRequestInterceptor::QueryForAwWebResourceResponse(
 net::URLRequestJob* AwRequestInterceptor::MaybeInterceptRequest(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // See if we've already found out the aw_web_resource_response for this
   // request.

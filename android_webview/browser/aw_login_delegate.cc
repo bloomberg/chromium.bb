@@ -69,21 +69,21 @@ AwLoginDelegate::~AwLoginDelegate() {
 
 void AwLoginDelegate::Proceed(const base::string16& user,
                               const base::string16& password) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&AwLoginDelegate::ProceedOnIOThread,
                  this, user, password));
 }
 
 void AwLoginDelegate::Cancel() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
       base::Bind(&AwLoginDelegate::CancelOnIOThread, this));
 }
 
 void AwLoginDelegate::HandleHttpAuthRequestOnUIThread(
     bool first_auth_attempt) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   aw_http_auth_handler_.reset(AwHttpAuthHandlerBase::Create(
       this, auth_info_.get(), first_auth_attempt));
@@ -99,7 +99,7 @@ void AwLoginDelegate::HandleHttpAuthRequestOnUIThread(
 }
 
 void AwLoginDelegate::CancelOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (request_) {
     request_->CancelAuth();
     ResourceDispatcherHost::Get()->ClearLoginDelegateForRequest(request_);
@@ -110,7 +110,7 @@ void AwLoginDelegate::CancelOnIOThread() {
 
 void AwLoginDelegate::ProceedOnIOThread(const base::string16& user,
                                         const base::string16& password) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (request_) {
     request_->SetAuth(net::AuthCredentials(user, password));
     ResourceDispatcherHost::Get()->ClearLoginDelegateForRequest(request_);
@@ -120,7 +120,7 @@ void AwLoginDelegate::ProceedOnIOThread(const base::string16& user,
 }
 
 void AwLoginDelegate::OnRequestCancelled() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   request_ = NULL;
   DeleteAuthHandlerSoon();
 }

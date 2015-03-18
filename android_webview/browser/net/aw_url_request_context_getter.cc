@@ -181,14 +181,14 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
       net_log_(new net::NetLog()) {
   proxy_config_service_ = config_service.Pass();
   // CreateSystemProxyConfigService for Android must be called on main thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 AwURLRequestContextGetter::~AwURLRequestContextGetter() {
 }
 
 void AwURLRequestContextGetter::InitializeURLRequestContext() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!url_request_context_);
 
   net::URLRequestContextBuilder builder;
@@ -248,7 +248,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
 }
 
 net::URLRequestContext* AwURLRequestContextGetter::GetURLRequestContext() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!url_request_context_)
     InitializeURLRequestContext();
 

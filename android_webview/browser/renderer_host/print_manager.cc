@@ -91,7 +91,7 @@ void PrintManager::OnDidGetDocumentCookie(int cookie) {
 
 void PrintManager::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   // Unlike the printing_message_filter, we do process this in ui thread
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OnGetDefaultPrintSettingsReply(reply_msg);
 }
 
@@ -142,7 +142,7 @@ void PrintManager::OnPrintingFailed(int cookie) {
 }
 
 bool PrintManager::PrintNow() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (printing_)
     return false;
 

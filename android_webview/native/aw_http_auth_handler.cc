@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 
 using base::android::ConvertJavaStringToUTF16;
+using content::BrowserThread;
 
 namespace android_webview {
 
@@ -23,7 +24,7 @@ AwHttpAuthHandler::AwHttpAuthHandler(AwLoginDelegate* login_delegate,
     : login_delegate_(login_delegate),
       host_(auth_info->challenger.host()),
       realm_(auth_info->realm) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = base::android::AttachCurrentThread();
   http_auth_handler_.Reset(
       Java_AwHttpAuthHandler_create(
@@ -31,7 +32,7 @@ AwHttpAuthHandler::AwHttpAuthHandler(AwLoginDelegate* login_delegate,
 }
 
 AwHttpAuthHandler:: ~AwHttpAuthHandler() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Java_AwHttpAuthHandler_handlerDestroyed(base::android::AttachCurrentThread(),
                                           http_auth_handler_.obj());
 }
@@ -40,7 +41,7 @@ void AwHttpAuthHandler::Proceed(JNIEnv* env,
                                 jobject obj,
                                 jstring user,
                                 jstring password) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (login_delegate_.get()) {
     login_delegate_->Proceed(ConvertJavaStringToUTF16(env, user),
                              ConvertJavaStringToUTF16(env, password));
@@ -49,7 +50,7 @@ void AwHttpAuthHandler::Proceed(JNIEnv* env,
 }
 
 void AwHttpAuthHandler::Cancel(JNIEnv* env, jobject obj) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (login_delegate_.get()) {
     login_delegate_->Cancel();
     login_delegate_ = NULL;
@@ -58,7 +59,7 @@ void AwHttpAuthHandler::Cancel(JNIEnv* env, jobject obj) {
 
 bool AwHttpAuthHandler::HandleOnUIThread(content::WebContents* web_contents) {
   DCHECK(web_contents);
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AwContents* aw_contents = AwContents::FromWebContents(web_contents);
 
   return aw_contents->OnReceivedHttpAuthRequest(http_auth_handler_, host_,

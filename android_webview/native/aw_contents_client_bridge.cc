@@ -272,7 +272,7 @@ void AwContentsClientBridge::RunJavaScriptDialog(
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const content::JavaScriptDialogManager::DialogClosedCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
@@ -322,7 +322,7 @@ void AwContentsClientBridge::RunBeforeUnloadDialog(
     const GURL& origin_url,
     const base::string16& message_text,
     const content::JavaScriptDialogManager::DialogClosedCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
@@ -361,7 +361,7 @@ void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,
                                              jobject,
                                              int id,
                                              jstring prompt) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::JavaScriptDialogManager::DialogClosedCallback* callback =
       pending_js_dialog_callbacks_.Lookup(id);
   if (!callback) {
@@ -377,7 +377,7 @@ void AwContentsClientBridge::ConfirmJsResult(JNIEnv* env,
 }
 
 void AwContentsClientBridge::CancelJsResult(JNIEnv*, jobject, int id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::JavaScriptDialogManager::DialogClosedCallback* callback =
       pending_js_dialog_callbacks_.Lookup(id);
   if (!callback) {
