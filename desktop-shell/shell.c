@@ -1838,6 +1838,10 @@ resize_grab_motion(struct weston_pointer_grab *grab, uint32_t time,
 		height += wl_fixed_to_int(to_y - from_y);
 	}
 
+	if (width < 1)
+		width = 1;
+	if (height < 1)
+		height = 1;
 	shsurf->client->send_configure(shsurf->surface, width, height);
 }
 
