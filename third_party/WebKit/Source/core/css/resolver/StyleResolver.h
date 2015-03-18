@@ -105,14 +105,14 @@ public:
     void pushParentElement(Element&);
     void popParentElement(Element&);
 
-    PassRefPtr<LayoutStyle> styleForElement(Element*, LayoutStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
+    PassRefPtr<LayoutStyle> styleForElement(Element*, const LayoutStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
         RuleMatchingBehavior = MatchAllRules);
 
-    PassRefPtr<LayoutStyle> styleForKeyframe(Element&, const LayoutStyle&, LayoutStyle* parentStyle, const StyleRuleKeyframe*, const AtomicString& animationName);
+    PassRefPtr<LayoutStyle> styleForKeyframe(Element&, const LayoutStyle&, const LayoutStyle* parentStyle, const StyleRuleKeyframe*, const AtomicString& animationName);
     static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(Element&, const LayoutStyle* baseStyle, CSSPropertyID, CSSValue*);
     static PassRefPtrWillBeRawPtr<AnimatableValue> createAnimatableValueSnapshot(StyleResolverState&, CSSPropertyID, CSSValue*);
 
-    PassRefPtr<LayoutStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, LayoutStyle* parentStyle);
+    PassRefPtr<LayoutStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, const LayoutStyle* parentStyle);
 
     PassRefPtr<LayoutStyle> styleForPage(int pageIndex);
     PassRefPtr<LayoutStyle> styleForText(Text*);
@@ -251,7 +251,7 @@ private:
     bool isFirstPage(int pageIndex) const;
     String pageName(int pageIndex) const;
 
-    bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, LayoutStyle* parentStyle, StyleResolverState&);
+    bool pseudoStyleForElementInternal(Element&, const PseudoStyleRequest&, const LayoutStyle* parentStyle, StyleResolverState&);
 
     PassRefPtrWillBeRawPtr<PseudoElement> createPseudoElement(Element* parent, PseudoId);
 

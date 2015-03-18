@@ -2656,7 +2656,7 @@ static PassRefPtr<LayoutStyle> firstLineStyleForCachedUncachedType(StyleCacheSta
         }
     } else if (!rendererForFirstLineStyle->isAnonymous() && rendererForFirstLineStyle->isLayoutInline()
         && !rendererForFirstLineStyle->node()->isFirstLetterPseudoElement()) {
-        LayoutStyle* parentStyle = rendererForFirstLineStyle->parent()->firstLineStyle();
+        const LayoutStyle* parentStyle = rendererForFirstLineStyle->parent()->firstLineStyle();
         if (parentStyle != rendererForFirstLineStyle->parent()->style()) {
             if (type == Cached) {
                 // A first-line style is in effect. Cache a first-line style for ourselves.
@@ -2689,7 +2689,7 @@ LayoutStyle* LayoutObject::cachedFirstLineStyle() const
     return m_style.get();
 }
 
-LayoutStyle* LayoutObject::getCachedPseudoStyle(PseudoId pseudo, LayoutStyle* parentStyle) const
+LayoutStyle* LayoutObject::getCachedPseudoStyle(PseudoId pseudo, const LayoutStyle* parentStyle) const
 {
     if (pseudo < FIRST_INTERNAL_PSEUDOID && !style()->hasPseudoStyle(pseudo))
         return 0;
@@ -2704,7 +2704,7 @@ LayoutStyle* LayoutObject::getCachedPseudoStyle(PseudoId pseudo, LayoutStyle* pa
     return 0;
 }
 
-PassRefPtr<LayoutStyle> LayoutObject::getUncachedPseudoStyle(const PseudoStyleRequest& pseudoStyleRequest, LayoutStyle* parentStyle, LayoutStyle* ownStyle) const
+PassRefPtr<LayoutStyle> LayoutObject::getUncachedPseudoStyle(const PseudoStyleRequest& pseudoStyleRequest, const LayoutStyle* parentStyle, const LayoutStyle* ownStyle) const
 {
     if (pseudoStyleRequest.pseudoId < FIRST_INTERNAL_PSEUDOID && !ownStyle && !style()->hasPseudoStyle(pseudoStyleRequest.pseudoId))
         return nullptr;
@@ -2749,7 +2749,7 @@ PassRefPtr<LayoutStyle> LayoutObject::getUncachedPseudoStyleFromParentOrShadowHo
 void LayoutObject::getTextDecorations(unsigned decorations, AppliedTextDecoration& underline, AppliedTextDecoration& overline, AppliedTextDecoration& linethrough, bool quirksMode, bool firstlineStyle)
 {
     LayoutObject* curr = this;
-    LayoutStyle* styleToUse = 0;
+    const LayoutStyle* styleToUse = 0;
     unsigned currDecs = TextDecorationNone;
     Color resultColor;
     TextDecorationStyle resultStyle;

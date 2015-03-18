@@ -530,7 +530,7 @@ void StyleResolver::loadPendingResources(StyleResolverState& state)
     document().styleEngine().fontSelector()->fontLoader()->loadPendingFonts();
 }
 
-PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, LayoutStyle* defaultParent, StyleSharingBehavior sharingBehavior,
+PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, const LayoutStyle* defaultParent, StyleSharingBehavior sharingBehavior,
     RuleMatchingBehavior matchingBehavior)
 {
     ASSERT(document().frame());
@@ -654,7 +654,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, LayoutS
     return state.takeStyle();
 }
 
-PassRefPtr<LayoutStyle> StyleResolver::styleForKeyframe(Element& element, const LayoutStyle& elementStyle, LayoutStyle* parentStyle, const StyleRuleKeyframe* keyframe, const AtomicString& animationName)
+PassRefPtr<LayoutStyle> StyleResolver::styleForKeyframe(Element& element, const LayoutStyle& elementStyle, const LayoutStyle* parentStyle, const StyleRuleKeyframe* keyframe, const AtomicString& animationName)
 {
     ASSERT(document().frame());
     ASSERT(document().settings());
@@ -761,7 +761,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
     return pseudo.release();
 }
 
-bool StyleResolver::pseudoStyleForElementInternal(Element& element, const PseudoStyleRequest& pseudoStyleRequest, LayoutStyle* parentStyle, StyleResolverState& state)
+bool StyleResolver::pseudoStyleForElementInternal(Element& element, const PseudoStyleRequest& pseudoStyleRequest, const LayoutStyle* parentStyle, StyleResolverState& state)
 {
     ASSERT(document().frame());
     ASSERT(document().settings());
@@ -830,7 +830,7 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
     return true;
 }
 
-PassRefPtr<LayoutStyle> StyleResolver::pseudoStyleForElement(Element* element, const PseudoStyleRequest& pseudoStyleRequest, LayoutStyle* parentStyle)
+PassRefPtr<LayoutStyle> StyleResolver::pseudoStyleForElement(Element* element, const PseudoStyleRequest& pseudoStyleRequest, const LayoutStyle* parentStyle)
 {
     ASSERT(parentStyle);
     if (!element)

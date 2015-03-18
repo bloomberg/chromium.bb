@@ -29,11 +29,12 @@
 
 namespace blink {
 
-StyleResolverState::StyleResolverState(Document& document, const ElementResolveContext& elementContext, LayoutStyle* parentStyle)
+StyleResolverState::StyleResolverState(Document& document, const ElementResolveContext& elementContext, const LayoutStyle* parentStyle)
     : m_elementContext(elementContext)
     , m_document(document)
     , m_style(nullptr)
-    , m_parentStyle(parentStyle)
+    // TODO(jchaffraix): We should make m_parentStyle const (https://crbug.com/468152)
+    , m_parentStyle(const_cast<LayoutStyle*>(parentStyle))
     , m_applyPropertyToRegularStyle(true)
     , m_applyPropertyToVisitedLinkStyle(false)
     , m_hasDirAutoAttribute(false)
@@ -46,7 +47,7 @@ StyleResolverState::StyleResolverState(Document& document, const ElementResolveC
     m_elementStyleResources.setDeviceScaleFactor(document.frameHost()->deviceScaleFactor());
 }
 
-StyleResolverState::StyleResolverState(Document& document, Element* element, LayoutStyle* parentStyle)
+StyleResolverState::StyleResolverState(Document& document, Element* element, const LayoutStyle* parentStyle)
     : StyleResolverState(document, element ? ElementResolveContext(*element) : ElementResolveContext(document), parentStyle)
 {
 }

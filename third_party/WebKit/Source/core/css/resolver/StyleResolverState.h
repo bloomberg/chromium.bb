@@ -45,8 +45,8 @@ class StyleResolverState {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(StyleResolverState);
 public:
-    StyleResolverState(Document&, const ElementResolveContext&, LayoutStyle* parentStyle);
-    StyleResolverState(Document&, Element*, LayoutStyle* parentStyle = 0);
+    StyleResolverState(Document&, const ElementResolveContext&, const LayoutStyle* parentStyle);
+    StyleResolverState(Document&, Element*, const LayoutStyle* parentStyle = 0);
     ~StyleResolverState();
 
     // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to grab the document from.
