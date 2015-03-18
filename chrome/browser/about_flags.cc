@@ -1438,13 +1438,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableWebGLDraftExtensions)
   },
   {
-    "enable-web-midi",
-    IDS_FLAGS_ENABLE_WEB_MIDI_NAME,
-    IDS_FLAGS_ENABLE_WEB_MIDI_DESCRIPTION,
-    kOsMac | kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
-    SINGLE_VALUE_TYPE(switches::kEnableWebMIDI)
-  },
-  {
     "enable-new-profile-management",
     IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_NAME,
     IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_DESCRIPTION,

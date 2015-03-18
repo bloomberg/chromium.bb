@@ -293,14 +293,6 @@ cr.define('options', function() {
   };
 
   /**
-   * Shows/hides the whole Web MIDI settings.
-   * @param {boolean} show Wether to show the whole Web MIDI settings.
-   */
-  ContentSettings.showExperimentalWebMIDISettings = function(show) {
-    $('experimental-web-midi-settings').hidden = !show;
-  };
-
-  /**
    * Updates the microphone/camera devices menu with the given entries.
    * @param {string} type The device type.
    * @param {Array} devices List of available devices.

@@ -667,12 +667,6 @@ void WebsiteSettings::PresentSitePermissions() {
   WebsiteSettingsUI::PermissionInfo permission_info;
   for (size_t i = 0; i < arraysize(kPermissionType); ++i) {
     permission_info.type = kPermissionType[i];
-    if (permission_info.type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
-      const base::CommandLine* command_line =
-          base::CommandLine::ForCurrentProcess();
-      if (!command_line->HasSwitch(switches::kEnableWebMIDI))
-        continue;
-    }
 
     content_settings::SettingInfo info;
     scoped_ptr<base::Value> value =

@@ -986,13 +986,6 @@ void ContentSettingsHandler::UpdateMediaExceptionsView() {
 }
 
 void ContentSettingsHandler::UpdateMIDISysExExceptionsView() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableWebMIDI)) {
-    web_ui()->CallJavascriptFunction(
-        "ContentSettings.showExperimentalWebMIDISettings",
-        base::FundamentalValue(true));
-  }
-
   UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
   UpdateExceptionsViewFromHostContentSettingsMap(
       CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
