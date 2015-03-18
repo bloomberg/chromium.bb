@@ -577,8 +577,8 @@ def main(argv):
     urls = GetArchStageTarballs(sdk_version)
 
   lock_path = os.path.dirname(options.chroot)
-  lock_path = os.path.join(lock_path,
-                           '.%s_lock' % os.path.basename(options.chroot))
+  lock_path = os.path.join(
+      lock_path, '.%s_lock' % os.path.basename(options.chroot).lstrip('.'))
   with cgroups.SimpleContainChildren('cros_sdk', pid=first_pid):
     with locking.FileLock(lock_path, 'chroot lock') as lock:
 
