@@ -350,10 +350,11 @@ function installTestLogger() {
  */
 function createRealStorage(fileNames) {
   var filePromises = fileNames.map(createFileEntry);
+  var tracker = new TestTracker();
   return Promise.all(filePromises)
       .then(
           function(fileEntries) {
-            return new importer.FileBasedRecordStorage(fileEntries);
+            return new importer.FileBasedRecordStorage(fileEntries, tracker);
           });
 }
 

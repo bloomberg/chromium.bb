@@ -48,7 +48,7 @@ function FileBrowserBackground() {
    *
    * @type {!importer.HistoryLoader}
    */
-  this.historyLoader = new importer.RuntimeHistoryLoader();
+  this.historyLoader = new importer.RuntimeHistoryLoader(this.tracker);
 
   /**
    * Event handler for progress center.

@@ -26,20 +26,21 @@ metrics.Categories = {
  * @private @enum {number}
  */
 metrics.Dimension_ = {
-  USER_TYPE: 1,
-  SESSION_TYPE: 2
+  CONSUMER_TYPE: 1,
+  SESSION_TYPE: 2,
+  MACHINE_USE: 3
 };
 
 /**
  * @enum {!analytics.EventBuilder.Dimension}
  */
 metrics.Dimensions = {
-  USER_TYPE_NON_IMPORT: {
-    index: metrics.Dimension_.USER_TYPE,
+  CONSUMER_TYPE_READER: {
+    index: metrics.Dimension_.CONSUMER_TYPE,
     value: 'Non-import'
   },
-  USER_TYPE_IMPORT: {
-    index: metrics.Dimension_.USER_TYPE,
+  CONSUMER_TYPE_IMPORTER: {
+    index: metrics.Dimension_.CONSUMER_TYPE,
     value: 'Import'
   },
   SESSION_TYPE_NON_IMPORT: {
@@ -49,6 +50,14 @@ metrics.Dimensions = {
   SESSION_TYPE_IMPORT: {
     index: metrics.Dimension_.SESSION_TYPE,
     value: 'Import'
+  },
+  MACHINE_USE_SINGLE: {
+    index: metrics.Dimension_.MACHINE_USE,
+    value: 'Single'
+  },
+  MACHINE_USE_MULTIPLE: {
+    index: metrics.Dimension_.MACHINE_USE,
+    value: 'Multiple'
   }
 };
 
@@ -71,7 +80,7 @@ metrics.ImportEvents = {
   STARTED: metrics.event.Builders_.IMPORT
       .action('Import Started')
       .dimension(metrics.Dimensions.SESSION_TYPE_IMPORT)
-      .dimension(metrics.Dimensions.USER_TYPE_IMPORT),
+      .dimension(metrics.Dimensions.CONSUMER_TYPE_IMPORTER),
 
   CANCELLED: metrics.event.Builders_.IMPORT
       .action('Import Cancelled'),
@@ -89,7 +98,10 @@ metrics.ImportEvents = {
       .action('Device Yanked'),
 
   FILES_DEDUPLICATED: metrics.event.Builders_.IMPORT
-      .action('Files Deduplicated')
+      .action('Files Deduplicated'),
+
+  HISTORY_LOADED: metrics.event.Builders_.IMPORT
+      .action('History Loaded')
 };
 
 // namespace
@@ -98,5 +110,6 @@ metrics.timing = metrics.timing || {};
 /** @enum {string} */
 metrics.timing.Variables = {
   COMPUTE_HASH: 'Compute Content Hash',
-  SEARCH_BY_HASH: 'Search By Hash'
+  SEARCH_BY_HASH: 'Search By Hash',
+  HISTORY_LOAD: 'History Load'
 };

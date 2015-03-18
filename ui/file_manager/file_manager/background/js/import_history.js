@@ -613,8 +613,9 @@ importer.HistoryLoader.prototype.addHistoryLoadedListener;
  * @struct
  *
  * @param {function(): !Promise<!Array<!FileEntry>>} filesProvider
+ * @param {!analytics.Tracker} tracker
  */
-importer.SynchronizedHistoryLoader = function(filesProvider) {
+importer.SynchronizedHistoryLoader = function(filesProvider, tracker) {
   /**
    * @return {!Promise<!Array<!FileEntry>>} History files. Will always
    *     have at least one file (the "primary file"). When other devices
@@ -624,6 +625,9 @@ importer.SynchronizedHistoryLoader = function(filesProvider) {
    * @private
    */
   this.getHistoryFiles_ = filesProvider;
+
+  /** @private {!analytics.Tracker} */
+  this.tracker_ = tracker;
 
   /** @private {boolean} */
   this.needsInitialization_ = true;
@@ -644,7 +648,9 @@ importer.SynchronizedHistoryLoader.prototype.getHistory = function() {
              * @this {importer.SynchronizedHistoryLoader}
              */
             function(fileEntries) {
-              var storage = new importer.FileBasedRecordStorage(fileEntries);
+              var storage = new importer.FileBasedRecordStorage(
+                  fileEntries,
+                  this.tracker_);
               var history = new importer.PersistentImportHistory(
                   importer.createMetadataHashcode,
                   storage);
@@ -700,14 +706,19 @@ importer.RecordStorage.prototype.readAll;
  * @constructor
  * @implements {importer.RecordStorage}
  * @struct
+ *
+ * @param {!analytics.Tracker} tracker
  */
-importer.FileBasedRecordStorage = function(fileEntries) {
+importer.FileBasedRecordStorage = function(fileEntries, tracker) {
   /** @private {!Array<!importer.PromisingFileEntry>} */
   this.inputFiles_ = fileEntries.map(
       importer.PromisingFileEntry.create);
 
   /** @private {!importer.PromisingFileEntry} */
   this.outputFile_ = this.inputFiles_[0];
+
+  /** @private {!analytics.Tracker} */
+  this.tracker_ = tracker;
 
   /**
    * Serializes all writes and reads on the primary file.
@@ -762,13 +773,17 @@ importer.FileBasedRecordStorage.prototype.writeRecord_ =
 
 /** @override */
 importer.FileBasedRecordStorage.prototype.readAll = function(recordCallback) {
+  var processTiming = this.tracker_.startTiming(
+      metrics.Categories.ACQUISITION,
+      metrics.timing.Variables.HISTORY_LOAD);
+
   return this.latestOperation_ = this.latestOperation_
       .then(
           /**
-           * @param {?} ignore
+           * @param {?} ignored
            * @this {importer.FileBasedRecordStorage}
            */
-          function(ignore) {
+          function(ignored) {
             var filePromises = this.inputFiles_.map(
                 /**
                  * @param {!importer.PromisingFileEntry} entry
@@ -815,6 +830,16 @@ importer.FileBasedRecordStorage.prototype.readAll = function(recordCallback) {
                 function(recordSet) {
                   recordSet.forEach(recordCallback);
                 });
+
+            processTiming.send();
+
+            var fileCount = this.inputFiles_.length;
+            this.tracker_.send(
+                metrics.ImportEvents.HISTORY_LOADED
+                    .value(fileCount)
+                    .dimension(fileCount === 1
+                        ? metrics.Dimensions.MACHINE_USE_SINGLE
+                        : metrics.Dimensions.MACHINE_USE_MULTIPLE));
           }.bind(this))
       .catch(importer.getLogger().catcher('file-record-store-read-all'));
 };
@@ -1047,8 +1072,18 @@ importer.DriveSyncWatcher.prototype.getSyncStatus_ =
  * @constructor
  * @implements {importer.HistoryLoader}
  * @struct
+ *
+ * @param {!analytics.Tracker} tracker
  */
-importer.RuntimeHistoryLoader = function() {
+importer.RuntimeHistoryLoader = function(tracker) {
+
+  /** @return {!importer.HistoryLoader} */
+  this.createRealHistoryLoader_ = function() {
+    return new importer.SynchronizedHistoryLoader(
+        importer.getHistoryFiles,
+        tracker);
+  };
+
   /** @private {boolean} */
   this.needsInitialization_ = true;
 
@@ -1065,13 +1100,13 @@ importer.RuntimeHistoryLoader.prototype.getHistory = function() {
             /**
              * @param {boolean} enabled
              * @return {!importer.HistoryLoader}
+             * @this {importer.RuntimeHistoryLoader}
              */
             function(enabled) {
               return enabled ?
-                  new importer.SynchronizedHistoryLoader(
-                      importer.getHistoryFiles) :
+                  this.createRealHistoryLoader_() :
                   new importer.DummyImportHistory(false);
-            })
+            }.bind(this))
         .then(
             /**
              * @param {!importer.HistoryLoader} loader

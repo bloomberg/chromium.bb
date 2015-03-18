@@ -71,4 +71,8 @@ TestTracker.prototype.forceSessionStart = function() {};
  * @param {number=} opt_sampleRate
  * @return {!TestTracker.Timing}
  */
-TestTracker.prototype.startTiming = function() {};
+TestTracker.prototype.startTiming = function() {
+  return /** @type {!TestTracker.Timing} */ ({
+    send: function() {}
+  });
+};
