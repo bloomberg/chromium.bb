@@ -468,7 +468,6 @@ mojom("mojo_bindings") {
     "geolocation_service.mojom",
     "permission_service.mojom",
     "presentation/presentation_service.mojom",
-    "presentation/presentation_session.mojom",
     "render_frame_setup.mojom",
   ]
 

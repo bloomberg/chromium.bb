@@ -15,7 +15,6 @@
           'common/geolocation_service.mojom',
           'common/permission_service.mojom',
           'common/presentation/presentation_service.mojom',
-          'common/presentation/presentation_session.mojom',
           'common/render_frame_setup.mojom',
 
           # NOTE: Sources duplicated in

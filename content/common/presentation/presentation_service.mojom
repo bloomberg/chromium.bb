@@ -4,10 +4,7 @@
 
 module presentation;
 
-import "presentation_session.mojom";
-
 struct PresentationSessionInfo {
-    PresentationSession session;
     string url;
     string id;
 };
@@ -20,7 +17,7 @@ enum PresentationErrorType {
 };
 
 struct PresentationError {
-    PresentationErrorType errorType;
+    PresentationErrorType error_type;
     string message;
 };
 
@@ -39,7 +36,8 @@ interface PresentationService {
     // stop discovery once there are no active calls to GetScreenAvailability.
     // |presentation_url| can be specified to help the implementation to filter
     // out incompatible screens.
-    GetScreenAvailability(string? presentation_url) => (bool available);
+    GetScreenAvailability(string? presentation_url) =>
+        (string? presentation_url, bool available);
 
     // Called when the frame no longer listens to the
     // |availablechange| event.

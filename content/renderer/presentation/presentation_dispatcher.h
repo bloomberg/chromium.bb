@@ -45,15 +45,21 @@ class CONTENT_EXPORT PresentationDispatcher
   // RenderFrameObserver
   void DidChangeDefaultPresentation() override;
 
-  void OnScreenAvailabilityChanged(bool available);
+  void OnScreenAvailabilityChanged(
+      const std::string& presentation_url,
+      bool available);
   void OnSessionCreated(
-    blink::WebPresentationSessionClientCallbacks* callback,
-    presentation::PresentationSessionInfoPtr session_info,
-    presentation::PresentationErrorPtr error);
+      blink::WebPresentationSessionClientCallbacks* callback,
+      presentation::PresentationSessionInfoPtr session_info,
+      presentation::PresentationErrorPtr error);
   void OnDefaultSessionStarted(
       presentation::PresentationSessionInfoPtr session_info);
 
   void ConnectToPresentationServiceIfNeeded();
+
+  void DoUpdateAvailableChangeWatched(
+      const std::string& presentation_url,
+      bool watched);
 
   // Used as a weak reference. Can be null since lifetime is bound to the frame.
   blink::WebPresentationController* controller_;

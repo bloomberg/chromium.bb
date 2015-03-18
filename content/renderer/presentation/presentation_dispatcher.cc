@@ -67,16 +67,20 @@ void PresentationDispatcher::setController(
 
 void PresentationDispatcher::updateAvailableChangeWatched(bool watched) {
   GURL presentation_url(GetPresentationURLFromFrame(render_frame()));
+  DoUpdateAvailableChangeWatched(presentation_url.spec(), watched);
+}
 
+void PresentationDispatcher::DoUpdateAvailableChangeWatched(
+    const std::string& presentation_url, bool watched) {
   ConnectToPresentationServiceIfNeeded();
   if (watched) {
     presentation_service_->GetScreenAvailability(
-        presentation_url.spec(),
+        presentation_url,
         base::Bind(&PresentationDispatcher::OnScreenAvailabilityChanged,
                  base::Unretained(this)));
   } else {
     presentation_service_->OnScreenAvailabilityListenerRemoved(
-        presentation_url.spec());
+        presentation_url);
   }
 }
 
@@ -124,12 +128,14 @@ void PresentationDispatcher::DidChangeDefaultPresentation() {
       presentation_url.spec(), mojo::String());
 }
 
-void PresentationDispatcher::OnScreenAvailabilityChanged(bool available) {
+void PresentationDispatcher::OnScreenAvailabilityChanged(
+    const std::string& presentation_url, bool available) {
   if (!controller_)
     return;
 
   // Reset the callback to get the next event.
-  updateAvailableChangeWatched(controller_->isAvailableChangeWatched());
+  DoUpdateAvailableChangeWatched(presentation_url,
+                                 controller_->isAvailableChangeWatched());
 
   controller_->didChangeAvailability(available);
 }
@@ -160,7 +166,7 @@ void PresentationDispatcher::OnSessionCreated(
   if (!error.is_null()) {
     DCHECK(session_info.is_null());
     callback->onError(new blink::WebPresentationError(
-        GetWebPresentationErrorTypeFromMojo(error->errorType),
+        GetWebPresentationErrorTypeFromMojo(error->error_type),
         blink::WebString::fromUTF8(error->message)));
     return;
   }

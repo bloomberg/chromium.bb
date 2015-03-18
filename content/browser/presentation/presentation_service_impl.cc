@@ -5,6 +5,7 @@
 #include "content/browser/presentation/presentation_service_impl.h"
 
 #include "base/logging.h"
+#include "content/browser/presentation/presentation_type_converters.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
@@ -21,12 +22,13 @@ PresentationServiceImpl::PresentationServiceImpl(
     PresentationServiceDelegate* delegate)
     : WebContentsObserver(web_contents),
       render_frame_host_(render_frame_host),
-      delegate_(delegate) {
+      delegate_(delegate),
+      weak_factory_(this) {
   DCHECK(render_frame_host_);
   DCHECK(web_contents);
-  VLOG(2) << "PresentationServiceImpl: "
-          << render_frame_host_->GetProcess()->GetID() << ", "
-          << render_frame_host_->GetRoutingID();
+  DVLOG(2) << "PresentationServiceImpl: "
+           << render_frame_host_->GetProcess()->GetID() << ", "
+           << render_frame_host_->GetRoutingID();
   if (delegate_)
     delegate_->AddObserver(this);
 }
@@ -40,7 +42,7 @@ PresentationServiceImpl::~PresentationServiceImpl() {
 void PresentationServiceImpl::CreateMojoService(
     RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<presentation::PresentationService> request) {
-  VLOG(2) << "PresentationServiceImpl::CreateService";
+  DVLOG(2) << "CreateMojoService";
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
   DCHECK(web_contents);
@@ -55,56 +57,61 @@ void PresentationServiceImpl::CreateMojoService(
 }
 
 void PresentationServiceImpl::OnConnectionError() {
-  VLOG(1) << "PresentationServiceImpl::OnConnectionError: "
-          << render_frame_host_->GetProcess()->GetID() << ", "
-          << render_frame_host_->GetRoutingID();
+  DVLOG(1) << "OnConnectionError: "
+           << render_frame_host_->GetProcess()->GetID() << ", "
+           << render_frame_host_->GetRoutingID();
 }
 
-void PresentationServiceImpl::SetDefaultPresentationURL(
-    const mojo::String& presentation_url,
-    const mojo::String& presentation_id) {
-  NOTIMPLEMENTED();
-}
-
-
-void PresentationServiceImpl::GetScreenAvailability(
-    const mojo::String& presentation_url,
-    const ScreenAvailabilityMojoCallback& callback) {
-  VLOG(2) << "PresentationServiceImpl::GetScreenAvailability";
-  if (!delegate_)
-    return;
-
-  const std::string& presentation_url_str = !presentation_url.is_null() ?
-      presentation_url.get() : default_presentation_url_;
-
-  // GetScreenAvailability() is called with no URL and there is no default
-  // Presentation URL.
-  if (presentation_url_str.empty())
-    return;
-
-  auto it = availability_contexts_.find(presentation_url_str);
+PresentationServiceImpl::ScreenAvailabilityContext*
+PresentationServiceImpl::GetOrCreateAvailabilityContext(
+    const std::string& presentation_url) {
+  auto it = availability_contexts_.find(presentation_url);
   if (it == availability_contexts_.end()) {
     linked_ptr<ScreenAvailabilityContext> context(
-        new ScreenAvailabilityContext(presentation_url_str));
-
+        new ScreenAvailabilityContext(presentation_url));
     if (!delegate_->AddScreenAvailabilityListener(
         render_frame_host_->GetProcess()->GetID(),
         render_frame_host_->GetRoutingID(),
         context.get())) {
-      VLOG(1) << "AddScreenAvailabilityListener failed. Ignoring request.";
-      return;
+      DVLOG(1) << "AddScreenAvailabilityListener failed. Ignoring request.";
+      return nullptr;
     }
-
     it = availability_contexts_.insert(
-        std::make_pair(presentation_url_str, context)).first;
+        std::make_pair(context->GetPresentationUrl(), context)).first;
   }
+  return it->second.get();
+}
 
-  it->second->CallbackReceived(callback);
+void PresentationServiceImpl::GetScreenAvailability(
+    const mojo::String& presentation_url,
+    const ScreenAvailabilityMojoCallback& callback) {
+  DVLOG(2) << "GetScreenAvailability";
+  if (!delegate_)
+    return;
+
+  ScreenAvailabilityContext* context =
+      GetOrCreateAvailabilityContext(presentation_url.get());
+  if (!context)
+    return;
+  context->CallbackReceived(callback);
 }
 
 void PresentationServiceImpl::OnScreenAvailabilityListenerRemoved(
     const mojo::String& presentation_url) {
-  NOTIMPLEMENTED();
+  DVLOG(2) << "OnScreenAvailabilityListenerRemoved";
+  if (!delegate_)
+    return;
+
+  const std::string& presentation_url_str = presentation_url.get();
+  auto it = availability_contexts_.find(presentation_url_str);
+  if (it == availability_contexts_.end())
+    return;
+
+  delegate_->RemoveScreenAvailabilityListener(
+      render_frame_host_->GetProcess()->GetID(),
+      render_frame_host_->GetRoutingID(),
+      it->second.get());
+  availability_contexts_.erase(it);
 }
 
 void PresentationServiceImpl::ListenForDefaultSessionStart(
@@ -116,21 +123,144 @@ void PresentationServiceImpl::StartSession(
     const mojo::String& presentation_url,
     const mojo::String& presentation_id,
     const NewSessionMojoCallback& callback) {
-  NOTIMPLEMENTED();
+  DVLOG(2) << "StartSession";
+  if (!delegate_)
+    return;
+
+  queued_start_session_requests_.push_back(make_linked_ptr(
+      new StartSessionRequest(presentation_url, presentation_id, callback)));
+  if (queued_start_session_requests_.size() == 1)
+    DoStartSession(presentation_url, presentation_id, callback);
 }
 
 void PresentationServiceImpl::JoinSession(
     const mojo::String& presentation_url,
     const mojo::String& presentation_id,
     const NewSessionMojoCallback& callback) {
-  NOTIMPLEMENTED();
+  DVLOG(2) << "JoinSession";
+  if (!delegate_)
+    return;
+
+  delegate_->JoinSession(
+      render_frame_host_->GetProcess()->GetID(),
+      render_frame_host_->GetRoutingID(),
+      presentation_url,
+      presentation_id,
+      base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionSucceeded,
+                 weak_factory_.GetWeakPtr(), false, callback),
+      base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionError,
+                 weak_factory_.GetWeakPtr(), false, callback));
+}
+
+void PresentationServiceImpl::HandleQueuedStartSessionRequests() {
+  DCHECK(!queued_start_session_requests_.empty());
+  queued_start_session_requests_.pop_front();
+  if (!queued_start_session_requests_.empty()) {
+    const linked_ptr<StartSessionRequest>& request =
+        queued_start_session_requests_.front();
+    DoStartSession(request->presentation_url,
+                   request->presentation_id,
+                   request->callback);
+  }
+}
+
+void PresentationServiceImpl::DoStartSession(
+    const std::string& presentation_url,
+    const std::string& presentation_id,
+    const NewSessionMojoCallback& callback) {
+  delegate_->StartSession(
+      render_frame_host_->GetProcess()->GetID(),
+      render_frame_host_->GetRoutingID(),
+      presentation_url,
+      presentation_id,
+      base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionSucceeded,
+                 weak_factory_.GetWeakPtr(), true, callback),
+      base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionError,
+                 weak_factory_.GetWeakPtr(), true, callback));
+}
+
+void PresentationServiceImpl::OnStartOrJoinSessionSucceeded(
+    bool is_start_session,
+    const NewSessionMojoCallback& callback,
+    const PresentationSessionInfo& session_info) {
+  callback.Run(
+      presentation::PresentationSessionInfo::From(session_info),
+      presentation::PresentationErrorPtr());
+  if (is_start_session)
+    HandleQueuedStartSessionRequests();
+}
+
+void PresentationServiceImpl::OnStartOrJoinSessionError(
+    bool is_start_session,
+    const NewSessionMojoCallback& callback,
+    const PresentationError& error) {
+  callback.Run(
+      presentation::PresentationSessionInfoPtr(),
+      presentation::PresentationError::From(error));
+  if (is_start_session)
+    HandleQueuedStartSessionRequests();
+}
+
+void PresentationServiceImpl::DoSetDefaultPresentationUrl(
+    const std::string& default_presentation_url,
+    const std::string& default_presentation_id) {
+  DCHECK(delegate_);
+  delegate_->SetDefaultPresentationUrl(
+      render_frame_host_->GetProcess()->GetID(),
+      render_frame_host_->GetRoutingID(),
+      default_presentation_url,
+      default_presentation_id);
+  default_presentation_url_ = default_presentation_url;
+  default_presentation_id_ = default_presentation_id;
+}
+
+void PresentationServiceImpl::SetDefaultPresentationURL(
+    const mojo::String& default_presentation_url,
+    const mojo::String& default_presentation_id) {
+  DVLOG(2) << "SetDefaultPresentationURL";
+  if (!delegate_)
+    return;
+
+  const std::string& old_default_url = default_presentation_url_;
+  const std::string& new_default_url = default_presentation_url.get();
+
+  // Don't call delegate if nothing changed.
+  if (old_default_url == new_default_url &&
+      default_presentation_id_ == default_presentation_id) {
+    return;
+  }
+
+  auto old_it = availability_contexts_.find(old_default_url);
+  // Haven't started listening yet.
+  if (old_it == availability_contexts_.end()) {
+    DoSetDefaultPresentationUrl(new_default_url, default_presentation_id);
+    return;
+  }
+
+  // Have already started listening. Create a listener for the new URL and
+  // transfer the callback from the old listener, if any.
+  // This is done so that a listener added before default URL is changed
+  // will continue to work.
+  ScreenAvailabilityMojoCallback* old_callback = old_it->second->GetCallback();
+  ScreenAvailabilityContext* context =
+      GetOrCreateAvailabilityContext(new_default_url);
+  if (old_callback)
+    context->CallbackReceived(*old_callback);
+
+  // Remove listener for old default presentation URL.
+  delegate_->RemoveScreenAvailabilityListener(
+      render_frame_host_->GetProcess()->GetID(),
+      render_frame_host_->GetRoutingID(),
+      old_it->second.get());
+  availability_contexts_.erase(old_it);
+  DoSetDefaultPresentationUrl(new_default_url, default_presentation_id);
 }
 
 void PresentationServiceImpl::DidNavigateAnyFrame(
     content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  VLOG(2) << "PresentationServiceImpl::DidNavigateAnyFrame";
+  DVLOG(2) << "PresentationServiceImpl::DidNavigateAnyFrame";
   if (render_frame_host_ != render_frame_host)
     return;
 
@@ -142,42 +272,45 @@ void PresentationServiceImpl::DidNavigateAnyFrame(
   bool in_page_navigation = details.is_in_page ||
       details.type == content::NAVIGATION_TYPE_IN_PAGE;
 
-  VLOG(2) << "DidNavigateAnyFrame: "
+  DVLOG(2) << "DidNavigateAnyFrame: "
           << "prev host: " << prev_url_host << ", curr host: " << curr_url_host
           << ", in_page_navigation: " << in_page_navigation;
 
   if (in_page_navigation)
     return;
 
-  // Unregister all sources if the frame actually navigated.
-  RemoveAllListeners();
+  // Reset if the frame actually navigated.
+  Reset();
 }
 
 void PresentationServiceImpl::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  VLOG(2) << "PresentationServiceImpl::RenderFrameDeleted";
+  DVLOG(2) << "PresentationServiceImpl::RenderFrameDeleted";
   if (render_frame_host_ != render_frame_host)
     return;
 
   // RenderFrameDeleted means this object is getting deleted soon.
-  RemoveAllListeners();
+  Reset();
 }
 
-void PresentationServiceImpl::RemoveAllListeners() {
-  VLOG(2) << "PresentationServiceImpl::RemoveAllListeners";
-  if (!delegate_)
-    return;
-
-  delegate_->RemoveAllScreenAvailabilityListeners(
+void PresentationServiceImpl::Reset() {
+  DVLOG(2) << "PresentationServiceImpl::Reset";
+  if (delegate_) {
+    delegate_->Reset(
         render_frame_host_->GetProcess()->GetID(),
         render_frame_host_->GetRoutingID());
+  }
 
+  default_presentation_url_.clear();
+  default_presentation_id_.clear();
   availability_contexts_.clear();
+  queued_start_session_requests_.clear();
 }
 
 void PresentationServiceImpl::OnDelegateDestroyed() {
-  VLOG(2) << "PresentationServiceImpl::OnDelegateDestroyed";
+  DVLOG(2) << "PresentationServiceImpl::OnDelegateDestroyed";
   delegate_ = nullptr;
+  Reset();
 }
 
 PresentationServiceImpl::ScreenAvailabilityContext::ScreenAvailabilityContext(
@@ -199,7 +332,7 @@ void PresentationServiceImpl::ScreenAvailabilityContext::CallbackReceived(
     // Run callback now, reset result.
     // There shouldn't be any callbacks stored in this scenario.
     DCHECK(!callback_ptr_);
-    callback.Run(*available_ptr_);
+    callback.Run(presentation_url_, *available_ptr_);
     Reset();
   }
 }
@@ -223,9 +356,26 @@ void PresentationServiceImpl::ScreenAvailabilityContext
     // Invoke callback and erase it.
     // There shouldn't be any result stored in this scenario.
     DCHECK(!available_ptr_);
-    callback_ptr_->Run(available);
+    callback_ptr_->Run(presentation_url_, available);
     Reset();
   }
+}
+
+PresentationServiceImpl::ScreenAvailabilityMojoCallback*
+PresentationServiceImpl::ScreenAvailabilityContext::GetCallback() const {
+  return callback_ptr_.get();
+}
+
+PresentationServiceImpl::StartSessionRequest::StartSessionRequest(
+    const std::string& presentation_url,
+    const std::string& presentation_id,
+    const NewSessionMojoCallback& callback)
+    : presentation_url(presentation_url),
+      presentation_id(presentation_id),
+      callback(callback) {
+}
+
+PresentationServiceImpl::StartSessionRequest::~StartSessionRequest() {
 }
 
 }  // namespace content

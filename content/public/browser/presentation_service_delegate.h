@@ -5,7 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_PRESENTATION_SERVICE_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_PRESENTATION_SERVICE_DELEGATE_H_
 
+#include "base/callback.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/presentation_session.h"
 
 namespace content {
 
@@ -24,6 +26,11 @@ class CONTENT_EXPORT PresentationServiceDelegate {
    protected:
     virtual ~Observer() {}
   };
+
+  using PresentationSessionSuccessCallback =
+      base::Callback<void(const PresentationSessionInfo&)>;
+  using PresentationSessionErrorCallback =
+      base::Callback<void(const PresentationError&)>;
 
   virtual ~PresentationServiceDelegate() {}
 
@@ -54,11 +61,60 @@ class CONTENT_EXPORT PresentationServiceDelegate {
       int render_frame_id,
       PresentationScreenAvailabilityListener* listener) = 0;
 
-  // Unregisters all listeners associated with the frame given by
-  // |render_process_id| and |render_frame_id|.
-  virtual void RemoveAllScreenAvailabilityListeners(
+  // Resets the presentation state for the frame given by |render_process_id|
+  // and |render_frame_id|.
+  // This unregisters all listeners associated with the given frame, and clears
+  // the default presentation URL and ID set for the frame.
+  virtual void Reset(
       int render_process_id,
       int render_frame_id) = 0;
+
+  // Sets the default presentation URL and ID for frame given by
+  // |render_process_id| and |render_frame_id|.
+  // If |default_presentation_url| is empty, the default presentation URL will
+  // be cleared.
+  virtual void SetDefaultPresentationUrl(
+      int render_process_id,
+      int render_frame_id,
+      const std::string& default_presentation_url,
+      const std::string& default_presentation_id) = 0;
+
+  // Starts a new presentation session.
+  // Typically, the embedder will allow the user to select a screen to show
+  // |presentation_url|.
+  // |render_process_id|, |render_frame_id|: ID of originating frame.
+  // |presentation_url|: URL of the presentation.
+  // |presentation_id|: The caller may provide an non-empty string to be used
+  // as the ID of the presentation. If empty, the default presentation ID
+  // will be used. If both are empty, the embedder will automatically generate
+  // one.
+  // |success_cb|: Invoked with session info, if presentation session started
+  // successfully.
+  // |error_cb|: Invoked with error reason, if presentation session did not
+  // start.
+  virtual void StartSession(
+      int render_process_id,
+      int render_frame_id,
+      const std::string& presentation_url,
+      const std::string& presentation_id,
+      const PresentationSessionSuccessCallback& success_cb,
+      const PresentationSessionErrorCallback& error_cb) = 0;
+
+  // Joins an existing presentation session. Unlike StartSession(), this
+  // does not bring a screen list UI.
+  // |render_process_id|, |render_frame_id|: ID for originating frame.
+  // |presentation_url|: URL of the presentation.
+  // |presentation_id|: The ID of the presentation to join.
+  // |success_cb|: Invoked with session info, if presentation session joined
+  // successfully.
+  // |error_cb|: Invoked with error reason, if joining failed.
+  virtual void JoinSession(
+      int render_process_id,
+      int render_frame_id,
+      const std::string& presentation_url,
+      const std::string& presentation_id,
+      const PresentationSessionSuccessCallback& success_cb,
+      const PresentationSessionErrorCallback& error_cb) = 0;
 };
 
 }  // namespace content

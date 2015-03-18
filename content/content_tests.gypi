@@ -478,6 +478,7 @@
       'browser/power_profiler/power_profiler_service_unittest.cc',
       'browser/power_usage_monitor_impl_unittest.cc',
       'browser/presentation/presentation_service_impl_unittest.cc',
+      'browser/presentation/presentation_type_converters_unittest.cc',
       'browser/quota/mock_quota_manager.cc',
       'browser/quota/mock_quota_manager.h',
       'browser/quota/mock_quota_manager_proxy.cc',
