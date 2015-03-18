@@ -282,7 +282,8 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocket) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_TCPSocket) {
   RUN_TCPSOCKET_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, TCPSocket) {
+// Flaky on Mac ASAN: http://crbug.com/437408
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_TCPSocket) {
   RUN_TCPSOCKET_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
@@ -385,10 +386,18 @@ TEST_PPAPI_NACL_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, HostResolver) {
   RUN_HOST_RESOLVER_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, HostResolver) {
+
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on Mac ASAN: http://crbug.com/437408
+#define MAYBE_HostResolver DISABLED_HostResolver
+#else
+#define MAYBE_HostResolver HostResolver
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_HostResolver) {
   RUN_HOST_RESOLVER_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, HostResolver) {
+// Flaky on Mac ASAN: http://crbug.com/437408
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_HostResolver) {
   RUN_HOST_RESOLVER_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
@@ -482,10 +491,22 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, URLLoaderTrusted) {
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader0) {
   RUN_URLLOADER_SUBTESTS_0;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader1) {
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on Mac ASAN: http://crbug.com/437411.
+#define MAYBE_URLLoader1 DISABLED_URLLoader1
+#else
+#define MAYBE_URLLoader1 URLLoader1
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_URLLoader1) {
   RUN_URLLOADER_SUBTESTS_1;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader2) {
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on Mac ASAN: http://crbug.com/437411.
+#define MAYBE_URLLoader2 DISABLED_URLLoader2
+#else
+#define MAYBE_URLLoader2 URLLoader2
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_URLLoader2) {
   RUN_URLLOADER_SUBTESTS_2;
 }
 #if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
@@ -614,7 +635,15 @@ TEST_PPAPI_NACL(VarResource)
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_PostMessage) {
   RUN_POSTMESSAGE_SUBTESTS;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, PostMessage) {
+
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on Mac ASAN: http://crbug.com/437408
+// Suffixed by a 2 to avoid macro redefinition with the above.
+#define MAYBE_PostMessage2 DISABLED_PostMessage
+#else
+#define MAYBE_PostMessage2 PostMessage
+#endif
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PostMessage2) {
   RUN_POSTMESSAGE_SUBTESTS;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, PostMessage) {
