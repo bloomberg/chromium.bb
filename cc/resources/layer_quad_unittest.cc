@@ -38,5 +38,32 @@ TEST(LayerQuadTest, Inflate) {
   EXPECT_EQ(layer_quad.ToQuadF(), quad);
 }
 
+TEST(LayerQuadTest, Degenerate) {
+  gfx::QuadF quad;
+  gfx::PointF p1(1.0f, 1.0f);
+  gfx::PointF p2(0.0f, 1.0f);
+  gfx::PointF p3(1.0f, 0.0f);
+  gfx::QuadF triangle(p1, p2, p3, p1);
+
+  LayerQuad::Edge e1d(p1, p1);
+  LayerQuad::Edge e2d(p2, p2);
+  LayerQuad::Edge e2(p1, p2);
+  LayerQuad::Edge e3(p2, p3);
+  LayerQuad::Edge e4(p3, p1);
+  EXPECT_TRUE(e1d.degenerate());
+  EXPECT_TRUE(e2d.degenerate());
+  EXPECT_FALSE(e2.degenerate());
+  EXPECT_FALSE(e3.degenerate());
+  EXPECT_FALSE(e4.degenerate());
+
+  LayerQuad degenerate_quad(e1d, e2d, e2, e3);
+  // With more than one degenerate edge, we expect the quad to be zero.
+  EXPECT_EQ(quad, degenerate_quad.ToQuadF());
+
+  LayerQuad triangle_quad(e1d, e2, e3, e4);
+  // With only one degenerate edge, we expect the quad to be a triangle.
+  EXPECT_EQ(triangle, triangle_quad.ToQuadF());
+}
+
 }  // namespace
 }  // namespace cc

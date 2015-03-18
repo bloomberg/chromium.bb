@@ -22,6 +22,14 @@ LayerQuad::Edge::Edge(const gfx::PointF& p, const gfx::PointF& q) {
   scale(1.0f / tangent.Length());
 }
 
+gfx::PointF LayerQuad::Edge::Intersect(const LayerQuad::Edge& e) const {
+  DCHECK(!degenerate());
+  DCHECK(!e.degenerate());
+
+  return gfx::PointF((y() * e.z() - e.y() * z()) / (x() * e.y() - e.x() * y()),
+                     (x() * e.z() - e.x() * z()) / (e.x() * y() - x() * e.y()));
+}
+
 LayerQuad::LayerQuad(const gfx::QuadF& quad) {
   // Create edges.
   left_ = Edge(quad.p4(), quad.p1());
@@ -46,6 +54,12 @@ LayerQuad::LayerQuad(const Edge& left,
       bottom_(bottom) {}
 
 gfx::QuadF LayerQuad::ToQuadF() const {
+  size_t num_degenerate_edges = left_.degenerate() + right_.degenerate() +
+                                top_.degenerate() + bottom_.degenerate();
+  if (num_degenerate_edges > 1) {
+    return gfx::QuadF();
+  }
+
   if (left_.degenerate()) {
     return gfx::QuadF(top_.Intersect(bottom_), top_.Intersect(right_),
                       right_.Intersect(bottom_), bottom_.Intersect(top_));
