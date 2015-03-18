@@ -6,6 +6,7 @@
 #define WebPresentationClient_h
 
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/WebCommon.h"
 
 namespace blink {
 
@@ -31,13 +32,21 @@ public:
     // last event listener from the |availablechange| event.
     virtual void updateAvailableChangeWatched(bool watched) = 0;
 
-    // Called when the frame request to start a new session.
+    // Called when the frame requests to start a new session.
     // The ownership of the |callbacks| argument is transferred to the embedder.
     virtual void startSession(const WebString& presentationUrl, const WebString& presentationId, WebPresentationSessionClientCallbacks*) = 0;
 
-    // Called when the frame request to start a new session.
+    // Called when the frame requests to join an existing session.
     // The ownership of the |callbacks| argument is transferred to the embedder.
     virtual void joinSession(const WebString& presentationUrl, const WebString& presentationId, WebPresentationSessionClientCallbacks*) = 0;
+
+    // Called when the frame requests to close an existing session.
+    virtual void closeSession(const WebString& url, const WebString& presentationId)
+    {
+        // TODO(haibinlu): make it pure virtual once Chromium has the
+        // implementation.
+        BLINK_ASSERT_NOT_REACHED();
+    }
 };
 
 } // namespace blink

@@ -9,15 +9,17 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/EventTargetModules.h"
 #include "modules/presentation/Presentation.h"
+#include "modules/presentation/PresentationController.h"
 #include "public/platform/WebString.h"
 #include "public/platform/modules/presentation/WebPresentationSessionClient.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
 
-PresentationSession::PresentationSession(LocalFrame* frame, const WebString& id)
+PresentationSession::PresentationSession(LocalFrame* frame, const WebString& id, const WebString& url)
     : DOMWindowProperty(frame)
     , m_id(id)
+    , m_url(url)
     , m_state("disconnected")
 {
 }
@@ -33,7 +35,7 @@ PresentationSession* PresentationSession::take(WebPresentationSessionClient* cli
     ASSERT(presentation);
     OwnPtr<WebPresentationSessionClient> client = adoptPtr(clientRaw);
 
-    PresentationSession* session = new PresentationSession(presentation->frame(), client->getId());
+    PresentationSession* session = new PresentationSession(presentation->frame(), client->getId(), client->getUrl());
     presentation->registerSession(session);
     return session;
 }
@@ -67,6 +69,18 @@ void PresentationSession::postMessage(const String& message)
 
 void PresentationSession::close()
 {
+    if (m_state != "connected")
+        return;
+    PresentationController* controller = presentationController();
+    if (controller)
+        controller->closeSession(m_url, m_id);
+}
+
+PresentationController* PresentationSession::presentationController()
+{
+    if (!frame())
+        return nullptr;
+    return PresentationController::from(*frame());
 }
 
 } // namespace blink

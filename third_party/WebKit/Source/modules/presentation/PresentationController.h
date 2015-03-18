@@ -54,6 +54,9 @@ public:
     // Called when the frame wants to join an existing presentation.
     void joinSession(const String& presentationUrl, const String& presentationId, WebPresentationSessionClientCallbacks*);
 
+    // Called when the frame wants to close an existing presentation.
+    void closeSession(const String& url, const String& presentationId);
+
     // Connects the |Presentation| object with this controller.
     void setPresentation(Presentation*);
 

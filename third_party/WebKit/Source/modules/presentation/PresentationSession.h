@@ -13,6 +13,7 @@
 namespace blink {
 
 class Presentation;
+class PresentationController;
 class WebPresentationSessionClient;
 class WebString;
 
@@ -43,9 +44,15 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
 private:
-    PresentationSession(LocalFrame*, const WebString& id);
+    PresentationSession(LocalFrame*, const WebString& id, const WebString& url);
+
+    // Returns the |PresentationController| object associated with the frame
+    // |Presentation| corresponds to. Can return |nullptr| if the frame is
+    // detached from the document.
+    PresentationController* presentationController();
 
     String m_id;
+    String m_url;
     AtomicString m_state;
 };
 

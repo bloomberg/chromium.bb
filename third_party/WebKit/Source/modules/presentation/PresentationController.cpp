@@ -104,6 +104,13 @@ void PresentationController::joinSession(const String& presentationUrl, const St
     m_client->joinSession(presentationUrl, presentationId, callbacks);
 }
 
+void PresentationController::closeSession(const String& url, const String& presentationId)
+{
+    if (!m_client)
+        return;
+    m_client->closeSession(url, presentationId);
+}
+
 void PresentationController::setPresentation(Presentation* presentation)
 {
     m_presentation = presentation;
