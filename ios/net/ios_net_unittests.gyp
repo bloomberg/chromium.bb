@@ -24,6 +24,7 @@
         'clients/crn_forwarding_network_client_factory_unittest.mm',
         'cookies/cookie_cache_unittest.cc',
         'cookies/cookie_creation_time_manager_unittest.mm',
+        'cookies/cookie_store_ios_unittest.mm',
         'cookies/system_cookie_util_unittest.mm',
         'nsurlrequest_util_unittest.mm',
         'protocol_handler_util_unittest.mm',

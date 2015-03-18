@@ -29,6 +29,8 @@
         'cookies/cookie_cache.h',
         'cookies/cookie_creation_time_manager.h',
         'cookies/cookie_creation_time_manager.mm',
+        'cookies/cookie_store_ios.h',
+        'cookies/cookie_store_ios.mm',
         'cookies/cookie_store_ios_client.h',
         'cookies/cookie_store_ios_client.mm',
         'cookies/system_cookie_util.h',
