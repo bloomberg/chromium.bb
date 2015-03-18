@@ -29,6 +29,7 @@ class TestNowSource;
 
 namespace content {
 namespace internal {
+class LazyNow;
 class TaskQueue;
 }
 class TaskQueueSelector;
@@ -98,8 +99,10 @@ class CONTENT_EXPORT TaskQueueManager {
   // lock, so calling it has some overhead.
   bool IsQueueEmpty(size_t queue_index) const;
 
-  // Returns the time of the next pending delayed task in any queue. Returns
-  // a null TimeTicks object if no tasks are pending.
+  // Returns the time of the next pending delayed task in any queue.  Ignores
+  // any delayed tasks whose delay has expired. Returns a null TimeTicks object
+  // if no tasks are pending.  NOTE this is somewhat expensive since every queue
+  // will get locked.
   base::TimeTicks NextPendingDelayedTaskRunTime();
 
   // Set the name |queue_index| for tracing purposes. |name| must be a pointer
@@ -120,6 +123,7 @@ class CONTENT_EXPORT TaskQueueManager {
   void SetTimeSourceForTesting(scoped_refptr<cc::TestNowSource> time_source);
 
  private:
+  friend class internal::LazyNow;
   friend class internal::TaskQueue;
 
   // Called by the task queue to register a new pending task and allocate a
@@ -134,14 +138,14 @@ class CONTENT_EXPORT TaskQueueManager {
   // Use the selector to choose a pending task and run it.
   void DoWork(bool posted_from_main_thread);
 
+  // Delayed Tasks with run_times <= Now() are enqueued onto the work queue.
   // Reloads any empty work queues which have automatic pumping enabled and
   // which are eligible to be auto pumped based on the |previous_task| which was
   // run. Call with an empty |previous_task| if no task was just run. Returns
   // true if any work queue has tasks after doing this.
   // |next_pending_delayed_task| should be the time of the next known delayed
   // task. It is updated if any task is found which should run earlier.
-  bool UpdateWorkQueues(base::TimeTicks* next_pending_delayed_task,
-                        const base::PendingTask* previous_task);
+  bool UpdateWorkQueues(const base::PendingTask* previous_task);
 
   // Chooses the next work queue to service. Returns true if |out_queue_index|
   // indicates the queue from which the next task should be run, false to

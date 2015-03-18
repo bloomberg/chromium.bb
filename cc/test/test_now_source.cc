@@ -23,17 +23,21 @@ scoped_refptr<TestNowSource> TestNowSource::Create(int64_t initial) {
 }
 
 TestNowSource::TestNowSource()
-    : initial_(base::TimeTicks::FromInternalValue(10000)), now_() {
+    : initial_(base::TimeTicks::FromInternalValue(10000)),
+      now_(),
+      num_now_calls_(0) {
   Reset();
 }
 
 TestNowSource::TestNowSource(base::TimeTicks initial)
-    : initial_(initial), now_() {
+    : initial_(initial), now_(), num_now_calls_(0) {
   Reset();
 }
 
 TestNowSource::TestNowSource(int64_t initial)
-    : initial_(base::TimeTicks::FromInternalValue(initial)), now_() {
+    : initial_(base::TimeTicks::FromInternalValue(initial)),
+      now_(),
+      num_now_calls_(0) {
   Reset();
 }
 
@@ -53,6 +57,7 @@ void TestNowSource::Reset() {
 }
 
 base::TimeTicks TestNowSource::Now() const {
+  num_now_calls_++;
   return now_;
 }
 

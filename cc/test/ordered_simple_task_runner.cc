@@ -127,6 +127,10 @@ bool OrderedSimpleTaskRunner::RunsTasksOnCurrentThread() const {
   return true;
 }
 
+size_t OrderedSimpleTaskRunner::NumPendingTasks() const {
+  return pending_tasks_.size();
+}
+
 bool OrderedSimpleTaskRunner::HasPendingTasks() const {
   return pending_tasks_.size() > 0;
 }

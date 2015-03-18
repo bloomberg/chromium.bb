@@ -37,6 +37,8 @@ class TestNowSource : public base::RefCounted<TestNowSource> {
   void AsValueInto(base::trace_event::TracedValue* state) const;
   std::string ToString() const;
 
+  int NumNowCalls() const { return num_now_calls_; }
+
  protected:
   TestNowSource();
   explicit TestNowSource(int64_t initial);
@@ -44,6 +46,7 @@ class TestNowSource : public base::RefCounted<TestNowSource> {
 
   base::TimeTicks initial_;
   base::TimeTicks now_;
+  mutable int num_now_calls_;
 
  private:
   friend class base::RefCounted<TestNowSource>;
