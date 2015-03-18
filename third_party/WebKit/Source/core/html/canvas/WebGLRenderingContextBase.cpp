@@ -3652,7 +3652,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     if (isContextLost() || !validateHTMLImageElement("texImage2D", image, exceptionState))
         return;
 
-    RefPtr<Image> imageForRender = image->cachedImage()->imageForRenderer(image->layoutObject());
+    RefPtr<Image> imageForRender = image->cachedImage()->imageForLayoutObject(image->layoutObject());
     if (imageForRender->isSVGImage())
         imageForRender = drawImageIntoBuffer(imageForRender.get(), image->width(), image->height(), "texImage2D");
 
@@ -3960,7 +3960,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     if (isContextLost() || !validateHTMLImageElement("texSubImage2D", image, exceptionState))
         return;
 
-    RefPtr<Image> imageForRender = image->cachedImage()->imageForRenderer(image->layoutObject());
+    RefPtr<Image> imageForRender = image->cachedImage()->imageForLayoutObject(image->layoutObject());
     if (imageForRender->isSVGImage())
         imageForRender = drawImageIntoBuffer(imageForRender.get(), image->width(), image->height(), "texSubImage2D");
 

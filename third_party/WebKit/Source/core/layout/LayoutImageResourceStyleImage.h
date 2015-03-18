@@ -49,7 +49,7 @@ public:
     virtual PassRefPtr<Image> image(int width = 0, int height = 0) const override;
     virtual bool errorOccurred() const override { return m_styleImage->errorOccurred(); }
 
-    virtual void setContainerSizeForRenderer(const IntSize&) override;
+    virtual void setContainerSizeForLayoutObject(const IntSize&) override;
     virtual bool imageHasRelativeWidth() const override { return m_styleImage->imageHasRelativeWidth(); }
     virtual bool imageHasRelativeHeight() const override { return m_styleImage->imageHasRelativeHeight(); }
 

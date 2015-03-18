@@ -55,11 +55,11 @@ public:
 
     virtual PassRefPtr<Image> image(int /* width */ = 0, int /* height */ = 0) const
     {
-        return m_cachedImage ? m_cachedImage->imageForRenderer(m_renderer) : Image::nullImage();
+        return m_cachedImage ? m_cachedImage->imageForLayoutObject(m_renderer) : Image::nullImage();
     }
     virtual bool errorOccurred() const { return m_cachedImage && m_cachedImage->errorOccurred(); }
 
-    virtual void setContainerSizeForRenderer(const IntSize&);
+    virtual void setContainerSizeForLayoutObject(const IntSize&);
     virtual bool imageHasRelativeWidth() const { return m_cachedImage ? m_cachedImage->imageHasRelativeWidth() : false; }
     virtual bool imageHasRelativeHeight() const { return m_cachedImage ? m_cachedImage->imageHasRelativeHeight() : false; }
 

@@ -703,7 +703,7 @@ static Image* getImage(Element* element)
 {
     ASSERT(element);
     ImageResource* cachedImage = getImageResource(element);
-    // Don't use cachedImage->imageForRenderer() here as that may return BitmapImages for cached SVG Images.
+    // Don't use cachedImage->imageForLayoutObject() here as that may return BitmapImages for cached SVG Images.
     // Users of getImage() want access to the SVGImage, in order to figure out the filename extensions,
     // which would be empty when asking the cached BitmapImages.
     return (cachedImage && !cachedImage->errorOccurred()) ?

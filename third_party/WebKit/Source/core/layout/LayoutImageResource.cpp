@@ -88,18 +88,18 @@ void LayoutImageResource::resetAnimation()
     m_renderer->setShouldDoFullPaintInvalidation();
 }
 
-void LayoutImageResource::setContainerSizeForRenderer(const IntSize& imageContainerSize)
+void LayoutImageResource::setContainerSizeForLayoutObject(const IntSize& imageContainerSize)
 {
     ASSERT(m_renderer);
     if (m_cachedImage)
-        m_cachedImage->setContainerSizeForRenderer(m_renderer, imageContainerSize, m_renderer->style()->effectiveZoom());
+        m_cachedImage->setContainerSizeForLayoutObject(m_renderer, imageContainerSize, m_renderer->style()->effectiveZoom());
 }
 
 LayoutSize LayoutImageResource::getImageSize(float multiplier, ImageResource::SizeType type) const
 {
     if (!m_cachedImage)
         return LayoutSize();
-    LayoutSize size = m_cachedImage->imageSizeForRenderer(m_renderer, multiplier, type);
+    LayoutSize size = m_cachedImage->imageSizeForLayoutObject(m_renderer, multiplier, type);
     if (m_renderer && m_renderer->isLayoutImage())
         size.scale(toLayoutImage(m_renderer)->imageDevicePixelRatio());
     return size;

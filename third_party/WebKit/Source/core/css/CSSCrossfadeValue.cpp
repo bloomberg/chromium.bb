@@ -117,8 +117,8 @@ IntSize CSSCrossfadeValue::fixedSize(const LayoutObject* renderer)
     if (!cachedFromImage || !cachedToImage)
         return IntSize();
 
-    IntSize fromImageSize = cachedFromImage->imageForRenderer(renderer)->size();
-    IntSize toImageSize = cachedToImage->imageForRenderer(renderer)->size();
+    IntSize fromImageSize = cachedFromImage->imageForLayoutObject(renderer)->size();
+    IntSize toImageSize = cachedToImage->imageForLayoutObject(renderer)->size();
 
     // Rounding issues can cause transitions between images of equal size to return
     // a different fixed size; avoid performing the interpolation if the images are the same size.
@@ -176,8 +176,8 @@ PassRefPtr<Image> CSSCrossfadeValue::image(LayoutObject* renderer, const IntSize
     if (!cachedFromImage || !cachedToImage)
         return Image::nullImage();
 
-    Image* fromImage = cachedFromImage->imageForRenderer(renderer);
-    Image* toImage = cachedToImage->imageForRenderer(renderer);
+    Image* fromImage = cachedFromImage->imageForLayoutObject(renderer);
+    Image* toImage = cachedToImage->imageForLayoutObject(renderer);
 
     if (!fromImage || !toImage)
         return Image::nullImage();

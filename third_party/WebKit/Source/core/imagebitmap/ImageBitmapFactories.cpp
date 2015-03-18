@@ -54,7 +54,7 @@ namespace blink {
 static LayoutSize sizeFor(HTMLImageElement* image)
 {
     if (ImageResource* cachedImage = image->cachedImage())
-        return cachedImage->imageSizeForRenderer(image->layoutObject(), 1.0f); // FIXME: Not sure about this.
+        return cachedImage->imageSizeForLayoutObject(image->layoutObject(), 1.0f); // FIXME: Not sure about this.
     return LayoutSize();
 }
 

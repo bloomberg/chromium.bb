@@ -64,7 +64,7 @@ bool StyleFetchedImage::errorOccurred() const
 
 LayoutSize StyleFetchedImage::imageSize(const LayoutObject* layoutObject, float multiplier) const
 {
-    return m_image->imageSizeForRenderer(layoutObject, multiplier);
+    return m_image->imageSizeForLayoutObject(layoutObject, multiplier);
 }
 
 bool StyleFetchedImage::imageHasRelativeWidth() const
@@ -87,9 +87,9 @@ bool StyleFetchedImage::usesImageContainerSize() const
     return m_image->usesImageContainerSize();
 }
 
-void StyleFetchedImage::setContainerSizeForRenderer(const LayoutObject* layoutObject, const IntSize& imageContainerSize, float imageContainerZoomFactor)
+void StyleFetchedImage::setContainerSizeForLayoutObject(const LayoutObject* layoutObject, const IntSize& imageContainerSize, float imageContainerZoomFactor)
 {
-    m_image->setContainerSizeForRenderer(layoutObject, imageContainerSize, imageContainerZoomFactor);
+    m_image->setContainerSizeForLayoutObject(layoutObject, imageContainerSize, imageContainerZoomFactor);
 }
 
 void StyleFetchedImage::addClient(LayoutObject* layoutObject)
@@ -104,7 +104,7 @@ void StyleFetchedImage::removeClient(LayoutObject* layoutObject)
 
 PassRefPtr<Image> StyleFetchedImage::image(LayoutObject* layoutObject, const IntSize&) const
 {
-    return m_image->imageForRenderer(layoutObject);
+    return m_image->imageForLayoutObject(layoutObject);
 }
 
 bool StyleFetchedImage::knownToBeOpaque(const LayoutObject* layoutObject) const

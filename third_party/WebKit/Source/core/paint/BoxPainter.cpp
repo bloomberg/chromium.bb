@@ -692,7 +692,7 @@ void BoxPainter::calculateBackgroundImageGeometry(LayoutBoxModelObject& obj, con
 
     const LayoutObject* clientForBackgroundImage = backgroundObject ? backgroundObject : &obj;
     IntSize fillTileSize = calculateFillTileSize(obj, fillLayer, positioningAreaSize);
-    fillLayer.image()->setContainerSizeForRenderer(clientForBackgroundImage, fillTileSize, obj.style()->effectiveZoom());
+    fillLayer.image()->setContainerSizeForLayoutObject(clientForBackgroundImage, fillTileSize, obj.style()->effectiveZoom());
     geometry.setTileSize(fillTileSize);
 
     EFillRepeat backgroundRepeatX = fillLayer.repeatX();
@@ -911,7 +911,7 @@ bool BoxPainter::paintNinePieceImage(LayoutBoxModelObject& obj, GraphicsContext*
     IntSize imageSize = obj.calculateImageIntrinsicDimensions(styleImage, borderImageRect.size(), LayoutBoxModelObject::DoNotScaleByEffectiveZoom);
 
     // If both values are 'auto' then the intrinsic width and/or height of the image should be used, if any.
-    styleImage->setContainerSizeForRenderer(&obj, imageSize, style.effectiveZoom());
+    styleImage->setContainerSizeForLayoutObject(&obj, imageSize, style.effectiveZoom());
 
     int imageWidth = imageSize.width();
     int imageHeight = imageSize.height();

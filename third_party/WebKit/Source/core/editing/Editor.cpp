@@ -435,7 +435,7 @@ static PassRefPtr<Image> imageFromNode(const Node& node)
         ImageResource* cachedImage = layoutImage->cachedImage();
         if (!cachedImage || cachedImage->errorOccurred())
             return nullptr;
-        return cachedImage->imageForRenderer(layoutImage);
+        return cachedImage->imageForLayoutObject(layoutImage);
     }
 
     return nullptr;

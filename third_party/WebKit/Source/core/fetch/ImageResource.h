@@ -56,7 +56,7 @@ public:
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&) override;
 
     blink::Image* image(); // Returns the nullImage() if the image is not available yet.
-    blink::Image* imageForRenderer(const LayoutObject*); // Returns the nullImage() if the image is not available yet.
+    blink::Image* imageForLayoutObject(const LayoutObject*); // Returns the nullImage() if the image is not available yet.
     bool hasImage() const { return m_image.get(); }
     // Side effect: ensures decoded image is in cache, therefore should only be called when about to draw the image.
     // FIXME: Decoding image on the main thread is expensive, so rather than forcing decode, consider returning false
@@ -66,9 +66,9 @@ public:
     static std::pair<blink::Image*, float> brokenImage(float deviceScaleFactor); // Returns an image and the image's resolution scale factor.
     bool willPaintBrokenImage() const;
 
-    bool canRender(const LayoutObject& renderer, float multiplier) { return !errorOccurred() && !imageSizeForRenderer(&renderer, multiplier).isEmpty(); }
+    bool canRender(const LayoutObject& layoutObject, float multiplier) { return !errorOccurred() && !imageSizeForLayoutObject(&layoutObject, multiplier).isEmpty(); }
 
-    void setContainerSizeForRenderer(const ImageResourceClient*, const IntSize&, float);
+    void setContainerSizeForLayoutObject(const ImageResourceClient*, const IntSize&, float);
     bool usesImageContainerSize() const;
     bool imageHasRelativeWidth() const;
     bool imageHasRelativeHeight() const;
@@ -77,11 +77,11 @@ public:
     bool hasDevicePixelRatioHeaderValue() const { return m_hasDevicePixelRatioHeaderValue; }
 
     enum SizeType {
-        NormalSize, // Report the size of the image associated with a certain renderer
+        NormalSize, // Report the size of the image associated with a certain layoutObject
         IntrinsicSize // Report the intrinsic size, i.e. ignore whatever has been set extrinsically.
     };
     // This method takes a zoom multiplier that can be used to increase the natural size of the image by the zoom.
-    LayoutSize imageSizeForRenderer(const LayoutObject*, float multiplier, SizeType = NormalSize); // returns the size of the complete image.
+    LayoutSize imageSizeForLayoutObject(const LayoutObject*, float multiplier, SizeType = NormalSize); // returns the size of the complete image.
     void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio);
 
     bool isAccessAllowed(ExecutionContext*, SecurityOrigin*);
@@ -125,8 +125,8 @@ private:
     void clearImage();
     // If not null, changeRect is the changed part of the image.
     void notifyObservers(const IntRect* changeRect = nullptr);
-    IntSize svgImageSizeForRenderer(const LayoutObject*) const;
-    blink::Image* svgImageForRenderer(const LayoutObject*);
+    IntSize svgImageSizeForLayoutObject(const LayoutObject*) const;
+    blink::Image* svgImageForLayoutObject(const LayoutObject*);
 
     virtual void switchClientsToRevalidatedResource() override;
 

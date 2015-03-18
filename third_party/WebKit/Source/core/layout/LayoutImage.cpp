@@ -128,7 +128,7 @@ void LayoutImage::updateInnerContentRect()
     LayoutRect containerRect = replacedContentRect();
     IntSize containerSize(containerRect.width(), containerRect.height());
     if (!containerSize.isEmpty())
-        m_imageResource->setContainerSizeForRenderer(containerSize);
+        m_imageResource->setContainerSizeForLayoutObject(containerSize);
 }
 
 void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded()

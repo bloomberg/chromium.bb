@@ -261,7 +261,7 @@ Image* HitTestResult::image() const
     if (renderer && renderer->isImage()) {
         LayoutImage* image = toLayoutImage(renderer);
         if (image->cachedImage() && !image->cachedImage()->errorOccurred())
-            return image->cachedImage()->imageForRenderer(image);
+            return image->cachedImage()->imageForLayoutObject(image);
     }
 
     return 0;

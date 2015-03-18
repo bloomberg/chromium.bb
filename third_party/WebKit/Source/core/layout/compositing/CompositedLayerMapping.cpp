@@ -1870,7 +1870,7 @@ bool CompositedLayerMapping::isDirectlyCompositedImage() const
         if (!cachedImage->hasImage())
             return false;
 
-        Image* image = cachedImage->imageForRenderer(imageRenderer);
+        Image* image = cachedImage->imageForLayoutObject(imageRenderer);
         return image->isBitmapImage();
     }
 
@@ -1899,7 +1899,7 @@ void CompositedLayerMapping::updateImageContents()
     if (!cachedImage)
         return;
 
-    Image* image = cachedImage->imageForRenderer(imageRenderer);
+    Image* image = cachedImage->imageForLayoutObject(imageRenderer);
     if (!image)
         return;
 

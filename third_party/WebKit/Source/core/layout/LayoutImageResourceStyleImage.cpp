@@ -69,10 +69,10 @@ PassRefPtr<Image> LayoutImageResourceStyleImage::image(int width, int height) co
     return m_styleImage->image(m_renderer, IntSize(width, height));
 }
 
-void LayoutImageResourceStyleImage::setContainerSizeForRenderer(const IntSize& size)
+void LayoutImageResourceStyleImage::setContainerSizeForLayoutObject(const IntSize& size)
 {
     ASSERT(m_renderer);
-    m_styleImage->setContainerSizeForRenderer(m_renderer, size, m_renderer->style()->effectiveZoom());
+    m_styleImage->setContainerSizeForLayoutObject(m_renderer, size, m_renderer->style()->effectiveZoom());
 }
 
 } // namespace blink

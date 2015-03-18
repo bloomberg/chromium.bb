@@ -81,9 +81,9 @@ static bool containerSizeIsSetForRenderer(ImageResource& cachedImage, const Layo
 {
     const Image* image = cachedImage.image();
     // If a container size has been specified for this renderer, then
-    // imageForRenderer() will return the SVGImageForContainer while image()
+    // imageForLayoutObject() will return the SVGImageForContainer while image()
     // will return the underlying SVGImage.
-    return !image->isSVGImage() || image != cachedImage.imageForRenderer(renderer);
+    return !image->isSVGImage() || image != cachedImage.imageForLayoutObject(renderer);
 }
 
 bool LayoutSVGImage::updateImageViewport()
@@ -105,7 +105,7 @@ bool LayoutSVGImage::updateImageViewport()
         FloatSize imageViewportSize = computeImageViewportSize(*cachedImage);
         if (LayoutSize(imageViewportSize) != m_imageResource->imageSize(styleRef().effectiveZoom())
             || !containerSizeIsSetForRenderer(*cachedImage, this)) {
-            m_imageResource->setContainerSizeForRenderer(roundedIntSize(imageViewportSize));
+            m_imageResource->setContainerSizeForLayoutObject(roundedIntSize(imageViewportSize));
             updatedViewport = true;
         }
     }

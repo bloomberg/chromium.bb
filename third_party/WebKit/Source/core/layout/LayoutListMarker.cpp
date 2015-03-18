@@ -1184,7 +1184,7 @@ void LayoutListMarker::updateContent()
         int bulletWidth = style()->fontMetrics().ascent() / 2;
         IntSize defaultBulletSize(bulletWidth, bulletWidth);
         IntSize imageSize = calculateImageIntrinsicDimensions(m_image.get(), defaultBulletSize, DoNotScaleByEffectiveZoom);
-        m_image->setContainerSizeForRenderer(this, imageSize, style()->effectiveZoom());
+        m_image->setContainerSizeForLayoutObject(this, imageSize, style()->effectiveZoom());
         return;
     }
 

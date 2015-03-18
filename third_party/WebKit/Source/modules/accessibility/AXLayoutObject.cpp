@@ -708,7 +708,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored() const
 
             // check whether laid out image was stretched from one-dimensional file image
             if (image->cachedImage()) {
-                LayoutSize imageSize = image->cachedImage()->imageSizeForRenderer(m_layoutObject, image->view()->zoomFactor());
+                LayoutSize imageSize = image->cachedImage()->imageSizeForLayoutObject(m_layoutObject, image->view()->zoomFactor());
                 return imageSize.height() <= 1 || imageSize.width() <= 1;
             }
         }

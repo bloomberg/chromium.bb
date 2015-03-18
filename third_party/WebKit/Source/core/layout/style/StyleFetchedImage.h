@@ -50,7 +50,7 @@ public:
     virtual bool imageHasRelativeHeight() const override;
     virtual void computeIntrinsicDimensions(const LayoutObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio) override;
     virtual bool usesImageContainerSize() const override;
-    virtual void setContainerSizeForRenderer(const LayoutObject*, const IntSize&, float) override;
+    virtual void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize&, float) override;
     virtual void addClient(LayoutObject*) override;
     virtual void removeClient(LayoutObject*) override;
     virtual PassRefPtr<Image> image(LayoutObject*, const IntSize&) const override;

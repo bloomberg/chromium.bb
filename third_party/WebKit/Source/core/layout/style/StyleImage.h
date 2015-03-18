@@ -59,7 +59,7 @@ public:
     virtual bool imageHasRelativeWidth() const = 0;
     virtual bool imageHasRelativeHeight() const = 0;
     virtual bool usesImageContainerSize() const = 0;
-    virtual void setContainerSizeForRenderer(const LayoutObject*, const IntSize&, float) = 0;
+    virtual void setContainerSizeForLayoutObject(const LayoutObject*, const IntSize&, float) = 0;
     virtual void addClient(LayoutObject*) = 0;
     virtual void removeClient(LayoutObject*) = 0;
     virtual PassRefPtr<Image> image(LayoutObject*, const IntSize&) const = 0;

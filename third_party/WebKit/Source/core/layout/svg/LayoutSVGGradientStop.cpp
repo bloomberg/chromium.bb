@@ -42,17 +42,17 @@ void LayoutSVGGradientStop::styleDidChange(StyleDifference diff, const LayoutSty
     if (!diff.hasDifference())
         return;
 
-    // <stop> elements should only be allowed to make renderers under gradient elements
+    // <stop> elements should only be allowed to make layoutObjects under gradient elements
     // but I can imagine a few cases we might not be catching, so let's not crash if our parent isn't a gradient.
     SVGGradientElement* gradient = gradientElement();
     if (!gradient)
         return;
 
-    LayoutObject* renderer = gradient->layoutObject();
-    if (!renderer)
+    LayoutObject* layoutObject = gradient->layoutObject();
+    if (!layoutObject)
         return;
 
-    LayoutSVGResourceContainer* container = toLayoutSVGResourceContainer(renderer);
+    LayoutSVGResourceContainer* container = toLayoutSVGResourceContainer(layoutObject);
     container->removeAllClientsFromCache();
 }
 

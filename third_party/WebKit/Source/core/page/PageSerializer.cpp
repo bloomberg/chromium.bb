@@ -319,7 +319,7 @@ void PageSerializer::addImageToResources(ImageResource* image, LayoutObject* ima
     if (!image || image->image() == Image::nullImage() || image->errorOccurred())
         return;
 
-    RefPtr<SharedBuffer> data = imageRenderer ? image->imageForRenderer(imageRenderer)->data() : nullptr;
+    RefPtr<SharedBuffer> data = imageRenderer ? image->imageForLayoutObject(imageRenderer)->data() : nullptr;
     if (!data)
         data = image->image()->data();
 
