@@ -200,7 +200,11 @@ void Event::setUnderlyingEvent(PassRefPtrWillBeRawPtr<Event> ue)
 
 void Event::initEventPath(Node& node)
 {
-    m_eventPath = adoptPtrWillBeNoop(new EventPath(node, this));
+    if (!m_eventPath) {
+        m_eventPath = adoptPtrWillBeNoop(new EventPath(node, this));
+    } else {
+        m_eventPath->initializeWith(node, this);
+    }
 }
 
 WillBeHeapVector<RefPtrWillBeMember<EventTarget>> Event::path() const

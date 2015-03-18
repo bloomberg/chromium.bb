@@ -35,7 +35,6 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/TouchEventContext.h"
-#include "core/events/WindowEventContext.h"
 
 namespace blink {
 
@@ -68,6 +67,21 @@ static inline bool shouldStopAtShadowRoot(Event& event, ShadowRoot& shadowRoot, 
 EventPath::EventPath(Node& node, Event* event)
     : m_node(node)
     , m_event(event)
+{
+    initialize();
+}
+
+void EventPath::initializeWith(Node& node, Event* event)
+{
+    m_node = &node;
+    m_event = event;
+    m_windowEventContext = nullptr;
+    m_nodeEventContexts.clear();
+    m_treeScopeEventContexts.clear();
+    initialize();
+}
+
+void EventPath::initialize()
 {
     calculatePath();
     calculateAdjustedTargets();
