@@ -26,12 +26,9 @@
     ['OS=="win"', {
       'include_dirs': [
         '<(DEPTH)/third_party/khronos',
+        # ANGLE libs picked up from ui/gl
         '<(angle_path)/src',
         '<(DEPTH)/third_party/wtl/include',
-      ],
-      'dependencies': [
-        '<(angle_path)/src/angle.gyp:libEGL',
-        '<(angle_path)/src/angle.gyp:libGLESv2',
       ],
       'link_settings': {
         'libraries': [

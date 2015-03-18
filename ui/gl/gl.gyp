@@ -186,6 +186,8 @@
         }],
         ['OS=="win"', {
           'sources': [
+            'angle_platform_impl.cc',
+            'angle_platform_impl.h',
             'gl_bindings_autogen_wgl.cc',
             'gl_bindings_autogen_wgl.h',
             'gl_context_wgl.cc',
