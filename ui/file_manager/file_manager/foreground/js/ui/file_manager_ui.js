@@ -315,8 +315,10 @@ FileManagerUI.prototype.initDirectoryTree = function(directoryTree) {
   // Visible height of the directory tree depends on the size of progress
   // center panel. When the size of progress center panel changes, directory
   // tree has to be notified to adjust its components (e.g. progress bar).
-  var observer =
-      new MutationObserver(directoryTree.relayout.bind(directoryTree));
+  var relayoutLimiter = new AsyncUtil.RateLimiter(
+      directoryTree.relayout.bind(directoryTree), 200);
+  var observer = new MutationObserver(
+      relayoutLimiter.run.bind(relayoutLimiter));
   observer.observe(this.progressCenterPanel.element,
                    /** @type {MutationObserverInit} */
                    ({subtree: true, attributes: true, childList: true}));
