@@ -685,6 +685,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Ash.StationaryTouchDuration" units="seconds">
+  <owner>kuscher@google.com</owner>
+  <owner>rbyers@chromium.org</owner>
+  <summary>The duration of mostly stationary long-duration touches.</summary>
+</histogram>
+
 <histogram name="Ash.TouchDuration" units="milliseconds">
   <obsolete>
     Deprecated 12/2013 in r239809, and replaced by Ash.TouchDuration2.
