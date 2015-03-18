@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/desktop_notification_delegate.h"
+#include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/content_client.h"
 
@@ -18,10 +19,12 @@ namespace content {
 
 NotificationMessageFilter::NotificationMessageFilter(
     int process_id,
+    PlatformNotificationContext* notification_context,
     ResourceContext* resource_context,
     BrowserContext* browser_context)
     : BrowserMessageFilter(PlatformNotificationMsgStart),
       process_id_(process_id),
+      notification_context_(notification_context),
       resource_context_(resource_context),
       browser_context_(browser_context) {}
 

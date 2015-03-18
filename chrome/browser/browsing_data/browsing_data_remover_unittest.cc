@@ -153,6 +153,11 @@ class TestStoragePartition : public StoragePartition {
     return nullptr;
   }
 
+  content::PlatformNotificationContext* GetPlatformNotificationContext()
+      override {
+    return nullptr;
+  }
+
   content::HostZoomMap* GetHostZoomMap() override { return NULL; }
   content::HostZoomLevelContext* GetHostZoomLevelContext() override {
     return NULL;

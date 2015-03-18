@@ -891,6 +891,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
   notification_message_filter_ = new NotificationMessageFilter(
       GetID(),
+      storage_partition_impl_->GetPlatformNotificationContext(),
       resource_context,
       browser_context);
   AddFilter(notification_message_filter_.get());

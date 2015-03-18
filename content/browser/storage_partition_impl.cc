@@ -13,6 +13,7 @@
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/navigator_connect/navigator_connect_context_impl.h"
 #include "content/browser/navigator_connect/navigator_connect_service_worker_service_factory.h"
+#include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -374,7 +375,8 @@ StoragePartitionImpl::StoragePartitionImpl(
     storage::SpecialStoragePolicy* special_storage_policy,
     GeofencingManager* geofencing_manager,
     HostZoomLevelContext* host_zoom_level_context,
-    NavigatorConnectContextImpl* navigator_connect_context)
+    NavigatorConnectContextImpl* navigator_connect_context,
+    PlatformNotificationContextImpl* platform_notification_context)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
       appcache_service_(appcache_service),
@@ -388,6 +390,7 @@ StoragePartitionImpl::StoragePartitionImpl(
       geofencing_manager_(geofencing_manager),
       host_zoom_level_context_(host_zoom_level_context),
       navigator_connect_context_(navigator_connect_context),
+      platform_notification_context_(platform_notification_context),
       browser_context_(browser_context) {
 }
 
@@ -496,13 +499,17 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   navigator_connect_context->AddFactory(make_scoped_ptr(
       new NavigatorConnectServiceWorkerServiceFactory(service_worker_context)));
 
+  scoped_refptr<PlatformNotificationContextImpl> platform_notification_context =
+      new PlatformNotificationContextImpl(path);
+
   StoragePartitionImpl* storage_partition = new StoragePartitionImpl(
       context, partition_path, quota_manager.get(), appcache_service.get(),
       filesystem_context.get(), database_tracker.get(),
       dom_storage_context.get(), indexed_db_context.get(),
       service_worker_context.get(), webrtc_identity_store.get(),
       special_storage_policy.get(), geofencing_manager.get(),
-      host_zoom_level_context.get(), navigator_connect_context.get());
+      host_zoom_level_context.get(), navigator_connect_context.get(),
+      platform_notification_context.get());
 
   service_worker_context->set_storage_partition(storage_partition);
 
@@ -571,6 +578,11 @@ ZoomLevelDelegate* StoragePartitionImpl::GetZoomLevelDelegate() {
 NavigatorConnectContextImpl*
 StoragePartitionImpl::GetNavigatorConnectContext() {
   return navigator_connect_context_.get();
+}
+
+PlatformNotificationContextImpl*
+StoragePartitionImpl::GetPlatformNotificationContext() {
+  return platform_notification_context_.get();
 }
 
 void StoragePartitionImpl::ClearDataImpl(

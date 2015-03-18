@@ -17,6 +17,7 @@ class SkBitmap;
 namespace content {
 
 class BrowserContext;
+class PlatformNotificationContext;
 struct PlatformNotificationData;
 class PlatformNotificationService;
 class ResourceContext;
@@ -25,6 +26,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
  public:
   NotificationMessageFilter(
       int process_id,
+      PlatformNotificationContext* notification_context,
       ResourceContext* resource_context,
       BrowserContext* browser_context);
 
@@ -67,6 +69,7 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       const GURL& origin);
 
   int process_id_;
+  scoped_refptr<PlatformNotificationContext> notification_context_;
   ResourceContext* resource_context_;
   BrowserContext* browser_context_;
 
