@@ -60,6 +60,7 @@ class WebPerformance;
 class WebPlugin;
 class WebPluginContainerImpl;
 class WebScriptExecutionCallback;
+class WebSuspendableTask;
 class WebView;
 class WebViewImpl;
 struct FrameLoadRequest;
@@ -234,7 +235,7 @@ public:
     virtual void navigateToSandboxedMarkup(const WebData& markup) override;
     virtual void sendOrientationChangeEvent() override;
     virtual void willShowInstallBannerPrompt(const WebString& platform, WebAppBannerPromptReply*) override;
-    void requestRunTask(WebThread::Task*) const override;
+    void requestRunTask(WebSuspendableTask*) const override;
 
     void willDetachParent();
 

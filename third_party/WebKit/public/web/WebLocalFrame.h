@@ -6,7 +6,6 @@
 #define WebLocalFrame_h
 
 #include "WebFrame.h"
-#include "public/platform/WebThread.h"
 
 namespace blink {
 
@@ -16,6 +15,7 @@ class WebAutofillClient;
 class WebContentSettingsClient;
 class WebFrameClient;
 class WebScriptExecutionCallback;
+class WebSuspendableTask;
 struct WebPrintPresetOptions;
 
 // Interface for interacting with in process frames. This contains methods that
@@ -100,7 +100,7 @@ public:
     // Run the task when the context of the current page is not suspended
     // otherwise run it on context resumed.
     // Method takes ownership of the passed task.
-    virtual void requestRunTask(WebThread::Task*) const = 0;
+    virtual void requestRunTask(WebSuspendableTask*) const = 0;
 
     // Associates an isolated world with human-readable name which is useful for
     // extension debugging.

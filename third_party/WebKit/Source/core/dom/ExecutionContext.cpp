@@ -99,6 +99,22 @@ void ExecutionContext::stopActiveDOMObjects()
     notifyStoppingActiveDOMObjects();
 }
 
+void ExecutionContext::postSuspendableTask(PassOwnPtr<SuspendableTask> task)
+{
+    m_suspendedTasks.append(task);
+    if (!m_activeDOMObjectsAreSuspended)
+        postTask(FROM_HERE, createSameThreadTask(&ExecutionContext::runSuspendableTasks, this));
+}
+
+void ExecutionContext::notifyContextDestroyed()
+{
+    Deque<OwnPtr<SuspendableTask>> suspendedTasks;
+    suspendedTasks.swap(m_suspendedTasks);
+    for (Deque<OwnPtr<SuspendableTask>>::iterator it = suspendedTasks.begin(); it != suspendedTasks.end(); ++it)
+        (*it)->contextDestroyed();
+    ContextLifecycleNotifier::notifyContextDestroyed();
+}
+
 void ExecutionContext::suspendScheduledTasks()
 {
     suspendActiveDOMObjects();
@@ -109,6 +125,8 @@ void ExecutionContext::resumeScheduledTasks()
 {
     resumeActiveDOMObjects();
     tasksWereResumed();
+    // We need finish stack unwiding before running next task because it can suspend this context.
+    postTask(FROM_HERE, createSameThreadTask(&ExecutionContext::runSuspendableTasks, this));
 }
 
 void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
@@ -163,6 +181,14 @@ bool ExecutionContext::dispatchErrorEvent(PassRefPtrWillBeRawPtr<ErrorEvent> eve
     target->dispatchEvent(errorEvent);
     m_inDispatchErrorEvent = false;
     return errorEvent->defaultPrevented();
+}
+
+void ExecutionContext::runSuspendableTasks()
+{
+    while (!m_activeDOMObjectsAreSuspended && m_suspendedTasks.size()) {
+        OwnPtr<SuspendableTask> task = m_suspendedTasks.takeFirst();
+        task->run();
+    }
 }
 
 int ExecutionContext::circularSequentialID()

@@ -100,6 +100,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/SuspendableTask.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -178,6 +179,7 @@
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSize.h"
+#include "public/platform/WebSuspendableTask.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebAutofillClient.h"
@@ -498,6 +500,34 @@ static WebDataSource* DataSourceForDocLoader(DocumentLoader* loader)
 {
     return loader ? WebDataSourceImpl::fromDocumentLoader(loader) : 0;
 }
+
+// WebSuspendableTaskWrapper --------------------------------------------------
+
+class WebSuspendableTaskWrapper: public SuspendableTask {
+public:
+    static PassOwnPtr<WebSuspendableTaskWrapper> create(PassOwnPtr<WebSuspendableTask> task)
+    {
+        return adoptPtr(new WebSuspendableTaskWrapper(task));
+    }
+
+    void run() override
+    {
+        m_task->run();
+    }
+
+    void contextDestroyed() override
+    {
+        m_task->contextDestroyed();
+    }
+
+private:
+    explicit WebSuspendableTaskWrapper(PassOwnPtr<WebSuspendableTask> task)
+        : m_task(task)
+    {
+    }
+
+    OwnPtr<WebSuspendableTask> m_task;
+};
 
 // WebFrame -------------------------------------------------------------------
 
@@ -1954,11 +1984,11 @@ void WebLocalFrameImpl::willShowInstallBannerPrompt(const WebString& platform, W
     AppBannerController::willShowInstallBannerPrompt(frame(), platform, reply);
 }
 
-void WebLocalFrameImpl::requestRunTask(WebThread::Task* task) const
+void WebLocalFrameImpl::requestRunTask(WebSuspendableTask* task) const
 {
     ASSERT(frame());
-
-    SuspendableTaskRunner::createAndRun(frame()->document(), adoptPtr(task));
+    ASSERT(frame()->document());
+    frame()->document()->postSuspendableTask(WebSuspendableTaskWrapper::create(adoptPtr(task)));
 }
 
 void WebLocalFrameImpl::willDetachParent()

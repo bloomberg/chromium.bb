@@ -32,10 +32,12 @@
 #include "core/dom/ContextLifecycleNotifier.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/SecurityContext.h"
+#include "core/dom/SuspendableTask.h"
 #include "core/fetch/AccessControlStatus.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -102,6 +104,8 @@ public:
     void suspendActiveDOMObjects();
     void resumeActiveDOMObjects();
     void stopActiveDOMObjects();
+    void postSuspendableTask(PassOwnPtr<SuspendableTask>);
+    void notifyContextDestroyed() override;
 
     virtual void suspendScheduledTasks();
     virtual void resumeScheduledTasks();
@@ -143,6 +147,7 @@ protected:
 
 private:
     bool dispatchErrorEvent(PassRefPtrWillBeRawPtr<ErrorEvent>, AccessControlStatus);
+    void runSuspendableTasks();
 
 #if !ENABLE(OILPAN)
     virtual void refExecutionContext() = 0;
@@ -168,6 +173,8 @@ private:
     // |allowWindowInteraction()| and |consumeWindowInteraction()| in order to
     // increment and decrement the counter.
     int m_windowInteractionTokens;
+
+    Deque<OwnPtr<SuspendableTask>> m_suspendedTasks;
 };
 
 } // namespace blink
