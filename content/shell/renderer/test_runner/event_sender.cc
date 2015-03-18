@@ -383,6 +383,10 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void ReleaseTouchPoint(unsigned index);
   void UpdateTouchPoint(unsigned index, double x, double y);
   void CancelTouchPoint(unsigned index);
+  void SetTouchPointRadius(unsigned index,
+                           float rx,
+                           float ry,
+                           bool set_state_moved);
   void SetTouchModifier(const std::string& key_name, bool set_mask);
   void SetTouchCancelable(bool cancelable);
   void DumpFilenameBeingDragged();
@@ -518,6 +522,8 @@ EventSenderBindings::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("releaseTouchPoint", &EventSenderBindings::ReleaseTouchPoint)
       .SetMethod("updateTouchPoint", &EventSenderBindings::UpdateTouchPoint)
       .SetMethod("cancelTouchPoint", &EventSenderBindings::CancelTouchPoint)
+      .SetMethod("setTouchPointRadius",
+                 &EventSenderBindings::SetTouchPointRadius)
       .SetMethod("setTouchModifier", &EventSenderBindings::SetTouchModifier)
       .SetMethod("setTouchCancelable", &EventSenderBindings::SetTouchCancelable)
       .SetMethod("dumpFilenameBeingDragged",
@@ -705,6 +711,14 @@ void EventSenderBindings::UpdateTouchPoint(unsigned index, double x, double y) {
 void EventSenderBindings::CancelTouchPoint(unsigned index) {
   if (sender_)
     sender_->CancelTouchPoint(index);
+}
+
+void EventSenderBindings::SetTouchPointRadius(unsigned index,
+                                              float rx,
+                                              float ry,
+                                              bool set_state_moved) {
+  if (sender_)
+    sender_->SetTouchPointRadius(index, rx, ry, set_state_moved);
 }
 
 void EventSenderBindings::SetTouchModifier(const std::string& key_name,
@@ -1617,6 +1631,22 @@ void EventSender::CancelTouchPoint(unsigned index) {
   touch_point->state = WebTouchPoint::StateCancelled;
 }
 
+void EventSender::SetTouchPointRadius(unsigned index,
+                                      float rx,
+                                      float ry,
+                                      bool set_state_moved) {
+  if (index >= touch_points_.size()) {
+    ThrowTouchPointError();
+    return;
+  }
+
+  WebTouchPoint* touch_point = &touch_points_[index];
+  if (set_state_moved)
+    touch_point->state = WebTouchPoint::StateMoved;
+  touch_point->radiusX = rx;
+  touch_point->radiusY = ry;
+}
+
 void EventSender::SetTouchModifier(const std::string& key_name,
                                     bool set_mask) {
   int mask = 0;
@@ -1775,25 +1805,6 @@ void EventSender::AddTouchPoint(gin::Arguments* args) {
   touch_point.position = WebFloatPoint(static_cast<float>(x),
                                        static_cast<float>(y));
   touch_point.screenPosition = touch_point.position;
-
-  if (!args->PeekNext().IsEmpty()) {
-    double radius_x;
-    if (!args->GetNext(&radius_x)) {
-      args->ThrowError();
-      return;
-    }
-
-    double radius_y = radius_x;
-    if (!args->PeekNext().IsEmpty()) {
-      if (!args->GetNext(&radius_y)) {
-        args->ThrowError();
-        return;
-      }
-    }
-
-    touch_point.radiusX = static_cast<float>(radius_x);
-    touch_point.radiusY = static_cast<float>(radius_y);
-  }
 
   int lowest_id = 0;
   for (size_t i = 0; i < touch_points_.size(); i++) {
