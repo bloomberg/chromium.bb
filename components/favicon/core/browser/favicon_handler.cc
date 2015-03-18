@@ -202,14 +202,12 @@ FaviconHandler::FaviconCandidate::FaviconCandidate(
 FaviconHandler::FaviconHandler(FaviconService* service,
                                FaviconClient* client,
                                FaviconDriver* driver,
-                               Type icon_type,
+                               Type handler_type,
                                bool download_largest_icon)
     : got_favicon_from_history_(false),
       favicon_expired_or_incomplete_(false),
-      icon_types_(icon_type == FAVICON
-                      ? favicon_base::FAVICON
-                      : favicon_base::TOUCH_ICON |
-                            favicon_base::TOUCH_PRECOMPOSED_ICON),
+      handler_type_(handler_type),
+      icon_types_(FaviconHandler::GetIconTypesFromHandlerType(handler_type)),
       download_largest_icon_(download_largest_icon),
       service_(service),
       client_(client),
@@ -218,6 +216,21 @@ FaviconHandler::FaviconHandler(FaviconService* service,
 }
 
 FaviconHandler::~FaviconHandler() {
+}
+
+// static
+int FaviconHandler::GetIconTypesFromHandlerType(
+    FaviconHandler::Type handler_type) {
+  switch (handler_type) {
+    case FAVICON:
+      return favicon_base::FAVICON;
+    case TOUCH:  // Falls through.
+    case LARGE:
+      return favicon_base::TOUCH_ICON | favicon_base::TOUCH_PRECOMPOSED_ICON;
+    default:
+      NOTREACHED();
+  }
+  return 0;
 }
 
 void FaviconHandler::FetchFavicon(const GURL& url) {
@@ -502,6 +515,7 @@ void FaviconHandler::SetHistoryFavicons(const GURL& page_url,
                                         const GURL& icon_url,
                                         favicon_base::IconType icon_type,
                                         const gfx::Image& image) {
+  // TODO(huangs): Get the following to garbage collect if handler_type_ == ALL.
   if (service_) {
     service_->SetFavicons(page_url, icon_url, icon_type, image);
   }
@@ -545,7 +559,7 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
       preferred_icon_size(), favicon_bitmap_results);
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
 
-  if (has_results && icon_types_ == favicon_base::FAVICON &&
+  if (has_results && handler_type_ == FAVICON &&
       !download_largest_icon_ && !driver_->GetActiveFaviconValidity() &&
       (!current_candidate() ||
        DoUrlsAndIconsMatch(*current_candidate(), favicon_bitmap_results))) {
@@ -583,8 +597,7 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
   // else we haven't got the icon url. When we get it we'll ask the
   // renderer to download the icon.
 
-  if (has_valid_result &&
-      (icon_types_ != favicon_base::FAVICON || download_largest_icon_))
+  if (has_valid_result && (handler_type_ != FAVICON || download_largest_icon_))
     NotifyFaviconAvailable(favicon_bitmap_results, false);
 }
 
@@ -628,8 +641,7 @@ void FaviconHandler::OnFaviconData(const std::vector<
       preferred_icon_size(), favicon_bitmap_results);
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
 
-  if (has_results && icon_types_ == favicon_base::FAVICON &&
-      !download_largest_icon_) {
+  if (has_results && handler_type_ == FAVICON && !download_largest_icon_) {
     if (has_valid_result) {
       // There is a favicon, set it now. If expired we'll download the current
       // one again, but at least the user will get some icon instead of the
@@ -654,7 +666,7 @@ void FaviconHandler::OnFaviconData(const std::vector<
   history_results_ = favicon_bitmap_results;
 
   if (has_valid_result &&
-      (icon_types_ != favicon_base::FAVICON || download_largest_icon_)) {
+      (handler_type_ != FAVICON || download_largest_icon_)) {
     NotifyFaviconAvailable(favicon_bitmap_results, false);
   }
 }

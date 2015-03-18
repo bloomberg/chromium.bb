@@ -4,6 +4,8 @@
 
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/chrome_favicon_client.h"
 #include "chrome/browser/favicon/chrome_favicon_client_factory.h"
@@ -40,6 +42,16 @@ using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(FaviconTabHelper);
 
+namespace {
+
+// Returns whether icon NTP is enabled.
+bool IsIconNTPEnabled() {
+  return StartsWithASCII(base::FieldTrialList::FindFullName("IconNTP"),
+                         "Enabled", true);
+}
+
+}  // namespace
+
 FaviconTabHelper::FaviconTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())) {
@@ -56,6 +68,9 @@ FaviconTabHelper::FaviconTabHelper(WebContents* web_contents)
   if (chrome::kEnableTouchIcon)
     touch_icon_handler_.reset(new FaviconHandler(
         service, client_, this, FaviconHandler::TOUCH, download_largest_icon));
+  if (IsIconNTPEnabled())
+    large_icon_handler_.reset(new FaviconHandler(
+        service, client_, this, FaviconHandler::LARGE, true));
 }
 
 FaviconTabHelper::~FaviconTabHelper() {
@@ -65,6 +80,8 @@ void FaviconTabHelper::FetchFavicon(const GURL& url) {
   favicon_handler_->FetchFavicon(url);
   if (touch_icon_handler_.get())
     touch_icon_handler_->FetchFavicon(url);
+  if (large_icon_handler_.get())
+    large_icon_handler_->FetchFavicon(url);
 }
 
 gfx::Image FaviconTabHelper::GetFavicon() const {
@@ -300,6 +317,8 @@ void FaviconTabHelper::DidUpdateFaviconURL(
   favicon_handler_->OnUpdateFaviconURL(favicon_urls);
   if (touch_icon_handler_.get())
     touch_icon_handler_->OnUpdateFaviconURL(favicon_urls);
+  if (large_icon_handler_.get())
+    large_icon_handler_->OnUpdateFaviconURL(favicon_urls);
 }
 
 void FaviconTabHelper::DidDownloadFavicon(
@@ -321,6 +340,10 @@ void FaviconTabHelper::DidDownloadFavicon(
       id, image_url, bitmaps, original_bitmap_sizes);
   if (touch_icon_handler_.get()) {
     touch_icon_handler_->OnDidDownloadFavicon(
+        id, image_url, bitmaps, original_bitmap_sizes);
+  }
+  if (large_icon_handler_.get()) {
+    large_icon_handler_->OnDidDownloadFavicon(
         id, image_url, bitmaps, original_bitmap_sizes);
   }
 }

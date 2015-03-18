@@ -76,14 +76,17 @@ class RefCountedMemory;
 
 class FaviconHandler {
  public:
-  enum Type { FAVICON, TOUCH };
+  enum Type { FAVICON, TOUCH, LARGE };
 
   FaviconHandler(FaviconService* service,
                  FaviconClient* client,
                  FaviconDriver* driver,
-                 Type icon_type,
+                 Type handler_type,
                  bool download_largest_icon);
   virtual ~FaviconHandler();
+
+  // Returns the bit mask of favicon_base::IconType based on the handler's type.
+  static int GetIconTypesFromHandlerType(Type icon_type);
 
   // Initiates loading the favicon for the specified url.
   void FetchFavicon(const GURL& url);
@@ -92,7 +95,7 @@ class FaviconHandler {
   // PrerenderContents. Collects the |image_urls| list.
   void OnUpdateFaviconURL(const std::vector<favicon::FaviconURL>& candidates);
 
-  // Processes the current image_irls_ entry, requesting the image from the
+  // Processes the current image_urls_ entry, requesting the image from the
   // history / download service.
   void ProcessCurrentUrl();
 
@@ -245,7 +248,7 @@ class FaviconHandler {
   int preferred_icon_size() const {
     if (download_largest_icon_)
       return 0;
-    return icon_types_ == favicon_base::FAVICON ? gfx::kFaviconSize : 0;
+    return handler_type_ == FAVICON ? gfx::kFaviconSize : 0;
   }
 
   // Sorts the entries in |image_urls_| by icon size in descending order.
@@ -274,6 +277,9 @@ class FaviconHandler {
   // Requests to the renderer to download favicons.
   typedef std::map<int, DownloadRequest> DownloadRequests;
   DownloadRequests download_requests_;
+
+  // The type of the current handler.
+  const Type handler_type_;
 
   // The combination of the supported icon types.
   const int icon_types_;

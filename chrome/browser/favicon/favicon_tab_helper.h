@@ -136,6 +136,8 @@ class FaviconTabHelper : public content::WebContentsObserver,
   // browser_defaults::kEnableTouchIcon is false.
   scoped_ptr<FaviconHandler> touch_icon_handler_;
 
+  scoped_ptr<FaviconHandler> large_icon_handler_;
+
   ObserverList<FaviconTabHelperObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconTabHelper);
