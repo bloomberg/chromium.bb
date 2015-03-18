@@ -514,7 +514,7 @@ cr.define('extensions', function() {
       // clicks the 'Reload' link. http://crbug.com/159302.
       if (extensionReloadedTimestamp[extension.id]) {
         item.style.backgroundImage =
-            'url(' + extension.icon + '?' +
+            'url(' + extension.iconUrl + '?' +
             extensionReloadedTimestamp[extension.id] + ')';
       } else {
         item.style.backgroundImage = 'url(' + extension.iconUrl + ')';
@@ -902,7 +902,7 @@ cr.define('extensions', function() {
           overlay.setInitialFocus();
       };
       overlay.setExtensionAndShowOverlay(extensionId, extension.name,
-                                         extension.icon, shownCallback);
+                                         extension.iconUrl, shownCallback);
       this.optionsShown_ = true;
 
       var self = this;
