@@ -354,6 +354,15 @@ TEST_F(KeySystemsTest, ClearKey) {
   EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kPrefixedClearKey));
 }
 
+TEST_F(KeySystemsTest, ClearKeyWithInitDataType) {
+  EXPECT_TRUE(IsSupportedKeySystem(kClearKey));
+  EXPECT_TRUE(IsSupportedKeySystemWithInitDataType(kClearKey, "webm"));
+  EXPECT_TRUE(IsSupportedKeySystemWithInitDataType(kClearKey, "keyids"));
+
+  // All other InitDataTypes are not supported.
+  EXPECT_FALSE(IsSupportedKeySystemWithInitDataType(kClearKey, "unknown"));
+}
+
 // The key system is not registered and therefore is unrecognized.
 TEST_F(KeySystemsTest, Basic_UnrecognizedKeySystem) {
   static const char* const kUnrecognized = "x-org.example.unrecognized";

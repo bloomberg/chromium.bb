@@ -39,8 +39,9 @@ struct NamedInitDataType {
 static NamedInitDataType kInitDataTypeNames[] = {
     {"webm", EME_INIT_DATA_TYPE_WEBM},
 #if defined(USE_PROPRIETARY_CODECS)
-    {"cenc", EME_INIT_DATA_TYPE_CENC}
+    {"cenc", EME_INIT_DATA_TYPE_CENC},
 #endif  // defined(USE_PROPRIETARY_CODECS)
+    {"keyids", EME_INIT_DATA_TYPE_KEYIDS},
 };
 
 struct NamedCodec {
@@ -83,7 +84,8 @@ static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   // http://developer.android.com/guide/appendix/media-formats.html
   // VP9 support is device dependent.
 
-  info.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
+  info.supported_init_data_types =
+      EME_INIT_DATA_TYPE_WEBM | EME_INIT_DATA_TYPE_KEYIDS;
   info.supported_codecs = EME_CODEC_WEBM_ALL;
 
 #if defined(OS_ANDROID)

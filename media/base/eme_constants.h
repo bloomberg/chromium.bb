@@ -18,6 +18,7 @@ enum EmeInitDataType {
 #if defined(USE_PROPRIETARY_CODECS)
   EME_INIT_DATA_TYPE_CENC = 1 << 1,
 #endif  // defined(USE_PROPRIETARY_CODECS)
+  EME_INIT_DATA_TYPE_KEYIDS = 1 << 2,
 };
 
 // Defines bitmask values that specify codecs used in Encrypted Media Extension
