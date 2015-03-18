@@ -650,8 +650,10 @@ void NavigatorImpl::OnBeginNavigation(
   }
 
   // In all other cases the current navigation, if any, is canceled and a new
-  // NavigationRequest is created and stored in the map. Actual cancellation
-  // happens when the existing request map entry is replaced and destroyed.
+  // NavigationRequest is created and stored in the map.
+  if (ongoing_navigation_request)
+    CancelNavigation(frame_tree_node);
+
   scoped_ptr<NavigationRequest> navigation_request =
       NavigationRequest::CreateRendererInitiated(
           frame_tree_node, common_params, begin_params, body,
@@ -788,7 +790,12 @@ void NavigatorImpl::RequestNavigation(
   // TODO(clamy): Check if navigations are blocked and if so store the
   // parameters.
 
-  // If there is an ongoing request, replace it.
+  // If there is an ongoing request, cancel and replace it.
+  NavigationRequest* ongoing_request =
+      navigation_request_map_.get(frame_tree_node->frame_tree_node_id());
+  if (ongoing_request)
+    CancelNavigation(frame_tree_node);
+
   navigation_request_map_.set(frame_tree_node_id, navigation_request.Pass());
 
   // Have the current renderer execute its beforeUnload event if needed. If it
