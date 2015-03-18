@@ -39,6 +39,10 @@ class BrickFeatureNotSupported(Exception):
   """Attempted feature not supported for this brick."""
 
 
+class BrickLocatorNotResolved(Exception):
+  """Given brick locator could not be resolved."""
+
+
 class Brick(object):
   """Encapsulates the interaction with a brick."""
 
@@ -55,8 +59,10 @@ class Brick(object):
         Ignored if |initial_config| is not None.
 
     Raises:
-      BrickNotFound: when |brick_loc| is not a brick and no initial
-        configuration was provided.
+      ValueError: If |brick_loc| is invalid.
+      BrickLocatorNotResolved: |brick_loc| is valid but could not be resolved.
+      BrickNotFound: If |brick_loc| does not point to a brick and no initial
+        config was provided.
       BrickCreationFailed: when the brick could not be created successfully.
     """
     if IsLocator(brick_loc):
@@ -105,7 +111,7 @@ class Brick(object):
           pass
 
       if self.config is None:
-        raise BrickNotFound(self.brick_dir)
+        raise BrickNotFound('Brick not found at %s' % self.brick_dir)
     elif initial_config is None:
       self.config = json.loads(osutils.ReadFile(config_json))
     else:
@@ -280,11 +286,15 @@ def _LocatorToPath(locator):
     The absolute path to the brick.
 
   Raises:
-    ValueError if the locator is invalid.
+    ValueError: If |locator| is invalid.
+    BrickLocatorNotResolved: If |locator| is valid but could not be resolved.
   """
   if locator.startswith(_WORKSPACE_PREFIX):
-    return os.path.join(workspace_lib.WorkspacePath(),
-                        locator[len(_WORKSPACE_PREFIX):])
+    workspace_path = workspace_lib.WorkspacePath()
+    if workspace_path is None:
+      raise BrickLocatorNotResolved(
+          'Workspace not found while trying to resolve %s' % locator)
+    return os.path.join(workspace_path, locator[len(_WORKSPACE_PREFIX):])
   if locator.startswith(_BOARD_PREFIX):
     return os.path.join(constants.SOURCE_ROOT, 'src', 'overlays',
                         'overlay-%s' % locator[len(_BOARD_PREFIX):])
