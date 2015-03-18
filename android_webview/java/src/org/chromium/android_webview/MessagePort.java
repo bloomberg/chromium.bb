@@ -72,9 +72,10 @@ import android.util.Log;
 public class MessagePort implements PostMessageSender.PostMessageSenderDelegate {
 
     /**
-     * The message event handler for receiving messages. Called on a background thread.
+     * The message callback for receiving messages. Called on UI thread or if
+     * provided, on the handler that is provided.
      */
-    public abstract static class WebEventHandler {
+    public abstract static class MessageCallback {
         public abstract void onMessage(String message, MessagePort[] sentPorts);
     }
 
@@ -118,7 +119,7 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
             new MessageHandler(Looper.getMainLooper());
 
     private int mPortId = PENDING;
-    private WebEventHandler mWebEventHandler;
+    private MessageCallback mMessageCallback;
     private AwMessagePortService mMessagePortService;
     private boolean mClosed;
     private boolean mTransferred;
@@ -181,10 +182,10 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     }
 
     // Only called on UI thread
-    public void setWebEventHandler(WebEventHandler webEventHandler, Handler handler) {
+    public void setMessageCallback(MessageCallback messageCallback, Handler handler) {
         mStarted = true;
         synchronized (mLock) {
-            mWebEventHandler = webEventHandler;
+            mMessageCallback = messageCallback;
             if (handler != null) {
                 mHandler = new MessageHandler(handler.getLooper());
             }
@@ -203,7 +204,7 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     }
 
     private void releaseMessages() {
-        if (mReleasedMessages || !isReady() || mWebEventHandler == null) {
+        if (mReleasedMessages || !isReady() || mMessageCallback == null) {
             return;
         }
         mReleasedMessages = true;
@@ -217,12 +218,12 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
                 Log.w(TAG, "Port [" + mPortId + "] received message in closed state");
                 return;
             }
-            if (mWebEventHandler == null) {
+            if (mMessageCallback == null) {
                 Log.w(TAG, "No handler set for port [" + mPortId + "], dropping message "
                         + message);
                 return;
             }
-            mWebEventHandler.onMessage(message, ports);
+            mMessageCallback.onMessage(message, ports);
         }
     }
 
