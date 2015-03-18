@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/process/process_iterator.h"
 #include "base/time/time.h"
@@ -54,7 +53,7 @@ void TerminateAllChromeProcesses(const ChromeProcessList& process_pids) {
     if (process.IsValid()) {
       // Ignore processes for which we can't open the handle. We don't
       // guarantee that all processes will terminate, only try to do so.
-      base::KillProcess(process.Handle(), content::RESULT_CODE_KILLED, true);
+      process.Terminate(content::RESULT_CODE_KILLED, true);
     }
   }
 }

@@ -256,8 +256,7 @@ void BrowserChildProcessHostImpl::OnBadMessageReceived(
           switches::kDisableKillAfterBadIPC)) {
     return;
   }
-  base::KillProcess(child_process_->GetProcess().Handle(),
-                    RESULT_CODE_KILLED_BAD_MESSAGE, false);
+  child_process_->GetProcess().Terminate(RESULT_CODE_KILLED_BAD_MESSAGE, false);
 }
 
 bool BrowserChildProcessHostImpl::CanShutdown() {

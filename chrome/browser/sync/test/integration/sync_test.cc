@@ -839,7 +839,7 @@ bool SyncTest::TearDownLocalPythonTestServer() {
 
 bool SyncTest::TearDownLocalTestServer() {
   if (test_server_.IsValid()) {
-    EXPECT_TRUE(base::KillProcess(test_server_.Handle(), 0, false))
+    EXPECT_TRUE(test_server_.Terminate(0, false))
         << "Could not stop local test server.";
     test_server_.Close();
   }

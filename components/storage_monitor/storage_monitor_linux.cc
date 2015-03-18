@@ -16,6 +16,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -221,7 +222,7 @@ StorageMonitor::EjectStatus EjectPathOnFileThread(
   int exit_code = -1;
   if (!process.WaitForExitWithTimeout(base::TimeDelta::FromMilliseconds(3000),
                                       &exit_code)) {
-    base::KillProcess(process.Handle(), -1, false);
+    process.Terminate(-1, false);
     base::EnsureProcessTerminated(process.Pass());
     return StorageMonitor::EJECT_FAILURE;
   }

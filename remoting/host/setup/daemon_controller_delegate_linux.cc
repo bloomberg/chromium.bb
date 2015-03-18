@@ -18,9 +18,8 @@
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/path_service.h"
-#include "base/process/kill.h"
 #include "base/process/launch.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -113,7 +112,7 @@ bool RunHostScriptWithTimeout(
   }
 
   if (!process.WaitForExitWithTimeout(timeout, exit_code)) {
-    base::KillProcess(process.Handle(), 0, false);
+    process.Terminate(0, false);
     LOG(ERROR) << "Timeout exceeded for command: "
                << command_line.GetCommandLineString();
     return false;

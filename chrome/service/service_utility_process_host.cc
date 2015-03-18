@@ -15,9 +15,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "base/process/kill.h"
 #include "base/process/launch.h"
-#include "base/process/process_handle.h"
 #include "base/task_runner_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_printing_messages.h"
@@ -163,7 +161,7 @@ ServiceUtilityProcessHost::ServiceUtilityProcessHost(
 
 ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {
   // We need to kill the child process when the host dies.
-  base::KillProcess(process_.Handle(), content::RESULT_CODE_NORMAL_EXIT, false);
+  process_.Terminate(content::RESULT_CODE_NORMAL_EXIT, false);
 }
 
 bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(

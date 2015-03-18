@@ -14,9 +14,8 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/process/kill.h"
 #include "base/process/launch.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -143,6 +142,6 @@ TEST_F(ProcessInfoSnapshotMacTest, EffectiveVsRealUserIDTest) {
   // Real user ID should match the calling process's user id.
   EXPECT_EQ(proc_info.uid, geteuid());
 
-  ASSERT_TRUE(base::KillProcess(process.Handle(), 0, true));
+  ASSERT_TRUE(process.Terminate(0, true));
   PCHECK(IGNORE_EINTR(close(fds[0])) == 0);
 }

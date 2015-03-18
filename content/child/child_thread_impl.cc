@@ -18,7 +18,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/metrics/field_trial.h"
-#include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -713,7 +713,7 @@ void ChildThreadImpl::OnProcessFinalRelease() {
 
 void ChildThreadImpl::EnsureConnected() {
   VLOG(0) << "ChildThreadImpl::EnsureConnected()";
-  base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
+  base::Process::Current().Terminate(0, false);
 }
 
 void ChildThreadImpl::OnProcessBackgrounded(bool background) {

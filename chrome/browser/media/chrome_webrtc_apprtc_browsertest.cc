@@ -66,11 +66,11 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     // especially if the test hangs or if we're on Windows.
     LOG(INFO) << "Entering TearDown";
     if (dev_appserver_.IsValid())
-      base::KillProcess(dev_appserver_.Handle(), 0, false);
+      dev_appserver_.Terminate(0, false);
     if (collider_server_.IsValid())
-      base::KillProcess(collider_server_.Handle(), 0, false);
+      collider_server_.Terminate(0, false);
     if (firefox_.IsValid())
-      base::KillProcess(firefox_.Handle(), 0, false);
+      firefox_.Terminate(0, false);
     LOG(INFO) << "Exiting TearDown";
   }
 

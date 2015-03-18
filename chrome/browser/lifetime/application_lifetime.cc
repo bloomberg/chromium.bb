@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
-#include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -306,7 +306,7 @@ void SessionEnding() {
   // termination as soon as it hides or destroys its windows. Since any
   // execution past that point will be non-deterministically cut short, we
   // might as well put ourselves out of that misery deterministically.
-  base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
+  base::Process::Current().Terminate(0, false);
 }
 
 void IncrementKeepAliveCount() {

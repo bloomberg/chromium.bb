@@ -10,7 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/process/process.h"
 #include "base/values.h"
 #include "base/win/registry.h"
@@ -37,13 +37,14 @@ static const base::char16 kAutoRunKeyPath[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 
 // Terminates any process.
-void ShutdownChrome(HANDLE process, DWORD thread_id) {
+void ShutdownChrome(base::Process process, DWORD thread_id) {
   if (::PostThreadMessage(thread_id, WM_QUIT, 0, 0) &&
-      WAIT_OBJECT_0 == ::WaitForSingleObject(process, kShutdownTimeoutMs)) {
+      WAIT_OBJECT_0 == ::WaitForSingleObject(process.Handle(),
+                                             kShutdownTimeoutMs)) {
     return;
   }
   LOG(ERROR) << "Failed to shutdown process.";
-  base::KillProcess(process, 0, true);
+  process.Terminate(0, true);
 }
 
 BOOL CALLBACK CloseIfPidEqual(HWND wnd, LPARAM lparam) {
@@ -59,12 +60,13 @@ void CloseAllProcessWindows(HANDLE process) {
 }
 
 // Close Chrome browser window.
-void CloseChrome(HANDLE process, DWORD thread_id) {
-  CloseAllProcessWindows(process);
-  if (WAIT_OBJECT_0 == ::WaitForSingleObject(process, kShutdownTimeoutMs)) {
+void CloseChrome(base::Process process, DWORD thread_id) {
+  CloseAllProcessWindows(process.Handle());
+  if (WAIT_OBJECT_0 ==
+      ::WaitForSingleObject(process.Handle(), kShutdownTimeoutMs)) {
     return;
   }
-  ShutdownChrome(process, thread_id);
+  ShutdownChrome(process.Pass(), thread_id);
 }
 
 bool LaunchProcess(const base::CommandLine& cmdline,
@@ -224,8 +226,11 @@ void ChromeLauncher::Run() {
       base::Time started = base::Time::Now();
       DWORD thread_id = 0;
       LaunchProcess(cmd, &chrome_handle, &thread_id);
+      base::Process chrome_process;
+      if (chrome_handle.IsValid())
+        chrome_process = base::Process(chrome_handle.Take());
 
-      HANDLE handles[] = { stop_event_.handle(), chrome_handle.Get() };
+      HANDLE handles[] = { stop_event_.handle(), chrome_process.Handle() };
       DWORD wait_result = WAIT_TIMEOUT;
       while (wait_result == WAIT_TIMEOUT) {
         cloud_print::SetGoogleUpdateUsage(kGoogleUpdateId);
@@ -233,7 +238,7 @@ void ChromeLauncher::Run() {
                                                FALSE, kUsageUpdateTimeoutMs);
       }
       if (wait_result == WAIT_OBJECT_0) {
-        ShutdownChrome(chrome_handle.Get(), thread_id);
+        ShutdownChrome(chrome_process.Pass(), thread_id);
         break;
       } else if (wait_result == WAIT_OBJECT_0 + 1) {
         LOG(ERROR) << "Chrome process exited.";
@@ -302,9 +307,10 @@ std::string ChromeLauncher::CreateServiceStateFile(
     LOG(ERROR) << "Unable to launch Chrome.";
     return std::string();
   }
+  base::Process chrome_process(chrome_handle.Take());
 
   for (;;) {
-    DWORD wait_result = ::WaitForSingleObject(chrome_handle.Get(), 500);
+    DWORD wait_result = ::WaitForSingleObject(chrome_process.Handle(), 500);
     std::string json = ReadAndUpdateServiceState(temp_user_data.path(),
                                                  proxy_id);
     if (wait_result == WAIT_OBJECT_0) {
@@ -317,7 +323,7 @@ std::string ChromeLauncher::CreateServiceStateFile(
     }
     if (!json.empty()) {
       // Close chrome because Service State is ready.
-      CloseChrome(chrome_handle.Get(), thread_id);
+      CloseChrome(chrome_process.Pass(), thread_id);
       return json;
     }
   }

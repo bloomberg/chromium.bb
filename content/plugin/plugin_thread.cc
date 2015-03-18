@@ -16,8 +16,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/process/kill.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "base/threading/thread_local.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/child/child_process.h"
@@ -57,7 +56,7 @@ class EnsureTerminateMessageFilter : public IPC::MessageFilter {
 
  private:
   void Terminate() {
-    base::KillProcess(base::GetCurrentProcessHandle(), 0, false);
+    base::Process::Current().Terminate(0, false);
   }
 };
 
@@ -116,7 +115,7 @@ void PluginThread::Shutdown() {
   PluginLib::UnloadAllPlugins();
 
   if (forcefully_terminate_plugin_process_)
-    base::KillProcess(base::GetCurrentProcessHandle(), 0, /* wait= */ false);
+    base::Process::Current().Terminate(0, /* wait= */ false);
 
   lazy_tls.Pointer()->Set(NULL);
 }

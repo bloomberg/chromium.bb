@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -387,7 +388,7 @@ Status LaunchDesktopChrome(
       return Status(kUnknownError,
                     "Chrome failed to start: " + termination_reason);
     }
-    if (!base::KillProcess(process.Handle(), 0, true)) {
+    if (!process.Terminate(0, true)) {
       int exit_code;
       if (base::GetTerminationStatus(process.Handle(), &exit_code) ==
           base::TERMINATION_STATUS_STILL_RUNNING)

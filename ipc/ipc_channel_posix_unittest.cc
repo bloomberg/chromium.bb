@@ -18,7 +18,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/process/kill.h"
+#include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "ipc/ipc_listener.h"
@@ -339,7 +339,7 @@ TEST_F(IPCChannelPosixTest, ResetState) {
                                            IPC::Message::PRIORITY_NORMAL);
   channel->Send(message);
   SpinRunLoop(TestTimeouts::action_timeout());
-  EXPECT_TRUE(base::KillProcess(process.Handle(), 0, false));
+  EXPECT_TRUE(process.Terminate(0, false));
   int exit_code = 0;
   EXPECT_TRUE(process2.WaitForExit(&exit_code));
   EXPECT_EQ(0, exit_code);

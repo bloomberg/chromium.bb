@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/process/process_info.h"
 #include "base/strings/string_number_conversions.h"
@@ -301,7 +300,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
     funnel.RecordEvent(L"HungBrowserTerminated");
 
   // Time to take action. Kill the browser process.
-  base::KillProcess(process.Handle(), content::RESULT_CODE_HUNG, true);
+  process.Terminate(content::RESULT_CODE_HUNG, true);
   remote_window_ = NULL;
   return PROCESS_NONE;
 }

@@ -16,7 +16,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
-#include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/process/process_iterator.h"
@@ -160,7 +159,7 @@ class ProcessSingletonTest : public InProcessBrowserTest {
   // flaky wait. Instead, we kill all descendants of the main process after we
   // killed it, relying on the fact that we can still get the parent id of a
   // child process, even when the parent dies.
-  void KillProcessTree(base::ProcessHandle process_handle) {
+  void KillProcessTree(const base::Process& process) {
     class ProcessTreeFilter : public base::ProcessFilter {
      public:
       explicit ProcessTreeFilter(base::ProcessId parent_pid) {
@@ -176,11 +175,11 @@ class ProcessSingletonTest : public InProcessBrowserTest {
       }
      private:
       mutable std::set<base::ProcessId> ancestor_pids_;
-    } process_tree_filter(base::GetProcId(process_handle));
+    } process_tree_filter(process.Pid());
 
     // Start by explicitly killing the main process we know about...
     static const int kExitCode = 42;
-    EXPECT_TRUE(base::KillProcess(process_handle, kExitCode, true /* wait */));
+    EXPECT_TRUE(process.Terminate(kExitCode, true /* wait */));
 
     // Then loop until we can't find any of its descendant.
     // But don't try more than kNbTries times...
@@ -303,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
         // But we let the last loop turn finish so that we can properly
         // kill all remaining processes. Starting with this one...
         if (chrome_starters_[starter_index]->process_.IsValid()) {
-          KillProcessTree(chrome_starters_[starter_index]->process_.Handle());
+          KillProcessTree(chrome_starters_[starter_index]->process_);
         }
       }
       pending_starters.erase(pending_starters.begin() + done_index);
@@ -314,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
     size_t last_index = pending_starters.front();
     pending_starters.clear();
     if (chrome_starters_[last_index]->process_.IsValid()) {
-      KillProcessTree(chrome_starters_[last_index]->process_.Handle());
+      KillProcessTree(chrome_starters_[last_index]->process_);
       chrome_starters_[last_index]->done_event_.Wait();
     }
   }
