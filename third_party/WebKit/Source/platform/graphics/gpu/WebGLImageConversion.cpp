@@ -23,9 +23,11 @@ WebGLImageConversion::DataFormat getDataFormat(GLenum destinationFormat, GLenum 
     case GL_UNSIGNED_BYTE:
         switch (destinationFormat) {
         case GL_RGB:
+        case GL_SRGB_EXT:
             dstFormat = WebGLImageConversion::DataFormatRGB8;
             break;
         case GL_RGBA:
+        case GL_SRGB_ALPHA_EXT:
             dstFormat = WebGLImageConversion::DataFormatRGBA8;
             break;
         case GL_ALPHA:
