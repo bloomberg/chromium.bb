@@ -79,7 +79,7 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
  * @private
  */
 remoting.SessionConnectorImpl.prototype.resetConnection_ = function() {
-  this.removePlugin_();
+  this.closeSession();
 
   /** @private {remoting.Host} */
   this.host_ = null;
@@ -313,7 +313,7 @@ remoting.SessionConnectorImpl.prototype.createSession_ = function() {
   // In some circumstances, the WCS <iframe> can get reloaded, which results
   // in a new clientJid and a new callback. In this case, remove the old
   // client plugin before instantiating a new one.
-  this.removePlugin_();
+  this.closeSession();
 
   var pluginContainer = this.clientContainer_.querySelector(
       '.client-plugin-container');
@@ -367,14 +367,11 @@ remoting.SessionConnectorImpl.prototype.onPluginInitialized_ = function(
 remoting.SessionConnectorImpl.prototype.pluginError_ = function(error) {
   this.signalStrategy_.setIncomingStanzaCallback(null);
   this.clientSession_.disconnect(error);
-  this.removePlugin_();
+  this.closeSession();
 };
 
-/** @private */
-remoting.SessionConnectorImpl.prototype.removePlugin_ = function() {
-  if (this.clientSession_) {
-    this.clientSession_.removePlugin();
-  }
+remoting.SessionConnectorImpl.prototype.closeSession = function() {
+  base.dispose(this.clientSession_);
   this.clientSession_ = null;
   remoting.clientSession = null;
 

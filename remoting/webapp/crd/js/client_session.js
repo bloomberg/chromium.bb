@@ -241,13 +241,6 @@ remoting.ClientSession.prototype.hasCapability = function(capability) {
 };
 
 /**
- * @return {void} Nothing.
- */
-remoting.ClientSession.prototype.removePlugin = function() {
-  this.plugin_ = null;
-};
-
-/**
  * Disconnect the current session with a particular |error|.  The session will
  * raise a |stateChanged| event in response to it.  The caller should then call
  * dispose() to remove and destroy the <embed> element.
@@ -257,6 +250,20 @@ remoting.ClientSession.prototype.removePlugin = function() {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.disconnect = function(error) {
+  this.sendIq_(
+      '<cli:iq ' +
+          'to="' + this.host_.jabberId + '" ' +
+          'type="set" ' +
+          'id="session-terminate" ' +
+          'xmlns:cli="jabber:client">' +
+        '<jingle ' +
+            'xmlns="urn:xmpp:jingle:1" ' +
+            'action="session-terminate" ' +
+            'sid="' + this.sessionId_ + '">' +
+          '<reason><success/></reason>' +
+        '</jingle>' +
+      '</cli:iq>');
+
   var state = error.isNone() ?
                   remoting.ClientSession.State.CLOSED :
                   remoting.ClientSession.State.FAILED;
@@ -274,20 +281,7 @@ remoting.ClientSession.prototype.disconnect = function(error) {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.dispose = function() {
-  this.sendIq_(
-      '<cli:iq ' +
-          'to="' + this.host_.jabberId + '" ' +
-          'type="set" ' +
-          'id="session-terminate" ' +
-          'xmlns:cli="jabber:client">' +
-        '<jingle ' +
-            'xmlns="urn:xmpp:jingle:1" ' +
-            'action="session-terminate" ' +
-            'sid="' + this.sessionId_ + '">' +
-          '<reason><success/></reason>' +
-        '</jingle>' +
-      '</cli:iq>');
-  this.removePlugin();
+  this.plugin_ = null;
 };
 
 /**

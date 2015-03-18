@@ -110,6 +110,10 @@ remoting.SessionConnector.prototype.getHostId = function() {};
 remoting.SessionConnector.prototype.registerProtocolExtension =
     function(extension) {};
 
+/**
+ * Closes the session and removes the plugin element.
+ */
+remoting.SessionConnector.prototype.closeSession = function() {};
 
 /**
  * @interface

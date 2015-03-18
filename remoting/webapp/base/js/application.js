@@ -121,7 +121,7 @@ remoting.Application.prototype.disconnect = function() {
 remoting.Application.prototype.onConnected = function(connectionInfo) {
   this.sessionConnectedHooks_ = new base.Disposables(
     new base.EventHook(connectionInfo.session(), 'stateChanged',
-                       this.onClientStateChange_.bind(this)),
+                       this.onSessionFinished_.bind(this)),
     new base.RepeatingTimer(this.updateStatistics_.bind(this), 1000)
   );
   remoting.clipboard.startSession();
@@ -193,7 +193,7 @@ remoting.Application.prototype.getSessionConnector = function() {
  * @param {remoting.ClientSession.StateEvent=} state
  * @private
  */
-remoting.Application.prototype.onClientStateChange_ = function(state) {
+remoting.Application.prototype.onSessionFinished_ = function(state) {
   switch (state.current) {
     case remoting.ClientSession.State.CLOSED:
       console.log('Connection closed by host');
@@ -219,8 +219,7 @@ remoting.Application.prototype.onClientStateChange_ = function(state) {
 
   base.dispose(this.sessionConnectedHooks_);
   this.sessionConnectedHooks_= null;
-  remoting.clientSession.dispose();
-  remoting.clientSession = null;
+  this.sessionConnector_.closeSession();
 };
 
 /** @private */
