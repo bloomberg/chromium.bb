@@ -22,8 +22,6 @@ class FileAccessPermissions {
   FileAccessPermissions();
   virtual ~FileAccessPermissions();
 
-  // Grants |extension_id| full access to all paths.
-  void GrantFullAccessPermission(const std::string& extension_id);
   // Grants |extension_id| access to |path|.
   void GrantAccessPermission(const std::string& extension_id,
                              const base::FilePath& path);

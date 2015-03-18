@@ -8,22 +8,9 @@
 
 namespace chromeos {
 
-namespace {
-
-// Empty path is prefix of any other paths, hence it represents full permission.
-base::FilePath FullPermission() { return base::FilePath(); }
-
-}  // namespace
-
 FileAccessPermissions::FileAccessPermissions() {}
 
 FileAccessPermissions::~FileAccessPermissions() {}
-
-void FileAccessPermissions::GrantFullAccessPermission(
-    const std::string& extension_id) {
-  base::AutoLock locker(lock_);
-  path_map_[extension_id].insert(FullPermission());
-}
 
 void FileAccessPermissions::GrantAccessPermission(
     const std::string& extension_id, const base::FilePath& path) {
@@ -39,9 +26,6 @@ bool FileAccessPermissions::HasAccessPermission(
   if (path_map_iter == path_map_.end())
     return false;
   const PathSet& path_set = path_map_iter->second;
-
-  if (path_set.find(FullPermission()) != path_set.end())
-    return true;
 
   // Check this file and walk up its directory tree to find if this extension
   // has access to it.

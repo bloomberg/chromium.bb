@@ -158,6 +158,7 @@ void OpenItem(Profile* profile,
               const platform_util::OpenOperationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // This is unfortunately necessary as file browser handlers operate on URLs.
   GURL url;
   if (!ConvertAbsoluteFilePathToFileSystemUrl(profile, file_path,
                                               kFileManagerAppId, &url)) {
@@ -166,7 +167,7 @@ void OpenItem(Profile* profile,
   }
 
   GetMetadataForPath(
-      GetFileSystemContextForExtensionId(profile, kFileManagerAppId), url,
+      GetFileSystemContextForExtensionId(profile, kFileManagerAppId), file_path,
       base::Bind(&OpenItemWithMetadata, profile, file_path, url, expected_type,
                  callback));
 }

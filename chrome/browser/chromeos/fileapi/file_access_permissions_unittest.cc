@@ -47,12 +47,6 @@ TEST(FileAccessPermissionsTest, FileAccessChecks) {
   EXPECT_TRUE(permissions.HasAccessPermission(extension2, good_file));
   EXPECT_TRUE(permissions.HasAccessPermission(extension2, bad_file));
 
-  // After granting full access, it can access all directories and files.
-  permissions.GrantFullAccessPermission(extension1);
-  EXPECT_TRUE(permissions.HasAccessPermission(extension1, good_dir));
-  EXPECT_TRUE(permissions.HasAccessPermission(extension1, good_file));
-  EXPECT_TRUE(permissions.HasAccessPermission(extension1, bad_file));
-
   // After revoking rights for extensions, they should not be able to access
   // any file system element anymore.
   permissions.RevokePermissions(extension1);

@@ -173,6 +173,10 @@ bool FileSystemBackend::IsAccessAllowed(
   if (!CanHandleURL(url))
     return false;
 
+  // If there is no origin set, then it's an internal access.
+  if (url.origin().is_empty())
+    return true;
+
   std::string extension_id = url.origin().host();
   // TODO(mtomasz): Temporarily whitelist TimeScapes. Remove this in M-31.
   // See: crbug.com/271946
@@ -188,17 +192,6 @@ bool FileSystemBackend::IsAccessAllowed(
 
   return file_access_permissions_->HasAccessPermission(extension_id,
                                                        url.virtual_path());
-}
-
-void FileSystemBackend::GrantFullAccessToExtension(
-    const std::string& extension_id) {
-  if (!special_storage_policy_.get())
-    return;
-  if (!special_storage_policy_->IsFileHandler(extension_id)) {
-    NOTREACHED();
-    return;
-  }
-  file_access_permissions_->GrantFullAccessPermission(extension_id);
 }
 
 void FileSystemBackend::GrantFileAccessToExtension(
@@ -396,16 +389,15 @@ scoped_ptr<storage::FileStreamWriter> FileSystemBackend::CreateFileStreamWriter(
   return scoped_ptr<storage::FileStreamWriter>();
 }
 
-bool FileSystemBackend::GetVirtualPath(
-    const base::FilePath& filesystem_path,
-    base::FilePath* virtual_path) {
+bool FileSystemBackend::GetVirtualPath(const base::FilePath& filesystem_path,
+                                       base::FilePath* virtual_path) const {
   return mount_points_->GetVirtualPath(filesystem_path, virtual_path) ||
          system_mount_points_->GetVirtualPath(filesystem_path, virtual_path);
 }
 
 void FileSystemBackend::GetRedirectURLForContents(
     const storage::FileSystemURL& url,
-    const storage::URLCallback& callback) {
+    const storage::URLCallback& callback) const {
   DCHECK(url.is_valid());
 
   if (!IsAccessAllowed(url))
@@ -430,6 +422,17 @@ void FileSystemBackend::GetRedirectURLForContents(
       NOTREACHED();
   }
   callback.Run(GURL());
+}
+
+storage::FileSystemURL FileSystemBackend::CreateInternalURL(
+    storage::FileSystemContext* context,
+    const base::FilePath& entry_path) const {
+  base::FilePath virtual_path;
+  if (!GetVirtualPath(entry_path, &virtual_path))
+    return storage::FileSystemURL();
+
+  return context->CreateCrackedFileSystemURL(
+      GURL() /* origin */, storage::kFileSystemTypeExternal, virtual_path);
 }
 
 }  // namespace chromeos

@@ -167,19 +167,6 @@ TEST(ChromeOSFileSystemBackendTest, AccessPermissions) {
       CreateFileSystemURL(extension, "system/foo1",
                           system_mount_points.get())));
 
-  backend.GrantFullAccessToExtension(extension);
-  // The extension should be able to access restricted file system after it was
-  // granted full access.
-  EXPECT_TRUE(backend.IsAccessAllowed(
-      CreateFileSystemURL(extension, "oem/foo", mount_points.get())));
-  // The extension which was granted full access should be able to access any
-  // path on current file systems.
-  EXPECT_TRUE(backend.IsAccessAllowed(
-      CreateFileSystemURL(extension, "removable/foo1", mount_points.get())));
-  EXPECT_TRUE(backend.IsAccessAllowed(
-      CreateFileSystemURL(extension, "system/foo1",
-                          system_mount_points.get())));
-
   // The extension cannot access new mount points.
   // TODO(tbarzic): This should probably be changed.
   ASSERT_TRUE(

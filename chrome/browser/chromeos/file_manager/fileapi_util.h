@@ -145,16 +145,16 @@ void ConvertSelectedFileInfoListToFileChooserFileInfoList(
     const SelectedFileInfoList& selected_info_list,
     const FileChooserFileInfoListCallback& callback);
 
-// Checks if a directory exists at |url|.
+// Checks if a directory exists at |directory_path| absolute path.
 void CheckIfDirectoryExists(
     scoped_refptr<storage::FileSystemContext> file_system_context,
-    const GURL& url,
+    const base::FilePath& directory_path,
     const storage::FileSystemOperationRunner::StatusCallback& callback);
 
-// Get metadata for object at |url|.
+// Get metadata for an entry at |entry_path| absolute path.
 void GetMetadataForPath(
     scoped_refptr<storage::FileSystemContext> file_system_context,
-    const GURL& url,
+    const base::FilePath& entry_path,
     const storage::FileSystemOperationRunner::GetMetadataCallback& callback);
 
 // Obtains isolated file system URL from |virtual_path| pointing a file in the

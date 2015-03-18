@@ -165,10 +165,6 @@ class ExternalFileSystemBackend : public FileSystemBackend {
   // provider. This list is used to set appropriate child process file access
   // permissions.
   virtual std::vector<base::FilePath> GetRootDirectories() const = 0;
-  // Grants access to all external file system from extension identified with
-  // |extension_id|. TODO(mtomasz): Remove, as full access should never be
-  // necessary. Use GrantFileAccessToExtension() instead.
-  virtual void GrantFullAccessToExtension(const std::string& extension_id) = 0;
   // Grants access to |virtual_path| from |origin_url|.
   virtual void GrantFileAccessToExtension(
       const std::string& extension_id,
@@ -179,12 +175,18 @@ class ExternalFileSystemBackend : public FileSystemBackend {
   // Gets virtual path by known filesystem path. Returns false when filesystem
   // path is not exposed by this provider.
   virtual bool GetVirtualPath(const base::FilePath& file_system_path,
-                              base::FilePath* virtual_path) = 0;
+                              base::FilePath* virtual_path) const = 0;
   // Gets a redirect URL for contents. e.g. Google Drive URL for hosted
   // documents. Returns empty URL if the entry does not have the redirect URL.
   virtual void GetRedirectURLForContents(
       const storage::FileSystemURL& url,
-      const storage::URLCallback& callback) = 0;
+      const storage::URLCallback& callback) const = 0;
+  // Creates an internal File System URL for performing internal operations such
+  // as confirming if a file or a directory exist before granting the final
+  // permission to the entry. The path must be an absolute path.
+  virtual storage::FileSystemURL CreateInternalURL(
+      storage::FileSystemContext* context,
+      const base::FilePath& entry_path) const = 0;
 };
 
 }  // namespace storage

@@ -217,30 +217,6 @@ void OnConvertFileDefinitionDone(
   callback.Run(entry_definition_list->at(0));
 }
 
-// Used to implement CheckIfDirectoryExists().
-void CheckIfDirectoryExistsOnIOThread(
-    scoped_refptr<storage::FileSystemContext> file_system_context,
-    const GURL& url,
-    const storage::FileSystemOperationRunner::StatusCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  storage::FileSystemURL file_system_url = file_system_context->CrackURL(url);
-  file_system_context->operation_runner()->DirectoryExists(
-      file_system_url, callback);
-}
-
-// Used by GetMetadataForPath
-void GetMetadataOnIOThread(
-    scoped_refptr<storage::FileSystemContext> file_system_context,
-    const GURL& url,
-    const storage::FileSystemOperationRunner::GetMetadataCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const storage::FileSystemURL file_system_url =
-      file_system_context->CrackURL(url);
-  file_system_context->operation_runner()->GetMetadata(file_system_url,
-                                                       callback);
-}
-
 // Checks if the |file_path| points non-native location or not.
 bool IsUnderNonNativeLocalPath(const storage::FileSystemContext& context,
                                const base::FilePath& file_path) {
@@ -556,38 +532,42 @@ void ConvertSelectedFileInfoListToFileChooserFileInfoList(
 
 void CheckIfDirectoryExists(
     scoped_refptr<storage::FileSystemContext> file_system_context,
-    const GURL& url,
+    const base::FilePath& directory_path,
     const storage::FileSystemOperationRunner::StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Check the existence of directory using file system API implementation on
-  // behalf of the file manager app. We need to grant access beforehand.
-  storage::ExternalFileSystemBackend* backend =
+  storage::ExternalFileSystemBackend* const backend =
       file_system_context->external_backend();
   DCHECK(backend);
-  backend->GrantFullAccessToExtension(kFileManagerAppId);
+  const storage::FileSystemURL internal_url =
+      backend->CreateInternalURL(file_system_context.get(), directory_path);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CheckIfDirectoryExistsOnIOThread, file_system_context, url,
-                 google_apis::CreateRelayCallback(callback)));
+      base::Bind(base::IgnoreResult(
+                     &storage::FileSystemOperationRunner::DirectoryExists),
+                 file_system_context->operation_runner()->AsWeakPtr(),
+                 internal_url, google_apis::CreateRelayCallback(callback)));
 }
 
 void GetMetadataForPath(
     scoped_refptr<storage::FileSystemContext> file_system_context,
-    const GURL& url,
+    const base::FilePath& entry_path,
     const storage::FileSystemOperationRunner::GetMetadataCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   storage::ExternalFileSystemBackend* const backend =
       file_system_context->external_backend();
   DCHECK(backend);
-  backend->GrantFullAccessToExtension(kFileManagerAppId);
+  const storage::FileSystemURL internal_url =
+      backend->CreateInternalURL(file_system_context.get(), entry_path);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetMetadataOnIOThread, file_system_context, url,
-                 google_apis::CreateRelayCallback(callback)));
+      base::Bind(
+          base::IgnoreResult(&storage::FileSystemOperationRunner::GetMetadata),
+          file_system_context->operation_runner()->AsWeakPtr(), internal_url,
+          google_apis::CreateRelayCallback(callback)));
 }
 
 storage::FileSystemURL CreateIsolatedURLFromVirtualPath(

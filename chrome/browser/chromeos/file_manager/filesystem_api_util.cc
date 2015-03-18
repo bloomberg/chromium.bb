@@ -197,20 +197,8 @@ void IsNonNativeLocalPathDirectory(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(IsUnderNonNativeLocalPath(profile, path));
 
-  GURL url;
-  if (!util::ConvertAbsoluteFilePathToFileSystemUrl(
-           profile, path, kFileManagerAppId, &url)) {
-    // Posting to the current thread, so that we always call back asynchronously
-    // independent from whether or not the operation succeeds.
-    content::BrowserThread::PostTask(content::BrowserThread::UI,
-                                     FROM_HERE,
-                                     base::Bind(callback, false));
-    return;
-  }
-
   util::CheckIfDirectoryExists(
-      GetFileSystemContextForExtensionId(profile, kFileManagerAppId),
-      url,
+      GetFileSystemContextForExtensionId(profile, kFileManagerAppId), path,
       base::Bind(&BoolCallbackAsFileErrorCallback, callback));
 }
 
@@ -232,20 +220,18 @@ void PrepareNonNativeLocalFileForWritableApp(
     return;
   }
 
-  storage::FileSystemContext* const context =
+  scoped_refptr<storage::FileSystemContext> const file_system_context =
       GetFileSystemContextForExtensionId(profile, kFileManagerAppId);
-  DCHECK(context);
-
-  // Check the existence of a file using file system API implementation on
-  // behalf of the file manager app. We need to grant access beforehand.
-  context->external_backend()->GrantFullAccessToExtension(kFileManagerAppId);
+  DCHECK(file_system_context);
+  storage::ExternalFileSystemBackend* const backend =
+      file_system_context->external_backend();
+  DCHECK(backend);
+  const storage::FileSystemURL internal_url =
+      backend->CreateInternalURL(file_system_context.get(), path);
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&PrepareFileOnIOThread,
-                 make_scoped_refptr(context),
-                 context->CrackURL(url),
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&PrepareFileOnIOThread, file_system_context, internal_url,
                  google_apis::CreateRelayCallback(callback)));
 }
 
