@@ -879,6 +879,13 @@ void ChromeClientImpl::textFieldDataListChanged(HTMLInputElement& input)
         webframe->autofillClient()->dataListOptionsChanged(WebInputElement(&input));
 }
 
+void ChromeClientImpl::xhrSucceeded(LocalFrame* frame)
+{
+    WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(frame);
+    if (webframe->autofillClient())
+        webframe->autofillClient()->xhrSucceeded();
+}
+
 void ChromeClientImpl::registerViewportLayers() const
 {
     if (m_webView->rootGraphicsLayer() && m_webView->layerTreeView() && m_webView->pinchVirtualViewportEnabled())

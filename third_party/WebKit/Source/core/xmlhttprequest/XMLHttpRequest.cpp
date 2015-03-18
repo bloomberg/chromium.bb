@@ -51,6 +51,9 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/ThreadableLoader.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "core/streams/ReadableStream.h"
 #include "core/streams/ReadableStreamImpl.h"
 #include "core/streams/Stream.h"
@@ -1573,6 +1576,12 @@ void XMLHttpRequest::endLoading()
     m_loaderIdentifier = 0;
 
     changeState(DONE);
+
+    if (!executionContext()->isDocument() || document() || !document()->frame() || !document()->frame()->page())
+        return;
+
+    if (status() >= 200 && status() < 300)
+        document()->frame()->page()->chrome().client().xhrSucceeded(document()->frame());
 }
 
 void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)

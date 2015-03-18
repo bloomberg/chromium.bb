@@ -167,6 +167,7 @@ public:
     virtual void didEndEditingOnTextField(HTMLInputElement&) override;
     virtual void openTextDataListChooser(HTMLInputElement&) override;
     virtual void textFieldDataListChanged(HTMLInputElement&) override;
+    virtual void xhrSucceeded(LocalFrame*) override;
 
     virtual void didCancelCompositionOnSelectionChange() override;
     virtual void willSetInputMethodState() override;
