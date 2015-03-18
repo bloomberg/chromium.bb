@@ -48,6 +48,10 @@ class BASE_EXPORT SysInfo {
   // or -1 on failure.
   static int64 AmountOfFreeDiskSpace(const FilePath& path);
 
+  // Determine whether the device that services |path| has a seek penalty.
+  // Returns false if it couldn't be determined (e.g., |path| doesn't exist).
+  static bool HasSeekPenalty(const FilePath& path, bool* has_seek_penalty);
+
   // Returns system uptime in milliseconds.
   static int64 Uptime();
 

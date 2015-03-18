@@ -41,6 +41,13 @@ TEST_F(SysInfoTest, AmountOfFreeDiskSpace) {
             << tmp_path.value();
 }
 
+TEST_F(SysInfoTest, HasSeekPenalty) {
+  FilePath tmp_path;
+  ASSERT_TRUE(base::GetTempDir(&tmp_path));
+  bool unused;
+  base::SysInfo::HasSeekPenalty(tmp_path, &unused);
+}
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(SysInfoTest, OperatingSystemVersionNumbers) {
   int32 os_major_version = -1;

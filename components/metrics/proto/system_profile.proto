@@ -92,7 +92,7 @@ message SystemProfileProto {
   }
   optional OS os = 5;
 
-  // Next tag for Hardware: 16
+  // Next tag for Hardware: 18
   // Information on the user's hardware.
   message Hardware {
     // The CPU architecture (x86, PowerPC, x86_64, ...)
@@ -254,6 +254,18 @@ message SystemProfileProto {
     // Lists vendor and product ids of external touchscreens.
     // Logged on ChromeOS only.
     repeated TouchScreen external_touchscreen = 15;
+
+    // Drive messages are logged on Windows 7+ only for now.
+    message Drive {
+      // Whether this drive incurs a time penalty when randomly accessed. This
+      // should be true for spinning disks but false for SSDs or other
+      // flash-based drives.
+      optional bool has_seek_penalty = 1;
+    }
+    // The drive that the application executable was loaded from.
+    optional Drive app_drive = 16;
+    // The drive that the current user data directory was loaded from.
+    optional Drive user_data_drive = 17;
   }
   optional Hardware hardware = 6;
 

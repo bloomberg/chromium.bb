@@ -23,6 +23,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
+#include "chrome/browser/metrics/drive_metrics_provider.h"
 #include "chrome/browser/metrics/omnibox_metrics_provider.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_constants.h"
@@ -122,9 +123,17 @@ bool IsCellularEnabledByExperiment() {
 ChromeMetricsServiceClient::ChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
     : metrics_state_manager_(state_manager),
-      chromeos_metrics_provider_(NULL),
+      chromeos_metrics_provider_(nullptr),
       waiting_for_collect_final_metrics_step_(false),
       num_async_histogram_fetches_in_progress_(0),
+      profiler_metrics_provider_(nullptr),
+#if defined(ENABLE_PLUGINS)
+      plugin_metrics_provider_(nullptr),
+#endif
+#if defined(OS_WIN)
+      google_update_metrics_provider_(nullptr),
+#endif
+      drive_metrics_provider_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
   RecordCommandLineMetrics();
@@ -314,7 +323,11 @@ void ChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr<metrics::MetricsProvider>(new ChromeStabilityMetricsProvider));
   metrics_service_->RegisterMetricsProvider(
-      scoped_ptr<metrics::MetricsProvider>(new metrics::GPUMetricsProvider()));
+      scoped_ptr<metrics::MetricsProvider>(new metrics::GPUMetricsProvider));
+
+  drive_metrics_provider_ = new DriveMetricsProvider;
+  metrics_service_->RegisterMetricsProvider(
+      scoped_ptr<metrics::MetricsProvider>(drive_metrics_provider_));
 
   profiler_metrics_provider_ =
       new metrics::ProfilerMetricsProvider(cellular_callback_);
@@ -412,7 +425,8 @@ void ChromeMetricsServiceClient::ReceivedProfilerData(
 }
 
 void ChromeMetricsServiceClient::FinishedReceivingProfilerData() {
-  finished_gathering_initial_metrics_callback_.Run();
+  drive_metrics_provider_->GetDriveMetrics(
+      finished_gathering_initial_metrics_callback_);
 }
 
 void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
