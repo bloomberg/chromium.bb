@@ -19083,6 +19083,26 @@
         "upload_standalone_images": false,
         "vm_tests": []
     },
+    "gizmo-project-sdk": {
+        "active_waterfall": "chromeos",
+        "boards": [
+            "gizmo"
+        ],
+        "build_type": "project-sdk",
+        "description": "Produce Project SDK build artifacts.",
+        "factory": false,
+        "factory_install_netboot": false,
+        "factory_toolkit": false,
+        "lkgm_manifest": "project-sdk/latest.xml",
+        "manifest": "project_sdk.xml",
+        "name": "gizmo-project-sdk",
+        "profile": "minimal",
+        "sync_chrome": false,
+        "uprev": false,
+        "use_lkgm": true,
+        "usepkg_build_packages": false,
+        "vm_tests": []
+    },
     "gizmo-release": {
         "active_waterfall": "chromeos",
         "archive_build_debug": true,

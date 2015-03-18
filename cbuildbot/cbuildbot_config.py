@@ -1263,6 +1263,7 @@ project_sdk = _config(
 
 _project_sdk_boards = frozenset([
     'panther_embedded',
+    'gizmo',
 ])
 
 beaglebone = brillo.derive(non_testable_builder, rootfs_verification=False)
@@ -3348,6 +3349,7 @@ _waterfall_config_map = {
 
       # SDK Builders.
       'panther_embedded-project-sdk',
+      'gizmo-project-sdk',
 
       # Toolchain Builders.
       'internal-toolchain-major',
