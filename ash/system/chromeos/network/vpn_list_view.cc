@@ -224,9 +224,9 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
   // All remaining space is used for the network name.
   views::BoxLayout* layout = new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 3, kTrayPopupPaddingBetweenItems);
+  SetLayoutManager(layout);
   layout->SetDefaultFlex(0);
   layout->SetFlexForView(text_label(), 1);
-  SetLayoutManager(layout);
   Layout();
 }
 
