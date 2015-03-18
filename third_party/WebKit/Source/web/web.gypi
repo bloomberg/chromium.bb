@@ -104,8 +104,6 @@
       'StorageClientImpl.h',
       'StorageQuotaClientImpl.cpp',
       'StorageQuotaClientImpl.h',
-      'SuspendableScriptExecutor.cpp',
-      'SuspendableScriptExecutor.h',
       'TextFinder.cpp',
       'TextFinder.h',
       'UserMediaClientImpl.cpp',
