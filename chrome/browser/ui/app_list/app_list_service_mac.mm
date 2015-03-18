@@ -19,12 +19,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/app_list_controller_delegate_impl.h"
 #include "chrome/browser/ui/app_list/app_list_positioner.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_service_cocoa_mac.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
-#include "chrome/browser/ui/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -40,8 +39,7 @@
 #include "extensions/common/manifest_handlers/file_handler_info.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "net/base/url_util.h"
-#import "ui/app_list/cocoa/app_list_view_controller.h"
-#import "ui/app_list/cocoa/app_list_window_controller.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -260,21 +258,24 @@ void GetAppListWindowOrigins(
                                      start_origin);
 }
 
+AppListServiceMac* GetActiveInstance() {
+  if (app_list::switches::IsMacViewsAppListListEnabled()) {
+#if defined(TOOLKIT_VIEWS)
+    // TODO(tapted): Return AppListServiceViewsMac instance.
+#else
+    NOTREACHED();
+#endif
+  }
+  return AppListServiceCocoaMac::GetInstance();
+}
+
 }  // namespace
 
-AppListServiceMac::AppListServiceMac()
-    : profile_(NULL),
-      controller_delegate_(new AppListControllerDelegateImpl(this)) {
+AppListServiceMac::AppListServiceMac() {
   animation_controller_.reset([[AppListAnimationController alloc] init]);
 }
 
 AppListServiceMac::~AppListServiceMac() {}
-
-// static
-AppListServiceMac* AppListServiceMac::GetInstance() {
-  return Singleton<AppListServiceMac,
-                   LeakySingletonTraits<AppListServiceMac> >::get();
-}
 
 // static
 void AppListServiceMac::FindAnchorPoint(const gfx::Size& window_size,
@@ -369,8 +370,7 @@ void AppListServiceMac::InitWithProfilePath(
     return;
 
   init_called = true;
-  apps::AppShimHandler::RegisterHandler(app_mode::kAppListModeId,
-                                        AppListServiceMac::GetInstance());
+  apps::AppShimHandler::RegisterHandler(app_mode::kAppListModeId, this);
 
   // Handle the case where Chrome was not running and was started with the app
   // launcher shim. The profile has not yet been loaded. To improve response
@@ -380,35 +380,30 @@ void AppListServiceMac::InitWithProfilePath(
   // launches will always have --silent-launch.
   if (base::CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kShowAppList)) {
-    // Do not show the launcher window when the profile is locked.
+    // Do not show the launcher window when the profile is locked, or if it
+    // can't be displayed unpopulated. In the latter case, the Show will occur
+    // in OnShimLaunch() or AppListService::HandleLaunchCommandLine().
     const ProfileInfoCache& profile_info_cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     size_t profile_index = profile_info_cache.
         GetIndexOfProfileWithPath(profile_path);
     if (profile_index != std::string::npos &&
-        !profile_info_cache.ProfileIsSigninRequiredAtIndex(profile_index))
+        !profile_info_cache.ProfileIsSigninRequiredAtIndex(profile_index) &&
+        ReadyToShow())
       ShowWindowNearDock();
   }
-}
-
-Profile* AppListServiceMac::GetCurrentAppListProfile() {
-  return profile_;
-}
-
-void AppListServiceMac::ShowForProfile(Profile* requested_profile) {
-  CreateForProfile(requested_profile);
-  ShowWindowNearDock();
 }
 
 void AppListServiceMac::DismissAppList() {
   if (!IsAppListVisible())
     return;
 
+  NSWindow* app_list_window = GetNativeWindow();
   // If the app list is currently the main window, it will activate the next
   // Chrome window when dismissed. But if a different application was active
   // when the app list was shown, activate that instead.
   base::scoped_nsobject<NSRunningApplication> prior_app;
-  if ([[window_controller_ window] isMainWindow])
+  if ([app_list_window isMainWindow])
     prior_app.swap(previously_active_application_);
   else
     previously_active_application_.reset();
@@ -420,7 +415,7 @@ void AppListServiceMac::DismissAppList() {
   if ([prior_app activateWithOptions:NSApplicationActivateIgnoringOtherApps])
     return;
 
-  [animation_controller_ animateWindow:[window_controller_ window]
+  [animation_controller_ animateWindow:app_list_window
                           targetOrigin:last_start_origin_
                                closing:YES];
 }
@@ -430,7 +425,7 @@ void AppListServiceMac::ShowForCustomLauncherPage(Profile* profile) {
 }
 
 bool AppListServiceMac::IsAppListVisible() const {
-  return [[window_controller_ window] isVisible] &&
+  return [GetNativeWindow() isVisible] &&
       ![animation_controller_ isClosing];
 }
 
@@ -446,50 +441,20 @@ void AppListServiceMac::CreateShortcut() {
       g_browser_process->profile_manager()->user_data_dir()));
 }
 
-void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
-  DCHECK(requested_profile);
-  InvalidatePendingProfileLoads();
-  if (profile_ && requested_profile->IsSameProfile(profile_))
-    return;
-
-  profile_ = requested_profile->GetOriginalProfile();
-  SetProfilePath(profile_->GetPath());
-
-  if (!window_controller_)
-    window_controller_.reset([[AppListWindowController alloc] init]);
-
-  [[window_controller_ appListViewController] setDelegate:nil];
-  [[window_controller_ appListViewController]
-      setDelegate:GetViewDelegate(profile_)];
-}
-
-void AppListServiceMac::DestroyAppList() {
-  // Due to reference counting, Mac can't guarantee that the widget is deleted,
-  // but mac supports a visible app list with a NULL profile, so there's also no
-  // need to tear it down completely.
-  DismissAppList();
-  [[window_controller_ appListViewController] setDelegate:NULL];
-
-  profile_ = NULL;
-}
-
 NSWindow* AppListServiceMac::GetAppListWindow() {
-  return [window_controller_ window];
-}
-
-AppListControllerDelegate* AppListServiceMac::GetControllerDelegate() {
-  return controller_delegate_.get();
+  return GetNativeWindow();
 }
 
 void AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host,
                                      apps::AppShimLaunchType launch_type,
                                      const std::vector<base::FilePath>& files) {
-  if (profile_ && IsAppListVisible()) {
+  if (GetCurrentAppListProfile() && IsAppListVisible()) {
     DismissAppList();
   } else {
     // Start by showing a possibly empty window to handle the case where Chrome
     // is running, but hasn't yet loaded the app launcher profile.
-    ShowWindowNearDock();
+    if (ReadyToShow())
+      ShowWindowNearDock();
     Show();
   }
 
@@ -512,12 +477,6 @@ void AppListServiceMac::ShowWindowNearDock() {
   if (IsAppListVisible())
     return;
 
-  if (!window_controller_) {
-    // Note that this will start showing an unpopulated window, the caller needs
-    // to ensure it will be populated later.
-    window_controller_.reset([[AppListWindowController alloc] init]);
-  }
-
   NSWindow* window = GetAppListWindow();
   DCHECK(window);
   NSPoint target_origin;
@@ -528,7 +487,7 @@ void AppListServiceMac::ShowWindowNearDock() {
   // active application, so that it can be reactivated when dismissing.
   previously_active_application_.reset([ActiveApplicationNotChrome() retain]);
 
-  [animation_controller_ animateWindow:[window_controller_ window]
+  [animation_controller_ animateWindow:window
                           targetOrigin:target_origin
                                closing:NO];
   [window makeKeyAndOrderFront:nil];
@@ -542,14 +501,13 @@ void AppListServiceMac::WindowAnimationDidEnd() {
 
 // static
 AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {
-  return AppListServiceMac::GetInstance();
+  return GetActiveInstance();
 }
 
 // static
 void AppListService::InitAll(Profile* initial_profile,
                              const base::FilePath& profile_path) {
-  AppListServiceMac::GetInstance()->InitWithProfilePath(initial_profile,
-                                                        profile_path);
+  GetActiveInstance()->InitWithProfilePath(initial_profile, profile_path);
 }
 
 @implementation AppListAnimationController
@@ -617,7 +575,7 @@ void AppListService::InitAll(Profile* initial_profile,
       content::BrowserThread::UI,
       FROM_HERE,
       base::Bind(&AppListServiceMac::WindowAnimationDidEnd,
-                 base::Unretained(AppListServiceMac::GetInstance())));
+                 base::Unretained(GetActiveInstance())));
 }
 
 @end

@@ -2392,6 +2392,8 @@
       'browser/ui/app_list/app_list_prefs_factory.h',
       'browser/ui/app_list/app_list_service.cc',
       'browser/ui/app_list/app_list_service.h',
+      'browser/ui/app_list/app_list_service_cocoa_mac.h',
+      'browser/ui/app_list/app_list_service_cocoa_mac.mm',
       'browser/ui/app_list/app_list_service_impl.cc',
       'browser/ui/app_list/app_list_service_impl.h',
       'browser/ui/app_list/app_list_service_mac.h',

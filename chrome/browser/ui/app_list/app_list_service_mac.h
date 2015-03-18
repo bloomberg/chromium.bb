@@ -12,29 +12,19 @@
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
-class AppListControllerDelegateImpl;
-
 @class AppListAnimationController;
-@class AppListWindowController;
-template <typename T> struct DefaultSingletonTraits;
 
 namespace gfx {
 class Display;
 class Point;
 }
 
-namespace test {
-class AppListServiceMacTestApi;
-}
-
 // AppListServiceMac manages global resources needed for the app list to
-// operate, and controls when the app list is opened and closed.
+// operate, and controls when and how the app list is opened and closed.
 class AppListServiceMac : public AppListServiceImpl,
                           public apps::AppShimHandler {
  public:
   ~AppListServiceMac() override;
-
-  static AppListServiceMac* GetInstance();
 
   // Finds the position for a window to anchor it to the dock. This chooses the
   // most appropriate position for the window based on whether the dock exists,
@@ -59,22 +49,15 @@ class AppListServiceMac : public AppListServiceImpl,
 
   // AppListService overrides:
   void Init(Profile* initial_profile) override;
-  void ShowForProfile(Profile* requested_profile) override;
   void DismissAppList() override;
   void ShowForCustomLauncherPage(Profile* profile) override;
   bool IsAppListVisible() const override;
   void EnableAppList(Profile* initial_profile,
                      AppListEnableSource enable_source) override;
   gfx::NativeWindow GetAppListWindow() override;
-  AppListControllerDelegate* GetControllerDelegate() override;
-  Profile* GetCurrentAppListProfile() override;
   void CreateShortcut() override;
 
-  // AppListServiceImpl overrides:
-  void CreateForProfile(Profile* requested_profile) override;
-  void DestroyAppList() override;
-
-  // AppShimHandler overrides:
+    // AppShimHandler overrides:
   void OnShimLaunch(apps::AppShimHandler::Host* host,
                     apps::AppShimLaunchType launch_type,
                     const std::vector<base::FilePath>& files) override;
@@ -85,18 +68,23 @@ class AppListServiceMac : public AppListServiceImpl,
   void OnShimSetHidden(apps::AppShimHandler::Host* host, bool hidden) override;
   void OnShimQuit(apps::AppShimHandler::Host* host) override;
 
- private:
-  friend class test::AppListServiceMacTestApi;
-  friend struct DefaultSingletonTraits<AppListServiceMac>;
-
+ protected:
   AppListServiceMac();
 
-  base::scoped_nsobject<AppListWindowController> window_controller_;
+  // Returns the native window for the app list, or nil if can't be shown yet.
+  // Note that, unlike GetAppListWindow(), this does not return null when the
+  // app list is loaded, but not visible.
+  virtual NSWindow* GetNativeWindow() const = 0;
+
+  // If the app list is loaded, return true. Otherwise, if supported,
+  // synchronously prepare an unpopulated app list window to begin showing on
+  // screen and return true. If that's not supported, return false.
+  virtual bool ReadyToShow() = 0;
+
+ private:
   base::scoped_nsobject<AppListAnimationController> animation_controller_;
   base::scoped_nsobject<NSRunningApplication> previously_active_application_;
   NSPoint last_start_origin_;
-  Profile* profile_;
-  scoped_ptr<AppListControllerDelegateImpl> controller_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceMac);
 };

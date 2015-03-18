@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/app_list/app_list_service_mac.h"
+#import "chrome/browser/ui/app_list/app_list_service_cocoa_mac.h"
 
 #include <vector>
 
@@ -21,7 +21,7 @@ namespace test {
 class AppListServiceMacTestApi {
  public:
   static AppListWindowController* window_controller() {
-    return AppListServiceMac::GetInstance()->window_controller_;
+    return AppListServiceCocoaMac::GetInstance()->window_controller_;
   }
 };
 
