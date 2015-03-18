@@ -60,7 +60,6 @@ crbug.com/460198 virtual/slimmingpaint/fast/borders/outline-alpha-inline.html [ 
 crbug.com/460198 virtual/slimmingpaint/fast/text/emphasis.html [ ImageOnlyFailure Pass ]
 crbug.com/460198 virtual/slimmingpaint/fast/text/text-transform-upper-lithuanian.html [ ImageOnlyFailure Pass ]
 crbug.com/460198 virtual/slimmingpaint/fast/text/emphasis-vertical.html [ ImageOnlyFailure Pass ]
-crbug.com/460198 virtual/slimmingpaint/fast/table/border-collapsing/adjacent-row-groups-multi.html [ ImageOnlyFailure Pass ]
 
 crbug.com/464039 [ Mac ] fast/block/float/float-mark-descendants-for-layout-crash.html [ Pass Crash ]
 

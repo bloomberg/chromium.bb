@@ -122,16 +122,20 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
         return;
 
     LayoutRect paintRect = paintBounds(paintOffset, AddOffsetFromParent);
-    if (paintRect.y() - m_layoutTableCell.table()->outerBorderTop() >= paintInfo.rect.maxY())
+
+    LayoutRect drawingCullRect(paintRect);
+    drawingCullRect.expandEdges(m_layoutTableCell.table()->outerBorderTop(), m_layoutTableCell.table()->outerBorderRight(),
+        m_layoutTableCell.table()->outerBorderBottom(), m_layoutTableCell.table()->outerBorderLeft());
+    if (drawingCullRect.y() >= paintInfo.rect.maxY())
         return;
 
-    if (paintRect.maxY() + m_layoutTableCell.table()->outerBorderBottom() <= paintInfo.rect.y())
+    if (drawingCullRect.maxY() <= paintInfo.rect.y())
         return;
 
     if (!m_layoutTableCell.table()->currentBorderValue())
         return;
 
-    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, paintInfo.phase, paintRect);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, paintInfo.phase, drawingCullRect);
     if (recorder.canUseCachedDrawing())
         return;
 
