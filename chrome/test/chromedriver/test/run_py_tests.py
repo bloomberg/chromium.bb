@@ -165,6 +165,7 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testEmulateNetworkConditionsNameSpeed',
         'ChromeDriverTest.testEmulateNetworkConditionsOffline',
         'ChromeDriverTest.testEmulateNetworkConditionsSpeed',
+        'ChromeDriverTest.testEmulateNetworkConditionsName',
     ]
 )
 
