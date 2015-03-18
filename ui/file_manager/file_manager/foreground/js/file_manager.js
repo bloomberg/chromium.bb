@@ -470,7 +470,10 @@ FileManager.prototype = /** @struct */ {
               this.directoryModel_,
               this.volumeManager_,
               this.document_,
-              pref.allowRedeemOffers));
+              // Whether to show offers on the welcome banner.
+              pref.allowRedeemOffers,
+              // Whether to show any welcome banner.
+              this.dialogType === DialogType.FULL_PAGE));
       callback();
     }.bind(this));
   };
@@ -481,7 +484,7 @@ FileManager.prototype = /** @struct */ {
   FileManager.prototype.initDataTransferOperations_ = function() {
     // CopyManager are required for 'Delete' operation in
     // Open and Save dialogs. But drag-n-drop and copy-paste are not needed.
-    if (this.dialogType != DialogType.FULL_PAGE)
+    if (this.dialogType !== DialogType.FULL_PAGE)
       return;
 
     this.fileTransferController_ = new FileTransferController(

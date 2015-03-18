@@ -10,14 +10,17 @@
  * @param {VolumeManagerWrapper} volumeManager The manager.
  * @param {Document} document HTML document.
  * @param {boolean} showOffers True if we should show offer banners.
+ * @param {boolean} showWelcome True if the welcome banner can be shown.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function Banners(directoryModel, volumeManager, document, showOffers) {
+function Banners(
+    directoryModel, volumeManager, document, showOffers, showWelcome) {
   this.directoryModel_ = directoryModel;
   this.volumeManager_ = volumeManager;
   this.document_ = assert(document);
   this.showOffers_ = showOffers;
+  this.showWelcome_ = showWelcome;
   this.driveEnabled_ = false;
 
   this.initializeWelcomeBanner_();
@@ -143,6 +146,9 @@ Banners.prototype.onDriveConnectionChanged_ = function() {
  * @private
  */
 Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
+  if (!this.showWelcome_)
+    return;
+
   this.showWelcomeBanner_(type);
 
   var container = queryRequiredElement(
@@ -305,7 +311,7 @@ Banners.prototype.checkSpaceAndMaybeShowWelcomeBanner_ = function() {
     return;
   }
 
-  if (!this.showOffers_) {
+  if (!this.showOffers_ || !this.showWelcome_) {
     // Because it is not necessary to show the offer, set
     // |usePromoWelcomeBanner_| false here. Note that it probably should be able
     // to do this in the constructor, but there remains non-trivial path,
