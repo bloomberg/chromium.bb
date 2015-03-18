@@ -746,6 +746,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
           NULL);
     }
   }
+
+  if (policy.has_extension_cache_size()) {
+    const em::ExtensionCacheSizeProto& container(policy.extension_cache_size());
+    if (container.has_extension_cache_size()) {
+      policies->Set(
+          key::kExtensionCacheSize, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE,
+          DecodeIntegerValue(container.extension_cache_size()).release(),
+          nullptr);
+    }
+  }
 }
 
 }  // namespace

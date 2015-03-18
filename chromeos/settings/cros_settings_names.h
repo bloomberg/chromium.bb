@@ -86,6 +86,8 @@ CHROMEOS_EXPORT extern const char kDeviceDisabled[];
 CHROMEOS_EXPORT extern const char kDeviceDisabledMessage[];
 
 CHROMEOS_EXPORT extern const char kRebootOnShutdown[];
+
+CHROMEOS_EXPORT extern const char kExtensionCacheSize[];
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_

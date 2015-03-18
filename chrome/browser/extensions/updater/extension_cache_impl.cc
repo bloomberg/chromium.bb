@@ -12,6 +12,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/updater/extension_cache_delegate.h"
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,44 +22,13 @@
 #include "extensions/browser/install/crx_install_error.h"
 
 namespace extensions {
-namespace {
 
-#if defined(OS_CHROMEOS)
-const char kLocalCacheDir[] = "/var/cache/external_cache";
-#else
-#error Please define kLocalCacheDir suitable for target OS
-#endif// Directory where the extensions are cached.
-
-// Maximum size of local cache on disk.
-size_t kMaxCacheSize = 256 * 1024 * 1024;
-
-// Maximum age of unused extensions in cache.
-const int kMaxCacheAgeDays = 30;
-
-}  // namespace
-
-ExtensionCacheImpl::ExtensionCacheImpl()
-  : cache_(new LocalExtensionCache(base::FilePath(kLocalCacheDir),
-        kMaxCacheSize,
-        base::TimeDelta::FromDays(kMaxCacheAgeDays),
-        content::BrowserThread::GetBlockingPool()->
-            GetSequencedTaskRunnerWithShutdownBehavior(
-                content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))),
-    weak_ptr_factory_(this) {
-  notification_registrar_.Add(
-      this,
-      extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
-      content::NotificationService::AllBrowserContextsAndSources());
-  cache_->Init(true, base::Bind(&ExtensionCacheImpl::OnCacheInitialized,
-                                weak_ptr_factory_.GetWeakPtr()));
-}
-
-ExtensionCacheImpl::ExtensionCacheImpl(const base::FilePath& local_cache_dir)
+ExtensionCacheImpl::ExtensionCacheImpl(
+    scoped_ptr<ExtensionCacheDelegate> delegate)
     : cache_(new LocalExtensionCache(
-          base::FilePath(local_cache_dir),
-          kMaxCacheSize,
-          base::TimeDelta::FromDays(kMaxCacheAgeDays),
+          delegate->GetCacheDir(),
+          delegate->GetMaximumCacheSize(),
+          delegate->GetMaximumCacheAge(),
           content::BrowserThread::GetBlockingPool()
               ->GetSequencedTaskRunnerWithShutdownBehavior(
                   content::BrowserThread::GetBlockingPool()->GetSequenceToken(),

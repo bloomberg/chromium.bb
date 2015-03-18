@@ -81,6 +81,7 @@ const char* const kKnownSettings[] = {
     kDeviceDisabled,
     kDeviceDisabledMessage,
     kRebootOnShutdown,
+    kExtensionCacheSize,
 };
 
 bool HasOldMetricsFile() {
@@ -415,6 +416,13 @@ void DecodeGenericPolicies(
         policy.attestation_settings().content_protection_enabled());
   } else {
     new_values_cache->SetBoolean(kAttestationForContentProtectionEnabled, true);
+  }
+
+  if (policy.has_extension_cache_size() &&
+      policy.extension_cache_size().has_extension_cache_size()) {
+    new_values_cache->SetInteger(
+        kExtensionCacheSize,
+        policy.extension_cache_size().extension_cache_size());
   }
 }
 

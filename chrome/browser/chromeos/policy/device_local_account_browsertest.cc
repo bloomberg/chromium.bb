@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/updater/chromeos_extension_cache_delegate.h"
 #include "chrome/browser/extensions/updater/extension_cache_impl.h"
 #include "chrome/browser/extensions/updater/local_extension_cache.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -1208,7 +1209,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, MAYBE_ExtensionCacheImplTest) {
   CreateFile(impl_path.Append(
                  extensions::LocalExtensionCache::kCacheReadyFlagFileName),
              0, base::Time::Now());
-  extensions::ExtensionCacheImpl cache_impl(impl_path);
+  extensions::ExtensionCacheImpl cache_impl(make_scoped_ptr(
+      new extensions::ChromeOSExtensionCacheDelegate(impl_path)));
   scoped_ptr<base::RunLoop> run_loop;
   run_loop.reset(new base::RunLoop);
   cache_impl.Start(base::Bind(&OnExtensionCacheImplInitialized, &run_loop));

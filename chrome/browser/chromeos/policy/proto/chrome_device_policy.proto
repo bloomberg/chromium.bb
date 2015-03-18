@@ -609,6 +609,11 @@ message DeviceHeartbeatSettingsProto {
   optional int64 heartbeat_frequency = 2 [default = 120000];
 }
 
+message ExtensionCacheSizeProto {
+  // Specifies the maximum extension cache size, in bytes.
+  optional int64 extension_cache_size = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -647,4 +652,5 @@ message ChromeDeviceSettingsProto {
   optional SAMLSettingsProto saml_settings = 33;
   optional RebootOnShutdownProto reboot_on_shutdown = 34;
   optional DeviceHeartbeatSettingsProto device_heartbeat_settings = 35;
+  optional ExtensionCacheSizeProto extension_cache_size = 36;
 }

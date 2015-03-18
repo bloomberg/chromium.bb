@@ -162,4 +162,8 @@ const char kDeviceDisabledMessage[] = "cros.disabled_state.message";
 // shutdown buttons in the UI will be replaced by reboot buttons.
 const char kRebootOnShutdown[] = "cros.device.reboot_on_shutdown";
 
+// An integer pref that specifies the limit of the device's extension cache
+// size in bytes.
+const char kExtensionCacheSize[] = "cros.device.extension_cache_size";
+
 }  // namespace chromeos

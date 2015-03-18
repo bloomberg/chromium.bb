@@ -21,6 +21,7 @@ template <typename T> struct DefaultSingletonTraits;
 
 namespace extensions {
 
+class ExtensionCacheDelegate;
 class LocalExtensionCache;
 
 // Singleton call that caches extensions .crx files to share them between
@@ -28,8 +29,7 @@ class LocalExtensionCache;
 class ExtensionCacheImpl : public ExtensionCache,
                            public content::NotificationObserver {
  public:
-  ExtensionCacheImpl();
-  explicit ExtensionCacheImpl(const base::FilePath& local_cache_dir);
+  explicit ExtensionCacheImpl(scoped_ptr<ExtensionCacheDelegate> delegate);
   ~ExtensionCacheImpl() override;
 
   // Implementation of ExtensionCache.

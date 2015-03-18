@@ -123,7 +123,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 295
+#   For your editing convenience: highest ID currently used: 296
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -7273,6 +7273,21 @@
       'caption': '''Automatic reboot on device shutdown''',
       'desc': '''If this policy is set to false or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will allow the user to shut down the device.
       If this policy is set to true, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will trigger a reboot when the user shuts down the device. <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> replaces all occurrences of shutdown buttons in the UI by reboot buttons. If the user shuts down the device using the power button, it will not automatically reboot, even if the policy is enabled.''',
+    },
+    {
+      'name': 'ExtensionCacheSize',
+      'type': 'int',
+      'schema': { 'type': 'integer' },
+      'supported_on': ['chrome_os:43-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': False,
+      },
+      'example_value': 104857600,
+      'id': 296,
+      'caption': '''Set Apps and Extensions cache size (in bytes)''',
+      'desc': '''<ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> caches Apps and Extensions for installation by multiple users of a single device to avoid re-downloading them for each user.
+      If this policy is not configured or the value is lower than 1 MB, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will use the default cache size.''',
     },
   ],
   'messages': {

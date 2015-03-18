@@ -1270,6 +1270,7 @@
       'browser/chromeos/policy/device_cloud_policy_store_chromeos_unittest.cc',
       'browser/chromeos/policy/device_local_account_policy_service_unittest.cc',
       'browser/chromeos/policy/enterprise_install_attributes_unittest.cc',
+      'browser/chromeos/policy/extension_cache_unittest.cc',
       'browser/chromeos/policy/fake_affiliated_invalidation_service_provider.cc',
       'browser/chromeos/policy/fake_affiliated_invalidation_service_provider.h',
       'browser/chromeos/policy/heartbeat_scheduler_unittest.cc',

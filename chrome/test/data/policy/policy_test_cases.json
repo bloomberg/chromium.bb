@@ -2415,6 +2415,9 @@
   "DeviceTransferSAMLCookies": {
   },
 
+  "ExtensionCacheSize": {
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
