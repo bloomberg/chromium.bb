@@ -32,7 +32,7 @@ net::CookieMonsterDelegate* CreateCookieDelegate(Profile* profile);
 // Factory method for returning a CookieCryptoDelegate if one is appropriate for
 // this platform. The object returned is a LazyInstance. Ownership is not
 // transferred.
-content::CookieCryptoDelegate* GetCookieCryptoDelegate();
+net::CookieCryptoDelegate* GetCookieCryptoDelegate();
 
 }  // namespace chrome_browser_net
 

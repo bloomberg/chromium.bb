@@ -28,13 +28,13 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
+#include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -87,7 +87,7 @@ class SQLitePersistentCookieStore::Backend
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       bool restore_old_session_cookies,
       storage::SpecialStoragePolicy* special_storage_policy,
-      CookieCryptoDelegate* crypto_delegate)
+      net::CookieCryptoDelegate* crypto_delegate)
       : path_(path),
         num_pending_(0),
         force_keep_session_state_(false),
@@ -299,7 +299,7 @@ class SQLitePersistentCookieStore::Backend
   // cookies stored persistently).
   //
   // Not owned.
-  CookieCryptoDelegate* crypto_;
+  net::CookieCryptoDelegate* crypto_;
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
@@ -1280,7 +1280,7 @@ SQLitePersistentCookieStore::SQLitePersistentCookieStore(
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     bool restore_old_session_cookies,
     storage::SpecialStoragePolicy* special_storage_policy,
-    CookieCryptoDelegate* crypto_delegate)
+    net::CookieCryptoDelegate* crypto_delegate)
     : backend_(new Backend(path,
                            client_task_runner,
                            background_task_runner,

@@ -1254,6 +1254,7 @@
       'websockets/websocket_stream.h',
     ],
     'net_extras_sources': [
+      'extras/sqlite/cookie_crypto_delegate.h',
       'extras/sqlite/sqlite_channel_id_store.cc',
       'extras/sqlite/sqlite_channel_id_store.h',
     ],

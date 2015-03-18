@@ -18,11 +18,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/os_crypt/os_crypt.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_constants.h"
 #include "extensions/common/constants.h"
+#include "net/extras/sqlite/cookie_crypto_delegate.h"
 
 using content::BrowserThread;
 
@@ -110,7 +110,7 @@ namespace {
 //
 // TODO(bcwhite): Enable on MACOSX -- requires all Cookie tests to call
 // OSCrypt::UseMockKeychain or will hang waiting for user input.
-class CookieOSCryptoDelegate : public content::CookieCryptoDelegate {
+class CookieOSCryptoDelegate : public net::CookieCryptoDelegate {
  public:
   bool EncryptString(const std::string& plaintext,
                      std::string* ciphertext) override;
@@ -135,11 +135,11 @@ base::LazyInstance<CookieOSCryptoDelegate> g_cookie_crypto_delegate =
 
 }  // namespace
 
-content::CookieCryptoDelegate* GetCookieCryptoDelegate() {
+net::CookieCryptoDelegate* GetCookieCryptoDelegate() {
   return g_cookie_crypto_delegate.Pointer();
 }
 #else  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-content::CookieCryptoDelegate* GetCookieCryptoDelegate() {
+net::CookieCryptoDelegate* GetCookieCryptoDelegate() {
   return NULL;
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)

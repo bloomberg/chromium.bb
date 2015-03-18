@@ -13,9 +13,9 @@
 #include "base/test/perf_time_logger.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "content/public/browser/cookie_crypto_delegate.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

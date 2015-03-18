@@ -14,6 +14,7 @@ class SequencedTaskRunner;
 }
 
 namespace net {
+class CookieCryptoDelegate;
 class CookieMonsterDelegate;
 class CookieStore;
 }
@@ -23,7 +24,6 @@ class SpecialStoragePolicy;
 }
 
 namespace content {
-class CookieCryptoDelegate;
 
 struct CONTENT_EXPORT CookieStoreConfig {
   // Specifies how session cookies are persisted in the backing data store.
@@ -73,7 +73,7 @@ struct CONTENT_EXPORT CookieStoreConfig {
   // Used to provide encryption hooks for the cookie store. The
   // CookieCryptoDelegate must outlive any cookie store created with this
   // config.
-  content::CookieCryptoDelegate* crypto_delegate;
+  net::CookieCryptoDelegate* crypto_delegate;
 
   // Callbacks for data load events will be performed on |client_task_runner|.
   // If nullptr, uses the task runner for BrowserThread::IO.

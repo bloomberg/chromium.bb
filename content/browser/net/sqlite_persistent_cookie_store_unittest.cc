@@ -19,12 +19,12 @@
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
-#include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -37,7 +37,7 @@ namespace {
 
 const base::FilePath::CharType kCookieFilename[] = FILE_PATH_LITERAL("Cookies");
 
-class CookieCryptor : public content::CookieCryptoDelegate {
+class CookieCryptor : public net::CookieCryptoDelegate {
  public:
   CookieCryptor();
   bool EncryptString(const std::string& plaintext,
@@ -188,7 +188,7 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   CanonicalCookieVector cookies_;
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SQLitePersistentCookieStore> store_;
-  scoped_ptr<content::CookieCryptoDelegate> cookie_crypto_delegate_;
+  scoped_ptr<net::CookieCryptoDelegate> cookie_crypto_delegate_;
 };
 
 TEST_F(SQLitePersistentCookieStoreTest, TestInvalidMetaTableRecovery) {

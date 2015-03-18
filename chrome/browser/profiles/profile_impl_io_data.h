@@ -21,10 +21,6 @@ namespace chrome_browser_net {
 class Predictor;
 }  // namespace chrome_browser_net
 
-namespace content {
-class CookieCryptoDelegate;
-}  // namespace content
-
 namespace data_reduction_proxy {
 class DataReductionProxyNetworkDelegate;
 }  // namespace data_reduction_proxy
@@ -34,6 +30,7 @@ class DomainReliabilityMonitor;
 }  // namespace domain_reliability
 
 namespace net {
+class CookieCryptoDelegate;
 class FtpTransactionFactory;
 class HttpServerProperties;
 class HttpServerPropertiesManager;

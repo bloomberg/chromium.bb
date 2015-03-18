@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_COOKIE_CRYPTO_DELEGATE_H_
-#define CONTENT_PUBLIC_BROWSER_COOKIE_CRYPTO_DELEGATE_H_
+#ifndef NET_EXTRAS_SQLITE_COOKIE_CRYPTO_DELEGATE_H_
+#define NET_EXTRAS_SQLITE_COOKIE_CRYPTO_DELEGATE_H_
 
-namespace content {
+namespace net {
 
 // Implements encryption and decryption for the persistent cookie store.
 class CookieCryptoDelegate {
@@ -17,6 +17,6 @@ class CookieCryptoDelegate {
                              std::string* plaintext) = 0;
 };
 
-}  // namespace content
+}  // namespace net
 
-#endif  // CONTENT_PUBLIC_BROWSER_COOKIE_CRYPTO_DELEGATE_H_
+#endif  // NET_EXTRAS_SQLITE_COOKIE_CRYPTO_DELEGATE_H_

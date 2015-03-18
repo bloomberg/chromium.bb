@@ -25,6 +25,7 @@ class SequencedTaskRunner;
 
 namespace net {
 class CanonicalCookie;
+class CookieCryptoDelegate;
 }
 
 namespace storage {
@@ -32,7 +33,6 @@ class SpecialStoragePolicy;
 }
 
 namespace content {
-class CookieCryptoDelegate;
 
 // Implements the PersistentCookieStore interface in terms of a SQLite database.
 // For documentation about the actual member functions consult the documentation
@@ -51,7 +51,7 @@ class CONTENT_EXPORT SQLitePersistentCookieStore
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       bool restore_old_session_cookies,
       storage::SpecialStoragePolicy* special_storage_policy,
-      CookieCryptoDelegate* crypto_delegate);
+      net::CookieCryptoDelegate* crypto_delegate);
 
   // net::CookieMonster::PersistentCookieStore:
   void Load(const LoadedCallback& loaded_callback) override;
