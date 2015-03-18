@@ -88,8 +88,8 @@ bool AwContentRendererClient::HandleNavigation(
   // works fine. This will stop working if android_webview starts swapping out
   // renderers on navigation.
   bool application_initiated =
-      !document_state->navigation_state()->is_content_initiated()
-      || type == blink::WebNavigationTypeBackForward;
+      !document_state->navigation_state()->IsContentInitiated() ||
+      type == blink::WebNavigationTypeBackForward;
 
   // Don't offer application-initiated navigations unless it's a redirect.
   if (application_initiated && !is_redirect)

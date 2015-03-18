@@ -85,6 +85,7 @@
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/mhtml_generator.h"
+#include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -2120,7 +2121,7 @@ void RenderViewImpl::didCreateDataSource(WebLocalFrame* frame,
   // non-null NavigationState.
   if (content_initiated) {
     document_state->set_navigation_state(
-        NavigationState::CreateContentInitiated());
+        NavigationStateImpl::CreateContentInitiated());
   } else {
     document_state->set_navigation_state(CreateNavigationStateFromPending());
     pending_navigation_params_.reset();
@@ -2221,38 +2222,17 @@ void RenderViewImpl::PopulateDocumentStateFromPending(
 }
 
 NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
-  NavigationState* navigation_state = NULL;
-
   // A navigation resulting from loading a javascript URL should not be treated
   // as a browser initiated event.  Instead, we want it to look as if the page
   // initiated any load resulting from JS execution.
   if (!pending_navigation_params_->common_params.url.SchemeIs(
           url::kJavaScriptScheme)) {
-    navigation_state = NavigationState::CreateBrowserInitiated(
-        pending_navigation_params_->history_params.page_id,
-        pending_navigation_params_->history_params.pending_history_list_offset,
-        pending_navigation_params_->history_params.should_clear_history_list,
-        pending_navigation_params_->common_params.transition);
-    navigation_state->set_allow_download(
-        pending_navigation_params_->common_params.allow_download);
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableBrowserSideNavigation)) {
-      navigation_state->set_should_replace_current_entry(
-          pending_navigation_params_->start_params
-              .should_replace_current_entry);
-      navigation_state->set_transferred_request_child_id(
-          pending_navigation_params_->start_params
-              .transferred_request_child_id);
-      navigation_state->set_transferred_request_request_id(
-          pending_navigation_params_->start_params
-              .transferred_request_request_id);
-      navigation_state->set_extra_headers(
-          pending_navigation_params_->start_params.extra_headers);
-    }
-  } else {
-    navigation_state = NavigationState::CreateContentInitiated();
+    return NavigationStateImpl::CreateBrowserInitiated(
+        pending_navigation_params_->common_params,
+        pending_navigation_params_->start_params,
+        pending_navigation_params_->history_params);
   }
-  return navigation_state;
+  return NavigationStateImpl::CreateContentInitiated();
 }
 
 void RenderViewImpl::didChangeIcon(WebLocalFrame* frame,

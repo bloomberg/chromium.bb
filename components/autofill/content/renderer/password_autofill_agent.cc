@@ -1087,7 +1087,7 @@ void PasswordAutofillAgent::LegacyDidStartProvisionalLoad(
           navigated_frame->provisionalDataSource());
   content::NavigationState* navigation_state =
       document_state->navigation_state();
-  ui::PageTransition type = navigation_state->transition_type();
+  ui::PageTransition type = navigation_state->GetTransitionType();
   if (ui::PageTransitionIsWebTriggerable(type) &&
       ui::PageTransitionIsNewNavigation(type) &&
       !blink::WebUserGestureIndicator::isProcessingUserGesture()) {

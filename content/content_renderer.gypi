@@ -307,6 +307,8 @@
       'renderer/mojo/service_registry_js_wrapper.h',
       'renderer/mouse_lock_dispatcher.cc',
       'renderer/mouse_lock_dispatcher.h',
+      'renderer/navigation_state_impl.cc',
+      'renderer/navigation_state_impl.h',
       'renderer/net_info_helper.cc',
       'renderer/net_info_helper.h',
       'renderer/notification_permission_dispatcher.cc',

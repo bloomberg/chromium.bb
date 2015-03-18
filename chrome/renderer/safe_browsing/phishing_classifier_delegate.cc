@@ -154,10 +154,11 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
   DocumentState* document_state = DocumentState::FromDataSource(
       frame->dataSource());
   NavigationState* navigation_state = document_state->navigation_state();
-  CancelPendingClassification(navigation_state->was_within_same_page() ?
-                              NAVIGATE_WITHIN_PAGE : NAVIGATE_AWAY);
+  CancelPendingClassification(navigation_state->WasWithinSamePage()
+                                  ? NAVIGATE_WITHIN_PAGE
+                                  : NAVIGATE_AWAY);
   if (frame == render_view()->GetWebView()->mainFrame()) {
-    last_main_frame_transition_ = navigation_state->transition_type();
+    last_main_frame_transition_ = navigation_state->GetTransitionType();
   }
 }
 

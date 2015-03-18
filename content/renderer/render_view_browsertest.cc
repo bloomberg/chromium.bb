@@ -33,6 +33,7 @@
 #include "content/renderer/accessibility/renderer_accessibility.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
+#include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/shell/browser/shell.h"
@@ -431,7 +432,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
   WebUIControllerFactory::RegisterFactory(&factory);
 
   DocumentState state;
-  state.set_navigation_state(NavigationState::CreateContentInitiated());
+  state.set_navigation_state(NavigationStateImpl::CreateContentInitiated());
 
   // Navigations to normal HTTP URLs can be handled locally.
   blink::WebURLRequest request(GURL("http://foo.com"));
@@ -468,7 +469,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
 
 TEST_F(RenderViewImplTest, DecideNavigationPolicyHandlesAllTopLevel) {
   DocumentState state;
-  state.set_navigation_state(NavigationState::CreateContentInitiated());
+  state.set_navigation_state(NavigationStateImpl::CreateContentInitiated());
 
   RendererPreferences prefs = view()->renderer_preferences();
   prefs.browser_handles_all_top_level_requests = true;
@@ -503,7 +504,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   view()->OnAllowBindings(BINDINGS_POLICY_WEB_UI);
 
   DocumentState state;
-  state.set_navigation_state(NavigationState::CreateContentInitiated());
+  state.set_navigation_state(NavigationStateImpl::CreateContentInitiated());
 
   // Navigations to normal HTTP URLs will be sent to browser process.
   blink::WebURLRequest request(GURL("http://foo.com"));
