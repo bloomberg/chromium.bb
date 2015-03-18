@@ -1088,6 +1088,7 @@ void Dispatcher::UpdateOriginPermissions(const GURL& extension_url,
 #if defined(OS_CHROMEOS)
     content::kExternalFileScheme,
 #endif
+    extensions::kExtensionScheme,
   };
   for (size_t i = 0; i < arraysize(kSchemes); ++i) {
     const char* scheme = kSchemes[i];

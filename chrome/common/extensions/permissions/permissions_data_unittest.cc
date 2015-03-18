@@ -378,6 +378,24 @@ TEST(PermissionsDataTest, ExternalFiles) {
   ASSERT_TRUE(extension->permissions_data()->HasHostPermission(external_file));
 }
 
+TEST(PermissionsDataTest, ExtensionScheme) {
+  GURL external_file(
+      "chrome-extension://abcdefghijklmnopabcdefghijklmnop/index.html");
+  scoped_refptr<const Extension> extension;
+
+  // A regular extension shouldn't get access to chrome-extension: scheme URLs
+  // even with <all_urls> specified.
+  extension = GetExtensionWithHostPermission("regular_extension", "<all_urls>",
+                                             Manifest::UNPACKED);
+  ASSERT_FALSE(extension->permissions_data()->HasHostPermission(external_file));
+
+  // Component extensions should get access to chrome-extension: scheme URLs
+  // when <all_urls> is specified.
+  extension = GetExtensionWithHostPermission("component_extension",
+                                             "<all_urls>", Manifest::COMPONENT);
+  ASSERT_TRUE(extension->permissions_data()->HasHostPermission(external_file));
+}
+
 // Base class for testing the CanAccessPage and CanCaptureVisiblePage
 // methods of Extension for extensions with various permissions.
 class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
