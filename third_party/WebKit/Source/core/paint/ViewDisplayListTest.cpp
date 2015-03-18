@@ -19,16 +19,13 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "third_party/skia/include/core/SkCanvas.h"
 #include <gtest/gtest.h>
 
 namespace blink {
 
 class ViewDisplayListTest : public RenderingTest {
 public:
-    ViewDisplayListTest()
-        : m_layoutView(nullptr)
-        , m_originalDisplayItemCacheEnabled(false) { }
+    ViewDisplayListTest() : m_layoutView(nullptr) { }
 
 protected:
     LayoutView* layoutView() { return m_layoutView; }
@@ -39,7 +36,7 @@ private:
     virtual void SetUp() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
-        m_originalDisplayItemCacheEnabled = RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled();
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled());
 
         RenderingTest::SetUp();
         enableCompositing();
@@ -51,11 +48,9 @@ private:
     virtual void TearDown() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(false);
-        RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(m_originalDisplayItemCacheEnabled);
     }
 
     LayoutView* m_layoutView;
-    bool m_originalDisplayItemCacheEnabled;
 };
 
 class TestDisplayItem : public DisplayItem {
@@ -382,8 +377,6 @@ TEST_F(ViewDisplayListTest, UpdateClip)
 
 TEST_F(ViewDisplayListTest, CachedDisplayItems)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
-
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
     LayoutBoxModelObject* firstRenderer = toLayoutBoxModelObject(document().body()->firstChild()->layoutObject());
     LayoutBoxModelObject* secondRenderer = toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->layoutObject());
@@ -438,8 +431,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheDisabled)
     LayoutObject* divRenderer = document().body()->firstChild()->layoutObject();
     InlineTextBox* textInlineBox = toLayoutText(div->firstChild()->layoutObject())->firstTextBox();
 
-    SkCanvas canvas(800, 600);
-    GraphicsContext context(&canvas, &rootDisplayItemList());
+    GraphicsContext context(nullptr, &rootDisplayItemList());
     LayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
     LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
@@ -459,10 +451,8 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheDisabled)
         TestDisplayItem(divRenderer, DisplayItem::Caret));
 }
 
-TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheEnabled)
+TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
-
     setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
     document().page()->focusController().setActive(true);
     document().page()->focusController().setFocused(true);
@@ -474,8 +464,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheEnabled)
     LayoutObject* divRenderer = document().body()->firstChild()->layoutObject();
     InlineTextBox* textInlineBox = toLayoutText(div->firstChild()->layoutObject())->firstTextBox();
 
-    SkCanvas canvas(800, 600);
-    GraphicsContext context(&canvas, &rootDisplayItemList());
+    GraphicsContext context(nullptr, &rootDisplayItemList());
     LayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
     LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
@@ -571,8 +560,6 @@ TEST_F(ViewDisplayListTest, ComplexUpdateSwapOrder)
 
 TEST_F(ViewDisplayListTest, CachedSubtreeSwapOrder)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
-
     setBodyInnerHTML("<div id='container1'><div id='content1'></div></div>"
         "<div id='container2'><div id='content2'></div></div>");
     LayoutObject* container1 = document().body()->firstChild()->layoutObject();
@@ -677,8 +664,6 @@ TEST_F(ViewDisplayListTest, CachedSubtreeSwapOrder)
 
 TEST_F(ViewDisplayListTest, Scope)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
-
     setBodyInnerHTML("<div id='multicol'><div id='content'></div></div>");
 
     LayoutObject* multicol = document().body()->firstChild()->layoutObject();
@@ -756,6 +741,64 @@ TEST_F(ViewDisplayListTest, Scope)
         TestDisplayItem(content, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
     EXPECT_NE(picture1, static_cast<DrawingDisplayItem*>(rootDisplayItemList().paintList()[1].get())->picture());
     EXPECT_NE(picture2, static_cast<DrawingDisplayItem*>(rootDisplayItemList().paintList()[2].get())->picture());
+}
+
+TEST_F(ViewDisplayListTest, InlineRelayout)
+{
+    setBodyInnerHTML("<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA BBBBBBBBBB</div>");
+    LayoutView* layoutView = document().layoutView();
+    Layer* rootLayer = layoutView->layer();
+    LayoutObject* htmlObject = document().documentElement()->layoutObject();
+    LayoutObject* bodyObject = document().body()->layoutObject();
+    Element* div = toElement(document().body()->firstChild());
+    LayoutBlock* divBlock = toLayoutBlock(document().body()->firstChild()->layoutObject());
+    LayoutText* text = toLayoutText(divBlock->firstChild());
+    InlineTextBox* firstTextBox = text->firstTextBox();
+    DisplayItemClient firstTextBoxDisplayItemClient = firstTextBox->displayItemClient();
+
+    GraphicsContext context(nullptr, &rootDisplayItemList());
+    LayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
+    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    rootDisplayItemList().endNewPaints();
+
+    EXPECT_EQ((size_t)10, rootDisplayItemList().paintList().size());
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 10,
+        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlObject, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(bodyObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(divBlock, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(firstTextBoxDisplayItemClient, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(divBlock, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(bodyObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
+
+    div->setAttribute(HTMLNames::styleAttr, "width: 10px; height: 200px");
+    document().view()->updateLayoutAndStyleForPainting();
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(htmlObject->displayItemClient()));
+    EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(bodyObject->displayItemClient()));
+    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divBlock->displayItemClient()));
+    EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstTextBoxDisplayItemClient));
+    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    rootDisplayItemList().endNewPaints();
+
+    text = toLayoutText(divBlock->firstChild());
+    firstTextBox = text->firstTextBox();
+    InlineTextBox* secondTextBox = text->firstTextBox()->nextTextBox();
+
+    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 11,
+        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlObject, DisplayItem::BoxDecorationBackground),
+        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseBlockBackground)),
+        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(bodyObject, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(divBlock, DisplayItem::paintPhaseToBeginSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(firstTextBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(secondTextBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
+        TestDisplayItem(divBlock, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(bodyObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)),
+        TestDisplayItem(htmlObject, DisplayItem::paintPhaseToEndSubtreeType(PaintPhaseForeground)));
 }
 
 } // namespace blink
