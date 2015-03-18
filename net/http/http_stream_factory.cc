@@ -36,6 +36,7 @@ void HttpStreamFactory::ProcessAlternateProtocol(
   AlternateProtocol protocol = UNINITIALIZED_ALTERNATE_PROTOCOL;
   int port = 0;
   double probability = 1;
+  bool is_valid = true;
   for (size_t i = 0; i < alternate_protocol_values.size(); ++i) {
     const std::string& alternate_protocol_str = alternate_protocol_values[i];
     if (StartsWithASCII(alternate_protocol_str, "p=", true)) {
@@ -45,7 +46,8 @@ void HttpStreamFactory::ProcessAlternateProtocol(
         DVLOG(1) << kAlternateProtocolHeader
                  << " header has unrecognizable probability: "
                  << alternate_protocol_values[i];
-        return;
+        is_valid = false;
+        break;
       }
       continue;
     }
@@ -56,7 +58,8 @@ void HttpStreamFactory::ProcessAlternateProtocol(
       DVLOG(1) << kAlternateProtocolHeader
                << " header has too many tokens: "
                << alternate_protocol_str;
-      return;
+      is_valid = false;
+      break;
     }
 
     if (!base::StringToInt(port_protocol_vector[0], &port) ||
@@ -64,7 +67,8 @@ void HttpStreamFactory::ProcessAlternateProtocol(
       DVLOG(1) << kAlternateProtocolHeader
                << " header has unrecognizable port: "
                << port_protocol_vector[0];
-      return;
+      is_valid = false;
+      break;
     }
 
     protocol = AlternateProtocolFromString(port_protocol_vector[1]);
@@ -74,12 +78,15 @@ void HttpStreamFactory::ProcessAlternateProtocol(
       DVLOG(1) << kAlternateProtocolHeader
                << " header has unrecognized protocol: "
                << port_protocol_vector[1];
-      return;
+      is_valid = false;
+      break;
     }
   }
 
-  if (protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
+  if (!is_valid || protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
+    http_server_properties->ClearAlternateProtocol(http_host_port_pair);
     return;
+  }
 
   HostPortPair host_port(http_host_port_pair);
   const HostMappingRules* mapping_rules = GetHostMappingRules();

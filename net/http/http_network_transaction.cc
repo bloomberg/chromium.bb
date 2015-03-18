@@ -79,7 +79,11 @@ void ProcessAlternateProtocol(
   std::string alternate_protocol_str;
   while (headers.EnumerateHeader(&iter, kAlternateProtocolHeader,
                                  &alternate_protocol_str)) {
-    alternate_protocol_values.push_back(alternate_protocol_str);
+    base::TrimWhitespaceASCII(alternate_protocol_str, base::TRIM_ALL,
+                              &alternate_protocol_str);
+    if (!alternate_protocol_str.empty()) {
+      alternate_protocol_values.push_back(alternate_protocol_str);
+    }
   }
 
   session->http_stream_factory()->ProcessAlternateProtocol(

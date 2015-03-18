@@ -8758,6 +8758,63 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
             alternative_service.protocol);
 }
 
+TEST_P(HttpNetworkTransactionTest, EmptyAlternateProtocolHeader) {
+  session_deps_.next_protos = SpdyNextProtos();
+  session_deps_.use_alternate_protocols = true;
+
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead("Alternate-Protocol: \r\n\r\n"),
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  HostPortPair http_host_port_pair("www.google.com", 80);
+  HttpServerProperties& http_server_properties =
+      *session->http_server_properties();
+  http_server_properties.SetAlternateProtocol(http_host_port_pair, 80, QUIC,
+                                              1.0);
+  AlternativeService alternative_service =
+      http_server_properties.GetAlternativeService(http_host_port_pair);
+  EXPECT_EQ(alternative_service.protocol, QUIC);
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+  ASSERT_TRUE(response->headers.get() != NULL);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_FALSE(response->was_fetched_via_spdy);
+  EXPECT_FALSE(response->was_npn_negotiated);
+
+  std::string response_data;
+  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  EXPECT_EQ("hello world", response_data);
+
+  alternative_service =
+      http_server_properties.GetAlternativeService(http_host_port_pair);
+  EXPECT_EQ(alternative_service.protocol, UNINITIALIZED_ALTERNATE_PROTOCOL);
+}
+
 TEST_P(HttpNetworkTransactionTest,
        MarkBrokenAlternateProtocolAndFallback) {
   session_deps_.use_alternate_protocols = true;
