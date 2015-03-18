@@ -21,7 +21,7 @@ namespace blink {
 
 class DOMException;
 class ExceptionState;
-class ExclusiveStreamReader;
+class ReadableStreamReader;
 class UnderlyingSource;
 
 class ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public ScriptWrappable, public ActiveDOMObject {
@@ -64,14 +64,14 @@ public:
 
     void didSourceStart();
 
-    // This function is not a getter. It creates an ExclusiveStreamReader and
+    // This function is not a getter. It creates an ReadableStreamReader and
     // returns it.
-    ExclusiveStreamReader* getReader(ExceptionState&);
-    // Only ExclusiveStreamReader methods should call this function.
-    void setReader(ExclusiveStreamReader*);
+    ReadableStreamReader* getReader(ExceptionState&);
+    // Only ReadableStreamReader methods should call this function.
+    void setReader(ReadableStreamReader*);
 
     bool isLocked() const { return m_reader; }
-    bool isLockedTo(const ExclusiveStreamReader* reader) const { return m_reader == reader; }
+    bool isLockedTo(const ReadableStreamReader* reader) const { return m_reader == reader; }
 
     bool hasPendingActivity() const override;
     void stop() override;
@@ -107,7 +107,7 @@ private:
     Member<ClosedPromise> m_closed;
 
     RefPtrWillBeMember<DOMException> m_exception;
-    Member<ExclusiveStreamReader> m_reader;
+    Member<ReadableStreamReader> m_reader;
 };
 
 } // namespace blink

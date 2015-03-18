@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/streams/ExclusiveStreamReader.h"
+#include "core/streams/ReadableStreamReader.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -64,9 +64,9 @@ public:
     bool shouldApplyBackpressure(size_t, ReadableStream*) override { return false; }
 };
 
-class ExclusiveStreamReaderTest : public ::testing::Test {
+class ReadableStreamReaderTest : public ::testing::Test {
 public:
-    ExclusiveStreamReaderTest()
+    ReadableStreamReaderTest()
         : m_page(DummyPageHolder::create(IntSize(1, 1)))
         , m_scope(scriptState())
         , m_exceptionState(ExceptionState::ConstructionContext, "property", "interface", scriptState()->context()->Global(), isolate())
@@ -75,7 +75,7 @@ public:
         m_stream->didSourceStart();
     }
 
-    ~ExclusiveStreamReaderTest()
+    ~ReadableStreamReaderTest()
     {
         // We need to call |error| in order to make
         // ActiveDOMObject::hasPendingActivity return false.
@@ -96,20 +96,20 @@ public:
     Persistent<StringStream> m_stream;
 };
 
-TEST_F(ExclusiveStreamReaderTest, Construct)
+TEST_F(ReadableStreamReaderTest, Construct)
 {
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
     EXPECT_TRUE(reader->isActive());
 }
 
-TEST_F(ExclusiveStreamReaderTest, Release)
+TEST_F(ReadableStreamReaderTest, Release)
 {
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
     EXPECT_TRUE(reader->isActive());
     reader->releaseLock();
     EXPECT_FALSE(reader->isActive());
 
-    ExclusiveStreamReader* another = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* another = new ReadableStreamReader(m_stream);
     EXPECT_TRUE(another->isActive());
     EXPECT_FALSE(reader->isActive());
     reader->releaseLock();
@@ -117,12 +117,12 @@ TEST_F(ExclusiveStreamReaderTest, Release)
     EXPECT_FALSE(reader->isActive());
 }
 
-TEST_F(ExclusiveStreamReaderTest, MaskState)
+TEST_F(ReadableStreamReaderTest, MaskState)
 {
     m_stream->enqueue("hello");
     EXPECT_EQ("readable", m_stream->stateString());
 
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
     EXPECT_EQ("waiting", m_stream->stateString());
     EXPECT_EQ("readable", reader->state());
 
@@ -130,18 +130,18 @@ TEST_F(ExclusiveStreamReaderTest, MaskState)
     EXPECT_EQ("readable", m_stream->stateString());
     EXPECT_EQ("closed", reader->state());
 
-    ExclusiveStreamReader* another = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* another = new ReadableStreamReader(m_stream);
     EXPECT_EQ("waiting", m_stream->stateString());
     EXPECT_EQ("closed", reader->state());
     EXPECT_EQ("readable", another->state());
 }
 
-TEST_F(ExclusiveStreamReaderTest, MaskReady)
+TEST_F(ReadableStreamReaderTest, MaskReady)
 {
     m_stream->enqueue("hello");
     isolate()->RunMicrotasks();
 
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
     {
         String s1, s2;
         reader->ready(scriptState()).then(createCaptor(&s1));
@@ -164,7 +164,7 @@ TEST_F(ExclusiveStreamReaderTest, MaskReady)
         EXPECT_EQ("undefined", s2);
     }
 
-    ExclusiveStreamReader* another = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* another = new ReadableStreamReader(m_stream);
     {
         String s1, s2, s3;
         reader->ready(scriptState()).then(createCaptor(&s1));
@@ -182,10 +182,10 @@ TEST_F(ExclusiveStreamReaderTest, MaskReady)
     }
 }
 
-TEST_F(ExclusiveStreamReaderTest, ReaderRead)
+TEST_F(ReadableStreamReaderTest, ReaderRead)
 {
     m_stream->enqueue("hello");
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
 
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
     ScriptValue value = reader->read(scriptState(), m_exceptionState);
@@ -196,10 +196,10 @@ TEST_F(ExclusiveStreamReaderTest, ReaderRead)
     EXPECT_EQ("hello", stringValue);
 }
 
-TEST_F(ExclusiveStreamReaderTest, StreamReadShouldFailWhenLocked)
+TEST_F(ReadableStreamReaderTest, StreamReadShouldFailWhenLocked)
 {
     m_stream->enqueue("hello");
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
     EXPECT_TRUE(reader->isActive());
 
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
@@ -209,10 +209,10 @@ TEST_F(ExclusiveStreamReaderTest, StreamReadShouldFailWhenLocked)
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 }
 
-TEST_F(ExclusiveStreamReaderTest, ReaderReadShouldFailWhenNotLocked)
+TEST_F(ReadableStreamReaderTest, ReaderReadShouldFailWhenNotLocked)
 {
     m_stream->enqueue("hello");
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
     reader->releaseLock();
     EXPECT_FALSE(reader->isActive());
 
@@ -223,9 +223,9 @@ TEST_F(ExclusiveStreamReaderTest, ReaderReadShouldFailWhenNotLocked)
     EXPECT_EQ(ReadableStream::Readable, m_stream->stateInternal());
 }
 
-TEST_F(ExclusiveStreamReaderTest, ClosedReader)
+TEST_F(ReadableStreamReaderTest, ClosedReader)
 {
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
 
     m_stream->close();
 
@@ -250,9 +250,9 @@ TEST_F(ExclusiveStreamReaderTest, ClosedReader)
     EXPECT_TRUE(onReadyRejected.isNull());
 }
 
-TEST_F(ExclusiveStreamReaderTest, ErroredReader)
+TEST_F(ReadableStreamReaderTest, ErroredReader)
 {
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
 
     m_stream->error(DOMException::create(SyntaxError, "some error"));
 
@@ -276,7 +276,7 @@ TEST_F(ExclusiveStreamReaderTest, ErroredReader)
     EXPECT_TRUE(onReadyRejected.isNull());
 }
 
-TEST_F(ExclusiveStreamReaderTest, ReadyPromiseShouldNotBeResolvedWhenLocked)
+TEST_F(ReadableStreamReaderTest, ReadyPromiseShouldNotBeResolvedWhenLocked)
 {
     String s;
     ScriptPromise ready = m_stream->ready(scriptState());
@@ -284,7 +284,7 @@ TEST_F(ExclusiveStreamReaderTest, ReadyPromiseShouldNotBeResolvedWhenLocked)
     isolate()->RunMicrotasks();
     EXPECT_TRUE(s.isNull());
 
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
     EXPECT_TRUE(reader->isActive());
     EXPECT_NE(ready, m_stream->ready(scriptState()));
 
@@ -297,33 +297,33 @@ TEST_F(ExclusiveStreamReaderTest, ReadyPromiseShouldNotBeResolvedWhenLocked)
     isolate()->RunMicrotasks();
 }
 
-TEST_F(ExclusiveStreamReaderTest, ReaderShouldBeReleasedWhenClosed)
+TEST_F(ReadableStreamReaderTest, ReaderShouldBeReleasedWhenClosed)
 {
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
     EXPECT_TRUE(reader->isActive());
     m_stream->close();
     EXPECT_FALSE(reader->isActive());
 }
 
-TEST_F(ExclusiveStreamReaderTest, ReaderShouldBeReleasedWhenCanceled)
+TEST_F(ReadableStreamReaderTest, ReaderShouldBeReleasedWhenCanceled)
 {
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
     EXPECT_TRUE(reader->isActive());
     reader->cancel(scriptState(), ScriptValue(scriptState(), v8::Undefined(isolate())));
     EXPECT_FALSE(reader->isActive());
 }
 
-TEST_F(ExclusiveStreamReaderTest, ReaderShouldBeReleasedWhenErrored)
+TEST_F(ReadableStreamReaderTest, ReaderShouldBeReleasedWhenErrored)
 {
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
     EXPECT_TRUE(reader->isActive());
     m_stream->error(DOMException::create(SyntaxError, "some error"));
     EXPECT_FALSE(reader->isActive());
 }
 
-TEST_F(ExclusiveStreamReaderTest, StreamCancelShouldFailWhenLocked)
+TEST_F(ReadableStreamReaderTest, StreamCancelShouldFailWhenLocked)
 {
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
     EXPECT_TRUE(reader->isActive());
     ScriptPromise p = m_stream->cancel(scriptState(), ScriptValue(scriptState(), v8::Undefined(isolate())));
     EXPECT_EQ(ReadableStream::Waiting, m_stream->stateInternal());
@@ -334,12 +334,12 @@ TEST_F(ExclusiveStreamReaderTest, StreamCancelShouldFailWhenLocked)
     EXPECT_TRUE(onRejected.isNull());
     isolate()->RunMicrotasks();
     EXPECT_TRUE(onFulfilled.isNull());
-    EXPECT_EQ("TypeError: this stream is locked to an ExclusiveStreamReader", onRejected);
+    EXPECT_EQ("TypeError: this stream is locked to a ReadableStreamReader", onRejected);
 }
 
-TEST_F(ExclusiveStreamReaderTest, ReaderCancelShouldNotWorkWhenNotActive)
+TEST_F(ReadableStreamReaderTest, ReaderCancelShouldNotWorkWhenNotActive)
 {
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
     reader->releaseLock();
     EXPECT_FALSE(reader->isActive());
 
@@ -355,12 +355,12 @@ TEST_F(ExclusiveStreamReaderTest, ReaderCancelShouldNotWorkWhenNotActive)
     EXPECT_TRUE(onRejected.isNull());
 }
 
-TEST_F(ExclusiveStreamReaderTest, ReadyShouldNotBeResolvedWhileLocked)
+TEST_F(ReadableStreamReaderTest, ReadyShouldNotBeResolvedWhileLocked)
 {
     String onFulfilled;
     m_stream->ready(scriptState()).then(createCaptor(&onFulfilled));
 
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
 
     m_stream->enqueue("hello");
     m_stream->enqueue("world");
@@ -380,12 +380,12 @@ TEST_F(ExclusiveStreamReaderTest, ReadyShouldNotBeResolvedWhileLocked)
     isolate()->RunMicrotasks();
 }
 
-TEST_F(ExclusiveStreamReaderTest, ReadyShouldNotBeResolvedWhenReleasedIfNotReady)
+TEST_F(ReadableStreamReaderTest, ReadyShouldNotBeResolvedWhenReleasedIfNotReady)
 {
     String onFulfilled;
     m_stream->ready(scriptState()).then(createCaptor(&onFulfilled));
 
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
 
     m_stream->enqueue("hello");
     m_stream->enqueue("world");
@@ -407,12 +407,12 @@ TEST_F(ExclusiveStreamReaderTest, ReadyShouldNotBeResolvedWhenReleasedIfNotReady
     isolate()->RunMicrotasks();
 }
 
-TEST_F(ExclusiveStreamReaderTest, ReadyShouldBeResolvedWhenReleasedIfReady)
+TEST_F(ReadableStreamReaderTest, ReadyShouldBeResolvedWhenReleasedIfReady)
 {
     String onFulfilled;
     m_stream->ready(scriptState()).then(createCaptor(&onFulfilled));
 
-    ExclusiveStreamReader* reader = new ExclusiveStreamReader(m_stream);
+    ReadableStreamReader* reader = new ReadableStreamReader(m_stream);
 
     m_stream->enqueue("hello");
     m_stream->enqueue("world");

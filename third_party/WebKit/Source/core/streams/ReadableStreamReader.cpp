@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/streams/ExclusiveStreamReader.h"
+#include "core/streams/ReadableStreamReader.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptFunction.h"
@@ -78,7 +78,7 @@ ScriptPromise race(ScriptState* scriptState, const Vector<ScriptPromise>& promis
 
 } // namespace
 
-ExclusiveStreamReader::ExclusiveStreamReader(ReadableStream* stream)
+ReadableStreamReader::ReadableStreamReader(ReadableStream* stream)
     : ActiveDOMObject(stream->executionContext())
     , m_stream(stream)
     , m_released(new ReleasedPromise(stream->executionContext(), this, ReleasedPromise::Released))
@@ -89,7 +89,7 @@ ExclusiveStreamReader::ExclusiveStreamReader(ReadableStream* stream)
     m_stream->setReader(this);
 }
 
-ScriptPromise ExclusiveStreamReader::closed(ScriptState* scriptState)
+ScriptPromise ReadableStreamReader::closed(ScriptState* scriptState)
 {
     if (isActive()) {
         Vector<ScriptPromise> promises;
@@ -101,12 +101,12 @@ ScriptPromise ExclusiveStreamReader::closed(ScriptState* scriptState)
     return m_closedAfterRelease->promise(scriptState->world());
 }
 
-bool ExclusiveStreamReader::isActive() const
+bool ReadableStreamReader::isActive() const
 {
     return m_stream->isLockedTo(this);
 }
 
-ScriptPromise ExclusiveStreamReader::ready(ScriptState* scriptState)
+ScriptPromise ReadableStreamReader::ready(ScriptState* scriptState)
 {
     if (isActive()) {
         Vector<ScriptPromise> promises;
@@ -118,14 +118,14 @@ ScriptPromise ExclusiveStreamReader::ready(ScriptState* scriptState)
     return m_readyAfterRelease->promise(scriptState->world());
 }
 
-String ExclusiveStreamReader::state() const
+String ReadableStreamReader::state() const
 {
     if (isActive())
         return ReadableStream::stateToString(m_stream->stateInternal());
     return ReadableStream::stateToString(m_stateAfterRelease);
 }
 
-ScriptPromise ExclusiveStreamReader::cancel(ScriptState* scriptState, ScriptValue reason)
+ScriptPromise ReadableStreamReader::cancel(ScriptState* scriptState, ScriptValue reason)
 {
     if (isActive()) {
         releaseLock();
@@ -134,7 +134,7 @@ ScriptPromise ExclusiveStreamReader::cancel(ScriptState* scriptState, ScriptValu
     return m_closedAfterRelease->promise(scriptState->world());
 }
 
-ScriptValue ExclusiveStreamReader::read(ScriptState* scriptState, ExceptionState& es)
+ScriptValue ReadableStreamReader::read(ScriptState* scriptState, ExceptionState& es)
 {
     if (!isActive()) {
         es.throwTypeError("The stream is not locked to this reader");
@@ -143,7 +143,7 @@ ScriptValue ExclusiveStreamReader::read(ScriptState* scriptState, ExceptionState
     return m_stream->readInternal(scriptState, es);
 }
 
-void ExclusiveStreamReader::releaseLock()
+void ReadableStreamReader::releaseLock()
 {
     if (!isActive())
         return;
@@ -168,25 +168,25 @@ void ExclusiveStreamReader::releaseLock()
     ASSERT(!isActive());
 }
 
-ScriptPromise ExclusiveStreamReader::released(ScriptState* scriptState)
+ScriptPromise ReadableStreamReader::released(ScriptState* scriptState)
 {
     return m_released->promise(scriptState->world());
 }
 
-bool ExclusiveStreamReader::hasPendingActivity() const
+bool ReadableStreamReader::hasPendingActivity() const
 {
-    // We need to extend ExclusiveStreamReader's wrapper's life while it is
+    // We need to extend ReadableStreamReader's wrapper's life while it is
     // active in order to call resolve / reject on ScriptPromiseProperties.
     return isActive();
 }
 
-void ExclusiveStreamReader::stop()
+void ReadableStreamReader::stop()
 {
     releaseLock();
     ActiveDOMObject::stop();
 }
 
-DEFINE_TRACE(ExclusiveStreamReader)
+DEFINE_TRACE(ReadableStreamReader)
 {
     visitor->trace(m_stream);
     visitor->trace(m_released);

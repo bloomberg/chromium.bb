@@ -56,13 +56,10 @@ sequential_promise_test(function(t) {
         return wait_until_readable(reader);
       }).then(function() {
         assert_equals(reader.state, 'readable');
-        assert_equals(stream.state, 'waiting');
         reader.releaseLock();
         assert_equals(reader.state, 'closed');
-        assert_equals(stream.state, 'readable');
         var another = stream.getReader();
         assert_equals(reader.state, 'closed');
-        assert_equals(stream.state, 'waiting');
         assert_equals(another.state, 'readable');
       });
   }, 'ExclusiveStreamReader state masking');

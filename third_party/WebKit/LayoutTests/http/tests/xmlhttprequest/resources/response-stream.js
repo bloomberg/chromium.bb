@@ -17,17 +17,17 @@ test.step(function() {
 
     var seenStates = [];
 
-    function readStream(stream) {
+    function readStream(reader) {
         var chunks = [];
         function rec(resolve, reject) {
-            while (stream.state === 'readable') {
-                chunks.push(stream.read());
+            while (reader.state === 'readable') {
+                chunks.push(reader.read());
             }
-            if (stream.state === 'closed') {
+            if (reader.state === 'closed') {
                 resolve(chunks);
                 return;
             }
-            stream.ready.then(function() {
+            reader.ready.then(function() {
                 rec(resolve, reject);
             }).catch(reject);
         }
@@ -58,23 +58,24 @@ test.step(function() {
             assert_true(xhr.response instanceof ReadableStream,
                 'xhr.response should be ReadableStream during LOADING');
             if (streamPromise === undefined) {
-                streamPromise = readStream(xhr.response);
+                streamPromise = readStream(xhr.response.getReader());
             }
-            streamPromise.then(test.step_func(function(chunks) {
+            streamPromise.then(function(chunks) {
                 assert_equals(xhr.status, 200, 'xhr.status');
 
                 // Check that we saw all states.
                 assert_array_equals(seenStates,
                     [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
-                assert_equals(xhr.response.state, 'closed', 'stream status');
                 var size = 0;
                 for (var i = 0; i < chunks.length; ++i) {
                     size += chunks[i].byteLength;
                 }
                 assert_equals(size, 103746, 'response size');
+                return xhr.response.closed;
+            }).then(function() {
                 test.done();
-            }), test.step_func(function(e) {
-                assert_unreached('failed to read the response stream: ' + e);
+            }).catch(test.step_func(function(e) {
+                throw e;
             }));
             return;
 

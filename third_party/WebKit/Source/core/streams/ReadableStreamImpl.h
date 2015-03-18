@@ -19,7 +19,6 @@
 
 namespace blink {
 
-class ExclusiveStreamReader;
 // We define the default ChunkTypeTraits for frequently used types.
 template<typename ChunkType>
 class ReadableStreamChunkTypeTraits { };

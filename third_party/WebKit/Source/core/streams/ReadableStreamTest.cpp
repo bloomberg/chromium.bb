@@ -13,8 +13,8 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/streams/ExclusiveStreamReader.h"
 #include "core/streams/ReadableStreamImpl.h"
+#include "core/streams/ReadableStreamReader.h"
 #include "core/streams/UnderlyingSource.h"
 #include "core/testing/DummyPageHolder.h"
 #include <gmock/gmock.h>
@@ -806,18 +806,18 @@ TEST_F(ReadableStreamTest, BackpressureOnReading)
     stream->error(DOMException::create(AbortError, "done"));
 }
 
-// Note: Detailed tests are on ExclusiveStreamReaderTest.
-TEST_F(ReadableStreamTest, ExclusiveStreamReader)
+// Note: Detailed tests are on ReadableStreamReaderTest.
+TEST_F(ReadableStreamTest, ReadableStreamReader)
 {
     StringStream* stream = construct();
-    ExclusiveStreamReader* reader = stream->getReader(m_exceptionState);
+    ReadableStreamReader* reader = stream->getReader(m_exceptionState);
 
     ASSERT_TRUE(reader);
     EXPECT_FALSE(m_exceptionState.hadException());
     EXPECT_TRUE(reader->isActive());
     EXPECT_TRUE(stream->isLockedTo(reader));
 
-    ExclusiveStreamReader* another = stream->getReader(m_exceptionState);
+    ReadableStreamReader* another = stream->getReader(m_exceptionState);
     ASSERT_EQ(nullptr, another);
     EXPECT_TRUE(m_exceptionState.hadException());
     EXPECT_TRUE(reader->isActive());

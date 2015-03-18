@@ -31,16 +31,14 @@ testInLoadingState.step(function()
         case xhr.LOADING:
             var stream = xhr.response;
             assert_true(stream instanceof ReadableStream, 'xhr.response shoud be ReadableStream');
-            assert_true(stream.state == 'readable' || stream.state == 'waiting', 'stream state before abort() call');
             assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING]);
 
             xhr.abort();
 
-            assert_equals(stream.state, 'errored', 'stream state after abort() call');
             assert_equals(xhr.readyState, xhr.UNSENT, 'xhr.readyState after abort() call');
             assert_equals(xhr.response, null, 'xhr.response after abort() call');
             assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
-            testInLoadingState.done();
+            stream.closed.then(testInLoadingState.step_func(assert_unreached), testInLoadingState.done.bind(testInLoadingState));
             return;
 
         case xhr.DONE:
@@ -58,15 +56,15 @@ testInLoadingState.step(function()
 
 var testInDoneState = async_test('Test aborting XMLHttpRequest with responseType set to "stream" in DONE state.');
 
-function readUntilDone(stream) {
-    return stream.ready.then(function() {
-        while (stream.state == 'readable') {
-            stream.read();
+function readUntilDone(reader) {
+    return reader.ready.then(function() {
+        while (reader.state == 'readable') {
+            reader.read();
         }
-        if (stream.state == 'closed' || stream.state == 'errored') {
-            return stream.closed;
+        if (reader.state == 'closed' || reader.state == 'errored') {
+            return reader.closed;
         } else {
-            return readUntilDone(stream);
+            return readUntilDone(reader);
         }
     });
 }
@@ -94,19 +92,19 @@ testInDoneState.step(function()
             if (!stream) {
                 stream = xhr.response;
                 assert_true(stream instanceof ReadableStream, 'xhr.response shoud be ReadableStream');
-                readUntilDone(stream).then(function() {
+                readUntilDone(stream.getReader()).then(function() {
                     assert_true(stream instanceof ReadableStream, 'xhr.response should be ReadableStream');
-                    assert_equals(stream.state, 'closed', 'stream state before abort() call');
                     assert_equals(xhr.status, 200, 'xhr.status');
                     assert_not_equals(xhr.response, null, 'xhr.response during DONE');
 
                     xhr.abort();
 
-                    assert_equals(stream.state, 'closed', 'stream state after abort() call');
                     assert_equals(xhr.readyState, xhr.UNSENT, 'xhr.readyState after abort() call');
                     assert_equals(xhr.response, null, 'xhr.response after abort() call');
 
                     assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
+                    return stream.closed;
+                }).then(function() {
                     testInDoneState.done();
                 }).catch(testInDoneState.step_func(function(e) {
                     assert_unreached(e);

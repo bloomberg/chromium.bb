@@ -15,7 +15,7 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/UseCounter.h"
-#include "core/streams/ExclusiveStreamReader.h"
+#include "core/streams/ReadableStreamReader.h"
 #include "core/streams/UnderlyingSource.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 

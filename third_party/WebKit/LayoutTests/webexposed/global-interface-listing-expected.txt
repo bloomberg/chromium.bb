@@ -1354,15 +1354,6 @@ interface EventTarget
     method constructor
     method dispatchEvent
     method removeEventListener
-interface ExclusiveStreamReader
-    getter closed
-    getter isActive
-    getter ready
-    getter state
-    method cancel
-    method constructor
-    method read
-    method releaseLock
 interface FederatedCredential
     getter federation
     method constructor
@@ -3711,12 +3702,18 @@ interface RangeError
     setter stack
 interface ReadableStream
     getter closed
+    method cancel
+    method constructor
+    method getReader
+interface ReadableStreamReader
+    getter closed
+    getter isActive
     getter ready
     getter state
     method cancel
     method constructor
-    method getReader
     method read
+    method releaseLock
 interface ReferenceError
     attribute name
     getter stack

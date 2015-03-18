@@ -12,29 +12,32 @@ function arrayBufferToString(buffer) {
   });
 }
 
-function readStream(stream, values) {
-  while (stream.state === 'readable') {
-    values.push(stream.read());
+function readStream(reader, values) {
+  while (reader.state === 'readable') {
+    values.push(reader.read());
   }
-  if (stream.state === 'waiting') {
-    return stream.ready.then(function() {
-        readStream(stream, values);
+  if (reader.state === 'waiting') {
+    return reader.ready.then(function() {
+        readStream(reader, values);
       });
   }
-  return stream.closed;
+  return reader.closed;
 }
 
 sequential_promise_test(function(test) {
     var response;
+    var reader;
     return fetch('/fetch/resources/doctype.html')
       .then(function(resp) {
           response = resp;
-          return response.body.ready;
+          reader = resp.body.getReader();
+          return reader.ready;
         })
       .then(function() {
-          if (response.body.state !== 'readable') {
+          if (reader.state !== 'readable') {
             return Promise.reject(TypeError('stream state get wrong'));
           } else {
+            reader.releaseLock();
             return response.text();
           }
         })
@@ -60,7 +63,7 @@ sequential_promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
       .then(function(response) {
           r = response;
-          return readStream(response.body, values);
+          return readStream(response.body.getReader(), values);
         })
       .then(function() {
           return Promise.all(values.map(arrayBufferToString));
@@ -149,19 +152,22 @@ sequential_promise_test(function(test) {
 
     var values = [];
     function partialReadResponse(response, read_count) {
+      var reader = response.body.getReader();
       function read(resolve, reject) {
-        while (response.body.state === 'readable') {
-          values.push(response.body.read());
+        while (reader.state === 'readable') {
+          values.push(reader.read());
           if (values.length > read_count) {
+            reader.releaseLock();
             resolve();
             return;
           }
         }
-        if (response.body.state === 'closed') {
+        if (reader.state === 'closed') {
+          reader.releaseLock();
           resolve();
           return;
         }
-        response.body.ready.then(function() {
+        reader.ready.then(function() {
             read(resolve, reject);
           }).catch(reject);
       }

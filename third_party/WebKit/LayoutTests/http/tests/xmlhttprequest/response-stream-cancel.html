@@ -35,7 +35,6 @@ test.step(function()
             assert_true(stream instanceof ReadableStream,
                 'xhr.response should be ReadableStream during LOADING');
             stream.cancel('canceled via ReadableStream.cancel');
-            assert_equals(stream.state, 'closed', 'stream.state after cancel');
 
             // Check that we saw all states.
             assert_array_equals(seenStates,
@@ -43,12 +42,12 @@ test.step(function()
 
             assert_equals(xhr.readyState, xhr.UNSENT, 'xhr.readyState after cancel');
             assert_equals(xhr.response, null, 'xhr.response after cancel');
-            stream.closed.then(test.step_func(function(value) {
+            stream.closed.then(function(value) {
                 assert_equals(value, undefined,
                     'stream.closed should be resolved with undefined');
                 test.done();
-            }), test.step_func(function() {
-                assert_unreached('stream.closed should not be rejected');
+            }).catch(test.step_func(function(e) {
+                assert_unreached('stream.closed should not be rejected: ' + e);
             }));
 
         case xhr.DONE:

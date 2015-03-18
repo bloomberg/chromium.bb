@@ -12,7 +12,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/streams/ExclusiveStreamReader.h"
+#include "core/streams/ReadableStreamReader.h"
 #include "core/streams/UnderlyingSource.h"
 
 namespace blink {
@@ -171,7 +171,7 @@ void ReadableStream::readInternalPostAction()
 ScriptValue ReadableStream::read(ScriptState* scriptState, ExceptionState& exceptionState)
 {
     if (m_reader) {
-        exceptionState.throwTypeError("this stream is locked to an ExclusiveStreamReader");
+        exceptionState.throwTypeError("this stream is locked to a ReadableStreamReader");
         return ScriptValue();
     }
     return readInternal(scriptState, exceptionState);
@@ -197,7 +197,7 @@ ScriptPromise ReadableStream::readyInternal(ScriptState* scriptState)
 ScriptPromise ReadableStream::cancel(ScriptState* scriptState, ScriptValue reason)
 {
     if (m_reader)
-        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "this stream is locked to an ExclusiveStreamReader"));
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "this stream is locked to a ReadableStreamReader"));
     if (m_state == Closed)
         return ScriptPromise::cast(scriptState, v8::Undefined(scriptState->isolate()));
     if (m_state == Errored)
@@ -249,7 +249,7 @@ void ReadableStream::didSourceStart()
     callPullIfNeeded();
 }
 
-ExclusiveStreamReader* ReadableStream::getReader(ExceptionState& exceptionState)
+ReadableStreamReader* ReadableStream::getReader(ExceptionState& exceptionState)
 {
     if (m_state == Closed) {
         exceptionState.throwTypeError("this stream is already closed");
@@ -260,13 +260,13 @@ ExclusiveStreamReader* ReadableStream::getReader(ExceptionState& exceptionState)
         return nullptr;
     }
     if (m_reader) {
-        exceptionState.throwTypeError("already locked to an ExclusiveStreamReader");
+        exceptionState.throwTypeError("already locked to a ReadableStreamReader");
         return nullptr;
     }
-    return new ExclusiveStreamReader(this);
+    return new ReadableStreamReader(this);
 }
 
-void ReadableStream::setReader(ExclusiveStreamReader* reader)
+void ReadableStream::setReader(ReadableStreamReader* reader)
 {
     ASSERT((reader && !m_reader) || (!reader && m_reader));
     m_reader = reader;
