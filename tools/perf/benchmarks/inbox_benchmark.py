@@ -6,7 +6,7 @@ from page_sets import inbox
 from telemetry import benchmark
 from telemetry.web_perf import timeline_based_measurement
 
-@benchmark.Disabled('android', 'reference', 'xp')  # http://crbug.com/452257
+@benchmark.Disabled  # http://crbug.com/452257
 class Inbox(benchmark.Benchmark):
   """Runs the timeline based measurement against inbox pageset."""
   test = timeline_based_measurement.TimelineBasedMeasurement
