@@ -67,8 +67,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
       ignore_mouse_drag_(false),
       size_animation_(this),
       left_margin_(0),
-      right_margin_(0),
-      outside_vertical_padding_(0) {
+      right_margin_(0) {
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
 
@@ -115,10 +114,10 @@ gfx::Rect OmniboxPopupContentsView::GetPopupBounds() const {
 void OmniboxPopupContentsView::LayoutChildren() {
   gfx::Rect contents_rect = GetContentsBounds();
 
-  contents_rect.Inset(left_margin_,
-                      views::NonClientFrameView::kClientEdgeThickness +
-                          outside_vertical_padding_,
-                      right_margin_, outside_vertical_padding_);
+  contents_rect.Inset(
+      left_margin_, views::NonClientFrameView::kClientEdgeThickness +
+                        OmniboxResultView::kMinimumTextVerticalPadding,
+      right_margin_, OmniboxResultView::kMinimumTextVerticalPadding);
   int top = contents_rect.y();
   for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
     View* v = child_at(i);
@@ -388,18 +387,11 @@ int OmniboxPopupContentsView::CalculatePopupHeight() {
   // amount of space between the text and the popup border as there is in the
   // interior between each row of text.
   //
-  // Discovering the exact amount of leading and padding around the font is
-  // a bit tricky and platform-specific, but this computation seems to work in
-  // practice.
-  OmniboxResultView* result_view = result_view_at(0);
-  outside_vertical_padding_ =
-      (result_view->GetPreferredSize().height() -
-       result_view->GetTextHeight());
-
+  // The * 2 accounts for vertical padding used at the top and bottom.
   return popup_height +
-         views::NonClientFrameView::kClientEdgeThickness +  // Top border.
-         outside_vertical_padding_ * 2 +                    // Padding.
-         bottom_shadow_->height() - kBorderInterior;        // Bottom border.
+         views::NonClientFrameView::kClientEdgeThickness +     // Top border.
+         OmniboxResultView::kMinimumTextVerticalPadding * 2 +  // Padding.
+         bottom_shadow_->height() - kBorderInterior;           // Bottom border.
 }
 
 OmniboxResultView* OmniboxPopupContentsView::CreateResultView(

@@ -40,6 +40,10 @@ using ui::NativeTheme;
 
 namespace {
 
+// The minimum distance between the top and bottom of the icon and the
+// top or bottom of the row.
+const int kMinimumIconVerticalPadding = 2;
+
 // Calls back to the OmniboxResultView when the requested image is downloaded.
 // This is a separate class instead of being implemented on OmniboxResultView
 // because BitmapFetcherService currently takes ownership of this object.
@@ -67,11 +71,6 @@ void AnswerImageObserver::OnImageChanged(
   if (view_)
     view_->SetAnswerImage(gfx::ImageSkia::CreateFrom1xBitmap(image));
 }
-
-// The minimum distance between the top and bottom of the {icon|text} and the
-// top or bottom of the row.
-const int kMinimumIconVerticalPadding = 2;
-const int kMinimumTextVerticalPadding = 3;
 
 // A mapping from OmniboxResultView's ResultViewState/ColorKind types to
 // NativeTheme colors.
@@ -159,7 +158,6 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
                                      const gfx::FontList& font_list)
     : edge_item_padding_(LocationBarView::kItemPadding),
       item_padding_(LocationBarView::kItemPadding),
-      minimum_text_vertical_padding_(kMinimumTextVerticalPadding),
       model_(model),
       model_index_(model_index),
       location_bar_view_(location_bar_view),
@@ -252,7 +250,7 @@ void OmniboxResultView::Invalidate() {
 gfx::Size OmniboxResultView::GetPreferredSize() const {
   return gfx::Size(0, std::max(
       default_icon_size_ + (kMinimumIconVerticalPadding * 2),
-      GetTextHeight() + (minimum_text_vertical_padding_ * 2)));
+      GetTextHeight() + (kMinimumTextVerticalPadding * 2)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

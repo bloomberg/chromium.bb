@@ -169,9 +169,6 @@ class OmniboxPopupContentsView : public views::View,
 
   const gfx::ImageSkia* bottom_shadow_;  // Ptr owned by resource bundle.
 
-  // Amount of extra padding to add to the popup on the top and bottom.
-  int outside_vertical_padding_;
-
   // When the dropdown is not wide enough while displaying postfix suggestions,
   // we use the width of widest match contents to shift the suggestions so that
   // the widest suggestion just reaches the end edge.

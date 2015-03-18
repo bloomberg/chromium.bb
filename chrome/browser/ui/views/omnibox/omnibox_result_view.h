@@ -47,6 +47,10 @@ class OmniboxResultView : public views::View,
     NUM_KINDS
   };
 
+  // The minimum distance between the top and bottom of the text and the
+  // top or bottom of the row.
+  static const int kMinimumTextVerticalPadding = 3;
+
   OmniboxResultView(OmniboxPopupContentsView* model,
                     int model_index,
                     LocationBarView* location_bar_view,
@@ -117,9 +121,6 @@ class OmniboxResultView : public views::View,
 
   void set_edge_item_padding(int value) { edge_item_padding_ = value; }
   void set_item_padding(int value) { item_padding_ = value; }
-  void set_minimum_text_vertical_padding(int value) {
-    minimum_text_vertical_padding_ = value;
-  }
 
  private:
   // views::View:
@@ -160,7 +161,6 @@ class OmniboxResultView : public views::View,
   // Default values cached here, may be overridden using the setters above.
   int edge_item_padding_;
   int item_padding_;
-  int minimum_text_vertical_padding_;
 
   // This row's model and model index.
   OmniboxPopupContentsView* model_;
