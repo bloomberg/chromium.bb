@@ -41,8 +41,25 @@ class WebSocketEncoder {
                    int inflate_bits,
                    bool no_context_takeover);
 
+  // Parses a value in the Sec-WebSocket-Extensions header. If it contains a
+  // single element of the permessage-deflate extension, stores the result of
+  // parsing the parameters of the extension into the given variables.
+  // Otherwise, returns with *deflate set to false.
+  //
+  // - If the client_max_window_bits parameter is missing, *client_window_bits
+  //   defaults to 15.
+  // - If the client_max_window_bits parameter has an invalid value,
+  //   *client_window_bits will be set to 0.
+  // - If the server_max_window_bits parameter is missing, *server_window_bits
+  //   defaults to 15.
+  // - If the server_max_window_bits parameter has an invalid value,
+  //   *client_window_bits will be set to 0.
+  //
+  // TODO(tyoshino): Consider using a struct than taking a lot of pointers for
+  // output.
   static void ParseExtensions(const std::string& extensions,
                               bool* deflate,
+                              bool* has_client_window_bits,
                               int* client_window_bits,
                               int* server_window_bits,
                               bool* client_no_context_takeover,

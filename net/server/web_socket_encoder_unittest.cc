@@ -7,6 +7,28 @@
 
 namespace net {
 
+TEST(WebSocketEncoderHandshakeTest,
+     CreateServerWithoutClientMaxWindowBitsParameter) {
+  std::string response_extensions;
+  scoped_ptr<WebSocketEncoder> server(WebSocketEncoder::CreateServer(
+      "permessage-deflate", &response_extensions));
+  // The response must not include client_max_window_bits if the client didn't
+  // declare that it accepts the parameter.
+  EXPECT_EQ("permessage-deflate; server_max_window_bits=15",
+            response_extensions);
+}
+
+TEST(WebSocketEncoderHandshakeTest,
+     CreateServerWithServerNoContextTakeoverParameter) {
+  std::string response_extensions;
+  scoped_ptr<WebSocketEncoder> server(WebSocketEncoder::CreateServer(
+      "permessage-deflate; server_no_context_takeover", &response_extensions));
+  EXPECT_EQ(
+      "permessage-deflate; server_max_window_bits=15"
+      "; server_no_context_takeover",
+      response_extensions);
+}
+
 class WebSocketEncoderTest : public testing::Test {
  public:
   WebSocketEncoderTest() {}
