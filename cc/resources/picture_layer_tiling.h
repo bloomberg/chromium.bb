@@ -232,7 +232,7 @@ class CC_EXPORT PictureLayerTiling {
       RectExpansionCache* cache);
 
   bool has_ever_been_updated() const {
-    return last_impl_frame_time_in_seconds_ != 0.0;
+    return visible_rect_history_[0].frame_time_in_seconds != 0.0;
   }
 
  protected:
@@ -243,6 +243,11 @@ class CC_EXPORT PictureLayerTiling {
 
   typedef std::pair<int, int> TileMapKey;
   typedef base::hash_map<TileMapKey, scoped_refptr<Tile>> TileMap;
+
+  struct FrameVisibleRect {
+    gfx::Rect visible_rect_in_content_space;
+    double frame_time_in_seconds = 0.0;
+  };
 
   PictureLayerTiling(float contents_scale,
                      scoped_refptr<RasterSource> raster_source,
@@ -279,8 +284,20 @@ class CC_EXPORT PictureLayerTiling {
   bool NeedsUpdateForFrameAtTimeAndViewport(
       double frame_time_in_seconds,
       const gfx::Rect& viewport_in_layer_space) {
-    return frame_time_in_seconds != last_impl_frame_time_in_seconds_ ||
+    return frame_time_in_seconds !=
+               visible_rect_history_[0].frame_time_in_seconds ||
            viewport_in_layer_space != last_viewport_in_layer_space_;
+  }
+  void UpdateVisibleRectHistory(
+      double frame_time_in_seconds,
+      const gfx::Rect& visible_rect_in_content_space) {
+    visible_rect_history_[1] = visible_rect_history_[0];
+    visible_rect_history_[0].frame_time_in_seconds = frame_time_in_seconds;
+    visible_rect_history_[0].visible_rect_in_content_space =
+        visible_rect_in_content_space;
+    // If we don't have a second history item, set it to the most recent one.
+    if (visible_rect_history_[1].frame_time_in_seconds == 0.0)
+      visible_rect_history_[1] = visible_rect_history_[0];
   }
 
   const size_t max_tiles_for_interest_area_;
@@ -298,10 +315,9 @@ class CC_EXPORT PictureLayerTiling {
   TileMap tiles_;  // It is not legal to have a NULL tile in the tiles_ map.
   gfx::Rect live_tiles_rect_;
 
-  // State saved for computing velocities based upon finite differences.
-  double last_impl_frame_time_in_seconds_;
   gfx::Rect last_viewport_in_layer_space_;
-  gfx::Rect last_visible_rect_in_content_space_;
+  // State saved for computing velocities based upon finite differences.
+  FrameVisibleRect visible_rect_history_[2];
 
   bool can_require_tiles_for_activation_;
 

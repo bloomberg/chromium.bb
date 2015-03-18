@@ -57,7 +57,6 @@ PictureLayerTiling::PictureLayerTiling(
       raster_source_(raster_source),
       resolution_(NON_IDEAL_RESOLUTION),
       tiling_data_(gfx::Size(), gfx::Size(), kBorderTexels),
-      last_impl_frame_time_in_seconds_(0.0),
       can_require_tiles_for_activation_(false),
       current_content_to_screen_scale_(0.f),
       has_visible_rect_tiles_(false),
@@ -530,21 +529,23 @@ gfx::Rect PictureLayerTiling::ComputeSkewport(
     double current_frame_time_in_seconds,
     const gfx::Rect& visible_rect_in_content_space) const {
   gfx::Rect skewport = visible_rect_in_content_space;
-  if (last_impl_frame_time_in_seconds_ == 0.0)
+  if (visible_rect_history_[1].frame_time_in_seconds == 0.0)
     return skewport;
 
-  double time_delta =
-      current_frame_time_in_seconds - last_impl_frame_time_in_seconds_;
+  double time_delta = current_frame_time_in_seconds -
+                      visible_rect_history_[1].frame_time_in_seconds;
   if (time_delta == 0.0)
     return skewport;
 
   double extrapolation_multiplier =
       skewport_target_time_in_seconds_ / time_delta;
 
-  int old_x = last_visible_rect_in_content_space_.x();
-  int old_y = last_visible_rect_in_content_space_.y();
-  int old_right = last_visible_rect_in_content_space_.right();
-  int old_bottom = last_visible_rect_in_content_space_.bottom();
+  int old_x = visible_rect_history_[1].visible_rect_in_content_space.x();
+  int old_y = visible_rect_history_[1].visible_rect_in_content_space.y();
+  int old_right =
+      visible_rect_history_[1].visible_rect_in_content_space.right();
+  int old_bottom =
+      visible_rect_history_[1].visible_rect_in_content_space.bottom();
 
   int new_x = visible_rect_in_content_space.x();
   int new_y = visible_rect_in_content_space.y();
@@ -587,9 +588,9 @@ bool PictureLayerTiling::ComputeTilePriorityRects(
       gfx::ScaleToEnclosingRect(viewport_in_layer_space, contents_scale_);
 
   if (tiling_size().IsEmpty()) {
-    last_impl_frame_time_in_seconds_ = current_frame_time_in_seconds;
+    UpdateVisibleRectHistory(current_frame_time_in_seconds,
+                             visible_rect_in_content_space);
     last_viewport_in_layer_space_ = viewport_in_layer_space;
-    last_visible_rect_in_content_space_ = visible_rect_in_content_space;
     return false;
   }
 
@@ -621,9 +622,9 @@ bool PictureLayerTiling::ComputeTilePriorityRects(
                                              content_to_screen_scale);
   soon_border_rect.Inset(-border, -border, -border, -border);
 
-  last_impl_frame_time_in_seconds_ = current_frame_time_in_seconds;
+  UpdateVisibleRectHistory(current_frame_time_in_seconds,
+                           visible_rect_in_content_space);
   last_viewport_in_layer_space_ = viewport_in_layer_space;
-  last_visible_rect_in_content_space_ = visible_rect_in_content_space;
 
   SetLiveTilesRect(eventually_rect);
   UpdateTilePriorityRects(

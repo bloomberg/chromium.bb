@@ -665,6 +665,75 @@ TEST(PictureLayerTilingTest, ComputeSkewport) {
   EXPECT_EQ(160, expanded_skewport.height());
 }
 
+TEST(PictureLayerTilingTest, SkewportThroughUpdateTilePriorities) {
+  FakePictureLayerTilingClient client;
+
+  gfx::Rect viewport(0, 0, 100, 100);
+  gfx::Size layer_bounds(200, 200);
+
+  client.SetTileSize(gfx::Size(100, 100));
+  client.set_tree(ACTIVE_TREE);
+
+  scoped_refptr<FakePicturePileImpl> pile =
+      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
+  scoped_ptr<TestablePictureLayerTiling> tiling =
+      TestablePictureLayerTiling::Create(1.0f, pile, &client,
+                                         LayerTreeSettings());
+
+  tiling->ComputeTilePriorityRects(viewport, 1.f, 1.0, Occlusion());
+
+  // Move viewport down 50 pixels in 0.5 seconds.
+  gfx::Rect viewport_50 = gfx::Rect(0, 50, 100, 100);
+  gfx::Rect skewport_50 = tiling->ComputeSkewport(1.5, viewport_50);
+
+  EXPECT_EQ(gfx::Rect(0, 50, 100, 200), skewport_50);
+  tiling->ComputeTilePriorityRects(viewport_50, 1.f, 1.5, Occlusion());
+
+  gfx::Rect viewport_100 = gfx::Rect(0, 100, 100, 100);
+  gfx::Rect skewport_100 = tiling->ComputeSkewport(2.0, viewport_100);
+
+  EXPECT_EQ(gfx::Rect(0, 100, 100, 200), skewport_100);
+  tiling->ComputeTilePriorityRects(viewport_100, 1.f, 2.0, Occlusion());
+
+  // Advance time, but not the viewport.
+  gfx::Rect result = tiling->ComputeSkewport(2.5, viewport_100);
+  // Since the history did advance, we should still get a skewport but a smaller
+  // one.
+  EXPECT_EQ(gfx::Rect(0, 100, 100, 150), result);
+  tiling->ComputeTilePriorityRects(viewport_100, 1.f, 2.5, Occlusion());
+
+  // Advance time again.
+  result = tiling->ComputeSkewport(3.0, viewport_100);
+  EXPECT_EQ(viewport_100, result);
+  tiling->ComputeTilePriorityRects(viewport_100, 1.f, 3.0, Occlusion());
+
+  // Ensure we have a skewport.
+  gfx::Rect viewport_150 = gfx::Rect(0, 150, 100, 100);
+  gfx::Rect skewport_150 = tiling->ComputeSkewport(3.5, viewport_150);
+  EXPECT_EQ(gfx::Rect(0, 150, 100, 150), skewport_150);
+  tiling->ComputeTilePriorityRects(viewport_150, 1.f, 3.5, Occlusion());
+
+  // Advance the viewport, but not the time.
+  gfx::Rect viewport_200 = gfx::Rect(0, 200, 100, 100);
+  gfx::Rect skewport_200 = tiling->ComputeSkewport(3.5, viewport_200);
+  EXPECT_EQ(gfx::Rect(0, 200, 100, 300), skewport_200);
+
+  // Ensure that continued calls with the same value, produce the same skewport.
+  tiling->ComputeTilePriorityRects(viewport_150, 1.f, 3.5, Occlusion());
+  EXPECT_EQ(gfx::Rect(0, 200, 100, 300), skewport_200);
+  tiling->ComputeTilePriorityRects(viewport_150, 1.f, 3.5, Occlusion());
+  EXPECT_EQ(gfx::Rect(0, 200, 100, 300), skewport_200);
+
+  tiling->ComputeTilePriorityRects(viewport_200, 1.f, 3.5, Occlusion());
+
+  // This should never happen, but advance the viewport yet again keeping the
+  // time the same.
+  gfx::Rect viewport_250 = gfx::Rect(0, 250, 100, 100);
+  gfx::Rect skewport_250 = tiling->ComputeSkewport(3.5, viewport_250);
+  EXPECT_EQ(viewport_250, skewport_250);
+  tiling->ComputeTilePriorityRects(viewport_250, 1.f, 3.5, Occlusion());
+}
+
 TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
   FakePictureLayerTilingClient client;
 
