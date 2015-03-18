@@ -154,6 +154,10 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
                                  uint32_t stride,
                                  void* pixels);
 
+  virtual bool CommitProperties(drmModePropertySet* properties,
+                                uint32_t flags,
+                                const PageFlipCallback& callback);
+
   // Drm master related
   virtual bool SetMaster();
   virtual bool DropMaster();

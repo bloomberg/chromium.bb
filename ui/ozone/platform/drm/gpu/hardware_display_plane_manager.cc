@@ -95,7 +95,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
     }
     plane_ids.insert(drm_plane->plane_id);
     scoped_ptr<HardwareDisplayPlane> plane(
-        new HardwareDisplayPlane(drm_plane.Pass()));
+        CreatePlane(drm_plane->plane_id, drm_plane->possible_crtcs));
     if (plane->Initialize(drm))
       planes_.push_back(plane.release());
   }
@@ -107,7 +107,7 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
   for (int i = 0; i < resources->count_crtcs; ++i) {
     if (plane_ids.find(resources->crtcs[i] - 1) == plane_ids.end()) {
       scoped_ptr<HardwareDisplayPlane> dummy_plane(
-          new HardwareDisplayPlane(0, (1 << i)));
+          CreatePlane(resources->crtcs[i] - 1, (1 << i)));
       dummy_plane->set_is_dummy(true);
       if (dummy_plane->Initialize(drm))
         planes_.push_back(dummy_plane.release());
@@ -119,6 +119,13 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
               return l->plane_id() < r->plane_id();
             });
   return true;
+}
+
+scoped_ptr<HardwareDisplayPlane> HardwareDisplayPlaneManager::CreatePlane(
+    uint32_t plane_id,
+    uint32_t possible_crtcs) {
+  return scoped_ptr<HardwareDisplayPlane>(
+      new HardwareDisplayPlane(plane_id, possible_crtcs));
 }
 
 HardwareDisplayPlane* HardwareDisplayPlaneManager::FindNextUnusedPlane(

@@ -41,6 +41,12 @@ void DrmPropertyDeleter::operator()(drmModePropertyRes* property) const {
   drmModeFreeProperty(property);
 }
 
+#if defined(USE_DRM_ATOMIC)
+void DrmPropertySetDeleter::operator()(drmModePropertySet* property) const {
+  drmModePropertySetFree(property);
+}
+#endif  // defined(USE_DRM_ATOMIC)
+
 void DrmPropertyBlobDeleter::operator()(
     drmModePropertyBlobRes* property) const {
   drmModeFreePropertyBlob(property);

@@ -64,6 +64,10 @@ struct OZONE_EXPORT HardwareDisplayPlaneList {
   // pageflipping.
   std::vector<PageFlipInfo> legacy_page_flips;
 
+#if defined(USE_DRM_ATOMIC)
+  ScopedDrmPropertySetPtr atomic_property_set;
+#endif  // defined(USE_DRM_ATOMIC)
+
   // Set if the last operation on this list was a Commit().
   bool committed;
 };
@@ -101,6 +105,10 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
                             uint32_t crtc_id,
                             const gfx::Rect& src_rect,
                             CrtcController* crtc) = 0;
+
+  virtual scoped_ptr<HardwareDisplayPlane> CreatePlane(uint32_t plane_id,
+                                                       uint32_t possible_crtcs);
+
   // Finds the plane located at or after |*index| that is not in use and can
   // be used with |crtc_index|.
   HardwareDisplayPlane* FindNextUnusedPlane(size_t* index, uint32_t crtc_index);

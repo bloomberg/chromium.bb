@@ -7,6 +7,7 @@ import("//ui/ozone/ozone.gni")
 
 declare_args() {
   use_mesa_platform_null = false
+  use_drm_atomic = false
 }
 
 pkg_config("libdrm") {
@@ -81,6 +82,16 @@ source_set("drm_common") {
   ]
 
   defines = [ "OZONE_IMPLEMENTATION" ]
+
+  if (use_drm_atomic) {
+    defines += [ "USE_DRM_ATOMIC" ]
+    sources += [
+      "gpu/hardware_display_plane_atomic.cc",
+      "gpu/hardware_display_plane_atomic.h",
+      "gpu/hardware_display_plane_manager_atomic.cc",
+      "gpu/hardware_display_plane_manager_atomic.h",
+    ]
+  }
 
   deps = [
     "//base",

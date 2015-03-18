@@ -21,6 +21,10 @@
 #include "ui/ozone/platform/drm/gpu/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_legacy.h"
 
+#if defined(USE_DRM_ATOMIC)
+#include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
+#endif
+
 namespace ui {
 
 namespace {
@@ -200,7 +204,11 @@ bool DrmDevice::Initialize() {
     return false;
   }
 
+#if defined(USE_DRM_ATOMIC)
+  plane_manager_.reset(new HardwareDisplayPlaneManagerAtomic());
+#else
   plane_manager_.reset(new HardwareDisplayPlaneManagerLegacy());
+#endif  // defined(USE_DRM_ATOMIC)
   if (!plane_manager_->Initialize(this)) {
     LOG(ERROR) << "Failed to initialize the plane manager for "
                << device_path_.value();
@@ -438,6 +446,24 @@ void DrmDevice::DestroyDumbBuffer(const SkImageInfo& info,
   TRACE_EVENT1("drm", "DrmDevice::DestroyDumbBuffer", "handle", handle);
   munmap(pixels, info.getSafeSize(stride));
   DrmDestroyDumbBuffer(file_.GetPlatformFile(), handle);
+}
+
+bool DrmDevice::CommitProperties(drmModePropertySet* properties,
+                                 uint32_t flags,
+                                 const PageFlipCallback& callback) {
+#if defined(USE_DRM_ATOMIC)
+  scoped_ptr<PageFlipPayload> payload(
+      new PageFlipPayload(base::ThreadTaskRunnerHandle::Get(), callback));
+  if (!drmModePropertySetCommit(file_.GetPlatformFile(), flags, payload.get(),
+                                properties)) {
+    // If successful the payload will be removed by the event
+    ignore_result(payload.release());
+    return true;
+  }
+  return false;
+#else
+  return false;
+#endif  // defined(USE_DRM_ATOMIC)
 }
 
 bool DrmDevice::SetMaster() {

@@ -22,12 +22,11 @@ class DrmDevice;
 
 class OZONE_EXPORT HardwareDisplayPlane {
  public:
-  HardwareDisplayPlane(ScopedDrmPlanePtr plane);
   HardwareDisplayPlane(uint32_t plane_id, uint32_t possible_crtcs);
 
   virtual ~HardwareDisplayPlane();
 
-  bool Initialize(DrmDevice* drm);
+  virtual bool Initialize(DrmDevice* drm);
 
   bool CanUseForCrtc(uint32_t crtc_index);
 
