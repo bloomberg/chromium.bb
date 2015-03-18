@@ -186,6 +186,30 @@ LayoutRect InlineFlowBoxPainter::paintRectForImageStrip(const LayoutPoint& paint
     return LayoutRect(stripX, stripY, stripWidth, stripHeight);
 }
 
+
+InlineFlowBoxPainter::BorderPaintingType InlineFlowBoxPainter::getBorderPaintType(const LayoutRect& adjustedFrameRect, LayoutRect& adjustedClipRect) const
+{
+    adjustedClipRect = adjustedFrameRect;
+    if (m_inlineFlowBox.parent() && m_inlineFlowBox.layoutObject().style()->hasBorder()) {
+        const NinePieceImage& borderImage = m_inlineFlowBox.layoutObject().style()->borderImage();
+        StyleImage* borderImageSource = borderImage.image();
+        const LayoutStyle* styleToUse = m_inlineFlowBox.layoutObject().style(m_inlineFlowBox.isFirstLineStyle());
+        bool hasBorderImage = borderImageSource && borderImageSource->canRender(m_inlineFlowBox.layoutObject(), styleToUse->effectiveZoom());
+        if (hasBorderImage && !borderImageSource->isLoaded())
+            return DontPaintBorders;
+
+        // The simple case is where we either have no border image or we are the only box for this object.
+        // In those cases only a single call to draw is required.
+        if (!hasBorderImage || (!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox()))
+            return PaintBordersWithoutClip;
+
+        // We have a border image that spans multiple lines.
+        adjustedClipRect = clipRectForNinePieceImageStrip(&m_inlineFlowBox, borderImage, adjustedFrameRect);
+        return PaintBordersWithClip;
+    }
+    return DontPaintBorders;
+}
+
 void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground);
@@ -211,43 +235,38 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
     m_inlineFlowBox.flipForWritingMode(localRect);
     LayoutPoint adjustedPaintOffset = paintOffset + localRect.location();
 
-    LayoutRect paintRect = LayoutRect(adjustedPaintOffset, frameRect.size());
+    LayoutRect adjustedFrameRect = LayoutRect(adjustedPaintOffset, frameRect.size());
 
-    DrawingRecorder recorder(paintInfo.context, m_inlineFlowBox.displayItemClient(), DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(paintRect));
+    LayoutRect adjustedClipRect;
+    BorderPaintingType borderPaintingType = getBorderPaintType(adjustedFrameRect, adjustedClipRect);
+
+    DrawingRecorder recorder(paintInfo.context, m_inlineFlowBox.displayItemClient(), DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(adjustedClipRect));
     if (recorder.canUseCachedDrawing())
         return;
 
     // Shadow comes first and is behind the background and border.
     if (!m_inlineFlowBox.boxModelObject()->boxShadowShouldBeAppliedToBackground(BackgroundBleedNone, &m_inlineFlowBox))
-        paintBoxShadow(paintInfo, *styleToUse, Normal, paintRect);
+        paintBoxShadow(paintInfo, *styleToUse, Normal, adjustedFrameRect);
 
     Color backgroundColor = m_inlineFlowBox.layoutObject().resolveColor(*styleToUse, CSSPropertyBackgroundColor);
-    paintFillLayers(paintInfo, backgroundColor, styleToUse->backgroundLayers(), paintRect);
-    paintBoxShadow(paintInfo, *styleToUse, Inset, paintRect);
+    paintFillLayers(paintInfo, backgroundColor, styleToUse->backgroundLayers(), adjustedFrameRect);
+    paintBoxShadow(paintInfo, *styleToUse, Inset, adjustedFrameRect);
 
-    // :first-line cannot be used to put borders on a line. Always paint borders with our
-    // non-first-line style.
-    if (m_inlineFlowBox.parent() && m_inlineFlowBox.layoutObject().style()->hasBorder()) {
-        const NinePieceImage& borderImage = m_inlineFlowBox.layoutObject().style()->borderImage();
-        StyleImage* borderImageSource = borderImage.image();
-        bool hasBorderImage = borderImageSource && borderImageSource->canRender(m_inlineFlowBox.layoutObject(), styleToUse->effectiveZoom());
-        if (hasBorderImage && !borderImageSource->isLoaded())
-            return; // Don't paint anything while we wait for the image to load.
-
-        // The simple case is where we either have no border image or we are the only box for this object.
-        // In those cases only a single call to draw is required.
-        if (!hasBorderImage || (!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox())) {
-            BoxPainter::paintBorder(*m_inlineFlowBox.boxModelObject(), paintInfo, paintRect, m_inlineFlowBox.layoutObject().styleRef(m_inlineFlowBox.isFirstLineStyle()), BackgroundBleedNone, m_inlineFlowBox.includeLogicalLeftEdge(), m_inlineFlowBox.includeLogicalRightEdge());
-        } else {
-            // We have a border image that spans multiple lines.
-            // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
-            // but it isn't even clear how this should work at all.
-            LayoutRect imageStripPaintRect = paintRectForImageStrip(adjustedPaintOffset, frameRect.size(), LTR);
-            LayoutRect clipRect = clipRectForNinePieceImageStrip(&m_inlineFlowBox, borderImage, paintRect);
-            GraphicsContextStateSaver stateSaver(*paintInfo.context);
-            paintInfo.context->clip(clipRect);
-            BoxPainter::paintBorder(*m_inlineFlowBox.boxModelObject(), paintInfo, imageStripPaintRect, m_inlineFlowBox.layoutObject().styleRef(m_inlineFlowBox.isFirstLineStyle()));
-        }
+    switch (borderPaintingType) {
+    case DontPaintBorders:
+        break;
+    case PaintBordersWithoutClip:
+        BoxPainter::paintBorder(*m_inlineFlowBox.boxModelObject(), paintInfo, adjustedFrameRect, m_inlineFlowBox.layoutObject().styleRef(m_inlineFlowBox.isFirstLineStyle()),
+            BackgroundBleedNone, m_inlineFlowBox.includeLogicalLeftEdge(), m_inlineFlowBox.includeLogicalRightEdge());
+        break;
+    case PaintBordersWithClip:
+        // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
+        // but it isn't even clear how this should work at all.
+        LayoutRect imageStripPaintRect = paintRectForImageStrip(adjustedPaintOffset, frameRect.size(), LTR);
+        GraphicsContextStateSaver stateSaver(*paintInfo.context);
+        paintInfo.context->clip(adjustedClipRect);
+        BoxPainter::paintBorder(*m_inlineFlowBox.boxModelObject(), paintInfo, imageStripPaintRect, m_inlineFlowBox.layoutObject().styleRef(m_inlineFlowBox.isFirstLineStyle()));
+        break;
     }
 }
 

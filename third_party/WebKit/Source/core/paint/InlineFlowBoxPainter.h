@@ -35,6 +35,13 @@ private:
     LayoutRect roundedFrameRectClampedToLineTopAndBottomIfNeeded() const;
     LayoutRect paintRectForImageStrip(const LayoutPoint&, const LayoutSize&, TextDirection) const;
 
+    enum BorderPaintingType {
+        DontPaintBorders,
+        PaintBordersWithoutClip,
+        PaintBordersWithClip
+    };
+    BorderPaintingType getBorderPaintType(const LayoutRect& adjustedFrameRect, LayoutRect& adjustedClipRect) const;
+
     InlineFlowBox& m_inlineFlowBox;
 };
 

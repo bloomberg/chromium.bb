@@ -52,9 +52,6 @@ crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer
 crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer.html [ ImageOnlyFailure ]
 
 # Incorrect cull rects cause failure when we raster via SkPicture
-crbug.com/460198 virtual/slimmingpaint/fast/borders/border-image-outset-split-inline-vertical-lr.html [ ImageOnlyFailure Pass ]
-crbug.com/460198 [ Mac Linux ] virtual/slimmingpaint/fast/css/transformed-mask.html [ ImageOnlyFailure Pass ]
-crbug.com/460198 virtual/slimmingpaint/svg/text/text-align-05-b.svg [ ImageOnlyFailure Pass ]
 crbug.com/460198 virtual/slimmingpaint/fast/css/outline-narrowLine.html [ ImageOnlyFailure Pass ]
 crbug.com/460198 virtual/slimmingpaint/fast/borders/outline-alpha-inline.html [ ImageOnlyFailure Pass ]
 crbug.com/460198 virtual/slimmingpaint/fast/text/emphasis.html [ ImageOnlyFailure Pass ]
@@ -67,6 +64,9 @@ crbug.com/464039 [ Mac ] fast/block/float/float-mark-descendants-for-layout-cras
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 
 crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Failure Pass ]
+
+crbug.com/460198 virtual/slimmingpaint/fast/css/transformed-mask.html [ NeedsRebaseline ]
+crbug.com/460198 virtual/slimmingpaint/svg/text/text-align-05-b.svg [ NeedsRebaseline ]
 
 crbug.com/307782 [ Win ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
 crbug.com/316146 [ XP ] http/tests/cache/cached-main-resource.html [ Pass Timeout ]
@@ -228,7 +228,6 @@ crbug.com/443804 virtual/slimmingpaint/fast/css/ZeroOpacityLayers2.html [ ImageO
 
 crbug.com/242735 virtual/slimmingpaint/fast/css/ex-unit-with-no-x-height.html [ Failure ]
 crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/css3-ch-unit.html [ Failure ]
-crbug.com/444591 [ Win ] virtual/slimmingpaint/fast/css/transformed-mask.html [ ImageOnlyFailure ]
 
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html [ Failure ]
 crbug.com/404303 imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/getusermedia-optional-constraint.html [ Failure ]
