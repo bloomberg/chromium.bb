@@ -11,6 +11,14 @@ exposing its interface to ATK from the command line.
 
 import pyatspi
 
+# Helper function to check application name
+def AppNameFinder(name):
+  if (name.lower().find('chromium') !=0 and
+      name.lower().find('chrome') !=0 and
+      name.lower().find('google chrome') != 0):
+    return False
+  return True
+
 def Dump(obj, indent):
   if not obj:
     return
@@ -21,8 +29,7 @@ def Dump(obj, indent):
 
   # Don't recurse into applications other than Chrome
   if role == 'application':
-    if (name.lower().find('chrom') != 0 and
-        name.lower().find('google chrome') != 0):
+    if (not AppNameFinder(name)):
       return
 
   for i in range(obj.get_child_count()):
