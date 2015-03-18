@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Changes to analytics reporting structures can have disruptive effects on the
+// analytics history of Files.app (e.g. making it hard or impossible to detect
+// trending).
+//
+// In general, treat changes to analytics like histogram changes, i.e. make
+// additive changes, don't remove or rename existing Dimensions, Events, Labels,
+// etc.
+//
+// Changes to this file will need to be reviewed by someone familiar with the
+// analytics system.
+
 // namespace
 var metrics = metrics || metricsBase;
 
