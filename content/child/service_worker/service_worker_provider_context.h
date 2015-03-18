@@ -24,9 +24,9 @@ class Message;
 namespace content {
 
 class ServiceWorkerHandleReference;
-class ServiceWorkerMessageSender;
 class ServiceWorkerRegistrationHandleReference;
 struct ServiceWorkerProviderContextDeleter;
+class ThreadSafeSender;
 
 // An instance of this class holds information related to Document/Worker.
 // Created and destructed on the main thread. Some functions can be called
@@ -91,7 +91,7 @@ class ServiceWorkerProviderContext
 
   const int provider_id_;
   scoped_refptr<base::MessageLoopProxy> main_thread_loop_proxy_;
-  scoped_refptr<ServiceWorkerMessageSender> sender_;
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   // Protects (installing, waiting, active) worker and registration references.
   base::Lock lock_;

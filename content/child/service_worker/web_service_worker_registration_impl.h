@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRegistration.h"
 
 namespace blink {
@@ -22,7 +21,7 @@ class ServiceWorkerRegistrationHandleReference;
 class ThreadSafeSender;
 struct ServiceWorkerObjectInfo;
 
-class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
+class WebServiceWorkerRegistrationImpl
     : NON_EXPORTED_BASE(public blink::WebServiceWorkerRegistration) {
  public:
   explicit WebServiceWorkerRegistrationImpl(

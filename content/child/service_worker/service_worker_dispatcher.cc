@@ -10,7 +10,6 @@
 #include "base/trace_event/trace_event.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
-#include "content/child/service_worker/service_worker_message_sender.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
@@ -46,8 +45,8 @@ int CurrentWorkerId() {
 }  // namespace
 
 ServiceWorkerDispatcher::ServiceWorkerDispatcher(
-    ServiceWorkerMessageSender* sender)
-    : sender_(sender) {
+    ThreadSafeSender* thread_safe_sender)
+    : thread_safe_sender_(thread_safe_sender) {
   g_dispatcher_tls.Pointer()->Set(this);
 }
 
@@ -92,6 +91,10 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
   DCHECK(handled) << "Unhandled message:" << msg.type();
 }
 
+bool ServiceWorkerDispatcher::Send(IPC::Message* msg) {
+  return thread_safe_sender_->Send(msg);
+}
+
 void ServiceWorkerDispatcher::RegisterServiceWorker(
     int provider_id,
     const GURL& pattern,
@@ -118,7 +121,7 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
                            request_id,
                            "Scope", pattern.spec(),
                            "Script URL", script_url.spec());
-  sender_->Send(new ServiceWorkerHostMsg_RegisterServiceWorker(
+  thread_safe_sender_->Send(new ServiceWorkerHostMsg_RegisterServiceWorker(
       CurrentWorkerId(), request_id, provider_id, pattern, script_url));
 }
 
@@ -145,7 +148,7 @@ void ServiceWorkerDispatcher::UnregisterServiceWorker(
                            "ServiceWorkerDispatcher::UnregisterServiceWorker",
                            request_id,
                            "Scope", pattern.spec());
-  sender_->Send(new ServiceWorkerHostMsg_UnregisterServiceWorker(
+  thread_safe_sender_->Send(new ServiceWorkerHostMsg_UnregisterServiceWorker(
       CurrentWorkerId(), request_id, provider_id, pattern));
 }
 
@@ -172,7 +175,7 @@ void ServiceWorkerDispatcher::GetRegistration(
                            "ServiceWorkerDispatcher::GetRegistration",
                            request_id,
                            "Document URL", document_url.spec());
-  sender_->Send(new ServiceWorkerHostMsg_GetRegistration(
+  thread_safe_sender_->Send(new ServiceWorkerHostMsg_GetRegistration(
       CurrentWorkerId(), request_id, provider_id, document_url));
 }
 
@@ -183,7 +186,7 @@ void ServiceWorkerDispatcher::GetRegistrationForReady(
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
                            "ServiceWorkerDispatcher::GetRegistrationForReady",
                            request_id);
-  sender_->Send(new ServiceWorkerHostMsg_GetRegistrationForReady(
+  thread_safe_sender_->Send(new ServiceWorkerHostMsg_GetRegistrationForReady(
       CurrentWorkerId(), request_id, provider_id));
 }
 
@@ -222,7 +225,7 @@ void ServiceWorkerDispatcher::RemoveProviderClient(int provider_id) {
 
 ServiceWorkerDispatcher*
 ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
-    ServiceWorkerMessageSender* sender) {
+    ThreadSafeSender* thread_safe_sender) {
   if (g_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted) {
     NOTREACHED() << "Re-instantiating TLS ServiceWorkerDispatcher.";
     g_dispatcher_tls.Pointer()->Set(NULL);
@@ -231,7 +234,7 @@ ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
     return g_dispatcher_tls.Pointer()->Get();
 
   ServiceWorkerDispatcher* dispatcher =
-      new ServiceWorkerDispatcher(sender);
+      new ServiceWorkerDispatcher(thread_safe_sender);
   if (WorkerTaskRunner::Instance()->CurrentWorkerId())
     WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
   return dispatcher;
@@ -260,17 +263,18 @@ WebServiceWorkerImpl* ServiceWorkerDispatcher::GetServiceWorker(
     if (adopt_handle) {
       // We are instructed to adopt a handle but we already have one, so
       // adopt and destroy a handle ref.
-      ServiceWorkerHandleReference::Adopt(info, sender_.get());
+      ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
     }
     return existing_worker->second;
   }
 
   scoped_ptr<ServiceWorkerHandleReference> handle_ref =
       adopt_handle
-          ? ServiceWorkerHandleReference::Adopt(info, sender_.get())
-          : ServiceWorkerHandleReference::Create(info, sender_.get());
+          ? ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get())
+          : ServiceWorkerHandleReference::Create(info,
+                                                 thread_safe_sender_.get());
   // WebServiceWorkerImpl constructor calls AddServiceWorker.
-  return new WebServiceWorkerImpl(handle_ref.Pass(), sender_.get());
+  return new WebServiceWorkerImpl(handle_ref.Pass(), thread_safe_sender_.get());
 }
 
 WebServiceWorkerRegistrationImpl*
@@ -283,9 +287,9 @@ ServiceWorkerDispatcher::CreateServiceWorkerRegistration(
 
   scoped_ptr<ServiceWorkerRegistrationHandleReference> handle_ref =
       adopt_handle ? ServiceWorkerRegistrationHandleReference::Adopt(
-                         info, sender_.get())
+                         info, thread_safe_sender_.get())
                    : ServiceWorkerRegistrationHandleReference::Create(
-                         info, sender_.get());
+                         info, thread_safe_sender_.get());
 
   // WebServiceWorkerRegistrationImpl constructor calls
   // AddServiceWorkerRegistration.
@@ -669,10 +673,14 @@ ServiceWorkerDispatcher::FindOrCreateRegistration(
     const ServiceWorkerVersionAttributes& attrs) {
   RegistrationObjectMap::iterator found = registrations_.find(info.handle_id);
   if (found != registrations_.end()) {
-    ServiceWorkerRegistrationHandleReference::Adopt(info, sender_.get());
-    ServiceWorkerHandleReference::Adopt(attrs.installing, sender_.get());
-    ServiceWorkerHandleReference::Adopt(attrs.waiting, sender_.get());
-    ServiceWorkerHandleReference::Adopt(attrs.active, sender_.get());
+    ServiceWorkerRegistrationHandleReference::Adopt(info,
+                                                    thread_safe_sender_.get());
+    ServiceWorkerHandleReference::Adopt(attrs.installing,
+                                        thread_safe_sender_.get());
+    ServiceWorkerHandleReference::Adopt(attrs.waiting,
+                                        thread_safe_sender_.get());
+    ServiceWorkerHandleReference::Adopt(attrs.active,
+                                        thread_safe_sender_.get());
     return found->second;
   }
 

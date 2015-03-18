@@ -4,7 +4,7 @@
 
 #include "content/child/service_worker/service_worker_handle_reference.h"
 
-#include "content/child/service_worker/service_worker_message_sender.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_messages.h"
 
 namespace content {
@@ -12,23 +12,24 @@ namespace content {
 scoped_ptr<ServiceWorkerHandleReference>
 ServiceWorkerHandleReference::Create(
     const ServiceWorkerObjectInfo& info,
-    ServiceWorkerMessageSender* sender) {
+    ThreadSafeSender* sender) {
+  DCHECK(sender);
   return make_scoped_ptr(new ServiceWorkerHandleReference(info, sender, true));
 }
 
 scoped_ptr<ServiceWorkerHandleReference> ServiceWorkerHandleReference::Adopt(
     const ServiceWorkerObjectInfo& info,
-    ServiceWorkerMessageSender* sender) {
+    ThreadSafeSender* sender) {
+  DCHECK(sender);
   return make_scoped_ptr(new ServiceWorkerHandleReference(info, sender, false));
 }
 
 ServiceWorkerHandleReference::ServiceWorkerHandleReference(
     const ServiceWorkerObjectInfo& info,
-    ServiceWorkerMessageSender* sender,
+    ThreadSafeSender* sender,
     bool increment_ref_in_ctor)
     : info_(info),
       sender_(sender) {
-  DCHECK(sender_);
   if (increment_ref_in_ctor &&
       info_.handle_id != kInvalidServiceWorkerHandleId) {
     sender_->Send(

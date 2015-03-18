@@ -10,7 +10,6 @@
 
 namespace content {
 
-class ServiceWorkerMessageSender;
 struct ServiceWorkerObjectInfo;
 struct ServiceWorkerRegistrationObjectInfo;
 struct ServiceWorkerVersionAttributes;
@@ -50,8 +49,6 @@ class CONTENT_EXPORT ServiceWorkerMessageFilter
       int provider_id,
       const ServiceWorkerObjectInfo& info,
       bool should_notify_controllerchange);
-
-  scoped_refptr<ServiceWorkerMessageSender> sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerMessageFilter);
 };

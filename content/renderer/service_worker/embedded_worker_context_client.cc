@@ -17,7 +17,6 @@
 #include "base/trace_event/trace_event.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
-#include "content/child/service_worker/service_worker_message_sender.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/service_worker_registration_handle_reference.h"
@@ -106,8 +105,7 @@ EmbeddedWorkerContextClient::EmbeddedWorkerContextClient(
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
       worker_devtools_agent_route_id_(worker_devtools_agent_route_id),
-      sender_(new ServiceWorkerMessageSender(
-          ChildThreadImpl::current()->thread_safe_sender())),
+      sender_(ChildThreadImpl::current()->thread_safe_sender()),
       main_thread_task_runner_(RenderThreadImpl::current()->GetTaskRunner()),
       weak_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
@@ -284,7 +282,7 @@ void EmbeddedWorkerContextClient::sendDevToolsMessage(
     const blink::WebString& message,
     const blink::WebString& state_cookie) {
   DevToolsAgent::SendChunkedProtocolMessage(
-      sender_->thread_safe_sender(), worker_devtools_agent_route_id_,
+      sender_.get(), worker_devtools_agent_route_id_,
       call_id, message.utf8(), state_cookie.utf8());
 }
 
@@ -388,7 +386,7 @@ EmbeddedWorkerContextClient::createServiceWorkerProvider() {
 
   // Blink is responsible for deleting the returned object.
   return new WebServiceWorkerProviderImpl(
-      sender()->thread_safe_sender(), provider_context_.get());
+      thread_safe_sender(), provider_context_.get());
 }
 
 void EmbeddedWorkerContextClient::postMessageToClient(
@@ -459,7 +457,8 @@ void EmbeddedWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope() {
     return;  // Cannot be associated with a registration in some tests.
 
   ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(sender());
+      ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance(
+          thread_safe_sender());
 
   // Register a registration and its version attributes with the dispatcher
   // living on the worker thread.

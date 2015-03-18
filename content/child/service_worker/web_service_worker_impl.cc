@@ -6,7 +6,7 @@
 
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
-#include "content/child/service_worker/service_worker_message_sender.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProxy.h"
@@ -21,10 +21,10 @@ namespace content {
 
 WebServiceWorkerImpl::WebServiceWorkerImpl(
     scoped_ptr<ServiceWorkerHandleReference> handle_ref,
-    ServiceWorkerMessageSender* sender)
+    ThreadSafeSender* thread_safe_sender)
     : handle_ref_(handle_ref.Pass()),
       state_(handle_ref_->state()),
-      sender_(sender),
+      thread_safe_sender_(thread_safe_sender),
       proxy_(NULL) {
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
@@ -65,14 +65,14 @@ blink::WebServiceWorkerState WebServiceWorkerImpl::state() const {
 
 void WebServiceWorkerImpl::postMessage(const WebString& message,
                                        WebMessagePortChannelArray* channels) {
-  sender_->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
+  thread_safe_sender_->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
       handle_ref_->handle_id(),
       message,
       WebMessagePortChannelImpl::ExtractMessagePortIDs(channels)));
 }
 
 void WebServiceWorkerImpl::terminate() {
-  sender_->Send(
+  thread_safe_sender_->Send(
       new ServiceWorkerHostMsg_TerminateWorker(handle_ref_->handle_id()));
 }
 

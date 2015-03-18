@@ -25,7 +25,6 @@ class WebServiceWorkerProvider;
 
 namespace content {
 
-class ServiceWorkerMessageSender;
 class ServiceWorkerProviderContext;
 class ServiceWorkerScriptContext;
 class ThreadSafeSender;
@@ -135,7 +134,7 @@ class EmbeddedWorkerContextClient
   base::SingleThreadTaskRunner* main_thread_task_runner() const {
     return main_thread_task_runner_.get();
   }
-  ServiceWorkerMessageSender* sender() { return sender_.get(); }
+  ThreadSafeSender* thread_safe_sender() { return sender_.get(); }
 
  private:
   void OnMessageToWorker(int thread_id,
@@ -149,7 +148,7 @@ class EmbeddedWorkerContextClient
   const GURL service_worker_scope_;
   const GURL script_url_;
   const int worker_devtools_agent_route_id_;
-  scoped_refptr<ServiceWorkerMessageSender> sender_;
+  scoped_refptr<ThreadSafeSender> sender_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;
 

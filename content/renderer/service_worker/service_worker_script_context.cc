@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "content/child/notifications/notification_data_conversions.h"
-#include "content/child/service_worker/service_worker_message_sender.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
@@ -33,7 +32,7 @@ namespace content {
 namespace {
 
 void SendPostMessageToClientOnMainThread(
-    ServiceWorkerMessageSender* sender,
+    ThreadSafeSender* sender,
     int routing_id,
     const std::string& uuid,
     const base::string16& message,
@@ -44,7 +43,7 @@ void SendPostMessageToClientOnMainThread(
 }
 
 void SendCrossOriginMessageToClientOnMainThread(
-    ServiceWorkerMessageSender* sender,
+    ThreadSafeSender* sender,
     int message_port_id,
     const base::string16& message,
     scoped_ptr<blink::WebMessagePortChannelArray> channels) {
@@ -266,7 +265,7 @@ void ServiceWorkerScriptContext::PostMessageToClient(
   embedded_context_->main_thread_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&SendPostMessageToClientOnMainThread,
-                 make_scoped_refptr(embedded_context_->sender()),
+                 make_scoped_refptr(embedded_context_->thread_safe_sender()),
                  GetRoutingID(),
                  base::UTF16ToUTF8(uuid),
                  message, base::Passed(&channels)));
@@ -283,7 +282,7 @@ void ServiceWorkerScriptContext::PostCrossOriginMessageToClient(
   embedded_context_->main_thread_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&SendCrossOriginMessageToClientOnMainThread,
-                 make_scoped_refptr(embedded_context_->sender()),
+                 make_scoped_refptr(embedded_context_->thread_safe_sender()),
                  client.clientID, message, base::Passed(&channels)));
 }
 
