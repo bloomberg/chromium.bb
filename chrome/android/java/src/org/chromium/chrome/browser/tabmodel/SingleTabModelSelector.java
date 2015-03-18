@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package com.google.android.apps.chrome.tabmodel;
+package org.chromium.chrome.browser.tabmodel;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,9 +10,7 @@ import android.content.Intent;
 import android.net.Uri;
 
 import org.chromium.chrome.browser.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorBase;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**

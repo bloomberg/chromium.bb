@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package com.google.android.apps.chrome.tabmodel;
+package org.chromium.chrome.browser.tabmodel;
 
 import android.app.Activity;
 
@@ -10,9 +10,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tabmodel.TabList;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 
 /**
  * Simple TabModel that assumes that only one Tab exists.
