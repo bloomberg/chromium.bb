@@ -140,12 +140,10 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
                        float contents_scale,
                        PictureRegionMap* result) const;
 
-  void RasterCommon(
-      SkCanvas* canvas,
-      SkDrawPictureCallback* callback,
-      const gfx::Rect& canvas_rect,
-      float contents_scale,
-      bool is_analysis) const;
+  void RasterCommon(SkCanvas* canvas,
+                    SkDrawPictureCallback* callback,
+                    const gfx::Rect& canvas_rect,
+                    float contents_scale) const;
 
   // An internal CanRaster check that goes to the picture_map rather than
   // using the recorded_viewport hint.

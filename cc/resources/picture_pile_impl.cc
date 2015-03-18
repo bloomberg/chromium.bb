@@ -80,17 +80,13 @@ PicturePileImpl::~PicturePileImpl() {
 void PicturePileImpl::PlaybackToSharedCanvas(SkCanvas* canvas,
                                              const gfx::Rect& canvas_rect,
                                              float contents_scale) const {
-  RasterCommon(canvas,
-               NULL,
-               canvas_rect,
-               contents_scale,
-               false);
+  RasterCommon(canvas, NULL, canvas_rect, contents_scale);
 }
 
 void PicturePileImpl::RasterForAnalysis(skia::AnalysisCanvas* canvas,
                                         const gfx::Rect& canvas_rect,
                                         float contents_scale) const {
-  RasterCommon(canvas, canvas, canvas_rect, contents_scale, true);
+  RasterCommon(canvas, canvas, canvas_rect, contents_scale);
 }
 
 void PicturePileImpl::PlaybackToCanvas(SkCanvas* canvas,
@@ -99,11 +95,7 @@ void PicturePileImpl::PlaybackToCanvas(SkCanvas* canvas,
   RasterSourceHelper::PrepareForPlaybackToCanvas(
       canvas, canvas_rect, gfx::Rect(tiling_.tiling_size()), contents_scale,
       background_color_, clear_canvas_with_debug_color_, requires_clear_);
-  RasterCommon(canvas,
-               NULL,
-               canvas_rect,
-               contents_scale,
-               false);
+  RasterCommon(canvas, NULL, canvas_rect, contents_scale);
 }
 
 void PicturePileImpl::CoalesceRasters(const gfx::Rect& canvas_rect,
@@ -201,12 +193,10 @@ void PicturePileImpl::CoalesceRasters(const gfx::Rect& canvas_rect,
   }
 }
 
-void PicturePileImpl::RasterCommon(
-    SkCanvas* canvas,
-    SkDrawPictureCallback* callback,
-    const gfx::Rect& canvas_rect,
-    float contents_scale,
-    bool is_analysis) const {
+void PicturePileImpl::RasterCommon(SkCanvas* canvas,
+                                   SkDrawPictureCallback* callback,
+                                   const gfx::Rect& canvas_rect,
+                                   float contents_scale) const {
   DCHECK(contents_scale >= min_contents_scale_);
 
   canvas->translate(-canvas_rect.x(), -canvas_rect.y());

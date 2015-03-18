@@ -87,13 +87,13 @@ void DisplayListRasterSource::PlaybackToSharedCanvas(
     SkCanvas* canvas,
     const gfx::Rect& canvas_rect,
     float contents_scale) const {
-  RasterCommon(canvas, NULL, canvas_rect, contents_scale, false);
+  RasterCommon(canvas, NULL, canvas_rect, contents_scale);
 }
 
 void DisplayListRasterSource::RasterForAnalysis(skia::AnalysisCanvas* canvas,
                                                 const gfx::Rect& canvas_rect,
                                                 float contents_scale) const {
-  RasterCommon(canvas, canvas, canvas_rect, contents_scale, true);
+  RasterCommon(canvas, canvas, canvas_rect, contents_scale);
 }
 
 void DisplayListRasterSource::PlaybackToCanvas(SkCanvas* canvas,
@@ -103,14 +103,13 @@ void DisplayListRasterSource::PlaybackToCanvas(SkCanvas* canvas,
       canvas, canvas_rect, gfx::Rect(size_), contents_scale, background_color_,
       clear_canvas_with_debug_color_, requires_clear_);
 
-  RasterCommon(canvas, NULL, canvas_rect, contents_scale, false);
+  RasterCommon(canvas, NULL, canvas_rect, contents_scale);
 }
 
 void DisplayListRasterSource::RasterCommon(SkCanvas* canvas,
                                            SkDrawPictureCallback* callback,
                                            const gfx::Rect& canvas_rect,
-                                           float contents_scale,
-                                           bool is_analysis) const {
+                                           float contents_scale) const {
   canvas->translate(-canvas_rect.x(), -canvas_rect.y());
   gfx::Rect content_rect =
       gfx::ToEnclosingRect(gfx::ScaleRect(gfx::Rect(size_), contents_scale));

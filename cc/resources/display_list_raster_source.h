@@ -88,8 +88,7 @@ class CC_EXPORT DisplayListRasterSource : public RasterSource {
   void RasterCommon(SkCanvas* canvas,
                     SkDrawPictureCallback* callback,
                     const gfx::Rect& canvas_rect,
-                    float contents_scale,
-                    bool is_analysis) const;
+                    float contents_scale) const;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayListRasterSource);
 };
