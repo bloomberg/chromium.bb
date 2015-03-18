@@ -58,7 +58,7 @@ headless_output_start_repaint_loop(struct weston_output *output)
 {
 	struct timespec ts;
 
-	clock_gettime(output->compositor->presentation_clock, &ts);
+	weston_compositor_read_presentation_clock(output->compositor, &ts);
 	weston_output_finish_frame(output, &ts, PRESENTATION_FEEDBACK_INVALID);
 }
 
@@ -68,7 +68,7 @@ finish_frame_handler(void *data)
 	struct headless_output *output = data;
 	struct timespec ts;
 
-	clock_gettime(output->base.compositor->presentation_clock, &ts);
+	weston_compositor_read_presentation_clock(output->base.compositor, &ts);
 	weston_output_finish_frame(&output->base, &ts, 0);
 
 	return 1;

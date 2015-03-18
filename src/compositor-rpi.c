@@ -217,7 +217,7 @@ rpi_output_start_repaint_loop(struct weston_output *output)
 	struct timespec ts;
 
 	/* XXX: do a phony dispmanx update and trigger on its completion? */
-	clock_gettime(output->compositor->presentation_clock, &ts);
+	weston_compositor_read_presentation_clock(output->compositor, &ts);
 	weston_output_finish_frame(output, &ts, PRESENTATION_FEEDBACK_INVALID);
 }
 

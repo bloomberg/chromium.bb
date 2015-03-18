@@ -4618,6 +4618,39 @@ weston_compositor_set_presentation_clock_software(
 	return -1;
 }
 
+/** Read the current time from the Presentation clock
+ *
+ * \param compositor
+ * \param ts[out] The current time.
+ *
+ * \note Reading the current time in user space is always imprecise to some
+ * degree.
+ *
+ * This function is never meant to fail. If reading the clock does fail,
+ * an error message is logged and a zero time is returned. Callers are not
+ * supposed to detect or react to failures.
+ */
+WL_EXPORT void
+weston_compositor_read_presentation_clock(
+			const struct weston_compositor *compositor,
+			struct timespec *ts)
+{
+	static bool warned;
+	int ret;
+
+	ret = clock_gettime(compositor->presentation_clock, ts);
+	if (ret < 0) {
+		ts->tv_sec = 0;
+		ts->tv_nsec = 0;
+
+		if (!warned)
+			weston_log("Error: failure to read "
+				   "the presentation clock %#x: '%m' (%d)\n",
+				   compositor->presentation_clock, errno);
+		warned = true;
+	}
+}
+
 WL_EXPORT void
 weston_version(int *major, int *minor, int *micro)
 {
