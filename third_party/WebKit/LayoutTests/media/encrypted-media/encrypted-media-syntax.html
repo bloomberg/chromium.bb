@@ -342,7 +342,16 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                var isWebmSupported;
+                var isCencSupported;
+
+                isInitDataTypeSupported('webm').then(function(result) {
+                    isWebmSupported = result;
+                    return isInitDataTypeSupported('cenc');
+                }).then(function(result) {
+                    isCencSupported = result;
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var initData = stringToUint8Array('init data');
@@ -352,7 +361,7 @@
 
                     // Test that WebM sessions generate the expected error, if
                     // supported.
-                    if (isInitDataTypeSupported('webm')) {
+                    if (isWebmSupported) {
                         var WebmSessionPromises = kTypeSpecificGenerateRequestExceptionsTestCases.map(function(testCase) {
                             return test_exception(testCase, mediaKeys, 'webm', getInitData('webm'));
                         });
@@ -360,7 +369,7 @@
                     }
 
                     // Repeat for MP4, if supported.
-                    if (isInitDataTypeSupported('cenc')) {
+                    if (isCencSupported) {
                         var mp4SessionPromises = kTypeSpecificGenerateRequestExceptionsTestCases.map(function(testCase) {
                             return test_exception(testCase, mediaKeys, 'cenc', getInitData('cenc'));
                         });
@@ -524,14 +533,23 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                var isWebmSupported;
+                var isCencSupported;
+
+                isInitDataTypeSupported('webm').then(function(result) {
+                    isWebmSupported = result;
+                    return isInitDataTypeSupported('cenc');
+                }).then(function(result) {
+                    isCencSupported = result;
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var sessionPromises = [];
 
                     // Test that WebM sessions generate the expected error, if
                     // supported.
-                    if (isInitDataTypeSupported('webm')) {
+                    if (isWebmSupported) {
                         var WebmSessionPromises = kCreateSessionTestCases.map(function(testCase) {
                             return test_generateRequest(testCase, mediaKeys, 'webm', getInitData('webm'));
                         });
@@ -539,7 +557,7 @@
                     }
 
                     // Repeat for MP4, if supported.
-                    if (isInitDataTypeSupported('cenc')) {
+                    if (isCencSupported) {
                         var mp4SessionPromises = kCreateSessionTestCases.map(function(testCase) {
                             return test_generateRequest(testCase, mediaKeys, 'cenc', getInitData('cenc'));
                         });
@@ -591,12 +609,21 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                var isWebmSupported;
+                var isCencSupported;
+
+                isInitDataTypeSupported('webm').then(function(result) {
+                    isWebmSupported = result;
+                    return isInitDataTypeSupported('cenc');
+                }).then(function(result) {
+                    isCencSupported = result;
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var promises = [];
 
-                    if (isInitDataTypeSupported('webm')) {
+                    if (isWebmSupported) {
                         var WebmSessionPromises = kUpdateSessionExceptionsTestCases.map(function(testCase) {
                             var mediaKeySession = mediaKeys.createSession();
                             return mediaKeySession.generateRequest('webm', getInitData('webm')).then(function(result) {
@@ -606,7 +633,7 @@
                         promises = promises.concat(WebmSessionPromises);
                     }
 
-                    if (isInitDataTypeSupported('cenc')) {
+                    if (isCencSupported) {
                         var mp4SessionPromises = kUpdateSessionExceptionsTestCases.map(function(testCase) {
                           var mediaKeySession = mediaKeys.createSession();
                           return mediaKeySession.generateRequest('cenc', getInitData('cenc')).then(function(result) {
@@ -642,16 +669,25 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                var isWebmSupported;
+                var isCencSupported;
+
+                isInitDataTypeSupported('webm').then(function(result) {
+                    isWebmSupported = result;
+                    return isInitDataTypeSupported('cenc');
+                }).then(function(result) {
+                    isCencSupported = result;
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                   var promises = [];
 
-                  if (isInitDataTypeSupported('webm')) {
+                  if (isWebmSupported) {
                       promises.push(create_update_test(mediaKeys, 'webm', getInitData('webm')));
                   }
 
-                  if (isInitDataTypeSupported('cenc')) {
+                  if (isCencSupported) {
                       promises.push(create_update_test(mediaKeys, 'cenc', getInitData('cenc')));
                   }
 
@@ -678,16 +714,25 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                var isWebmSupported;
+                var isCencSupported;
+
+                isInitDataTypeSupported('webm').then(function(result) {
+                    isWebmSupported = result;
+                    return isInitDataTypeSupported('cenc');
+                }).then(function(result) {
+                    isCencSupported = result;
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var promises = [];
 
-                    if (isInitDataTypeSupported('webm')) {
+                    if (isWebmSupported) {
                         promises.push(create_close_exception_test(mediaKeys, 'webm', getInitData('webm')));
                     }
 
-                    if (isInitDataTypeSupported('cenc')) {
+                    if (isCencSupported) {
                         promises.push(create_close_exception_test(mediaKeys, 'cenc', getInitData('cenc')));
                     }
 
@@ -716,16 +761,25 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                var isWebmSupported;
+                var isCencSupported;
+
+                isInitDataTypeSupported('webm').then(function(result) {
+                    isWebmSupported = result;
+                    return isInitDataTypeSupported('cenc');
+                }).then(function(result) {
+                    isCencSupported = result;
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var promises = [];
 
-                    if (isInitDataTypeSupported('webm')) {
+                    if (isWebmSupported) {
                         promises.push(create_close_test(mediaKeys, 'webm', getInitData('webm')));
                     }
 
-                    if (isInitDataTypeSupported('cenc')) {
+                    if (isCencSupported) {
                         promises.push(create_close_test(mediaKeys, 'cenc', getInitData('cenc')));
                     }
 
@@ -760,16 +814,25 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                var isWebmSupported;
+                var isCencSupported;
+
+                isInitDataTypeSupported('webm').then(function(result) {
+                    isWebmSupported = result;
+                    return isInitDataTypeSupported('cenc');
+                }).then(function(result) {
+                    isCencSupported = result;
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var promises = [];
 
-                    if (isInitDataTypeSupported('webm')) {
+                    if (isWebmSupported) {
                         promises.push(create_remove_exception_test(mediaKeys, 'webm', getInitData('webm')));
                     }
 
-                    if (isInitDataTypeSupported('cenc')) {
+                    if (isCencSupported) {
                         promises.push(create_remove_exception_test(mediaKeys, 'cenc', getInitData('cenc')));
                     }
 
@@ -800,16 +863,25 @@
 
             async_test(function(test)
             {
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                var isWebmSupported;
+                var isCencSupported;
+
+                isInitDataTypeSupported('webm').then(function(result) {
+                    isWebmSupported = result;
+                    return isInitDataTypeSupported('cenc');
+                }).then(function(result) {
+                    isCencSupported = result;
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
                     var promises = [];
 
-                    if (isInitDataTypeSupported('webm')) {
+                    if (isWebmSupported) {
                         promises.push(create_remove_test(mediaKeys, 'webm', getInitData('webm')));
                     }
 
-                    if (isInitDataTypeSupported('cenc')) {
+                    if (isCencSupported) {
                         promises.push(create_remove_test(mediaKeys, 'cenc', getInitData('cenc')));
                     }
 

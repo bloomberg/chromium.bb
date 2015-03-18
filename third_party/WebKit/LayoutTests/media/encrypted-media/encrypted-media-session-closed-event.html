@@ -11,13 +11,18 @@
         <script>
             async_test(function(test)
             {
+                var initDataType;
+                var initData;
                 var mediaKeySession;
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                getSupportedInitDataType().then(function(type) {
+                    initDataType = type;
+                    initData = getInitData(initDataType);
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
-                    var initDataType = getInitDataType();
                     mediaKeySession = mediaKeys.createSession();
-                    return mediaKeySession.generateRequest(initDataType, getInitData(initDataType));
+                    return mediaKeySession.generateRequest(initDataType, initData);
                 }).then(function() {
                     // Wait for the session to be closed.
                     mediaKeySession.closed.then(function(result) {

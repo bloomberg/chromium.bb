@@ -26,6 +26,8 @@
             // ActiveDOMObject) and verify lifetime.
             async_test(function(test)
             {
+                var initDataType;
+                var initData;
                 var mediaKeys;
                 var startingActiveDOMObjectCount = window.internals.activeDOMObjectCount(document);
 
@@ -35,7 +37,11 @@
                 }
 
                 // Create a MediaKeys object with a session.
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                getSupportedInitDataType().then(function(type) {
+                    initDataType = type;
+                    initData = getInitData(initDataType);
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     assert_equals(access.keySystem, 'org.w3.clearkey');
                     return access.createMediaKeys();
                 }).then(function(result) {
@@ -48,9 +54,8 @@
                     //  1 MediaKeySystemAccessInitializer).
                     assert_less_than_equal(numActiveDOMObjectsCreated(), 2, 'MediaKeys.create()');
 
-                    var initDataType = getInitDataType();
                     var mediaKeySession = mediaKeys.createSession();
-                    return mediaKeySession.generateRequest(initDataType, getInitData(initDataType));
+                    return mediaKeySession.generateRequest(initDataType, initData);
                 }).then(function() {
                     // 1 MediaKeySession.
                     // In non-Oilpan, numActiveDOMObjectsCreate() == 1.

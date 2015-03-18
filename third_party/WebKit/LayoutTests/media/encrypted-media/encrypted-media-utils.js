@@ -12,47 +12,57 @@ function consoleWrite(text)
     console.appendChild(span);
 }
 
-// FIXME: Detect EME support rather than just general container support.
-// http://crbug.com/441585
-// For now, assume that implementations that support a container type for clear
-// content and are running these tests also support that container with EME.
-// The element used for this will is not released to avoid interfering with the
-// ActiveDOMObject counts in the lifetime tests.
-var canPlayTypeElement = new Audio();
-var isWebMSupported = ('' != canPlayTypeElement.canPlayType('video/webm'));
-var isCencSupported = ('' != canPlayTypeElement.canPlayType('video/mp4'));
-
+// Returns a promise that is fulfilled with true if |initDataType| is supported,
+// or false if not.
 function isInitDataTypeSupported(initDataType)
 {
-    var result = false;
-    switch (initDataType) {
-    case 'webm':
-        result = isWebMSupported;
-        break;
-    case 'cenc':
-        result = isCencSupported;
-        break;
-    default:
-        result = false;
-    }
-
-    return result;
+    return navigator.requestMediaKeySystemAccess(
+                         "org.w3.clearkey", [{ initDataTypes : [initDataType] }])
+        .then(function() { return(true); }, function() { return(false); });
 }
 
-
-function getInitDataType()
+// Returns a promise that is fulfilled with an initDataType that is supported,
+// rejected if neither 'webm' or 'cenc' are supported.
+function getSupportedInitDataType()
 {
-    if (isInitDataTypeSupported('webm'))
-        return 'webm';
-    if (isInitDataTypeSupported('cenc'))
-        return 'cenc';
-    throw 'No supported Initialization Data Types';
+    return isInitDataTypeSupported('webm').then(function(result) {
+        if (result) {
+            return Promise.resolve('webm');
+        }
+        return isInitDataTypeSupported('cenc').then(function(result) {
+            if (result) {
+                return Promise.resolve('cenc');
+            }
+            return Promise.reject('No supported initDataType.');
+        });
+    });
 }
 
 function getInitData(initDataType)
 {
-    // FIXME: This should be dependent on initDataType.
-    return new Uint8Array([ 0, 1, 2, 3, 4, 5, 6, 7 ]);
+  if (initDataType == 'webm') {
+      return new Uint8Array([
+          0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+          0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
+      ]);
+  }
+
+  if (initDataType == 'cenc') {
+      return new Uint8Array([
+          0x00, 0x00, 0x00, 0x00,                          // size = 0
+          0x70, 0x73, 0x73, 0x68,                          // 'pssh'
+          0x01,                                            // version = 1
+          0x00, 0x00, 0x00,                                // flags
+          0x10, 0x77, 0xEF, 0xEC, 0xC0, 0xB2, 0x4D, 0x02,  // Common SystemID
+          0xAC, 0xE3, 0x3C, 0x1E, 0x52, 0xE2, 0xFB, 0x4B,
+          0x00, 0x00, 0x00, 0x01,                          // key count
+          0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,  // key
+          0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+          0x00, 0x00, 0x00, 0x00                           // datasize
+     ]);
+  }
+
+  throw 'initDataType ' + initDataType + ' not supported.';
 }
 
 function waitForEventAndRunStep(eventName, element, func, stepTest)
@@ -212,7 +222,7 @@ function forceTestFailureFromPromise(test, error, message)
     if (message)
         consoleWrite(message + ': ' + error.message);
     else if (error)
-        consoleWrite(error.message);
+        consoleWrite(error);
 
     test.force_timeout();
     test.done();

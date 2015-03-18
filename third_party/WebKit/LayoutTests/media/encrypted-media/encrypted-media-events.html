@@ -13,6 +13,8 @@
             // "keychange" events.
             async_test(function(test)
             {
+                var initDataType;
+                var initData;
                 var mediaKeySession;
                 var rawKey = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
                                              0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c]);
@@ -42,13 +44,16 @@
                     test.done();
                 }
 
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                getSupportedInitDataType().then(function(type) {
+                    initDataType = type;
+                    initData = getInitData(initDataType);
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     return access.createMediaKeys();
                 }).then(test.step_func(function(mediaKeys) {
-                    var initDataType = getInitDataType();
                     mediaKeySession = mediaKeys.createSession();
                     waitForEventAndRunStep('message', mediaKeySession, test.step_func(processMessage), test);
-                    return mediaKeySession.generateRequest(initDataType, getInitData(initDataType));
+                    return mediaKeySession.generateRequest(initDataType, initData);
                 })).catch(test.step_func(function(error) {
                     forceTestFailureFromPromise(test, error);
                 }));

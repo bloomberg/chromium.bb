@@ -9,20 +9,22 @@
     <body>
         <div id="log"></div>
         <script>
-            var mediaKeySession1;
-            var mediaKeySession2;
-
-            // Even though key ids are uint8, using printable values so that
-            // they can be verified easily.
-            var key1 = stringToUint8Array('123');
-            var key2 = stringToUint8Array('4567890');
-            var rawKey1 = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
-                                          0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c]);
-            var rawKey2 = new Uint8Array([0x3c, 0xae, 0xe4, 0xfc, 0x2a, 0x12, 0xef, 0x68,
-                                          0x7b, 0xd2, 0x14, 0x68, 0xf1, 0x62, 0xdd, 0xeb]);
-
             async_test(function(test)
             {
+                var mediaKeySession1;
+                var mediaKeySession2;
+                var initDataType;
+                var initData;
+
+                // Even though key ids are uint8, using printable values so that
+                // they can be verified easily.
+                var key1 = stringToUint8Array('123');
+                var key2 = stringToUint8Array('4567890');
+                var rawKey1 = new Uint8Array([0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
+                                              0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c]);
+                var rawKey2 = new Uint8Array([0x3c, 0xae, 0xe4, 0xfc, 0x2a, 0x12, 0xef, 0x68,
+                                              0x7b, 0xd2, 0x14, 0x68, 0xf1, 0x62, 0xdd, 0xeb]);
+
                 function processMessage1(event)
                 {
                     // This should only be called for session1.
@@ -48,8 +50,7 @@
                     verifyKeyStatuses(mediaKeySession1.keyStatuses, { expected: [key1], unexpected: [key2] });
 
                     // Now trigger a message event on session2.
-                    var initDataType = getInitDataType();
-                    mediaKeySession2.generateRequest(initDataType, getInitData(initDataType)).catch(function(error) {
+                    mediaKeySession2.generateRequest(initDataType, initData).catch(function(error) {
                         forceTestFailureFromPromise(test, error);
                     });
                 }
@@ -87,10 +88,13 @@
                     test.done();
                 }
 
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                getSupportedInitDataType().then(function(type) {
+                    initDataType = type;
+                    initData = getInitData(initDataType);
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(mediaKeys) {
-                    var initDataType = getInitDataType();
                     mediaKeySession1 = mediaKeys.createSession();
                     mediaKeySession2 = mediaKeys.createSession();
 
@@ -105,7 +109,7 @@
                     waitForEventAndRunStep('keystatuseschange', mediaKeySession2, processKeyStatusesChange2, test);
 
                     // Generate a request on session1.
-                    return mediaKeySession1.generateRequest(initDataType, getInitData(initDataType));
+                    return mediaKeySession1.generateRequest(initDataType, initData);
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);
                 });

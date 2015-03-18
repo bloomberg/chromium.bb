@@ -20,8 +20,8 @@
                 var mediaKeys;
                 var mediaKeySession1;
                 var mediaKeySession2;
-                var initDataType = getInitDataType();
-                var initData = getInitData(initDataType);
+                var initDataType;
+                var initData;
                 var startingActiveDOMObjectCount = window.internals.activeDOMObjectCount(document);
 
                 function numActiveDOMObjectsCreated()
@@ -30,7 +30,11 @@
                 }
 
                 // Create 2 sessions.
-                navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                getSupportedInitDataType().then(function(type) {
+                    initDataType = type;
+                    initData = getInitData(initDataType);
+                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
+                }).then(function(access) {
                     return access.createMediaKeys();
                 }).then(function(result) {
                     mediaKeys = result;
