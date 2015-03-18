@@ -44,6 +44,9 @@ class UI_CHROMEOS_EXPORT NetworkListDelegate {
   // (e.g. unavailability of network etc.).
   virtual views::Label* CreateInfoLabel() = 0;
 
+  // Called when the user clicks on an entry representing a network in the list.
+  virtual void OnViewClicked(views::View* sender) = 0;
+
   virtual void RelayoutScrollList() = 0;
 };
 

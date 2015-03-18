@@ -55,9 +55,6 @@
   <message name="IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI" desc="The accessible text for the badge in the detailed network list indicating that the respective network's configuration may be controlled by an extension.">
     The extension "<ph name="EXTENSION_NAME">$1<ex>Nexus S</ex></ph>" can configure this network.
   </message>
-  <message name="IDS_ASH_STATUS_TRAY_OTHER_VPN" desc="The label used for the item to configure other private networks.">
-    Join other...
-  </message>
   <message name="IDS_ASH_STATUS_TRAY_TURN_ON_WIFI" desc="The label used for the item to turn on Wi-Fi networks.">
     Turn Wi-Fi on...
   </message>
@@ -99,6 +96,9 @@
   </message>
   <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIRED" desc="Notification shown when a new device is paired with the computer.">
     Bluetooth device "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>" has been paired and is now available to all users. You may remove this pairing using Settings.
+  </message>
+  <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECT" desc="Message on button that disconnects from the current VPN.">
+    Disconnect
   </message>
 
   <!-- Ash multi-user warning dialog -->

@@ -197,6 +197,10 @@ void HoverHighlightView::OnGestureEvent(ui::GestureEvent* event) {
   ActionableView::OnGestureEvent(event);
 }
 
+void HoverHighlightView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  SetHoverHighlight(IsMouseHovered());
+}
+
 void HoverHighlightView::OnEnabledChanged() {
   for (int i = 0; i < child_count(); ++i)
     child_at(i)->SetEnabled(enabled());

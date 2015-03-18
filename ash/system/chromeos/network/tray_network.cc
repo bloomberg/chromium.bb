@@ -29,6 +29,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/network/network_icon.h"
 #include "ui/chromeos/network/network_icon_animation.h"
+#include "ui/chromeos/network/network_icon_animation_observer.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"

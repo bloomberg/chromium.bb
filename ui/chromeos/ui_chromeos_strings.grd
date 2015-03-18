@@ -131,9 +131,6 @@
         No network
       </message>
 
-      <message name="IDS_ASH_STATUS_TRAY_NETWORK_NO_VPN" desc="The label used in the tray popup to notify no vpn is configured.">
-        VPN is not configured.
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_NO_NETWORKS" desc="The message to display in the network info bubble when it is otherwise empty.">
         No network information available
       </message>

@@ -31,19 +31,18 @@ namespace ui {
 
 NetworkListView::NetworkListView(NetworkListDelegate* delegate)
     : delegate_(delegate),
-      content_(NULL),
       scanning_view_(NULL),
       no_wifi_networks_view_(NULL),
       no_cellular_networks_view_(NULL) {
-  CHECK(delegate);
+  CHECK(delegate_);
 }
 
 NetworkListView::~NetworkListView() {
   network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
 }
 
-void NetworkListView::UpdateNetworkList() {
-  CHECK(content_);
+void NetworkListView::Update() {
+  CHECK(container_);
   NetworkStateHandler::NetworkStateList network_list;
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   handler->GetVisibleNetworkList(&network_list);
@@ -52,8 +51,8 @@ void NetworkListView::UpdateNetworkList() {
   UpdateNetworkListInternal();
 }
 
-bool NetworkListView::IsViewInList(views::View* view,
-                                   std::string* service_path) const {
+bool NetworkListView::IsNetworkEntry(views::View* view,
+                                     std::string* service_path) const {
   std::map<views::View*, std::string>::const_iterator found =
       network_map_.find(view);
   if (found == network_map_.end())
@@ -123,7 +122,7 @@ void NetworkListView::UpdateNetworkListInternal() {
     if (new_service_paths.find(it->first) == new_service_paths.end()) {
       remove_service_paths.insert(it->first);
       network_map_.erase(it->second);
-      content_->RemoveChildView(it->second);
+      container_->RemoveChildView(it->second);
       needs_relayout = true;
     }
   }
@@ -147,10 +146,10 @@ void NetworkListView::HandleRelayout() {
       break;
     }
   }
-  content_->SizeToPreferredSize();
+  container_->SizeToPreferredSize();
   delegate_->RelayoutScrollList();
   if (selected_view)
-    content_->ScrollRectToVisible(selected_view->bounds());
+    container_->ScrollRectToVisible(selected_view->bounds());
 }
 
 bool NetworkListView::UpdateNetworkListEntries(
@@ -209,12 +208,8 @@ bool NetworkListView::UpdateNetworkListEntries(
 
   // No networks or other messages (fallback)
   if (index == 0) {
-    int message_id = 0;
-    if (pattern.Equals(NetworkTypePattern::VPN()))
-      message_id = IDS_ASH_STATUS_TRAY_NETWORK_NO_VPN;
-    else
-      message_id = IDS_ASH_STATUS_TRAY_NO_NETWORKS;
-    needs_relayout |= UpdateInfoLabel(message_id, index, &scanning_view_);
+    needs_relayout |= UpdateInfoLabel(IDS_ASH_STATUS_TRAY_NO_NETWORKS, index,
+                                      &scanning_view_);
   }
 
   return needs_relayout;
@@ -243,7 +238,7 @@ bool NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
       service_path_map_.find(info->service_path);
   if (found == service_path_map_.end()) {
     container = delegate_->CreateViewForNetwork(*info);
-    content_->AddChildViewAt(container, index);
+    container_->AddChildViewAt(container, index);
     needs_relayout = true;
   } else {
     container = found->second;
@@ -261,9 +256,9 @@ bool NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
 }
 
 bool NetworkListView::PlaceViewAtIndex(views::View* view, int index) {
-  if (content_->child_at(index) == view)
+  if (container_->child_at(index) == view)
     return false;
-  content_->ReorderChildView(view, index);
+  container_->ReorderChildView(view, index);
   return true;
 }
 
@@ -278,14 +273,14 @@ bool NetworkListView::UpdateInfoLabel(int message_id,
     if (!*label) {
       *label = delegate_->CreateInfoLabel();
       (*label)->SetText(text);
-      content_->AddChildViewAt(*label, index);
+      container_->AddChildViewAt(*label, index);
       needs_relayout = true;
     } else {
       (*label)->SetText(text);
       needs_relayout = PlaceViewAtIndex(*label, index);
     }
   } else if (*label) {
-    content_->RemoveChildView(*label);
+    container_->RemoveChildView(*label);
     delete *label;
     *label = NULL;
     needs_relayout = true;
@@ -294,7 +289,7 @@ bool NetworkListView::UpdateInfoLabel(int message_id,
 }
 
 void NetworkListView::NetworkIconChanged() {
-  UpdateNetworkList();
+  Update();
 }
 
 }  // namespace ui

@@ -10,15 +10,19 @@
 #include "ash/system/chromeos/network/network_detailed_view.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "ash/system/user/login_status.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/chromeos/network/network_list.h"
 #include "ui/chromeos/network/network_list_delegate.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/button.h"
 
 namespace chromeos {
 class NetworkTypePattern;
+}
+
+namespace ui {
+class NetworkListViewBase;
 }
 
 namespace views {
@@ -121,7 +125,6 @@ class NetworkStateListDetailedView
   TrayPopupLabelButton* other_wifi_;
   TrayPopupLabelButton* turn_on_wifi_;
   TrayPopupLabelButton* other_mobile_;
-  TrayPopupLabelButton* other_vpn_;
   TrayPopupLabelButton* settings_;
   TrayPopupLabelButton* proxy_settings_;
 
@@ -130,7 +133,7 @@ class NetworkStateListDetailedView
 
   gfx::Image controlled_by_extension_icon_;
 
-  ui::NetworkListView network_list_view_;
+  scoped_ptr<ui::NetworkListViewBase> network_list_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateListDetailedView);
 };

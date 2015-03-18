@@ -11,6 +11,7 @@
 
 #include "chromeos/network/network_state_handler.h"
 #include "ui/chromeos/network/network_icon_animation_observer.h"
+#include "ui/chromeos/network/network_list_view_base.h"
 #include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -24,22 +25,19 @@ namespace ui {
 struct NetworkInfo;
 class NetworkListDelegate;
 
-// NetworkListView can be used to present the list of available networks to the
-// user.
+// A list of available networks of a given type. This class is used for all
+// network types except VPNs. For VPNs, see the |VPNList| class.
 class UI_CHROMEOS_EXPORT NetworkListView
-    : public network_icon::AnimationObserver {
+    : public NetworkListViewBase,
+      public network_icon::AnimationObserver {
  public:
   explicit NetworkListView(NetworkListDelegate* delegate);
   ~NetworkListView() override;
 
-  void UpdateNetworkList();
-
-  // Returns whether |view| is a View that represents a network in the list.
-  // |service_path| is set to the service-path of the network if this returns
-  // true, and remains unchanged if this returns false.
-  bool IsViewInList(views::View* view, std::string* service_path) const;
-
-  void set_content_view(views::View* content) { content_ = content; }
+  // NetworkListViewBase:
+  void Update() override;
+  bool IsNetworkEntry(views::View* view,
+                      std::string* service_path) const override;
 
  private:
   void UpdateNetworks(
@@ -59,7 +57,6 @@ class UI_CHROMEOS_EXPORT NetworkListView
   void NetworkIconChanged() override;
 
   NetworkListDelegate* delegate_;
-  views::View* content_;
 
   views::Label* scanning_view_;
   views::Label* no_wifi_networks_view_;

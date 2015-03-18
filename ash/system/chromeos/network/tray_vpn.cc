@@ -8,6 +8,7 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_state_list_detailed_view.h"
+#include "ash/system/chromeos/network/vpn_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
@@ -21,6 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/network/network_icon.h"
 #include "ui/chromeos/network/network_icon_animation.h"
+#include "ui/chromeos/network/network_icon_animation_observer.h"
 
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
@@ -43,12 +45,21 @@ class VpnDefaultView : public TrayItemMore,
   }
 
   static bool ShouldShow() {
-    // Do not show VPN line in uber tray bubble if VPN is not configured.
-    NetworkStateHandler* handler =
+    // Show the VPN entry in the ash tray bubble if at least one third-party VPN
+    // provider is installed.
+    if (Shell::GetInstance()
+            ->system_tray_delegate()
+            ->GetVPNDelegate()
+            ->HaveThirdPartyVPNProviders()) {
+      return true;
+    }
+
+    // Also show the VPN entry if at least one VPN network is configured.
+    NetworkStateHandler* const handler =
         NetworkHandler::Get()->network_state_handler();
-    const NetworkState* vpn =
-        handler->FirstNetworkByType(NetworkTypePattern::VPN());
-    return vpn != NULL;
+    if (handler->FirstNetworkByType(NetworkTypePattern::VPN()))
+      return true;
+    return false;
   }
 
   void Update() {

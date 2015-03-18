@@ -11115,6 +11115,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="StatusArea_VPN_AddBuiltIn">
+  <owner>bartfab@chromium.org</owner>
+  <description>
+    Indicates that the user requested that the built-in dialog for adding an
+    OpenVPN or L2TP VPN be shown via the ash UI.
+  </description>
+</action>
+
+<action name="StatusArea_VPN_AddThirdParty">
+  <owner>bartfab@chromium.org</owner>
+  <description>
+    Indicates that the user requested that the &quot;add network&quot; dialog
+    for a third-party VPN be shown via the ash UI.
+  </description>
+</action>
+
 <action name="StatusArea_VPN_ConnectToNetwork">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -11130,9 +11146,17 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="StatusArea_VPN_Disconnect">
+  <owner>bartfab@chromium.org</owner>
+  <description>
+    Indicates that the user disconnected from a VPN via the ash UI.
+  </description>
+</action>
+
 <action name="StatusArea_VPN_JoinOther">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>Replaced by StatusArea_VPN_AddBuiltIn.</obsolete>
 </action>
 
 <action name="StatusArea_VPN_Settings">

@@ -305,9 +305,15 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(
           base::UserMetricsAction("StatusArea_SignOut"));
       break;
-    case ash::UMA_STATUS_AREA_VPN_JOIN_OTHER_CLICKED:
+    case ash::UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED:
+      base::RecordAction(base::UserMetricsAction("StatusArea_VPN_AddBuiltIn"));
+      break;
+    case ash::UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED:
       base::RecordAction(
-          base::UserMetricsAction("StatusArea_VPN_JoinOther"));
+          base::UserMetricsAction("StatusArea_VPN_AddThirdParty"));
+      break;
+    case ash::UMA_STATUS_AREA_VPN_DISCONNECT_CLICKED:
+      base::RecordAction(base::UserMetricsAction("StatusArea_VPN_Disconnect"));
       break;
     case ash::UMA_STATUS_AREA_VPN_SETTINGS_CLICKED:
       base::RecordAction(

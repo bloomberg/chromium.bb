@@ -14,6 +14,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
+#include "ash/system/chromeos/network/vpn_list_view.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/fixed_sized_scroll_view.h"
 #include "ash/system/tray/hover_highlight_view.h"
@@ -43,6 +44,8 @@
 #include "ui/chromeos/network/network_icon.h"
 #include "ui/chromeos/network/network_icon_animation.h"
 #include "ui/chromeos/network/network_info.h"
+#include "ui/chromeos/network/network_list.h"
+#include "ui/chromeos/network/network_list_view_base.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/label.h"
@@ -125,17 +128,22 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
     : NetworkDetailedView(owner),
       list_type_(list_type),
       login_(login),
-      info_icon_(NULL),
-      button_wifi_(NULL),
-      button_mobile_(NULL),
-      other_wifi_(NULL),
-      turn_on_wifi_(NULL),
-      other_mobile_(NULL),
-      other_vpn_(NULL),
-      settings_(NULL),
-      proxy_settings_(NULL),
-      info_bubble_(NULL),
-      network_list_view_(this) {
+      info_icon_(nullptr),
+      button_wifi_(nullptr),
+      button_mobile_(nullptr),
+      other_wifi_(nullptr),
+      turn_on_wifi_(nullptr),
+      other_mobile_(nullptr),
+      settings_(nullptr),
+      proxy_settings_(nullptr),
+      info_bubble_(nullptr) {
+  if (list_type == LIST_TYPE_VPN) {
+    // Use a specialized class to list VPNs.
+    network_list_view_.reset(new VPNListView(this));
+  } else {
+    // Use a common class to list any other network types.
+    network_list_view_.reset(new ui::NetworkListView(this));
+  }
 }
 
 NetworkStateListDetailedView::~NetworkStateListDetailedView() {
@@ -160,7 +168,6 @@ void NetworkStateListDetailedView::Init() {
   other_wifi_ = NULL;
   turn_on_wifi_ = NULL;
   other_mobile_ = NULL;
-  other_vpn_ = NULL;
   settings_ = NULL;
   proxy_settings_ = NULL;
 
@@ -169,7 +176,7 @@ void NetworkStateListDetailedView::Init() {
   CreateHeaderEntry();
   CreateHeaderButtons();
 
-  network_list_view_.set_content_view(scroll_content());
+  network_list_view_->set_container(scroll_content());
   Update();
 
   CallRequestScan();
@@ -218,10 +225,6 @@ void NetworkStateListDetailedView::ButtonPressed(views::Button* sender,
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
         ash::UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
     delegate->ShowOtherNetworkDialog(shill::kTypeWifi);
-  } else if (sender == other_vpn_) {
-    Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        ash::UMA_STATUS_AREA_VPN_JOIN_OTHER_CLICKED);
-    delegate->ShowOtherNetworkDialog(shill::kTypeVPN);
   } else {
     NOTREACHED();
   }
@@ -240,7 +243,7 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
     return;
 
   std::string service_path;
-  if (!network_list_view_.IsViewInList(sender, &service_path))
+  if (!network_list_view_->IsNetworkEntry(sender, &service_path))
     return;
 
   const NetworkState* network =
@@ -327,11 +330,6 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
     other_mobile_ = new TrayPopupLabelButton(
         this, rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_OTHER_MOBILE));
     bottom_row->AddChildView(other_mobile_);
-  } else {
-    other_vpn_ = new TrayPopupLabelButton(
-        this, ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-                  IDS_ASH_STATUS_TRAY_OTHER_VPN));
-    bottom_row->AddChildView(other_vpn_);
   }
 
   CreateSettingsEntry();
@@ -390,7 +388,7 @@ void NetworkStateListDetailedView::UpdateTechnologyButton(
 }
 
 void NetworkStateListDetailedView::UpdateNetworkList() {
-  network_list_view_.UpdateNetworkList();
+  network_list_view_->Update();
 }
 
 bool NetworkStateListDetailedView::OrderChild(views::View* view, int index) {
