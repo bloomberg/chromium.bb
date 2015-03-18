@@ -26,6 +26,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/content_settings_pref.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -42,10 +43,10 @@ class DeadlockCheckerThread : public base::PlatformThread::Delegate {
       : provider_(provider) {}
 
   void ThreadMain() override {
-    bool got_lock = provider_->lock_.Try();
+    bool got_lock = provider_->content_settings_pref()->lock_.Try();
     EXPECT_TRUE(got_lock);
     if (got_lock)
-      provider_->lock_.Release();
+      provider_->content_settings_pref()->lock_.Release();
   }
  private:
   PrefProvider* provider_;
@@ -57,7 +58,7 @@ class DeadlockCheckerThread : public base::PlatformThread::Delegate {
 class DeadlockCheckerObserver {
  public:
   // |DeadlockCheckerObserver| doesn't take the ownership of |prefs| or
-  // ||provider|.
+  // |provider|.
   DeadlockCheckerObserver(PrefService* prefs, PrefProvider* provider)
       : provider_(provider),
       notification_received_(false) {

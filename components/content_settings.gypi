@@ -38,6 +38,8 @@
         'content_settings/core/browser/content_settings_override_provider.h',
         'content_settings/core/browser/content_settings_policy_provider.cc',
         'content_settings/core/browser/content_settings_policy_provider.h',
+        'content_settings/core/browser/content_settings_pref.cc',
+        'content_settings/core/browser/content_settings_pref.h',
         'content_settings/core/browser/content_settings_pref_provider.cc',
         'content_settings/core/browser/content_settings_pref_provider.h',
         'content_settings/core/browser/content_settings_provider.h',
