@@ -1655,6 +1655,10 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 			return;
 	}
 
+	if (pointer->sprite && pointer->sprite->surface == surface &&
+	    pointer->hotspot_x == x && pointer->hotspot_y == y)
+		return;
+
 	if (pointer->sprite)
 		pointer_unmap_sprite(pointer);
 
