@@ -303,7 +303,7 @@ void HTMLOptionElement::setLabel(const AtomicString& label)
 
 void HTMLOptionElement::updateNonLayoutStyle()
 {
-    m_style = originalStyleForRenderer();
+    m_style = originalStyleForLayoutObject();
     if (HTMLSelectElement* select = ownerSelectElement())
         select->updateListOnRenderer();
 }
@@ -313,7 +313,7 @@ LayoutStyle* HTMLOptionElement::nonRendererStyle() const
     return m_style.get();
 }
 
-PassRefPtr<LayoutStyle> HTMLOptionElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> HTMLOptionElement::customStyleForLayoutObject()
 {
     updateNonLayoutStyle();
     return m_style;

@@ -1885,9 +1885,9 @@ bool HTMLInputElement::supportsAutofocus() const
     return m_inputType->isInteractiveContent();
 }
 
-PassRefPtr<LayoutStyle> HTMLInputElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> HTMLInputElement::customStyleForLayoutObject()
 {
-    return m_inputTypeView->customStyleForRenderer(originalStyleForRenderer());
+    return m_inputTypeView->customStyleForLayoutObject(originalStyleForLayoutObject());
 }
 
 bool HTMLInputElement::shouldDispatchFormControlChangeEvent(String& oldValue, String& newValue)

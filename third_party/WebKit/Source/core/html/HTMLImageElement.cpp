@@ -706,9 +706,9 @@ void HTMLImageElement::reattachFallbackContent()
         lazyReattachIfAttached();
 }
 
-PassRefPtr<LayoutStyle> HTMLImageElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> HTMLImageElement::customStyleForLayoutObject()
 {
-    RefPtr<LayoutStyle> newStyle = originalStyleForRenderer();
+    RefPtr<LayoutStyle> newStyle = originalStyleForLayoutObject();
 
     if (!m_useFallbackContent)
         return newStyle;

@@ -295,7 +295,7 @@ void ImageInputType::createShadowSubtree()
     HTMLImageFallbackHelper::createAltTextShadowTree(element());
 }
 
-PassRefPtr<LayoutStyle> ImageInputType::customStyleForRenderer(PassRefPtr<LayoutStyle> newStyle)
+PassRefPtr<LayoutStyle> ImageInputType::customStyleForLayoutObject(PassRefPtr<LayoutStyle> newStyle)
 {
     if (!m_useFallbackContent)
         return newStyle;

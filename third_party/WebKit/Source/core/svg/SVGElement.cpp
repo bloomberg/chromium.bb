@@ -906,7 +906,7 @@ void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) cons
     }
 }
 
-PassRefPtr<LayoutStyle> SVGElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> SVGElement::customStyleForLayoutObject()
 {
     if (!correspondingElement())
         return document().ensureStyleResolver().styleForElement(this);

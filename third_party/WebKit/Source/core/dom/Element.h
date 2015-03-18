@@ -471,7 +471,7 @@ public:
     bool isSpellCheckingEnabled() const;
 
     // FIXME: public for LayoutTreeBuilder, we shouldn't expose this though.
-    PassRefPtr<LayoutStyle> styleForRenderer();
+    PassRefPtr<LayoutStyle> styleForLayoutObject();
 
     bool hasID() const;
     bool hasClass() const;
@@ -515,7 +515,7 @@ protected:
 
     virtual void willRecalcStyle(StyleRecalcChange);
     virtual void didRecalcStyle(StyleRecalcChange);
-    virtual PassRefPtr<LayoutStyle> customStyleForRenderer();
+    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject();
 
     virtual bool shouldRegisterAsNamedItem() const { return false; }
     virtual bool shouldRegisterAsExtraNamedItem() const { return false; }
@@ -536,7 +536,7 @@ protected:
     // svgAttributeChanged (called when element.className.baseValue is set)
     void classAttributeChanged(const AtomicString& newClassString);
 
-    PassRefPtr<LayoutStyle> originalStyleForRenderer();
+    PassRefPtr<LayoutStyle> originalStyleForLayoutObject();
 
     Node* insertAdjacent(const String& where, Node* newChild, ExceptionState&);
 

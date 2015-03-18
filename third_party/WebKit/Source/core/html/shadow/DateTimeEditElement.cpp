@@ -501,10 +501,10 @@ PassRefPtrWillBeRawPtr<DateTimeEditElement> DateTimeEditElement::create(Document
     return container.release();
 }
 
-PassRefPtr<LayoutStyle> DateTimeEditElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> DateTimeEditElement::customStyleForLayoutObject()
 {
     // FIXME: This is a kind of layout. We might want to introduce new renderer.
-    RefPtr<LayoutStyle> originalStyle = originalStyleForRenderer();
+    RefPtr<LayoutStyle> originalStyle = originalStyleForLayoutObject();
     RefPtr<LayoutStyle> style = LayoutStyle::clone(*originalStyle);
     float width = 0;
     for (Node* child = fieldsWrapperElement()->firstChild(); child; child = child->nextSibling()) {

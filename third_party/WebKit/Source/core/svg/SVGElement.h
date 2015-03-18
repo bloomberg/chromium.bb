@@ -130,7 +130,7 @@ public:
 
     void synchronizeAnimatedSVGAttribute(const QualifiedName&) const;
 
-    virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override final;
+    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject() override final;
 
     virtual void synchronizeRequiredFeatures() { }
     virtual void synchronizeRequiredExtensions() { }

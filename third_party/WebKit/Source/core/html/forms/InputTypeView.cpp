@@ -102,7 +102,7 @@ LayoutObject* InputTypeView::createLayoutObject(const LayoutStyle& style) const
     return LayoutObject::createObject(&element(), style);
 }
 
-PassRefPtr<LayoutStyle> InputTypeView::customStyleForRenderer(PassRefPtr<LayoutStyle> originalStyle)
+PassRefPtr<LayoutStyle> InputTypeView::customStyleForLayoutObject(PassRefPtr<LayoutStyle> originalStyle)
 {
     return originalStyle;
 }

@@ -47,7 +47,7 @@ public:
 
 protected:
     explicit EditingViewPortElement(Document&);
-    virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override;
+    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject() override;
 
 private:
     virtual bool supportsFocus() const override { return false; }
@@ -62,7 +62,7 @@ public:
 private:
     explicit TextControlInnerEditorElement(Document&);
     virtual LayoutObject* createLayoutObject(const LayoutStyle&) override;
-    virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override;
+    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject() override;
     virtual bool supportsFocus() const override { return false; }
 };
 

@@ -114,7 +114,7 @@ protected:
     virtual bool useFallbackContent() const { return m_useFallbackContent; }
 
     virtual void didAddClosedShadowRoot(ShadowRoot&) override;
-    virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override;
+    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject() override;
 private:
     virtual bool areAuthorShadowsAllowed() const override { return false; }
 

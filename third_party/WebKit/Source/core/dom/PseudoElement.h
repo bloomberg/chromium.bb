@@ -36,7 +36,7 @@ class PseudoElement : public Element {
 public:
     static PassRefPtrWillBeRawPtr<PseudoElement> create(Element* parent, PseudoId);
 
-    virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override;
+    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject() override;
     virtual void attach(const AttachContext& = AttachContext()) override;
     virtual bool layoutObjectIsNeeded(const LayoutStyle&) override;
 

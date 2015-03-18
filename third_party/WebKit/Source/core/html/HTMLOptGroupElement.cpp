@@ -108,7 +108,7 @@ bool HTMLOptGroupElement::supportsFocus() const
 
 void HTMLOptGroupElement::updateNonLayoutStyle()
 {
-    m_style = originalStyleForRenderer();
+    m_style = originalStyleForLayoutObject();
     if (layoutObject()) {
         if (HTMLSelectElement* select = ownerSelectElement())
             select->updateListOnRenderer();
@@ -120,7 +120,7 @@ LayoutStyle* HTMLOptGroupElement::nonRendererStyle() const
     return m_style.get();
 }
 
-PassRefPtr<LayoutStyle> HTMLOptGroupElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> HTMLOptGroupElement::customStyleForLayoutObject()
 {
     updateNonLayoutStyle();
     return m_style;

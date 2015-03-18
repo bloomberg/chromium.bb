@@ -77,7 +77,7 @@ PassRefPtrWillBeRawPtr<EditingViewPortElement> EditingViewPortElement::create(Do
     return element.release();
 }
 
-PassRefPtr<LayoutStyle> EditingViewPortElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> EditingViewPortElement::customStyleForLayoutObject()
 {
     // FXIME: Move these styles to html.css.
 
@@ -135,11 +135,11 @@ LayoutObject* TextControlInnerEditorElement::createLayoutObject(const LayoutStyl
     return new LayoutTextControlInnerBlock(this);
 }
 
-PassRefPtr<LayoutStyle> TextControlInnerEditorElement::customStyleForRenderer()
+PassRefPtr<LayoutStyle> TextControlInnerEditorElement::customStyleForLayoutObject()
 {
     LayoutObject* parentRenderer = shadowHost()->layoutObject();
     if (!parentRenderer || !parentRenderer->isTextControl())
-        return originalStyleForRenderer();
+        return originalStyleForLayoutObject();
     LayoutTextControl* textControlRenderer = toLayoutTextControl(parentRenderer);
     return textControlRenderer->createInnerEditorStyle(textControlRenderer->styleRef());
 }

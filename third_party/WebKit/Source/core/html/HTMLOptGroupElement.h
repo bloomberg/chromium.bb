@@ -56,7 +56,7 @@ private:
     // <optgroup> might not have a renderer so we manually manage a cached style.
     void updateNonLayoutStyle();
     virtual LayoutStyle* nonRendererStyle() const override;
-    virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override;
+    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject() override;
 
     void updateGroupLabel();
     void recalcSelectOptions();

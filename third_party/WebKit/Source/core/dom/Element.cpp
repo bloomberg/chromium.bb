@@ -1541,7 +1541,7 @@ bool Element::pseudoStyleCacheIsInvalid(const LayoutStyle* currentStyle, LayoutS
     return false;
 }
 
-PassRefPtr<LayoutStyle> Element::styleForRenderer()
+PassRefPtr<LayoutStyle> Element::styleForLayoutObject()
 {
     ASSERT(document().inStyleRecalc());
 
@@ -1553,9 +1553,9 @@ PassRefPtr<LayoutStyle> Element::styleForRenderer()
         elementAnimations->cssAnimations().setPendingUpdate(nullptr);
 
     if (hasCustomStyleCallbacks())
-        style = customStyleForRenderer();
+        style = customStyleForLayoutObject();
     if (!style)
-        style = originalStyleForRenderer();
+        style = originalStyleForLayoutObject();
     ASSERT(style);
 
     // styleForElement() might add active animations so we need to get it again.
@@ -1573,7 +1573,7 @@ PassRefPtr<LayoutStyle> Element::styleForRenderer()
     return style.release();
 }
 
-PassRefPtr<LayoutStyle> Element::originalStyleForRenderer()
+PassRefPtr<LayoutStyle> Element::originalStyleForLayoutObject()
 {
     ASSERT(document().inStyleRecalc());
     return document().ensureStyleResolver().styleForElement(this);
@@ -1644,7 +1644,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     ASSERT(parentLayoutStyle());
 
     RefPtr<LayoutStyle> oldStyle = layoutStyle();
-    RefPtr<LayoutStyle> newStyle = styleForRenderer();
+    RefPtr<LayoutStyle> newStyle = styleForLayoutObject();
     StyleRecalcChange localChange = LayoutStyle::stylePropagationDiff(oldStyle.get(), newStyle.get());
 
     ASSERT(newStyle);
@@ -3106,7 +3106,7 @@ void Element::didRecalcStyle(StyleRecalcChange)
 }
 
 
-PassRefPtr<LayoutStyle> Element::customStyleForRenderer()
+PassRefPtr<LayoutStyle> Element::customStyleForLayoutObject()
 {
     ASSERT(hasCustomStyleCallbacks());
     return nullptr;

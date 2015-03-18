@@ -91,7 +91,7 @@ private:
     // <option> never has a renderer so we manually manage a cached style.
     void updateNonLayoutStyle();
     virtual LayoutStyle* nonRendererStyle() const override;
-    virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override;
+    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject() override;
     virtual void didRecalcStyle(StyleRecalcChange) override;
     virtual void didAddClosedShadowRoot(ShadowRoot&) override;
 

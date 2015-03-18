@@ -357,7 +357,7 @@ private:
     RadioButtonGroupScope* radioButtonGroupScope() const;
     void addToRadioButtonGroup();
     void removeFromRadioButtonGroup();
-    virtual PassRefPtr<LayoutStyle> customStyleForRenderer() override;
+    virtual PassRefPtr<LayoutStyle> customStyleForLayoutObject() override;
 
     virtual bool shouldDispatchFormControlChangeEvent(String&, String&) override;
 

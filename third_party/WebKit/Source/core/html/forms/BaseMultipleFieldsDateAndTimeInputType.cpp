@@ -324,7 +324,7 @@ void BaseMultipleFieldsDateAndTimeInputType::blur()
         edit->blurByOwner();
 }
 
-PassRefPtr<LayoutStyle> BaseMultipleFieldsDateAndTimeInputType::customStyleForRenderer(PassRefPtr<LayoutStyle> originalStyle)
+PassRefPtr<LayoutStyle> BaseMultipleFieldsDateAndTimeInputType::customStyleForLayoutObject(PassRefPtr<LayoutStyle> originalStyle)
 {
     EDisplay originalDisplay = originalStyle->display();
     EDisplay newDisplay = originalDisplay;
@@ -348,7 +348,7 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
     ASSERT(element().shadow());
 
     // Element must not have a renderer here, because if it did
-    // DateTimeEditElement::customStyleForRenderer() is called in appendChild()
+    // DateTimeEditElement::customStyleForLayoutObject() is called in appendChild()
     // before the field wrapper element is created.
     // FIXME: This code should not depend on such craziness.
     ASSERT(!element().layoutObject());

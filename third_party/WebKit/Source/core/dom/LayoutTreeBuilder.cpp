@@ -109,7 +109,7 @@ bool LayoutTreeBuilderForElement::shouldCreateLayoutObject() const
 LayoutStyle& LayoutTreeBuilderForElement::style() const
 {
     if (!m_style)
-        m_style = m_node->styleForRenderer();
+        m_style = m_node->styleForLayoutObject();
     return *m_style;
 }
 
