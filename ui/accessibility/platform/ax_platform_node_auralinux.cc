@@ -231,6 +231,8 @@ void AXPlatformNodeAuraLinux::SetApplication(AXPlatformNode* application) {
 
 AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
   switch (GetData().role) {
+    case ui::AX_ROLE_ALERT:
+      return ATK_ROLE_ALERT;
     case ui::AX_ROLE_APPLICATION:
       return ATK_ROLE_APPLICATION;
     case ui::AX_ROLE_BUTTON:
@@ -239,10 +241,22 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_CHECK_BOX;
     case ui::AX_ROLE_COMBO_BOX:
       return ATK_ROLE_COMBO_BOX;
+    case ui::AX_ROLE_GROUP:
+      return ATK_ROLE_PANEL;
+    case ui::AX_ROLE_MENU_ITEM:
+      return ATK_ROLE_MENU_ITEM;
+    case ui::AX_ROLE_SPLITTER:
+      return ATK_ROLE_SEPARATOR;
     case ui::AX_ROLE_STATIC_TEXT:
       return ATK_ROLE_TEXT;
+    case ui::AX_ROLE_TAB:
+      return ATK_ROLE_PAGE_TAB;
+    case ui::AX_ROLE_TAB_LIST:
+      return ATK_ROLE_PAGE_TAB_LIST;
     case ui::AX_ROLE_TEXT_FIELD:
       return ATK_ROLE_ENTRY;
+    case ui::AX_ROLE_TOOLBAR:
+      return ATK_ROLE_TOOL_BAR;
     case ui::AX_ROLE_WINDOW:
       return ATK_ROLE_WINDOW;
     default:
