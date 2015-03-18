@@ -4975,7 +4975,7 @@ bool GLES2Implementation::ValidateSize(const char* func, GLsizeiptr size) {
     SetGLError(GL_INVALID_VALUE, func, "size < 0");
     return false;
   }
-  if (!FitInt32NonNegative<GLsizeiptr>(size)) {
+  if (!base::IsValueInRangeForNumericType<int32_t>(size)) {
     SetGLError(GL_INVALID_OPERATION, func, "size more than 32-bit");
     return false;
   }
@@ -4987,7 +4987,7 @@ bool GLES2Implementation::ValidateOffset(const char* func, GLintptr offset) {
     SetGLError(GL_INVALID_VALUE, func, "offset < 0");
     return false;
   }
-  if (!FitInt32NonNegative<GLintptr>(offset)) {
+  if (!base::IsValueInRangeForNumericType<int32_t>(offset)) {
     SetGLError(GL_INVALID_OPERATION, func, "offset more than 32-bit");
     return false;
   }

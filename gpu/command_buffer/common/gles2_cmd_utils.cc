@@ -404,13 +404,14 @@ int ElementsPerGroup(int format, int type) {
 // Return the number of bytes per element, based on the element type.
 int BytesPerElement(int type) {
   switch (type) {
+    case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
+      return 8;
     case GL_FLOAT:
     case GL_UNSIGNED_INT_24_8_OES:
     case GL_UNSIGNED_INT:
     case GL_UNSIGNED_INT_2_10_10_10_REV:
     case GL_UNSIGNED_INT_10F_11F_11F_REV:
     case GL_UNSIGNED_INT_5_9_9_9_REV:
-    case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
       return 4;
     case GL_HALF_FLOAT_OES:
     case GL_UNSIGNED_SHORT:
@@ -430,12 +431,18 @@ int BytesPerElement(int type) {
 }  // anonymous namespace
 
 uint32 GLES2Util::ComputeImageGroupSize(int format, int type) {
-  return BytesPerElement(type) * ElementsPerGroup(format, type);
+  int bytes_per_element = BytesPerElement(type);
+  DCHECK_GE(8, bytes_per_element);
+  int elements_per_group = ElementsPerGroup(format, type);
+  DCHECK_GE(4, elements_per_group);
+  return  bytes_per_element * elements_per_group;
 }
 
 bool GLES2Util::ComputeImagePaddedRowSize(
         int width, int format, int type, int unpack_alignment,
         uint32* padded_row_size) {
+  DCHECK(unpack_alignment == 1 || unpack_alignment == 2 ||
+         unpack_alignment == 4 || unpack_alignment == 8);
   uint32 bytes_per_group = ComputeImageGroupSize(format, type);
   uint32 unpadded_row_size;
   if (!SafeMultiplyUint32(width, bytes_per_group, &unpadded_row_size)) {
@@ -454,6 +461,8 @@ bool GLES2Util::ComputeImageDataSizes(
     int width, int height, int depth, int format, int type,
     int unpack_alignment, uint32* size, uint32* ret_unpadded_row_size,
     uint32* ret_padded_row_size) {
+  DCHECK(unpack_alignment == 1 || unpack_alignment == 2 ||
+         unpack_alignment == 4 || unpack_alignment == 8);
   uint32 bytes_per_group = ComputeImageGroupSize(format, type);
   uint32 row_size;
   if (!SafeMultiplyUint32(width, bytes_per_group, &row_size)) {
