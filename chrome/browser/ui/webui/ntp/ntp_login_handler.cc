@@ -177,8 +177,14 @@ void NTPLoginHandler::HandleShowAdvancedLoginUI(const base::ListValue* args) {
 
 void NTPLoginHandler::UpdateLogin() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  std::string username =
-      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedUsername();
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  if (!signin_manager) {
+    // Guests on desktop do not have a signin manager.
+    return;
+  }
+
+  std::string username = signin_manager->GetAuthenticatedUsername();
 
   base::string16 header, sub_header;
   std::string icon_url;
