@@ -5,13 +5,19 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/test/fake_server/fake_server_entity.h"
 #include "sync/test/fake_server/unique_client_entity.h"
 
+using autofill_helper::GetPersonalDataManager;
 using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 namespace {
@@ -51,6 +57,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, Download) {
   SetPreexistingPreferencesFileContents(kWalletSyncEnabledPreferencesContents);
 
   std::string id = "wallet entity ID";
+  int expiration_month = 8;
+  int expiration_year = 2087;
+  std::string last_four_digits = "1234";
+  std::string name_on_card = "Patrick Valenzuela";
+
   sync_pb::EntitySpecifics specifics;
   sync_pb::AutofillWalletSpecifics* wallet_specifics =
       specifics.mutable_autofill_wallet();
@@ -60,10 +71,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, Download) {
   sync_pb::WalletMaskedCreditCard* credit_card =
       wallet_specifics->mutable_masked_card();
   credit_card->set_id(id);
-  credit_card->set_exp_month(8);
-  credit_card->set_exp_year(2087);
-  credit_card->set_last_four("1234");
-  credit_card->set_name_on_card("Patrick Valenzuela");
+  credit_card->set_exp_month(expiration_month);
+  credit_card->set_exp_year(expiration_year);
+  credit_card->set_last_four(last_four_digits);
+  credit_card->set_name_on_card(name_on_card);
   credit_card->set_status(sync_pb::WalletMaskedCreditCard::VALID);
   credit_card->set_type(sync_pb::WalletMaskedCreditCard::AMEX);
 
@@ -74,5 +85,19 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, Download) {
           specifics));
 
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed";
-  // TODO(pvalenzuela): Assert that the credit card entity has been synced down.
+
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_TRUE(pdm != nullptr);
+  std::vector<autofill::CreditCard*> cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+
+  autofill::CreditCard* card = cards[0];
+  ASSERT_EQ(autofill::CreditCard::MASKED_SERVER_CARD, card->record_type());
+  ASSERT_EQ(id, card->server_id());
+  ASSERT_EQ(base::UTF8ToUTF16(last_four_digits), card->LastFourDigits());
+  ASSERT_EQ(autofill::kAmericanExpressCard, card->type());
+  ASSERT_EQ(expiration_month, card->expiration_month());
+  ASSERT_EQ(expiration_year, card->expiration_year());
+  ASSERT_EQ(base::UTF8ToUTF16(name_on_card),
+            card->GetRawInfo(autofill::ServerFieldType::CREDIT_CARD_NAME));
 }
