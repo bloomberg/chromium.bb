@@ -214,9 +214,9 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
     saved_samples_index_ += frames_to_copy;
 
     // Pad any remaining space with zeroes.
-    for (int i = remaining_frames; i < dest->frames(); i++) {
-      for (int c = 0; c < dest->channels(); c++)
-        dest->channel(c)[i] = 0;
+    if (remaining_frames < dest->frames()) {
+      dest->ZeroFramesPartial(remaining_frames,
+                              dest->frames() - remaining_frames);
     }
 
     // Return the volume level.
