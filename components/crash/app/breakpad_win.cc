@@ -541,8 +541,16 @@ void InitCrashReporter(const std::string& process_type_switch) {
                             base::CommandLine::ForCurrentProcess(),
                             GetCrashReporterClient());
 
+#if !defined(COMPONENT_BUILD)
+  // chrome/common/child_process_logging_win.cc registers crash keys for
+  // chrome.dll. In a component build, that is sufficient as chrome.dll and
+  // chrome.exe share a copy of base (in base.dll).
+  // In a static build, the EXE must separately initialize the crash keys
+  // configuration as it has its own statically linked copy of base.
   base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValueForBaseDebug,
                                              &ClearCrashKeyForBaseDebug);
+  GetCrashReporterClient()->RegisterCrashKeys();
+#endif
 
   google_breakpad::ExceptionHandler::MinidumpCallback callback = NULL;
   LPTOP_LEVEL_EXCEPTION_FILTER default_filter = NULL;
