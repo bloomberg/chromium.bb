@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import getpass
 import os
+import shutil
 
 from chromite.compute import compute_configs
 from chromite.compute import bot_constants
@@ -52,7 +53,7 @@ def SetupPipPrerequisites():
   """
   # dict of package to version. Provide version None if you don't care about the
   # version installed.
-  packages = {'python-statsd': '1.7.0'}
+  packages = {'python-statsd': '1.7.0', 'google-api-python-client': '1.4.0'}
 
   for package, version in packages.iteritems():
     install_atom = package
@@ -138,17 +139,22 @@ def _SetupGoB():
 
 def _SetupCIDB():
   """Copies cidb credentials."""
-  RunCommand(
-      ['cp', '-r', os.path.join(BOT_CREDS_PATH, bot_constants.CIDB_CREDS_DIR),
-       HOME_DIR])
+  shutil.copytree(os.path.join(BOT_CREDS_PATH, bot_constants.CIDB_CREDS_DIR),
+                  os.path.join(HOME_DIR, bot_constants.CIDB_CREDS_DIR))
 
 
 def _SetupTreeStatus():
   """Copies credentials for updating tree status."""
-  RunCommand(
-      ['cp',
-       os.path.join(BOT_CREDS_PATH, bot_constants.TREE_STATUS_PASSWORD_FILE),
-       HOME_DIR])
+  shutil.copy(
+      os.path.join(BOT_CREDS_PATH, bot_constants.TREE_STATUS_PASSWORD_FILE),
+      HOME_DIR)
+
+
+def _SetupGmail():
+  """Copies credentials for accessing gmail API."""
+  shutil.copy(
+      os.path.join(BOT_CREDS_PATH, bot_constants.GMAIL_CREDENTIALS_FILE),
+      HOME_DIR)
 
 
 def SetupCredentials():
@@ -157,6 +163,7 @@ def SetupCredentials():
   _SetupGoB()
   _SetupCIDB()
   _SetupTreeStatus()
+  _SetupGmail()
 
 
 def SetupBuildbotEnvironment():
@@ -192,10 +199,9 @@ def SetupBuildbotEnvironment():
 
   # Set up buildbot password.
   config_dir = os.path.join(bot_constants.BUILDBOT_DIR, 'build', 'site_config')
-  RunCommand(['cp', os.path.join(BOT_CREDS_PATH,
-                                 bot_constants.BUILDBOT_PASSWORD_FILE),
-              os.path.join(config_dir,
-                           bot_constants.BUILDBOT_PASSWORD_FILE)])
+  shutil.copy(
+      os.path.join(BOT_CREDS_PATH, bot_constants.BUILDBOT_PASSWORD_FILE),
+      config_dir)
 
   # Update the environment variable.
   depot_tools_path = os.path.join(bot_constants.BUILDBOT_DIR, 'depot_tools')

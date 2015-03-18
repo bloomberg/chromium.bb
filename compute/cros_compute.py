@@ -287,7 +287,8 @@ def main(argv):
             'One and only one of the two options should be specified: '
             'source image (--image) or the builder (--config)')
       if opts.image:
-        gcctx.CreateInstance(opts.instance, image=opts.image)
+        gcctx.CreateInstance(opts.instance, image=opts.image,
+                             address=opts.address)
       elif opts.config:
         config = compute_configs.configs.get(opts.config, None)
         if not config:
