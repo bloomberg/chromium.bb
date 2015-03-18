@@ -25,6 +25,17 @@ namespace ui {
 
 namespace {
 
+// A test implementation of PlatformEventSource that we can instantiate to make
+// sure that the PlatformEventSource has an instance while in unit tests.
+class TestPlatformEventSource : public ui::PlatformEventSource {
+ public:
+  TestPlatformEventSource() {}
+  ~TestPlatformEventSource() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestPlatformEventSource);
+};
+
 // OzonePlatform for testing
 //
 // This platform dumps images to a file for testing purposes.
@@ -67,7 +78,7 @@ class OzonePlatformTest : public OzonePlatform {
     window_manager_->Initialize();
     // This unbreaks tests that create their own.
     if (!PlatformEventSource::GetInstance())
-      platform_event_source_ = PlatformEventSource::CreateDefault();
+      platform_event_source_.reset(new TestPlatformEventSource);
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
         make_scoped_ptr(new StubKeyboardLayoutEngine()));
 
