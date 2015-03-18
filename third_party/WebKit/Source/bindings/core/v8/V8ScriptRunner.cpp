@@ -362,7 +362,22 @@ PassOwnPtr<CompileFn> selectCompileFunction(ScriptResource* resource, ScriptStre
 
 v8::Local<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions)
 {
-    return compileScript(v8String(isolate, source.source()), source.url(), source.sourceMapUrl(), source.startPosition(), isolate, source.resource(), source.streamer(), source.resource() ? source.resource()->cacheHandler() : nullptr, corsStatus, cacheOptions);
+    v8::Handle<v8::String> sourceAsV8String(v8String(isolate, source.source()));
+    if (sourceAsV8String.IsEmpty()) {
+        V8ThrowException::throwGeneralError(isolate, "Source file too large.");
+        return v8::Local<v8::Script>();
+    }
+    return compileScript(sourceAsV8String, source.url(), source.sourceMapUrl(), source.startPosition(), isolate, source.resource(), source.streamer(), source.resource() ? source.resource()->cacheHandler() : nullptr, corsStatus, cacheOptions);
+}
+
+v8::Local<v8::Script> V8ScriptRunner::compileScript(const String& code, const String& fileName, const String& sourceMapUrl, const TextPosition& textPosition, v8::Isolate* isolate, CachedMetadataHandler* cacheMetadataHandler, AccessControlStatus accessControlStatus, V8CacheOptions v8CacheOptions)
+{
+    v8::Handle<v8::String> codeAsV8String(v8String(isolate, code));
+    if (codeAsV8String.IsEmpty()) {
+        V8ThrowException::throwGeneralError(isolate, "Source file too large.");
+        return v8::Local<v8::Script>();
+    }
+    return compileScript(codeAsV8String, fileName, sourceMapUrl, textPosition, isolate, nullptr, nullptr, cacheMetadataHandler, accessControlStatus, v8CacheOptions);
 }
 
 v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const String& sourceMapUrl, const TextPosition& scriptStartPosition, v8::Isolate* isolate, ScriptResource* resource, ScriptStreamer* streamer, CachedMetadataHandler* cacheHandler, AccessControlStatus corsStatus, V8CacheOptions cacheOptions, bool isInternalScript)

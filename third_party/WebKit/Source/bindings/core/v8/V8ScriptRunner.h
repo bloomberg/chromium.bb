@@ -47,6 +47,7 @@ public:
     // For the following methods, the caller sites have to hold
     // a HandleScope and a ContextScope.
     static v8::Local<v8::Script> compileScript(const ScriptSourceCode&, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault);
+    static v8::Local<v8::Script> compileScript(const String&, const String& fileName, const String& sourceMapUrl, const TextPosition&, v8::Isolate*, CachedMetadataHandler* = nullptr, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault);
     // CachedMetadataHandler is set when metadata caching is supported. For
     // normal scripe resources, CachedMetadataHandler is from ScriptResource.
     // For worker script, ScriptResource is null but CachedMetadataHandler may be

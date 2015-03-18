@@ -183,8 +183,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
 
     v8::TryCatch block;
 
-    v8::Handle<v8::String> scriptString = v8String(isolate(), script);
-    v8::Handle<v8::Script> compiledScript = V8ScriptRunner::compileScript(scriptString, fileName, String(), scriptStartPosition, isolate(), nullptr, nullptr, cacheHandler, SharableCrossOrigin, v8CacheOptions);
+    v8::Handle<v8::Script> compiledScript = V8ScriptRunner::compileScript(script, fileName, String(), scriptStartPosition, isolate(), cacheHandler, SharableCrossOrigin, v8CacheOptions);
     v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(isolate(), compiledScript, &m_workerGlobalScope);
 
     if (!block.CanContinue()) {
