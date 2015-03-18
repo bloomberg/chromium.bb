@@ -9,3 +9,7 @@
   font-family: Roboto;
   height: 100%;
 }
+
+cr-settings-main core-icon-button {
+  z-index: 10;
+}

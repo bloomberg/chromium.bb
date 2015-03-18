@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/polymer/core-menu/core-menu.html">
 <link rel="import" href="chrome://resources/polymer/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_collapse/cr_collapse.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dropdown_menu/cr_dropdown_menu.html">
@@ -12,7 +13,7 @@
 <polymer-element name="cr-settings-dummy-page">
   <template>
     <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
-    <section layout vertical cross-fade>
+    <paper-shadow layout vertical cross-fade>
       <cr-settings-page-header page="{{}}"></cr-settings-page-header>
       <div class="main">
         <section>
@@ -54,7 +55,7 @@
           <cr-input label="Enter Something!"></cr-input>
         </section>
       </div>
-    </section>
+    </paper-shadow>
   </template>
   <script src="dummy_page.js"></script>
 </polymer-element>

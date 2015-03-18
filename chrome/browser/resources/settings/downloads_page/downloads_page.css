@@ -2,14 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-core-label {
-  margin: 10px;
-}
-
-cr-checkbox {
-  -webkit-margin-end: 10px;
-}
-
 cr-input {
   width: 300px;
 }

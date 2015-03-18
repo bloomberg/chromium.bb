@@ -1,30 +1,35 @@
 <link rel="import" href="chrome://resources/polymer/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/core-label/core-label.html">
 <link rel="import" href="chrome://resources/polymer/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.
 html">
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.
 html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 
-<polymer-element name="cr-settings-downloads-page" layout vertical>
+<polymer-element name="cr-settings-downloads-page">
   <template>
+    <link rel="stylesheet" href="chrome://md-settings/settings_page/settings_page.css">
     <link rel="stylesheet" href="downloads_page.css">
-    <div horizontal layout center>
-      <core-label horizontal layout center>
-        <span class="location-label">Download location:</span>
-        <cr-input id="downloadsPath" floatingLabel="false"
-            value="{{prefs.settings.download.defaultDirectory}}" readonly for>
-        </cr-input>
+    <paper-shadow layout vertical cross-fade>
+      <cr-settings-page-header page="{{}}"></cr-settings-page-header>
+      <div horizontal layout center>
+        <core-label horizontal layout center>
+          <span class="location-label">Download location:</span>
+          <cr-input id="downloadsPath" floatingLabel="false"
+              value="{{prefs.settings.download.defaultDirectory}}" readonly for>
+          </cr-input>
+        </core-label>
+        <cr-button id="changeDownloadsPath"
+            on-click="{{selectDownloadLocation}}">Change</cr-button>
+      </div>
+      <core-label horizontal layout>
+        <cr-checkbox checked="{{prefs.settings.download.promptForDownload}}" for>
+        </cr-checkbox>
+        <span>Ask where to save each file before downloading</span>
       </core-label>
-      <cr-button id="changeDownloadsPath"
-          on-click="{{selectDownloadLocation}}">Change</cr-button>
-    </div>
-    <core-label horizontal layout>
-      <cr-checkbox checked="{{prefs.settings.download.promptForDownload}}" for>
-      </cr-checkbox>
-      <span>Ask where to save each file before downloading</span>
-    </core-label>
+    </paper-shadow>
   </template>
   <script src="downloads_page.js"></script>
 </polymer-element>

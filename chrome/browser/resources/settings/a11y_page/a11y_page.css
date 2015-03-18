@@ -2,19 +2,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.sub-label {
-  -webkit-margin-start: 10px;
-  color: rgba(0, 0, 0, .5);
-}
-
-core-label {
-  margin: 10px;
-}
-
-cr-checkbox {
-  -webkit-margin-end: 10px;
-}
-
 .autoclick-delay-label {
   -webkit-margin-end: 0;
   -webkit-margin-start: 40px;

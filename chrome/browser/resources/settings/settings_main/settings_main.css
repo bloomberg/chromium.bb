@@ -12,12 +12,11 @@
   box-sizing: border-box;
   height: 100%;
   overflow: auto;
-  padding-top: 5px;
 }
 
-paper-shadow {
-  background-color: white;
-  margin: 0 20px;
+#pageContainer {
+  -webkit-margin-end: 20px;
+  -webkit-margin-start: 20px;
 }
 
 ::content core-icon-button {

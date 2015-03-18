@@ -69,6 +69,15 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_UI_JS"
                  file="settings_ui/settings_ui.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_CSS"
+                 file="downloads_page/downloads_page.css"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_JS"
+                 file="downloads_page/downloads_page.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_HTML"
+                 file="downloads_page/downloads_page.html"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_DUMMY_PAGE_HTML"
                  file="dummy_page/dummy_page.html"
                  type="chrome_html" />

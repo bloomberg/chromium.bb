@@ -6,15 +6,30 @@
  * @fileoverview
  * Common styles for Settings pages.
  */
-:host {
-  -webkit-margin-start: 40px;
-  -webkit-padding-end: 20px;
-  -webkit-padding-start: 40px;
+:host > paper-shadow {
+  -webkit-padding-start: 80px;
+  background-color: white;
   padding-bottom: 40px;
   padding-top: 40px;
 }
 
-:host cr-settings-page-header {
+cr-settings-page-header {
   margin-bottom: 30px;
   min-height: 24px;
+}
+
+core-label {
+  -webkit-margin-end: 10px;
+  -webkit-margin-start: 0;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.sub-label {
+  -webkit-margin-start: 10px;
+  color: rgba(0, 0, 0, .5);
+}
+
+cr-checkbox {
+  -webkit-margin-end: 10px;
 }
