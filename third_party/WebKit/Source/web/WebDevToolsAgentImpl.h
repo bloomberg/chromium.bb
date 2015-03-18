@@ -170,6 +170,7 @@ private:
     RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;
     RawPtrWillBeMember<InspectorLayerTreeAgent> m_layerTreeAgent;
     RawPtrWillBeMember<InspectorTracingAgent> m_tracingAgent;
+    RawPtrWillBeMember<PageRuntimeAgent> m_pageRuntimeAgent;
 
     RefPtrWillBeMember<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
     OwnPtr<InspectorFrontend> m_inspectorFrontend;

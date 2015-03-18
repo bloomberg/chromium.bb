@@ -143,7 +143,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     ScriptState::Scope scope(m_scriptState.get());
 
     // Name new context for debugging.
-    V8PerContextDebugData::setContextDebugData(context, "worker");
+    V8PerContextDebugData::setContextDebugData(context, "[worker,0]");
 
     // Create a new JS object and use it as the prototype for the shadow global object.
     const WrapperTypeInfo* wrapperTypeInfo = m_workerGlobalScope.wrapperTypeInfo();

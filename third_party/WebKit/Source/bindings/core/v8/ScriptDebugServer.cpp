@@ -87,6 +87,39 @@ DEFINE_TRACE(ScriptDebugServer)
 {
 }
 
+void ScriptDebugServer::enable()
+{
+    v8::HandleScope scope(m_isolate);
+    v8::Debug::SetDebugEventListener(&ScriptDebugServer::v8DebugEventCallback, v8::External::New(m_isolate, this));
+    ensureDebuggerScriptCompiled();
+}
+
+void ScriptDebugServer::disable()
+{
+    discardDebuggerScript();
+    v8::Debug::SetDebugEventListener(nullptr);
+    // FIXME: Remove all breakpoints set by the agent.
+}
+
+void ScriptDebugServer::reportParsedScripts(const String& contextDataSubstring, ScriptDebugListener* listener)
+{
+    v8::HandleScope scope(m_isolate);
+    v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
+    v8::Context::Scope contextScope(debuggerContext);
+
+    v8::Local<v8::Object> debuggerScript = debuggerScriptLocal();
+    ASSERT(!debuggerScript->IsUndefined());
+    v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getScripts")));
+    v8::Handle<v8::Value> argv[] = { v8String(m_isolate, contextDataSubstring) };
+    v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
+    if (value.IsEmpty())
+        return;
+    ASSERT(value->IsArray());
+    v8::Handle<v8::Array> scriptsArray = v8::Handle<v8::Array>::Cast(value);
+    for (unsigned i = 0; i < scriptsArray->Length(); ++i)
+        dispatchDidParseSource(listener, v8::Handle<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), CompileSuccess);
+}
+
 String ScriptDebugServer::setBreakpoint(const String& sourceID, const ScriptBreakpoint& scriptBreakpoint, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation)
 {
     v8::HandleScope scope(m_isolate);

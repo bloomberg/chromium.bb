@@ -57,36 +57,18 @@ DEFINE_TRACE(WorkerScriptDebugServer)
 
 void WorkerScriptDebugServer::addListener(ScriptDebugListener* listener)
 {
-    v8::HandleScope scope(m_isolate);
     ASSERT(!m_listener);
-
-    v8::Debug::SetDebugEventListener(&WorkerScriptDebugServer::v8DebugEventCallback, v8::External::New(m_isolate, this));
-    ensureDebuggerScriptCompiled();
+    enable();
     m_listener = listener;
-
-    v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
-    v8::Context::Scope contextScope(debuggerContext);
-
-    v8::Local<v8::Object> debuggerScript = debuggerScriptLocal();
-    ASSERT(!debuggerScript->IsUndefined());
-
-    v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getWorkerScripts")));
-    v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, 0, 0, m_isolate);
-    if (value.IsEmpty())
-        return;
-    ASSERT(!value->IsUndefined() && value->IsArray());
-    v8::Handle<v8::Array> scriptsArray = v8::Handle<v8::Array>::Cast(value);
-    for (unsigned i = 0; i < scriptsArray->Length(); ++i)
-        dispatchDidParseSource(listener, v8::Handle<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), CompileSuccess);
+    reportParsedScripts("[worker,0]", listener);
 }
 
 void WorkerScriptDebugServer::removeListener(ScriptDebugListener* listener)
 {
     ASSERT(m_listener == listener);
     continueProgram();
-    discardDebuggerScript();
     m_listener = 0;
-    v8::Debug::SetDebugEventListener(0);
+    disable();
 }
 
 ScriptDebugListener* WorkerScriptDebugServer::getDebugListenerForContext(v8::Handle<v8::Context>)

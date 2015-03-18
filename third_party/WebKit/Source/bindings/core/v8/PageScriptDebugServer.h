@@ -56,7 +56,7 @@ public:
     ~PageScriptDebugServer() override;
     DECLARE_VIRTUAL_TRACE();
 
-    void addListener(ScriptDebugListener*, LocalFrame*);
+    void addListener(ScriptDebugListener*, LocalFrame*, int contextDebugId);
     void removeListener(ScriptDebugListener*, LocalFrame*);
 
     static PageScriptDebugServer* instance();

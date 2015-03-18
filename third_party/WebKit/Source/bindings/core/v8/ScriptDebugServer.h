@@ -54,6 +54,11 @@ public:
     virtual ~ScriptDebugServer();
     DECLARE_VIRTUAL_TRACE();
 
+    void enable();
+    void disable();
+
+    void reportParsedScripts(const String& contextDataSubstring, ScriptDebugListener*);
+
     String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
     void removeBreakpoint(const String& breakpointId);
     void clearBreakpoints();
@@ -123,9 +128,6 @@ protected:
     static void breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     void handleProgramBreak(ScriptState* pausedScriptState, v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpoints, bool isPromiseRejection = false);
 
-    static void v8DebugEventCallback(const v8::Debug::EventDetails& eventDetails);
-    void handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails);
-
     void dispatchDidParseSource(ScriptDebugListener*, v8::Handle<v8::Object> sourceObject, CompileResult);
 
     void ensureDebuggerScriptCompiled();
@@ -135,6 +137,9 @@ protected:
     v8::Isolate* m_isolate;
 
 private:
+    static void v8DebugEventCallback(const v8::Debug::EventDetails&);
+    void handleV8DebugEvent(const v8::Debug::EventDetails&);
+
     v8::Local<v8::String> v8InternalizedString(const char*) const;
 
     enum ScopeInfoDetails {

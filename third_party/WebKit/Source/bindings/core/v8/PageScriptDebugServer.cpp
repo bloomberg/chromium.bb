@@ -93,7 +93,7 @@ DEFINE_TRACE(PageScriptDebugServer)
     ScriptDebugServer::trace(visitor);
 }
 
-void PageScriptDebugServer::addListener(ScriptDebugListener* listener, LocalFrame* localFrameRoot)
+void PageScriptDebugServer::addListener(ScriptDebugListener* listener, LocalFrame* localFrameRoot, int contextDebugId)
 {
     ASSERT(localFrameRoot == localFrameRoot->localFrameRoot());
 
@@ -101,33 +101,11 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, LocalFram
     if (!scriptController.canExecuteScripts(NotAboutToExecuteScript))
         return;
 
-    v8::HandleScope scope(m_isolate);
-
-    if (!m_listenersMap.size()) {
-        v8::Debug::SetDebugEventListener(&PageScriptDebugServer::v8DebugEventCallback, v8::External::New(m_isolate, this));
-        ensureDebuggerScriptCompiled();
-    }
-
-    v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
-    v8::Context::Scope contextScope(debuggerContext);
-
-    v8::Local<v8::Object> debuggerScript = debuggerScriptLocal();
-    ASSERT(!debuggerScript->IsUndefined());
+    if (m_listenersMap.isEmpty())
+        enable();
     m_listenersMap.set(localFrameRoot, listener);
-
-    WindowProxy* windowProxy = scriptController.existingWindowProxy(DOMWrapperWorld::mainWorld());
-    if (!windowProxy || !windowProxy->isContextInitialized())
-        return;
-    v8::Local<v8::Context> context = windowProxy->context();
-    v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getScripts")));
-    v8::Handle<v8::Value> argv[] = { V8PerContextDebugData::contextDebugData(context) };
-    v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
-    if (value.IsEmpty())
-        return;
-    ASSERT(!value->IsUndefined() && value->IsArray());
-    v8::Handle<v8::Array> scriptsArray = v8::Handle<v8::Array>::Cast(value);
-    for (unsigned i = 0; i < scriptsArray->Length(); ++i)
-        dispatchDidParseSource(listener, v8::Handle<v8::Object>::Cast(scriptsArray->Get(v8::Integer::New(m_isolate, i))), CompileSuccess);
+    String contextDataSubstring = "," + String::number(contextDebugId) + "]";
+    reportParsedScripts(contextDataSubstring, listener);
 }
 
 void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, LocalFrame* localFrame)
@@ -140,11 +118,8 @@ void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, LocalF
 
     m_listenersMap.remove(localFrame);
 
-    if (m_listenersMap.isEmpty()) {
-        discardDebuggerScript();
-        v8::Debug::SetDebugEventListener(0);
-        // FIXME: Remove all breakpoints set by the agent.
-    }
+    if (m_listenersMap.isEmpty())
+        disable();
 }
 
 PageScriptDebugServer* PageScriptDebugServer::instance()

@@ -63,6 +63,8 @@ public:
     void didCreateScriptContext(LocalFrame*, ScriptState*, SecurityOrigin*, int worldId);
     void willReleaseScriptContext(LocalFrame*, ScriptState*);
 
+    int debuggerId() const { return m_debuggerId; }
+
 private:
     PageRuntimeAgent(InjectedScriptManager*, Client*, ScriptDebugServer*, InspectorPageAgent*);
 

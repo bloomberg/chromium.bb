@@ -109,7 +109,8 @@ void PageRuntimeAgent::didCreateScriptContext(LocalFrame* frame, ScriptState* sc
     bool isMainWorld = worldId == MainWorldId;
 
     // Name the context for debugging.
-    String debugData = (isMainWorld ? "page," : "injected,") + String::number(m_debuggerId);
+    String type = isMainWorld ? "page" : "injected";
+    String debugData = "[" + type + "," + String::number(m_debuggerId) + "]";
     V8PerContextDebugData::setContextDebugData(scriptState->context(), debugData);
 
     if (!m_enabled)
