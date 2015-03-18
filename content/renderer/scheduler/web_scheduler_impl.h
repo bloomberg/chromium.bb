@@ -36,6 +36,9 @@ class CONTENT_EXPORT WebSchedulerImpl : public blink::WebScheduler {
                                        blink::WebScheduler::IdleTask* task);
   virtual void postLoadingTask(const blink::WebTraceLocation& location,
                                blink::WebThread::Task* task);
+  virtual void postTimerTask(const blink::WebTraceLocation& location,
+                             blink::WebThread::Task* task,
+                             long long delayMs);
   virtual void shutdown();
 
  private:
@@ -46,6 +49,7 @@ class CONTENT_EXPORT WebSchedulerImpl : public blink::WebScheduler {
   RendererScheduler* renderer_scheduler_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
 };
 
 }  // namespace content

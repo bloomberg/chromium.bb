@@ -14,7 +14,8 @@ namespace content {
 WebSchedulerImpl::WebSchedulerImpl(RendererScheduler* renderer_scheduler)
     : renderer_scheduler_(renderer_scheduler),
       idle_task_runner_(renderer_scheduler_->IdleTaskRunner()),
-      loading_task_runner_(renderer_scheduler_->LoadingTaskRunner()) {
+      loading_task_runner_(renderer_scheduler_->LoadingTaskRunner()),
+      timer_task_runner_(renderer_scheduler_->DefaultTaskRunner()) {
 }
 
 WebSchedulerImpl::~WebSchedulerImpl() {
@@ -82,6 +83,20 @@ void WebSchedulerImpl::postLoadingTask(
   loading_task_runner_->PostTask(
       location,
       base::Bind(&WebSchedulerImpl::runTask, base::Passed(&scoped_task)));
+}
+
+void WebSchedulerImpl::postTimerTask(
+    const blink::WebTraceLocation& web_location,
+    blink::WebThread::Task* task,
+    long long delayMs) {
+  DCHECK(timer_task_runner_);
+  scoped_ptr<blink::WebThread::Task> scoped_task(task);
+  tracked_objects::Location location(web_location.functionName(),
+                                     web_location.fileName(), -1, nullptr);
+  timer_task_runner_->PostDelayedTask(
+      location,
+      base::Bind(&WebSchedulerImpl::runTask, base::Passed(&scoped_task)),
+      base::TimeDelta::FromMilliseconds(delayMs));
 }
 
 void WebSchedulerImpl::shutdown() {
