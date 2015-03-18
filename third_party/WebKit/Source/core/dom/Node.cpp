@@ -57,6 +57,7 @@
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/UserActionElementSet.h"
 #include "core/dom/WeakNodeMap.h"
+#include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -1618,6 +1619,11 @@ void Node::showTreeForThis() const
     showTreeAndMark(this, "*");
 }
 
+void Node::showTreeForThisInComposedTree() const
+{
+    showTreeAndMarkInComposedTree(this, "*");
+}
+
 void Node::showNodePathForThis() const
 {
     Vector<const Node*, 16> chain;
@@ -1704,6 +1710,24 @@ static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, 
     }
 }
 
+static void traverseTreeAndMarkInComposedTree(const String& baseIndent, const Node* rootNode, const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2)
+{
+    for (const Node* node = rootNode; node; node = ComposedTreeTraversal::nextSibling(*node)) {
+        StringBuilder indent;
+        if (node == markedNode1)
+            indent.append(markedLabel1);
+        if (node == markedNode2)
+            indent.append(markedLabel2);
+        indent.append(baseIndent);
+        node->showNode(indent.toString().utf8().data());
+        indent.append('\t');
+
+        Node* child = ComposedTreeTraversal::firstChild(*node);
+        if (child)
+            traverseTreeAndMarkInComposedTree(indent.toString(), child, markedNode1, markedLabel1, markedNode2, markedLabel2);
+    }
+}
+
 void Node::showTreeAndMark(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2) const
 {
     const Node* rootNode;
@@ -1714,6 +1738,18 @@ void Node::showTreeAndMark(const Node* markedNode1, const char* markedLabel1, co
 
     String startingIndent;
     traverseTreeAndMark(startingIndent, rootNode, markedNode1, markedLabel1, markedNode2, markedLabel2);
+}
+
+void Node::showTreeAndMarkInComposedTree(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2) const
+{
+    const Node* rootNode;
+    const Node* node = this;
+    while (node->parentOrShadowHostNode() && !isHTMLBodyElement(*node))
+        node = node->parentOrShadowHostNode();
+    rootNode = node;
+
+    String startingIndent;
+    traverseTreeAndMarkInComposedTree(startingIndent, rootNode, markedNode1, markedLabel1, markedNode2, markedLabel2);
 }
 
 void Node::formatForDebugger(char* buffer, unsigned length) const
