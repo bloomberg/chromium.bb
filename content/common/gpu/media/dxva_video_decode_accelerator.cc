@@ -1391,13 +1391,26 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
   pending_output_samples_.clear();
   pending_input_buffers_.clear();
   decoder_.Release();
-  if (video_format_converter_mft_.get()) {
-    video_format_converter_mft_->ProcessMessage(
-        MFT_MESSAGE_NOTIFY_END_STREAMING, 0);
-    video_format_converter_mft_.Release();
+
+  if (use_dx11_) {
+    if (video_format_converter_mft_.get()) {
+      video_format_converter_mft_->ProcessMessage(
+          MFT_MESSAGE_NOTIFY_END_STREAMING, 0);
+      video_format_converter_mft_.Release();
+    }
+    d3d11_device_context_.Release();
+    d3d11_device_.Release();
+    d3d11_device_manager_.Release();
+    d3d11_query_.Release();
+    dx11_video_format_converter_media_type_needs_init_ = true;
+  } else {
+    d3d9_.Release();
+    d3d9_device_ex_.Release();
+    device_manager_.Release();
+    query_.Release();
   }
+
   MFShutdown();
-  dx11_video_format_converter_media_type_needs_init_ = true;
   SetState(kUninitialized);
 }
 
