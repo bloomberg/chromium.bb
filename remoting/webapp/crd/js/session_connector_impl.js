@@ -20,13 +20,6 @@ var remoting = remoting || {};
 remoting.clientSession = null;
 
 /**
- * @type {remoting.DesktopConnectedView} The client session view object, set
- *     once the connector has invoked its onOk callback.
- * TODO(garykac): Have this owned by someone instead of being global.
- */
-remoting.desktopConnectedView = null;
-
-/**
  * @param {HTMLElement} clientContainer Container element for the client view.
  * @param {function(remoting.ConnectionInfo):void} onConnected Callback on
  *     success.
@@ -99,9 +92,6 @@ remoting.SessionConnectorImpl.prototype.resetConnection_ = function() {
 
   /** @private {remoting.ClientSession} */
   this.clientSession_ = null;
-
-  /** @private {remoting.DesktopConnectedView} */
-  this.connectedView_ = null;
 
   /** @private {XMLHttpRequest} */
   this.pendingXhr_ = null;
@@ -361,11 +351,6 @@ remoting.SessionConnectorImpl.prototype.onPluginInitialized_ = function(
       this.onProtocolExtensionMessage_.bind(this));
   remoting.clientSession = this.clientSession_;
 
-  this.connectedView_ = new remoting.DesktopConnectedView(
-      this.plugin_, this.clientContainer_, this.host_,
-      this.connectionMode_, this.defaultRemapKeys_);
-  remoting.desktopConnectedView = this.connectedView_;
-
   this.clientSession_.logHostOfflineErrors(this.logHostOfflineErrors_);
   this.clientSession_.addEventListener(
       remoting.ClientSession.Events.stateChanged,
@@ -392,10 +377,6 @@ remoting.SessionConnectorImpl.prototype.removePlugin_ = function() {
   }
   this.clientSession_ = null;
   remoting.clientSession = null;
-
-  base.dispose(this.connectedView_);
-  this.connectedView_ = null;
-  remoting.desktopConnectedView = null;
 
   base.dispose(this.plugin_);
   this.plugin_ = null;
@@ -479,10 +460,6 @@ remoting.SessionConnectorImpl.prototype.onProtocolExtensionMessage_ =
     if (handled) {
       return true;
     }
-  }
-
-  if (remoting.desktopConnectedView) {
-    return remoting.desktopConnectedView.handleExtensionMessage(type, message);
   }
 
   return false;

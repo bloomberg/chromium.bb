@@ -13,37 +13,34 @@
 var remoting = remoting || {};
 
 /**
- * @param {remoting.ClientPlugin} plugin
  * @param {HTMLElement} container
- * @param {remoting.Host} host
- * @param {remoting.DesktopConnectedView.Mode} mode The mode of this connection.
+ * @param {remoting.ConnectionInfo} connectionInfo
  * @param {string} defaultRemapKeys The default set of remap keys, to use
  *     when the client doesn't define any.
  * @constructor
  * @extends {base.EventSourceImpl}
  * @implements {base.Disposable}
  */
-remoting.DesktopConnectedView = function(plugin, container, host, mode,
+remoting.DesktopConnectedView = function(container, connectionInfo,
                                          defaultRemapKeys) {
 
   /** @private {HTMLElement} */
   this.container_ = container;
 
   /** @private {remoting.ClientPlugin} */
-  this.plugin_ = plugin;
+  this.plugin_ = connectionInfo.plugin();
+
+  /** @private {remoting.ClientSession} */
+  this.session_ = connectionInfo.session();
 
   /** @private */
-  this.host_ = host;
+  this.host_ = connectionInfo.host();
 
   /** @private */
-  this.mode_ = mode;
+  this.mode_ = connectionInfo.mode();
 
   /** @private {string} */
   this.defaultRemapKeys_ = defaultRemapKeys;
-
-  /** @private {Element} */
-  this.debugRegionContainer_ =
-      this.container_.querySelector('.debug-region-container');
 
   /** @private {remoting.DesktopViewport} */
   this.viewport_ = null;
@@ -57,7 +54,8 @@ remoting.DesktopConnectedView = function(plugin, container, host, mode,
   /** private {base.Disposable} */
   this.eventHooks_ = null;
 
-  this.setupPlugin_();
+  this.initPlugin_();
+  this.initUI_();
 };
 
 /** @return {void} Nothing. */
@@ -145,7 +143,7 @@ remoting.DesktopConnectedView.prototype.getViewportForTesting = function() {
 };
 
 /** @private */
-remoting.DesktopConnectedView.prototype.setupPlugin_ = function() {
+remoting.DesktopConnectedView.prototype.initPlugin_ = function() {
   // Show the Send Keys menu only if the plugin has the injectKeyEvent feature,
   // and the Ctrl-Alt-Del button only in Me2Me mode.
   if (!this.plugin_.hasFeature(
@@ -162,6 +160,11 @@ remoting.DesktopConnectedView.prototype.setupPlugin_ = function() {
   if (this.plugin_.hasFeature(remoting.ClientPlugin.Feature.REMAP_KEY)) {
     this.applyRemapKeys_(true);
   }
+
+  if (this.session_.hasCapability(
+          remoting.ClientSession.Capability.VIDEO_RECORDER)) {
+    this.videoFrameRecorder_ = new remoting.VideoFrameRecorder(this.plugin_);
+  }
 };
 
 /**
@@ -176,19 +179,8 @@ remoting.DesktopConnectedView.prototype.onResize_ = function() {
   }
 };
 
-/**
- * Callback that the plugin invokes to indicate when the connection is
- * ready.
- *
- * @param {boolean} ready True if the connection is ready.
- */
-remoting.DesktopConnectedView.prototype.onConnectionReady = function(ready) {
-  if (this.view_) {
-    this.view_.onConnectionReady(ready);
-  }
-};
-
-remoting.DesktopConnectedView.prototype.onConnected = function() {
+/** @private */
+remoting.DesktopConnectedView.prototype.initUI_ = function() {
   document.body.classList.add('connected');
 
   this.view_ = new remoting.ConnectedView(
@@ -214,9 +206,11 @@ remoting.DesktopConnectedView.prototype.onConnected = function() {
   // Activate full-screen related UX.
   this.eventHooks_ = new base.Disposables(
     this.view_,
+    new base.EventHook(this.session_,
+                       remoting.ClientSession.Events.videoChannelStateChanged,
+                       this.view_.onConnectionReady.bind(this.view_)),
     new base.DomEventHook(window, 'resize', this.onResize_.bind(this), false),
-    new remoting.Fullscreen.EventHook(this.onFullScreenChanged_.bind(this))
-  );
+    new remoting.Fullscreen.EventHook(this.onFullScreenChanged_.bind(this)));
   this.onFullScreenChanged_(remoting.fullscreen.isActive());
 };
 
@@ -349,10 +343,6 @@ remoting.DesktopConnectedView.prototype.sendPrintScreen = function() {
   this.sendKeyCombination_([0x070046]);
 };
 
-remoting.DesktopConnectedView.prototype.initVideoFrameRecorder = function() {
-  this.videoFrameRecorder_ = new remoting.VideoFrameRecorder(this.plugin_);
-};
-
 /**
  * Returns true if the ClientSession can record video frames to a file.
  * @return {boolean}
@@ -393,29 +383,4 @@ remoting.DesktopConnectedView.prototype.handleExtensionMessage =
     return this.videoFrameRecorder_.handleMessage(type, message);
   }
   return false;
-};
-
-/**
- * Handles dirty region debug messages.
- *
- * @param {{rects:Array<Array<number>>}} region Dirty region of the latest
- *     frame.
- */
-remoting.DesktopConnectedView.prototype.handleDebugRegion = function(region) {
-  while (this.debugRegionContainer_.firstChild) {
-    this.debugRegionContainer_.removeChild(
-        this.debugRegionContainer_.firstChild);
-  }
-  if (region.rects) {
-    var rects = region.rects;
-    for (var i = 0; i < rects.length; ++i) {
-      var rect = document.createElement('div');
-      rect.classList.add('debug-region-rect');
-      rect.style.left = rects[i][0] + 'px';
-      rect.style.top = rects[i][1] +'px';
-      rect.style.width = rects[i][2] +'px';
-      rect.style.height = rects[i][3] + 'px';
-      this.debugRegionContainer_.appendChild(rect);
-    }
-  }
 };

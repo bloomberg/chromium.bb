@@ -387,9 +387,7 @@ remoting.ClientSession.prototype.onIncomingMessage_ = function(message) {
  */
 remoting.ClientSession.prototype.onConnectionStatusUpdate =
     function(status, error) {
-  if (status == remoting.ClientSession.State.CONNECTED) {
-    remoting.desktopConnectedView.onConnected();
-  } else if (status == remoting.ClientSession.State.FAILED) {
+  if (status == remoting.ClientSession.State.FAILED) {
     switch (error) {
       case remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE:
         this.error_ = new remoting.Error(
@@ -450,8 +448,6 @@ remoting.ClientSession.prototype.onConnectionReady = function(ready) {
     return;
   }
 
-  remoting.desktopConnectedView.onConnectionReady(ready);
-
   this.raiseEvent(remoting.ClientSession.Events.videoChannelStateChanged,
                   ready);
 };
@@ -474,10 +470,6 @@ remoting.ClientSession.prototype.onSetCapabilities = function(capabilities) {
   this.capabilities_ = capabilities;
   if (this.hasCapability(remoting.ClientSession.Capability.GOOGLE_DRIVE)) {
     this.sendGoogleDriveAccessToken_();
-  }
-  if (this.hasCapability(
-      remoting.ClientSession.Capability.VIDEO_RECORDER)) {
-    remoting.desktopConnectedView.initVideoFrameRecorder();
   }
 };
 
@@ -613,16 +605,3 @@ remoting.ClientSession.prototype.sendGoogleDriveAccessToken_ = function() {
                     remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS);
 };
 
-/**
- * Enables or disables rendering of dirty regions for debugging.
- * @param {boolean} enable True to enable rendering.
- */
-remoting.ClientSession.prototype.enableDebugRegion = function(enable) {
-  if (enable) {
-    this.plugin_.setDebugDirtyRegionHandler(
-        remoting.desktopConnectedView.handleDebugRegion.bind(
-            remoting.desktopConnectedView));
-  } else {
-    this.plugin_.setDebugDirtyRegionHandler(null);
-  }
-}

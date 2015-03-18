@@ -31,8 +31,11 @@ remoting.AppRemoting = function(app) {
   /** @private {remoting.WindowActivationMenu} */
   this.windowActivationMenu_ = null;
 
-   /** @private {base.RepeatingTimer} */
-   this.pingTimer_ = null;
+  /** @private {base.RepeatingTimer} */
+  this.pingTimer_ = null;
+
+  /** @private {remoting.DesktopConnectedView} */
+  this.connectedView_ = null;
 };
 
 /**
@@ -242,6 +245,12 @@ remoting.AppRemoting.prototype.handleConnected = function(connectionInfo) {
     var message = { timestamp: new Date().getTime() };
     clientSession.sendClientMessage('pingRequest', JSON.stringify(message));
   }, CONNECTION_SPEED_PING_INTERVAL);
+
+  // TODO(kelvinp): Move all app remoting specific logic into
+  // remoting.AppRemotingView.
+  this.connectedView_ = new remoting.DesktopConnectedView(
+      document.getElementById('client-container'), connectionInfo,
+      this.getDefaultRemapKeys());
 };
 
 /**
@@ -253,6 +262,9 @@ remoting.AppRemoting.prototype.handleDisconnected = function() {
   // Cancel the ping when the connection closes.
   base.dispose(this.pingTimer_);
   this.pingTimer_ = null;
+
+  base.dispose(this.connectedView_);
+  this.connectedView_ = null;
 
   chrome.app.window.current().close();
 };

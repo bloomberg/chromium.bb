@@ -45,6 +45,10 @@ remoting.ConnectedView = function(plugin, viewportElement, cursorElement) {
   this.cursor_ = new remoting.ConnectedView.Cursor(
       plugin, viewportElement, cursorElement);
 
+  /** @private {Element} */
+  this.debugRegionContainer_ =
+      viewportElement.querySelector('.debug-region-container');
+
   var pluginElement = plugin.element();
 
   /** private */
@@ -120,6 +124,43 @@ remoting.ConnectedView.prototype.onPluginLostFocus_ = function() {
   // otherwise the plugin gets confused about whether or not it has focus.
   window.setTimeout(
       this.plugin_.element().focus.bind(this.plugin_.element()), 0);
+};
+
+/**
+ * Handles dirty region debug messages.
+ *
+ * @param {{rects:Array<Array<number>>}} region Dirty region of the latest
+ *     frame.
+ */
+remoting.ConnectedView.prototype.handleDebugRegion = function(region) {
+  while (this.debugRegionContainer_.firstChild) {
+    this.debugRegionContainer_.removeChild(
+        this.debugRegionContainer_.firstChild);
+  }
+  if (region.rects) {
+    var rects = region.rects;
+    for (var i = 0; i < rects.length; ++i) {
+      var rect = document.createElement('div');
+      rect.classList.add('debug-region-rect');
+      rect.style.left = rects[i][0] + 'px';
+      rect.style.top = rects[i][1] +'px';
+      rect.style.width = rects[i][2] +'px';
+      rect.style.height = rects[i][3] + 'px';
+      this.debugRegionContainer_.appendChild(rect);
+    }
+  }
+};
+
+/**
+ * Enables or disables rendering of dirty regions for debugging.
+ * @param {boolean} enable True to enable rendering.
+ */
+remoting.ConnectedView.prototype.enableDebugRegion = function(enable) {
+  if (enable) {
+    this.plugin_.setDebugDirtyRegionHandler(this.handleDebugRegion.bind(this));
+  } else {
+    this.plugin_.setDebugDirtyRegionHandler(null);
+  }
 };
 
 /**

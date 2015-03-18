@@ -56,6 +56,14 @@ browserTest.FakeDesktopViewport.prototype.raiseEvent =
   return this.bumpScroller_.raiseEvent.apply(this.bumpScroller_, arguments);
 };
 
+/** @return {remoting.DesktopViewport} */
+function getViewportForTesting() {
+  var view = remoting.desktopDelegateForTesting.getConnectedViewForTesting();
+  if (view) {
+    return view.getViewportForTesting();
+  }
+  return null;
+}
 
 /** @constructor */
 browserTest.Bump_Scroll = function() {
@@ -114,7 +122,7 @@ browserTest.Bump_Scroll.prototype.run = function(data) {
  * @return {Promise}
  */
 browserTest.Bump_Scroll.prototype.noScrollWindowed = function() {
-  var viewport = remoting.desktopConnectedView.getViewportForTesting();
+  var viewport = getViewportForTesting();
   viewport.setPluginSizeForBumpScrollTesting(
       window.innerWidth + this.kHostDesktopSizeDelta,
       window.innerHeight + this.kHostDesktopSizeDelta);
@@ -126,7 +134,7 @@ browserTest.Bump_Scroll.prototype.noScrollWindowed = function() {
  * @return {Promise}
  */
 browserTest.Bump_Scroll.prototype.noScrollSmaller = function() {
-  var viewport = remoting.desktopConnectedView.getViewportForTesting();
+  var viewport = getViewportForTesting();
   viewport.setPluginSizeForBumpScrollTesting(
       window.innerWidth - this.kHostDesktopSizeDelta,
       window.innerHeight - this.kHostDesktopSizeDelta);
@@ -141,7 +149,7 @@ browserTest.Bump_Scroll.prototype.noScrollSmaller = function() {
  */
 browserTest.Bump_Scroll.prototype.scrollDirection =
     function(widthFraction, heightFraction) {
-  var viewport = remoting.desktopConnectedView.getViewportForTesting();
+  var viewport = getViewportForTesting();
   viewport.setPluginSizeForBumpScrollTesting(
       screen.width + this.kHostDesktopSizeDelta,
       screen.height + this.kHostDesktopSizeDelta);
@@ -273,8 +281,7 @@ browserTest.Bump_Scroll.prototype.testVerifyScroll = function() {
  */
 browserTest.Bump_Scroll.prototype.verifyScroll =
     function (expectedTop, expectedLeft, opt_desktopViewport) {
-  var desktopViewport = opt_desktopViewport ||
-      remoting.desktopConnectedView.getViewportForTesting();
+  var desktopViewport = opt_desktopViewport || getViewportForTesting();
   base.debug.assert(desktopViewport != null);
   var STARTED = remoting.BumpScroller.Events.bumpScrollStarted;
   var STOPPED = remoting.BumpScroller.Events.bumpScrollStopped;
@@ -330,8 +337,7 @@ browserTest.Bump_Scroll.prototype.verifyScroll =
  */
 browserTest.Bump_Scroll.prototype.verifyNoScroll =
     function(opt_desktopViewport) {
-  var desktopViewport = opt_desktopViewport ||
-                        remoting.desktopConnectedView.getViewportForTesting();
+  var desktopViewport = opt_desktopViewport || getViewportForTesting();
   var bumpScroller = desktopViewport.getBumpScrollerForTesting();
   if (!bumpScroller) {
     Promise.resolve(true);

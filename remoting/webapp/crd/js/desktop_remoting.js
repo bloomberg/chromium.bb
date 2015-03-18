@@ -36,6 +36,11 @@ remoting.DesktopRemoting = function(app) {
    * @private {boolean}
    */
   this.refreshHostJidIfOffline_ = true;
+
+  /** @private {remoting.DesktopConnectedView} */
+  this.connectedView_ = null;
+
+  remoting.desktopDelegateForTesting = this;
 };
 
 /**
@@ -113,7 +118,7 @@ remoting.DesktopRemoting.prototype.init = function() {
   }
 
   remoting.ClientPlugin.factory.preloadPlugin();
-}
+};
 
 /**
  * Start the application. Once start() is called, the delegate can assume that
@@ -192,8 +197,11 @@ remoting.DesktopRemoting.prototype.handleConnected = function(connectionInfo) {
     remoting.toolbar.preview();
   }
 
-  if (remoting.desktopConnectedView.getMode() ==
-        remoting.DesktopConnectedView.Mode.ME2ME) {
+  this.connectedView_ = new remoting.DesktopConnectedView(
+      document.getElementById('client-container'), connectionInfo,
+      this.getDefaultRemapKeys());
+
+  if (connectionInfo.mode() === remoting.DesktopConnectedView.Mode.ME2ME) {
     var sessionConnector = remoting.app.getSessionConnector();
     if (remoting.app.hasCapability(remoting.ClientSession.Capability.CAST)) {
       sessionConnector.registerProtocolExtension(
@@ -242,12 +250,14 @@ remoting.DesktopRemoting.prototype.handleConnected = function(connectionInfo) {
  * @return {void} Nothing.
  */
 remoting.DesktopRemoting.prototype.handleDisconnected = function() {
-  if (remoting.desktopConnectedView.getMode() ==
-      remoting.DesktopConnectedView.Mode.IT2ME) {
+  var mode = this.connectedView_.getMode();
+  if (mode === remoting.DesktopConnectedView.Mode.IT2ME) {
     remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_IT2ME);
   } else {
     remoting.setMode(remoting.AppMode.CLIENT_SESSION_FINISHED_ME2ME);
   }
+  base.dispose(this.connectedView_);
+  this.connectedView_ = null;
 };
 
 /**
@@ -301,7 +311,10 @@ remoting.DesktopRemoting.prototype.handleVideoStreamingStarted = function() {
  */
 remoting.DesktopRemoting.prototype.handleError = function(error) {
   console.error('Connection failed: ' + error.toString());
-  remoting.accessCode = '';
+  var mode = this.connectedView_ ? this.connectedView_.getMode()
+      : this.app_.getSessionConnector().getConnectionMode();
+  base.dispose(this.connectedView_);
+  this.connectedView_ = null;
 
   if (error.hasTag(remoting.Error.Tag.AUTHENTICATION_FAILED)) {
     remoting.setMode(remoting.AppMode.HOME);
@@ -315,8 +328,6 @@ remoting.DesktopRemoting.prototype.handleError = function(error) {
   var errorDiv = document.getElementById('connect-error-message');
   l10n.localizeElementFromTag(errorDiv, error.getTag());
 
-  var mode = remoting.clientSession ? remoting.desktopConnectedView.getMode()
-      : this.app_.getSessionConnector().getConnectionMode();
   if (mode == remoting.DesktopConnectedView.Mode.IT2ME) {
     remoting.setMode(remoting.AppMode.CLIENT_CONNECT_FAILED_IT2ME);
   } else {
@@ -329,3 +340,14 @@ remoting.DesktopRemoting.prototype.handleError = function(error) {
  */
 remoting.DesktopRemoting.prototype.handleExit = function() {
 };
+
+/** @returns {remoting.DesktopConnectedView} */
+remoting.DesktopRemoting.prototype.getConnectedViewForTesting = function() {
+  return this.connectedView_;
+};
+
+/**
+ * Global instance of remoting.DesktopRemoting used for testing.
+ * @type {remoting.DesktopRemoting}
+ */
+remoting.desktopDelegateForTesting = null;

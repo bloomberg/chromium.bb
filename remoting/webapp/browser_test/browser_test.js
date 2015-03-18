@@ -217,7 +217,7 @@ browserTest.disconnect = function() {
   var AppMode = remoting.AppMode;
   var finishedMode = AppMode.CLIENT_SESSION_FINISHED_ME2ME;
   var finishedButton = 'client-finished-me2me-button';
-  if (remoting.desktopConnectedView.getMode() ==
+  if (remoting.app.getSessionConnector().getConnectionMode() ===
       remoting.DesktopConnectedView.Mode.IT2ME) {
     finishedMode = AppMode.CLIENT_SESSION_FINISHED_IT2ME;
     finishedButton = 'client-finished-it2me-button';

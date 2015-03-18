@@ -61,6 +61,8 @@ remoting.DesktopViewport = function(rootElement, hostDesktop, hostOptions) {
         remoting.windowShape.setDesktopRects.bind(remoting.windowShape)));
 
   if (this.hostOptions_.resizeToClient) {
+    // TODO(kelvinp): This call is required in app remoting to set the host
+    // desktop size.  Move this to remoting.AppConnectedView later.
     this.resizeHostDesktop_();
   } else {
     this.onDesktopSizeChanged_();
