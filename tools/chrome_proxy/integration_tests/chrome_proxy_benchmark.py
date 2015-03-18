@@ -5,7 +5,12 @@
 from integration_tests import chrome_proxy_measurements as measurements
 from integration_tests import chrome_proxy_pagesets as pagesets
 from telemetry import benchmark
+from telemetry.core.backends.chrome import android_browser_finder
 
+
+ANDROID_CHROME_BROWSERS = [
+  browser for browser in android_browser_finder.CHROME_PACKAGE_NAMES
+    if 'webview' not in browser]
 
 class ChromeProxyLatency(benchmark.Benchmark):
   tag = 'latency'
@@ -149,7 +154,7 @@ class ChromeProxyBlockOnce(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.block_once.block_once'
 
 
-@benchmark.Enabled('android')
+@benchmark.Enabled(*ANDROID_CHROME_BROWSERS)
 # Safebrowsing is enabled for Android and iOS.
 class ChromeProxySafeBrowsingOn(benchmark.Benchmark):
   tag = 'safebrowsing_on'
@@ -161,6 +166,7 @@ class ChromeProxySafeBrowsingOn(benchmark.Benchmark):
     return 'chrome_proxy_benchmark.safebrowsing_on.safebrowsing'
 
 
+@benchmark.Disabled(*ANDROID_CHROME_BROWSERS)
 # Safebrowsing is switched off for Android Webview and all desktop platforms.
 class ChromeProxySafeBrowsingOff(benchmark.Benchmark):
   tag = 'safebrowsing_off'
