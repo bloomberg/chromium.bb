@@ -39,6 +39,7 @@ class _RasterizeAndRecordMicro(benchmark.Benchmark):
         options.start_wait_time, options.rasterize_repeat,
         options.record_repeat, options.timeout, options.report_detailed_results)
 
+
 # RasterizeAndRecord disabled on mac because of crbug.com/350684.
 # RasterizeAndRecord disabled on windows because of crbug.com/338057.
 @benchmark.Disabled('mac', 'win')
@@ -51,6 +52,24 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
   @classmethod
   def Name(cls):
     return 'rasterize_and_record_micro.top_25_smooth'
+
+
+# RasterizeAndRecord disabled on mac because of crbug.com/350684.
+# RasterizeAndRecord disabled on windows because of crbug.com/338057.
+@benchmark.Disabled('mac', 'win')
+@benchmark.Disabled('reference')
+class RasterizeAndRecordMicroTop25WithSlimmingPaint(_RasterizeAndRecordMicro):
+  """Measures rasterize and record performance with --enable-slimming-paint.
+
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+  page_set = page_sets.Top25PageSet
+
+  def CustomizeBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs(['--enable-slimming-paint'])
+
+  @classmethod
+  def Name(cls):
+    return 'rasterize_and_record_micro.top_25_slimming_paint_smooth'
 
 
 @benchmark.Disabled('mac', 'win')
