@@ -90,8 +90,11 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
     /** Dialog for reporting connection progress. */
     private ProgressDialog mProgressIndicator;
 
-    /** Object for fetching OAuth2 access tokens from third party authorization servers. */
-    private ThirdPartyTokenFetcher mTokenFetcher;
+    /**
+     * Helper used by SessionConnection for session authentication. Receives onNewIntent()
+     * notifications to handle third-party authentication.
+     */
+    private SessionAuthenticator mAuthenticator;
 
     /**
      * This is set when receiving an authentication error from the HostListLoader. If that occurs,
@@ -214,10 +217,9 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        if (mTokenFetcher != null) {
-            if (mTokenFetcher.handleTokenFetched(intent)) {
-                mTokenFetcher = null;
-            }
+
+        if (mAuthenticator != null) {
+            mAuthenticator.onNewIntent(intent);
         }
     }
 
@@ -323,13 +325,11 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
                     @Override
                     public void onCancel(DialogInterface dialog) {
                         JniInterface.disconnectFromHost();
-                        mTokenFetcher = null;
                     }
                 });
         SessionConnector connector = new SessionConnector(this, this, mHostListLoader);
-        assert mTokenFetcher == null;
-        mTokenFetcher = createTokenFetcher(host);
-        connector.connectToHost(mAccount.name, mToken, host);
+        mAuthenticator = new SessionAuthenticator(this, host);
+        connector.connectToHost(mAccount.name, mToken, host, mAuthenticator);
     }
 
     private void refreshHostList() {
@@ -509,29 +509,5 @@ public class Chromoting extends ActionBarActivity implements JniInterface.Connec
             mProgressIndicator.dismiss();
             mProgressIndicator = null;
         }
-    }
-
-    private ThirdPartyTokenFetcher createTokenFetcher(HostInfo host) {
-        ThirdPartyTokenFetcher.Callback callback = new ThirdPartyTokenFetcher.Callback() {
-            @Override
-            public void onTokenFetched(String code, String accessToken) {
-                // The native client sends the OAuth authorization code to the host as the token so
-                // that the host can obtain the shared secret from the third party authorization
-                // server.
-                String token = code;
-
-                // The native client uses the OAuth access token as the shared secret to
-                // authenticate itself with the host using spake.
-                String sharedSecret = accessToken;
-
-                JniInterface.onThirdPartyTokenFetched(token, sharedSecret);
-            }
-        };
-        return new ThirdPartyTokenFetcher(this, host.getTokenUrlPatterns(), callback);
-    }
-
-    public void fetchThirdPartyToken(String tokenUrl, String clientId, String scope) {
-        assert mTokenFetcher != null;
-        mTokenFetcher.fetchToken(tokenUrl, clientId, scope);
     }
 }

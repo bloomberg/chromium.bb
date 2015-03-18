@@ -4,27 +4,17 @@
 
 package org.chromium.chromoting.jni;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Looper;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.View;
-import android.widget.CheckBox;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.chromoting.CapabilityManager;
-import org.chromium.chromoting.Chromoting;
 import org.chromium.chromoting.R;
+import org.chromium.chromoting.SessionAuthenticator;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -41,8 +31,8 @@ public class JniInterface {
     /** Whether the library has been loaded. Accessed on the UI thread. */
     private static boolean sLoaded = false;
 
-    /** The application context. Accessed on the UI thread. */
-    private static Activity sContext = null;
+    /** Used for authentication-related UX during connection. Accessed on the UI thread. */
+    private static SessionAuthenticator sAuthenticator;
 
     /** Interface used for connection state notifications. */
     public interface ConnectionListener {
@@ -152,9 +142,7 @@ public class JniInterface {
      * context, but not reload the library. This is useful e.g. when the activity is closed and the
      * user later wants to return to the application. Called on the UI thread.
      */
-    public static void loadLibrary(Activity context) {
-        sContext = context;
-
+    public static void loadLibrary(Context context) {
         if (sLoaded) return;
 
         System.loadLibrary("remoting_client_jni");
@@ -173,15 +161,21 @@ public class JniInterface {
     public static native String nativeGetClientId();
     public static native String nativeGetClientSecret();
 
+    /** Returns whether the client is connected. */
+    public static boolean isConnected() {
+        return sConnected;
+    }
+
     /** Attempts to form a connection to the user-selected host. Called on the UI thread. */
     public static void connectToHost(String username, String authToken,
-            String hostJid, String hostId, String hostPubkey, ConnectionListener listener) {
+            String hostJid, String hostId, String hostPubkey, ConnectionListener listener,
+            SessionAuthenticator authenticator) {
         disconnectFromHost();
 
         sConnectionListener = listener;
-        SharedPreferences prefs = sContext.getPreferences(Activity.MODE_PRIVATE);
+        sAuthenticator = authenticator;
         nativeConnect(username, authToken, hostJid, hostId, hostPubkey,
-                prefs.getString(hostId + "_id", ""), prefs.getString(hostId + "_secret", ""),
+                sAuthenticator.getPairingId(hostId), sAuthenticator.getPairingSecret(hostId),
                 sCapabilityManager.getLocalCapabilities());
         sConnected = true;
     }
@@ -238,69 +232,7 @@ public class JniInterface {
     /** Prompts the user to enter a PIN. Called on the UI thread. */
     @CalledByNative
     private static void displayAuthenticationPrompt(boolean pairingSupported) {
-        AlertDialog.Builder pinPrompt = new AlertDialog.Builder(sContext);
-        pinPrompt.setTitle(sContext.getString(R.string.title_authenticate));
-        pinPrompt.setMessage(sContext.getString(R.string.pin_message_android));
-        pinPrompt.setIcon(android.R.drawable.ic_lock_lock);
-
-        final View pinEntry = sContext.getLayoutInflater().inflate(R.layout.pin_dialog, null);
-        pinPrompt.setView(pinEntry);
-
-        final TextView pinTextView = (TextView) pinEntry.findViewById(R.id.pin_dialog_text);
-        final CheckBox pinCheckBox = (CheckBox) pinEntry.findViewById(R.id.pin_dialog_check);
-
-        if (!pairingSupported) {
-            pinCheckBox.setChecked(false);
-            pinCheckBox.setVisibility(View.GONE);
-        }
-
-        pinPrompt.setPositiveButton(
-                R.string.connect_button, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i("jniiface", "User provided a PIN code");
-                        if (sConnected) {
-                            nativeAuthenticationResponse(String.valueOf(pinTextView.getText()),
-                                    pinCheckBox.isChecked(), Build.MODEL);
-                        } else {
-                            String message = sContext.getString(R.string.error_network_error);
-                            Toast.makeText(sContext, message, Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
-
-        pinPrompt.setNegativeButton(
-                R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i("jniiface", "User canceled pin entry prompt");
-                        disconnectFromHost();
-                    }
-                });
-
-        final AlertDialog pinDialog = pinPrompt.create();
-
-        pinTextView.setOnEditorActionListener(
-                new TextView.OnEditorActionListener() {
-                    @Override
-                    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                        // The user pressed enter on the keypad (equivalent to the connect button).
-                        pinDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
-                        pinDialog.dismiss();
-                        return true;
-                    }
-                });
-
-        pinDialog.setOnCancelListener(
-                new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        // The user backed out of the dialog (equivalent to the cancel button).
-                        pinDialog.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
-                    }
-                });
-
-        pinDialog.show();
+        sAuthenticator.displayAuthenticationPrompt(pairingSupported);
     }
 
     /**
@@ -310,24 +242,20 @@ public class JniInterface {
      * @param deviceName The device name to appear in the pairing registry. Only used if createPair
      *                   is true.
      */
+    public static void handleAuthenticationResponse(String pin, boolean createPair,
+            String deviceName) {
+        assert sConnected;
+        nativeAuthenticationResponse(pin, createPair, deviceName);
+    }
+
+    /** Native implementation of handleAuthenticationResponse(). */
     private static native void nativeAuthenticationResponse(String pin, boolean createPair,
             String deviceName);
 
     /** Saves newly-received pairing credentials to permanent storage. Called on the UI thread. */
     @CalledByNative
     private static void commitPairingCredentials(String host, String id, String secret) {
-        // Empty |id| indicates that pairing needs to be removed.
-        if (id.isEmpty()) {
-            sContext.getPreferences(Activity.MODE_PRIVATE).edit()
-                    .remove(host + "_id")
-                    .remove(host + "_secret")
-                    .apply();
-        } else {
-            sContext.getPreferences(Activity.MODE_PRIVATE).edit()
-                    .putString(host + "_id", id)
-                    .putString(host + "_secret", secret)
-                    .apply();
-        }
+        sAuthenticator.commitPairingCredentials(host, id, secret);
     }
 
     /**
@@ -498,8 +426,7 @@ public class JniInterface {
     /** Pops up a third party login page to fetch the token required for authentication. */
     @CalledByNative
     public static void fetchThirdPartyToken(String tokenUrl, String clientId, String scope) {
-        Chromoting app = (Chromoting) sContext;
-        app.fetchThirdPartyToken(tokenUrl, clientId, scope);
+        sAuthenticator.fetchThirdPartyToken(tokenUrl, clientId, scope);
     }
 
     /**

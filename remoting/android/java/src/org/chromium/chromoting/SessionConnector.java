@@ -15,6 +15,7 @@ public class SessionConnector implements JniInterface.ConnectionListener,
     private JniInterface.ConnectionListener mConnectionCallback;
     private HostListLoader.Callback mHostListCallback;
     private HostListLoader mHostListLoader;
+    private SessionAuthenticator mAuthenticator;
 
     private String mAccountName;
     private String mAuthToken;
@@ -43,11 +44,13 @@ public class SessionConnector implements JniInterface.ConnectionListener,
     }
 
     /** Initiates a connection to the host. */
-    public void connectToHost(String accountName, String authToken, HostInfo host) {
+    public void connectToHost(String accountName, String authToken, HostInfo host,
+            SessionAuthenticator authenticator) {
         mAccountName = accountName;
         mAuthToken = authToken;
         mHostId = host.id;
         mHostJabberId = host.jabberId;
+        mAuthenticator = authenticator;
 
         if (hostIncomplete(host)) {
             // These keys might not be present in a newly-registered host, so treat this as a
@@ -57,7 +60,7 @@ public class SessionConnector implements JniInterface.ConnectionListener,
         }
 
         JniInterface.connectToHost(accountName, authToken, host.jabberId, host.id, host.publicKey,
-                this);
+                this, mAuthenticator);
     }
 
     private static boolean hostIncomplete(HostInfo host) {
@@ -108,7 +111,7 @@ public class SessionConnector implements JniInterface.ConnectionListener,
             // Reconnect to the host, but use the original callback directly, instead of this
             // wrapper object, so the host list is not loaded again.
             JniInterface.connectToHost(mAccountName, mAuthToken, foundHost.jabberId,
-                    foundHost.id, foundHost.publicKey, mConnectionCallback);
+                    foundHost.id, foundHost.publicKey, mConnectionCallback, mAuthenticator);
         }
     }
 
