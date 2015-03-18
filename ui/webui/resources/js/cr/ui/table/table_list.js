@@ -35,6 +35,10 @@ cr.define('cr.ui.table', function() {
      * Resizes columns. Called when column width changed.
      */
     resize: function() {
+      if (this.needsFullRedraw_()) {
+        this.redraw();
+        return;
+      }
       if (this.updateScrollbars_())
         List.prototype.redraw.call(this);  // Redraw items only.
       this.resizeCells_();
@@ -174,6 +178,7 @@ cr.define('cr.ui.table', function() {
         cell.className = 'table-row-cell';
         if (cm.isEndAlign(i))
           cell.style.textAlign = 'end';
+        cell.hidden = !cm.isVisible(i);
         cell.appendChild(
             cm.getRenderFunction(i).call(null, dataItem, cm.getId(i), table));
 
@@ -182,6 +187,25 @@ cr.define('cr.ui.table', function() {
       listItem.style.width = cm.totalWidth + 'px';
 
       return listItem;
+    },
+
+    /**
+     * Determines whether a full redraw is required.
+     * @return {boolean}
+     */
+    needsFullRedraw_: function() {
+      var cm = this.table_.columnModel;
+      var row = this.firstElementChild;
+      // If the number of columns in the model has changed, a full redraw is
+      // needed.
+      if (row.children.length != cm.size)
+        return true;
+      // If the column visibility has changed, a full redraw is required.
+      for (var i = 0; i < cm.size; ++i) {
+        if (cm.isVisible(i) == row.children[i].hidden)
+          return true;
+      }
+      return false;
     },
   };
 

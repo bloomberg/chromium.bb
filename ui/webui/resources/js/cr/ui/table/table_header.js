@@ -49,14 +49,13 @@ cr.define('cr.ui.table', function() {
      * Resizes columns.
      */
     resize: function() {
-      var cm = this.table_.columnModel;
-
       var headerCells = this.querySelectorAll('.table-header-cell');
-      if (headerCells.length != cm.size) {
+      if (this.needsFullRedraw_(headerCells)) {
         this.redraw();
         return;
       }
 
+      var cm = this.table_.columnModel;
       for (var i = 0; i < cm.size; i++) {
         headerCells[i].style.width = cm.getWidth(i) + 'px';
       }
@@ -95,6 +94,10 @@ cr.define('cr.ui.table', function() {
       for (var i = 0; i < cm.size; i++) {
         var cell = this.ownerDocument.createElement('div');
         cell.style.width = cm.getWidth(i) + 'px';
+        // Don't display cells for hidden columns. Don't omit the cell
+        // completely, as it's much simpler if the number of cell elements and
+        // columns are in sync.
+        cell.hidden = !cm.isVisible(i);
         cell.className = 'table-header-cell';
         if (dm.isSortable(cm.getId(i)))
           cell.addEventListener('click',
@@ -117,7 +120,11 @@ cr.define('cr.ui.table', function() {
         var splitter = new TableSplitter({table: this.table_});
         splitter.columnIndex = i;
         splitter.addEventListener('dblclick',
-                              this.handleDblClick_.bind(this, i));
+                                  this.handleDblClick_.bind(this, i));
+        // Don't display splitters for hidden columns.  Don't omit the splitter
+        // completely, as it's much simpler if the number of splitter elements
+        // and columns are in sync.
+        splitter.hidden = !cm.isVisible(i);
 
         this.headerInner_.appendChild(splitter);
         splitters.push(splitter);
@@ -133,6 +140,9 @@ cr.define('cr.ui.table', function() {
       var cm = this.table_.columnModel;
       var place = 0;
       for (var i = 0; i < cm.size; i++) {
+        // Don't account for the widths of hidden columns.
+        if (splitters[i].hidden)
+          continue;
         place += cm.getWidth(i);
         splitters[i].style.webkitMarginStart = place + 'px';
       }
@@ -211,13 +221,32 @@ cr.define('cr.ui.table', function() {
 
     /**
      * Handles the double click on a column separator event.
-     * Ajusts column width.
+     * Adjusts column width.
      * @param {number} index Column index.
      * @param {Event} e The double click event.
      */
     handleDblClick_: function(index, e) {
      this.table_.fitColumn(index);
-    }
+    },
+
+    /**
+     * Determines whether a full redraw is required.
+     * @param {!NodeList} headerCells
+     * @return {boolean}
+     */
+    needsFullRedraw_: function(headerCells) {
+      var cm = this.table_.columnModel;
+      // If the number of columns in the model has changed, a full redraw is
+      // needed.
+      if (headerCells.length != cm.size)
+        return true;
+      // If the column visibility has changed, a full redraw is required.
+      for (var i = 0; i < cm.size; i++) {
+        if (cm.isVisible(i) == headerCells[i].hidden)
+          return true;
+      }
+      return false;
+    },
   };
 
   /**
