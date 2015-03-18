@@ -115,14 +115,10 @@ void CheckX11KeyTestCase(const std::string& expected,
   ui::KeyEvent& rewritten_key_event =
       new_event ? *static_cast<ui::KeyEvent*>(new_event.get()) : xkey_event;
   EXPECT_EQ(expected, GetKeyEventAsString(rewritten_key_event));
-  if ((rewritten_key_event.key_code() != ui::VKEY_UNKNOWN) &&
-      (rewritten_key_event.native_event()->xkey.keycode != 0)) {
-    // Build a new ui::KeyEvent from the rewritten native component,
-    // and check that it also matches the rewritten event.
-    EXPECT_TRUE(rewritten_key_event.native_event());
-    ui::KeyEvent from_native_event(rewritten_key_event.native_event());
-    EXPECT_EQ(expected, GetKeyEventAsString(from_native_event));
-  }
+  if (xevent->type == GenericEvent)
+    EXPECT_EQ(nullptr, rewritten_key_event.native_event());
+  else
+    EXPECT_NE(nullptr, rewritten_key_event.native_event());
 }
 #endif
 
