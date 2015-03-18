@@ -60,9 +60,13 @@ env.AddNodeToTestSuite(node,
 
 def AddIntrinsicTest(test_env, src, exit_status,
                      golden_file=None, test_suffix='', is_broken=False,
-                     EXTRA_LIBS=[]):
+                     EXTRA_LIBS=[], EXTRA_CCFLAGS=''):
   name = src.split('.')[0]
   name += test_suffix
+
+  if EXTRA_CCFLAGS:
+    test_env = test_env.Clone()
+    test_env.Append(CCFLAGS=[EXTRA_CCFLAGS])
 
   obj = test_env.ComponentObject(name, src)
   nexe = test_env.ComponentProgram(
@@ -110,8 +114,11 @@ if env.Bit('bitcode') or env.Bit('nacl_clang'):
 if env.Bit('bitcode') or env.Bit('nacl_clang'):
   AddIntrinsicTest(env, 'llvm_bitmanip_intrinsics.c', '0',
                    golden_file=env.File('llvm_bitmanip_intrinsics.stdout'))
-  AddIntrinsicTest(cpp11_envs['libc++'], 'overflow.cc', '0',
-                   golden_file=env.File('overflow.stdout'))
+  for should_inline in [0, 1]:
+    AddIntrinsicTest(cpp11_envs['libc++'], 'overflow.cc', '0',
+                     test_suffix='inline' if should_inline else 'noinline',
+                     golden_file=env.File('overflow.stdout'),
+                     EXTRA_CCFLAGS='-DSHOULD_INLINE=' + str(should_inline))
   # The test depends on the llvm.fabs intrinsic which was only allowed
   # with feature version 12.
   if env['TOOLCHAIN_FEATURE_VERSION'] >= 12:
