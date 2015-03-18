@@ -54,6 +54,7 @@
 #include <sys/types.h>
 #elif defined(OS_WIN)
 #include "base/win/scoped_handle.h"
+#include "chrome/test/chromedriver/keycode_text_conversion.h"
 #endif
 
 namespace {
@@ -345,6 +346,10 @@ Status LaunchDesktopChrome(
   options.stderr_handle = out_write;
   options.stdin_handle = GetStdHandle(STD_INPUT_HANDLE);
   options.inherit_handles = true;
+
+  if (!SwitchToUSKeyboardLayout())
+    VLOG(0) << "Can not set to US keyboard layout - Some keycodes may be"
+        "interpreted incorrectly";
 #endif
 
 #if defined(OS_WIN)

@@ -4,9 +4,11 @@
 
 #include "chrome/test/chromedriver/keycode_text_conversion.h"
 
+#include <VersionHelpers.h>
 #include <stdlib.h>
 #include <windows.h>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 
@@ -56,4 +58,37 @@ bool ConvertCharToKeyCode(
     *necessary_modifiers = modifiers;
   }
   return translated;
+}
+
+bool SwitchToUSKeyboardLayout() {
+  // For LoadKeyboardLayout - Prior to Windows 8: If the specified input
+  // locale identifier is not already loaded, the function loads and
+  // activates the input locale identifier for the current thread.
+  // Beginning in Windows 8: If the specified input locale identifier is not
+  // already loaded, the function loads and activates the input
+  // locale identifier for the system.
+  // For Windows 8 - Use ActivateKeyboardLayout instead of LoadKeyboardLayout
+  LPCTSTR kUsKeyboardLayout = TEXT("00000409");
+
+  if (IsWindows8OrGreater()) {
+    int size;
+    TCHAR active_keyboard[KL_NAMELENGTH];
+
+    if ((size = ::GetKeyboardLayoutList(0, NULL)) <= 0)
+      return false;
+
+    scoped_ptr<HKL[]> keyboard_handles_list(new HKL[size]);
+    ::GetKeyboardLayoutList(size, keyboard_handles_list.get());
+
+    for (int keyboard_index = 0; keyboard_index < size; keyboard_index++) {
+      ::ActivateKeyboardLayout(keyboard_handles_list[keyboard_index],
+          KLF_SETFORPROCESS);
+      ::GetKeyboardLayoutName(active_keyboard);
+      if (wcscmp(active_keyboard, kUsKeyboardLayout) == 0)
+        return true;
+    }
+    return false;
+  } else {
+    return ::LoadKeyboardLayout(kUsKeyboardLayout, KLF_ACTIVATE) != NULL;
+  }
 }

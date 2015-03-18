@@ -32,4 +32,8 @@ bool ConvertCharToKeyCode(base::char16 key,
                           int *necessary_modifiers,
                           std::string* error_msg);
 
+#if defined(OS_WIN)
+bool SwitchToUSKeyboardLayout();
+#endif
+
 #endif  // CHROME_TEST_CHROMEDRIVER_KEYCODE_TEXT_CONVERSION_H_
