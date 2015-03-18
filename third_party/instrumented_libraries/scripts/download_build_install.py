@@ -199,6 +199,15 @@ class InstrumentedPackageBuilder(object):
     """Returns the final location of the DSOs."""
     return os.path.join(self._destdir, self._libdir)
 
+  def cleanup_after_install(self):
+    """Removes unneeded files in self.temp_libdir()."""
+    # .la files are not needed, nuke them.
+    # In case --no-static is not supported, nuke any static libraries we built.
+    self.shell_call(
+        'find %s -name *.la -or -name *.a | xargs rm -f' % self.temp_libdir())
+    # .pc files are not needed.
+    self.shell_call('rm %s/pkgconfig -rf' % self.temp_libdir())
+
   def make(self, args, jobs=None, env=None, cwd=None):
     """Invokes `make'.
 
@@ -236,8 +245,7 @@ class InstrumentedPackageBuilder(object):
     # Some packages don't support parallel install. Use -j1 always.
     self.make_install(make_args, jobs=1)
 
-    # .la files are not needed, nuke them.
-    self.shell_call('rm %s/*.la -f' % self.temp_libdir())
+    self.cleanup_after_install()
 
     self.fix_rpaths(self.temp_libdir())
 
@@ -263,6 +271,8 @@ class LibcapBuilder(InstrumentedPackageBuilder):
         'RAISE_SETFCAP=no'
     ]
     self.make_install(install_args)
+
+    self.cleanup_after_install()
 
     self.fix_rpaths(self.temp_libdir())
 
