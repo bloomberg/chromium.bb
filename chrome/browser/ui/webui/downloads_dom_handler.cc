@@ -272,14 +272,7 @@ DownloadsDOMHandler::~DownloadsDOMHandler() {
 
 // DownloadsDOMHandler, public: -----------------------------------------------
 
-void DownloadsDOMHandler::OnPageLoaded(const base::ListValue* args) {
-  SendCurrentDownloads();
-}
-
 void DownloadsDOMHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("onPageLoaded",
-      base::Bind(&DownloadsDOMHandler::OnPageLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback("getDownloads",
       base::Bind(&DownloadsDOMHandler::HandleGetDownloads,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -393,7 +386,7 @@ void DownloadsDOMHandler::OnDownloadRemoved(
 void DownloadsDOMHandler::HandleGetDownloads(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_GET_DOWNLOADS);
   search_terms_.reset(args && !args->empty() ? args->DeepCopy() : NULL);
-  SendCurrentDownloads();
+  ScheduleSendCurrentDownloads();
 }
 
 void DownloadsDOMHandler::HandleOpenFile(const base::ListValue* args) {

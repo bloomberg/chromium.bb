@@ -177,8 +177,6 @@ cr.define('downloads', function() {
       document.addEventListener('command', this.onCommand_.bind(this));
 
       this.setSearchText('');
-
-      chrome.send('onPageLoaded');
     },
 
     /**
@@ -187,7 +185,8 @@ cr.define('downloads', function() {
      */
     onCanExecute_: function(e) {
       e = /** @type {cr.ui.CanExecuteEvent} */(e);
-      e.canExecute = document.activeElement != $('term');
+      e.canExecute = e.command.id != 'undo-command' ||
+                     document.activeElement != $('term');
     },
 
     /**
