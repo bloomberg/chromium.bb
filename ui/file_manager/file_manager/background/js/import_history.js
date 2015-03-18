@@ -1064,32 +1064,21 @@ importer.RuntimeHistoryLoader.prototype.getHistory = function() {
         .then(
             /**
              * @param {boolean} enabled
-             * @return {!Promise<!importer.ImportHistory>}
-             * @this {importer.RuntimeHistoryLoader}
+             * @return {!importer.HistoryLoader}
              */
             function(enabled) {
-              importer.getHistoryFilename().then(
-                  function(filename) {
-                    var loader;
-                    if (enabled) {
-                      // TODO(smckay): Replace this with code to load
-                      // all history files from ChromeSyncFileSystem.
-                      var historyFilesProvider = function() {
-                          return importer.ChromeSyncFilesystem.
-                              getOrCreateFileEntry(Promise.resolve(filename))
-                                  .then(
-                                      /** @param {!FileEntry} fileEntry */
-                                      function(fileEntry) {
-                                        return Promise.resolve([fileEntry]);
-                                      });
-                      };
-                      var loader = new importer.SynchronizedHistoryLoader(
-                          historyFilesProvider);
-                    } else {
-                      var loader = new importer.DummyImportHistory(false);
-                    }
-                    this.historyResolver_.resolve(loader.getHistory());
-                  }.bind(this));
+              return enabled ?
+                  new importer.SynchronizedHistoryLoader(
+                      importer.getHistoryFiles) :
+                  new importer.DummyImportHistory(false);
+            })
+        .then(
+            /**
+             * @param {!importer.HistoryLoader} loader
+             * @this {importer.RuntimeHistoryLoader}
+             */
+            function(loader) {
+              return this.historyResolver_.resolve(loader.getHistory());
             }.bind(this))
         .catch(
             importer.getLogger().catcher(

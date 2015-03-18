@@ -264,6 +264,64 @@ importer.generateMachineId_ = function() {
 };
 
 /**
+ * @param {number} machineId The machine id for *this* machine. All returned
+ *     files will have machine ids NOT matching this.
+ * @return {!Promise<!FileEntry>} all history files not having
+ *     a machine id matching {@code machineId}.
+ * @private
+ */
+importer.getUnownedHistoryFiles_ = function(machineId) {
+  var historyFiles = [];
+  return importer.ChromeSyncFilesystem.getRoot()
+      .then(
+          /** @param {!DirectoryEntry} root */
+          function(root) {
+            return fileOperationUtil.listEntries(
+                root,
+                /** @param {Entry} entry */
+                function(entry) {
+                  if (entry.isFile &&
+                      entry.name.indexOf(machineId.toString()) === -1 &&
+                      /^([0-9]{6}-import-history.log)$/.test(entry.name)) {
+                    historyFiles.push(/** @type {!FileEntry} */ (entry));
+                  }
+                })
+                .then(
+                    function() {
+                      return historyFiles;
+                    });
+          });
+};
+
+/**
+ * Returns a sync file entry for this machine's history file.
+ *
+ * @return {!Promise<!FileEntry>}
+ */
+importer.getOrCreateHistoryFile = function() {
+  return importer.ChromeSyncFilesystem.getOrCreateFileEntry(
+      importer.getHistoryFilename());
+};
+
+/**
+ * @return {!Promise<!Array<!FileEntry>>} Resolves with a list of
+ *     history files with the first enty being the history file for
+ *     the current (*this*) machine. List will always have at least one entry.
+ */
+importer.getHistoryFiles = function() {
+  return Promise.all([
+      importer.getOrCreateHistoryFile(),
+      importer.getMachineId().then(importer.getUnownedHistoryFiles_)
+    ]).then(
+        /** @param {!Array<!FileEntry|!Array<!FileEntry>>} entries */
+        function(entries) {
+          var historyFiles = entries[1];
+          historyFiles.unshift(entries[0]);
+          return historyFiles;
+        });
+};
+
+/**
  * A Promise wrapper that provides public access to resolve and reject methods.
  *
  * @constructor
@@ -494,14 +552,35 @@ importer.ChromeSyncFilesystem.getFileSystem_ = function() {
   return new Promise(
       function(resolve, reject) {
         chrome.syncFileSystem.requestFileSystem(
-            /** @param {FileSystem} fileSystem */
-            function(fileSystem) {
+            /** @param {FileSystem} filesystem */
+            function(filesystem) {
               if (chrome.runtime.lastError) {
                 reject(chrome.runtime.lastError.message);
               } else {
-                resolve(/** @type {!FileSystem} */ (fileSystem));
+                resolve(/** @type {!FileSystem} */ (filesystem));
               }
             });
+      });
+};
+
+/**
+ * Returns this apps ChromeSyncFilesystem root directory.
+ *
+ * @return {!Promise<!DirectoryEntry>}
+ */
+importer.ChromeSyncFilesystem.getRoot = function() {
+  return new Promise(
+      function(resolve, reject) {
+        importer.ChromeSyncFilesystem.getFileSystem_()
+            .then(
+                /** @param {FileSystem} filesystem */
+                function(filesystem) {
+                  if (!filesystem.root) {
+                    reject('Unable to access ChromeSyncFilesystem root');
+                  }
+                  resolve(
+                    /** @type {!DirectoryEntry} */ (filesystem.root));
+                });
       });
 };
 
@@ -512,19 +591,19 @@ importer.ChromeSyncFilesystem.getFileSystem_ = function() {
  * @return {!Promise<!FileEntry>}
  */
 importer.ChromeSyncFilesystem.getOrCreateFileEntry = function(fileNamePromise) {
-  var promise = importer.ChromeSyncFilesystem.getFileSystem_()
+  var promise = importer.ChromeSyncFilesystem.getRoot()
       .then(
           /**
-           * @param {!FileSystem} fileSystem
+           * @param {!DirectoryEntry} directory
            * @return {!Promise<!FileEntry>}
            */
-          function(fileSystem) {
-            fileNamePromise.then(
+          function(directory) {
+            return fileNamePromise.then(
                 /** @param {string} fileName */
                 function(fileName) {
                   return new Promise(
                       function(resolve, reject) {
-                        fileSystem.root.getFile(
+                        directory.getFile(
                             fileName,
                             {
                               create: true,

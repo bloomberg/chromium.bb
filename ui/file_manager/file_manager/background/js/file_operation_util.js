@@ -317,6 +317,36 @@ fileOperationUtil.findEntriesRecursively = function(entry, onResultCallback) {
 };
 
 /**
+ * Calls {@code callback} for each child entry of {@code directory}.
+ *
+ * @param {!DirectoryEntry} directory
+ * @param {function(!Entry)} callback
+ * @return {!Promise} Resolves when listing is complete.
+ */
+fileOperationUtil.listEntries = function(directory, callback) {
+  return new Promise(
+      function(resolve, reject) {
+        var reader = directory.createReader();
+
+        var readEntries = function() {
+          reader.readEntries (
+              /** @param {!Array<Entry>} entries */
+              function(entries) {
+                if (entries.length === 0) {
+                  resolve(undefined);
+                  return;
+                }
+                entries.forEach(callback);
+                readEntries();
+              },
+              reject);
+        };
+
+        readEntries();
+      });
+};
+
+/**
  * Copies source to parent with the name newName recursively.
  * This should work very similar to FileSystem API's copyTo. The difference is;
  * - The progress callback is supported.
