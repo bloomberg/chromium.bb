@@ -19,7 +19,7 @@
       'outputs': [
         '<(PRODUCT_DIR)/instrumented_libraries/<(_sanitizer_type)/<(_package_name).txt',
       ],
-      'action': ['./download_build_install.py',
+      'action': ['scripts/download_build_install.py',
         '--build-method=>(_build_method)',
         '--cc=<(_cc)',
         '--cflags=>(_package_cflags)',
@@ -49,12 +49,12 @@
             '>(_patch)',
           ],
         }],
-        ['">(_run_before_build)"!=""', {
+        ['">(_pre_build)"!=""', {
           'action+': [
-            '--run-before-build=>(_run_before_build)',
+            '--pre-build=>(_pre_build)',
           ],
           'inputs+': [
-            '>(_run_before_build)',
+            '>(_pre_build)',
           ],
         }],
         ['">(_<(_sanitizer_type)_blacklist)"!=""', {

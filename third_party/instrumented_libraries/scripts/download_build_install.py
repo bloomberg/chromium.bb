@@ -26,15 +26,15 @@ def unescape_flags(s):
   return ' '.join(shlex.split(s))
 
 
-def real_path(path_relative_to_script):
+def real_path(path_relative_to_gyp):
   """Returns the absolute path to a file.
 
-  GYP generates paths relative to the location of the .gyp file, which coincides
-  with the location of this script. This function converts them to absolute
-  paths.
+  GYP generates paths relative to the location of the .gyp file, which is one
+  level above the location of this script. This function converts them to
+  absolute paths.
   """
-  return os.path.realpath(os.path.join(SCRIPT_ABSOLUTE_PATH,
-                                       path_relative_to_script))
+  return os.path.realpath(os.path.join(SCRIPT_ABSOLUTE_PATH, '..',
+                                       path_relative_to_gyp))
 
 
 class InstrumentedPackageBuilder(object):
@@ -47,8 +47,8 @@ class InstrumentedPackageBuilder(object):
     self._libdir = args.libdir
     self._package = args.package
     self._patch = real_path(args.patch) if args.patch else None
-    self._run_before_build = \
-        real_path(args.run_before_build) if args.run_before_build else None
+    self._pre_build = \
+        real_path(args.pre_build) if args.pre_build else None
     self._sanitizer = args.sanitizer
     self._verbose = args.verbose
     self._clobber = clobber
@@ -139,8 +139,8 @@ class InstrumentedPackageBuilder(object):
   def patch_source(self):
     if self._patch:
       self.shell_call('patch -p1 -i %s' % self._patch, cwd=self._source_dir)
-    if self._run_before_build:
-      self.shell_call(self._run_before_build, cwd=self._source_dir)
+    if self._pre_build:
+      self.shell_call(self._pre_build, cwd=self._source_dir)
 
   def copy_source_archives(self):
     """Copies the downloaded source archives to the output dir.
@@ -167,7 +167,8 @@ class InstrumentedPackageBuilder(object):
       self.build_and_install()
     except Exception as exception:
       print 'ERROR: Failed to build package %s. Have you run ' \
-            'src/third_party/instrumented_libraries/install-build-deps.sh?' % \
+            'src/third_party/instrumented_libraries/scripts/' \
+            'install-build-deps.sh?' % \
             self._package
       print
       raise
@@ -183,7 +184,7 @@ class InstrumentedPackageBuilder(object):
 
   def fix_rpaths(self, directory):
     # TODO(earthdok): reimplement fix_rpaths.sh in Python.
-    script = real_path('fix_rpaths.sh')
+    script = real_path('scripts/fix_rpaths.sh')
     self.shell_call("%s %s" % (script, directory))
 
   def temp_dir(self):
@@ -392,7 +393,7 @@ def main():
   parser.add_argument('--patch', default='')
   # This should be a shell script to run before building specific libraries.
   # This will be run after applying the patch above.
-  parser.add_argument('--run-before-build', default='')
+  parser.add_argument('--pre-build', default='')
   parser.add_argument('--build-method', default='destdir')
   parser.add_argument('--sanitizer-blacklist', default='')
   # The LIBDIR argument to configure/make.

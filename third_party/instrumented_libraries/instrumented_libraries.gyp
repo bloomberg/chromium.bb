@@ -56,7 +56,7 @@
       '-Wl,-R,XORIGIN/.'
     ],
     'patch': '',
-    'run_before_build': '',
+    'pre_build': '',
     'asan_blacklist': '',
     'msan_blacklist': '',
     'tsan_blacklist': '',
@@ -186,7 +186,7 @@
       'package_name': 'freetype',
       'dependencies=': [],
       'extra_configure_flags': ['--disable-static'],
-      'run_before_build': 'scripts/freetype.sh',
+      'pre_build': 'scripts/pre-build/freetype.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -284,7 +284,7 @@
       ],
       'asan_blacklist': 'blacklists/asan/libglib2.0-0.txt',
       'msan_blacklist': 'blacklists/msan/libglib2.0-0.txt',
-      'run_before_build': 'scripts/autogen.sh',
+      'pre_build': 'scripts/pre-build/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -302,7 +302,7 @@
         # TSan reports data races on debug variables.
         '--disable-debug',
       ],
-      'run_before_build': 'scripts/libnspr4.sh',
+      'pre_build': 'scripts/pre-build/libnspr4.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -310,7 +310,7 @@
       'dependencies=': [],
       'extra_configure_flags': ['--disable-static'],
       # Required on Trusty due to autoconf version mismatch.
-      'run_before_build': 'scripts/autoreconf.sh',
+      'pre_build': 'scripts/pre-build/autoreconf.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -352,7 +352,7 @@
       ],
       'msan_blacklist': 'blacklists/msan/libx11-6.txt',
       # Required on Trusty due to autoconf version mismatch.
-      'run_before_build': 'scripts/autoreconf.sh',
+      'pre_build': 'scripts/pre-build/autoreconf.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -375,7 +375,7 @@
         }],
       ],
       # Required on Trusty due to autoconf version mismatch.
-      'run_before_build': 'scripts/autoreconf.sh',
+      'pre_build': 'scripts/pre-build/autoreconf.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -501,14 +501,14 @@
           # this even impacts x86-64 builds.
           '--disable-neon-opt'
       ],
-      'run_before_build': 'scripts/pulseaudio.sh',
+      'pre_build': 'scripts/pre-build/pulseaudio.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
       'package_name': 'libasound2',
       'dependencies=': [],
       'extra_configure_flags': ['--disable-static'],
-      'run_before_build': 'scripts/libasound2.sh',
+      'pre_build': 'scripts/pre-build/libasound2.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -575,7 +575,7 @@
           # TODO(earthdok): find a better fix.
           '--disable-gudev'
       ],
-      'run_before_build': 'scripts/udev.sh',
+      'pre_build': 'scripts/pre-build/udev.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -630,7 +630,7 @@
           'patch': 'patches/libgtk2.0-0.trusty.diff',
         }],
       ],
-      'run_before_build': 'scripts/libgtk2.0-0.sh',
+      'pre_build': 'scripts/pre-build/libgtk2.0-0.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -648,7 +648,7 @@
           '--disable-modules',
       ],
       'dependencies=': [],
-      'run_before_build': 'scripts/libgdk-pixbuf2.0-0.sh',
+      'pre_build': 'scripts/pre-build/libgdk-pixbuf2.0-0.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -673,7 +673,7 @@
           '--disable-vala',
       ],
       'dependencies=': [],
-      'run_before_build': 'scripts/autogen.sh',
+      'pre_build': 'scripts/pre-build/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -698,7 +698,7 @@
       ],
       'dependencies=': [],
       'jobs': 1,
-      'run_before_build': 'scripts/autogen.sh',
+      'pre_build': 'scripts/pre-build/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -713,7 +713,7 @@
           '--disable-vala',
       ],
       'dependencies=': [],
-      'run_before_build': 'scripts/autogen.sh',
+      'pre_build': 'scripts/pre-build/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -730,7 +730,7 @@
       'package_name': 'libunity9',
       'dependencies=': [],
       'extra_configure_flags': ['--disable-static'],
-      'run_before_build': 'scripts/autogen.sh',
+      'pre_build': 'scripts/pre-build/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -741,7 +741,7 @@
           '--disable-introspection',
       ],
       'dependencies=': [],
-      'run_before_build': 'scripts/autogen.sh',
+      'pre_build': 'scripts/pre-build/autogen.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -786,7 +786,7 @@
       # Backport a use-after-free fix:
       # http://cgit.freedesktop.org/libva/diff/va/va.c?h=staging&id=d4988142a3f2256e38c5c5cdcdfc1b4f5f3c1ea9
       'patch': 'patches/libva1.diff',
-      'run_before_build': 'scripts/libva1.sh',
+      'pre_build': 'scripts/pre-build/libva1.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
@@ -797,7 +797,7 @@
           # See above.
           '--disable-introspection',
       ],
-      'run_before_build': 'scripts/autoreconf.sh',
+      'pre_build': 'scripts/pre-build/autoreconf.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
   ],
