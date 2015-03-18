@@ -59,7 +59,6 @@
         '../',
       ],
       'includes': ['libjingle_common.gypi', ],
-      # TODO(sergeyu): Depend on webrtc/base.gyp:rtc_base_approved?
       'sources': [
         '<(webrtc_base)/asyncfile.cc',
         '<(webrtc_base)/asyncfile.h',
@@ -101,8 +100,6 @@
         '<(webrtc_base)/dscp.h',
         '<(webrtc_base)/event.cc',
         '<(webrtc_base)/event.h',
-        '<(webrtc_base)/event_tracer.cc',
-        '<(webrtc_base)/event_tracer.h',
         '<(webrtc_base)/fileutils.cc',
         '<(webrtc_base)/fileutils.h',
         '<(webrtc_base)/firewallsocketserver.cc',
