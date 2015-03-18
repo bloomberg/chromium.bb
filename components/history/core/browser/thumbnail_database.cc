@@ -1024,6 +1024,24 @@ bool ThumbnailDatabase::RetainDataForPageUrls(
   if (!transaction.Begin())
     return false;
 
+  // Populate temp.retained_urls with |urls_to_keep|.
+  {
+    const char kCreateRetainedUrls[] =
+        "CREATE TEMP TABLE retained_urls (url LONGVARCHAR PRIMARY KEY)";
+    if (!db_.Execute(kCreateRetainedUrls))
+      return false;
+
+    const char kRetainedUrlSql[] =
+        "INSERT OR IGNORE INTO temp.retained_urls (url) VALUES (?)";
+    sql::Statement statement(db_.GetUniqueStatement(kRetainedUrlSql));
+    for (const GURL& url : urls_to_keep) {
+      statement.BindString(0, URLDatabase::GURLToDatabaseURL(url));
+      if (!statement.Run())
+        return false;
+      statement.Reset(true);
+    }
+  }
+
   // temp.icon_id_mapping generates new icon ids as consecutive
   // integers starting from 1, and maps them to the old icon ids.
   {
@@ -1039,23 +1057,21 @@ bool ThumbnailDatabase::RetainDataForPageUrls(
     // Insert the icon ids for retained urls, skipping duplicates.
     const char kIconMappingSql[] =
         "INSERT OR IGNORE INTO temp.icon_id_mapping (old_icon_id) "
-        "SELECT icon_id FROM icon_mapping WHERE page_url = ?";
-    sql::Statement statement(db_.GetUniqueStatement(kIconMappingSql));
-    for (std::vector<GURL>::const_iterator
-             i = urls_to_keep.begin(); i != urls_to_keep.end(); ++i) {
-      statement.BindString(0, URLDatabase::GURLToDatabaseURL(*i));
-      if (!statement.Run())
-        return false;
-      statement.Reset(true);
-    }
+        "SELECT icon_id FROM icon_mapping "
+        "JOIN temp.retained_urls "
+        "ON (temp.retained_urls.url = icon_mapping.page_url)";
+    if (!db_.Execute(kIconMappingSql))
+      return false;
   }
 
   const char kRenameIconMappingTable[] =
       "ALTER TABLE icon_mapping RENAME TO old_icon_mapping";
   const char kCopyIconMapping[] =
       "INSERT INTO icon_mapping (page_url, icon_id) "
-      "SELECT old.page_url, mapping.new_icon_id "
-      "FROM old_icon_mapping AS old "
+      "SELECT temp.retained_urls.url, mapping.new_icon_id "
+      "FROM temp.retained_urls "
+      "JOIN old_icon_mapping AS old "
+      "ON (temp.retained_urls.url = old.page_url) "
       "JOIN temp.icon_id_mapping AS mapping "
       "ON (old.icon_id = mapping.old_icon_id)";
   const char kDropOldIconMappingTable[] = "DROP TABLE old_icon_mapping";
@@ -1117,7 +1133,8 @@ bool ThumbnailDatabase::RetainDataForPageUrls(
     return false;
 
   const char kIconMappingDrop[] = "DROP TABLE temp.icon_id_mapping";
-  if (!db_.Execute(kIconMappingDrop))
+  const char kRetainedUrlsDrop[] = "DROP TABLE temp.retained_urls";
+  if (!db_.Execute(kIconMappingDrop) || !db_.Execute(kRetainedUrlsDrop))
     return false;
 
   return transaction.Commit();

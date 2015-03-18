@@ -306,10 +306,15 @@ TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrls) {
 
   db.BeginTransaction();
 
-  // Build a database mapping kPageUrl1 -> kIconUrl1, kPageUrl2 ->
-  // kIconUrl2, kPageUrl3 -> kIconUrl1, and kPageUrl5 -> kIconUrl5.
-  // Then retain kPageUrl1, kPageUrl3, and kPageUrl5.  kPageUrl2
-  // should go away, but the others should be retained correctly.
+  // Build a database mapping
+  // kPageUrl1 -> kIconUrl1
+  // kPageUrl2 -> kIconUrl2
+  // kPageUrl3 -> kIconUrl1
+  // kPageUrl4 -> kIconUrl1
+  // kPageUrl5 -> kIconUrl5
+  // Then retain kPageUrl1, kPageUrl3, and kPageUrl5. kPageUrl2
+  // and kPageUrl4 should go away, but the others should be retained
+  // correctly.
 
   // TODO(shess): This would probably make sense as a golden file.
 
@@ -323,6 +328,7 @@ TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrls) {
   db.AddFaviconBitmap(kept_id1, favicon1, base::Time::Now(), kLargeSize);
   db.AddIconMapping(kPageUrl1, kept_id1);
   db.AddIconMapping(kPageUrl3, kept_id1);
+  db.AddIconMapping(kPageUrl4, kept_id1);
 
   favicon_base::FaviconID unkept_id =
       db.AddFavicon(kIconUrl2, favicon_base::FAVICON);
@@ -367,8 +373,9 @@ TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrls) {
                                sizeof(kBlob2),
                                kBlob2));
 
-  // The one not retained should be missing.
+  // The ones not retained should be missing.
   EXPECT_FALSE(db.GetFaviconIDForFaviconURL(kPageUrl2, false, NULL));
+  EXPECT_FALSE(db.GetFaviconIDForFaviconURL(kPageUrl4, false, NULL));
 
   // Schema should be the same.
   EXPECT_EQ(original_schema, db.db_.GetSchema());
