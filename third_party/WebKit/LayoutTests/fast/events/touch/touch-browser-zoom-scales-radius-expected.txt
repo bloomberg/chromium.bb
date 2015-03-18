@@ -7,14 +7,8 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 ===Initial Zoom===
-PASS radiusX is 4
-PASS radiusY is 10
 ===Zoom 2X===
-PASS radiusX is 2
-PASS radiusY is 5
 ===Zoom 0.5X===
-PASS radiusX is 8
-PASS radiusY is 20
 PASS successfullyParsed is true
 
 TEST COMPLETE

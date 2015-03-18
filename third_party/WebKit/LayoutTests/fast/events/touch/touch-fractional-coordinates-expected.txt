@@ -16,8 +16,6 @@ PASS lastEvent.changedTouches[0].clientX is within 0.00001 of 30.33
 PASS lastEvent.changedTouches[0].clientY is within 0.00001 of 4.5
 PASS lastEvent.changedTouches[0].pageX is within 0.00001 of 33.33
 PASS lastEvent.changedTouches[0].pageY is within 0.00001 of 14.5
-PASS lastEvent.changedTouches[0].webkitRadiusX is within 0.00001 of 5.2
-PASS lastEvent.changedTouches[0].webkitRadiusY is within 0.00001 of 6.3
 
 Testing fractional touch inside simple iframe
 PASS eventCount is 1
