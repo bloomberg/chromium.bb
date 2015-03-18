@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
@@ -21,6 +23,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::ElementsAre;
 using testing::Mock;
 using testing::Return;
 using testing::SaveArg;
@@ -41,6 +44,11 @@ const char kDMToken[] = "fake-dm-token";
 const char kDeviceCertificate[] = "fake-device-certificate";
 const char kRequisition[] = "fake-requisition";
 const char kStateKey[] = "fake-state-key";
+const char kPayload[] = "input_payload";
+const char kResultPayload[] = "output_payload";
+
+const int64_t kLastCommandId = 123456789;
+const int64_t kTimestamp = 987654321;
 
 MATCHER_P(MatchProto, expected, "matches protobuf") {
   return arg.SerializePartialAsString() == expected.SerializePartialAsString();
@@ -50,9 +58,19 @@ MATCHER_P(MatchProto, expected, "matches protobuf") {
 class MockUploadObserver {
  public:
   MockUploadObserver() {}
-  virtual ~MockUploadObserver() {}
 
   MOCK_METHOD1(OnUploadComplete, void(bool));
+};
+
+// A mock class to allow us to set expectations on remote command fetch
+// callbacks.
+class MockRemoteCommandsObserver {
+ public:
+  MockRemoteCommandsObserver() {}
+
+  MOCK_METHOD2(OnRemoteCommandsFetched,
+               void(DeviceManagementStatus,
+                    const std::vector<em::RemoteCommand>&));
 };
 
 }  // namespace
@@ -88,13 +106,32 @@ class CloudPolicyClientTest : public testing::Test {
 
     upload_status_request_.mutable_device_status_report_request();
     upload_status_request_.mutable_session_status_report_request();
+
+    remote_command_request_.mutable_remote_command_request()
+        ->set_last_command_unique_id(kLastCommandId);
+    em::RemoteCommandResult* command_result =
+        remote_command_request_.mutable_remote_command_request()
+            ->add_command_results();
+    command_result->set_unique_id(kLastCommandId);
+    command_result->set_result(
+        em::RemoteCommandResult_ResultType_RESULT_SUCCESS);
+    command_result->set_payload(kResultPayload);
+    command_result->set_timestamp(kTimestamp);
+
+    em::RemoteCommand* command =
+        remote_command_response_.mutable_remote_command_response()
+            ->add_commands();
+    command->set_timestamp(kTimestamp + 1);
+    command->set_payload(kPayload);
+    command->set_unique_id(kLastCommandId + 1);
+    command->set_type(em::RemoteCommand_Type_COMMAND_ECHO_TEST);
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CreateClient(USER_AFFILIATION_NONE);
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     client_->RemoveObserver(&observer_);
   }
 
@@ -175,6 +212,17 @@ class CloudPolicyClientTest : public testing::Test {
                          client_id_, MatchProto(upload_status_request_)));
   }
 
+  void ExpectFetchRemoteCommands() {
+    EXPECT_CALL(service_,
+                CreateJob(DeviceManagementRequestJob::TYPE_REMOTE_COMMANDS,
+                          request_context_))
+        .WillOnce(service_.SucceedJob(remote_command_response_));
+    EXPECT_CALL(service_,
+                StartJob(dm_protocol::kValueRequestRemoteCommands,
+                         std::string(), std::string(), kDMToken, std::string(),
+                         client_id_, MatchProto(remote_command_request_)));
+  }
+
   void CheckPolicyResponse() {
     ASSERT_TRUE(client_->GetPolicyFor(policy_type_, std::string()));
     EXPECT_THAT(*client_->GetPolicyFor(policy_type_, std::string()),
@@ -194,6 +242,7 @@ class CloudPolicyClientTest : public testing::Test {
   em::DeviceManagementRequest unregistration_request_;
   em::DeviceManagementRequest upload_certificate_request_;
   em::DeviceManagementRequest upload_status_request_;
+  em::DeviceManagementRequest remote_command_request_;
 
   // Protobufs used in successful responses.
   em::DeviceManagementResponse registration_response_;
@@ -201,6 +250,7 @@ class CloudPolicyClientTest : public testing::Test {
   em::DeviceManagementResponse unregistration_response_;
   em::DeviceManagementResponse upload_certificate_response_;
   em::DeviceManagementResponse upload_status_response_;
+  em::DeviceManagementResponse remote_command_response_;
 
   base::MessageLoop loop_;
   std::string client_id_;
@@ -715,6 +765,32 @@ TEST_F(CloudPolicyClientTest, RequestCancelOnUnregister) {
   ExpectUnregistration(kDMToken);
   client_->Unregister();
   EXPECT_EQ(0, client_->GetActiveRequestCountForTest());
+}
+
+TEST_F(CloudPolicyClientTest, FetchRemoteCommands) {
+  StrictMock<MockRemoteCommandsObserver> remote_commands_observer;
+
+  Register();
+
+  ExpectFetchRemoteCommands();
+  EXPECT_CALL(
+      remote_commands_observer,
+      OnRemoteCommandsFetched(
+          DM_STATUS_SUCCESS,
+          ElementsAre(MatchProto(
+              remote_command_response_.remote_command_response().commands(0)))))
+      .Times(1);
+  const CloudPolicyClient::RemoteCommandCallback callback =
+      base::Bind(&MockRemoteCommandsObserver::OnRemoteCommandsFetched,
+                 base::Unretained(&remote_commands_observer));
+
+  const std::vector<em::RemoteCommandResult> command_results(
+      1, remote_command_request_.remote_command_request().command_results(0));
+  client_->FetchRemoteCommands(
+      make_scoped_ptr(new RemoteCommandJob::UniqueIDType(kLastCommandId)),
+      command_results, callback);
+
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
 }  // namespace policy

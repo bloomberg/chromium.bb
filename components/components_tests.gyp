@@ -364,6 +364,7 @@
       'policy/core/common/preg_parser_win_unittest.cc',
       'policy/core/common/registry_dict_win_unittest.cc',
       'policy/core/common/remote_commands/remote_commands_queue_unittest.cc',
+      'policy/core/common/remote_commands/remote_commands_service_unittest.cc',
       'policy/core/common/schema_map_unittest.cc',
       'policy/core/common/schema_registry_tracking_policy_provider_unittest.cc',
       'policy/core/common/schema_registry_unittest.cc',

@@ -31,7 +31,7 @@ class RemoteCommandJob;
 class POLICY_EXPORT RemoteCommandsQueue {
  public:
   // Interface for classes who would like to monitor remote command execution.
-  class Observer {
+  class POLICY_EXPORT Observer {
    public:
     // Called when a remote command starts running.
     virtual void OnJobStarted(RemoteCommandJob* command) = 0;

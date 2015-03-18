@@ -5,6 +5,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -261,11 +262,10 @@ void CloudPolicyClient::UploadCertificate(
   request->mutable_cert_upload_request()->set_device_certificate(
       certificate_data);
 
-  DeviceManagementRequestJob::Callback job_callback = base::Bind(
-      &CloudPolicyClient::OnCertificateUploadCompleted,
-      base::Unretained(this),
-      request_job.get(),
-      callback);
+  const DeviceManagementRequestJob::Callback job_callback =
+      base::Bind(&CloudPolicyClient::OnCertificateUploadCompleted,
+                 base::Unretained(this), request_job.get(), callback);
+
   request_jobs_.push_back(request_job.Pass());
   request_jobs_.back()->Start(job_callback);
 }
@@ -289,11 +289,37 @@ void CloudPolicyClient::UploadDeviceStatus(
   if (session_status)
     *request->mutable_session_status_report_request() = *session_status;
 
-  DeviceManagementRequestJob::Callback job_callback = base::Bind(
-      &CloudPolicyClient::OnStatusUploadCompleted,
-      base::Unretained(this),
-      request_job.get(),
-      callback);
+  const DeviceManagementRequestJob::Callback job_callback =
+      base::Bind(&CloudPolicyClient::OnStatusUploadCompleted,
+                 base::Unretained(this), request_job.get(), callback);
+
+  request_jobs_.push_back(request_job.Pass());
+  request_jobs_.back()->Start(job_callback);
+}
+
+void CloudPolicyClient::FetchRemoteCommands(
+    scoped_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
+    const std::vector<em::RemoteCommandResult>& command_results,
+    const RemoteCommandCallback& callback) {
+  CHECK(is_registered());
+  scoped_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_REMOTE_COMMANDS, GetRequestContext()));
+
+  request_job->SetDMToken(dm_token_);
+  request_job->SetClientID(client_id_);
+
+  em::DeviceRemoteCommandRequest* const request =
+      request_job->GetRequest()->mutable_remote_command_request();
+
+  if (last_command_id)
+    request->set_last_command_unique_id(*last_command_id);
+
+  for (const auto& command_result : command_results)
+    *request->add_command_results() = command_result;
+
+  const DeviceManagementRequestJob::Callback job_callback =
+      base::Bind(&CloudPolicyClient::OnRemoteCommandsFetched,
+                 base::Unretained(this), request_job.get(), callback);
 
   request_jobs_.push_back(request_job.Pass());
   request_jobs_.back()->Start(job_callback);
@@ -512,6 +538,26 @@ void CloudPolicyClient::OnStatusUploadCompleted(
     NotifyClientError();
 
   callback.Run(status == DM_STATUS_SUCCESS);
+  // Must call RemoveJob() last, because it frees |callback|.
+  RemoveJob(job);
+}
+
+void CloudPolicyClient::OnRemoteCommandsFetched(
+    const DeviceManagementRequestJob* job,
+    const RemoteCommandCallback& callback,
+    DeviceManagementStatus status,
+    int net_error,
+    const enterprise_management::DeviceManagementResponse& response) {
+  std::vector<enterprise_management::RemoteCommand> commands;
+  if (status == DM_STATUS_SUCCESS) {
+    if (response.has_remote_command_response()) {
+      for (const auto& command : response.remote_command_response().commands())
+        commands.push_back(command);
+    } else {
+      status = DM_STATUS_RESPONSE_DECODING_ERROR;
+    }
+  }
+  callback.Run(status, commands);
   // Must call RemoveJob() last, because it frees |callback|.
   RemoveJob(job);
 }

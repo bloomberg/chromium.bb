@@ -323,6 +323,8 @@
             'policy/core/common/preferences_mock_mac.h',
             'policy/core/common/remote_commands/test_remote_command_job.cc',
             'policy/core/common/remote_commands/test_remote_command_job.h',
+            'policy/core/common/remote_commands/testing_remote_commands_server.cc',
+            'policy/core/common/remote_commands/testing_remote_commands_server.h',
           ],
           'conditions': [
             ['OS=="android"', {

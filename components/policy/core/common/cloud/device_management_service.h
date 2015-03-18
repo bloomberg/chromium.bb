@@ -46,6 +46,7 @@ class POLICY_EXPORT DeviceManagementRequestJob {
     TYPE_UPLOAD_CERTIFICATE,
     TYPE_DEVICE_STATE_RETRIEVAL,
     TYPE_UPLOAD_STATUS,
+    TYPE_REMOTE_COMMANDS,
   };
 
   typedef base::Callback<

@@ -164,6 +164,10 @@ bool TestMockTimeTaskRunner::PostNonNestableDelayedTask(
   return PostDelayedTask(from_here, task, delay);
 }
 
+bool TestMockTimeTaskRunner::IsElapsingStopped() {
+  return false;
+}
+
 void TestMockTimeTaskRunner::OnBeforeSelectingTask() {
   // Empty default implementation.
 }
@@ -179,7 +183,7 @@ void TestMockTimeTaskRunner::OnAfterTaskRun() {
 void TestMockTimeTaskRunner::ProcessAllTasksNoLaterThan(TimeDelta max_delta) {
   DCHECK_GE(max_delta, TimeDelta());
   const TimeTicks original_now_ticks = now_ticks_;
-  while (true) {
+  while (!IsElapsingStopped()) {
     OnBeforeSelectingTask();
     TestPendingTask task_info;
     if (!DequeueNextTask(original_now_ticks, max_delta, &task_info))

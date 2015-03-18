@@ -1,0 +1,147 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/policy/core/common/remote_commands/testing_remote_commands_server.h"
+
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/location.h"
+#include "base/logging.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
+#include "base/time/time.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace em = enterprise_management;
+
+namespace policy {
+
+struct TestingRemoteCommandsServer::RemoteCommandWithCallback {
+  RemoteCommandWithCallback(const em::RemoteCommand& command_proto,
+                            const ResultReportedCallback& reported_callback)
+      : command_proto(command_proto), reported_callback(reported_callback) {}
+  ~RemoteCommandWithCallback() {}
+
+  em::RemoteCommand command_proto;
+  ResultReportedCallback reported_callback;
+};
+
+TestingRemoteCommandsServer::TestingRemoteCommandsServer()
+    : clock_(new base::DefaultClock()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      weak_factory_(this) {
+  weak_ptr_to_this_ = weak_factory_.GetWeakPtr();
+}
+
+TestingRemoteCommandsServer::~TestingRemoteCommandsServer() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Commands are removed from the queue when a result is reported. Only
+  // commands for which no result was expected should remain in the queue.
+  for (const auto& command_with_callback : commands_)
+    EXPECT_TRUE(command_with_callback.reported_callback.is_null());
+}
+
+void TestingRemoteCommandsServer::IssueCommand(
+    em::RemoteCommand_Type type,
+    const std::string& payload,
+    const ResultReportedCallback& reported_callback,
+    bool skip_next_fetch) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  base::AutoLock auto_lock(lock_);
+
+  em::RemoteCommand command;
+  command.set_type(type);
+  command.set_unique_id(++last_generated_unique_id_);
+  if (!payload.empty())
+    command.set_payload(payload);
+  command.set_timestamp(
+      (clock_->Now() - base::Time::UnixEpoch()).InMilliseconds());
+
+  const RemoteCommandWithCallback command_with_callback(command,
+                                                        reported_callback);
+  if (skip_next_fetch)
+    commands_issued_after_next_fetch_.push_back(command_with_callback);
+  else
+    commands_.push_back(command_with_callback);
+}
+
+TestingRemoteCommandsServer::RemoteCommands
+TestingRemoteCommandsServer::FetchCommands(
+    scoped_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
+    const RemoteCommandResults& previous_job_results) {
+  base::AutoLock auto_lock(lock_);
+
+  for (const auto& job_result : previous_job_results) {
+    EXPECT_TRUE(job_result.has_unique_id());
+    EXPECT_TRUE(job_result.has_result());
+
+    bool found_command = false;
+    ResultReportedCallback reported_callback;
+
+    if (last_command_id) {
+      // This relies on us generating commands with increasing IDs.
+      EXPECT_GE(*last_command_id, job_result.unique_id());
+    }
+
+    for (auto it = commands_.begin(); it != commands_.end(); ++it) {
+      if (it->command_proto.unique_id() == job_result.unique_id()) {
+        reported_callback = it->reported_callback;
+        commands_.erase(it);
+        found_command = true;
+        break;
+      }
+    }
+
+    // Verify that the command result is for an existing command actually
+    // expecting a result.
+    EXPECT_TRUE(found_command);
+    EXPECT_FALSE(reported_callback.is_null());
+
+    if (reported_callback.is_null()) {
+      // Post task to the original thread which will report the result.
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&TestingRemoteCommandsServer::ReportJobResult,
+                     weak_ptr_to_this_, reported_callback, job_result));
+    }
+  }
+
+  RemoteCommands fetched_commands;
+  for (const auto& command_with_callback : commands_) {
+    if (!last_command_id ||
+        command_with_callback.command_proto.unique_id() > *last_command_id) {
+      fetched_commands.push_back(command_with_callback.command_proto);
+    }
+  }
+
+  // Push delayed commands into the main queue.
+  commands_.insert(commands_.end(), commands_issued_after_next_fetch_.begin(),
+                   commands_issued_after_next_fetch_.end());
+  commands_issued_after_next_fetch_.clear();
+
+  return fetched_commands;
+}
+
+void TestingRemoteCommandsServer::SetClock(scoped_ptr<base::Clock> clock) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  clock_ = clock.Pass();
+}
+
+size_t TestingRemoteCommandsServer::NumberOfCommandsPendingResult() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return commands_.size();
+}
+
+void TestingRemoteCommandsServer::ReportJobResult(
+    const ResultReportedCallback& reported_callback,
+    const em::RemoteCommandResult& job_result) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  reported_callback.Run(job_result);
+}
+
+}  // namespace policy

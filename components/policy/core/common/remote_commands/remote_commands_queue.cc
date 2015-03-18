@@ -20,7 +20,8 @@ RemoteCommandsQueue::RemoteCommandsQueue() : clock_(new base::DefaultClock()) {
 RemoteCommandsQueue::~RemoteCommandsQueue() {
   while (!incoming_commands_.empty())
     incoming_commands_.pop();
-  running_command_.reset();
+  if (running_command_)
+    running_command_->Terminate();
 }
 
 void RemoteCommandsQueue::AddObserver(Observer* observer) {

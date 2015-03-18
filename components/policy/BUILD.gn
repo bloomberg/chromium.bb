@@ -200,6 +200,8 @@ if (enable_configuration_policy) {
       "core/common/preferences_mock_mac.h",
       "core/common/remote_commands/test_remote_command_job.cc",
       "core/common/remote_commands/test_remote_command_job.h",
+      "core/common/remote_commands/testing_remote_commands_server.cc",
+      "core/common/remote_commands/testing_remote_commands_server.h",
     ]
 
     if (is_chromeos) {

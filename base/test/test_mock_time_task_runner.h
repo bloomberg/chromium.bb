@@ -94,6 +94,11 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner {
  protected:
   ~TestMockTimeTaskRunner() override;
 
+  // Whether the elapsing of virtual time is stopped or not. Subclasses can
+  // override this method to perform early exits from a running task runner.
+  // Defaults to always return false.
+  virtual bool IsElapsingStopped();
+
   // Called before the next task to run is selected, so that subclasses have a
   // last chance to make sure all tasks are posted.
   virtual void OnBeforeSelectingTask();

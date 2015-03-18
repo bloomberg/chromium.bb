@@ -18,6 +18,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "components/policy/policy_export.h"
 #include "policy/proto/device_management_backend.pb.h"
 
@@ -42,12 +43,17 @@ class POLICY_EXPORT CloudPolicyClient {
  public:
   // Maps a (policy type, settings entity ID) pair to its corresponding
   // PolicyFetchResponse.
-  typedef std::map<std::pair<std::string, std::string>,
-                   enterprise_management::PolicyFetchResponse*> ResponseMap;
+  using ResponseMap = std::map<std::pair<std::string, std::string>,
+                               enterprise_management::PolicyFetchResponse*>;
 
   // A callback which receives boolean status of an operation.  If the operation
   // succeeded, |status| is true.
-  typedef base::Callback<void(bool status)> StatusCallback;
+  using StatusCallback = base::Callback<void(bool status)>;
+
+  // A callback which receives fetched remote commands.
+  using RemoteCommandCallback = base::Callback<void(
+      DeviceManagementStatus,
+      const std::vector<enterprise_management::RemoteCommand>&)>;
 
   // Observer interface for state and policy changes.
   class POLICY_EXPORT Observer {
@@ -137,6 +143,19 @@ class POLICY_EXPORT CloudPolicyClient {
       const enterprise_management::DeviceStatusReportRequest* device_status,
       const enterprise_management::SessionStatusReportRequest* session_status,
       const StatusCallback& callback);
+
+  // Attempts to fetch remote commands, with |last_command_id| being the ID of
+  // the last command that finished execution and |command_results| being
+  // results for previous commands which have not been reported yet. The
+  // |callback| will be called when the operation completes.
+  // Note that sending |last_command_id| will acknowledge this command and any
+  // previous commands. A nullptr indicates that no commands have finished
+  // execution.
+  virtual void FetchRemoteCommands(
+      scoped_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
+      const std::vector<enterprise_management::RemoteCommandResult>&
+          command_results,
+      const RemoteCommandCallback& callback);
 
   // Adds an observer to be called back upon policy and state changes.
   void AddObserver(Observer* observer);
@@ -263,6 +282,14 @@ class POLICY_EXPORT CloudPolicyClient {
   void OnStatusUploadCompleted(
       const DeviceManagementRequestJob* job,
       const StatusCallback& callback,
+      DeviceManagementStatus status,
+      int net_error,
+      const enterprise_management::DeviceManagementResponse& response);
+
+  // Callback for remote command fetch requests.
+  void OnRemoteCommandsFetched(
+      const DeviceManagementRequestJob* job,
+      const RemoteCommandCallback& callback,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);

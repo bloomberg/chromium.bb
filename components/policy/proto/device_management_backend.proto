@@ -454,6 +454,21 @@ message RemoteCommandResult {
   optional bytes payload = 4;
 }
 
+message DeviceRemoteCommandRequest {
+  // The command ID of the last command received from the server until
+  // now.  Omitted if no commands have been received yet.
+  optional int64 last_command_unique_id = 1;
+
+  // The execution results of previously fetched commands.
+  // The client should send back a command result whenever possible.
+  repeated RemoteCommandResult command_results = 2;
+}
+
+message DeviceRemoteCommandResponse {
+  // The queue of pending commands.
+  repeated RemoteCommand commands = 1;
+}
+
 // Request from device to server for reading policies.
 message DevicePolicyRequest {
   // The policy fetch request.  If this field exists, the request must
@@ -934,6 +949,7 @@ message CheckDevicePairingResponse {
 //     * register
 //     * status
 //     * unregister
+//     * remote_commands
 //
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
@@ -943,7 +959,7 @@ message CheckDevicePairingResponse {
 //   * For register and ping requests
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
 //
-//   * For unregister, policy, status, and cert_upload requests
+//   * For unregister, policy, status, cert_upload and remote commands requests
 //      Authorization: GoogleDMToken token=<dm token from register>
 //
 //   * The Authorization header isn't used for enterprise_check
@@ -963,6 +979,7 @@ message CheckDevicePairingResponse {
 //   register: register_request
 //   status: device_status_report_request or session_status_report_request
 //   unregister: unregister_request
+//   remote_commands: remote_command_request
 //
 //
 message DeviceManagementRequest {
@@ -999,6 +1016,9 @@ message DeviceManagementRequest {
 
   // Check if two devices are paired.
   optional CheckDevicePairingRequest check_device_pairing_request = 12;
+
+  // Remote command fetching.
+  optional DeviceRemoteCommandRequest remote_command_request = 13;
 }
 
 // Response from server to device.
@@ -1053,4 +1073,7 @@ message DeviceManagementResponse {
 
   // Response to check device pairing request.
   optional CheckDevicePairingResponse check_device_pairing_response = 13;
+
+  // Response to remote command request.
+  optional DeviceRemoteCommandResponse remote_command_response = 14;
 }

@@ -26,6 +26,8 @@ class CloudPolicyClient;
 class CloudPolicyRefreshScheduler;
 class CloudPolicyService;
 class CloudPolicyStore;
+class RemoteCommandsFactory;
+class RemoteCommandsService;
 
 // CloudPolicyCore glues together the ingredients that are essential for
 // obtaining a fully-functional cloud policy system: CloudPolicyClient and
@@ -73,11 +75,23 @@ class POLICY_EXPORT CloudPolicyCore {
     return refresh_scheduler_.get();
   }
 
+  RemoteCommandsService* remote_commands_service() {
+    return remote_commands_service_.get();
+  }
+  const RemoteCommandsService* remote_commands_service() const {
+    return remote_commands_service_.get();
+  }
+
   // Initializes the cloud connection.
   void Connect(scoped_ptr<CloudPolicyClient> client);
 
   // Shuts down the cloud connection.
   void Disconnect();
+
+  // Starts a remote commands service, with the provided factory. Will attempt
+  // to fetch commands immediately, thus requiring the cloud policy client to
+  // be registered.
+  void StartRemoteCommandsService(scoped_ptr<RemoteCommandsFactory> factory);
 
   // Requests a policy refresh to be performed soon. This may apply throttling,
   // and the request may not be immediately sent.
@@ -108,6 +122,7 @@ class POLICY_EXPORT CloudPolicyCore {
   scoped_ptr<CloudPolicyClient> client_;
   scoped_ptr<CloudPolicyService> service_;
   scoped_ptr<CloudPolicyRefreshScheduler> refresh_scheduler_;
+  scoped_ptr<RemoteCommandsService> remote_commands_service_;
   scoped_ptr<IntegerPrefMember> refresh_delay_;
   ObserverList<Observer, true> observers_;
 

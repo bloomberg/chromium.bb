@@ -39,6 +39,7 @@ POLICY_EXPORT extern const char kValueRequestUnregister[];
 POLICY_EXPORT extern const char kValueRequestUploadCertificate[];
 POLICY_EXPORT extern const char kValueRequestDeviceStateRetrieval[];
 POLICY_EXPORT extern const char kValueRequestUploadStatus[];
+POLICY_EXPORT extern const char kValueRequestRemoteCommands[];
 POLICY_EXPORT extern const char kValueUserAffiliationManaged[];
 POLICY_EXPORT extern const char kValueUserAffiliationNone[];
 

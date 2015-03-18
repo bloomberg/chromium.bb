@@ -38,6 +38,7 @@ const char kValueRequestUnregister[] = "unregister";
 const char kValueRequestUploadCertificate[] = "cert_upload";
 const char kValueRequestDeviceStateRetrieval[] = "device_state_retrieval";
 const char kValueRequestUploadStatus[] = "status_upload";
+const char kValueRequestRemoteCommands[] = "remote_commands";
 const char kValueUserAffiliationManaged[] = "managed";
 const char kValueUserAffiliationNone[] = "none";
 

@@ -127,6 +127,8 @@ const char* JobTypeToRequestType(DeviceManagementRequestJob::JobType type) {
       return dm_protocol::kValueRequestDeviceStateRetrieval;
     case DeviceManagementRequestJob::TYPE_UPLOAD_STATUS:
       return dm_protocol::kValueRequestUploadStatus;
+    case DeviceManagementRequestJob::TYPE_REMOTE_COMMANDS:
+      return dm_protocol::kValueRequestRemoteCommands;
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";
