@@ -282,7 +282,7 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "alwaysExposedAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setAlwaysExposedAttribute(cppValue);
@@ -314,7 +314,7 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "workerExposedAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setWorkerExposedAttribute(cppValue);
@@ -346,7 +346,7 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "windowExposedAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setWindowExposedAttribute(cppValue);

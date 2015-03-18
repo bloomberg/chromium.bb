@@ -1081,7 +1081,7 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
     }
 
     if (v8Value->IsNumber()) {
-        int cppValue = toInt32(isolate, v8Value, exceptionState);
+        int cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setLong(cppValue);
@@ -1089,7 +1089,7 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8
     }
 
     {
-        int cppValue = toInt32(isolate, v8Value, exceptionState);
+        int cppValue = toInt32(isolate, v8Value, NormalConversion, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setLong(cppValue);

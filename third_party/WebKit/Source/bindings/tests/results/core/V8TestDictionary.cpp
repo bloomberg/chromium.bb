@@ -176,7 +176,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     if (longMemberValue.IsEmpty() || longMemberValue->IsUndefined()) {
         // Do nothing.
     } else {
-        int longMember = toInt32(isolate, longMemberValue, exceptionState);
+        int longMember = toInt32(isolate, longMemberValue, NormalConversion, exceptionState);
         if (exceptionState.hadException())
             return;
         impl.setLongMember(longMember);

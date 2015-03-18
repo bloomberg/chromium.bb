@@ -47,7 +47,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     unsigned index;
     {
-        index = toUInt32(info.GetIsolate(), info[0], exceptionState);
+        index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -78,7 +78,7 @@ static void setItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     unsigned index;
     TestInterfaceEmpty* value;
     {
-        index = toUInt32(info.GetIsolate(), info[0], exceptionState);
+        index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
         value = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), info[1]);
@@ -114,7 +114,7 @@ static void deleteItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterface2* impl = V8TestInterface2::toImpl(info.Holder());
     unsigned index;
     {
-        index = toUInt32(info.GetIsolate(), info[0], exceptionState);
+        index = toUInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }

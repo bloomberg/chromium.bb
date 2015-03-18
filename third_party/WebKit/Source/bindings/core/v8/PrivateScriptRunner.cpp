@@ -240,9 +240,11 @@ void rethrowExceptionInPrivateScript(v8::Isolate* isolate, v8::TryCatch& block, 
     if (exceptionName == "PrivateScriptException") {
         v8::Handle<v8::Value> code = exceptionObject->Get(v8String(isolate, "code"));
         RELEASE_ASSERT(!code.IsEmpty() && code->IsInt32());
+        NonThrowableExceptionState nonThrowableExceptionState;
+        int exceptionCode = toInt32(isolate, code, NormalConversion, nonThrowableExceptionState);
         ScriptState::Scope scope(scriptStateInUserScript);
         ExceptionState exceptionState(errorContext, propertyName, interfaceName, scriptStateInUserScript->context()->Global(), scriptStateInUserScript->isolate());
-        exceptionState.throwDOMException(toInt32(isolate, code), messageString);
+        exceptionState.throwDOMException(exceptionCode, messageString);
         exceptionState.throwIfNeeded();
         return;
     }

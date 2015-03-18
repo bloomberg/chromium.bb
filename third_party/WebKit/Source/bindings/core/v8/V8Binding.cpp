@@ -266,21 +266,9 @@ int8_t toInt8(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversi
     return toSmallerInt<int8_t>(isolate, value, configuration, "byte", exceptionState);
 }
 
-int8_t toInt8(v8::Isolate* isolate, v8::Handle<v8::Value> value)
-{
-    NonThrowableExceptionState exceptionState;
-    return toInt8(isolate, value, NormalConversion, exceptionState);
-}
-
 uint8_t toUInt8(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     return toSmallerUInt<uint8_t>(isolate, value, configuration, "octet", exceptionState);
-}
-
-uint8_t toUInt8(v8::Isolate* isolate, v8::Handle<v8::Value> value)
-{
-    NonThrowableExceptionState exceptionState;
-    return toUInt8(isolate, value, NormalConversion, exceptionState);
 }
 
 int16_t toInt16(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
@@ -288,21 +276,9 @@ int16_t toInt16(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConver
     return toSmallerInt<int16_t>(isolate, value, configuration, "short", exceptionState);
 }
 
-int16_t toInt16(v8::Isolate* isolate, v8::Handle<v8::Value> value)
-{
-    NonThrowableExceptionState exceptionState;
-    return toInt16(isolate, value, NormalConversion, exceptionState);
-}
-
 uint16_t toUInt16(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     return toSmallerUInt<uint16_t>(isolate, value, configuration, "unsigned short", exceptionState);
-}
-
-uint16_t toUInt16(v8::Isolate* isolate, v8::Handle<v8::Value> value)
-{
-    NonThrowableExceptionState exceptionState;
-    return toUInt16(isolate, value, NormalConversion, exceptionState);
 }
 
 int32_t toInt32Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
@@ -332,12 +308,6 @@ int32_t toInt32Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerCo
         return 0;
 
     return numberObject->Int32Value();
-}
-
-int32_t toInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value)
-{
-    NonThrowableExceptionState exceptionState;
-    return toInt32(isolate, value, NormalConversion, exceptionState);
 }
 
 uint32_t toUInt32Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
@@ -382,12 +352,6 @@ uint32_t toUInt32Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, Integer
     return numberObject->Uint32Value();
 }
 
-uint32_t toUInt32(v8::Isolate* isolate, v8::Handle<v8::Value> value)
-{
-    NonThrowableExceptionState exceptionState;
-    return toUInt32(isolate, value, NormalConversion, exceptionState);
-}
-
 int64_t toInt64Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
     ASSERT(!value->IsInt32());
@@ -414,12 +378,6 @@ int64_t toInt64Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerCo
     unsigned long long integer;
     doubleToInteger(numberValue, integer);
     return integer;
-}
-
-int64_t toInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value)
-{
-    NonThrowableExceptionState exceptionState;
-    return toInt64(isolate, value, NormalConversion, exceptionState);
 }
 
 uint64_t toUInt64Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
@@ -466,12 +424,6 @@ uint64_t toUInt64Slow(v8::Isolate* isolate, v8::Handle<v8::Value> value, Integer
     unsigned long long integer;
     doubleToInteger(numberValue, integer);
     return integer;
-}
-
-uint64_t toUInt64(v8::Isolate* isolate, v8::Handle<v8::Value> value)
-{
-    NonThrowableExceptionState exceptionState;
-    return toUInt64(isolate, value, NormalConversion, exceptionState);
 }
 
 float toRestrictedFloat(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)

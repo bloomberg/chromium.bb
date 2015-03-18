@@ -403,7 +403,7 @@ static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "alwaysExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setAlwaysExposedAttribute(cppValue);
@@ -435,7 +435,7 @@ static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "workerExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setWorkerExposedAttribute(cppValue);
@@ -467,7 +467,7 @@ static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "windowExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setWindowExposedAttribute(cppValue);
@@ -839,7 +839,7 @@ static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, co
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     TestPartialInterface::setPartialLongAttribute(*impl, cppValue);
@@ -875,7 +875,7 @@ static void partialStaticLongAttributeAttributeGetterCallback(v8::Local<v8::Name
 static void partialStaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialStaticLongAttribute", "TestInterface", holder, info.GetIsolate());
-    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     TestPartialInterface::setPartialStaticLongAttribute(cppValue);
@@ -916,7 +916,7 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialCallWithExecutionContextLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
@@ -1036,7 +1036,7 @@ static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial2LongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     TestPartialInterfaceImplementation::setPartial2LongAttribute(*impl, cppValue);
@@ -1064,7 +1064,7 @@ static void partial2StaticLongAttributeAttributeGetterCallback(v8::Local<v8::Nam
 static void partial2StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial2StaticLongAttribute", "TestInterface", holder, info.GetIsolate());
-    int cppValue = toInt32(info.GetIsolate(), v8Value, exceptionState);
+    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     TestPartialInterfaceImplementation::setPartial2StaticLongAttribute(cppValue);
@@ -1308,7 +1308,7 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlag1Method(const v8::Func
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     int longArg;
     {
-        longArg = toInt32(info.GetIsolate(), info[0], exceptionState);
+        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -1636,7 +1636,7 @@ static void partialVoidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Va
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     int longArg;
     {
-        longArg = toInt32(info.GetIsolate(), info[0], exceptionState);
+        longArg = toInt32(info.GetIsolate(), info[0], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -1717,7 +1717,7 @@ static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
     int value;
     {
-        value = toInt16(info.GetIsolate(), info[0], exceptionState);
+        value = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -2458,7 +2458,7 @@ bool V8TestInterface::PrivateScript::shortMethodWithShortArgumentImplementedInPr
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestInterfaceImplementation", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
     if (v8Value.IsEmpty())
         return false;
-    int cppValue = toInt16(scriptState->isolate(), v8Value, exceptionState);
+    int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.throwIfNeeded())
         return false;
     *result = cppValue;
