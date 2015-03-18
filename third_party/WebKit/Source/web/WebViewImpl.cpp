@@ -143,6 +143,7 @@
 #include "web/DevToolsEmulator.h"
 #include "web/FullscreenController.h"
 #include "web/GraphicsLayerFactoryChromium.h"
+#include "web/InspectorEmulationAgent.h"
 #include "web/InspectorRenderingAgent.h"
 #include "web/LinkHighlight.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
@@ -357,6 +358,7 @@ void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
     if (devToolsClient) {
         m_devToolsAgent = adoptPtrWillBeNoop(new WebDevToolsAgentImpl(this, devToolsClient));
         m_devToolsAgent->registerAgent(InspectorRenderingAgent::create(this));
+        m_devToolsAgent->registerAgent(InspectorEmulationAgent::create(this));
     } else {
         m_devToolsAgent.clear();
     }
@@ -3790,6 +3792,7 @@ void WebViewImpl::sendResizeEventAndRepaint()
     }
     if (m_pageOverlays)
         m_pageOverlays->update();
+    m_devToolsEmulator->viewportChanged();
 }
 
 void WebViewImpl::configureAutoResizeMode()
@@ -4111,6 +4114,7 @@ void WebViewImpl::pageScaleFactorChanged()
     updateLayerTreeViewport();
     if (m_devToolsAgent)
         m_devToolsAgent->pageScaleFactorChanged();
+    m_devToolsEmulator->viewportChanged();
     m_client->pageScaleFactorChanged();
 }
 

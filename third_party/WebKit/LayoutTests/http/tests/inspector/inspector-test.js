@@ -718,6 +718,7 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.DOMAgent = target.domAgent();
         InspectorTest.DOMDebuggerAgent = target.domdebuggerAgent();
         InspectorTest.DebuggerAgent = target.debuggerAgent();
+        InspectorTest.EmulationAgent = target.emulationAgent();
         InspectorTest.HeapProfilerAgent = target.heapProfilerAgent();
         InspectorTest.InspectorAgent = target.inspectorAgent();
         InspectorTest.LayerTreeAgent = target.layerTreeAgent();

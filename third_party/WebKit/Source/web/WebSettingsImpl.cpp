@@ -44,7 +44,6 @@ namespace blink {
 WebSettingsImpl::WebSettingsImpl(Settings* settings, DevToolsEmulator* devToolsEmulator)
     : m_settings(settings)
     , m_devToolsEmulator(devToolsEmulator)
-    , m_devToolsAgent(nullptr)
     , m_showFPSCounter(false)
     , m_showPaintRects(false)
     , m_renderVSyncNotificationEnabled(false)
@@ -59,11 +58,6 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings, DevToolsEmulator* devToolsE
     , m_mainFrameResizesAreOrientationChanges(false)
 {
     ASSERT(settings);
-}
-
-void WebSettingsImpl::setWebDevToolsAgentImpl(WebDevToolsAgentImpl* devToolsAgent)
-{
-    m_devToolsAgent = devToolsAgent;
 }
 
 void WebSettingsImpl::setStandardFontFamily(const WebString& font, UScriptCode script)
@@ -195,10 +189,7 @@ void WebSettingsImpl::setDefaultTextEncodingName(const WebString& encoding)
 
 void WebSettingsImpl::setJavaScriptEnabled(bool enabled)
 {
-    if (m_devToolsAgent)
-        m_devToolsAgent->setScriptEnabled(enabled);
-    else
-        m_settings->setScriptEnabled(enabled);
+    m_devToolsEmulator->setScriptEnabled(enabled);
 }
 
 void WebSettingsImpl::setWebSecurityEnabled(bool enabled)

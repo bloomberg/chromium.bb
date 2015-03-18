@@ -10,7 +10,7 @@
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/web/WebDeviceEmulationParams.h"
-#include "web/WebDevToolsAgentImpl.h"
+#include "web/InspectorEmulationAgent.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
@@ -49,6 +49,7 @@ namespace blink {
 
 DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     : m_webViewImpl(webViewImpl)
+    , m_emulationAgent(nullptr)
     , m_deviceMetricsEnabled(false)
     , m_emulateMobileEnabled(false)
     , m_originalViewportEnabled(false)
@@ -64,11 +65,24 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     , m_originalDeviceSupportsMouse(false)
     , m_originalDeviceSupportsTouch(false)
     , m_originalMaxTouchPoints(0)
+    , m_embedderScriptEnabled(webViewImpl->page()->settings().scriptEnabled())
+    , m_scriptExecutionDisabled(false)
 {
 }
 
 DevToolsEmulator::~DevToolsEmulator()
 {
+}
+
+void DevToolsEmulator::setEmulationAgent(InspectorEmulationAgent* agent)
+{
+    m_emulationAgent = agent;
+}
+
+void DevToolsEmulator::viewportChanged()
+{
+    if (m_emulationAgent)
+        m_emulationAgent->viewportChanged();
 }
 
 void DevToolsEmulator::setTextAutosizingEnabled(bool enabled)
@@ -103,14 +117,19 @@ void DevToolsEmulator::setUseMobileViewportStyle(bool enabled)
         m_webViewImpl->page()->settings().setUseMobileViewportStyle(enabled);
 }
 
+void DevToolsEmulator::setScriptEnabled(bool enabled)
+{
+    m_embedderScriptEnabled = enabled;
+    if (!m_scriptExecutionDisabled)
+        m_webViewImpl->page()->settings().setScriptEnabled(enabled);
+}
+
 void DevToolsEmulator::enableDeviceEmulation(const WebDeviceEmulationParams& params)
 {
     if (!m_deviceMetricsEnabled) {
         m_deviceMetricsEnabled = true;
         m_webViewImpl->setBackgroundColorOverride(Color::darkGray);
         m_webViewImpl->updateShowFPSCounterAndContinuousPainting();
-        if (WebDevToolsAgentImpl* devToolsAgent = m_webViewImpl->devToolsAgentImpl())
-            devToolsAgent->pageAgent()->setViewportNotificationsEnabled(true);
     }
     m_webViewImpl->page()->settings().setDeviceScaleAdjustment(calculateDeviceScaleAdjustment(params.viewSize.width, params.viewSize.height, params.deviceScaleFactor));
 
@@ -135,8 +154,6 @@ void DevToolsEmulator::disableDeviceEmulation()
     m_deviceMetricsEnabled = false;
     m_webViewImpl->setBackgroundColorOverride(Color::transparent);
     m_webViewImpl->updateShowFPSCounterAndContinuousPainting();
-    if (WebDevToolsAgentImpl* devToolsAgent = m_webViewImpl->devToolsAgentImpl())
-        devToolsAgent->pageAgent()->setViewportNotificationsEnabled(false);
     m_webViewImpl->page()->settings().setDeviceScaleAdjustment(m_embedderDeviceScaleAdjustment);
     disableMobileEmulation();
     m_webViewImpl->setCompositorDeviceScaleFactorOverride(0.f);
@@ -190,6 +207,8 @@ void DevToolsEmulator::disableMobileEmulation()
 
 void DevToolsEmulator::setTouchEventEmulationEnabled(bool enabled)
 {
+    if (m_touchEventEmulationEnabled == enabled)
+        return;
     if (!m_touchEventEmulationEnabled) {
         m_originalTouchEnabled = RuntimeEnabledFeatures::touchEnabled();
         m_originalDeviceSupportsMouse = m_webViewImpl->page()->settings().deviceSupportsMouse();
@@ -205,6 +224,12 @@ void DevToolsEmulator::setTouchEventEmulationEnabled(bool enabled)
     }
     m_touchEventEmulationEnabled = enabled;
     m_webViewImpl->mainFrameImpl()->frameView()->layout();
+}
+
+void DevToolsEmulator::setScriptExecutionDisabled(bool scriptExecutionDisabled)
+{
+    m_scriptExecutionDisabled = scriptExecutionDisabled;
+    m_webViewImpl->page()->settings().setScriptEnabled(m_scriptExecutionDisabled ? false : m_embedderScriptEnabled);
 }
 
 bool DevToolsEmulator::handleInputEvent(const WebInputEvent& inputEvent)

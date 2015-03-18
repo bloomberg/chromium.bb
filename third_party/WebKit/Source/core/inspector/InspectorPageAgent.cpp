@@ -89,10 +89,8 @@ namespace blink {
 
 namespace PageAgentState {
 static const char pageAgentEnabled[] = "pageAgentEnabled";
-static const char pageAgentScriptExecutionDisabled[] = "pageAgentScriptExecutionDisabled";
 static const char pageAgentScriptsToEvaluateOnLoad[] = "pageAgentScriptsToEvaluateOnLoad";
 static const char touchEventEmulationEnabled[] = "touchEventEmulationEnabled";
-static const char pageAgentEmulatedMedia[] = "pageAgentEmulatedMedia";
 static const char showSizeOnResize[] = "showSizeOnResize";
 static const char showGridOnResize[] = "showGridOnResize";
 static const char screencastEnabled[] = "screencastEnabled";
@@ -390,17 +388,8 @@ InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* inject
     , m_overlay(overlay)
     , m_lastScriptIdentifier(0)
     , m_enabled(false)
-    , m_viewportNotificationsEnabled(false)
-    , m_embedderScriptEnabled(m_page->settings().scriptEnabled())
     , m_reloading(false)
 {
-}
-
-void InspectorPageAgent::setScriptEnabled(bool enabled)
-{
-    m_embedderScriptEnabled = enabled;
-    if (!m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled))
-        m_page->settings().setScriptEnabled(enabled);
 }
 
 void InspectorPageAgent::restore()
@@ -408,9 +397,6 @@ void InspectorPageAgent::restore()
     if (m_state->getBoolean(PageAgentState::pageAgentEnabled)) {
         ErrorString error;
         enable(&error);
-        bool scriptExecutionDisabled = m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled);
-        setScriptExecutionDisabled(0, scriptExecutionDisabled);
-        setEmulatedMedia(nullptr, m_state->getString(PageAgentState::pageAgentEmulatedMedia));
 
         updateTouchEventEmulationInPage(m_state->getBoolean(PageAgentState::touchEventEmulationEnabled));
     }
@@ -445,9 +431,7 @@ void InspectorPageAgent::disable(ErrorString*)
         m_inspectorResourceContentLoader.clear();
     }
 
-    setEmulatedMedia(0, String());
     setShowViewportSizeOnResize(0, false, 0);
-    setScriptExecutionDisabled(nullptr, false);
     stopScreencast(0);
 
     if (m_state->getBoolean(PageAgentState::touchEventEmulationEnabled)) {
@@ -728,29 +712,6 @@ void InspectorPageAgent::setDocumentContent(ErrorString* errorString, const Stri
     DOMPatchSupport::patchDocument(*document, html);
 }
 
-void InspectorPageAgent::resetScrollAndPageScaleFactor(ErrorString*)
-{
-    m_client->resetScrollAndPageScaleFactor();
-}
-
-void InspectorPageAgent::setPageScaleFactor(ErrorString*, double pageScaleFactor)
-{
-    m_client->setPageScaleFactor(static_cast<float>(pageScaleFactor));
-}
-
-void InspectorPageAgent::setScriptExecutionDisabled(ErrorString*, bool value)
-{
-    if (m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled) == value)
-        return;
-    m_state->setBoolean(PageAgentState::pageAgentScriptExecutionDisabled, value);
-    if (!inspectedFrame())
-        return;
-
-    Settings* settings = inspectedFrame()->settings();
-    if (settings)
-        settings->setScriptEnabled(value ? false : m_embedderScriptEnabled);
-}
-
 void InspectorPageAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
 {
     if (!frontend())
@@ -792,7 +753,6 @@ void InspectorPageAgent::didCommitLoad(LocalFrame*, DocumentLoader* loader)
             m_inspectorResourceContentLoader->stop();
     }
     frontend()->frameNavigated(buildObjectForFrame(loader->frame()));
-    viewportChanged();
 }
 
 void InspectorPageAgent::frameAttachedToParent(LocalFrame* frame)
@@ -934,37 +894,12 @@ void InspectorPageAgent::didLayout()
     if (!m_enabled)
         return;
     m_overlay->update();
-    viewportChanged();
 }
 
 void InspectorPageAgent::didScroll()
 {
     if (m_enabled)
         m_overlay->update();
-    viewportChanged();
-}
-
-void InspectorPageAgent::viewportChanged()
-{
-    if (!m_enabled || !m_viewportNotificationsEnabled || !inspectedFrame()->isMainFrame())
-        return;
-    IntSize contentsSize = inspectedFrame()->view()->contentsSize();
-    FloatPoint scrollOffset;
-
-    if (frameHost()->settings().pinchVirtualViewportEnabled())
-        scrollOffset = frameHost()->pinchViewport().visibleRectInDocument().location();
-    else
-        scrollOffset = inspectedFrame()->view()->visibleContentRect().location();
-
-    RefPtr<TypeBuilder::Page::Viewport> viewport = TypeBuilder::Page::Viewport::create()
-        .setScrollX(scrollOffset.x())
-        .setScrollY(scrollOffset.y())
-        .setContentsWidth(contentsSize.width())
-        .setContentsHeight(contentsSize.height())
-        .setPageScaleFactor(m_page->pageScaleFactor())
-        .setMinimumPageScaleFactor(m_client->minimumPageScaleFactor())
-        .setMaximumPageScaleFactor(m_client->maximumPageScaleFactor());
-    frontend()->viewportChanged(viewport);
 }
 
 void InspectorPageAgent::didResizeMainFrame()
@@ -976,7 +911,6 @@ void InspectorPageAgent::didResizeMainFrame()
         m_overlay->showAndHideViewSize(m_state->getBoolean(PageAgentState::showGridOnResize));
 #endif
     frontend()->frameResized();
-    viewportChanged();
 }
 
 void InspectorPageAgent::didRecalculateStyle(int)
@@ -989,12 +923,6 @@ void InspectorPageAgent::pageScaleFactorChanged()
 {
     if (m_enabled)
         m_overlay->update();
-    viewportChanged();
-}
-
-void InspectorPageAgent::setViewportNotificationsEnabled(bool enabled)
-{
-    m_viewportNotificationsEnabled = enabled;
 }
 
 PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
@@ -1074,18 +1002,6 @@ void InspectorPageAgent::setTouchEmulationEnabled(ErrorString*, bool enabled, co
 
     m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, enabled);
     updateTouchEventEmulationInPage(enabled);
-}
-
-void InspectorPageAgent::setEmulatedMedia(ErrorString*, const String& media)
-{
-    if (!inspectedFrame()->isMainFrame())
-        return;
-    String currentMedia = m_state->getString(PageAgentState::pageAgentEmulatedMedia);
-    if (media == currentMedia)
-        return;
-
-    m_state->setString(PageAgentState::pageAgentEmulatedMedia, media);
-    inspectedFrame()->host()->settings().setMediaTypeOverride(media);
 }
 
 bool InspectorPageAgent::compositingEnabled(ErrorString* errorString)

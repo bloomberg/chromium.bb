@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class InspectorEmulationAgent;
 class IntPoint;
 class WebInputEvent;
 class WebViewImpl;
@@ -21,11 +22,15 @@ public:
     explicit DevToolsEmulator(WebViewImpl*);
     ~DevToolsEmulator();
 
+    void setEmulationAgent(InspectorEmulationAgent*);
+    void viewportChanged();
+
     // Settings overrides.
     void setTextAutosizingEnabled(bool);
     void setDeviceScaleAdjustment(float);
     void setPreferCompositingToLCDTextEnabled(bool);
     void setUseMobileViewportStyle(bool);
+    void setScriptEnabled(bool);
 
     // Emulation.
     void enableDeviceEmulation(const WebDeviceEmulationParams&);
@@ -33,12 +38,15 @@ public:
     bool deviceEmulationEnabled() { return m_deviceMetricsEnabled; }
     void setTouchEventEmulationEnabled(bool);
     bool handleInputEvent(const WebInputEvent&);
+    void setScriptExecutionDisabled(bool);
 
 private:
     void enableMobileEmulation();
     void disableMobileEmulation();
 
     WebViewImpl* m_webViewImpl;
+    InspectorEmulationAgent* m_emulationAgent;
+
     bool m_deviceMetricsEnabled;
     bool m_emulateMobileEnabled;
     bool m_originalViewportEnabled;
@@ -57,6 +65,9 @@ private:
     int m_originalMaxTouchPoints;
     OwnPtr<IntPoint> m_lastPinchAnchorCss;
     OwnPtr<IntPoint> m_lastPinchAnchorDip;
+
+    bool m_embedderScriptEnabled;
+    bool m_scriptExecutionDisabled;
 };
 
 } // namespace blink

@@ -300,8 +300,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_agents.append(InspectorIndexedDBAgent::create(page));
     m_agents.append(InspectorAccessibilityAgent::create(page));
     m_agents.append(InspectorDOMStorageAgent::create(page));
-
-    m_webViewImpl->settingsImpl()->setWebDevToolsAgentImpl(this);
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
@@ -314,7 +312,6 @@ void WebDevToolsAgentImpl::dispose()
     // Explicitly dispose of the agent before destructing to ensure
     // same behavior (and correctness) with and without Oilpan.
     ClientMessageLoopAdapter::inspectedViewClosed(m_webViewImpl);
-    m_webViewImpl->settingsImpl()->setWebDevToolsAgentImpl(nullptr);
     if (m_attached)
         Platform::current()->currentThread()->removeTaskObserver(this);
 #if ENABLE(ASSERT)
@@ -556,11 +553,6 @@ void WebDevToolsAgentImpl::willAddPageOverlay(const GraphicsLayer* layer)
 void WebDevToolsAgentImpl::didRemovePageOverlay(const GraphicsLayer* layer)
 {
     m_layerTreeAgent->didRemovePageOverlay(layer);
-}
-
-void WebDevToolsAgentImpl::setScriptEnabled(bool enabled)
-{
-    m_pageAgent->setScriptEnabled(enabled);
 }
 
 void WebDevToolsAgentImpl::setTouchEventEmulationEnabled(bool enabled)

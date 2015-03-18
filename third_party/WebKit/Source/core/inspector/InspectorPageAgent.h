@@ -87,9 +87,6 @@ public:
     static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(Page*, InjectedScriptManager*, Client*, InspectorOverlay*);
     void setDeferredAgents(InspectorDebuggerAgent*, InspectorCSSAgent*);
 
-    // Settings overrides.
-    void setScriptEnabled(bool);
-
     static Vector<Document*> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
     static bool sharedBufferContent(PassRefPtr<SharedBuffer>, const String& textEncodingName, bool withBase64Encode, String* result);
@@ -113,11 +110,7 @@ public:
     void getResourceContent(ErrorString*, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>) override;
     void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>>&) override;
     void setDocumentContent(ErrorString*, const String& frameId, const String& html) override;
-    void resetScrollAndPageScaleFactor(ErrorString*) override;
-    void setPageScaleFactor(ErrorString*, double pageScaleFactor) override;
-    void setScriptExecutionDisabled(ErrorString*, bool) override;
     void setTouchEmulationEnabled(ErrorString*, bool enabled, const String* configuration) override;
-    void setEmulatedMedia(ErrorString*, const String&) override;
     void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight) override;
     void stopScreencast(ErrorString*) override;
     void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) override;
@@ -158,7 +151,6 @@ public:
     LocalFrame* findFrameWithSecurityOrigin(const String& originRawString);
     LocalFrame* assertFrame(ErrorString*, const String& frameId);
     void pageScaleFactorChanged();
-    void setViewportNotificationsEnabled(bool);
     bool screencastEnabled();
     static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
     InspectorResourceContentLoader* resourceContentLoader() { return m_inspectorResourceContentLoader.get(); }
@@ -177,8 +169,6 @@ private:
 
     static bool dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result);
 
-    void viewportChanged();
-
     PassRefPtr<TypeBuilder::Page::Frame> buildObjectForFrame(LocalFrame*);
     PassRefPtr<TypeBuilder::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
     RawPtrWillBeMember<Page> m_page;
@@ -194,8 +184,6 @@ private:
     HashMap<String, LocalFrame*> m_identifierToFrame;
     HashMap<DocumentLoader*, String> m_loaderToIdentifier;
     bool m_enabled;
-    bool m_viewportNotificationsEnabled;
-    bool m_embedderScriptEnabled;
     bool m_reloading;
 
     OwnPtrWillBeMember<InspectorResourceContentLoader> m_inspectorResourceContentLoader;

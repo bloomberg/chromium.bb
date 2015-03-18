@@ -83,7 +83,6 @@ public:
     bool handleInputEvent(Page*, const WebInputEvent&);
     void flushPendingProtocolNotifications();
     void dispatchMessageFromFrontend(const String& message);
-    InspectorPageAgent* pageAgent() const { return m_pageAgent.get(); }
     void registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
 
     // Instrumentation from web/ layer.
@@ -92,9 +91,6 @@ public:
     bool screencastEnabled();
     void willAddPageOverlay(const GraphicsLayer*);
     void didRemovePageOverlay(const GraphicsLayer*);
-
-    // Settings overrides.
-    void setScriptEnabled(bool);
 
     // WebDevToolsAgent implementation.
     void attach(const WebString& hostId) override;

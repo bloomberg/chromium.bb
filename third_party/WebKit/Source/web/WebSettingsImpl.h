@@ -37,14 +37,11 @@ namespace blink {
 
 class DevToolsEmulator;
 class Settings;
-class WebDevToolsAgentImpl;
 
 class WebSettingsImpl final : public WebSettings {
 public:
     WebSettingsImpl(Settings*, DevToolsEmulator*);
     virtual ~WebSettingsImpl() { }
-
-    void setWebDevToolsAgentImpl(WebDevToolsAgentImpl*);
 
     virtual bool mainFrameResizesAreOrientationChanges() const override;
     virtual bool shrinksViewportContentToFit() const override;
@@ -202,7 +199,6 @@ public:
 private:
     Settings* m_settings;
     DevToolsEmulator* m_devToolsEmulator;
-    WebDevToolsAgentImpl* m_devToolsAgent;
     bool m_showFPSCounter;
     bool m_showPaintRects;
     bool m_renderVSyncNotificationEnabled;

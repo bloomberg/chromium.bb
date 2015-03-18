@@ -88,6 +88,7 @@
 #include "public/web/WebSecurityOrigin.h"
 #include "public/web/WebTransitionElementData.h"
 #include "public/web/WebViewClient.h"
+#include "web/DevToolsEmulator.h"
 #include "web/PluginPlaceholderImpl.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
 #include "web/WebDataSourceImpl.h"
@@ -175,6 +176,8 @@ void FrameLoaderClientImpl::didChangeScrollOffset()
 {
     if (m_webFrame->client())
         m_webFrame->client()->didChangeScrollOffset(m_webFrame);
+    if (WebViewImpl* webview = m_webFrame->viewImpl())
+        webview->devToolsEmulator()->viewportChanged();
 }
 
 void FrameLoaderClientImpl::didUpdateCurrentHistoryItem()

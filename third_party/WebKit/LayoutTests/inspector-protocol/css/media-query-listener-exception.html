@@ -15,7 +15,7 @@ theMediaQueryList.addListener(function(aMediaQueryList) {
     if (callCount == 1) {
         // This needs to use setTimeout because we want to test
         // uncaught exceptions.
-        setTimeout("evaluateInFrontend('InspectorTest.sendPageDisable()')", 0);
+        setTimeout("evaluateInFrontend('InspectorTest.resetEmulatedMedia()')", 0);
     }
     if (callCount == 2) {
         // This needs to use setTimeout because we want to test
@@ -27,9 +27,9 @@ theMediaQueryList.addListener(function(aMediaQueryList) {
 
 function test()
 {
-    InspectorTest.sendPageDisable = function()
+    InspectorTest.resetEmulatedMedia = function()
     {
-        InspectorTest.sendCommand("Page.disable", {});
+        InspectorTest.sendCommand("Emulation.setEmulatedMedia", { "media": "" });
     }
 
     function didSetEmulatedMedia(messageObject)
@@ -38,8 +38,7 @@ function test()
             InspectorTest.log("FAILED: " + messageObject.error.message);
     }
 
-    InspectorTest.sendCommand("Page.enable", {});
-    InspectorTest.sendCommand("Page.setEmulatedMedia", {
+    InspectorTest.sendCommand("Emulation.setEmulatedMedia", {
         "media": "print"
     }, didSetEmulatedMedia);
 }
