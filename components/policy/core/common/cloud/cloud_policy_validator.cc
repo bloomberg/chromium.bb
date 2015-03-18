@@ -20,8 +20,8 @@ namespace policy {
 
 namespace {
 
-// Grace interval for policy timestamp checks, in seconds.
-const int kTimestampGraceIntervalSeconds = 7200;
+// Grace interval for policy-from-the-future timestamp checks.
+const int kTimestampGraceIntervalHours = 2;
 
 // DER-encoded ASN.1 object identifier for the SHA1-RSA signature algorithm.
 const uint8 kSHA1SignatureAlgorithm[] = {
@@ -68,13 +68,11 @@ void CloudPolicyValidatorBase::ValidateTimestamp(
     base::Time not_before,
     base::Time now,
     ValidateTimestampOption timestamp_option) {
-  // Timestamp should be from the past. We allow for a grace interval to cover
-  // clock drift.
   validation_flags_ |= VALIDATE_TIMESTAMP;
   timestamp_not_before_ =
       (not_before - base::Time::UnixEpoch()).InMilliseconds();
   timestamp_not_after_ =
-      ((now + base::TimeDelta::FromSeconds(kTimestampGraceIntervalSeconds)) -
+      ((now + base::TimeDelta::FromHours(kTimestampGraceIntervalHours)) -
           base::Time::UnixEpoch()).InMillisecondsRoundedUp();
   timestamp_option_ = timestamp_option;
 }
@@ -427,22 +425,23 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckEntityId() {
 }
 
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckTimestamp() {
+  if (timestamp_option_ == TIMESTAMP_NOT_REQUIRED)
+    return VALIDATION_OK;
+
   if (!policy_data_->has_timestamp()) {
-    if (timestamp_option_ == TIMESTAMP_NOT_REQUIRED) {
-      return VALIDATION_OK;
-    } else {
-      LOG(ERROR) << "Policy timestamp missing";
-      return VALIDATION_BAD_TIMESTAMP;
-    }
+    LOG(ERROR) << "Policy timestamp missing";
+    return VALIDATION_BAD_TIMESTAMP;
   }
 
-  if (timestamp_option_ != TIMESTAMP_NOT_REQUIRED &&
-      policy_data_->timestamp() < timestamp_not_before_) {
-    // If |timestamp_option_| is TIMESTAMP_REQUIRED or TIMESTAMP_NOT_BEFORE
-    // then this is a failure.
+  if (policy_data_->timestamp() < timestamp_not_before_) {
     LOG(ERROR) << "Policy too old: " << policy_data_->timestamp();
     return VALIDATION_BAD_TIMESTAMP;
   }
+
+  // Limit the damage in case of an unlikely server bug: If the server
+  // accidentally sends a time from the distant future, this time is stored
+  // locally and after the server time is corrected, due to rollback prevention
+  // the client could not receive policy updates until that future date.
   if (timestamp_option_ == TIMESTAMP_REQUIRED &&
       policy_data_->timestamp() > timestamp_not_after_) {
     LOG(ERROR) << "Policy from the future: " << policy_data_->timestamp();
