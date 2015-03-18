@@ -223,6 +223,10 @@ void HeadsUpDisplayLayerImpl::ReleaseResources() {
   resources_.clear();
 }
 
+gfx::Rect HeadsUpDisplayLayerImpl::GetEnclosingRectInTargetSpace() const {
+  return GetScaledEnclosingRectInTargetSpace(internal_contents_scale_);
+}
+
 void HeadsUpDisplayLayerImpl::UpdateHudContents() {
   const LayerTreeDebugState& debug_state = layer_tree_impl()->debug_state();
 

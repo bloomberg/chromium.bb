@@ -694,6 +694,13 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
  public:
   LayerTreeHostTestUndrawnLayersDamageLater() {}
 
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    // If we don't set the minimum contents scale, it's harder to verify whether
+    // the damage we get is correct. For other scale amounts, please see
+    // LayerTreeHostTestDamageWithScale.
+    settings->minimum_contents_scale = 1.f;
+  }
+
   void SetupTree() override {
     if (layer_tree_host()->settings().impl_side_painting)
       root_layer_ = FakePictureLayer::Create(&client_);
@@ -787,6 +794,114 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUndrawnLayersDamageLater);
+
+// Tests that if a layer is not drawn because of some reason in the parent then
+// its damage is preserved until the next time it is drawn.
+class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestDamageWithScale() {}
+
+  void SetupTree() override {
+    client_.set_fill_with_nonsolid_color(true);
+
+    scoped_ptr<FakePicturePile> pile(
+        new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
+                            ImplSidePaintingSettings().default_tile_grid_size));
+    root_layer_ =
+        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
+    root_layer_->SetBounds(gfx::Size(50, 50));
+
+    pile.reset(
+        new FakePicturePile(ImplSidePaintingSettings().minimum_contents_scale,
+                            ImplSidePaintingSettings().default_tile_grid_size));
+    child_layer_ =
+        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
+    child_layer_->SetBounds(gfx::Size(25, 25));
+    child_layer_->SetIsDrawable(true);
+    child_layer_->SetContentsOpaque(true);
+    root_layer_->AddChild(child_layer_);
+
+    layer_tree_host()->SetRootLayer(root_layer_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    // Force the layer to have a tiling at 1.3f scale. Note that if we simply
+    // add tiling, it will be gone by the time we draw because of aggressive
+    // cleanup. AddTilingUntilNextDraw ensures that it remains there during
+    // damage calculation.
+    FakePictureLayerImpl* child_layer_impl = static_cast<FakePictureLayerImpl*>(
+        host_impl->active_tree()->LayerById(child_layer_->id()));
+    child_layer_impl->AddTilingUntilNextDraw(1.3f);
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
+
+    gfx::RectF root_damage_rect;
+    if (!frame_data->render_passes.empty())
+      root_damage_rect = frame_data->render_passes.back()->damage_rect;
+
+    // The first time, the whole view needs be drawn.
+    // Afterwards, just the opacity of surface_layer1 is changed a few times,
+    // and each damage should be the bounding box of it and its child. If this
+    // was working improperly, the damage might not include its childs bounding
+    // box.
+    switch (host_impl->active_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_EQ(gfx::Rect(root_layer_->bounds()), root_damage_rect);
+        break;
+      case 1: {
+        FakePictureLayerImpl* child_layer_impl =
+            static_cast<FakePictureLayerImpl*>(
+                host_impl->active_tree()->LayerById(child_layer_->id()));
+        // We remove tilings pretty aggressively if they are not ideal. Add this
+        // back in so that we can compare
+        // child_layer_impl->GetEnclosingRectInTargetSpace to the damage.
+        child_layer_impl->AddTilingUntilNextDraw(1.3f);
+
+        EXPECT_EQ(gfx::Rect(26, 26), root_damage_rect);
+        EXPECT_EQ(child_layer_impl->GetEnclosingRectInTargetSpace(),
+                  root_damage_rect);
+        EXPECT_TRUE(child_layer_impl->GetEnclosingRectInTargetSpace().Contains(
+            gfx::Rect(child_layer_->bounds())));
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
+
+    return draw_result;
+  }
+
+  void DidCommitAndDrawFrame() override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1: {
+        // Test not owning the surface.
+        child_layer_->SetOpacity(0.5f);
+        break;
+      }
+      case 2:
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<Layer> root_layer_;
+  scoped_refptr<Layer> child_layer_;
+};
+
+MULTI_THREAD_IMPL_TEST_F(LayerTreeHostTestDamageWithScale);
 
 // Tests that if a layer is not drawn because of some reason in the parent,
 // causing its content bounds to not be computed, then when it is later drawn,

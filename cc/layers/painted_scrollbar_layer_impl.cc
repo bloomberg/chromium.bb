@@ -131,6 +131,10 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   }
 }
 
+gfx::Rect PaintedScrollbarLayerImpl::GetEnclosingRectInTargetSpace() const {
+  return GetScaledEnclosingRectInTargetSpace(internal_contents_scale_);
+}
+
 void PaintedScrollbarLayerImpl::SetThumbThickness(int thumb_thickness) {
   if (thumb_thickness_ == thumb_thickness)
     return;

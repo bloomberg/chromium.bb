@@ -83,6 +83,10 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::UpdateIdealScales;
   using PictureLayerImpl::MaximumTilingContentsScale;
 
+  void AddTilingUntilNextDraw(float scale) {
+    last_append_quads_tilings_.push_back(AddTiling(scale));
+  }
+
   float raster_page_scale() const { return raster_page_scale_; }
   void set_raster_page_scale(float scale) { raster_page_scale_ = scale; }
 

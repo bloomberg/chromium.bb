@@ -1594,4 +1594,20 @@ Region LayerImpl::GetInvalidationRegion() {
   return Region(update_rect_);
 }
 
+gfx::Rect LayerImpl::GetEnclosingRectInTargetSpace() const {
+  return MathUtil::MapEnclosingClippedRect(
+      draw_properties_.target_space_transform,
+      gfx::Rect(draw_properties_.content_bounds));
+}
+
+gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
+  gfx::Transform scaled_draw_transform =
+      draw_properties_.target_space_transform;
+  scaled_draw_transform.Scale(SK_MScalar1 / scale, SK_MScalar1 / scale);
+  gfx::Size scaled_content_bounds =
+      gfx::ToCeiledSize(gfx::ScaleSize(content_bounds(), scale));
+  return MathUtil::MapEnclosingClippedRect(scaled_draw_transform,
+                                           gfx::Rect(scaled_content_bounds));
+}
+
 }  // namespace cc

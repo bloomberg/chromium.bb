@@ -283,8 +283,7 @@ void DamageTracker::ExtendDamageForLayer(LayerImpl* layer,
   RectMapData& data = RectDataForLayer(layer->id(), &layer_is_new);
   gfx::Rect old_rect_in_target_space = data.rect_;
 
-  gfx::Rect rect_in_target_space = MathUtil::MapEnclosingClippedRect(
-      layer->draw_transform(), gfx::Rect(layer->content_bounds()));
+  gfx::Rect rect_in_target_space = layer->GetEnclosingRectInTargetSpace();
   data.Update(rect_in_target_space, mailboxId_);
 
   gfx::RectF damage_rect =

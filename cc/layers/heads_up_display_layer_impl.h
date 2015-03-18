@@ -45,6 +45,8 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
 
   void ReleaseResources() override;
 
+  gfx::Rect GetEnclosingRectInTargetSpace() const override;
+
   bool IsAnimatingHUDContents() const { return fade_step_ > 0; }
 
  private:

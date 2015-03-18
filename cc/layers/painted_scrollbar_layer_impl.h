@@ -31,6 +31,7 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
                 ResourceProvider* resource_provider) override;
   void AppendQuads(RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
+  gfx::Rect GetEnclosingRectInTargetSpace() const override;
 
   void SetThumbThickness(int thumb_thickness);
   void SetThumbLength(int thumb_length);
