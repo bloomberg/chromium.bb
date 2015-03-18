@@ -21,9 +21,13 @@ namespace hotwordPrivate {
     boolean enabled;
 
     // Whether the hotword extension is available to be enabled
+    // Optional field, only valid when getStatus() is called with
+    // |getOptionalFields| = true. Otherwise, set to false.
     boolean available;
 
     // Whether always-on is available to be enabled
+    // Optional field, only valid when getStatus() is called with
+    // |getOptionalFields| = true. Otherwise, set to false.
     boolean alwaysOnAvailable;
 
     // Whether the sound of "Ok, Google" plus a few seconds before is sent
@@ -90,7 +94,11 @@ namespace hotwordPrivate {
 
     // Retrieves the current state of hotword search.
     // The result is put into a StatusDetails object.
-    static void getStatus(StatusDetailsCallback callback);
+    // |getOptionalFields|: If true, fills in fields tagged as optional in
+    // StatusDetails with valid values. These fields are not valid by default
+    // since their current implementations may cause blocking operations.
+    static void getStatus(optional boolean getOptionalFields,
+                          StatusDetailsCallback callback);
 
     // Retrieves a dictionary mapping names to localized resource strings.
     static void getLocalizedStrings(LocalizeStringsCallback callback);

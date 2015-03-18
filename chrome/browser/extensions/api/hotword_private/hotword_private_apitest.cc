@@ -250,6 +250,13 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, IsAvailableTrue) {
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, IsAvailableTrue_NoGet) {
+  service()->setServiceAvailable(true);
+  ExtensionTestMessageListener listener("available: false", false);
+  ASSERT_TRUE(RunComponentExtensionTest("isAvailableNoGet")) << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+}
+
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, IsAvailableFalse) {
   service()->setServiceAvailable(false);
   ExtensionTestMessageListener listener("available: false", false);

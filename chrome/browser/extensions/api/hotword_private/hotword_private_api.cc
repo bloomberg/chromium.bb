@@ -145,6 +145,10 @@ bool HotwordPrivateSetHotwordAlwaysOnSearchEnabledFunction::RunSync() {
 }
 
 bool HotwordPrivateGetStatusFunction::RunSync() {
+  scoped_ptr<api::hotword_private::GetStatus::Params> params(
+      api::hotword_private::GetStatus::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
   api::hotword_private::StatusDetails result;
 
   HotwordService* hotword_service =
@@ -157,9 +161,13 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
     result.always_on_enabled = false;
     result.user_is_active = false;
   } else {
-    result.available = hotword_service->IsServiceAvailable();
-    result.always_on_available =
-        HotwordServiceFactory::IsAlwaysOnAvailable();
+    result.available = false;
+    result.always_on_available = false;
+    if (params->get_optional_fields && *params->get_optional_fields) {
+      result.available = hotword_service->IsServiceAvailable();
+      result.always_on_available =
+          HotwordServiceFactory::IsAlwaysOnAvailable();
+    }
     result.enabled = hotword_service->IsSometimesOnEnabled();
     result.audio_logging_enabled = hotword_service->IsOptedIntoAudioLogging();
     result.training_enabled = hotword_service->IsTraining();

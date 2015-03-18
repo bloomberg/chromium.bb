@@ -425,6 +425,7 @@ cr.define('hotword', function() {
         case CommandFromPage.PAGE_WAKEUP:
           if (sender.tab && this.isEligibleUrl_(sender.tab.url)) {
             chrome.hotwordPrivate.getStatus(
+                true /* getOptionalFields */,
                 this.statusDone_.bind(
                     this,
                     request.tab || sender.tab || {incognito: true},
