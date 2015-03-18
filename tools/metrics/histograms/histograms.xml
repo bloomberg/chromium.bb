@@ -56020,6 +56020,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="Clicked 'OK'"/>
   <int value="8" label="Clicked on a credential"/>
   <int value="9" label="Auto-signin toast timeout"/>
+  <int value="10" label="Auto-signin toast clicked"/>
 </enum>
 
 <enum name="PeerConnectionCounters" type="int">

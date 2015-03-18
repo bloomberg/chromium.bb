@@ -255,6 +255,13 @@ void ManagePasswordsUIController::UnblacklistSite() {
   UpdateBubbleAndIconVisibility();
 }
 
+void ManagePasswordsUIController::ManageAccounts() {
+  DCHECK_EQ(password_manager::ui::AUTO_SIGNIN_STATE, state());
+  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+  base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
+  UpdateBubbleAndIconVisibility();
+}
+
 void ManagePasswordsUIController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
@@ -308,19 +315,10 @@ void ManagePasswordsUIController::OnBubbleShown() {
 }
 
 void ManagePasswordsUIController::OnBubbleHidden() {
-  password_manager::ui::State next_state = state();
-  if (state() == password_manager::ui::CREDENTIAL_REQUEST_STATE)
-    next_state = password_manager::ui::MANAGE_STATE;
-  else if (state() == password_manager::ui::CONFIRMATION_STATE)
-    next_state = password_manager::ui::MANAGE_STATE;
-  else if (state() == password_manager::ui::AUTO_SIGNIN_STATE)
-    next_state = password_manager::ui::INACTIVE_STATE;
-
-  if (next_state != state()) {
-    if (next_state == password_manager::ui::INACTIVE_STATE)
-      passwords_data_.OnInactive();
-    else
-      passwords_data_.TransitionToState(next_state);
+  if (state() == password_manager::ui::CREDENTIAL_REQUEST_STATE ||
+      state() == password_manager::ui::CONFIRMATION_STATE ||
+      state() == password_manager::ui::AUTO_SIGNIN_STATE) {
+    passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
     UpdateBubbleAndIconVisibility();
   }
 }

@@ -292,3 +292,20 @@ TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninToast) {
       password_manager::metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT,
       1);
 }
+
+TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninAndManagedBubble) {
+  base::HistogramTester histogram_tester;
+  PretendAutoSigningIn();
+  model_->OnAutoSignInToastTimeout();
+  model_->OnAutoSignInClicked();
+  EXPECT_EQ(model_->dismissal_reason(),
+            password_manager::metrics_util::AUTO_SIGNIN_TOAST_CLICKED);
+  model_->OnBubbleHidden();
+
+  EXPECT_TRUE(controller()->manage_accounts());
+
+  histogram_tester.ExpectUniqueSample(
+      kUIDismissalReasonMetric,
+      password_manager::metrics_util::AUTO_SIGNIN_TOAST_CLICKED,
+      1);
+}

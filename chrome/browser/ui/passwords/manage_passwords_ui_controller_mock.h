@@ -56,6 +56,9 @@ class ManagePasswordsUIControllerMock
   const autofill::PasswordForm& PendingPassword() const override;
   void SetPendingPassword(autofill::PasswordForm pending_password);
 
+  void ManageAccounts() override;
+  bool manage_accounts() const { return manage_accounts_; }
+
   void UpdateBubbleAndIconVisibility() override;
 
   void UpdateAndroidAccountChooserInfoBarVisibility() override;
@@ -75,6 +78,7 @@ class ManagePasswordsUIControllerMock
   bool never_saved_password_;
   bool unblacklist_site_;
   bool choose_credential_;
+  bool manage_accounts_;
   base::TimeDelta elapsed_;
 
   autofill::PasswordForm chosen_credential_;

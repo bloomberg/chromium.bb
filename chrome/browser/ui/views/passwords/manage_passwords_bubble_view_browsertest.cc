@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
+#include "base/command_line.h"
 #include "base/metrics/histogram_samples.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
+#include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
@@ -17,6 +19,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/content_switches.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -294,6 +297,9 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
 }
 
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
+  // The switch enables the new UI.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableCredentialManagerAPI);
   ScopedVector<autofill::PasswordForm> local_credentials;
   test_form()->origin = GURL("https://example.com");
   test_form()->display_name = base::ASCIIToUTF16("Peter");
@@ -313,5 +319,18 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
   EXPECT_CALL(url_callback, OnRequestDone(avatar_url));
 
   SetupAutoSignin(local_credentials.Pass());
+  EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
+  ::testing::Mock::VerifyAndClearExpectations(&url_callback);
+
+  ManagePasswordsBubbleView::CloseBubble();
+  EXPECT_FALSE(ManagePasswordsBubbleView::IsShowing());
+  content::RunAllPendingInMessageLoop();
+
+  // Open the bubble to manage accounts.
+  EXPECT_EQ(password_manager::ui::MANAGE_STATE, GetController()->state());
+  EXPECT_CALL(url_callback, OnRequestDone(avatar_url));
+  ManagePasswordsBubbleView::ShowBubble(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        ManagePasswordsBubble::USER_ACTION);
   EXPECT_TRUE(ManagePasswordsBubbleView::IsShowing());
 }

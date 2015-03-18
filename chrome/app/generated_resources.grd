@@ -13621,6 +13621,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_MANAGE_PASSWORDS_CHOOSE_TITLE" desc="The title of the password bubble when a credential should be chosen.">
         Choose an account from your Google Smart Lock
       </message>
+      <message name="IDS_MANAGE_ACCOUNTS_TITLE" desc="The title of the password bubble when a list of credentials for the site is shown.">
+        Saved accounts for <ph name="ORIGIN">$1<ex>facebook.com</ex></ph>
+      </message>
       <message name="IDS_MANAGE_PASSWORDS_IDENTITY_PROVIDER" desc="The description of an identity provider in the Account Chooser dialog.">
         via <ph name="PROVIDER">$1<ex>facebook.com</ex></ph>
       </message>

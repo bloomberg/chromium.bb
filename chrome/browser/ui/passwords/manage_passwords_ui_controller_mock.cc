@@ -16,7 +16,8 @@ ManagePasswordsUIControllerMock::ManagePasswordsUIControllerMock(
       saved_password_(false),
       never_saved_password_(false),
       unblacklist_site_(false),
-      choose_credential_(false) {
+      choose_credential_(false),
+      manage_accounts_(false) {
   // Do not silently replace an existing ManagePasswordsUIController because it
   // unregisters itself in WebContentsDestroyed().
   EXPECT_FALSE(contents->GetUserData(UserDataKey()));
@@ -40,6 +41,10 @@ const autofill::PasswordForm&
 void ManagePasswordsUIControllerMock::SetPendingPassword(
     autofill::PasswordForm pending_password) {
   pending_password_ = pending_password;
+}
+
+void ManagePasswordsUIControllerMock::ManageAccounts() {
+  manage_accounts_ = true;
 }
 
 void ManagePasswordsUIControllerMock::UpdateBubbleAndIconVisibility() {

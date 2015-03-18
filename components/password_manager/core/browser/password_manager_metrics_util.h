@@ -48,6 +48,7 @@ enum UIDismissalReason {
   CLICKED_OK,
   CLICKED_CREDENTIAL,
   AUTO_SIGNIN_TOAST_TIMEOUT,
+  AUTO_SIGNIN_TOAST_CLICKED,
   NUM_UI_RESPONSES,
 
   // If we add the omnibox icon _without_ intending to display the bubble,

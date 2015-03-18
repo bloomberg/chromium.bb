@@ -61,12 +61,13 @@ class ManagePasswordsTest : public InProcessBrowserTest {
 
   autofill::PasswordForm* test_form() { return &test_form_; }
 
-  MOCK_METHOD1(OnChooseCredential,
-               void(const password_manager::CredentialInfo&));
- private:
   // Get the UI controller for the current WebContents.
   ManagePasswordsUIController* GetController();
 
+  MOCK_METHOD1(OnChooseCredential,
+               void(const password_manager::CredentialInfo&));
+
+ private:
   autofill::PasswordForm test_form_;
   base::HistogramTester histogram_tester_;
 

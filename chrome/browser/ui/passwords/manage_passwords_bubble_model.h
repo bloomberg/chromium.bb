@@ -75,8 +75,13 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // Called by the view code when the manage link is clicked by the user.
   void OnManageLinkClicked();
 
-  // Called by the view code when the auto-signin toast is about to close.
+  // Called by the view code when the auto-signin toast is about to close due to
+  // timeout.
   void OnAutoSignInToastTimeout();
+
+  // Called by the view code when user clicks on the auto sign-in toast in order
+  // to manage credentials.
+  void OnAutoSignInClicked();
 
   // Called by the view code to delete or add a password form to the
   // PasswordStore.
@@ -115,6 +120,10 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   }
 
   Profile* GetProfile() const;
+
+  // Returns true iff the new UI should be presented to user for managing and
+  // saving the passwords.
+  bool IsNewUIActive() const;
 
 #if defined(UNIT_TEST)
   // Gets and sets the reason the bubble was displayed.

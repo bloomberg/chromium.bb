@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 
+#include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,6 +19,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -111,7 +114,10 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   } else if (state_ == password_manager::ui::AUTO_SIGNIN_STATE) {
     // There is no title.
   } else {
-    title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_TITLE);
+    title_ = IsNewUIActive() ?
+        l10n_util::GetStringFUTF16(IDS_MANAGE_ACCOUNTS_TITLE,
+                                   base::UTF8ToUTF16(origin_.spec())) :
+        l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_TITLE);
   }
 
   if (state_ == password_manager::ui::CONFIRMATION_STATE) {
@@ -245,6 +251,14 @@ void ManagePasswordsBubbleModel::OnAutoSignInToastTimeout() {
   dismissal_reason_ = metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT;
 }
 
+void ManagePasswordsBubbleModel::OnAutoSignInClicked() {
+  dismissal_reason_ = metrics_util::AUTO_SIGNIN_TOAST_CLICKED;
+  ManagePasswordsUIController* manage_passwords_ui_controller =
+      ManagePasswordsUIController::FromWebContents(web_contents());
+  manage_passwords_ui_controller->ManageAccounts();
+  state_ = password_manager::ui::MANAGE_STATE;
+}
+
 void ManagePasswordsBubbleModel::OnPasswordAction(
     const autofill::PasswordForm& password_form,
     PasswordAction action) {
@@ -276,6 +290,11 @@ void ManagePasswordsBubbleModel::OnChooseCredentials(
 
 Profile* ManagePasswordsBubbleModel::GetProfile() const {
   return GetProfileFromWebContents(web_contents());
+}
+
+bool ManagePasswordsBubbleModel::IsNewUIActive() const {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCredentialManagerAPI);
 }
 
 // static

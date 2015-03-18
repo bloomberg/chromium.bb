@@ -270,8 +270,6 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
       CredentialsItemView::AUTO_SIGNIN,
       parent_->model()->GetProfile()->GetRequestContext());
   AddChildView(credential);
-  // TODO(vasilii): enable the button to switch to the "Managed" state.
-  credential->SetEnabled(false);
   parent_->set_initially_focused_view(credential);
 
   timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kAutoSigninToastTimeout),
@@ -280,7 +278,8 @@ ManagePasswordsBubbleView::AutoSigninView::AutoSigninView(
 
 void ManagePasswordsBubbleView::AutoSigninView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
-  // TODO(vasilii): close the toast and switch to the "Managed" state.
+  parent_->model()->OnAutoSignInClicked();
+  parent_->Close();
 }
 
 void ManagePasswordsBubbleView::AutoSigninView::OnTimer() {
@@ -997,7 +996,10 @@ void ManagePasswordsBubbleView::Refresh() {
   } else if (model()->state() == password_manager::ui::AUTO_SIGNIN_STATE) {
     AddChildView(new AutoSigninView(this));
   } else {
-    AddChildView(new ManageView(this));
+    if (model()->IsNewUIActive())
+      AddChildView(new ManageAccountsView(this));
+    else
+      AddChildView(new ManageView(this));
   }
   GetLayoutManager()->Layout(this);
 }

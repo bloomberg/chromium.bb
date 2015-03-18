@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/common/password_form.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -49,7 +50,7 @@ void BuildColumnSet(views::GridLayout* layout) {
 ManageCredentialItemView::ManageCredentialItemView(
     ManagePasswordsBubbleModel* model,
     const autofill::PasswordForm* password_form)
-    : form_(*password_form),
+    : form_(password_form),
       delete_button_(nullptr),
       undo_link_(nullptr),
       model_(model),
@@ -57,7 +58,7 @@ ManageCredentialItemView::ManageCredentialItemView(
   net::URLRequestContextGetter* request_context =
       model_->GetProfile()->GetRequestContext();
   credential_button_.reset(new CredentialsItemView(
-      this, &form_, password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL,
+      this, form_, password_manager::CredentialType::CREDENTIAL_TYPE_LOCAL,
       CredentialsItemView::ACCOUNT_CHOOSER, request_context));
   credential_button_->set_owned_by_client();
   credential_button_->SetEnabled(false);
@@ -108,7 +109,7 @@ void ManageCredentialItemView::ButtonPressed(views::Button* sender,
                                              const ui::Event& event) {
   DCHECK_EQ(delete_button_, sender);
   form_deleted_ = true;
-  // TODO(vasilii): notify |model_| about the deletion.
+  model_->OnPasswordAction(*form_, ManagePasswordsBubbleModel::REMOVE_PASSWORD);
   Refresh();
 }
 
@@ -116,6 +117,6 @@ void ManageCredentialItemView::LinkClicked(views::Link* source,
                                            int event_flags) {
   DCHECK_EQ(undo_link_, source);
   form_deleted_ = false;
-  // TODO(vasilii): notify |model_| about adding.
+  model_->OnPasswordAction(*form_, ManagePasswordsBubbleModel::ADD_PASSWORD);
   Refresh();
 }
