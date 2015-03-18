@@ -46,6 +46,7 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
 
     private int mInitialExpirationMonthPos;
     private int mInitialExpirationYearPos;
+    private boolean mYearOrMonthSelected;
 
     @Override
     public void onCreate(Bundle savedState) {
@@ -94,7 +95,8 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if ((parent == mExpirationYear && position != mInitialExpirationYearPos)
                 || (parent == mExpirationMonth && position != mInitialExpirationMonthPos)) {
-            enableSaveButton();
+            mYearOrMonthSelected = true;
+            updateSaveButtonEnabled();
         }
     }
 
@@ -109,7 +111,7 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-        enableSaveButton();
+        updateSaveButtonEnabled();
     }
 
     void addSpinnerAdapters() {
@@ -247,9 +249,11 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
         mExpirationYear.setOnItemSelectedListener(this);
     }
 
-    private void enableSaveButton() {
+    private void updateSaveButtonEnabled() {
+        boolean enabled = mYearOrMonthSelected || !TextUtils.isEmpty(mNameText.getText())
+                || !TextUtils.isEmpty(mNumberText.getText());
         Button button = (Button) getView().findViewById(R.id.autofill_credit_card_save);
-        button.setEnabled(true);
+        button.setEnabled(enabled);
     }
 
     /**
