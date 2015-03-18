@@ -104,7 +104,8 @@ class MacPort(base.Port):
         return '/usr/sbin/httpd'
 
     def path_to_apache_config_file(self):
-        return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', 'apache2-httpd.conf')
+        config_file_name = 'apache2-httpd-' + self._apache_version() + '.conf'
+        return self._filesystem.join(self.layout_tests_dir(), 'http', 'conf', config_file_name)
 
     def _path_to_driver(self, configuration=None):
         # FIXME: make |configuration| happy with case-sensitive file systems.

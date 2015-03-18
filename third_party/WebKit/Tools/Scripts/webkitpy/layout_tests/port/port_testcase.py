@@ -435,11 +435,11 @@ class PortTestCase(unittest.TestCase):
         port = TestWebKitPort()
         self._assert_config_file_for_platform(port, 'cygwin', 'cygwin-httpd.conf')
 
-        self._assert_config_file_for_platform(port, 'linux2', 'apache2-httpd.conf')
-        self._assert_config_file_for_platform(port, 'linux3', 'apache2-httpd.conf')
+        port._apache_version = lambda: '2.2'
+        self._assert_config_file_for_platform(port, 'linux2', 'apache2-httpd-2.2.conf')
+        self._assert_config_file_for_platform(port, 'linux3', 'apache2-httpd-2.2.conf')
 
         port._is_redhat_based = lambda: True
-        port._apache_version = lambda: '2.2'
         self._assert_config_file_for_platform(port, 'linux2', 'fedora-httpd-2.2.conf')
 
         port = TestWebKitPort()
@@ -447,9 +447,9 @@ class PortTestCase(unittest.TestCase):
         port._apache_version = lambda: '2.2'
         self._assert_config_file_for_platform(port, 'linux2', 'debian-httpd-2.2.conf')
 
-        self._assert_config_file_for_platform(port, 'mac', 'apache2-httpd.conf')
-        self._assert_config_file_for_platform(port, 'win32', 'apache2-httpd.conf')  # win32 isn't a supported sys.platform.  AppleWin/WinCairo/WinCE ports all use cygwin.
-        self._assert_config_file_for_platform(port, 'barf', 'apache2-httpd.conf')
+        self._assert_config_file_for_platform(port, 'mac', 'apache2-httpd-2.2.conf')
+        self._assert_config_file_for_platform(port, 'win32', 'apache2-httpd-2.2.conf')  # win32 isn't a supported sys.platform.  AppleWin/WinCairo/WinCE ports all use cygwin.
+        self._assert_config_file_for_platform(port, 'barf', 'apache2-httpd-2.2.conf')
 
     def test_path_to_apache_config_file(self):
         port = TestWebKitPort()

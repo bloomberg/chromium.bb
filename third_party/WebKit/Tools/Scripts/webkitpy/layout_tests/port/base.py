@@ -1465,7 +1465,7 @@ class Port(object):
             if self._is_debian_based():
                 return 'debian-httpd-' + self._apache_version() + '.conf'
         # All platforms use apache2 except for CYGWIN (and Mac OS X Tiger and prior, which we no longer support).
-        return "apache2-httpd.conf"
+        return 'apache2-httpd-' + self._apache_version() + '.conf'
 
     def _path_to_driver(self, configuration=None):
         """Returns the full path to the test driver."""
