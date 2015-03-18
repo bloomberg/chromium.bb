@@ -11,7 +11,7 @@
  *   ConnectionState: string,
  *   GUID: string,
  *   Type: string,
- *   policyManaged: boolean,
+ *   policyManaged: boolean
  * }}
  * @see chrome/browser/ui/webui/options/chromeos/internet_options_handler.cc
  */
