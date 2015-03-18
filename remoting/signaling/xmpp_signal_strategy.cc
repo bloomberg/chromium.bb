@@ -140,26 +140,6 @@ XmppSignalStrategy::Core::Core(
   // Non-secure connections are allowed only for debugging.
   CHECK(xmpp_server_config_.use_tls);
 #endif
-
-  // TODO(sergeyu): Support for direct connections without TLS is not
-  // implemented yet.
-  if (!xmpp_server_config_.use_tls)
-    NOTIMPLEMENTED();
-
-  // Port 5222 may be blocked by firewall. talk.google.com allows connections on
-  // port 443 which can be used instead of 5222. The webapp still requests to
-  // use port 5222 for backwards compatibility with older versions of the host
-  // that do not pass correct |use_fake_ssl_client_socket| value to
-  // XmppClientSocketFactory (and so cannot connect to port 443). In case we are
-  // connecting to talk.google.com try to use port 443 anyway.
-  //
-  // TODO(sergeyu): Once all hosts support connections on port 443
-  // the webapp needs to be updated to request port 443 and these 2 lines can be
-  // removed. crbug.com/443384
-  if (xmpp_server_config_.host == "talk.google.com" &&
-      xmpp_server_config_.port == kDefaultXmppPort) {
-    xmpp_server_config_.port = kDefaultHttpsPort;
-  }
 }
 
 XmppSignalStrategy::Core::~Core() {

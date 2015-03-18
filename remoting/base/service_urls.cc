@@ -10,6 +10,7 @@
 // Configurable service data.
 const char kDirectoryBaseUrl[] = "https://www.googleapis.com/chromoting/v1";
 const char kXmppServerAddress[] = "talk.google.com:443";
+const char kXmppServerAddressForMe2MeHost[] = "talk.google.com:5222";
 const bool kXmppServerUseTls = true;
 const char kDirectoryBotJid[] = "remoting@bot.talk.google.com";
 
@@ -27,10 +28,11 @@ const char kDirectoryHostsSuffix[] = "/@me/hosts/";
 namespace remoting {
 
 ServiceUrls::ServiceUrls()
-  : directory_base_url_(kDirectoryBaseUrl),
-    xmpp_server_address_(kXmppServerAddress),
-    xmpp_server_use_tls_(kXmppServerUseTls),
-    directory_bot_jid_(kDirectoryBotJid) {
+    : directory_base_url_(kDirectoryBaseUrl),
+      xmpp_server_address_(kXmppServerAddress),
+      xmpp_server_address_for_me2me_host_(kXmppServerAddressForMe2MeHost),
+      xmpp_server_use_tls_(kXmppServerUseTls),
+      directory_bot_jid_(kDirectoryBotJid) {
 #if !defined(NDEBUG)
   // Allow debug builds to override urls via command line.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -42,6 +44,7 @@ ServiceUrls::ServiceUrls()
   if (command_line->HasSwitch(kXmppServerAddressSwitch)) {
     xmpp_server_address_ = command_line->GetSwitchValueASCII(
         kXmppServerAddressSwitch);
+    xmpp_server_address_for_me2me_host_ = xmpp_server_address_;
   }
   if (command_line->HasSwitch(kXmppServerDisableTlsSwitch)) {
     xmpp_server_use_tls_ = false;
@@ -72,6 +75,10 @@ const std::string& ServiceUrls::directory_hosts_url() const {
 
 const std::string& ServiceUrls::xmpp_server_address() const {
   return xmpp_server_address_;
+}
+
+const std::string& ServiceUrls::xmpp_server_address_for_me2me_host() const {
+  return xmpp_server_address_for_me2me_host_;
 }
 
 bool ServiceUrls::xmpp_server_use_tls() const {

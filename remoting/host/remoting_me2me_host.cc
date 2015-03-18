@@ -494,12 +494,12 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
   net::URLFetcher::SetIgnoreCertificateRequests(true);
 
   ServiceUrls* service_urls = ServiceUrls::GetInstance();
-  bool xmpp_server_valid = net::ParseHostAndPort(
-      service_urls->xmpp_server_address(),
-      &xmpp_server_config_.host, &xmpp_server_config_.port);
-  if (!xmpp_server_valid) {
-    LOG(ERROR) << "Invalid XMPP server: " <<
-        service_urls->xmpp_server_address();
+
+  const std::string& xmpp_server =
+      service_urls->xmpp_server_address_for_me2me_host();
+  if (!net::ParseHostAndPort(xmpp_server, &xmpp_server_config_.host,
+                             &xmpp_server_config_.port)) {
+    LOG(ERROR) << "Invalid XMPP server: " << xmpp_server;
     return false;
   }
   xmpp_server_config_.use_tls = service_urls->xmpp_server_use_tls();

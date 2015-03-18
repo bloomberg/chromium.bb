@@ -26,6 +26,7 @@ class ServiceUrls {
 
   // XMPP Server configuration.
   const std::string& xmpp_server_address() const;
+  const std::string& xmpp_server_address_for_me2me_host() const;
   bool xmpp_server_use_tls() const;
 
   // Remoting directory bot JID (for registering hosts, logging, heartbeats).
@@ -40,6 +41,7 @@ class ServiceUrls {
   std::string directory_base_url_;
   std::string directory_hosts_url_;
   std::string xmpp_server_address_;
+  std::string xmpp_server_address_for_me2me_host_;
   bool xmpp_server_use_tls_;
   std::string directory_bot_jid_;
 
