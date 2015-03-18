@@ -14144,10 +14144,10 @@ After you create a new supervised user, you can manage their settings at any tim
       <if expr="not is_android and not is_ios">
         <!-- User manager web UI -->
         <if expr="use_titlecase">
+          <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
+            Add Person
+          </message>
           <if expr="not chromeos">
-            <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
-              Add Person
-            </message>
             <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON" desc="Text shown on a button that confirms removal of a user.">
               Remove This Person
             </message>
@@ -14156,9 +14156,6 @@ After you create a new supervised user, you can manage their settings at any tim
             </message>
           </if>
           <if expr="chromeos">
-            <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
-              Add User
-            </message>
             <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON" desc="Text shown on a button that confirms removal of a user.">
               Remove This User
             </message>
@@ -14174,10 +14171,10 @@ After you create a new supervised user, you can manage their settings at any tim
           </message>
         </if>
         <if expr="not use_titlecase">
+          <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
+            Add person
+          </message>
           <if expr="not chromeos">
-            <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
-              Add person
-            </message>
             <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON" desc="Text shown on a button that confirms removal of a user.">
               Remove this person
             </message>
@@ -14186,9 +14183,6 @@ After you create a new supervised user, you can manage their settings at any tim
             </message>
           </if>
           <if expr="chromeos">
-            <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
-              Add user
-            </message>
             <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON" desc="Text shown on a button that confirms removal of a user.">
               Remove this user
             </message>
