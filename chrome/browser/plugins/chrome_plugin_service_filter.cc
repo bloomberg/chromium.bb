@@ -98,14 +98,12 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
 
   // Check whether the plugin is overridden.
   if (details) {
-    for (size_t i = 0; i < details->overridden_plugins.size(); ++i) {
-      if (details->overridden_plugins[i].render_frame_id == render_frame_id &&
-          (details->overridden_plugins[i].url == url ||
-           details->overridden_plugins[i].url.is_empty())) {
-
-        bool use = details->overridden_plugins[i].plugin.path == plugin->path;
+    for (const auto& plugin_override : details->overridden_plugins) {
+      if (plugin_override.render_frame_id == render_frame_id &&
+          (plugin_override.url.is_empty() || plugin_override.url == url)) {
+        bool use = plugin_override.plugin.path == plugin->path;
         if (use)
-          *plugin = details->overridden_plugins[i].plugin;
+          *plugin = plugin_override.plugin;
         return use;
       }
     }
@@ -151,14 +149,8 @@ bool ChromePluginServiceFilter::CanLoadPlugin(int render_process_id,
   if (!details)
     return false;
 
-  if (details->authorized_plugins.find(path) ==
-          details->authorized_plugins.end() &&
-      details->authorized_plugins.find(base::FilePath()) ==
-          details->authorized_plugins.end()) {
-    return false;
-  }
-
-  return true;
+  return (ContainsKey(details->authorized_plugins, path) ||
+          ContainsKey(details->authorized_plugins, base::FilePath()));
 }
 
 void ChromePluginServiceFilter::AuthorizePlugin(

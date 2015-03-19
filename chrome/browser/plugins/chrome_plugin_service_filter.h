@@ -40,7 +40,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
   void UnregisterResourceContext(const void* context);
 
   // Overrides the plugin lookup mechanism for a given tab and object URL to use
-  // a specifc plugin.
+  // a specific plugin.
   void OverridePluginForFrame(int render_process_id,
                               int render_frame_id,
                               const GURL& url,
@@ -67,7 +67,7 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
                            bool load_blocked,
                            const std::string& identifier);
 
-  // Returns whether the plugin is found in restricted_plugins_.
+  // Returns whether the plugin is found in |restricted_plugins_|.
   bool IsPluginRestricted(const base::FilePath& plugin_path);
 
   // PluginServiceFilter implementation:

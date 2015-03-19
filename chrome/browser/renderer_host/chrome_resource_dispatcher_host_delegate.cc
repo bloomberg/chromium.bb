@@ -610,8 +610,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
   std::vector<std::string> whitelist = MimeTypesHandler::GetMIMETypeWhitelist();
   // Go through the white-listed extensions and try to use them to intercept
   // the URL request.
-  for (size_t i = 0; i < whitelist.size(); ++i) {
-    const char* extension_id = whitelist[i].c_str();
+  for (const std::string& extension_id : whitelist) {
     const Extension* extension =
         extension_info_map->extensions().GetByID(extension_id);
     // The white-listed extension may not be installed, so we have to NULL check
