@@ -36,7 +36,6 @@ InspectorEmulationAgent::InspectorEmulationAgent(WebViewImpl* webViewImpl)
 
 InspectorEmulationAgent::~InspectorEmulationAgent()
 {
-    m_webViewImpl->devToolsEmulator()->setEmulationAgent(nullptr);
 }
 
 void InspectorEmulationAgent::restore()
@@ -53,6 +52,11 @@ void InspectorEmulationAgent::disable(ErrorString*)
     setScriptExecutionDisabled(&error, false);
     setTouchEmulationEnabled(&error, false, nullptr);
     setEmulatedMedia(&error, String());
+}
+
+void InspectorEmulationAgent::discardAgent()
+{
+    m_webViewImpl->devToolsEmulator()->setEmulationAgent(nullptr);
 }
 
 void InspectorEmulationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)

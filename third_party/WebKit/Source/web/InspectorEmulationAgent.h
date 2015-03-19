@@ -32,6 +32,7 @@ public:
     // InspectorBaseAgent overrides.
     void disable(ErrorString*) override;
     void restore() override;
+    void discardAgent() override;
     void didCommitLoadForLocalFrame(LocalFrame*) override;
 
     DECLARE_VIRTUAL_TRACE();
