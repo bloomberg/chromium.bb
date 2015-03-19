@@ -328,10 +328,6 @@ void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
     return;
   }
 
-  // Do not leave this host as canonical so that we don't infer the other
-  // hosts are also broken without testing them first.
-  RemoveCanonicalHost(origin);
-
   // If this is the only entry in the list, schedule an expiration task.
   // Otherwise it will be rescheduled automatically when the pending task runs.
   if (broken_alternative_services_.size() == 1) {
@@ -496,9 +492,23 @@ HttpServerPropertiesImpl::GetAlternateProtocolIterator(
     return it;
 
   CanonicalHostMap::const_iterator canonical = GetCanonicalHost(server);
-  if (canonical != canonical_host_to_origin_map_.end())
-    return alternate_protocol_map_.Get(canonical->second);
+  if (canonical == canonical_host_to_origin_map_.end()) {
+    return alternate_protocol_map_.end();
+  }
 
+  const HostPortPair canonical_host_port = canonical->second;
+  it = alternate_protocol_map_.Get(canonical_host_port);
+  if (it == alternate_protocol_map_.end()) {
+    return alternate_protocol_map_.end();
+  }
+
+  const AlternativeService alternative_service(
+      it->second.protocol, canonical_host_port.host(), it->second.port);
+  if (!IsAlternativeServiceBroken(alternative_service)) {
+    return it;
+  }
+
+  RemoveCanonicalHost(canonical_host_port);
   return alternate_protocol_map_.end();
 }
 
