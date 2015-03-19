@@ -36,7 +36,8 @@ void TCPConnectedSocketImpl::ReceiveMore() {
     // The pipe is full. We need to wait for it to have more space.
     receive_handle_watcher_.Start(
         receive_stream_.get(),
-        MOJO_HANDLE_SIGNAL_WRITABLE, MOJO_DEADLINE_INDEFINITE,
+        MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        MOJO_DEADLINE_INDEFINITE,
         base::Bind(&TCPConnectedSocketImpl::OnReceiveStreamReady,
                    weak_ptr_factory_.GetWeakPtr()));
     return;
@@ -46,12 +47,17 @@ void TCPConnectedSocketImpl::ReceiveMore() {
     // It's valid that the user of this class consumed the data they care about
     // and closed their data pipe handles after writing data. This class should
     // still write out all the data.
+    ShutdownReceive();
+    // TODO(johnmccutchan): Notify socket direction is closed along with
+    // net_result and mojo_result.
     return;
   }
 
   if (result != MOJO_RESULT_OK) {
     // The receive stream is in a bad state.
-    // TODO(darin): How should this be communicated to our client?
+    ShutdownReceive();
+    // TODO(johnmccutchan): Notify socket direction is closed along with
+    // net_result and mojo_result.
     return;
   }
 
@@ -65,17 +71,25 @@ void TCPConnectedSocketImpl::ReceiveMore() {
                  false));
   if (read_result == net::ERR_IO_PENDING) {
     // Pending I/O, wait for result in DidReceive().
-  } else if (read_result >= 0) {
+  } else if (read_result > 0) {
     // Synchronous data ready.
     DidReceive(true, read_result);
   } else {
-    // Some kind of error.
-    // TODO(brettw) notify caller of error.
+    // read_result == 0 indicates EOF.
+    // read_result < 0 indicates error.
+    ShutdownReceive();
+    // TODO(johnmccutchan): Notify socket direction is closed along with
+    // net_result and mojo_result.
   }
 }
 
 void TCPConnectedSocketImpl::OnReceiveStreamReady(MojoResult result) {
-  // TODO(darin): Handle a bad |result| value.
+  if (result != MOJO_RESULT_OK) {
+    ShutdownReceive();
+    // TODO(johnmccutchan): Notify socket direction is closed along with
+    // net_result and mojo_result.
+    return;
+  }
   ReceiveMore();
 }
 
@@ -83,13 +97,14 @@ void TCPConnectedSocketImpl::DidReceive(bool completed_synchronously,
                                         int result) {
   if (result < 0) {
     // Error.
-    pending_receive_ = NULL;  // Closes the pipe (owned by the pending write).
-    // TODO(brettw) notify the caller of an error?
+    ShutdownReceive();
+    // TODO(johnmccutchan): Notify socket direction is closed along with
+    // net_result and mojo_result.
     return;
   }
 
   receive_stream_ = pending_receive_->Complete(result);
-  pending_receive_ = NULL;
+  pending_receive_ = nullptr;
 
   // Schedule more reading.
   if (completed_synchronously) {
@@ -103,6 +118,11 @@ void TCPConnectedSocketImpl::DidReceive(bool completed_synchronously,
   }
 }
 
+void TCPConnectedSocketImpl::ShutdownReceive() {
+  pending_receive_ = nullptr;
+  receive_stream_.reset();
+}
+
 void TCPConnectedSocketImpl::SendMore() {
   uint32_t num_bytes = 0;
   MojoResult result = MojoToNetPendingBuffer::BeginRead(
@@ -111,12 +131,15 @@ void TCPConnectedSocketImpl::SendMore() {
     // Data not ready, wait for it.
     send_handle_watcher_.Start(
         send_stream_.get(),
-        MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE,
+        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        MOJO_DEADLINE_INDEFINITE,
         base::Bind(&TCPConnectedSocketImpl::OnSendStreamReady,
                    weak_ptr_factory_.GetWeakPtr()));
     return;
   } else if (result != MOJO_RESULT_OK) {
-    // TODO(brettw) notify caller of error.
+    ShutdownSend();
+    // TODO(johnmccutchan): Notify socket direction is closed along with
+    // net_result and mojo_result.
     return;
   }
 
@@ -132,25 +155,36 @@ void TCPConnectedSocketImpl::SendMore() {
   } else if (write_result >= 0) {
     // Synchronous data consumed.
     DidSend(true, write_result);
+  } else {
+    // write_result < 0 indicates error.
+    ShutdownSend();
+    // TODO(johnmccutchan): Notify socket direction is closed along with
+    // net_result and mojo_result.
   }
 }
 
 void TCPConnectedSocketImpl::OnSendStreamReady(MojoResult result) {
-  // TODO(brettw): Handle a bad |result| value.
+  if (result != MOJO_RESULT_OK) {
+    ShutdownSend();
+    // TODO(johnmccutchan): Notify socket direction is closed along with
+    // net_result and mojo_result.
+    return;
+  }
   SendMore();
 }
 
 void TCPConnectedSocketImpl::DidSend(bool completed_synchronously,
                                      int result) {
   if (result < 0) {
-    // TODO(brettw) report error.
-    pending_send_ = NULL;
+    ShutdownSend();
+    // TODO(johnmccutchan): Notify socket direction is closed along with
+    // net_result and mojo_result.
     return;
   }
 
   // Take back ownership of the stream and free the IOBuffer.
   send_stream_ = pending_send_->Complete(result);
-  pending_send_ = NULL;
+  pending_send_ = nullptr;
 
   // Schedule more writing.
   if (completed_synchronously) {
@@ -162,6 +196,11 @@ void TCPConnectedSocketImpl::DidSend(bool completed_synchronously,
   } else {
     SendMore();
   }
+}
+
+void TCPConnectedSocketImpl::ShutdownSend() {
+  pending_send_ = nullptr;
+  send_stream_.reset();
 }
 
 }  // namespace mojo

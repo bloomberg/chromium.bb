@@ -30,12 +30,14 @@ class TCPConnectedSocketImpl : public InterfaceImpl<TCPConnectedSocket> {
   void ReceiveMore();
   void OnReceiveStreamReady(MojoResult result);
   void DidReceive(bool completed_synchronously, int result);
+  void ShutdownReceive();
 
   // "Writing" is reading from the Mojo send_stream and writing to the
   // TCPSocket.
   void SendMore();
   void OnSendStreamReady(MojoResult result);
   void DidSend(bool completed_asynchronously, int result);
+  void ShutdownSend();
 
   scoped_ptr<net::TCPSocket> socket_;
 
