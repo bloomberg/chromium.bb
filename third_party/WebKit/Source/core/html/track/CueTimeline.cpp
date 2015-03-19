@@ -132,6 +132,8 @@ void CueTimeline::updateActiveCues(double movieTime)
 
     HTMLMediaElement& mediaElement = this->mediaElement();
 
+    // https://html.spec.whatwg.org/#time-marches-on
+
     // 1 - Let current cues be a list of cues, initialized to contain all the
     // cues of all the hidden, showing, or showing by default text tracks of the
     // media element (not the disabled ones) whose start times are less than or

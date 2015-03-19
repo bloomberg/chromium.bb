@@ -3210,6 +3210,9 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
     honorUserPreferencesForAutomaticTextTrackSelection();
     m_processingPreferenceChange = false;
 
+    // As track visibility changed while m_processingPreferenceChange was set,
+    // there was no call to updateTextTrackDisplay(). This call is not in the
+    // spec, see the note in configureTextTrackDisplay().
     updateTextTrackDisplay();
 }
 
@@ -3348,6 +3351,13 @@ void HTMLMediaElement::configureTextTrackDisplay(VisibilityChangeAssumption assu
     mediaControls()->changedClosedCaptionsVisibility();
 
     cueTimeline().updateActiveCues(currentTime());
+
+    // Note: The "time marches on" algorithm (updateActiveCues) runs the "rules
+    // for updating the text track rendering" (updateTextTrackDisplay) only for
+    // "affected tracks", i.e. tracks where the the active cues have changed.
+    // This misses cues in tracks that changed mode between hidden and showing.
+    // This appears to be a spec bug, which we work around here:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28236
     updateTextTrackDisplay();
 }
 

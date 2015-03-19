@@ -61,6 +61,8 @@ void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement)
         return;
     }
 
+    // http://dev.w3.org/html5/webvtt/#dfn-rules-for-updating-the-display-of-webvtt-text-tracks
+
     // 1. If the media element is an audio element, or is another playback
     // mechanism with no rendering area, abort these steps. There is nothing to
     // render.
