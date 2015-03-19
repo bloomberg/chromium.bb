@@ -20,14 +20,15 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/gpu_timing.h"
 #include "ui/gl/scoped_make_current.h"
 
 namespace gpu {
 namespace {
 
-const int kUploadPerfWarmupRuns = 10;
-const int kUploadPerfTestRuns = 100;
+const int kUploadPerfWarmupRuns = 5;
+const int kUploadPerfTestRuns = 30;
 
 #define SHADER(Src) #Src
 
@@ -58,8 +59,8 @@ SHADER(
 );
 // clang-format on
 
-void CheckNoGlError() {
-  CHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
+void CheckNoGlError(const std::string& msg) {
+  CHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError()) << " " << msg;
 }
 
 // Utility function to compile a shader from a string.
@@ -88,6 +89,20 @@ GLuint LoadShader(const GLenum type, const char* const src) {
 int GLFormatBytePerPixel(GLenum format) {
   DCHECK(format == GL_RGBA || format == GL_LUMINANCE || format == GL_RED_EXT);
   return format == GL_RGBA ? 4 : 1;
+}
+
+GLenum GLFormatToStorageFormat(GLenum format) {
+  switch (format) {
+    case GL_RGBA:
+      return GL_RGBA8;
+    case GL_LUMINANCE:
+      return GL_LUMINANCE8;
+    case GL_RED_EXT:
+      return GL_R8;
+    default:
+      NOTREACHED();
+  }
+  return 0;
 }
 
 void GenerateTextureData(const gfx::Size& size,
@@ -227,7 +242,12 @@ class TextureUploadPerfTest : public testing::Test {
                           reinterpret_cast<void*>(sizeof(GLfloat) * 2));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
-    CheckNoGlError();
+    CheckNoGlError("glEnableVertexAttribArray");
+
+    has_texture_storage_ =
+        gl_context_->GetVersionInfo()->is_es3 ||
+        gl_context_->HasExtension("GL_EXT_texture_storage") ||
+        gl_context_->HasExtension("GL_ARB_texture_storage");
   }
 
   void GenerateVertexBuffer(const gfx::Size& size) {
@@ -249,7 +269,7 @@ class TextureUploadPerfTest : public testing::Test {
       right, top,    1.f, 1.f};
     // clang-format on
     glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
-    CheckNoGlError();
+    CheckNoGlError("glBufferData");
   }
 
   void TearDown() override {
@@ -262,7 +282,7 @@ class TextureUploadPerfTest : public testing::Test {
     glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
     glDeleteFramebuffersEXT(1, &framebuffer_object_);
     glDeleteTextures(1, &color_texture_);
-    CheckNoGlError();
+    CheckNoGlError("glDeleteTextures");
 
     gpu_timing_client_ = nullptr;
     gl_context_ = nullptr;
@@ -270,36 +290,57 @@ class TextureUploadPerfTest : public testing::Test {
   }
 
  protected:
-  GLuint CreateGLTexture() {
+  GLuint CreateGLTexture(const GLenum format,
+                         const gfx::Size& size,
+                         const bool specify_storage) {
     GLuint texture_id = 0;
     glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    if (specify_storage) {
+      if (has_texture_storage_) {
+        glTexStorage2DEXT(GL_TEXTURE_2D, 1, GLFormatToStorageFormat(format),
+                          size.width(), size.height());
+        CheckNoGlError("glTexStorage2DEXT");
+      } else {
+        glTexImage2D(GL_TEXTURE_2D, 0, format, size.width(), size.height(), 0,
+                     format, GL_UNSIGNED_BYTE, nullptr);
+        CheckNoGlError("glTexImage2D");
+      }
+    }
     return texture_id;
   }
 
   void UploadTexture(GLuint texture_id,
                      const gfx::Size& size,
                      const std::vector<uint8>& pixels,
-                     GLenum format) {
-    glTexImage2D(GL_TEXTURE_2D, 0, format, size.width(), size.height(), 0,
-                 format, GL_UNSIGNED_BYTE, &pixels[0]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    CheckNoGlError();
+                     GLenum format,
+                     const bool subimage) {
+    if (subimage) {
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, size.width(), size.height(),
+                      format, GL_UNSIGNED_BYTE, &pixels[0]);
+      CheckNoGlError("glTexSubImage2D");
+    } else {
+      glTexImage2D(GL_TEXTURE_2D, 0, format, size.width(), size.height(), 0,
+                   format, GL_UNSIGNED_BYTE, &pixels[0]);
+      CheckNoGlError("glTexImage2D");
+    }
   }
 
   // Upload and draw on the offscren surface.
   // Return a list of pair. Each pair describe a gl operation and the wall
   // time elapsed in milliseconds.
-  std::vector<Measurement> UploadAndDraw(const gfx::Size& size,
+  std::vector<Measurement> UploadAndDraw(GLuint texture_id,
+                                         const gfx::Size& size,
                                          const std::vector<uint8>& pixels,
-                                         const GLenum format) {
-    GLuint texture_id = CreateGLTexture();
+                                         const GLenum format,
+                                         const bool subimage) {
     MeasurementTimers tex_timers(gpu_timing_client_.get());
-    UploadTexture(texture_id, size, pixels, format);
+    UploadTexture(texture_id, size, pixels, format, subimage);
     tex_timers.Record();
 
     MeasurementTimers draw_timers(gpu_timing_client_.get());
@@ -309,15 +350,13 @@ class TextureUploadPerfTest : public testing::Test {
 
     MeasurementTimers finish_timers(gpu_timing_client_.get());
     glFinish();
-    CheckNoGlError();
+    CheckNoGlError("glFinish");
     finish_timers.Record();
-
-    glDeleteTextures(1, &texture_id);
 
     std::vector<uint8> pixels_rendered(size.GetArea() * 4);
     glReadPixels(0, 0, size.width(), size.height(), GL_RGBA, GL_UNSIGNED_BYTE,
                  &pixels_rendered[0]);
-    CheckNoGlError();
+    CheckNoGlError("glReadPixels");
     EXPECT_TRUE(
         CompareBufferToRGBABuffer(format, size, pixels, pixels_rendered))
         << "Format is: " << gfx::GLEnums::GetStringEnum(format);
@@ -327,7 +366,8 @@ class TextureUploadPerfTest : public testing::Test {
         gpu_timing_client_->IsAvailable() &&
         gpu_timing_client_->CheckAndResetTimerErrors();
     if (!gpu_timer_errors) {
-      measurements.push_back(tex_timers.GetAsMeasurement("teximage2d"));
+      measurements.push_back(tex_timers.GetAsMeasurement(
+          subimage ? "texsubimage2d" : "teximage2d"));
       measurements.push_back(draw_timers.GetAsMeasurement("drawarrays"));
       measurements.push_back(finish_timers.GetAsMeasurement("finish"));
     }
@@ -335,14 +375,16 @@ class TextureUploadPerfTest : public testing::Test {
   }
 
   void RunUploadAndDrawMultipleTimes(const gfx::Size& size,
-                                     const GLenum format) {
+                                     const GLenum format,
+                                     const bool subimage) {
     std::vector<uint8> pixels;
     base::SmallMap<std::map<std::string, Measurement>>
         aggregates;  // indexed by name
     int successful_runs = 0;
+    GLuint texture_id = CreateGLTexture(format, size, subimage);
     for (int i = 0; i < kUploadPerfWarmupRuns + kUploadPerfTestRuns; ++i) {
       GenerateTextureData(size, GLFormatBytePerPixel(format), i + 1, &pixels);
-      auto run = UploadAndDraw(size, pixels, format);
+      auto run = UploadAndDraw(texture_id, size, pixels, format, subimage);
       if (i < kUploadPerfWarmupRuns || !run.size()) {
         continue;
       }
@@ -353,8 +395,14 @@ class TextureUploadPerfTest : public testing::Test {
         aggregate.Increment(measurement);
       }
     }
+    glDeleteTextures(1, &texture_id);
+
     std::string graph_name = base::StringPrintf(
         "%d_%s", size.width(), gfx::GLEnums::GetStringEnum(format).c_str());
+    if (subimage) {
+      graph_name += "_sub";
+    }
+
     if (successful_runs) {
       for (const auto& entry : aggregates) {
         const auto m = entry.second.Divide(successful_runs);
@@ -378,11 +426,13 @@ class TextureUploadPerfTest : public testing::Test {
   GLint sampler_location_ = -1;
   GLint translation_location_ = -1;
   GLuint vertex_buffer_ = 0;
+
+  bool has_texture_storage_ = false;
 };
 
 // Perf test that generates, uploads and draws a texture on a surface repeatedly
 // and prints out aggregated measurements for all the runs.
-TEST_F(TextureUploadPerfTest, glTexImage2d) {
+TEST_F(TextureUploadPerfTest, upload) {
   int sizes[] = {21, 128, 256, 512, 1024};
   std::vector<GLenum> formats;
   formats.push_back(GL_RGBA);
@@ -390,21 +440,23 @@ TEST_F(TextureUploadPerfTest, glTexImage2d) {
   formats.push_back(GL_LUMINANCE);
 
   ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
-  bool has_texture_rg = gl_context_->HasExtension("GL_EXT_texture_rg") ||
-                        gl_context_->HasExtension("GL_ARB_texture_rg");
+  const bool has_texture_rg = gl_context_->HasExtension("GL_EXT_texture_rg") ||
+                              gl_context_->HasExtension("GL_ARB_texture_rg");
 
   if (has_texture_rg) {
     // Used as ResourceProvider::yuv_resource_format_ if
     // {ARB,EXT}_texture_rg are available.
     formats.push_back(GL_RED_EXT);
   }
+
   for (int side : sizes) {
     ASSERT_GE(fbo_size_.width(), side);
     ASSERT_GE(fbo_size_.height(), side);
     gfx::Size size(side, side);
     GenerateVertexBuffer(size);
     for (GLenum format : formats) {
-      RunUploadAndDrawMultipleTimes(size, format);
+      RunUploadAndDrawMultipleTimes(size, format, true);  // use glTexSubImage2D
+      RunUploadAndDrawMultipleTimes(size, format, false);  // use glTexImage2D
     }
   }
 }
@@ -433,12 +485,12 @@ TEST_F(TextureUploadPerfTest, renaming) {
                                 gfx::Vector2dF(1.f, 0.f),
                                 gfx::Vector2dF(0.f, 1.f),
                                 gfx::Vector2dF(1.f, 1.f)};
-  GLuint texture_id = CreateGLTexture();
+  GLuint texture_id = CreateGLTexture(GL_RGBA, texture_size, true);
 
   MeasurementTimers upload_and_draw_timers(gpu_timing_client_.get());
 
   for (int i = 0; i < 4; ++i) {
-    UploadTexture(texture_id, texture_size, pixels[i % 4], GL_RGBA);
+    UploadTexture(texture_id, texture_size, pixels[i % 4], GL_RGBA, true);
     DCHECK_NE(-1, translation_location_);
     glUniform2f(translation_location_, positions[i % 4].x(),
                 positions[i % 4].y());
@@ -452,7 +504,7 @@ TEST_F(TextureUploadPerfTest, renaming) {
   upload_and_draw_timers.Record();
   MeasurementTimers finish_timers(gpu_timing_client_.get());
   glFinish();
-  CheckNoGlError();
+  CheckNoGlError("glFinish");
   finish_timers.Record();
 
   glDeleteTextures(1, &texture_id);
@@ -463,7 +515,7 @@ TEST_F(TextureUploadPerfTest, renaming) {
                  texture_size.height() * positions[i].y(), texture_size.width(),
                  texture_size.height(), GL_RGBA, GL_UNSIGNED_BYTE,
                  &pixels_rendered[0]);
-    CheckNoGlError();
+    CheckNoGlError("glReadPixels");
     ASSERT_EQ(pixels[i].size(), pixels_rendered.size());
     EXPECT_EQ(pixels[i], pixels_rendered);
   }
