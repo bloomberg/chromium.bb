@@ -95,7 +95,9 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
 }
 
 // Tests that tab capture video frames can be received in a VIDEO element.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, EndToEndWithoutRemoting) {
+// Disabled due to flakiness. http://crbug.com/468606.
+IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest,
+                       DISABLED_EndToEndWithoutRemoting) {
   if (IsTooIntensiveForThisPlatform()) {
     LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
     return;
@@ -299,16 +301,9 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
       << message_;
 }
 
-// Flaky on Windows: http://crbug.com/177163
-// Flaky on Linux ASan: http://crbug.com/468256
-#if (defined(OS_WIN) && !defined(NDEBUG)) || \
-    (defined(OS_LINUX) && defined(ADDRESS_SANITIZER))
-#define MAYBE_TabIndicator DISABLED_TabIndicator
-#else
-#define MAYBE_TabIndicator TabIndicator
-#endif
 // Tests that the tab indicator (in the tab strip) is shown during tab capture.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
+// Disabled due to flakiness. http://crbug.com/468608
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, DISABLED_TabIndicator) {
   ASSERT_EQ(TAB_MEDIA_STATE_NONE,
             chrome::GetTabMediaStateForContents(
                 browser()->tab_strip_model()->GetActiveWebContents()));
