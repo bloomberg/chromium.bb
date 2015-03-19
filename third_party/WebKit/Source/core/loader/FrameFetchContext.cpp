@@ -511,6 +511,14 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
             UseCounter::count(frame()->document(), UseCounter::RequestedSubresourceWithEmbeddedCredentials);
     }
 
+    // Measure the number of pages that load resources after a redirect
+    // when a CSP is active, to see if implementing CSP
+    // 'unsafe-redirect' is feasible.
+    if (csp && csp->isActive() && resourceRequest.frameType() != WebURLRequest::FrameTypeTopLevel && resourceRequest.frameType() != WebURLRequest::FrameTypeAuxiliary && redirectStatus == ContentSecurityPolicy::DidRedirect) {
+        ASSERT(frame()->document());
+        UseCounter::count(frame()->document(), UseCounter::ResourceLoadedAfterRedirectWithCSP);
+    }
+
     // Last of all, check for mixed content. We do this last so that when
     // folks block mixed content with a CSP policy, they don't get a warning.
     // They'll still get a warning in the console about CSP blocking the load.
