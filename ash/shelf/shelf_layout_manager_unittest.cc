@@ -1513,8 +1513,8 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->auto_hide_state());
 }
 
-// Makes sure shelf will be hidden when app list opens as shelf is in HIDDEN
-// state, and toggling app list won't change shelf visibility state.
+// Makes sure the shelf will be hidden when we have a fullscreen window, and it
+// will unhide when we open the app list.
 TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   Shell* shell = Shell::GetInstance();
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
@@ -1535,7 +1535,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   // Show app list.
   shell->ShowAppList(NULL);
   EXPECT_TRUE(shell->GetAppListTargetVisibility());
-  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
 
   // Hide app list.
   shell->DismissAppList();
