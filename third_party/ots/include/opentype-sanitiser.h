@@ -203,7 +203,6 @@ class OTSContext {
     //     partial output may have been written.
     //   input: the OpenType file
     //   length: the size, in bytes, of |input|
-    //   context: optional context that holds various OTS settings like user callbacks
     bool Process(OTSStream *output, const uint8_t *input, size_t length);
 
     // This function will be called when OTS is reporting an error.
@@ -221,10 +220,6 @@ class OTSContext {
 
 // For backward compatibility - remove once Chrome switches over to the new API.
 bool Process(OTSStream *output, const uint8_t *input, size_t length);
-
-// For backward compatibility - remove once https://codereview.chromium.org/774253008/
-// is submitted.
-void EnableWOFF2();
 
 }  // namespace ots
 
