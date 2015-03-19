@@ -147,7 +147,7 @@
 	surface is mapped.
 
 	Parent windows should be set on dialogs, toolboxes, or other
-	"auxilliary" surfaces, so that the parent is raised when the dialog
+	"auxiliary" surfaces, so that the parent is raised when the dialog
 	is raised.
       </description>
       <arg name="parent" type="object" interface="xdg_surface" allow-null="true"/>

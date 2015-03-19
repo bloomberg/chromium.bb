@@ -1032,7 +1032,7 @@ shm_surface_prepare(struct toysurface *base, int dx, int dy,
 	surface->dx = dx;
 	surface->dy = dy;
 
-	/* pick a free buffer, preferrably one that already has storage */
+	/* pick a free buffer, preferably one that already has storage */
 	for (i = 0; i < MAX_LEAVES; i++) {
 		if (surface->leaf[i].busy)
 			continue;

@@ -41,7 +41,7 @@
  *             that allows the calibration state to be stored in the ICC profile
  *  Output:    Physical port with a display attached, e.g. LVDS1
  *
- * As a CMF is probably something you don't want or need on an embeded install
+ * As a CMF is probably something you don't want or need on an embedded install
  * these functions will not be called if the icc_profile key is set for a
  * specific [output] section in weston.ini
  *

@@ -62,7 +62,7 @@
 	its own cursor and set wl_pointer.cursor(NULL).
       </description>
       <entry name="arbitrary_modes" value="1" summary="compositor is capable of almost any output mode"/>
-      <entry name="cursor_plane" value="2" summary="compositor has a seperate cursor plane"/>
+      <entry name="cursor_plane" value="2" summary="compositor has a separate cursor plane"/>
     </enum>
 
     <event name="capability">

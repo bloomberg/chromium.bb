@@ -16,7 +16,7 @@ IVI-shell contains two main features:
 
   http://projects.genivi.org/wayland-ivi-extension/
 
-- Extension protocal; ivi-application to tie wl_surface and a given ID.
+- Extension protocol; ivi-application to tie wl_surface and a given ID.
   With this ID, shell can identify which wl_surface is drawn by which
   application. In in-vehicle infortainment system, a shell has to update
   a property of a wl_surface. E.g. there may be a use case when vehicle

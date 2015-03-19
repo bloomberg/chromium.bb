@@ -593,7 +593,7 @@ enum weston_capability {
 	/* screencaptures need to be y-flipped */
 	WESTON_CAP_CAPTURE_YFLIP		= 0x0002,
 
-	/* backend/renderer has a seperate cursor plane */
+	/* backend/renderer has a separate cursor plane */
 	WESTON_CAP_CURSOR_PLANE			= 0x0004,
 
 	/* backend supports setting arbitrary resolutions */
