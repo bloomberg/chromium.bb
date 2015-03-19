@@ -6,17 +6,31 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_EMULATION_HANDLER_H_
 
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
+#include "content/browser/devtools/protocol/page_handler.h"
+#include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 
 namespace content {
+
+class RenderViewHostImpl;
+
 namespace devtools {
+
+namespace page { class PageHandler; }
+
 namespace emulation {
 
-class EmulationHandler {
+class EmulationHandler : public page::PageHandler::ScreencastListener {
  public:
   using Response = DevToolsProtocolClient::Response;
 
-  EmulationHandler();
-  virtual ~EmulationHandler();
+  explicit EmulationHandler(page::PageHandler* page_handler);
+  ~EmulationHandler() override;
+
+  // page::PageHandler::ScreencastListener implementation.
+  void ScreencastEnabledChanged() override;
+
+  void SetRenderViewHost(RenderViewHostImpl* host);
+  void Detached();
 
   Response SetGeolocationOverride(double* latitude,
                                   double* longitude,
@@ -37,9 +51,19 @@ class EmulationHandler {
                                     const double* optional_offset_y);
   Response ClearDeviceMetricsOverride();
 
-  void SetClient(scoped_ptr<DevToolsProtocolClient> client);
-
  private:
+  void UpdateTouchEventEmulationState();
+  void UpdateDeviceEmulationState();
+
+  bool touch_emulation_enabled_;
+  std::string touch_emulation_configuration_;
+
+  bool device_emulation_enabled_;
+  blink::WebDeviceEmulationParams device_emulation_params_;
+
+  page::PageHandler* page_handler_;
+  RenderViewHostImpl* host_;
+
   DISALLOW_COPY_AND_ASSIGN(EmulationHandler);
 };
 

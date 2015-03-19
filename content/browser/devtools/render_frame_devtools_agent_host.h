@@ -34,6 +34,7 @@ class PowerSaveBlockerImpl;
 
 namespace devtools {
 namespace dom { class DOMHandler; }
+namespace emulation { class EmulationHandler; }
 namespace input { class InputHandler; }
 namespace inspector { class InspectorHandler; }
 namespace network { class NetworkHandler; }
@@ -141,6 +142,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   scoped_ptr<devtools::service_worker::ServiceWorkerHandler>
       service_worker_handler_;
   scoped_ptr<devtools::tracing::TracingHandler> tracing_handler_;
+  scoped_ptr<devtools::emulation::EmulationHandler> emulation_handler_;
   scoped_ptr<DevToolsProtocolHandler> protocol_handler_;
   scoped_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)

@@ -13,6 +13,7 @@
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
+#include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/devtools/protocol/input_handler.h"
 #include "content/browser/devtools/protocol/inspector_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
@@ -144,6 +145,8 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(RenderFrameHost* rfh)
           new devtools::service_worker::ServiceWorkerHandler()),
       tracing_handler_(new devtools::tracing::TracingHandler(
           devtools::tracing::TracingHandler::Renderer)),
+      emulation_handler_(new devtools::emulation::EmulationHandler(
+          page_handler_.get())),
       protocol_handler_(new DevToolsProtocolHandler(
           base::Bind(&RenderFrameDevToolsAgentHost::DispatchOnInspectorFrontend,
                      base::Unretained(this)))),
@@ -151,6 +154,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(RenderFrameHost* rfh)
       reattaching_(false) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetDOMHandler(dom_handler_.get());
+  dispatcher->SetEmulationHandler(emulation_handler_.get());
   dispatcher->SetInputHandler(input_handler_.get());
   dispatcher->SetInspectorHandler(inspector_handler_.get());
   dispatcher->SetNetworkHandler(network_handler_.get());
@@ -240,6 +244,7 @@ void RenderFrameDevToolsAgentHost::OnClientDetached() {
 #if defined(OS_ANDROID)
   power_save_blocker_.reset();
 #endif
+  emulation_handler_->Detached();
   page_handler_->Detached();
   power_handler_->Detached();
   service_worker_handler_->Detached();
@@ -432,6 +437,7 @@ void RenderFrameDevToolsAgentHost::SetRenderFrameHost(RenderFrameHost* rfh) {
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       rfh->GetRenderViewHost());
   dom_handler_->SetRenderViewHost(rvh);
+  emulation_handler_->SetRenderViewHost(rvh);
   input_handler_->SetRenderViewHost(rvh);
   network_handler_->SetRenderViewHost(rvh);
   page_handler_->SetRenderViewHost(rvh);
@@ -453,6 +459,7 @@ void RenderFrameDevToolsAgentHost::ClearRenderFrameHost() {
       content::Source<RenderWidgetHost>(rvh));
   render_frame_host_ = nullptr;
   dom_handler_->SetRenderViewHost(nullptr);
+  emulation_handler_->SetRenderViewHost(nullptr);
   input_handler_->SetRenderViewHost(nullptr);
   network_handler_->SetRenderViewHost(nullptr);
   page_handler_->SetRenderViewHost(nullptr);

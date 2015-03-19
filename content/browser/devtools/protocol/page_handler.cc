@@ -121,6 +121,7 @@ PageHandler::PageHandler()
           &PageHandler::OnColorPicked, base::Unretained(this)))),
       frame_recorder_(new FrameRecorder()),
       host_(nullptr),
+      screencast_listener_(nullptr),
       weak_factory_(this) {
 }
 
@@ -177,6 +178,10 @@ void PageHandler::DidDetachInterstitialPage() {
   client_->InterstitialHidden(InterstitialHiddenParams::Create());
 }
 
+void PageHandler::SetScreencastListener(ScreencastListener* listener) {
+  screencast_listener_ = listener;
+}
+
 Response PageHandler::Enable() {
   enabled_ = true;
   return Response::FallThrough();
@@ -190,6 +195,8 @@ Response PageHandler::Disable() {
   UpdateTouchEventEmulationState();
   UpdateDeviceEmulationState();
   color_picker_->SetEnabled(false);
+  if (screencast_listener_)
+    screencast_listener_->ScreencastEnabledChanged();
   return Response::FallThrough();
 }
 
@@ -439,12 +446,16 @@ Response PageHandler::StartScreencast(const std::string* format,
     else
       host_->Send(new ViewMsg_ForceRedraw(host_->GetRoutingID(), 0));
   }
+  if (screencast_listener_)
+    screencast_listener_->ScreencastEnabledChanged();
   return Response::FallThrough();
 }
 
 Response PageHandler::StopScreencast() {
   screencast_enabled_ = false;
   UpdateTouchEventEmulationState();
+  if (screencast_listener_)
+    screencast_listener_->ScreencastEnabledChanged();
   return Response::FallThrough();
 }
 

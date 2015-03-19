@@ -4,48 +4,219 @@
 
 #include "content/browser/devtools/protocol/emulation_handler.h"
 
+#include "base/strings/string_number_conversions.h"
+#include "content/browser/geolocation/geolocation_service_context.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/view_messages.h"
+#include "content/public/common/url_constants.h"
+
 namespace content {
 namespace devtools {
 namespace emulation {
 
 using Response = DevToolsProtocolClient::Response;
 
-EmulationHandler::EmulationHandler() {
+namespace {
+
+ui::GestureProviderConfigType TouchEmulationConfigurationToType(
+    const std::string& protocol_value) {
+  ui::GestureProviderConfigType result =
+      ui::GestureProviderConfigType::CURRENT_PLATFORM;
+  if (protocol_value ==
+      set_touch_emulation_enabled::kConfigurationMobile) {
+    result = ui::GestureProviderConfigType::GENERIC_MOBILE;
+  }
+  if (protocol_value ==
+      set_touch_emulation_enabled::kConfigurationDesktop) {
+    result = ui::GestureProviderConfigType::GENERIC_DESKTOP;
+  }
+  return result;
+}
+
+}  // namespace
+
+EmulationHandler::EmulationHandler(page::PageHandler* page_handler)
+    : touch_emulation_enabled_(false),
+      device_emulation_enabled_(false),
+      page_handler_(page_handler),
+      host_(nullptr)
+{
+  page_handler->SetScreencastListener(this);
 }
 
 EmulationHandler::~EmulationHandler() {
 }
 
-void EmulationHandler::SetClient(scoped_ptr<DevToolsProtocolClient> client) {
+void EmulationHandler::ScreencastEnabledChanged() {
+   UpdateTouchEventEmulationState();
+}
+
+void EmulationHandler::SetRenderViewHost(RenderViewHostImpl* host) {
+  if (host_ == host)
+    return;
+
+  host_ = host;
+  UpdateTouchEventEmulationState();
+  UpdateDeviceEmulationState();
+}
+
+void EmulationHandler::Detached() {
+  touch_emulation_enabled_ = false;
+  device_emulation_enabled_ = false;
+  UpdateTouchEventEmulationState();
+  UpdateDeviceEmulationState();
 }
 
 Response EmulationHandler::SetGeolocationOverride(
     double* latitude, double* longitude, double* accuracy) {
-  return Response::InternalError("Not implemented");
+  if (!host_)
+    return Response::InternalError("Could not connect to view");
+
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderViewHost(host_));
+  if (!web_contents)
+    return Response::InternalError("No WebContents to override");
+
+  GeolocationServiceContext* geolocation_context =
+      web_contents->GetGeolocationServiceContext();
+  scoped_ptr<Geoposition> geoposition(new Geoposition());
+  if (latitude && longitude && accuracy) {
+    geoposition->latitude = *latitude;
+    geoposition->longitude = *longitude;
+    geoposition->accuracy = *accuracy;
+    geoposition->timestamp = base::Time::Now();
+    if (!geoposition->Validate()) {
+      return Response::InternalError("Invalid geolocation");
+    }
+  } else {
+    geoposition->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+  }
+  geolocation_context->SetOverride(geoposition.Pass());
+  return Response::OK();
 }
 
 Response EmulationHandler::ClearGeolocationOverride() {
-  return Response::InternalError("Not implemented");
+  if (!host_)
+    return Response::InternalError("Could not connect to view");
+
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderViewHost(host_));
+  if (!web_contents)
+    return Response::InternalError("No WebContents to override");
+
+  GeolocationServiceContext* geolocation_context =
+      web_contents->GetGeolocationServiceContext();
+  geolocation_context->ClearOverride();
+  return Response::OK();
 }
 
 Response EmulationHandler::SetTouchEmulationEnabled(
     bool enabled, const std::string* configuration) {
-  return Response::InternalError("Not implemented");
+  touch_emulation_enabled_ = enabled;
+  touch_emulation_configuration_ =
+      configuration ? *configuration : std::string();
+  UpdateTouchEventEmulationState();
+  return Response::FallThrough();
 }
 
 Response EmulationHandler::CanEmulate(bool* result) {
-  return Response::InternalError("Not implemented");
+#if defined(OS_ANDROID)
+  *result = false;
+#else
+  if (host_) {
+    if (WebContents* web_contents = WebContents::FromRenderViewHost(host_)) {
+      *result = web_contents->GetMainFrame()->GetRenderViewHost() == host_;
+#if defined(DEBUG_DEVTOOLS)
+      *result &= !web_contents->GetVisibleURL().SchemeIs(kChromeDevToolsScheme);
+#endif  // defined(DEBUG_DEVTOOLS)
+    } else {
+      *result = true;
+    }
+  } else {
+    *result = true;
+  }
+#endif  // defined(OS_ANDROID)
+  return Response::OK();
 }
 
 Response EmulationHandler::SetDeviceMetricsOverride(
     int width, int height, double device_scale_factor, bool mobile,
     bool fit_window, const double* optional_scale,
     const double* optional_offset_x, const double* optional_offset_y) {
-  return Response::InternalError("Not implemented");
+  const static int max_size = 10000000;
+  const static double max_scale = 10;
+
+  if (!host_)
+    return Response::InternalError("Could not connect to view");
+
+  if (width < 0 || height < 0 || width > max_size || height > max_size) {
+    return Response::InvalidParams(
+        "Width and height values must be positive, not greater than " +
+        base::IntToString(max_size));
+  }
+
+  if (device_scale_factor < 0)
+    return Response::InvalidParams("deviceScaleFactor must be non-negative");
+
+  if (optional_scale && (*optional_scale <= 0 || *optional_scale > max_scale)) {
+    return Response::InvalidParams(
+        "scale must be positive, not greater than " +
+        base::IntToString(max_scale));
+  }
+
+  blink::WebDeviceEmulationParams params;
+  params.screenPosition = mobile ? blink::WebDeviceEmulationParams::Mobile :
+      blink::WebDeviceEmulationParams::Desktop;
+  params.deviceScaleFactor = device_scale_factor;
+  params.viewSize = blink::WebSize(width, height);
+  params.fitToView = fit_window;
+  params.scale = optional_scale ? *optional_scale : 1;
+  params.offset = blink::WebFloatPoint(
+      optional_offset_x ? *optional_offset_x : 0.f,
+      optional_offset_y ? *optional_offset_y : 0.f);
+
+  if (device_emulation_enabled_ && params == device_emulation_params_)
+    return Response::OK();
+
+  device_emulation_enabled_ = true;
+  device_emulation_params_ = params;
+  UpdateDeviceEmulationState();
+  return Response::OK();
 }
 
 Response EmulationHandler::ClearDeviceMetricsOverride() {
-  return Response::InternalError("Not implemented");
+  if (!device_emulation_enabled_)
+    return Response::OK();
+
+  device_emulation_enabled_ = false;
+  UpdateDeviceEmulationState();
+  return Response::OK();
+}
+
+void EmulationHandler::UpdateTouchEventEmulationState() {
+  if (!host_)
+    return;
+  bool enabled = touch_emulation_enabled_ ||
+      page_handler_->screencast_enabled();
+  ui::GestureProviderConfigType config_type =
+      TouchEmulationConfigurationToType(touch_emulation_configuration_);
+  host_->SetTouchEventEmulationEnabled(enabled, config_type);
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      WebContents::FromRenderViewHost(host_));
+  if (web_contents)
+    web_contents->SetForceDisableOverscrollContent(enabled);
+}
+
+void EmulationHandler::UpdateDeviceEmulationState() {
+  if (!host_)
+    return;
+  if (device_emulation_enabled_) {
+    host_->Send(new ViewMsg_EnableDeviceEmulation(
+        host_->GetRoutingID(), device_emulation_params_));
+  } else {
+    host_->Send(new ViewMsg_DisableDeviceEmulation(host_->GetRoutingID()));
+  }
 }
 
 }  // namespace emulation

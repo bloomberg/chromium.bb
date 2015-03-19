@@ -30,6 +30,12 @@ class PageHandler {
  public:
   typedef DevToolsProtocolClient::Response Response;
 
+  class ScreencastListener {
+   public:
+    virtual ~ScreencastListener() { }
+    virtual void ScreencastEnabledChanged() = 0;
+  };
+
   PageHandler();
   virtual ~PageHandler();
 
@@ -40,6 +46,8 @@ class PageHandler {
   void OnVisibilityChanged(bool visible);
   void DidAttachInterstitialPage();
   void DidDetachInterstitialPage();
+  void SetScreencastListener(ScreencastListener* listener);
+  bool screencast_enabled() const { return enabled_ && screencast_enabled_; }
 
   Response Enable();
   Response Disable();
@@ -147,6 +155,7 @@ class PageHandler {
 
   RenderViewHostImpl* host_;
   scoped_ptr<Client> client_;
+  ScreencastListener* screencast_listener_;
   base::WeakPtrFactory<PageHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PageHandler);
