@@ -194,6 +194,7 @@ public:
 
     ScriptValueSerializer(SerializedScriptValueWriter&, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
     v8::Isolate* isolate() { return m_scriptState->isolate(); }
+    v8::Local<v8::Context> context() { return isolate()->GetCurrentContext(); }
 
     Status serialize(v8::Handle<v8::Value>);
     String errorMessage() { return m_errorMessage; }

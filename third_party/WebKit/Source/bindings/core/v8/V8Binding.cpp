@@ -870,7 +870,9 @@ PassRefPtr<JSONValue> v8ToJSONValue(v8::Isolate* isolate, v8::Handle<v8::Value> 
     if (value->IsObject()) {
         RefPtr<JSONObject> jsonObject = JSONObject::create();
         v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(value);
-        v8::Local<v8::Array> propertyNames = object->GetPropertyNames();
+        v8::Local<v8::Array> propertyNames;
+        if (!object->GetPropertyNames(isolate->GetCurrentContext()).ToLocal(&propertyNames))
+            return nullptr;
         uint32_t length = propertyNames->Length();
         for (uint32_t i = 0; i < length; i++) {
             v8::Local<v8::Value> name = propertyNames->Get(v8::Int32::New(isolate, i));

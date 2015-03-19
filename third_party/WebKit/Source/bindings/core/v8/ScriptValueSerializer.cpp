@@ -530,11 +530,8 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::AbstractObjectState::se
 ScriptValueSerializer::StateBase* ScriptValueSerializer::ObjectState::advance(ScriptValueSerializer& serializer)
 {
     if (m_propertyNames.IsEmpty()) {
-        m_propertyNames = composite()->GetPropertyNames();
-        if (StateBase* newState = serializer.checkException(this))
-            return newState;
-        if (m_propertyNames.IsEmpty())
-            return serializer.handleError(InputError, "Empty property names cannot be cloned.", nextState());
+        if (!composite()->GetPropertyNames(serializer.context()).ToLocal(&m_propertyNames))
+            return serializer.checkException(this);
     }
     return serializeProperties(false, serializer);
 }
@@ -945,9 +942,9 @@ bool ScriptValueSerializer::shouldSerializeDensely(uint32_t length, uint32_t pro
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::startArrayState(v8::Handle<v8::Array> array, ScriptValueSerializer::StateBase* next)
 {
-    v8::Handle<v8::Array> propertyNames = array->GetPropertyNames();
-    if (StateBase* newState = checkException(next))
-        return newState;
+    v8::Local<v8::Array> propertyNames;
+    if (!array->GetPropertyNames(context()).ToLocal(&propertyNames))
+        return checkException(next);
     uint32_t length = array->Length();
 
     if (shouldSerializeDensely(length, propertyNames->Length())) {

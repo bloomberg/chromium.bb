@@ -214,8 +214,8 @@ bool Dictionary::getOwnPropertiesAsStringHashMap(HashMap<String, String>& hashMa
     if (options.IsEmpty())
         return false;
 
-    v8::Local<v8::Array> properties = options->GetOwnPropertyNames();
-    if (properties.IsEmpty())
+    v8::Local<v8::Array> properties;
+    if (!options->GetOwnPropertyNames(v8Context()).ToLocal(&properties))
         return true;
     for (uint32_t i = 0; i < properties->Length(); ++i) {
         v8::Local<v8::String> key = properties->Get(i)->ToString(m_isolate);
