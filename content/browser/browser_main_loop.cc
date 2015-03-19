@@ -614,13 +614,6 @@ int BrowserMainLoop::PreCreateThreads() {
   }
 #endif
 
-#if !defined(OS_IOS) && (!defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID))
-  // Single-process is an unsupported and not fully tested mode, so
-  // don't enable it for official Chrome builds (except on Android).
-  if (parsed_command_line_.HasSwitch(switches::kSingleProcess))
-    RenderProcessHost::SetRunRendererInProcess(true);
-#endif
-
   // Need to initialize in-process GpuDataManager before creating threads.
   // It's unsafe to append the gpu command line switches to the global
   // CommandLine::ForCurrentProcess object after threads are created.
@@ -639,6 +632,13 @@ int BrowserMainLoop::PreCreateThreads() {
     if (initialize_gpu_data_manager)
       GpuDataManagerImpl::GetInstance()->Initialize();
   }
+
+#if !defined(OS_IOS) && (!defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID))
+  // Single-process is an unsupported and not fully tested mode, so
+  // don't enable it for official Chrome builds (except on Android).
+  if (parsed_command_line_.HasSwitch(switches::kSingleProcess))
+    RenderProcessHost::SetRunRendererInProcess(true);
+#endif
 
   return result_code_;
 }
