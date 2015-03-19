@@ -45,6 +45,8 @@ public:
 
     virtual const char* name() const override { return "LayoutEmbeddedObject"; }
 
+    const String& unavailablePluginReplacementText() const { return m_unavailablePluginReplacementText; }
+
 private:
     virtual void paintContents(const PaintInfo&, const LayoutPoint&) override final;
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) override final;
@@ -58,8 +60,6 @@ private:
     virtual LayerType layerTypeRequired() const override final;
 
     virtual bool scroll(ScrollDirection, ScrollGranularity, float multiplier) override final;
-
-    bool getReplacementTextGeometry(const LayoutPoint& accumulatedOffset, FloatRect& contentRect, Path&, FloatRect& replacementTextRect, Font&, TextRun&, float& textWidth) const;
 
     virtual CompositingReasons additionalCompositingReasons() const override;
 

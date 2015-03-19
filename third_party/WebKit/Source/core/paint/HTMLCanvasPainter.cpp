@@ -23,6 +23,10 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPo
     LayoutRect paintRect = m_layoutHTMLCanvas.replacedContentRect();
     paintRect.moveBy(paintOffset);
 
+    LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutHTMLCanvas, paintInfo.phase, contentRect);
+    if (drawingRecorder.canUseCachedDrawing())
+        return;
+
     bool clip = !contentRect.contains(paintRect);
     if (clip) {
         context->save();

@@ -524,7 +524,6 @@ public:
     virtual void paintObject(const PaintInfo&, const LayoutPoint&) { ASSERT_NOT_REACHED(); }
     virtual void paintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
     virtual void paintMask(const PaintInfo&, const LayoutPoint&);
-    virtual void paintClippingMask(const PaintInfo&, const LayoutPoint&);
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
     void logicalExtentAfterUpdatingLogicalWidth(const LayoutUnit& logicalTop, LogicalExtentComputedValues&);

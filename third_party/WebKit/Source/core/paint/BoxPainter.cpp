@@ -539,14 +539,20 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo, const LayoutRect& p
 
 void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&m_layoutBox) || m_layoutBox.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseClippingMask)
+    ASSERT(paintInfo.phase == PaintPhaseClippingMask);
+
+    if (!paintInfo.shouldPaintWithinRoot(&m_layoutBox) || m_layoutBox.style()->visibility() != VISIBLE)
         return;
 
     if (!m_layoutBox.layer() || m_layoutBox.layer()->compositingState() != PaintsIntoOwnBacking)
         return;
 
-    LayoutRect paintRect = LayoutRect(paintOffset, m_layoutBox.size());
-    paintInfo.context->fillRect(pixelSnappedIntRect(paintRect), Color::black);
+    IntRect paintRect = pixelSnappedIntRect(LayoutRect(paintOffset, m_layoutBox.size()));
+    LayoutObjectDrawingRecorder drawingRecorder(paintInfo.context, m_layoutBox, paintInfo.phase, paintRect);
+    if (drawingRecorder.canUseCachedDrawing())
+        return;
+
+    paintInfo.context->fillRect(paintRect, Color::black);
 }
 
 void BoxPainter::paintRootBackgroundColor(LayoutObject& obj, const PaintInfo& paintInfo, const LayoutRect& rect, const Color& bgColor)

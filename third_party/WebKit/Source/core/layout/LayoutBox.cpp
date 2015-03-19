@@ -1351,11 +1351,6 @@ void LayoutBox::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOf
     BoxPainter(*this).paintMask(paintInfo, paintOffset);
 }
 
-void LayoutBox::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    BoxPainter(*this).paintClippingMask(paintInfo, paintOffset);
-}
-
 void LayoutBox::imageChanged(WrappedImagePtr image, const IntRect*)
 {
     if (!parent())

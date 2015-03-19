@@ -22,6 +22,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext* context, DisplayItemClient dis
     , m_canUseCachedDrawing(false)
 #if ENABLE(ASSERT)
     , m_checkedCachedDrawing(false)
+    , m_displayItemPosition(RuntimeEnabledFeatures::slimmingPaintEnabled() ? m_context->displayItemList()->newPaintsSize() : 0)
 #endif
 {
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
@@ -76,6 +77,9 @@ DrawingRecorder::~DrawingRecorder()
     displayItem->setClientDebugString(m_clientDebugString);
 #endif
 
+#if ENABLE(ASSERT)
+    ASSERT(m_displayItemPosition == m_context->displayItemList()->newPaintsSize());
+#endif
     m_context->displayItemList()->add(displayItem.release());
 }
 

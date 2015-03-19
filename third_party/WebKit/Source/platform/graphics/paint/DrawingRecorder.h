@@ -43,6 +43,7 @@ private:
     bool m_canUseCachedDrawing;
 #if ENABLE(ASSERT)
     mutable bool m_checkedCachedDrawing;
+    size_t m_displayItemPosition;
 #endif
 #ifndef NDEBUG
     WTF::String m_clientDebugString;

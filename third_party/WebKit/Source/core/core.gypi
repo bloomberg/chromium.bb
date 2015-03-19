@@ -1821,6 +1821,8 @@
             'paint/DetailsMarkerPainter.h',
             'paint/EllipsisBoxPainter.cpp',
             'paint/EllipsisBoxPainter.h',
+            'paint/EmbeddedObjectPainter.cpp',
+            'paint/EmbeddedObjectPainter.h',
             'paint/FieldsetPainter.cpp',
             'paint/FieldsetPainter.h',
             'paint/FileUploadControlPainter.cpp',

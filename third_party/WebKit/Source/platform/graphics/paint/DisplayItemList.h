@@ -43,6 +43,10 @@ public:
     // Plays back the current PaintList() into the given context.
     void replay(GraphicsContext*);
 
+#if ENABLE(ASSERT)
+    size_t newPaintsSize() const { return m_newPaints.size(); }
+#endif
+
 #ifndef NDEBUG
     void showDebugData() const;
 #endif

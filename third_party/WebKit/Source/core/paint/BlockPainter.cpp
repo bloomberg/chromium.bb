@@ -191,9 +191,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     }
 
     if (paintPhase == PaintPhaseClippingMask && m_layoutBlock.style()->visibility() == VISIBLE) {
-        LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutBlock, paintPhase, bounds);
-        if (!recorder.canUseCachedDrawing())
-            m_layoutBlock.paintClippingMask(paintInfo, paintOffset);
+        BoxPainter(m_layoutBlock).paintClippingMask(paintInfo, paintOffset);
         return;
     }
 

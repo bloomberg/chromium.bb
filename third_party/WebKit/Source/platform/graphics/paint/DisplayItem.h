@@ -75,6 +75,7 @@ public:
         ScrollbarTickMark,
         ScrollbarVertical,
         SelectionGap,
+        SelectionTint,
         VideoBitmap,
         ViewBackground,
         WebPlugin,

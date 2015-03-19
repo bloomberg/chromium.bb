@@ -61,6 +61,7 @@ static WTF::String drawingTypeAsDebugString(DisplayItem::Type type)
     case DisplayItem::ScrollbarTickMark: return "DrawingScrollbarTickMark";
     case DisplayItem::ScrollbarVertical: return "DrawingScrollbarVertical";
     case DisplayItem::SelectionGap: return "DrawingSelectionGap";
+    case DisplayItem::SelectionTint: return "DrawingSelectionTint";
     case DisplayItem::VideoBitmap: return "DrawingVideoBitmap";
     case DisplayItem::ViewBackground: return "DrawingViewBackground";
     case DisplayItem::WebPlugin: return "DrawingWebPlugin";
