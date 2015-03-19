@@ -21,10 +21,10 @@ UNKNOWN_TYPE |  | Employee Number |  | _1-default
 UNKNOWN_TYPE | discount | % |  | _1-default
 UNKNOWN_TYPE | discount | % |  | _1-default
 UNKNOWN_TYPE |  | CREDIT CARD |  | _1-default
-UNKNOWN_TYPE |  | Card Number Information |  | _1-default
-UNKNOWN_TYPE |  |  |  | _1-default
-UNKNOWN_TYPE |  |  |  | _1-default
-UNKNOWN_TYPE | credit-ccv | Security Code Information |  | _1-default
+CREDIT_CARD_NUMBER |  | Card Number Information |  | _1-cc
+CREDIT_CARD_EXP_MONTH |  |  |  | _1-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR |  |  |  | _1-cc
+CREDIT_CARD_VERIFICATION_CODE | credit-ccv | Security Code Information |  | _1-cc
 UNKNOWN_TYPE |  | Yes, I would like to save my credit card information. | on | _1-default
 UNKNOWN_TYPE |  | BILL TO |  | _1-default
 NAME_FIRST |  | First Name |  | _1-default

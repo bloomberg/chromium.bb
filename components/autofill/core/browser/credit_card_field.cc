@@ -7,19 +7,48 @@
 #include <stddef.h>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_regex_constants.h"
+#include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_scanner.h"
 #include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
 
+namespace {
+
 // Credit card numbers are at most 19 digits in length.
 // [Ref: http://en.wikipedia.org/wiki/Bank_card_number]
-static const size_t kMaxValidCardNumberSize = 19;
+const size_t kMaxValidCardNumberSize = 19;
+
+// Look for the vector |regex_needles| in |haystack|. Returns true if a
+// consecutive section of |haystack| matches |regex_needles|.
+bool FindConsecutiveStrings(const std::vector<base::string16>& regex_needles,
+                            const std::vector<base::string16>& haystack) {
+  if (regex_needles.empty() ||
+      haystack.empty() ||
+      (haystack.size() < regex_needles.size()))
+    return false;
+
+  for (size_t i = 0; i < haystack.size() - regex_needles.size() + 1; ++i) {
+    for (size_t j = 0; j < regex_needles.size(); ++j) {
+      if (!MatchesPattern(haystack[i + j], regex_needles[j]))
+        break;
+
+      if (j == regex_needles.size() - 1)
+        return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 // static
 scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
@@ -157,6 +186,67 @@ scoped_ptr<FormField> CreditCardField::Parse(AutofillScanner* scanner) {
   return nullptr;
 }
 
+// static
+bool CreditCardField::LikelyCardMonthSelectField(AutofillScanner* scanner) {
+  if (scanner->IsEnd())
+    return false;
+
+  AutofillField* field = scanner->Cursor();
+  if (!MatchesFormControlType(field->form_control_type, MATCH_SELECT))
+    return false;
+
+  if (field->option_values.size() < 12 || field->option_values.size() > 13)
+    return false;
+
+  // Filter out years.
+  const base::string16 kNumericalYearRe =
+      base::ASCIIToUTF16("[1-9][0-9][0-9][0-9]");
+  for (const auto& value : field->option_values) {
+    if (MatchesPattern(value, kNumericalYearRe))
+      return false;
+  }
+  for (const auto& value : field->option_contents) {
+    if (MatchesPattern(value, kNumericalYearRe))
+      return false;
+  }
+
+  // Look for numerical months.
+  const base::string16 kNumericalMonthRe = base::ASCIIToUTF16("12");
+  if (MatchesPattern(field->option_values.back(), kNumericalMonthRe) ||
+      MatchesPattern(field->option_contents.back(), kNumericalMonthRe)) {
+    return true;
+  }
+
+  // Maybe do more matches here. e.g. look for (translated) December.
+
+  // Unsure? Return false.
+  return false;
+}
+
+// static
+bool CreditCardField::LikelyCardYearSelectField(AutofillScanner* scanner) {
+  if (scanner->IsEnd())
+    return false;
+
+  AutofillField* field = scanner->Cursor();
+  if (!MatchesFormControlType(field->form_control_type, MATCH_SELECT))
+    return false;
+
+  const base::Time time_now = base::Time::Now();
+  base::Time::Exploded time_exploded;
+  time_now.UTCExplode(&time_exploded);
+
+  const int kYearsToMatch = 3;
+  std::vector<base::string16> years_to_check;
+  for (int year = time_exploded.year;
+       year < time_exploded.year + kYearsToMatch;
+       ++year) {
+    years_to_check.push_back(base::IntToString16(year));
+  }
+  return (FindConsecutiveStrings(years_to_check, field->option_values) ||
+          FindConsecutiveStrings(years_to_check, field->option_contents));
+}
+
 CreditCardField::CreditCardField()
     : cardholder_(nullptr),
       cardholder_last_(nullptr),
@@ -215,8 +305,24 @@ bool CreditCardField::ParseExpirationDate(AutofillScanner* scanner) {
   if (expiration_month_ || expiration_date_)
     return false;
 
-  // First try to parse split month/year expiration fields.
+  // First try to parse split month/year expiration fields by looking for a
+  // pair of select fields that look like month/year.
   size_t month_year_saved_cursor = scanner->SaveCursor();
+
+  if (LikelyCardMonthSelectField(scanner)) {
+    expiration_month_ = scanner->Cursor();
+    scanner->Advance();
+    if (LikelyCardYearSelectField(scanner)) {
+      expiration_year_ = scanner->Cursor();
+      scanner->Advance();
+      return true;
+    }
+    expiration_month_ = nullptr;
+    expiration_year_ = nullptr;
+  }
+
+  // If that fails, do a general regex search.
+  scanner->RewindTo(month_year_saved_cursor);
   const int kMatchTelAndSelect = MATCH_DEFAULT | MATCH_TELEPHONE | MATCH_SELECT;
   if (ParseFieldSpecifics(scanner,
                           base::UTF8ToUTF16(kExpirationMonthRe),

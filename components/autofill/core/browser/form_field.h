@@ -83,6 +83,9 @@ class FormField {
                                 ServerFieldType type,
                                 ServerFieldTypeMap* map);
 
+  // Returns true iff |type| matches |match_type|.
+  static bool MatchesFormControlType(const std::string& type, int match_type);
+
   // Derived classes must implement this interface to supply field type
   // information.  |ParseFormFields| coordinates the parsing and extraction
   // of types from an input vector of |AutofillField| objects and delegates
@@ -119,9 +122,6 @@ class FormField {
   static void ParseFormFieldsPass(ParseFunction parse,
                                   std::vector<AutofillField*>* fields,
                                   ServerFieldTypeMap* map);
-
-  // Returns true iff |type| matches |match_type|.
-  static bool MatchesFormControlType(const std::string& type, int match_type);
 
   DISALLOW_COPY_AND_ASSIGN(FormField);
 };

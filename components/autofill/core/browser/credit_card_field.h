@@ -31,6 +31,15 @@ class CreditCardField : public FormField {
  private:
   friend class CreditCardFieldTest;
 
+  // Returns true if |scanner| points to a field that looks like a month
+  // <select>.
+  static bool LikelyCardMonthSelectField(AutofillScanner* scanner);
+
+  // Returns true if |scanner| points to a field that looks like a year
+  // <select> for a credit card. i.e. it contains the current year and
+  // the next few years.
+  static bool LikelyCardYearSelectField(AutofillScanner* scanner);
+
   CreditCardField();
 
   // Parses the expiration month/year/date fields. Returns true if it finds
