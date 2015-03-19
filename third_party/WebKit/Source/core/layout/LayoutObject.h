@@ -257,9 +257,16 @@ public:
 #endif
 
     // FIXME: This could be used when changing the size of a renderer without children to skip some invalidations.
-    bool rendererHasNoBoxEffect() const
+    // FIXME: This is incorrect for document element. Remove this when we enable slimming paint.
+    bool rendererHasNoBoxEffectObsolete() const
     {
         return !style()->hasVisualOverflowingEffect() && !style()->hasBorder() && !style()->hasBackground();
+    }
+
+    // Correct version of !rendererHasNoBoxEffectObsolete().
+    bool hasBoxEffect() const
+    {
+        return hasBoxDecorationBackground() || style()->hasVisualOverflowingEffect();
     }
 
     // Obtains the nearest enclosing block (including this block) that contributes a first-line style to our inline

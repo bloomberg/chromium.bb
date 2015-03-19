@@ -31,7 +31,7 @@ if (window.testRunner) {
             internals.startTrackingRepaints(document);
             repaintTest();
             document.body.offsetTop;
-            repaintRects += internals.layerTreeAsText(document, window.internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+            repaintRects += internals.layerTreeAsText(document, window.internals.LAYER_TREE_INCLUDES_REPAINT_RECTS | window.internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATION_OBJECTS);
             internals.stopTrackingRepaints(document);
         }
         testRunner.setCustomTextOutput(repaintRects);

@@ -627,7 +627,10 @@ bool LayoutObject::skipInvalidationWhenLaidOutChildren() const
     if (hasNonCompositedScrollbars())
         return false;
 
-    return rendererHasNoBoxEffect();
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled() && isDocumentElement())
+        return !hasBoxEffect();
+
+    return rendererHasNoBoxEffectObsolete();
 }
 
 LayoutBlock* LayoutObject::firstLineBlock() const
