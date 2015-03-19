@@ -265,6 +265,8 @@ class Brick(object):
 
 def IsLocator(name):
   """Returns True if name is a specific locator."""
+  if not name:
+    raise ValueError('Brick locator is empty')
   return name.startswith(_WORKSPACE_PREFIX) or name.startswith(_BOARD_PREFIX)
 
 
