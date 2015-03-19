@@ -149,8 +149,16 @@ importer.ImportController.prototype.onVolumeUnmounted_ = function(volumeId) {
   this.checkState_();
 };
 
-/** @private */
-importer.ImportController.prototype.onDirectoryChanged_ = function() {
+/**
+ * @param {!Event} event
+ * @private
+ */
+importer.ImportController.prototype.onDirectoryChanged_ = function(event) {
+  if (!event.previousDirEntry &&
+      event.newDirEntry &&
+      importer.isMediaDirectory(event.newDirEntry, this.environment_)) {
+    this.commandWidget_.setDetailsVisible(true);
+  }
   this.scanManager_.clearSelectionScan();
   if (this.isCurrentDirectoryScannable_()) {
     this.checkState_(
@@ -412,6 +420,13 @@ importer.CommandWidget.prototype.addClickListener;
 importer.CommandWidget.prototype.update;
 
 /**
+ * Directly sets the visibility of the details panel.
+ *
+ * @param {boolean} visible
+ */
+importer.CommandWidget.prototype.setDetailsVisible;
+
+/**
  * Toggles the visibility state of the details panel.
  */
 importer.CommandWidget.prototype.toggleDetails;
@@ -503,7 +518,7 @@ importer.RuntimeCommandWidget = function() {
 importer.RuntimeCommandWidget.prototype.onKeyDown_ = function(event) {
   switch (util.getKeyModifiers(event) + event.keyIdentifier) {
     case 'U+001B':
-      this.setDetailsVisible_(false);
+      this.setDetailsVisible(false);
   }
 };
 
@@ -574,7 +589,7 @@ importer.RuntimeCommandWidget.prototype.onButtonClicked_ =
 
 /** @override */
 importer.RuntimeCommandWidget.prototype.toggleDetails = function() {
-    this.setDetailsVisible_(this.detailsPanel_.className === 'hidden');
+    this.setDetailsVisible(this.detailsPanel_.className === 'hidden');
 };
 
 /** @override */
@@ -585,9 +600,8 @@ importer.RuntimeCommandWidget.prototype.setDetailsBannerVisible =
 
 /**
  * @param {boolean} visible
- * @private
  */
-importer.RuntimeCommandWidget.prototype.setDetailsVisible_ = function(visible) {
+importer.RuntimeCommandWidget.prototype.setDetailsVisible = function(visible) {
   if (visible) {
     this.detailsPanel_.hidden = false;
 
@@ -620,7 +634,7 @@ importer.RuntimeCommandWidget.prototype.onDetailsTransitionEnd_ =
 /** @private */
 importer.RuntimeCommandWidget.prototype.onDetailsFocusLost_ =
     function() {
-  this.setDetailsVisible_(false);
+  this.setDetailsVisible(false);
 };
 
 /** @override */
@@ -628,7 +642,7 @@ importer.RuntimeCommandWidget.prototype.update =
     function(activityState, opt_scan) {
   switch(activityState) {
     case importer.ActivityState.HIDDEN:
-      this.setDetailsVisible_(false);
+      this.setDetailsVisible(false);
 
       this.panelButton_.disabled = true;
 
@@ -642,7 +656,7 @@ importer.RuntimeCommandWidget.prototype.update =
 
     case importer.ActivityState.IMPORTING:
       console.assert(!!opt_scan, 'Scan not defined, but is required.');
-      this.setDetailsVisible_(false);
+      this.setDetailsVisible(false);
 
       this.mainButton_.setAttribute('title', strf(
           'CLOUD_IMPORT_TOOLTIP_IMPORTING',
@@ -911,7 +925,7 @@ importer.ControllerEnvironment.prototype.addVolumeUnmountListener;
 /**
  * Installs an 'directory-changed' listener. Listener is called when
  * the directory changed.
- * @param {function()} listener
+ * @param {function(!Event)} listener
  */
 importer.ControllerEnvironment.prototype.addDirectoryChangedListener;
 

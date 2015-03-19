@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/** @const {!Event} */
+var EMPTY_EVENT = new Event('directory-changed');
+
 /** @type {!MockVolumeManager} */
 var volumeManager;
 
@@ -78,7 +81,7 @@ function testClickToStartImport(callback) {
       new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
 
   // First we need to force the controller into a scanning state.
-  environment.directoryChangedListener_();
+  environment.directoryChangedListener_(EMPTY_EVENT);
 
   var promise = widget.updateResolver.promise.then(
           function() {
@@ -110,7 +113,7 @@ function testVolumeUnmount_InvalidatesScans(callback) {
       ],
       '/DCIM');
 
-  environment.directoryChangedListener_();
+  environment.directoryChangedListener_(EMPTY_EVENT);
   var promise = widget.updateResolver.promise.then(
           function() {
             // Reset the promise so we can wait on a second widget update.
@@ -120,7 +123,7 @@ function testVolumeUnmount_InvalidatesScans(callback) {
             // A fresh new scan should be started.
             environment.simulateUnmount();
 
-            environment.directoryChangedListener_();
+            environment.directoryChangedListener_(EMPTY_EVENT);
             // Return the new promise, so subsequent "thens" only
             // fire once the widget has been updated again.
             return widget.updateResolver.promise;
@@ -143,8 +146,50 @@ function testDirectoryChange_TriggersUpdate(callback) {
       ],
       '/DCIM');
 
-  environment.directoryChangedListener_();
+  environment.directoryChangedListener_(EMPTY_EVENT);
   reportPromise(widget.updateResolver.promise, callback);
+}
+
+function testDirectoryChange_DetailsPanelVisibility_InitialChangeDir() {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+      ],
+      '/DCIM');
+
+  var event = new Event('directory-changed');
+  event.newDirEntry = new MockDirectoryEntry(
+      new MockFileSystem('testFs'),
+      '/DCIM/');
+
+  environment.directoryChangedListener_(event);
+  assertTrue(widget.detailsVisible);
+}
+
+function testDirectoryChange_DetailsPanelVisibility_SubsequentChangeDir() {
+  var controller = createController(
+      VolumeManagerCommon.VolumeType.MTP,
+      'mtp-volume',
+      [
+        '/DCIM/',
+        '/DCIM/photos0/',
+        '/DCIM/photos0/IMG00001.jpg',
+      ],
+      '/DCIM');
+
+  var event = new Event('directory-changed');
+  event.newDirEntry = new MockDirectoryEntry(
+      new MockFileSystem('testFs'),
+      '/DCIM/');
+  // Any previous dir at all will skip the new window logic.
+  event.previousDirEntry = event.newDirEntry;
+
+  environment.directoryChangedListener_(event);
+  assertFalse(widget.detailsVisible);
 }
 
 function testSelectionChange_TriggersUpdate(callback) {
@@ -179,7 +224,7 @@ function testFinalizeScans_TriggersUpdate(callback) {
   mediaScanner.fileEntries.push(
       new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
 
-  environment.directoryChangedListener_();  // initiates a scan.
+  environment.directoryChangedListener_(EMPTY_EVENT);  // initiates a scan.
   widget.resetPromises();
   mediaScanner.finalizeScans();
 
@@ -221,7 +266,7 @@ function testClickDestination_ShowsDestinationAfterImportStarted(callback) {
       new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
 
   // First we need to force the controller into a scanning state.
-  environment.directoryChangedListener_();
+  environment.directoryChangedListener_(EMPTY_EVENT);
 
   var promise = widget.updateResolver.promise.then(
           function() {
@@ -363,7 +408,7 @@ TestControllerEnvironment = function(volumeInfo, directory) {
   /** @public {boolean} */
   this.isDriveMounted = true;
 
-  /** @private {number} */
+  /** @public {number} */
   this.freeStorageSpace = 123456789;  // bytes
 
   /** @public {!importer.Resolver} */
@@ -466,6 +511,9 @@ importer.TestCommandWidget = function() {
 
   /** @public {!importer.Resolver.<!importer.CommandUpdate>} */
   this.toggleDetailsResolver = new importer.Resolver();
+
+  /** @public {boolean} */
+  this.detailsVisible = false;
 };
 
 /** Resets the widget */
@@ -506,7 +554,13 @@ importer.TestCommandWidget.prototype.toggleDetails = function() {
   assertFalse(
       this.toggleDetailsResolver.settled,
       'Toggle details promise should not have been settled.');
+  this.setDetailsVisible(!this.detailsVisible);
   this.toggleDetailsResolver.resolve();
+};
+
+/** @override */
+importer.TestCommandWidget.prototype.setDetailsVisible = function(visible) {
+  this.detailsVisible = visible;
 };
 
 /** @override */

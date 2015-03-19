@@ -422,10 +422,10 @@ body.check-select #gear-button {
   border-radius: 2px;
   line-height: 1.5em;
   position: absolute;
-  right: 75px;  /* Positioned in relation to the cloud-import toolbar button */
+  right: 13px;  /* Positioned in relation to the cloud-import toolbar button */
   top: 38px;  /* Positioned just overlapping the top of the toolbar */
   transition: all 0.2s ease;
-  width: 250px;
+  width: 270px;
   z-index: 5;
 }
 
