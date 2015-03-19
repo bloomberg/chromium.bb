@@ -10,14 +10,18 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "base/values.h"
+#include "crypto/sha2.h"
 #include "media/midi/midi_port_info.h"
 
 namespace media {
@@ -38,6 +42,23 @@ const size_t kSendBufferSize = 256;
 //               hardcoding.
 const int kMinimumClientIdForCards = 16;
 
+// udev key constants.
+const char kSoundClass[] = "sound";
+const char kIdVendor[] = "ID_VENDOR";
+const char kIdVendorEnc[] = "ID_VENDOR_ENC";
+const char kIdVendorFromDatabase[] = "ID_VENDOR_FROM_DATABASE";
+const char kSysattrVendorName[] = "vendor_name";
+const char kIdVendorId[] = "ID_VENDOR_ID";
+const char kSysattrVendor[] = "vendor";
+const char kIdModelId[] = "ID_MODEL_ID";
+const char kSysattrModel[] = "model";
+const char kIdBus[] = "ID_BUS";
+const char kIdPath[] = "ID_PATH";
+const char kUsbInterfaceNum[] = "ID_USB_INTERFACE_NUM";
+
+// ALSA constants.
+const char kAlsaHw[] = "hw";
+
 // Constants for the capabilities we search for in inputs and outputs.
 // See http://www.alsa-project.org/alsa-doc/alsa-lib/seq.html.
 const unsigned int kRequiredInputPortCaps =
@@ -48,6 +69,25 @@ const unsigned int kRequiredOutputPortCaps =
 int AddrToInt(const snd_seq_addr_t* addr) {
   return (addr->client << 8) | addr->port;
 }
+
+// TODO(agoode): Move this to device/udev_linux.
+#if defined(USE_UDEV)
+const std::string UdevDeviceGetPropertyOrSysattr(
+    struct udev_device* udev_device,
+    const char* property_key,
+    const char* sysattr_key) {
+  // First try the property.
+  std::string value =
+      device::UdevDeviceGetPropertyValue(udev_device, property_key);
+
+  // If no property, look for sysattrs and walk up the parent devices too.
+  while (value.empty() && udev_device) {
+    value = device::UdevDeviceGetSysattrValue(udev_device, sysattr_key);
+    udev_device = device::udev_device_get_parent(udev_device);
+  }
+  return value;
+}
+#endif  // defined(USE_UDEV)
 
 }  // namespace
 
@@ -94,23 +134,19 @@ MidiManagerAlsa::~MidiManagerAlsa() {
 
   // Free the decoder.
   snd_midi_event_free(decoder_);
-
-  // Free the encoders.
-  for (EncoderList::iterator i = encoders_.begin(); i != encoders_.end(); ++i)
-    snd_midi_event_free(*i);
 }
 
 void MidiManagerAlsa::StartInitialization() {
   // TODO(agoode): Move off I/O thread. See http://crbug.com/374341.
 
   // Create client handles.
-  int err = snd_seq_open(&in_client_, "hw", SND_SEQ_OPEN_INPUT, 0);
+  int err = snd_seq_open(&in_client_, kAlsaHw, SND_SEQ_OPEN_INPUT, 0);
   if (err != 0) {
     VLOG(1) << "snd_seq_open fails: " << snd_strerror(err);
     return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
   }
   int in_client_id = snd_seq_client_id(in_client_);
-  err = snd_seq_open(&out_client_, "hw", SND_SEQ_OPEN_OUTPUT, 0);
+  err = snd_seq_open(&out_client_, kAlsaHw, SND_SEQ_OPEN_OUTPUT, 0);
   if (err != 0) {
     VLOG(1) << "snd_seq_open fails: " << snd_strerror(err);
     return CompleteInitialization(MIDI_INITIALIZATION_ERROR);
@@ -198,64 +234,102 @@ void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
                             base::Unretained(client), data.size()));
 }
 
-MidiManagerAlsa::MidiDevice::MidiDevice(const MidiManagerAlsa* outer,
-                                        const std::string& alsa_name,
-                                        const std::string& alsa_longname,
-                                        const std::string& alsa_driver,
-                                        int card_index)
-    : alsa_name_(alsa_name), alsa_driver_(alsa_driver) {
+MidiManagerAlsa::AlsaRawmidi::AlsaRawmidi(const MidiManagerAlsa* outer,
+                                          const std::string& alsa_name,
+                                          const std::string& alsa_longname,
+                                          const std::string& alsa_driver,
+                                          int card_index)
+    : alsa_name_(alsa_name),
+      alsa_longname_(alsa_longname),
+      alsa_driver_(alsa_driver) {
   // Get udev properties if available.
-  std::string udev_id_vendor;
-  std::string udev_id_vendor_id;
-  std::string udev_id_vendor_from_database;
+  std::string vendor;
+  std::string vendor_from_database;
 
 #if defined(USE_UDEV)
   const std::string sysname = base::StringPrintf("card%i", card_index);
   device::ScopedUdevDevicePtr udev_device(
-      device::udev_device_new_from_subsystem_sysname(outer->udev_.get(),
-                                                     "sound", sysname.c_str()));
-  udev_id_vendor = device::UdevDecodeString(
-      device::UdevDeviceGetPropertyValue(udev_device.get(), "ID_VENDOR_ENC"));
-  udev_id_vendor_id =
-      device::UdevDeviceGetPropertyValue(udev_device.get(), "ID_VENDOR_ID");
-  udev_id_vendor_from_database = device::UdevDeviceGetPropertyValue(
-      udev_device.get(), "ID_VENDOR_FROM_DATABASE");
+      device::udev_device_new_from_subsystem_sysname(
+          outer->udev_.get(), kSoundClass, sysname.c_str()));
 
-  udev_id_path_ =
-      device::UdevDeviceGetPropertyValue(udev_device.get(), "ID_PATH");
-  udev_id_id_ = device::UdevDeviceGetPropertyValue(udev_device.get(), "ID_ID");
+  // TODO(agoode): Move this to a new utility class in device/udev_linux?
+
+  // Try to get the vendor string. Sometimes it is encoded.
+  vendor = device::UdevDecodeString(
+      device::UdevDeviceGetPropertyValue(udev_device.get(), kIdVendorEnc));
+  // Sometimes it is not encoded.
+  if (vendor.empty())
+    UdevDeviceGetPropertyOrSysattr(udev_device.get(), kIdVendor,
+                                   kSysattrVendorName);
+  // Also get the vendor string from the hardware database.
+  vendor_from_database = device::UdevDeviceGetPropertyValue(
+      udev_device.get(), kIdVendorFromDatabase);
+
+  // Get the device path.
+  path_ = device::UdevDeviceGetPropertyValue(udev_device.get(), kIdPath);
+
+  // Get the bus.
+  bus_ = device::UdevDeviceGetPropertyValue(udev_device.get(), kIdBus);
+
+  // Get the vendor id, by either property or sysattr.
+  vendor_id_ = UdevDeviceGetPropertyOrSysattr(udev_device.get(), kIdVendorId,
+                                              kSysattrVendor);
+
+  // Get the model id, by either property or sysattr.
+  model_id_ = UdevDeviceGetPropertyOrSysattr(udev_device.get(), kIdModelId,
+                                             kSysattrModel);
+
+  // Get the usb interface number.
+  usb_interface_num_ =
+      device::UdevDeviceGetPropertyValue(udev_device.get(), kUsbInterfaceNum);
 #endif  // defined(USE_UDEV)
 
-  manufacturer_ = ExtractManufacturerString(udev_id_vendor, udev_id_vendor_id,
-                                            udev_id_vendor_from_database,
-                                            alsa_name, alsa_longname);
+  manufacturer_ = ExtractManufacturerString(
+      vendor, vendor_id_, vendor_from_database, alsa_name, alsa_longname);
 }
 
-MidiManagerAlsa::MidiDevice::~MidiDevice() {
+MidiManagerAlsa::AlsaRawmidi::~AlsaRawmidi() {
 }
 
-const std::string MidiManagerAlsa::MidiDevice::alsa_name() const {
+const std::string MidiManagerAlsa::AlsaRawmidi::alsa_name() const {
   return alsa_name_;
 }
 
-const std::string MidiManagerAlsa::MidiDevice::manufacturer() const {
+const std::string MidiManagerAlsa::AlsaRawmidi::alsa_longname() const {
+  return alsa_longname_;
+}
+
+const std::string MidiManagerAlsa::AlsaRawmidi::manufacturer() const {
   return manufacturer_;
 }
 
-const std::string MidiManagerAlsa::MidiDevice::alsa_driver() const {
+const std::string MidiManagerAlsa::AlsaRawmidi::alsa_driver() const {
   return alsa_driver_;
 }
 
-const std::string MidiManagerAlsa::MidiDevice::udev_id_path() const {
-  return udev_id_path_;
+const std::string MidiManagerAlsa::AlsaRawmidi::path() const {
+  return path_;
 }
 
-const std::string MidiManagerAlsa::MidiDevice::udev_id_id() const {
-  return udev_id_id_;
+const std::string MidiManagerAlsa::AlsaRawmidi::bus() const {
+  return bus_;
+}
+
+const std::string MidiManagerAlsa::AlsaRawmidi::vendor_id() const {
+  return vendor_id_;
+}
+
+const std::string MidiManagerAlsa::AlsaRawmidi::id() const {
+  std::string id = vendor_id_;
+  if (!model_id_.empty())
+    id += ":" + model_id_;
+  if (!usb_interface_num_.empty())
+    id += ":" + usb_interface_num_;
+  return id;
 }
 
 // static
-std::string MidiManagerAlsa::MidiDevice::ExtractManufacturerString(
+std::string MidiManagerAlsa::AlsaRawmidi::ExtractManufacturerString(
     const std::string& udev_id_vendor,
     const std::string& udev_id_vendor_id,
     const std::string& udev_id_vendor_from_database,
@@ -263,12 +337,12 @@ std::string MidiManagerAlsa::MidiDevice::ExtractManufacturerString(
     const std::string& alsa_longname) {
   // Let's try to determine the manufacturer. Here is the ordered preference
   // in extraction:
-  //  1. Vendor name from the USB device iManufacturer string, from
-  //     the udev property ID_VENDOR_ENC.
+  //  1. Vendor name from the hardware device string, from udev properties
+  //     or sysattrs.
   //  2. Vendor name from the udev database (property ID_VENDOR_FROM_DATABASE).
   //  3. Heuristic from ALSA.
 
-  // Is the vendor string not just the USB vendor hex id?
+  // Is the vendor string not just the vendor hex id?
   if (udev_id_vendor != udev_id_vendor_id) {
     return udev_id_vendor;
   }
@@ -283,9 +357,9 @@ std::string MidiManagerAlsa::MidiDevice::ExtractManufacturerString(
   // "<manufacturer> <name> at <bus>". Otherwise, we give up to detect
   // a manufacturer name here.
   size_t at_index = alsa_longname.rfind(" at ");
-  if (std::string::npos != at_index) {
+  if (at_index && at_index != std::string::npos) {
     size_t name_index = alsa_longname.rfind(alsa_name, at_index - 1);
-    if (std::string::npos != name_index)
+    if (name_index && name_index != std::string::npos)
       return alsa_longname.substr(0, name_index - 1);
   }
 
@@ -293,8 +367,77 @@ std::string MidiManagerAlsa::MidiDevice::ExtractManufacturerString(
   return "";
 }
 
-ScopedVector<MidiManagerAlsa::MidiDevice> MidiManagerAlsa::AllMidiDevices() {
-  ScopedVector<MidiDevice> devices;
+MidiManagerAlsa::AlsaPortMetadata::AlsaPortMetadata(
+    const std::string& path,
+    const std::string& bus,
+    const std::string& id,
+    const snd_seq_addr_t* address,
+    const std::string& client_name,
+    const std::string& port_name,
+    const std::string& card_name,
+    const std::string& card_longname,
+    Type type)
+    : path_(path),
+      bus_(bus),
+      id_(id),
+      client_addr_(address->client),
+      port_addr_(address->port),
+      client_name_(client_name),
+      port_name_(port_name),
+      card_name_(card_name),
+      card_longname_(card_longname),
+      type_(type) {
+}
+
+MidiManagerAlsa::AlsaPortMetadata::~AlsaPortMetadata() {
+}
+
+scoped_ptr<base::Value> MidiManagerAlsa::AlsaPortMetadata::Value() const {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  value->SetString("path", path_);
+  value->SetString("bus", bus_);
+  value->SetString("id", id_);
+  value->SetInteger("clientAddr", client_addr_);
+  value->SetInteger("portAddr", port_addr_);
+  value->SetString("clientName", client_name_);
+  value->SetString("portName", port_name_);
+  value->SetString("cardName", card_name_);
+  value->SetString("cardLongname", card_longname_);
+  std::string type;
+  switch (type_) {
+    case Type::kInput:
+      type = "input";
+      break;
+
+    case Type::kOutput:
+      type = "output";
+      break;
+  }
+  value->SetString("type", type);
+
+  return scoped_ptr<base::Value>(value).Pass();
+}
+
+std::string MidiManagerAlsa::AlsaPortMetadata::JSONValue() const {
+  std::string json;
+  JSONStringValueSerializer serializer(&json);
+  serializer.Serialize(*Value().get());
+  return json;
+}
+
+// TODO(agoode): Do not use SHA256 here. Instead store a persistent
+//               mapping and just use a UUID or other random string.
+//               http://crbug.com/465320
+std::string MidiManagerAlsa::AlsaPortMetadata::OpaqueKey() const {
+  uint8 hash[crypto::kSHA256Length];
+  crypto::SHA256HashString(JSONValue(), &hash, sizeof(hash));
+  return base::HexEncode(&hash, sizeof(hash));
+}
+
+// TODO(agoode): Add a client->card/rawmidi mapping to the kernel to avoid
+//               needing to probe in this way.
+ScopedVector<MidiManagerAlsa::AlsaRawmidi> MidiManagerAlsa::AllAlsaRawmidis() {
+  ScopedVector<AlsaRawmidi> devices;
   snd_ctl_card_info_t* card;
   snd_rawmidi_info_t* midi_out;
   snd_rawmidi_info_t* midi_in;
@@ -315,7 +458,7 @@ ScopedVector<MidiManagerAlsa::MidiDevice> MidiManagerAlsa::AllMidiDevices() {
       snd_ctl_close(handle);
       continue;
     }
-    // Enumerate any rawmidi devices (not subdevices) and extract MidiDevice.
+    // Enumerate any rawmidi devices (not subdevices) and extract AlsaRawmidi.
     for (int device = -1;
          !snd_ctl_rawmidi_next_device(handle, &device) && device >= 0;) {
       bool output;
@@ -333,10 +476,10 @@ ScopedVector<MidiManagerAlsa::MidiDevice> MidiManagerAlsa::AllMidiDevices() {
 
       // Compute and save ALSA and udev properties.
       snd_rawmidi_info_t* midi = midi_out ? midi_out : midi_in;
-      devices.push_back(new MidiDevice(this, snd_rawmidi_info_get_name(midi),
-                                       snd_ctl_card_info_get_longname(card),
-                                       snd_ctl_card_info_get_driver(card),
-                                       card_index));
+      devices.push_back(new AlsaRawmidi(this, snd_rawmidi_info_get_name(midi),
+                                        snd_ctl_card_info_get_longname(card),
+                                        snd_ctl_card_info_get_driver(card),
+                                        card_index));
     }
     snd_ctl_close(handle);
   }
@@ -345,7 +488,7 @@ ScopedVector<MidiManagerAlsa::MidiDevice> MidiManagerAlsa::AllMidiDevices() {
 }
 
 void MidiManagerAlsa::EnumeratePorts() {
-  ScopedVector<MidiDevice> devices = AllMidiDevices();
+  ScopedVector<AlsaRawmidi> devices = AllAlsaRawmidis();
 
   snd_seq_port_subscribe_t* subs;
   snd_seq_port_subscribe_alloca(&subs);
@@ -376,21 +519,29 @@ void MidiManagerAlsa::EnumeratePorts() {
 
     std::string manufacturer;
     std::string driver;
-    std::string udev_id_path;
-    std::string udev_id_id;
+    std::string path;
+    std::string bus;
+    std::string vendor_id;
+    std::string id;
+    std::string card_name;
+    std::string card_longname;
 
-    // Join kernel clients against the list of MidiDevices.
+    // Join kernel clients against the list of AlsaRawmidis.
     // In the current ALSA kernel implementation, kernel clients match the
     // kernel devices in the same order, for devices with client_id over
     // kMinimumClientIdForCards.
     if ((snd_seq_client_info_get_type(client_info) == SND_SEQ_KERNEL_CLIENT) &&
         (current_device < devices.size()) &&
         (client_id >= kMinimumClientIdForCards)) {
-      const MidiDevice* device = devices[current_device];
+      const AlsaRawmidi* device = devices[current_device];
       manufacturer = device->manufacturer();
       driver = device->alsa_driver();
-      udev_id_path = device->udev_id_path();
-      udev_id_id = device->udev_id_id();
+      path = device->path();
+      bus = device->bus();
+      vendor_id = device->vendor_id();
+      id = device->id();
+      card_name = device->alsa_name();
+      card_longname = device->alsa_longname();
       current_device++;
     }
     // Enumerate ports.
@@ -399,9 +550,6 @@ void MidiManagerAlsa::EnumeratePorts() {
       if (port_type & SND_SEQ_PORT_TYPE_MIDI_GENERIC) {
         const snd_seq_addr_t* addr = snd_seq_port_info_get_addr(port_info);
         const std::string name = snd_seq_port_info_get_name(port_info);
-        const std::string id_suffix =
-            base::StringPrintf("%d:%d/%s/%s", addr->client, addr->port,
-                               udev_id_path.c_str(), udev_id_id.c_str());
         std::string version;
         if (!driver.empty()) {
           version = driver + " / ";
@@ -424,9 +572,12 @@ void MidiManagerAlsa::EnumeratePorts() {
             VLOG(1) << "snd_seq_subscribe_port fails: " << snd_strerror(err);
           } else {
             source_map_[AddrToInt(sender)] = current_input++;
-            AddInputPort(
-                MidiPortInfo(base::StringPrintf("input/%s", id_suffix.c_str()),
-                             manufacturer, name, version, MIDI_PORT_OPENED));
+            const AlsaPortMetadata metadata(path, bus, id, addr, client_name,
+                                            name, card_name, card_longname,
+                                            AlsaPortMetadata::Type::kInput);
+            const std::string id = metadata.OpaqueKey();
+            AddInputPort(MidiPortInfo(id.c_str(), manufacturer, name, version,
+                                      MIDI_PORT_OPENED));
           }
         }
         if ((caps & kRequiredOutputPortCaps) == kRequiredOutputPortCaps) {
@@ -456,13 +607,13 @@ void MidiManagerAlsa::EnumeratePorts() {
             VLOG(1) << "snd_seq_subscribe_port fails: " << snd_strerror(err);
             snd_seq_delete_simple_port(out_client_, out_port);
           } else {
-            snd_midi_event_t* encoder;
-            snd_midi_event_new(kSendBufferSize, &encoder);
-            encoders_.push_back(encoder);
             out_ports_.push_back(out_port);
-            AddOutputPort(
-                MidiPortInfo(base::StringPrintf("output/%s", id_suffix.c_str()),
-                             manufacturer, name, version, MIDI_PORT_OPENED));
+            const AlsaPortMetadata metadata(path, bus, id, addr, client_name,
+                                            name, card_name, card_longname,
+                                            AlsaPortMetadata::Type::kOutput);
+            const std::string id = metadata.OpaqueKey();
+            AddOutputPort(MidiPortInfo(id.c_str(), manufacturer, name, version,
+                                       MIDI_PORT_OPENED));
           }
         }
       }
@@ -474,7 +625,8 @@ void MidiManagerAlsa::SendMidiData(uint32 port_index,
                                    const std::vector<uint8>& data) {
   DCHECK(send_thread_.message_loop_proxy()->BelongsToCurrentThread());
 
-  snd_midi_event_t* encoder = encoders_[port_index];
+  snd_midi_event_t* encoder;
+  snd_midi_event_new(kSendBufferSize, &encoder);
   for (unsigned int i = 0; i < data.size(); i++) {
     snd_seq_event_t event;
     int result = snd_midi_event_encode_byte(encoder, data[i], &event);
@@ -486,6 +638,7 @@ void MidiManagerAlsa::SendMidiData(uint32 port_index,
       snd_seq_event_output_direct(out_client_, &event);
     }
   }
+  snd_midi_event_free(encoder);
 }
 
 void MidiManagerAlsa::ScheduleEventLoop() {
