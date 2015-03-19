@@ -204,11 +204,18 @@ scoped_ptr<ScriptInjection> UserScriptSet::GetInjectionForScript(
   scoped_ptr<ScriptInjector> injector(new UserScriptInjector(script,
                                                              this,
                                                              is_declarative));
-  if (injector->CanExecuteOnFrame(
-          injection_host.get(),
-          web_frame,
-          -1,  // Content scripts are not tab-specific.
-          web_frame->top()->document().url()) ==
+
+  blink::WebDocument top_document = web_frame->top()->document();
+  // This can be null if site isolation is turned on. The best we can do is to
+  // just give up - generally the wrong behavior, but better than crashing.
+  // TODO(kalman): Fix this properly by moving all security checks into the
+  // browser. See http://crbug.com/466373 for ongoing work here.
+  if (top_document.isNull())
+    return injection.Pass();
+
+  if (injector->CanExecuteOnFrame(injection_host.get(), web_frame,
+                                  -1,  // Content scripts are not tab-specific.
+                                  top_document.url()) ==
       PermissionsData::ACCESS_DENIED) {
     return injection.Pass();
   }
