@@ -549,6 +549,7 @@
       'common/crash_keys_unittest.cc',
       'common/favicon/fallback_icon_url_parser_unittest.cc',
       'common/favicon/favicon_url_parser_unittest.cc',
+      'common/favicon/large_icon_url_parser_unittest.cc',
       'common/ini_parser_unittest.cc',
       'common/instant_types_unittest.cc',
       'common/mac/cfbundle_blocker_unittest.mm',

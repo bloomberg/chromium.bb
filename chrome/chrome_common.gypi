@@ -55,6 +55,8 @@
       'common/favicon/fallback_icon_url_parser.h',
       'common/favicon/favicon_url_parser.cc',
       'common/favicon/favicon_url_parser.h',
+      'common/favicon/large_icon_url_parser.cc',
+      'common/favicon/large_icon_url_parser.h',
       'common/icon_with_badge_image_source.cc',
       'common/icon_with_badge_image_source.h',
       'common/ini_parser.cc',
