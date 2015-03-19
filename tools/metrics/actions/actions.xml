@@ -9112,27 +9112,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Options_NetworkAddVPNBuiltIn">
-  <owner>stevenjb@chromium.org</owner>
-  <description>
-    Settings: Internet connection: VPN dropdown: Show built-in dialog for adding
-    an OpenVPN or T2TP VPN.
-  </description>
-</action>
-
-<action name="Options_NetworkAddVPNThirdParty">
-  <owner>stevenjb@chromium.org</owner>
-  <description>
-    Settings: Internet connection: VPN dropdown: Show &quot;add network&quot; dialog for a third-party VPN provider.
-  </description>
-</action>
-
 <action name="Options_NetworkJoinOtherVPN">
   <owner>stevenjb@chromium.org</owner>
   <description>
     Settings: Internet connection: VPN dropdown: Join other
   </description>
-  <obsolete>Replaced by Options_NetworkAddVPNBuiltIn.</obsolete>
 </action>
 
 <action name="Options_NetworkJoinOtherWifi">

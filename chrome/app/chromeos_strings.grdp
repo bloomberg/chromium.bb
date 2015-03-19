@@ -1887,9 +1887,6 @@ Press any key to continue exploring.
     Remembered networks
 
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_ADD_VPN_TEMPLATE" desc="Template for constructing a menu item that will ask a given VPN provider to show its 'add network' dialog.">
-    Add <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>...
-  </message>
   <!-- Network state strings -->
   <message name="IDS_CHROMEOS_NETWORK_STATE_NOT_CONNECTED" desc="Displayed state for a network when not connected.">
     Not connected

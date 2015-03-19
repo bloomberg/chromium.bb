@@ -40,7 +40,7 @@ StringResource kStringResources[] = {
     {"useSharedProxies", IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES},
     {"addConnectionTitle", IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADD_CONNECTION},
     {"addConnectionWifi", IDS_OPTIONS_SETTINGS_ADD_CONNECTION_WIFI},
-    {"addConnectionVPNTemplate", IDS_OPTIONS_SETTINGS_ADD_VPN_TEMPLATE},
+    {"addConnectionVPN", IDS_STATUSBAR_NETWORK_ADD_VPN},
     {"otherCellularNetworks", IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS},
     {"enableDataRoaming", IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING},
     {"disableDataRoaming", IDS_OPTIONS_SETTINGS_DISABLE_DATA_ROAMING},

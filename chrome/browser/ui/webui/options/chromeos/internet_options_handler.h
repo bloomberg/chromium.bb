@@ -110,8 +110,7 @@ class InternetOptionsHandler : public ::options::OptionsPageUIHandler,
   const PrefService* GetPrefs() const;
 
   // Additional callbacks for managing networks.
-  void AddVPNConnection(const base::ListValue* args);
-  void AddNonVPNConnection(const base::ListValue* args);
+  void AddConnection(const base::ListValue* args);
   void ConfigureNetwork(const base::ListValue* args);
   void ActivateNetwork(const base::ListValue* args);
   void RemoveNetwork(const base::ListValue* args);
