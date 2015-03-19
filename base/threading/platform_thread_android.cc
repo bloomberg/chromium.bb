@@ -7,79 +7,56 @@
 #include <errno.h>
 #include <sys/prctl.h>
 #include <sys/resource.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "base/android/jni_android.h"
 #include "base/android/thread_utils.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/tracked_objects.h"
 #include "jni/ThreadUtils_jni.h"
 
 namespace base {
 
-namespace {
-int ThreadNiceValue(ThreadPriority priority) {
-  // These nice values are taken from Android, which uses nice
-  // values like linux, but defines some preset nice values.
-  //   Process.THREAD_PRIORITY_AUDIO = -16
-  //   Process.THREAD_PRIORITY_BACKGROUND = 10
-  //   Process.THREAD_PRIORITY_DEFAULT = 0;
-  //   Process.THREAD_PRIORITY_DISPLAY = -4;
-  //   Process.THREAD_PRIORITY_FOREGROUND = -2;
-  //   Process.THREAD_PRIORITY_LESS_FAVORABLE = 1;
-  //   Process.THREAD_PRIORITY_LOWEST = 19;
-  //   Process.THREAD_PRIORITY_MORE_FAVORABLE = -1;
-  //   Process.THREAD_PRIORITY_URGENT_AUDIO = -19;
-  //   Process.THREAD_PRIORITY_URGENT_DISPLAY = -8;
-  // We use -6 for display, but we may want to split this
-  // into urgent (-8) and non-urgent (-4).
-  static const int threadPriorityAudio = -16;
-  static const int threadPriorityBackground = 10;
-  static const int threadPriorityDefault = 0;
-  static const int threadPriorityDisplay = -6;
-  switch (priority) {
-    case kThreadPriority_RealtimeAudio:
-      return threadPriorityAudio;
-    case kThreadPriority_Background:
-      return threadPriorityBackground;
-    case kThreadPriority_Normal:
-      return threadPriorityDefault;
-    case kThreadPriority_Display:
-      return threadPriorityDisplay;
-    default:
-      NOTREACHED() << "Unknown priority.";
-      return 0;
-  }
-}
-} // namespace
+namespace internal {
 
-//static
-void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
-                                       ThreadPriority priority) {
+// These nice values are taken from Android, which uses nice values like linux,
+// but defines some preset nice values.
+//   Process.THREAD_PRIORITY_AUDIO = -16
+//   Process.THREAD_PRIORITY_BACKGROUND = 10
+//   Process.THREAD_PRIORITY_DEFAULT = 0;
+//   Process.THREAD_PRIORITY_DISPLAY = -4;
+//   Process.THREAD_PRIORITY_FOREGROUND = -2;
+//   Process.THREAD_PRIORITY_LESS_FAVORABLE = 1;
+//   Process.THREAD_PRIORITY_LOWEST = 19;
+//   Process.THREAD_PRIORITY_MORE_FAVORABLE = -1;
+//   Process.THREAD_PRIORITY_URGENT_AUDIO = -19;
+//   Process.THREAD_PRIORITY_URGENT_DISPLAY = -8;
+// We use -6 for display, but we may want to split this into urgent (-8) and
+// non-urgent (-4).
+const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
+    {kThreadPriority_RealtimeAudio, -16},
+    {kThreadPriority_Background, 10},
+    {kThreadPriority_Normal, 0},
+    {kThreadPriority_Display, -6},
+};
+
+bool HandleSetThreadPriorityForPlatform(PlatformThreadHandle handle,
+                                        ThreadPriority priority) {
   // On Android, we set the Audio priority through JNI as Audio priority
   // will also allow the process to run while it is backgrounded.
   if (priority == kThreadPriority_RealtimeAudio) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_ThreadUtils_setThreadPriorityAudio(env, PlatformThread::CurrentId());
-    return;
+    return true;
   }
-
-  // setpriority(2) should change the whole thread group's (i.e. process)
-  // priority. however, on linux it will only change the target thread's
-  // priority. see the bugs section in
-  // http://man7.org/linux/man-pages/man2/getpriority.2.html.
-  // we prefer using 0 rather than the current thread id since they are
-  // equivalent but it makes sandboxing easier (https://crbug.com/399473).
-  DCHECK_NE(handle.id_, kInvalidThreadId);
-  int kNiceSetting = ThreadNiceValue(priority);
-  const PlatformThreadId current_id = PlatformThread::CurrentId();
-  if (setpriority(PRIO_PROCESS,
-                  handle.id_ == current_id ? 0 : handle.id_,
-                  kNiceSetting)) {
-    LOG(ERROR) << "Failed to set nice value of thread to " << kNiceSetting;
-  }
+  return false;
 }
+
+}  // namespace internal
 
 void PlatformThread::SetName(const char* name) {
   ThreadIdNameManager::GetInstance()->SetName(CurrentId(), name);

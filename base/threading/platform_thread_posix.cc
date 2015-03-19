@@ -5,28 +5,25 @@
 #include "base/threading/platform_thread.h"
 
 #include <errno.h>
+#include <pthread.h>
 #include <sched.h>
+#include <sys/resource.h>
+#include <sys/time.h>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/safe_strerror_posix.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 
-#if defined(OS_MACOSX)
-#include <sys/resource.h>
-#include <algorithm>
-#endif
-
 #if defined(OS_LINUX)
-#include <sys/prctl.h>
-#include <sys/resource.h>
 #include <sys/syscall.h>
-#include <sys/time.h>
-#include <unistd.h>
+#elif defined(OS_ANDROID)
+#include <sys/types.h>
 #endif
 
 namespace base {
@@ -234,5 +231,32 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   base::ThreadRestrictions::AssertIOAllowed();
   CHECK_EQ(0, pthread_join(thread_handle.handle_, NULL));
 }
+
+// Mac has its own SetThreadPriority() implementation.
+#if !defined(OS_MACOSX)
+// static
+void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
+                                       ThreadPriority priority) {
+#if !defined(OS_NACL)
+  if (internal::HandleSetThreadPriorityForPlatform(handle, priority))
+    return;
+
+  // setpriority(2) should change the whole thread group's (i.e. process)
+  // priority. However, as stated in the bugs section of
+  // http://man7.org/linux/man-pages/man2/getpriority.2.html: "under the current
+  // Linux/NPTL implementation of POSIX threads, the nice value is a per-thread
+  // attribute". Also, 0 is prefered to the current thread id since it is
+  // equivalent but makes sandboxing easier (https://crbug.com/399473).
+  DCHECK_NE(handle.id_, kInvalidThreadId);
+  const int nice_setting = internal::ThreadPriorityToNiceValue(priority);
+  const PlatformThreadId current_id = PlatformThread::CurrentId();
+  if (setpriority(PRIO_PROCESS, handle.id_ == current_id ? 0 : handle.id_,
+                  nice_setting)) {
+    DVPLOG(1) << "Failed to set nice value of thread (" << handle.id_ << ") to "
+              << nice_setting;
+  }
+#endif  // !defined(OS_NACL)
+}
+#endif  // !defined(OS_MACOSX)
 
 }  // namespace base

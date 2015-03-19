@@ -600,6 +600,8 @@
           'threading/non_thread_safe_impl.h',
           'threading/platform_thread.h',
           'threading/platform_thread_android.cc',
+          'threading/platform_thread_internal_posix.cc',
+          'threading/platform_thread_internal_posix.h',
           'threading/platform_thread_linux.cc',
           'threading/platform_thread_mac.mm',
           'threading/platform_thread_posix.cc',
@@ -898,6 +900,7 @@
               ['include', '^process/.*_ios\.(cc|mm)$'],
               ['include', '^process/memory_stubs\.cc$'],
               ['include', '^process/process_handle_posix\.cc$'],
+              ['exclude', '^threading/platform_thread_internal_posix\\.(h|cc)'],
               ['exclude', 'files/file_path_watcher_fsevents.cc'],
               ['exclude', 'files/file_path_watcher_fsevents.h'],
               ['include', 'files/file_path_watcher_mac.cc'],
@@ -965,10 +968,11 @@
           }],
           ['(OS == "mac" or OS == "ios") and >(nacl_untrusted_build)==0', {
             'sources/': [
-              ['exclude', '^files/file_path_watcher_stub\\.cc$'],
               ['exclude', '^base_paths_posix\\.cc$'],
+              ['exclude', '^files/file_path_watcher_stub\\.cc$'],
               ['exclude', '^native_library_posix\\.cc$'],
               ['exclude', '^strings/sys_string_conversions_posix\\.cc$'],
+              ['exclude', '^threading/platform_thread_internal_posix\\.cc$'],
             ],
           }],
           ['<(os_bsd)==1 and >(nacl_untrusted_build)==0', {

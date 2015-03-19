@@ -9,39 +9,44 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/safe_strerror_posix.h"
 #include "base/threading/thread_id_name_manager.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 
 #if !defined(OS_NACL)
-#include <sys/resource.h>
-#include <sys/syscall.h>
-#include <sys/time.h>
+#include <pthread.h>
+#include <sys/prctl.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
 
 namespace base {
 
+namespace internal {
+
 namespace {
-int ThreadNiceValue(ThreadPriority priority) {
-  switch (priority) {
-    case kThreadPriority_RealtimeAudio:
-      return -10;
-    case kThreadPriority_Background:
-      return 10;
-    case kThreadPriority_Normal:
-      return 0;
-    case kThreadPriority_Display:
-      return -6;
-    default:
-      NOTREACHED() << "Unknown priority.";
-      return 0;
-  }
+#if !defined(OS_NACL)
+const struct sched_param kRealTimePrio = {8};
+#endif
+}  // namespace
+
+const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
+  { kThreadPriority_RealtimeAudio, -10 },
+  { kThreadPriority_Background, 10 },
+  { kThreadPriority_Normal, 0 },
+  { kThreadPriority_Display, -6 },
 }
-} // namespace
+
+bool HandleSetThreadPriorityForPlatform(PlatformThreadHandle handle,
+                                        ThreadPriority priority) {
+#if !defined(OS_NACL)
+  return priority == kThreadPriority_RealtimeAudio &&
+         pthread_setschedparam(pthread_self(), SCHED_RR, &kRealTimePrio) == 0;
+#else
+  return false;
+#endif
+}
+
+}  // namespace internal
 
 // static
 void PlatformThread::SetName(const char* name) {
@@ -56,31 +61,6 @@ void PlatformThread::SetName(const char* name) {
   if (PlatformThread::CurrentId() == getpid())
     return;
   setproctitle("%s", name);
-#endif  //  !defined(OS_NACL)
-}
-
-// static
-void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
-                                       ThreadPriority priority) {
-#if !defined(OS_NACL)
-  if (priority == kThreadPriority_RealtimeAudio) {
-    const struct sched_param kRealTimePrio = { 8 };
-    if (pthread_setschedparam(pthread_self(), SCHED_RR, &kRealTimePrio) == 0) {
-      // Got real time priority, no need to set nice level.
-      return;
-    }
-  }
-
-  // setpriority(2) will set a thread's priority if it is passed a tid as
-  // the 'process identifier', not affecting the rest of the threads in the
-  // process. Setting this priority will only succeed if the user has been
-  // granted permission to adjust nice values on the system.
-  DCHECK_NE(handle.id_, kInvalidThreadId);
-  const int kNiceSetting = ThreadNiceValue(priority);
-  if (setpriority(PRIO_PROCESS, handle.id_, kNiceSetting)) {
-    DVPLOG(1) << "Failed to set nice value of thread ("
-              << handle.id_ << ") to " << kNiceSetting;
-  }
 #endif  //  !defined(OS_NACL)
 }
 

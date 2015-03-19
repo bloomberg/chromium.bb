@@ -484,6 +484,8 @@ component("base") {
     "threading/non_thread_safe_impl.h",
     "threading/platform_thread.h",
     "threading/platform_thread_android.cc",
+    "threading/platform_thread_internal_posix.cc",
+    "threading/platform_thread_internal_posix.h",
     "threading/platform_thread_linux.cc",
     "threading/platform_thread_mac.mm",
     "threading/platform_thread_posix.cc",
@@ -740,6 +742,7 @@ component("base") {
     sources -= [
       "native_library_posix.cc",
       "strings/sys_string_conversions_posix.cc",
+      "threading/platform_thread_internal_posix.cc",
     ]
   } else {
     # Non-Mac.

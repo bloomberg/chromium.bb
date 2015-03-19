@@ -9,43 +9,45 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/safe_strerror_posix.h"
+#include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/thread_id_name_manager.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/tracked_objects.h"
 
 #if !defined(OS_NACL)
+#include <pthread.h>
 #include <sys/prctl.h>
-#include <sys/resource.h>
-#include <sys/syscall.h>
-#include <sys/time.h>
+#include <sys/types.h>
 #include <unistd.h>
 #endif
 
 namespace base {
 
+namespace internal {
+
 namespace {
-
 #if !defined(OS_NACL)
-int ThreadNiceValue(ThreadPriority priority) {
-  switch (priority) {
-    case kThreadPriority_RealtimeAudio:
-      return -10;
-    case kThreadPriority_Background:
-      return 10;
-    case kThreadPriority_Normal:
-      return 0;
-    case kThreadPriority_Display:
-      return -6;
-    default:
-      NOTREACHED() << "Unknown priority.";
-      return 0;
-  }
-}
-#endif  // !defined(OS_NACL)
-
+const struct sched_param kRealTimePrio = {8};
+#endif
 }  // namespace
+
+const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
+    {kThreadPriority_RealtimeAudio, -10},
+    {kThreadPriority_Background, 10},
+    {kThreadPriority_Normal, 0},
+    {kThreadPriority_Display, -6},
+};
+
+bool HandleSetThreadPriorityForPlatform(PlatformThreadHandle handle,
+                                        ThreadPriority priority) {
+#if !defined(OS_NACL)
+  return priority == kThreadPriority_RealtimeAudio &&
+         pthread_setschedparam(pthread_self(), SCHED_RR, &kRealTimePrio) == 0;
+#else
+  return false;
+#endif
+}
+
+}  // namespace internal
 
 // static
 void PlatformThread::SetName(const char* name) {
@@ -69,36 +71,6 @@ void PlatformThread::SetName(const char* name) {
   // We expect EPERM failures in sandboxed processes, just ignore those.
   if (err < 0 && errno != EPERM)
     DPLOG(ERROR) << "prctl(PR_SET_NAME)";
-#endif  //  !defined(OS_NACL)
-}
-
-// static
-void PlatformThread::SetThreadPriority(PlatformThreadHandle handle,
-                                       ThreadPriority priority) {
-#if !defined(OS_NACL)
-  if (priority == kThreadPriority_RealtimeAudio) {
-    const struct sched_param kRealTimePrio = {8};
-    if (pthread_setschedparam(pthread_self(), SCHED_RR, &kRealTimePrio) == 0) {
-      // Got real time priority, no need to set nice level.
-      return;
-    }
-  }
-
-  // setpriority(2) should change the whole thread group's (i.e. process)
-  // priority. however, on linux it will only change the target thread's
-  // priority. see the bugs section in
-  // http://man7.org/linux/man-pages/man2/getpriority.2.html.
-  // we prefer using 0 rather than the current thread id since they are
-  // equivalent but it makes sandboxing easier (https://crbug.com/399473).
-  DCHECK_NE(handle.id_, kInvalidThreadId);
-  const int kNiceSetting = ThreadNiceValue(priority);
-  const PlatformThreadId current_id = PlatformThread::CurrentId();
-  if (setpriority(PRIO_PROCESS,
-                  handle.id_ == current_id ? 0 : handle.id_,
-                  kNiceSetting)) {
-    DVPLOG(1) << "Failed to set nice value of thread (" << handle.id_ << ") to "
-              << kNiceSetting;
-  }
 #endif  //  !defined(OS_NACL)
 }
 
