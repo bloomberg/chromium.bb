@@ -327,7 +327,8 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
     SkImageInfo info = SkImageInfo::Make(rect.width(), rect.height(), kRGBA_8888_SkColorType, alphaType);
 
     m_surface->willAccessPixels();
-    context()->readPixels(info, result.data(), 4 * rect.width(), rect.x(), rect.y());
+    ASSERT(canvas());
+    canvas()->readPixels(info, result.data(), 4 * rect.width(), rect.x(), rect.y());
     result.transfer(contents);
     return true;
 }

@@ -413,15 +413,6 @@ void GraphicsContext::setColorFilter(ColorFilter colorFilter)
     stateToSet->setColorFilter(WebCoreColorFilterToSkiaColorFilter(colorFilter));
 }
 
-bool GraphicsContext::readPixels(const SkImageInfo& info, void* pixels, size_t rowBytes, int x, int y)
-{
-    if (contextDisabled())
-        return false;
-
-    ASSERT(m_canvas);
-    return m_canvas->readPixels(info, pixels, rowBytes, x, y);
-}
-
 void GraphicsContext::setMatrix(const SkMatrix& matrix)
 {
     if (contextDisabled())

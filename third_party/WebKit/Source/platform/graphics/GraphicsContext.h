@@ -199,9 +199,6 @@ public:
     void setColorFilter(ColorFilter);
     // ---------- End state management methods -----------------
 
-    // Get the contents of the image buffer
-    bool readPixels(const SkImageInfo&, void* pixels, size_t rowBytes, int x, int y);
-
     // Get the current fill style.
     const SkPaint& fillPaint() const { return immutableState()->fillPaint(); }
 
