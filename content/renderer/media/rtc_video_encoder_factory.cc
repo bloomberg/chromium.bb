@@ -20,9 +20,9 @@ namespace {
 void VEAToWebRTCCodecs(
     std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec>* codecs,
     const media::VideoEncodeAccelerator::SupportedProfile& profile) {
-  int width = profile.max_resolution.width();
-  int height = profile.max_resolution.height();
-  int fps = profile.max_framerate_numerator;
+  const int width = profile.max_resolution.width();
+  const int height = profile.max_resolution.height();
+  const int fps = profile.max_framerate_numerator;
   DCHECK_EQ(profile.max_framerate_denominator, 1U);
 
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
@@ -44,26 +44,21 @@ void VEAToWebRTCCodecs(
 RTCVideoEncoderFactory::RTCVideoEncoderFactory(
     const scoped_refptr<media::GpuVideoAcceleratorFactories>& gpu_factories)
     : gpu_factories_(gpu_factories) {
-  std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles =
+  const std::vector<media::VideoEncodeAccelerator::SupportedProfile>& profiles =
       gpu_factories_->GetVideoEncodeAcceleratorSupportedProfiles();
-  for (size_t i = 0; i < profiles.size(); ++i)
-    VEAToWebRTCCodecs(&codecs_, profiles[i]);
+  for (const auto& profile : profiles)
+    VEAToWebRTCCodecs(&codecs_, profile);
 }
 
 RTCVideoEncoderFactory::~RTCVideoEncoderFactory() {}
 
 webrtc::VideoEncoder* RTCVideoEncoderFactory::CreateVideoEncoder(
     webrtc::VideoCodecType type) {
-  bool found = false;
-  for (size_t i = 0; i < codecs_.size(); ++i) {
-    if (codecs_[i].type == type) {
-      found = true;
-      break;
-    }
+  for (const auto& codec : codecs_) {
+    if (codec.type == type)
+      return new RTCVideoEncoder(type, gpu_factories_);
   }
-  if (!found)
-    return NULL;
-  return new RTCVideoEncoder(type, gpu_factories_);
+  return nullptr;
 }
 
 const std::vector<cricket::WebRtcVideoEncoderFactory::VideoCodec>&

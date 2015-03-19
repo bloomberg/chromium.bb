@@ -39,7 +39,7 @@ class CONTENT_EXPORT RTCVideoDecoderFactory
   void DestroyVideoDecoder(webrtc::VideoDecoder* decoder) override;
 
  private:
-  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
+  const scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderFactory);
 };

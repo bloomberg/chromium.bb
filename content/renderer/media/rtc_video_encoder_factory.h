@@ -13,9 +13,7 @@
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideoencoderfactory.h"
 
 namespace media {
-
 class GpuVideoAcceleratorFactories;
-
 }  // namespace media
 
 namespace content {
@@ -38,8 +36,7 @@ class CONTENT_EXPORT RTCVideoEncoderFactory
  private:
   const scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
 
-  // Codec support list of cricket::WebRtcVideoEncoderFactory::VideoCodec
-  // instances.
+  // List of supported cricket::WebRtcVideoEncoderFactory::VideoCodec.
   std::vector<VideoCodec> codecs_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoEncoderFactory);

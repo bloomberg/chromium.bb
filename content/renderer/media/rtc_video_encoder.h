@@ -18,15 +18,11 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
-
 class MessageLoopProxy;
-
 }  // namespace base
 
 namespace media {
-
 class GpuVideoAcceleratorFactories;
-
 }  // namespace media
 
 namespace content {
@@ -85,7 +81,7 @@ class CONTENT_EXPORT RTCVideoEncoder
   const webrtc::VideoCodecType video_codec_type_;
 
   // Factory for creating VEAs, shared memory buffers, etc.
-  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
+  const scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
 
   // webrtc::VideoEncoder encode complete callback.
   webrtc::EncodedImageCallback* encoded_image_callback_;
