@@ -1664,6 +1664,7 @@
       'android/java/src/org/chromium/chrome/browser/signin/SigninManager.java',
       'android/java/src/org/chromium/chrome/browser/sync/ProfileSyncService.java',
       'android/java/src/org/chromium/chrome/browser/tab/TransitionPageHelper.java',
+      'android/java/src/org/chromium/chrome/browser/tabmodel/SingleTabModel.java',
       'android/java/src/org/chromium/chrome/browser/tabmodel/TabModelJniBridge.java',
       'android/java/src/org/chromium/chrome/browser/Tab.java',
       'android/java/src/org/chromium/chrome/browser/TabState.java',
