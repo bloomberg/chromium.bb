@@ -374,9 +374,11 @@ Profile* CreatePrimaryProfile(const content::MainFunctionParams& parameters,
         g_browser_process->profile_manager()->GetProfileInfoCache();
     size_t profile_index = cache.GetIndexOfProfileWithPath(profile_path);
 
-    if (cache.ProfileIsSigninRequiredAtIndex(profile_index))
+    if (profile_index != std::string::npos &&
+        cache.ProfileIsSigninRequiredAtIndex(profile_index)) {
       profile = g_browser_process->profile_manager()->GetProfile(
           ProfileManager::GetGuestProfilePath());
+    }
   }
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
   if (profile) {
