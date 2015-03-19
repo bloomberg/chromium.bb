@@ -148,8 +148,7 @@ template <class T>
 void STLDeleteValues(T* container) {
   if (!container)
     return;
-  for (typename T::iterator i(container->begin()); i != container->end(); ++i)
-    delete i->second;
+  STLDeleteContainerPairSecondPointers(container->begin(), container->end());
   container->clear();
 }
 
