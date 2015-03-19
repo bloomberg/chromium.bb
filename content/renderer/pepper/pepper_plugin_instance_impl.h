@@ -171,6 +171,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Returns true if Delete() has been called on this object.
   bool is_deleted() const;
 
+  GURL document_url() const { return document_url_; }
+
   // Paints the current backing store to the web page.
   void Paint(blink::WebCanvas* canvas,
              const gfx::Rect& plugin_rect,
@@ -721,6 +723,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // Plugin URL.
   const GURL plugin_url_;
+
+  GURL document_url_;
 
   // Used to track Flash-specific metrics.
   const bool is_flash_plugin_;

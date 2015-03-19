@@ -479,6 +479,8 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       layer_bound_to_fullscreen_(false),
       layer_is_hardware_(false),
       plugin_url_(plugin_url),
+      document_url_(container ? GURL(container->element().document().url())
+                              : GURL()),
       is_flash_plugin_(module->name() == kFlashPluginName),
       has_been_clicked_(false),
       javascript_used_(false),
@@ -564,7 +566,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       browser_connection->DidCreateInProcessInstance(
           pp_instance(),
           render_frame_->GetRoutingID(),
-          container_->element().document().url(),
+          document_url_,
           GetPluginURL());
     }
   }
