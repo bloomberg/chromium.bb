@@ -23,12 +23,8 @@
 #include "config.h"
 #include "core/fetch/MemoryCache.h"
 
-#include "core/dom/CrossThreadTask.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/frame/FrameView.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerLoaderProxy.h"
-#include "core/workers/WorkerThread.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -36,6 +32,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
@@ -631,19 +628,9 @@ MemoryCacheLiveResourcePriority MemoryCache::priority(Resource* resource) const
     return entry->m_liveResourcePriority;
 }
 
-void MemoryCache::removeURLFromCache(ExecutionContext* context, const KURL& url)
+void MemoryCache::removeURLFromCache(const KURL& url)
 {
-    if (context->isWorkerGlobalScope()) {
-        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-        workerGlobalScope->thread()->workerLoaderProxy()->postTaskToLoader(createCrossThreadTask(&removeURLFromCacheInternal, url));
-        return;
-    }
-    removeURLFromCacheInternal(context, url);
-}
-
-void MemoryCache::removeURLFromCacheInternal(ExecutionContext*, const KURL& url)
-{
-    WillBeHeapVector<Member<Resource>> resources = memoryCache()->resourcesForURL(url);
+    WillBeHeapVector<Member<Resource>> resources = resourcesForURL(url);
     for (Resource* resource : resources)
         memoryCache()->remove(resource);
 }

@@ -31,6 +31,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/EventTarget.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -244,6 +245,11 @@ bool ExecutionContext::isWindowInteractionAllowed() const
     // it will be removed as soon as WebScopedWindowFocusAllowedIndicator will
     // be updated to not use WindowFocusAllowedIndicator.
     return m_windowInteractionTokens > 0 || WindowFocusAllowedIndicator::windowFocusAllowed();
+}
+
+void ExecutionContext::removeURLFromMemoryCache(const KURL& url)
+{
+    memoryCache()->removeURLFromCache(url);
 }
 
 DEFINE_TRACE(ExecutionContext)

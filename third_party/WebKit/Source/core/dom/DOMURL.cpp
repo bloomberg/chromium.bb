@@ -90,7 +90,7 @@ void DOMURL::revokeObjectURL(ExecutionContext* executionContext, const String& u
         return;
 
     KURL url(KURL(), urlString);
-    MemoryCache::removeURLFromCache(executionContext, url);
+    executionContext->removeURLFromMemoryCache(url);
     executionContext->publicURLManager().revoke(url);
 }
 

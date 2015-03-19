@@ -142,6 +142,8 @@ protected:
     void addMessageToWorkerConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>);
     void setV8CacheOptions(V8CacheOptions v8CacheOptions) { m_v8CacheOptions = v8CacheOptions; }
 
+    void removeURLFromMemoryCache(const KURL&) override;
+
 private:
 #if !ENABLE(OILPAN)
     virtual void refExecutionContext() override final { ref(); }
@@ -155,6 +157,8 @@ private:
 
     virtual EventTarget* errorEventTarget() override final;
     virtual void didUpdateSecurityOrigin() override final { }
+
+    static void removeURLFromMemoryCacheInternal(ExecutionContext*, const KURL&);
 
     KURL m_url;
     String m_userAgent;

@@ -36,11 +36,13 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/AddConsoleMessageTask.h"
 #include "core/dom/ContextLifecycleNotifier.h"
+#include "core/dom/CrossThreadTask.h"
 #include "core/dom/DOMURL.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/Event.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/frame/DOMTimer.h"
 #include "core/frame/DOMTimerCoordinator.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -53,6 +55,7 @@
 #include "core/workers/WorkerNavigator.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerConsole.h"
+#include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerLocation.h"
 #include "core/workers/WorkerNavigator.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -358,6 +361,16 @@ void WorkerGlobalScope::exceptionHandled(int exceptionId, bool isHandled)
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = m_pendingMessages.take(exceptionId);
     if (!isHandled)
         addConsoleMessage(consoleMessage.release());
+}
+
+void WorkerGlobalScope::removeURLFromMemoryCache(const KURL& url)
+{
+    m_thread->workerLoaderProxy()->postTaskToLoader(createCrossThreadTask(&WorkerGlobalScope::removeURLFromMemoryCacheInternal, url));
+}
+
+void WorkerGlobalScope::removeURLFromMemoryCacheInternal(ExecutionContext*, const KURL& url)
+{
+    memoryCache()->removeURLFromCache(url);
 }
 
 DEFINE_TRACE(WorkerGlobalScope)

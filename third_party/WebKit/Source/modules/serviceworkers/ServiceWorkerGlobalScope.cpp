@@ -211,7 +211,7 @@ void ServiceWorkerGlobalScope::importScripts(const Vector<String>& urls, Excepti
     // and get added to and retrieved from the ServiceWorker's script cache.
     // FIXME: Revisit in light of the solution to crbug/388375.
     for (Vector<String>::const_iterator it = urls.begin(); it != urls.end(); ++it)
-        MemoryCache::removeURLFromCache(this->executionContext(), completeURL(*it));
+        executionContext()->removeURLFromMemoryCache(completeURL(*it));
     WorkerGlobalScope::importScripts(urls, exceptionState);
 }
 

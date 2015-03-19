@@ -101,6 +101,8 @@ public:
 
     PublicURLManager& publicURLManager();
 
+    virtual void removeURLFromMemoryCache(const KURL&);
+
     void suspendActiveDOMObjects();
     void resumeActiveDOMObjects();
     void stopActiveDOMObjects();

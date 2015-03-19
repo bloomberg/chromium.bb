@@ -210,7 +210,7 @@ public:
     // This should be called when a Resource object becomes unnecesarry.
     void unregisterLiveResource(Resource&);
 
-    static void removeURLFromCache(ExecutionContext*, const KURL&);
+    void removeURLFromCache(const KURL&);
 
     Statistics getStatistics();
 

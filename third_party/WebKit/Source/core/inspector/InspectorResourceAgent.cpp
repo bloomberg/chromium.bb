@@ -790,7 +790,7 @@ void InspectorResourceAgent::replayXHR(ErrorString*, const String& requestId)
 
     RefPtrWillBeRawPtr<XMLHttpRequest> xhr = XMLHttpRequest::create(executionContext);
 
-    memoryCache()->removeURLFromCache(executionContext, xhrReplayData->url());
+    executionContext->removeURLFromMemoryCache(xhrReplayData->url());
 
     xhr->open(xhrReplayData->method(), xhrReplayData->url(), xhrReplayData->async(), IGNORE_EXCEPTION);
     if (xhrReplayData->includeCredentials())
