@@ -69,7 +69,7 @@ public:
 
     virtual ~InlineBox();
 
-    virtual void destroy();
+    virtual void destroy() { delete this; }
 
     virtual void deleteLine();
     virtual void extractLine();

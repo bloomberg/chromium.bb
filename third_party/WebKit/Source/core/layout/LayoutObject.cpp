@@ -1146,13 +1146,10 @@ void LayoutObject::invalidateDisplayItemClient(const DisplayItemClientData& disp
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
 
-    // Not using enclosingCompositedContainer() directly because this object may be in an orphaned subtree.
-    if (const DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer()) {
-        // This is valid because we want to invalidate the client in the display item list of the current backing.
-        DisableCompositingQueryAsserts disabler;
-        if (const DeprecatedPaintLayer* paintInvalidationLayer = enclosingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            paintInvalidationLayer->layoutObject()->invalidateDisplayItemClientOnBacking(displayItemClientData);
-    }
+    // This is valid because we want to invalidate the client in the display item list of the current backing.
+    DisableCompositingQueryAsserts disabler;
+    if (const LayoutBoxModelObject* paintInvalidationContainer = enclosingCompositedContainer())
+        paintInvalidationContainer->invalidateDisplayItemClientOnBacking(displayItemClientData);
 }
 
 void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer) const
