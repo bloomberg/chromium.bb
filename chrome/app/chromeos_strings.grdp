@@ -483,6 +483,7 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_SCANNING" desc="Cloud import scanning status message.">
     Scanning your media device...
+    <ph name="LINE_BREAK1">&lt;br&gt;</ph>
     <ph name="FILE_COUNT">$1<ex>5</ex></ph> new photos found
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_SCANNING" desc="Cloud import scanning tooltip.">
@@ -496,9 +497,9 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_INSUFFICIENT_SPACE" desc="Cloud import insufficient space status message.">
     <ph name="FILE_COUNT">$1<ex>5</ex></ph> new photos found
-    &lt;br&gt;
+    <ph name="LINE_BREAK1">&lt;br&gt;</ph>
     Not enough space on device.
-    &lt;br&gt;
+    <ph name="LINE_BREAK2">&lt;br&gt;</ph>
     Try selecting a few photos to start.
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_INSUFFICIENT_SPACE" desc="Cloud import insufficient space tooltip.">
@@ -506,7 +507,7 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_STATUS_READY" desc="Cloud import ready status message.">
     <ph name="FILE_COUNT">$1<ex>5</ex></ph> new photos found
-    &lt;br&gt;
+    <ph name="LINE_BREAK1">&lt;br&gt;</ph>
     Ready to backup to <ph name="BEGIN_LINK">&lt;span class='destination-link'&gt;</ph>Google Drive<ph name="END_LINK">&lt;/span&gt;</ph>
   </message>
   <message name="IDS_FILE_BROWSER_CLOUD_IMPORT_TOOLTIP_READY" desc="Cloud import ready tooltip.">
