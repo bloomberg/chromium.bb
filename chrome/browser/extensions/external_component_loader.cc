@@ -67,7 +67,7 @@ void ExternalComponentLoader::StartLoading() {
 
   {
     std::string extension_id;
-    if (GetBookmarksExperimentExtensionID(&extension_id)) {
+    if (IsEnhancedBookmarksEnabled(&extension_id)) {
       prefs_->SetString(extension_id + ".external_update_url",
                         extension_urls::GetWebstoreUpdateUrl().spec());
     }

@@ -5,19 +5,8 @@
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 
 #include "base/command_line.h"
-#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
-#include "base/sha1.h"
-#include "base/strings/string_number_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/flags_storage.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "components/sync_driver/pref_names.h"
 #include "components/variations/variations_associated_data.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
@@ -37,17 +26,8 @@ bool GetBookmarksExperimentExtensionID(std::string* extension_id) {
   if (extension_id->empty())
     return false;
 
-  // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
-  // "0" - user opted out.
-  bool opt_out = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-      switches::kEnhancedBookmarksExperiment) == "0";
-
-  if (opt_out)
-    return false;
-
 #if defined(OS_ANDROID)
-  return base::android::BuildInfo::GetInstance()->sdk_int() >
-         base::android::SdkVersion::SDK_VERSION_ICE_CREAM_SANDWICH_MR1;
+  return true;
 #else
   const extensions::FeatureProvider* feature_provider =
       extensions::FeatureProvider::GetPermissionFeatures();
@@ -73,9 +53,32 @@ bool IsEnhancedBookmarkImageFetchingEnabled(const PrefService* user_prefs) {
 
 bool IsEnhancedBookmarksEnabled() {
   std::string extension_id;
-  return GetBookmarksExperimentExtensionID(&extension_id);
+  return IsEnhancedBookmarksEnabled(&extension_id);
 }
 #endif
+
+bool IsEnhancedBookmarksEnabled(std::string* extension_id) {
+  // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
+  // "0" - user opted out.
+  bool opt_out = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                     switches::kEnhancedBookmarksExperiment) == "0";
+
+#if defined(OS_ANDROID)
+  opt_out |= base::android::BuildInfo::GetInstance()->sdk_int() <
+                 base::android::SdkVersion::SDK_VERSION_ICE_CREAM_SANDWICH_MR1;
+
+  // Android tests use command line flag to force enhanced bookmark to be on.
+  bool opt_in = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                    switches::kEnhancedBookmarksExperiment) == "1";
+  if (opt_in)
+    return true;
+#endif
+
+  if (opt_out)
+    return false;
+
+  return GetBookmarksExperimentExtensionID(extension_id);
+}
 
 bool IsEnableDomDistillerSet() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
