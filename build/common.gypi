@@ -3077,7 +3077,14 @@
               '_CRT_NONSTDC_NO_DEPRECATE',
               '_SCL_SECURE_NO_DEPRECATE',
             ],
-            'msvs_disabled_warnings': [4800],
+            'msvs_disabled_warnings': [
+              # These are variable shadowing warnings that are new in VS2015.
+              # We should probably work through these at some point for
+              # non-chromium code, but for now, focus on chromium_code==1 code.
+              4456, 4457, 4458, 4459,
+
+              4800,
+            ],
             'msvs_settings': {
               'VCCLCompilerTool': {
                 'WarningLevel': '3',
@@ -3199,7 +3206,8 @@
               # Suggested by Microsoft Devrel to avoid
               #   LINK : fatal error LNK1248: image size (80000000) exceeds maximum allowable size (80000000)
               # which started happening more regularly after VS2013 Update 4.
-              '/maxilksize:2147483647',
+              # Needs to be a bit lower for VS2015, or else errors out.
+              '/maxilksize:0x7ff00000',
             ],
           },
         },
@@ -5469,6 +5477,11 @@
         ],
         'msvs_cygwin_shell': 0,
         'msvs_disabled_warnings': [
+          # C4091: 'typedef ': ignored on left of 'X' when no variable is
+          #                    declared.
+          # This happens in a number of Windows headers. Dumb.
+          4091,
+
           # C4127: conditional expression is constant
           # This warning can in theory catch dead code and other problems, but
           # triggers in far too many desirable cases where the conditional
