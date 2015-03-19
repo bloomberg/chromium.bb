@@ -2,9 +2,7 @@
 // Requires |audio-testing.js| to work properly.
 
 function testMergerInput(config, done) {
-  var context = new OfflineAudioContext(
-    config.numberOfChannels, 128, 44100
-  );
+  var context = new OfflineAudioContext(config.numberOfChannels, 128, 44100);
   var merger = context.createChannelMerger(config.numberOfChannels);
   var source = context.createBufferSource();
 
@@ -23,8 +21,8 @@ function testMergerInput(config, done) {
 
   context.startRendering().then(function (buffer) {
     for (var i = 0; i < config.numberOfChannels; i++)
-      Should.haveValueInChannel(config.expected[i], buffer.getChannelData(i));
-
+      Should('Channel #' + i, buffer.getChannelData(i))
+        .beConstantValueOf(config.expected[i]);
     done();
   });
 }

@@ -41,10 +41,9 @@
       source.disconnect();
 
       context.startRendering().then(function (buffer) {
-        var channelData = buffer.getChannelData(0);
-
+        
         // With everything disconnected, the result should be zero.
-        Should.haveValueInChannel(0, channelData);
+        Should('Channel #0', buffer.getChannelData(0)).beConstantValueOf(0);
 
       }).then(done);
     });
@@ -74,10 +73,9 @@
       splitter.disconnect(1);
 
       context.startRendering().then(function (buffer) {
-        var channelData = buffer.getChannelData(0);
-
+        
         // The rendered channel should contain 4. (= 1 + 0 + 3)
-        Should.haveValueInChannel(4, channelData);
+        Should('Channel #0', buffer.getChannelData(0)).beConstantValueOf(4);
 
       }).then(done);
     });
@@ -108,10 +106,9 @@
       source.disconnect(gain2);
 
       context.startRendering().then(function (buffer) {
-        var channelData = buffer.getChannelData(0);
 
         // The |sum| gain node should produce value 2. (1 + 0 + 1 = 2)
-        Should.haveValueInChannel(2, channelData);
+        Should('Channel #0', buffer.getChannelData(0)).beConstantValueOf(2);
 
       }).then(done);
     });
@@ -147,10 +144,9 @@
       splitter.disconnect(gain2, 0); // Now gain2 gets [2]
 
       context.startRendering().then(function (buffer) {
-        var channelData0 = buffer.getChannelData(0);
         
         // The sum of gain1 and gain2 should produce value 3. (= 1 + 2)
-        Should.haveValueInChannel(3, channelData0);
+        Should('Channel #0', buffer.getChannelData(0)).beConstantValueOf(3);
         
       }).then(done);
     });
@@ -184,14 +180,11 @@
       splitter.disconnect(merger, 2, 2);
       
       context.startRendering().then(function (buffer) {
-        var channelData0 = buffer.getChannelData(0);
-        var channelData1 = buffer.getChannelData(1);
-        var channelData2 = buffer.getChannelData(2);
         
         // Each channel should have 1, 2, and 0 respectively.
-        Should.haveValueInChannel(1, channelData0);
-        Should.haveValueInChannel(2, channelData1);
-        Should.haveValueInChannel(0, channelData2);
+        Should('Channel #0', buffer.getChannelData(0)).beConstantValueOf(1);
+        Should('Channel #1', buffer.getChannelData(1)).beConstantValueOf(2);
+        Should('Channel #2', buffer.getChannelData(2)).beConstantValueOf(0);
         
       }).then(done);
     });
@@ -218,46 +211,46 @@
       merger.connect(context.destination);
 
       // There is no output #2. An exception should be thrown.
-      Should.throwWithType('IndexSizeError', function () {
+      Should('splitter.disconnect(2)', function () {
         splitter.disconnect(2);
-      });
+      }).throw('IndexSizeError');
 
       // Disconnecting the output already disconnected should not throw.
-      Should.notThrow(function () {
+      Should('Disconnecting a connection twice', function () {
         splitter.disconnect(1);
         splitter.disconnect(1);
-      });
+      }).notThrow();
 
       // gain1 is not connected gain2. An exception should be thrown.
-      Should.throwWithType('InvalidAccessError', function () {
+      Should('gain1.disconnect(gain2)', function () {
         gain1.disconnect(gain2);
-      });
+      }).throw('InvalidAccessError');
 
       // gain1 and gain3 are not connected. An exception should be thrown.
-      Should.throwWithType('InvalidAccessError', function () {
+      Should('gain1.disconnect(gain3)', function () {
         gain1.disconnect(gain3);
-      });
+      }).throw('InvalidAccessError');
 
       // There is no output #2 in the splitter. An exception should be thrown.
-      Should.throwWithType('IndexSizeError', function () {
+      Should('splitter.disconnect(gain2, 2)', function () {
         splitter.disconnect(gain2, 2);
-      });
+      }).throw('IndexSizeError');
 
       // The splitter and gain1 are not connected. An exception should be thrown.
-      Should.throwWithType('InvalidAccessError', function () {
+      Should('splitter.disconnect(gain1, 0)', function () {
         splitter.disconnect(gain1, 0);
-      });
+      }).throw('InvalidAccessError');
 
       // The splitter output #0 and the gain3 output #0 are not connected. An
       // exception should be thrown.
-      Should.throwWithType('InvalidAccessError', function () {
+      Should('splitter.disconnect(gain3, 0, 0)', function () {
         splitter.disconnect(gain3, 0, 0);
-      });
+      }).throw('InvalidAccessError');
 
       // The output index is out of bound. An exception should be thrown.
-      Should.throwWithType('IndexSizeError', function () {
+      Should('splitter.disconnect(merger, 3, 0)', function () {
         splitter.disconnect(merger, 3, 0);
-      });
+      }).throw('IndexSizeError');
 
       done();
     });

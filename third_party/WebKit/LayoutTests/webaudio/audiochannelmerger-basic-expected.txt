@@ -3,14 +3,14 @@ Basic tests for ChannelMerger.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS "merger = context.createChannelMerger();" did not throw exception.
-PASS "merger = context.createChannelMerger(0);" threw exception IndexSizeError.
-PASS "merger = context.createChannelMerger(32);" did not throw exception.
-PASS "merger = context.createChannelMerger(33);" threw exception IndexSizeError.
+PASS context.createChannelMerger() did not throw an exception.
+PASS context.createChannelMerger(0) threw IndexSizeError.
+PASS context.createChannelMerger(32) did not throw an exception.
+PASS context.createChannelMerger(33) threw IndexSizeError.
 PASS merger.channelCount is equal to 1.
-PASS "merger.channelCount = 3;" threw exception InvalidStateError.
+PASS merger.channelCount = 3 threw InvalidStateError.
 PASS merger.channelCountMode is equal to explicit.
-PASS "merger.channelCountMode = 'max';" threw exception InvalidStateError.
+PASS merger.channelCountMode = "max" threw InvalidStateError.
 PASS successfullyParsed is true
 
 TEST COMPLETE

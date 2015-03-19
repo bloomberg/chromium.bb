@@ -73,17 +73,10 @@
 
         // Note that this test depends on the disconnection below to happen
         // sometime during rendering.
-        var channelData = buffer.getChannelData(0);
-        var expectedValues = [2.25, 1.5]; // 1 * 1.5 * 1.5 -> 1 * 1.5
-        var passed = compareElements(expectedValues, channelData);
+
+        // Expected values are: 1 * 1.5 * 1.5 -> 1 * 1.5 = [2.25, 1.5]
+        Should('Channel #0', buffer.getChannelData(0)).containValues([2.25, 1.5]);
         
-        if (passed) {
-          testPassed('The rendered buffer matches expected values: [' + 
-            expectedValues.toString() + ']'
-          );
-        } else {
-          testFailed('The rendered buffer does not match expected values.');
-        }
       }).then(done);
     });
 
@@ -138,19 +131,13 @@
       };
 
       context.startRendering().then(function (buffer) {
-        var channelData0 = buffer.getChannelData(0);
-        var channelData1 = buffer.getChannelData(1);
-        var expectedValuesCh0 = [3, 1.5]; // 1 * 1.5 * 2 -> 1 * 1.5
-        var expectedValuesCh1 = [6, 3]; // 2 * 1.5 * 2 -> 2 * 1.5
-        var passedCh0 = compareElements(expectedValuesCh0, channelData0);
-        var passedCh1 = compareElements(expectedValuesCh1, channelData1);
+        
+        // Expected values are: 1 * 1.5 * 2 -> 1 * 1.5 = [3, 1.5]
+        Should('Channel #0', buffer.getChannelData(0)).containValues([3, 1.5]);
 
-        if (passedCh0 && passedCh1) {
-          testPassed('The rendered buffer matches expected values: Ch0 = [' + 
-            expectedValuesCh0.toString() + '] Ch1 = [' + expectedValuesCh1.toString() +
-            ']'
-          );
-        }
+        // Expected values are: 2 * 1.5 * 2 -> 2 * 1.5 = [6, 3]
+        Should('Channel #1', buffer.getChannelData(1)).containValues([6, 3]);
+
       }).then(done);
     });
 
@@ -172,19 +159,19 @@
       gain3.connect(context.destination);
 
       // gain1 is not connected to gain3.gain. Exception should be thrown.
-      Should.throwWithType('InvalidAccessError', function () {
+      Should('gain1.disconnect(gain3.gain)', function () {
         gain1.disconnect(gain3.gain);
-      });
+      }).throw('InvalidAccessError');
 
       // When the output index is good but the destination is invalid.
-      Should.throwWithType('InvalidAccessError', function () {
+      Should('splitter.disconnect(gain1.gain, 1)', function () {
         splitter.disconnect(gain1.gain, 1);
-      });
+      }).throw('InvalidAccessError');
 
       // When both arguments are wrong, throw IndexSizeError first.
-      Should.throwWithType('IndexSizeError', function () {
+      Should('splitter.disconnect(gain1.gain, 2)', function () {
         splitter.disconnect(gain1.gain, 2);
-      });
+      }).throw('IndexSizeError');
 
       done();
     });
@@ -200,31 +187,6 @@
       'exceptions',
       'finish'
     );
-
-    // The value-wise comparison of two arrays with different length. It
-    // checks the value of element regardless of its occurrence. For example,
-    //    (1) [2.25, 2.25, 2.25, 1.5, 1.5, 1.5] === [2.25, 1.5]
-    //    (2) [2.25, 2.25, 1.5, 1.5, 0, 7, 7, 7, 9, 1] !== [2.25, 1.5]
-    //    (3) [-1, 2, 3, 2.25, 2.25, 1.5, 1.5] !== [2.25, 1.5]
-    //    (4) [3, 3, 3, 7, 7, 7] !== [2.25, 1.5]
-    function compareElements(expected, actual) {
-      var indexExpected = 0, indexActual = 0;
-      while (indexExpected < expected.length && indexActual < actual.length) {
-        if (expected[indexExpected] === actual[indexActual]) {
-          indexActual++;
-        } else {
-          indexExpected++;
-        }
-      }
-      
-      if (indexExpected < expected.length - 1 || indexActual < actual.length - 1) {
-        testFailed('The value ' + actual[indexActual] + ' at index ' + 
-          indexActual + ' was not found in expected values');
-        return false;
-      } else {
-        return true;
-      }
-    }
 
     successfullyParsed = true;
   </script>

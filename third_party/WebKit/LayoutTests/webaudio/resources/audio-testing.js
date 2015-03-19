@@ -175,6 +175,7 @@ function isValidNumber(x) {
     return !isNaN(x) && (x != Infinity) && (x != -Infinity);
 }
 
+
 // |Audit| is a task runner for web audio test. It makes asynchronous web audio
 // testing simple and manageable.
 //
@@ -220,16 +221,16 @@ function isValidNumber(x) {
         // done() callback from tasks. Increase the task index and call the
         // next task.
         var done = function () {
-            // debug('[Audit] Task: ' + this.queue[this.currentTask] + ' completed.');
-            if (this.currentTask === this.queue.length - 1) {
-                // debug('[Audit] All task finished.');
-            } else {
-                this.tasks[this.queue[++this.currentTask]](done);
+            if (this.currentTask !== this.queue.length - 1) {
+                ++this.currentTask;
+                // debug('>> TASK: ' + this.queue[this.currentTask]);
+                this.tasks[this.queue[this.currentTask]](done);
             }
             return;
         }.bind(this);
 
         // Start task 0.
+        // debug('>> TASK: ' + this.queue[this.currentTask]);
         this.tasks[this.queue[this.currentTask]](done);
     };
 
@@ -258,95 +259,228 @@ function createTestingAudioBuffer(context, numChannels, length) {
     return buffer;
 }
 
-// Generate a string out of function. Useful when throwing an error/exception
-// with a description. It creates strings from a function, then extract the
-// function body and trim out leading and trailing white spaces.
-function getTaskSummary(func) {
-    var lines = func.toString().split('\n').slice(1, -1);
-    lines = lines.map(function (str) { return str.trim(); });
-    lines = lines.join(' ');
-    return '"' + lines + '"';
-}
 
+// |Should| JS layout test utility.
+// Dependency: ../resources/js-test.js
+var Should = (function () {
 
-// The name space for |Should| test utility. Dependencies: testPassed(),
-// testFailed() from resources/js-test.js
-var Should = {};
+    'use strict';
 
-// The evaluation of |target| should be equal to |value|. |description| should
-// explain what the |target| is.
-Should.beEqualTo = function (description, target, value) {
-    if (target === value)
-        testPassed(description + ' is equal to ' + value + '.');
-    else
-        testFailed(description  + ' is ' + target + ' and not equal to ' + value + '.');
-};
+    // ShouldModel internal class. For the exposed (factory) method, it is the
+    // return value of this closure.
+    function ShouldModel(desc, target, opts) {
+        this.desc = desc;
+        this.target = target;
 
-// Expect an exception to be thrown with a certain type.
-Should.throwWithType = function (type, func) {
-    var summary = getTaskSummary(func);
-    try {
-        func();
-        testFailed(summary + ' should throw ' + type + '.');
-    } catch (e) {
-        if (e.name === type)
-            testPassed(summary + ' threw exception ' + e.name + '.');
+        // If the number of errors is greater than this, the rest of error
+        // messages are suppressed. the value is fairly arbitrary, but shouldn't
+        // be too small or too large.
+        this.NUM_ERRORS_LOG = opts.numberOfErrorLog;
+
+        // If the number of array elements is greater than this, the rest of
+        // elements will be omitted.
+        this.NUM_ARRAY_LOG = opts.numberOfArrayLog;
+    }
+
+    // Internal methods starting with a underscore.
+    ShouldModel.prototype._testPassed = function (msg) {
+        testPassed(this.desc + ' ' + msg + '.');
+    };
+
+    ShouldModel.prototype._testFailed = function (msg) {
+        testFailed(this.desc + ' ' + msg + '.');
+    };
+
+    ShouldModel.prototype._isArray = function (arg) {
+        return arg instanceof Array || arg instanceof Float32Array;
+    };
+
+    ShouldModel.prototype._assert = function (expression, reason) {
+        if (expression)
+            return;
+
+        var failureMessage = 'Assertion failed: ' + reason + ' ' + this.desc +'.';
+        testFailed(failureMessage);
+        throw failureMessage;
+    };
+
+    // Check if |target| is equal to |value|.
+    //
+    // Example:
+    // Should('Zero', 0).beEqualTo(0);
+    // Result:
+    // "PASS Zero is equal to 0."
+    ShouldModel.prototype.beEqualTo = function (value) {
+        var type = typeof value;
+        this._assert(type === 'number' || type === 'string',
+            'value should be number or string for');
+
+        if (this.target === value)
+            this._testPassed('is equal to ' + value);
         else
-            testFailed(summary + ' should throw ' + type + '. Threw exception ' + e.name + '.');
-    }
-};
+            this._testFailed('was ' + value + ' instead of ' + this.target);
+    };
 
-// Expect not to throw an exception.
-Should.notThrow = function (func) {
-    var summary = getTaskSummary(func);
-    try {
-        func();
-        testPassed(summary + ' did not throw exception.');
-    } catch (e) {
-        testFailed(summary + ' should not throw exception. Threw exception ' + e.name + '.');
-    }
-};
-
-// Verify if the channelData array contains a single constant |value|.
-Should.haveValueInChannel = function (value, channelData) {
-    var mismatch = {};
-    for (var i = 0; i < channelData.length; i++) {
-        if (channelData[i] !== value) {
-            mismatch[i] = value;
+    // Check if |func| throws an exception with a certain |errorType| correctly.
+    // |errorType| is optional.
+    //
+    // Example:
+    // Should('A bad code', function () { var a = b; }).throw();
+    // Result:
+    // "PASS A bad code threw an exception."
+    // Example:
+    // Should('var c = d', function () { var c = d; }).throw('ReferenceError');
+    // "PASS var c = d threw ReferenceError."
+    ShouldModel.prototype.throw = function (errorType) {
+        if (typeof this.target !== 'function') {
+            console.log('target is not a function. test halted.');
+            return;
         }
-    }
 
-    var numberOfmismatches = Object.keys(mismatch).length;
-    if (numberOfmismatches === 0) {
-        testPassed('ChannelData has expected values (' + value + ').');
-    } else {
-        testFailed(numberOfmismatches + ' values in ChannelData are not equal to ' + value + ':');
-        for (var index in mismatch) {
-            console.log('[' + index + '] : ' + mismatch[index]);
+        try {
+            this.target();
+            this._testFailed('did not throw an exception');
+        } catch (error) {
+            if (errorType === undefined)
+                this._testPassed('threw an exception');
+            else if (error.name === errorType)
+                this._testPassed('threw ' + errorType);
+            else
+                this._testFailed('threw ' + error.name + ' instead of ' + exception);
         }
-    }
-};
+    };
 
-// The |actual| array should contain a set of values in the order of appearance
-// specified in the |expected| array.
-Should.containValuesInChannel = function (expected, actual) {
-  var indexExpected = 0, indexActual = 0;
-    while (indexExpected < expected.length && indexActual < actual.length) {
-        if (expected[indexExpected] === actual[indexActual])
-            indexActual++;
-        else
-            indexExpected++;
-    }
+    // Check if |func| does not throw an exception.
+    //
+    // Example:
+    // Should('var foo = "bar"', function () { var foo = 'bar'; }).notThrow();
+    // Result:
+    // "PASS var foo = "bar" did not throw an exception."
+    ShouldModel.prototype.notThrow = function () {
+        try {
+            this.target();
+            this._testPassed('did not throw an exception');
+        } catch (error) {
+            this._testFailed('threw ' + error.name);
+        }
+    };
 
-    if (indexExpected < expected.length-1 || indexActual < actual.length-1) {
+    // Check if |target| array is filled with constant values.
+    //
+    // Example:
+    // Should('[2, 2, 2]', [2, 2, 2]).beConstantValueOf(2);
+    // Result:
+    // "PASS [2, 2, 2] has constant values of 2."
+    ShouldModel.prototype.beConstantValueOf = function (value) {
+        var mismatches = {};
+        for (var i = 0; i < this.target.length; i++) {
+            if (this.target[i] !== value)
+            mismatches[i] = this.target[i];
+        }
 
-        var error = 'The value ' + actual[indexActual] + ' at index ' +
-            indexActual + ' was not found in expected values';
-        testFailed(error);
-        return false;
-    } else {
-        testPassed('The channel contains all the expected values in the correct order: [' +
-            expected + '].');
-        return true;
-    }
-};
+        var numberOfmismatches = Object.keys(mismatches).length;
+
+        if (numberOfmismatches === 0) {
+            this._testPassed('contains only the constant ' + value);
+        } else {
+            var counter = 0;
+            var failureMessage = 'contains ' + numberOfmismatches +
+            ' values that are NOT equal to ' + value + ':';
+            for (var index in mismatches) {
+                failureMessage += '\n[' + index + '] : ' + mismatches[index];
+                if (++counter >= this.NUM_ERRORS_LOG) {
+                    failureMessage += '\nand ' + (numberOfmismatches - counter) +
+                    ' more differences...';
+                    break;
+                }
+            }
+            this._testFailed(failureMessage);
+        }
+    };
+
+    // Check if |target| array is identical to |expected| array element-wise.
+    //
+    // Example:
+    // Should('[1, 2, 3]', [1, 2, 3]).beEqualToArray([1, 2, 3]);
+    // Result:
+    // "PASS [1, 2, 3] is identical to the array [1,2,3]."
+    ShouldModel.prototype.beEqualToArray = function (array) {
+        this._assert(this._isArray(array) && this.target.length === array.length,
+            'Invalid array or the length does not match.');
+
+        var mismatches = {};
+        for (var i = 0; i < this.target.length; i++) {
+            if (this.target[i] !== array[i])
+                mismatches[i] = this.target[i];
+        }
+
+        var numberOfmismatches = Object.keys(mismatches).length;
+        var arrStr = (array.length > this.NUM_ARRAY_LOG) ?
+        array.slice(0, this.NUM_ARRAY_LOG).toString() + '...' : array.toString();
+
+        if (numberOfmismatches === 0) {
+            this._testPassed('is identical to the array [' + arrStr + ']');
+        } else {
+            var counter = 0;
+            var failureMessage = 'is not equal to the array [' + arrStr + ']';
+            for (var index in mismatches) {
+                failureMessage += '\n[' + index + '] : ' + mismatches[index];
+                if (++counter >= this.NUM_ERRORS_LOG) {
+                    failureMessage += '\nand ' + (numberOfmismatches - counter) +
+                    ' more differences...';
+                    break;
+                }
+            }
+
+            this._testFailed(failureMessage);
+        }
+    };
+
+    // Check if |target| array contains a set of values in a certain order.
+    //
+    // Example:
+    // Should('My random array', [1, 1, 3, 3, 2]).containValues([1, 3, 2]);
+    // Result:
+    // "PASS My random array contains all the expected values in the correct
+    //  order: [1,3,2]."
+    ShouldModel.prototype.containValues = function (expected) {
+        var indexExpected = 0, indexActual = 0;
+        while (indexExpected < expected.length && indexActual < this.target.length) {
+            if (expected[indexExpected] === this.target[indexActual])
+                indexActual++;
+            else
+                indexExpected++;
+        }
+
+        if (indexExpected < expected.length-1 || indexActual < this.target.length-1) {
+            this._testFailed('contains an unexpected value ' + this.target[indexActual] +
+            ' at index ' + indexActual);
+        } else {
+            this._testPassed('contains all the expected values in the correct order: [' +
+            expected + ']');
+        }
+    };
+
+    // Should() method.
+    //
+    // |desc| is the description of the task or check and |target| is a value
+    // needs to be checked or a task to be performed. |opt| contains options for
+    // printing out log messages: options are |opt.numberOfErrorLog| and
+    // |opts.numberOfArrayLog|.
+    return function (desc, target, opts) {
+        var _opts = {
+            numberOfErrorLog: 8,
+            numberOfArrayLog: 16
+        };
+
+        if (opts instanceof Object) {
+            if (opts.hasOwnProperty('numberOfErrorLog'))
+                _opts.numberOfErrorLog = opts.numberOfErrorLog;
+            if (opts.hasOwnProperty('numberOfArrayLog'))
+                _opts.numberOfArrayLog = opts.numberOfArrayLog;
+        }
+
+        return new ShouldModel(desc, target, _opts);
+    };
+
+})();

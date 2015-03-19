@@ -3,21 +3,21 @@ Test disconnect() method on AudioNode destination.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS ChannelData has expected values (0).
-PASS ChannelData has expected values (4).
-PASS ChannelData has expected values (2).
-PASS ChannelData has expected values (3).
-PASS ChannelData has expected values (1).
-PASS ChannelData has expected values (2).
-PASS ChannelData has expected values (0).
-PASS "splitter.disconnect(2);" threw exception IndexSizeError.
-PASS "splitter.disconnect(1); splitter.disconnect(1);" did not throw exception.
-PASS "gain1.disconnect(gain2);" threw exception InvalidAccessError.
-PASS "gain1.disconnect(gain3);" threw exception InvalidAccessError.
-PASS "splitter.disconnect(gain2, 2);" threw exception IndexSizeError.
-PASS "splitter.disconnect(gain1, 0);" threw exception InvalidAccessError.
-PASS "splitter.disconnect(gain3, 0, 0);" threw exception InvalidAccessError.
-PASS "splitter.disconnect(merger, 3, 0);" threw exception IndexSizeError.
+PASS Channel #0 contains only the constant 0.
+PASS Channel #0 contains only the constant 4.
+PASS Channel #0 contains only the constant 2.
+PASS Channel #0 contains only the constant 3.
+PASS Channel #0 contains only the constant 1.
+PASS Channel #1 contains only the constant 2.
+PASS Channel #2 contains only the constant 0.
+PASS splitter.disconnect(2) threw IndexSizeError.
+PASS Disconnecting a connection twice did not throw an exception.
+PASS gain1.disconnect(gain2) threw InvalidAccessError.
+PASS gain1.disconnect(gain3) threw InvalidAccessError.
+PASS splitter.disconnect(gain2, 2) threw IndexSizeError.
+PASS splitter.disconnect(gain1, 0) threw InvalidAccessError.
+PASS splitter.disconnect(gain3, 0, 0) threw InvalidAccessError.
+PASS splitter.disconnect(merger, 3, 0) threw IndexSizeError.
 PASS successfullyParsed is true
 
 TEST COMPLETE

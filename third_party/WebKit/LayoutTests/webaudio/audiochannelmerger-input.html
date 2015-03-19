@@ -99,8 +99,8 @@
       context.startRendering().then(function (buffer) {
         
         // Channel#0 = 1, Channel#1 = -1
-        Should.haveValueInChannel(1, buffer.getChannelData(0));
-        Should.haveValueInChannel(-1, buffer.getChannelData(1));
+        Should('Channel #0', buffer.getChannelData(0)).beConstantValueOf(1);
+        Should('Channel #1', buffer.getChannelData(1)).beConstantValueOf(-1);
 
         done();
       });

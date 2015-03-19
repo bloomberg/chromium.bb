@@ -53,10 +53,10 @@
       context.startRendering().then(function (buffer) {
 
         // The entire first channel of the output should be 1.
-        Should.haveValueInChannel(1, buffer.getChannelData(0));
+        Should('Channel #0', buffer.getChannelData(0)).beConstantValueOf(1);
 
         // The second channel should contain 1, and 0 after the disconnection.
-        Should.containValuesInChannel([1, 0], buffer.getChannelData(1));
+        Should('Channel #1', buffer.getChannelData(1)).containValues([1, 0]);
 
         done();
       });

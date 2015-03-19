@@ -19,23 +19,23 @@
       var context = new OfflineAudioContext(2, 128, 44100);
       var merger;
 
-      Should.notThrow(function () {
+      Should('context.createChannelMerger()', function () {
         merger = context.createChannelMerger();
-      });
+      }).notThrow();
 
-      Should.throwWithType('IndexSizeError', function () {
+      Should('context.createChannelMerger(0)', function () {
         merger = context.createChannelMerger(0);
-      });
+      }).throw('IndexSizeError');
 
-      Should.notThrow(function () {
+      Should('context.createChannelMerger(32)', function () {
         merger = context.createChannelMerger(32);
-      });
+      }).notThrow();
 
       // Can't create a channel merger with 33 channels because the audio
       // context has a 32-channel-limit in Chrome.
-      Should.throwWithType('IndexSizeError', function () {
+      Should('context.createChannelMerger(33)', function () {
         merger = context.createChannelMerger(33);
-      });
+      }).throw('IndexSizeError');
 
       done();
     });
@@ -46,19 +46,17 @@
       var context = new OfflineAudioContext(2, 128, 44100);
       var merger = context.createChannelMerger();
 
-      Should.beEqualTo('merger.channelCount', merger.channelCount, 1);
+      Should('merger.channelCount', merger.channelCount).beEqualTo(1);
 
-      Should.throwWithType('InvalidStateError', function () {
+      Should('merger.channelCount = 3', function () {
         merger.channelCount = 3;
-      });
+      }).throw('InvalidStateError');
 
-      Should.beEqualTo(
-        'merger.channelCountMode', merger.channelCountMode, 'explicit'
-      );
+      Should('merger.channelCountMode', merger.channelCountMode).beEqualTo('explicit');
 
-      Should.throwWithType('InvalidStateError', function () {
+      Should('merger.channelCountMode = "max"', function () {
         merger.channelCountMode = 'max';
-      });
+      }).throw('InvalidStateError');
 
       done();
     });

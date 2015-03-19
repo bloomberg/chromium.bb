@@ -3,8 +3,8 @@ Test ChannelMergerNode behavior on dynamic input change.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS ChannelData has expected values (1).
-PASS The channel contains all the expected values in the correct order: [1,0].
+PASS Channel #0 contains only the constant 1.
+PASS Channel #1 contains all the expected values in the correct order: [1,0].
 PASS successfullyParsed is true
 
 TEST COMPLETE
