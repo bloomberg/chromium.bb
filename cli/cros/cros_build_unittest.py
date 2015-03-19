@@ -6,9 +6,8 @@
 
 from __future__ import print_function
 
-
 from chromite.cli import command_unittest
-from chromite.cros.commands import cros_build
+from chromite.cli.cros import cros_build
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel_unittest
@@ -17,7 +16,7 @@ from chromite.lib import partial_mock
 
 class MockBuildCommand(command_unittest.MockCommand):
   """Mock out the build command."""
-  TARGET = 'chromite.cros.commands.cros_build.BuildCommand'
+  TARGET = 'chromite.cli.cros.cros_build.BuildCommand'
   TARGET_CLASS = cros_build.BuildCommand
 
   def Run(self, inst):

@@ -30,7 +30,7 @@ import time
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
-from chromite.cros.commands import cros_chrome_sdk
+from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import chrome_util
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -250,8 +250,8 @@ class DeployChrome(object):
     dest_path = _CHROME_DIR
     if not self.device.HasRsync():
       raise DeployFailure(
-            'rsync is not found on the device.\n'
-            'Run dev_install on the device to get rsync installed')
+          'rsync is not found on the device.\n'
+          'Run dev_install on the device to get rsync installed')
     self.device.CopyToDevice('%s/' % os.path.abspath(self.staging_dir),
                              self.options.target_dir,
                              inplace=True, debug_level=logging.INFO,

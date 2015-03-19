@@ -11,7 +11,7 @@
 """Additional lint modules loaded by pylint.
 
 This is loaded by pylint directly via its pylintrc file:
-  load-plugins=chromite.cros.commands.lint
+  load-plugins=chromite.cli.cros.lint
 
 Then pylint will import the register function and call it.  So we can have
 as many/few checkers as we want in this one module.

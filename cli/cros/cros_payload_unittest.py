@@ -11,7 +11,7 @@ import os
 import sys
 
 from chromite.cbuildbot import constants
-from chromite.cros.commands import cros_payload
+from chromite.cli.cros import cros_payload
 from chromite.lib import cros_test_lib
 
 # Needed for the dev.host.lib import below.

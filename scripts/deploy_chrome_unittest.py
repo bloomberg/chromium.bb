@@ -10,7 +10,7 @@ import mock
 import os
 import time
 
-from chromite.cros.commands import cros_chrome_sdk_unittest
+from chromite.cli.cros import cros_chrome_sdk_unittest
 from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib

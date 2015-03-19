@@ -354,7 +354,7 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
     """
     # Import image_test here so that extra imports from image_test does not
     # affect cbuildbot in bootstrap.
-    from chromite.cros.tests import image_test
+    from chromite.lib import image_test
     # A dict of list of perf values, keyed by test name.
     perf_entries = collections.defaultdict(list)
     for root, _, filenames in os.walk(test_results_dir):

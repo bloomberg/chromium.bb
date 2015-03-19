@@ -18,7 +18,6 @@ from __future__ import print_function
 import glob
 import os
 
-from chromite.cbuildbot import constants
 from chromite.lib import brick_lib
 from chromite.lib import cros_import
 
@@ -42,13 +41,13 @@ def _ImportCommands():
 
   This method imports the cros_[!unittest] modules which may contain
   commands. When these modules are loaded, declared commands (those that use
-  the cros.CommandDecorator) will automatically get added to cros._commands.
+  the cros.CommandDecorator) will automatically get added to _commands.
   """
-  subdir_path = os.path.join(constants.CHROMITE_DIR, 'cros', 'commands')
+  subdir_path = os.path.join(os.path.dirname(__file__), 'cros')
   for file_path in _FindModules(subdir_path):
     file_name = os.path.basename(file_path)
     mod_name = os.path.splitext(file_name)[0]
-    cros_import.ImportModule(('chromite', 'cros', 'commands', mod_name))
+    cros_import.ImportModule(('chromite', 'cli', 'cros', mod_name))
 
 
 def ListCommands():

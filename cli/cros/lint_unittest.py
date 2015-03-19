@@ -9,8 +9,8 @@ from __future__ import print_function
 import collections
 import StringIO
 
+from chromite.cli.cros import lint
 from chromite.lib import cros_test_lib
-from chromite.cros.commands import lint
 
 
 # pylint: disable=protected-access

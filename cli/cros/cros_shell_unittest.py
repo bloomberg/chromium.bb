@@ -7,7 +7,7 @@
 from __future__ import print_function
 
 from chromite.cli import command_unittest
-from chromite.cros.commands import cros_shell
+from chromite.cli.cros import cros_shell
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import remote_access
@@ -15,7 +15,7 @@ from chromite.lib import remote_access
 
 class MockShellCommand(command_unittest.MockCommand):
   """Mock out the `cros shell` command."""
-  TARGET = 'chromite.cros.commands.cros_shell.ShellCommand'
+  TARGET = 'chromite.cli.cros.cros_shell.ShellCommand'
   TARGET_CLASS = cros_shell.ShellCommand
   COMMAND = 'shell'
 

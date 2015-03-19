@@ -13,7 +13,7 @@ import shutil
 
 from chromite.cbuildbot import constants
 from chromite.cli import command_unittest
-from chromite.cros.commands import cros_chrome_sdk
+from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import cache
 from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib_unittest
@@ -29,7 +29,7 @@ from chromite.lib import partial_mock
 
 class MockChromeSDKCommand(command_unittest.MockCommand):
   """Mock out the build command."""
-  TARGET = 'chromite.cros.commands.cros_chrome_sdk.ChromeSDKCommand'
+  TARGET = 'chromite.cli.cros.cros_chrome_sdk.ChromeSDKCommand'
   TARGET_CLASS = cros_chrome_sdk.ChromeSDKCommand
   COMMAND = 'chrome-sdk'
   ATTRS = (('_GOMA_URL', '_SetupEnvironment') +
@@ -96,7 +96,7 @@ def _DependencyMockCtx(f):
 class SDKFetcherMock(partial_mock.PartialMock):
   """Provides mocking functionality for SDKFetcher."""
 
-  TARGET = 'chromite.cros.commands.cros_chrome_sdk.SDKFetcher'
+  TARGET = 'chromite.cli.cros.cros_chrome_sdk.SDKFetcher'
   ATTRS = ('__init__', 'GetFullVersion', '_GetMetadata', '_UpdateTarball',
            'UpdateDefaultVersion')
 

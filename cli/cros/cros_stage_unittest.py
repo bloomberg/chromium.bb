@@ -6,7 +6,7 @@
 
 from __future__ import print_function
 
-from chromite.cros.commands import cros_stage
+from chromite.cli.cros import cros_stage
 from chromite.lib import cros_test_lib
 
 

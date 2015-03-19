@@ -9,7 +9,7 @@ from __future__ import print_function
 import mock
 
 from chromite.cli import command_unittest
-from chromite.cros.commands import cros_debug
+from chromite.cli.cros import cros_debug
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import remote_access
@@ -17,7 +17,7 @@ from chromite.lib import remote_access
 
 class MockDebugCommand(command_unittest.MockCommand):
   """Mock out the debug command."""
-  TARGET = 'chromite.cros.commands.cros_debug.DebugCommand'
+  TARGET = 'chromite.cli.cros.cros_debug.DebugCommand'
   TARGET_CLASS = cros_debug.DebugCommand
   COMMAND = 'debug'
   ATTRS = ('_ListProcesses', '_DebugNewProcess', '_DebugRunningProcess')

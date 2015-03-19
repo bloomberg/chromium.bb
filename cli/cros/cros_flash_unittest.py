@@ -10,7 +10,7 @@ import mock
 import os
 
 from chromite.cli import command_unittest
-from chromite.cros.commands import cros_flash
+from chromite.cli.cros import cros_flash
 from chromite.lib import brick_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -22,7 +22,7 @@ from chromite.lib import remote_access
 # pylint: disable=W0212
 class MockFlashCommand(command_unittest.MockCommand):
   """Mock out the flash command."""
-  TARGET = 'chromite.cros.commands.cros_flash.FlashCommand'
+  TARGET = 'chromite.cli.cros.cros_flash.FlashCommand'
   TARGET_CLASS = cros_flash.FlashCommand
   COMMAND = 'flash'
 
@@ -35,7 +35,7 @@ class MockFlashCommand(command_unittest.MockCommand):
 
 class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
   """Mock out RemoteDeviceUpdater."""
-  TARGET = 'chromite.cros.commands.cros_flash.RemoteDeviceUpdater'
+  TARGET = 'chromite.cli.cros.cros_flash.RemoteDeviceUpdater'
   ATTRS = ('UpdateStateful', 'UpdateRootfs', 'SetupRootfsUpdate', 'Verify')
 
   def __init__(self):
@@ -151,7 +151,7 @@ class UpdateRunThroughTest(cros_test_lib.MockTempDirTestCase,
 
 class USBImagerMock(partial_mock.PartialCmdMock):
   """Mock out USBImager."""
-  TARGET = 'chromite.cros.commands.cros_flash.USBImager'
+  TARGET = 'chromite.cli.cros.cros_flash.USBImager'
   ATTRS = ('CopyImageToDevice', 'InstallImageToDevice',
            'ChooseRemovableDevice', 'ListAllRemovableDevices',
            'GetRemovableDeviceDescription', 'IsFilePathGPTDiskImage')

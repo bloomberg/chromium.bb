@@ -11,7 +11,7 @@ import os
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
-from chromite.cros.commands import cros_sdk
+from chromite.cli.cros import cros_sdk
 from chromite.lib import bootstrap_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils

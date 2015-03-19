@@ -10,10 +10,10 @@ import os
 import unittest
 
 from chromite.cbuildbot import constants
-from chromite.cros.tests import image_test
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import image_test
 from chromite.lib import osutils
 
 
@@ -66,7 +66,7 @@ def main(args):
   # We use a different prefix here so that unittest DO NOT pick up the
   # image tests automatically because they depend on a proper environment.
   loader.testMethodPrefix = 'Test'
-  all_tests = loader.loadTestsFromName('chromite.cros.tests.image_test')
+  all_tests = loader.loadTestsFromName('chromite.lib.image_test')
   forgiving = image_test.ImageTestSuite()
   non_forgiving = image_test.ImageTestSuite()
   for suite in all_tests:

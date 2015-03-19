@@ -19,7 +19,7 @@ import tempfile
 
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
-from chromite.cros.tests import cros_vm_test
+from chromite.cli.cros.tests import cros_vm_test
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git

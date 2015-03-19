@@ -105,7 +105,7 @@ class CommandTest(cros_test_lib.MockTestCase):
     """Tests import commands correctly."""
     fake_module = 'cros_command_test'
     fake_command_file = '%s.py' % fake_module
-    module_path = ('chromite', 'cros', 'commands', fake_module)
+    module_path = ('chromite', 'cli', 'cros', fake_module)
 
     self.PatchObject(command, '_FindModules', return_value=[fake_command_file])
     # The code doesn't use the return value, so stub it out lazy-like.

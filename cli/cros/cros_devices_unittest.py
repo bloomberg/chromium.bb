@@ -7,14 +7,14 @@
 from __future__ import print_function
 
 from chromite.cli import command_unittest
-from chromite.cros.commands import cros_devices
+from chromite.cli.cros import cros_devices
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 
 
 class MockDevicesCommand(command_unittest.MockCommand):
   """Mock out the devices command."""
-  TARGET = 'chromite.cros.commands.cros_devices.DevicesCommand'
+  TARGET = 'chromite.cli.cros.cros_devices.DevicesCommand'
   TARGET_CLASS = cros_devices.DevicesCommand
   COMMAND = 'devices'
   ATTRS = ('_ListDevices', '_SetAlias', '_FullReset')
