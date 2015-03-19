@@ -20,13 +20,12 @@ Follow these steps to release a new version of libdrm:
   4) Run autoconf and then re-run ./configure so the build system
      picks up the new version number.
 
-  5) Verify that the code passes "make distcheck".  libdrm is tricky
-     to distcheck since the test suite will need to become drm master.
-     This means that you need to run it outside X, that is, in text
-     mode (KMS or no KMS doesn't matter).
+  5) (optional step, release.sh will make distcheck for you, but it can be
+      heart warming to verify that make distcheck passes)
 
-     Running "make distcheck" should result in no warnings or errors
-     and end with a message of the form:
+     Verify that the code passes "make distcheck".  Running "make
+     distcheck" should result in no warnings or errors and end with a
+     message of the form:
 
 	=============================================
 	libdrm-X.Y.Z archives ready for distribution:
@@ -52,11 +51,11 @@ Follow these steps to release a new version of libdrm:
 
   6) Use the release.sh script from the xorg/util/modular repo to
      upload the tarballs to the freedesktop.org download area and
-     create an annouce email template.  The script takes three
-     arguments: a "section", the previous tag and the new tag we just
-     created.  For 2.4.16 again, the command is:
+     create an annouce email template.  The script takes one argument:
+     the path to the libdrm checkout. So, if a checkout of modular is
+     at the same level than the libdrm repo:
 
-	../modular/release.sh libdrm 2.4.15 2.4.16
+	./modular/release.sh libdrm
 
      This copies the two tarballs to freedesktop.org and creates
      libdrm-2.4.16.announce which has a detailed summary of the
