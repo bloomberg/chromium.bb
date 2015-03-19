@@ -17,6 +17,7 @@ import datetime
 import glob
 import os
 import random
+import shutil
 import time
 
 from chromite.cbuildbot import constants
@@ -43,22 +44,47 @@ SERIES_0_TEST_DATA_PATH = os.path.join(
 SERIES_1_TEST_DATA_PATH = os.path.join(
     constants.CHROMITE_DIR, 'cidb', 'test_data', 'series_1')
 
-TEST_DB_CRED_ROOT = os.path.join(constants.SOURCE_ROOT,
-                                 'crostools', 'cidb',
-                                 'cidb_test_root')
 
-TEST_DB_CRED_READONLY = os.path.join(constants.SOURCE_ROOT,
-                                     'crostools', 'cidb',
-                                     'cidb_test_readonly')
-
-TEST_DB_CRED_BOT = os.path.join(constants.SOURCE_ROOT,
-                                'crostools', 'cidb',
-                                'cidb_test_bot')
-
-
-
-class CIDBIntegrationTest(cros_test_lib.TestCase):
+class CIDBIntegrationTest(cros_test_lib.LocalSqlServerTestCase):
   """Base class for cidb tests that connect to a test MySQL instance."""
+
+  CIDB_USER_ROOT = 'root'
+  CIDB_USER_BOT = 'bot'
+  CIDB_USER_READONLY = 'readonly'
+
+  CIDB_CREDS_DIR = {
+      CIDB_USER_BOT: os.path.join(constants.SOURCE_ROOT, 'crostools', 'cidb',
+                                  'cidb_test_bot'),
+      CIDB_USER_READONLY: os.path.join(constants.SOURCE_ROOT, 'crostools',
+                                       'cidb', 'cidb_test_readonly'),
+  }
+
+  def LocalCIDBConnection(self, cidb_user):
+    """Create a CIDBConnection with the local mysqld instance.
+
+    Args:
+      cidb_user: The mysql user to connect as.
+
+    Returns:
+      The created CIDBConnection object.
+    """
+    creds_dir_path = os.path.join(self.tempdir, 'local_cidb_creds')
+    osutils.RmDir(creds_dir_path, ignore_missing=True)
+    osutils.SafeMakedirs(creds_dir_path)
+
+    osutils.WriteFile(os.path.join(creds_dir_path, 'host.txt'),
+                      self.mysqld_host)
+    osutils.WriteFile(os.path.join(creds_dir_path, 'port.txt'),
+                      str(self.mysqld_port))
+    osutils.WriteFile(os.path.join(creds_dir_path, 'user.txt'), cidb_user)
+
+    if cidb_user in self.CIDB_CREDS_DIR:
+      shutil.copy(os.path.join(self.CIDB_CREDS_DIR[cidb_user], 'password.txt'),
+                  creds_dir_path)
+
+    return cidb.CIDBConnection(
+        creds_dir_path,
+        query_retry_args=cidb.SQLConnectionRetryArgs(4, 1, 1.1))
 
   def _PrepareFreshDatabase(self, max_schema_version=None):
     """Create an empty database with migrations applied.
@@ -78,11 +104,11 @@ class CIDBIntegrationTest(cros_test_lib.TestCase):
     # database connections as other mysql users.
 
     # Connect to database and drop its contents.
-    db = cidb.CIDBConnection(TEST_DB_CRED_ROOT)
+    db = self.LocalCIDBConnection(self.CIDB_USER_ROOT)
     db.DropDatabase()
 
     # Connect to now fresh database and apply migrations.
-    db = cidb.CIDBConnection(TEST_DB_CRED_ROOT)
+    db = self.LocalCIDBConnection(self.CIDB_USER_ROOT)
     db.ApplySchemaMigrations(max_schema_version)
 
     return db
@@ -95,7 +121,7 @@ class CIDBIntegrationTest(cros_test_lib.TestCase):
     require an empty database.
     """
     # Connect to now fresh database and apply migrations.
-    db = cidb.CIDBConnection(TEST_DB_CRED_ROOT)
+    db = self.LocalCIDBConnection(self.CIDB_USER_ROOT)
     db.ApplySchemaMigrations()
 
     return db
@@ -208,7 +234,7 @@ class DataSeries0Test(CIDBIntegrationTest):
     self.assertEqual(len(metadatas), 630, 'Did not load expected amount of '
                                           'test data')
 
-    bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
 
     # Simulate the test builds, using a database connection as the
     # bot user.
@@ -216,7 +242,7 @@ class DataSeries0Test(CIDBIntegrationTest):
 
     # Perform some sanity check queries against the database, connected
     # as the readonly user.
-    readonly_db = cidb.CIDBConnection(TEST_DB_CRED_READONLY)
+    readonly_db = self.LocalCIDBConnection(self.CIDB_USER_READONLY)
 
     self._start_and_finish_time_checks(readonly_db)
 
@@ -409,7 +435,7 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
     """Test basic buildStageTable and failureTable functionality."""
     self._PrepareDatabase()
 
-    bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
 
     master_build_id = bot_db.InsertBuild('master build',
                                          constants.WATERFALL_INTERNAL,
@@ -462,7 +488,7 @@ class BuildTableTest(CIDBIntegrationTest):
   def testInsertWithDeadline(self):
     """Test deadline setting/querying API."""
     self._PrepareDatabase()
-    bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
 
     build_id = bot_db.InsertBuild('build_name',
                                   constants.WATERFALL_INTERNAL,
@@ -496,7 +522,7 @@ class BuildTableTest(CIDBIntegrationTest):
     """Test that a deadline in the future can be extended."""
 
     self._PrepareDatabase()
-    bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
 
     build_id = bot_db.InsertBuild('build_name',
                                   constants.WATERFALL_INTERNAL,
@@ -540,7 +566,7 @@ class DataSeries1Test(CIDBIntegrationTest):
     # simulated, to test that db contents are correctly migrated.
     self._PrepareFreshDatabase(39)
 
-    bot_db = cidb.CIDBConnection(TEST_DB_CRED_BOT)
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
 
     def is_master(m):
       return m.GetValue('bot-config') == 'master-release'

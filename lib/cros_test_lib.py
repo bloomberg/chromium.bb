@@ -34,6 +34,9 @@ from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import graphite
+from chromite.lib import parallel
+from chromite.lib import remote_access
+from chromite.lib import retry_util
 import cros_build_lib
 import gob_util
 import osutils
@@ -1077,6 +1080,109 @@ class TempDirTestCase(TestCase):
       self._tempdir_obj.Cleanup()
       self.tempdir = None
       self._tempdir_obj = None
+
+
+class LocalSqlServerTestCase(TempDirTestCase):
+  """A TestCase that launches a local mysqld server in the background.
+
+  - This test must run insde the chroot.
+  - This class provides attributes:
+    - mysqld_host: The IP of the local mysqld server.
+    - mysqld_port: The port of the local mysqld server.
+  """
+
+  # Neither of these are in the PATH for a non-sudo user.
+  MYSQL_INSTALL_DB = '/usr/share/mysql/scripts/mysql_install_db'
+  MYSQLD = '/usr/sbin/mysqld'
+  MYSQLD_SHUTDOWN_TIMEOUT_S = 30
+
+  def __init__(self, *args, **kwargs):
+    TempDirTestCase.__init__(self, *args, **kwargs)
+    self.mysqld_host = None
+    self.mysqld_port = None
+    self._mysqld_dir = None
+    self._mysqld_runner = None
+    self._mysqld_needs_cleanup = False
+    # This class has assumptions about the mariadb installation that are only
+    # guaranteed to hold inside the chroot.
+    cros_build_lib.AssertInsideChroot()
+
+  def setUp(self):
+    """Launch mysqld in a clean temp directory."""
+
+    self._mysqld_dir = os.path.join(self.tempdir, 'mysqld_dir')
+    osutils.SafeMakedirs(self._mysqld_dir)
+    mysqld_tmp_dir = os.path.join(self._mysqld_dir, 'tmp')
+    osutils.SafeMakedirs(mysqld_tmp_dir)
+
+    # MYSQL_INSTALL_DB is stupid. It can't parse '--flag value'.
+    # Must give it options in '--flag=value' form.
+    cmd = [
+        self.MYSQL_INSTALL_DB,
+        '--no-defaults',
+        '--basedir=/usr',
+        '--ldata=%s' % self._mysqld_dir,
+    ]
+    cros_build_lib.RunCommand(cmd, quiet=True)
+
+    self.mysqld_host = '127.0.0.1'
+    self.mysqld_port = remote_access.GetUnusedPort()
+    cmd = [
+        self.MYSQLD,
+        '--no-defaults',
+        '--datadir', self._mysqld_dir,
+        '--socket', os.path.join(self._mysqld_dir, 'mysqld.socket'),
+        '--port', str(self.mysqld_port),
+        '--pid-file', os.path.join(self._mysqld_dir, 'mysqld.pid'),
+        '--tmpdir', mysqld_tmp_dir,
+    ]
+    self._mysqld_runner = parallel.BackgroundTaskRunner(
+        cros_build_lib.RunCommand,
+        processes=1,
+        halt_on_error=True)
+    queue = self._mysqld_runner.__enter__()
+    queue.put((cmd,))
+
+    # Ensure that the Sql server is up before continuing.
+    cmd = [
+        'mysqladmin',
+        '-S', os.path.join(self._mysqld_dir, 'mysqld.socket'),
+        'ping',
+    ]
+    try:
+      retry_util.RunCommandWithRetries(cmd=cmd, quiet=True, max_retry=5,
+                                       sleep=1, backoff_factor=1.5)
+    except Exception as e:
+      self._mysqld_needs_cleanup = True
+      logging.warning('Mysql server failed to show up! (%s)', e)
+      raise
+
+  def tearDown(self):
+    """Cleanup mysqld and our mysqld data directory."""
+    mysqld_socket = os.path.join(self._mysqld_dir, 'mysqld.socket')
+    if os.path.exists(mysqld_socket):
+      try:
+        cmd = [
+            'mysqladmin',
+            '-S', os.path.join(self._mysqld_dir, 'mysqld.socket'),
+            '-u', 'root',
+            'shutdown',
+        ]
+        cros_build_lib.RunCommand(cmd, quiet=True)
+      except cros_build_lib.RunCommandError as e:
+        self._mysqld_needs_cleanup = True
+        logging.warning('Could not stop test mysqld daemon (%s)', e)
+
+    # Explicitly stop the mysqld process before removing the working directory.
+    if self._mysqld_runner is not None:
+      if self._mysqld_needs_cleanup:
+        self._mysqld_runner.__exit__(
+            cros_build_lib.RunCommandError,
+            'Artification exception to cleanup mysqld',
+            None)
+      else:
+        self._mysqld_runner.__exit__(None, None, None)
+    osutils.RmDir(self._mysqld_dir, ignore_missing=True)
 
 
 class MockTestCase(TestCase):
