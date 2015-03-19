@@ -212,9 +212,12 @@ FileGrid.decorateThumbnail_ = function(
   }
   frame.appendChild(box);
 
-  var checkmark = li.ownerDocument.createElement('div');
-  checkmark.className = 'checkmark';
-  frame.appendChild(checkmark);
+  var active_checkmark = li.ownerDocument.createElement('div');
+  active_checkmark.className = 'checkmark active';
+  frame.appendChild(active_checkmark);
+  var inactive_checkmark = li.ownerDocument.createElement('div');
+  inactive_checkmark.className = 'checkmark inactive';
+  frame.appendChild(inactive_checkmark);
 
   var bottom = li.ownerDocument.createElement('div');
   bottom.className = 'thumbnail-bottom';

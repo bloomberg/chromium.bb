@@ -1039,24 +1039,32 @@ body[type='full-page'] .detail-name .detail-icon {
   width: 34px;
 }
 
-body.selecting .thumbnail-grid .checkmark {
+.thumbnail-grid .checkmark.inactive {
   background-image: -webkit-image-set(
       url(../images/files/ui/thumbnail_unchecked.png) 1x,
       url(../images/files/ui/2x/thumbnail_unchecked.png) 2x);
-  opacity: 0.6;
 }
 
-body.check-select .thumbnail-grid .thumbnail-item .checkmark {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/thumbnail_unchecked.png) 1x,
-      url(../images/files/ui/2x/thumbnail_unchecked.png) 2x);
-  opacity: 1;
-}
-
-body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark {
+.thumbnail-grid .checkmark.active {
   background-image: -webkit-image-set(
       url(../images/files/ui/thumbnail_checked.png) 1x,
       url(../images/files/ui/2x/thumbnail_checked.png) 2x);
+}
+
+body.selecting .thumbnail-grid .checkmark.inactive {
+  opacity: 0.6;
+}
+
+body.check-select .thumbnail-grid .thumbnail-item .checkmark.inactive {
+  opacity: 1;
+}
+
+body.check-select .thumbnail-grid .thumbnail-item[selected]
+    .checkmark.inactive {
+  opacity: 0;
+}
+
+body.check-select .thumbnail-grid .thumbnail-item[selected] .checkmark.active {
   opacity: 1;
 }
 
