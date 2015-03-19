@@ -6,7 +6,7 @@
 #define BASE_TRACE_EVENT_MEMORY_DUMP_PROVIDER_H_
 
 #include "base/base_export.h"
-#include "base/macros.h"
+#include "base/trace_event/memory_allocator_attributes.h"
 
 namespace base {
 namespace trace_event {
@@ -22,11 +22,22 @@ class BASE_EXPORT MemoryDumpProvider {
 
   virtual const char* GetFriendlyName() const = 0;
 
+  const MemoryAllocatorDeclaredAttributes& allocator_attributes() const {
+    return allocator_attributes_;
+  }
+
  protected:
-  MemoryDumpProvider() {}
-  virtual ~MemoryDumpProvider() {}
+  MemoryDumpProvider();
+  virtual ~MemoryDumpProvider();
+
+  void DeclareAllocatorAttribute(const MemoryAllocatorDeclaredAttribute& attr);
 
  private:
+  // The map (attribute name -> type) that specifies the semantic of the
+  // extra attributes that the MemoryAllocatorDump(s) produced by this
+  // MemoryDumpProvider will have.
+  MemoryAllocatorDeclaredAttributes allocator_attributes_;
+
   DISALLOW_COPY_AND_ASSIGN(MemoryDumpProvider);
 };
 

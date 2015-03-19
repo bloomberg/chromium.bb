@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::Invoke;
 using testing::Return;
 
 namespace base {
@@ -50,6 +51,14 @@ class MemoryDumpManagerTest : public testing::Test {
 class MockDumpProvider : public MemoryDumpProvider {
  public:
   MOCK_METHOD1(DumpInto, bool(ProcessMemoryDump* pmd));
+
+  // DumpInto() override for the ActiveDumpProviderConsistency test,
+  bool DumpIntoAndCheckDumpProviderCurrentlyActive(ProcessMemoryDump* pmd) {
+    EXPECT_EQ(
+        this,
+        MemoryDumpManager::GetInstance()->dump_provider_currently_active());
+    return true;
+  }
 
   const char* GetFriendlyName() const override { return "MockDumpProvider"; }
 };
@@ -145,6 +154,31 @@ TEST_F(MemoryDumpManagerTest, DisableFailingDumpers) {
   EXPECT_CALL(mdp2, DumpInto(_)).Times(1).WillRepeatedly(Return(false));
   mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
 
+  DisableTracing();
+}
+
+// TODO(primiano): remove once crbug.com/466121 gets fixed.
+// Ascertains that calls to MDM::dump_provider_currently_active() actually
+// returns the MemoryDumpProvider currently active during the DumpInto() call.
+TEST_F(MemoryDumpManagerTest, ActiveDumpProviderConsistency) {
+  MockDumpProvider mdp1;
+  MockDumpProvider mdp2;
+
+  mdm_->RegisterDumpProvider(&mdp1);
+  mdm_->RegisterDumpProvider(&mdp2);
+  EnableTracing(kTraceCategory);
+  EXPECT_CALL(mdp1, DumpInto(_))
+      .Times(2)
+      .WillRepeatedly(Invoke(
+          &mdp1,
+          &MockDumpProvider::DumpIntoAndCheckDumpProviderCurrentlyActive));
+  EXPECT_CALL(mdp2, DumpInto(_))
+      .Times(2)
+      .WillRepeatedly(Invoke(
+          &mdp2,
+          &MockDumpProvider::DumpIntoAndCheckDumpProviderCurrentlyActive));
+  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
+  mdm_->RequestDumpPoint(DumpPointType::EXPLICITLY_TRIGGERED);
   DisableTracing();
 }
 

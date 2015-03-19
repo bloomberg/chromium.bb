@@ -4,8 +4,12 @@
 
 source_set("trace_event") {
   sources = [
+    "memory_allocator_attributes.h",
+    "memory_allocator_dump.cc",
+    "memory_allocator_dump.h",
     "memory_dump_manager.cc",
     "memory_dump_manager.h",
+    "memory_dump_provider.cc",
     "memory_dump_provider.h",
     "process_memory_dump.cc",
     "process_memory_dump.h",

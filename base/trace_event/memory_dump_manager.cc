@@ -59,7 +59,8 @@ void MemoryDumpManager::SetInstanceForTesting(MemoryDumpManager* instance) {
   g_instance_for_testing = instance;
 }
 
-MemoryDumpManager::MemoryDumpManager() : memory_tracing_enabled_(0) {
+MemoryDumpManager::MemoryDumpManager()
+    : dump_provider_currently_active_(nullptr), memory_tracing_enabled_(0) {
 }
 
 MemoryDumpManager::~MemoryDumpManager() {
@@ -128,17 +129,19 @@ void MemoryDumpManager::CreateLocalDumpPoint(DumpPointType dump_point_type,
     AutoLock lock(lock_);
     for (auto it = dump_providers_enabled_.begin();
          it != dump_providers_enabled_.end();) {
-      MemoryDumpProvider* dump_provider = *it;
-      if (dump_provider->DumpInto(pmd.get())) {
+      dump_provider_currently_active_ = *it;
+      if (dump_provider_currently_active_->DumpInto(pmd.get())) {
         did_any_provider_dump = true;
         ++it;
       } else {
-        LOG(ERROR) << "The memory dumper " << dump_provider->GetFriendlyName()
+        LOG(ERROR) << "The memory dumper "
+                   << dump_provider_currently_active_->GetFriendlyName()
                    << " failed, possibly due to sandboxing (crbug.com/461788), "
                       "disabling it for current process. Try restarting chrome "
                       "with the --no-sandbox switch.";
         it = dump_providers_enabled_.erase(it);
       }
+      dump_provider_currently_active_ = nullptr;
     }
   }
 

@@ -49,6 +49,12 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
+  // Returns the MemoryDumpProvider which is currently being dumping into a
+  // ProcessMemoryDump via DumpInto(...) if any, nullptr otherwise.
+  MemoryDumpProvider* dump_provider_currently_active() const {
+    return dump_provider_currently_active_;
+  }
+
  private:
   friend struct DefaultDeleter<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
@@ -69,6 +75,9 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
   std::vector<MemoryDumpProvider*> dump_providers_registered_;  // Not owned.
   std::vector<MemoryDumpProvider*> dump_providers_enabled_;     // Not owned.
+
+  // TODO(primiano): this is required only until crbug.com/466121 gets fixed.
+  MemoryDumpProvider* dump_provider_currently_active_;  // Now owned.
 
   // Protects from concurrent accesses to the |dump_providers_*|, e.g., tearing
   // down logging while creating a dump point on another thread.
