@@ -10,13 +10,13 @@
 
 namespace content {
 
+ThreadSafeSender::~ThreadSafeSender() {
+}
+
 ThreadSafeSender::ThreadSafeSender(
     const scoped_refptr<base::MessageLoopProxy>& main_loop,
     const scoped_refptr<IPC::SyncMessageFilter>& sync_filter)
     : main_loop_(main_loop), sync_filter_(sync_filter) {
-}
-
-ThreadSafeSender::~ThreadSafeSender() {
 }
 
 bool ThreadSafeSender::Send(IPC::Message* msg) {

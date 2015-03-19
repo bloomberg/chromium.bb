@@ -41,7 +41,8 @@ struct TransferredMessagePort;
 // This class manages communication with the browser process about
 // registration of the service worker, exposed to renderer and worker
 // scripts through methods like navigator.registerServiceWorker().
-class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
+class CONTENT_EXPORT ServiceWorkerDispatcher
+    : public WorkerTaskRunner::Observer {
  public:
   typedef blink::WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks
       WebServiceWorkerRegistrationCallbacks;
@@ -147,6 +148,7 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   typedef std::map<int, WebServiceWorkerRegistrationImpl*>
       RegistrationObjectMap;
 
+  friend class ServiceWorkerDispatcherTest;
   friend class WebServiceWorkerImpl;
   friend class WebServiceWorkerRegistrationImpl;
 

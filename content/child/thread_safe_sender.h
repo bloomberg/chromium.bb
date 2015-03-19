@@ -28,15 +28,16 @@ class CONTENT_EXPORT ThreadSafeSender
  public:
   bool Send(IPC::Message* msg) override;
 
+ protected:
+  ThreadSafeSender(const scoped_refptr<base::MessageLoopProxy>& main_loop,
+                   const scoped_refptr<IPC::SyncMessageFilter>& sync_filter);
+  ~ThreadSafeSender() override;
+
  private:
   friend class ChildThreadImpl;  // for construction
   friend class IndexedDBDispatcherTest;
   friend class WebIDBCursorImplTest;
   friend class base::RefCountedThreadSafe<ThreadSafeSender>;
-
-  ThreadSafeSender(const scoped_refptr<base::MessageLoopProxy>& main_loop,
-                   const scoped_refptr<IPC::SyncMessageFilter>& sync_filter);
-  ~ThreadSafeSender() override;
 
   scoped_refptr<base::MessageLoopProxy> main_loop_;
   scoped_refptr<IPC::SyncMessageFilter> sync_filter_;
