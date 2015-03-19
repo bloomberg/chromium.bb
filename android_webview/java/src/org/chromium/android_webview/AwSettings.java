@@ -415,6 +415,7 @@ public class AwSettings {
      * See {@link android.webkit.WebView#setInitialScale}.
      */
     public void setInitialPageScale(final float scaleInPercent) {
+        if (TRACE) Log.d(LOGTAG, "setInitialScale=" + scaleInPercent);
         synchronized (mAwSettingsLock) {
             if (mInitialPageScalePercent != scaleInPercent) {
                 mInitialPageScalePercent = scaleInPercent;
