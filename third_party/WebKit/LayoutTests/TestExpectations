@@ -1869,7 +1869,24 @@ crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug46368-1.html [ Pass ImageOnlyFai
 crbug.com/460580 [ Mac ] tables/mozilla/bugs/bug12384.html [ Pass ImageOnlyFailure ]
 
 crbug.com/463302 virtual/slimmingpaint/fast/repaint/absolute-position-and-opacity-changed.html [ ImageOnlyFailure ]
-crbug.com/463608 virtual/slimmingpaint/fast/repaint/4774354.html [ ImageOnlyFailure ]
+
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/selection-after-delete.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/selection-gap-absolute-child.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/selection-gap-flipped-fixed-child.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/japanese-rl-selection-clear.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/japanese-rl-selection-repaint.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/selection-clear.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/selection-change-in-iframe-with-relative-parent.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/text-selection-rect-in-overflow.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/text-selection-rect-in-overflow-2.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/selection-gap-flipped-absolute-child.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/selection-rl.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/repaint-across-writing-mode-boundary.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/selection-gap-transformed-absolute-child.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/selection-gap-fixed-child.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/selection-partial-invalidation-between-blocks.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/selection-gap-transformed-fixed-child.html [ NeedsRebaseline ]
+crbug.com/463608 virtual/slimmingpaint/fast/repaint/selection-clear-after-move.html [ NeedsRebaseline ]
 
 # These need a manual rebaseline after crbug.com/461107
 crbug.com/461107 [ Linux Mac Android ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]

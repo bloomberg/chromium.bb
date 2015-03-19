@@ -1262,6 +1262,9 @@ void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject& paint
     LayoutRect newSelectionRect = selectionRectForPaintInvalidation(&paintInvalidationContainer);
     setPreviousSelectionRectForPaintInvalidation(newSelectionRect);
 
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled() && shouldInvalidateSelection())
+        invalidateDisplayItemClients(paintInvalidationContainer);
+
     if (fullInvalidation)
         return;
 
