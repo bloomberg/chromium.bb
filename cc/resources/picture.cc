@@ -213,11 +213,7 @@ void Picture::Record(ContentLayerClient* painter,
   canvas->translate(SkFloatToScalar(-layer_rect_.x()),
                     SkFloatToScalar(-layer_rect_.y()));
 
-  SkRect layer_skrect = SkRect::MakeXYWH(layer_rect_.x(),
-                                         layer_rect_.y(),
-                                         layer_rect_.width(),
-                                         layer_rect_.height());
-  canvas->clipRect(layer_skrect);
+  canvas->clipRect(gfx::RectToSkRect(layer_rect_));
 
   painter->PaintContents(canvas.get(), layer_rect_, painting_control);
 
