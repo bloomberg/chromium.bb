@@ -889,6 +889,11 @@ void PictureLayerTiling::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetInteger("num_tiles", tiles_.size());
   state->SetDouble("content_scale", contents_scale_);
+  MathUtil::AddToTracedValue("visible_rect", current_visible_rect_, state);
+  MathUtil::AddToTracedValue("skewport_rect", current_skewport_rect_, state);
+  MathUtil::AddToTracedValue("soon_rect", current_soon_border_rect_, state);
+  MathUtil::AddToTracedValue("eventually_rect", current_eventually_rect_,
+                             state);
   MathUtil::AddToTracedValue("tiling_size", tiling_size(), state);
 }
 
