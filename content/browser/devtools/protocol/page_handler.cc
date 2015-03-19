@@ -53,12 +53,10 @@ ui::GestureProviderConfigType TouchEmulationConfigurationToType(
     const std::string& protocol_value) {
   ui::GestureProviderConfigType result =
       ui::GestureProviderConfigType::CURRENT_PLATFORM;
-  if (protocol_value ==
-      set_touch_emulation_enabled::kConfigurationMobile) {
+  if (protocol_value == "mobile") {
     result = ui::GestureProviderConfigType::GENERIC_MOBILE;
   }
-  if (protocol_value ==
-      set_touch_emulation_enabled::kConfigurationDesktop) {
+  if (protocol_value == "desktop") {
     result = ui::GestureProviderConfigType::GENERIC_DESKTOP;
   }
   return result;
