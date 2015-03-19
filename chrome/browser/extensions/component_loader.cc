@@ -448,6 +448,11 @@ void ComponentLoader::AddKeyboardApp() {
 }
 
 void ComponentLoader::AddWebStoreApp() {
+#if defined(OS_CHROMEOS)
+  if (!IsNormalSession())
+    return;
+#endif
+
   AddWithNameAndDescription(IDR_WEBSTORE_MANIFEST,
                             base::FilePath(FILE_PATH_LITERAL("web_store")),
                             IDS_WEBSTORE_NAME_STORE,
