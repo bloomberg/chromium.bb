@@ -2412,8 +2412,18 @@ weston_output_finish_frame(struct weston_output *output,
 	msec = (refresh_nsec - timespec_to_nsec(&gone)) / 1000000; /* floor */
 	msec -= compositor->repaint_msec;
 
-	/* Also sanity check. */
-	if (msec < 1 || msec > 1000)
+	if (msec < -1000 || msec > 1000) {
+		static bool warned;
+
+		if (!warned)
+			weston_log("Warning: computed repaint delay is "
+				   "insane: %d msec\n", msec);
+		warned = true;
+
+		msec = 0;
+	}
+
+	if (msec < 1)
 		output_repaint_timer_handler(output);
 	else
 		wl_event_source_timer_update(output->repaint_timer, msec);
