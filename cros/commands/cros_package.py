@@ -138,7 +138,7 @@ To enable building a package from latest or stable ebuilds:
     """Enable latest/stable build."""
     cmd = ['cros_workon',
            'start' if latest else 'stop',
-           '--board=%s' % self.options.brick,
+           '--brick=%s' % self.options.brick,
            self.options.package_name]
     result = cros_build_lib.RunCommand(cmd, quiet=True, error_code_ok=True)
     if (result.returncode and
