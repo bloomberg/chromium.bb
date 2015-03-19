@@ -23,48 +23,55 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebKitAnimationEvent_h
-#define WebKitAnimationEvent_h
-
-#include "core/events/Event.h"
-#include "core/events/WebKitAnimationEventInit.h"
+#include "config.h"
+#include "core/events/AnimationEvent.h"
 
 namespace blink {
 
-class WebKitAnimationEvent final : public Event {
-    DEFINE_WRAPPERTYPEINFO();
-public:
-    static PassRefPtrWillBeRawPtr<WebKitAnimationEvent> create()
-    {
-        return adoptRefWillBeNoop(new WebKitAnimationEvent);
-    }
-    static PassRefPtrWillBeRawPtr<WebKitAnimationEvent> create(const AtomicString& type, const String& animationName, double elapsedTime)
-    {
-        return adoptRefWillBeNoop(new WebKitAnimationEvent(type, animationName, elapsedTime));
-    }
-    static PassRefPtrWillBeRawPtr<WebKitAnimationEvent> create(const AtomicString& type, const WebKitAnimationEventInit& initializer)
-    {
-        return adoptRefWillBeNoop(new WebKitAnimationEvent(type, initializer));
-    }
+AnimationEvent::AnimationEvent()
+    : m_elapsedTime(0.0)
+{
+}
 
-    virtual ~WebKitAnimationEvent();
+AnimationEvent::AnimationEvent(const AtomicString& type, const AnimationEventInit& initializer)
+    : Event(type, initializer)
+    , m_elapsedTime(0.0)
+{
+    if (initializer.hasAnimationName())
+        m_animationName = initializer.animationName();
+    if (initializer.hasElapsedTime())
+        m_elapsedTime = initializer.elapsedTime();
+}
 
-    const String& animationName() const;
-    double elapsedTime() const;
+AnimationEvent::AnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime)
+    : Event(type, true, true)
+    , m_animationName(animationName)
+    , m_elapsedTime(elapsedTime)
+{
+}
 
-    virtual const AtomicString& interfaceName() const override;
+AnimationEvent::~AnimationEvent()
+{
+}
 
-    DECLARE_VIRTUAL_TRACE();
+const String& AnimationEvent::animationName() const
+{
+    return m_animationName;
+}
 
-private:
-    WebKitAnimationEvent();
-    WebKitAnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime);
-    WebKitAnimationEvent(const AtomicString&, const WebKitAnimationEventInit&);
+double AnimationEvent::elapsedTime() const
+{
+    return m_elapsedTime;
+}
 
-    String m_animationName;
-    double m_elapsedTime;
-};
+const AtomicString& AnimationEvent::interfaceName() const
+{
+    return EventNames::AnimationEvent;
+}
+
+DEFINE_TRACE(AnimationEvent)
+{
+    Event::trace(visitor);
+}
 
 } // namespace blink
-
-#endif // WebKitAnimationEvent_h

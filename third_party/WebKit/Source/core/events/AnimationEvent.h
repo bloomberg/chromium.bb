@@ -23,10 +23,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Constructor(DOMString type, optional WebKitAnimationEventInit eventInitDict),
-] interface WebKitAnimationEvent : Event {
-    readonly attribute DOMString animationName;
-    readonly attribute double elapsedTime;
+#ifndef AnimationEvent_h
+#define AnimationEvent_h
+
+#include "core/events/AnimationEventInit.h"
+#include "core/events/Event.h"
+
+namespace blink {
+
+class AnimationEvent final : public Event {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static PassRefPtrWillBeRawPtr<AnimationEvent> create()
+    {
+        return adoptRefWillBeNoop(new AnimationEvent);
+    }
+    static PassRefPtrWillBeRawPtr<AnimationEvent> create(const AtomicString& type, const String& animationName, double elapsedTime)
+    {
+        return adoptRefWillBeNoop(new AnimationEvent(type, animationName, elapsedTime));
+    }
+    static PassRefPtrWillBeRawPtr<AnimationEvent> create(const AtomicString& type, const AnimationEventInit& initializer)
+    {
+        return adoptRefWillBeNoop(new AnimationEvent(type, initializer));
+    }
+
+    virtual ~AnimationEvent();
+
+    const String& animationName() const;
+    double elapsedTime() const;
+
+    virtual const AtomicString& interfaceName() const override;
+
+    DECLARE_VIRTUAL_TRACE();
+
+private:
+    AnimationEvent();
+    AnimationEvent(const AtomicString& type, const String& animationName, double elapsedTime);
+    AnimationEvent(const AtomicString&, const AnimationEventInit&);
+
+    String m_animationName;
+    double m_elapsedTime;
 };
 
+} // namespace blink
+
+#endif // AnimationEvent_h

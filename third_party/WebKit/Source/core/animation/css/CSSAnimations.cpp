@@ -49,8 +49,8 @@
 #include "core/dom/Element.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/StyleEngine.h"
+#include "core/events/AnimationEvent.h"
 #include "core/events/TransitionEvent.h"
-#include "core/events/WebKitAnimationEvent.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/KeyframeList.h"
@@ -675,7 +675,7 @@ EventTarget* CSSAnimations::AnimationEventDelegate::eventTarget() const
 void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType listenerType, const AtomicString& eventName, double elapsedTime)
 {
     if (m_animationTarget->document().hasListenerType(listenerType)) {
-        RefPtrWillBeRawPtr<WebKitAnimationEvent> event = WebKitAnimationEvent::create(eventName, m_name, elapsedTime);
+        RefPtrWillBeRawPtr<AnimationEvent> event = AnimationEvent::create(eventName, m_name, elapsedTime);
         event->setTarget(eventTarget());
         document().enqueueAnimationFrameEvent(event);
     }

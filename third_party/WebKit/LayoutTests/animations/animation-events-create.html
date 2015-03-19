@@ -7,7 +7,7 @@
 <div id="console"></div>
 <script>
 
-description("Test dynamic creation of WebKitAnimationEvent.");
+description("Test dynamic creation of AnimationEvent.");
 
 if (document.createEvent)
     testPassed("document.createEvent exists");
@@ -15,16 +15,16 @@ else
     testFailed("document.createEvent missing");
 
 debug("");
-debug("Test creation of WebKitAnimationEvent");
+debug("Test creation of AnimationEvent");
 
-var ev = document.createEvent("WebKitAnimationEvent");
+var ev = document.createEvent("AnimationEvent");
 
 shouldBe("typeof(ev)", "'object'");
 shouldBe("ev.animationName", "''");
 shouldBe("ev.elapsedTime", "0.0");
 
 debug("");
-debug("Create a MouseEvent and make sure it doesn't have the WebKitAnimationEnd event properties");
+debug("Create a MouseEvent and make sure it doesn't have AnimationEvent properties");
 
 ev = document.createEvent("MouseEvent");
 

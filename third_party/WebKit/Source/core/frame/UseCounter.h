@@ -641,6 +641,8 @@ public:
         ElementOffsetLeft = 704,
         ElementOffsetWidth = 705,
         ElementOffsetHeight = 706,
+        V8Window_WebKitAnimationEvent_ConstructorGetter = 707,
+        V8Window_WebKitAnimationEvent_AttributeSetter = 708,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
