@@ -406,9 +406,17 @@ void SetKeyEventTimestamp(XEvent* event, long time) {
   event->xkey.time = time;
 }
 
+void AdvanceKeyEventTimestamp(XEvent* event) {
+  event->xkey.time++;
+}
+
 #elif defined(OS_WIN)
 void SetKeyEventTimestamp(MSG& msg, long time) {
   msg.time = time;
+}
+
+void AdvanceKeyEventTimestamp(MSG& msg) {
+  msg.time++;
 }
 #endif
 }  // namespace
@@ -452,28 +460,44 @@ TEST(EventTest, AutoRepeat) {
   {
     KeyEvent key_a1(native_event_a_pressed);
     EXPECT_FALSE(key_a1.IsRepeat());
+
+    KeyEvent key_a1_with_same_event(native_event_a_pressed);
+    EXPECT_FALSE(key_a1_with_same_event.IsRepeat());
+
     KeyEvent key_a1_released(native_event_a_released);
     EXPECT_FALSE(key_a1_released.IsRepeat());
 
     KeyEvent key_a2(native_event_a_pressed);
     EXPECT_FALSE(key_a2.IsRepeat());
+
+    AdvanceKeyEventTimestamp(native_event_a_pressed);
     KeyEvent key_a2_repeated(native_event_a_pressed);
     EXPECT_TRUE(key_a2_repeated.IsRepeat());
+
     KeyEvent key_a2_released(native_event_a_released);
     EXPECT_FALSE(key_a2_released.IsRepeat());
   }
 
+  // Interleaved with different key press.
   {
     KeyEvent key_a3(native_event_a_pressed);
     EXPECT_FALSE(key_a3.IsRepeat());
+
     KeyEvent key_b(native_event_b_pressed);
     EXPECT_FALSE(key_b.IsRepeat());
+
+    AdvanceKeyEventTimestamp(native_event_a_pressed);
     KeyEvent key_a3_again(native_event_a_pressed);
     EXPECT_FALSE(key_a3_again.IsRepeat());
+
+    AdvanceKeyEventTimestamp(native_event_a_pressed);
     KeyEvent key_a3_repeated(native_event_a_pressed);
     EXPECT_TRUE(key_a3_repeated.IsRepeat());
+
+    AdvanceKeyEventTimestamp(native_event_a_pressed);
     KeyEvent key_a3_repeated2(native_event_a_pressed);
     EXPECT_TRUE(key_a3_repeated2.IsRepeat());
+
     KeyEvent key_a3_released(native_event_a_released);
     EXPECT_FALSE(key_a3_released.IsRepeat());
   }
@@ -482,10 +506,13 @@ TEST(EventTest, AutoRepeat) {
   {
     KeyEvent key_a4_0(native_event_a_pressed);
     EXPECT_FALSE(key_a4_0.IsRepeat());
+
     KeyEvent key_a4_1500(native_event_a_pressed_1500);
     EXPECT_TRUE(key_a4_1500.IsRepeat());
+
     KeyEvent key_a4_3000(native_event_a_pressed_3000);
     EXPECT_TRUE(key_a4_3000.IsRepeat());
+
     KeyEvent key_a4_released(native_event_a_released);
     EXPECT_FALSE(key_a4_released.IsRepeat());
   }

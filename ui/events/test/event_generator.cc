@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "ui/events/event.h"
 #include "ui/events/event_source.h"
 #include "ui/events/event_utils.h"
@@ -31,6 +31,21 @@ namespace {
 
 void DummyCallback(EventType, const gfx::Vector2dF&) {
 }
+
+class TestTickClock : public base::TickClock {
+ public:
+  // Starts off with a clock set to TimeTicks().
+  TestTickClock() {}
+
+  base::TimeTicks NowTicks() override {
+    return base::TimeTicks::FromInternalValue(ticks_++ * 1000);
+  }
+
+ private:
+  int64 ticks_ = 1;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTickClock);
+};
 
 class TestKeyEvent : public ui::KeyEvent {
  public:
@@ -67,7 +82,7 @@ EventGenerator::EventGenerator(gfx::NativeWindow root_window)
       grab_(false),
       async_(false),
       targeting_application_(false),
-      tick_clock_(new base::DefaultTickClock()) {
+      tick_clock_(new TestTickClock()) {
   Init(root_window, NULL);
 }
 
@@ -79,7 +94,7 @@ EventGenerator::EventGenerator(gfx::NativeWindow root_window,
       grab_(false),
       async_(false),
       targeting_application_(false),
-      tick_clock_(new base::DefaultTickClock()) {
+      tick_clock_(new TestTickClock()) {
   Init(root_window, NULL);
 }
 
@@ -90,7 +105,7 @@ EventGenerator::EventGenerator(gfx::NativeWindow root_window,
       grab_(false),
       async_(false),
       targeting_application_(false),
-      tick_clock_(new base::DefaultTickClock()) {
+      tick_clock_(new TestTickClock()) {
   Init(root_window, window);
 }
 
@@ -101,7 +116,7 @@ EventGenerator::EventGenerator(EventGeneratorDelegate* delegate)
       grab_(false),
       async_(false),
       targeting_application_(false),
-      tick_clock_(new base::DefaultTickClock()) {
+      tick_clock_(new TestTickClock()) {
   Init(NULL, NULL);
 }
 
@@ -537,12 +552,14 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
   }
   MSG native_event =
       { NULL, (is_press ? key_press : WM_KEYUP), key_code, 0 };
+  native_event.time = Now().InMicroseconds();
   TestKeyEvent keyev(native_event, flags);
 #elif defined(USE_X11)
   ui::ScopedXI2Event xevent;
   xevent.InitKeyEvent(is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
                       key_code,
                       flags);
+  static_cast<XEvent*>(xevent)->xkey.time = Now().InMicroseconds();
   ui::KeyEvent keyev(xevent);
 #else
   ui::EventType type = is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;

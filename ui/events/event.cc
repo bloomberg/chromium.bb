@@ -645,12 +645,16 @@ bool KeyEvent::IsRepeated(const KeyEvent& event) {
   if (!last_key_event_) {
     last_key_event_ = new KeyEvent(event);
     return false;
+  } else if (event.time_stamp() == last_key_event_->time_stamp()) {
+    // The KeyEvent is created from the same native event.
+    return (last_key_event_->flags() & ui::EF_IS_REPEAT) != 0;
   }
   if (event.key_code() == last_key_event_->key_code() &&
-      event.flags() == last_key_event_->flags() &&
+      event.flags() == (last_key_event_->flags() & ~ui::EF_IS_REPEAT) &&
       (event.time_stamp() - last_key_event_->time_stamp()).InMilliseconds() <
-      kMaxAutoRepeatTimeMs) {
+          kMaxAutoRepeatTimeMs) {
     last_key_event_->set_time_stamp(event.time_stamp());
+    last_key_event_->set_flags(last_key_event_->flags() | ui::EF_IS_REPEAT);
     return true;
   }
   delete last_key_event_;

@@ -38,27 +38,13 @@ IN_PROC_BROWSER_TEST_F(AcceleratorControllerBrowserTest,
   ash::wm::WindowState* window_state = ash::wm::GetActiveWindowState();
   EXPECT_FALSE(window_state->IsMaximized());
 
-  // Construct the key events from XEvents because RenderWidgetHostViewAura
-  // drops the ui::EF_IS_REPEAT flag otherwise.
-  ui::ScopedXI2Event xi2_down1;
-  xi2_down1.InitKeyEvent(ui::ET_KEY_PRESSED,
-                         ui::VKEY_OEM_PLUS,
-                         ui::EF_ALT_DOWN);
-  ui::KeyEvent down1(xi2_down1);
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
-  generator.Dispatch(&down1);
+  generator.PressKey(ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN);
   EXPECT_TRUE(window_state->IsMaximized());
 
-  ui::ScopedXI2Event xi2_down2;
-  xi2_down2.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_OEM_PLUS,
-                         ui::EF_ALT_DOWN);
-  ui::KeyEvent down2(xi2_down2);
-  generator.Dispatch(&down2);
+  generator.PressKey(ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN);
 
-  ui::ScopedXI2Event xi2_up;
-  xi2_up.InitKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN);
-  ui::KeyEvent up(xi2_up);
-  generator.Dispatch(&up);
+  generator.ReleaseKey(ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN);
   EXPECT_TRUE(window_state->IsMaximized());
 }
 #endif
