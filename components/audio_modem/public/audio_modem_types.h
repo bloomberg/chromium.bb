@@ -25,9 +25,8 @@ extern const float kDefaultSampleRate;
 extern const int kDefaultBitsPerSample;
 extern const float kDefaultCarrierFrequency;
 
-// The next two really need to be configurable since they don't need to be
-// consistent across platforms, or even playing/recording.
-extern const int kDefaultChannels;
+// This really needs to be configurable since it doesn't need
+// to be consistent across platforms, or even playing/recording.
 extern const media::ChannelLayout kDefaultChannelLayout;
 
 // Enum to represent the audio band (audible vs. ultrasound).

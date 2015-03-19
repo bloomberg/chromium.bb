@@ -10,7 +10,6 @@ const int kDefaultRepetitions = 5;
 const float kDefaultSampleRate = 48000.0f;
 const int kDefaultBitsPerSample = 16;
 const float kDefaultCarrierFrequency = 18500.0f;
-const int kDefaultChannels = 2;
 const media::ChannelLayout kDefaultChannelLayout = media::CHANNEL_LAYOUT_STEREO;
 
 }  // namespace audio_modem

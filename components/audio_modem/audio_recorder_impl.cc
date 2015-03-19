@@ -175,7 +175,7 @@ void AudioRecorderImpl::OnData(media::AudioInputStream* stream,
   // Buffer full, send it for processing.
   if (buffer_->frames() == buffer_frame_index_) {
     ProcessSamples(buffer_.Pass(), decode_callback_);
-    buffer_ = media::AudioBus::Create(kDefaultChannels, total_buffer_frames_);
+    buffer_ = media::AudioBus::Create(source->channels(), total_buffer_frames_);
     buffer_frame_index_ = 0;
 
     // Copy any remaining frames in the source to our buffer.
