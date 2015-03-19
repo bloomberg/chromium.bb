@@ -27,8 +27,12 @@ cat <<PREAMBLE
 <subchar>                     \x3F
 <icu:charsetFamily>           "ASCII"
 
-<icu:state>                  0-80, 81-fe:1, ff
+# 81-fe in states 2 and 3 can be tigher and a1-fe, but
+# to be compliant to HTML5 spec, it should be 81-fe.
+<icu:state>                  0-7f, 81-c5:1, c6:2, c7-fe:3
 <icu:state>                  41-5a, 61-7a, 81-fe
+<icu:state>                  41-52, 81-fe
+<icu:state>                  81-fe
 
 CHARMAP
 PREAMBLE
@@ -60,7 +64,7 @@ function unsorted_table {
   euckr
 }
 
-curl -o index-euc-kr.txt https://encoding.spec.whatwg.org/index-euc-kr.txt
+wget -N -r -nd https://encoding.spec.whatwg.org/index-euc-kr.txt
 preamble
 ascii
 unsorted_table | sort -k1  | uniq

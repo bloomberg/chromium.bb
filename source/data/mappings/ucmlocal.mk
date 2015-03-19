@@ -14,12 +14,7 @@
 #   - GB-HZ is supported now that it uses the GBK table.
 # * Traditional Chinese : Big5
 # * Japanese : SJIS (shift_jis-html), EUC-JP (euc-jp-html)
-# * Korean : Windows-949
-#  - EUC-KR table was removed. It's different from Windows-949, but
-#    in practice EUC-KR and Windows-949 are treated synonymously.
-#  - ISO-2022-KR is now supported by with a one-line change
-#    in common/ucnv2022.c and other changes in convrtrs.txt to make it
-#    use the windows-949 table.
+# * Korean : EUC-KR per the encoding spec
 # * Thai : Windows-874
 #   - TIS-620 and ISO-8859-11 are treated as synonyms of Windows-874
 #     although they're not the same.
@@ -42,7 +37,7 @@ windows-1253-html.ucm windows-1254-html.ucm windows-1255-html.ucm\
 windows-1256-html.ucm windows-1257-html.ucm windows-1258-html.ucm\
 windows-936-2000.ucm gb18030.ucm big5-html.ucm\
 shift_jis-html.ucm euc-jp-html.ucm\
-windows-949-2000.ucm\
+euc-kr-html.ucm\
 windows-874-html.ucm \
 macintosh-html.ucm x-mac-cyrillic-html.ucm\
 ibm866-html.ucm koi8-r-html.ucm koi8-u-html.ucm

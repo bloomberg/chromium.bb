@@ -29,10 +29,22 @@ cat <<PREAMBLE
 <icu:charsetFamily>           "ASCII"
 
 # 'p' is for the range that may produce non-BMP code points.
+# 'i' is to make the code range illegal.
+# Big5 has a lot of small holes in the 2nd byte. If it's in the ASCII range,
+# the 2nd byte has to be added back to the stream to be compliant to the
+# encoding spec. Each state adds 1kB in the data size.
 # See http://userguide.icu-project.org/conversion/data.
-<icu:state>                   0-7f, 87-fe:1, 87-a0:2, c8:2, fa-fe:2
+<icu:state>                   0-7f, a1-fe:1, 87-a0:2, c8:2, fa-fe:2, 87:3, 89:4, 8a:5, 8b:6, 8d:7, 9b:8, 9f:9, a0:a
 <icu:state>                   40-7e, a1-fe
 <icu:state>                   40-7e.p, a1-fe.p
+<icu:state>                   40-7e.p, a1-fe.p, 66.i
+<icu:state>                   40-7e.p, a1-fe.p, 42.i, 44.i, 45.i, 4a-4b.i
+<icu:state>                   40-7e.p, a1-fe.p, 42.i, 63.i, 75.i
+<icu:state>                   40-7e.p, a1-fe.p, 54.i
+<icu:state>                   40-7e.p, a1-fe.p, 41.i
+<icu:state>                   40-7e.p, a1-fe.p, 61.i
+<icu:state>                   40-7e.p, a1-fe.p, 4e.i
+<icu:state>                   40-7e.p, a1-fe.p, 54.i, 57.i, 5a.i, 62.i, 72.i
 
 CHARMAP
 PREAMBLE

@@ -4,9 +4,7 @@
 # *   Corporation and others.  All Rights Reserved.
 # *
 # *   Generated per the algorithm for EUC-JP
-# *   described at http://encoding.spec.whatwg.org/#euc-jp.
-# *   Added the 34 decoding only (EUC-JP to Unicode) entries from euc-jp-2007.ucm
-# *   for the backward compatibility.
+# *   described at https://encoding.spec.whatwg.org/#euc-jp.
 # *
 # ***************************************************************************
 <code_set_name>               "euc-jp-html"
@@ -14,13 +12,12 @@
 <mb_cur_max>                  3
 <mb_cur_min>                  1
 <uconv_class>                 "MBCS"
-<subchar>                     \xF4\xFE
-<subchar1>                    \x1A
+<subchar>                     \x3F
 <icu:charsetFamily>           "ASCII"
 
 <icu:state>                   0-7f, 8e:2, 8f:3, a1-fe:1
 <icu:state>                   a1-fe
-<icu:state>                   a1-e2
+<icu:state>                   a1-df
 <icu:state>                   a1-fe:1, a1:4, a3-a5:4, a8:4, ac-af:4, ee-f2:4, f4-fe:4
 <icu:state>                   a1-fe.u
 

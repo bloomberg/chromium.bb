@@ -27,6 +27,9 @@
       'HAVE_DLOPEN=0',
       # Only build encoding coverters and detectors necessary for HTML5.
       'UCONFIG_NO_NON_HTML5_CONVERSION=1',
+      # No dependency on the default platform encoding.
+      # Will cut down the code size.
+      'U_CHARSET_IS_UTF8=1',
     ],
     'conditions': [
       ['component=="static_library"', {

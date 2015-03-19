@@ -4,11 +4,11 @@
 # found in the LICENSE file.
 
 # References:
-#   http://encoding.spec.whatwg.org/#shift_jis
+#   https://encoding.spec.whatwg.org/#shift_jis
 
 # Download the following file, run it in source/data/mappings directory
 # and save the result to euc-jp-html5.ucm
-#   http://encoding.spec.whatwg.org/index-jis0208.txt
+#   https://encoding.spec.whatwg.org/index-jis0208.txt
 
 function preamble {
 cat <<PREAMBLE
@@ -18,7 +18,7 @@ cat <<PREAMBLE
 # *   Corporation and others.  All Rights Reserved.
 # *
 # *   Generated per the algorithm for Shift_JIS
-# *   described at http://encoding.spec.whatwg.org/#shift_jis
+# *   described at https://encoding.spec.whatwg.org/#shift_jis
 # *
 # ***************************************************************************
 <code_set_name>               "shift_jis-html5"
@@ -26,12 +26,19 @@ cat <<PREAMBLE
 <mb_cur_max>                  2
 <mb_cur_min>                  1
 <uconv_class>                 "MBCS"
-<subchar>                     \xFC\xFC
-<subchar1>                    \x7F
+<subchar>                     \x3F
 <icu:charsetFamily>           "ASCII"
 
-<icu:state>                   0-80, 81-9f:1, a1-df, e0-fc:1
+<icu:state>                   0-80, 81-9f:1, a1-df, e0-fc:1, 82:3, 84:4, 85-86:2, 87:5, 88:2, 98:6, eb-ec:2, ef:2, f9:2, fc:7
+
 <icu:state>                   40-7e, 80-fc
+<icu:state>                   80-fc
+<icu:state>                   4f-7e, 80-fc, 59-5f.i, 7a-7e.i
+<icu:state>                   40-7e, 80-fc, 61-6f.i
+<icu:state>                   40-7e, 80-fc, 76-7d.i
+<icu:state>                   40-7e, 80-fc, 73-7e.i
+<icu:state>                   40-4b, 80-fc
+
 
 CHARMAP
 PREAMBLE
@@ -57,7 +64,7 @@ function half_width_kana {
 }
 
 
-# From http://encoding.spec.whatwg.org/#index-shift_jis-pointer
+# From https://encoding.spec.whatwg.org/#index-shift_jis-pointer
 # The index shift_jis pointer for code point is the return value of
 # these steps for the round-trip code points (tag = 0)
 #
@@ -86,7 +93,7 @@ function jis208 {
 
 # EUDC (End User Defined Characters)  is for decoding only
 # (use '|3' to denote that).
-# See http://encoding.spec.whatwg.org/#shift_jis-decoder - step 5
+# See https://encoding.spec.whatwg.org/#shift_jis-decoder - step 5
 # This function is called twice with {0x40, 0x7E, 0x40} and {0x80, 0xFC, 0x41}
 # to implement it.
 
@@ -117,6 +124,7 @@ function unsorted_table {
   echo '<U203E> \x7E |1'
 }
 
+wget -N -r -nd https://encoding.spec.whatwg.org/index-jis0208.txt
 preamble
 unsorted_table | sort  | uniq
 echo 'END CHARMAP'

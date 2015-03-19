@@ -4,20 +4,27 @@
 # *   Corporation and others.  All Rights Reserved.
 # *
 # *   Generated per the algorithm for Shift_JIS
-# *   described at http://encoding.spec.whatwg.org/#shift_jis
+# *   described at https://encoding.spec.whatwg.org/#shift_jis
 # *
 # ***************************************************************************
-<code_set_name>               "shift_jis_html"
+<code_set_name>               "shift_jis-html5"
 <char_name_mask>              "AXXXX"
 <mb_cur_max>                  2
 <mb_cur_min>                  1
 <uconv_class>                 "MBCS"
-<subchar>                     \xFC\xFC
-<subchar1>                    \x7F
+<subchar>                     \x3F
 <icu:charsetFamily>           "ASCII"
 
-<icu:state>                   0-80, 81-9f:1, a1-df, e0-fc:1
+<icu:state>                   0-80, 81-9f:1, a1-df, e0-fc:1, 82:3, 84:4, 85-86:2, 87:5, 88:2, 98:6, eb-ec:2, ef:2, f9:2, fc:7
+
 <icu:state>                   40-7e, 80-fc
+<icu:state>                   80-fc
+<icu:state>                   4f-7e, 80-fc, 59-5f.i, 7a-7e.i
+<icu:state>                   40-7e, 80-fc, 61-6f.i
+<icu:state>                   40-7e, 80-fc, 76-7d.i
+<icu:state>                   40-7e, 80-fc, 73-7e.i
+<icu:state>                   40-4b, 80-fc
+
 
 CHARMAP
 <U0000> \x00 |0

@@ -414,7 +414,7 @@ shift_jis-html
     windows-31j
     x-sjis
 
-windows-949-2000
+euc-kr-html
     EUC-KR { MIME* HTML* }
     cseuckr
     csksc56011987
