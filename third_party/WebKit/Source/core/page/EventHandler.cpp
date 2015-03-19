@@ -2553,7 +2553,7 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
             stopNode = m_previousGestureScrolledNode.get();
 
         // First try to scroll the closest scrollable LayoutBox ancestor of |node|.
-        ScrollGranularity granularity = ScrollByPixel;
+        ScrollGranularity granularity = ScrollByPrecisePixel;
         bool horizontalScroll = scroll(ScrollLeft, granularity, node, &stopNode, delta.width());
         bool verticalScroll = scroll(ScrollUp, granularity, node, &stopNode, delta.height());
 

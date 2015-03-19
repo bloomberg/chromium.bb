@@ -311,5 +311,10 @@
     "prefix": "scroll_customization",
     "base": "fast/events/touch",
     "args": ["--enable-blink-features=ScrollCustomization"]
+  },
+  {
+    "prefix": "smoothscrolling",
+    "base": "fast/events/touch/gesture",
+    "args": ["--enable-smooth-scrolling"]
   }
 ]
