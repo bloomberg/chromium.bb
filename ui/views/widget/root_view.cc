@@ -493,8 +493,13 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
             DispatchEvent(mouse_move_handler_, &exit);
         if (dispatch_details.dispatcher_destroyed)
           return;
-        NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_EXITED,
-            mouse_move_handler_, v);
+        // The mouse_move_handler_ could have been destroyed in the context of
+        // the mouse exit event.
+        if (!dispatch_details.target_destroyed) {
+          CHECK(mouse_move_handler_);
+          NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_EXITED,
+              mouse_move_handler_, v);
+        }
       }
       View* old_handler = mouse_move_handler_;
       mouse_move_handler_ = v;
@@ -507,8 +512,13 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
             DispatchEvent(mouse_move_handler_, &entered);
         if (dispatch_details.dispatcher_destroyed)
           return;
-        NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_ENTERED,
-            mouse_move_handler_, old_handler);
+        // The mouse_move_handler_ could have been destroyed in the context of
+        // the mouse exit event.
+        if (!dispatch_details.target_destroyed) {
+          CHECK(mouse_move_handler_);
+          NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_ENTERED,
+              mouse_move_handler_, old_handler);
+        }
       }
     }
     ui::MouseEvent moved_event(event, static_cast<View*>(this),
@@ -525,8 +535,13 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
         DispatchEvent(mouse_move_handler_, &exited);
     if (dispatch_details.dispatcher_destroyed)
       return;
-    NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_EXITED,
-        mouse_move_handler_, v);
+    // The mouse_move_handler_ could have been destroyed in the context of the
+    // mouse exit event.
+    if (!dispatch_details.target_destroyed) {
+      CHECK(mouse_move_handler_);
+      NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_EXITED,
+          mouse_move_handler_, v);
+    }
     // On Aura the non-client area extends slightly outside the root view for
     // some windows.  Let the non-client cursor handling code set the cursor
     // as we do above.
@@ -543,8 +558,13 @@ void RootView::OnMouseExited(const ui::MouseEvent& event) {
         DispatchEvent(mouse_move_handler_, &exited);
     if (dispatch_details.dispatcher_destroyed)
       return;
-    NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_EXITED,
-        mouse_move_handler_, NULL);
+    // The mouse_move_handler_ could have been destroyed in the context of the
+    // mouse exit event.
+    if (!dispatch_details.target_destroyed) {
+      CHECK(mouse_move_handler_);
+      NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_EXITED,
+          mouse_move_handler_, NULL);
+    }
     mouse_move_handler_ = NULL;
   }
 }
