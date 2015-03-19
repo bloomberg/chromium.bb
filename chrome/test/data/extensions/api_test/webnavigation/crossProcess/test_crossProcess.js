@@ -187,6 +187,10 @@ onload = function() {
         // Navigates to a different site, but then commits
         // same-site, non-user, renderer-initiated navigation
         // before the slow cross-site navigation commits.
+        /*
+         * This test case is disabled, because it is flaky and fails fairly
+         * consistently on MSan bots. See https://crbug.com/467800
+         *
         function crossProcessWithSameSiteCommit() {
           expect([
             { label: "a-onBeforeNavigate",
@@ -294,6 +298,7 @@ onload = function() {
               tabId,
               { url: getURL('d.html?' + config.testServer.port + "/test1") });
         },
+        */
 
         // Navigates cross-site, but then starts a same-site,
         // renderer-initiated navigation with user gesture.
