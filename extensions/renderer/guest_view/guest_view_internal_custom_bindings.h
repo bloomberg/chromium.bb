@@ -55,6 +55,16 @@ class GuestViewInternalCustomBindings : public ObjectBackedNativeHandler {
   // a single parameter, |callback|.
   void RegisterElementResizeCallback(
       const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Runs a JavaScript function with user gesture.
+  //
+  // This is used to request webview element to enter fullscreen (from the
+  // embedder).
+  // Note that the guest requesting fullscreen means it has already been
+  // triggered by a user gesture and we get to this point if embedder allows
+  // the fullscreen request to proceed.
+  void RunWithGesture(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 };
 
 }  // namespace extensions

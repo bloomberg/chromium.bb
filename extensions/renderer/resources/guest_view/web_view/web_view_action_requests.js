@@ -14,7 +14,8 @@ var PERMISSION_TYPES = ['media',
                         'pointerLock',
                         'download',
                         'loadplugin',
-                        'filesystem'];
+                        'filesystem',
+                        'fullscreen'];
 
 // -----------------------------------------------------------------------------
 // WebViewActionRequest object.
@@ -250,11 +251,38 @@ PermissionRequest.prototype.WARNING_MSG_REQUEST_BLOCKED =
 
 // -----------------------------------------------------------------------------
 
+// FullscreenPermissionRequest object.
+
+// Represents a fullscreen permission request.
+function FullscreenPermissionRequest(webViewImpl, event, webViewEvent) {
+  PermissionRequest.call(this, webViewImpl, event, webViewEvent);
+}
+
+FullscreenPermissionRequest.prototype.__proto__ = PermissionRequest.prototype;
+
+FullscreenPermissionRequest.prototype.getInterfaceObject = function() {
+  return {
+    allow: function() {
+      this.validateCall();
+      WebViewInternal.setPermission(
+          this.guestInstanceId, this.requestId, 'allow');
+      // Now make the <webview> element go fullscreen.
+      this.webViewImpl.makeElementFullscreen();
+    }.bind(this),
+    deny: function() {
+      this.validateCall();
+      WebViewInternal.setPermission(
+          this.guestInstanceId, this.requestId, 'deny');
+    }.bind(this)
+  };
+};
+
 var WebViewActionRequests = {
   WebViewActionRequest: WebViewActionRequest,
   Dialog: Dialog,
   NewWindow: NewWindow,
-  PermissionRequest: PermissionRequest
+  PermissionRequest: PermissionRequest,
+  FullscreenPermissionRequest: FullscreenPermissionRequest
 };
 
 exports.WebViewActionRequests = WebViewActionRequests;

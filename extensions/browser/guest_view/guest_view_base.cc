@@ -72,16 +72,18 @@ scoped_ptr<base::DictionaryValue> GuestViewBase::Event::GetArguments() {
 }
 
 // This observer ensures that the GuestViewBase destroys itself when its
-// embedder goes away.
-class GuestViewBase::OwnerLifetimeObserver : public WebContentsObserver {
+// embedder goes away. It also tracks when the embedder's fullscreen is
+// toggled so the guest can change itself accordingly.
+class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
  public:
-  OwnerLifetimeObserver(GuestViewBase* guest,
+  OwnerContentsObserver(GuestViewBase* guest,
                         content::WebContents* embedder_web_contents)
       : WebContentsObserver(embedder_web_contents),
+        is_fullscreen_(false),
         destroyed_(false),
         guest_(guest) {}
 
-  ~OwnerLifetimeObserver() override {}
+  ~OwnerContentsObserver() override {}
 
   // WebContentsObserver implementation.
   void WebContentsDestroyed() override {
@@ -102,7 +104,32 @@ class GuestViewBase::OwnerLifetimeObserver : public WebContentsObserver {
     Destroy();
   }
 
+  void DidToggleFullscreenModeForTab(bool entered_fullscreen) override {
+    if (destroyed_)
+      return;
+
+    is_fullscreen_ = entered_fullscreen;
+    guest_->EmbedderFullscreenToggled(is_fullscreen_);
+  }
+
+  void MainFrameWasResized(bool width_changed) override {
+    if (destroyed_)
+      return;
+
+    if (!web_contents()->GetDelegate())
+      return;
+
+    bool current_fullscreen =
+        web_contents()->GetDelegate()->IsFullscreenForTabOrPending(
+            web_contents());
+    if (is_fullscreen_ && !current_fullscreen) {
+      is_fullscreen_ = false;
+      guest_->EmbedderFullscreenToggled(is_fullscreen_);
+    }
+  }
+
  private:
+  bool is_fullscreen_;
   bool destroyed_;
   GuestViewBase* guest_;
 
@@ -115,7 +142,7 @@ class GuestViewBase::OwnerLifetimeObserver : public WebContentsObserver {
     guest_->Destroy();
   }
 
-  DISALLOW_COPY_AND_ASSIGN(OwnerLifetimeObserver);
+  DISALLOW_COPY_AND_ASSIGN(OwnerContentsObserver);
 };
 
 // This observer ensures that the GuestViewBase destroys itself when its
@@ -209,8 +236,8 @@ void GuestViewBase::InitWithWebContents(
   // At this point, we have just created the guest WebContents, we need to add
   // an observer to the owner WebContents. This observer will be responsible
   // for destroying the guest WebContents if the owner goes away.
-  owner_lifetime_observer_.reset(
-      new OwnerLifetimeObserver(this, owner_web_contents_));
+  owner_contents_observer_.reset(
+      new OwnerContentsObserver(this, owner_web_contents_));
 
   WebContentsObserver::Observe(guest_web_contents);
   guest_web_contents->SetDelegate(this);
@@ -490,12 +517,12 @@ void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
                                int element_instance_id,
                                bool is_full_page_plugin) {
   if (owner_web_contents_ != embedder_web_contents) {
-    DCHECK_EQ(owner_lifetime_observer_->web_contents(), owner_web_contents_);
+    DCHECK_EQ(owner_contents_observer_->web_contents(), owner_web_contents_);
     // Stop tracking the old embedder's zoom level.
     StopTrackingEmbedderZoomLevel();
     owner_web_contents_ = embedder_web_contents;
-    owner_lifetime_observer_.reset(
-        new OwnerLifetimeObserver(this, embedder_web_contents));
+    owner_contents_observer_.reset(
+        new OwnerContentsObserver(this, embedder_web_contents));
   }
 
   // Start tracking the new embedder's zoom level.

@@ -13,6 +13,9 @@ enum WebViewPermissionType {
 
   WEB_VIEW_PERMISSION_TYPE_FILESYSTEM,
 
+  // html5 fullscreen permission.
+  WEB_VIEW_PERMISSION_TYPE_FULLSCREEN,
+
   WEB_VIEW_PERMISSION_TYPE_GEOLOCATION,
 
   // JavaScript Dialogs: prompt, alert, confirm

@@ -124,6 +124,12 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // work.
   virtual void GuestReady() {}
 
+  // This method is called when embedder WebContents's fullscreen is toggled.
+  //
+  // If the guest asked the embedder to enter fullscreen, the guest uses this
+  // signal to exit fullscreen state.
+  virtual void EmbedderFullscreenToggled(bool entered_fullscreen) {}
+
   // This method is invoked when the contents auto-resized to give the container
   // an opportunity to match it if it wishes.
   //
@@ -347,7 +353,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
 
  private:
-  class OwnerLifetimeObserver;
+  class OwnerContentsObserver;
 
   class OpenerLifetimeObserver;
 
@@ -414,7 +420,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // This observer ensures that this guest self-destructs if the embedder goes
   // away.
-  scoped_ptr<OwnerLifetimeObserver> owner_lifetime_observer_;
+  scoped_ptr<OwnerContentsObserver> owner_contents_observer_;
 
   // This observer ensures that if the guest is unattached and its opener goes
   // away then this guest also self-destructs.

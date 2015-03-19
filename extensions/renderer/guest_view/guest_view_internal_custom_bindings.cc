@@ -15,6 +15,7 @@
 #include "extensions/renderer/guest_view/extensions_guest_view_container.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
@@ -43,6 +44,10 @@ GuestViewInternalCustomBindings::GuestViewInternalCustomBindings(
       base::Bind(
           &GuestViewInternalCustomBindings::RegisterElementResizeCallback,
           base::Unretained(this)));
+  RouteFunction(
+      "RunWithGesture",
+      base::Bind(&GuestViewInternalCustomBindings::RunWithGesture,
+                 base::Unretained(this)));
 }
 
 void GuestViewInternalCustomBindings::AttachGuest(
@@ -196,6 +201,16 @@ void GuestViewInternalCustomBindings::RegisterElementResizeCallback(
       args[1].As<v8::Function>(), args.GetIsolate());
 
   args.GetReturnValue().Set(v8::Boolean::New(context()->isolate(), true));
+}
+
+void GuestViewInternalCustomBindings::RunWithGesture(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  // Gesture is required to request fullscreen.
+  blink::WebScopedUserGesture user_gesture;
+  CHECK_EQ(args.Length(), 1);
+  CHECK(args[0]->IsFunction());
+  v8::Handle<v8::Value> no_args;
+  context()->CallFunction(v8::Handle<v8::Function>::Cast(args[0]), 0, &no_args);
 }
 
 }  // namespace extensions

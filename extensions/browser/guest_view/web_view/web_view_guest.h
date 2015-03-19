@@ -98,6 +98,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void DidDropLink(const GURL& url) override;
   void DidInitialize(const base::DictionaryValue& create_params) override;
   void DidStopLoading() override;
+  void EmbedderFullscreenToggled(bool entered_fullscreen) override;
   void EmbedderWillBeDestroyed() override;
   const char* GetAPINamespace() const override;
   int GetTaskPrefix() const override;
@@ -164,6 +165,11 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                           const base::string16& frame_name,
                           const GURL& target_url,
                           content::WebContents* new_contents) override;
+  void EnterFullscreenModeForTab(content::WebContents* web_contents,
+                                 const GURL& origin) override;
+  void ExitFullscreenModeForTab(content::WebContents* web_contents) override;
+  bool IsFullscreenForTabOrPending(
+      const content::WebContents* web_contents) const override;
 
   // NotificationObserver implementation.
   void Observe(int type,
@@ -249,6 +255,11 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void OnWebViewNewWindowResponse(int new_window_instance_id,
                                   bool allow,
                                   const std::string& user_input);
+
+  void OnFullscreenPermissionDecided(bool allowed,
+                                     const std::string& user_input);
+  bool GuestMadeEmbedderFullscreen() const;
+  void SetFullscreenState(bool is_fullscreen);
 
   // WebContentsObserver implementation.
   void DidCommitProvisionalLoadForFrame(
@@ -369,6 +380,9 @@ class WebViewGuest : public GuestView<WebViewGuest>,
 
   // Determines if this guest accepts pinch-zoom gestures.
   bool allow_scaling_;
+  bool is_guest_fullscreen_;
+  bool is_embedder_fullscreen_;
+  bool last_fullscreen_permission_was_allowed_by_embedder_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

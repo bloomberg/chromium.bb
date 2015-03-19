@@ -9,6 +9,7 @@
 var DocumentNatives = requireNative('document_natives');
 var GuestView = require('guestView').GuestView;
 var GuestViewContainer = require('guestViewContainer').GuestViewContainer;
+var GuestViewInternalNatives = requireNative('guest_view_internal');
 var WebViewConstants = require('webViewConstants').WebViewConstants;
 var WebViewEvents = require('webViewEvents').WebViewEvents;
 var WebViewInternal = require('webViewInternal').WebViewInternal;
@@ -215,6 +216,13 @@ WebViewImpl.prototype.executeCode = function(func, args) {
   $Function.apply(func, null, args);
   return true;
 }
+
+// Requests the <webview> element wihtin the embedder to enter fullscreen.
+WebViewImpl.prototype.makeElementFullscreen = function() {
+  GuestViewInternalNatives.RunWithGesture(function() {
+    this.element.webkitRequestFullScreen();
+  }.bind(this));
+};
 
 // Implemented when the ChromeWebView API is available.
 WebViewImpl.prototype.maybeSetupContextMenus = function() {};

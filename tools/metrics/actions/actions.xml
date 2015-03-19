@@ -11729,6 +11729,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="WebView.PermissionAllow.Fullscreen">
+  <owner>fsamuel@chromium.org</owner>
+  <owner>lazyboy@chromium.org</owner>
+  <description>
+    Tracks when the fullscreen permission is explicitly allowed on a webview.
+  </description>
+</action>
+
 <action name="WebView.PermissionAllow.Geolocation">
   <owner>fsamuel@chromium.org</owner>
   <owner>lazyboy@chromium.org</owner>
@@ -11774,6 +11782,14 @@ should be able to be added at any place in this file.
   <owner>hanxi@chromium.org</owner>
   <description>
     Tracks when the filesystem permission is explicitly denied on a webview.
+  </description>
+</action>
+
+<action name="WebView.PermissionDeny.Fullscreen">
+  <owner>fsamuel@chromium.org</owner>
+  <owner>lazyboy@chromium.org</owner>
+  <description>
+    Tracks when the fullscreen permission is explicitly denied on a webview.
   </description>
 </action>
 

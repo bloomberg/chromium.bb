@@ -55,6 +55,12 @@ WebViewEvents.EVENTS = {
     evt: CreateEvent('webViewInternal.onExit'),
     fields: ['processId', 'reason']
   },
+  'exitfullscreen': {
+    evt: CreateEvent('webViewInternal.onExitFullscreen'),
+    fields: ['url'],
+    handler: 'handleFullscreenExitEvent',
+    internal: true
+  },
   'findupdate': {
     evt: CreateEvent('webViewInternal.onFindReply'),
     fields: [
@@ -219,6 +225,10 @@ WebViewEvents.prototype.handleFrameNameChangedEvent = function(event) {
   this.view.onFrameNameChanged(event.name);
 };
 
+WebViewEvents.prototype.handleFullscreenExitEvent = function(event, eventName) {
+  document.webkitCancelFullScreen();
+};
+
 WebViewEvents.prototype.handleLoadAbortEvent = function(event, eventName) {
   var showWarningMessage = function(reason) {
     var WARNING_MSG_LOAD_ABORTED = '<webview>: ' +
@@ -249,7 +259,12 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, eventName) {
 
 WebViewEvents.prototype.handlePermissionEvent = function(event, eventName) {
   var webViewEvent = this.makeDomEvent(event, eventName);
-  new WebViewActionRequests.PermissionRequest(this.view, event, webViewEvent);
+  if (event.permission === 'fullscreen') {
+    new WebViewActionRequests.FullscreenPermissionRequest(
+        this.view, event, webViewEvent);
+  } else {
+    new WebViewActionRequests.PermissionRequest(this.view, event, webViewEvent);
+  }
 };
 
 WebViewEvents.prototype.handleSizeChangedEvent = function(event, eventName) {

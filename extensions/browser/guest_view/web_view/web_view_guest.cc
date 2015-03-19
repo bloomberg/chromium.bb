@@ -321,6 +321,14 @@ void WebViewGuest::DidStopLoading() {
       new GuestViewBase::Event(webview::kEventLoadStop, args.Pass()));
 }
 
+void WebViewGuest::EmbedderFullscreenToggled(bool entered_fullscreen) {
+  is_embedder_fullscreen_ = entered_fullscreen;
+  // If the embedder has got out of fullscreen, we get out of fullscreen
+  // mode as well.
+  if (!entered_fullscreen)
+    SetFullscreenState(false);
+}
+
 void WebViewGuest::EmbedderWillBeDestroyed() {
   // Clean up rules registries for the webview.
   RulesRegistryService::Get(browser_context())
@@ -640,6 +648,9 @@ WebViewGuest::WebViewGuest(content::WebContents* owner_web_contents)
       javascript_dialog_helper_(this),
       current_zoom_factor_(1.0),
       allow_scaling_(false),
+      is_guest_fullscreen_(false),
+      is_embedder_fullscreen_(false),
+      last_fullscreen_permission_was_allowed_by_embedder_(false),
       weak_ptr_factory_(this) {
   web_view_guest_delegate_.reset(
       ExtensionsAPIClient::Get()->CreateWebViewGuestDelegate(this));
@@ -1158,6 +1169,36 @@ void WebViewGuest::WebContentsCreated(WebContents* source_contents,
       std::make_pair(guest, NewWindowInfo(target_url, guest_name)));
 }
 
+void WebViewGuest::EnterFullscreenModeForTab(content::WebContents* web_contents,
+                                             const GURL& origin) {
+  // Ask the embedder for permission.
+  base::DictionaryValue request_info;
+  request_info.SetString(webview::kOrigin, origin.spec());
+  web_view_permission_helper_->RequestPermission(
+      WEB_VIEW_PERMISSION_TYPE_FULLSCREEN, request_info,
+      base::Bind(&WebViewGuest::OnFullscreenPermissionDecided,
+                 weak_ptr_factory_.GetWeakPtr()),
+      false /* allowed_by_default */);
+
+  // TODO(lazyboy): Right now the guest immediately goes fullscreen within its
+  // bounds. If the embedder denies the permission then we will see a flicker.
+  // Once we have the ability to "cancel" a renderer/ fullscreen request:
+  // http://crbug.com/466854 this won't be necessary and we should be
+  // Calling SetFullscreenState(true) once the embedder allowed the request.
+  // Otherwise we would cancel renderer/ fullscreen if the embedder denied.
+  SetFullscreenState(true);
+}
+
+void WebViewGuest::ExitFullscreenModeForTab(
+    content::WebContents* web_contents) {
+  SetFullscreenState(false);
+}
+
+bool WebViewGuest::IsFullscreenForTabOrPending(
+    const content::WebContents* web_contents) const {
+  return is_guest_fullscreen_;
+}
+
 void WebViewGuest::LoadURLWithParams(const GURL& url,
                                      const content::Referrer& referrer,
                                      ui::PageTransition transition_type,
@@ -1262,6 +1303,38 @@ void WebViewGuest::OnWebViewNewWindowResponse(
 
   if (!allow)
     guest->Destroy();
+}
+
+void WebViewGuest::OnFullscreenPermissionDecided(
+    bool allowed,
+    const std::string& user_input) {
+  last_fullscreen_permission_was_allowed_by_embedder_ = allowed;
+  SetFullscreenState(allowed);
+}
+
+bool WebViewGuest::GuestMadeEmbedderFullscreen() const {
+  return last_fullscreen_permission_was_allowed_by_embedder_ &&
+         is_embedder_fullscreen_;
+}
+
+void WebViewGuest::SetFullscreenState(bool is_fullscreen) {
+  if (is_fullscreen == is_guest_fullscreen_)
+    return;
+
+  bool was_fullscreen = is_guest_fullscreen_;
+  is_guest_fullscreen_ = is_fullscreen;
+  // If the embedder entered fullscreen because of us, it should exit fullscreen
+  // when we exit fullscreen.
+  if (was_fullscreen && GuestMadeEmbedderFullscreen()) {
+    // Dispatch a message so we can call document.webkitCancelFullscreen()
+    // on the embedder.
+    scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
+    DispatchEventToView(
+        new GuestViewBase::Event(webview::kEventExitFullscreen, args.Pass()));
+  }
+  // Since we changed fullscreen state, sending a Resize message ensures that
+  // renderer/ sees the change.
+  web_contents()->GetRenderViewHost()->WasResized();
 }
 
 }  // namespace extensions
