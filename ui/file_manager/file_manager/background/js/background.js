@@ -614,8 +614,12 @@ FileBrowserBackground.prototype.initContextMenu_ = function() {
     // According to the spec [1], the callback is optional. But no callback
     // causes an error for some reason, so we call it with null-callback to
     // prevent the error. http://crbug.com/353877
+    // Also, we read the runtime.lastError here not to output the message on the
+    // console as an unchecked error.
     // - [1] https://developer.chrome.com/extensions/contextMenus#method-remove
-    chrome.contextMenus.remove('new-window', function() {});
+    chrome.contextMenus.remove('new-window', function() {
+      var ignore = chrome.runtime.lastError;
+    });
   } catch (ignore) {
     // There is no way to detect if the context menu is already added, therefore
     // try to recreate it every time.
