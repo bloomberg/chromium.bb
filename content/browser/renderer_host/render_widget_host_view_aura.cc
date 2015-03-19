@@ -334,6 +334,10 @@ bool PointerEventActivates(const ui::Event& event) {
   return false;
 }
 
+bool IsFractionalScaleFactor(float scale_factor) {
+  return (scale_factor - static_cast<int>(scale_factor)) > 0;
+}
+
 }  // namespace
 
 // We need to watch for mouse events outside a Web Popup or its parent
@@ -1926,6 +1930,25 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     bool is_move_to_center_event = (event->type() == ui::ET_MOUSE_MOVED ||
         event->type() == ui::ET_MOUSE_DRAGGED) &&
         mouse_event.x == center.x() && mouse_event.y == center.y();
+
+    // For fractional scale factors, the conversion from pixels to dip and
+    // vice versa could result in off by 1 or 2 errors which hurts us because
+    // we want to avoid sending the artificial move to center event to the
+    // renderer. Sending the move to center to the renderer cause the cursor
+    // to bounce around the center of the screen leading to the lock operation
+    // not working correctly.
+    // Workaround is to treat a mouse move or drag event off by at most 2 px
+    // from the center as a move to center event.
+    if (synthetic_move_sent_ &&
+        IsFractionalScaleFactor(current_device_scale_factor_)) {
+      if (event->type() == ui::ET_MOUSE_MOVED ||
+          event->type() == ui::ET_MOUSE_DRAGGED) {
+        if ((abs(mouse_event.x - center.x()) <= 2) &&
+            (abs(mouse_event.y - center.y()) <= 2)) {
+          is_move_to_center_event = true;
+        }
+      }
+    }
 
     ModifyEventMovementAndCoords(&mouse_event);
 
