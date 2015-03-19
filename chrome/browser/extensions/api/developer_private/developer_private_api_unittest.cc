@@ -55,11 +55,10 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestBase {
   // it to be reloaded.
   const Extension* LoadUnpackedExtension();
 
-  // Tests a developer private function (T) that sets an extension pref, and
-  // verifies it with |has_pref|.
-  template<typename T>
+  // Tests modifying the extension's configuration.
   void TestExtensionPrefSetting(
-      bool (*has_pref)(const std::string&, content::BrowserContext*));
+      bool (*has_pref)(const std::string&, content::BrowserContext*),
+      const std::string& key);
 
   testing::AssertionResult TestPackExtensionFunction(
       const base::ListValue& args,
@@ -97,7 +96,8 @@ const Extension* DeveloperPrivateApiUnitTest::LoadUnpackedExtension() {
       "{"
       " \"name\": \"foo\","
       " \"version\": \"1.0\","
-      " \"manifest_version\": 2"
+      " \"manifest_version\": 2,"
+      " \"permissions\": [\"*://*/*\"]"
       "}";
 
   test_extension_dirs_.push_back(new TestExtensionDir);
@@ -124,37 +124,37 @@ const Extension* DeveloperPrivateApiUnitTest::LoadUnpackedExtension() {
   return extension;
 }
 
-template<typename T>
 void DeveloperPrivateApiUnitTest::TestExtensionPrefSetting(
-    bool (*has_pref)(const std::string&, content::BrowserContext*)) {
+    bool (*has_pref)(const std::string&, content::BrowserContext*),
+    const std::string& key) {
   // Sadly, we need a "real" directory here, because toggling incognito causes
   // a reload (which needs a path).
   std::string extension_id = LoadUnpackedExtension()->id();
 
-  scoped_refptr<UIThreadExtensionFunction> function(new T());
+  scoped_refptr<UIThreadExtensionFunction> function(
+      new api::DeveloperPrivateUpdateExtensionConfigurationFunction());
 
-  base::ListValue enable_args;
-  enable_args.AppendString(extension_id);
-  enable_args.AppendBoolean(true);
+  base::ListValue args;
+  base::DictionaryValue* parameters = new base::DictionaryValue();
+  parameters->SetString("extensionId", extension_id);
+  parameters->SetBoolean(key, true);
+  args.Append(parameters);
 
-  EXPECT_FALSE(has_pref(extension_id, profile()));
+  EXPECT_FALSE(has_pref(extension_id, profile())) << key;
 
-  // Pref-setting should require a user action.
-  EXPECT_FALSE(RunFunction(function, enable_args));
+  EXPECT_FALSE(RunFunction(function, args)) << key;
   EXPECT_EQ(std::string("This action requires a user gesture."),
             function->GetError());
 
   ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
-  function = new T();
-  EXPECT_TRUE(RunFunction(function, enable_args));
-  EXPECT_TRUE(has_pref(extension_id, profile()));
+  function = new api::DeveloperPrivateUpdateExtensionConfigurationFunction();
+  EXPECT_TRUE(RunFunction(function, args)) << key;
+  EXPECT_TRUE(has_pref(extension_id, profile())) << key;
 
-  base::ListValue disable_args;
-  disable_args.AppendString(extension_id);
-  disable_args.AppendBoolean(false);
-  function = new T();
-  EXPECT_TRUE(RunFunction(function, disable_args));
-  EXPECT_FALSE(has_pref(extension_id, profile()));
+  parameters->SetBoolean(key, false);
+  function = new api::DeveloperPrivateUpdateExtensionConfigurationFunction();
+  EXPECT_TRUE(RunFunction(function, args)) << key;
+  EXPECT_FALSE(has_pref(extension_id, profile())) << key;
 }
 
 testing::AssertionResult DeveloperPrivateApiUnitTest::TestPackExtensionFunction(
@@ -213,10 +213,15 @@ void DeveloperPrivateApiUnitTest::TearDown() {
   ExtensionServiceTestBase::TearDown();
 }
 
-// Test developerPrivate.allowIncognito.
-TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateAllowIncognito) {
-  TestExtensionPrefSetting<api::DeveloperPrivateAllowIncognitoFunction>(
-      &util::IsIncognitoEnabled);
+// Test developerPrivate.updateExtensionConfiguration.
+TEST_F(DeveloperPrivateApiUnitTest,
+       DeveloperPrivateUpdateExtensionConfiguration) {
+  FeatureSwitch::ScopedOverride scripts_require_action(
+      FeatureSwitch::scripts_require_action(), true);
+  TestExtensionPrefSetting(&util::IsIncognitoEnabled, "incognitoAccess");
+  TestExtensionPrefSetting(&util::AllowFileAccess, "fileAccess");
+  TestExtensionPrefSetting(&util::AllowedScriptingOnAllUrls,
+                           "runOnAllUrls");
 }
 
 // Test developerPrivate.reload.
@@ -236,12 +241,6 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateReload) {
   const Extension* reloaded_extension =
       registry_observer.WaitForExtensionLoaded();
   EXPECT_EQ(extension_id, reloaded_extension->id());
-}
-
-// Test developerPrivate.allowFileAccess.
-TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateAllowFileAccess) {
-  TestExtensionPrefSetting<api::DeveloperPrivateAllowFileAccessFunction>(
-      &util::AllowFileAccess);
 }
 
 // Test developerPrivate.packDirectory.

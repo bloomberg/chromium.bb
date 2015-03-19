@@ -48420,7 +48420,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="270" label="WALLPAPERPRIVATE_GETOFFLINEWALLPAPERLIST"/>
   <int value="271" label="BROWSERACTION_GETBADGEBACKGROUNDCOLOR"/>
   <int value="272" label="DELETED_PAGEACTIONS_DISABLEFORTAB"/>
-  <int value="273" label="DEVELOPERPRIVATE_ALLOWFILEACCESS"/>
+  <int value="273" label="DELETED_DEVELOPERPRIVATE_ALLOWFILEACCESS"/>
   <int value="274" label="FILEMANAGERPRIVATE_REMOVEMOUNT"/>
   <int value="275" label="DELETED_BLUETOOTH_CONNECT"/>
   <int value="276" label="TABCAPTURE_CAPTURE"/>
@@ -48570,7 +48570,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="420" label="NETWORKINGPRIVATE_VERIFYANDENCRYPTCREDENTIALS"/>
   <int value="421" label="NETWORKINGPRIVATE_VERIFYANDENCRYPTDATA"/>
   <int value="422" label="DEVELOPERPRIVATE_RESTART"/>
-  <int value="423" label="DEVELOPERPRIVATE_ALLOWINCOGNITO"/>
+  <int value="423" label="DELETED_DEVELOPERPRIVATE_ALLOWINCOGNITO"/>
   <int value="424" label="INPUT_IME_DELETESURROUNDINGTEXT"/>
   <int value="425" label="DELETED_FILEMANAGERPRIVATE_OPENNEWWINDOW"/>
   <int value="426" label="CLOUDPRINTPRIVATE_GETCLIENTID"/>
@@ -49146,6 +49146,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="978" label="DEVELOPERPRIVATE_GETEXTENSIONSINFO"/>
   <int value="979" label="DEVELOPERPRIVATE_GETEXTENSIONINFO"/>
   <int value="980" label="FILEMANAGERPRIVATE_ENABLEEXTERNALFILESCHEME"/>
+  <int value="981" label="DEVELOPERPRIVATE_UPDATEEXTENSIONCONFIGURATION"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

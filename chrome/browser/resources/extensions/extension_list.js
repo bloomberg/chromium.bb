@@ -316,7 +316,10 @@ cr.define('extensions', function() {
 
       // The 'Show Browser Action' button.
       row.setupColumn('.show-button', 'showButton', 'click', function(e) {
-        chrome.send('extensionSettingsShowButton', [extension.id]);
+        chrome.developerPrivate.updateExtensionConfiguration({
+          extensionId: extension.id,
+          showActionButton: true
+        });
       });
 
       // The 'allow in incognito' checkbox.
@@ -332,7 +335,10 @@ cr.define('extensions', function() {
         } else {
           butterBar.hidden = true;
         }
-        chrome.developerPrivate.allowIncognito(extension.id, checked);
+        chrome.developerPrivate.updateExtensionConfiguration({
+          extensionId: extension.id,
+          incognitoAccess: e.target.checked
+        });
       }.bind(this));
 
       // The 'collect errors' checkbox. This should only be visible if the
@@ -340,8 +346,10 @@ cr.define('extensions', function() {
       // |errorCollectionEnabled| property.
       row.setupColumn('.error-collection-control input', 'dev-collectErrors',
                       'change', function(e) {
-        chrome.send('extensionSettingsEnableErrorCollection',
-                    [extension.id, String(e.target.checked)]);
+        chrome.developerPrivate.updateExtensionConfiguration({
+          extensionId: extension.id,
+          errorCollection: e.target.checked
+        });
       });
 
       // The 'allow on all urls' checkbox. This should only be visible if
@@ -349,14 +357,19 @@ cr.define('extensions', function() {
       // extensions should want all urls.
       row.setupColumn('.all-urls-control input', 'allUrls', 'click',
                       function(e) {
-        chrome.send('extensionSettingsAllowOnAllUrls',
-                    [extension.id, String(e.target.checked)]);
+        chrome.developerPrivate.updateExtensionConfiguration({
+          extensionId: extension.id,
+          runOnAllUrls: e.target.checked
+        });
       });
 
       // The 'allow file:// access' checkbox.
       row.setupColumn('.file-access-control input', 'localUrls', 'click',
                       function(e) {
-        chrome.developerPrivate.allowFileAccess(extension.id, e.target.checked);
+        chrome.developerPrivate.updateExtensionConfiguration({
+          extensionId: extension.id,
+          fileAccess: e.target.checked
+        });
       });
 
       // The 'Options' button or link, depending on its behaviour.

@@ -22,6 +22,46 @@ var tests = [
       checkItemInList(items, "packaged_app", true, "packaged_app",
           { "offline_enabled": true});
     }));
+  },
+  function aliasedFunctions() {
+    // The allow file access and allow incognito functions are aliased with
+    // custom bindings. Test that they work as expected.
+    var getExtensionInfoCallback = chrome.test.callbackAdded();
+    chrome.developerPrivate.getExtensionsInfo(function(infos) {
+      var info = null;
+      for (var i = 0; i < infos.length; ++i) {
+        if (infos[i].name == 'simple_extension') {
+          info = infos[i];
+          break;
+        }
+      }
+      chrome.test.assertTrue(info != null);
+      var extId = info.id;
+      chrome.test.assertFalse(info.incognitoAccess.isActive);
+      chrome.test.assertTrue(info.fileAccess.isActive);
+      chrome.test.assertEq(chrome.developerPrivate.ExtensionState.ENABLED,
+                           info.state);
+      var allowIncognitoCallback = chrome.test.callbackAdded();
+      chrome.test.runWithUserGesture(function() {
+        chrome.developerPrivate.allowIncognito(extId, true, function() {
+          chrome.developerPrivate.getExtensionInfo(extId, function(info) {
+            chrome.test.assertTrue(info.incognitoAccess.isActive);
+            allowIncognitoCallback();
+          });
+        });
+      });
+      var allowFileAccessCallback = chrome.test.callbackAdded();
+      chrome.test.runWithUserGesture(function() {
+        chrome.developerPrivate.allowFileAccess(extId, false, function() {
+          chrome.developerPrivate.getExtensionInfo(extId, function(info) {
+            chrome.test.assertFalse(info.fileAccess.isActive);
+            allowFileAccessCallback();
+          });
+        });
+      });
+
+      getExtensionInfoCallback();
+    });
   }
 ];
 

@@ -20,13 +20,11 @@
 #include "chrome/browser/background/background_contents.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/extensions/webstore_reinstaller.h"
@@ -69,7 +67,6 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extension_urls.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -357,17 +354,8 @@ void ExtensionSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("extensionSettingsRepair",
       base::Bind(&ExtensionSettingsHandler::HandleRepairMessage,
                  AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsEnableErrorCollection",
-      base::Bind(&ExtensionSettingsHandler::HandleEnableErrorCollectionMessage,
-                 AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsAllowOnAllUrls",
-      base::Bind(&ExtensionSettingsHandler::HandleAllowOnAllUrlsMessage,
-                 AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsOptions",
       base::Bind(&ExtensionSettingsHandler::HandleOptionsMessage,
-                 AsWeakPtr()));
-  web_ui()->RegisterMessageCallback("extensionSettingsShowButton",
-      base::Bind(&ExtensionSettingsHandler::HandleShowButtonMessage,
                  AsWeakPtr()));
   web_ui()->RegisterMessageCallback("extensionSettingsAutoupdate",
       base::Bind(&ExtensionSettingsHandler::HandleAutoUpdateMessage,
@@ -575,31 +563,6 @@ void ExtensionSettingsHandler::HandleRepairMessage(
   reinstaller->BeginReinstall();
 }
 
-void ExtensionSettingsHandler::HandleEnableErrorCollectionMessage(
-    const base::ListValue* args) {
-  CHECK_EQ(2u, args->GetSize());
-  std::string extension_id;
-  std::string enable_str;
-  CHECK(args->GetString(0, &extension_id));
-  CHECK(args->GetString(1, &enable_str));
-  bool enabled = enable_str == "true";
-  ErrorConsole::Get(Profile::FromWebUI(web_ui()))
-      ->SetReportingAllForExtension(extension_id, enabled);
-}
-
-void ExtensionSettingsHandler::HandleAllowOnAllUrlsMessage(
-    const base::ListValue* args) {
-  DCHECK(FeatureSwitch::scripts_require_action()->IsEnabled());
-  CHECK_EQ(2u, args->GetSize());
-  std::string extension_id;
-  std::string allow_str;
-  CHECK(args->GetString(0, &extension_id));
-  CHECK(args->GetString(1, &allow_str));
-  util::SetAllowedScriptingOnAllUrls(extension_id,
-                                     extension_service_->GetBrowserContext(),
-                                     allow_str == "true");
-}
-
 void ExtensionSettingsHandler::HandleOptionsMessage(
     const base::ListValue* args) {
   const Extension* extension = GetActiveExtension(args);
@@ -607,17 +570,6 @@ void ExtensionSettingsHandler::HandleOptionsMessage(
     return;
   ExtensionTabUtil::OpenOptionsPage(extension,
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
-}
-
-void ExtensionSettingsHandler::HandleShowButtonMessage(
-    const base::ListValue* args) {
-  const Extension* extension = GetActiveExtension(args);
-  if (!extension)
-    return;
-  ExtensionActionAPI::SetBrowserActionVisibility(
-      ExtensionPrefs::Get(extension_service_->profile()),
-      extension->id(),
-      true);
 }
 
 void ExtensionSettingsHandler::HandleAutoUpdateMessage(

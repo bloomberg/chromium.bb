@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/developer_private/extension_info_generator.h"
 #include "chrome/browser/extensions/api/developer_private/show_permissions_dialog_helper.h"
+#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -165,10 +166,32 @@ std::string ReadFileToString(const base::FilePath& path) {
   return data;
 }
 
+bool UserCanModifyExtensionConfiguration(
+    const Extension* extension,
+    content::BrowserContext* browser_context,
+    std::string* error) {
+  // Currently, we only gate file access modification on account permissions.
+  if (util::IsExtensionSupervised(
+          extension, Profile::FromBrowserContext(browser_context))) {
+    *error = kSupervisedUserError;
+    return false;
+  }
+
+  ManagementPolicy* management_policy =
+      ExtensionSystem::Get(browser_context)->management_policy();
+  if (!management_policy->UserMayModifySettings(extension, nullptr)) {
+    LOG(ERROR) << "Attempt to change allow file access of an extension that "
+               << "non-usermanagable was made. Extension id : "
+               << extension->id();
+    *error = kCannotModifyPolicyExtensionError;
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
-namespace AllowFileAccess = api::developer_private::AllowFileAccess;
-namespace AllowIncognito = api::developer_private::AllowIncognito;
 namespace ChoosePath = api::developer_private::ChoosePath;
 namespace GetItemsInfo = api::developer_private::GetItemsInfo;
 namespace Inspect = api::developer_private::Inspect;
@@ -406,9 +429,10 @@ DeveloperPrivateGetExtensionInfoFunction::Run() {
                   registry->terminated_extensions().GetByID(params->id)) !=
                   nullptr) {
     state = developer::EXTENSION_STATE_TERMINATED;
-  } else {
-    return RespondNow(Error(kNoSuchExtensionError));
   }
+
+  if (!extension)
+    return RespondNow(Error(kNoSuchExtensionError));
 
   return RespondNow(OneArgument(ExtensionInfoGenerator(browser_context()).
       CreateExtensionInfo(*extension, state)->ToValue().release()));
@@ -481,64 +505,54 @@ void DeveloperPrivateGetItemsInfoFunction::Finish() {
   Respond(ArgumentList(developer::GetItemsInfo::Results::Create(item_list_)));
 }
 
+DeveloperPrivateUpdateExtensionConfigurationFunction::
+~DeveloperPrivateUpdateExtensionConfigurationFunction() {}
+
 ExtensionFunction::ResponseAction
-DeveloperPrivateAllowFileAccessFunction::Run() {
-  scoped_ptr<AllowFileAccess::Params> params(
-      AllowFileAccess::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
+  scoped_ptr<developer::UpdateExtensionConfiguration::Params> params(
+      developer::UpdateExtensionConfiguration::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
-  const Extension* extension = GetExtensionById(params->extension_id);
+  const developer::ExtensionConfigurationUpdate& update = params->update;
 
+  const Extension* extension = GetExtensionById(update.extension_id);
   if (!extension)
     return RespondNow(Error(kNoSuchExtensionError));
-
   if (!user_gesture())
     return RespondNow(Error(kRequiresUserGestureError));
 
-  if (util::IsExtensionSupervised(
-          extension, Profile::FromBrowserContext(browser_context()))) {
-    return RespondNow(Error(kSupervisedUserError));
+  if (update.file_access) {
+    std::string error;
+    if (!UserCanModifyExtensionConfiguration(extension,
+                                             browser_context(),
+                                             &error)) {
+      return RespondNow(Error(error));
+    }
+    util::SetAllowFileAccess(
+        extension->id(), browser_context(), *update.file_access);
   }
-
-  ManagementPolicy* management_policy =
-      ExtensionSystem::Get(browser_context())->management_policy();
-  if (!management_policy->UserMayModifySettings(extension, nullptr)) {
-    LOG(ERROR) << "Attempt to change allow file access of an extension that "
-               << "non-usermanagable was made. Extension id : "
-               << extension->id();
-    return RespondNow(Error(kCannotModifyPolicyExtensionError));
+  if (update.incognito_access) {
+    util::SetIsIncognitoEnabled(
+        extension->id(), browser_context(), *update.incognito_access);
   }
-
-  util::SetAllowFileAccess(extension->id(), browser_context(), params->allow);
-  return RespondNow(NoArguments());
-}
-
-DeveloperPrivateAllowFileAccessFunction::
-    ~DeveloperPrivateAllowFileAccessFunction() {}
-
-ExtensionFunction::ResponseAction
-DeveloperPrivateAllowIncognitoFunction::Run() {
-  scoped_ptr<AllowIncognito::Params> params(
-      AllowIncognito::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  const Extension* extension = GetExtensionById(params->extension_id);
-
-  if (!extension)
-    return RespondNow(Error(kNoSuchExtensionError));
-
-  if (!user_gesture())
-    return RespondNow(Error(kRequiresUserGestureError));
-
-  // Should this take into account policy settings?
-  util::SetIsIncognitoEnabled(
-      extension->id(), browser_context(), params->allow);
+  if (update.error_collection) {
+    ErrorConsole::Get(browser_context())->SetReportingAllForExtension(
+        extension->id(), *update.error_collection);
+  }
+  if (update.run_on_all_urls) {
+    util::SetAllowedScriptingOnAllUrls(
+        extension->id(), browser_context(), *update.run_on_all_urls);
+  }
+  if (update.show_action_button) {
+    ExtensionActionAPI::SetBrowserActionVisibility(
+        ExtensionPrefs::Get(browser_context()),
+        extension->id(),
+        *update.show_action_button);
+  }
 
   return RespondNow(NoArguments());
 }
-
-DeveloperPrivateAllowIncognitoFunction::
-    ~DeveloperPrivateAllowIncognitoFunction() {}
 
 DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() {}
 

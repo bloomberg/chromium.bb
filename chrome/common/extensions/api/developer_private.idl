@@ -226,6 +226,15 @@ namespace developerPrivate {
     boolean incognito;
   };
 
+  dictionary ExtensionConfigurationUpdate {
+    DOMString extensionId;
+    boolean? fileAccess;
+    boolean? incognitoAccess;
+    boolean? errorCollection;
+    boolean? runOnAllUrls;
+    boolean? showActionButton;
+  };
+
   dictionary ReloadOptions {
     // If false, an alert dialog will show in the event of a reload error.
     // Defaults to false.
@@ -397,13 +406,6 @@ namespace developerPrivate {
     static void inspect(InspectOptions options,
                         optional VoidCallback callback);
 
-    // Enables / Disables file access for an extension.
-    // |extensionId| : The id of the extension to set file access for.
-    // |allow| : Whether or not to allow file access for the extension.
-    static void allowFileAccess(DOMString extensionId,
-                                boolean allow,
-                                optional VoidCallback callback);
-
     // Reloads a given extension.
     // |extensionId| : The id of the extension to reload.
     // |options| : Additional configuration parameters.
@@ -411,12 +413,12 @@ namespace developerPrivate {
                        optional ReloadOptions options,
                        optional VoidCallback callback);
 
-    // Allows / Disallows an extension to run in incognito mode.
-    // |extensionId| : The id of the extension.
-    // |allow| : Whether or not the extension should be allowed incognito.
-    static void allowIncognito(DOMString extensionId,
-                               boolean allow,
-                               optional VoidCallback callback);
+    // Modifies an extension's current configuration.
+    // |update| : The parameters for updating the extension's configuration.
+    //     Any properties omitted from |update| will not be changed.
+    static void updateExtensionConfiguration(
+        ExtensionConfigurationUpdate update,
+        optional VoidCallback callback);
 
     // Loads a user-selected unpacked item.
     // |options| : Additional configuration parameters.

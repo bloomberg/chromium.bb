@@ -238,29 +238,14 @@ class DeveloperPrivateInspectFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class DeveloperPrivateAllowFileAccessFunction
+class DeveloperPrivateUpdateExtensionConfigurationFunction
     : public DeveloperPrivateAPIFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("developerPrivate.allowFileAccess",
-                             DEVELOPERPRIVATE_ALLOWFILEACCESS);
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.updateExtensionConfiguration",
+                             DEVELOPERPRIVATE_UPDATEEXTENSIONCONFIGURATION);
 
  protected:
-  ~DeveloperPrivateAllowFileAccessFunction() override;
-
-  // ExtensionFunction:
-  ResponseAction Run() override;
-};
-
-class DeveloperPrivateAllowIncognitoFunction
-    : public DeveloperPrivateAPIFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("developerPrivate.allowIncognito",
-                             DEVELOPERPRIVATE_ALLOWINCOGNITO);
-
- protected:
-  ~DeveloperPrivateAllowIncognitoFunction() override;
-
-  // UIThreadExtensionFunction:
+  ~DeveloperPrivateUpdateExtensionConfigurationFunction() override;
   ResponseAction Run() override;
 };
 

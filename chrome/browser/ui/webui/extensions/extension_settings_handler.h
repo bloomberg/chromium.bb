@@ -114,20 +114,11 @@ class ExtensionSettingsHandler
   // Callback for "repair" message.
   void HandleRepairMessage(const base::ListValue* args);
 
-  // Callback for "enableErrorCollection" message.
-  void HandleEnableErrorCollectionMessage(const base::ListValue* args);
-
-  // Callback for "allowOnAllUrls" message.
-  void HandleAllowOnAllUrlsMessage(const base::ListValue* args);
-
   // Callback for "options" message.
   void HandleOptionsMessage(const base::ListValue* args);
 
   // Callback for "permissions" message.
   void HandlePermissionsMessage(const base::ListValue* args);
-
-  // Callback for "showButton" message.
-  void HandleShowButtonMessage(const base::ListValue* args);
 
   // Callback for "autoupdate" message.
   void HandleAutoUpdateMessage(const base::ListValue* args);

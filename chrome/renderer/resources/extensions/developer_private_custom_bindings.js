@@ -25,6 +25,16 @@ binding.registerCustomHook(function(bindingsAPI) {
   // developerPrivate.enable is the same as chrome.management.setEnabled.
   // TODO(devlin): Migrate callers off developerPrivate.enable.
   bindingsAPI.compiledApi.enable = chrome.management.setEnabled;
+
+  bindingsAPI.compiledApi.allowFileAccess = function(id, allow, callback) {
+    chrome.developerPrivate.updateExtensionConfiguration(
+        {extensionId: id, fileAccess: allow}, callback);
+  };
+
+  bindingsAPI.compiledApi.allowIncognito = function(id, allow, callback) {
+    chrome.developerPrivate.updateExtensionConfiguration(
+        {extensionId: id, incognitoAccess: allow}, callback);
+  };
 });
 
 exports.binding = binding.generate();

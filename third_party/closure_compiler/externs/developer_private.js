@@ -270,6 +270,18 @@ var InspectOptions;
 
 /**
  * @typedef {{
+ *   extensionId: string,
+ *   fileAccess: (boolean|undefined),
+ *   incognitoAccess: (boolean|undefined),
+ *   errorCollection: (boolean|undefined),
+ *   runOnAllUrls: (boolean|undefined),
+ *   showActionButton: (boolean|undefined)
+ * }}
+ */
+var ExtensionConfigurationUpdate;
+
+/**
+ * @typedef {{
  *   failQuietly: (boolean|undefined)
  * }}
  */
@@ -447,6 +459,13 @@ chrome.developerPrivate.allowFileAccess = function(extensionId, allow, callback)
  * @param {Function=} callback
  */
 chrome.developerPrivate.reload = function(extensionId, options, callback) {};
+
+/**
+ * Modifies an extension's current configuration.
+ * @param {ExtensionConfigurationUpdate} update The parameters for updating the extension's configuration. Any properties omitted from |update| will not be changed.
+ * @param {Function=} callback
+ */
+chrome.developerPrivate.updateExtensionConfiguration = function(update, callback) {};
 
 /**
  * Enables / Disables a given extension.
