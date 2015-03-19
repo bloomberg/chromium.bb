@@ -115,16 +115,6 @@
     playing: false,
 
     /**
-     * Invoked when the 'duration' property is changed.
-     * @param {number} oldValue old value.
-     * @param {number} newValue new value.
-     */
-    durationChanged: function(oldValue, newValue) {
-      // Reset the current playback position.
-      this.time = 0;
-    },
-
-    /**
      * Invoked when the next button is clicked.
      */
     nextClick: function() {
