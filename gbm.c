@@ -41,6 +41,9 @@ extern struct gbm_driver gbm_driver_gma500;
 #ifdef GBM_I915
 extern struct gbm_driver gbm_driver_i915;
 #endif
+#ifdef GBM_MEDIATEK
+extern struct gbm_driver gbm_driver_mediatek;
+#endif
 #ifdef GBM_ROCKCHIP
 extern struct gbm_driver gbm_driver_rockchip;
 #endif
@@ -67,6 +70,9 @@ static struct gbm_driver *gbm_get_driver(int fd)
 		&gbm_driver_gma500,
 #ifdef GBM_I915
 		&gbm_driver_i915,
+#endif
+#ifdef GBM_MEDIATEK
+		&gbm_driver_mediatek,
 #endif
 #ifdef GBM_ROCKCHIP
 		&gbm_driver_rockchip,
