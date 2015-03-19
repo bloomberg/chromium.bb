@@ -143,6 +143,11 @@ bool SVGPathParser::parseCurveToCubicSegment()
     return true;
 }
 
+static FloatPoint reflectedPoint(const FloatPoint& reflectIn, const FloatPoint& pointToReflect)
+{
+    return FloatPoint(2 * reflectIn.x() - pointToReflect.x(), 2 * reflectIn.y() - pointToReflect.y());
+}
+
 bool SVGPathParser::parseCurveToCubicSmoothSegment()
 {
     FloatPoint point2;
@@ -160,9 +165,7 @@ bool SVGPathParser::parseCurveToCubicSmoothSegment()
         && m_lastCommand != PathSegCurveToCubicSmoothRel)
         m_controlPoint = m_currentPoint;
 
-    FloatPoint point1 = m_currentPoint;
-    point1.scale(2, 2);
-    point1.move(-m_controlPoint.x(), -m_controlPoint.y());
+    FloatPoint point1 = reflectedPoint(m_currentPoint, m_controlPoint);
     if (m_mode == RelativeCoordinates) {
         point2 += m_currentPoint;
         targetPoint += m_currentPoint;
@@ -222,9 +225,7 @@ bool SVGPathParser::parseCurveToQuadraticSmoothSegment()
         && m_lastCommand != PathSegCurveToQuadraticSmoothRel)
         m_controlPoint = m_currentPoint;
 
-    FloatPoint cubicPoint = m_currentPoint;
-    cubicPoint.scale(2, 2);
-    cubicPoint.move(-m_controlPoint.x(), -m_controlPoint.y());
+    FloatPoint cubicPoint = reflectedPoint(m_currentPoint, m_controlPoint);
     FloatPoint point1(m_currentPoint.x() + 2 * cubicPoint.x(), m_currentPoint.y() + 2 * cubicPoint.y());
     FloatPoint point2(targetPoint.x() + 2 * cubicPoint.x(), targetPoint.y() + 2 * cubicPoint.y());
     if (m_mode == RelativeCoordinates) {
