@@ -69,14 +69,14 @@ import android.util.Log;
  * transferring data. As a return, it simplifies implementation and prevents hard
  * to debug, racy corner cases while receiving/sending data.
  */
-public class MessagePort implements PostMessageSender.PostMessageSenderDelegate {
+public class AwMessagePort implements PostMessageSender.PostMessageSenderDelegate {
 
     /**
      * The message callback for receiving messages. Called on UI thread or if
      * provided, on the handler that is provided.
      */
     public abstract static class MessageCallback {
-        public abstract void onMessage(String message, MessagePort[] sentPorts);
+        public abstract void onMessage(String message, AwMessagePort[] sentPorts);
     }
 
     private static final String TAG = "MessagePort";
@@ -86,11 +86,11 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     private static final int POST_MESSAGE = 1;
 
     private static class PostMessageFromWeb {
-        public MessagePort port;
+        public AwMessagePort port;
         public String message;
-        public MessagePort[] sentPorts;
+        public AwMessagePort[] sentPorts;
 
-        public PostMessageFromWeb(MessagePort port, String message, MessagePort[] sentPorts) {
+        public PostMessageFromWeb(AwMessagePort port, String message, AwMessagePort[] sentPorts) {
             this.port = port;
             this.message = message;
             this.sentPorts = sentPorts;
@@ -129,7 +129,7 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     private MessageHandler mHandler;
     private Object mLock = new Object();
 
-    public MessagePort(AwMessagePortService messagePortService) {
+    public AwMessagePort(AwMessagePortService messagePortService) {
         mMessagePortService = messagePortService;
         mPostMessageSender = new PostMessageSender(this, mMessagePortService);
         mMessagePortService.addObserver(mPostMessageSender);
@@ -194,7 +194,7 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     }
 
     // Only called on IO thread.
-    public void onReceivedMessage(String message, MessagePort[] sentPorts) {
+    public void onReceivedMessage(String message, AwMessagePort[] sentPorts) {
         synchronized (mLock) {
             PostMessageFromWeb m = new PostMessageFromWeb(this, message, sentPorts);
             Handler handler = mHandler != null ? mHandler : sDefaultHandler;
@@ -212,7 +212,7 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
     }
 
     // This method may be called on a different thread than UI thread.
-    public void onMessage(String message, MessagePort[] ports) {
+    public void onMessage(String message, AwMessagePort[] ports) {
         synchronized (mLock) {
             if (isClosed()) {
                 Log.w(TAG, "Port [" + mPortId + "] received message in closed state");
@@ -227,12 +227,13 @@ public class MessagePort implements PostMessageSender.PostMessageSenderDelegate 
         }
     }
 
-    public void postMessage(String message, MessagePort[] sentPorts) throws IllegalStateException {
+    public void postMessage(String message, AwMessagePort[] sentPorts)
+            throws IllegalStateException {
         if (isClosed() || isTransferred()) {
             throw new IllegalStateException("Port is already closed or transferred");
         }
         if (sentPorts != null) {
-            for (MessagePort port : sentPorts) {
+            for (AwMessagePort port : sentPorts) {
                 if (port.equals(this)) {
                     throw new IllegalStateException("Source port cannot be transferred");
                 }

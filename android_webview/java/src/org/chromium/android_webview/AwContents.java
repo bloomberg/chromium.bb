@@ -1996,7 +1996,7 @@ public class AwContents implements SmartClipProvider,
      *                  message ports to pass.
      */
     public void postMessageToFrame(String frameName, String message, String targetOrigin,
-            MessagePort[] sentPorts) {
+            AwMessagePort[] sentPorts) {
         if (isDestroyed()) return;
         if (mPostMessageSender == null) {
             AwMessagePortService service = mBrowserContext.getMessagePortService();
@@ -2030,10 +2030,10 @@ public class AwContents implements SmartClipProvider,
     /**
      * Creates a message channel and returns the ports for each end of the channel.
      */
-    public MessagePort[] createMessageChannel() {
+    public AwMessagePort[] createMessageChannel() {
         if (TRACE) Log.d(TAG, "createMessageChannel");
         if (isDestroyed()) return null;
-        MessagePort[] ports = mBrowserContext.getMessagePortService().createMessageChannel();
+        AwMessagePort[] ports = mBrowserContext.getMessagePortService().createMessageChannel();
         nativeCreateMessageChannel(mNativeAwContents, ports);
         return ports;
     }
@@ -2998,5 +2998,5 @@ public class AwContents implements SmartClipProvider,
     private native void nativePostMessageToFrame(long nativeAwContents, String frameId,
             String message, String targetOrigin, int[] msgPorts);
 
-    private native void nativeCreateMessageChannel(long nativeAwContents, MessagePort[] ports);
+    private native void nativeCreateMessageChannel(long nativeAwContents, AwMessagePort[] ports);
 }

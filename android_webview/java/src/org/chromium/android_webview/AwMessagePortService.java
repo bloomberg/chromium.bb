@@ -45,7 +45,7 @@ public class AwMessagePortService {
 
     // A thread safe storage for Message Ports.
     private static class MessagePortStorage {
-        private SparseArray<MessagePort> mMessagePorts = new SparseArray<MessagePort>();
+        private SparseArray<AwMessagePort> mMessagePorts = new SparseArray<AwMessagePort>();
         private Object mLock = new Object();
 
         public void remove(int portId) {
@@ -54,12 +54,12 @@ public class AwMessagePortService {
             }
         }
 
-        public void put(int portId, MessagePort m) {
+        public void put(int portId, AwMessagePort m) {
             synchronized (mLock) {
                 mMessagePorts.put(portId, m);
             }
         }
-        public MessagePort get(int portId) {
+        public AwMessagePort get(int portId) {
             synchronized (mLock) {
                 return mMessagePorts.get(portId);
             }
@@ -102,7 +102,7 @@ public class AwMessagePortService {
         // verify that webview owns all the ports that are transferred
         if (sentPorts != null) {
             for (int port : sentPorts) {
-                MessagePort p = mPortStorage.get(port);
+                AwMessagePort p = mPortStorage.get(port);
                 if (p == null) {
                     throw new IllegalStateException("Cannot transfer unknown port " + port);
                 }
@@ -111,8 +111,8 @@ public class AwMessagePortService {
         }
     }
 
-    public MessagePort[] createMessageChannel() {
-        return new MessagePort[]{new MessagePort(this), new MessagePort(this)};
+    public AwMessagePort[] createMessageChannel() {
+        return new AwMessagePort[]{new AwMessagePort(this), new AwMessagePort(this)};
     }
 
     // Called on UI thread.
@@ -121,7 +121,7 @@ public class AwMessagePortService {
         nativeReleaseMessages(mNativeMessagePortService, portId);
     }
 
-    private MessagePort addPort(MessagePort m, int portId) {
+    private AwMessagePort addPort(AwMessagePort m, int portId) {
         if (mPortStorage.get(portId) != null) {
             throw new IllegalStateException("Port already exists");
         }
@@ -132,7 +132,7 @@ public class AwMessagePortService {
 
     @CalledByNative
     private void onMessageChannelCreated(int portId1, int portId2,
-            MessagePort[] ports) {
+            AwMessagePort[] ports) {
         ThreadUtils.assertOnUiThread();
         addPort(ports[0], portId1);
         addPort(ports[1], portId2);
@@ -144,12 +144,12 @@ public class AwMessagePortService {
     // Called on IO thread.
     @CalledByNative
     private void onReceivedMessage(int portId, String message, int[] ports) {
-        MessagePort[] messagePorts = null;
+        AwMessagePort[] messagePorts = null;
         for (int i = 0; i < ports.length; i++) {
             if (messagePorts == null) {
-                messagePorts = new MessagePort[ports.length];
+                messagePorts = new AwMessagePort[ports.length];
             }
-            messagePorts[i] = addPort(new MessagePort(this), ports[i]);
+            messagePorts[i] = addPort(new AwMessagePort(this), ports[i]);
         }
         mPortStorage.get(portId).onReceivedMessage(message, messagePorts);
     }

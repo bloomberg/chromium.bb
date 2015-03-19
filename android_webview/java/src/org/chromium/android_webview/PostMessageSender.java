@@ -39,10 +39,10 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
         public String frameName;
         public String message;
         public String targetOrigin;
-        public MessagePort[] sentPorts;
+        public AwMessagePort[] sentPorts;
 
         public PostMessageParams(String frameName, String message, String targetOrigin,
-                MessagePort[] sentPorts) {
+                AwMessagePort[] sentPorts) {
             this.frameName = frameName;
             this.message = message;
             this.targetOrigin = targetOrigin;
@@ -71,9 +71,9 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
     }
 
     // Return true if any sent port is pending.
-    private boolean anySentPortIsPending(MessagePort[] sentPorts) {
+    private boolean anySentPortIsPending(AwMessagePort[] sentPorts) {
         if (sentPorts != null) {
-            for (MessagePort port : sentPorts) {
+            for (AwMessagePort port : sentPorts) {
                 if (!port.isReady()) {
                     return true;
                 }
@@ -88,7 +88,7 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
     // a pending state.
     // 2. There are already queued messages
     // 3. The message includes a port that is not ready yet.
-    private boolean shouldQueueMessage(MessagePort[] sentPorts) {
+    private boolean shouldQueueMessage(AwMessagePort[] sentPorts) {
         // if messages to frames are already in queue mode, simply queue it, no need to
         // check ports.
         if (mMessageQueue.size() > 0 || !mDelegate.isPostMessageSenderReady()) {
@@ -101,7 +101,7 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
     }
 
     private void postMessageToWeb(String frameName, String message, String targetOrigin,
-            MessagePort[] sentPorts) {
+            AwMessagePort[] sentPorts) {
         int[] portIds = null;
         if (sentPorts != null) {
             portIds = new int[sentPorts.length];
@@ -118,10 +118,10 @@ public class PostMessageSender implements AwMessagePortService.MessageChannelObs
      * when message can be sent.
      */
     public void postMessage(String frameName, String message, String targetOrigin,
-            MessagePort[] sentPorts) throws IllegalStateException {
+            AwMessagePort[] sentPorts) throws IllegalStateException {
         // Sanity check all the ports that are being transferred.
         if (sentPorts != null) {
-            for (MessagePort p : sentPorts) {
+            for (AwMessagePort p : sentPorts) {
                 if (p.isClosed()) {
                     throw new IllegalStateException("Closed port cannot be transfered");
                 }
