@@ -53,8 +53,6 @@ public:
 
     bool usesRemUnits() const { return m_usesRemUnits; }
 
-    DocumentOrderedList& styleSheetCandidateNodes() { return m_styleSheetCandidateNodes; }
-
     void clearMediaQueryRuleSetStyleSheets();
     void setExitTransitionStyleshetsEnabled(bool);
 
