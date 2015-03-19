@@ -106,7 +106,8 @@ const char kSetNetworkGuidMessage[] = "setNetworkGuid";
 const char kRemoveNetworkMessage[] = "removeNetwork";
 
 // TODO(stevenjb): Deprecate these and integrate with settings Web UI.
-const char kAddConnectionMessage[] = "addConnection";
+const char kAddVPNConnectionMessage[] = "addVPNConnection";
+const char kAddNonVPNConnectionMessage[] = "addNonVPNConnection";
 const char kConfigureNetworkMessage[] = "configureNetwork";
 const char kActivateNetworkMessage[] = "activateNetwork";
 
@@ -289,8 +290,11 @@ void InternetOptionsHandler::InitializePage() {
 }
 
 void InternetOptionsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(kAddConnectionMessage,
-      base::Bind(&InternetOptionsHandler::AddConnection,
+  web_ui()->RegisterMessageCallback(kAddVPNConnectionMessage,
+      base::Bind(&InternetOptionsHandler::AddVPNConnection,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kAddNonVPNConnectionMessage,
+      base::Bind(&InternetOptionsHandler::AddNonVPNConnection,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kRemoveNetworkMessage,
       base::Bind(&InternetOptionsHandler::RemoveNetwork,
@@ -565,7 +569,27 @@ const PrefService* InternetOptionsHandler::GetPrefs() const {
   return Profile::FromWebUI(web_ui())->GetPrefs();
 }
 
-void InternetOptionsHandler::AddConnection(const base::ListValue* args) {
+
+void InternetOptionsHandler::AddVPNConnection(const base::ListValue* args) {
+  if (args->empty()) {
+    // Show the "add network" dialog for the built-in OpenVPN/L2TP provider.
+    NetworkConfigView::ShowForType(shill::kTypeVPN, GetNativeWindow());
+    return;
+  }
+
+  std::string extension_id;
+  if (args->GetSize() != 1 || !args->GetString(0, &extension_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  // Request that the third-party VPN provider identified by |provider_id|
+  // show its "add network" dialog.
+  chromeos::VpnServiceFactory::GetForBrowserContext(
+      GetProfileForPrimaryUser())->SendShowAddDialogToExtension(extension_id);
+}
+
+void InternetOptionsHandler::AddNonVPNConnection(const base::ListValue* args) {
   std::string onc_type;
   if (args->GetSize() != 1 || !args->GetString(0, &onc_type)) {
     NOTREACHED();
@@ -573,8 +597,6 @@ void InternetOptionsHandler::AddConnection(const base::ListValue* args) {
   }
   if (onc_type == ::onc::network_type::kWiFi) {
     NetworkConfigView::ShowForType(shill::kTypeWifi, GetNativeWindow());
-  } else if (onc_type == ::onc::network_type::kVPN) {
-    NetworkConfigView::ShowForType(shill::kTypeVPN, GetNativeWindow());
   } else if (onc_type == ::onc::network_type::kCellular) {
     ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
   } else {
