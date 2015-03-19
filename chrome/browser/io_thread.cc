@@ -14,7 +14,6 @@
 #include "base/debug/leak_tracker.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/user_metrics.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
@@ -998,7 +997,6 @@ void IOThread::EnableSpdy(const std::string& mode) {
       globals_->use_alternate_protocols.set(false);
     } else if (option == kForceAltProtocols) {
       net::AlternateProtocolInfo pair(443, net::NPN_SPDY_3, 1);
-      base::RecordAction(base::UserMetricsAction("Net.ForceAlternateProtocol"));
       net::HttpServerPropertiesImpl::ForceAlternateProtocol(pair);
     } else if (option == kSingleDomain) {
       DVLOG(1) << "FORCING SINGLE DOMAIN";
