@@ -21,6 +21,11 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+// For fine-grained suppression on flaky tests.
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace content {
 
 class FrameTreeBrowserTest : public ContentBrowserTest {
@@ -146,6 +151,11 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
 #define MAYBE_NavigateWithLeftoverFrames NavigateWithLeftoverFrames
 #endif
 IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, MAYBE_NavigateWithLeftoverFrames) {
+#if defined(OS_WIN)
+  // Flaky on XP bot http://crbug.com/468713
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
   GURL base_url = embedded_test_server()->GetURL("A.com", "/site_isolation/");
 
   NavigateToURL(shell(),
