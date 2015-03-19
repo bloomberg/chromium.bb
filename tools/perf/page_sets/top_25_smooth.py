@@ -53,51 +53,6 @@ class GmailSmoothPage(top_pages.GmailPage):
     interaction.End()
 
 
-class GmailMouseScrollPage(top_pages.GmailPage):
-
-  """ Why: productivity, top google properties """
-
-  def RunPageInteractions(self, action_runner):
-    action_runner.ExecuteJavaScript('''
-        gmonkey.load('2.0', function(api) {
-          window.__scrollableElementForTelemetry = api.getScrollableElement();
-        });''')
-    action_runner.WaitForJavaScriptCondition(
-        'window.__scrollableElementForTelemetry != null')
-    scrollbar_x, start_y, end_y = self._CalculateScrollBarRatios(action_runner)
-
-    interaction = action_runner.BeginGestureInteraction(
-        'DragAction')
-    action_runner.DragPage(left_start_ratio=scrollbar_x,
-        top_start_ratio=start_y, left_end_ratio=scrollbar_x,
-        top_end_ratio=end_y, speed_in_pixels_per_second=100,
-        element_function='window.__scrollableElementForTelemetry')
-    interaction.End()
-
-  def CanRunOnBrowser(self, browser_info):
-    return (browser_info._browser._platform_backend.platform.GetOSName() !=
-        'android')
-
-  def _CalculateScrollBarRatios(self, action_runner):
-    viewport_height = float(action_runner.EvaluateJavaScript(
-        'window.__scrollableElementForTelemetry.clientHeight'))
-    content_height = float(action_runner.EvaluateJavaScript(
-        'window.__scrollableElementForTelemetry.scrollHeight'))
-    viewport_width = float(action_runner.EvaluateJavaScript(
-        'window.__scrollableElementForTelemetry.offsetWidth'))
-    scrollbar_width = float(action_runner.EvaluateJavaScript('''
-        window.__scrollableElementForTelemetry.offsetWidth -
-        window.__scrollableElementForTelemetry.scrollWidth'''))
-
-    # This calculation is correct only when the element doesn't have border or
-    # padding or scroll buttons (eg: gmail mail element).
-    scrollbar_start_mid_y = viewport_height / (2 * content_height)
-    scrollbar_end_mid_y = 1 - scrollbar_start_mid_y
-    scrollbar_mid_x_offset = scrollbar_width / (2 * viewport_width)
-    scrollbar_mid_x = 1 - scrollbar_mid_x_offset
-    return scrollbar_mid_x, scrollbar_start_mid_y, scrollbar_end_mid_y
-
-
 class GoogleCalendarSmoothPage(top_pages.GoogleCalendarPage):
 
   """ Why: productivity, top google properties """
@@ -118,25 +73,6 @@ class GoogleDocSmoothPage(top_pages.GoogleDocPage):
         'ScrollAction')
     action_runner.ScrollElement(selector='.kix-appview-editor')
     interaction.End()
-
-
-class GoogleMapsPage(top_pages.GoogleMapsPage):
-
-  """ Why: productivity, top google properties; Supports drag gestures """
-
-  def RunPageInteractions(self, action_runner):
-    interaction = action_runner.BeginGestureInteraction(
-        'DragAction', repeatable=True)
-    action_runner.DragPage(left_start_ratio=0.5, top_start_ratio=0.75,
-                           left_end_ratio=0.75, top_end_ratio=0.5)
-    interaction.End()
-    action_runner.Wait(2)
-    interaction = action_runner.BeginGestureInteraction(
-        'DragAction', repeatable=True)
-    action_runner.DragPage(left_start_ratio=0.5, top_start_ratio=0.5,
-                           left_end_ratio=0.35, top_end_ratio=0.75)
-    interaction.End()
-    # TODO(ssid): Add zoom gestures after fixing bug crbug.com/462214.
 
 
 class ESPNSmoothPage(top_pages.ESPNPage):
@@ -163,7 +99,6 @@ class Top25SmoothPageSet(page_set_module.PageSet):
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.GoogleWebSearchPage)(self))
     self.AddUserStory(GmailSmoothPage(self))
-    self.AddUserStory(GmailMouseScrollPage(self))
     self.AddUserStory(GoogleCalendarSmoothPage(self))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.GoogleImageSearchPage)(self))
@@ -191,7 +126,6 @@ class Top25SmoothPageSet(page_set_module.PageSet):
         top_pages.WeatherPage)(self))
     self.AddUserStory(_CreatePageClassWithSmoothInteractions(
         top_pages.YahooGamesPage)(self))
-    self.AddUserStory(GoogleMapsPage(self))
 
     other_urls = [
         # Why: #1 news worldwide (Alexa global)
