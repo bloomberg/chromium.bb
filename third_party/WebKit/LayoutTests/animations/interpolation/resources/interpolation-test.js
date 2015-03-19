@@ -33,26 +33,16 @@
  * exercise the interpolation functionaltiy of the animation system.
  * Tests which run using this script should be portable across browsers.
  *
- * The following functions are exported:
- *  * runAsRefTest - indicates that the test is a ref test and disables
- *    dumping of textual output.
- *  * testInterpolationAt([timeFractions], {property: x, from: y, to: z})
- *    Constructs a test case for the interpolation of property x from
- *    value y to value z at each of the times in timeFractions.
+ * The following function is exported:
  *  * assertInterpolation({property: x, from: y, to: z}, [{at: fraction, is: value}])
  *    Constructs a test case which for each fraction will output a PASS
  *    or FAIL depending on whether the interpolated result matches
  *    'value'. Replica elements are constructed to aid eyeballing test
  *    results. This function may not be used in a ref test.
- *  * convertToReference - This is intended to be used interactively to
- *    construct a reference given the results of a test. To build a
- *    reference, run the test, open the inspector and trigger this
- *    function, then copy/paste the results.
  */
 'use strict';
 (function() {
   var webkitPrefix = 'webkitAnimation' in document.documentElement.style ? '-webkit-' : '';
-  var isRefTest = false;
   var webAnimationsTest = typeof Element.prototype.animate === 'function';
   var startEvent = webkitPrefix ? 'webkitAnimationStart' : 'animationstart';
   var endEvent = webkitPrefix ? 'webkitAnimationEnd' : 'animationend';
@@ -106,49 +96,23 @@
 
   function dumpResults() {
     var targets = document.querySelectorAll('.target.active');
-    if (isRefTest) {
-      // Convert back to reference to avoid cases where the computed style is
-      // out of sync with the compositor.
-      for (var i = 0; i < targets.length; i++) {
-        targets[i].convertToReference();
+    var cssResultString = 'CSS Animations:\n';
+    var waResultString = 'Web Animations API:\n';
+    for (var i = 0; i < targets.length; i++) {
+      if (targets[i].testType === 'css') {
+        cssResultString += targets[i].getResultString() + '\n';
+      } else {
+        waResultString += targets[i].getResultString() + '\n';
       }
-      style.parentNode.removeChild(style);
-    } else {
-      var cssResultString = 'CSS Animations:\n';
-      var waResultString = 'Web Animations API:\n';
-      for (var i = 0; i < targets.length; i++) {
-        if (targets[i].testType === 'css') {
-          cssResultString += targets[i].getResultString() + '\n';
-        } else {
-          waResultString += targets[i].getResultString() + '\n';
-        }
-      }
-      var results = document.createElement('pre');
-      results.textContent = cssResultString + (waTestsDiv ? '\n' + waResultString : '');
-      results.id = 'results';
-      document.body.appendChild(results);
     }
-  }
-
-  function convertToReference() {
-    console.assert(isRefTest);
-    var scripts = document.querySelectorAll('script');
-    for (var i = 0; i < scripts.length; i++) {
-      scripts[i].parentNode.removeChild(scripts[i]);
-    }
-    style.parentNode.removeChild(style);
-    var html = document.documentElement.outerHTML;
-    document.documentElement.style.whiteSpace = 'pre';
-    document.documentElement.textContent = html;
+    var results = document.createElement('pre');
+    results.textContent = cssResultString + (waTestsDiv ? '\n' + waResultString : '');
+    results.id = 'results';
+    document.body.appendChild(results);
   }
 
   function afterTest(callback) {
     afterTestCallback = callback;
-  }
-
-  function runAsRefTest() {
-    console.assert(!isRefTest);
-    isRefTest = true;
   }
 
   // Constructs a timing function which produces 'y' at x = 0.5
@@ -290,7 +254,6 @@
   }
 
   function makeInterpolationTest(testType, fraction, testId, caseId, params, expectation) {
-    console.assert(expectation === undefined || !isRefTest);
     var targetContainer = createTargetContainer(caseId);
     var target = targetContainer.querySelector('.target') || targetContainer;
     target.classList.add('active');
@@ -321,9 +284,6 @@
       return result + property + ' from [' + params.from + '] to ' +
           '[' + params.to + '] was [' + value + ']' +
           ' at ' + fraction + reason;
-    };
-    target.convertToReference = function() {
-      this.style[params.property] = getComputedStyle(this).getPropertyValue(params.property);
     };
     var easing = createEasing(fraction);
     testCount++;
@@ -364,12 +324,10 @@
       afterTestCallback();
     }
     if (window.testRunner) {
-      if (!isRefTest) {
-        var results = document.querySelector('#results');
-        document.documentElement.textContent = '';
-        document.documentElement.appendChild(results);
-        testRunner.dumpAsText();
-      }
+      var results = document.querySelector('#results');
+      document.documentElement.textContent = '';
+      document.documentElement.appendChild(results);
+      testRunner.dumpAsText();
       testRunner.notifyDone();
     }
   }
@@ -421,10 +379,8 @@
     webAnimationsTest = false;
   }
 
-  window.runAsRefTest = runAsRefTest;
   window.testInterpolationAt = testInterpolationAt;
   window.assertInterpolation = assertInterpolation;
-  window.convertToReference = convertToReference;
   window.afterTest = afterTest;
   window.disableWebAnimationsTest = disableWebAnimationsTest;
 })();
