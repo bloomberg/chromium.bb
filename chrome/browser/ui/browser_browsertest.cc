@@ -1389,7 +1389,15 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 }
 
 // Check that the location bar is shown correctly for bookmark apps.
-IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBarForBookmarkApp) {
+// Flaky on Windows: http://crbug.com/468753.
+#if defined(OS_WIN)
+#define MAYBE_ShouldShowLocationBarForBookmarkApp \
+        DISABLED_ShouldShowLocationBarForBookmarkApp
+#else
+#define MAYBE_ShouldShowLocationBarForBookmarkApp \
+        ShouldShowLocationBarForBookmarkApp
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ShouldShowLocationBarForBookmarkApp) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableNewBookmarkApps);
   ASSERT_TRUE(test_server()->Start());
