@@ -470,6 +470,24 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(TrailingWhitespace)) {
   EXPECT_EQ("sip", event_interface_->selected_subprotocol());
 }
 
+// This is a regression test for crbug.com/169448 "WebSockets should support
+// header continuations"
+// TODO(ricea): HTTP continuation headers have been deprecated by RFC7230.  If
+// support for continuation headers is removed from Chrome, then this test will
+// break and should be removed.
+TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HeaderContinuations)) {
+  SpawnedTestServer ws_server(SpawnedTestServer::TYPE_WS,
+                              SpawnedTestServer::kLocalhost,
+                              GetWebSocketTestDataDirectory());
+  ASSERT_TRUE(ws_server.Start());
+
+  GURL ws_url = ws_server.GetURL("header-continuation");
+
+  EXPECT_TRUE(ConnectAndWait(ws_url));
+  EXPECT_EQ("permessage-deflate; server_max_window_bits=10",
+            event_interface_->extensions());
+}
+
 }  // namespace
 
 }  // namespace net
