@@ -652,8 +652,7 @@ RenderViewImpl::RenderViewImpl(const ViewMsg_New_Params& params)
 #endif
       enumeration_completion_id_(0),
       session_storage_namespace_id_(params.session_storage_namespace_id),
-      page_scale_factor_is_one_(true),
-      debug_info_(params.debug_info) {
+      page_scale_factor_is_one_(true) {
 }
 
 void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
