@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This file allows the bots to be easily configured and run the tests.
+"""Encapsulates running tests defined in tests.py.
 
 Running this script requires passing --config-path with a path to a config file
 of the following structure:
@@ -14,121 +14,65 @@ of the following structure:
   chrome-path=<chrome binary path>
   chromedriver-path=<chrome driver path>
   [run_options]
-  # |write_to_sheet| is optional, the default value is false.
-  write_to_sheet=[false|true]
   # |tests_in_parallel| is optional, the default value is 1.
   tests_in_parallel=<number of parallel tests>
   # |tests_to_runs| field is optional, if it is absent all tests will be run.
   tests_to_run=<test names to run, comma delimited>
-  [output]
-  # |save-path| is optional, the default value is /dev/null.
-  save-path=<file where to save result>
-  [sheet_info]
-  # This section is required only when write_to_sheet=true
-  pkey=full_path
-  client_email=email_assigned_by_google_dev_console
-  sheet_key=sheet_key_from_sheet_url
 """
-from datetime import datetime
+import argparse
 import ConfigParser
-import sys
-import httplib2
+import logging
 import os
 import shutil
 import subprocess
 import tempfile
 import time
-sheet_libraries_import_error = None
-try:
-# TODO(vabr) Remove this dependency http://crbug.com/418485#c4.
-  from Sheet import Sheet
-  from apiclient.discovery import build
-  from gdata.gauth import OAuth2TokenFromCredentials
-  from gdata.spreadsheet.service import SpreadsheetsService
-  from oauth2client.client import SignedJwtAssertionCredentials
-  import oauth2client.tools
-except ImportError as err:
-  sheet_libraries_import_error = err
-
 
 from environment import Environment
 import tests
 
-_CREDENTIAL_SCOPES = "https://spreadsheets.google.com/feeds"
 
-# TODO(dvadym) Change all prints in this file to correspond logging.
+# Just below logging.DEBUG, use for this script's debug messages instead
+# of logging.DEBUG, which is already used for detailed test debug messages.
+SCRIPT_DEBUG = 9
 
-# TODO(dvadym) Consider to move this class to separate file.
-class SheetWriter(object):
-
-  def __init__(self, config):
-    self.write_to_sheet = config.getboolean("run_options", "write_to_sheet")
-    if not self.write_to_sheet:
-      return
-    if sheet_libraries_import_error:
-      raise sheet_libraries_import_error
-    self.pkey = config.get("sheet_info", "pkey")
-    self.client_email = config.get("sheet_info", "client_email")
-    self.sheet_key = config.get("sheet_info", "sheet_key")
-    _, self.access_token = self._authenticate()
-    self.sheet = self._spredsheeet_for_logging()
-
-  # TODO(melandory): Function _authenticate belongs to separate module.
-  def _authenticate(self):
-    http, token = None, None
-    with open(self.pkey) as pkey_file:
-      private_key = pkey_file.read()
-      credentials = SignedJwtAssertionCredentials(
-          self.client_email, private_key, _CREDENTIAL_SCOPES)
-      http = httplib2.Http()
-      http = credentials.authorize(http)
-      build("drive", "v2", http=http)
-      token = OAuth2TokenFromCredentials(credentials).access_token
-    return http, token
-
-  # TODO(melandory): Functionality of _spredsheeet_for_logging belongs
-  # to websitetests, because this way we do not need to write results of run
-  # in separate file and then read it here.
-  def _spredsheeet_for_logging(self):
-    """ Connects to document where result of test run will be logged. """
-    # Connect to trix
-    service = SpreadsheetsService(additional_headers={
-              "Authorization": "Bearer " + self.access_token})
-    sheet = Sheet(service, self.sheet_key)
-    return sheet
-
-  def write_line_to_sheet(self, data):
-    if not self.write_to_sheet:
-      return
-    try:
-      self.sheet.InsertRow(self.sheet.row_count, data)
-    except Exception:
-      pass  # TODO(melandory): Sometimes writing to spreadsheet fails. We need
-            # to deal with it better that just ignoring it.
 
 class TestRunner(object):
+  """Runs tests for a single website."""
 
-  def __init__(self, general_test_cmd, test_name):
-    """ Args:
-     general_test_cmd: String contains part of run command common for all tests,
-      [2] is placeholder for test name.
-     test_name: Test name (facebook for example).
+  def __init__(self, test_cmd, test_name):
+    """Initialize the TestRunner.
+
+    Args:
+      test_cmd: List of command line arguments to be supplied to
+        every test run.
+      test_name: Test name (e.g., facebook).
     """
+    self.logger = logging.getLogger("run_tests")
+
     self.profile_path = tempfile.mkdtemp()
     results = tempfile.NamedTemporaryFile(delete=False)
     self.results_path = results.name
     results.close()
-    self.test_cmd = general_test_cmd + ["--profile-path", self.profile_path,
-                                        "--save-path", self.results_path]
-    self.test_cmd[2] = self.test_name = test_name
-    # TODO(rchtara): Using "timeout is just temporary until a better,
-    # platform-independent solution is found.
+    self.test_cmd = test_cmd + ["--profile-path", self.profile_path,
+                                "--save-path", self.results_path]
+    self.test_name = test_name
+    # TODO(vabr): Ideally we would replace timeout with something allowing
+    # calling tests directly inside Python, and working on other platforms.
+    #
     # The website test runs in two passes, each pass has an internal
     # timeout of 200s for waiting (see |remaining_time_to_wait| and
     # Wait() in websitetest.py). Accounting for some more time spent on
     # the non-waiting execution, 300 seconds should be the upper bound on
     # the runtime of one pass, thus 600 seconds for the whole test.
     self.test_cmd = ["timeout", "600"] + self.test_cmd
+
+    self.logger.log(SCRIPT_DEBUG,
+                    "TestRunner set up for test %s, command '%s', "
+                    "profile path %s, results file %s",
+                    self.test_name, self.test_cmd, self.profile_path,
+                    self.results_path)
+
     self.runner_process = None
     # The tests can be flaky. This is why we try to rerun up to 3 times.
     self.max_test_runs_left = 3
@@ -136,50 +80,54 @@ class TestRunner(object):
     self._run_test()
 
   def get_test_result(self):
-    """ Return None if result is not ready yet."""
+    """Return the test results.
+
+    Returns:
+      (True, []) if the test passed.
+      (False, list_of_failures) if the test failed.
+      None if the test is still running.
+    """
+
     test_running = self.runner_process and self.runner_process.poll() is None
-    if test_running: return None
+    if test_running:
+      return None
     # Test is not running, now we have to check if we want to start it again.
     if self._check_if_test_passed():
-      print "Test " + self.test_name + " passed"
-      return "pass", []
+      self.logger.log(SCRIPT_DEBUG, "Test %s passed", self.test_name)
+      return True, []
     if self.max_test_runs_left == 0:
-      print "Test " + self.test_name + " failed"
-      return "fail", self.failures
+      self.logger.log(SCRIPT_DEBUG, "Test %s failed", self.test_name)
+      return False, self.failures
     self._run_test()
     return None
 
   def _check_if_test_passed(self):
+    """Returns True if and only if the test passed."""
     if os.path.isfile(self.results_path):
-      results = open(self.results_path, "r")
-      count = 0  # Count the number of successful tests.
-      for line in results:
-        # TODO(melandory): We do not need to send all this data to sheet.
-        self.failures.append(line)
-        count += line.count("successful='True'")
-      results.close()
+      with open(self.results_path, "r") as results:
+        count = 0  # Count the number of successful tests.
+        for line in results:
+          self.failures.append(line)
+          count += line.count("successful='True'")
+
       # There is only two tests running for every website: the prompt and
       # the normal test. If both of the tests were successful, the tests
       # would be stopped for the current website.
-      print "Test run of %s %s" % (self.test_name, "passed"
-                                   if count == 2 else "failed")
+      self.logger.log(SCRIPT_DEBUG, "Test run of %s: %s",
+                      self.test_name, "pass" if count == 2 else "fail")
       if count == 2:
         return True
     return False
 
   def _run_test(self):
-    """Run separate process that once run test for one site."""
-    try:
-      os.remove(self.results_path)
-    except Exception:
-      pass
-    try:
-      shutil.rmtree(self.profile_path)
-    except Exception:
-      pass
+    """Executes the command to run the test."""
+    with open(self.results_path, "w"):
+      pass  # Just clear the results file.
+    shutil.rmtree(path=self.profile_path, ignore_errors=True)
     self.max_test_runs_left -= 1
-    print "Run of test %s started" % self.test_name
+    self.logger.log(SCRIPT_DEBUG, "Run of test %s started", self.test_name)
     self.runner_process = subprocess.Popen(self.test_cmd)
+
 
 def _apply_defaults(config, defaults):
   """Adds default values from |defaults| to |config|.
@@ -202,53 +150,79 @@ def _apply_defaults(config, defaults):
     if not config.has_option(section, option):
       config.set(section, option, defaults[(section, option)])
 
+
 def run_tests(config_path):
-  """ Runs automated tests. """
+  """Runs automated tests.
+
+  Runs the tests and returns the results through logging:
+  On logging.INFO logging level, it returns the summary of how many tests
+  passed and failed.
+  On logging.DEBUG logging level, it returns the failure logs, if any.
+  (On SCRIPT_DEBUG it returns diagnostics for this script.)
+
+  Args:
+    config_path: The path to the config INI file. See the top of the file
+      for format description.
+  """
+
   environment = Environment("", "", "", None, False)
-  defaults = { ("output", "save-path"): "/dev/null",
-               ("run_options", "tests_in_parallel"): "1",
-               ("run_options", "write_to_sheet"): "false" }
+  defaults = {("run_options", "tests_in_parallel"): "1"}
   config = ConfigParser.ConfigParser()
   _apply_defaults(config, defaults)
   config.read(config_path)
-  date = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
   max_tests_in_parallel = config.getint("run_options", "tests_in_parallel")
-  sheet_writer = SheetWriter(config)
   full_path = os.path.realpath(__file__)
   tests_dir = os.path.dirname(full_path)
   tests_path = os.path.join(tests_dir, "tests.py")
-  general_test_cmd =  ["python", tests_path, "test_name_placeholder",
-     "--chrome-path", config.get("binaries", "chrome-path"),
-     "--chromedriver-path", config.get("binaries", "chromedriver-path"),
-     "--passwords-path", config.get("data_files", "passwords_path")]
+  test_name_idx = 2  # Index of "test_name_placeholder" below.
+  general_test_cmd = ["python", tests_path, "test_name_placeholder",
+                      "--chrome-path", config.get("binaries", "chrome-path"),
+                      "--chromedriver-path",
+                      config.get("binaries", "chromedriver-path"),
+                      "--passwords-path",
+                      config.get("data_files", "passwords_path")]
   runners = []
   if config.has_option("run_options", "tests_to_run"):
-    user_selected_tests = config.get("run_options", "tests_to_run").split(',')
+    user_selected_tests = config.get("run_options", "tests_to_run").split(",")
     tests_to_run = user_selected_tests
   else:
     tests.Tests(environment)
     tests_to_run = [test.name for test in environment.websitetests]
 
-  with open(config.get("output", "save-path"), 'w') as savefile:
-    print "Tests to run %d\nTests: %s" % (len(tests_to_run), tests_to_run)
-    while len(runners) + len(tests_to_run) > 0:
-      i = 0
-      while i < len(runners):
-        result = runners[i].get_test_result()
-        if result:  # This test run is finished.
-          status, log = result
-          testinfo = [runners[i].test_name, status, date, " | ".join(log)]
-          sheet_writer.write_line_to_sheet(testinfo)
-          print>>savefile, " ".join(testinfo)
-          del runners[i]
-        else:
-          i += 1
-      while len(runners) < max_tests_in_parallel and len(tests_to_run) > 0:
-        runners.append(TestRunner(general_test_cmd, tests_to_run.pop()))
-      time.sleep(1)  # Let us wait for worker process to finish.
+  logger = logging.getLogger("run_tests")
+  logger.log(SCRIPT_DEBUG, "%d tests to run: %s", len(tests_to_run),
+             tests_to_run)
+  results = []  # List of (name, bool_passed, failure_log).
+  while len(runners) + len(tests_to_run) > 0:
+    i = 0
+    # TODO(melandory): Rewrite with list comprehension to increase readability.
+    while i < len(runners):
+      result = runners[i].get_test_result()
+      if result:  # This test run is finished.
+        status, log = result
+        results.append((runners[i].test_name, status, log))
+        del runners[i]
+      else:
+        i += 1
+    while len(runners) < max_tests_in_parallel and len(tests_to_run):
+      test_name = tests_to_run.pop()
+      specific_test_cmd = list(general_test_cmd)
+      specific_test_cmd[test_name_idx] = test_name
+      runners.append(TestRunner(specific_test_cmd, test_name))
+    time.sleep(1)
+  failed_tests = [(name, log) for (name, passed, log) in results if not passed]
+  logger.info("%d failed tests out of %d", len(failed_tests), len(results))
+  logger.info("Failing tests: %s", [name for (name, _) in failed_tests])
+  logger.debug("Logs of failing tests: %s", failed_tests)
+
+
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument("config_path", metavar="N",
+                      help="Path to the config.ini file.")
+  args = parser.parse_args()
+  run_tests(args.config_path)
+
 
 if __name__ == "__main__":
-  if len(sys.argv) != 2:
-    print "Synopsis:\n python run_tests.py <config_path>"
-  config_path = sys.argv[1]
-  run_tests(config_path)
+  main()
