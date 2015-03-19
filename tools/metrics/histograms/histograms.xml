@@ -2064,17 +2064,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Autofill.UnmaskPrompt.Events" enum="AutofillUnmaskPromptEvent">
   <owner>waltercacau@chromium.org</owner>
   <summary>
-    Events tracking the usage of the unmasking prompt. This prompt is
-    triggered when a user selects a masked card in a autofill dropdown.
+    Events tracking the usage of the unmasking prompt. This prompt is triggered
+    when a user selects a masked card in a autofill dropdown.
   </summary>
 </histogram>
 
-<histogram name="Autofill.UnmaskPrompt.GetRealPanResult" enum="AutofillGetRealPanResult">
+<histogram name="Autofill.UnmaskPrompt.GetRealPanResult"
+    enum="AutofillGetRealPanResult">
   <owner>waltercacau@chromium.org</owner>
   <summary>
-    Tracks the result of the GetRealPan API call. This API call is triggered
-    by the unmasking prompt when the user types information to verify his
-    ownership of the card being fetched.
+    Tracks the result of the GetRealPan API call. This API call is triggered by
+    the unmasking prompt when the user types information to verify his ownership
+    of the card being fetched.
   </summary>
 </histogram>
 
