@@ -20,14 +20,15 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_version_info.h"
 #include "ui/gl/gpu_timing.h"
 #include "ui/gl/scoped_make_current.h"
 
 namespace gpu {
 namespace {
 
-const int kUploadPerfWarmupRuns = 10;
-const int kUploadPerfTestRuns = 100;
+const int kUploadPerfWarmupRuns = 5;
+const int kUploadPerfTestRuns = 30;
 
 #define SHADER(Src) #Src
 
@@ -126,7 +127,7 @@ bool CompareBufferToRGBABuffer(GLenum format,
         case GL_LUMINANCE:  // (L_t, L_t, L_t, 1)
           expected[1] = pixels[pixels_index];
           expected[2] = pixels[pixels_index];
-        case GL_RED_EXT:  // (R_t, 0, 0, 1)n
+        case GL_RED:  // (R_t, 0, 0, 1)
           expected[0] = pixels[pixels_index];
           expected[3] = 255;
           break;
@@ -386,17 +387,21 @@ TEST_F(TextureUploadPerfTest, glTexImage2d) {
   int sizes[] = {21, 128, 256, 512, 1024};
   std::vector<GLenum> formats;
   formats.push_back(GL_RGBA);
-  // Used by default for ResourceProvider::yuv_resource_format_.
-  formats.push_back(GL_LUMINANCE);
+
+  if (!gl_context_->GetVersionInfo()->is_es3) {
+    // Used by default for ResourceProvider::yuv_resource_format_.
+    formats.push_back(GL_LUMINANCE);
+  }
 
   ui::ScopedMakeCurrent smc(gl_context_.get(), surface_.get());
-  bool has_texture_rg = gl_context_->HasExtension("GL_EXT_texture_rg") ||
-                        gl_context_->HasExtension("GL_ARB_texture_rg");
+  const bool has_texture_rg = gl_context_->GetVersionInfo()->is_es3 ||
+                              gl_context_->HasExtension("GL_EXT_texture_rg") ||
+                              gl_context_->HasExtension("GL_ARB_texture_rg");
 
   if (has_texture_rg) {
     // Used as ResourceProvider::yuv_resource_format_ if
     // {ARB,EXT}_texture_rg are available.
-    formats.push_back(GL_RED_EXT);
+    formats.push_back(GL_RED);
   }
   for (int side : sizes) {
     ASSERT_GE(fbo_size_.width(), side);
