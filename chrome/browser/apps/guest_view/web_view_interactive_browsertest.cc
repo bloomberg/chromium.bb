@@ -1023,7 +1023,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
 // "*** Assertion failure in -[_NSWindowFullScreenTransition
 //     transitionedWindowFrame],"
 // See similar bug: http://crbug.com/169820.
-#if defined(OS_MACOSX)
+// Also flaky on Windows: http://crbug.com/468660
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_FullscreenAllow_EmbedderHasPermission \
     DISABLED_FullscreenAllow_EmbedderHasPermission
 #else
