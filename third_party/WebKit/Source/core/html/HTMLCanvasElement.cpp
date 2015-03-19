@@ -44,8 +44,8 @@
 #include "core/html/canvas/WebGLContextAttributes.h"
 #include "core/html/canvas/WebGLContextEvent.h"
 #include "core/html/canvas/WebGLRenderingContext.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutHTMLCanvas.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/BitmapImage.h"
@@ -305,7 +305,7 @@ void HTMLCanvasElement::didFinalizeFrame()
     // the canvas contents are sent separately through a texture layer.
     if (ro && (!m_context || !m_context->isAccelerated())) {
         LayoutRect mappedDirtyRect(enclosingIntRect(mapRect(m_dirtyRect, srcRect, ro->contentBoxRect())));
-        // For querying Layer::compositingState()
+        // For querying DeprecatedPaintLayer::compositingState()
         // FIXME: is this invalidation using the correct compositing state?
         DisableCompositingQueryAsserts disabler;
         ro->invalidatePaintRectangle(mappedDirtyRect);

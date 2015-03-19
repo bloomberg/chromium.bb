@@ -42,15 +42,15 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef LayerPaintingInfo_h
-#define LayerPaintingInfo_h
+#ifndef DeprecatedPaintLayerPaintingInfo_h
+#define DeprecatedPaintLayerPaintingInfo_h
 
 #include "core/layout/PaintInfo.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
 
-class Layer;
+class DeprecatedPaintLayer;
 
 enum PaintLayerFlag {
     PaintLayerHaveTransparency = 1,
@@ -71,8 +71,8 @@ enum PaintLayerFlag {
 
 typedef unsigned PaintLayerFlags;
 
-struct LayerPaintingInfo {
-    LayerPaintingInfo(Layer* inRootLayer, const LayoutRect& inDirtyRect,
+struct DeprecatedPaintLayerPaintingInfo {
+    DeprecatedPaintLayerPaintingInfo(DeprecatedPaintLayer* inRootLayer, const LayoutRect& inDirtyRect,
         PaintBehavior inPaintBehavior, const LayoutSize& inSubPixelAccumulation,
         LayoutObject* inPaintingRoot = 0)
         : rootLayer(inRootLayer)
@@ -82,7 +82,7 @@ struct LayerPaintingInfo {
         , paintBehavior(inPaintBehavior)
         , clipToDirtyRect(true)
     { }
-    Layer* rootLayer;
+    DeprecatedPaintLayer* rootLayer;
     LayoutObject* paintingRoot; // only paint descendants of this object
     LayoutRect paintDirtyRect; // relative to rootLayer;
     LayoutSize subPixelAccumulation;
@@ -92,4 +92,4 @@ struct LayerPaintingInfo {
 
 } // namespace blink
 
-#endif // LayerPaintingInfo_h
+#endif // DeprecatedPaintLayerPaintingInfo_h

@@ -141,7 +141,7 @@ private:
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
 
-    virtual LayerType layerTypeRequired() const override { return isRelPositioned() || createsGroup() || hasClipPath() || style()->shouldCompositeForCurrentAnimations() ? NormalLayer : NoLayer; }
+    virtual DeprecatedPaintLayerType layerTypeRequired() const override { return isRelPositioned() || createsGroup() || hasClipPath() || style()->shouldCompositeForCurrentAnimations() ? NormalDeprecatedPaintLayer : NoDeprecatedPaintLayer; }
 
     virtual LayoutUnit offsetLeft() const override final;
     virtual LayoutUnit offsetTop() const override final;

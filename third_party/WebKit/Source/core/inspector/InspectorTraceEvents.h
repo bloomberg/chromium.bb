@@ -24,7 +24,7 @@ class FrameView;
 class GraphicsLayer;
 class ImageResource;
 class KURL;
-class Layer;
+class DeprecatedPaintLayer;
 class LayoutRect;
 class LocalFrame;
 class Node;
@@ -196,7 +196,7 @@ public:
     static const char ReflectionLayerChanged[];
     static const char NewCompositedLayer[];
 
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const Layer*, const char* reason);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const DeprecatedPaintLayer*, const char* reason);
 };
 #define TRACE_LAYER_INVALIDATION(LAYER, REASON) \
     TRACE_EVENT_INSTANT1( \

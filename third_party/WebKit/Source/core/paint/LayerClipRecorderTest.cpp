@@ -7,7 +7,8 @@
 
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"

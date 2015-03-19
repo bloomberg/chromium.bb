@@ -65,7 +65,7 @@ class LayoutBoxModelObject;
 class LayoutBlock;
 class LayoutFlowThread;
 class LayoutGeometryMap;
-class Layer;
+class DeprecatedPaintLayer;
 class LayoutMultiColumnSpannerPlaceholder;
 class LayoutView;
 class TransformState;
@@ -117,7 +117,7 @@ struct AnnotatedRegionValue {
     bool draggable;
 };
 
-typedef WTF::HashMap<const Layer*, Vector<LayoutRect>> LayerHitTestRects;
+typedef WTF::HashMap<const DeprecatedPaintLayer*, Vector<LayoutRect>> LayerHitTestRects;
 
 #ifndef NDEBUG
 const int showTreeCharacterOffset = 39;
@@ -127,8 +127,8 @@ const int showTreeCharacterOffset = 39;
 class LayoutObject : public ImageResourceClient {
     friend class LayoutBlock;
     friend class LayoutBlockFlow;
-    friend class LayerReflectionInfo; // For setParent
-    friend class LayerScrollableArea; // For setParent.
+    friend class DeprecatedPaintLayerReflectionInfo; // For setParent
+    friend class DeprecatedPaintLayerScrollableArea; // For setParent.
     friend class LayoutObjectChildList;
     WTF_MAKE_NONCOPYABLE(LayoutObject);
 public:
@@ -184,11 +184,11 @@ public:
     // The following six functions are used when the render tree hierarchy changes to make sure layers get
     // properly added and removed.  Since containership can be implemented by any subclass, and since a hierarchy
     // can contain a mixture of boxes and other object types, these functions need to be in the base class.
-    Layer* enclosingLayer() const;
-    void addLayers(Layer* parentLayer);
-    void removeLayers(Layer* parentLayer);
-    void moveLayers(Layer* oldParent, Layer* newParent);
-    Layer* findNextLayer(Layer* parentLayer, LayoutObject* startPoint, bool checkParent = true);
+    DeprecatedPaintLayer* enclosingLayer() const;
+    void addLayers(DeprecatedPaintLayer* parentLayer);
+    void removeLayers(DeprecatedPaintLayer* parentLayer);
+    void moveLayers(DeprecatedPaintLayer* oldParent, DeprecatedPaintLayer* newParent);
+    DeprecatedPaintLayer* findNextLayer(DeprecatedPaintLayer* parentLayer, LayoutObject* startPoint, bool checkParent = true);
 
     // Scrolling is a LayoutBox concept, however some code just cares about recursively scrolling our enclosing ScrollableArea(s).
     bool scrollRectToVisible(const LayoutRect&, const ScrollAlignment& alignX = ScrollAlignment::alignCenterIfNeeded, const ScrollAlignment& alignY = ScrollAlignment::alignCenterIfNeeded);
@@ -777,7 +777,7 @@ public:
     FloatPoint localToContainerPoint(const FloatPoint&, const LayoutBoxModelObject* paintInvalidationContainer, MapCoordinatesFlags = 0, bool* wasFixed = 0, const PaintInvalidationState* = 0) const;
 
     // Convert a local point into the coordinate system of backing coordinates. Also returns the backing layer if needed.
-    FloatPoint localToInvalidationBackingPoint(const LayoutPoint&, Layer** backingLayer = nullptr);
+    FloatPoint localToInvalidationBackingPoint(const LayoutPoint&, DeprecatedPaintLayer** backingLayer = nullptr);
 
     // Return the offset from the container() renderer (excluding transforms). In multi-column layout,
     // different offsets apply at different points, so return the offset that applies to the given point.
@@ -1184,7 +1184,7 @@ protected:
     // containerRect is a rect that has already been added for the currentLayer which is likely to
     // be a container for child elements. Any rect wholly contained by containerRect can be
     // skipped.
-    virtual void addLayerHitTestRects(LayerHitTestRects&, const Layer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const;
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const;
 
     // Add hit-test rects for this renderer only to the provided list. layerOffset is the offset
     // of this renderer within the current layer that should be used for each result.

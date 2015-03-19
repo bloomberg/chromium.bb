@@ -20,12 +20,12 @@
 #include "config.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 
-#include "core/layout/Layer.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 
 #include "wtf/TemporaryChange.h"
 
@@ -131,8 +131,8 @@ void LayoutSVGResourceContainer::markAllClientsForInvalidation(InvalidationMode 
 
 void LayoutSVGResourceContainer::markAllClientLayersForInvalidation()
 {
-    HashSet<Layer*>::iterator layerEnd = m_clientLayers.end();
-    for (HashSet<Layer*>::iterator it = m_clientLayers.begin(); it != layerEnd; ++it)
+    HashSet<DeprecatedPaintLayer*>::iterator layerEnd = m_clientLayers.end();
+    for (HashSet<DeprecatedPaintLayer*>::iterator it = m_clientLayers.begin(); it != layerEnd; ++it)
         (*it)->filterNeedsPaintInvalidation();
 }
 
@@ -177,14 +177,14 @@ void LayoutSVGResourceContainer::addClientLayer(Node* node)
     clearInvalidationMask();
 }
 
-void LayoutSVGResourceContainer::addClientLayer(Layer* client)
+void LayoutSVGResourceContainer::addClientLayer(DeprecatedPaintLayer* client)
 {
     ASSERT(client);
     m_clientLayers.add(client);
     clearInvalidationMask();
 }
 
-void LayoutSVGResourceContainer::removeClientLayer(Layer* client)
+void LayoutSVGResourceContainer::removeClientLayer(DeprecatedPaintLayer* client)
 {
     ASSERT(client);
     m_clientLayers.remove(client);

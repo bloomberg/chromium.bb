@@ -31,15 +31,14 @@
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/ColumnInfo.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutQuote.h"
 #include "core/layout/LayoutScrollbarPart.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/page/Page.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/ViewPainter.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/TraceEvent.h"
@@ -92,7 +91,7 @@ bool LayoutView::hitTest(const HitTestRequest& request, const HitTestLocation& l
     ASSERT(!location.isRectBasedTest() || request.listBased());
 
     // We have to recursively update layout/style here because otherwise, when the hit test recurses
-    // into a child document, it could trigger a layout on the parent document, which can destroy Layers
+    // into a child document, it could trigger a layout on the parent document, which can destroy DeprecatedPaintLayer
     // that are higher up in the call stack, leading to crashes.
     // Note that Document::updateLayout calls its parent's updateLayout.
     // FIXME: It should be the caller's responsibility to ensure an up-to-date layout.
@@ -335,7 +334,7 @@ void LayoutView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInval
     LayoutRect dirtyRect = viewRect();
     if (doingFullPaintInvalidation() && !dirtyRect.isEmpty()) {
         const LayoutBoxModelObject* paintInvalidationContainer = &paintInvalidationState.paintInvalidationContainer();
-        Layer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect, &paintInvalidationState);
+        DeprecatedPaintLayer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect, &paintInvalidationState);
         invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationFull);
         if (RuntimeEnabledFeatures::slimmingPaintEnabled())
             invalidateDisplayItemClients(*paintInvalidationContainer);
@@ -951,10 +950,10 @@ bool LayoutView::usesCompositing() const
     return m_compositor && m_compositor->staleInCompositingMode();
 }
 
-LayerCompositor* LayoutView::compositor()
+DeprecatedPaintLayerCompositor* LayoutView::compositor()
 {
     if (!m_compositor)
-        m_compositor = adoptPtr(new LayerCompositor(*this));
+        m_compositor = adoptPtr(new DeprecatedPaintLayerCompositor(*this));
 
     return m_compositor.get();
 }

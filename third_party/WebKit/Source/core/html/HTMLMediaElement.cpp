@@ -61,7 +61,7 @@
 #include "core/html/track/VideoTrackList.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"

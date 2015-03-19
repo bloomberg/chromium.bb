@@ -24,7 +24,6 @@
 #ifndef BreakingContextInlineHeaders_h
 #define BreakingContextInlineHeaders_h
 
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutObject.h"
@@ -40,6 +39,7 @@
 #include "core/layout/line/TrailingObjects.h"
 #include "core/layout/line/WordMeasurement.h"
 #include "core/layout/svg/LayoutSVGInlineText.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/text/TextBreakIterator.h"
 
 namespace blink {

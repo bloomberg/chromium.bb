@@ -39,10 +39,10 @@
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"
 #include "core/animation/animatable/AnimatableValue.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/geometry/FloatBox.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorAnimation.h"
@@ -268,7 +268,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, in
 
     const KeyframeEffectModelBase& keyframeEffect = toKeyframeEffectModelBase(effect);
 
-    Layer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
+    DeprecatedPaintLayer* layer = toLayoutBoxModelObject(element.layoutObject())->layer();
     ASSERT(layer);
 
     Vector<OwnPtr<WebCompositorAnimation>> animations;
@@ -276,7 +276,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, in
     ASSERT(!animations.isEmpty());
     for (auto& animation : animations) {
         int id = animation->id();
-        if (!layer->compositedLayerMapping()->mainGraphicsLayer()->addAnimation(animation.release())) {
+        if (!layer->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->addAnimation(animation.release())) {
             // FIXME: We should know ahead of time whether these animations can be started.
             for (int startedAnimationId : startedAnimationIds)
                 cancelAnimationOnCompositor(element, startedAnimationId);
@@ -299,7 +299,7 @@ void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, i
         // compositing update.
         return;
     }
-    toLayoutBoxModelObject(element.layoutObject())->layer()->compositedLayerMapping()->mainGraphicsLayer()->removeAnimation(id);
+    toLayoutBoxModelObject(element.layoutObject())->layer()->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->removeAnimation(id);
 }
 
 void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& element, int id, double pauseTime)
@@ -312,7 +312,7 @@ void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& e
         ASSERT_NOT_REACHED();
         return;
     }
-    toLayoutBoxModelObject(element.layoutObject())->layer()->compositedLayerMapping()->mainGraphicsLayer()->pauseAnimation(id, pauseTime);
+    toLayoutBoxModelObject(element.layoutObject())->layer()->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->pauseAnimation(id, pauseTime);
 }
 
 // -----------------------------------------------------------------------

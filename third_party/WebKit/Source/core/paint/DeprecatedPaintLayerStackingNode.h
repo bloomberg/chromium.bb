@@ -42,8 +42,8 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef LayerStackingNode_h
-#define LayerStackingNode_h
+#ifndef DeprecatedPaintLayerStackingNode_h
+#define DeprecatedPaintLayerStackingNode_h
 
 #include "core/layout/LayoutBoxModelObject.h"
 #include "wtf/Noncopyable.h"
@@ -52,16 +52,16 @@
 
 namespace blink {
 
-class Layer;
-class LayerCompositor;
+class DeprecatedPaintLayer;
+class DeprecatedPaintLayerCompositor;
 class LayoutStyle;
 class LayoutBoxModelObject;
 
-class LayerStackingNode {
-    WTF_MAKE_NONCOPYABLE(LayerStackingNode);
+class DeprecatedPaintLayerStackingNode {
+    WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNode);
 public:
-    explicit LayerStackingNode(Layer*);
-    ~LayerStackingNode();
+    explicit DeprecatedPaintLayerStackingNode(DeprecatedPaintLayer*);
+    ~DeprecatedPaintLayerStackingNode();
 
     int zIndex() const { return layoutObject()->style()->zIndex(); }
 
@@ -88,9 +88,9 @@ public:
 
     void updateStackingNodesAfterStyleChange(const LayoutStyle* oldStyle);
 
-    LayerStackingNode* ancestorStackingContextNode() const;
+    DeprecatedPaintLayerStackingNode* ancestorStackingContextNode() const;
 
-    Layer* layer() const { return m_layer; }
+    DeprecatedPaintLayer* layer() const { return m_layer; }
 
 #if ENABLE(ASSERT)
     bool layerListMutationAllowed() const { return m_layerListMutationAllowed; }
@@ -98,24 +98,24 @@ public:
 #endif
 
 private:
-    friend class LayerStackingNodeIterator;
-    friend class LayerStackingNodeReverseIterator;
+    friend class DeprecatedPaintLayerStackingNodeIterator;
+    friend class DeprecatedPaintLayerStackingNodeReverseIterator;
     friend class LayoutTreeAsText;
 
-    Vector<LayerStackingNode*>* posZOrderList() const
+    Vector<DeprecatedPaintLayerStackingNode*>* posZOrderList() const
     {
         ASSERT(!m_zOrderListsDirty);
         ASSERT(isStackingContext() || !m_posZOrderList);
         return m_posZOrderList.get();
     }
 
-    Vector<LayerStackingNode*>* normalFlowList() const
+    Vector<DeprecatedPaintLayerStackingNode*>* normalFlowList() const
     {
         ASSERT(!m_normalFlowListDirty);
         return m_normalFlowList.get();
     }
 
-    Vector<LayerStackingNode*>* negZOrderList() const
+    Vector<DeprecatedPaintLayerStackingNode*>* negZOrderList() const
     {
         ASSERT(!m_zOrderListsDirty);
         ASSERT(isStackingContext() || !m_negZOrderList);
@@ -123,14 +123,14 @@ private:
     }
 
     void rebuildZOrderLists();
-    void collectLayers(OwnPtr<Vector<LayerStackingNode*>>& posZOrderList, OwnPtr<Vector<LayerStackingNode*>>& negZOrderList);
+    void collectLayers(OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>>& posZOrderList, OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>>& negZOrderList);
 
 #if ENABLE(ASSERT)
     bool isInStackingParentZOrderLists() const;
     bool isInStackingParentNormalFlowList() const;
-    void updateStackingParentForZOrderLists(LayerStackingNode* stackingParent);
-    void updateStackingParentForNormalFlowList(LayerStackingNode* stackingParent);
-    void setStackingParent(LayerStackingNode* stackingParent) { m_stackingParent = stackingParent; }
+    void updateStackingParentForZOrderLists(DeprecatedPaintLayerStackingNode* stackingParent);
+    void updateStackingParentForNormalFlowList(DeprecatedPaintLayerStackingNode* stackingParent);
+    void setStackingParent(DeprecatedPaintLayerStackingNode* stackingParent) { m_stackingParent = stackingParent; }
 #endif
 
     bool shouldBeNormalFlowOnly() const;
@@ -139,21 +139,21 @@ private:
 
     bool isDirtyStackingContext() const { return m_zOrderListsDirty && isStackingContext(); }
 
-    LayerCompositor* compositor() const;
+    DeprecatedPaintLayerCompositor* compositor() const;
     // We can't return a LayoutBox as LayoutInline can be a stacking context.
     LayoutBoxModelObject* layoutObject() const;
 
-    Layer* m_layer;
+    DeprecatedPaintLayer* m_layer;
 
     // m_posZOrderList holds a sorted list of all the descendant nodes within
     // that have z-indices of 0 or greater (auto will count as 0).
     // m_negZOrderList holds descendants within our stacking context with
     // negative z-indices.
-    OwnPtr<Vector<LayerStackingNode*>> m_posZOrderList;
-    OwnPtr<Vector<LayerStackingNode*>> m_negZOrderList;
+    OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>> m_posZOrderList;
+    OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>> m_negZOrderList;
 
     // This list contains child nodes that cannot create stacking contexts.
-    OwnPtr<Vector<LayerStackingNode*>> m_normalFlowList;
+    OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>> m_normalFlowList;
 
     unsigned m_zOrderListsDirty : 1;
     unsigned m_normalFlowListDirty: 1;
@@ -161,11 +161,11 @@ private:
 
 #if ENABLE(ASSERT)
     unsigned m_layerListMutationAllowed : 1;
-    LayerStackingNode* m_stackingParent;
+    DeprecatedPaintLayerStackingNode* m_stackingParent;
 #endif
 };
 
-inline void LayerStackingNode::clearZOrderLists()
+inline void DeprecatedPaintLayerStackingNode::clearZOrderLists()
 {
     ASSERT(!isStackingContext());
 
@@ -177,7 +177,7 @@ inline void LayerStackingNode::clearZOrderLists()
     m_negZOrderList.clear();
 }
 
-inline void LayerStackingNode::updateZOrderLists()
+inline void DeprecatedPaintLayerStackingNode::updateZOrderLists()
 {
     if (!m_zOrderListsDirty)
         return;
@@ -194,7 +194,7 @@ inline void LayerStackingNode::updateZOrderLists()
 #if ENABLE(ASSERT)
 class LayerListMutationDetector {
 public:
-    explicit LayerListMutationDetector(LayerStackingNode* stackingNode)
+    explicit LayerListMutationDetector(DeprecatedPaintLayerStackingNode* stackingNode)
         : m_stackingNode(stackingNode)
         , m_previousMutationAllowedState(stackingNode->layerListMutationAllowed())
     {
@@ -207,11 +207,11 @@ public:
     }
 
 private:
-    LayerStackingNode* m_stackingNode;
+    DeprecatedPaintLayerStackingNode* m_stackingNode;
     bool m_previousMutationAllowedState;
 };
 #endif
 
 } // namespace blink
 
-#endif // LayerStackingNode_h
+#endif // DeprecatedPaintLayerStackingNode_h

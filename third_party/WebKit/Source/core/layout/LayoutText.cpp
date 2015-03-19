@@ -32,7 +32,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/TextResourceDecoder.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/LayoutView.h"
@@ -40,6 +39,7 @@
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatQuad.h"
@@ -1341,7 +1341,7 @@ UChar LayoutText::previousCharacter() const
     return prev;
 }
 
-void LayoutText::addLayerHitTestRects(LayerHitTestRects&, const Layer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
+void LayoutText::addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     // Text nodes aren't event targets, so don't descend any further.
 }
@@ -1645,7 +1645,7 @@ LayoutRect LayoutText::selectionRectForPaintInvalidation(const LayoutBoxModelObj
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
     // FIXME: groupedMapping() leaks the squashing abstraction.
     if (paintInvalidationContainer->layer()->groupedMapping())
-        Layer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
+        DeprecatedPaintLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
     return rect;
 }
 

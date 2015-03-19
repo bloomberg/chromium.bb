@@ -37,7 +37,6 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/layout/HitTestLocation.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
@@ -48,6 +47,7 @@
 #include "core/layout/line/LineBreaker.h"
 #include "core/layout/line/LineWidth.h"
 #include "core/paint/BlockFlowPainter.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/ClipRecorderStack.h"
@@ -367,7 +367,7 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren)
     if (m_paintInvalidationLogicalTop != m_paintInvalidationLogicalBottom) {
         bool hasVisibleContent = style()->visibility() == VISIBLE;
         if (!hasVisibleContent) {
-            Layer* layer = enclosingLayer();
+            DeprecatedPaintLayer* layer = enclosingLayer();
             layer->updateDescendantDependentFlags();
             hasVisibleContent = layer->hasVisibleContent();
         }
@@ -1349,7 +1349,7 @@ void LayoutBlockFlow::adjustPositionedBlock(LayoutBox& child, const MarginInfo& 
         logicalTop += collapsedBeforePos - collapsedBeforeNeg;
     }
 
-    Layer* childLayer = child.layer();
+    DeprecatedPaintLayer* childLayer = child.layer();
     if (childLayer->staticBlockPosition() != logicalTop) {
         childLayer->setStaticBlockPosition(logicalTop);
         if (hasStaticBlockPosition)
@@ -2696,7 +2696,7 @@ LayoutRect LayoutBlockFlow::selectionRectForPaintInvalidation(const LayoutBoxMod
     LayoutRect rect = selectionGapRectsForPaintInvalidation(paintInvalidationContainer);
     // FIXME: groupedMapping() leaks the squashing abstraction.
     if (paintInvalidationContainer->layer()->groupedMapping())
-        Layer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
+        DeprecatedPaintLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
     return rect;
 }
 

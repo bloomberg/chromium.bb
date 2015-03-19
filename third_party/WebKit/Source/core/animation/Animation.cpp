@@ -43,7 +43,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeLayoutStyle.h"
 #include "core/frame/UseCounter.h"
-#include "core/layout/Layer.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 
 namespace blink {
 

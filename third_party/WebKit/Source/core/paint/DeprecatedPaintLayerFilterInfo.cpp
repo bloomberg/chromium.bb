@@ -28,52 +28,51 @@
  */
 
 #include "config.h"
-
-#include "core/layout/LayerFilterInfo.h"
+#include "core/paint/DeprecatedPaintLayerFilterInfo.h"
 
 #include "core/fetch/DocumentResourceReference.h"
 #include "core/layout/FilterEffectRenderer.h"
-#include "core/layout/Layer.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/graphics/filters/SVGFilter.h"
 
 namespace blink {
 
-LayerFilterInfoMap* LayerFilterInfo::s_filterMap = 0;
+DeprecatedPaintLayerFilterInfoMap* DeprecatedPaintLayerFilterInfo::s_filterMap = 0;
 
-LayerFilterInfo* LayerFilterInfo::filterInfoForLayer(const Layer* layer)
+DeprecatedPaintLayerFilterInfo* DeprecatedPaintLayerFilterInfo::filterInfoForLayer(const DeprecatedPaintLayer* layer)
 {
     if (!s_filterMap)
         return 0;
-    LayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
+    DeprecatedPaintLayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
     return (iter != s_filterMap->end()) ? iter->value : 0;
 }
 
-LayerFilterInfo* LayerFilterInfo::createFilterInfoForLayerIfNeeded(Layer* layer)
+DeprecatedPaintLayerFilterInfo* DeprecatedPaintLayerFilterInfo::createFilterInfoForLayerIfNeeded(DeprecatedPaintLayer* layer)
 {
     if (!s_filterMap)
-        s_filterMap = new LayerFilterInfoMap();
+        s_filterMap = new DeprecatedPaintLayerFilterInfoMap();
 
-    LayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
+    DeprecatedPaintLayerFilterInfoMap::iterator iter = s_filterMap->find(layer);
     if (iter != s_filterMap->end()) {
         ASSERT(layer->hasFilterInfo());
         return iter->value;
     }
 
-    LayerFilterInfo* filter = new LayerFilterInfo(layer);
+    DeprecatedPaintLayerFilterInfo* filter = new DeprecatedPaintLayerFilterInfo(layer);
     s_filterMap->set(layer, filter);
     layer->setHasFilterInfo(true);
     return filter;
 }
 
-void LayerFilterInfo::removeFilterInfoForLayer(Layer* layer)
+void DeprecatedPaintLayerFilterInfo::removeFilterInfoForLayer(DeprecatedPaintLayer* layer)
 {
     if (!s_filterMap)
         return;
-    LayerFilterInfo* filter = s_filterMap->take(layer);
+    DeprecatedPaintLayerFilterInfo* filter = s_filterMap->take(layer);
     if (s_filterMap->isEmpty()) {
         delete s_filterMap;
         s_filterMap = 0;
@@ -86,22 +85,22 @@ void LayerFilterInfo::removeFilterInfoForLayer(Layer* layer)
     delete filter;
 }
 
-LayerFilterInfo::LayerFilterInfo(Layer* layer)
+DeprecatedPaintLayerFilterInfo::DeprecatedPaintLayerFilterInfo(DeprecatedPaintLayer* layer)
     : m_layer(layer)
 {
 }
 
-LayerFilterInfo::~LayerFilterInfo()
+DeprecatedPaintLayerFilterInfo::~DeprecatedPaintLayerFilterInfo()
 {
     removeReferenceFilterClients();
 }
 
-void LayerFilterInfo::setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer> renderer)
+void DeprecatedPaintLayerFilterInfo::setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer> renderer)
 {
     m_renderer = renderer;
 }
 
-void LayerFilterInfo::notifyFinished(Resource*)
+void DeprecatedPaintLayerFilterInfo::notifyFinished(Resource*)
 {
     LayoutObject* renderer = m_layer->layoutObject();
     // FIXME: This caller of scheduleSVGFilterLayerUpdateHack() is not correct. It's using the layer update
@@ -112,7 +111,7 @@ void LayerFilterInfo::notifyFinished(Resource*)
     renderer->setShouldDoFullPaintInvalidation();
 }
 
-void LayerFilterInfo::updateReferenceFilterClients(const FilterOperations& operations)
+void DeprecatedPaintLayerFilterInfo::updateReferenceFilterClients(const FilterOperations& operations)
 {
     removeReferenceFilterClients();
     for (size_t i = 0; i < operations.size(); ++i) {
@@ -142,7 +141,7 @@ void LayerFilterInfo::updateReferenceFilterClients(const FilterOperations& opera
     }
 }
 
-void LayerFilterInfo::removeReferenceFilterClients()
+void DeprecatedPaintLayerFilterInfo::removeReferenceFilterClients()
 {
     for (size_t i = 0; i < m_externalSVGReferences.size(); ++i)
         m_externalSVGReferences.at(i)->removeClient(this);

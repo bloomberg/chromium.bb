@@ -26,10 +26,10 @@
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
 
 #include "core/frame/UseCounter.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/TextRunConstructor.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/fonts/Font.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -381,7 +381,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
         for (LayoutBox* child = iterator.first(); child; child = iterator.next()) {
             if (child->isOutOfFlowPositioned()) {
                 child->containingBlock()->insertPositionedObject(child);
-                Layer* childLayer = child->layer();
+                DeprecatedPaintLayer* childLayer = child->layer();
                 childLayer->setStaticInlinePosition(xPos);
                 if (childLayer->staticBlockPosition() != yPos) {
                     childLayer->setStaticBlockPosition(yPos);
@@ -619,7 +619,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
         for (LayoutBox* child = iterator.first(); child; child = iterator.next()) {
             if (child->isOutOfFlowPositioned()) {
                 child->containingBlock()->insertPositionedObject(child);
-                Layer* childLayer = child->layer();
+                DeprecatedPaintLayer* childLayer = child->layer();
                 childLayer->setStaticInlinePosition(borderStart() + paddingStart());
                 if (childLayer->staticBlockPosition() != size().height()) {
                     childLayer->setStaticBlockPosition(size().height());

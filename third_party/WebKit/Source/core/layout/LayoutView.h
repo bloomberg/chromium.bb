@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class LayerCompositor;
+class DeprecatedPaintLayerCompositor;
 class LayoutQuote;
 
 // The root of the render tree, corresponding to the CSS initial containing block.
@@ -58,7 +58,7 @@ public:
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutView || LayoutBlockFlow::isOfType(type); }
 
-    virtual LayerType layerTypeRequired() const override { return NormalLayer; }
+    virtual DeprecatedPaintLayerType layerTypeRequired() const override { return NormalDeprecatedPaintLayer; }
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;
 
@@ -136,7 +136,7 @@ public:
     // Notification that this view moved into or out of a native window.
     void setIsInWindow(bool);
 
-    LayerCompositor* compositor();
+    DeprecatedPaintLayerCompositor* compositor();
     bool usesCompositing() const;
 
     IntRect unscaledDocumentRect() const;
@@ -197,7 +197,7 @@ private:
     LayoutUnit m_pageLogicalHeight;
     bool m_pageLogicalHeightChanged;
     LayoutState* m_layoutState;
-    OwnPtr<LayerCompositor> m_compositor;
+    OwnPtr<DeprecatedPaintLayerCompositor> m_compositor;
     RefPtr<IntervalArena> m_intervalArena;
 
     LayoutQuote* m_layoutQuoteHead;

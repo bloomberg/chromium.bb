@@ -30,7 +30,7 @@ public:
     explicit LayoutSVGInline(Element*);
 
     virtual const char* name() const override { return "LayoutSVGInline"; }
-    virtual LayerType layerTypeRequired() const override final { return NoLayer; }
+    virtual DeprecatedPaintLayerType layerTypeRequired() const override final { return NoDeprecatedPaintLayer; }
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || type == LayoutObjectSVGInline || LayoutInline::isOfType(type); }
 
     virtual bool isChildAllowed(LayoutObject*, const LayoutStyle&) const override;

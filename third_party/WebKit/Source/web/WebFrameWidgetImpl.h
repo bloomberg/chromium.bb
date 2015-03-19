@@ -46,7 +46,7 @@ class Frame;
 class Element;
 class LocalFrame;
 class Page;
-class LayerCompositor;
+class DeprecatedPaintLayerCompositor;
 class UserGestureToken;
 class WebLayer;
 class WebLayerTreeView;
@@ -130,7 +130,7 @@ public:
 
     void scheduleAnimation();
 
-    LayerCompositor* compositor() const;
+    DeprecatedPaintLayerCompositor* compositor() const;
     void suppressInvalidations(bool enable);
     void setRootGraphicsLayer(GraphicsLayer*);
 

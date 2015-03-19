@@ -47,12 +47,12 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutDetailsMarker.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "wtf/text/WTFString.h"
 
@@ -231,9 +231,9 @@ void TextFieldInputType::forwardEvent(Event* event)
         LayoutTextControlSingleLine* renderTextControl = toLayoutTextControlSingleLine(element().layoutObject());
         if (event->type() == EventTypeNames::blur) {
             if (LayoutBox* innerEditorRenderer = element().innerEditorElement()->layoutBox()) {
-                // FIXME: This class has no need to know about Layer!
-                if (Layer* innerLayer = innerEditorRenderer->layer()) {
-                    if (LayerScrollableArea* innerScrollableArea = innerLayer->scrollableArea()) {
+                // FIXME: This class has no need to know about DeprecatedPaintLayer!
+                if (DeprecatedPaintLayer* innerLayer = innerEditorRenderer->layer()) {
+                    if (DeprecatedPaintLayerScrollableArea* innerScrollableArea = innerLayer->scrollableArea()) {
                         IntSize scrollOffset(!renderTextControl->style()->isLeftToRightDirection() ? innerScrollableArea->scrollWidth().toInt() : 0, 0);
                         innerScrollableArea->scrollToOffset(scrollOffset, ScrollOffsetClamped);
                     }

@@ -51,15 +51,15 @@ LayoutEmbeddedObject::~LayoutEmbeddedObject()
 {
 }
 
-LayerType LayoutEmbeddedObject::layerTypeRequired() const
+DeprecatedPaintLayerType LayoutEmbeddedObject::layerTypeRequired() const
 {
-    // This can't just use LayoutPart::layerTypeRequired, because LayerCompositor
+    // This can't just use LayoutPart::layerTypeRequired, because DeprecatedPaintLayerCompositor
     // doesn't loop through LayoutEmbeddedObjects the way it does frames in order
     // to update the self painting bit on their Layer.
     // Also, unlike iframes, embeds don't used the usesCompositing bit on LayoutView
     // in requiresAcceleratedCompositing.
     if (requiresAcceleratedCompositing())
-        return NormalLayer;
+        return NormalDeprecatedPaintLayer;
     return LayoutPart::layerTypeRequired();
 }
 

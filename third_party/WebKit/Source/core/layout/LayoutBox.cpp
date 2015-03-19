@@ -38,7 +38,6 @@
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutGeometryMap.h"
@@ -51,13 +50,14 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/layout/style/ShadowList.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
@@ -106,28 +106,28 @@ LayoutBox::LayoutBox(ContainerNode* node)
     setIsBox();
 }
 
-LayerType LayoutBox::layerTypeRequired() const
+DeprecatedPaintLayerType LayoutBox::layerTypeRequired() const
 {
     // hasAutoZIndex only returns true if the element is positioned or a flex-item since
     // position:static elements that are not flex-items get their z-index coerced to auto.
     if (isPositioned() || createsGroup() || hasClipPath() || hasTransformRelatedProperty()
         || hasHiddenBackface() || hasReflection() || style()->specifiesColumns()
         || !style()->hasAutoZIndex() || style()->shouldCompositeForCurrentAnimations())
-        return NormalLayer;
+        return NormalDeprecatedPaintLayer;
 
     // Ensure that explicit use of scroll-blocks-on creates a Layer (since we might need
     // it to be composited).
     if (style()->hasScrollBlocksOn()) {
         if (isDocumentElement()) {
             ASSERT(style()->scrollBlocksOn() == view()->style()->scrollBlocksOn());
-            return NoLayer;
+            return NoDeprecatedPaintLayer;
         }
-        return NormalLayer;
+        return NormalDeprecatedPaintLayer;
     }
     if (hasOverflowClip())
-        return OverflowClipLayer;
+        return OverflowClipDeprecatedPaintLayer;
 
-    return NoLayer;
+    return NoDeprecatedPaintLayer;
 }
 
 void LayoutBox::willBeDestroyed()
@@ -656,7 +656,7 @@ bool LayoutBox::canResize() const
     return (hasOverflowClip() || isLayoutIFrame()) && style()->resize() != RESIZE_NONE;
 }
 
-void LayoutBox::addLayerHitTestRects(LayerHitTestRects& layerRects, const Layer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
+void LayoutBox::addLayerHitTestRects(LayerHitTestRects& layerRects, const DeprecatedPaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     LayoutPoint adjustedLayerOffset = layerOffset + locationOffset();
     LayoutBoxModelObject::addLayerHitTestRects(layerRects, currentLayer, adjustedLayerOffset, containerRect);
@@ -1259,7 +1259,7 @@ static bool isCandidateForOpaquenessTest(const LayoutBox& childBox)
         return false;
     if (childBox.size().isZero())
         return false;
-    if (Layer* childLayer = childBox.layer()) {
+    if (DeprecatedPaintLayer* childLayer = childBox.layer()) {
         // FIXME: perhaps this could be less conservative?
         if (childLayer->compositingState() != NotComposited)
             return false;
@@ -1413,7 +1413,7 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidati
         // Issue paint invalidations for any scrollbars if there is a scrollable area for this renderer.
         if (ScrollableArea* area = scrollableArea()) {
             // In slimming paint mode, we already invalidated the display item clients of the scrollbars
-            // during LayerScrollableArea::invalidateScrollbarRect(). However, for now we still need to
+            // during DeprecatedPaintLayerScrollableArea::invalidateScrollbarRect(). However, for now we still need to
             // invalidate the rectangles to trigger repaints.
             if (area->hasVerticalBarDamage())
                 invalidatePaintRectangleNotInvalidatingDisplayItemClients(LayoutRect(area->verticalBarDamage()));
@@ -1788,7 +1788,7 @@ void LayoutBox::clearSpannerPlaceholder()
 LayoutRect LayoutBox::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     if (style()->visibility() != VISIBLE) {
-        Layer* layer = enclosingLayer();
+        DeprecatedPaintLayer* layer = enclosingLayer();
         layer->updateDescendantDependentFlags();
         if (layer->subtreeIsInvisible())
             return LayoutRect();
@@ -3907,8 +3907,8 @@ bool LayoutBox::avoidsFloats() const
 
 bool LayoutBox::hasNonCompositedScrollbars() const
 {
-    if (Layer* layer = this->layer()) {
-        if (LayerScrollableArea* scrollableArea = layer->scrollableArea()) {
+    if (DeprecatedPaintLayer* layer = this->layer()) {
+        if (DeprecatedPaintLayerScrollableArea* scrollableArea = layer->scrollableArea()) {
             if (scrollableArea->hasHorizontalScrollbar() && !scrollableArea->layerForHorizontalScrollbar())
                 return true;
             if (scrollableArea->hasVerticalScrollbar() && !scrollableArea->layerForVerticalScrollbar())
@@ -4355,11 +4355,11 @@ int LayoutBox::baselinePosition(FontBaseline baselineType, bool /*firstLine*/, L
 }
 
 
-Layer* LayoutBox::enclosingFloatPaintingLayer() const
+DeprecatedPaintLayer* LayoutBox::enclosingFloatPaintingLayer() const
 {
     const LayoutObject* curr = this;
     while (curr) {
-        Layer* layer = curr->hasLayer() && curr->isBox() ? toLayoutBox(curr)->layer() : 0;
+        DeprecatedPaintLayer* layer = curr->hasLayer() && curr->isBox() ? toLayoutBox(curr)->layer() : 0;
         if (layer && layer->isSelfPaintingLayer())
             return layer;
         curr = curr->parent();

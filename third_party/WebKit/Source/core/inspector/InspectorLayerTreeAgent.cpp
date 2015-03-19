@@ -44,11 +44,12 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/CompositingReasons.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/PictureSnapshot.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
@@ -206,7 +207,7 @@ void InspectorLayerTreeAgent::didPaint(LayoutObject*, const GraphicsLayer* graph
 
 PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTreeAgent::buildLayerTree()
 {
-    LayerCompositor* compositor = renderLayerCompositor();
+    DeprecatedPaintLayerCompositor* compositor = deprecatedPaintLayerCompositor();
     if (!compositor || !compositor->inCompositingMode())
         return nullptr;
 
@@ -217,21 +218,21 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTre
     return layers.release();
 }
 
-void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(Layer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
+void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(DeprecatedPaintLayer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
 {
-    if (root->hasCompositedLayerMapping()) {
+    if (root->hasCompositedDeprecatedPaintLayerMapping()) {
         if (Node* node = root->layoutObject()->generatingNode()) {
-            GraphicsLayer* graphicsLayer = root->compositedLayerMapping()->childForSuperlayers();
+            GraphicsLayer* graphicsLayer = root->compositedDeprecatedPaintLayerMapping()->childForSuperlayers();
             layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(), idForNode(node));
         }
     }
-    for (Layer* child = root->firstChild(); child; child = child->nextSibling())
+    for (DeprecatedPaintLayer* child = root->firstChild(); child; child = child->nextSibling())
         buildLayerIdToNodeIdMap(child, layerIdToNodeIdMap);
     if (!root->layoutObject()->isLayoutIFrame())
         return;
     FrameView* childFrameView = toFrameView(toLayoutPart(root->layoutObject())->widget());
     if (LayoutView* childLayoutView = childFrameView->layoutView()) {
-        if (LayerCompositor* childCompositor = childLayoutView->compositor())
+        if (DeprecatedPaintLayerCompositor* childCompositor = childLayoutView->compositor())
             buildLayerIdToNodeIdMap(childCompositor->rootLayer(), layerIdToNodeIdMap);
     }
 }
@@ -253,10 +254,10 @@ int InspectorLayerTreeAgent::idForNode(Node* node)
     return InspectorNodeIds::idForNode(node);
 }
 
-LayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor()
+DeprecatedPaintLayerCompositor* InspectorLayerTreeAgent::deprecatedPaintLayerCompositor()
 {
     LayoutView* layoutView = m_pageAgent->inspectedFrame()->contentRenderer();
-    LayerCompositor* compositor = layoutView ? layoutView->compositor() : nullptr;
+    DeprecatedPaintLayerCompositor* compositor = layoutView ? layoutView->compositor() : nullptr;
     return compositor;
 }
 
@@ -265,7 +266,7 @@ GraphicsLayer* InspectorLayerTreeAgent::rootGraphicsLayer()
     if (m_pageAgent->frameHost()->settings().pinchVirtualViewportEnabled())
         return m_pageAgent->frameHost()->pinchViewport().rootGraphicsLayer();
 
-    return renderLayerCompositor()->rootGraphicsLayer();
+    return deprecatedPaintLayerCompositor()->rootGraphicsLayer();
 }
 
 static GraphicsLayer* findLayerById(GraphicsLayer* root, int layerId)
@@ -291,7 +292,7 @@ GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString, cons
         *errorString = "Invalid layer id";
         return nullptr;
     }
-    LayerCompositor* compositor = renderLayerCompositor();
+    DeprecatedPaintLayerCompositor* compositor = deprecatedPaintLayerCompositor();
     if (!compositor) {
         *errorString = "Not in compositing mode";
         return nullptr;

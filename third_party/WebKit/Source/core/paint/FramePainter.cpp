@@ -9,12 +9,12 @@
 #include "core/frame/FrameView.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutView.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "core/paint/LayerPainter.h"
+#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/DeprecatedPaintLayerPainter.h"
 #include "core/paint/ScrollbarPainter.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/fonts/FontCache.h"
@@ -128,14 +128,14 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
 
     // m_frameView.nodeToDraw() is used to draw only one element (and its descendants)
     LayoutObject* renderer = m_frameView.nodeToDraw() ? m_frameView.nodeToDraw()->layoutObject() : 0;
-    Layer* rootLayer = layoutView->layer();
+    DeprecatedPaintLayer* rootLayer = layoutView->layer();
 
 #if ENABLE(ASSERT)
     layoutView->assertSubtreeIsLaidOut();
     LayoutObject::SetLayoutNeededForbiddenScope forbidSetNeedsLayout(*rootLayer->layoutObject());
 #endif
 
-    LayerPainter layerPainter(*rootLayer);
+    DeprecatedPaintLayerPainter layerPainter(*rootLayer);
 
     float deviceScaleFactor = blink::deviceScaleFactor(rootLayer->layoutObject()->frame());
     context->setDeviceScaleFactor(deviceScaleFactor);

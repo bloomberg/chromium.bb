@@ -31,8 +31,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/fonts/SimpleFontData.h"
 

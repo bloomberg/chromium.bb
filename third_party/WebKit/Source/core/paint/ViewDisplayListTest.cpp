@@ -7,11 +7,11 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/LayerCompositor.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/page/FocusController.h"
+#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/DeprecatedPaintLayerPainter.h"
 #include "core/paint/LayerClipRecorder.h"
-#include "core/paint/LayerPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ScopeRecorder.h"
 #include "core/paint/SubtreeRecorder.h"
@@ -425,15 +425,15 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheDisabled)
     document().page()->focusController().setActive(true);
     document().page()->focusController().setFocused(true);
     LayoutView* layoutView = document().layoutView();
-    Layer* rootLayer = layoutView->layer();
+    DeprecatedPaintLayer* rootLayer = layoutView->layer();
     LayoutObject* htmlRenderer = document().documentElement()->layoutObject();
     Element* div = toElement(document().body()->firstChild());
     LayoutObject* divRenderer = document().body()->firstChild()->layoutObject();
     InlineTextBox* textInlineBox = toLayoutText(div->firstChild()->layoutObject())->firstTextBox();
 
     GraphicsContext context(nullptr, &rootDisplayItemList());
-    LayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
-    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    DeprecatedPaintLayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
+    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
@@ -442,7 +442,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheDisabled)
 
     div->focus();
     document().view()->updateLayoutAndStyleForPainting();
-    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
@@ -457,7 +457,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     document().page()->focusController().setActive(true);
     document().page()->focusController().setFocused(true);
     LayoutView* layoutView = document().layoutView();
-    Layer* rootLayer = layoutView->layer();
+    DeprecatedPaintLayer* rootLayer = layoutView->layer();
     LayoutObject* htmlRenderer = document().documentElement()->layoutObject();
     LayoutObject* bodyRenderer = document().body()->layoutObject();
     Element* div = toElement(document().body()->firstChild());
@@ -465,8 +465,8 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     InlineTextBox* textInlineBox = toLayoutText(div->firstChild()->layoutObject())->firstTextBox();
 
     GraphicsContext context(nullptr, &rootDisplayItemList());
-    LayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
-    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    DeprecatedPaintLayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
+    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
     EXPECT_EQ((size_t)10, rootDisplayItemList().paintList().size());
@@ -488,7 +488,7 @@ TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(bodyRenderer->displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divRenderer->displayItemClient()));
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(textInlineBox->displayItemClient()));
-    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 11,
@@ -747,7 +747,7 @@ TEST_F(ViewDisplayListTest, InlineRelayout)
 {
     setBodyInnerHTML("<div id='div' style='width:100px; height: 200px'>AAAAAAAAAA BBBBBBBBBB</div>");
     LayoutView* layoutView = document().layoutView();
-    Layer* rootLayer = layoutView->layer();
+    DeprecatedPaintLayer* rootLayer = layoutView->layer();
     LayoutObject* htmlObject = document().documentElement()->layoutObject();
     LayoutObject* bodyObject = document().body()->layoutObject();
     Element* div = toElement(document().body()->firstChild());
@@ -757,8 +757,8 @@ TEST_F(ViewDisplayListTest, InlineRelayout)
     DisplayItemClient firstTextBoxDisplayItemClient = firstTextBox->displayItemClient();
 
     GraphicsContext context(nullptr, &rootDisplayItemList());
-    LayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
-    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    DeprecatedPaintLayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
+    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
     EXPECT_EQ((size_t)10, rootDisplayItemList().paintList().size());
@@ -780,7 +780,7 @@ TEST_F(ViewDisplayListTest, InlineRelayout)
     EXPECT_TRUE(rootDisplayItemList().clientCacheIsValid(bodyObject->displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(divBlock->displayItemClient()));
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(firstTextBoxDisplayItemClient));
-    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
     rootDisplayItemList().endNewPaints();
 
     text = toLayoutText(divBlock->firstChild());

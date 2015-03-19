@@ -41,7 +41,7 @@ public:
 
     virtual const char* name() const override { return "LayoutReplica"; }
 
-    virtual LayerType layerTypeRequired() const override { return NormalLayer; }
+    virtual DeprecatedPaintLayerType layerTypeRequired() const override { return NormalDeprecatedPaintLayer; }
 
     virtual void layout() override;
 

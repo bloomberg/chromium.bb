@@ -27,8 +27,8 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutObject.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 
 namespace blink {
 
@@ -153,7 +153,7 @@ void MouseRelatedEvent::computeRelativePosition()
 
     // Adjust layerLocation to be relative to the layer.
     // FIXME: event.layerX and event.layerY are poorly defined,
-    // and probably don't always correspond to Layer offsets.
+    // and probably don't always correspond to DeprecatedPaintLayer offsets.
     // https://bugs.webkit.org/show_bug.cgi?id=21868
     Node* n = targetNode;
     while (n && !n->layoutObject())
@@ -161,7 +161,7 @@ void MouseRelatedEvent::computeRelativePosition()
 
     if (n) {
         // FIXME: This logic is a wrong implementation of convertToLayerCoords.
-        for (Layer* layer = n->layoutObject()->enclosingLayer(); layer; layer = layer->parent())
+        for (DeprecatedPaintLayer* layer = n->layoutObject()->enclosingLayer(); layer; layer = layer->parent())
             m_layerLocation -= toLayoutSize(layer->location());
     }
 

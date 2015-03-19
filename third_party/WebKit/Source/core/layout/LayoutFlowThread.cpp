@@ -180,7 +180,7 @@ void LayoutFlowThread::generateColumnSetIntervalTree()
         m_multiColumnSetIntervalTree.add(MultiColumnSetIntervalTree::createInterval(columnSet->logicalTopInFlowThread(), columnSet->logicalBottomInFlowThread(), columnSet));
 }
 
-void LayoutFlowThread::collectLayerFragments(LayerFragments& layerFragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)
+void LayoutFlowThread::collectLayerFragments(DeprecatedPaintLayerFragments& layerFragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect)
 {
     ASSERT(!m_regionsInvalidated);
 
@@ -197,10 +197,10 @@ LayoutRect LayoutFlowThread::fragmentsBoundingBox(const LayoutRect& layerBoundin
     LayoutRect result;
     for (LayoutMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
         LayoutMultiColumnSet* columnSet = *iter;
-        LayerFragments fragments;
+        DeprecatedPaintLayerFragments fragments;
         columnSet->collectLayerFragments(fragments, layerBoundingBox, LayoutRect(LayoutRect::infiniteIntRect()));
         for (size_t i = 0; i < fragments.size(); ++i) {
-            const LayerFragment& fragment = fragments.at(i);
+            const DeprecatedPaintLayerFragment& fragment = fragments.at(i);
             LayoutRect fragmentRect(layerBoundingBox);
             fragmentRect.intersect(fragment.paginationClip);
             fragmentRect.moveBy(fragment.paginationOffset);

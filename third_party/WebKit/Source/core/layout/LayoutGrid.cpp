@@ -26,11 +26,11 @@
 #include "config.h"
 #include "core/layout/LayoutGrid.h"
 
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/style/GridCoordinate.h"
 #include "core/layout/style/LayoutStyle.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/GridPainter.h"
 #include "platform/LengthFunctions.h"
 
@@ -1220,7 +1220,7 @@ void LayoutGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayout
 
         if (child->parent() == this) {
             // If column/row start is not auto the padding has been already computed in offsetAndBreadthForPositionedChild().
-            Layer* childLayer = child->layer();
+            DeprecatedPaintLayer* childLayer = child->layer();
             if (columnStartIsAuto)
                 childLayer->setStaticInlinePosition(borderAndPaddingStart());
             else

@@ -28,11 +28,11 @@
 #include "core/layout/LayoutObjectChildList.h"
 
 #include "core/dom/AXObjectCache.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/style/LayoutStyle.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 
 namespace blink {
 

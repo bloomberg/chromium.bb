@@ -36,7 +36,7 @@ class Element;
 class LayoutRect;
 class LocalFrame;
 class Node;
-class Layer;
+class DeprecatedPaintLayer;
 class LayoutObject;
 class TextStream;
 
@@ -64,7 +64,7 @@ class LayoutTreeAsText {
 // not being done).
 public:
 static void writeLayoutObject(TextStream&, const LayoutObject&, LayoutAsTextBehavior);
-static void writeLayers(TextStream&, const Layer* rootLayer, Layer*, const LayoutRect& paintDirtyRect, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
+static void writeLayers(TextStream&, const DeprecatedPaintLayer* rootLayer, DeprecatedPaintLayer*, const LayoutRect& paintDirtyRect, int indent = 0, LayoutAsTextBehavior = LayoutAsTextBehaviorNormal);
 };
 
 // Helper function shared with SVGLayoutTreeAsText

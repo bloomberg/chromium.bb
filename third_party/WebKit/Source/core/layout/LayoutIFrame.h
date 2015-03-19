@@ -44,7 +44,7 @@ private:
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutIFrame || LayoutPart::isOfType(type); }
 
-    virtual LayerType layerTypeRequired() const override;
+    virtual DeprecatedPaintLayerType layerTypeRequired() const override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutIFrame, isLayoutIFrame());

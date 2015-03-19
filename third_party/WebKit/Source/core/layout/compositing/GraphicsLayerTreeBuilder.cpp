@@ -29,12 +29,11 @@
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
-#include "core/layout/Layer.h"
-#include "core/layout/LayerReflectionInfo.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 
 namespace blink {
 
@@ -46,7 +45,7 @@ GraphicsLayerTreeBuilder::~GraphicsLayerTreeBuilder()
 {
 }
 
-static bool shouldAppendLayer(const Layer& layer)
+static bool shouldAppendLayer(const DeprecatedPaintLayer& layer)
 {
     if (!RuntimeEnabledFeatures::overlayFullscreenVideoEnabled())
         return true;
@@ -61,7 +60,7 @@ static bool shouldAppendLayer(const Layer& layer)
     return true;
 }
 
-void GraphicsLayerTreeBuilder::rebuild(Layer& layer, AncestorInfo info)
+void GraphicsLayerTreeBuilder::rebuild(DeprecatedPaintLayer& layer, AncestorInfo info)
 {
     // Make the layer compositing if necessary, and set up clipping and content layers.
     // Note that we can only do work here that is independent of whether the descendant layers
@@ -69,14 +68,14 @@ void GraphicsLayerTreeBuilder::rebuild(Layer& layer, AncestorInfo info)
 
     layer.stackingNode()->updateLayerListsIfNeeded();
 
-    const bool hasCompositedLayerMapping = layer.hasCompositedLayerMapping();
-    CompositedLayerMapping* currentCompositedLayerMapping = layer.compositedLayerMapping();
+    const bool hasCompositedDeprecatedPaintLayerMapping = layer.hasCompositedDeprecatedPaintLayerMapping();
+    CompositedDeprecatedPaintLayerMapping* currentCompositedDeprecatedPaintLayerMapping = layer.compositedDeprecatedPaintLayerMapping();
 
-    // If this layer has a compositedLayerMapping, then that is where we place subsequent children GraphicsLayers.
+    // If this layer has a compositedDeprecatedPaintLayerMapping, then that is where we place subsequent children GraphicsLayers.
     // Otherwise children continue to append to the child list of the enclosing layer.
     GraphicsLayerVector layerChildren;
     AncestorInfo infoForChildren(info);
-    if (hasCompositedLayerMapping) {
+    if (hasCompositedDeprecatedPaintLayerMapping) {
         infoForChildren.childLayersOfEnclosingCompositedLayer = &layerChildren;
         infoForChildren.enclosingCompositedLayer = &layer;
     }
@@ -86,56 +85,56 @@ void GraphicsLayerTreeBuilder::rebuild(Layer& layer, AncestorInfo info)
 #endif
 
     if (layer.stackingNode()->isStackingContext()) {
-        LayerStackingNodeIterator iterator(*layer.stackingNode(), NegativeZOrderChildren);
-        while (LayerStackingNode* curNode = iterator.next())
+        DeprecatedPaintLayerStackingNodeIterator iterator(*layer.stackingNode(), NegativeZOrderChildren);
+        while (DeprecatedPaintLayerStackingNode* curNode = iterator.next())
             rebuild(*curNode->layer(), infoForChildren);
 
         // If a negative z-order child is compositing, we get a foreground layer which needs to get parented.
-        if (hasCompositedLayerMapping && currentCompositedLayerMapping->foregroundLayer())
-            infoForChildren.childLayersOfEnclosingCompositedLayer->append(currentCompositedLayerMapping->foregroundLayer());
+        if (hasCompositedDeprecatedPaintLayerMapping && currentCompositedDeprecatedPaintLayerMapping->foregroundLayer())
+            infoForChildren.childLayersOfEnclosingCompositedLayer->append(currentCompositedDeprecatedPaintLayerMapping->foregroundLayer());
     }
 
-    LayerStackingNodeIterator iterator(*layer.stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
-    while (LayerStackingNode* curNode = iterator.next())
+    DeprecatedPaintLayerStackingNodeIterator iterator(*layer.stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
+    while (DeprecatedPaintLayerStackingNode* curNode = iterator.next())
         rebuild(*curNode->layer(), infoForChildren);
 
-    if (hasCompositedLayerMapping) {
+    if (hasCompositedDeprecatedPaintLayerMapping) {
         bool parented = false;
         if (layer.layoutObject()->isLayoutPart())
-            parented = LayerCompositor::parentFrameContentLayers(toLayoutPart(layer.layoutObject()));
+            parented = DeprecatedPaintLayerCompositor::parentFrameContentLayers(toLayoutPart(layer.layoutObject()));
 
         if (!parented)
-            currentCompositedLayerMapping->parentForSublayers()->setChildren(layerChildren);
+            currentCompositedDeprecatedPaintLayerMapping->parentForSublayers()->setChildren(layerChildren);
 
         // If the layer has a clipping layer the overflow controls layers will be siblings of the clipping layer.
         // Otherwise, the overflow control layers are normal children.
         // FIXME: Why isn't this handled in CLM updateInternalHierarchy?
-        if (!currentCompositedLayerMapping->hasClippingLayer() && !currentCompositedLayerMapping->hasScrollingLayer()) {
-            if (GraphicsLayer* overflowControlLayer = currentCompositedLayerMapping->layerForHorizontalScrollbar()) {
+        if (!currentCompositedDeprecatedPaintLayerMapping->hasClippingLayer() && !currentCompositedDeprecatedPaintLayerMapping->hasScrollingLayer()) {
+            if (GraphicsLayer* overflowControlLayer = currentCompositedDeprecatedPaintLayerMapping->layerForHorizontalScrollbar()) {
                 overflowControlLayer->removeFromParent();
-                currentCompositedLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
+                currentCompositedDeprecatedPaintLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
             }
 
-            if (GraphicsLayer* overflowControlLayer = currentCompositedLayerMapping->layerForVerticalScrollbar()) {
+            if (GraphicsLayer* overflowControlLayer = currentCompositedDeprecatedPaintLayerMapping->layerForVerticalScrollbar()) {
                 overflowControlLayer->removeFromParent();
-                currentCompositedLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
+                currentCompositedDeprecatedPaintLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
             }
 
-            if (GraphicsLayer* overflowControlLayer = currentCompositedLayerMapping->layerForScrollCorner()) {
+            if (GraphicsLayer* overflowControlLayer = currentCompositedDeprecatedPaintLayerMapping->layerForScrollCorner()) {
                 overflowControlLayer->removeFromParent();
-                currentCompositedLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
+                currentCompositedDeprecatedPaintLayerMapping->parentForSublayers()->addChild(overflowControlLayer);
             }
         }
 
         if (shouldAppendLayer(layer))
-            info.childLayersOfEnclosingCompositedLayer->append(currentCompositedLayerMapping->childForSuperlayers());
+            info.childLayersOfEnclosingCompositedLayer->append(currentCompositedDeprecatedPaintLayerMapping->childForSuperlayers());
     }
 
     if (layer.scrollParent()
-        && layer.scrollParent()->hasCompositedLayerMapping()
-        && layer.scrollParent()->compositedLayerMapping()->needsToReparentOverflowControls()
+        && layer.scrollParent()->hasCompositedDeprecatedPaintLayerMapping()
+        && layer.scrollParent()->compositedDeprecatedPaintLayerMapping()->needsToReparentOverflowControls()
         && layer.scrollParent()->scrollableArea()->topmostScrollChild() == &layer)
-        info.childLayersOfEnclosingCompositedLayer->append(layer.scrollParent()->compositedLayerMapping()->detachLayerForOverflowControls(*info.enclosingCompositedLayer));
+        info.childLayersOfEnclosingCompositedLayer->append(layer.scrollParent()->compositedDeprecatedPaintLayerMapping()->detachLayerForOverflowControls(*info.enclosingCompositedLayer));
 }
 
 }

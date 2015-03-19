@@ -42,11 +42,11 @@
  */
 
 #include "config.h"
-#include "core/layout/LayerClipper.h"
+#include "core/paint/DeprecatedPaintLayerClipper.h"
 
 #include "core/frame/Settings.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 
 namespace blink {
 
@@ -91,12 +91,12 @@ static void applyClipRects(const ClipRectsContext& context, LayoutObject& render
     }
 }
 
-LayerClipper::LayerClipper(LayoutBoxModelObject& renderer)
+DeprecatedPaintLayerClipper::DeprecatedPaintLayerClipper(LayoutBoxModelObject& renderer)
     : m_renderer(renderer)
 {
 }
 
-ClipRects* LayerClipper::clipRectsIfCached(const ClipRectsContext& context) const
+ClipRects* DeprecatedPaintLayerClipper::clipRectsIfCached(const ClipRectsContext& context) const
 {
     ASSERT(context.usesCache());
     if (!m_cache)
@@ -121,7 +121,7 @@ ClipRects* LayerClipper::clipRectsIfCached(const ClipRectsContext& context) cons
     return entry.clipRects.get();
 }
 
-ClipRects* LayerClipper::storeClipRectsInCache(const ClipRectsContext& context, ClipRects* parentClipRects, const ClipRects& clipRects) const
+ClipRects* DeprecatedPaintLayerClipper::storeClipRectsInCache(const ClipRectsContext& context, ClipRects* parentClipRects, const ClipRects& clipRects) const
 {
     ClipRectsCache::Entry& entry = cache().get(context.cacheSlot);
     entry.root = context.rootLayer;
@@ -141,7 +141,7 @@ ClipRects* LayerClipper::storeClipRectsInCache(const ClipRectsContext& context, 
     return entry.clipRects.get();
 }
 
-ClipRects* LayerClipper::getClipRects(const ClipRectsContext& context) const
+ClipRects* DeprecatedPaintLayerClipper::getClipRects(const ClipRectsContext& context) const
 {
     if (ClipRects* result = clipRectsIfCached(context))
         return result;
@@ -158,28 +158,28 @@ ClipRects* LayerClipper::getClipRects(const ClipRectsContext& context) const
     return storeClipRectsInCache(context, parentClipRects, *clipRects);
 }
 
-void LayerClipper::clearClipRectsIncludingDescendants()
+void DeprecatedPaintLayerClipper::clearClipRectsIncludingDescendants()
 {
     m_cache = nullptr;
 
-    for (Layer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling())
+    for (DeprecatedPaintLayer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling())
         layer->clipper().clearClipRectsIncludingDescendants();
 }
 
-void LayerClipper::clearClipRectsIncludingDescendants(ClipRectsCacheSlot cacheSlot)
+void DeprecatedPaintLayerClipper::clearClipRectsIncludingDescendants(ClipRectsCacheSlot cacheSlot)
 {
     if (m_cache)
         m_cache->clear(cacheSlot);
 
-    for (Layer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling())
+    for (DeprecatedPaintLayer* layer = m_renderer.layer()->firstChild(); layer; layer = layer->nextSibling())
         layer->clipper().clearClipRectsIncludingDescendants(cacheSlot);
 }
 
-LayoutRect LayerClipper::childrenClipRect() const
+LayoutRect DeprecatedPaintLayerClipper::childrenClipRect() const
 {
     // FIXME: border-radius not accounted for.
     // FIXME: Regions not accounted for.
-    Layer* clippingRootLayer = clippingRootForPainting();
+    DeprecatedPaintLayer* clippingRootLayer = clippingRootForPainting();
     LayoutRect layerBounds;
     ClipRect backgroundRect, foregroundRect, outlineRect;
     // Need to use uncached clip rects, because the value of 'dontClipToOverflow' may be different from the painting path (<rdar://problem/11844909>).
@@ -188,10 +188,10 @@ LayoutRect LayerClipper::childrenClipRect() const
     return LayoutRect(clippingRootLayer->layoutObject()->localToAbsoluteQuad(FloatQuad(foregroundRect.rect())).enclosingBoundingBox());
 }
 
-LayoutRect LayerClipper::localClipRect() const
+LayoutRect DeprecatedPaintLayerClipper::localClipRect() const
 {
     // FIXME: border-radius not accounted for.
-    Layer* clippingRootLayer = clippingRootForPainting();
+    DeprecatedPaintLayer* clippingRootLayer = clippingRootForPainting();
     LayoutRect layerBounds;
     ClipRect backgroundRect, foregroundRect, outlineRect;
     ClipRectsContext context(clippingRootLayer, PaintingClipRects);
@@ -208,7 +208,7 @@ LayoutRect LayerClipper::localClipRect() const
     return clipRect;
 }
 
-void LayerClipper::calculateRects(const ClipRectsContext& context, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
+void DeprecatedPaintLayerClipper::calculateRects(const ClipRectsContext& context, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
     ClipRect& backgroundRect, ClipRect& foregroundRect, ClipRect& outlineRect, const LayoutPoint* offsetFromRoot) const
 {
     bool isClippingRoot = m_renderer.layer() == context.rootLayer;
@@ -249,7 +249,7 @@ void LayerClipper::calculateRects(const ClipRectsContext& context, const LayoutR
             // FIXME: Does not do the right thing with CSS regions yet, since we don't yet factor in the
             // individual region boxes as overflow.
             LayoutRect layerBoundsWithVisualOverflow = toLayoutBox(m_renderer).visualOverflowRect();
-            toLayoutBox(m_renderer).flipForWritingMode(layerBoundsWithVisualOverflow); // Layers are in physical coordinates, so the overflow has to be flipped.
+            toLayoutBox(m_renderer).flipForWritingMode(layerBoundsWithVisualOverflow); // DeprecatedPaintLayer are in physical coordinates, so the overflow has to be flipped.
             layerBoundsWithVisualOverflow.moveBy(offset);
             if (!isClippingRoot || context.respectOverflowClip == RespectOverflowClip)
                 backgroundRect.intersect(layerBoundsWithVisualOverflow);
@@ -271,7 +271,7 @@ void LayerClipper::calculateRects(const ClipRectsContext& context, const LayoutR
     }
 }
 
-void LayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
+void DeprecatedPaintLayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
 {
     bool rootLayerScrolls = m_renderer.document().settings() && m_renderer.document().settings()->rootLayerScrolls();
     if (!m_renderer.layer()->parent() && !rootLayerScrolls) {
@@ -284,7 +284,7 @@ void LayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRects
 
     // For transformed layers, the root layer was shifted to be us, so there is no need to
     // examine the parent. We want to cache clip rects with us as the root.
-    Layer* parentLayer = !isClippingRoot ? m_renderer.layer()->parent() : 0;
+    DeprecatedPaintLayer* parentLayer = !isClippingRoot ? m_renderer.layer()->parent() : 0;
 
     // Ensure that our parent's clip has been calculated so that we can examine the values.
     if (parentLayer) {
@@ -302,7 +302,7 @@ void LayerClipper::calculateClipRects(const ClipRectsContext& context, ClipRects
 
     if ((m_renderer.hasOverflowClip() && (context.respectOverflowClip == RespectOverflowClip || !isClippingRoot)) || m_renderer.hasClip()) {
         // This offset cannot use convertToLayerCoords, because sometimes our rootLayer may be across
-        // some transformed layer boundary, for example, in the LayerCompositor overlapMap, where
+        // some transformed layer boundary, for example, in the DeprecatedPaintLayerCompositor overlapMap, where
         // clipRects are needed in view space.
         applyClipRects(context, m_renderer, roundedLayoutPoint(m_renderer.localToContainerPoint(FloatPoint(), context.rootLayer->layoutObject())), clipRects);
     }
@@ -319,7 +319,7 @@ static ClipRect backgroundClipRectForPosition(const ClipRects& parentRects, EPos
     return parentRects.overflowClipRect();
 }
 
-ClipRect LayerClipper::backgroundClipRect(const ClipRectsContext& context) const
+ClipRect DeprecatedPaintLayerClipper::backgroundClipRect(const ClipRectsContext& context) const
 {
     ASSERT(m_renderer.layer()->parent());
     ASSERT(m_renderer.view());
@@ -339,7 +339,7 @@ ClipRect LayerClipper::backgroundClipRect(const ClipRectsContext& context) const
     return result;
 }
 
-void LayerClipper::getOrCalculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
+void DeprecatedPaintLayerClipper::getOrCalculateClipRects(const ClipRectsContext& context, ClipRects& clipRects) const
 {
     if (context.usesCache())
         clipRects = *getClipRects(context);
@@ -347,24 +347,24 @@ void LayerClipper::getOrCalculateClipRects(const ClipRectsContext& context, Clip
         calculateClipRects(context, clipRects);
 }
 
-Layer* LayerClipper::clippingRootForPainting() const
+DeprecatedPaintLayer* DeprecatedPaintLayerClipper::clippingRootForPainting() const
 {
-    const Layer* current = m_renderer.layer();
-    // FIXME: getting rid of current->hasCompositedLayerMapping() here breaks the
+    const DeprecatedPaintLayer* current = m_renderer.layer();
+    // FIXME: getting rid of current->hasCompositedDeprecatedPaintLayerMapping() here breaks the
     // compositing/backing/no-backing-for-clip.html layout test, because there is a
     // "composited but paints into ancestor" layer involved. However, it doesn't make sense that
     // that check would be appropriate here but not inside the while loop below.
-    if (current->isPaintInvalidationContainer() || current->hasCompositedLayerMapping())
-        return const_cast<Layer*>(current);
+    if (current->isPaintInvalidationContainer() || current->hasCompositedDeprecatedPaintLayerMapping())
+        return const_cast<DeprecatedPaintLayer*>(current);
 
     while (current) {
         if (current->isRootLayer())
-            return const_cast<Layer*>(current);
+            return const_cast<DeprecatedPaintLayer*>(current);
 
         current = current->compositingContainer();
         ASSERT(current);
         if (current->transform() || current->isPaintInvalidationContainer())
-            return const_cast<Layer*>(current);
+            return const_cast<DeprecatedPaintLayer*>(current);
     }
 
     ASSERT_NOT_REACHED();

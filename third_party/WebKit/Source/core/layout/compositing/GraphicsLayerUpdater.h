@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class Layer;
+class DeprecatedPaintLayer;
 
 class GraphicsLayerUpdater {
 
@@ -44,18 +44,18 @@ public:
         ForceUpdate,
     };
 
-    void update(Layer&, Vector<Layer*>& layersNeedingPaintInvalidation);
+    void update(DeprecatedPaintLayer&, Vector<DeprecatedPaintLayer*>& layersNeedingPaintInvalidation);
 
     bool needsRebuildTree() const { return m_needsRebuildTree; }
 
 #if ENABLE(ASSERT)
-    static void assertNeedsToUpdateGraphicsLayerBitsCleared(Layer&);
+    static void assertNeedsToUpdateGraphicsLayerBitsCleared(DeprecatedPaintLayer&);
 #endif
 
 private:
     class UpdateContext;
 
-    void updateRecursive(Layer&, UpdateType, const UpdateContext&, Vector<Layer*>& layersNeedingPaintInvalidation);
+    void updateRecursive(DeprecatedPaintLayer&, UpdateType, const UpdateContext&, Vector<DeprecatedPaintLayer*>& layersNeedingPaintInvalidation);
 
     bool m_needsRebuildTree;
 };

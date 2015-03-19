@@ -29,10 +29,9 @@
 
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/layout/Layer.h"
-#include "core/layout/LayerReflectionInfo.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
@@ -45,7 +44,7 @@ public:
     {
     }
 
-    UpdateContext(const UpdateContext& other, const Layer& layer)
+    UpdateContext(const UpdateContext& other, const DeprecatedPaintLayer& layer)
         : m_compositingStackingContext(other.m_compositingStackingContext)
         , m_compositingAncestor(other.compositingContainer(layer))
     {
@@ -57,19 +56,19 @@ public:
         }
     }
 
-    const Layer* compositingContainer(const Layer& layer) const
+    const DeprecatedPaintLayer* compositingContainer(const DeprecatedPaintLayer& layer) const
     {
         return layer.stackingNode()->isNormalFlowOnly() ? m_compositingAncestor : m_compositingStackingContext;
     }
 
-    const Layer* compositingStackingContext() const
+    const DeprecatedPaintLayer* compositingStackingContext() const
     {
         return m_compositingStackingContext;
     }
 
 private:
-    const Layer* m_compositingStackingContext;
-    const Layer* m_compositingAncestor;
+    const DeprecatedPaintLayer* m_compositingStackingContext;
+    const DeprecatedPaintLayer* m_compositingAncestor;
 };
 
 GraphicsLayerUpdater::GraphicsLayerUpdater()
@@ -81,21 +80,21 @@ GraphicsLayerUpdater::~GraphicsLayerUpdater()
 {
 }
 
-void GraphicsLayerUpdater::update(Layer& layer, Vector<Layer*>& layersNeedingPaintInvalidation)
+void GraphicsLayerUpdater::update(DeprecatedPaintLayer& layer, Vector<DeprecatedPaintLayer*>& layersNeedingPaintInvalidation)
 {
     TRACE_EVENT0("blink", "GraphicsLayerUpdater::update");
     updateRecursive(layer, DoNotForceUpdate, UpdateContext(), layersNeedingPaintInvalidation);
     layer.compositor()->updateRootLayerPosition();
 }
 
-void GraphicsLayerUpdater::updateRecursive(Layer& layer, UpdateType updateType, const UpdateContext& context, Vector<Layer*>& layersNeedingPaintInvalidation)
+void GraphicsLayerUpdater::updateRecursive(DeprecatedPaintLayer& layer, UpdateType updateType, const UpdateContext& context, Vector<DeprecatedPaintLayer*>& layersNeedingPaintInvalidation)
 {
-    if (layer.hasCompositedLayerMapping()) {
-        CompositedLayerMapping* mapping = layer.compositedLayerMapping();
+    if (layer.hasCompositedDeprecatedPaintLayerMapping()) {
+        CompositedDeprecatedPaintLayerMapping* mapping = layer.compositedDeprecatedPaintLayerMapping();
 
         if (updateType == ForceUpdate || mapping->needsGraphicsLayerUpdate()) {
-            const Layer* compositingContainer = context.compositingContainer(layer);
-            ASSERT(compositingContainer == layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
+            const DeprecatedPaintLayer* compositingContainer = context.compositingContainer(layer);
+            ASSERT(compositingContainer == layer.enclosingLayerWithCompositedDeprecatedPaintLayerMapping(ExcludeSelf));
 
             if (mapping->updateGraphicsLayerConfiguration())
                 m_needsRebuildTree = true;
@@ -111,18 +110,18 @@ void GraphicsLayerUpdater::updateRecursive(Layer& layer, UpdateType updateType, 
     }
 
     UpdateContext childContext(context, layer);
-    for (Layer* child = layer.firstChild(); child; child = child->nextSibling())
+    for (DeprecatedPaintLayer* child = layer.firstChild(); child; child = child->nextSibling())
         updateRecursive(*child, updateType, childContext, layersNeedingPaintInvalidation);
 }
 
 #if ENABLE(ASSERT)
 
-void GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(Layer& layer)
+void GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(DeprecatedPaintLayer& layer)
 {
-    if (layer.hasCompositedLayerMapping())
-        layer.compositedLayerMapping()->assertNeedsToUpdateGraphicsLayerBitsCleared();
+    if (layer.hasCompositedDeprecatedPaintLayerMapping())
+        layer.compositedDeprecatedPaintLayerMapping()->assertNeedsToUpdateGraphicsLayerBitsCleared();
 
-    for (Layer* child = layer.firstChild(); child; child = child->nextSibling())
+    for (DeprecatedPaintLayer* child = layer.firstChild(); child; child = child->nextSibling())
         assertNeedsToUpdateGraphicsLayerBitsCleared(*child);
 }
 

@@ -5,11 +5,11 @@
 #include "config.h"
 #include "core/layout/PaintInvalidationState.h"
 
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGModelObject.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/Partitions.h"
 
 namespace blink {

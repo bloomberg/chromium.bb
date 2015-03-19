@@ -173,7 +173,7 @@ LayoutPoint MultiColumnFragmentainerGroup::visualPointToFlowThreadPoint(const La
     return LayoutPoint(localPoint.x(), localPoint.y() + logicalTopInFlowThreadAt(columnIndex));
 }
 
-void MultiColumnFragmentainerGroup::collectLayerFragments(LayerFragments& fragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) const
+void MultiColumnFragmentainerGroup::collectLayerFragments(DeprecatedPaintLayerFragments& fragments, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) const
 {
     // |layerBoundingBox| is in the flow thread coordinate space, relative to the top/left edge of
     // the flow thread, but note that it has been converted with respect to writing mode (so that
@@ -274,7 +274,7 @@ void MultiColumnFragmentainerGroup::collectLayerFragments(LayerFragments& fragme
 
         // Something does need to paint in this column. Make a fragment now and supply the physical translation
         // offset and the clip rect for the column with that offset applied.
-        LayerFragment fragment;
+        DeprecatedPaintLayerFragment fragment;
         fragment.paginationOffset = translationOffset;
 
         LayoutRect flippedFlowThreadOverflowPortion(flowThreadOverflowPortion);

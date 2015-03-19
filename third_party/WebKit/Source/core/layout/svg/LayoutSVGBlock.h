@@ -39,7 +39,7 @@ public:
 
     virtual AffineTransform localTransform() const override final { return m_localTransform; }
 
-    virtual LayerType layerTypeRequired() const override final { return NoLayer; }
+    virtual DeprecatedPaintLayerType layerTypeRequired() const override final { return NoDeprecatedPaintLayer; }
 
     virtual void invalidateTreeIfNeeded(const PaintInvalidationState&) override;
 

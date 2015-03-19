@@ -27,11 +27,11 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/SVGRootPainter.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGSVGElement.h"

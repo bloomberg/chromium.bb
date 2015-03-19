@@ -69,7 +69,7 @@
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Chrome.h"
@@ -4322,7 +4322,7 @@ GraphicsLayerFactory* WebViewImpl::graphicsLayerFactory() const
     return m_graphicsLayerFactory.get();
 }
 
-LayerCompositor* WebViewImpl::compositor() const
+DeprecatedPaintLayerCompositor* WebViewImpl::compositor() const
 {
     if (!page() || !page()->mainFrame() || !page()->mainFrame()->isLocalFrame())
         return 0;

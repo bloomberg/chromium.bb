@@ -60,7 +60,7 @@ private:
     virtual LayoutObjectChildList* virtualChildren() override final { return children(); }
     virtual const LayoutObjectChildList* virtualChildren() const override final { return children(); }
 
-    virtual LayerType layerTypeRequired() const override { return NormalLayer; }
+    virtual DeprecatedPaintLayerType layerTypeRequired() const override { return NormalDeprecatedPaintLayer; }
 
     // FIXME: LayoutMedia::layout makes assumptions about what children are allowed
     // so we can't support generated content.

@@ -39,7 +39,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -972,7 +972,7 @@ void WebFrameWidgetImpl::setIsAcceleratedCompositingActive(bool active)
         m_localRoot->frameView()->setClipsRepaints(!m_isAcceleratedCompositingActive);
 }
 
-LayerCompositor* WebFrameWidgetImpl::compositor() const
+DeprecatedPaintLayerCompositor* WebFrameWidgetImpl::compositor() const
 {
     LocalFrame* frame = toLocalFrame(toCoreFrame(m_localRoot));
     if (!frame || !frame->document() || !frame->document()->layoutView())

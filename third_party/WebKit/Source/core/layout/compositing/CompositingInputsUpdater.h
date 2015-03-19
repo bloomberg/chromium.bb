@@ -9,17 +9,17 @@
 
 namespace blink {
 
-class Layer;
+class DeprecatedPaintLayer;
 
 class CompositingInputsUpdater {
 public:
-    explicit CompositingInputsUpdater(Layer* rootLayer);
+    explicit CompositingInputsUpdater(DeprecatedPaintLayer* rootLayer);
     ~CompositingInputsUpdater();
 
     void update();
 
 #if ENABLE(ASSERT)
-    static void assertNeedsCompositingInputsUpdateBitsCleared(Layer*);
+    static void assertNeedsCompositingInputsUpdateBitsCleared(DeprecatedPaintLayer*);
 #endif
 
 private:
@@ -38,22 +38,22 @@ private:
         {
         }
 
-        Layer* ancestorStackingContext;
-        Layer* enclosingCompositedLayer;
+        DeprecatedPaintLayer* ancestorStackingContext;
+        DeprecatedPaintLayer* enclosingCompositedLayer;
         // Notice that lastScrollingAncestor isn't the same thing as
         // ancestorScrollingLayer. The former is just the nearest scrolling
-        // along the Layer::parent() chain. The latter is the layer that
+        // along the DeprecatedPaintLayer::parent() chain. The latter is the layer that
         // actually controls the scrolling of this layer, which we find on the
         // containing block chain.
-        Layer* lastScrollingAncestor;
+        DeprecatedPaintLayer* lastScrollingAncestor;
         bool hasAncestorWithClipOrOverflowClip;
         bool hasAncestorWithClipPath;
     };
 
-    void updateRecursive(Layer*, UpdateType, AncestorInfo);
+    void updateRecursive(DeprecatedPaintLayer*, UpdateType, AncestorInfo);
 
     LayoutGeometryMap m_geometryMap;
-    Layer* m_rootLayer;
+    DeprecatedPaintLayer* m_rootLayer;
 };
 
 } // namespace blink

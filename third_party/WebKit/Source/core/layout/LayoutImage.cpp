@@ -39,7 +39,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"

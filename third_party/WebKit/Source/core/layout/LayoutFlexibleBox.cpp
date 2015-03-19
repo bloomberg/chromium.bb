@@ -32,11 +32,11 @@
 #include "core/layout/LayoutFlexibleBox.h"
 
 #include "core/frame/UseCounter.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/paint/BlockPainter.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/LengthFunctions.h"
 #include "wtf/MathExtras.h"
 #include <limits>
@@ -984,7 +984,7 @@ void LayoutFlexibleBox::prepareChildForPositionedLayout(LayoutBox& child, Layout
 {
     ASSERT(child.isOutOfFlowPositioned());
     child.containingBlock()->insertPositionedObject(&child);
-    Layer* childLayer = child.layer();
+    DeprecatedPaintLayer* childLayer = child.layer();
     LayoutUnit inlinePosition = isColumnFlow() ? crossAxisOffset : mainAxisOffset;
     if (layoutMode == FlipForRowReverse && style()->flexDirection() == FlowRowReverse)
         inlinePosition = mainAxisExtent() - mainAxisOffset;

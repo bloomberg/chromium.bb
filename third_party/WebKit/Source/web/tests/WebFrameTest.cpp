@@ -63,13 +63,14 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutFullScreen.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/testing/NullExecutionContext.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
@@ -1327,7 +1328,7 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode)
 
     webViewHelper.initializeAndLoad(m_baseURL + "0-by-0.html", true, 0, &client, configurePinchVirtualViewport);
     webViewHelper.webView()->settings()->setForceZeroLayoutHeight(true);
-    LayerCompositor* compositor = webViewHelper.webViewImpl()->compositor();
+    DeprecatedPaintLayerCompositor* compositor = webViewHelper.webViewImpl()->compositor();
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().width());
     EXPECT_EQ(0, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutSize().height());
     EXPECT_EQ(0.0, compositor->containerLayer()->size().width());
@@ -5885,7 +5886,7 @@ TEST_F(WebFrameTest, overflowHiddenRewrite)
     webViewHelper.webView()->resize(WebSize(100, 100));
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "non-scrollable.html");
 
-    LayerCompositor* compositor =  webViewHelper.webViewImpl()->compositor();
+    DeprecatedPaintLayerCompositor* compositor =  webViewHelper.webViewImpl()->compositor();
     ASSERT_TRUE(compositor->scrollLayer());
 
     // Verify that the WebLayer is not scrollable initially.
@@ -6231,7 +6232,7 @@ TEST_F(WebFrameTest, FullscreenMediaStreamVideo)
     webViewImpl->layout();
 
     // Verify that the video layer is visible in fullscreen.
-    Layer* renderLayer =  videoFullscreen->layoutObject()->enclosingLayer();
+    DeprecatedPaintLayer* renderLayer =  videoFullscreen->layoutObject()->enclosingLayer();
     GraphicsLayer* graphicsLayer = renderLayer->graphicsLayerBacking();
     EXPECT_TRUE(graphicsLayer->contentsAreVisible());
     context->notifyContextDestroyed();

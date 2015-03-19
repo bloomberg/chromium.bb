@@ -5,9 +5,9 @@
 #include "config.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DisplayItemList.h"

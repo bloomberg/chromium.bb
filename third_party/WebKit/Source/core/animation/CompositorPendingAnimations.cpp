@@ -33,9 +33,10 @@
 
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationTimeline.h"
+#include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
-#include "core/layout/Layer.h"
 #include "core/page/Page.h"
+#include "platform/TraceEvent.h"
 
 namespace blink {
 

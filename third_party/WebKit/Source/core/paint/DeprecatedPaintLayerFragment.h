@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayerFragment_h
-#define LayerFragment_h
+#ifndef DeprecatedPaintLayerFragment_h
+#define DeprecatedPaintLayerFragment_h
 
 #include "core/layout/ClipRect.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-struct LayerFragment {
+struct DeprecatedPaintLayerFragment {
 public:
     void setRects(const LayoutRect& bounds, const ClipRect& background, const ClipRect& foreground, const ClipRect& outline)
     {
@@ -70,8 +70,8 @@ public:
     LayoutRect paginationClip;
 };
 
-typedef Vector<LayerFragment, 1> LayerFragments;
+typedef Vector<DeprecatedPaintLayerFragment, 1> DeprecatedPaintLayerFragments;
 
 } // namespace blink
 
-#endif // LayerFragment_h
+#endif // DeprecatedPaintLayerFragment_h

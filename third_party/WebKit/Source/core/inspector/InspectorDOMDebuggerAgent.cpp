@@ -32,6 +32,7 @@
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
 
 #include "core/InspectorFrontend.h"
+#include "core/dom/Element.h"
 #include "core/events/Event.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorState.h"

@@ -5,9 +5,9 @@
 #include "config.h"
 #include "core/paint/BoxClipper.h"
 
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/PaintInfo.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"

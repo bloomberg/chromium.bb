@@ -63,7 +63,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutView.h"
@@ -81,6 +80,7 @@
 #include "core/page/Page.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/page/TouchAdjustment.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
@@ -1191,7 +1191,7 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
     bool inResizer = false;
     LayoutObject* renderer = node ? node->layoutObject() : nullptr;
     if (renderer && m_frame->view()) {
-        Layer* layer = renderer->enclosingLayer();
+        DeprecatedPaintLayer* layer = renderer->enclosingLayer();
         inResizer = layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
     }
 
@@ -1286,7 +1286,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     m_clickNode = mev.innerNode()->isTextNode() ?  NodeRenderingTraversal::parent(*mev.innerNode()) : mev.innerNode();
 
     if (FrameView* view = m_frame->view()) {
-        Layer* layer = mev.innerNode()->layoutObject() ? mev.innerNode()->layoutObject()->enclosingLayer() : nullptr;
+        DeprecatedPaintLayer* layer = mev.innerNode()->layoutObject() ? mev.innerNode()->layoutObject()->enclosingLayer() : nullptr;
         IntPoint p = view->windowToContents(mouseEvent.position());
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForPointer)) {
             m_resizeScrollableArea = layer->scrollableArea();
@@ -1332,7 +1332,7 @@ bool EventHandler::handleMousePressEvent(const PlatformMouseEvent& mouseEvent)
     return swallowEvent;
 }
 
-static Layer* layerForNode(Node* node)
+static DeprecatedPaintLayer* layerForNode(Node* node)
 {
     if (!node)
         return nullptr;
@@ -1341,16 +1341,16 @@ static Layer* layerForNode(Node* node)
     if (!renderer)
         return nullptr;
 
-    Layer* layer = renderer->enclosingLayer();
+    DeprecatedPaintLayer* layer = renderer->enclosingLayer();
     if (!layer)
         return nullptr;
 
     return layer;
 }
 
-ScrollableArea* EventHandler::associatedScrollableArea(const Layer* layer) const
+ScrollableArea* EventHandler::associatedScrollableArea(const DeprecatedPaintLayer* layer) const
 {
-    if (LayerScrollableArea* scrollableArea = layer->scrollableArea()) {
+    if (DeprecatedPaintLayerScrollableArea* scrollableArea = layer->scrollableArea()) {
         if (scrollableArea->scrollsOverflow())
             return scrollableArea;
     }
@@ -1372,7 +1372,7 @@ bool EventHandler::handleMouseMoveEvent(const PlatformMouseEvent& event)
     if (!page)
         return result;
 
-    if (Layer* layer = layerForNode(hoveredNode.innerNode())) {
+    if (DeprecatedPaintLayer* layer = layerForNode(hoveredNode.innerNode())) {
         if (ScrollableArea* layerScrollableArea = associatedScrollableArea(layer))
             layerScrollableArea->mouseMovedInContentArea();
     }
@@ -1849,8 +1849,8 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
 
     // Fire mouseout/mouseover if the mouse has shifted to a different node.
     if (fireMouseOverOut) {
-        Layer* layerForLastNode = layerForNode(m_lastNodeUnderMouse.get());
-        Layer* layerForNodeUnderMouse = layerForNode(m_nodeUnderMouse.get());
+        DeprecatedPaintLayer* layerForLastNode = layerForNode(m_lastNodeUnderMouse.get());
+        DeprecatedPaintLayer* layerForNodeUnderMouse = layerForNode(m_nodeUnderMouse.get());
         Page* page = m_frame->page();
 
         if (m_lastNodeUnderMouse && (!m_nodeUnderMouse || m_nodeUnderMouse->document() != m_frame->document())) {
@@ -2437,7 +2437,7 @@ bool EventHandler::handleGestureLongTap(const GestureEventWithHitTestResults& ta
 
 bool EventHandler::handleScrollGestureOnResizer(Node* eventTarget, const PlatformGestureEvent& gestureEvent) {
     if (gestureEvent.type() == PlatformEvent::GestureScrollBegin) {
-        Layer* layer = eventTarget->layoutObject() ? eventTarget->layoutObject()->enclosingLayer() : nullptr;
+        DeprecatedPaintLayer* layer = eventTarget->layoutObject() ? eventTarget->layoutObject()->enclosingLayer() : nullptr;
         IntPoint p = m_frame->view()->windowToContents(gestureEvent.position());
         if (layer && layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(p, ResizerForTouch)) {
             m_resizeScrollableArea = layer->scrollableArea();

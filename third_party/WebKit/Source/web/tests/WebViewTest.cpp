@@ -44,12 +44,12 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTextAreaElement.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutView.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
-#include "core/paint/LayerPainter.h"
+#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/DeprecatedPaintLayerPainter.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
@@ -354,10 +354,10 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
 
     // Paint the root of the main frame in the way that CompositedLayerMapping would.
     FrameView* view = m_webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
-    Layer* rootLayer = view->layoutView()->layer();
+    DeprecatedPaintLayer* rootLayer = view->layoutView()->layer();
     LayoutRect paintRect(0, 0, kWidth, kHeight);
-    LayerPaintingInfo paintingInfo(rootLayer, paintRect, PaintBehaviorNormal, LayoutSize());
-    LayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
+    DeprecatedPaintLayerPaintingInfo paintingInfo(rootLayer, paintRect, PaintBehaviorNormal, LayoutSize());
+    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
 
     // The result should be a blend of red and green.
     SkColor color = bitmap.getColor(kWidth / 2, kHeight / 2);

@@ -27,7 +27,6 @@
 #include "core/layout/LayoutBoxModelObject.h"
 
 #include "core/layout/ImageQualityController.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutGeometryMap.h"
@@ -36,11 +35,12 @@
 #include "core/layout/LayoutRegion.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/layout/style/BorderEdge.h"
 #include "core/layout/style/ShadowList.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/DrawLooperBuilder.h"
@@ -166,8 +166,8 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const LayoutStyl
     LayoutObject::styleDidChange(diff, oldStyle);
     updateFromStyle();
 
-    LayerType type = layerTypeRequired();
-    if (type != NoLayer) {
+    DeprecatedPaintLayerType type = layerTypeRequired();
+    if (type != NoDeprecatedPaintLayer) {
         if (!layer() && layerCreationAllowedForSubtree()) {
             if (s_wasFloating && isFloating())
                 setChildNeedsLayout();
@@ -209,10 +209,10 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const LayoutStyl
     }
 }
 
-void LayoutBoxModelObject::createLayer(LayerType type)
+void LayoutBoxModelObject::createLayer(DeprecatedPaintLayerType type)
 {
     ASSERT(!m_layer);
-    m_layer = adoptPtr(new Layer(this, type));
+    m_layer = adoptPtr(new DeprecatedPaintLayer(this, type));
     setHasLayer(true);
     m_layer->insertOnlyThisLayer();
 }
@@ -228,12 +228,12 @@ bool LayoutBoxModelObject::hasSelfPaintingLayer() const
     return m_layer && m_layer->isSelfPaintingLayer();
 }
 
-LayerScrollableArea* LayoutBoxModelObject::scrollableArea() const
+DeprecatedPaintLayerScrollableArea* LayoutBoxModelObject::scrollableArea() const
 {
     return m_layer ? m_layer->scrollableArea() : 0;
 }
 
-void LayoutBoxModelObject::addLayerHitTestRects(LayerHitTestRects& rects, const Layer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
+void LayoutBoxModelObject::addLayerHitTestRects(LayerHitTestRects& rects, const DeprecatedPaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     if (hasLayer()) {
         if (isLayoutView()) {
@@ -286,7 +286,7 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
             squashingLayer->setNeedsDisplayInRect(pixelSnappedIntRect(paintInvalidationRect), invalidationReason);
         }
     } else {
-        layer()->compositedLayerMapping()->setContentsNeedDisplayInRect(r, invalidationReason);
+        layer()->compositedDeprecatedPaintLayerMapping()->setContentsNeedDisplayInRect(r, invalidationReason);
     }
 }
 
@@ -297,8 +297,8 @@ void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayIte
     if (layer()->groupedMapping()) {
         if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
             squashingLayer->invalidateDisplayItemClient(displayItemClientData);
-    } else if (CompositedLayerMapping* compositedLayerMapping = layer()->compositedLayerMapping()) {
-        compositedLayerMapping->invalidateDisplayItemClient(displayItemClientData);
+    } else if (CompositedDeprecatedPaintLayerMapping* compositedDeprecatedPaintLayerMapping = layer()->compositedDeprecatedPaintLayerMapping()) {
+        compositedDeprecatedPaintLayerMapping->invalidateDisplayItemClient(displayItemClientData);
     }
 }
 

@@ -42,15 +42,15 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef LayerClipper_h
-#define LayerClipper_h
+#ifndef DeprecatedPaintLayerClipper_h
+#define DeprecatedPaintLayerClipper_h
 
 #include "core/layout/ClipRectsCache.h"
 #include "core/layout/LayoutBox.h"
 
 namespace blink {
 
-class Layer;
+class DeprecatedPaintLayer;
 
 enum ShouldRespectOverflowClip {
     IgnoreOverflowClip,
@@ -59,7 +59,7 @@ enum ShouldRespectOverflowClip {
 
 class ClipRectsContext {
 public:
-    ClipRectsContext(const Layer* root, ClipRectsCacheSlot slot, OverlayScrollbarSizeRelevancy relevancy = IgnoreOverlayScrollbarSize, const LayoutSize& accumulation = LayoutSize())
+    ClipRectsContext(const DeprecatedPaintLayer* root, ClipRectsCacheSlot slot, OverlayScrollbarSizeRelevancy relevancy = IgnoreOverlayScrollbarSize, const LayoutSize& accumulation = LayoutSize())
         : rootLayer(root)
         , scrollbarRelevancy(relevancy)
         , cacheSlot(slot)
@@ -82,21 +82,21 @@ public:
         return cacheSlot != UncachedClipRects;
     }
 
-    const Layer* const rootLayer;
+    const DeprecatedPaintLayer* const rootLayer;
     const OverlayScrollbarSizeRelevancy scrollbarRelevancy;
 
 private:
-    friend class LayerClipper;
+    friend class DeprecatedPaintLayerClipper;
 
     ClipRectsCacheSlot cacheSlot;
     LayoutSize subPixelAccumulation;
     ShouldRespectOverflowClip respectOverflowClip;
 };
 
-class LayerClipper {
-    WTF_MAKE_NONCOPYABLE(LayerClipper);
+class DeprecatedPaintLayerClipper {
+    WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerClipper);
 public:
-    explicit LayerClipper(LayoutBoxModelObject&);
+    explicit DeprecatedPaintLayerClipper(LayoutBoxModelObject&);
 
     void clearClipRectsIncludingDescendants();
     void clearClipRectsIncludingDescendants(ClipRectsCacheSlot);
@@ -130,7 +130,7 @@ private:
 
     void getOrCalculateClipRects(const ClipRectsContext&, ClipRects&) const;
 
-    Layer* clippingRootForPainting() const;
+    DeprecatedPaintLayer* clippingRootForPainting() const;
 
     ClipRectsCache& cache() const
     {

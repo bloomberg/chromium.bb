@@ -27,8 +27,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef LayerFilterInfo_h
-#define LayerFilterInfo_h
+#ifndef DeprecatedPaintLayerFilterInfo_h
+#define DeprecatedPaintLayerFilterInfo_h
 
 #include "core/dom/Element.h"
 #include "core/fetch/DocumentResource.h"
@@ -42,16 +42,16 @@ namespace blink {
 
 class FilterEffectRenderer;
 class FilterOperations;
-class Layer;
-class LayerFilterInfo;
+class DeprecatedPaintLayer;
+class DeprecatedPaintLayerFilterInfo;
 
-typedef HashMap<const Layer*, LayerFilterInfo*> LayerFilterInfoMap;
+typedef HashMap<const DeprecatedPaintLayer*, DeprecatedPaintLayerFilterInfo*> DeprecatedPaintLayerFilterInfoMap;
 
-class LayerFilterInfo final : public DocumentResourceClient {
+class DeprecatedPaintLayerFilterInfo final : public DocumentResourceClient {
 public:
-    static LayerFilterInfo* filterInfoForLayer(const Layer*);
-    static LayerFilterInfo* createFilterInfoForLayerIfNeeded(Layer*);
-    static void removeFilterInfoForLayer(Layer*);
+    static DeprecatedPaintLayerFilterInfo* filterInfoForLayer(const DeprecatedPaintLayer*);
+    static DeprecatedPaintLayerFilterInfo* createFilterInfoForLayerIfNeeded(DeprecatedPaintLayer*);
+    static void removeFilterInfoForLayer(DeprecatedPaintLayer*);
 
     FilterEffectRenderer* layoutObject() const { return m_renderer.get(); }
     void setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer>);
@@ -61,14 +61,14 @@ public:
     void removeReferenceFilterClients();
 
 private:
-    LayerFilterInfo(Layer*);
-    virtual ~LayerFilterInfo();
+    DeprecatedPaintLayerFilterInfo(DeprecatedPaintLayer*);
+    virtual ~DeprecatedPaintLayerFilterInfo();
 
-    Layer* m_layer;
+    DeprecatedPaintLayer* m_layer;
 
     RefPtrWillBePersistent<FilterEffectRenderer> m_renderer;
 
-    static LayerFilterInfoMap* s_filterMap;
+    static DeprecatedPaintLayerFilterInfoMap* s_filterMap;
     WillBePersistentHeapVector<RefPtrWillBeMember<Element>> m_internalSVGReferences;
     Vector<ResourcePtr<DocumentResource>> m_externalSVGReferences;
 };
@@ -76,4 +76,4 @@ private:
 } // namespace blink
 
 
-#endif // LayerFilterInfo_h
+#endif // DeprecatedPaintLayerFilterInfo_h

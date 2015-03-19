@@ -35,7 +35,6 @@
 #include "core/fileapi/FileList.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/DragImage.h"

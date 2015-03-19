@@ -49,7 +49,6 @@
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
 #include "core/layout/LayoutFlexibleBox.h"
@@ -70,13 +69,13 @@
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/layout/style/ContentData.h"
 #include "core/layout/style/ShadowList.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/ObjectPainter.h"
 #include "platform/JSONValues.h"
 #include "platform/Partitions.h"
@@ -436,8 +435,8 @@ LayoutObject* LayoutObject::lastLeafChild() const
     return r;
 }
 
-static void addLayers(LayoutObject* obj, Layer* parentLayer, LayoutObject*& newObject,
-    Layer*& beforeChild)
+static void addLayers(LayoutObject* obj, DeprecatedPaintLayer* parentLayer, LayoutObject*& newObject,
+    DeprecatedPaintLayer*& beforeChild)
 {
     if (obj->hasLayer()) {
         if (!beforeChild && newObject) {
@@ -455,17 +454,17 @@ static void addLayers(LayoutObject* obj, Layer* parentLayer, LayoutObject*& newO
         addLayers(curr, parentLayer, newObject, beforeChild);
 }
 
-void LayoutObject::addLayers(Layer* parentLayer)
+void LayoutObject::addLayers(DeprecatedPaintLayer* parentLayer)
 {
     if (!parentLayer)
         return;
 
     LayoutObject* object = this;
-    Layer* beforeChild = 0;
+    DeprecatedPaintLayer* beforeChild = 0;
     blink::addLayers(this, parentLayer, object, beforeChild);
 }
 
-void LayoutObject::removeLayers(Layer* parentLayer)
+void LayoutObject::removeLayers(DeprecatedPaintLayer* parentLayer)
 {
     if (!parentLayer)
         return;
@@ -479,13 +478,13 @@ void LayoutObject::removeLayers(Layer* parentLayer)
         curr->removeLayers(parentLayer);
 }
 
-void LayoutObject::moveLayers(Layer* oldParent, Layer* newParent)
+void LayoutObject::moveLayers(DeprecatedPaintLayer* oldParent, DeprecatedPaintLayer* newParent)
 {
     if (!newParent)
         return;
 
     if (hasLayer()) {
-        Layer* layer = toLayoutBoxModelObject(this)->layer();
+        DeprecatedPaintLayer* layer = toLayoutBoxModelObject(this)->layer();
         ASSERT(oldParent == layer->parent());
         if (oldParent)
             oldParent->removeChild(layer);
@@ -497,14 +496,14 @@ void LayoutObject::moveLayers(Layer* oldParent, Layer* newParent)
         curr->moveLayers(oldParent, newParent);
 }
 
-Layer* LayoutObject::findNextLayer(Layer* parentLayer, LayoutObject* startPoint, bool checkParent)
+DeprecatedPaintLayer* LayoutObject::findNextLayer(DeprecatedPaintLayer* parentLayer, LayoutObject* startPoint, bool checkParent)
 {
     // Error check the parent layer passed in. If it's null, we can't find anything.
     if (!parentLayer)
         return 0;
 
     // Step 1: If our layer is a child of the desired parent, then return our layer.
-    Layer* ourLayer = hasLayer() ? toLayoutBoxModelObject(this)->layer() : 0;
+    DeprecatedPaintLayer* ourLayer = hasLayer() ? toLayoutBoxModelObject(this)->layer() : 0;
     if (ourLayer && ourLayer->parent() == parentLayer)
         return ourLayer;
 
@@ -513,7 +512,7 @@ Layer* LayoutObject::findNextLayer(Layer* parentLayer, LayoutObject* startPoint,
     if (!ourLayer || ourLayer == parentLayer) {
         for (LayoutObject* curr = startPoint ? startPoint->nextSibling() : slowFirstChild();
             curr; curr = curr->nextSibling()) {
-            Layer* nextLayer = curr->findNextLayer(parentLayer, 0, false);
+            DeprecatedPaintLayer* nextLayer = curr->findNextLayer(parentLayer, 0, false);
             if (nextLayer)
                 return nextLayer;
         }
@@ -532,7 +531,7 @@ Layer* LayoutObject::findNextLayer(Layer* parentLayer, LayoutObject* startPoint,
     return 0;
 }
 
-Layer* LayoutObject::enclosingLayer() const
+DeprecatedPaintLayer* LayoutObject::enclosingLayer() const
 {
     for (const LayoutObject* current = this; current; current = current->parent()) {
         if (current->hasLayer())
@@ -1036,7 +1035,7 @@ const LayoutBoxModelObject* LayoutObject::enclosingCompositedContainer() const
     // FIXME: CompositingState is not necessarily up to date for many callers of this function.
     DisableCompositingQueryAsserts disabler;
 
-    if (Layer* compositingLayer = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+    if (DeprecatedPaintLayer* compositingLayer = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
         container = compositingLayer->layoutObject();
     return container;
 }
@@ -1145,10 +1144,10 @@ void LayoutObject::invalidateDisplayItemClient(const DisplayItemClientData& disp
         return;
 
     // Not using enclosingCompositedContainer() directly because this object may be in an orphaned subtree.
-    if (const Layer* enclosingLayer = this->enclosingLayer()) {
+    if (const DeprecatedPaintLayer* enclosingLayer = this->enclosingLayer()) {
         // This is valid because we want to invalidate the client in the display item list of the current backing.
         DisableCompositingQueryAsserts disabler;
-        if (const Layer* paintInvalidationLayer = enclosingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+        if (const DeprecatedPaintLayer* paintInvalidationLayer = enclosingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
             paintInvalidationLayer->layoutObject()->invalidateDisplayItemClientOnBacking(displayItemClientData);
     }
 }
@@ -1163,7 +1162,7 @@ LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObje
 {
     if (!paintInvalidationContainer)
         return computePaintInvalidationRect(paintInvalidationContainer, paintInvalidationState);
-    return Layer::computePaintInvalidationRect(this, paintInvalidationContainer->layer(), paintInvalidationState);
+    return DeprecatedPaintLayer::computePaintInvalidationRect(this, paintInvalidationContainer->layer(), paintInvalidationState);
 }
 
 const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(const LayoutRect& r) const
@@ -1179,7 +1178,7 @@ const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(const
     LayoutRect dirtyRect(r);
 
     const LayoutBoxModelObject* paintInvalidationContainer = containerForPaintInvalidation();
-    Layer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect);
+    DeprecatedPaintLayer::mapRectToPaintInvalidationBacking(this, paintInvalidationContainer, dirtyRect);
     invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRect, PaintInvalidationRectangle);
     return paintInvalidationContainer;
 }
@@ -1278,7 +1277,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
     const LayoutRect oldBounds = previousPaintInvalidationRect();
     const LayoutPoint oldLocation = previousPositionFromPaintInvalidationBacking();
     const LayoutRect newBounds = boundsRectForPaintInvalidation(&paintInvalidationContainer, &paintInvalidationState);
-    const LayoutPoint newLocation = Layer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
+    const LayoutPoint newLocation = DeprecatedPaintLayer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
     setPreviousPaintInvalidationRect(newBounds);
     setPreviousPositionFromPaintInvalidationBacking(newLocation);
 
@@ -1593,7 +1592,7 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
 
     // If filter changed, and the layer does not paint into its own separate backing or it paints with filters, then we need to invalidate paints.
     if (diff.filterChanged() && hasLayer()) {
-        Layer* layer = toLayoutBoxModelObject(this)->layer();
+        DeprecatedPaintLayer* layer = toLayoutBoxModelObject(this)->layer();
         if (!layer->hasStyleDeterminedDirectCompositingReasons() || layer->paintsWithFilters())
             diff.setNeedsPaintInvalidationLayer();
     }
@@ -1608,7 +1607,7 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
     // style changing, since it depends on whether we decide to composite these elements. When the
     // layer status of one of these elements changes, we need to force a layout.
     if (!diff.needsFullLayout() && style() && isLayoutBoxModelObject()) {
-        bool requiresLayer = toLayoutBoxModelObject(this)->layerTypeRequired() != NoLayer;
+        bool requiresLayer = toLayoutBoxModelObject(this)->layerTypeRequired() != NoDeprecatedPaintLayer;
         if (hasLayer() != requiresLayer)
             diff.setNeedsFullLayout();
     }
@@ -1744,7 +1743,7 @@ void LayoutObject::styleWillChange(StyleDifference diff, const LayoutStyle& newS
         // Keep layer hierarchy visibility bits up to date if visibility changes.
         if (m_style->visibility() != newStyle.visibility()) {
             // We might not have an enclosing layer yet because we might not be in the tree.
-            if (Layer* layer = enclosingLayer())
+            if (DeprecatedPaintLayer* layer = enclosingLayer())
                 layer->potentiallyDirtyVisibleContentStatus(newStyle.visibility());
         }
 
@@ -2031,7 +2030,7 @@ void LayoutObject::getTransformFromContainer(const LayoutObject* containerObject
 {
     transform.makeIdentity();
     transform.translate(offsetInContainer.width().toFloat(), offsetInContainer.height().toFloat());
-    Layer* layer = hasLayer() ? toLayoutBoxModelObject(this)->layer() : 0;
+    DeprecatedPaintLayer* layer = hasLayer() ? toLayoutBoxModelObject(this)->layer() : 0;
     if (layer && layer->transform())
         transform.multiply(layer->currentTransform());
 
@@ -2069,7 +2068,7 @@ FloatPoint LayoutObject::localToContainerPoint(const FloatPoint& localPoint, con
     return transformState.lastPlanarPoint();
 }
 
-FloatPoint LayoutObject::localToInvalidationBackingPoint(const LayoutPoint& localPoint, Layer** backingLayer)
+FloatPoint LayoutObject::localToInvalidationBackingPoint(const LayoutPoint& localPoint, DeprecatedPaintLayer** backingLayer)
 {
     const LayoutBoxModelObject* paintInvalidationContainer = containerForPaintInvalidation();
     ASSERT(paintInvalidationContainer);
@@ -2084,7 +2083,7 @@ FloatPoint LayoutObject::localToInvalidationBackingPoint(const LayoutPoint& loca
     if (paintInvalidationContainer->layer()->compositingState() == NotComposited)
         return containerPoint;
 
-    Layer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, containerPoint);
+    DeprecatedPaintLayer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, containerPoint);
     return containerPoint;
 }
 
@@ -2139,7 +2138,7 @@ void LayoutObject::computeLayerHitTestRects(LayerHitTestRects& layerRects) const
     // Figure out what layer our container is in. Any offset (or new layer) for this
     // renderer within it's container will be applied in addLayerHitTestRects.
     LayoutPoint layerOffset;
-    const Layer* currentLayer = 0;
+    const DeprecatedPaintLayer* currentLayer = 0;
 
     if (!hasLayer()) {
         LayoutObject* container = this->container();
@@ -2157,7 +2156,7 @@ void LayoutObject::computeLayerHitTestRects(LayerHitTestRects& layerRects) const
     this->addLayerHitTestRects(layerRects, currentLayer, layerOffset, LayoutRect());
 }
 
-void LayoutObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const Layer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
+void LayoutObject::addLayerHitTestRects(LayerHitTestRects& layerRects, const DeprecatedPaintLayer* currentLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const
 {
     ASSERT(currentLayer);
     ASSERT(currentLayer == this->enclosingLayer());
@@ -2380,7 +2379,7 @@ void LayoutObject::insertedIntoTree()
 
     // Keep our layer hierarchy updated. Optimize for the common case where we don't have any children
     // and don't have a layer attached to ourselves.
-    Layer* layer = 0;
+    DeprecatedPaintLayer* layer = 0;
     if (slowFirstChild() || hasLayer()) {
         layer = parent()->enclosingLayer();
         addLayers(layer);
@@ -2407,7 +2406,7 @@ void LayoutObject::willBeRemovedFromTree()
     // FIXME: We should ASSERT(isRooted()) but we have some out-of-order removals which would need to be fixed first.
 
     // If we remove a visible child from an invisible parent, we don't know the layer visibility any more.
-    Layer* layer = 0;
+    DeprecatedPaintLayer* layer = 0;
     if (parent()->style()->visibility() != VISIBLE && style()->visibility() == VISIBLE && !hasLayer()) {
         layer = parent()->enclosingLayer();
         if (layer)

@@ -48,7 +48,6 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutFieldset.h"
 #include "core/layout/LayoutFileUploadControl.h"
 #include "core/layout/LayoutHTMLCanvas.h"
@@ -62,6 +61,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -1339,7 +1339,7 @@ AXObject* AXLayoutObject::accessibilityHitTest(const IntPoint& point) const
     if (!m_layoutObject || !m_layoutObject->hasLayer())
         return 0;
 
-    Layer* layer = toLayoutBox(m_layoutObject)->layer();
+    DeprecatedPaintLayer* layer = toLayoutBox(m_layoutObject)->layer();
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult hitTestResult = HitTestResult(point);

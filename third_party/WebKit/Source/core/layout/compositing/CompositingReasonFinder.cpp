@@ -10,8 +10,8 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/LayerCompositor.h"
 #include "core/page/Page.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 
 namespace blink {
 
@@ -45,7 +45,7 @@ bool CompositingReasonFinder::isMainFrame() const
     return !m_layoutView.document().ownerElement();
 }
 
-CompositingReasons CompositingReasonFinder::directReasons(const Layer* layer) const
+CompositingReasons CompositingReasonFinder::directReasons(const DeprecatedPaintLayer* layer) const
 {
     if (RuntimeEnabledFeatures::slimmingPaintCompositorLayerizationEnabled())
         return CompositingReasonNone;
@@ -143,7 +143,7 @@ bool CompositingReasonFinder::requiresCompositingForTransform(LayoutObject* rend
     return renderer->hasTransformRelatedProperty() && renderer->style()->transform().has3DOperation();
 }
 
-CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const Layer* layer) const
+CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(const DeprecatedPaintLayer* layer) const
 {
     CompositingReasons directReasons = CompositingReasonNone;
     LayoutObject* renderer = layer->layoutObject();
@@ -159,7 +159,7 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(cons
     // Composite |layer| if it is inside of an ancestor scrolling layer, but that
     // scrolling layer is not not on the stacking context ancestor chain of |layer|.
     // See the definition of the scrollParent property in Layer for more detail.
-    if (const Layer* scrollingAncestor = layer->ancestorScrollingLayer()) {
+    if (const DeprecatedPaintLayer* scrollingAncestor = layer->ancestorScrollingLayer()) {
         if (scrollingAncestor->needsCompositedScrolling() && layer->scrollParent())
             directReasons |= CompositingReasonOverflowScrollingParent;
     }
@@ -181,7 +181,7 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(const LayoutStyle&
     return style.shouldCompositeForCurrentAnimations();
 }
 
-bool CompositingReasonFinder::requiresCompositingForPositionFixed(const Layer* layer) const
+bool CompositingReasonFinder::requiresCompositingForPositionFixed(const DeprecatedPaintLayer* layer) const
 {
     if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger))
         return false;

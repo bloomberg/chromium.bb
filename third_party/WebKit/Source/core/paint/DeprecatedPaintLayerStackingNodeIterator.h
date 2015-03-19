@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayerStackingNodeIterator_h
-#define LayerStackingNodeIterator_h
+#ifndef DeprecatedPaintLayerStackingNodeIterator_h
+#define DeprecatedPaintLayerStackingNodeIterator_h
 
 #include "wtf/Noncopyable.h"
 
@@ -42,50 +42,50 @@ enum ChildrenIteration {
     AllChildren = NegativeZOrderChildren | NormalFlowChildren | PositiveZOrderChildren
 };
 
-class LayerStackingNode;
+class DeprecatedPaintLayerStackingNode;
 
-// This iterator walks the LayerStackingNode lists in the following order:
+// This iterator walks the DeprecatedPaintLayerStackingNode lists in the following order:
 // NegativeZOrderChildren -> NormalFlowChildren -> PositiveZOrderChildren.
-class LayerStackingNodeIterator {
-    WTF_MAKE_NONCOPYABLE(LayerStackingNodeIterator);
+class DeprecatedPaintLayerStackingNodeIterator {
+    WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNodeIterator);
 public:
-    LayerStackingNodeIterator(const LayerStackingNode& root, unsigned whichChildren)
+    DeprecatedPaintLayerStackingNodeIterator(const DeprecatedPaintLayerStackingNode& root, unsigned whichChildren)
         : m_root(root)
         , m_remainingChildren(whichChildren)
         , m_index(0)
     {
     }
 
-    LayerStackingNode* next();
+    DeprecatedPaintLayerStackingNode* next();
 
 private:
-    const LayerStackingNode& m_root;
+    const DeprecatedPaintLayerStackingNode& m_root;
     unsigned m_remainingChildren;
     unsigned m_index;
 };
 
-// This iterator is similar to LayerStackingNodeIterator but it walks the lists in reverse order
+// This iterator is similar to DeprecatedPaintLayerStackingNodeIterator but it walks the lists in reverse order
 // (from the last item to the first one).
-class LayerStackingNodeReverseIterator {
-    WTF_MAKE_NONCOPYABLE(LayerStackingNodeReverseIterator);
+class DeprecatedPaintLayerStackingNodeReverseIterator {
+    WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNodeReverseIterator);
 public:
-    LayerStackingNodeReverseIterator(const LayerStackingNode& root, unsigned whichChildren)
+    DeprecatedPaintLayerStackingNodeReverseIterator(const DeprecatedPaintLayerStackingNode& root, unsigned whichChildren)
         : m_root(root)
         , m_remainingChildren(whichChildren)
     {
         setIndexToLastItem();
     }
 
-    LayerStackingNode* next();
+    DeprecatedPaintLayerStackingNode* next();
 
 private:
     void setIndexToLastItem();
 
-    const LayerStackingNode& m_root;
+    const DeprecatedPaintLayerStackingNode& m_root;
     unsigned m_remainingChildren;
     int m_index;
 };
 
 } // namespace blink
 
-#endif // LayerStackingNodeIterator_h
+#endif // DeprecatedPaintLayerStackingNodeIterator_h

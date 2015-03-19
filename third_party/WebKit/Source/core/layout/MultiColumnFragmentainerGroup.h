@@ -61,7 +61,7 @@ public:
     LayoutSize flowThreadTranslationAtOffset(LayoutUnit offsetInFlowThread) const;
     LayoutUnit columnLogicalTopForOffset(LayoutUnit offsetInFlowThread) const;
     LayoutPoint visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const;
-    void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) const;
+    void collectLayerFragments(DeprecatedPaintLayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect) const;
     LayoutRect calculateOverflow() const;
 
     // The "CSS actual" value of column-count. This includes overflowing columns, if any.

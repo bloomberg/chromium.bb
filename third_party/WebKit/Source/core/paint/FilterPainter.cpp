@@ -6,10 +6,9 @@
 #include "core/paint/FilterPainter.h"
 
 #include "core/layout/FilterEffectRenderer.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayerClipRecorder.h"
-#include "core/paint/LayerPainter.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -23,7 +22,7 @@
 
 namespace blink {
 
-FilterPainter::FilterPainter(Layer& renderLayer, GraphicsContext* context, const LayoutPoint& offsetFromRoot, const ClipRect& clipRect, LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags,
+FilterPainter::FilterPainter(DeprecatedPaintLayer& renderLayer, GraphicsContext* context, const LayoutPoint& offsetFromRoot, const ClipRect& clipRect, DeprecatedPaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags,
     LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed)
     : m_filterInProgress(false)
     , m_context(context)

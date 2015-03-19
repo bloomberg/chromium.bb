@@ -24,7 +24,6 @@
 
 #include "core/dom/AXObjectCache.h"
 #include "core/layout/BidiRunForLine.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutListMarker.h"

@@ -32,12 +32,12 @@
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
 #include "core/layout/style/ShadowData.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
@@ -143,7 +143,7 @@ static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpace
         point = targetRenderer->frame()->view()->contentsToWindow(point);
         point = paintInvalidationContainer->frame()->view()->windowToContents(point);
         FloatPoint floatPoint = paintInvalidationContainer->absoluteToLocal(point, UseTransforms);
-        Layer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, floatPoint);
+        DeprecatedPaintLayer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, floatPoint);
 
         switch (i) {
         case 0: compositedSpaceQuad.setP1(floatPoint); break;
@@ -194,7 +194,7 @@ bool LinkHighlight::computeHighlightLayerPathAndPosition(const LayoutBoxModelObj
     // FIXME: This is defensive code to avoid crashes such as those described in
     // crbug.com/440887. This should be cleaned up once we fix the root cause of
     // of the paint invalidation container not being composited.
-    if (!paintInvalidationContainer->layer()->compositedLayerMapping() && !paintInvalidationContainer->layer()->groupedMapping())
+    if (!paintInvalidationContainer->layer()->compositedDeprecatedPaintLayerMapping() && !paintInvalidationContainer->layer()->groupedMapping())
         return false;
 
     // Get quads for node in absolute coordinates.

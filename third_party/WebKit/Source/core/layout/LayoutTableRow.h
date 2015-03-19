@@ -107,15 +107,15 @@ private:
     virtual void addChild(LayoutObject* child, LayoutObject* beforeChild = 0) override;
     virtual void layout() override;
 
-    virtual LayerType layerTypeRequired() const override
+    virtual DeprecatedPaintLayerType layerTypeRequired() const override
     {
         if (hasTransformRelatedProperty() || hasHiddenBackface() || hasClipPath() || createsGroup() || style()->shouldCompositeForCurrentAnimations())
-            return NormalLayer;
+            return NormalDeprecatedPaintLayer;
 
         if (hasOverflowClip())
-            return OverflowClipLayer;
+            return OverflowClipDeprecatedPaintLayer;
 
-        return NoLayer;
+        return NoDeprecatedPaintLayer;
     }
 
     virtual void paint(const PaintInfo&, const LayoutPoint&) override;

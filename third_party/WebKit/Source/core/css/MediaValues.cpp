@@ -17,7 +17,7 @@
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/page/Page.h"
 #include "platform/PlatformScreen.h"

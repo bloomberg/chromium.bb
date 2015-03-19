@@ -52,7 +52,7 @@ void LayoutSVGBlock::updateFromStyle()
 
     // LayoutSVGlock, used by Render(SVGText|ForeignObject), is not allowed to call setHasOverflowClip(true).
     // LayoutBlock assumes a layer to be present when the overflow clip functionality is requested. Both
-    // Render(SVGText|ForeignObject) return 'NoLayer' on 'layerTypeRequired'. Fine for LayoutSVGText.
+    // Render(SVGText|ForeignObject) return 'NoDeprecatedPaintLayer' on 'layerTypeRequired'. Fine for LayoutSVGText.
     //
     // If we want to support overflow rules for <foreignObject> we can choose between two solutions:
     // a) make LayoutSVGForeignObject require layers and SVG layer aware

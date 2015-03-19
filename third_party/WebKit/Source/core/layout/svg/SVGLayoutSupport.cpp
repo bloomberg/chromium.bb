@@ -26,7 +26,6 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 
 #include "core/frame/FrameHost.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/SubtreeLayoutScope.h"
@@ -40,6 +39,7 @@
 #include "core/layout/svg/LayoutSVGViewportContainer.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/svg/SVGElement.h"
 #include "platform/geometry/TransformState.h"
 
@@ -489,7 +489,7 @@ float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(const LayoutObject*
     // Continue walking up the layer tree, accumulating CSS transforms.
     // FIXME: this queries layer compositing state - which is not
     // supported during layout. Hence, the result may not include all CSS transforms.
-    Layer* layer = renderer ? renderer->enclosingLayer() : 0;
+    DeprecatedPaintLayer* layer = renderer ? renderer->enclosingLayer() : 0;
     while (layer && layer->isAllowedToQueryCompositingState()) {
         // We can stop at compositing layers, to match the backing resolution.
         // FIXME: should we be computing the transform to the nearest composited layer,

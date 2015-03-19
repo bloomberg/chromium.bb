@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CompositedLayerMapping_h
-#define CompositedLayerMapping_h
+#ifndef CompositedDeprecatedPaintLayerMapping_h
+#define CompositedDeprecatedPaintLayerMapping_h
 
-#include "core/layout/Layer.h"
 #include "core/layout/compositing/GraphicsLayerUpdater.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -35,11 +35,11 @@
 
 namespace blink {
 
-class LayerCompositor;
+class DeprecatedPaintLayerCompositor;
 
 // A GraphicsLayerPaintInfo contains all the info needed to paint a partial subtree of Layers into a GraphicsLayer.
 struct GraphicsLayerPaintInfo {
-    Layer* renderLayer;
+    DeprecatedPaintLayer* renderLayer;
 
     LayoutRect compositedBounds;
 
@@ -59,23 +59,23 @@ enum GraphicsLayerUpdateScope {
     GraphicsLayerUpdateSubtree,
 };
 
-// CompositedLayerMapping keeps track of how Layers of the render tree correspond to
-// GraphicsLayers of the composited layer tree. Each instance of CompositedLayerMapping
+// CompositedDeprecatedPaintLayerMapping keeps track of how Layers of the render tree correspond to
+// GraphicsLayers of the composited layer tree. Each instance of CompositedDeprecatedPaintLayerMapping
 // manages a small cluster of GraphicsLayers and the references to which Layers
 // and paint phases contribute to each GraphicsLayer.
 //
-// Currently (Oct. 2013) there is one CompositedLayerMapping for each Layer,
+// Currently (Oct. 2013) there is one CompositedDeprecatedPaintLayerMapping for each Layer,
 // but this is likely to evolve soon.
-class CompositedLayerMapping final : public GraphicsLayerClient {
-    WTF_MAKE_NONCOPYABLE(CompositedLayerMapping); WTF_MAKE_FAST_ALLOCATED;
+class CompositedDeprecatedPaintLayerMapping final : public GraphicsLayerClient {
+    WTF_MAKE_NONCOPYABLE(CompositedDeprecatedPaintLayerMapping); WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit CompositedLayerMapping(Layer&);
-    virtual ~CompositedLayerMapping();
+    explicit CompositedDeprecatedPaintLayerMapping(DeprecatedPaintLayer&);
+    virtual ~CompositedDeprecatedPaintLayerMapping();
 
-    Layer& owningLayer() const { return m_owningLayer; }
+    DeprecatedPaintLayer& owningLayer() const { return m_owningLayer; }
 
     bool updateGraphicsLayerConfiguration();
-    void updateGraphicsLayerGeometry(const Layer* compositingContainer, const Layer* compositingStackingContext, Vector<Layer*>& layersNeedingPaintInvalidation);
+    void updateGraphicsLayerGeometry(const DeprecatedPaintLayer* compositingContainer, const DeprecatedPaintLayer* compositingStackingContext, Vector<DeprecatedPaintLayer*>& layersNeedingPaintInvalidation);
 
     // Update whether layer needs blending.
     void updateContentsOpaque();
@@ -133,8 +133,8 @@ public:
     bool hasUnpositionedOverflowControlsLayers() const;
 
     // Returns true if the assignment actually changed the assigned squashing layer.
-    bool updateSquashingLayerAssignment(Layer* squashedLayer, const Layer& owningLayer, size_t nextSquashedLayerIndex);
-    void removeLayerFromSquashingGraphicsLayer(const Layer*);
+    bool updateSquashingLayerAssignment(DeprecatedPaintLayer* squashedLayer, const DeprecatedPaintLayer& owningLayer, size_t nextSquashedLayerIndex);
+    void removeLayerFromSquashingGraphicsLayer(const DeprecatedPaintLayer*);
 
     void finishAccumulatingSquashingLayers(size_t nextSquashedLayerIndex);
     void updateRenderingContext();
@@ -165,7 +165,7 @@ public:
     // Removes the overflow controls host layer from its parent and positions it
     // so that it can be inserted as a sibling to this CLM without changing
     // position.
-    GraphicsLayer* detachLayerForOverflowControls(const Layer& enclosingLayer);
+    GraphicsLayer* detachLayerForOverflowControls(const DeprecatedPaintLayer& enclosingLayer);
 
     void updateFilters(const LayoutStyle&);
 
@@ -201,18 +201,18 @@ private:
     static const GraphicsLayerPaintInfo* containingSquashedLayer(const LayoutObject*,  const Vector<GraphicsLayerPaintInfo>& layers, unsigned maxSquashedLayerIndex);
 
     // Helper methods to updateGraphicsLayerGeometry:
-    void computeGraphicsLayerParentLocation(const Layer* compositingContainer, const IntRect& ancestorCompositingBounds, IntPoint& graphicsLayerParentLocation);
-    void updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const Layer& referenceLayer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer*, LayoutPoint* offsetFromTransformedAncestor, Vector<Layer*>& layersNeedingPaintInvalidation);
+    void computeGraphicsLayerParentLocation(const DeprecatedPaintLayer* compositingContainer, const IntRect& ancestorCompositingBounds, IntPoint& graphicsLayerParentLocation);
+    void updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const DeprecatedPaintLayer& referenceLayer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer*, LayoutPoint* offsetFromTransformedAncestor, Vector<DeprecatedPaintLayer*>& layersNeedingPaintInvalidation);
     void updateMainGraphicsLayerGeometry(const IntRect& relativeCompositingBounds, const IntRect& localCompositingBounds, const IntPoint& graphicsLayerParentLocation);
-    void updateAncestorClippingLayerGeometry(const Layer* compositingContainer, const IntPoint& snappedOffsetFromCompositedAncestor, IntPoint& graphicsLayerParentLocation);
-    void updateOverflowControlsHostLayerGeometry(const Layer* compositingStackingContext, const Layer* compositingContainer);
+    void updateAncestorClippingLayerGeometry(const DeprecatedPaintLayer* compositingContainer, const IntPoint& snappedOffsetFromCompositedAncestor, IntPoint& graphicsLayerParentLocation);
+    void updateOverflowControlsHostLayerGeometry(const DeprecatedPaintLayer* compositingStackingContext, const DeprecatedPaintLayer* compositingContainer);
     void updateChildContainmentLayerGeometry(const IntRect& clippingBox, const IntRect& localCompositingBounds);
     void updateChildTransformLayerGeometry();
     void updateMaskLayerGeometry();
     void updateTransformGeometry(const IntPoint& snappedOffsetFromCompositedAncestor, const IntRect& relativeCompositingBounds);
     void updateForegroundLayerGeometry(const FloatSize& relativeCompositingBoundsSize, const IntRect& clippingBox);
     void updateBackgroundLayerGeometry(const FloatSize& relativeCompositingBoundsSize);
-    void updateReflectionLayerGeometry(Vector<Layer*>& layersNeedingPaintInvalidation);
+    void updateReflectionLayerGeometry(Vector<DeprecatedPaintLayer*>& layersNeedingPaintInvalidation);
     void updateScrollingLayerGeometry(const IntRect& localCompositingBounds);
     void updateChildClippingMaskLayerGeometry();
 
@@ -223,7 +223,7 @@ private:
     bool toggleScrollbarLayerIfNeeded(OwnPtr<GraphicsLayer>&, bool needsLayer, CompositingReasons);
 
     LayoutBoxModelObject* layoutObject() const { return m_owningLayer.layoutObject(); }
-    LayerCompositor* compositor() const { return m_owningLayer.compositor(); }
+    DeprecatedPaintLayerCompositor* compositor() const { return m_owningLayer.compositor(); }
 
     void updateInternalHierarchy();
     void updatePaintingPhases();
@@ -238,7 +238,7 @@ private:
     bool requiresVerticalScrollbarLayer() const { return m_owningLayer.scrollableArea() && m_owningLayer.scrollableArea()->verticalScrollbar(); }
     bool requiresScrollCornerLayer() const { return m_owningLayer.scrollableArea() && !m_owningLayer.scrollableArea()->scrollCornerAndResizerRect().isEmpty(); }
     bool updateScrollingLayers(bool scrollingLayers);
-    void updateScrollParent(Layer*);
+    void updateScrollParent(DeprecatedPaintLayer*);
     void updateClipParent();
     bool updateSquashingLayers(bool needsSquashingLayers);
     void updateDrawsContent();
@@ -247,7 +247,7 @@ private:
     void registerScrollingLayers();
 
     // Also sets subpixelAccumulation on the layer.
-    void computeBoundsOfOwningLayer(const Layer* compositedAncestor, IntRect& localCompositingBounds, IntRect& compositingBoundsRelativeToCompositedAncestor, LayoutPoint& offsetFromCompositedAncestor, IntPoint& snappedOffsetFromCompositedAncestor);
+    void computeBoundsOfOwningLayer(const DeprecatedPaintLayer* compositedAncestor, IntRect& localCompositingBounds, IntRect& compositingBoundsRelativeToCompositedAncestor, LayoutPoint& offsetFromCompositedAncestor, IntPoint& snappedOffsetFromCompositedAncestor);
 
     void setBackgroundLayerPaintsFixedRootBackground(bool);
 
@@ -279,7 +279,7 @@ private:
     void updateAfterPartResize();
     void updateCompositingReasons();
 
-    static bool hasVisibleNonCompositingDescendant(Layer* parent);
+    static bool hasVisibleNonCompositingDescendant(DeprecatedPaintLayer* parent);
 
     void doPaintTask(const GraphicsLayerPaintInfo&, const PaintLayerFlags&, GraphicsContext*, const IntRect& clip);
 
@@ -288,15 +288,15 @@ private:
     // The clip rect is returned in the coordinate space of the given squashed layer.
     // If there is no such containing layer, returns the infinite rect.
     // FIXME: unify this code with the code that sets up m_ancestorClippingLayer. They are doing very similar things.
-    static IntRect localClipRectForSquashedLayer(const Layer& referenceLayer, const GraphicsLayerPaintInfo&,  const Vector<GraphicsLayerPaintInfo>& layers);
+    static IntRect localClipRectForSquashedLayer(const DeprecatedPaintLayer& referenceLayer, const GraphicsLayerPaintInfo&,  const Vector<GraphicsLayerPaintInfo>& layers);
 
     // Return true if |m_owningLayer|'s compositing ancestor is not a descendant (inclusive) of the
     // clipping container for |m_owningLayer|.
     bool owningLayerClippedByLayerNotAboveCompositedAncestor();
 
-    Layer& m_owningLayer;
+    DeprecatedPaintLayer& m_owningLayer;
 
-    // The hierarchy of layers that is maintained by the CompositedLayerMapping looks like this:
+    // The hierarchy of layers that is maintained by the CompositedDeprecatedPaintLayerMapping looks like this:
     //
     //  + m_ancestorClippingLayer [OPTIONAL]
     //     + m_graphicsLayer
@@ -344,8 +344,8 @@ private:
     OwnPtr<GraphicsLayer> m_maskLayer; // Only used if we have a mask.
     OwnPtr<GraphicsLayer> m_childClippingMaskLayer; // Only used if we have to clip child layers or accelerated contents with border radius or clip-path.
 
-    // There are two other (optional) layers whose painting is managed by the CompositedLayerMapping,
-    // but whose position in the hierarchy is maintained by the LayerCompositor. These
+    // There are two other (optional) layers whose painting is managed by the CompositedDeprecatedPaintLayerMapping,
+    // but whose position in the hierarchy is maintained by the DeprecatedPaintLayerCompositor. These
     // are the foreground and background layers. The foreground layer exists if we have composited
     // descendants with negative z-order. We need the extra layer in this case because the layer
     // needs to draw both below (for the background, say) and above (for the normal flow content, say)
@@ -420,4 +420,4 @@ private:
 
 } // namespace blink
 
-#endif // CompositedLayerMapping_h
+#endif // CompositedDeprecatedPaintLayerMapping_h

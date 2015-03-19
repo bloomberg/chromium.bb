@@ -50,7 +50,6 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutPart.h"
 #include "core/loader/FormState.h"
@@ -60,6 +59,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "modules/plugins/PluginOcclusionSupport.h"
 #include "platform/HostWindow.h"
@@ -149,7 +149,7 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
     dirtyRect.move(renderer->borderLeft() + renderer->paddingLeft(),
                    renderer->borderTop() + renderer->paddingTop());
 
-    // For querying Layer::compositingState().
+    // For querying DeprecatedPaintLayer::compositingState().
     // This code should be correct.
     DisableCompositingQueryAsserts disabler;
     // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
@@ -315,7 +315,7 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
 
     m_element->setNeedsCompositingUpdate();
     // Being composited or not affects the self painting layer bit
-    // on the Layer.
+    // on the DeprecatedPaintLayer.
     if (LayoutPart* renderer = m_element->layoutPart()) {
         ASSERT(renderer->hasLayer());
         renderer->layer()->updateSelfPaintingLayer();

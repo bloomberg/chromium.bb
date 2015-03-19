@@ -23,7 +23,6 @@
 #include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListMarker.h"

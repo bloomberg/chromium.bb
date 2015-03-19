@@ -31,7 +31,6 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutTableCaption.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
@@ -43,6 +42,7 @@
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/style/StyleInheritedData.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/TablePainter.h"
 
 namespace blink {

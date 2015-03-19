@@ -32,9 +32,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLTextFormControlElement.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {

@@ -30,8 +30,8 @@
 #ifndef LayoutFlowThread_h
 #define LayoutFlowThread_h
 
-#include "core/layout/LayerFragment.h"
 #include "core/layout/LayoutBlockFlow.h"
+#include "core/paint/DeprecatedPaintLayerFragment.h"
 #include "wtf/ListHashSet.h"
 
 namespace blink {
@@ -62,7 +62,7 @@ public:
 
     // Always create a Layer for the LayoutFlowThread so that we
     // can easily avoid drawing the children directly.
-    virtual LayerType layerTypeRequired() const override final { return NormalLayer; }
+    virtual DeprecatedPaintLayerType layerTypeRequired() const override final { return NormalDeprecatedPaintLayer; }
 
     // Skip past a column spanner during flow thread layout. Spanners are not laid out inside the
     // flow thread, since the flow thread is not in a spanner's containing block chain (since the
@@ -106,7 +106,7 @@ public:
     virtual bool isPageLogicalHeightKnown() const { return true; }
     bool pageLogicalSizeChanged() const { return m_pageLogicalSizeChanged; }
 
-    void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
+    void collectLayerFragments(DeprecatedPaintLayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
 
     // Return the visual bounding box based on the supplied flow-thread bounding box. Both
     // rectangles are completely physical in terms of writing mode.

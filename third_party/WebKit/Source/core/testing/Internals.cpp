@@ -100,13 +100,12 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/HistoryItem.h"
 #include "core/page/Chrome.h"
@@ -116,6 +115,7 @@
 #include "core/page/NetworkStateNotifier.h"
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/plugins/testing/DictionaryPluginPlaceholder.h"
 #include "core/plugins/testing/DocumentFragmentPluginPlaceholder.h"
 #include "core/testing/DictionaryTest.h"
@@ -1163,12 +1163,12 @@ unsigned Internals::touchEventHandlerCount(Document* document)
     return eventHandlerCount(*document, EventHandlerRegistry::TouchEvent);
 }
 
-static Layer* findLayerForGraphicsLayer(Layer* searchRoot, GraphicsLayer* graphicsLayer, IntSize* layerOffset, String* layerType)
+static DeprecatedPaintLayer* findLayerForGraphicsLayer(DeprecatedPaintLayer* searchRoot, GraphicsLayer* graphicsLayer, IntSize* layerOffset, String* layerType)
 {
     *layerOffset = IntSize();
-    if (searchRoot->hasCompositedLayerMapping() && graphicsLayer == searchRoot->compositedLayerMapping()->mainGraphicsLayer()) {
+    if (searchRoot->hasCompositedDeprecatedPaintLayerMapping() && graphicsLayer == searchRoot->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()) {
         LayoutRect rect;
-        Layer::mapRectToPaintBackingCoordinates(searchRoot->layoutObject(), rect);
+        DeprecatedPaintLayer::mapRectToPaintBackingCoordinates(searchRoot->layoutObject(), rect);
         *layerOffset = IntSize(rect.x(), rect.y());
         return searchRoot;
     }
@@ -1184,7 +1184,7 @@ static Layer* findLayerForGraphicsLayer(Layer* searchRoot, GraphicsLayer* graphi
         if (graphicsLayer == squashingLayer) {
             *layerType ="squashing";
             LayoutRect rect;
-            Layer::mapRectToPaintBackingCoordinates(searchRoot->layoutObject(), rect);
+            DeprecatedPaintLayer::mapRectToPaintBackingCoordinates(searchRoot->layoutObject(), rect);
             *layerOffset = IntSize(rect.x(), rect.y());
             return searchRoot;
         }
@@ -1210,8 +1210,8 @@ static Layer* findLayerForGraphicsLayer(Layer* searchRoot, GraphicsLayer* graphi
 
     // Search right to left to increase the chances that we'll choose the top-most layers in a
     // grouped mapping for squashing.
-    for (Layer* child = searchRoot->lastChild(); child; child = child->previousSibling()) {
-        Layer* foundLayer = findLayerForGraphicsLayer(child, graphicsLayer, layerOffset, layerType);
+    for (DeprecatedPaintLayer* child = searchRoot->lastChild(); child; child = child->previousSibling()) {
+        DeprecatedPaintLayer* foundLayer = findLayerForGraphicsLayer(child, graphicsLayer, layerOffset, layerType);
         if (foundLayer)
             return foundLayer;
     }
@@ -1264,14 +1264,14 @@ static void mergeRects(blink::WebVector<blink::WebRect>& rects)
     }
 }
 
-static void accumulateLayerRectList(LayerCompositor* compositor, GraphicsLayer* graphicsLayer, LayerRectList* rects)
+static void accumulateLayerRectList(DeprecatedPaintLayerCompositor* compositor, GraphicsLayer* graphicsLayer, LayerRectList* rects)
 {
     blink::WebVector<blink::WebRect> layerRects = graphicsLayer->platformLayer()->touchEventHandlerRegion();
     if (!layerRects.isEmpty()) {
         mergeRects(layerRects);
         String layerType;
         IntSize layerOffset;
-        Layer* renderLayer = findLayerForGraphicsLayer(compositor->rootLayer(), graphicsLayer, &layerOffset, &layerType);
+        DeprecatedPaintLayer* renderLayer = findLayerForGraphicsLayer(compositor->rootLayer(), graphicsLayer, &layerOffset, &layerType);
         Node* node = renderLayer ? renderLayer->layoutObject()->node() : 0;
         for (size_t i = 0; i < layerRects.size(); ++i) {
             if (!layerRects[i].isEmpty()) {
@@ -1300,7 +1300,7 @@ LayerRectList* Internals::touchEventTargetLayerRects(Document* document, Excepti
         return nullptr;
 
     if (LayoutView* view = document->layoutView()) {
-        if (LayerCompositor* compositor = view->compositor()) {
+        if (DeprecatedPaintLayerCompositor* compositor = view->compositor()) {
             if (GraphicsLayer* rootLayer = compositor->rootGraphicsLayer()) {
                 LayerRectList* rects = LayerRectList::create();
                 accumulateLayerRectList(compositor, rootLayer, rects);
@@ -1517,10 +1517,10 @@ bool Internals::scrollsWithRespectTo(Element* element1, Element* element2, Excep
         return false;
     }
 
-    Layer* layer1 = toLayoutBox(renderer1)->layer();
-    Layer* layer2 = toLayoutBox(renderer2)->layer();
+    DeprecatedPaintLayer* layer1 = toLayoutBox(renderer1)->layer();
+    DeprecatedPaintLayer* layer2 = toLayoutBox(renderer2)->layer();
     if (!layer1 || !layer2) {
-        exceptionState.throwDOMException(InvalidAccessError, String::format("No render layer can be obtained from the %s provided element.", layer1 ? "second" : "first"));
+        exceptionState.throwDOMException(InvalidAccessError, String::format("No DeprecatedPaintLayer can be obtained from the %s provided element.", layer1 ? "second" : "first"));
         return false;
     }
 
@@ -1551,15 +1551,15 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
         return String();
     }
 
-    Layer* layer = toLayoutBox(renderer)->layer();
+    DeprecatedPaintLayer* layer = toLayoutBox(renderer)->layer();
     if (!layer
-        || !layer->hasCompositedLayerMapping()
-        || !layer->compositedLayerMapping()->mainGraphicsLayer()) {
+        || !layer->hasCompositedDeprecatedPaintLayerMapping()
+        || !layer->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()) {
         // Don't raise exception in these cases which may be normally used in tests.
         return String();
     }
 
-    return layer->compositedLayerMapping()->mainGraphicsLayer()->layerTreeAsText(flags);
+    return layer->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer()->layerTreeAsText(flags);
 }
 
 String Internals::scrollingStateTreeAsText(Document*) const

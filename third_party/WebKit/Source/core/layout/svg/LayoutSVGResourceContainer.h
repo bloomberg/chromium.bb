@@ -35,7 +35,7 @@ enum LayoutSVGResourceType {
     ClipperResourceType
 };
 
-class Layer;
+class DeprecatedPaintLayer;
 
 class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
 public:
@@ -61,8 +61,8 @@ public:
 
     void idChanged();
     void addClientLayer(Node*);
-    void addClientLayer(Layer*);
-    void removeClientLayer(Layer*);
+    void addClientLayer(DeprecatedPaintLayer*);
+    void removeClientLayer(DeprecatedPaintLayer*);
 
     void invalidateCacheAndMarkForLayout(SubtreeLayoutScope* = 0);
 
@@ -103,7 +103,7 @@ private:
     // 22 padding bits available
 
     HashSet<LayoutObject*> m_clients;
-    HashSet<Layer*> m_clientLayers;
+    HashSet<DeprecatedPaintLayer*> m_clientLayers;
 };
 
 inline LayoutSVGResourceContainer* getLayoutSVGResourceContainerById(TreeScope& treeScope, const AtomicString& id)

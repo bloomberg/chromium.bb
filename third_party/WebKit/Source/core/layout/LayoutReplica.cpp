@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/layout/LayoutReplica.h"
 
-#include "core/layout/Layer.h"
 #include "core/paint/ReplicaPainter.h"
 
 namespace blink {

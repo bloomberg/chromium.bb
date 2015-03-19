@@ -31,10 +31,11 @@
 #define InspectorDOMAgent_h
 
 #include "core/InspectorFrontend.h"
+#include "core/events/EventListenerMap.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/layout/Layer.h"
+#include "core/layout/style/LayoutStyleConstants.h"
 #include "platform/JSONValues.h"
 
 #include "wtf/HashMap.h"
@@ -50,16 +51,21 @@ namespace blink {
 class CharacterData;
 class DOMEditor;
 class Document;
+class DocumentLoader;
 class Element;
 class EventTarget;
 class ExceptionState;
+class FloatQuad;
 class InsertionPoint;
 class InspectorFrontend;
 class InspectorHistory;
 class InspectorOverlay;
 class InspectorPageAgent;
 class Node;
+class QualifiedName;
+class PseudoElement;
 class PlatformGestureEvent;
+class PlatformMouseEvent;
 class PlatformTouchEvent;
 class InspectorRevalidateDOMTask;
 class ShadowRoot;

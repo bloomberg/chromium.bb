@@ -41,11 +41,11 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef LayerScrollableArea_h
-#define LayerScrollableArea_h
+#ifndef DeprecatedPaintLayerScrollableArea_h
+#define DeprecatedPaintLayerScrollableArea_h
 
-#include "core/layout/LayerFragment.h"
 #include "core/layout/LayoutBox.h"
+#include "core/paint/DeprecatedPaintLayerFragment.h"
 #include "platform/scroll/ScrollableArea.h"
 
 namespace blink {
@@ -57,17 +57,17 @@ enum ResizerHitTestType {
 
 class PlatformEvent;
 class LayoutBox;
-class Layer;
+class DeprecatedPaintLayer;
 class LayoutScrollbarPart;
 
-class LayerScrollableArea final : public ScrollableArea {
+class DeprecatedPaintLayerScrollableArea final : public ScrollableArea {
     friend class Internals;
 
 public:
     // FIXME: We should pass in the LayoutBox but this opens a window
-    // for crashers during Layer setup (see crbug.com/368062).
-    LayerScrollableArea(Layer&);
-    virtual ~LayerScrollableArea();
+    // for crashers during DeprecatedPaintLayer setup (see crbug.com/368062).
+    DeprecatedPaintLayerScrollableArea(DeprecatedPaintLayer&);
+    virtual ~DeprecatedPaintLayerScrollableArea();
 
     bool hasHorizontalScrollbar() const { return horizontalScrollbar(); }
     bool hasVerticalScrollbar() const { return verticalScrollbar(); }
@@ -178,7 +178,7 @@ public:
     bool isPointInResizeControl(const IntPoint& absolutePoint, ResizerHitTestType) const;
     bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
 
-    bool hitTestResizerInFragments(const LayerFragments&, const HitTestLocation&) const;
+    bool hitTestResizerInFragments(const DeprecatedPaintLayerFragments&, const HitTestLocation&) const;
 
     LayoutRect exposeRect(const LayoutRect&, const ScrollAlignment& alignX, const ScrollAlignment& alignY);
 
@@ -200,13 +200,13 @@ public:
 
     // These are used during compositing updates to determine if the overflow
     // controls need to be repositioned in the GraphicsLayer tree.
-    void setTopmostScrollChild(Layer*);
-    Layer* topmostScrollChild() const { ASSERT(!m_nextTopmostScrollChild); return m_topmostScrollChild; }
+    void setTopmostScrollChild(DeprecatedPaintLayer*);
+    DeprecatedPaintLayer* topmostScrollChild() const { ASSERT(!m_nextTopmostScrollChild); return m_topmostScrollChild; }
 
     IntRect resizerCornerRect(const IntRect&, ResizerHitTestType) const;
 
     LayoutBox& box() const;
-    Layer* layer() const;
+    DeprecatedPaintLayer* layer() const;
 
     LayoutScrollbarPart* resizer() { return m_resizer; }
 
@@ -248,7 +248,7 @@ private:
 
     void updateCompositingLayersAfterScroll();
 
-    Layer& m_layer;
+    DeprecatedPaintLayer& m_layer;
 
     // Keeps track of whether the layer is currently resizing, so events can cause resizing to start and stop.
     unsigned m_inResizeMode : 1;
@@ -257,8 +257,8 @@ private:
     unsigned m_scrollDimensionsDirty : 1;
     unsigned m_inOverflowRelayout : 1;
 
-    Layer* m_nextTopmostScrollChild;
-    Layer* m_topmostScrollChild;
+    DeprecatedPaintLayer* m_nextTopmostScrollChild;
+    DeprecatedPaintLayer* m_topmostScrollChild;
 
     // FIXME: once cc can handle composited scrolling with clip paths, we will
     // no longer need this bit.

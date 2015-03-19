@@ -47,7 +47,6 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutListBox.h"
@@ -57,9 +56,9 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/layout/style/LayoutStyle.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoader.h"
@@ -71,6 +70,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/FramePainter.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
@@ -376,7 +376,7 @@ bool FrameView::didFirstLayout() const
 
 void FrameView::invalidateRect(const IntRect& rect)
 {
-    // For querying Layer::compositingState() when invalidating scrollbars.
+    // For querying DeprecatedPaintLayer::compositingState() when invalidating scrollbars.
     // FIXME: do all scrollbar invalidations after layout of all frames is complete. It's currently not recursively true.
     DisableCompositingQueryAsserts disabler;
     if (!parent()) {
@@ -832,11 +832,11 @@ static void gatherDebugLayoutRects(LayoutObject& layoutRoot)
     TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), &isTracing);
     if (!isTracing)
         return;
-    if (!layoutRoot.enclosingLayer()->hasCompositedLayerMapping())
+    if (!layoutRoot.enclosingLayer()->hasCompositedDeprecatedPaintLayerMapping())
         return;
-    // For access to compositedLayerMapping().
+    // For access to compositedDeprecatedPaintLayerMapping().
     DisableCompositingQueryAsserts disabler;
-    GraphicsLayer* graphicsLayer = layoutRoot.enclosingLayer()->compositedLayerMapping()->mainGraphicsLayer();
+    GraphicsLayer* graphicsLayer = layoutRoot.enclosingLayer()->compositedDeprecatedPaintLayerMapping()->mainGraphicsLayer();
     if (!graphicsLayer)
         return;
 
@@ -1341,11 +1341,11 @@ void FrameView::scrollContentsIfNeededRecursive()
 }
 
 // FIXME: If we had a flag to force invalidations in a whole subtree, we could get rid of this function (crbug.com/410097).
-static void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(const Layer* layer)
+static void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(const DeprecatedPaintLayer* layer)
 {
     layer->layoutObject()->setShouldDoFullPaintInvalidation();
 
-    for (Layer* child = layer->firstChild(); child; child = child->nextSibling()) {
+    for (DeprecatedPaintLayer* child = layer->firstChild(); child; child = child->nextSibling()) {
         // Don't include paint invalidation rects for composited child layers; they will paint themselves and have a different origin.
         if (child->isPaintInvalidationContainer())
             continue;
@@ -1360,7 +1360,7 @@ bool FrameView::invalidateViewportConstrainedObjects()
         LayoutObject* renderer = viewportConstrainedObject;
         ASSERT(renderer->style()->hasViewportConstrainedPosition());
         ASSERT(renderer->hasLayer());
-        Layer* layer = toLayoutBoxModelObject(renderer)->layer();
+        DeprecatedPaintLayer* layer = toLayoutBoxModelObject(renderer)->layer();
 
         if (layer->isPaintInvalidationContainer())
             continue;
@@ -1881,8 +1881,8 @@ void FrameView::setTransparent(bool isTransparent)
 {
     m_isTransparent = isTransparent;
     DisableCompositingQueryAsserts disabler;
-    if (layoutView() && layoutView()->layer()->hasCompositedLayerMapping())
-        layoutView()->layer()->compositedLayerMapping()->updateContentsOpaque();
+    if (layoutView() && layoutView()->layer()->hasCompositedDeprecatedPaintLayerMapping())
+        layoutView()->layer()->compositedDeprecatedPaintLayerMapping()->updateContentsOpaque();
 }
 
 bool FrameView::hasOpaqueBackground() const
@@ -1899,11 +1899,11 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
 {
     m_baseBackgroundColor = backgroundColor;
 
-    if (layoutView() && layoutView()->layer()->hasCompositedLayerMapping()) {
-        CompositedLayerMapping* compositedLayerMapping = layoutView()->layer()->compositedLayerMapping();
-        compositedLayerMapping->updateContentsOpaque();
-        if (compositedLayerMapping->mainGraphicsLayer())
-            compositedLayerMapping->mainGraphicsLayer()->setNeedsDisplay();
+    if (layoutView() && layoutView()->layer()->hasCompositedDeprecatedPaintLayerMapping()) {
+        CompositedDeprecatedPaintLayerMapping* compositedDeprecatedPaintLayerMapping = layoutView()->layer()->compositedDeprecatedPaintLayerMapping();
+        compositedDeprecatedPaintLayerMapping->updateContentsOpaque();
+        if (compositedDeprecatedPaintLayerMapping->mainGraphicsLayer())
+            compositedDeprecatedPaintLayerMapping->mainGraphicsLayer()->setNeedsDisplay();
     }
     recalculateScrollbarOverlayStyle();
 }
@@ -2173,7 +2173,7 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
         return windowClipRect();
 
     // If we have no layer, just return our window clip rect.
-    const Layer* enclosingLayer = ownerElement->layoutObject()->enclosingLayer();
+    const DeprecatedPaintLayer* enclosingLayer = ownerElement->layoutObject()->enclosingLayer();
     if (!enclosingLayer)
         return windowClipRect();
 

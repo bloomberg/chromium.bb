@@ -6,9 +6,9 @@
 #include "core/paint/BlockFlowPainter.h"
 
 #include "core/layout/FloatingObjects.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/PaintInfo.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "platform/graphics/paint/ClipRecorderStack.h"
 
@@ -65,7 +65,7 @@ void BlockFlowPainter::paintSelection(const PaintInfo& paintInfo, const LayoutPo
         LayoutRect gapRectsBounds = m_layoutBlockFlow.selectionGaps(&m_layoutBlockFlow, paintOffset, LayoutSize(), lastTop, lastLeft, lastRight,
             recorder.canUseCachedDrawing() ? nullptr : &paintInfo);
         if (!gapRectsBounds.isEmpty()) {
-            Layer* layer = m_layoutBlockFlow.enclosingLayer();
+            DeprecatedPaintLayer* layer = m_layoutBlockFlow.enclosingLayer();
             gapRectsBounds.moveBy(-paintOffset);
             if (!m_layoutBlockFlow.hasLayer()) {
                 LayoutRect localBounds(gapRectsBounds);

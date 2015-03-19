@@ -30,16 +30,16 @@
 
 namespace blink {
 
-class Layer;
-class LayerScrollableArea;
+class DeprecatedPaintLayer;
+class DeprecatedPaintLayerScrollableArea;
 
-enum LayerType {
-    NoLayer,
-    NormalLayer,
+enum DeprecatedPaintLayerType {
+    NoDeprecatedPaintLayer,
+    NormalDeprecatedPaintLayer,
     // A forced or overflow clip layer is required for bookkeeping purposes,
     // but does not force a layer to be self painting.
-    OverflowClipLayer,
-    ForcedLayer
+    OverflowClipDeprecatedPaintLayer,
+    ForcedDeprecatedPaintLayer
 };
 
 // Modes for some of the line-related functions.
@@ -91,12 +91,12 @@ public:
     virtual int pixelSnappedOffsetHeight() const;
 
     bool hasSelfPaintingLayer() const;
-    Layer* layer() const { return m_layer.get(); }
-    LayerScrollableArea* scrollableArea() const;
+    DeprecatedPaintLayer* layer() const { return m_layer.get(); }
+    DeprecatedPaintLayerScrollableArea* scrollableArea() const;
 
     virtual void updateFromStyle();
 
-    virtual LayerType layerTypeRequired() const = 0;
+    virtual DeprecatedPaintLayerType layerTypeRequired() const = 0;
 
     // This will work on inlines to return the bounding box of all of the lines' border boxes.
     virtual IntRect borderBoundingBox() const = 0;
@@ -217,7 +217,7 @@ protected:
 
     void addChildFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
 
-    virtual void addLayerHitTestRects(LayerHitTestRects&, const Layer*, const LayoutPoint&, const LayoutRect&) const override;
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer*, const LayoutPoint&, const LayoutRect&) const override;
 
     void styleWillChange(StyleDifference, const LayoutStyle& newStyle) override;
     void styleDidChange(StyleDifference, const LayoutStyle* oldStyle) override;
@@ -251,14 +251,14 @@ public:
     IntSize calculateImageIntrinsicDimensions(StyleImage*, const IntSize& scaledPositioningAreaSize, ScaleByEffectiveZoomOrNot) const;
 
 private:
-    void createLayer(LayerType);
+    void createLayer(DeprecatedPaintLayerType);
 
     LayoutUnit computedCSSPadding(const Length&) const;
     virtual bool isBoxModelObject() const override final { return true; }
 
     virtual bool isLayoutBoxModelObject() const override final { return true; }
 
-    OwnPtr<Layer> m_layer;
+    OwnPtr<DeprecatedPaintLayer> m_layer;
 
     // Used to store state between styleWillChange and styleDidChange
     static bool s_wasFloating;

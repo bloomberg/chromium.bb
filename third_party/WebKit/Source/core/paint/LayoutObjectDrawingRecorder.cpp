@@ -5,8 +5,8 @@
 #include "config.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutObject.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {

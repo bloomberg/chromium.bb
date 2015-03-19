@@ -29,17 +29,16 @@
  */
 
 #include "config.h"
-#include "core/layout/LayerStackingNodeIterator.h"
+#include "core/paint/DeprecatedPaintLayerStackingNodeIterator.h"
 
-#include "core/layout/Layer.h"
-#include "core/layout/LayerStackingNode.h"
+#include "core/paint/DeprecatedPaintLayerStackingNode.h"
 
 namespace blink {
 
-LayerStackingNode* LayerStackingNodeIterator::next()
+DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeIterator::next()
 {
     if (m_remainingChildren & NegativeZOrderChildren) {
-        Vector<LayerStackingNode*>* negZOrderList = m_root.negZOrderList();
+        Vector<DeprecatedPaintLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
         if (negZOrderList && m_index < negZOrderList->size())
             return negZOrderList->at(m_index++);
 
@@ -48,7 +47,7 @@ LayerStackingNode* LayerStackingNodeIterator::next()
     }
 
     if (m_remainingChildren & NormalFlowChildren) {
-        Vector<LayerStackingNode*>* normalFlowList = m_root.normalFlowList();
+        Vector<DeprecatedPaintLayerStackingNode*>* normalFlowList = m_root.normalFlowList();
         if (normalFlowList && m_index < normalFlowList->size())
             return normalFlowList->at(m_index++);
 
@@ -57,7 +56,7 @@ LayerStackingNode* LayerStackingNodeIterator::next()
     }
 
     if (m_remainingChildren & PositiveZOrderChildren) {
-        Vector<LayerStackingNode*>* posZOrderList = m_root.posZOrderList();
+        Vector<DeprecatedPaintLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
         if (posZOrderList && m_index < posZOrderList->size())
             return posZOrderList->at(m_index++);
 
@@ -68,10 +67,10 @@ LayerStackingNode* LayerStackingNodeIterator::next()
     return 0;
 }
 
-LayerStackingNode* LayerStackingNodeReverseIterator::next()
+DeprecatedPaintLayerStackingNode* DeprecatedPaintLayerStackingNodeReverseIterator::next()
 {
     if (m_remainingChildren & NegativeZOrderChildren) {
-        Vector<LayerStackingNode*>* negZOrderList = m_root.negZOrderList();
+        Vector<DeprecatedPaintLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
         if (negZOrderList && m_index >= 0)
             return negZOrderList->at(m_index--);
 
@@ -80,7 +79,7 @@ LayerStackingNode* LayerStackingNodeReverseIterator::next()
     }
 
     if (m_remainingChildren & NormalFlowChildren) {
-        Vector<LayerStackingNode*>* normalFlowList = m_root.normalFlowList();
+        Vector<DeprecatedPaintLayerStackingNode*>* normalFlowList = m_root.normalFlowList();
         if (normalFlowList && m_index >= 0)
             return normalFlowList->at(m_index--);
 
@@ -89,7 +88,7 @@ LayerStackingNode* LayerStackingNodeReverseIterator::next()
     }
 
     if (m_remainingChildren & PositiveZOrderChildren) {
-        Vector<LayerStackingNode*>* posZOrderList = m_root.posZOrderList();
+        Vector<DeprecatedPaintLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
         if (posZOrderList && m_index >= 0)
             return posZOrderList->at(m_index--);
 
@@ -100,10 +99,10 @@ LayerStackingNode* LayerStackingNodeReverseIterator::next()
     return 0;
 }
 
-void LayerStackingNodeReverseIterator::setIndexToLastItem()
+void DeprecatedPaintLayerStackingNodeReverseIterator::setIndexToLastItem()
 {
     if (m_remainingChildren & NegativeZOrderChildren) {
-        Vector<LayerStackingNode*>* negZOrderList = m_root.negZOrderList();
+        Vector<DeprecatedPaintLayerStackingNode*>* negZOrderList = m_root.negZOrderList();
         if (negZOrderList) {
             m_index  = negZOrderList->size() - 1;
             return;
@@ -113,7 +112,7 @@ void LayerStackingNodeReverseIterator::setIndexToLastItem()
     }
 
     if (m_remainingChildren & NormalFlowChildren) {
-        Vector<LayerStackingNode*>* normalFlowList = m_root.normalFlowList();
+        Vector<DeprecatedPaintLayerStackingNode*>* normalFlowList = m_root.normalFlowList();
         if (normalFlowList) {
             m_index = normalFlowList->size() - 1;
             return;
@@ -123,7 +122,7 @@ void LayerStackingNodeReverseIterator::setIndexToLastItem()
     }
 
     if (m_remainingChildren & PositiveZOrderChildren) {
-        Vector<LayerStackingNode*>* posZOrderList = m_root.posZOrderList();
+        Vector<DeprecatedPaintLayerStackingNode*>* posZOrderList = m_root.posZOrderList();
         if (posZOrderList) {
             m_index = posZOrderList->size() - 1;
             return;

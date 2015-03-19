@@ -5,13 +5,15 @@
 #ifndef CompositingReasonFinder_h
 #define CompositingReasonFinder_h
 
-#include "core/layout/Layer.h"
 #include "core/layout/compositing/CompositingTriggers.h"
 #include "platform/graphics/CompositingReasons.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
+class DeprecatedPaintLayer;
 class LayoutObject;
+class LayoutStyle;
 class LayoutView;
 
 class CompositingReasonFinder {
@@ -20,7 +22,7 @@ public:
     explicit CompositingReasonFinder(LayoutView&);
 
     CompositingReasons potentialCompositingReasonsFromStyle(LayoutObject*) const;
-    CompositingReasons directReasons(const Layer*) const;
+    CompositingReasons directReasons(const DeprecatedPaintLayer*) const;
 
     void updateTriggers();
 
@@ -30,11 +32,11 @@ public:
 private:
     bool isMainFrame() const;
 
-    CompositingReasons nonStyleDeterminedDirectReasons(const Layer*) const;
+    CompositingReasons nonStyleDeterminedDirectReasons(const DeprecatedPaintLayer*) const;
 
     bool requiresCompositingForTransform(LayoutObject*) const;
     bool requiresCompositingForAnimation(const LayoutStyle&) const;
-    bool requiresCompositingForPositionFixed(const Layer*) const;
+    bool requiresCompositingForPositionFixed(const DeprecatedPaintLayer*) const;
     bool requiresCompositingForScrollBlocksOn(const LayoutObject*) const;
 
     LayoutView& m_layoutView;

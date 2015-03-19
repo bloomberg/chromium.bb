@@ -26,9 +26,9 @@
 #include "core/layout/LayoutListMarker.h"
 
 #include "core/fetch/ImageResource.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/TextRunConstructor.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/ListMarkerPainter.h"
 #include "platform/fonts/Font.h"
 #include "wtf/text/StringBuilder.h"
@@ -1628,7 +1628,7 @@ LayoutRect LayoutListMarker::selectionRectForPaintInvalidation(const LayoutBoxMo
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
     // FIXME: groupedMapping() leaks the squashing abstraction.
     if (paintInvalidationContainer->layer()->groupedMapping())
-        Layer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
+        DeprecatedPaintLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
     return rect;
 }
 

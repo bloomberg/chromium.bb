@@ -76,7 +76,7 @@ class LayoutBox : public LayoutBoxModelObject {
 public:
     explicit LayoutBox(ContainerNode*);
 
-    virtual LayerType layerTypeRequired() const override;
+    virtual DeprecatedPaintLayerType layerTypeRequired() const override;
 
     virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const override;
 
@@ -532,7 +532,7 @@ public:
 
     void removeFloatingOrPositionedChildFromBlockLists();
 
-    Layer* enclosingFloatPaintingLayer() const;
+    DeprecatedPaintLayer* enclosingFloatPaintingLayer() const;
 
     virtual int firstLineBoxBaseline() const { return -1; }
     virtual int inlineBlockBaseline(LineDirectionMode) const { return -1; } // Returns -1 if we should skip this box when computing the baseline of an inline-block.
@@ -689,7 +689,7 @@ protected:
 
     LayoutObject* splitAnonymousBoxesAroundChild(LayoutObject* beforeChild);
 
-    virtual void addLayerHitTestRects(LayerHitTestRects&, const Layer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
 
     virtual PaintInvalidationReason paintInvalidationReason(const LayoutBoxModelObject& paintInvalidationContainer,

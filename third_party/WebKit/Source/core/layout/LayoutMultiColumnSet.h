@@ -140,7 +140,7 @@ public:
     // page.
     LayoutUnit pageLogicalTopForOffset(LayoutUnit offset) const;
 
-    void collectLayerFragments(LayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
+    void collectLayerFragments(DeprecatedPaintLayerFragments&, const LayoutRect& layerBoundingBox, const LayoutRect& dirtyRect);
 
     LayoutUnit columnGap() const;
 

@@ -10,11 +10,11 @@ namespace blink {
 class GraphicsContext;
 class IntPoint;
 class IntRect;
-class LayerScrollableArea;
+class DeprecatedPaintLayerScrollableArea;
 
 class ScrollableAreaPainter {
 public:
-    ScrollableAreaPainter(LayerScrollableArea& renderLayerScrollableArea) : m_renderLayerScrollableArea(renderLayerScrollableArea) { }
+    ScrollableAreaPainter(DeprecatedPaintLayerScrollableArea& renderLayerScrollableArea) : m_scrollableArea(renderLayerScrollableArea) { }
 
     void paintResizer(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect);
     void paintOverflowControls(GraphicsContext*, const IntPoint& paintOffset, const IntRect& damageRect, bool paintingOverlayControls);
@@ -24,7 +24,7 @@ private:
     void drawPlatformResizerImage(GraphicsContext*, IntRect resizerCornerRect);
     bool overflowControlsIntersectRect(const IntRect& localRect) const;
 
-    LayerScrollableArea& m_renderLayerScrollableArea;
+    DeprecatedPaintLayerScrollableArea& m_scrollableArea;
 };
 
 } // namespace blink

@@ -13,8 +13,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
-#include "core/layout/compositing/LayerCompositor.h"
+#include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
 #include "core/page/Page.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -139,7 +138,7 @@ public:
 
     WebLayer* getRootScrollLayer()
     {
-        LayerCompositor* compositor = frame()->contentRenderer()->compositor();
+        DeprecatedPaintLayerCompositor* compositor = frame()->contentRenderer()->compositor();
         ASSERT(compositor);
         ASSERT(compositor->scrollLayer());
 

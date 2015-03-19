@@ -30,10 +30,10 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/PartPainter.h"
 #include "core/plugins/PluginView.h"
 
@@ -95,12 +95,12 @@ Widget* LayoutPart::widget() const
     return 0;
 }
 
-LayerType LayoutPart::layerTypeRequired() const
+DeprecatedPaintLayerType LayoutPart::layerTypeRequired() const
 {
-    LayerType type = LayoutReplaced::layerTypeRequired();
-    if (type != NoLayer)
+    DeprecatedPaintLayerType type = LayoutReplaced::layerTypeRequired();
+    if (type != NoDeprecatedPaintLayer)
         return type;
-    return ForcedLayer;
+    return ForcedDeprecatedPaintLayer;
 }
 
 bool LayoutPart::requiresAcceleratedCompositing() const

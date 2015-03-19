@@ -41,7 +41,7 @@ public:
 
     virtual const char* name() const override { return "LayoutScrollbarPart"; }
 
-    virtual LayerType layerTypeRequired() const override { return NoLayer; }
+    virtual DeprecatedPaintLayerType layerTypeRequired() const override { return NoDeprecatedPaintLayer; }
 
     virtual void layout() override;
 

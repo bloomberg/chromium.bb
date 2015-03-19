@@ -42,13 +42,13 @@
  */
 
 #include "config.h"
-#include "core/layout/LayerReflectionInfo.h"
+#include "core/paint/DeprecatedPaintLayerReflectionInfo.h"
 
 #include "core/frame/UseCounter.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutReplica.h"
 #include "core/layout/style/LayoutStyle.h"
-#include "core/paint/LayerPainter.h"
+#include "core/paint/DeprecatedPaintLayer.h"
+#include "core/paint/DeprecatedPaintLayerPainter.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 
@@ -56,7 +56,7 @@
 
 namespace blink {
 
-LayerReflectionInfo::LayerReflectionInfo(LayoutBox& renderer)
+DeprecatedPaintLayerReflectionInfo::DeprecatedPaintLayerReflectionInfo(LayoutBox& renderer)
     : m_box(&renderer)
     , m_isPaintingInsideReflection(false)
 {
@@ -66,7 +66,7 @@ LayerReflectionInfo::LayerReflectionInfo(LayoutBox& renderer)
     m_reflection->setParent(m_box); // We create a 1-way connection.
 }
 
-void LayerReflectionInfo::destroy()
+void DeprecatedPaintLayerReflectionInfo::destroy()
 {
     if (!m_reflection->documentBeingDestroyed())
         m_reflection->removeLayers(box().layer());
@@ -76,12 +76,12 @@ void LayerReflectionInfo::destroy()
     m_reflection = nullptr;
 }
 
-Layer* LayerReflectionInfo::reflectionLayer() const
+DeprecatedPaintLayer* DeprecatedPaintLayerReflectionInfo::reflectionLayer() const
 {
     return m_reflection->layer();
 }
 
-void LayerReflectionInfo::updateAfterStyleChange(const LayoutStyle* oldStyle)
+void DeprecatedPaintLayerReflectionInfo::updateAfterStyleChange(const LayoutStyle* oldStyle)
 {
     RefPtr<LayoutStyle> newStyle = LayoutStyle::create();
     newStyle->inheritFrom(box().styleRef());
@@ -129,14 +129,14 @@ void LayerReflectionInfo::updateAfterStyleChange(const LayoutStyle* oldStyle)
     m_reflection->setStyle(newStyle.release());
 }
 
-void LayerReflectionInfo::paint(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags flags)
+void DeprecatedPaintLayerReflectionInfo::paint(GraphicsContext* context, const DeprecatedPaintLayerPaintingInfo& paintingInfo, PaintLayerFlags flags)
 {
     if (m_isPaintingInsideReflection)
         return;
 
     // Mark that we are now inside replica painting.
     m_isPaintingInsideReflection = true;
-    LayerPainter(*reflectionLayer()).paintLayer(context, paintingInfo, flags);
+    DeprecatedPaintLayerPainter(*reflectionLayer()).paintLayer(context, paintingInfo, flags);
     m_isPaintingInsideReflection = false;
 }
 

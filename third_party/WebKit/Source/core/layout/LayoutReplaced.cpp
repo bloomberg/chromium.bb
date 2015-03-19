@@ -25,10 +25,10 @@
 #include "core/layout/LayoutReplaced.h"
 
 #include "core/editing/PositionWithAffinity.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutView.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/ReplacedPainter.h"
 #include "platform/LengthFunctions.h"
 
@@ -437,7 +437,7 @@ LayoutRect LayoutReplaced::selectionRectForPaintInvalidation(const LayoutBoxMode
     mapRectToPaintInvalidationBacking(paintInvalidationContainer, rect, 0);
     // FIXME: groupedMapping() leaks the squashing abstraction.
     if (paintInvalidationContainer->layer()->groupedMapping())
-        Layer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
+        DeprecatedPaintLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
     return rect;
 }
 

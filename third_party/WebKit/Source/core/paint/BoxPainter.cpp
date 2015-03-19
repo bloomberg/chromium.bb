@@ -9,7 +9,6 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/ImageQualityController.h"
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
@@ -17,11 +16,12 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
-#include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/layout/compositing/CompositedDeprecatedPaintLayerMapping.h"
 #include "core/layout/style/BorderEdge.h"
 #include "core/layout/style/ShadowList.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxDecorationData.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "platform/LengthFunctions.h"
@@ -801,11 +801,11 @@ bool BoxPainter::fixedBackgroundPaintsInLocalCoordinates(const LayoutObject& obj
     if (obj.view()->frameView() && obj.view()->frameView()->paintBehavior() & PaintBehaviorFlattenCompositingLayers)
         return false;
 
-    Layer* rootLayer = obj.view()->layer();
+    DeprecatedPaintLayer* rootLayer = obj.view()->layer();
     if (!rootLayer || rootLayer->compositingState() == NotComposited)
         return false;
 
-    return rootLayer->compositedLayerMapping()->backgroundLayerPaintsFixedRootBackground();
+    return rootLayer->compositedDeprecatedPaintLayerMapping()->backgroundLayerPaintsFixedRootBackground();
 }
 
 static inline void applySubPixelHeuristicForTileSize(LayoutSize& tileSize, const IntSize& positioningAreaSize)

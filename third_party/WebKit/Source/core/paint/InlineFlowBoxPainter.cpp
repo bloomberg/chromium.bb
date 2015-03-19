@@ -5,13 +5,13 @@
 #include "config.h"
 #include "core/paint/InlineFlowBoxPainter.h"
 
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 

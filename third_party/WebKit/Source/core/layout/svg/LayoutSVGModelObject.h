@@ -65,7 +65,7 @@ public:
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVG || LayoutObject::isOfType(type); }
 
 protected:
-    virtual void addLayerHitTestRects(LayerHitTestRects&, const Layer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override final;
+    virtual void addLayerHitTestRects(LayerHitTestRects&, const DeprecatedPaintLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override final;
     virtual void willBeDestroyed() override;
 
 private:

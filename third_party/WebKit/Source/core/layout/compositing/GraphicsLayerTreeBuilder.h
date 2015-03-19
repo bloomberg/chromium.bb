@@ -31,7 +31,7 @@
 
 namespace blink {
 
-class Layer;
+class DeprecatedPaintLayer;
 
 class GraphicsLayerTreeBuilder {
 public:
@@ -45,11 +45,11 @@ public:
         {
         }
 
-        Layer* enclosingCompositedLayer;
+        DeprecatedPaintLayer* enclosingCompositedLayer;
         GraphicsLayerVector* childLayersOfEnclosingCompositedLayer;
     };
 
-    void rebuild(Layer&, AncestorInfo);
+    void rebuild(DeprecatedPaintLayer&, AncestorInfo);
 };
 
 } // namespace blink

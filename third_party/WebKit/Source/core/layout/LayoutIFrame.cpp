@@ -51,10 +51,10 @@ bool LayoutIFrame::isInlineBlockOrInlineTable() const
     return isInline();
 }
 
-LayerType LayoutIFrame::layerTypeRequired() const
+DeprecatedPaintLayerType LayoutIFrame::layerTypeRequired() const
 {
     if (style()->resize() != RESIZE_NONE)
-        return NormalLayer;
+        return NormalDeprecatedPaintLayer;
     return LayoutPart::layerTypeRequired();
 }
 

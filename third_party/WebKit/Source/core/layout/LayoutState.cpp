@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/layout/LayoutState.h"
 
-#include "core/layout/Layer.h"
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
