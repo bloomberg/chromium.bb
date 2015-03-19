@@ -405,8 +405,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
         RenderWidgetResizeHelper::Get()->PostRendererProcessMsg(
             render_process_id_, message))
 #endif
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
-                        OnAllocateSharedMemory)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
+        ChildProcessHostMsg_SyncAllocateSharedMemory, OnAllocateSharedMemory)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         ChildProcessHostMsg_SyncAllocateSharedBitmap, OnAllocateSharedBitmap)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
@@ -909,11 +909,23 @@ void RenderMessageFilter::OnSaveImageFromDataURL(int render_view_id,
   DownloadUrl(render_view_id, data_url, Referrer(), base::string16(), true);
 }
 
-void RenderMessageFilter::OnAllocateSharedMemory(
+void RenderMessageFilter::AllocateSharedMemoryOnFileThread(
     uint32 buffer_size,
-    base::SharedMemoryHandle* handle) {
-  ChildProcessHostImpl::AllocateSharedMemory(
-      buffer_size, PeerHandle(), handle);
+    IPC::Message* reply_msg) {
+  base::SharedMemoryHandle handle;
+  ChildProcessHostImpl::AllocateSharedMemory(buffer_size, PeerHandle(),
+                                             &handle);
+  ChildProcessHostMsg_SyncAllocateSharedMemory::WriteReplyParams(reply_msg,
+                                                                 handle);
+  Send(reply_msg);
+}
+
+void RenderMessageFilter::OnAllocateSharedMemory(uint32 buffer_size,
+                                                 IPC::Message* reply_msg) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
+      base::Bind(&RenderMessageFilter::AllocateSharedMemoryOnFileThread, this,
+                 buffer_size, reply_msg));
 }
 
 void RenderMessageFilter::AllocateSharedBitmapOnFileThread(
