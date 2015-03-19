@@ -14,24 +14,12 @@
 
 using content::WebContents;
 
-// Test crashes on Aura due to initiator's native view having no parent.
-// http://crbug.com/104284
-#if defined(USE_AURA)
-#define MAYBE_GetOrCreatePreviewDialog DISABLED_GetOrCreatePreviewDialog
-#define MAYBE_MultiplePreviewDialogs DISABLED_MultiplePreviewDialogs
-#define MAYBE_ClearInitiatorDetails DISABLED_ClearInitiatorDetails
-#else
-#define MAYBE_GetOrCreatePreviewDialog GetOrCreatePreviewDialog
-#define MAYBE_MultiplePreviewDialogs MultiplePreviewDialogs
-#define MAYBE_ClearInitiatorDetails ClearInitiatorDetails
-#endif
-
 namespace printing {
 
 typedef PrintPreviewTest PrintPreviewDialogControllerUnitTest;
 
 // Create/Get a preview dialog for initiator.
-TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_GetOrCreatePreviewDialog) {
+TEST_F(PrintPreviewDialogControllerUnitTest, GetOrCreatePreviewDialog) {
   // Lets start with one window with one tab.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
@@ -69,7 +57,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_GetOrCreatePreviewDialog) {
 // Tests multiple print preview dialogs exist in the same browser for different
 // initiators. If a preview dialog already exists for an initiator, that
 // initiator gets focused.
-TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_MultiplePreviewDialogs) {
+TEST_F(PrintPreviewDialogControllerUnitTest, MultiplePreviewDialogs) {
   // Lets start with one window and two tabs.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
@@ -133,7 +121,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_MultiplePreviewDialogs) {
 
 // Check clearing the initiator details associated with a print preview dialog
 // allows the initiator to create another print preview dialog.
-TEST_F(PrintPreviewDialogControllerUnitTest, MAYBE_ClearInitiatorDetails) {
+TEST_F(PrintPreviewDialogControllerUnitTest, ClearInitiatorDetails) {
   // Lets start with one window with one tab.
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   EXPECT_EQ(0, browser()->tab_strip_model()->count());
