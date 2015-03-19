@@ -896,14 +896,6 @@ Status ChromiumEnv::NewWritableFile(const std::string& fname,
 
 Status ChromiumEnv::NewAppendableFile(const std::string& fname,
                                       leveldb::WritableFile** result) {
-#if defined(OS_CHROMEOS)
-  // Disabled until crbug.com/460568 is fixed. Technically this method shouldn't
-  // be called if reuse_logs is false, but a leveldb bug (fixed, but not yet in
-  // Chrome) still calls this function. Using default leveldb Env implementation
-  // to workaround this bug.
-  return Env::NewAppendableFile(fname, result);
-#endif
-
   *result = NULL;
   FilePath path = FilePath::FromUTF8Unsafe(fname);
   scoped_ptr<base::File> f(new base::File(
