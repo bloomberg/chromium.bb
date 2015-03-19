@@ -63,7 +63,8 @@ void HTMLParserThread::setupHTMLParserThread()
 void HTMLParserThread::shutdown()
 {
     ASSERT(s_sharedThread);
-    if (s_sharedThread->isRunning()) {
+    // currentThread will always be non-null in production, but can be null in Chromium unit tests.
+    if (blink::Platform::current()->currentThread() && s_sharedThread->isRunning()) {
         s_sharedThread->postTask(WTF::bind(&HTMLParserThread::cleanupHTMLParserThread, s_sharedThread));
     }
     delete s_sharedThread;
