@@ -97,6 +97,8 @@ NDK_DIR=
 NO_PULL_LIBS=
 PACKAGE_NAME=
 PID=
+PRIVILEGED=
+PRIVILEGED_INDEX=
 PROGRAM_NAME="activity"
 PULL_LIBS=
 PULL_LIBS_DIR=
@@ -144,6 +146,13 @@ for opt; do
       ;;
     --pid=*)
       PID=$optarg
+      ;;
+    --privileged)
+      PRIVILEGED=true
+      ;;
+    --privileged=*)
+      PRIVILEGED=true
+      PRIVILEGED_INDEX=$optarg
       ;;
     --program-name=*)
       PROGRAM_NAME=$optarg
@@ -236,8 +245,9 @@ EOF
   cat <<EOF
 
 This script is used to debug a running $PROGRAM_NAME process.
-This can be a regular Android application process, or a sandboxed
-service, if you use the --sandboxed or --sandboxed=<num> option.
+This can be a regular Android application process, sandboxed (if you use the
+--sandboxed or --sandboxed=<num> option) or a privileged (--privileged or
+--privileged=<num>) service.
 
 This script needs several things to work properly. It will try to pick
 them up automatically for you though:
@@ -304,6 +314,8 @@ Valid options:
   --symbol-dir=<path>   Specify directory with symbol shared libraries.
   --out-dir=<path>      Specify the out directory.
   --package-name=<name> Specify package name (alternative to 1st argument).
+  --privileged          Debug first privileged process we find.
+  --privileged=<num>    Debug specific privileged process.
   --program-name=<name> Specify program name (cosmetic only).
   --pid=<pid>           Specify application process pid.
   --force               Kill any previous debugging session, if any.
@@ -818,6 +830,12 @@ if [ -z "$PID" ]; then
     PROCESSNAME=$PROCESSNAME:sandboxed_process
     PID=$(adb_shell ps | \
           awk '$9 ~ /^'$PROCESSNAME'/ { print $2; }' | head -1)
+  elif [ "$PRIVILEGED_INDEX" ]; then
+    PROCESSNAME=$PROCESSNAME:privileged_process$PRIVILEGED_INDEX
+  elif [ "$PRIVILEGED" ]; then
+    PROCESSNAME=$PROCESSNAME:privileged_process
+    PID=$(adb_shell ps | \
+          awk '$9 ~ /^'$PROCESSNAME'/ { print $2; }' | head -1)
   fi
   if [ -z "$PID" ]; then
     PID=$(adb_shell ps | \
@@ -834,6 +852,8 @@ running? Try using --start."
   log "Found process PID: $PID"
 elif [ "$SANDBOXED" ]; then
   echo "WARNING: --sandboxed option ignored due to use of --pid."
+elif [ "$PRIVILEGED" ]; then
+  echo "WARNING: --privileged option ignored due to use of --pid."
 fi
 
 # Determine if 'adb shell' runs as root or not.
