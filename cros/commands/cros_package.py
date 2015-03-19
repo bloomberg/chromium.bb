@@ -151,6 +151,8 @@ To enable building a package from latest or stable ebuilds:
   def _ReadOptions(self):
     """Process arguments and set variables, then freeze options."""
     if not self.options.brick:
+      if not self.curr_brick_locator:
+        cros_build_lib.Die('Brick not specified nor discovered')
       self.options.brick = self.curr_brick_locator
     try:
       self.brick = brick_lib.Brick(self.options.brick)
