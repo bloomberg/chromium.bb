@@ -9,7 +9,6 @@ from __future__ import print_function
 import collections
 import errno
 import hashlib
-import logging
 import os
 import re
 import string
@@ -18,6 +17,7 @@ from xml import sax
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import retry_util
 

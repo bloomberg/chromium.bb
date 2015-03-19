@@ -6,11 +6,11 @@
 
 from __future__ import print_function
 
-import logging
 import sys
 import time
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 
 
 def GenericRetry(handler, max_retry, functor, *args, **kwargs):

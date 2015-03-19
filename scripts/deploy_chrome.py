@@ -21,7 +21,6 @@ import collections
 import contextlib
 import functools
 import glob
-import logging
 import multiprocessing
 import os
 import optparse
@@ -33,8 +32,9 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.cros.commands import cros_chrome_sdk
 from chromite.lib import chrome_util
-from chromite.lib import cros_build_lib
 from chromite.lib import commandline
+from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel

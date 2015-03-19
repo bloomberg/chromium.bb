@@ -11,10 +11,9 @@ a VM. It starts a VM and runs `cros flash` to update the VM, and then
 
 from __future__ import print_function
 
-import logging
-
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import remote_access
 from chromite.lib import vm

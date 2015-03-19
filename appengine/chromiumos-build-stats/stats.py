@@ -4,9 +4,10 @@
 
 import datetime
 import json
-import logging
 import os
 import re
+
+from chromite.lib import cros_logging as logging
 
 from google.appengine.api import datastore_errors
 from google.appengine.ext import db

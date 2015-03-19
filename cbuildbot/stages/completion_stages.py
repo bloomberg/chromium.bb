@@ -6,8 +6,6 @@
 
 from __future__ import print_function
 
-import logging
-
 from chromite.cbuildbot import chroot_lib
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import cbuildbot_config
@@ -21,6 +19,7 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import portage_util
 

@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import contextlib
 import cPickle
-import logging
 import mock
 import multiprocessing
 import os
@@ -26,12 +25,12 @@ except ImportError:
   import queue as Queue
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import partial_mock
 from chromite.lib import timeout_util
-
 
 
 # pylint: disable=protected-access

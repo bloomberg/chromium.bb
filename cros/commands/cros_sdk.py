@@ -6,13 +6,12 @@
 
 from __future__ import print_function
 
-import logging
-
 from chromite import cros
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.lib import bootstrap_lib
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import project_sdk
 from chromite.lib import workspace_lib

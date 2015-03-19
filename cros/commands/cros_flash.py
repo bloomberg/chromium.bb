@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import cStringIO
-import logging
 import os
 import shutil
 import tempfile
@@ -18,6 +17,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper as ds_wrapper
 from chromite.lib import osutils
 from chromite.lib import project_sdk

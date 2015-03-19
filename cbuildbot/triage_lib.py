@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import ConfigParser
 import glob
-import logging
 import os
 import pprint
 
@@ -16,6 +15,7 @@ from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import osutils

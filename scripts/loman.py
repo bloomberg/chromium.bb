@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import logging
 import platform
 import optparse
 import os
@@ -14,6 +13,7 @@ import sys
 import xml.etree.ElementTree as ElementTree
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 
 

@@ -6,7 +6,7 @@
 
 from __future__ import print_function
 
-import logging
+from chromite.lib import cros_logging as logging
 
 
 class DryRunMgr(object):

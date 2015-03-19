@@ -9,7 +9,6 @@ from __future__ import print_function
 import ConfigParser
 import contextlib
 import datetime
-import logging
 import os
 import shutil
 import sys
@@ -34,6 +33,7 @@ from chromite.cbuildbot.stages import build_stages
 from chromite.lib import clactions
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch

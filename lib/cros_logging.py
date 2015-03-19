@@ -15,10 +15,17 @@ from __future__ import print_function
 from logging import *
 # pylint: enable=unused-wildcard-import, wildcard-import
 
+# Have to import shutdown explicitly from logging because it is not included
+# in logging's __all__.
+# pylint: disable=unused-import
+from logging import shutdown
+# pylint: enable=unused-import
+
 
 # Notice Level.
 NOTICE = 25
 addLevelName(NOTICE, 'NOTICE')
+
 
 # Notice implementation.
 def notice(message, *args, **kwargs):

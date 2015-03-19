@@ -30,9 +30,9 @@ the creating server.
 from __future__ import print_function
 
 import datetime
-import logging
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 
 

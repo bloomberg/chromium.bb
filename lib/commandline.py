@@ -14,7 +14,6 @@ import argparse
 import collections
 import datetime
 import functools
-import logging
 import os
 import optparse
 import signal
@@ -26,6 +25,7 @@ import urlparse
 # lib shouldn't have to import from buildbot like this.
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils

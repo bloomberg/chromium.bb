@@ -9,7 +9,6 @@ from __future__ import print_function
 import glob
 import itertools
 import json
-import logging
 import multiprocessing
 import os
 import shutil
@@ -21,6 +20,7 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel

@@ -16,7 +16,6 @@ from __future__ import print_function
 import ConfigParser
 import itertools
 import json
-import logging
 import os
 import shutil
 import socket
@@ -29,6 +28,7 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
 from chromite.lib import retry_util
 from chromite.lib.paygen import download_cache
@@ -39,6 +39,7 @@ from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import urilib
 from chromite.lib.paygen import utils
+
 
 # For crostools access.
 sys.path.insert(0, constants.SOURCE_ROOT)

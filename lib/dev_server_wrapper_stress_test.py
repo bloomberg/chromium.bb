@@ -10,9 +10,9 @@ dev_server_wrapper. Even very rare hangs will cause significant build flake.
 
 from __future__ import print_function
 
-import logging
-
+from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper
+
 
 _ITERATIONS = 10000
 

@@ -15,11 +15,11 @@ See cros/command/cros_XXX.py for actual command implementations.
 
 from __future__ import print_function
 
-import logging
 import sys
 
 from chromite.cros import commands
 from chromite.lib import commandline
+from chromite.lib import cros_logging as logging
 from chromite.lib import stats
 
 

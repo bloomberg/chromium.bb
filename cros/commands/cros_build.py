@@ -7,14 +7,14 @@
 from __future__ import print_function
 
 import os
-import logging
 
+from chromite import cros
 from chromite.cbuildbot import constants
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
-from chromite import cros
 
 if cros_build_lib.IsInsideChroot():
   # These import libraries outside chromite. See brbug.com/472.

@@ -20,13 +20,13 @@ from __future__ import print_function
 import collections
 import httplib
 import json
-import logging
 import math
 import os
 import string
 import urllib
 import urllib2
 
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import retry_util
 

@@ -10,7 +10,6 @@ Used to check in a LKGM version for Chrome OS for other consumers.
 from __future__ import print_function
 
 import distutils.version
-import logging
 import os
 
 from chromite.cbuildbot import archive_lib
@@ -20,6 +19,7 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gclient
 from chromite.lib import gs
 from chromite.lib import osutils

@@ -9,7 +9,6 @@ from __future__ import print_function
 import cPickle
 import fnmatch
 import glob
-import logging
 import os
 import re
 import shutil
@@ -20,6 +19,7 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils

@@ -7,12 +7,12 @@
 from __future__ import print_function
 
 import collections
-import logging
 import mock
 import os
 import re
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
 

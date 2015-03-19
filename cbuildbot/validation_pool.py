@@ -14,7 +14,6 @@ import contextlib
 import cPickle
 import functools
 import httplib
-import logging
 import os
 import random
 import sys
@@ -28,6 +27,7 @@ from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import triage_lib
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import gob_util

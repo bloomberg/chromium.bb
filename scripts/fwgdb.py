@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import errno
-import logging
 import os
 import re
 import signal
@@ -17,6 +16,7 @@ import time
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 
@@ -30,6 +30,7 @@ cros_build_lib.AssertInsideChroot()
 from servo import client
 from servo import multiservo
 # pylint: enable=import-error
+
 
 _SRC_ROOT = os.path.join(constants.CHROOT_SOURCE_ROOT, 'src')
 _SRC_DC = os.path.join(_SRC_ROOT, 'platform/depthcharge')

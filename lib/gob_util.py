@@ -14,7 +14,6 @@ import cookielib
 import datetime
 import httplib
 import json
-import logging
 import netrc
 import os
 import socket
@@ -23,6 +22,7 @@ import urlparse
 from cStringIO import StringIO
 
 from chromite.cbuildbot import constants
+from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
 
 

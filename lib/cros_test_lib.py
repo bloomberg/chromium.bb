@@ -15,7 +15,6 @@ import exceptions
 import functools
 import hashlib
 import json
-import logging
 import mock
 import mox
 import netrc
@@ -32,6 +31,7 @@ import urllib
 from chromite.cbuildbot import constants
 from chromite.lib import cidb
 from chromite.lib import commandline
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import graphite
 import cros_build_lib
@@ -39,6 +39,7 @@ import gob_util
 import osutils
 import terminal
 import timeout_util
+
 
 # Unit tests should never connect to the live prod or debug instances
 # of the cidb. This call ensures that they will not accidentally

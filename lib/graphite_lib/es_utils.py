@@ -66,9 +66,10 @@ from __future__ import print_function
 
 import collections
 import json
-import logging
 import socket
 import time
+
+from chromite.lib import cros_logging as logging
 
 try:
   import elasticsearch

@@ -9,7 +9,6 @@ from __future__ import print_function
 import cStringIO
 import collections
 import itertools
-import logging
 import magic
 import mimetypes
 import os
@@ -18,6 +17,7 @@ import stat
 import unittest
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import filetype
 from chromite.lib import osutils
 from chromite.lib import perf_uploader

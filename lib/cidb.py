@@ -9,7 +9,6 @@ from __future__ import print_function
 import collections
 import datetime
 import glob
-import logging
 import os
 import re
 try:
@@ -23,10 +22,12 @@ except ImportError:
       '`sudo apt-get install python-sqlalchemy` or similar.')
 
 from chromite.cbuildbot import constants
-from chromite.lib import retry_stats
 from chromite.lib import clactions
+from chromite.lib import cros_logging as logging
 from chromite.lib import factory
 from chromite.lib import osutils
+from chromite.lib import retry_stats
+
 
 CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
                                    'migrations')

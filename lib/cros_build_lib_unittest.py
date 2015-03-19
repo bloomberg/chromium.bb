@@ -12,7 +12,6 @@ import difflib
 import errno
 import functools
 import itertools
-import logging
 import mock
 import os
 import signal
@@ -25,8 +24,9 @@ import __builtin__
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
-from chromite.lib import git
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
+from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import retry_util

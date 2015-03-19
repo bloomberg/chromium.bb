@@ -12,13 +12,13 @@ elementary project more easily.
 
 from __future__ import print_function
 
-import logging
 import os
 
 from chromite import cros
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import portage_util
 

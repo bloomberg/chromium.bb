@@ -120,14 +120,15 @@ in http://crbug.com/271832 .
 
 from __future__ import print_function
 
-import logging
 import os
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
 from chromite.licensing import licenses_lib
+
 
 EXTRA_LICENSES_DIR = os.path.join(licenses_lib.SCRIPT_DIR,
                                   'extra_package_licenses')

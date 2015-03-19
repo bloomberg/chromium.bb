@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import logging
 import os
 import re
 import shutil
@@ -15,6 +14,7 @@ import time
 import threading
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths

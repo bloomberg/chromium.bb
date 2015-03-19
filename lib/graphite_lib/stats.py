@@ -6,7 +6,7 @@
 
 from __future__ import print_function
 
-import logging
+from chromite.lib import cros_logging as logging
 
 
 # Autotest uses this library and can not guarantee existence of the statsd

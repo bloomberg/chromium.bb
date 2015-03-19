@@ -10,7 +10,6 @@ import collections
 import contextlib
 import errno
 import functools
-import logging
 import multiprocessing
 import os
 try:
@@ -31,6 +30,7 @@ from multiprocessing.managers import SyncManager
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import signals
 from chromite.lib import timeout_util

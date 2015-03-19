@@ -13,7 +13,6 @@ import ctypes
 import ctypes.util
 import datetime
 import errno
-import logging
 import operator
 import os
 import pwd
@@ -22,6 +21,7 @@ import shutil
 import tempfile
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
 
 

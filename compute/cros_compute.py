@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import logging
 import os
 
 from chromite.compute import bot_constants
@@ -14,6 +13,7 @@ from chromite.compute import compute_configs
 from chromite.compute import gcloud
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 

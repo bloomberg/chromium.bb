@@ -6,17 +6,18 @@
 
 from __future__ import print_function
 
-import Queue
+from contextlib import contextmanager
 import datetime
 import itertools
-import logging
 import os
+import Queue
 import subprocess
 import tempfile
 import threading
 import time
 import traceback
-from contextlib import contextmanager
+
+from chromite.lib import cros_logging as logging
 
 
 # Give preference to /usr/local/google/tmp for space reasons.

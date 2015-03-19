@@ -13,7 +13,6 @@ from __future__ import print_function
 import distutils.version
 import glob
 import json
-import logging
 import mock
 import optparse
 import os
@@ -36,6 +35,7 @@ from chromite.lib import cgroups
 from chromite.lib import cleanup
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import graphite
 from chromite.lib import gob_util

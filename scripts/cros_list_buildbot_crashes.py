@@ -10,7 +10,6 @@ import collections
 import contextlib
 import datetime
 import multiprocessing
-import logging
 import optparse
 import os
 import re
@@ -20,6 +19,7 @@ from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
 
 

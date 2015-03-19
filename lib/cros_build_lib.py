@@ -16,7 +16,6 @@ import functools
 import getpass
 import hashlib
 import inspect
-import logging
 import operator
 import os
 import pprint
@@ -31,6 +30,7 @@ import traceback
 import types
 
 from chromite.cbuildbot import constants
+from chromite.lib import cros_logging as logging
 from chromite.lib import signals
 
 

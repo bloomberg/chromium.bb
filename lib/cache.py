@@ -6,13 +6,13 @@
 
 from __future__ import print_function
 
-import logging
 import os
 import shutil
 import tempfile
 import urlparse
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import retry_util

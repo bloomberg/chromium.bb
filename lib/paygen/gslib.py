@@ -9,10 +9,10 @@ from __future__ import print_function
 import base64
 import datetime
 import errno
-import logging
 import os
 import re
 
+from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib.paygen import filelib

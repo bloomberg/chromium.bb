@@ -7,12 +7,12 @@
 from __future__ import print_function
 
 import json
-import logging
 import re
 import time
 import urllib
 
 from chromite.cbuildbot import constants
+from chromite.lib import cros_logging as logging
 
 
 logger = logging.getLogger('chromite')

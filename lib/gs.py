@@ -12,7 +12,6 @@ import datetime
 import errno
 import getpass
 import hashlib
-import logging
 import os
 import re
 import tempfile
@@ -21,6 +20,7 @@ import urlparse
 from chromite.cbuildbot import constants
 from chromite.lib import cache
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import retry_stats
 from chromite.lib import retry_util

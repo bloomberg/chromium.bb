@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import logging
 import os
 import sys
 
@@ -22,6 +21,7 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import graphite
 from chromite.lib import gs
 from chromite.lib import osutils

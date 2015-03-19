@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import logging
 import os
 import unittest
 
@@ -14,6 +13,7 @@ from chromite.cbuildbot import constants
 from chromite.cros.tests import image_test
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
 

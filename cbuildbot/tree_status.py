@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import httplib
 import json
-import logging
 import os
 import re
 import socket
@@ -18,6 +17,7 @@ import urllib2
 from chromite.cbuildbot import constants
 from chromite.lib import alerts
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 

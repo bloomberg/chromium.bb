@@ -7,12 +7,12 @@
 from __future__ import print_function
 
 import constants
-import logging
 import os
 import re
 import shutil
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import rewrite_git_alternates

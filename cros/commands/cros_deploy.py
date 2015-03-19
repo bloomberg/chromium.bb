@@ -9,12 +9,12 @@ from __future__ import print_function
 import fnmatch
 import json
 import os
-import logging
 
 from chromite import cros
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import portage_util
 from chromite.lib import project_sdk
 from chromite.lib import remote_access

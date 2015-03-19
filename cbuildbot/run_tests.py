@@ -13,7 +13,6 @@ You can add a .testignore file to a dir to disable scanning it.
 from __future__ import print_function
 
 import errno
-import logging
 import multiprocessing
 import os
 import signal
@@ -25,6 +24,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import cgroups
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import namespaces
 from chromite.lib import osutils
 from chromite.lib import proctitle

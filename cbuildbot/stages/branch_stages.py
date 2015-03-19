@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 
-import logging
 import os
 import re
 from xml.etree import ElementTree
@@ -15,6 +14,7 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import parallel
 

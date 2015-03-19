@@ -15,7 +15,6 @@ from __future__ import print_function
 
 import datetime
 import glob
-import logging
 import os
 import random
 import time
@@ -25,6 +24,7 @@ from chromite.cbuildbot import metadata_lib
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel

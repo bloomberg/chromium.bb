@@ -7,11 +7,11 @@
 from __future__ import print_function
 
 import argparse
-import logging
 
 from chromite import cros
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import remote_access
 

@@ -8,9 +8,9 @@ from __future__ import print_function
 
 import array
 import errno
-import logging
 import os
 
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
 

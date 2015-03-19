@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import httplib
-import logging
 import os
 import re
 import shutil
@@ -16,6 +15,7 @@ import urllib2
 from chromite import cros
 from chromite.cbuildbot import commands, constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import dev_server_wrapper
 from chromite.lib import gs
 from chromite.lib import remote_access

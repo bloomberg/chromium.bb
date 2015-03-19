@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import glob
-import logging
 import os
 import shutil
 import socket
@@ -16,6 +15,7 @@ import tempfile
 import time
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import timeout_util
 

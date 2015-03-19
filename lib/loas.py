@@ -13,12 +13,12 @@ If you don't know what any of this means, then you don't need this module :).
 from __future__ import print_function
 
 import datetime
-import logging
 import re
 import socket
 
 from chromite.lib import alerts
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 
 
 class LoasError(Exception):

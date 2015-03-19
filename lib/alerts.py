@@ -7,16 +7,17 @@
 from __future__ import print_function
 
 import cStringIO
-from email.mime.application import MIMEApplication
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 import gzip
-import logging
 import smtplib
 import socket
 import sys
 
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
 
 

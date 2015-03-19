@@ -15,7 +15,6 @@ are part of the prebuilt package.
 from __future__ import print_function
 
 import argparse
-import logging
 import os
 import pickle
 import sys
@@ -26,6 +25,7 @@ from chromite.lib import binpkg
 from chromite.lib import cache
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import gs

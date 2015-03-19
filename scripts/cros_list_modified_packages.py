@@ -23,7 +23,6 @@ Some caveats:
 from __future__ import print_function
 
 import errno
-import logging
 import multiprocessing
 import os
 try:
@@ -38,6 +37,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
