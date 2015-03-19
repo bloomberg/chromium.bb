@@ -1286,7 +1286,7 @@ InjectedScript.RemoteObject = function(object, objectGroupName, doNotBind, force
         this.className = className;
     this.description = injectedScript._describe(object);
 
-    if (generatePreview && this.type === "object")
+    if (generatePreview && this.type === "object" && this.subtype !== "node")
         this.preview = this._generatePreview(object, undefined, columnNames, isTable, skipEntriesPreview);
 
     if (injectedScript._customObjectFormatterEnabled) {
