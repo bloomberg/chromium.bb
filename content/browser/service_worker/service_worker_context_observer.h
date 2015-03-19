@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_OBSERVER_H_
 
 #include "base/strings/string16.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -43,8 +44,16 @@ class ServiceWorkerContextObserver {
     const int line_number;
     const GURL source_url;
   };
-  virtual void OnRunningStateChanged(int64 version_id) {}
-  virtual void OnVersionStateChanged(int64 version_id) {}
+  virtual void OnNewLiveRegistration(int64 registration_id,
+                                     const GURL& pattern) {}
+  virtual void OnNewLiveVersion(int64 version_id,
+                                int64 registration_id,
+                                const GURL& script_url) {}
+  virtual void OnRunningStateChanged(
+      int64 version_id,
+      ServiceWorkerVersion::RunningStatus running_status) {}
+  virtual void OnVersionStateChanged(int64 version_id,
+                                     ServiceWorkerVersion::Status status) {}
   virtual void OnErrorReported(int64 version_id,
                                int process_id,
                                int thread_id,

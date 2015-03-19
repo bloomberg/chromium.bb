@@ -75,12 +75,12 @@ void ServiceWorkerRegistration::NotifyUpdateFound() {
 ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return ServiceWorkerRegistrationInfo(
-      pattern(),
-      registration_id_,
+      pattern(), registration_id_,
+      is_deleted_ ? ServiceWorkerRegistrationInfo::IS_DELETED
+                  : ServiceWorkerRegistrationInfo::IS_NOT_DELETED,
       GetVersionInfo(active_version_.get()),
       GetVersionInfo(waiting_version_.get()),
-      GetVersionInfo(installing_version_.get()),
-      resources_total_size_bytes_);
+      GetVersionInfo(installing_version_.get()), resources_total_size_bytes_);
 }
 
 void ServiceWorkerRegistration::SetActiveVersion(

@@ -1270,6 +1270,8 @@
       'browser/service_worker/service_worker_context_observer.h',
       'browser/service_worker/service_worker_context_request_handler.cc',
       'browser/service_worker/service_worker_context_request_handler.h',
+      'browser/service_worker/service_worker_context_watcher.cc',
+      'browser/service_worker/service_worker_context_watcher.h',
       'browser/service_worker/service_worker_context_wrapper.cc',
       'browser/service_worker/service_worker_context_wrapper.h',
       'browser/service_worker/service_worker_controllee_request_handler.cc',

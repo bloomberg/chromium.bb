@@ -157,7 +157,8 @@ class WorkerActivatedObserver
     RunOnIOThread(base::Bind(&WorkerActivatedObserver::InitOnIOThread, this));
   }
   // ServiceWorkerContextObserver overrides.
-  void OnVersionStateChanged(int64 version_id) override {
+  void OnVersionStateChanged(int64 version_id,
+                             ServiceWorkerVersion::Status) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     const ServiceWorkerVersion* version =
         context_->context()->GetLiveVersion(version_id);

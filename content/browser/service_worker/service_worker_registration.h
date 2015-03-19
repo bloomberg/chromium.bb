@@ -19,8 +19,8 @@
 
 namespace content {
 
-class ServiceWorkerRegistrationInfo;
 class ServiceWorkerVersion;
+struct ServiceWorkerRegistrationInfo;
 
 // This class represents a Service Worker registration. The scope is constant
 // for the life of the persistent registration. It's refcounted to facilitate

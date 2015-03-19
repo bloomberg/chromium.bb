@@ -304,13 +304,15 @@ class ServiceWorkerInternalsUI::PartitionObserver
       : partition_id_(partition_id), web_ui_(web_ui) {}
   ~PartitionObserver() override {}
   // ServiceWorkerContextObserver overrides:
-  void OnRunningStateChanged(int64 version_id) override {
+  void OnRunningStateChanged(int64 version_id,
+                             ServiceWorkerVersion::RunningStatus) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunction(
         "serviceworker.onRunningStateChanged", FundamentalValue(partition_id_),
         StringValue(base::Int64ToString(version_id)));
   }
-  void OnVersionStateChanged(int64 version_id) override {
+  void OnVersionStateChanged(int64 version_id,
+                             ServiceWorkerVersion::Status) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     web_ui_->CallJavascriptFunction(
         "serviceworker.onVersionStateChanged",

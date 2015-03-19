@@ -347,6 +347,11 @@ void ServiceWorkerContextCore::AddLiveRegistration(
     ServiceWorkerRegistration* registration) {
   DCHECK(!GetLiveRegistration(registration->id()));
   live_registrations_[registration->id()] = registration;
+  if (observer_list_.get()) {
+    observer_list_->Notify(FROM_HERE,
+                           &ServiceWorkerContextObserver::OnNewLiveRegistration,
+                           registration->id(), registration->pattern());
+  }
 }
 
 void ServiceWorkerContextCore::RemoveLiveRegistration(int64 id) {
@@ -363,6 +368,12 @@ void ServiceWorkerContextCore::AddLiveVersion(ServiceWorkerVersion* version) {
   DCHECK(!GetLiveVersion(version->version_id()));
   live_versions_[version->version_id()] = version;
   version->AddListener(this);
+  if (observer_list_.get()) {
+    observer_list_->Notify(FROM_HERE,
+                           &ServiceWorkerContextObserver::OnNewLiveVersion,
+                           version->version_id(), version->registration_id(),
+                           version->script_url());
+  }
 }
 
 void ServiceWorkerContextCore::RemoveLiveVersion(int64 id) {
@@ -461,7 +472,7 @@ void ServiceWorkerContextCore::OnRunningStateChanged(
     return;
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextObserver::OnRunningStateChanged,
-                         version->version_id());
+                         version->version_id(), version->running_status());
 }
 
 void ServiceWorkerContextCore::OnVersionStateChanged(
@@ -470,7 +481,7 @@ void ServiceWorkerContextCore::OnVersionStateChanged(
     return;
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextObserver::OnVersionStateChanged,
-                         version->version_id());
+                         version->version_id(), version->status());
 }
 
 void ServiceWorkerContextCore::OnErrorReported(

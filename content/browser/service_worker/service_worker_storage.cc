@@ -1128,10 +1128,12 @@ void ServiceWorkerStorage::DidGetRegistrations(
       info.active_version.status = ServiceWorkerVersion::ACTIVATED;
       info.active_version.script_url = registration_data.script;
       info.active_version.version_id = registration_data.version_id;
+      info.active_version.registration_id = registration_data.registration_id;
     } else {
       info.waiting_version.status = ServiceWorkerVersion::INSTALLED;
       info.waiting_version.script_url = registration_data.script;
       info.waiting_version.version_id = registration_data.version_id;
+      info.waiting_version.registration_id = registration_data.registration_id;
     }
     infos.push_back(info);
   }

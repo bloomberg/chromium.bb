@@ -42,18 +42,31 @@ ServiceWorkerVersionInfo::~ServiceWorkerVersionInfo() {}
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo()
     : registration_id(kInvalidServiceWorkerRegistrationId),
+      delete_flag(IS_NOT_DELETED),
       stored_version_size_bytes(0) {
 }
 
 ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
     const GURL& pattern,
     int64 registration_id,
+    DeleteFlag delete_flag)
+    : pattern(pattern),
+      registration_id(registration_id),
+      delete_flag(delete_flag),
+      stored_version_size_bytes(0) {
+}
+
+ServiceWorkerRegistrationInfo::ServiceWorkerRegistrationInfo(
+    const GURL& pattern,
+    int64 registration_id,
+    DeleteFlag delete_flag,
     const ServiceWorkerVersionInfo& active_version,
     const ServiceWorkerVersionInfo& waiting_version,
     const ServiceWorkerVersionInfo& installing_version,
     int64_t stored_version_size_bytes)
     : pattern(pattern),
       registration_id(registration_id),
+      delete_flag(delete_flag),
       active_version(active_version),
       waiting_version(waiting_version),
       installing_version(installing_version),

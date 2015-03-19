@@ -13,7 +13,7 @@
 
 namespace content {
 
-class CONTENT_EXPORT ServiceWorkerVersionInfo {
+struct CONTENT_EXPORT ServiceWorkerVersionInfo {
  public:
   ServiceWorkerVersionInfo();
   ServiceWorkerVersionInfo(ServiceWorkerVersion::RunningStatus running_status,
@@ -36,12 +36,17 @@ class CONTENT_EXPORT ServiceWorkerVersionInfo {
   int devtools_agent_route_id;
 };
 
-class CONTENT_EXPORT ServiceWorkerRegistrationInfo {
+struct CONTENT_EXPORT ServiceWorkerRegistrationInfo {
  public:
+  enum DeleteFlag { IS_NOT_DELETED, IS_DELETED };
   ServiceWorkerRegistrationInfo();
+  ServiceWorkerRegistrationInfo(const GURL& pattern,
+                                int64 registration_id,
+                                DeleteFlag delete_flag);
   ServiceWorkerRegistrationInfo(
       const GURL& pattern,
       int64 registration_id,
+      DeleteFlag delete_flag,
       const ServiceWorkerVersionInfo& active_version,
       const ServiceWorkerVersionInfo& waiting_version,
       const ServiceWorkerVersionInfo& installing_version,
@@ -50,6 +55,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationInfo {
 
   GURL pattern;
   int64 registration_id;
+  DeleteFlag delete_flag;
   ServiceWorkerVersionInfo active_version;
   ServiceWorkerVersionInfo waiting_version;
   ServiceWorkerVersionInfo installing_version;

@@ -49,10 +49,10 @@ class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerURLRequestJob;
-class ServiceWorkerVersionInfo;
 struct NavigatorConnectClient;
 struct PlatformNotificationData;
 struct ServiceWorkerClientInfo;
+struct ServiceWorkerVersionInfo;
 struct TransferredMessagePort;
 
 // This class corresponds to a specific version of a ServiceWorker

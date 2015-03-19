@@ -38,10 +38,10 @@ namespace content {
 class ServiceWorkerContextCore;
 class ServiceWorkerDiskCache;
 class ServiceWorkerRegistration;
-class ServiceWorkerRegistrationInfo;
 class ServiceWorkerResponseMetadataWriter;
 class ServiceWorkerResponseReader;
 class ServiceWorkerResponseWriter;
+struct ServiceWorkerRegistrationInfo;
 
 // This class provides an interface to store and retrieve ServiceWorker
 // registration data.

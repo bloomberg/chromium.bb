@@ -157,9 +157,12 @@ class GeofencingManagerTest : public testing::Test {
     EXPECT_FALSE(called);
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);
-
-    return make_scoped_refptr(new ServiceWorkerRegistration(
-        pattern, registration_id, helper_->context()->AsWeakPtr()));
+    scoped_refptr<ServiceWorkerRegistration> worker(
+        new ServiceWorkerRegistration(pattern, registration_id,
+                                      helper_->context()->AsWeakPtr()));
+    // ServiceWorkerRegistration posts a notification task on construction.
+    base::RunLoop().RunUntilIdle();
+    return worker;
   }
 
   void UnregisterServiceWorker(

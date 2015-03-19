@@ -23,6 +23,7 @@
 namespace content {
 
 class RenderFrameHostImpl;
+class ServiceWorkerContextWatcher;
 class ServiceWorkerContextWrapper;
 
 namespace devtools {
@@ -54,8 +55,6 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) override;
 
  private:
-  class ContextObserver;
-
   // DevToolsAgentHostClient overrides.
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override;
@@ -69,14 +68,13 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
   void OnWorkerVersionUpdated(
       const std::vector<ServiceWorkerVersionInfo>& registrations);
-  void OnWorkerRegistrationDeleted(int64 registration_id);
 
   scoped_refptr<ServiceWorkerContextWrapper> context_;
   scoped_ptr<Client> client_;
   ServiceWorkerDevToolsAgentHost::Map attached_hosts_;
   bool enabled_;
   std::set<GURL> urls_;
-  scoped_refptr<ContextObserver> context_observer_;
+  scoped_refptr<ServiceWorkerContextWatcher> context_watcher_;
   RenderFrameHostImpl* render_frame_host_;
 
   base::WeakPtrFactory<ServiceWorkerHandler> weak_factory_;

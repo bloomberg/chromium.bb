@@ -5,14 +5,16 @@
 #include "content/browser/devtools/protocol/service_worker_handler.h"
 
 #include "base/bind.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/service_worker/service_worker_context_observer.h"
+#include "content/browser/service_worker/service_worker_context_watcher.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -32,17 +34,29 @@ namespace service_worker {
 
 namespace {
 
+const char kServiceWorkerVersionRunningStatusStopped[] = "stopped";
+const char kServiceWorkerVersionRunningStatusStarting[] = "starting";
+const char kServiceWorkerVersionRunningStatusRunning[] = "running";
+const char kServiceWorkerVersionRunningStatusStopping[] = "stopping";
+
+const char kServiceWorkerVersionStatusNew[] = "new";
+const char kServiceWorkerVersionStatusInstalling[] = "installing";
+const char kServiceWorkerVersionStatusInstalled[] = "installed";
+const char kServiceWorkerVersionStatusActivating[] = "activating";
+const char kServiceWorkerVersionStatusActivated[] = "activated";
+const char kServiceWorkerVersionStatusRedundant[] = "redundant";
+
 const std::string GetVersionRunningStatusString(
     content::ServiceWorkerVersion::RunningStatus running_status) {
   switch (running_status) {
     case content::ServiceWorkerVersion::STOPPED:
-      return service_worker_version::kRunningStatusStopped;
+      return kServiceWorkerVersionRunningStatusStopped;
     case content::ServiceWorkerVersion::STARTING:
-      return service_worker_version::kRunningStatusStarting;
+      return kServiceWorkerVersionRunningStatusStarting;
     case content::ServiceWorkerVersion::RUNNING:
-      return service_worker_version::kRunningStatusRunning;
+      return kServiceWorkerVersionRunningStatusRunning;
     case content::ServiceWorkerVersion::STOPPING:
-      return service_worker_version::kRunningStatusStopping;
+      return kServiceWorkerVersionRunningStatusStopping;
   }
   return "";
 }
@@ -51,17 +65,17 @@ const std::string GetVersionStatusString(
     content::ServiceWorkerVersion::Status status) {
   switch (status) {
     case content::ServiceWorkerVersion::NEW:
-      return service_worker_version::kStatusNew;
+      return kServiceWorkerVersionStatusNew;
     case content::ServiceWorkerVersion::INSTALLING:
-      return service_worker_version::kStatusInstalling;
+      return kServiceWorkerVersionStatusInstalling;
     case content::ServiceWorkerVersion::INSTALLED:
-      return service_worker_version::kStatusInstalled;
+      return kServiceWorkerVersionStatusInstalled;
     case content::ServiceWorkerVersion::ACTIVATING:
-      return service_worker_version::kStatusActivating;
+      return kServiceWorkerVersionStatusActivating;
     case content::ServiceWorkerVersion::ACTIVATED:
-      return service_worker_version::kStatusActivated;
+      return kServiceWorkerVersionStatusActivated;
     case content::ServiceWorkerVersion::REDUNDANT:
-      return service_worker_version::kStatusRedundant;
+      return kServiceWorkerVersionStatusRedundant;
   }
   return "";
 }
@@ -86,22 +100,9 @@ scoped_refptr<ServiceWorkerRegistration> CreateRegistrationDictionaryValue(
       ServiceWorkerRegistration::Create()
           ->set_registration_id(
                 base::Int64ToString(registration_info.registration_id))
-          ->set_scope_url(registration_info.pattern.spec()));
-  if (registration_info.active_version.version_id !=
-      kInvalidServiceWorkerVersionId) {
-    registration->set_active_version(
-        CreateVersionDictionaryValue(registration_info.active_version));
-  }
-  if (registration_info.waiting_version.version_id !=
-      kInvalidServiceWorkerVersionId) {
-    registration->set_waiting_version(
-        CreateVersionDictionaryValue(registration_info.waiting_version));
-  }
-  if (registration_info.installing_version.version_id !=
-      kInvalidServiceWorkerVersionId) {
-    registration->set_installing_version(
-        CreateVersionDictionaryValue(registration_info.installing_version));
-  }
+          ->set_scope_url(registration_info.pattern.spec())
+          ->set_is_deleted(registration_info.delete_flag ==
+                           ServiceWorkerRegistrationInfo::IS_DELETED));
   return registration;
 }
 
@@ -147,157 +148,6 @@ bool CollectURLs(std::set<GURL>* urls, FrameTreeNode* tree_node) {
 }  // namespace
 
 using Response = DevToolsProtocolClient::Response;
-
-class ServiceWorkerHandler::ContextObserver
-    : public ServiceWorkerContextObserver,
-      public base::RefCountedThreadSafe<ContextObserver> {
- public:
-  ContextObserver(scoped_refptr<ServiceWorkerContextWrapper> context,
-                  base::WeakPtr<ServiceWorkerHandler> handler);
-  void Start();
-  void Stop();
-
- private:
-  friend class base::RefCountedThreadSafe<ContextObserver>;
-  ~ContextObserver() override;
-  void GetStoredRegistrationsOnIOThread();
-  void OnStoredRegistrationsOnIOThread(
-      const std::vector<ServiceWorkerRegistrationInfo>& registrations);
-  void StopOnIOThread();
-
-  void OnVersionUpdated(int64 version_id);
-  void OnRegistrationUpdated(int64 registration_id);
-
-  // ServiceWorkerContextObserver implements
-  void OnRunningStateChanged(int64 version_id) override;
-  void OnVersionStateChanged(int64 version_id) override;
-  void OnRegistrationStored(int64 registration_id,
-                            const GURL& pattern) override;
-  void OnRegistrationDeleted(int64 registration_id,
-                             const GURL& pattern) override;
-
-  scoped_refptr<ServiceWorkerContextWrapper> context_;
-  base::WeakPtr<ServiceWorkerHandler> handler_;
-};
-
-ServiceWorkerHandler::ContextObserver::ContextObserver(
-    scoped_refptr<ServiceWorkerContextWrapper> context,
-    base::WeakPtr<ServiceWorkerHandler> handler)
-    : context_(context), handler_(handler) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
-void ServiceWorkerHandler::ContextObserver::Start() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&ServiceWorkerHandler::ContextObserver::
-                                         GetStoredRegistrationsOnIOThread,
-                                     this));
-}
-
-void ServiceWorkerHandler::ContextObserver::Stop() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ServiceWorkerHandler::ContextObserver::StopOnIOThread, this));
-}
-
-void ServiceWorkerHandler::ContextObserver::GetStoredRegistrationsOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  context_->context()->storage()->GetAllRegistrations(base::Bind(
-      &ServiceWorkerHandler::ContextObserver::OnStoredRegistrationsOnIOThread,
-      this));
-}
-
-void ServiceWorkerHandler::ContextObserver::OnStoredRegistrationsOnIOThread(
-    const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  context_->AddObserver(this);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ServiceWorkerHandler::OnWorkerRegistrationUpdated, handler_,
-                 registrations));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ServiceWorkerHandler::OnWorkerRegistrationUpdated, handler_,
-                 context_->context()->GetAllLiveRegistrationInfo()));
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ServiceWorkerHandler::OnWorkerVersionUpdated, handler_,
-                 context_->context()->GetAllLiveVersionInfo()));
-}
-
-void ServiceWorkerHandler::ContextObserver::StopOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  context_->RemoveObserver(this);
-}
-
-ServiceWorkerHandler::ContextObserver::~ContextObserver() {
-}
-
-void ServiceWorkerHandler::ContextObserver::OnVersionUpdated(int64 version_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  content::ServiceWorkerVersion* version =
-      context_->context()->GetLiveVersion(version_id);
-  if (!version)
-    return;
-  OnRegistrationUpdated(version->registration_id());
-  std::vector<ServiceWorkerVersionInfo> versions;
-  versions.push_back(version->GetInfo());
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ServiceWorkerHandler::OnWorkerVersionUpdated, handler_,
-                 versions));
-}
-
-void ServiceWorkerHandler::ContextObserver::OnRegistrationUpdated(
-    int64 registration_id) {
-  content::ServiceWorkerRegistration* registration =
-      context_->context()->GetLiveRegistration(registration_id);
-  if (!registration)
-    return;
-  std::vector<ServiceWorkerRegistrationInfo> registrations;
-  registrations.push_back(registration->GetInfo());
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ServiceWorkerHandler::OnWorkerRegistrationUpdated, handler_,
-                 registrations));
-}
-
-void ServiceWorkerHandler::ContextObserver::OnRunningStateChanged(
-    int64 version_id) {
-  OnVersionUpdated(version_id);
-}
-
-void ServiceWorkerHandler::ContextObserver::OnVersionStateChanged(
-    int64 version_id) {
-  OnVersionUpdated(version_id);
-}
-
-void ServiceWorkerHandler::ContextObserver::OnRegistrationStored(
-    int64 registration_id,
-    const GURL& pattern) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  content::ServiceWorkerRegistration* registration =
-      context_->context()->GetLiveRegistration(registration_id);
-  DCHECK(registration);
-  std::vector<ServiceWorkerRegistrationInfo> registrations;
-  registrations.push_back(registration->GetInfo());
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ServiceWorkerHandler::OnWorkerRegistrationUpdated, handler_,
-                 registrations));
-}
-
-void ServiceWorkerHandler::ContextObserver::OnRegistrationDeleted(
-    int64 registration_id,
-    const GURL& pattern) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ServiceWorkerHandler::OnWorkerRegistrationDeleted, handler_,
-                 registration_id));
-}
 
 ServiceWorkerHandler::ServiceWorkerHandler()
     : enabled_(false), weak_factory_(this) {
@@ -364,8 +214,14 @@ Response ServiceWorkerHandler::Enable() {
   enabled_ = true;
 
   ServiceWorkerDevToolsManager::GetInstance()->AddObserver(this);
-  context_observer_ = new ContextObserver(context_, weak_factory_.GetWeakPtr());
-  context_observer_->Start();
+
+  context_watcher_ = new ServiceWorkerContextWatcher(
+      context_, base::Bind(&ServiceWorkerHandler::OnWorkerRegistrationUpdated,
+                           weak_factory_.GetWeakPtr()),
+      base::Bind(&ServiceWorkerHandler::OnWorkerVersionUpdated,
+                 weak_factory_.GetWeakPtr()));
+  context_watcher_->Start();
+
   UpdateHosts();
   return Response::OK();
 }
@@ -379,9 +235,9 @@ Response ServiceWorkerHandler::Disable() {
   for (const auto& pair : attached_hosts_)
     pair.second->DetachClient();
   attached_hosts_.clear();
-  DCHECK(context_observer_);
-  context_observer_->Stop();
-  context_observer_ = nullptr;
+  DCHECK(context_watcher_);
+  context_watcher_->Stop();
+  context_watcher_ = nullptr;
   return Response::OK();
 }
 
@@ -424,12 +280,6 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
   }
   client_->WorkerVersionUpdated(
       WorkerVersionUpdatedParams::Create()->set_versions(version_values));
-}
-
-void ServiceWorkerHandler::OnWorkerRegistrationDeleted(int64 registration_id) {
-  client_->WorkerRegistrationDeleted(
-      WorkerRegistrationDeletedParams::Create()->set_registration_id(
-          base::Int64ToString(registration_id)));
 }
 
 void ServiceWorkerHandler::DispatchProtocolMessage(
