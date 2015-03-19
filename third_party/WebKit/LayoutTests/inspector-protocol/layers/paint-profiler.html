@@ -26,7 +26,7 @@ function test()
     function gotLayerTree(layers)
     {
         var matchingLayers = layers.filter(function(layer) { return !!(layer.backendNodeId && layer.transform); });
-        InspectorTest.assertEquals(1, matchingLayers.length);
+        InspectorTest.log("matchingLayers.length: " + matchingLayers.length);
         var layerId = matchingLayers[0].layerId;
 
         InspectorTest.sendCommand("LayerTree.makeSnapshot", {"layerId": layerId}, InspectorTest.wrapCallback(gotSnapshot));
@@ -40,17 +40,17 @@ function test()
     function gotProfile(result)
     {
         var timings = result.timings;
-        InspectorTest.assertEquals(4, result.timings.length, "invalid profile array length");
+        InspectorTest.log("Profile array length: " + result.timings.length);
         for (var i = 0; i < result.timings.length; ++i) {
-            InspectorTest.assertEquals(result.timings[0].length, result.timings[i].length, "invalid profile subarray length");
+            InspectorTest.log("Profile subarray " + i + " length: " + result.timings[i].length);
             for (var j = 0; j < result.timings[i].length; ++j)
-                InspectorTest.assert(result.timings[i][j] >= 0, "profile timing is not a number");
+                InspectorTest.log("Profile timing [" + i + "][" + j + "] is a number: " + (result.timings[i][j] >= 0));
         }
         InspectorTest.sendCommand("LayerTree.replaySnapshot", {"snapshotId": snapshotId, "fromStep": 2, "toStep": result.timings[0].length - 2}, InspectorTest.wrapCallback(replayedSnapshot));
     }
     function replayedSnapshot(result)
     {
-        InspectorTest.assert(/^data:image\/png;base64,/, "invalid image returned from LayerTree.replaySnapshot");
+        InspectorTest.log("LayerTree.replaySnapshot returned valid image: " + /^data:image\/png;base64,/.test(result.dataURL));
         InspectorTest.log("DONE!");
         InspectorTest.completeTest();
     }

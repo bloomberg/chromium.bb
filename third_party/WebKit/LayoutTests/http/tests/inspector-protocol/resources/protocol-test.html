@@ -277,21 +277,6 @@ InspectorTest.checkExpectation = function(fail, name, messageObject)
 InspectorTest.expectedSuccess = InspectorTest.checkExpectation.bind(null, false);
 InspectorTest.expectedError = InspectorTest.checkExpectation.bind(null, true);
 
-InspectorTest.assert = function(condition, message)
-{
-    if (condition)
-        return;
-    InspectorTest.log("FAIL: assertion failed: " + message);
-    InspectorTest.completeTest();
-}
-
-InspectorTest.assertEquals = function(expected, actual, message)
-{
-    if (expected === actual)
-        return;
-    InspectorTest.assert(false, "expected: `" + expected + "', actual: `" + actual + "'" + (message ? ", " + message : ""));
-}
-
 /**
  * @param {string} scriptName
  */

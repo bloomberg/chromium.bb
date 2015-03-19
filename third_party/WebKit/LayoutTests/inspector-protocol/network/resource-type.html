@@ -69,8 +69,7 @@ function test()
     {
         for (var i = 0; i < resources.length; ++i) {
             var resource = resources[i];
-            InspectorTest.log("Resource " + resource.url + " got type " + resource.gotType);
-            InspectorTest.assertEquals(resource.type, resource.gotType);
+            InspectorTest.log("Resource " + resource.url + " got type: " + resource.gotType +  ", type: " + resource.type);
         }
         InspectorTest.completeTest();
     }

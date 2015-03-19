@@ -36,8 +36,8 @@ function test()
         var raf1 = InspectorTest.findEvent("RequestAnimationFrame", "I", hasRafId.bind(this, firedRaf));
         var raf2 = InspectorTest.findEvent("RequestAnimationFrame", "I", hasRafId.bind(this, canceledRaf));
 
-        InspectorTest.assert(!!raf1.args.data.frame, "RequestAnimationFrame frame");
-        InspectorTest.assertEquals(raf1.args.data.frame, raf2.args.data.frame, "RequestAnimationFrame frame match");
+        InspectorTest.log("RequestAnimationFrame has frame: " + !!raf1.args.data.frame);
+        InspectorTest.log("RequestAnimationFrame frames match: " + (raf1.args.data.frame === raf2.args.data.frame));
 
         InspectorTest.findEvent("CancelAnimationFrame", "I", hasRafId.bind(this, canceledRaf));
         InspectorTest.findEvent("FireAnimationFrame", "X", hasRafId.bind(this, firedRaf));

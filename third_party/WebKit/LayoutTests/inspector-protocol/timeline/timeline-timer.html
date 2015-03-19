@@ -37,8 +37,8 @@ function test()
         var installTimer1 = InspectorTest.findEvent("TimerInstall", "I", hasTimerId.bind(this, firedTimerId));
         var installTimer2 = InspectorTest.findEvent("TimerInstall", "I", hasTimerId.bind(this, removedTimerId));
 
-        InspectorTest.assert(!!installTimer1.args.data.frame, "TimerInstall frame");
-        InspectorTest.assertEquals(installTimer1.args.data.frame, installTimer2.args.data.frame, "TimerInstall frame match");
+        InspectorTest.log("TimerInstall has frame: " + !!installTimer1.args.data.frame);
+        InspectorTest.log("TimerInstall frames match: " + (installTimer1.args.data.frame === installTimer2.args.data.frame));
 
         InspectorTest.findEvent("TimerRemove", "I", hasTimerId.bind(this, removedTimerId));
         InspectorTest.findEvent("TimerFire", "X", hasTimerId.bind(this, firedTimerId));

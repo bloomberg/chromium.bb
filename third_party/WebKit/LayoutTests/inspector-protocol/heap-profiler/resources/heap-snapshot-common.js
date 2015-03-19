@@ -16,12 +16,6 @@ InspectorTest.fail = function(message)
     InspectorTest.completeTest();
 }
 
-InspectorTest.assert = function(result, message)
-{
-    if (!result)
-        InspectorTest.fail(message);
-}
-
 InspectorTest.takeHeapSnapshot = function(callback)
 {
     var chunks = [];

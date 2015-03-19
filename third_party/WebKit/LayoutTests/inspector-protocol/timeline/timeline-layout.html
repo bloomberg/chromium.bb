@@ -27,23 +27,23 @@ function test()
         var schedRecalc = InspectorTest.findEvent("ScheduleStyleRecalculation", "I");
         var recalcBegin = InspectorTest.findEvent("RecalculateStyles", "B");
         var recalcEnd = InspectorTest.findEvent("RecalculateStyles", "E");
-        InspectorTest.assertEquals(schedRecalc.args.data.frame, recalcBegin.args.beginData.frame, "RecalculateStyles frame");
-        InspectorTest.assert(recalcEnd.args.elementCount > 0, "RecalculateStyles elementCount");
+        InspectorTest.log("RecalculateStyles frames match: " + (schedRecalc.args.data.frame === recalcBegin.args.beginData.frame));
+        InspectorTest.log("RecalculateStyles elementCount > 0: " + (recalcEnd.args.elementCount > 0));
 
         var invalidate = InspectorTest.findEvent("InvalidateLayout", "I");
         var layoutBegin = InspectorTest.findEvent("Layout", "B");
         var layoutEnd = InspectorTest.findEvent("Layout", "E");
 
-        InspectorTest.assertEquals(recalcBegin.args.beginData.frame, invalidate.args.data.frame, "InvalidateLayout frame");
+        InspectorTest.log("InvalidateLayout frames match: " + (recalcBegin.args.beginData.frame === invalidate.args.data.frame));
 
         var beginData = layoutBegin.args.beginData;
-        InspectorTest.assertEquals(invalidate.args.data.frame, beginData.frame, "Layout frame");
-        InspectorTest.assert(beginData.dirtyObjects > 0, "dirtyObjects");
-        InspectorTest.assert(beginData.totalObjects > 0, "totalObjects");
+        InspectorTest.log("Layout frames match: " + (invalidate.args.data.frame === beginData.frame));
+        InspectorTest.log("dirtyObjects > 0: " + (beginData.dirtyObjects > 0));
+        InspectorTest.log("totalObjects > 0: " + (beginData.totalObjects > 0));
 
         var endData = layoutEnd.args.endData;
-        InspectorTest.assert(endData.rootNode > 0, "rootNode id");
-        InspectorTest.assert(!!endData.root , "root quad");
+        InspectorTest.log("has rootNode id: " + (endData.rootNode > 0));
+        InspectorTest.log("has root quad: " + !!endData.root);
 
         InspectorTest.log("SUCCESS: found all expected events.");
         InspectorTest.completeTest();

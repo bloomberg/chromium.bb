@@ -13,12 +13,12 @@ function test()
         var payload = data.params.message;
 
         if (messages.length > 0)
-            InspectorTest.assert(payload.timestamp >= messages[messages.length - 1].timestamp, "Timestamp shouldn't decrease over time.");
+            InspectorTest.log("Message " + messages.length + " has non-decreasing timestamp: " + (payload.timestamp >= messages[messages.length - 1].timestamp));
 
         messages.push(payload);
-        InspectorTest.assert(payload.timestamp, "No timestamp found in message.");
+        InspectorTest.log("Message has timestamp: " + !!payload.timestamp);
 
-        InspectorTest.assert(Math.abs(new Date().getTime() / 1000 - payload.timestamp) < 60, "Timestamp shouldn't differ very much from current time (one minute interval).");
+        InspectorTest.log("Message timestamp doesn't differ too much from current time (one minute interval): " + (Math.abs(new Date().getTime() / 1000 - payload.timestamp) < 60));
         if (messages.length === 3)
             InspectorTest.completeTest();
     }
