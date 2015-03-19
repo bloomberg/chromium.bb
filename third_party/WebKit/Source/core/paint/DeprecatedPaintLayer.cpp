@@ -2059,18 +2059,28 @@ bool DeprecatedPaintLayer::hitTestContents(const HitTestRequest& request, HitTes
         return false;
     }
 
-    // For positioned generated content, we might still not have a
-    // node by the time we get to the layer level, since none of
-    // the content in the layer has an element. So just walk up
-    // the tree.
     if (!result.innerNode() || !result.innerNonSharedNode()) {
+        // We hit something anonymous, and we didn't find a DOM node ancestor in this layer.
+
+        if (layoutObject()->isLayoutFlowThread()) {
+            // For a flow thread it's safe to just say that we didn't hit anything. That means that
+            // we'll continue as normally, and eventually hit a column set sibling instead. Column
+            // sets are also anonymous, but, unlike flow threads, they don't establish layers, so
+            // we'll fall back and hit the multicol container parent (which should have a DOM node).
+            return false;
+        }
+
         Node* e = enclosingElement();
         if (!result.innerNode())
             result.setInnerNode(e);
         if (!result.innerNonSharedNode())
             result.setInnerNonSharedNode(e);
+        // FIXME: missing call to result.setLocalPoint(). What we would really want to do here is to
+        // return and look for the nearest non-anonymous ancestor, and ignore aunts and uncles on
+        // our way. It's bad to look for it manually like we do here, and give up on setting a local
+        // point in the result, because that has bad implications for text selection and
+        // caretRangeFromPoint(). See crbug.com/461791
     }
-
     return true;
 }
 
