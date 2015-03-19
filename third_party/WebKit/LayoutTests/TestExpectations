@@ -52,8 +52,6 @@ crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer
 crbug.com/454866 virtual/slimmingpaint/fast/multicol/border-radius-clipped-layer.html [ ImageOnlyFailure ]
 
 # Incorrect cull rects cause failure when we raster via SkPicture
-crbug.com/460198 virtual/slimmingpaint/fast/css/outline-narrowLine.html [ ImageOnlyFailure Pass ]
-crbug.com/460198 virtual/slimmingpaint/fast/borders/outline-alpha-inline.html [ ImageOnlyFailure Pass ]
 crbug.com/460198 virtual/slimmingpaint/fast/text/emphasis.html [ ImageOnlyFailure Pass ]
 crbug.com/460198 virtual/slimmingpaint/fast/text/text-transform-upper-lithuanian.html [ ImageOnlyFailure Pass ]
 crbug.com/460198 virtual/slimmingpaint/fast/text/emphasis-vertical.html [ ImageOnlyFailure Pass ]

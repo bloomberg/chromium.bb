@@ -66,9 +66,13 @@ void InlinePainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
     Color outlineColor = m_layoutInline.resolveColor(styleToUse, CSSPropertyOutlineColor);
     bool useTransparencyLayer = outlineColor.hasAlpha();
 
+    int outlineWidth = styleToUse.outlineWidth();
     LayoutRect bounds;
-    for (const auto& rect : rects)
-        bounds.unite(rect);
+    for (const auto& rect : rects) {
+        LayoutRect rectCopy(rect);
+        rectCopy.expand(LayoutSize(outlineWidth, outlineWidth));
+        bounds.unite(rectCopy);
+    }
     bounds.moveBy(paintOffset);
 
     LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutInline, paintInfo.phase, bounds);
