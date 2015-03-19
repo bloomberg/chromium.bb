@@ -188,6 +188,7 @@ MessageChannel::MessageChannel(PepperPluginInstanceImpl* instance)
       plugin_message_queue_state_(WAITING_TO_START),
       var_converter_(instance->pp_instance(),
                      V8VarConverter::kDisallowObjectVars),
+      template_cache_(instance->GetIsolate()),
       weak_ptr_factory_(this) {
 }
 
@@ -217,13 +218,13 @@ v8::Local<v8::Value> MessageChannel::GetNamedProperty(
 
   PepperTryCatchV8 try_catch(instance_, &var_converter_, isolate);
   if (identifier == kPostMessage) {
-    return gin::CreateFunctionTemplate(isolate,
-        base::Bind(&MessageChannel::PostMessageToNative,
-                   weak_ptr_factory_.GetWeakPtr()))->GetFunction();
+    return GetFunctionTemplate(isolate, identifier,
+                               &MessageChannel::PostMessageToNative)
+        ->GetFunction();
   } else if (identifier == kPostMessageAndAwaitResponse) {
-    return gin::CreateFunctionTemplate(isolate,
-        base::Bind(&MessageChannel::PostBlockingMessageToNative,
-                   weak_ptr_factory_.GetWeakPtr()))->GetFunction();
+    return GetFunctionTemplate(isolate, identifier,
+                               &MessageChannel::PostBlockingMessageToNative)
+        ->GetFunction();
   }
 
   std::map<std::string, ScopedPPVar>::const_iterator it =
@@ -466,6 +467,19 @@ void MessageChannel::UnregisterSyncMessageStatusObserver() {
     unregister_observer_callback_.Run();
     unregister_observer_callback_.Reset();
   }
+}
+
+v8::Local<v8::FunctionTemplate> MessageChannel::GetFunctionTemplate(
+    v8::Isolate* isolate,
+    const std::string& name,
+    void (MessageChannel::*memberFuncPtr)(gin::Arguments* args)) {
+  v8::Local<v8::FunctionTemplate> function_template = template_cache_.Get(name);
+  if (!function_template.IsEmpty())
+    return function_template;
+  function_template = gin::CreateFunctionTemplate(
+      isolate, base::Bind(memberFuncPtr, weak_ptr_factory_.GetWeakPtr()));
+  template_cache_.Set(name, function_template);
+  return function_template;
 }
 
 }  // namespace content

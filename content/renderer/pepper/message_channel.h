@@ -18,6 +18,7 @@
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/shared_impl/resource.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
+#include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 
 struct PP_Var;
@@ -142,6 +143,11 @@ class MessageChannel :
 
   void UnregisterSyncMessageStatusObserver();
 
+  v8::Local<v8::FunctionTemplate> GetFunctionTemplate(
+      v8::Isolate* isolate,
+      const std::string& name,
+      void (MessageChannel::*memberFuncPtr)(gin::Arguments* args));
+
   PepperPluginInstanceImpl* instance_;
 
   // We pass all non-postMessage calls through to the passthrough_object_.
@@ -185,6 +191,8 @@ class MessageChannel :
   // A callback to invoke at shutdown to ensure we unregister ourselves as
   // Observers for sync messages.
   base::Closure unregister_observer_callback_;
+
+  v8::StdPersistentValueMap<std::string, v8::FunctionTemplate> template_cache_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

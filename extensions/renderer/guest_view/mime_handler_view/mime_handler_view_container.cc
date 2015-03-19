@@ -50,9 +50,15 @@ class ScriptableObject : public gin::Wrappable<ScriptableObject>,
       v8::Isolate* isolate,
       const std::string& identifier) override {
     if (identifier == kPostMessageName) {
-      return gin::CreateFunctionTemplate(isolate,
-          base::Bind(&MimeHandlerViewContainer::PostMessage,
-                     container_, isolate))->GetFunction();
+      if (post_message_function_template_.IsEmpty()) {
+        post_message_function_template_.Reset(
+            isolate,
+            gin::CreateFunctionTemplate(
+                isolate, base::Bind(&MimeHandlerViewContainer::PostMessage,
+                                    container_, isolate)));
+      }
+      return v8::Local<v8::FunctionTemplate>::New(
+                 isolate, post_message_function_template_)->GetFunction();
     }
     return v8::Local<v8::Value>();
   }
@@ -71,6 +77,7 @@ class ScriptableObject : public gin::Wrappable<ScriptableObject>,
   }
 
   base::WeakPtr<MimeHandlerViewContainer> container_;
+  v8::Persistent<v8::FunctionTemplate> post_message_function_template_;
 };
 
 // static
