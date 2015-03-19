@@ -443,6 +443,49 @@ TEST(FileTest, Seek) {
   EXPECT_EQ(kOffset, file.Seek(base::File::FROM_END, -kOffset));
 }
 
+TEST(FileTest, Duplicate) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath file_path = temp_dir.path().AppendASCII("file");
+  File file(file_path,(base::File::FLAG_CREATE |
+                       base::File::FLAG_READ |
+                       base::File::FLAG_WRITE));
+  ASSERT_TRUE(file.IsValid());
+
+  File file2(file.Duplicate());
+  ASSERT_TRUE(file2.IsValid());
+
+  // Write through one handle, close it, read through the other.
+  static const char kData[] = "now is a good time.";
+  static const int kDataLen = sizeof(kData) - 1;
+
+  ASSERT_EQ(0, file.Seek(base::File::FROM_CURRENT, 0));
+  ASSERT_EQ(0, file2.Seek(base::File::FROM_CURRENT, 0));
+  ASSERT_EQ(kDataLen, file.WriteAtCurrentPos(kData, kDataLen));
+  ASSERT_EQ(kDataLen, file.Seek(base::File::FROM_CURRENT, 0));
+  ASSERT_EQ(kDataLen, file2.Seek(base::File::FROM_CURRENT, 0));
+  file.Close();
+  char buf[kDataLen];
+  ASSERT_EQ(kDataLen, file2.Read(0, &buf[0], kDataLen));
+  ASSERT_EQ(std::string(kData, kDataLen), std::string(&buf[0], kDataLen));
+}
+
+TEST(FileTest, DuplicateDeleteOnClose) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath file_path = temp_dir.path().AppendASCII("file");
+  File file(file_path,(base::File::FLAG_CREATE |
+                       base::File::FLAG_READ |
+                       base::File::FLAG_WRITE |
+                       base::File::FLAG_DELETE_ON_CLOSE));
+  ASSERT_TRUE(file.IsValid());
+  File file2(file.Duplicate());
+  ASSERT_TRUE(file2.IsValid());
+  file.Close();
+  file2.Close();
+  ASSERT_FALSE(base::PathExists(file_path));
+}
+
 #if defined(OS_WIN)
 TEST(FileTest, GetInfoForDirectory) {
   base::ScopedTempDir temp_dir;

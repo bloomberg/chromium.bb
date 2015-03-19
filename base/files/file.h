@@ -288,6 +288,13 @@ class BASE_EXPORT File {
   // Unlock a file previously locked.
   Error Unlock();
 
+  // Returns a new object referencing this file for use within the current
+  // process. Handling of FLAG_DELETE_ON_CLOSE varies by OS. On POSIX, the File
+  // object that was created or initialized with this flag will have unlinked
+  // the underlying file when it was created or opened. On Windows, the
+  // underlying file is deleted when the last handle to it is closed.
+  File Duplicate();
+
   bool async() const { return async_; }
 
 #if defined(OS_WIN)

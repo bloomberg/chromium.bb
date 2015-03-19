@@ -463,6 +463,20 @@ File::Error File::Unlock() {
   return CallFctnlFlock(file_.get(), false);
 }
 
+File File::Duplicate() {
+  if (!IsValid())
+    return File();
+
+  PlatformFile other_fd = dup(GetPlatformFile());
+  if (other_fd == -1)
+    return File(OSErrorToFileError(errno));
+
+  File other(other_fd);
+  if (async())
+    other.async_ = true;
+  return other.Pass();
+}
+
 // Static.
 File::Error File::OSErrorToFileError(int saved_errno) {
   switch (saved_errno) {

@@ -309,6 +309,28 @@ File::Error File::Unlock() {
   return FILE_OK;
 }
 
+File File::Duplicate() {
+  if (!IsValid())
+    return File();
+
+  HANDLE other_handle = nullptr;
+
+  if (!::DuplicateHandle(GetCurrentProcess(),  // hSourceProcessHandle
+                         GetPlatformFile(),
+                         GetCurrentProcess(),  // hTargetProcessHandle
+                         &other_handle,
+                         0,  // dwDesiredAccess ignored due to SAME_ACCESS
+                         FALSE,  // !bInheritHandle
+                         DUPLICATE_SAME_ACCESS)) {
+    return File(OSErrorToFileError(GetLastError()));
+  }
+
+  File other(other_handle);
+  if (async())
+    other.async_ = true;
+  return other.Pass();
+}
+
 // Static.
 File::Error File::OSErrorToFileError(DWORD last_error) {
   switch (last_error) {
