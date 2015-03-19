@@ -221,12 +221,12 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
 
   // Set up the canvas.
   PPB_ImageData_API* image = static_cast<PPB_ImageData_API*>(enter.object());
-  SkCanvas* canvas = image->GetPlatformCanvas();
+  SkCanvas* canvas = image->GetCanvas();
   bool needs_unmapping = false;
   if (!canvas) {
     needs_unmapping = true;
     image->Map();
-    canvas = image->GetPlatformCanvas();
+    canvas = image->GetCanvas();
     if (!canvas)
       return PP_ERROR_FAILED;  // Failure mapping.
   }
