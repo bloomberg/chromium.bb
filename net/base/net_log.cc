@@ -5,6 +5,9 @@
 #include "net/base/net_log.h"
 
 #include "base/bind.h"
+#ifdef TEMP_INSTRUMENTATION_467797
+#include "base/debug/alias.h"
+#endif
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -398,8 +401,22 @@ void NetLog::AddEntry(EventType type,
   FOR_EACH_OBSERVER(ThreadSafeObserver, observers_, OnAddEntryData(entry_data));
 }
 
+BoundNetLog::~BoundNetLog() {
+#ifdef TEMP_INSTRUMENTATION_467797
+  liveness_ = DEAD;
+  stack_trace_ = base::debug::StackTrace();
+
+  // Probably not necessary, but just in case compiler tries to optimize out the
+  // writes to liveness_ and stack_trace_.
+  base::debug::Alias(&liveness_);
+  base::debug::Alias(&stack_trace_);
+#endif
+}
+
 void BoundNetLog::AddEntry(NetLog::EventType type,
                            NetLog::EventPhase phase) const {
+  CrashIfInvalid();
+
   if (!net_log_)
     return;
   net_log_->AddEntry(type, source_, phase, NULL);
@@ -409,6 +426,8 @@ void BoundNetLog::AddEntry(
     NetLog::EventType type,
     NetLog::EventPhase phase,
     const NetLog::ParametersCallback& get_parameters) const {
+  CrashIfInvalid();
+
   if (!net_log_)
     return;
   net_log_->AddEntry(type, source_, phase, &get_parameters);
@@ -471,6 +490,8 @@ void BoundNetLog::AddByteTransferEvent(NetLog::EventType event_type,
 }
 
 NetLog::LogLevel BoundNetLog::GetLogLevel() const {
+  CrashIfInvalid();
+
   if (net_log_)
     return net_log_->GetLogLevel();
   return NetLog::LOG_NONE;
@@ -492,6 +513,24 @@ BoundNetLog BoundNetLog::Make(NetLog* net_log,
 
   NetLog::Source source(source_type, net_log->NextID());
   return BoundNetLog(source, net_log);
+}
+
+void BoundNetLog::CrashIfInvalid() const {
+#ifdef TEMP_INSTRUMENTATION_467797
+  Liveness liveness = liveness_;
+
+  if (liveness == ALIVE)
+    return;
+
+  // Copy relevant variables onto the stack to guarantee they will be available
+  // in minidumps, and then crash.
+  base::debug::StackTrace stack_trace = stack_trace_;
+
+  base::debug::Alias(&liveness);
+  base::debug::Alias(&stack_trace);
+
+  CHECK_EQ(ALIVE, liveness);
+#endif
 }
 
 }  // namespace net
