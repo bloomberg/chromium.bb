@@ -40,6 +40,8 @@ source_set("lib") {
     "blink_resource_constants.h",
     "blink_url_request_type_converters.cc",
     "blink_url_request_type_converters.h",
+    "discardable_memory_allocator.cc",
+    "discardable_memory_allocator.h",
     "html_document.cc",
     "html_document.h",
     "mojo_blink_platform_impl.cc",
@@ -176,6 +178,7 @@ test("tests") {
   output_name = "html_viewer_unittests"
   sources = [
     "ax_provider_impl_unittest.cc",
+    "discardable_memory_allocator_unittest.cc",
   ]
   deps = [
     ":lib",

@@ -10,6 +10,7 @@
 #include "base/threading/thread.h"
 #include "gin/public/isolate_holder.h"
 #include "mojo/application/application_runner_chromium.h"
+#include "mojo/services/html_viewer/discardable_memory_allocator.h"
 #include "mojo/services/html_viewer/html_document.h"
 #include "mojo/services/html_viewer/mojo_blink_platform_impl.h"
 #include "mojo/services/html_viewer/webmediaplayer_factory.h"
@@ -58,6 +59,8 @@ const char kDisableEncryptedMedia[] = "disable-encrypted-media";
 
 // Prevents creation of any output surface.
 const char kIsHeadless[] = "is-headless";
+
+size_t kDesiredMaxMemory = 20 * 1024 * 1024;
 
 class HTMLViewer;
 
@@ -161,13 +164,18 @@ class ContentHandlerImpl : public mojo::InterfaceImpl<ContentHandler> {
 class HTMLViewer : public mojo::ApplicationDelegate,
                    public mojo::InterfaceFactory<ContentHandler> {
  public:
-  HTMLViewer() : compositor_thread_("compositor thread") {}
+  HTMLViewer()
+      : discardable_memory_allocator_(kDesiredMaxMemory),
+        compositor_thread_("compositor thread") {}
 
   ~HTMLViewer() override { blink::shutdown(); }
 
  private:
   // Overridden from ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override {
+    base::DiscardableMemoryAllocator::SetInstance(
+        &discardable_memory_allocator_);
+
     blink_platform_.reset(new MojoBlinkPlatformImpl(app));
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
     // Note: this requires file system access.
@@ -233,6 +241,14 @@ class HTMLViewer : public mojo::ApplicationDelegate,
                                web_media_player_factory_.get(), is_headless_),
         &request);
   }
+
+  // Skia requires that we have one of these. Unlike the one used in chrome,
+  // this doesn't use purgable shared memory. Instead, it tries to free the
+  // oldest unlocked chunks on allocation.
+  //
+  // TODO(erg): In the long run, delete this allocator and get the real shared
+  // memory based purging allocator working here.
+  DiscardableMemoryAllocator discardable_memory_allocator_;
 
   scoped_ptr<MojoBlinkPlatformImpl> blink_platform_;
   base::Thread compositor_thread_;
