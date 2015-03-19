@@ -397,11 +397,8 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
             webLayer->setScrollPositionDouble(scrollPosition);
             // Blink can only use the integer part of the scroll offset to position elements.
             // Sends the fractional part of the scroll offset to CC as scroll adjustment for
-            // fixed-position layer (only when there is visible fixed-position layer).
-            if (scrollableArea->hasViewportConstrainedObjectsForScrollCompensation())
-                webLayer->setScrollCompensationAdjustment(fractionalPart);
-            else
-                webLayer->setScrollCompensationAdjustment(DoublePoint());
+            // fixed-position layer.
+            webLayer->setScrollCompensationAdjustment(fractionalPart);
         }
 
         webLayer->setBounds(scrollableArea->contentsSize());
@@ -889,12 +886,6 @@ void ScrollingCoordinator::frameViewFixedObjectsDidChange(FrameView* frameView)
 {
     ASSERT(isMainThread());
     ASSERT(m_page);
-
-    bool viewportConstrainedObjectsForScrollCompensation = frameView->hasViewportConstrainedObjects();
-    if (viewportConstrainedObjectsForScrollCompensation != frameView->hasViewportConstrainedObjectsForScrollCompensation()) {
-        frameView->setHasViewportConstrainedObjectsForScrollCompensation(viewportConstrainedObjectsForScrollCompensation);
-        scrollableAreaScrollLayerDidChange(frameView);
-    }
 
     if (!coordinatesScrollingForFrameView(frameView))
         return;

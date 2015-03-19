@@ -1589,7 +1589,6 @@ crbug.com/438281 [ Debug SnowLeopard ] virtual/slimmingpaint/fast/text/internati
 crbug.com/438281 [ Mac ] virtual/slimmingpaint/fast/text/aat-morx.html [ Failure ]
 
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ImageOnlyFailure ]
-crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position.html [ Failure ImageOnlyFailure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overflow-hidden.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-overried-inherited-visibility-hidden.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-scrolling-no-overried-inherited-visibility-hidden.html [ Failure ]

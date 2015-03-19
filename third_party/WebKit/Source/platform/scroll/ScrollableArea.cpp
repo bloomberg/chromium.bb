@@ -78,7 +78,6 @@ ScrollableArea::ScrollableArea()
     , m_inLiveResize(false)
     , m_scrollbarOverlayStyle(ScrollbarOverlayStyleDefault)
     , m_scrollOriginChanged(false)
-    , m_hasViewportConstrainedObjectsForScrollCompensation(false)
 {
 }
 
