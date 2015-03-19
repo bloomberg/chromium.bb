@@ -28,8 +28,6 @@
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/MathExtras.h"
 
-static const float gOneOverThree = 1 / 3.f;
-
 namespace blink {
 
 DEFINE_TRACE(SVGPathParser)
@@ -178,6 +176,13 @@ bool SVGPathParser::parseCurveToCubicSmoothSegment()
     return true;
 }
 
+// Blend the points with a ratio (1/3):(2/3).
+static FloatPoint blendPoints(const FloatPoint& p1, const FloatPoint& p2)
+{
+    const float oneOverThree = 1 / 3.f;
+    return FloatPoint((p1.x() + 2 * p2.x()) * oneOverThree, (p1.y() + 2 * p2.y()) * oneOverThree);
+}
+
 bool SVGPathParser::parseCurveToQuadraticSegment()
 {
     FloatPoint point1;
@@ -190,21 +195,16 @@ bool SVGPathParser::parseCurveToQuadraticSegment()
         return true;
     }
     m_controlPoint = point1;
-    point1 = m_currentPoint;
-    point1.move(2 * m_controlPoint.x(), 2 * m_controlPoint.y());
-    FloatPoint point2(targetPoint.x() + 2 * m_controlPoint.x(), targetPoint.y() + 2 * m_controlPoint.y());
+
     if (m_mode == RelativeCoordinates) {
-        point1.move(2 * m_currentPoint.x(), 2 * m_currentPoint.y());
-        point2.move(3 * m_currentPoint.x(), 3 * m_currentPoint.y());
+        m_controlPoint += m_currentPoint;
         targetPoint += m_currentPoint;
     }
-    point1.scale(gOneOverThree, gOneOverThree);
-    point2.scale(gOneOverThree, gOneOverThree);
+    point1 = blendPoints(m_currentPoint, m_controlPoint);
+    FloatPoint point2 = blendPoints(targetPoint, m_controlPoint);
 
     m_consumer->curveToCubic(point1, point2, targetPoint, AbsoluteCoordinates);
 
-    if (m_mode == RelativeCoordinates)
-        m_controlPoint += m_currentPoint;
     m_currentPoint = targetPoint;
     return true;
 }
@@ -225,19 +225,15 @@ bool SVGPathParser::parseCurveToQuadraticSmoothSegment()
         && m_lastCommand != PathSegCurveToQuadraticSmoothRel)
         m_controlPoint = m_currentPoint;
 
-    FloatPoint cubicPoint = reflectedPoint(m_currentPoint, m_controlPoint);
-    FloatPoint point1(m_currentPoint.x() + 2 * cubicPoint.x(), m_currentPoint.y() + 2 * cubicPoint.y());
-    FloatPoint point2(targetPoint.x() + 2 * cubicPoint.x(), targetPoint.y() + 2 * cubicPoint.y());
-    if (m_mode == RelativeCoordinates) {
-        point2 += m_currentPoint;
+    if (m_mode == RelativeCoordinates)
         targetPoint += m_currentPoint;
-    }
-    point1.scale(gOneOverThree, gOneOverThree);
-    point2.scale(gOneOverThree, gOneOverThree);
+
+    m_controlPoint = reflectedPoint(m_currentPoint, m_controlPoint);
+    FloatPoint point1 = blendPoints(m_currentPoint, m_controlPoint);
+    FloatPoint point2 = blendPoints(targetPoint, m_controlPoint);
 
     m_consumer->curveToCubic(point1, point2, targetPoint, AbsoluteCoordinates);
 
-    m_controlPoint = cubicPoint;
     m_currentPoint = targetPoint;
     return true;
 }
