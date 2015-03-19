@@ -550,6 +550,8 @@
       'credentialmanager/NavigatorCredentials.h',
       'crypto/Crypto.cpp',
       'crypto/Crypto.h',
+      'crypto/CryptoHistograms.cpp',
+      'crypto/CryptoHistograms.h',
       'crypto/CryptoKey.cpp',
       'crypto/CryptoKey.h',
       'crypto/CryptoResultImpl.cpp',
