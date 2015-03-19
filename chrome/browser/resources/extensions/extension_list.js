@@ -417,7 +417,7 @@ cr.define('extensions', function() {
       // The 'Reload' terminated link.
       row.setupColumn('.terminated-reload-link', 'terminatedReload', 'click',
                       function(e) {
-        chrome.send('extensionSettingsReload', [extension.id]);
+        chrome.developerPrivate.reload(extension.id, {failQuietly: true});
       });
 
       // The 'Repair' corrupted link.
