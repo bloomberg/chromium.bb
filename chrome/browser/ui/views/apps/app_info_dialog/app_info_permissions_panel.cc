@@ -284,9 +284,11 @@ AppInfoPermissionsPanel::GetActivePermissionMessages() const {
 int AppInfoPermissionsPanel::GetRetainedFileCount() const {
   if (app_->permissions_data()->HasAPIPermission(
           extensions::APIPermission::kFileSystem)) {
-    return apps::SavedFilesService::Get(profile_)
-        ->GetAllFileEntries(app_->id())
-        .size();
+    apps::SavedFilesService* service = apps::SavedFilesService::Get(profile_);
+    // The SavedFilesService can be null for incognito profiles. See
+    // http://crbug.com/467795.
+    if (service)
+      return service->GetAllFileEntries(app_->id()).size();
   }
   return 0;
 }
@@ -312,20 +314,26 @@ AppInfoPermissionsPanel::GetRetainedFilePaths() const {
   std::vector<base::string16> retained_file_paths;
   if (app_->permissions_data()->HasAPIPermission(
           extensions::APIPermission::kFileSystem)) {
-    std::vector<apps::SavedFileEntry> retained_file_entries =
-        apps::SavedFilesService::Get(profile_)->GetAllFileEntries(app_->id());
-    for (std::vector<apps::SavedFileEntry>::const_iterator it =
-             retained_file_entries.begin();
-         it != retained_file_entries.end();
-         ++it) {
-      retained_file_paths.push_back(it->path.LossyDisplayName());
+    apps::SavedFilesService* service = apps::SavedFilesService::Get(profile_);
+    // The SavedFilesService can be null for incognito profiles.
+    if (service) {
+      std::vector<apps::SavedFileEntry> retained_file_entries =
+          service->GetAllFileEntries(app_->id());
+      for (std::vector<apps::SavedFileEntry>::const_iterator it =
+               retained_file_entries.begin();
+           it != retained_file_entries.end(); ++it) {
+        retained_file_paths.push_back(it->path.LossyDisplayName());
+      }
     }
   }
   return retained_file_paths;
 }
 
 void AppInfoPermissionsPanel::RevokeFilePermissions() {
-  apps::SavedFilesService::Get(profile_)->ClearQueue(app_);
+  apps::SavedFilesService* service = apps::SavedFilesService::Get(profile_);
+  // The SavedFilesService can be null for incognito profiles.
+  if (service)
+    service->ClearQueue(app_);
   apps::AppLoadService::Get(profile_)->RestartApplicationIfRunning(app_->id());
 
   Close();
