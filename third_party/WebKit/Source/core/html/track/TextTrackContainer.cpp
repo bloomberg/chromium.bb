@@ -91,7 +91,7 @@ void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement)
     // 7. Let cues be an empty list of text track cues.
     // 8. For each track track in tracks, append to cues all the cues from
     // track's list of cues that have their text track cue active flag set.
-    CueList activeCues = video.cueTimeline().currentlyActiveCues();
+    const CueList& activeCues = video.cueTimeline().currentlyActiveCues();
 
     // 9. If reset is false, then, for each text track cue cue in cues: if cue's
     // text track cue display state has a set of CSS boxes, then add those boxes

@@ -39,7 +39,7 @@ public:
     void beginIgnoringUpdateRequests();
     void endIgnoringUpdateRequests();
 
-    CueList currentlyActiveCues() const { return m_currentlyActiveCues; }
+    const CueList& currentlyActiveCues() const { return m_currentlyActiveCues; }
 
     DECLARE_TRACE();
 
