@@ -106,7 +106,7 @@ cr.define('extensions', function() {
       // maxHeight, but the maxHeight does not include our header height (title
       // and close button), so we need to subtract that to get the maxHeight
       // for the extension options.
-      var maxHeight = parseInt(overlay.style.maxHeight, 10) -
+      var maxHeight = parseInt(overlayStyle.maxHeight, 10) -
                       overlayHeader.offsetHeight;
       var minWidth = parseInt(overlayStyle.minWidth, 10);
 
@@ -125,16 +125,19 @@ cr.define('extensions', function() {
        * @param {{width: number, height: number}} evt
        */
       extensionoptions.onpreferredsizechanged = function(evt) {
-        var oldWidth = parseInt(overlayStyle.width, 10);
-        var oldHeight = parseInt(overlayStyle.height, 10);
+        var oldOverlayWidth = parseInt(overlayStyle.width, 10);
+        var oldOverlayHeight = parseInt(overlayStyle.height, 10);
         // The overlay must be slightly larger than the extension options to
         // avoid creating scrollbars.
         // TODO(paulmeyer): This shouldn't be necessary, but the preferred size
         // (coming from Blink) seems to be too small for some zoom levels. The
         // 2-pixel addition should be removed once this problem is investigated
         // and corrected.
-        var newWidth = Math.max(evt.width + 2, minWidth);
-        var newHeight = Math.min(evt.height + 2, maxHeight);
+        var newOverlayWidth = Math.max(evt.width + 2, minWidth);
+        // |evt.height| is just the new overlay guest height, and does not
+        // include the overlay header height, so it needs to be added.
+        var newOverlayHeight =
+            Math.min(evt.height + overlayHeader.offsetHeight + 2, maxHeight);
 
         // animationTime is the amount of time in ms that will be used to resize
         // the overlay. It is calculated by multiplying the pythagorean distance
@@ -142,15 +145,17 @@ cr.define('extensions', function() {
         // 0.25 ms/px.
         var loading = document.documentElement.classList.contains('loading');
         var animationTime = loading ? 0 :
-            0.25 * Math.sqrt(Math.pow(newWidth - oldWidth, 2) +
-                             Math.pow(newHeight - oldHeight, 2));
+            0.25 * Math.sqrt(Math.pow(newOverlayWidth - oldOverlayWidth, 2) +
+                             Math.pow(newOverlayHeight - oldOverlayHeight, 2));
 
         if (animation)
           animation.cancel();
 
+        // The header height must be added to the (old and new) preferred
+        // heights to get the full overlay heights.
         animation = overlay.animate([
-          {width: oldWidth + 'px', height: oldHeight + 'px'},
-          {width: newWidth + 'px', height: newHeight + 'px'}
+          {width: oldOverlayWidth + 'px', height: oldOverlayHeight + 'px'},
+          {width: newOverlayWidth + 'px', height: newOverlayHeight + 'px'}
         ], {
           duration: animationTime,
           delay: 0
@@ -164,8 +169,11 @@ cr.define('extensions', function() {
           // of the overlay.
           overlayGuest.style.position = '';
           overlayGuest.style.left = '';
-          overlayGuest.style.width = newWidth + 'px';
-          overlayGuest.style.height = newHeight + 'px';
+          overlayGuest.style.width = newOverlayWidth + 'px';
+          // |newOverlayHeight| includes the header height, so it needs to be
+          // subtracted to get the new guest height.
+          overlayGuest.style.height =
+              (newOverlayHeight - overlayHeader.offsetHeight) + 'px';
 
           if (shownCallback) {
             shownCallback();
