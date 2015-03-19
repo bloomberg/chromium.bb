@@ -238,7 +238,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	const struct wl_message *message;
 	uint32_t p[2];
 	uint32_t resource_flags;
-	int opcode, size;
+	int opcode, size, since;
 	int len;
 
 	if (mask & (WL_EVENT_ERROR | WL_EVENT_HANGUP)) {
@@ -294,13 +294,14 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		}
 
 		message = &object->interface->methods[opcode];
+		since = wl_message_get_since(message);
 		if (!(resource_flags & WL_MAP_ENTRY_LEGACY) &&
-		    resource->version > 0 &&
-		    resource->version < wl_message_get_since(message)) {
+		    resource->version > 0 && resource->version < since) {
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
-					       "invalid method %d, object %s@%u",
-					       opcode,
+					       "invalid method %d (since %d < %d)"
+					       ", object %s@%u",
+					       opcode, resource->version, since,
 					       object->interface->name,
 					       object->id);
 			break;
