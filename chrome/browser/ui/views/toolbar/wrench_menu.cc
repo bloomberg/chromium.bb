@@ -994,11 +994,13 @@ bool WrenchMenu::IsCommandEnabled(int command_id) const {
   if (command_id == 0)
     return false;  // The root item.
 
+  if (command_id == IDC_MORE_TOOLS_MENU)
+    return true;
+
   // The items representing the cut menu (cut/copy/paste), zoom menu
   // (increment/decrement/reset) and extension toolbar view are always enabled.
   // The child views of these items enabled state updates appropriately.
   if (command_id == IDC_EDIT_MENU || command_id == IDC_ZOOM_MENU ||
-      command_id == IDC_MORE_TOOLS_MENU ||
       command_id == IDC_EXTENSIONS_OVERFLOW_MENU)
     return true;
 
@@ -1017,7 +1019,6 @@ void WrenchMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
   }
 
   if (command_id == IDC_EDIT_MENU || command_id == IDC_ZOOM_MENU ||
-      command_id == IDC_MORE_TOOLS_MENU ||
       command_id == IDC_EXTENSIONS_OVERFLOW_MENU) {
     // These items are represented by child views. If ExecuteCommand is invoked
     // it means the user clicked on the area around the buttons and we should
@@ -1035,7 +1036,6 @@ bool WrenchMenu::GetAccelerator(int command_id,
     return false;
 
   if (command_id == IDC_EDIT_MENU || command_id == IDC_ZOOM_MENU ||
-      command_id == IDC_MORE_TOOLS_MENU ||
       command_id == IDC_EXTENSIONS_OVERFLOW_MENU) {
     // These have special child views; don't show the accelerator for them.
     return false;
@@ -1107,8 +1107,7 @@ void WrenchMenu::PopulateMenu(MenuItemView* parent,
         AddMenuItem(parent, menu_index, model, i, model->GetTypeAt(i));
 
     if (model->GetCommandIdAt(i) == IDC_EDIT_MENU ||
-        model->GetCommandIdAt(i) == IDC_ZOOM_MENU ||
-        model->GetCommandIdAt(i) == IDC_MORE_TOOLS_MENU) {
+        model->GetCommandIdAt(i) == IDC_ZOOM_MENU) {
       const MenuConfig& config = item->GetMenuConfig();
       int top_margin = config.item_top_margin + config.separator_height / 2;
       int bottom_margin =
