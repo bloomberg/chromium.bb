@@ -64,6 +64,7 @@ enum PageshowEventPersistence {
 // please ping dcheng@chromium.org first. You probably don't want to do that.
 class CORE_EXPORT LocalDOMWindow final : public DOMWindow, public WillBeHeapSupplementable<LocalDOMWindow>, public DOMWindowLifecycleNotifier {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
+    WILL_BE_USING_PRE_FINALIZER(LocalDOMWindow, dispose);
 public:
     static PassRefPtrWillBeRawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
     static PassRefPtrWillBeRawPtr<LocalDOMWindow> create(LocalFrame& frame)
@@ -71,6 +72,7 @@ public:
         return adoptRefWillBeNoop(new LocalDOMWindow(frame));
     }
     virtual ~LocalDOMWindow();
+    void dispose();
 
     PassRefPtrWillBeRawPtr<Document> installNewDocument(const String& mimeType, const DocumentInit&, bool forceXHTML = false);
 
@@ -244,19 +246,8 @@ private:
     void clearDocument();
     void willDestroyDocumentInFrame();
 
-    // FIXME: Oilpan: the need for this internal method will fall
-    // away when EventTargets are no longer using refcounts and
-    // window properties are also on the heap. Inline the minimal
-    // do-not-broadcast handling then and remove the enum +
-    // removeAllEventListenersInternal().
-    enum BroadcastListenerRemoval {
-        DoNotBroadcastListenerRemoval,
-        DoBroadcastListenerRemoval
-    };
-
     void willDetachFrameHost();
     void frameDestroyed();
-    void removeAllEventListenersInternal(BroadcastListenerRemoval);
 
     OwnPtrWillBeMember<WindowFrameObserver> m_frameObserver;
     RefPtrWillBeMember<Document> m_document;

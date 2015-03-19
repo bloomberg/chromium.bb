@@ -203,14 +203,11 @@ private:
     int m_asyncOperationId;
 };
 
-static void disableSuddenTermination()
+static void updateSuddenTerminationStatus(LocalDOMWindow* domWindow, bool addedListener, FrameLoaderClient::SuddenTerminationDisablerType disablerType)
 {
-    blink::Platform::current()->suddenTerminationChanged(false);
-}
-
-static void enableSuddenTermination()
-{
-    blink::Platform::current()->suddenTerminationChanged(true);
+    blink::Platform::current()->suddenTerminationChanged(!addedListener);
+    if (domWindow->frame() && domWindow->frame()->loader().client())
+        domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(addedListener, disablerType);
 }
 
 typedef HashCountedSet<LocalDOMWindow*> DOMWindowSet;
@@ -230,13 +227,9 @@ static DOMWindowSet& windowsWithBeforeUnloadEventListeners()
 static void addUnloadEventListener(LocalDOMWindow* domWindow)
 {
     DOMWindowSet& set = windowsWithUnloadEventListeners();
-    if (set.isEmpty()) {
-        disableSuddenTermination();
-        if (domWindow->frame()) {
-            domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
-                true, FrameLoaderClient::UnloadHandler);
-        }
-    }
+    if (set.isEmpty())
+        updateSuddenTerminationStatus(domWindow, true, FrameLoaderClient::UnloadHandler);
+
     set.add(domWindow);
 }
 
@@ -247,13 +240,8 @@ static void removeUnloadEventListener(LocalDOMWindow* domWindow)
     if (it == set.end())
         return;
     set.remove(it);
-    if (set.isEmpty()) {
-        enableSuddenTermination();
-        if (domWindow->frame()) {
-            domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
-                false, FrameLoaderClient::UnloadHandler);
-        }
-    }
+    if (set.isEmpty())
+        updateSuddenTerminationStatus(domWindow, false, FrameLoaderClient::UnloadHandler);
 }
 
 static void removeAllUnloadEventListeners(LocalDOMWindow* domWindow)
@@ -263,25 +251,16 @@ static void removeAllUnloadEventListeners(LocalDOMWindow* domWindow)
     if (it == set.end())
         return;
     set.removeAll(it);
-    if (set.isEmpty()) {
-        enableSuddenTermination();
-        if (domWindow->frame()) {
-            domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
-                false, FrameLoaderClient::UnloadHandler);
-        }
-    }
+    if (set.isEmpty())
+        updateSuddenTerminationStatus(domWindow, false, FrameLoaderClient::UnloadHandler);
 }
 
 static void addBeforeUnloadEventListener(LocalDOMWindow* domWindow)
 {
     DOMWindowSet& set = windowsWithBeforeUnloadEventListeners();
-    if (set.isEmpty()) {
-        disableSuddenTermination();
-        if (domWindow->frame()) {
-            domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
-                true, FrameLoaderClient::BeforeUnloadHandler);
-        }
-    }
+    if (set.isEmpty())
+        updateSuddenTerminationStatus(domWindow, true, FrameLoaderClient::BeforeUnloadHandler);
+
     set.add(domWindow);
 }
 
@@ -292,13 +271,8 @@ static void removeBeforeUnloadEventListener(LocalDOMWindow* domWindow)
     if (it == set.end())
         return;
     set.remove(it);
-    if (set.isEmpty()) {
-        enableSuddenTermination();
-        if (domWindow->frame()) {
-            domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
-                false, FrameLoaderClient::BeforeUnloadHandler);
-        }
-    }
+    if (set.isEmpty())
+        updateSuddenTerminationStatus(domWindow, false, FrameLoaderClient::BeforeUnloadHandler);
 }
 
 static void removeAllBeforeUnloadEventListeners(LocalDOMWindow* domWindow)
@@ -308,13 +282,8 @@ static void removeAllBeforeUnloadEventListeners(LocalDOMWindow* domWindow)
     if (it == set.end())
         return;
     set.removeAll(it);
-    if (set.isEmpty()) {
-        enableSuddenTermination();
-        if (domWindow->frame()) {
-            domWindow->frame()->loader().client()->suddenTerminationDisablerChanged(
-                false, FrameLoaderClient::BeforeUnloadHandler);
-        }
-    }
+    if (set.isEmpty())
+        updateSuddenTerminationStatus(domWindow, false, FrameLoaderClient::BeforeUnloadHandler);
 }
 
 static bool allowsBeforeUnloadListeners(LocalDOMWindow* window)
@@ -379,6 +348,9 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     , m_hasBeenReset(false)
 #endif
 {
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(*this);
+#endif
 }
 
 void LocalDOMWindow::clearDocument()
@@ -532,22 +504,32 @@ void LocalDOMWindow::statePopped(PassRefPtr<SerializedScriptValue> stateObject)
 LocalDOMWindow::~LocalDOMWindow()
 {
 #if ENABLE(OILPAN)
-    // Oilpan: the frame host and document objects are
-    // also garbage collected; cannot notify these
-    // when removing event listeners.
-    removeAllEventListenersInternal(DoNotBroadcastListenerRemoval);
-
     // Cleared when detaching document.
     ASSERT(!m_eventQueue);
 #else
     ASSERT(m_hasBeenReset);
-    reset();
-
-    removeAllEventListenersInternal(DoBroadcastListenerRemoval);
-
     ASSERT(m_document->isStopped());
     clearDocument();
 #endif
+}
+
+void LocalDOMWindow::dispose()
+{
+    // Oilpan: should the LocalDOMWindow be GCed along with its LocalFrame without the
+    // frame having first notified its observers of imminent destruction, the
+    // LocalDOMWindow will not have had an opportunity to remove event listeners.
+    // Do that here by way of a prefinalizing action.
+    //
+    // (Non-Oilpan, LocalDOMWindow::reset() will always be invoked, the last opportunity
+    // being via ~LocalFrame's setDOMWindow() call.)
+    if (!frame())
+        return;
+
+    // (Prefinalizing actions run to completion before the Oilpan GC start to lazily sweep,
+    // so keeping them short is worthwhile. Something that's worth keeping in mind when
+    // working out where to best place some actions that have to be performed very late
+    // on in LocalDOMWindow's lifetime.)
+    removeAllEventListeners();
 }
 
 const AtomicString& LocalDOMWindow::interfaceName() const
@@ -587,6 +569,7 @@ void LocalDOMWindow::frameDestroyed()
     willDestroyDocumentInFrame();
     resetLocation();
     m_properties.clear();
+    removeAllEventListeners();
 }
 
 void LocalDOMWindow::willDestroyDocumentInFrame()
@@ -1577,23 +1560,16 @@ bool LocalDOMWindow::dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassR
     return fireEventListeners(event.get());
 }
 
-void LocalDOMWindow::removeAllEventListenersInternal(BroadcastListenerRemoval mode)
+void LocalDOMWindow::removeAllEventListeners()
 {
     EventTarget::removeAllEventListeners();
 
-    if (mode == DoBroadcastListenerRemoval) {
-        notifyRemoveAllEventListeners(this);
-        if (frame() && frame()->host())
-            frame()->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
-    }
+    notifyRemoveAllEventListeners(this);
+    if (frame() && frame()->host())
+        frame()->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
 
     removeAllUnloadEventListeners(this);
     removeAllBeforeUnloadEventListeners(this);
-}
-
-void LocalDOMWindow::removeAllEventListeners()
-{
-    removeAllEventListenersInternal(DoBroadcastListenerRemoval);
 }
 
 void LocalDOMWindow::finishedLoading()

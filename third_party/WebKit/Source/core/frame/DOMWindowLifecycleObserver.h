@@ -38,11 +38,6 @@ class DOMWindowLifecycleNotifier;
 
 class CORE_EXPORT DOMWindowLifecycleObserver : public LifecycleObserver<LocalDOMWindow, DOMWindowLifecycleObserver, DOMWindowLifecycleNotifier> {
 public:
-    virtual void contextDestroyed()
-    {
-        didRemoveAllEventListeners(lifecycleContext());
-        LifecycleObserver<LocalDOMWindow, DOMWindowLifecycleObserver, DOMWindowLifecycleNotifier>::contextDestroyed();
-    }
     virtual void didAddEventListener(LocalDOMWindow*, const AtomicString&) { }
     virtual void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) { }
     virtual void didRemoveAllEventListeners(LocalDOMWindow*) { }
