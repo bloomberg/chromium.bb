@@ -5,7 +5,9 @@
 #include "android_webview/browser/hardware_renderer.h"
 
 #include "android_webview/browser/aw_gl_surface.h"
+#include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
+#include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "android_webview/browser/parent_output_surface.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "android_webview/public/browser/draw_gl.h"
@@ -109,8 +111,6 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
 }
 
 HardwareRenderer::~HardwareRenderer() {
-  SetFrameData();
-
   // Must reset everything before |resource_collection_| to ensure all
   // resources are returned before resetting |resource_collection_| client.
   layer_tree_host_.reset();
@@ -128,7 +128,7 @@ HardwareRenderer::~HardwareRenderer() {
   resource_collection_->SetClient(NULL);
 
   // Reset draw constraints.
-  shared_renderer_state_->UpdateDrawConstraintsOnRT(
+  shared_renderer_state_->PostExternalDrawConstraintsToChildCompositorOnRT(
       ParentCompositorDrawConstraints());
 }
 
@@ -144,35 +144,26 @@ void HardwareRenderer::DidBeginMainFrame() {
 void HardwareRenderer::CommitFrame() {
   TRACE_EVENT0("android_webview", "CommitFrame");
   scroll_offset_ = shared_renderer_state_->GetScrollOffsetOnRT();
-  if (committed_frame_.get()) {
-    TRACE_EVENT_INSTANT0("android_webview",
-                         "EarlyOut_PreviousFrameUnconsumed",
-                         TRACE_EVENT_SCOPE_THREAD);
-    shared_renderer_state_->DidSkipCommitFrameOnRT();
-    return;
+  {
+    scoped_ptr<ChildFrame> child_frame =
+        shared_renderer_state_->PassCompositorFrameOnRT();
+    if (!child_frame.get())
+      return;
+    child_frame_ = child_frame.Pass();
   }
 
-  committed_frame_ = shared_renderer_state_->PassCompositorFrameOnRT();
-  // Happens with empty global visible rect.
-  if (!committed_frame_.get())
-    return;
-
-  DCHECK(!committed_frame_->gl_frame_data);
-  DCHECK(!committed_frame_->software_frame_data);
+  scoped_ptr<cc::CompositorFrame> frame = child_frame_->frame.Pass();
+  DCHECK(frame.get());
+  DCHECK(!frame->gl_frame_data);
+  DCHECK(!frame->software_frame_data);
 
   // DelegatedRendererLayerImpl applies the inverse device_scale_factor of the
   // renderer frame, assuming that the browser compositor will scale
   // it back up to device scale.  But on Android we put our browser layers in
   // physical pixels and set our browser CC device_scale_factor to 1, so this
   // suppresses the transform.
-  committed_frame_->delegated_frame_data->device_scale_factor = 1.0f;
-}
+  frame->delegated_frame_data->device_scale_factor = 1.0f;
 
-void HardwareRenderer::SetFrameData() {
-  if (!committed_frame_.get())
-    return;
-
-  scoped_ptr<cc::CompositorFrame> frame = committed_frame_.Pass();
   gfx::Size frame_size =
       frame->delegated_frame_data->render_pass_list.back()->output_rect.size();
   bool size_changed = frame_size != frame_size_;
@@ -210,12 +201,6 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   if (last_egl_context_ != current_context)
     DLOG(WARNING) << "EGLContextChanged";
 
-  SetFrameData();
-  if (shared_renderer_state_->ForceCommitOnRT()) {
-    CommitFrame();
-    SetFrameData();
-  }
-
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix().setColMajorf(draw_info->transform);
   transform.Translate(scroll_offset_.x(), scroll_offset_.y());
@@ -225,10 +210,10 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   // compositor might not have the tiles rasterized as the animation goes on.
   ParentCompositorDrawConstraints draw_constraints(
       draw_info->is_layer, transform, gfx::Rect(viewport_));
-
-  draw_constraints_ = draw_constraints;
-  shared_renderer_state_->PostExternalDrawConstraintsToChildCompositorOnRT(
-      draw_constraints);
+  if (!child_frame_.get() || draw_constraints.NeedUpdate(*child_frame_)) {
+    shared_renderer_state_->PostExternalDrawConstraintsToChildCompositorOnRT(
+        draw_constraints);
+  }
 
   if (!delegated_layer_.get())
     return;

@@ -5,6 +5,7 @@
 #include "android_webview/browser/browser_view_renderer.h"
 
 #include "android_webview/browser/browser_view_renderer_client.h"
+#include "android_webview/browser/child_frame.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -98,7 +99,6 @@ BrowserViewRenderer::BrowserViewRenderer(
       clear_view_(false),
       offscreen_pre_raster_(false),
       compositor_needs_continuous_invalidate_(false),
-      invalidate_after_composite_(false),
       block_invalidates_(false),
       fallback_tick_pending_(false) {
 }
@@ -216,36 +216,20 @@ bool BrowserViewRenderer::OnDrawHardware() {
     return false;
   }
 
-  ReturnResourceFromParent();
-  if (shared_renderer_state_.HasCompositorFrameOnUI()) {
-    TRACE_EVENT_INSTANT0("android_webview",
-                         "EarlyOut_PreviousFrameUnconsumed",
-                         TRACE_EVENT_SCOPE_THREAD);
-    DidSkipCompositeInDraw();
-    return true;
-  }
-
-  scoped_ptr<cc::CompositorFrame> frame = CompositeHw();
-  if (!frame.get()) {
-    TRACE_EVENT_INSTANT0("android_webview", "NoNewFrame",
-                         TRACE_EVENT_SCOPE_THREAD);
-    return false;
-  }
-
-  shared_renderer_state_.SetCompositorFrameOnUI(frame.Pass(), false);
-  return true;
+  return CompositeHw();
 }
 
-scoped_ptr<cc::CompositorFrame> BrowserViewRenderer::CompositeHw() {
+bool BrowserViewRenderer::CompositeHw() {
+  ReturnResourceFromParent();
   compositor_->SetMemoryPolicy(CalculateDesiredMemoryPolicy());
 
-  parent_draw_constraints_ =
+  ParentCompositorDrawConstraints parent_draw_constraints =
       shared_renderer_state_.GetParentDrawConstraintsOnUI();
   gfx::Size surface_size(size_);
   gfx::Rect viewport(surface_size);
   gfx::Rect clip = viewport;
   gfx::Transform transform_for_tile_priority =
-      parent_draw_constraints_.transform;
+      parent_draw_constraints.transform;
 
   // If the WebView is on a layer, WebView does not know what transform is
   // applied onto the layer so global visible rect does not make sense here.
@@ -254,9 +238,8 @@ scoped_ptr<cc::CompositorFrame> BrowserViewRenderer::CompositeHw() {
 
   // Leave viewport_rect_for_tile_priority empty if offscreen_pre_raster_ is on.
   if (!offscreen_pre_raster_) {
-    if (parent_draw_constraints_.is_layer ||
-        last_on_draw_global_visible_rect_.IsEmpty()) {
-      viewport_rect_for_tile_priority = parent_draw_constraints_.surface_rect;
+    if (parent_draw_constraints.is_layer) {
+      viewport_rect_for_tile_priority = parent_draw_constraints.surface_rect;
     } else {
       viewport_rect_for_tile_priority = last_on_draw_global_visible_rect_;
     }
@@ -269,32 +252,37 @@ scoped_ptr<cc::CompositorFrame> BrowserViewRenderer::CompositeHw() {
                                 clip,
                                 viewport_rect_for_tile_priority,
                                 transform_for_tile_priority);
-  if (frame.get())
-    DidComposite();
-  return frame.Pass();
+  if (!frame.get()) {
+    TRACE_EVENT_INSTANT0("android_webview", "NoNewFrame",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return false;
+  }
+
+  scoped_ptr<ChildFrame> child_frame = make_scoped_ptr(
+      new ChildFrame(frame.Pass(), viewport_rect_for_tile_priority,
+                     transform_for_tile_priority, offscreen_pre_raster_,
+                     parent_draw_constraints.is_layer));
+
+  DidComposite();
+  // Uncommitted frame can happen with consecutive fallback ticks.
+  ReturnUnusedResource(shared_renderer_state_.PassUncommittedFrameOnUI());
+  shared_renderer_state_.SetCompositorFrameOnUI(child_frame.Pass());
+  return true;
 }
 
 void BrowserViewRenderer::UpdateParentDrawConstraints() {
-  // Post an invalidate if the parent draw constraints are stale and there is
-  // no pending invalidate.
-  bool needs_force_invalidate =
-      shared_renderer_state_.NeedsForceInvalidateOnNextDrawGLOnUI();
-  if (needs_force_invalidate ||
-      !parent_draw_constraints_.Equals(
-          shared_renderer_state_.GetParentDrawConstraintsOnUI())) {
-    shared_renderer_state_.SetForceInvalidateOnNextDrawGLOnUI(false);
-    EnsureContinuousInvalidation(true, needs_force_invalidate);
-  }
+  EnsureContinuousInvalidation(true);
 }
 
 void BrowserViewRenderer::ReturnUnusedResource(
-    scoped_ptr<cc::CompositorFrame> frame) {
-  if (!frame.get())
+    scoped_ptr<ChildFrame> child_frame) {
+  if (!child_frame.get() || !child_frame->frame.get())
     return;
 
   cc::CompositorFrameAck frame_ack;
   cc::TransferableResource::ReturnResources(
-      frame->delegated_frame_data->resource_list, &frame_ack.resources);
+      child_frame->frame->delegated_frame_data->resource_list,
+      &frame_ack.resources);
   if (compositor_ && !frame_ack.resources.empty())
     compositor_->ReturnResources(frame_ack);
 }
@@ -305,11 +293,6 @@ void BrowserViewRenderer::ReturnResourceFromParent() {
   if (compositor_ && !frame_ack.resources.empty()) {
     compositor_->ReturnResources(frame_ack);
   }
-}
-
-void BrowserViewRenderer::DidSkipCommitFrame() {
-  // Treat it the same way as skipping onDraw.
-  DidSkipCompositeInDraw();
 }
 
 void BrowserViewRenderer::DetachFunctorFromView() {
@@ -356,7 +339,7 @@ void BrowserViewRenderer::ClearView() {
 
   clear_view_ = true;
   // Always invalidate ignoring the compositor to actually clear the webview.
-  EnsureContinuousInvalidation(true, false);
+  EnsureContinuousInvalidation(true);
 }
 
 void BrowserViewRenderer::SetOffscreenPreRaster(bool enable) {
@@ -371,7 +354,7 @@ void BrowserViewRenderer::SetIsPaused(bool paused) {
                        "paused",
                        paused);
   is_paused_ = paused;
-  EnsureContinuousInvalidation(false, false);
+  EnsureContinuousInvalidation(false);
 }
 
 void BrowserViewRenderer::SetViewVisibility(bool view_visible) {
@@ -390,7 +373,7 @@ void BrowserViewRenderer::SetWindowVisibility(bool window_visible) {
                        "window_visible",
                        window_visible);
   window_visible_ = window_visible;
-  EnsureContinuousInvalidation(false, false);
+  EnsureContinuousInvalidation(false);
 }
 
 void BrowserViewRenderer::OnSizeChanged(int width, int height) {
@@ -471,7 +454,7 @@ void BrowserViewRenderer::SetContinuousInvalidate(bool invalidate) {
                        invalidate);
   compositor_needs_continuous_invalidate_ = invalidate;
 
-  EnsureContinuousInvalidation(false, false);
+  EnsureContinuousInvalidation(false);
 }
 
 void BrowserViewRenderer::SetDipScale(float dip_scale) {
@@ -641,20 +624,12 @@ void BrowserViewRenderer::DidOverscroll(gfx::Vector2dF accumulated_overscroll,
   client_->DidOverscroll(rounded_overscroll_delta);
 }
 
-void BrowserViewRenderer::EnsureContinuousInvalidation(
-    bool force_invalidate,
-    bool skip_reschedule_tick) {
-  if (force_invalidate)
-    invalidate_after_composite_ = true;
-
+void BrowserViewRenderer::EnsureContinuousInvalidation(bool force_invalidate) {
   // This method should be called again when any of these conditions change.
   bool need_invalidate =
-      compositor_needs_continuous_invalidate_ || invalidate_after_composite_;
+      compositor_needs_continuous_invalidate_ || force_invalidate;
   if (!need_invalidate || block_invalidates_)
     return;
-
-  if (!compositor_needs_continuous_invalidate_ && invalidate_after_composite_)
-    invalidate_after_composite_ = false;
 
   // Always call view invalidate. We rely the Android framework to ignore the
   // invalidate when it's not needed such as when view is not visible.
@@ -672,7 +647,7 @@ void BrowserViewRenderer::EnsureContinuousInvalidation(
     return;
 
   block_invalidates_ = compositor_needs_continuous_invalidate_;
-  if (skip_reschedule_tick && fallback_tick_pending_)
+  if (fallback_tick_pending_)
     return;
 
   // Unretained here is safe because the callbacks are cancelled when
@@ -718,12 +693,7 @@ void BrowserViewRenderer::FallbackTickFired() {
   fallback_tick_pending_ = false;
   if (compositor_needs_continuous_invalidate_ && compositor_) {
     if (hardware_enabled_) {
-      ReturnResourceFromParent();
-      ReturnUnusedResource(shared_renderer_state_.PassUncommittedFrameOnUI());
-      scoped_ptr<cc::CompositorFrame> frame = CompositeHw();
-      if (frame.get()) {
-        shared_renderer_state_.SetCompositorFrameOnUI(frame.Pass(), true);
-      }
+      CompositeHw();
     } else {
       ForceFakeCompositeSW();
     }
@@ -755,12 +725,7 @@ void BrowserViewRenderer::DidComposite() {
   post_fallback_tick_.Cancel();
   fallback_tick_fired_.Cancel();
   fallback_tick_pending_ = false;
-  EnsureContinuousInvalidation(false, false);
-}
-
-void BrowserViewRenderer::DidSkipCompositeInDraw() {
-  block_invalidates_ = false;
-  EnsureContinuousInvalidation(true, true);
+  EnsureContinuousInvalidation(false);
 }
 
 std::string BrowserViewRenderer::ToString() const {

@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_HARDWARE_RENDERER_H_
 #define ANDROID_WEBVIEW_BROWSER_HARDWARE_RENDERER_H_
 
-#include "android_webview/browser/parent_compositor_draw_constraints.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
@@ -24,6 +23,7 @@ class LayerTreeHost;
 namespace android_webview {
 
 class AwGLSurface;
+class ChildFrame;
 class ParentOutputSurface;
 
 class HardwareRenderer : public cc::LayerTreeHostClient,
@@ -69,14 +69,10 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
   void UnusedResourcesAreAvailable() override;
 
  private:
-  void SetFrameData();
-
   SharedRendererState* shared_renderer_state_;
 
   typedef void* EGLContext;
   EGLContext last_egl_context_;
-
-  scoped_ptr<cc::CompositorFrame> committed_frame_;
 
   // Information about last delegated frame.
   gfx::Size frame_size_;
@@ -90,6 +86,8 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
   bool stencil_enabled_;
   bool viewport_clip_valid_for_dcheck_;
 
+  scoped_ptr<ChildFrame> child_frame_;
+
   scoped_refptr<AwGLSurface> gl_surface_;
 
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
@@ -101,8 +99,6 @@ class HardwareRenderer : public cc::LayerTreeHostClient,
 
   // This is owned indirectly by |layer_tree_host_|.
   ParentOutputSurface* output_surface_;
-
-  ParentCompositorDrawConstraints draw_constraints_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareRenderer);
 };

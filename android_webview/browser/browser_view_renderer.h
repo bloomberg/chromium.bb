@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
+#include "skia/ext/refptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -25,6 +26,7 @@ class WebContents;
 namespace android_webview {
 
 class BrowserViewRendererClient;
+class ChildFrame;
 
 // Interface for all the WebView-specific content rendering operations.
 // Provides software and hardware rendering and the Capture Picture API.
@@ -109,7 +111,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
                      gfx::Vector2dF current_fling_velocity) override;
 
   void UpdateParentDrawConstraints();
-  void DidSkipCommitFrame();
   void DetachFunctorFromView();
 
  private:
@@ -117,20 +118,16 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   bool CanOnDraw();
   // Checks the continuous invalidate and block invalidate state, and schedule
   // invalidates appropriately. If |force_invalidate| is true, then send a view
-  // invalidate regardless of compositor expectation. If |skip_reschedule_tick|
-  // is true and if there is already a pending fallback tick, don't reschedule
-  // them.
-  void EnsureContinuousInvalidation(bool force_invalidate,
-                                    bool skip_reschedule_tick);
+  // invalidate regardless of compositor expectation.
+  void EnsureContinuousInvalidation(bool force_invalidate);
   bool CompositeSW(SkCanvas* canvas);
   void DidComposite();
-  void DidSkipCompositeInDraw();
   scoped_refptr<base::trace_event::ConvertableToTraceFormat>
   RootLayerStateAsValue(const gfx::Vector2dF& total_scroll_offset_dip,
                         const gfx::SizeF& scrollable_size_dip);
 
-  scoped_ptr<cc::CompositorFrame> CompositeHw();
-  void ReturnUnusedResource(scoped_ptr<cc::CompositorFrame> frame);
+  bool CompositeHw();
+  void ReturnUnusedResource(scoped_ptr<ChildFrame> frame);
   void ReturnResourceFromParent();
 
   // If we call up view invalidate and OnDraw is not called before a deadline,
@@ -173,17 +170,11 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
   gfx::Vector2d last_on_draw_scroll_offset_;
   gfx::Rect last_on_draw_global_visible_rect_;
 
-  // The draw constraints from the parent compositor. These are only used for
-  // tiling priority.
-  ParentCompositorDrawConstraints parent_draw_constraints_;
-
   // When true, we should continuously invalidate and keep drawing, for example
   // to drive animation. This value is set by the compositor and should always
   // reflect the expectation of the compositor and not be reused for other
   // states.
   bool compositor_needs_continuous_invalidate_;
-
-  bool invalidate_after_composite_;
 
   // Used to block additional invalidates while one is already pending.
   bool block_invalidates_;

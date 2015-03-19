@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
 
+#include "android_webview/browser/child_frame.h"
+
 namespace android_webview {
 
 ParentCompositorDrawConstraints::ParentCompositorDrawConstraints()
@@ -17,13 +19,24 @@ ParentCompositorDrawConstraints::ParentCompositorDrawConstraints(
     : is_layer(is_layer), transform(transform), surface_rect(surface_rect) {
 }
 
-bool ParentCompositorDrawConstraints::Equals(
-    const ParentCompositorDrawConstraints& other) const {
-  if (is_layer != other.is_layer || transform != other.transform)
+bool ParentCompositorDrawConstraints::NeedUpdate(
+    const ChildFrame& frame) const {
+  if (is_layer != frame.is_layer ||
+      transform != frame.transform_for_tile_priority) {
+    return true;
+  }
+
+  // Viewport for tile priority does not depend on surface rect in this case.
+  if (frame.offscreen_pre_raster)
     return false;
 
-  // Don't care about the surface size when neither is on a layer.
-  return !is_layer || surface_rect == other.surface_rect;
+  if (is_layer) {
+    return surface_rect != frame.viewport_rect_for_tile_priority;
+  } else {
+    // Workaround for corner case. See crbug.com/417479.
+    return frame.viewport_rect_for_tile_priority.IsEmpty() &&
+           !surface_rect.IsEmpty();
+  }
 }
 
 }  // namespace webview

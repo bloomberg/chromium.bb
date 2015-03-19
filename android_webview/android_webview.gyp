@@ -246,6 +246,8 @@
         'browser/browser_view_renderer.cc',
         'browser/browser_view_renderer.h',
         'browser/browser_view_renderer_client.h',
+        'browser/child_frame.cc',
+        'browser/child_frame.h',
         'browser/deferred_gpu_command_service.cc',
         'browser/deferred_gpu_command_service.h',
         'browser/find_helper.cc',

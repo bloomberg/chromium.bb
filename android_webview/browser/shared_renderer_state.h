@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -25,6 +24,7 @@ class RequestDrawGLTracker;
 }
 
 class BrowserViewRenderer;
+class ChildFrame;
 class HardwareRenderer;
 class InsideHardwareReleaseReset;
 
@@ -41,30 +41,20 @@ class SharedRendererState {
 
   // UI thread methods.
   void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset);
-  bool HasCompositorFrameOnUI() const;
-  void SetCompositorFrameOnUI(scoped_ptr<cc::CompositorFrame> frame,
-                              bool force_commit);
+  void SetCompositorFrameOnUI(scoped_ptr<ChildFrame> frame);
   void InitializeHardwareDrawIfNeededOnUI();
   void ReleaseHardwareDrawIfNeededOnUI();
   ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI() const;
-  void SetForceInvalidateOnNextDrawGLOnUI(
-      bool needs_force_invalidate_on_next_draw_gl);
-  bool NeedsForceInvalidateOnNextDrawGLOnUI() const;
   void SwapReturnedResourcesOnUI(cc::ReturnedResourceArray* resources);
   bool ReturnedResourcesEmptyOnUI() const;
-  scoped_ptr<cc::CompositorFrame> PassUncommittedFrameOnUI();
+  scoped_ptr<ChildFrame> PassUncommittedFrameOnUI();
 
   // RT thread methods.
   gfx::Vector2d GetScrollOffsetOnRT();
-  scoped_ptr<cc::CompositorFrame> PassCompositorFrameOnRT();
-  bool ForceCommitOnRT() const;
+  scoped_ptr<ChildFrame> PassCompositorFrameOnRT();
   void DrawGL(AwDrawGLInfo* draw_info);
-  // Returns true if the draw constraints are updated.
-  bool UpdateDrawConstraintsOnRT(
-      const ParentCompositorDrawConstraints& parent_draw_constraints);
   void PostExternalDrawConstraintsToChildCompositorOnRT(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
-  void DidSkipCommitFrameOnRT();
   void InsertReturnedResourcesOnRT(const cc::ReturnedResourceArray& resources);
 
  private:
@@ -86,7 +76,6 @@ class SharedRendererState {
   void ResetRequestDrawGLCallback();
   void ClientRequestDrawGLOnUI();
   void UpdateParentDrawConstraintsOnUI();
-  void DidSkipCommitFrameOnUI();
   bool IsInsideHardwareRelease() const;
   void SetInsideHardwareRelease(bool inside);
 
@@ -105,10 +94,8 @@ class SharedRendererState {
   // Accessed by both UI and RT thread.
   mutable base::Lock lock_;
   gfx::Vector2d scroll_offset_;
-  scoped_ptr<cc::CompositorFrame> compositor_frame_;
-  bool force_commit_;
+  scoped_ptr<ChildFrame> child_frame_;
   bool inside_hardware_release_;
-  bool needs_force_invalidate_on_next_draw_gl_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
   cc::ReturnedResourceArray returned_resources_;
   base::Closure request_draw_gl_closure_;

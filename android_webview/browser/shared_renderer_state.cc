@@ -5,6 +5,7 @@
 #include "android_webview/browser/shared_renderer_state.h"
 
 #include "android_webview/browser/browser_view_renderer.h"
+#include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/hardware_renderer.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
@@ -88,9 +89,7 @@ SharedRendererState::SharedRendererState(
     : ui_loop_(ui_loop),
       browser_view_renderer_(browser_view_renderer),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()),
-      force_commit_(false),
       inside_hardware_release_(false),
-      needs_force_invalidate_on_next_draw_gl_(false),
       weak_factory_on_ui_thread_(this) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   DCHECK(browser_view_renderer_);
@@ -157,86 +156,40 @@ gfx::Vector2d SharedRendererState::GetScrollOffsetOnRT() {
   return scroll_offset_;
 }
 
-bool SharedRendererState::HasCompositorFrameOnUI() const {
+void SharedRendererState::SetCompositorFrameOnUI(scoped_ptr<ChildFrame> frame) {
   base::AutoLock lock(lock_);
-  return compositor_frame_.get();
+  DCHECK(!child_frame_.get());
+  child_frame_ = frame.Pass();
 }
 
-void SharedRendererState::SetCompositorFrameOnUI(
-    scoped_ptr<cc::CompositorFrame> frame,
-    bool force_commit) {
+scoped_ptr<ChildFrame> SharedRendererState::PassCompositorFrameOnRT() {
   base::AutoLock lock(lock_);
-  DCHECK(!compositor_frame_.get());
-  compositor_frame_ = frame.Pass();
-  force_commit_ = force_commit;
+  return child_frame_.Pass();
 }
 
-scoped_ptr<cc::CompositorFrame> SharedRendererState::PassCompositorFrameOnRT() {
+scoped_ptr<ChildFrame> SharedRendererState::PassUncommittedFrameOnUI() {
   base::AutoLock lock(lock_);
-  return compositor_frame_.Pass();
-}
-
-scoped_ptr<cc::CompositorFrame>
-SharedRendererState::PassUncommittedFrameOnUI() {
-  base::AutoLock lock(lock_);
-  return compositor_frame_.Pass();
-}
-
-bool SharedRendererState::ForceCommitOnRT() const {
-  base::AutoLock lock(lock_);
-  return force_commit_;
-}
-
-bool SharedRendererState::UpdateDrawConstraintsOnRT(
-    const ParentCompositorDrawConstraints& parent_draw_constraints) {
-  base::AutoLock lock(lock_);
-  if (needs_force_invalidate_on_next_draw_gl_ ||
-      !parent_draw_constraints_.Equals(parent_draw_constraints)) {
-    parent_draw_constraints_ = parent_draw_constraints;
-    return true;
-  }
-
-  return false;
+  return child_frame_.Pass();
 }
 
 void SharedRendererState::PostExternalDrawConstraintsToChildCompositorOnRT(
     const ParentCompositorDrawConstraints& parent_draw_constraints) {
-  if (UpdateDrawConstraintsOnRT(parent_draw_constraints)) {
-    // No need to hold the lock_ during the post task.
-    ui_loop_->PostTask(
-        FROM_HERE,
-        base::Bind(&SharedRendererState::UpdateParentDrawConstraintsOnUI,
-                   ui_thread_weak_ptr_));
+  {
+    base::AutoLock lock(lock_);
+    parent_draw_constraints_ = parent_draw_constraints;
   }
-}
 
-void SharedRendererState::DidSkipCommitFrameOnRT() {
-  ui_loop_->PostTask(FROM_HERE,
-                     base::Bind(&SharedRendererState::DidSkipCommitFrameOnUI,
-                                ui_thread_weak_ptr_));
-}
-
-void SharedRendererState::DidSkipCommitFrameOnUI() {
-  DCHECK(ui_loop_->BelongsToCurrentThread());
-  browser_view_renderer_->DidSkipCommitFrame();
+  // No need to hold the lock_ during the post task.
+  ui_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&SharedRendererState::UpdateParentDrawConstraintsOnUI,
+                 ui_thread_weak_ptr_));
 }
 
 ParentCompositorDrawConstraints
 SharedRendererState::GetParentDrawConstraintsOnUI() const {
   base::AutoLock lock(lock_);
   return parent_draw_constraints_;
-}
-
-void SharedRendererState::SetForceInvalidateOnNextDrawGLOnUI(
-    bool needs_force_invalidate_on_next_draw_gl) {
-  base::AutoLock lock(lock_);
-  needs_force_invalidate_on_next_draw_gl_ =
-      needs_force_invalidate_on_next_draw_gl;
-}
-
-bool SharedRendererState::NeedsForceInvalidateOnNextDrawGLOnUI() const {
-  base::AutoLock lock(lock_);
-  return needs_force_invalidate_on_next_draw_gl_;
 }
 
 void SharedRendererState::SetInsideHardwareRelease(bool inside) {
