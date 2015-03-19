@@ -1065,7 +1065,6 @@ crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/border-padding-pagina
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-rules-stacking.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/flipped-blocks-hit-test.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/max-height-columns-block.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/nested-columns.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/pagination-h-horizontal-bt.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/pagination-h-horizontal-tb.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/pagination-h-vertical-lr.html [ Skip ]
@@ -1086,9 +1085,8 @@ crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-as-nested-c
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-as-nested-inline-block-child.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-margin-collapsing.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-lr/border-padding-pagination.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-lr/nested-columns.html [ Skip ]
 crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/border-padding-pagination.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/nested-columns.html [ Skip ]
+crbug.com/467477 virtual/regionbasedmulticol/fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]
 
 crbug.com/453794 virtual/slimmingpaint/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]
 crbug.com/453794 fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]
