@@ -48,27 +48,20 @@ class NavigatorTestWithBrowserSideNavigation
 
   void RequestNavigation(FrameTreeNode* node, const GURL& url) {
     RequestNavigationWithParameters(node, url, Referrer(),
-                                    ui::PAGE_TRANSITION_LINK,
-                                    NavigationController::NO_RELOAD);
+                                    ui::PAGE_TRANSITION_LINK);
   }
 
   void RequestNavigationWithParameters(
       FrameTreeNode* node,
       const GURL& url,
       const Referrer& referrer,
-      ui::PageTransition transition_type,
-      NavigationController::ReloadType reload_type) {
-    scoped_ptr<NavigationEntryImpl> entry(
-        NavigationEntryImpl::FromNavigationEntry(
-            NavigationController::CreateNavigationEntry(
-                url,
-                referrer,
-                transition_type,
-                false,
-                std::string(),
-                controller().GetBrowserContext())));
-    static_cast<NavigatorImpl*>(node->navigator())->RequestNavigation(
-        node, *entry, reload_type, base::TimeTicks::Now());
+      ui::PageTransition transition_type) {
+    NavigationController::LoadURLParams load_params(url);
+    load_params.frame_tree_node_id = node->frame_tree_node_id();
+    load_params.referrer = referrer;
+    load_params.transition_type = transition_type;
+
+    controller().LoadURLWithParams(load_params);
   }
 
   NavigationRequest* GetNavigationRequestForFrameTreeNode(
@@ -772,9 +765,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, Reload) {
   contents()->NavigateAndCommit(kUrl);
 
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
-  RequestNavigationWithParameters(node, kUrl, Referrer(),
-                                  ui::PAGE_TRANSITION_LINK,
-                                  NavigationController::RELOAD);
+  controller().Reload(false);
   // A NavigationRequest should have been generated.
   NavigationRequest* main_request = GetNavigationRequestForFrameTreeNode(node);
   ASSERT_TRUE(main_request != NULL);
@@ -787,9 +778,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, Reload) {
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 
   // Now do a shift+reload.
-  RequestNavigationWithParameters(node, kUrl, Referrer(),
-                                  ui::PAGE_TRANSITION_LINK,
-                                  NavigationController::RELOAD_IGNORING_CACHE);
+  controller().ReloadIgnoringCache(false);
   // A NavigationRequest should have been generated.
   main_request = GetNavigationRequestForFrameTreeNode(node);
   ASSERT_TRUE(main_request != NULL);
