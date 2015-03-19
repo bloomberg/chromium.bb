@@ -219,8 +219,9 @@ def run_tests(config_path):
       runners.append(TestRunner(specific_test_cmd, test_name))
     time.sleep(1)
   failed_tests = [(name, log) for (name, passed, log) in results if not passed]
-  logger.info("%d failed tests out of %d", len(failed_tests), len(results))
-  logger.info("Failing tests: %s", [name for (name, _) in failed_tests])
+  logger.info("%d failed tests out of %d, failing tests: %s",
+              len(failed_tests), len(results),
+              [name for (name, _) in failed_tests])
   logger.debug("Logs of failing tests: %s", failed_tests)
 
 
