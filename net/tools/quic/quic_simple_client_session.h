@@ -4,8 +4,8 @@
 //
 // A client specific QuicSession subclass.
 
-#ifndef NET_TOOLS_QUIC_QUIC_CLIENT_SESSION_H_
-#define NET_TOOLS_QUIC_QUIC_CLIENT_SESSION_H_
+#ifndef NET_TOOLS_QUIC_QUIC_SIMPLE_CLIENT_SESSION_H_
+#define NET_TOOLS_QUIC_QUIC_SIMPLE_CLIENT_SESSION_H_
 
 #include <string>
 
@@ -13,7 +13,7 @@
 #include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_protocol.h"
-#include "net/tools/quic/quic_spdy_client_stream.h"
+#include "net/tools/quic/quic_simple_client_stream.h"
 
 namespace net {
 
@@ -23,19 +23,19 @@ class ReliableQuicStream;
 
 namespace tools {
 
-class QuicClientSession : public QuicClientSessionBase {
+class QuicSimpleClientSession : public QuicClientSessionBase {
  public:
-  QuicClientSession(const QuicConfig& config, QuicConnection* connection);
-  ~QuicClientSession() override;
+  QuicSimpleClientSession(const QuicConfig& config, QuicConnection* connection);
+  ~QuicSimpleClientSession() override;
 
   void InitializeSession(const QuicServerId& server_id,
                          QuicCryptoClientConfig* config);
 
   // QuicSession methods:
-  QuicSpdyClientStream* CreateOutgoingDataStream() override;
+  QuicSimpleClientStream* CreateOutgoingDataStream() override;
   QuicCryptoClientStream* GetCryptoStream() override;
 
-  // QuicClientSessionBase methods:
+  // QuicSimpleClientSessionBase methods:
   void OnProofValid(const QuicCryptoClientConfig::CachedState& cached) override;
   void OnProofVerifyDetailsAvailable(
       const ProofVerifyDetails& verify_details) override;
@@ -63,10 +63,10 @@ class QuicClientSession : public QuicClientSessionBase {
   // the creation of streams regardless of the high chance they will fail.
   bool respect_goaway_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuicClientSession);
+  DISALLOW_COPY_AND_ASSIGN(QuicSimpleClientSession);
 };
 
 }  // namespace tools
 }  // namespace net
 
-#endif  // NET_TOOLS_QUIC_QUIC_CLIENT_SESSION_H_
+#endif  // NET_TOOLS_QUIC_QUIC_SIMPLE_CLIENT_SESSION_H_

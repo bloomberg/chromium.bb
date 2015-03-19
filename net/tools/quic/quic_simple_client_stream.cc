@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/quic_spdy_client_stream.h"
+#include "net/tools/quic/quic_simple_client_stream.h"
 
+#include "net/http/http_response_info.h"
 #include "net/spdy/spdy_framer.h"
-#include "net/tools/quic/quic_client_session.h"
-#include "net/tools/quic/spdy_utils.h"
+#include "net/spdy/spdy_http_utils.h"
+#include "net/tools/quic/quic_simple_client_session.h"
 
 using base::StringPiece;
 using std::string;
@@ -16,19 +17,20 @@ namespace tools {
 
 static const size_t kHeaderBufInitialSize = 4096;
 
-QuicSpdyClientStream::QuicSpdyClientStream(QuicStreamId id,
-                                           QuicClientSession* session)
+QuicSimpleClientStream::QuicSimpleClientStream(QuicStreamId id,
+                                               QuicSimpleClientSession* session)
     : QuicDataStream(id, session),
       read_buf_(new GrowableIOBuffer()),
       response_headers_received_(false),
       header_bytes_read_(0),
       header_bytes_written_(0) {
+  read_buf_->SetCapacity(kHeaderBufInitialSize);
 }
 
-QuicSpdyClientStream::~QuicSpdyClientStream() {
+QuicSimpleClientStream::~QuicSimpleClientStream() {
 }
 
-void QuicSpdyClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
+void QuicSimpleClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
   if (!write_side_closed()) {
     DVLOG(1) << "Got a response before the request was complete.  "
              << "Aborting request.";
@@ -37,14 +39,14 @@ void QuicSpdyClientStream::OnStreamFrame(const QuicStreamFrame& frame) {
   QuicDataStream::OnStreamFrame(frame);
 }
 
-void QuicSpdyClientStream::OnStreamHeadersComplete(bool fin,
+void QuicSimpleClientStream::OnStreamHeadersComplete(bool fin,
                                                    size_t frame_len) {
   header_bytes_read_ = frame_len;
   QuicDataStream::OnStreamHeadersComplete(fin, frame_len);
 }
 
-uint32 QuicSpdyClientStream::ProcessData(const char* data,
-                                         uint32 data_len) {
+uint32 QuicSimpleClientStream::ProcessData(const char* data,
+                                           uint32 data_len) {
   int total_bytes_processed = 0;
 
   // Are we still reading the response headers.
@@ -63,22 +65,26 @@ uint32 QuicSpdyClientStream::ProcessData(const char* data,
   return data_len;
 }
 
-void QuicSpdyClientStream::OnFinRead() {
+void QuicSimpleClientStream::OnFinRead() {
   ReliableQuicStream::OnFinRead();
   if (!response_headers_received_) {
     Reset(QUIC_BAD_APPLICATION_PAYLOAD);
-  } else if ((headers().content_length_status() ==
-             BalsaHeadersEnums::VALID_CONTENT_LENGTH) &&
-             data_.size() != headers().content_length()) {
+  } else if (headers()->GetContentLength() != -1 &&
+             data_.size() !=
+                 static_cast<size_t>(headers()->GetContentLength())) {
     Reset(QUIC_BAD_APPLICATION_PAYLOAD);
   }
 }
 
-ssize_t QuicSpdyClientStream::SendRequest(const BalsaHeaders& headers,
-                                          StringPiece body,
-                                          bool fin) {
-  SpdyHeaderBlock header_block =
-      SpdyUtils::RequestHeadersToSpdyHeaders(headers);
+size_t QuicSimpleClientStream::SendRequest(const HttpRequestInfo& headers,
+                                           StringPiece body,
+                                           bool fin) {
+  SpdyHeaderBlock header_block;
+  CreateSpdyHeadersFromHttpRequest(headers,
+                                   headers.extra_headers,
+                                   SPDY3,
+                                   /*direct=*/ true,
+                                   &header_block);
 
   bool send_fin_with_headers = fin && body.empty();
   size_t bytes_sent = body.size();
@@ -93,7 +99,7 @@ ssize_t QuicSpdyClientStream::SendRequest(const BalsaHeaders& headers,
   return bytes_sent;
 }
 
-int QuicSpdyClientStream::ParseResponseHeaders() {
+int QuicSimpleClientStream::ParseResponseHeaders() {
   size_t read_buf_len = static_cast<size_t>(read_buf_->offset());
   SpdyFramer framer(SPDY3);
   SpdyHeaderBlock headers;
@@ -104,10 +110,13 @@ int QuicSpdyClientStream::ParseResponseHeaders() {
     return -1;
   }
 
-  if (!SpdyUtils::FillBalsaResponseHeaders(headers, &headers_)) {
+  HttpResponseInfo info;
+  if (!SpdyHeadersToHttpResponse(headers, SPDY3, &info)) {
     Reset(QUIC_BAD_APPLICATION_PAYLOAD);
     return -1;
   }
+  headers_ = info.headers;
+
   response_headers_received_ = true;
 
   size_t delta = read_buf_len - len;
@@ -115,14 +124,14 @@ int QuicSpdyClientStream::ParseResponseHeaders() {
     data_.append(data + len, delta);
   }
 
-  return len;
+  return static_cast<int>(len);
 }
 
-void QuicSpdyClientStream::SendBody(const string& data, bool fin) {
+void QuicSimpleClientStream::SendBody(const string& data, bool fin) {
   SendBody(data, fin, nullptr);
 }
 
-void QuicSpdyClientStream::SendBody(
+void QuicSimpleClientStream::SendBody(
     const string& data,
     bool fin,
     QuicAckNotifier::DelegateInterface* delegate) {

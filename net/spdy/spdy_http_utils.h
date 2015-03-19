@@ -24,9 +24,10 @@ class HttpResponseHeaders;
 // |response| output parameter for the HttpResponseInfo.
 // Returns true if successfully converted.  False if the SpdyHeaderBlock is
 // incomplete (e.g. missing 'status' or 'version').
-bool SpdyHeadersToHttpResponse(const SpdyHeaderBlock& headers,
-                               SpdyMajorVersion protocol_version,
-                               HttpResponseInfo* response);
+NET_EXPORT_PRIVATE bool SpdyHeadersToHttpResponse(
+    const SpdyHeaderBlock& headers,
+    SpdyMajorVersion protocol_version,
+    HttpResponseInfo* response);
 
 // Create a SpdyHeaderBlock from HttpRequestInfo and HttpRequestHeaders.
 NET_EXPORT_PRIVATE void CreateSpdyHeadersFromHttpRequest(
