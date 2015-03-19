@@ -114,6 +114,7 @@ def BuildAndTest(options):
                                '%s_%s' % (os_name, arch_name))
   nacl_newlib_dir = os.path.join(toolchain_dir, 'nacl_%s_newlib' % arch_name)
   nacl_glibc_dir = os.path.join(toolchain_dir, 'nacl_%s_glibc' % arch_name)
+  pnacl_newlib_dir = os.path.join(toolchain_dir, 'pnacl_newlib')
 
   # Decide platform specifics.
   if options.browser_path:
@@ -220,6 +221,7 @@ def BuildAndTest(options):
       'chrome_browser_path=%s' % chrome_filename,
       'nacl_newlib_dir=%s' % nacl_newlib_dir,
       'nacl_glibc_dir=%s' % nacl_glibc_dir,
+      'pnacl_newlib_dir=%s' % pnacl_newlib_dir,
   ]
   if not options.integration_bot and not options.morenacl_bot:
     cmd.append('disable_flaky_tests=1')
@@ -232,15 +234,6 @@ def BuildAndTest(options):
   if options.json_build_results_output_file:
     cmd.append('json_build_results_output_file=%s' %
                options.json_build_results_output_file)
-
-  # Download the toolchain(s).
-  pkg_ver_dir = os.path.join(NACL_DIR, 'build', 'package_version')
-  RunCommand([python, os.path.join(pkg_ver_dir, 'package_version.py'),
-              '--mode', 'nacl_core_sdk',
-              '--exclude', 'pnacl_newlib',
-              '--exclude', 'nacl_arm_newlib',
-              'sync', '--extract'],
-             NACL_DIR, os.environ)
 
   CleanTempDir()
 
