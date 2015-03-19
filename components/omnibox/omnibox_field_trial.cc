@@ -289,37 +289,6 @@ int OmniboxFieldTrial::HQPBookmarkValue() {
   return bookmark_value;
 }
 
-bool OmniboxFieldTrial::HQPExperimentalScoringEnabled() {
-  return variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kHQPExperimentalScoringEnabledParam) == "true";
-}
-
-std::string OmniboxFieldTrial::HQPExperimentalScoringBuckets() {
-  if (!HQPExperimentalScoringEnabled())
-    return "";
-
-  return variations::GetVariationParamValue(
-      kBundledExperimentFieldTrialName,
-      kHQPExperimentalScoringBucketsParam);
-}
-
-float OmniboxFieldTrial::HQPExperimentalTopicalityThreshold() {
-  if (!HQPExperimentalScoringEnabled())
-    return -1;
-
-  std::string topicality_threhold_str =
-    variations::GetVariationParamValue(
-        kBundledExperimentFieldTrialName,
-        kHQPExperimentalScoringTopicalityThresholdParam);
-
-  double topicality_threshold;
-  if (!base::StringToDouble(topicality_threhold_str, &topicality_threshold))
-    return -1;
-
-  return static_cast<float>(topicality_threshold);
-}
-
 bool OmniboxFieldTrial::HQPAllowMatchInTLDValue() {
   return variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
@@ -372,6 +341,43 @@ void OmniboxFieldTrial::GetSuggestPollingStrategy(bool* from_last_keystroke,
   }
 }
 
+bool OmniboxFieldTrial::HQPExperimentalScoringEnabled() {
+  return variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kHQPExperimentalScoringEnabledParam) == "true";
+}
+
+std::string OmniboxFieldTrial::HQPExperimentalScoringBuckets() {
+  if (!HQPExperimentalScoringEnabled())
+    return "";
+
+  return variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kHQPExperimentalScoringBucketsParam);
+}
+
+float OmniboxFieldTrial::HQPExperimentalTopicalityThreshold() {
+  if (!HQPExperimentalScoringEnabled())
+    return -1;
+
+  std::string topicality_threhold_str =
+    variations::GetVariationParamValue(
+        kBundledExperimentFieldTrialName,
+        kHQPExperimentalScoringTopicalityThresholdParam);
+
+  double topicality_threshold;
+  if (!base::StringToDouble(topicality_threhold_str, &topicality_threshold))
+    return -1;
+
+  return static_cast<float>(topicality_threshold);
+}
+
+bool OmniboxFieldTrial::HQPFixFrequencyScoringBugs() {
+  return variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kHQPFixFrequencyScoringBugsRule) == "true";
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
@@ -396,6 +402,8 @@ OmniboxFieldTrial::kMeasureSuggestPollingDelayFromLastKeystrokeRule[] =
     "MeasureSuggestPollingDelayFromLastKeystroke";
 const char OmniboxFieldTrial::kSuggestPollingDelayMsRule[] =
     "SuggestPollingDelayMs";
+const char OmniboxFieldTrial::kHQPFixFrequencyScoringBugsRule[] =
+    "HQPFixFrequencyScoringBugs";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";

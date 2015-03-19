@@ -292,6 +292,14 @@ class OmniboxFieldTrial {
   static float HQPExperimentalTopicalityThreshold();
 
   // ---------------------------------------------------------
+  // For the HQPFixFrequencyScoring experiment that's part of the
+  // bundled omnibox field trial.
+
+  // Returns true if HQP should apply the bug fixes to the GetFrequency()
+  // function.
+  static bool HQPFixFrequencyScoringBugs();
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -310,6 +318,7 @@ class OmniboxFieldTrial {
   static const char kDisableResultsCachingRule[];
   static const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
   static const char kSuggestPollingDelayMsRule[];
+  static const char kHQPFixFrequencyScoringBugsRule[];
 
   // Parameter names used by the HUP new scoring experiments.
   static const char kHUPNewScoringEnabledParam[];
