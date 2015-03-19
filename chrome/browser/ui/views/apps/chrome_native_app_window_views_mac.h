@@ -14,6 +14,12 @@ class ChromeNativeAppWindowViewsMac : public ChromeNativeAppWindowViews {
   ~ChromeNativeAppWindowViewsMac() override;
 
  protected:
+  // ChromeNativeAppWindowViews implementation.
+  void OnBeforeWidgetInit(
+      const extensions::AppWindow::CreateParams& create_params,
+      views::Widget::InitParams* init_params,
+      views::Widget* widget) override;
+
   // ui::BaseWindow implementation.
   void Show() override;
   void ShowInactive() override;

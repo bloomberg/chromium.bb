@@ -2334,9 +2334,13 @@
     # TODO(jackhou): Move items to chrome_browser_ui_views_sources when they
     # migrate from mac_views_browser to a chrome://flag.
     'chrome_browser_ui_views_mac_experimental_sources': [
+      'browser/ui/views/apps/app_window_native_widget_mac.h',
+      'browser/ui/views/apps/app_window_native_widget_mac.mm',
       'browser/ui/views/apps/chrome_app_window_client_views_mac.mm',
       'browser/ui/views/apps/chrome_native_app_window_views_mac.h',
       'browser/ui/views/apps/chrome_native_app_window_views_mac.mm',
+      'browser/ui/views/apps/native_widget_mac_frameless_nswindow.h',
+      'browser/ui/views/apps/native_widget_mac_frameless_nswindow.mm',
     ],
     # Windows-only. Assume ash/aura/views.
     'chrome_browser_ui_win_sources': [

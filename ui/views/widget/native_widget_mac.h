@@ -118,6 +118,10 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   void RepostNativeEvent(gfx::NativeEvent native_event) override;
 
  protected:
+  // Creates the NSWindow that will be passed to the BridgedNativeWidget.
+  // Called by InitNativeWidget. The return value will be autoreleased.
+  virtual gfx::NativeWindow CreateNSWindow(const Widget::InitParams& params);
+
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 
  private:

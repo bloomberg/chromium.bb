@@ -248,7 +248,24 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
   return YES;
 }
 
+- (void)viewDidMoveToWindow {
+  // When this view is added to a window, AppKit calls setFrameSize before it is
+  // added to the window, so the behavior in setFrameSize is not triggered.
+  NSWindow* window = [self window];
+  if (window)
+    [self setFrameSize:NSZeroSize];
+}
+
 - (void)setFrameSize:(NSSize)newSize {
+  // The size passed in here does not always use
+  // -[NSWindow contentRectForFrameRect]. The following ensures that the
+  // contentView for a frameless window can extend over the titlebar of the new
+  // window containing it, since AppKit requires a titlebar to give frameless
+  // windows correct shadows and rounded corners.
+  NSWindow* window = [self window];
+  if (window)
+    newSize = [window contentRectForFrameRect:[window frame]].size;
+
   [super setFrameSize:newSize];
   if (!hostedView_)
     return;

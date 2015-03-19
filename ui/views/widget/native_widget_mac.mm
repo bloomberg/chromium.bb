@@ -85,13 +85,7 @@ void NativeWidgetMac::OnWindowWillClose() {
 
 void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
-
-  NSInteger style_mask = StyleMaskForParams(params);
-  base::scoped_nsobject<NSWindow> window([[NativeWidgetMacNSWindow alloc]
-      initWithContentRect:ui::kWindowSizeDeterminedLater
-                styleMask:style_mask
-                  backing:NSBackingStoreBuffered
-                    defer:YES]);
+  base::scoped_nsobject<NSWindow> window([CreateNSWindow(params) retain]);
   [window setReleasedWhenClosed:NO];  // Owned by scoped_nsobject.
   bridge_->Init(window, params);
 
@@ -537,6 +531,17 @@ void NativeWidgetMac::OnSizeConstraintsChanged() {
 
 void NativeWidgetMac::RepostNativeEvent(gfx::NativeEvent native_event) {
   NOTIMPLEMENTED();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetMac, protected:
+
+NSWindow* NativeWidgetMac::CreateNSWindow(const Widget::InitParams& params) {
+  return [[[NativeWidgetMacNSWindow alloc]
+      initWithContentRect:ui::kWindowSizeDeterminedLater
+                styleMask:StyleMaskForParams(params)
+                  backing:NSBackingStoreBuffered
+                    defer:YES] autorelease];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

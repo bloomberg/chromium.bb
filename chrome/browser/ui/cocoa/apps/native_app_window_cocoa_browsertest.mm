@@ -213,3 +213,30 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
   EXPECT_FALSE(window->IsFullscreen());
   EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
 }
+
+// Test that, in frameless windows, the web contents has the same size as the
+// window.
+IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Frameless) {
+  extensions::AppWindow* app_window =
+      CreateTestAppWindow("{\"frame\": \"none\"}");
+  NSWindow* ns_window = app_window->GetNativeWindow();
+  NSView* web_contents = app_window->web_contents()->GetNativeView();
+  EXPECT_TRUE(NSEqualSizes(NSMakeSize(512, 384), [web_contents frame].size));
+  // Move and resize the window.
+  NSRect new_frame = NSMakeRect(50, 50, 200, 200);
+  [ns_window setFrame:new_frame display:YES];
+  EXPECT_TRUE(NSEqualSizes(new_frame.size, [web_contents frame].size));
+
+  // Windows created with NSBorderlessWindowMask by default don't have shadow,
+  // but packaged apps should always have one.
+  EXPECT_TRUE([ns_window hasShadow]);
+
+  // Since the window has no constraints, it should have all of the following
+  // style mask bits.
+  NSUInteger style_mask = NSTitledWindowMask | NSClosableWindowMask |
+                          NSMiniaturizableWindowMask | NSResizableWindowMask |
+                          NSTexturedBackgroundWindowMask;
+  EXPECT_EQ(style_mask, [ns_window styleMask]);
+
+  CloseAppWindow(app_window);
+}
