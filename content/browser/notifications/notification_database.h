@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_NOTIFICATIONS_NOTIFICATION_DATABASE_H_
 
 #include <stdint.h>
+#include <set>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/sequence_checker.h"
@@ -67,6 +69,25 @@ class CONTENT_EXPORT NotificationDatabase {
       const GURL& origin,
       NotificationDatabaseData* notification_database_data) const;
 
+  // Reads all notification data for all origins from the database, and appends
+  // the data to |notification_data_vector|. Returns the status code.
+  Status ReadAllNotificationData(
+      std::vector<NotificationDatabaseData>* notification_data_vector) const;
+
+  // Reads all notification data associated with |origin| from the database, and
+  // appends the data to |notification_data_vector|. Returns the status code.
+  Status ReadAllNotificationDataForOrigin(
+      const GURL& origin,
+      std::vector<NotificationDatabaseData>* notification_data_vector) const;
+
+  // Reads all notification data associated to |service_worker_registration_id|
+  // belonging to |origin| from the database, and appends the data to the
+  // |notification_data_vector|. Returns the status code.
+  Status ReadAllNotificationDataForServiceWorkerRegistration(
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      std::vector<NotificationDatabaseData>* notification_data_vector) const;
+
   // Writes the |notification_database_data| for a new notification belonging to
   // |origin| to the database, and returns the status code of the writing
   // operation. The id of the new notification will be set in |notification_id|.
@@ -80,6 +101,22 @@ class CONTENT_EXPORT NotificationDatabase {
   // status code of the deletion operation. Note that it is not considered a
   // failure if the to-be-deleted notification does not exist.
   Status DeleteNotificationData(int64_t notification_id, const GURL& origin);
+
+  // Deletes all data associated with |origin| from the database, and appends
+  // the deleted notification ids to |deleted_notification_set|. Returns the
+  // status code of the deletion operation.
+  Status DeleteAllNotificationDataForOrigin(
+      const GURL& origin,
+      std::set<int64_t>* deleted_notification_set);
+
+  // Deletes all data associated with the |service_worker_registration_id|
+  // belonging to |origin| from the database, and appends the deleted
+  // notification ids to |deleted_notification_set|. Returns the status code
+  // of the deletion operation.
+  Status DeleteAllNotificationDataForServiceWorkerRegistration(
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      std::set<int64_t>* deleted_notification_set);
 
   // Completely destroys the contents of this database.
   Status Destroy();
@@ -99,6 +136,26 @@ class CONTENT_EXPORT NotificationDatabase {
   // the status code of the reading operation. The value will be stored in
   // the |next_notification_id_| member.
   Status ReadNextNotificationId();
+
+  // Reads all notification data with the given constraints. |origin| may be
+  // empty to read all notification data from all origins. If |origin| is
+  // set, but |service_worker_registration_id| is invalid, then all notification
+  // data for |origin| will be read. If both are set, then all notification data
+  // for the given |service_worker_registration_id| will be read.
+  Status ReadAllNotificationDataInternal(
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      std::vector<NotificationDatabaseData>* notification_data_vector) const;
+
+  // Deletes all notification data with the given constraints. |origin| must
+  // always be set - use Destroy() when the goal is to empty the database. If
+  // |service_worker_registration_id| is invalid, all notification data for the
+  // |origin| will be deleted.
+  // All deleted notification ids will be written to |deleted_notification_set|.
+  Status DeleteAllNotificationDataInternal(
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      std::set<int64_t>* deleted_notification_set);
 
   // Returns whether the database has been opened.
   bool IsOpen() const { return db_ != nullptr; }
