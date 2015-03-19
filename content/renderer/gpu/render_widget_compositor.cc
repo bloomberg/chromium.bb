@@ -40,7 +40,6 @@
 #include "third_party/WebKit/public/platform/WebSelectionBound.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "ui/gfx/frame_time.h"
 #include "ui/gl/gl_switches.h"
@@ -211,12 +210,7 @@ void RenderWidgetCompositor::Initialize() {
       !compositor_deps_->IsElasticOverscrollEnabled();
   settings.accelerated_animation_enabled =
       !cmd->HasSwitch(cc::switches::kDisableThreadedAnimation);
-  if (cmd->HasSwitch(switches::kEnableSlimmingPaint)) {
-    settings.use_display_lists = true;
-    blink::WebRuntimeFeatures::enableSlimmingPaint(true);
-    settings.record_full_layer =
-        !blink::WebRuntimeFeatures::slimmingPaintDisplayItemCacheEnabled();
-  }
+  settings.use_display_lists = cmd->HasSwitch(switches::kEnableSlimmingPaint);
 
   settings.default_tile_size = CalculateDefaultTileSize();
   if (cmd->HasSwitch(switches::kDefaultTileWidth)) {
