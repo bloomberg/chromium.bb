@@ -78,7 +78,7 @@ LangAttributeAwareFormControlUI
 LinkPreconnect status=experimental
 LinkHeader status=experimental
 LocalStorage status=stable
-FractionalScrollOffsets status=stable
+FractionalScrollOffsets status=experimental
 GlobalFetch status=stable
 Media status=stable
 MediaCapture
