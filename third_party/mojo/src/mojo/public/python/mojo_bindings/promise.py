@@ -133,15 +133,15 @@ class Promise(object):
     if isinstance(self._result, Promise):
       return self._result.Then(onFullfilled, onRejected)
     def GeneratorFunction(resolve, reject):
+      recover = reject
+      if onRejected:
+        recover = resolve
       if self._state == Promise.STATE_PENDING:
         self._onFulfilled.append(_Delegate(resolve, reject, onFullfilled))
-        self._onRejected.append(_Delegate(reject, reject, onRejected))
+        self._onRejected.append(_Delegate(recover, reject, onRejected))
       if self._state == self.STATE_FULLFILLED:
         _Delegate(resolve, reject, onFullfilled)(self._result)
       if self._state == self.STATE_REJECTED:
-        recover = reject
-        if onRejected:
-          recover = resolve
         _Delegate(recover, reject, onRejected)(self._result)
     return Promise(GeneratorFunction)
 

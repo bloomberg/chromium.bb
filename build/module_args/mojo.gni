@@ -9,6 +9,10 @@ mojo_sdk_root = "//third_party/mojo/src"
 # producer of the network service.
 build_network_service_from_source = true
 
+# Chromium does not build dart apptests. Disable any Mojo targets which
+# depend on the apptest framework.
+disable_dart_apptest_framework = true
+
 declare_args() {
   # Specify prebuilt network service mojo file location rather than download
   # from gs://mojo.

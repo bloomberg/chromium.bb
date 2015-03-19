@@ -48,7 +48,7 @@ enum ValidationError {
   // lengths.
   VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP,
   // Attempted to deserialize a tagged union with an unknown tag.
-  VALIDATION_ERROR_UNKOWN_UNION_TAG
+  VALIDATION_ERROR_UNKNOWN_UNION_TAG
 };
 
 const char* ValidationErrorToString(ValidationError error);

@@ -38,7 +38,7 @@ abstract class {{interface|name}} {
 
 class {{interface|name}}ProxyImpl extends bindings.Proxy {
   {{interface|name}}ProxyImpl.fromEndpoint(
-      core.MojoMessagePipeEndpoint endpoint) : super(endpoint);
+      core.MojoMessagePipeEndpoint endpoint) : super.fromEndpoint(endpoint);
 
   {{interface|name}}ProxyImpl.fromHandle(core.MojoHandle handle) :
       super.fromHandle(handle);
@@ -73,6 +73,11 @@ class {{interface|name}}ProxyImpl extends bindings.Proxy {
         break;
     }
   }
+
+  String toString() {
+    var superString = super.toString();
+    return "{{interface|name}}ProxyImpl($superString)";
+  }
 }
 
 
@@ -89,6 +94,7 @@ class _{{interface|name}}ProxyCalls implements {{interface|name}} {
   {%- endfor -%}
   {%- set request_struct = method|struct_from_method -%}
     ) {
+      assert(_proxyImpl.isBound);
       var params = new {{request_struct|name}}();
   {%- for parameter in method.parameters %}
       params.{{parameter|name}} = {{parameter|name}};
@@ -103,6 +109,7 @@ class _{{interface|name}}ProxyCalls implements {{interface|name}} {
       {{parameter.kind|dart_type}} {{parameter|name}},
   {%- endfor -%}
       [Function responseFactory = null]) {
+      assert(_proxyImpl.isBound);
       var params = new {{request_struct|name}}();
   {%- for parameter in method.parameters %}
       params.{{parameter|name}} = {{parameter|name}};
@@ -147,18 +154,23 @@ class {{interface|name}}Proxy implements bindings.ProxyBase {
       core.MojoMessagePipeEndpoint endpoint) =>
       new {{interface|name}}Proxy.fromEndpoint(endpoint);
 
-  void close() => impl.close();
+  Future close() => impl.close();
+
+  String toString() {
+    return "{{interface|name}}Proxy($impl)";
+  }
 }
 
 
 class {{interface|name}}Stub extends bindings.Stub {
-  {{interface|name}} _delegate = null;
+  {{interface|name}} _impl = null;
 
-  {{interface|name}}Stub.fromEndpoint(core.MojoMessagePipeEndpoint endpoint) :
-      super(endpoint);
+  {{interface|name}}Stub.fromEndpoint(
+      core.MojoMessagePipeEndpoint endpoint, [this._impl])
+      : super.fromEndpoint(endpoint);
 
-  {{interface|name}}Stub.fromHandle(core.MojoHandle handle) :
-      super.fromHandle(handle);
+  {{interface|name}}Stub.fromHandle(core.MojoHandle handle, [this._impl])
+      : super.fromHandle(handle);
 
   {{interface|name}}Stub.unbound() : super.unbound();
 
@@ -186,7 +198,7 @@ class {{interface|name}}Stub extends bindings.Stub {
 {%- endfor %}
 
   Future<bindings.Message> handleMessage(bindings.ServiceMessage message) {
-    assert(_delegate != null);
+    assert(_impl != null);
     switch (message.header.type) {
 {%- for method in interface.methods %}
 {%- set request_struct = method|struct_from_method %}
@@ -194,14 +206,14 @@ class {{interface|name}}Stub extends bindings.Stub {
         var params = {{request_struct|name}}.deserialize(
             message.payload);
 {%- if method.response_parameters == None %}
-        _delegate.{{method|name}}(
+        _impl.{{method|name}}(
           {%- for parameter in method.parameters -%}
               params.{{parameter|name}}{% if not loop.last %}, {% endif %}
           {%- endfor -%}
         );
 {%- else %}
 {%- set response_struct = method|response_struct_from_method %}
-        return _delegate.{{method|name}}(
+        return _impl.{{method|name}}(
           {%- for parameter in method.parameters -%}
               params.{{parameter|name}},
           {%- endfor -%}
@@ -224,9 +236,14 @@ class {{interface|name}}Stub extends bindings.Stub {
     return null;
   }
 
-  {{interface|name}} get delegate => _delegate;
-      set delegate({{interface|name}} d) {
-    assert(_delegate == null);
-    _delegate = d;
+  {{interface|name}} get impl => _impl;
+      set impl({{interface|name}} d) {
+    assert(_impl == null);
+    _impl = d;
+  }
+
+  String toString() {
+    var superString = super.toString();
+    return "{{interface|name}}Stub($superString)";
   }
 }

@@ -37,11 +37,24 @@ func StringPointer(s string) *string {
 
 // Counter is a simple thread-safe lock-free counter that can issue unique
 // numbers starting from 1 to callers.
-type Counter struct {
+type Counter interface {
+	// Count returns next unused value, each value is returned only once.
+	Count() uint64
+}
+
+// NewCounter return a new counter that returns numbers starting from 1.
+func NewCounter() Counter {
+	return &counterImpl{}
+}
+
+// counterImpl implements Counter interface.
+// This implementation uses atomic operations on an uint64, it should be always
+// allocated separatelly to be 8-aligned in order to work correctly on ARM.
+// See http://golang.org/pkg/sync/atomic/#pkg-note-BUG.
+type counterImpl struct {
 	last uint64
 }
 
-// Next returns next unused value, each value is returned only once.
-func (c *Counter) Next() uint64 {
+func (c *counterImpl) Count() uint64 {
 	return atomic.AddUint64(&c.last, 1)
 }

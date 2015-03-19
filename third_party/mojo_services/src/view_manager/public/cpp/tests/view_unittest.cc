@@ -742,7 +742,7 @@ class SharedPropertyChangeObserver : public ViewObserver {
   explicit SharedPropertyChangeObserver(View* view) : view_(view) {
     view_->AddObserver(this);
   }
-  virtual ~SharedPropertyChangeObserver() { view_->RemoveObserver(this); }
+  ~SharedPropertyChangeObserver() override { view_->RemoveObserver(this); }
 
   Changes GetAndClearChanges() {
     Changes changes;
@@ -835,7 +835,7 @@ class LocalPropertyChangeObserver : public ViewObserver {
         old_property_value_(-1) {
     view_->AddObserver(this);
   }
-  virtual ~LocalPropertyChangeObserver() { view_->RemoveObserver(this); }
+  ~LocalPropertyChangeObserver() override { view_->RemoveObserver(this); }
 
   PropertyChangeInfo PropertyChangeInfoAndClear() {
     PropertyChangeInfo result(property_key_, old_property_value_);

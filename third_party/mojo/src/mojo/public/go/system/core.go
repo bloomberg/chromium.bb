@@ -4,13 +4,9 @@
 
 package system
 
-//#include "c_allocators.h"
-//#include "mojo/public/c/system/core.h"
-import "C"
 import (
-	"reflect"
+	"runtime"
 	"sync"
-	"unsafe"
 )
 
 // core is an instance of the Mojo system APIs implementation.
@@ -77,96 +73,75 @@ func GetCore() Core {
 	return &core
 }
 
-func (impl *coreImpl) acquireCHandle(handle C.MojoHandle) UntypedHandle {
-	return impl.AcquireNativeHandle(MojoHandle(handle))
-}
-
-func (impl *coreImpl) AcquireNativeHandle(handle MojoHandle) UntypedHandle {
-	return &untypedHandleImpl{baseHandle{impl, handle}}
+func (impl *coreImpl) AcquireNativeHandle(mojoHandle MojoHandle) UntypedHandle {
+	handle := &untypedHandleImpl{baseHandle{impl, mojoHandle}}
+	runtime.SetFinalizer(handle, finalizeHandle)
+	return handle
 }
 
 func (impl *coreImpl) GetTimeTicksNow() MojoTimeTicks {
 	impl.mu.Lock()
-	defer impl.mu.Unlock()
-
-	return MojoTimeTicks(C.MojoGetTimeTicksNow())
+	r := sysImpl.GetTimeTicksNow()
+	impl.mu.Unlock()
+	return MojoTimeTicks(r)
 }
 
-func (impl *coreImpl) WaitMany(handles []Handle, signals []MojoHandleSignals, deadline MojoDeadline) (result MojoResult, index int, states []MojoHandleSignalsState) {
-	l := len(handles)
-	if l == 0 {
-		result = MojoResult(C.MojoWaitMany(nil, nil, 0, deadline.cValue(), nil, nil))
-		index = -1
-		return
+func (impl *coreImpl) WaitMany(handles []Handle, signals []MojoHandleSignals, deadline MojoDeadline) (MojoResult, int, []MojoHandleSignalsState) {
+	if len(handles) == 0 {
+		r, _, _, _ := sysImpl.WaitMany(nil, nil, uint64(deadline))
+		return MojoResult(r), -1, nil
 	}
-	cParams := C.MallocWaitManyParams(C.uint32_t(l))
-	defer C.FreeWaitManyParams(cParams)
-	cHandles := *(*[]MojoHandle)(newUnsafeSlice(unsafe.Pointer(cParams.handles), l))
-	cStates := *(*[]C.struct_MojoHandleSignalsState)(newUnsafeSlice(unsafe.Pointer(cParams.states), l))
-	for i := 0; i < l; i++ {
-		cHandles[i] = handles[i].NativeHandle()
-		cStates[i] = C.struct_MojoHandleSignalsState{}
+	rawHandles := make([]uint32, len(handles))
+	rawSignals := make([]uint32, len(signals))
+	for i := 0; i < len(handles); i++ {
+		rawHandles[i] = uint32(handles[i].NativeHandle())
+		rawSignals[i] = uint32(signals[i])
 	}
-	cSignals := *(*[]MojoHandleSignals)(newUnsafeSlice(unsafe.Pointer(cParams.signals), l))
-	copy(cSignals, signals)
-	// Set "-1" using the instructions from http://blog.golang.org/constants
-	*cParams.index = ^C.uint32_t(0)
-
-	result = MojoResult(C.MojoWaitMany(cParams.handles, cParams.signals, C.uint32_t(l), deadline.cValue(), cParams.index, cParams.states))
-	// Explicitly convert *cParams.index to int32 type as int has 32 or 64 bits
-	// depending on system configuration.
-	index = int(int32(*cParams.index))
-	if result != MOJO_RESULT_INVALID_ARGUMENT && result != MOJO_RESULT_RESOURCE_EXHAUSTED {
-		for _, cState := range cStates {
-			states = append(states, cState.goValue())
-		}
+	r, index, rawSatisfiedSignals, rawSatisfiableSignals := sysImpl.WaitMany(rawHandles, rawSignals, uint64(deadline))
+	if MojoResult(r) == MOJO_RESULT_INVALID_ARGUMENT || MojoResult(r) == MOJO_RESULT_RESOURCE_EXHAUSTED {
+		return MojoResult(r), index, nil
 	}
-	return
+	signalsStates := make([]MojoHandleSignalsState, len(handles))
+	for i := 0; i < len(handles); i++ {
+		signalsStates[i].SatisfiedSignals = MojoHandleSignals(rawSatisfiedSignals[i])
+		signalsStates[i].SatisfiableSignals = MojoHandleSignals(rawSatisfiableSignals[i])
+	}
+	return MojoResult(r), index, signalsStates
 }
 
 func (impl *coreImpl) CreateDataPipe(opts *DataPipeOptions) (MojoResult, ProducerHandle, ConsumerHandle) {
-	impl.mu.Lock()
-	defer impl.mu.Unlock()
 
-	cParams := C.MallocCreateDataPipeParams()
-	defer C.FreeCreateDataPipeParams(cParams)
-	result := C.MojoCreateDataPipe(opts.cValue(cParams.opts), cParams.producer, cParams.consumer)
-	producer := impl.acquireCHandle(*cParams.producer).ToProducerHandle()
-	consumer := impl.acquireCHandle(*cParams.consumer).ToConsumerHandle()
-	return MojoResult(result), producer, consumer
+	var r int32
+	var p, c uint32
+	impl.mu.Lock()
+	if opts == nil {
+		r, p, c = sysImpl.CreateDataPipeWithDefaultOptions()
+	} else {
+		r, p, c = sysImpl.CreateDataPipe(uint32(opts.flags), uint32(opts.elemSize), uint32(opts.capacity))
+	}
+	impl.mu.Unlock()
+	return MojoResult(r), impl.AcquireNativeHandle(MojoHandle(p)).ToProducerHandle(), impl.AcquireNativeHandle(MojoHandle(c)).ToConsumerHandle()
 }
 
 func (impl *coreImpl) CreateMessagePipe(opts *MessagePipeOptions) (MojoResult, MessagePipeHandle, MessagePipeHandle) {
-	impl.mu.Lock()
-	defer impl.mu.Unlock()
 
-	cParams := C.MallocCreateMessagePipeParams()
-	defer C.FreeCreateMessagePipeParams(cParams)
-	result := C.MojoCreateMessagePipe(opts.cValue(cParams.opts), cParams.handle0, cParams.handle1)
-	handle0 := impl.acquireCHandle(*cParams.handle0).ToMessagePipeHandle()
-	handle1 := impl.acquireCHandle(*cParams.handle1).ToMessagePipeHandle()
-	return MojoResult(result), handle0, handle1
+	var flags uint32
+	if opts != nil {
+		flags = uint32(opts.flags)
+	}
+	impl.mu.Lock()
+	r, handle0, handle1 := sysImpl.CreateMessagePipe(flags)
+	impl.mu.Unlock()
+	return MojoResult(r), impl.AcquireNativeHandle(MojoHandle(handle0)).ToMessagePipeHandle(), impl.AcquireNativeHandle(MojoHandle(handle1)).ToMessagePipeHandle()
 }
 
 func (impl *coreImpl) CreateSharedBuffer(opts *SharedBufferOptions, numBytes uint64) (MojoResult, SharedBufferHandle) {
-	impl.mu.Lock()
-	defer impl.mu.Unlock()
-
-	cParams := C.MallocCreateSharedBufferParams()
-	defer C.FreeCreateSharedBufferParams(cParams)
-	result := C.MojoCreateSharedBuffer(opts.cValue(cParams.opts), C.uint64_t(numBytes), cParams.handle)
-	return MojoResult(result), impl.acquireCHandle(*cParams.handle).ToSharedBufferHandle()
-}
-
-func newUnsafeSlice(ptr unsafe.Pointer, length int) unsafe.Pointer {
-	header := &reflect.SliceHeader{
-		Data: uintptr(ptr),
-		Len:  length,
-		Cap:  length,
+	var flags uint32
+	if opts != nil {
+		flags = uint32(opts.flags)
 	}
-	return unsafe.Pointer(header)
-}
-
-func unsafeByteSlice(ptr unsafe.Pointer, length int) []byte {
-	return *(*[]byte)(newUnsafeSlice(ptr, length))
+	impl.mu.Lock()
+	r, handle := sysImpl.CreateSharedBuffer(flags, numBytes)
+	impl.mu.Unlock()
+	return MojoResult(r), impl.AcquireNativeHandle(MojoHandle(handle)).ToSharedBufferHandle()
 }

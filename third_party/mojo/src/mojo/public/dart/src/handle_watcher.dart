@@ -7,10 +7,10 @@ part of core;
 class _MojoHandleWatcherNatives {
   static int sendControlData(int controlHandle, int mojoHandle, SendPort port,
       int data) native "MojoHandleWatcher_SendControlData";
-  static List recvControlData(int controlHandle) native
-      "MojoHandleWatcher_RecvControlData";
-  static int setControlHandle(int controlHandle) native
-      "MojoHandleWatcher_SetControlHandle";
+  static List recvControlData(
+      int controlHandle) native "MojoHandleWatcher_RecvControlData";
+  static int setControlHandle(
+      int controlHandle) native "MojoHandleWatcher_SetControlHandle";
   static int getControlHandle() native "MojoHandleWatcher_GetControlHandle";
 }
 
@@ -102,8 +102,7 @@ class MojoHandleWatcher {
 
         // Route event.
         watcher._routeEvent(
-            mwmr.states[mwmr.index].satisfied_signals,
-            mwmr.index);
+            mwmr.states[mwmr.index].satisfied_signals, mwmr.index);
         // Remove the handle from the list.
         watcher._removeHandle(handle);
       } else if (!mwmr.result.isDeadlineExceeded) {
@@ -134,7 +133,7 @@ class MojoHandleWatcher {
         _removeHandle(result[0]);
         break;
       case CLOSE:
-        _close(result[0]);
+        _close(result[0], result[1]);
         break;
       case TIMER:
         _timer(result[1], result[0]);
@@ -193,20 +192,25 @@ class MojoHandleWatcher {
     }
   }
 
-  void _close(int mojoHandle, {bool pruning: false}) {
+  void _close(int mojoHandle, SendPort port, {bool pruning: false}) {
+    assert(!pruning || (port == null));
     int idx = _handleIndices[mojoHandle];
     if (idx == null) {
-      // A client may request to close a handle that has already been closed on
-      // the other side and pruned, but before receiving notification from the
-      // handle watcher.
+      // An app isolate may request that the handle watcher close a handle that
+      // has already been pruned. This happens when the app isolate has not yet
+      // received the PEER_CLOSED event. The app isolate will not close the
+      // handle, so we must do so here.
+      _tempHandle._set(mojoHandle);
+      _tempHandle.close();
+      if (port != null) port.send(null); // Notify that close is done.
       return;
     }
     if (idx == 0) {
       throw "The control handle (idx = 0) cannot be closed.";
     }
-    _tempHandle.h = _handles[idx];
+    _tempHandle._set(_handles[idx]);
     _tempHandle.close();
-    _tempHandle.h = MojoHandle.INVALID;
+    if (port != null) port.send(null); // Notify that close is done.
     if (pruning) {
       // If this handle is being pruned, notify the application isolate
       // by sending MojoHandleSignals.PEER_CLOSED.
@@ -223,9 +227,9 @@ class MojoHandleWatcher {
       _timerQueue.removeCurrent();
       now = (new DateTime.now()).millisecondsSinceEpoch;
     }
-    return _timerQueue.hasTimer ?
-        (_timerQueue.currentTimeout - now) * 1000 :
-        MojoHandle.DEADLINE_INDEFINITE;
+    return _timerQueue.hasTimer
+        ? (_timerQueue.currentTimeout - now) * 1000
+        : MojoHandle.DEADLINE_INDEFINITE;
   }
 
   void _timer(SendPort port, int deadline) {
@@ -241,16 +245,16 @@ class MojoHandleWatcher {
           closed.add(_handles[i]);
         }
       } else {
-        _tempHandle.h = _handles[i];
+        _tempHandle._set(_handles[i]);
         MojoWaitResult mwr = _tempHandle.wait(MojoHandleSignals.kAll, 0);
         if ((!mwr.result.isOk) && (!mwr.result.isDeadlineExceeded)) {
           closed.add(_handles[i]);
         }
-        _tempHandle.h = MojoHandle.INVALID;
+        _tempHandle._set(MojoHandle.INVALID);
       }
     }
     for (var h in closed) {
-      _close(h, pruning: true);
+      _close(h, null, pruning: true);
     }
     // '_close' updated the '_handles' array, so at this point the '_handles'
     // array and the caller's 'states' array are mismatched.
@@ -258,14 +262,13 @@ class MojoHandleWatcher {
 
   void _shutdownHandleWatcher(SendPort shutdownSendPort) {
     _shutdown = true;
-    _tempHandle.h = _controlHandle;
+    _tempHandle._set(_controlHandle);
     _tempHandle.close();
-    _tempHandle.h = MojoHandle.INVALID;
     shutdownSendPort.send(null);
   }
 
-  static MojoResult _sendControlData(MojoHandle mojoHandle, SendPort port,
-      int data) {
+  static MojoResult _sendControlData(
+      MojoHandle mojoHandle, SendPort port, int data) {
     int controlHandle = _MojoHandleWatcherNatives.getControlHandle();
     if (controlHandle == MojoHandle.INVALID) {
       return MojoResult.FAILED_PRECONDITION;
@@ -276,10 +279,7 @@ class MojoHandleWatcher {
       rawHandle = mojoHandle.h;
     }
     var result = _MojoHandleWatcherNatives.sendControlData(
-        controlHandle,
-        rawHandle,
-        port,
-        data);
+        controlHandle, rawHandle, port, data);
     return new MojoResult(result);
   }
 
@@ -323,8 +323,26 @@ class MojoHandleWatcher {
     });
   }
 
-  static MojoResult close(MojoHandle mojoHandle) {
-    return _sendControlData(mojoHandle, null, _encodeCommand(CLOSE));
+  // If wait is true, returns a future that resolves only after the handle
+  // has actually been closed by the handle watcher. Otherwise, returns a
+  // future that resolves immediately.
+  static Future<MojoResult> close(MojoHandle mojoHandle, {bool wait: false}) {
+    assert(MojoHandle._removeUnclosedHandle(mojoHandle));
+    if (!wait) {
+      return new Future.value(
+          _sendControlData(mojoHandle, null, _encodeCommand(CLOSE)));
+    }
+    MojoResult result;
+    var completer = new Completer();
+    var rawPort = new RawReceivePort((_) {
+      completer.complete(result);
+    });
+    result =
+        _sendControlData(mojoHandle, rawPort.sendPort, _encodeCommand(CLOSE));
+    return completer.future.then((r) {
+      rawPort.close();
+      return r;
+    });
   }
 
   static MojoResult add(MojoHandle mojoHandle, SendPort port, int signals) {
@@ -338,8 +356,6 @@ class MojoHandleWatcher {
   static MojoResult timer(Object ignored, SendPort port, int deadline) {
     // The deadline will be unwrapped before sending to the handle watcher.
     return _sendControlData(
-        new MojoHandle(deadline),
-        port,
-        _encodeCommand(TIMER));
+        new MojoHandle._internal(deadline), port, _encodeCommand(TIMER));
   }
 }

@@ -165,6 +165,9 @@ class MOJO_SYSTEM_IMPL_EXPORT ChannelEndpoint
   // Must be called with |lock_| held.
   bool WriteMessageNoLock(scoped_ptr<MessageInTransit> message);
 
+  // Helper for |OnReadMessage()|, handling messages for the client.
+  void OnReadMessageForClient(scoped_ptr<MessageInTransit> message);
+
   // Resets |channel_| to null (and sets |is_detached_from_channel_|). This may
   // only be called if |channel_| is non-null. Must be called with |lock_| held.
   void ResetChannelNoLock();

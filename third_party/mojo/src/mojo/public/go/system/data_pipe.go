@@ -4,11 +4,6 @@
 
 package system
 
-//#include "c_allocators.h"
-//#include "mojo/public/c/system/core.h"
-import "C"
-import "unsafe"
-
 // ConsumerHandle is a handle for the consumer part of a data pipe.
 type ConsumerHandle interface {
 	Handle
@@ -82,80 +77,55 @@ type ProducerHandle interface {
 }
 
 type dataPipeConsumer struct {
+	// baseHandle should always be the first component of this struct,
+	// see |finalizeHandle()| for more details.
 	baseHandle
 }
 
 func (h *dataPipeConsumer) ReadData(flags MojoReadDataFlags) (MojoResult, []byte) {
 	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
-	cParams := C.MallocReadDataParams()
-	defer C.FreeReadDataParams(cParams)
-	*cParams.num_bytes = 0
-	if result := C.MojoReadData(h.mojoHandle.cValue(), nil, cParams.num_bytes, C.MOJO_READ_DATA_FLAG_QUERY); result != C.MOJO_RESULT_OK {
-		return MojoResult(result), nil
-	}
-	dataArray := C.MallocDataArray(*cParams.num_bytes)
-	defer C.FreeDataArray(dataArray)
-	result := C.MojoReadData(h.mojoHandle.cValue(), dataArray.elements, cParams.num_bytes, flags.cValue())
-	dataSize := int(*cParams.num_bytes)
-	data := make([]byte, dataSize)
-	cData := unsafeByteSlice(unsafe.Pointer(dataArray.elements), dataSize)
-	copy(data, cData)
-	return MojoResult(result), data
+	r, buf := sysImpl.ReadData(uint32(h.mojoHandle), uint32(flags))
+	h.core.mu.Unlock()
+	return MojoResult(r), buf
 }
 
 func (h *dataPipeConsumer) BeginReadData(numBytes int, flags MojoReadDataFlags) (MojoResult, []byte) {
 	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
-	cParams := C.MallocTwoPhaseActionParams()
-	defer C.FreeTwoPhaseActionParams(cParams)
-	*cParams.num_bytes = C.uint32_t(numBytes)
-	result := C.MojoBeginReadData(h.mojoHandle.cValue(), cParams.buffer, cParams.num_bytes, flags.cValue())
-	buffer := unsafeByteSlice(unsafe.Pointer(*cParams.buffer), int(*cParams.num_bytes))
-	return MojoResult(result), buffer
+	r, buf := sysImpl.BeginReadData(uint32(h.mojoHandle), uint32(numBytes), uint32(flags))
+	h.core.mu.Unlock()
+	return MojoResult(r), buf
 }
 
 func (h *dataPipeConsumer) EndReadData(numBytesRead int) MojoResult {
 	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
-	return MojoResult(C.MojoEndReadData(h.mojoHandle.cValue(), C.uint32_t(numBytesRead)))
+	r := sysImpl.EndReadData(uint32(h.mojoHandle), uint32(numBytesRead))
+	h.core.mu.Unlock()
+	return MojoResult(r)
 }
 
 type dataPipeProducer struct {
+	// baseHandle should always be the first component of this struct,
+	// see |finalizeHandle()| for more details.
 	baseHandle
 }
 
 func (h *dataPipeProducer) WriteData(data []byte, flags MojoWriteDataFlags) (MojoResult, int) {
 	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
-	cParams := C.MallocWriteDataParams(C.uint32_t(len(data)))
-	defer C.FreeWriteDataParams(cParams)
-	*cParams.num_bytes = C.uint32_t(len(data))
-	cArray := unsafeByteSlice(unsafe.Pointer(cParams.elements), len(data))
-	copy(cArray, data)
-	result := C.MojoWriteData(h.mojoHandle.cValue(), cParams.elements, cParams.num_bytes, flags.cValue())
-	return MojoResult(result), int(*cParams.num_bytes)
+	r, bytesWritten := sysImpl.WriteData(uint32(h.mojoHandle), data, uint32(flags))
+	h.core.mu.Unlock()
+	return MojoResult(r), int(bytesWritten)
 }
 
 func (h *dataPipeProducer) BeginWriteData(numBytes int, flags MojoWriteDataFlags) (MojoResult, []byte) {
 	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
-	cParams := C.MallocTwoPhaseActionParams()
-	defer C.FreeTwoPhaseActionParams(cParams)
-	*cParams.num_bytes = C.uint32_t(numBytes)
-	result := C.MojoBeginWriteData(h.mojoHandle.cValue(), cParams.buffer, cParams.num_bytes, flags.cValue())
-	buffer := unsafeByteSlice(unsafe.Pointer(*cParams.buffer), int(*cParams.num_bytes))
-	return MojoResult(result), buffer
+	r, buf := sysImpl.BeginWriteData(uint32(h.mojoHandle), uint32(numBytes), uint32(flags))
+	h.core.mu.Unlock()
+	return MojoResult(r), buf
 }
 
 func (h *dataPipeProducer) EndWriteData(numBytesWritten int) MojoResult {
 	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
-	return MojoResult(C.MojoEndWriteData(h.mojoHandle.cValue(), C.uint32_t(numBytesWritten)))
+	r := sysImpl.EndWriteData(uint32(h.mojoHandle), uint32(numBytesWritten))
+	h.core.mu.Unlock()
+	return MojoResult(r)
 }

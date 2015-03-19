@@ -56,7 +56,7 @@ class ScopedPyRef {
 class PythonClosure : public mojo::Closure::Runnable {
  public:
   PythonClosure(PyObject* callable, const mojo::Closure& quit);
-  ~PythonClosure();
+  ~PythonClosure() override;
 
   void Run() const override;
 

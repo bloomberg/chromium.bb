@@ -35,7 +35,8 @@ void DataPipeImpl::ConvertDataToMessages(const char* buffer,
 
     // Note: |message_num_bytes| fits in a |uint32_t| since the capacity does.
     scoped_ptr<MessageInTransit> message(new MessageInTransit(
-        MessageInTransit::kTypeEndpoint, MessageInTransit::kSubtypeEndpointData,
+        MessageInTransit::kTypeEndpointClient,
+        MessageInTransit::kSubtypeEndpointClientData,
         static_cast<uint32_t>(message_num_bytes), buffer + *start_index));
     message_queue->AddMessage(message.Pass());
 

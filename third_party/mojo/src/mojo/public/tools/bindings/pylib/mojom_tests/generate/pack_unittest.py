@@ -42,9 +42,9 @@ class PackTest(unittest.TestCase):
     self.assertEquals("field_2", ps.packed_fields[1].field.name)
     self.assertEquals("field_1", ps.packed_fields[2].field.name)
 
-    self.assertEquals(1, ps.packed_fields[0].min_version)
-    self.assertEquals(3, ps.packed_fields[1].min_version)
-    self.assertEquals(2, ps.packed_fields[2].min_version)
+    self.assertEquals(0, ps.packed_fields[0].min_version)
+    self.assertEquals(0, ps.packed_fields[1].min_version)
+    self.assertEquals(0, ps.packed_fields[2].min_version)
 
     struct.fields[0].attributes = {'MinVersion': 1}
     ps = pack.PackedStruct(struct)

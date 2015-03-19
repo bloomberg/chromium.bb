@@ -68,10 +68,11 @@ func (h *MessageHeader) Encode(encoder *Encoder) error {
 }
 
 func (h *MessageHeader) Decode(decoder *Decoder) error {
-	numFields, err := decoder.StartStruct()
+	header, err := decoder.StartStruct()
 	if err != nil {
 		return err
 	}
+	numFields := header.ElementsOrVersion
 	if numFields < 2 || numFields > 3 {
 		return fmt.Errorf("Invalid message header: it should have 2 or 3 fileds, but has %d", numFields)
 	}

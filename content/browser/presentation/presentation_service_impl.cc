@@ -4,6 +4,8 @@
 
 #include "content/browser/presentation/presentation_service_impl.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "content/browser/presentation/presentation_type_converters.h"
 #include "content/public/browser/content_browser_client.h"
@@ -86,13 +88,17 @@ void PresentationServiceImpl::GetScreenAvailability(
     const mojo::String& presentation_url,
     const ScreenAvailabilityMojoCallback& callback) {
   DVLOG(2) << "GetScreenAvailability";
-  if (!delegate_)
+  if (!delegate_) {
+    callback.Run(presentation_url, false);
     return;
+  }
 
   ScreenAvailabilityContext* context =
       GetOrCreateAvailabilityContext(presentation_url.get());
-  if (!context)
+  if (!context) {
+    callback.Run(presentation_url, false);
     return;
+  }
   context->CallbackReceived(callback);
 }
 
@@ -111,6 +117,8 @@ void PresentationServiceImpl::OnScreenAvailabilityListenerRemoved(
       render_frame_host_->GetProcess()->GetID(),
       render_frame_host_->GetRoutingID(),
       it->second.get());
+  // Resolve the context's pending callbacks before removing it.
+  it->second->OnScreenAvailabilityChanged(false);
   availability_contexts_.erase(it);
 }
 
@@ -124,8 +132,13 @@ void PresentationServiceImpl::StartSession(
     const mojo::String& presentation_id,
     const NewSessionMojoCallback& callback) {
   DVLOG(2) << "StartSession";
-  if (!delegate_)
+  if (!delegate_) {
+    callback.Run(
+        presentation::PresentationSessionInfoPtr(),
+        presentation::PresentationError::From(
+            PresentationError(PRESENTATION_ERROR_UNKNOWN, "")));
     return;
+  }
 
   queued_start_session_requests_.push_back(make_linked_ptr(
       new StartSessionRequest(presentation_url, presentation_id, callback)));
@@ -138,14 +151,20 @@ void PresentationServiceImpl::JoinSession(
     const mojo::String& presentation_id,
     const NewSessionMojoCallback& callback) {
   DVLOG(2) << "JoinSession";
-  if (!delegate_)
+  if (!delegate_) {
+    callback.Run(
+        presentation::PresentationSessionInfoPtr(),
+        presentation::PresentationError::From(
+            PresentationError(PRESENTATION_ERROR_UNKNOWN, "")));
     return;
+  }
 
   delegate_->JoinSession(
       render_frame_host_->GetProcess()->GetID(),
       render_frame_host_->GetRoutingID(),
       presentation_url,
       presentation_id,
+      // TODO(imcheng): These callbacks may be dropped. http://crbug.com/468575
       base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionSucceeded,
                  weak_factory_.GetWeakPtr(), false, callback),
       base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionError,
@@ -173,6 +192,7 @@ void PresentationServiceImpl::DoStartSession(
       render_frame_host_->GetRoutingID(),
       presentation_url,
       presentation_id,
+      // TODO(imcheng): These callbacks may be dropped. http://crbug.com/468575
       base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionSucceeded,
                  weak_factory_.GetWeakPtr(), true, callback),
       base::Bind(&PresentationServiceImpl::OnStartOrJoinSessionError,
@@ -238,14 +258,12 @@ void PresentationServiceImpl::SetDefaultPresentationURL(
   }
 
   // Have already started listening. Create a listener for the new URL and
-  // transfer the callback from the old listener, if any.
+  // transfer the callbacks from the old listener, if any.
   // This is done so that a listener added before default URL is changed
   // will continue to work.
-  ScreenAvailabilityMojoCallback* old_callback = old_it->second->GetCallback();
   ScreenAvailabilityContext* context =
       GetOrCreateAvailabilityContext(new_default_url);
-  if (old_callback)
-    context->CallbackReceived(*old_callback);
+  old_it->second->PassPendingCallbacks(context);
 
   // Remove listener for old default presentation URL.
   delegate_->RemoveScreenAvailabilityListener(
@@ -309,7 +327,11 @@ void PresentationServiceImpl::Reset() {
 
   default_presentation_url_.clear();
   default_presentation_id_.clear();
+  for (const auto& context : availability_contexts_) {
+    context.second->OnScreenAvailabilityChanged(false);
+  }
   availability_contexts_.clear();
+  // TODO(imcheng): This may drop callbacks. See http://crbug.com/468575.
   queued_start_session_requests_.clear();
 }
 
@@ -333,19 +355,14 @@ void PresentationServiceImpl::ScreenAvailabilityContext::CallbackReceived(
   // NOTE: This will overwrite previously registered callback if any.
   if (!available_ptr_) {
     // No results yet, store callback for later invocation.
-    callback_ptr_.reset(new ScreenAvailabilityMojoCallback(callback));
+    callbacks_.push_back(new ScreenAvailabilityMojoCallback(callback));
   } else {
     // Run callback now, reset result.
     // There shouldn't be any callbacks stored in this scenario.
-    DCHECK(!callback_ptr_);
+    DCHECK(!HasPendingCallbacks());
     callback.Run(presentation_url_, *available_ptr_);
-    Reset();
+    available_ptr_.reset();
   }
-}
-
-void PresentationServiceImpl::ScreenAvailabilityContext::Reset() {
-  callback_ptr_.reset();
-  available_ptr_.reset();
 }
 
 std::string PresentationServiceImpl::ScreenAvailabilityContext
@@ -355,21 +372,32 @@ std::string PresentationServiceImpl::ScreenAvailabilityContext
 
 void PresentationServiceImpl::ScreenAvailabilityContext
     ::OnScreenAvailabilityChanged(bool available) {
-  if (!callback_ptr_) {
+  if (!HasPendingCallbacks()) {
     // No callback, stash the result for now.
     available_ptr_.reset(new bool(available));
   } else {
-    // Invoke callback and erase it.
+    // Invoke callbacks and erase them.
     // There shouldn't be any result stored in this scenario.
     DCHECK(!available_ptr_);
-    callback_ptr_->Run(presentation_url_, available);
-    Reset();
+    ScopedVector<ScreenAvailabilityMojoCallback> callbacks;
+    callbacks.swap(callbacks_);
+    for (const auto& callback : callbacks)
+      callback->Run(presentation_url_, available);
   }
 }
 
-PresentationServiceImpl::ScreenAvailabilityMojoCallback*
-PresentationServiceImpl::ScreenAvailabilityContext::GetCallback() const {
-  return callback_ptr_.get();
+void PresentationServiceImpl::ScreenAvailabilityContext
+    ::PassPendingCallbacks(
+    PresentationServiceImpl::ScreenAvailabilityContext* other) {
+  std::vector<ScreenAvailabilityMojoCallback*> callbacks;
+  callbacks_.release(&callbacks);
+  std::copy(callbacks.begin(), callbacks.end(),
+            std::back_inserter(other->callbacks_));
+}
+
+bool PresentationServiceImpl::ScreenAvailabilityContext
+    ::HasPendingCallbacks() const {
+  return !callbacks_.empty();
 }
 
 PresentationServiceImpl::StartSessionRequest::StartSessionRequest(
@@ -385,3 +413,4 @@ PresentationServiceImpl::StartSessionRequest::~StartSessionRequest() {
 }
 
 }  // namespace content
+

@@ -23,18 +23,32 @@ func (s *{{struct|name(exported)}}) Encode(encoder *bindings.Encoder) error {
 	return nil
 }
 
+var {{struct|name(False)}}_Versions []bindings.DataHeader = []bindings.DataHeader{
+{% for versionInfo in struct.versions %}
+	bindings.DataHeader{{'{'}}{{versionInfo.num_bytes}}, {{versionInfo.version}}{{'}'}},
+{% endfor %}
+}
+
 func (s *{{struct|name(exported)}}) Decode(decoder *bindings.Decoder) error {
-{% if struct.bytes %}
-	version, err := decoder.StartStruct()
-{% else %}
-	_, err := decoder.StartStruct()
-{% endif %}
+	header, err := decoder.StartStruct()
 	if err != nil {
 		return err
 	}
+	index := sort.Search(len({{struct|name(False)}}_Versions), func(i int) bool {
+		return {{struct|name(False)}}_Versions[i].ElementsOrVersion >= header.ElementsOrVersion
+	})
+	if index < len({{struct|name(False)}}_Versions) {
+		if {{struct|name(False)}}_Versions[index].ElementsOrVersion > header.ElementsOrVersion {
+			index--
+		}
+		expectedSize := {{struct|name(False)}}_Versions[index].Size
+		if expectedSize != header.Size {
+			return fmt.Errorf("invalid struct header size: should be %d, but was %d", expectedSize, header.Size)
+		}
+	}
 {% for byte in struct.bytes %}
 {%   for packed_field in byte.packed_fields %}
-	if version >= {{packed_field.min_version}} {
+	if header.ElementsOrVersion >= {{packed_field.min_version}} {
 		{{decode('s.'~packed_field.field|name(exported), packed_field.field.kind)|tab_indent(2)}}
 	}
 {%   endfor %}

@@ -155,7 +155,7 @@ template("mojo_native_application") {
     nexe_target_name = base_target_name + "_nexe"
     nexe_name = base_target_name + ".nexe"
 
-    output = "${base_target_name}_${cpu_arch}.nexe.mojo"
+    output = "${base_target_name}_${target_cpu}.nexe.mojo"
 
     executable(nexe_target_name) {
       output_name = base_target_name

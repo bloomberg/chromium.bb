@@ -4,20 +4,15 @@
 
 part of core;
 
-
 class _MojoMessagePipeNatives {
-  static List MojoCreateMessagePipe(int flags)
-      native "MojoMessagePipe_Create";
+  static List MojoCreateMessagePipe(int flags) native "MojoMessagePipe_Create";
 
-  static int MojoWriteMessage(
-      int handle, ByteData data, int numBytes, List<int> handles, int flags)
-      native "MojoMessagePipe_Write";
+  static int MojoWriteMessage(int handle, ByteData data, int numBytes,
+      List<int> handles, int flags) native "MojoMessagePipe_Write";
 
-  static List MojoReadMessage(
-      int handle, ByteData data, int numBytes, List<int> handles, int flags)
-      native "MojoMessagePipe_Read";
+  static List MojoReadMessage(int handle, ByteData data, int numBytes,
+      List<int> handles, int flags) native "MojoMessagePipe_Read";
 }
-
 
 class MojoMessagePipeReadResult {
   final MojoResult status;
@@ -27,8 +22,12 @@ class MojoMessagePipeReadResult {
   MojoMessagePipeReadResult(this.status, this.bytesRead, this.handlesRead);
   MojoMessagePipeReadResult.fromList(List<int> resultList)
       : this(new MojoResult(resultList[0]), resultList[1], resultList[2]);
-}
 
+  String toString() {
+    return "MojoMessagePipeReadResult("
+        "status: $status, bytesRead: $bytesRead, handlesRead: $handlesRead)";
+  }
+}
 
 class MojoMessagePipeEndpoint {
   static const int WRITE_FLAG_NONE = 0;
@@ -41,9 +40,7 @@ class MojoMessagePipeEndpoint {
   MojoMessagePipeEndpoint(this.handle);
 
   MojoResult write(ByteData data,
-                   [int numBytes = -1,
-                    List<MojoHandle> handles = null,
-                    int flags = 0]) {
+      [int numBytes = -1, List<MojoHandle> handles = null, int flags = 0]) {
     if (handle == null) {
       status = MojoResult.INVALID_ARGUMENT;
       return status;
@@ -70,11 +67,8 @@ class MojoMessagePipeEndpoint {
     return status;
   }
 
-
   MojoMessagePipeReadResult read(ByteData data,
-                                 [int numBytes = -1,
-                                  List<MojoHandle> handles = null,
-                                  int flags = 0]) {
+      [int numBytes = -1, List<MojoHandle> handles = null, int flags = 0]) {
     if (handle == null) {
       status = MojoResult.INVALID_ARGUMENT;
       return null;
@@ -88,7 +82,7 @@ class MojoMessagePipeEndpoint {
       dataNumBytes = (numBytes == -1) ? data.lengthInBytes : numBytes;
       if (dataNumBytes > data.lengthInBytes) {
         status = MojoResult.INVALID_ARGUMENT;
-        return status;
+        return null;
       }
     }
 
@@ -124,8 +118,15 @@ class MojoMessagePipeEndpoint {
   }
 
   MojoMessagePipeReadResult query() => read(null);
-}
 
+  void close() {
+    handle.close();
+    handle = null;
+  }
+
+  String toString() =>
+      "MojoMessagePipeEndpoint(handle: $handle, status: $status)";
+}
 
 class MojoMessagePipe {
   static const int FLAG_NONE = 0;

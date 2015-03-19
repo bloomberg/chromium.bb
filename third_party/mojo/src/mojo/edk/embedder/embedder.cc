@@ -195,14 +195,16 @@ void InitIPCSupport(ProcessType process_type,
       break;
     case ProcessType::MASTER:
       DCHECK(!platform_handle.is_valid());  // We wouldn't do anything with it.
-      g_connection_manager = new system::MasterConnectionManager();
+      g_connection_manager =
+          new system::MasterConnectionManager(internal::g_platform_support);
       static_cast<system::MasterConnectionManager*>(g_connection_manager)
           ->Init(g_delegate_thread_task_runner,
                  static_cast<MasterProcessDelegate*>(g_process_delegate));
       break;
     case ProcessType::SLAVE:
       DCHECK(platform_handle.is_valid());
-      g_connection_manager = new system::SlaveConnectionManager();
+      g_connection_manager =
+          new system::SlaveConnectionManager(internal::g_platform_support);
       static_cast<system::SlaveConnectionManager*>(g_connection_manager)
           ->Init(g_delegate_thread_task_runner,
                  static_cast<SlaveProcessDelegate*>(g_process_delegate),

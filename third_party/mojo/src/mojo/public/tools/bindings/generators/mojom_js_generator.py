@@ -342,15 +342,9 @@ class Generator(generator.Generator):
   def GenerateAMDModule(self):
     return self.GetParameters()
 
-  @UseJinja("js_templates/module.sky.tmpl", filters=js_filters)
-  def GenerateHTMLModule(self):
-    return self.GetParameters()
-
   def GenerateFiles(self, args):
     self.Write(self.GenerateAMDModule(),
         self.MatchMojomFilePath("%s.js" % self.module.name))
-    self.Write(self.GenerateHTMLModule(),
-        self.MatchMojomFilePath("%s.sky" % self.module.name))
 
   def GetImports(self):
     used_names = set()

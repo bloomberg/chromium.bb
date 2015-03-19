@@ -7,8 +7,8 @@ library application;
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-import 'mojo:bindings' as bindings;
-import 'mojo:core' as core;
+import 'dart:mojo.bindings' as bindings;
+import 'dart:mojo.core' as core;
 
 import 'package:mojo/public/interfaces/application/application.mojom.dart' as application_mojom;
 import 'package:mojo/public/interfaces/application/service_provider.mojom.dart';

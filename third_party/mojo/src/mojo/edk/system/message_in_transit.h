@@ -44,22 +44,29 @@ class TransportData;
 class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
  public:
   typedef uint16_t Type;
-  // Messages that are forwarded to endpoints.
-  static const Type kTypeEndpoint = 0;
+  // Messages that are forwarded to endpoint clients.
+  static const Type kTypeEndpointClient = 0;
+  // Messages that are consumed by the |ChannelEndpoint|.
+  static const Type kTypeEndpoint = 1;
   // Messages that are consumed by the |Channel|.
-  static const Type kTypeChannel = 1;
+  static const Type kTypeChannel = 2;
   // Messages that are consumed by the |RawChannel| (implementation).
-  static const Type kTypeRawChannel = 2;
+  static const Type kTypeRawChannel = 3;
   // |ConnectionManager| implementations also use |RawChannel|s.
   // Messages sent to a |MasterConnectionManager|.
-  static const Type kTypeConnectionManager = 3;
+  static const Type kTypeConnectionManager = 4;
   // Messages sent by a |MasterConnectionManager| (all responses).
-  static const Type kTypeConnectionManagerAck = 4;
+  static const Type kTypeConnectionManagerAck = 5;
 
   typedef uint16_t Subtype;
+  // Subtypes for type |kTypeEndpointClient|:
+  // Message pipe or data pipe data (etc.).
+  static const Subtype kSubtypeEndpointClientData = 0;
+  // Data pipe: consumer -> producer message that data was consumed. Payload is
+  // |RemoteDataPipeAck|.
+  static const Subtype kSubtypeEndpointClientDataPipeAck = 1;
   // Subtypes for type |kTypeEndpoint|:
-  static const Subtype kSubtypeEndpointData = 0;
-  static const Subtype kSubtypeEndpointDataPipeAck = 1;
+  // TODO(vtl): Nothing yet.
   // Subtypes for type |kTypeChannel|:
   static const Subtype kSubtypeChannelAttachAndRunEndpoint = 0;
   static const Subtype kSubtypeChannelRemoveEndpoint = 1;

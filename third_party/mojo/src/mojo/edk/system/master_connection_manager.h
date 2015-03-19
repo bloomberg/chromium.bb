@@ -44,7 +44,9 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager
  public:
   // Note: None of the public methods may be called from |private_thread_|.
 
-  MasterConnectionManager();
+  // |platform_support| must be valid and remain alive until after |Shutdown()|
+  // has completed.
+  explicit MasterConnectionManager(embedder::PlatformSupport* platform_support);
   ~MasterConnectionManager() override;
 
   // No other methods may be called until after this has been called.

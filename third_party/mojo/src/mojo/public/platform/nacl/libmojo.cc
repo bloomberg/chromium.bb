@@ -224,3 +224,4 @@ MojoResult _MojoGetInitialHandle(MojoHandle* handle) {
     return MOJO_RESULT_INTERNAL;
   return irt_mojo->_MojoGetInitialHandle(handle);
 }
+

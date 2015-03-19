@@ -5,24 +5,26 @@
 part of application;
 
 typedef Object ServiceFactory(core.MojoMessagePipeEndpoint endpoint);
-typedef void FallbackServiceFactory(String interfaceName,
-    core.MojoMessagePipeEndpoint endpoint);
-
+typedef void FallbackServiceFactory(
+    String interfaceName, core.MojoMessagePipeEndpoint endpoint);
 
 class LocalServiceProvider implements ServiceProvider {
   final ApplicationConnection connection;
   ServiceProviderStub _stub;
 
   LocalServiceProvider(this.connection, this._stub) {
-    _stub.delegate = this;
+    assert(_stub.isOpen);
+    _stub.impl = this;
   }
 
-  listen() => _stub.listen();
+  set onError(Function f) {
+    _stub.onError = f;
+  }
 
-  void close({bool nodefer : false}) => _stub.close(nodefer: nodefer);
+  Future close({bool nodefer: false}) => _stub.close(nodefer: nodefer);
 
-  void connectToService(String interfaceName,
-      core.MojoMessagePipeEndpoint pipe) {
+  void connectToService(
+      String interfaceName, core.MojoMessagePipeEndpoint pipe) {
     if (connection._nameToServiceFactory.containsKey(interfaceName)) {
       connection._nameToServiceFactory[interfaceName](pipe);
       return;
@@ -33,7 +35,7 @@ class LocalServiceProvider implements ServiceProvider {
     }
     // The specified interface isn't provided. Close the pipe so the
     // remote endpoint sees that we don't support this interface.
-    pipe.handle.close();
+    pipe.close();
   }
 }
 
@@ -63,15 +65,17 @@ class ApplicationConnection {
   LocalServiceProvider _localServiceProvider;
   final _nameToServiceFactory = new Map<String, ServiceFactory>();
   FallbackServiceFactory _fallbackServiceFactory;
+  core.ErrorHandler onError;
 
-  ApplicationConnection(ServiceProviderStub stub, ServiceProviderProxy proxy)
-      : remoteServiceProvider = proxy {
-    if (stub != null) _localServiceProvider =
-        new LocalServiceProvider(this, stub);
+  ApplicationConnection(ServiceProviderStub stub, this.remoteServiceProvider) {
+    if (stub != null) {
+      _localServiceProvider = new LocalServiceProvider(this, stub);
+      _localServiceProvider.onError = _errorHandler;
+    }
   }
 
   FallbackServiceFactory get fallbackServiceFactory => _fallbackServiceFactory;
-                         set fallbackServiceFactory(FallbackServiceFactory f) {
+  set fallbackServiceFactory(FallbackServiceFactory f) {
     assert(_localServiceProvider != null);
     _fallbackServiceFactory = f;
   }
@@ -82,8 +86,7 @@ class ApplicationConnection {
         remoteServiceProvider.impl.isBound);
     var pipe = new core.MojoMessagePipe();
     proxy.impl.bind(pipe.endpoints[0]);
-    remoteServiceProvider.ptr.connectToService(
-        proxy.name, pipe.endpoints[1]);
+    remoteServiceProvider.ptr.connectToService(proxy.name, pipe.endpoints[1]);
     return proxy;
   }
 
@@ -92,20 +95,27 @@ class ApplicationConnection {
     _nameToServiceFactory[interfaceName] = factory;
   }
 
-  void listen() {
-    assert(_localServiceProvider != null);
-    _localServiceProvider.listen();
+  void _errorHandler() {
+    close().then((_) {
+      if (onError != null) onError();
+    });
   }
 
-  void close({bool nodefer: false}) {
+  Future close({bool nodefer: false}) {
+    var rspCloseFuture;
+    var lspCloseFuture;
     if (remoteServiceProvider != null) {
-      remoteServiceProvider.close();
+      rspCloseFuture = remoteServiceProvider.close();
       remoteServiceProvider = null;
+    } else {
+      rspCloseFuture = new Future.value(null);
     }
     if (_localServiceProvider != null) {
-      _localServiceProvider.close(nodefer: nodefer);
+      lspCloseFuture = _localServiceProvider.close(nodefer: nodefer);
       _localServiceProvider = null;
+    } else {
+      lspCloseFuture = new Future.value(null);
     }
-
+    return rspCloseFuture.then((_) => lspCloseFuture);
   }
 }

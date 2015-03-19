@@ -19,6 +19,12 @@ if (!defined(build_network_service_from_source) ||
   use_prebuilt_network_service = is_linux || is_android
 }
 
+# Enable Dart apptest framework by default.
+use_dart_apptest_framework = true
+if (defined(disable_dart_apptest_framework) && disable_dart_apptest_framework) {
+  use_dart_apptest_framework = false
+}
+
 # The absolute path to the directory containing the mojo public SDK (i.e., the
 # directory containing mojo/public). The build files within the Mojo public
 # SDK use this variable to allow themselves to be parameterized by the location

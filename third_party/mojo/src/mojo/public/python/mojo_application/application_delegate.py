@@ -18,10 +18,13 @@ class ApplicationDelegate:
     """
     pass
 
-  def OnAcceptConnection(self, service_provider, requestor_url,
+  def OnAcceptConnection(self,
+                         requestor_url,
+                         resolved_url,
+                         service_provider,
                          exposed_services):
     """
     Called from ApplicationImpl's OnAcceptConnection() method. Returns a bool
     indicating whether this connection should be accepted.
     """
-    return True
+    return False

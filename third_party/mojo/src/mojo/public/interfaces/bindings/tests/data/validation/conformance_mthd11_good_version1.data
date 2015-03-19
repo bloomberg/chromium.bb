@@ -5,7 +5,7 @@
 [anchr]message_header
 
 [dist4]method11_params  // num_bytes
-[u4]1                   // version
+[u4]0                   // version
 [dist8]param0_ptr       // param0
 [anchr]method11_params
 

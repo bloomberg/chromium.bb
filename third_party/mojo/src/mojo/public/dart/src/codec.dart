@@ -57,10 +57,10 @@ class _EncoderBuffer {
 
   static const int kInitialBufferSize = 1024;
 
-  _EncoderBuffer([int size = -1]) :
-      buffer = new ByteData(size > 0 ? size : kInitialBufferSize),
-      handles = [],
-      extent = 0;
+  _EncoderBuffer([int size = -1])
+      : buffer = new ByteData(size > 0 ? size : kInitialBufferSize),
+        handles = [],
+        extent = 0;
 
   void _grow(int newSize) {
     Uint8List newBuffer = new Uint8List(newSize);
@@ -84,11 +84,13 @@ class Encoder {
   _EncoderBuffer _buffer;
   int _base;
 
-  Encoder([int size = -1]) : _buffer = new _EncoderBuffer(size), _base = 0;
+  Encoder([int size = -1])
+      : _buffer = new _EncoderBuffer(size),
+        _base = 0;
 
-  Encoder._fromBuffer(_EncoderBuffer buffer) :
-      _buffer = buffer,
-      _base = buffer.extent;
+  Encoder._fromBuffer(_EncoderBuffer buffer)
+      : _buffer = buffer,
+        _base = buffer.extent;
 
   Encoder getStructEncoderAtOffset(StructDataHeader dataHeader) {
     var result = new Encoder._fromBuffer(_buffer);
@@ -167,45 +169,61 @@ class Encoder {
     _buffer.buffer.setUint64(_base + offset, value, Endianness.LITTLE_ENDIAN);
   }
 
-  void encodeFloat(double value, int offset) =>
-    _buffer.buffer.setFloat32(_base + offset, value, Endianness.LITTLE_ENDIAN);
+  void encodeFloat(double value, int offset) => _buffer.buffer.setFloat32(
+      _base + offset, value, Endianness.LITTLE_ENDIAN);
 
-  void encodeDouble(double value, int offset) =>
-    _buffer.buffer.setFloat64(_base + offset, value, Endianness.LITTLE_ENDIAN);
+  void encodeDouble(double value, int offset) => _buffer.buffer.setFloat64(
+      _base + offset, value, Endianness.LITTLE_ENDIAN);
 
   void encodeHandle(core.MojoHandle value, int offset, bool nullable) {
     if ((value == null) || !value.isValid) {
       encodeInvalideHandle(offset, nullable);
     } else {
       encodeUint32(_buffer.handles.length, offset);
-      _buffer.handles.add(value);
+      _buffer.handles.add(value.pass());
     }
   }
 
   void encodeMessagePipeHandle(
-      core.MojoMessagePipeEndpoint value, int offset, bool nullable) =>
+          core.MojoMessagePipeEndpoint value, int offset, bool nullable) =>
       encodeHandle(value != null ? value.handle : null, offset, nullable);
 
   void encodeConsumerHandle(
-      core.MojoDataPipeConsumer value, int offset, bool nullable) =>
+          core.MojoDataPipeConsumer value, int offset, bool nullable) =>
       encodeHandle(value != null ? value.handle : null, offset, nullable);
 
   void encodeProducerHandle(
-      core.MojoDataPipeProducer value, int offset, bool nullable) =>
+          core.MojoDataPipeProducer value, int offset, bool nullable) =>
       encodeHandle(value != null ? value.handle : null, offset, nullable);
 
   void encodeSharedBufferHandle(
-      core.MojoSharedBuffer value, int offset, bool nullable) =>
+          core.MojoSharedBuffer value, int offset, bool nullable) =>
       encodeHandle(value != null ? value.handle : null, offset, nullable);
 
-  void encodeInterface(Stub interface, int offset, bool nullable) {
+  void encodeInterface(
+      core.MojoEventStreamListener interface, int offset, bool nullable) {
     if (interface == null) {
       encodeInvalideHandle(offset, nullable);
       return;
     }
-    var pipe = new core.MojoMessagePipe();
-    interface.bind(pipe.endpoints[0]);
-    encodeMessagePipeHandle(pipe.endpoints[1], offset, nullable);
+    if (interface is Stub) {
+      assert(!interface.isBound);
+      var pipe = new core.MojoMessagePipe();
+      interface.bind(pipe.endpoints[0]);
+      interface.listen();
+      encodeMessagePipeHandle(pipe.endpoints[1], offset, nullable);
+    } else if (interface is Proxy) {
+      assert(interface.isBound);
+      if (!interface.isOpen) {
+        // Make sure that we are listening so that state for the proxy is
+        // cleaned up when the message is sent and the handle is closed.
+        interface.listen();
+      }
+      encodeMessagePipeHandle(interface.endpoint, offset, nullable);
+    } else {
+      throw new MojoCodecError(
+          'Trying to encode an unknown MojoEventStreamListener');
+    }
   }
 
   void encodeInterfaceRequest(ProxyBase client, int offset, bool nullable) {
@@ -215,6 +233,7 @@ class Encoder {
     }
     var pipe = new core.MojoMessagePipe();
     client.impl.bind(pipe.endpoints[0]);
+    client.impl.listen();
     encodeMessagePipeHandle(pipe.endpoints[1], offset, nullable);
   }
 
@@ -285,81 +304,74 @@ class Encoder {
         }
       }
     }
-    var encoder = encoderForArrayByTotalSize(
-        bytes.length, value.length, offset);
+    var encoder =
+        encoderForArrayByTotalSize(bytes.length, value.length, offset);
     encoder.appendUint8Array(bytes);
   }
 
-  void encodeArray(Function arrayAppend,
-                   int elementBytes,
-                   List<int> value,
-                   int offset,
-                   int nullability,
-                   int expectedLength) {
+  void encodeArray(Function arrayAppend, int elementBytes, List<int> value,
+      int offset, int nullability, int expectedLength) {
     if (value == null) {
       encodeNullPointer(offset, isArrayNullable(nullability));
       return;
     }
-    var encoder = encoderForArray(
-        elementBytes, value.length, offset, expectedLength);
+    var encoder =
+        encoderForArray(elementBytes, value.length, offset, expectedLength);
     arrayAppend(encoder, value);
   }
 
   void encodeInt8Array(
-      List<int> value, int offset, int nullability, int expectedLength) =>
-      encodeArray((e, v) => e.appendInt8Array(v),
-                  1, value, offset, nullability, expectedLength);
+          List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendInt8Array(v), 1, value, offset, nullability,
+          expectedLength);
 
   void encodeUint8Array(
-      List<int> value, int offset, int nullability, int expectedLength) =>
-      encodeArray((e, v) => e.appendUint8Array(v),
-                  1, value, offset, nullability, expectedLength);
+          List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendUint8Array(v), 1, value, offset,
+          nullability, expectedLength);
 
   void encodeInt16Array(
-      List<int> value, int offset, int nullability, int expectedLength) =>
-      encodeArray((e, v) => e.appendInt16Array(v),
-                  2, value, offset, nullability, expectedLength);
+          List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendInt16Array(v), 2, value, offset,
+          nullability, expectedLength);
 
   void encodeUint16Array(
-      List<int> value, int offset, int nullability, int expectedLength) =>
-      encodeArray((e, v) => e.appendUint16Array(v),
-                  2, value, offset, nullability, expectedLength);
+          List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendUint16Array(v), 2, value, offset,
+          nullability, expectedLength);
 
   void encodeInt32Array(
-      List<int> value, int offset, int nullability, int expectedLength) =>
-      encodeArray((e, v) => e.appendInt32Array(v),
-                  4, value, offset, nullability, expectedLength);
+          List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendInt32Array(v), 4, value, offset,
+          nullability, expectedLength);
 
   void encodeUint32Array(
-      List<int> value, int offset, int nullability, int expectedLength) =>
-      encodeArray((e, v) => e.appendUint32Array(v),
-                  4, value, offset, nullability, expectedLength);
+          List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendUint32Array(v), 4, value, offset,
+          nullability, expectedLength);
 
   void encodeInt64Array(
-      List<int> value, int offset, int nullability, int expectedLength) =>
-      encodeArray((e, v) => e.appendInt64Array(v),
-                  8, value, offset, nullability, expectedLength);
+          List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendInt64Array(v), 8, value, offset,
+          nullability, expectedLength);
 
   void encodeUint64Array(
-      List<int> value, int offset, int nullability, int expectedLength) =>
-      encodeArray((e, v) => e.appendUint64Array(v),
-                  8, value, offset, nullability, expectedLength);
+          List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendUint64Array(v), 8, value, offset,
+          nullability, expectedLength);
 
   void encodeFloatArray(
-      List<int> value, int offset, int nullability, int expectedLength) =>
-      encodeArray((e, v) => e.appendFloatArray(v),
-                  4, value, offset, nullability, expectedLength);
+          List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendFloatArray(v), 4, value, offset,
+          nullability, expectedLength);
 
   void encodeDoubleArray(
-      List<int> value, int offset, int nullability, int expectedLength) =>
-      encodeArray((e, v) => e.appendDoubleArray(v),
-                  8, value, offset, nullability, expectedLength);
+          List<int> value, int offset, int nullability, int expectedLength) =>
+      encodeArray((e, v) => e.appendDoubleArray(v), 8, value, offset,
+          nullability, expectedLength);
 
-  void _handleArrayEncodeHelper(Function elementEncoder,
-                                List value,
-                                int offset,
-                                int nullability,
-                                int expectedLength) {
+  void _handleArrayEncodeHelper(Function elementEncoder, List value, int offset,
+      int nullability, int expectedLength) {
     if (value == null) {
       encodeNullPointer(offset, isArrayNullable(nullability));
       return;
@@ -374,67 +386,42 @@ class Encoder {
     }
   }
 
-  void encodeHandleArray(
-      List<core.MojoHandle> value,
-      int offset,
-      int nullability,
-      int expectedLength) =>
+  void encodeHandleArray(List<core.MojoHandle> value, int offset,
+      int nullability, int expectedLength) => _handleArrayEncodeHelper(
+          (e, v, o, n) => e.encodeHandle(v, o, n), value, offset, nullability,
+          expectedLength);
+
+  void encodeMessagePipeHandleArray(List<core.MojoMessagePipeEndpoint> value,
+          int offset, int nullability, int expectedLength) =>
       _handleArrayEncodeHelper(
-          (e, v, o, n) => e.encodeHandle(v, o, n),
+          (e, v, o, n) => e.encodeMessagePipeHandle(v, o, n), value, offset,
+          nullability, expectedLength);
+
+  void encodeConsumerHandleArray(List<core.MojoDataPipeConsumer> value,
+          int offset, int nullability, int expectedLength) =>
+      _handleArrayEncodeHelper((e, v, o, n) => e.encodeConsumerHandle(v, o, n),
           value, offset, nullability, expectedLength);
 
-  void encodeMessagePipeHandleArray(
-      List<core.MojoMessagePipeEndpoint> value,
-      int offset,
-      int nullability,
-      int expectedLength) =>
-      _handleArrayEncodeHelper(
-          (e, v, o, n) => e.encodeMessagePipeHandle(v, o, n),
+  void encodeProducerHandleArray(List<core.MojoDataPipeProducer> value,
+          int offset, int nullability, int expectedLength) =>
+      _handleArrayEncodeHelper((e, v, o, n) => e.encodeProducerHandle(v, o, n),
           value, offset, nullability, expectedLength);
 
-  void encodeConsumerHandleArray(
-      List<core.MojoDataPipeConsumer> value,
-      int offset,
-      int nullability,
-      int expectedLength) =>
+  void encodeSharedBufferHandleArray(List<core.MojoSharedBuffer> value,
+          int offset, int nullability, int expectedLength) =>
       _handleArrayEncodeHelper(
-          (e, v, o, n) => e.encodeConsumerHandle(v, o, n),
-          value, offset, nullability, expectedLength);
-
-  void encodeProducerHandleArray(
-      List<core.MojoDataPipeProducer> value,
-      int offset,
-      int nullability,
-      int expectedLength) =>
-      _handleArrayEncodeHelper(
-          (e, v, o, n) => e.encodeProducerHandle(v, o, n),
-          value, offset, nullability, expectedLength);
-
-  void encodeSharedBufferHandleArray(
-      List<core.MojoSharedBuffer> value,
-      int offset,
-      int nullability,
-      int expectedLength) =>
-      _handleArrayEncodeHelper(
-          (e, v, o, n) => e.encodeSharedBufferHandle(v, o, n),
-          value, offset, nullability, expectedLength);
+          (e, v, o, n) => e.encodeSharedBufferHandle(v, o, n), value, offset,
+          nullability, expectedLength);
 
   void encodeInterfaceRequestArray(
-      List<Proxy> value,
-      int offset,
-      int nullability,
-      int expectedLength) =>
+          List<Proxy> value, int offset, int nullability, int expectedLength) =>
       _handleArrayEncodeHelper(
-          (e, v, o, n) => e.encodeInterfaceRequest(v, o, n),
-          value, offset, nullability, expectedLength);
+          (e, v, o, n) => e.encodeInterfaceRequest(v, o, n), value, offset,
+          nullability, expectedLength);
 
   void encodeInterfaceArray(
-      List<Stub> value,
-      int offset,
-      int nullability,
-      int expectedLength) =>
-      _handleArrayEncodeHelper(
-          (e, v, o, n) => e.encodeInterface(v, o, n),
+          List<Stub> value, int offset, int nullability, int expectedLength) =>
+      _handleArrayEncodeHelper((e, v, o, n) => e.encodeInterface(v, o, n),
           value, offset, nullability, expectedLength);
 
   static Uint8List _utf8OfString(String s) =>
@@ -446,17 +433,15 @@ class Encoder {
       return;
     }
     int nullability = nullable ? kArrayNullable : kNothingNullable;
-    encodeUint8Array(_utf8OfString(value),
-                     offset,
-                     nullability,
-                     kUnspecifiedArrayLength);
+    encodeUint8Array(
+        _utf8OfString(value), offset, nullability, kUnspecifiedArrayLength);
   }
 
   void appendBytes(Uint8List value) {
-    _buffer.buffer.buffer.asUint8List().setRange(
-        _base + ArrayDataHeader.kHeaderSize,
-        _base + ArrayDataHeader.kHeaderSize + value.lengthInBytes,
-        value);
+    _buffer.buffer.buffer
+        .asUint8List()
+        .setRange(_base + ArrayDataHeader.kHeaderSize,
+            _base + ArrayDataHeader.kHeaderSize + value.lengthInBytes, value);
   }
 
   void appendInt8Array(List<int> value) =>
@@ -495,7 +480,6 @@ class Encoder {
   }
 }
 
-
 class _Validator {
   final int _maxMemory;
   final int _numberOfHandles;
@@ -531,7 +515,6 @@ class _Validator {
   }
 }
 
-
 class Decoder {
   _Validator _validator;
   Message _message;
@@ -566,7 +549,7 @@ class Decoder {
   int decodeInt64(int offset) =>
       _buffer.getInt64(_base + offset, Endianness.LITTLE_ENDIAN);
   int decodeUint64(int offset) =>
-      _buffer.getUint64(_base + offset,Endianness.LITTLE_ENDIAN);
+      _buffer.getUint64(_base + offset, Endianness.LITTLE_ENDIAN);
   double decodeFloat(int offset) =>
       _buffer.getFloat32(_base + offset, Endianness.LITTLE_ENDIAN);
   double decodeDouble(int offset) =>
@@ -582,14 +565,14 @@ class Decoder {
         throw new MojoCodecError(
             'Trying to decode an invalid handle from a non-nullable type.');
       }
-      return new core.MojoHandle(core.MojoHandle.INVALID);
+      return new core.MojoHandle.invalid();
     }
     _validator.claimHandle(index);
     return _handles[index];
   }
 
   core.MojoMessagePipeEndpoint decodeMessagePipeHandle(
-      int offset, bool nullable) =>
+          int offset, bool nullable) =>
       new core.MojoMessagePipeEndpoint(decodeHandle(offset, nullable));
 
   core.MojoDataPipeConsumer decodeConsumerHandle(int offset, bool nullable) =>
@@ -678,8 +661,7 @@ class Decoder {
       return null;
     }
     var header = d.decodeDataHeaderForBoolArray(expectedLength);
-    var bytes = new Uint8List.view(
-        d._buffer.buffer,
+    var bytes = new Uint8List.view(d._buffer.buffer,
         d._buffer.offsetInBytes + d._base + ArrayDataHeader.kHeaderSize,
         (header.numElements + 7) ~/ kAlignment);
     var result = new List<bool>(header.numElements);
@@ -694,8 +676,8 @@ class Decoder {
     return result;
   }
 
-  ArrayDataHeader decodeDataHeaderForArray(int elementSize,
-                                           int expectedLength) {
+  ArrayDataHeader decodeDataHeaderForArray(
+      int elementSize, int expectedLength) {
     var header = decodeArrayDataHeader();
     var arrayByteCount =
         ArrayDataHeader.kHeaderSize + header.numElements * elementSize;
@@ -715,76 +697,65 @@ class Decoder {
   ArrayDataHeader decodeDataHeaderForPointerArray(int expectedLength) =>
       decodeDataHeaderForArray(kPointerSize, expectedLength);
 
-  List decodeArray(Function arrayViewer,
-                   int elementSize,
-                   int offset,
-                   int nullability,
-                   int expectedLength) {
+  List decodeArray(Function arrayViewer, int elementSize, int offset,
+      int nullability, int expectedLength) {
     Decoder d = decodePointer(offset, isArrayNullable(nullability));
     if (d == null) {
       return null;
     }
     var header = d.decodeDataHeaderForArray(elementSize, expectedLength);
-    return arrayViewer(
-        d._buffer.buffer,
+    return arrayViewer(d._buffer.buffer,
         d._buffer.offsetInBytes + d._base + ArrayDataHeader.kHeaderSize,
         header.numElements);
   }
 
-  List<int> decodeInt8Array(
-      int offset, int nullability, int expectedLength) =>
-      decodeArray((b, s, l) => new Int8List.view(b, s, l),
-                  1, offset, nullability, expectedLength);
+  List<int> decodeInt8Array(int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Int8List.view(b, s, l), 1, offset,
+          nullability, expectedLength);
 
-  List<int> decodeUint8Array(
-      int offset, int nullability, int expectedLength) =>
-      decodeArray((b, s, l) => new Uint8List.view(b, s, l),
-                  1, offset, nullability, expectedLength);
+  List<int> decodeUint8Array(int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Uint8List.view(b, s, l), 1, offset,
+          nullability, expectedLength);
 
-  List<int> decodeInt16Array(
-      int offset, int nullability, int expectedLength) =>
-      decodeArray((b, s, l) => new Int16List.view(b, s, l),
-                  2, offset, nullability, expectedLength);
+  List<int> decodeInt16Array(int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Int16List.view(b, s, l), 2, offset,
+          nullability, expectedLength);
 
   List<int> decodeUint16Array(
-      int offset, int nullability, int expectedLength) =>
-      decodeArray((b, s, l) => new Uint16List.view(b, s, l),
-                  2, offset, nullability, expectedLength);
+      int offset, int nullability, int expectedLength) => decodeArray(
+          (b, s, l) => new Uint16List.view(b, s, l), 2, offset, nullability,
+          expectedLength);
 
-  List<int> decodeInt32Array(
-      int offset, int nullability, int expectedLength) =>
-      decodeArray((b, s, l) => new Int32List.view(b, s, l),
-                  4, offset, nullability, expectedLength);
+  List<int> decodeInt32Array(int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Int32List.view(b, s, l), 4, offset,
+          nullability, expectedLength);
 
   List<int> decodeUint32Array(
-      int offset, int nullability, int expectedLength) =>
-      decodeArray((b, s, l) => new Uint32List.view(b, s, l),
-                  4, offset, nullability, expectedLength);
+      int offset, int nullability, int expectedLength) => decodeArray(
+          (b, s, l) => new Uint32List.view(b, s, l), 4, offset, nullability,
+          expectedLength);
 
-  List<int> decodeInt64Array(
-      int offset, int nullability, int expectedLength) =>
-      decodeArray((b, s, l) => new Int64List.view(b, s, l),
-                  8, offset, nullability, expectedLength);
+  List<int> decodeInt64Array(int offset, int nullability, int expectedLength) =>
+      decodeArray((b, s, l) => new Int64List.view(b, s, l), 8, offset,
+          nullability, expectedLength);
 
   List<int> decodeUint64Array(
-      int offset, int nullability, int expectedLength) =>
-      decodeArray((b, s, l) => new Uint64List.view(b, s, l),
-                  8, offset, nullability, expectedLength);
+      int offset, int nullability, int expectedLength) => decodeArray(
+          (b, s, l) => new Uint64List.view(b, s, l), 8, offset, nullability,
+          expectedLength);
 
   List<double> decodeFloatArray(
-      int offset, int nullability, int expectedLength) =>
-      decodeArray((b, s, l) => new Float32List.view(b, s, l),
-                  4, offset, nullability, expectedLength);
+      int offset, int nullability, int expectedLength) => decodeArray(
+          (b, s, l) => new Float32List.view(b, s, l), 4, offset, nullability,
+          expectedLength);
 
   List<double> decodeDoubleArray(
-      int offset, int nullability, int expectedLength) =>
-      decodeArray((b, s, l) => new Float64List.view(b, s, l),
-                  8, offset, nullability, expectedLength);
+      int offset, int nullability, int expectedLength) => decodeArray(
+          (b, s, l) => new Float64List.view(b, s, l), 8, offset, nullability,
+          expectedLength);
 
-  List _handleArrayDecodeHelper(Function elementDecoder,
-                                int offset,
-                                int nullability,
-                                int expectedLength) {
+  List _handleArrayDecodeHelper(Function elementDecoder, int offset,
+      int nullability, int expectedLength) {
     Decoder d = decodePointer(offset, isArrayNullable(nullability));
     if (d == null) {
       return null;
@@ -792,57 +763,48 @@ class Decoder {
     var header = d.decodeDataHeaderForArray(4, expectedLength);
     var result = new List(header.numElements);
     for (int i = 0; i < result.length; ++i) {
-      result[i] = elementDecoder(
-          d,
+      result[i] = elementDecoder(d,
           ArrayDataHeader.kHeaderSize + kSerializedHandleSize * i,
           isElementNullable(nullability));
     }
     return result;
-
   }
 
   List<core.MojoHandle> decodeHandleArray(
-      int offset, int nullability, int expectedLength) =>
-      _handleArrayDecodeHelper((d, o, n) => d.decodeHandle(o, n),
-                               offset, nullability, expectedLength);
+          int offset, int nullability, int expectedLength) =>
+      _handleArrayDecodeHelper((d, o, n) => d.decodeHandle(o, n), offset,
+          nullability, expectedLength);
 
   List<core.MojoDataPipeConsumer> decodeConsumerHandleArray(
-      int offset, int nullability, int expectedLength) =>
+          int offset, int nullability, int expectedLength) =>
       _handleArrayDecodeHelper((d, o, n) => d.decodeConsumerHandle(o, n),
-                               offset, nullability, expectedLength);
+          offset, nullability, expectedLength);
 
   List<core.MojoDataPipeProducer> decodeProducerHandleArray(
-      int offset, int nullability, int expectedLength) =>
+          int offset, int nullability, int expectedLength) =>
       _handleArrayDecodeHelper((d, o, n) => d.decodeProducerHandle(o, n),
-                               offset, nullability, expectedLength);
+          offset, nullability, expectedLength);
 
   List<core.MojoMessagePipeEndpoint> decodeMessagePipeHandleArray(
-      int offset, int nullability, int expectedLength) =>
+          int offset, int nullability, int expectedLength) =>
       _handleArrayDecodeHelper((d, o, n) => d.decodeMessagePipeHandle(o, n),
-                               offset, nullability, expectedLength);
+          offset, nullability, expectedLength);
 
   List<core.MojoSharedBuffer> decodeSharedBufferHandleArray(
-      int offset, int nullability, int expectedLength) =>
+          int offset, int nullability, int expectedLength) =>
       _handleArrayDecodeHelper((d, o, n) => d.decodeSharedBufferHandle(o, n),
-                               offset, nullability, expectedLength);
-
-  List<Stub> decodeInterfaceRequestArray(
-      int offset,
-      int nullability,
-      int expectedLength,
-      Function interfaceFactory) =>
-      _handleArrayDecodeHelper(
-          (d, o, n) => d.decodeInterfaceRequest(o, n, interfaceFactory),
           offset, nullability, expectedLength);
 
-  List<Proxy> decodeServiceInterfaceArray(
-      int offset,
-      int nullability,
-      int expectedLength,
-      Function clientFactory) =>
+  List<Stub> decodeInterfaceRequestArray(int offset, int nullability,
+          int expectedLength, Function interfaceFactory) =>
       _handleArrayDecodeHelper(
-          (d, o, n) => d.decodeServiceInterface(o, n, clientFactory),
-          offset, nullability, expectedLength);
+          (d, o, n) => d.decodeInterfaceRequest(o, n, interfaceFactory), offset,
+          nullability, expectedLength);
+
+  List<Proxy> decodeServiceInterfaceArray(int offset, int nullability,
+      int expectedLength, Function clientFactory) => _handleArrayDecodeHelper(
+          (d, o, n) => d.decodeServiceInterface(o, n, clientFactory), offset,
+          nullability, expectedLength);
 
   static String _stringOfUtf8(Uint8List bytes) =>
       (const Utf8Decoder()).convert(bytes.toList());

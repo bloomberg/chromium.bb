@@ -34,7 +34,7 @@ bool {{class_name}}::Validate(const void* data,
 {%- endfor %}
     default:
       ReportValidationError(
-          mojo::internal::VALIDATION_ERROR_UNKOWN_UNION_TAG,
+          mojo::internal::VALIDATION_ERROR_UNKNOWN_UNION_TAG,
           "unknown tag in {{union.name}}");
       return false;
   }

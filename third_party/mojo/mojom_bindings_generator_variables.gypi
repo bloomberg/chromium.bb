@@ -39,7 +39,6 @@
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/js_templates/interface_definition.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/js_templates/module_definition.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/js_templates/module.amd.tmpl',
-      '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/js_templates/module.sky.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/js_templates/struct_definition.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/python_templates/module_macros.tmpl',
       '<(DEPTH)/third_party/mojo/src/mojo/public/tools/bindings/generators/python_templates/module.py.tmpl',

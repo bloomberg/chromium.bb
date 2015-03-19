@@ -124,9 +124,9 @@ def FormatName(name, exported=True):
 def GetFullName(element, exported=True):
   if not hasattr(element, 'imported_from') or not element.imported_from:
     return FormatName(element.name, exported)
-  path = 'gen/mojom'
-  if element.imported_from['namespace']:
-    path = '/'.join([path] + element.imported_from['namespace'].split('.'))
+  path = ''
+  if element.imported_from['module'].path:
+    path += GetPackagePath(element.imported_from['module'])
   if path in _imports:
     return '%s.%s' % (_imports[path], FormatName(element.name, exported))
   return FormatName(element.name, exported)
@@ -177,16 +177,12 @@ def EncodeSuffix(kind):
     return EncodeSuffix(mojom.MSGPIPE)
   return _kind_infos[kind].encode_suffix
 
-def GetPackage(namespace):
-  if namespace:
-    return namespace.split('.')[-1]
-  return 'mojom'
+def GetPackageName(module):
+  return module.name.split('.')[0]
 
-def GetPackagePath(namespace):
-  path = 'mojom'
-  for i in namespace.split('.'):
-    path = os.path.join(path, i)
-  return path
+def GetPackagePath(module):
+  name = module.name.split('.')[0]
+  return '/'.join(module.path.split('/')[:-1] + [name])
 
 def GetStructFromMethod(method):
   params_class = "%s_%s_Params" % (GetNameForElement(method.interface),
@@ -225,24 +221,30 @@ def GetAllEnums(module):
 # Adds an import required to use the provided |element|.
 # The required import is stored at '_imports'.
 def AddImport(module, element):
-  if (isinstance(element, mojom.Kind) and
-      mojom.IsNonInterfaceHandleKind(element)):
-    _imports['mojo/public/go/system'] = 'system'
+  if not isinstance(element, mojom.Kind):
     return
-  if isinstance(element, mojom.Kind) and mojom.IsInterfaceRequestKind(element):
+
+  if mojom.IsArrayKind(element) or mojom.IsInterfaceRequestKind(element):
     AddImport(module, element.kind)
     return
+  if mojom.IsMapKind(element):
+    AddImport(module, element.key_kind)
+    AddImport(module, element.value_kind)
+    return
+  if mojom.IsNonInterfaceHandleKind(element):
+    _imports['mojo/public/go/system'] = 'system'
+    return
+
   if not hasattr(element, 'imported_from') or not element.imported_from:
     return
   imported = element.imported_from
-  if imported['namespace'] == module.namespace:
+  if GetPackagePath(imported['module']) == GetPackagePath(module):
     return
-  path = 'gen/mojom'
-  name = 'mojom'
-  if imported['namespace']:
-    path = '/'.join([path] + imported['namespace'].split('.'))
-    name = '_'.join([name] + imported['namespace'].split('.'))
-  while (name in _imports.values() and _imports[path] != path):
+  path = GetPackagePath(imported['module'])
+  if path in _imports:
+    return
+  name = GetPackageName(imported['module'])
+  while name in _imports.values():
     name += '_'
   _imports[path] = name
 
@@ -259,7 +261,11 @@ def GetImports(module):
         all_structs.append(GetResponseStructFromMethod(method))
 
   if len(all_structs) > 0 or len(module.interfaces) > 0:
+    _imports['fmt'] = 'fmt'
     _imports['mojo/public/go/bindings'] = 'bindings'
+  if len(all_structs) > 0:
+    _imports['sort'] = 'sort'
+
   for struct in all_structs:
     for field in struct.fields:
       AddImport(module, field.kind)
@@ -313,7 +319,7 @@ class Generator(generator.Generator):
       'enums': GetAllEnums(self.module),
       'imports': GetImports(self.module),
       'interfaces': self.module.interfaces,
-      'package': GetPackage(self.module.namespace),
+      'package': GetPackageName(self.module),
       'structs': self.GetStructs(),
     }
 
@@ -322,8 +328,8 @@ class Generator(generator.Generator):
     return self.GetParameters()
 
   def GenerateFiles(self, args):
-    self.Write(self.GenerateSource(), os.path.join("go", "src", "gen",
-        GetPackagePath(self.module.namespace), '%s.go' % self.module.name))
+    self.Write(self.GenerateSource(), os.path.join("go", "src",
+        GetPackagePath(self.module), "%s.go" % self.module.name))
 
   def GetJinjaParameters(self):
     return {

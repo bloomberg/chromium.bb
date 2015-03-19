@@ -101,7 +101,7 @@ class Binding : public ErrorHandler {
   // implementation unbound.
   ~Binding() override {
     if (internal_router_) {
-      DestroyRouter();
+      Close();
     }
   }
 
@@ -169,6 +169,8 @@ class Binding : public ErrorHandler {
     InterfaceRequest<Interface> request =
         MakeRequest<Interface>(internal_router_->PassMessagePipe());
     DestroyRouter();
+    // TODO(vtl): The |.Pass()| below is only needed due to an MSVS bug; remove
+    // it once that's fixed.
     return request.Pass();
   }
 

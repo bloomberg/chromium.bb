@@ -11,13 +11,10 @@
 package {{package}}
 
 import (
-	"fmt"
 {% for i in imports %}
 	{{i}}
 {% endfor %}
 )
-
-var _ = fmt.Errorf
 
 {% import "enum.tmpl" as enum_macros %}
 {% import "interface.tmpl" as interface_macros %}

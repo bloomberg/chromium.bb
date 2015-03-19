@@ -135,5 +135,12 @@ class {{struct|name}} extends bindings.Struct {
 {%-   endfor %}
 {%- endfor %}
   }
+
+  String toString() {
+    return "{{struct|name}}("
+{%- for packed_field in struct.packed.packed_fields %}
+           "{{packed_field.field|name}}: ${{packed_field.field|name}}" {% if not loop.last %}", "{% endif %}
+{%- endfor %}")";
+  }
 }
 {%- endmacro %}

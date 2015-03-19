@@ -5,6 +5,7 @@
 package bindings
 
 import (
+	"fmt"
 	"mojo/public/go/system"
 )
 
@@ -60,7 +61,7 @@ type InterfacePointer struct {
 func CreateMessagePipeForMojoInterface() (InterfaceRequest, InterfacePointer) {
 	r, h0, h1 := system.GetCore().CreateMessagePipe(nil)
 	if r != system.MOJO_RESULT_OK {
-		panic("can't create a message pipe")
+		panic(fmt.Sprintf("can't create a message pipe: %v", r))
 	}
 	return InterfaceRequest{MessagePipeHandleOwner{h0}}, InterfacePointer{MessagePipeHandleOwner{h1}}
 }

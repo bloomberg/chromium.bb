@@ -5,8 +5,6 @@
 module mojo;
 
 import "geometry/public/interfaces/geometry.mojom";
-import "gpu/public/interfaces/command_buffer.mojom";
-import "gpu/public/interfaces/viewport_parameter_listener.mojom";
 import "surfaces/public/interfaces/quads.mojom";
 import "surfaces/public/interfaces/surface_id.mojom";
 
@@ -76,9 +74,4 @@ interface Surface {
   // to ratelimit frame submissions.
   SubmitFrame(uint32 id_local, Frame frame) => ();
   DestroySurface(uint32 id_local);
-
-  CreateGLES2BoundSurface(CommandBuffer gles2_client,
-                          uint32 id_local,
-                          Size size,
-                          ViewportParameterListener& listener);
 };

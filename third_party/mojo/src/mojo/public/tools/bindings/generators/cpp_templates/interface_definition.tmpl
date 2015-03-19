@@ -116,13 +116,17 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
  public:
   virtual ~{{class_name}}_{{method.name}}_ProxyToResponder() {
     delete responder_;
+    // TODO(rudominer) DCHECK if |was_run_| is false and we don't have evidence
+    // that we are in a legitamte shutdown case such as the Connector detected
+    // an error or Close() was invoked.
   }
 
   {{class_name}}_{{method.name}}_ProxyToResponder(
       uint64_t request_id,
       mojo::MessageReceiver* responder)
       : request_id_(request_id),
-        responder_(responder) {
+        responder_(responder),
+        was_run_(false) {
   }
 
   virtual void Run({{interface_macros.declare_params("in_", method.response_parameters)}}) const override;
@@ -130,10 +134,12 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
  private:
   uint64_t request_id_;
   mutable mojo::MessageReceiver* responder_;
+  mutable bool was_run_;
   MOJO_DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ProxyToResponder);
 };
 void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
     {{interface_macros.declare_params("in_", method.response_parameters)}}) const {
+  was_run_ = true;
   {{struct_macros.get_serialized_size(response_params_struct, "in_%s")}}
   mojo::internal::ResponseMessageBuilder builder(
       {{message_name}}, size, request_id_);

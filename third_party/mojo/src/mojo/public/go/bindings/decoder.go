@@ -125,22 +125,22 @@ func (d *Decoder) StartMap() error {
 	return nil
 }
 
-// StartStruct starts decoding a struct and reads its data header,
-// returning struct version declared in data header.
+// StartStruct starts decoding a struct and reads its data header.
+// Returns the read data header. The caller should check if it is valid.
 // Note: it doesn't read a pointer to the encoded struct.
 // Call |Finish()| after reading all fields.
-func (d *Decoder) StartStruct() (uint32, error) {
+func (d *Decoder) StartStruct() (DataHeader, error) {
 	header, err := d.readDataHeader()
 	if err != nil {
-		return 0, err
+		return DataHeader{}, err
 	}
 	if header.Size < dataHeaderSize {
-		return 0, fmt.Errorf("data header size is too small: is %d, but should be at least %d", header.Size, dataHeaderSize)
+		return DataHeader{}, fmt.Errorf("data header size(%d) should be at least %d", header.Size, dataHeaderSize)
 	}
 	if err := d.pushState(header, 0); err != nil {
-		return 0, err
+		return DataHeader{}, err
 	}
-	return header.ElementsOrVersion, nil
+	return header, nil
 }
 
 func (d *Decoder) readDataHeader() (DataHeader, error) {

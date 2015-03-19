@@ -318,8 +318,10 @@ TEST_F(PresentationServiceImplTest, GetScreenAvailabilityTwice) {
   std::string presentation_url("http://fooUrl");
   GetScreenAvailabilityAndWait(
       presentation_url,
-      base::Bind(&PresentationServiceImplTest::ShouldNotBeCalled,
-          base::Unretained(this)),
+      base::Bind(
+          &PresentationServiceImplTest::ScreenAvailabilityChangedCallback,
+          base::Unretained(this),
+          false),
       true);
 
   // Second call should overwrite the callback from first call.
@@ -339,7 +341,7 @@ TEST_F(PresentationServiceImplTest, GetScreenAvailabilityTwice) {
   SimulateScreenAvailabilityChange(presentation_url, false);
   SaveQuitClosureAndRunLoop();
 
-  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(2, callback_count_);
 }
 
 TEST_F(PresentationServiceImplTest, DelegateFails) {
@@ -372,7 +374,7 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrl) {
   const auto& contexts = service_impl_->availability_contexts_;
   auto it = contexts.find(url1);
   ASSERT_TRUE(it != contexts.end());
-  EXPECT_NE(nullptr, it->second->GetCallback());
+  EXPECT_TRUE(it->second->HasPendingCallbacks());
 
   std::string url2("http://barUrl");
   // Sets different DPU.
@@ -394,7 +396,7 @@ TEST_F(PresentationServiceImplTest, SetDefaultPresentationUrl) {
 
   it = contexts.find(url2);
   ASSERT_TRUE(it != contexts.end());
-  EXPECT_NE(nullptr, it->second->GetCallback());
+  EXPECT_TRUE(it->second->HasPendingCallbacks());
 }
 
 TEST_F(PresentationServiceImplTest, SetSameDefaultPresentationUrl) {
@@ -433,7 +435,7 @@ TEST_F(PresentationServiceImplTest, ClearDefaultPresentationUrl) {
   const auto& contexts = service_impl_->availability_contexts_;
   auto it = contexts.find(url);
   ASSERT_TRUE(it != contexts.end());
-  EXPECT_NE(nullptr, it->second->GetCallback());
+  EXPECT_TRUE(it->second->HasPendingCallbacks());
 
   // Clears the default presentation URL. Transfers the listener from url to
   // "1-UA" mode.

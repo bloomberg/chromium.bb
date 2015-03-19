@@ -105,4 +105,3 @@ class ServiceProviderImpl implements ServiceProvider {
     @Override
     public void onConnectionError(MojoException e) {}
 }
-;

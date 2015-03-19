@@ -122,78 +122,12 @@ ssize_t MojoDescSendMsg(void* handle,
 
       return 0;
     }
-    case 2: {
-      if (num_params != 7) {
-        return -1;
-      }
-      MojoHandle buffer_handle_value;
-      uint64_t offset_value;
-      uint64_t num_bytes_value;
-      void* volatile* buffer_ptr;
-      void* buffer_value;
-      MojoMapBufferFlags flags_value;
-      MojoResult volatile* result_ptr;
-      MojoResult result_value;
-      {
-        ScopedCopyLock copy_lock(nap);
-        if (!ConvertScalarInput(nap, params[1], &buffer_handle_value)) {
-          return -1;
-        }
-        if (!ConvertScalarInput(nap, params[2], &offset_value)) {
-          return -1;
-        }
-        if (!ConvertScalarInput(nap, params[3], &num_bytes_value)) {
-          return -1;
-        }
-        if (!ConvertScalarInOut(nap, params[4], false, &buffer_value,
-                                &buffer_ptr)) {
-          return -1;
-        }
-        if (!ConvertScalarInput(nap, params[5], &flags_value)) {
-          return -1;
-        }
-        if (!ConvertScalarOutput(nap, params[6], false, &result_ptr)) {
-          return -1;
-        }
-      }
-
-      result_value = MojoMapBuffer(buffer_handle_value, offset_value,
-                                   num_bytes_value, &buffer_value, flags_value);
-
-      {
-        ScopedCopyLock copy_lock(nap);
-        *buffer_ptr = buffer_value;
-        *result_ptr = result_value;
-      }
-
-      return 0;
-    }
-    case 3: {
-      if (num_params != 3) {
-        return -1;
-      }
-      void* buffer_value;
-      MojoResult volatile* result_ptr;
-      MojoResult result_value;
-      {
-        ScopedCopyLock copy_lock(nap);
-        if (!ConvertScalarInput(nap, params[1], &buffer_value)) {
-          return -1;
-        }
-        if (!ConvertScalarOutput(nap, params[2], false, &result_ptr)) {
-          return -1;
-        }
-      }
-
-      result_value = MojoUnmapBuffer(buffer_value);
-
-      {
-        ScopedCopyLock copy_lock(nap);
-        *result_ptr = result_value;
-      }
-
-      return 0;
-    }
+    case 2:
+      fprintf(stderr, "MojoMapBuffer not implemented\n");
+      return -1;
+    case 3:
+      fprintf(stderr, "MojoUnmapBuffer not implemented\n");
+      return -1;
     case 4: {
       if (num_params != 5) {
         return -1;
@@ -282,53 +216,9 @@ ssize_t MojoDescSendMsg(void* handle,
 
       return 0;
     }
-    case 6: {
-      if (num_params != 6) {
-        return -1;
-      }
-      MojoHandle data_pipe_producer_handle_value;
-      void* volatile* buffer_ptr;
-      void* buffer_value;
-      uint32_t volatile* buffer_num_bytes_ptr;
-      uint32_t buffer_num_bytes_value;
-      MojoWriteDataFlags flags_value;
-      MojoResult volatile* result_ptr;
-      MojoResult result_value;
-      {
-        ScopedCopyLock copy_lock(nap);
-        if (!ConvertScalarInput(nap, params[1],
-                                &data_pipe_producer_handle_value)) {
-          return -1;
-        }
-        if (!ConvertScalarInOut(nap, params[2], false, &buffer_value,
-                                &buffer_ptr)) {
-          return -1;
-        }
-        if (!ConvertScalarInOut(nap, params[3], false, &buffer_num_bytes_value,
-                                &buffer_num_bytes_ptr)) {
-          return -1;
-        }
-        if (!ConvertScalarInput(nap, params[4], &flags_value)) {
-          return -1;
-        }
-        if (!ConvertScalarOutput(nap, params[5], false, &result_ptr)) {
-          return -1;
-        }
-      }
-
-      result_value =
-          MojoBeginWriteData(data_pipe_producer_handle_value, &buffer_value,
-                             &buffer_num_bytes_value, flags_value);
-
-      {
-        ScopedCopyLock copy_lock(nap);
-        *buffer_ptr = buffer_value;
-        *buffer_num_bytes_ptr = buffer_num_bytes_value;
-        *result_ptr = result_value;
-      }
-
-      return 0;
-    }
+    case 6:
+      fprintf(stderr, "MojoBeginWriteData not implemented\n");
+      return -1;
     case 7: {
       if (num_params != 4) {
         return -1;
@@ -405,53 +295,9 @@ ssize_t MojoDescSendMsg(void* handle,
 
       return 0;
     }
-    case 9: {
-      if (num_params != 6) {
-        return -1;
-      }
-      MojoHandle data_pipe_consumer_handle_value;
-      const void* volatile* buffer_ptr;
-      const void* buffer_value;
-      uint32_t volatile* buffer_num_bytes_ptr;
-      uint32_t buffer_num_bytes_value;
-      MojoReadDataFlags flags_value;
-      MojoResult volatile* result_ptr;
-      MojoResult result_value;
-      {
-        ScopedCopyLock copy_lock(nap);
-        if (!ConvertScalarInput(nap, params[1],
-                                &data_pipe_consumer_handle_value)) {
-          return -1;
-        }
-        if (!ConvertScalarInOut(nap, params[2], false, &buffer_value,
-                                &buffer_ptr)) {
-          return -1;
-        }
-        if (!ConvertScalarInOut(nap, params[3], false, &buffer_num_bytes_value,
-                                &buffer_num_bytes_ptr)) {
-          return -1;
-        }
-        if (!ConvertScalarInput(nap, params[4], &flags_value)) {
-          return -1;
-        }
-        if (!ConvertScalarOutput(nap, params[5], false, &result_ptr)) {
-          return -1;
-        }
-      }
-
-      result_value =
-          MojoBeginReadData(data_pipe_consumer_handle_value, &buffer_value,
-                            &buffer_num_bytes_value, flags_value);
-
-      {
-        ScopedCopyLock copy_lock(nap);
-        *buffer_ptr = buffer_value;
-        *buffer_num_bytes_ptr = buffer_num_bytes_value;
-        *result_ptr = result_value;
-      }
-
-      return 0;
-    }
+    case 9:
+      fprintf(stderr, "MojoBeginReadData not implemented\n");
+      return -1;
     case 10: {
       if (num_params != 4) {
         return -1;

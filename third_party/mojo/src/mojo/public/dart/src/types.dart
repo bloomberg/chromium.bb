@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 part of core;
-
 
 class MojoResult {
   static const int kOk = 0;
@@ -51,24 +49,42 @@ class MojoResult {
 
   factory MojoResult(int value) {
     switch (value) {
-      case kOk: return OK;
-      case kCancelled: return CANCELLED;
-      case kUnknown: return UNKNOWN;
-      case kInvalidArgument: return INVALID_ARGUMENT;
-      case kDeadlineExceeded: return DEADLINE_EXCEEDED;
-      case kNotFound: return NOT_FOUND;
-      case kAlreadyExists: return ALREADY_EXISTS;
-      case kPermissionDenied: return PERMISSION_DENIED;
-      case kResourceExhausted: return RESOURCE_EXHAUSTED;
-      case kFailedPrecondition: return FAILED_PRECONDITION;
-      case kAborted: return ABORTED;
-      case kOutOfRange: return OUT_OF_RANGE;
-      case kUnimplemented: return UNIMPLEMENTED;
-      case kInternal: return INTERNAL;
-      case kUnavailable: return UNAVAILABLE;
-      case kDataLoss: return DATA_LOSS;
-      case kBusy: return BUSY;
-      case kShouldWait: return SHOULD_WAIT;
+      case kOk:
+        return OK;
+      case kCancelled:
+        return CANCELLED;
+      case kUnknown:
+        return UNKNOWN;
+      case kInvalidArgument:
+        return INVALID_ARGUMENT;
+      case kDeadlineExceeded:
+        return DEADLINE_EXCEEDED;
+      case kNotFound:
+        return NOT_FOUND;
+      case kAlreadyExists:
+        return ALREADY_EXISTS;
+      case kPermissionDenied:
+        return PERMISSION_DENIED;
+      case kResourceExhausted:
+        return RESOURCE_EXHAUSTED;
+      case kFailedPrecondition:
+        return FAILED_PRECONDITION;
+      case kAborted:
+        return ABORTED;
+      case kOutOfRange:
+        return OUT_OF_RANGE;
+      case kUnimplemented:
+        return UNIMPLEMENTED;
+      case kInternal:
+        return INTERNAL;
+      case kUnavailable:
+        return UNAVAILABLE;
+      case kDataLoss:
+        return DATA_LOSS;
+      case kBusy:
+        return BUSY;
+      case kShouldWait:
+        return SHOULD_WAIT;
       default:
         throw 'Invalid Mojo result';
     }
@@ -95,29 +111,47 @@ class MojoResult {
 
   String toString() {
     switch (value) {
-      case kOk: return "OK";
-      case kCancelled: return "CANCELLED";
-      case kUnknown: return "UNKNOWN";
-      case kInvalidArgument: return "INVALID_ARGUMENT";
-      case kDeadlineExceeded: return "DEADLINE_EXCEEDED";
-      case kNotFound: return "NOT_FOUND";
-      case kAlreadyExists: return "ALREADY_EXISTS";
-      case kPermissionDenied: return "PERMISSION_DENIED";
-      case kResourceExhausted: return "RESOURCE_EXHAUSTED";
-      case kFailedPrecondition: return "FAILED_PRECONDITION";
-      case kAborted: return "ABORTED";
-      case kOutOfRange: return "OUT_OF_RANGE";
-      case kUnimplemented: return "UNIMPLEMENTED";
-      case kInternal: return "INTERNAL";
-      case kUnavailable: return "UNAVAILABLE";
-      case kDataLoss: return "DATA_LOSS";
-      case kBusy: return "BUSY";
-      case kShouldWait: return "SHOULD_WAIT";
-      default: return "<invalid result>";
+      case kOk:
+        return "OK";
+      case kCancelled:
+        return "CANCELLED";
+      case kUnknown:
+        return "UNKNOWN";
+      case kInvalidArgument:
+        return "INVALID_ARGUMENT";
+      case kDeadlineExceeded:
+        return "DEADLINE_EXCEEDED";
+      case kNotFound:
+        return "NOT_FOUND";
+      case kAlreadyExists:
+        return "ALREADY_EXISTS";
+      case kPermissionDenied:
+        return "PERMISSION_DENIED";
+      case kResourceExhausted:
+        return "RESOURCE_EXHAUSTED";
+      case kFailedPrecondition:
+        return "FAILED_PRECONDITION";
+      case kAborted:
+        return "ABORTED";
+      case kOutOfRange:
+        return "OUT_OF_RANGE";
+      case kUnimplemented:
+        return "UNIMPLEMENTED";
+      case kInternal:
+        return "INTERNAL";
+      case kUnavailable:
+        return "UNAVAILABLE";
+      case kDataLoss:
+        return "DATA_LOSS";
+      case kBusy:
+        return "BUSY";
+      case kShouldWait:
+        return "SHOULD_WAIT";
+      default:
+        return "<invalid result>";
     }
   }
 }
-
 
 class MojoHandleSignals {
   static const int kNone = 0;
@@ -126,6 +160,7 @@ class MojoHandleSignals {
   static const int kPeerClosed = 1 << 2;
   static const int kReadWrite = kReadable | kWritable;
   static const int kAll = kReadable | kWritable | kPeerClosed;
+  static const int kBitfieldSize = 3;
 
   static const NONE = const MojoHandleSignals._(kNone);
   static const READABLE = const MojoHandleSignals._(kReadable);
@@ -142,13 +177,20 @@ class MojoHandleSignals {
 
   factory MojoHandleSignals(int value) {
     switch (value) {
-      case kNone: return NONE;
-      case kReadable: return READABLE;
-      case kWritable: return WRITABLE;
-      case kPeerClosed: return PEER_CLOSED;
-      case kReadWrite: return READWRITE;
-      case kPeerClosed | kReadable: return PEER_CLOSED_READABLE;
-      case kAll: return ALL;
+      case kNone:
+        return NONE;
+      case kReadable:
+        return READABLE;
+      case kWritable:
+        return WRITABLE;
+      case kPeerClosed:
+        return PEER_CLOSED;
+      case kReadWrite:
+        return READWRITE;
+      case kPeerClosed | kReadable:
+        return PEER_CLOSED_READABLE;
+      case kAll:
+        return ALL;
       default:
         throw 'Invalid handle signal: $value';
     }
@@ -160,6 +202,7 @@ class MojoHandleSignals {
   bool get isPeerClosed => (value & kPeerClosed) == kPeerClosed;
   bool get isReadWrite => (value & kReadWrite) == kReadWrite;
   bool get isAll => (this == ALL);
+  bool get isValid => (value & kAll) == value;
 
   MojoHandleSignals operator +(MojoHandleSignals other) {
     return new MojoHandleSignals(value | other.value);
@@ -170,41 +213,43 @@ class MojoHandleSignals {
   }
 
   String toString() {
-    switch (value) {
-      case kNone: return "NONE";
-      case kReadable: return "READABLE";
-      case kWritable: return "WRITABLE";
-      case kPeerClosed: return "PEER_CLOSED";
-      case kReadWrite: return "READWRITE";
-      case kPeerClosed | kReadable: return "PEER_CLOSED_READABLE";
-      case kAll: return "ALL";
-      default: return "<invalid signals>";
+    if (isNone) {
+      return "(None)";
     }
+    if (!isValid) {
+      return "(INVALID)";
+    }
+    List<String> signals = [];
+    if (isReadable) signals.add("Readable");
+    if (isWritable) signals.add("Writable");
+    if (isPeerClosed) signals.add("PeerClosed");
+    return "(" + signals.join(", ") + ")";
   }
 }
 
-
 class MojoHandleSignalsState {
-  MojoHandleSignalsState(this.satisfied_signals,
-                         this.satisfiable_signals);
+  MojoHandleSignalsState(this.satisfied_signals, this.satisfiable_signals);
   final int satisfied_signals;
   final int satisfiable_signals;
+  String toString() => (new MojoHandleSignals(satisfied_signals)).toString();
 }
-
 
 class MojoWaitResult {
   MojoWaitResult(this.result, this.state);
   final MojoResult result;
   MojoHandleSignalsState state;
+  String toString() => "MojoWaitResult(result: $result, state: $state)";
 }
-
 
 class MojoWaitManyResult {
   MojoWaitManyResult(this.result, this.index, this.states);
   final MojoResult result;
   final int index;
   List<MojoHandleSignalsState> states;
-  
+
   bool get isIndexValid => (this.index != null);
   bool get areSignalStatesValid => (this.states != null);
+
+  String toString() =>
+      "MojoWaitManyResult(" "result: $result, idx: $index, state: ${states[index]})";
 }

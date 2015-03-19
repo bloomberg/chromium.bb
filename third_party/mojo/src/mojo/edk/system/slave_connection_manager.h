@@ -41,7 +41,9 @@ class MOJO_SYSTEM_IMPL_EXPORT SlaveConnectionManager
  public:
   // Note: None of the public methods may be called from |private_thread_|.
 
-  SlaveConnectionManager();
+  // |platform_support| must be valid and remain alive until after |Shutdown()|
+  // has completed.
+  explicit SlaveConnectionManager(embedder::PlatformSupport* platform_support);
   ~SlaveConnectionManager() override;
 
   // No other methods may be called until after this has been called.

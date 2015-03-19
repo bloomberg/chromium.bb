@@ -29,8 +29,8 @@ class ApplicationImpl(application_mojom.Application):
   def AcceptConnection(self, requestor_url, services, exposed_services,
                        resolved_url):
     service_provider = ServiceProviderImpl(services)
-    if self._delegate.OnAcceptConnection(service_provider, requestor_url,
-                                         exposed_services):
+    if self._delegate.OnAcceptConnection(requestor_url, resolved_url,
+                                         service_provider, exposed_services):
       # We keep a reference to ServiceProviderImpl to ensure neither it nor
       # |services| gets garbage collected.
       services.Bind(service_provider)

@@ -44,9 +44,10 @@ scoped_ptr<MessageInTransit> MakeTestMessage(uint32_t num_bytes) {
   std::vector<unsigned char> bytes(num_bytes, 0);
   for (size_t i = 0; i < num_bytes; i++)
     bytes[i] = static_cast<unsigned char>(i + num_bytes);
-  return make_scoped_ptr(new MessageInTransit(
-      MessageInTransit::kTypeEndpoint, MessageInTransit::kSubtypeEndpointData,
-      num_bytes, bytes.empty() ? nullptr : &bytes[0]));
+  return make_scoped_ptr(
+      new MessageInTransit(MessageInTransit::kTypeEndpointClient,
+                           MessageInTransit::kSubtypeEndpointClientData,
+                           num_bytes, bytes.empty() ? nullptr : &bytes[0]));
 }
 
 bool CheckMessageData(const void* bytes, uint32_t num_bytes) {
@@ -837,8 +838,8 @@ TEST_F(RawChannelTest, MAYBE_ReadWritePlatformHandles) {
         mojo::test::PlatformHandleFromFILE(fp2.Pass()).release());
 
     scoped_ptr<MessageInTransit> message(new MessageInTransit(
-        MessageInTransit::kTypeEndpoint, MessageInTransit::kSubtypeEndpointData,
-        sizeof(kHello), kHello));
+        MessageInTransit::kTypeEndpointClient,
+        MessageInTransit::kSubtypeEndpointClientData, sizeof(kHello), kHello));
     message->SetTransportData(
         make_scoped_ptr(new TransportData(platform_handles.Pass())));
     EXPECT_TRUE(rc_write->WriteMessage(message.Pass()));

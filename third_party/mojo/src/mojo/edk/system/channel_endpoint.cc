@@ -93,45 +93,18 @@ void ChannelEndpoint::AttachAndRun(Channel* channel,
 }
 
 void ChannelEndpoint::OnReadMessage(scoped_ptr<MessageInTransit> message) {
-  scoped_refptr<ChannelEndpointClient> client;
-  unsigned client_port = 0;
-
-  // This loop is to make |ReplaceClient()| work. We can't call the client's
-  // |OnReadMessage()| under our lock, so by the time we do that, |client| may
-  // no longer be our client.
-  //
-  // In that case, |client| must return false. We'll then yield, and retry with
-  // the new client. (Theoretically, the client could be replaced again.)
-  //
-  // This solution isn't terribly elegant, but it's the least costly way of
-  // handling/avoiding this (very unlikely) race. (Other solutions -- e.g.,
-  // adding a client message queue, which the client only fetches messages from
-  // -- impose significant cost in the common case.)
-  for (;;) {
-    {
-      base::AutoLock locker(lock_);
-      if (!channel_ || !client_) {
-        // This isn't a failure per se. (It just means that, e.g., the other end
-        // of the message point closed first.)
-        return;
-      }
-
-      // If we get here in a second (third, etc.) iteration of the loop, it's
-      // because |ReplaceClient()| was called.
-      DCHECK(client_ != client || client_port_ != client_port);
-
-      // Take a ref, and call |OnReadMessage()| outside the lock.
-      client = client_;
-      client_port = client_port_;
-    }
-
-    if (client->OnReadMessage(client_port, message.get())) {
-      ignore_result(message.release());
-      break;
-    }
-
-    base::PlatformThread::YieldCurrentThread();
+  if (message->type() == MessageInTransit::kTypeEndpointClient) {
+    OnReadMessageForClient(message.Pass());
+    return;
   }
+
+  DCHECK_EQ(message->type(), MessageInTransit::kTypeEndpoint);
+
+  // TODO(vtl)
+  // Note that this won't crash on Release builds, which is important (since the
+  // other side may be malicious). Doing nothing is safe and will dispose of the
+  // message.
+  NOTREACHED();
 }
 
 void ChannelEndpoint::DetachFromChannel() {
@@ -184,6 +157,51 @@ bool ChannelEndpoint::WriteMessageNoLock(scoped_ptr<MessageInTransit> message) {
   message->set_source_id(local_id_);
   message->set_destination_id(remote_id_);
   return channel_->WriteMessage(message.Pass());
+}
+
+void ChannelEndpoint::OnReadMessageForClient(
+    scoped_ptr<MessageInTransit> message) {
+  DCHECK_EQ(message->type(), MessageInTransit::kTypeEndpointClient);
+
+  scoped_refptr<ChannelEndpointClient> client;
+  unsigned client_port = 0;
+
+  // This loop is to make |ReplaceClient()| work. We can't call the client's
+  // |OnReadMessage()| under our lock, so by the time we do that, |client| may
+  // no longer be our client.
+  //
+  // In that case, |client| must return false. We'll then yield, and retry with
+  // the new client. (Theoretically, the client could be replaced again.)
+  //
+  // This solution isn't terribly elegant, but it's the least costly way of
+  // handling/avoiding this (very unlikely) race. (Other solutions -- e.g.,
+  // adding a client message queue, which the client only fetches messages from
+  // -- impose significant cost in the common case.)
+  for (;;) {
+    {
+      base::AutoLock locker(lock_);
+      if (!channel_ || !client_) {
+        // This isn't a failure per se. (It just means that, e.g., the other end
+        // of the message point closed first.)
+        return;
+      }
+
+      // If we get here in a second (third, etc.) iteration of the loop, it's
+      // because |ReplaceClient()| was called.
+      DCHECK(client_ != client || client_port_ != client_port);
+
+      // Take a ref, and call |OnReadMessage()| outside the lock.
+      client = client_;
+      client_port = client_port_;
+    }
+
+    if (client->OnReadMessage(client_port, message.get())) {
+      ignore_result(message.release());
+      break;
+    }
+
+    base::PlatformThread::YieldCurrentThread();
+  }
 }
 
 void ChannelEndpoint::ResetChannelNoLock() {

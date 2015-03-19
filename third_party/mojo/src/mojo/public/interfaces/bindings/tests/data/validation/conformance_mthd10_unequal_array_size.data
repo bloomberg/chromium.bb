@@ -1,11 +1,11 @@
 [dist4]message_header  // num_bytes
-[u4]2                  // num_fields
+[u4]2                  // version
 [u4]10                 // name
 [u4]0                  // flags
 [anchr]message_header
 
 [dist4]method10_params  // num_bytes
-[u4]1                   // num_fields
+[u4]0                   // version
 [dist8]map_data_ptr     // param0
 [anchr]method10_params
 

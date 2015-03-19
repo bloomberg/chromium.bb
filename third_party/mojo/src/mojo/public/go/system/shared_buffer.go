@@ -4,10 +4,10 @@
 
 package system
 
-//#include "c_allocators.h"
-//#include "mojo/public/c/system/core.h"
-import "C"
-import "unsafe"
+import (
+	"reflect"
+	"unsafe"
+)
 
 // SharedBufferHandle is a handle for a buffer that can be shared between
 // applications.
@@ -27,35 +27,49 @@ type SharedBufferHandle interface {
 }
 
 type sharedBuffer struct {
+	// baseHandle should always be the first component of this struct,
+	// see |finalizeHandle()| for more details.
 	baseHandle
 }
 
 func (h *sharedBuffer) DuplicateBufferHandle(opts *DuplicateBufferHandleOptions) (MojoResult, SharedBufferHandle) {
+	var flags uint32
+	if opts != nil {
+		flags = uint32(opts.flags)
+	}
 	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
-	cParams := C.MallocDuplicateBufferHandleParams()
-	defer C.FreeDuplicateBufferHandleParams(cParams)
-	result := C.MojoDuplicateBufferHandle(h.mojoHandle.cValue(), opts.cValue(cParams.opts), cParams.duplicate)
-	return MojoResult(result), core.acquireCHandle(*cParams.duplicate).ToSharedBufferHandle()
+	r, dup := sysImpl.DuplicateBufferHandle(uint32(h.mojoHandle), flags)
+	h.core.mu.Unlock()
+	return MojoResult(r), core.AcquireNativeHandle(MojoHandle(dup)).ToSharedBufferHandle()
 }
 
 func (h *sharedBuffer) MapBuffer(offset uint64, numBytes int, flags MojoMapBufferFlags) (MojoResult, []byte) {
 	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
-
-	cParams := C.MallocMapBufferParams()
-	defer C.FreeMapBufferParams(cParams)
-	result := C.MojoMapBuffer(h.mojoHandle.cValue(), C.uint64_t(offset), C.uint64_t(numBytes), cParams.buffer, flags.cValue())
-	if result != C.MOJO_RESULT_OK {
-		return MojoResult(result), nil
+	r, buf := sysImpl.MapBuffer(uint32(h.mojoHandle), offset, uint64(numBytes), uint32(flags))
+	h.core.mu.Unlock()
+	if r != 0 {
+		return MojoResult(r), nil
 	}
-	return MOJO_RESULT_OK, unsafeByteSlice(unsafe.Pointer(*cParams.buffer), numBytes)
+
+	return MojoResult(r), buf
 }
 
 func (h *sharedBuffer) UnmapBuffer(buffer []byte) MojoResult {
 	h.core.mu.Lock()
-	defer h.core.mu.Unlock()
+	r := sysImpl.UnmapBuffer(buffer)
+	h.core.mu.Unlock()
+	return MojoResult(r)
+}
 
-	return MojoResult(C.MojoUnmapBuffer(unsafe.Pointer(&buffer[0])))
+func newUnsafeSlice(ptr unsafe.Pointer, length int) unsafe.Pointer {
+	header := &reflect.SliceHeader{
+		Data: uintptr(ptr),
+		Len:  length,
+		Cap:  length,
+	}
+	return unsafe.Pointer(header)
+}
+
+func unsafeByteSlice(ptr unsafe.Pointer, length int) []byte {
+	return *(*[]byte)(newUnsafeSlice(ptr, length))
 }

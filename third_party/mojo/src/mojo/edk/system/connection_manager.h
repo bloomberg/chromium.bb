@@ -12,6 +12,7 @@
 namespace mojo {
 
 namespace embedder {
+class PlatformSupport;
 class ScopedPlatformHandle;
 }  // namespace embedder
 
@@ -67,6 +68,8 @@ class MOJO_SYSTEM_IMPL_EXPORT ConnectionManager {
  public:
   virtual ~ConnectionManager() {}
 
+  ConnectionIdentifier GenerateConnectionIdentifier();
+
   // Shuts down this connection manager. No other methods may be called after
   // this is (or while it is being) called.
   virtual void Shutdown() = 0;
@@ -99,9 +102,14 @@ class MOJO_SYSTEM_IMPL_EXPORT ConnectionManager {
                        embedder::ScopedPlatformHandle* platform_handle) = 0;
 
  protected:
-  ConnectionManager() {}
+  // |platform_support| must be valid and remain alive until after |Shutdown()|
+  // has completed.
+  explicit ConnectionManager(embedder::PlatformSupport* platform_support)
+      : platform_support_(platform_support) {}
 
  private:
+  embedder::PlatformSupport* const platform_support_;
+
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };
 

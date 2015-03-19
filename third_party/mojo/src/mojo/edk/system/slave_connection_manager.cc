@@ -16,8 +16,10 @@ namespace system {
 
 // SlaveConnectionManager ------------------------------------------------------
 
-SlaveConnectionManager::SlaveConnectionManager()
-    : slave_process_delegate_(),
+SlaveConnectionManager::SlaveConnectionManager(
+    embedder::PlatformSupport* platform_support)
+    : ConnectionManager(platform_support),
+      slave_process_delegate_(),
       private_thread_("SlaveConnectionManagerPrivateThread"),
       awaiting_ack_type_(NOT_AWAITING_ACK),
       ack_result_(),

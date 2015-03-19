@@ -230,7 +230,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe : public ChannelEndpointClient {
            bool has_local_consumer,
            const MojoCreateDataPipeOptions& validated_options,
            scoped_ptr<DataPipeImpl> impl);
-  virtual ~DataPipe();
+  ~DataPipe() override;
 
   // |ChannelEndpointClient| implementation:
   bool OnReadMessage(unsigned port, MessageInTransit* message) override;

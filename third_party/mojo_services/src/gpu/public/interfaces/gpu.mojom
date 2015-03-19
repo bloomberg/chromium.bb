@@ -4,14 +4,9 @@
 
 module mojo;
 
-import "geometry/public/interfaces/geometry.mojom";
 import "gpu/public/interfaces/command_buffer.mojom";
-import "gpu/public/interfaces/viewport_parameter_listener.mojom";
 
 interface Gpu {
-  CreateOnscreenGLES2Context(uint64 native_viewport_id,
-                             Size size,
-                             CommandBuffer& gles2_client,
-                             ViewportParameterListener? listener);
+  // Creates a new offscreen OpenGL ES 2.0 context.
   CreateOffscreenGLES2Context(CommandBuffer& gles2_client);
 };

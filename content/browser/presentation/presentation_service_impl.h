@@ -13,6 +13,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/presentation/presentation_service.mojom.h"
@@ -83,9 +85,6 @@ class CONTENT_EXPORT PresentationServiceImpl
     // (i.e. the renderer) that screen availability has changed, via Mojo.
     void CallbackReceived(const ScreenAvailabilityMojoCallback& callback);
 
-    // Clears both callback and available bit.
-    void Reset();
-
     // PresentationScreenAvailabilityListener implementation.
     std::string GetPresentationUrl() const override;
 
@@ -95,12 +94,15 @@ class CONTENT_EXPORT PresentationServiceImpl
     // |available|: New screen availability for the presentation URL.
     void OnScreenAvailabilityChanged(bool available) override;
 
-    // Gets the callback as a raw pointer.
-    ScreenAvailabilityMojoCallback* GetCallback() const;
+    // Pass this context's queued callbacks to another context.
+    void PassPendingCallbacks(ScreenAvailabilityContext* other);
+
+    // Indicates if this context has any pending callbacks.
+    bool HasPendingCallbacks() const;
 
    private:
     std::string presentation_url_;
-    scoped_ptr<ScreenAvailabilityMojoCallback> callback_ptr_;
+    ScopedVector<ScreenAvailabilityMojoCallback> callbacks_;
     scoped_ptr<bool> available_ptr_;
   };
 

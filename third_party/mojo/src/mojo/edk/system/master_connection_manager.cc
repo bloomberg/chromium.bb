@@ -219,8 +219,10 @@ struct MasterConnectionManager::PendingConnectionInfo {
 
 // MasterConnectionManager -----------------------------------------------------
 
-MasterConnectionManager::MasterConnectionManager()
-    : master_process_delegate_(),
+MasterConnectionManager::MasterConnectionManager(
+    embedder::PlatformSupport* platform_support)
+    : ConnectionManager(platform_support),
+      master_process_delegate_(),
       private_thread_("MasterConnectionManagerPrivateThread"),
       next_process_identifier_(kFirstSlaveProcessIdentifier) {
 }

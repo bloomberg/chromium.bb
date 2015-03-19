@@ -23,13 +23,13 @@
 
 
 
-{%- macro flags(response_parameters, is_renponse) -%}
+{%- macro flags(response_parameters, is_response) -%}
 {%- if not response_parameters -%}
 	bindings.MessageNoFlag
-{%- elif is_parameter: -%}
-	bindings.MessageExpectsResponseFlag
-{%- else -%}
+{%- elif is_response: -%}
 	bindings.MessageIsResponseFlag
+{%- else -%}
+	bindings.MessageExpectsResponseFlag
 {%- endif -%}
 {%- endmacro -%}
 
@@ -45,19 +45,26 @@ type {{interface|name}} interface {
 type {{interface|name}}Request bindings.InterfaceRequest
 type {{interface|name}}Pointer bindings.InterfacePointer
 
+// CreateMessagePipeFor{{interface|name}} creates a message pipe for use with the
+// {{interface|name}} interface with a {{interface|name}}Request on one end and a {{interface|name}}Pointer on the other.
+func CreateMessagePipeFor{{interface|name}}() ({{interface|name}}Request, {{interface|name}}Pointer) {
+        r, p := bindings.CreateMessagePipeForMojoInterface()
+        return {{interface|name}}Request(r), {{interface|name}}Pointer(p)
+}
+
 {% for method in interface.methods %}
 const {{interface|name(False)}}_{{method|name}}_Name = {{method.ordinal}}
 {% endfor %}
 
 type {{interface|name}}Proxy struct {
 	router *bindings.Router
-	ids *bindings.Counter
+	ids bindings.Counter
 }
 
 func New{{interface|name}}Proxy(p {{interface|name}}Pointer, waiter bindings.AsyncWaiter) *{{interface|name}}Proxy {
 	return &{{interface|name}}Proxy{
 		bindings.NewRouter(p.PassMessagePipe(), waiter),
-		&bindings.Counter{},
+		bindings.NewCounter(),
 	}
 }
 
@@ -80,29 +87,35 @@ func (p *{{interface|name}}Proxy) {{method|name}}{{declare_request_params(method
 		Type: {{interface|name(False)}}_{{method|name}}_Name,
 		Flags: {{flags(method.response_parameters, False)}},
 {%   if method.response_parameters %}
-		RequestId: p.ids.Next(),
+		RequestId: p.ids.Count(),
 {%   endif %}
 	}
 	var message *bindings.Message
 	if message, err = bindings.EncodeMessage(header, payload); err != nil {
 		err = fmt.Errorf("can't encode request: %v", err.Error())
+		p.Close_proxy()
 		return
 	}
 {% if method.response_parameters %}
 	readResult := <-p.router.AcceptWithResponse(message)
 	if err = readResult.Error; err != nil {
+		p.Close_proxy()
 		return
 	}
 	var response {{method|response_struct_from_method|name(False)}}
 	if err = readResult.Message.DecodePayload(&response); err != nil {
 		err = fmt.Errorf("can't decode response: %v", err.Error())
+		p.Close_proxy()
 		return
 	}
 {%   for field in (method|response_struct_from_method).fields %}
 	{{field|name(False)}} = response.{{field|name(False)}}
 {%   endfor %}
 {% else %}
-	err = p.router.Accept(message)
+	if err = p.router.Accept(message); err != nil {
+		p.Close_proxy()
+		return
+	}
 {% endif %}
 	return
 }

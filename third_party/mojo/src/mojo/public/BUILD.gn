@@ -15,7 +15,6 @@ group("public") {
     "cpp/environment:standalone",
     "cpp/utility",
     "interfaces/bindings/tests:test_interfaces",
-    "sky",
   ]
 
   if (is_linux) {

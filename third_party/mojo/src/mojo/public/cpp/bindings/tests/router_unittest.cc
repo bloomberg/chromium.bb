@@ -57,18 +57,23 @@ class ResponseGenerator : public MessageReceiverWithResponder {
                            MessageReceiver* responder) override {
     EXPECT_TRUE(message->has_flag(internal::kMessageExpectsResponse));
 
-    return SendResponse(message->name(), message->request_id(), responder);
+    bool result = SendResponse(
+        message->name(), message->request_id(),
+        reinterpret_cast<const char*>(message->payload()), responder);
+    delete responder;
+    return result;
   }
 
   bool SendResponse(uint32_t name,
                     uint64_t request_id,
+                    const char* request_string,
                     MessageReceiver* responder) {
     Message response;
-    AllocResponseMessage(name, "world", request_id, &response);
+    std::string response_string(request_string);
+    response_string += " world!";
+    AllocResponseMessage(name, response_string.c_str(), request_id, &response);
 
-    bool result = responder->Accept(&response);
-    delete responder;
-    return result;
+    return responder->Accept(&response);
   }
 };
 
@@ -82,21 +87,35 @@ class LazyResponseGenerator : public ResponseGenerator {
                            MessageReceiver* responder) override {
     name_ = message->name();
     request_id_ = message->request_id();
+    request_string_ =
+        std::string(reinterpret_cast<const char*>(message->payload()));
     responder_ = responder;
     return true;
   }
 
   bool has_responder() const { return !!responder_; }
 
-  void Complete() {
-    SendResponse(name_, request_id_, responder_);
+  // Send the response and delete the responder.
+  void CompleteWithResponse() { Complete(true); }
+
+  // Delete the responder without sending a response.
+  void CompleteWithoutResponse() { Complete(false); }
+
+ private:
+  // Completes the request handling by deleting responder_. Optionally
+  // also sends a response.
+  void Complete(bool send_response) {
+    if (send_response) {
+      SendResponse(name_, request_id_, request_string_.c_str(), responder_);
+    }
+    delete responder_;
     responder_ = nullptr;
   }
 
- private:
   MessageReceiver* responder_;
   uint32_t name_;
   uint64_t request_id_;
+  std::string request_string_;
 };
 
 class RouterTest : public testing::Test {
@@ -140,7 +159,23 @@ TEST_F(RouterTest, BasicRequestResponse) {
   Message response;
   message_queue.Pop(&response);
 
-  EXPECT_EQ(std::string("world"),
+  EXPECT_EQ(std::string("hello world!"),
+            std::string(reinterpret_cast<const char*>(response.payload())));
+
+  // Send a second message on the pipe.
+  Message request2;
+  AllocRequestMessage(1, "hello again", &request2);
+
+  router0.AcceptWithResponder(&request2,
+                              new MessageAccumulator(&message_queue));
+
+  PumpMessages();
+
+  EXPECT_FALSE(message_queue.IsEmpty());
+
+  message_queue.Pop(&response);
+
+  EXPECT_EQ(std::string("hello again world!"),
             std::string(reinterpret_cast<const char*>(response.payload())));
 }
 
@@ -165,7 +200,24 @@ TEST_F(RouterTest, BasicRequestResponse_Synchronous) {
   Message response;
   message_queue.Pop(&response);
 
-  EXPECT_EQ(std::string("world"),
+  EXPECT_EQ(std::string("hello world!"),
+            std::string(reinterpret_cast<const char*>(response.payload())));
+
+  // Send a second message on the pipe.
+  Message request2;
+  AllocRequestMessage(1, "hello again", &request2);
+
+  router0.AcceptWithResponder(&request2,
+                              new MessageAccumulator(&message_queue));
+
+  router1.WaitForIncomingMessage();
+  router0.WaitForIncomingMessage();
+
+  EXPECT_FALSE(message_queue.IsEmpty());
+
+  message_queue.Pop(&response);
+
+  EXPECT_EQ(std::string("hello again world!"),
             std::string(reinterpret_cast<const char*>(response.payload())));
 }
 
@@ -187,6 +239,99 @@ TEST_F(RouterTest, RequestWithNoReceiver) {
   EXPECT_TRUE(router0.encountered_error());
   EXPECT_TRUE(router1.encountered_error());
   EXPECT_TRUE(message_queue.IsEmpty());
+}
+
+// Tests Router using the LazyResponseGenerator. The responses will not be
+// sent until after the requests have been accepted.
+TEST_F(RouterTest, LazyResponses) {
+  internal::Router router0(handle0_.Pass(), internal::FilterChain());
+  internal::Router router1(handle1_.Pass(), internal::FilterChain());
+
+  LazyResponseGenerator generator;
+  router1.set_incoming_receiver(&generator);
+
+  Message request;
+  AllocRequestMessage(1, "hello", &request);
+
+  internal::MessageQueue message_queue;
+  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+  PumpMessages();
+
+  // The request has been received but the response has not been sent yet.
+  EXPECT_TRUE(message_queue.IsEmpty());
+
+  // Send the response.
+  generator.CompleteWithResponse();
+  PumpMessages();
+
+  // Check the response.
+  EXPECT_FALSE(message_queue.IsEmpty());
+  Message response;
+  message_queue.Pop(&response);
+  EXPECT_EQ(std::string("hello world!"),
+            std::string(reinterpret_cast<const char*>(response.payload())));
+
+  // Send a second message on the pipe.
+  Message request2;
+  AllocRequestMessage(1, "hello again", &request2);
+
+  router0.AcceptWithResponder(&request2,
+                              new MessageAccumulator(&message_queue));
+  PumpMessages();
+
+  // The request has been received but the response has not been sent yet.
+  EXPECT_TRUE(message_queue.IsEmpty());
+
+  // Send the second response.
+  generator.CompleteWithResponse();
+  PumpMessages();
+
+  // Check the second response.
+  EXPECT_FALSE(message_queue.IsEmpty());
+  message_queue.Pop(&response);
+  EXPECT_EQ(std::string("hello again world!"),
+            std::string(reinterpret_cast<const char*>(response.payload())));
+}
+
+// Tests that if the receiving application destroys the responder_ without
+// sending a response, then we close the Pipe as a way of signalling an
+// error condition to the caller.
+TEST_F(RouterTest, MissingResponses) {
+  internal::Router router0(handle0_.Pass(), internal::FilterChain());
+  internal::Router router1(handle1_.Pass(), internal::FilterChain());
+
+  LazyResponseGenerator generator;
+  router1.set_incoming_receiver(&generator);
+
+  Message request;
+  AllocRequestMessage(1, "hello", &request);
+
+  internal::MessageQueue message_queue;
+  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+  PumpMessages();
+
+  // The request has been received but no response has been sent.
+  EXPECT_TRUE(message_queue.IsEmpty());
+
+  // Destroy the responder MessagerReceiver but don't send any response.
+  // This should close the pipe.
+  generator.CompleteWithoutResponse();
+  PumpMessages();
+
+  // Check that no response was received.
+  EXPECT_TRUE(message_queue.IsEmpty());
+
+  // There is no direct way to test whether or not the pipe has been closed.
+  // The only thing we can do is try to send a second message on the pipe
+  // and observe that an error occurs.
+  Message request2;
+  AllocRequestMessage(1, "hello again", &request2);
+  router0.AcceptWithResponder(&request2,
+                              new MessageAccumulator(&message_queue));
+  PumpMessages();
+
+  // Make sure there was an error.
+  EXPECT_TRUE(router0.encountered_error());
 }
 
 TEST_F(RouterTest, LateResponse) {
@@ -213,7 +358,7 @@ TEST_F(RouterTest, LateResponse) {
     EXPECT_TRUE(generator.has_responder());
   }
 
-  generator.Complete();  // This should end up doing nothing.
+  generator.CompleteWithResponse();  // This should end up doing nothing.
 }
 
 }  // namespace

@@ -199,20 +199,19 @@ class ConnectionManagerTest : public testing::Test {
 };
 
 TEST_F(ConnectionManagerTest, BasicConnectSlaves) {
-  MasterConnectionManager master;
+  MasterConnectionManager master(platform_support());
   master.Init(base::MessageLoop::current()->task_runner(),
               &master_process_delegate());
 
   MockSlaveProcessDelegate slave1_process_delegate;
-  SlaveConnectionManager slave1;
+  SlaveConnectionManager slave1(platform_support());
   ConnectSlave(&master, &slave1_process_delegate, &slave1, "slave1");
 
   MockSlaveProcessDelegate slave2_process_delegate;
-  SlaveConnectionManager slave2;
+  SlaveConnectionManager slave2(platform_support());
   ConnectSlave(&master, &slave2_process_delegate, &slave2, "slave2");
 
-  ConnectionIdentifier connection_id =
-      ConnectionIdentifier::Generate(platform_support());
+  ConnectionIdentifier connection_id = master.GenerateConnectionIdentifier();
   EXPECT_TRUE(slave1.AllowConnect(connection_id));
   EXPECT_TRUE(slave2.AllowConnect(connection_id));
 
@@ -260,12 +259,12 @@ TEST_F(ConnectionManagerTest, BasicConnectSlaves) {
 }
 
 TEST_F(ConnectionManagerTest, ShutdownMasterBeforeSlave) {
-  MasterConnectionManager master;
+  MasterConnectionManager master(platform_support());
   master.Init(base::MessageLoop::current()->task_runner(),
               &master_process_delegate());
 
   MockSlaveProcessDelegate slave_process_delegate;
-  SlaveConnectionManager slave;
+  SlaveConnectionManager slave(platform_support());
   ConnectSlave(&master, &slave_process_delegate, &slave, "slave");
 
   // The process manager shouldn't have gotten any notifications yet. (Spin the
@@ -288,20 +287,19 @@ TEST_F(ConnectionManagerTest, ShutdownMasterBeforeSlave) {
 }
 
 TEST_F(ConnectionManagerTest, SlaveCancelConnect) {
-  MasterConnectionManager master;
+  MasterConnectionManager master(platform_support());
   master.Init(base::MessageLoop::current()->task_runner(),
               &master_process_delegate());
 
   MockSlaveProcessDelegate slave1_process_delegate;
-  SlaveConnectionManager slave1;
+  SlaveConnectionManager slave1(platform_support());
   ConnectSlave(&master, &slave1_process_delegate, &slave1, "slave1");
 
   MockSlaveProcessDelegate slave2_process_delegate;
-  SlaveConnectionManager slave2;
+  SlaveConnectionManager slave2(platform_support());
   ConnectSlave(&master, &slave2_process_delegate, &slave2, "slave2");
 
-  ConnectionIdentifier connection_id =
-      ConnectionIdentifier::Generate(platform_support());
+  ConnectionIdentifier connection_id = master.GenerateConnectionIdentifier();
   EXPECT_TRUE(slave1.AllowConnect(connection_id));
   EXPECT_TRUE(slave2.AllowConnect(connection_id));
 
@@ -319,20 +317,19 @@ TEST_F(ConnectionManagerTest, SlaveCancelConnect) {
 
 // Tests that pending connections are removed on error.
 TEST_F(ConnectionManagerTest, ErrorRemovePending) {
-  MasterConnectionManager master;
+  MasterConnectionManager master(platform_support());
   master.Init(base::MessageLoop::current()->task_runner(),
               &master_process_delegate());
 
   MockSlaveProcessDelegate slave1_process_delegate;
-  SlaveConnectionManager slave1;
+  SlaveConnectionManager slave1(platform_support());
   ConnectSlave(&master, &slave1_process_delegate, &slave1, "slave1");
 
   MockSlaveProcessDelegate slave2_process_delegate;
-  SlaveConnectionManager slave2;
+  SlaveConnectionManager slave2(platform_support());
   ConnectSlave(&master, &slave2_process_delegate, &slave2, "slave2");
 
-  ConnectionIdentifier connection_id =
-      ConnectionIdentifier::Generate(platform_support());
+  ConnectionIdentifier connection_id = master.GenerateConnectionIdentifier();
   EXPECT_TRUE(slave1.AllowConnect(connection_id));
   EXPECT_TRUE(slave2.AllowConnect(connection_id));
 
@@ -355,16 +352,15 @@ TEST_F(ConnectionManagerTest, ErrorRemovePending) {
 }
 
 TEST_F(ConnectionManagerTest, ConnectSlaveToSelf) {
-  MasterConnectionManager master;
+  MasterConnectionManager master(platform_support());
   master.Init(base::MessageLoop::current()->task_runner(),
               &master_process_delegate());
 
   MockSlaveProcessDelegate slave_process_delegate;
-  SlaveConnectionManager slave;
+  SlaveConnectionManager slave(platform_support());
   ConnectSlave(&master, &slave_process_delegate, &slave, "slave");
 
-  ConnectionIdentifier connection_id =
-      ConnectionIdentifier::Generate(platform_support());
+  ConnectionIdentifier connection_id = master.GenerateConnectionIdentifier();
   EXPECT_TRUE(slave.AllowConnect(connection_id));
   EXPECT_TRUE(slave.AllowConnect(connection_id));
 
@@ -388,20 +384,19 @@ TEST_F(ConnectionManagerTest, ConnectSlaveToSelf) {
 }
 
 TEST_F(ConnectionManagerTest, ConnectSlavesTwice) {
-  MasterConnectionManager master;
+  MasterConnectionManager master(platform_support());
   master.Init(base::MessageLoop::current()->task_runner(),
               &master_process_delegate());
 
   MockSlaveProcessDelegate slave1_process_delegate;
-  SlaveConnectionManager slave1;
+  SlaveConnectionManager slave1(platform_support());
   ConnectSlave(&master, &slave1_process_delegate, &slave1, "slave1");
 
   MockSlaveProcessDelegate slave2_process_delegate;
-  SlaveConnectionManager slave2;
+  SlaveConnectionManager slave2(platform_support());
   ConnectSlave(&master, &slave2_process_delegate, &slave2, "slave2");
 
-  ConnectionIdentifier connection_id =
-      ConnectionIdentifier::Generate(platform_support());
+  ConnectionIdentifier connection_id = master.GenerateConnectionIdentifier();
   EXPECT_TRUE(slave1.AllowConnect(connection_id));
   EXPECT_TRUE(slave2.AllowConnect(connection_id));
 
@@ -420,7 +415,7 @@ TEST_F(ConnectionManagerTest, ConnectSlavesTwice) {
   // tracking and is prone to races -- especially if we want slaves to be able
   // to tear down no-longer-needed connections.) But the slaves should be able
   // to do the tracking themselves (using the peer process identifiers).
-  connection_id = ConnectionIdentifier::Generate(platform_support());
+  connection_id = master.GenerateConnectionIdentifier();
   EXPECT_TRUE(slave1.AllowConnect(connection_id));
   EXPECT_TRUE(slave2.AllowConnect(connection_id));
 
@@ -441,16 +436,15 @@ TEST_F(ConnectionManagerTest, ConnectSlavesTwice) {
 }
 
 TEST_F(ConnectionManagerTest, ConnectMasterToSlave) {
-  MasterConnectionManager master;
+  MasterConnectionManager master(platform_support());
   master.Init(base::MessageLoop::current()->task_runner(),
               &master_process_delegate());
 
   MockSlaveProcessDelegate slave_process_delegate;
-  SlaveConnectionManager slave;
+  SlaveConnectionManager slave(platform_support());
   ConnectSlave(&master, &slave_process_delegate, &slave, "slave");
 
-  ConnectionIdentifier connection_id =
-      ConnectionIdentifier::Generate(platform_support());
+  ConnectionIdentifier connection_id = master.GenerateConnectionIdentifier();
   EXPECT_TRUE(master.AllowConnect(connection_id));
   EXPECT_TRUE(slave.AllowConnect(connection_id));
 
@@ -473,12 +467,11 @@ TEST_F(ConnectionManagerTest, ConnectMasterToSlave) {
 }
 
 TEST_F(ConnectionManagerTest, ConnectMasterToSelf) {
-  MasterConnectionManager master;
+  MasterConnectionManager master(platform_support());
   master.Init(base::MessageLoop::current()->task_runner(),
               &master_process_delegate());
 
-  ConnectionIdentifier connection_id =
-      ConnectionIdentifier::Generate(platform_support());
+  ConnectionIdentifier connection_id = master.GenerateConnectionIdentifier();
   EXPECT_TRUE(master.AllowConnect(connection_id));
   EXPECT_TRUE(master.AllowConnect(connection_id));
 
@@ -501,16 +494,15 @@ TEST_F(ConnectionManagerTest, ConnectMasterToSelf) {
 }
 
 TEST_F(ConnectionManagerTest, MasterCancelConnect) {
-  MasterConnectionManager master;
+  MasterConnectionManager master(platform_support());
   master.Init(base::MessageLoop::current()->task_runner(),
               &master_process_delegate());
 
   MockSlaveProcessDelegate slave_process_delegate;
-  SlaveConnectionManager slave;
+  SlaveConnectionManager slave(platform_support());
   ConnectSlave(&master, &slave_process_delegate, &slave, "slave");
 
-  ConnectionIdentifier connection_id =
-      ConnectionIdentifier::Generate(platform_support());
+  ConnectionIdentifier connection_id = master.GenerateConnectionIdentifier();
   EXPECT_TRUE(master.AllowConnect(connection_id));
   EXPECT_TRUE(slave.AllowConnect(connection_id));
 
@@ -526,12 +518,12 @@ TEST_F(ConnectionManagerTest, MasterCancelConnect) {
 }
 
 TEST_F(ConnectionManagerTest, AddSlaveThenImmediateShutdown) {
-  MasterConnectionManager master;
+  MasterConnectionManager master(platform_support());
   master.Init(base::MessageLoop::current()->task_runner(),
               &master_process_delegate());
 
   MockSlaveProcessDelegate slave_process_delegate;
-  SlaveConnectionManager slave;
+  SlaveConnectionManager slave(platform_support());
   embedder::PlatformChannelPair platform_channel_pair;
   master.AddSlave(new TestSlaveInfo("slave"),
                   platform_channel_pair.PassServerHandle());

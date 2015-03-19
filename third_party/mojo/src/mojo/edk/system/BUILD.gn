@@ -39,15 +39,16 @@ component("system") {
     "channel_manager.h",
     "configuration.cc",
     "configuration.h",
+    "connection_manager.cc",
     "connection_manager.h",
     "core.cc",
     "core.h",
     "data_pipe.cc",
     "data_pipe.h",
-    "data_pipe_impl.cc",
-    "data_pipe_impl.h",
     "data_pipe_consumer_dispatcher.cc",
     "data_pipe_consumer_dispatcher.h",
+    "data_pipe_impl.cc",
+    "data_pipe_impl.h",
     "data_pipe_producer_dispatcher.cc",
     "data_pipe_producer_dispatcher.h",
     "dispatcher.cc",
@@ -166,7 +167,6 @@ test("mojo_system_unittests") {
     "data_pipe_impl_unittest.cc",
     "data_pipe_unittest.cc",
     "dispatcher_unittest.cc",
-    "local_data_pipe_impl_unittest.cc",
     "memory_unittest.cc",
     "message_pipe_dispatcher_unittest.cc",
     "message_pipe_test_utils.cc",
@@ -203,8 +203,8 @@ test("mojo_system_unittests") {
 test("mojo_message_pipe_perftests") {
   sources = [
     "message_pipe_perftest.cc",
-    "message_pipe_test_utils.h",
     "message_pipe_test_utils.cc",
+    "message_pipe_test_utils.h",
   ]
 
   deps = [

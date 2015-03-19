@@ -5,9 +5,8 @@
 module mojo;
 
 import "geometry/public/interfaces/geometry.mojom";
-import "gpu/public/interfaces/command_buffer.mojom";
+import "gpu/public/interfaces/context_provider.mojom";
 import "input_events/public/interfaces/input_events.mojom";
-import "surfaces/public/interfaces/surface_id.mojom";
 
 struct ViewportMetrics {
   Size size;
@@ -17,14 +16,17 @@ struct ViewportMetrics {
 interface NativeViewport {
   // TODO(sky): having a create function is awkward. Should there be a factory
   // to create the NativeViewport that takes the size?
-  Create(Size size) => (uint64 native_viewport_id, ViewportMetrics metrics);
+  Create(Size size) => (ViewportMetrics metrics);
 
   Show();
   Hide();
   Close();
   SetSize(Size size);
-  SubmittedFrame(SurfaceId surface_id);
   SetEventDispatcher(NativeViewportEventDispatcher dispatcher);
+
+  // Requests a ContextProvider capable of producing contexts that draw to
+  // this native viewport.
+  GetContextProvider(ContextProvider& provider);
 
   // The initial viewport metrics will be sent in the reply to the Create
   // method. Call RequestMetrics() to receive updates when the viewport metrics

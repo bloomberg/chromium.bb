@@ -120,6 +120,8 @@ type Router struct {
 	// Channel to communicate with worker.
 	requestChan chan<- routeRequest
 
+	// Makes sure that the done channel is closed once.
+	closeOnce sync.Once
 	// Channel to stop the worker.
 	done chan<- struct{}
 }
@@ -147,10 +149,11 @@ func NewRouter(handle system.MessagePipeHandle, waiter AsyncWaiter) *Router {
 }
 
 // Close closes the router and the underlying message pipe. All new incoming
-// requests are returned with an error. Panics if you try to close the router
-// more than once.
+// requests are returned with an error.
 func (r *Router) Close() {
-	close(r.done)
+	r.closeOnce.Do(func() {
+		close(r.done)
+	})
 }
 
 // Accept sends a message to the message pipe. The message should have a

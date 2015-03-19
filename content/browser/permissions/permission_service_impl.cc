@@ -30,10 +30,19 @@ PermissionType PermissionNameToPermissionType(PermissionName name) {
 
 } // anonymous namespace
 
-PermissionServiceImpl::PendingRequest::PendingRequest(PermissionType permission,
-                                                      const GURL& origin)
+PermissionServiceImpl::PendingRequest::PendingRequest(
+    PermissionType permission,
+    const GURL& origin,
+    const mojo::Callback<void(PermissionStatus)>& callback)
     : permission(permission),
-      origin(origin) {
+      origin(origin),
+      callback(callback) {
+}
+
+PermissionServiceImpl::PendingRequest::~PendingRequest() {
+  if (!callback.is_null()) {
+    callback.Run(PERMISSION_STATUS_ASK);
+  }
 }
 
 PermissionServiceImpl::PermissionServiceImpl(PermissionServiceContext* context)
@@ -70,7 +79,7 @@ void PermissionServiceImpl::RequestPermission(
 
   PermissionType permission_type = PermissionNameToPermissionType(permission);
   int request_id = pending_requests_.Add(
-      new PendingRequest(permission_type, GURL(origin)));
+      new PendingRequest(permission_type, GURL(origin), callback));
 
   GetContentClient()->browser()->RequestPermission(
       permission_type,
@@ -80,16 +89,16 @@ void PermissionServiceImpl::RequestPermission(
       user_gesture, // TODO(mlamouri): should be removed (crbug.com/423770)
       base::Bind(&PermissionServiceImpl::OnRequestPermissionResponse,
                  weak_factory_.GetWeakPtr(),
-                 callback,
                  request_id));
 }
 
 void PermissionServiceImpl::OnRequestPermissionResponse(
-    const mojo::Callback<void(PermissionStatus)>& callback,
     int request_id,
     PermissionStatus status) {
+  PendingRequest* request = pending_requests_.Lookup(request_id);
+  mojo::Callback<void(PermissionStatus)> callback(request->callback);
+  request->callback.reset();
   pending_requests_.Remove(request_id);
-
   callback.Run(status);
 }
 

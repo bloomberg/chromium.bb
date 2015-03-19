@@ -4,13 +4,7 @@
 
 package system
 
-//#include "mojo/public/c/system/main.h"
-//#include "mojo/public/platform/native/system_thunks.h"
-import "C"
-import (
-	"math"
-	"unsafe"
-)
+import "math"
 
 // Go equivalent definitions of the various system types defined in Mojo.
 // mojo/public/c/system/types.h
@@ -71,8 +65,8 @@ const (
 	MOJO_WRITE_DATA_FLAG_NONE        MojoWriteDataFlags = 0
 	MOJO_WRITE_DATA_FLAG_ALL_OR_NONE MojoWriteDataFlags = 1 << 0
 
-	MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE        MojoCreateDataPipeOptionsFlags    = 0
-	MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE     MojoCreateMessagePipeOptionsFlags = 0
+	MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE    MojoCreateDataPipeOptionsFlags    = 0
+	MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE MojoCreateMessagePipeOptionsFlags = 0
 
 	MOJO_CREATE_SHARED_BUFFER_OPTIONS_FLAG_NONE    MojoCreateSharedBufferOptionsFlags    = 0
 	MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE MojoDuplicateBufferHandleOptionsFlags = 0
@@ -105,13 +99,6 @@ type MojoHandleSignalsState struct {
 	SatisfiableSignals MojoHandleSignals
 }
 
-func (cState *C.struct_MojoHandleSignalsState) goValue() MojoHandleSignalsState {
-	return MojoHandleSignalsState{
-		MojoHandleSignals(cState.satisfied_signals),
-		MojoHandleSignals(cState.satisfiable_signals),
-	}
-}
-
 // DataPipeOptions is used to specify creation parameters for a data pipe.
 type DataPipeOptions struct {
 	flags MojoCreateDataPipeOptionsFlags
@@ -122,33 +109,9 @@ type DataPipeOptions struct {
 	capacity uint32
 }
 
-func (opts *DataPipeOptions) cValue(cOpts *C.struct_MojoCreateDataPipeOptions) *C.struct_MojoCreateDataPipeOptions {
-	if opts == nil {
-		return nil
-	}
-	*cOpts = C.struct_MojoCreateDataPipeOptions{
-		C.uint32_t(unsafe.Sizeof(*cOpts)),
-		opts.flags.cValue(),
-		C.uint32_t(opts.elemSize),
-		C.uint32_t(opts.capacity),
-	}
-	return cOpts
-}
-
 // MessagePipeOptions is used to specify creation parameters for a message pipe.
 type MessagePipeOptions struct {
 	flags MojoCreateMessagePipeOptionsFlags
-}
-
-func (opts *MessagePipeOptions) cValue(cOpts *C.struct_MojoCreateMessagePipeOptions) *C.struct_MojoCreateMessagePipeOptions {
-	if opts == nil {
-		return nil
-	}
-	*cOpts = C.struct_MojoCreateMessagePipeOptions{
-		C.uint32_t(unsafe.Sizeof(*cOpts)),
-		opts.flags.cValue(),
-	}
-	return cOpts
 }
 
 // SharedBufferOptions is used to specify creation parameters for a
@@ -157,79 +120,8 @@ type SharedBufferOptions struct {
 	flags MojoCreateSharedBufferOptionsFlags
 }
 
-func (opts *SharedBufferOptions) cValue(cOpts *C.struct_MojoCreateSharedBufferOptions) *C.struct_MojoCreateSharedBufferOptions {
-	if opts == nil {
-		return nil
-	}
-	*cOpts = C.struct_MojoCreateSharedBufferOptions{
-		C.uint32_t(unsafe.Sizeof(*cOpts)),
-		opts.flags.cValue(),
-	}
-	return cOpts
-}
-
 // DuplicateBufferHandleOptions is used to specify parameters in
 // duplicating access to a shared buffer.
 type DuplicateBufferHandleOptions struct {
 	flags MojoDuplicateBufferHandleOptionsFlags
-}
-
-func (opts *DuplicateBufferHandleOptions) cValue(cOpts *C.struct_MojoDuplicateBufferHandleOptions) *C.struct_MojoDuplicateBufferHandleOptions {
-	if opts == nil {
-		return nil
-	}
-	*cOpts = C.struct_MojoDuplicateBufferHandleOptions{
-		C.uint32_t(unsafe.Sizeof(*cOpts)),
-		opts.flags.cValue(),
-	}
-	return cOpts
-}
-
-// Convenience functions to convert Go types to their equivalent C types.
-func (m MojoHandle) cValue() C.MojoHandle {
-	return C.MojoHandle(m)
-}
-
-func (m MojoDeadline) cValue() C.MojoDeadline {
-	return C.MojoDeadline(m)
-}
-
-func (m MojoHandleSignals) cValue() C.MojoHandleSignals {
-	return C.MojoHandleSignals(m)
-}
-
-func (m MojoWriteMessageFlags) cValue() C.MojoWriteMessageFlags {
-	return C.MojoWriteMessageFlags(m)
-}
-
-func (m MojoReadMessageFlags) cValue() C.MojoReadMessageFlags {
-	return C.MojoReadMessageFlags(m)
-}
-
-func (m MojoWriteDataFlags) cValue() C.MojoWriteDataFlags {
-	return C.MojoWriteDataFlags(m)
-}
-
-func (m MojoReadDataFlags) cValue() C.MojoReadDataFlags {
-	return C.MojoReadDataFlags(m)
-}
-
-func (m MojoCreateDataPipeOptionsFlags) cValue() C.MojoCreateDataPipeOptionsFlags {
-	return C.MojoCreateDataPipeOptionsFlags(m)
-}
-
-func (m MojoCreateMessagePipeOptionsFlags) cValue() C.MojoCreateMessagePipeOptionsFlags {
-	return C.MojoCreateMessagePipeOptionsFlags(m)
-}
-
-func (m MojoCreateSharedBufferOptionsFlags) cValue() C.MojoCreateSharedBufferOptionsFlags {
-	return C.MojoCreateSharedBufferOptionsFlags(m)
-}
-
-func (m MojoDuplicateBufferHandleOptionsFlags) cValue() C.MojoDuplicateBufferHandleOptionsFlags {
-	return C.MojoDuplicateBufferHandleOptionsFlags(m)
-}
-
-func (m MojoMapBufferFlags) cValue() C.MojoMapBufferFlags {
-	return C.MojoMapBufferFlags(m)
 }

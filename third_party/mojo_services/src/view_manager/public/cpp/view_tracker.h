@@ -34,7 +34,7 @@ class ViewTracker : public ViewObserver {
   bool Contains(View* view);
 
   // ViewObserver overrides:
-  virtual void OnViewDestroying(View* view) override;
+  void OnViewDestroying(View* view) override;
 
  private:
   Views views_;

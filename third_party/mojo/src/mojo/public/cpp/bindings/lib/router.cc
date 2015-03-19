@@ -14,11 +14,25 @@ namespace internal {
 class ResponderThunk : public MessageReceiver {
  public:
   explicit ResponderThunk(const SharedData<Router*>& router)
-      : router_(router) {}
-  ~ResponderThunk() override {}
+      : router_(router), accept_was_invoked_(false) {}
+  ~ResponderThunk() override {
+    if (!accept_was_invoked_) {
+      // The Mojo application handled a message that was expecting a response
+      // but did not send a response.
+      Router* router = router_.value();
+      if (router) {
+        // We close the pipe here as a way of signaling to the calling
+        // application that an error condition occurred. Without this the
+        // calling application would have no way of knowing it should stop
+        // waiting for a response.
+        router->CloseMessagePipe();
+      }
+    }
+  }
 
   // MessageReceiver implementation:
   bool Accept(Message* message) override {
+    accept_was_invoked_ = true;
     MOJO_DCHECK(message->has_flag(kMessageIsResponse));
 
     bool result = false;
@@ -32,6 +46,7 @@ class ResponderThunk : public MessageReceiver {
 
  private:
   SharedData<Router*> router_;
+  bool accept_was_invoked_;
 };
 
 // ----------------------------------------------------------------------------

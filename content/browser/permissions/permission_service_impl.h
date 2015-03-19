@@ -36,9 +36,13 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
 
  private:
   struct PendingRequest {
-    PendingRequest(PermissionType permission, const GURL& origin);
+    PendingRequest(PermissionType permission, const GURL& origin,
+                   const mojo::Callback<void(PermissionStatus)>& callback);
+    ~PendingRequest();
+
     PermissionType permission;
     GURL origin;
+    mojo::Callback<void(PermissionStatus)> callback;
   };
   typedef IDMap<PendingRequest, IDMapOwnPointer> RequestsMap;
 
@@ -60,10 +64,7 @@ class PermissionServiceImpl : public mojo::InterfaceImpl<PermissionService> {
   // mojo::InterfaceImpl.
   void OnConnectionError() override;
 
-  void OnRequestPermissionResponse(
-    const mojo::Callback<void(PermissionStatus)>& callback,
-    int request_id,
-    PermissionStatus status);
+  void OnRequestPermissionResponse(int request_id, PermissionStatus status);
 
   PermissionStatus GetPermissionStatus(PermissionType type, GURL origin);
   void ResetPermissionStatus(PermissionType type, GURL origin);
