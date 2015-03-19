@@ -1577,7 +1577,7 @@ void XMLHttpRequest::endLoading()
 
     changeState(DONE);
 
-    if (!executionContext()->isDocument() || document() || !document()->frame() || !document()->frame()->page())
+    if (!executionContext()->isDocument() || !document() || !document()->frame() || !document()->frame()->page())
         return;
 
     if (status() >= 200 && status() < 300)
