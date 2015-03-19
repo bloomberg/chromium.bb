@@ -243,7 +243,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_layerTreeAgent(nullptr)
     , m_agents(m_instrumentingAgents.get(), m_state.get())
     , m_deferredAgentsInitialized(false)
-    , m_generatingEvent(false)
 {
     ASSERT(isMainThread());
 
@@ -458,7 +457,7 @@ void WebDevToolsAgentImpl::continueProgram()
 
 bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inputEvent)
 {
-    if (!m_attached && !m_generatingEvent)
+    if (!m_attached)
         return false;
 
     if (WebInputEvent::isGestureEventType(inputEvent.type) && inputEvent.type == WebInputEvent::GestureTap) {
@@ -551,12 +550,10 @@ void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
     if (!m_webViewImpl->page()->focusController().isFocused())
         m_webViewImpl->setFocus(true);
 
-    m_generatingEvent = true;
     WebKeyboardEvent webEvent = WebKeyboardEventBuilder(event);
     if (!webEvent.keyIdentifier[0] && webEvent.type != WebInputEvent::Char)
         webEvent.setKeyIdentifierFromWindowsKeyCode();
     m_webViewImpl->handleInputEvent(webEvent);
-    m_generatingEvent = false;
 }
 
 void WebDevToolsAgentImpl::dispatchMouseEvent(const PlatformMouseEvent& event)
@@ -564,10 +561,8 @@ void WebDevToolsAgentImpl::dispatchMouseEvent(const PlatformMouseEvent& event)
     if (!m_webViewImpl->page()->focusController().isFocused())
         m_webViewImpl->setFocus(true);
 
-    m_generatingEvent = true;
     WebMouseEvent webEvent = WebMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), event);
     m_webViewImpl->handleInputEvent(webEvent);
-    m_generatingEvent = false;
 }
 
 void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)
