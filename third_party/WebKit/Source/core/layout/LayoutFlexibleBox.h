@@ -31,12 +31,13 @@
 #ifndef LayoutFlexibleBox_h
 #define LayoutFlexibleBox_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/OrderIterator.h"
 
 namespace blink {
 
-class LayoutFlexibleBox : public LayoutBlock {
+class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 public:
     LayoutFlexibleBox(Element*);
     virtual ~LayoutFlexibleBox();

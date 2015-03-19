@@ -26,6 +26,7 @@
 #ifndef DOMWindowLifecycleNotifier_h
 #define DOMWindowLifecycleNotifier_h
 
+#include "core/CoreExport.h"
 #include "platform/LifecycleNotifier.h"
 #include "wtf/Forward.h"
 
@@ -34,7 +35,7 @@ namespace blink {
 class DOMWindowLifecycleObserver;
 class LocalDOMWindow;
 
-class DOMWindowLifecycleNotifier : public LifecycleNotifier<LocalDOMWindow, DOMWindowLifecycleObserver> {
+class CORE_EXPORT DOMWindowLifecycleNotifier : public LifecycleNotifier<LocalDOMWindow, DOMWindowLifecycleObserver> {
 public:
     void notifyAddEventListener(LocalDOMWindow*, const AtomicString& eventType);
     void notifyRemoveEventListener(LocalDOMWindow*, const AtomicString& eventType);

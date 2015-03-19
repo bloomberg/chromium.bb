@@ -23,13 +23,14 @@
 #ifndef LayoutPart_h
 #define LayoutPart_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutReplaced.h"
 #include "platform/Widget.h"
 
 namespace blink {
 
 // Renderer for frames via LayoutFrame and LayoutIFrame, and plug-ins via LayoutEmbeddedObject.
-class LayoutPart : public LayoutReplaced {
+class CORE_EXPORT LayoutPart : public LayoutReplaced {
 public:
     explicit LayoutPart(Element*);
     virtual ~LayoutPart();

@@ -22,6 +22,7 @@
 #ifndef LayoutView_h
 #define LayoutView_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Position.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutBlockFlow.h"
@@ -42,7 +43,7 @@ class LayoutQuote;
 // It's dimensions match that of the logical viewport (which may be different from
 // the visible viewport in fixed-layout mode), and it is always at position (0,0)
 // relative to the document (and so isn't necessarily in view).
-class LayoutView final : public LayoutBlockFlow {
+class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 public:
     explicit LayoutView(Document*);
     virtual ~LayoutView();

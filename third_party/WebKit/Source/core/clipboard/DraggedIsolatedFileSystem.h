@@ -5,6 +5,7 @@
 #ifndef DraggedIsolatedFileSystem_h
 #define DraggedIsolatedFileSystem_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 
@@ -12,7 +13,7 @@ namespace blink {
 
 class DataObject;
 
-class DraggedIsolatedFileSystem {
+class CORE_EXPORT DraggedIsolatedFileSystem {
     WTF_MAKE_NONCOPYABLE(DraggedIsolatedFileSystem);
 public:
     DraggedIsolatedFileSystem() { }

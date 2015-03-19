@@ -25,6 +25,7 @@
 #ifndef FrameView_h
 #define FrameView_h
 
+#include "core/CoreExport.h"
 #include "core/frame/FrameViewAutoSizeInfo.h"
 #include "core/layout/PaintPhase.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -65,7 +66,7 @@ struct CompositedSelectionBound;
 
 typedef unsigned long long DOMTimeStamp;
 
-class FrameView final : public Widget, public ScrollableArea {
+class CORE_EXPORT FrameView final : public Widget, public ScrollableArea {
 public:
     friend class LayoutView;
     friend class Internals;

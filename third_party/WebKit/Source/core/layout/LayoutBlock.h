@@ -23,6 +23,7 @@
 #ifndef LayoutBlock_h
 #define LayoutBlock_h
 
+#include "core/CoreExport.h"
 #include "core/layout/ColumnInfo.h"
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/GapRects.h"
@@ -53,7 +54,7 @@ typedef WTF::HashMap<LayoutBlock*, OwnPtr<ListHashSet<LayoutInline*>>> Continuat
 
 ContinuationOutlineTableMap* continuationOutlineTable();
 
-class LayoutBlock : public LayoutBox {
+class CORE_EXPORT LayoutBlock : public LayoutBox {
 public:
     friend class LineLayoutState;
 

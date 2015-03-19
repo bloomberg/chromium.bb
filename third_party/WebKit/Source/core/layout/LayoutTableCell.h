@@ -25,6 +25,7 @@
 #ifndef LayoutTableCell_h
 #define LayoutTableCell_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTableSection.h"
@@ -39,7 +40,7 @@ enum IncludeBorderColorOrNot { DoNotIncludeBorderColor, IncludeBorderColor };
 
 class SubtreeLayoutScope;
 
-class LayoutTableCell final : public LayoutBlockFlow {
+class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 public:
     explicit LayoutTableCell(Element*);
 

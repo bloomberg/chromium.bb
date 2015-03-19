@@ -26,9 +26,11 @@
 #ifndef PopupOpeningObserver_h
 #define PopupOpeningObserver_h
 
+#include "core/CoreExport.h"
+
 namespace blink {
 
-class PopupOpeningObserver {
+class CORE_EXPORT PopupOpeningObserver {
 public:
     virtual void willOpenPopup() = 0;
 

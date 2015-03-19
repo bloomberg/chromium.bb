@@ -26,6 +26,7 @@
 #ifndef VisibleUnits_h
 #define VisibleUnits_h
 
+#include "core/CoreExport.h"
 #include "core/editing/EditingBoundary.h"
 #include "platform/text/TextDirection.h"
 
@@ -57,9 +58,9 @@ VisiblePosition nextSentencePosition(const VisiblePosition &);
 // lines
 VisiblePosition startOfLine(const VisiblePosition &);
 VisiblePosition endOfLine(const VisiblePosition &);
-VisiblePosition previousLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
-VisiblePosition nextLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
-bool inSameLine(const VisiblePosition &, const VisiblePosition &);
+CORE_EXPORT VisiblePosition previousLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
+CORE_EXPORT VisiblePosition nextLinePosition(const VisiblePosition&, LayoutUnit lineDirectionPoint, EditableType = ContentIsEditable);
+CORE_EXPORT bool inSameLine(const VisiblePosition &, const VisiblePosition &);
 bool isStartOfLine(const VisiblePosition &);
 bool isEndOfLine(const VisiblePosition &);
 VisiblePosition logicalStartOfLine(const VisiblePosition &);

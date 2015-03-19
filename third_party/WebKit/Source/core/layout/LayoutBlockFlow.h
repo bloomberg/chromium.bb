@@ -36,6 +36,7 @@
 #ifndef LayoutBlockFlow_h
 #define LayoutBlockFlow_h
 
+#include "core/CoreExport.h"
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/line/TrailingObjects.h"
@@ -52,7 +53,7 @@ class LayoutMultiColumnSpannerPlaceholder;
 class LayoutRubyRun;
 template <class Run> class BidiRunList;
 
-class LayoutBlockFlow : public LayoutBlock {
+class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 public:
     explicit LayoutBlockFlow(ContainerNode*);
     virtual ~LayoutBlockFlow();

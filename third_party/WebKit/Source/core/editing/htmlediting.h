@@ -26,6 +26,7 @@
 #ifndef htmlediting_h
 #define htmlediting_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Position.h"
 #include "core/editing/EditingBoundary.h"
 #include "platform/text/TextDirection.h"
@@ -57,7 +58,7 @@ class VisibleSelection;
 
 // Functions returning Node
 
-ContainerNode* highestEditableRoot(const Position&, EditableType = ContentIsEditable);
+CORE_EXPORT ContainerNode* highestEditableRoot(const Position&, EditableType = ContentIsEditable);
 
 Node* highestEnclosingNodeOfType(const Position&, bool (*nodeIsOfType)(const Node*),
     EditingBoundaryCrossingRule = CannotCrossEditingBoundary, Node* stayWithin = nullptr);

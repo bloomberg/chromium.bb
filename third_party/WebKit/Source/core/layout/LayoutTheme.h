@@ -23,12 +23,13 @@
 #ifndef LayoutTheme_h
 #define LayoutTheme_h
 
+#include "core/CoreExport.h"
+#include "core/layout/LayoutObject.h"
 #if USE(NEW_THEME)
 #include "platform/Theme.h"
 #else
 #include "platform/ThemeTypes.h"
 #endif
-#include "core/layout/LayoutObject.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -44,7 +45,7 @@ class LayoutMeter;
 class LayoutProgress;
 
 
-class LayoutTheme : public RefCounted<LayoutTheme> {
+class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 protected:
     LayoutTheme();
 

@@ -27,6 +27,7 @@
 #define ContentSecurityPolicy_h
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/SecurityContext.h"
 #include "core/frame/ConsoleTypes.h"
@@ -60,7 +61,7 @@ typedef int SandboxFlags;
 typedef Vector<OwnPtr<CSPDirectiveList>> CSPDirectiveListVector;
 typedef WillBePersistentHeapVector<RefPtrWillBeMember<ConsoleMessage>> ConsoleMessageVector;
 
-class ContentSecurityPolicy : public RefCounted<ContentSecurityPolicy> {
+class CORE_EXPORT ContentSecurityPolicy : public RefCounted<ContentSecurityPolicy> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     // CSP Level 1 Directives

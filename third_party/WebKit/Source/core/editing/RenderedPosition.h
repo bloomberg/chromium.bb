@@ -31,6 +31,7 @@
 #ifndef RenderedPosition_h
 #define RenderedPosition_h
 
+#include "core/CoreExport.h"
 #include "core/editing/TextAffinity.h"
 #include "core/layout/line/InlineBox.h"
 
@@ -111,7 +112,7 @@ inline RenderedPosition::RenderedPosition(LayoutObject* renderer, InlineBox* box
 {
 }
 
-bool layoutObjectContainsPosition(LayoutObject*, const Position&);
+CORE_EXPORT bool layoutObjectContainsPosition(LayoutObject*, const Position&);
 
 };
 

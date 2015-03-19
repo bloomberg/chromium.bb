@@ -26,6 +26,7 @@
 #ifndef TextIterator_h
 #define TextIterator_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Range.h"
 #include "core/editing/FindOptions.h"
 #include "core/editing/iterators/FullyClippedStateStack.h"
@@ -48,7 +49,7 @@ void findPlainText(const Position& inputStart, const Position& inputEnd, const S
 // at points where replaced elements break up the text flow.  The text comes back in
 // chunks so as to optimize for performance of the iteration.
 
-class TextIterator {
+class CORE_EXPORT TextIterator {
     STACK_ALLOCATED();
 public:
     explicit TextIterator(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);

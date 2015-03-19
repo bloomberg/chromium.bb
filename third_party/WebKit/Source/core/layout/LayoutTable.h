@@ -26,6 +26,7 @@
 #define LayoutTable_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/style/CollapsedBorderValue.h"
 #include "wtf/Vector.h"
@@ -40,7 +41,7 @@ class TableLayoutAlgorithm;
 
 enum SkipEmptySectionsValue { DoNotSkipEmptySections, SkipEmptySections };
 
-class LayoutTable final : public LayoutBlock {
+class CORE_EXPORT LayoutTable final : public LayoutBlock {
 public:
     explicit LayoutTable(Element*);
     virtual ~LayoutTable();

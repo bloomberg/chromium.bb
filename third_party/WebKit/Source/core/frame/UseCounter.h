@@ -27,6 +27,7 @@
 #define UseCounter_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "wtf/BitVector.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -54,7 +55,7 @@ class StyleSheetContents;
 // during their install of Google Chrome:
 // http://www.google.com/chrome/intl/en/privacy.html
 
-class UseCounter {
+class CORE_EXPORT UseCounter {
     WTF_MAKE_NONCOPYABLE(UseCounter);
 public:
     UseCounter();

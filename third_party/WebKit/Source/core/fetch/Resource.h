@@ -23,6 +23,7 @@
 #ifndef Resource_h
 #define Resource_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/CachedMetadataHandler.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/Timer.h"
@@ -55,7 +56,7 @@ class SharedBuffer;
 // A resource that is held in the cache. Classes who want to use this object should derive
 // from ResourceClient, to get the function calls in case the requested data has arrived.
 // This class also does the actual communication with the loader to obtain the resource from the network.
-class Resource : public NoBaseWillBeGarbageCollectedFinalized<Resource> {
+class CORE_EXPORT Resource : public NoBaseWillBeGarbageCollectedFinalized<Resource> {
     WTF_MAKE_NONCOPYABLE(Resource); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     friend class InspectorResource;
 

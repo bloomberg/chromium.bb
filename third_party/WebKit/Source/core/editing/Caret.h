@@ -26,6 +26,7 @@
 #ifndef Caret_h
 #define Caret_h
 
+#include "core/CoreExport.h"
 #include "core/editing/VisiblePosition.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
@@ -39,7 +40,7 @@ class PositionWithAffinity;
 class LayoutBlock;
 class LayoutView;
 
-class CaretBase {
+class CORE_EXPORT CaretBase {
     WTF_MAKE_NONCOPYABLE(CaretBase);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 protected:

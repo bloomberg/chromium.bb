@@ -6,13 +6,14 @@
 #define DOMArrayBuffer_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "core/dom/DOMArrayBufferDeallocationObserver.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class DOMArrayBuffer final : public RefCounted<DOMArrayBuffer>, public ScriptWrappable {
+class CORE_EXPORT DOMArrayBuffer final : public RefCounted<DOMArrayBuffer>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtr<DOMArrayBuffer> create(PassRefPtr<WTF::ArrayBuffer> buffer)

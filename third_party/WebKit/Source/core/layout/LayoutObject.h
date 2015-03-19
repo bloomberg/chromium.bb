@@ -26,6 +26,7 @@
 #ifndef LayoutObject_h
 #define LayoutObject_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycle.h"
 #include "core/dom/Element.h"
@@ -124,7 +125,7 @@ const int showTreeCharacterOffset = 39;
 #endif
 
 // Base class for all rendering tree objects.
-class LayoutObject : public ImageResourceClient {
+class CORE_EXPORT LayoutObject : public ImageResourceClient {
     friend class LayoutBlock;
     friend class LayoutBlockFlow;
     friend class DeprecatedPaintLayerReflectionInfo; // For setParent

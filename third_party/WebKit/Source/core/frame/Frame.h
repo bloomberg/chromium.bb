@@ -28,6 +28,7 @@
 #ifndef Frame_h
 #define Frame_h
 
+#include "core/CoreExport.h"
 #include "core/frame/FrameTypes.h"
 #include "core/page/FrameTree.h"
 #include "platform/heap/Handle.h"
@@ -52,7 +53,7 @@ class Settings;
 class WindowProxy;
 class WindowProxyManager;
 
-class Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
+class CORE_EXPORT Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
 public:
     virtual ~Frame();
 

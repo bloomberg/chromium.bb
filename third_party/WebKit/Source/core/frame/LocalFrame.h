@@ -28,6 +28,7 @@
 #ifndef LocalFrame_h
 #define LocalFrame_h
 
+#include "core/CoreExport.h"
 #include "core/frame/Frame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
@@ -67,7 +68,7 @@ namespace blink {
     class TreeScope;
     class VisiblePosition;
 
-    class LocalFrame : public Frame, public WillBeHeapSupplementable<LocalFrame> {
+    class CORE_EXPORT LocalFrame : public Frame, public WillBeHeapSupplementable<LocalFrame> {
         WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
     public:
         static PassRefPtrWillBeRawPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);

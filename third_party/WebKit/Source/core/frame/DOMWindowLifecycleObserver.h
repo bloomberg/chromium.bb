@@ -27,6 +27,7 @@
 #ifndef DOMWindowLifecycleObserver_h
 #define DOMWindowLifecycleObserver_h
 
+#include "core/CoreExport.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/LifecycleObserver.h"
 #include "wtf/text/WTFString.h"
@@ -35,7 +36,7 @@ namespace blink {
 
 class DOMWindowLifecycleNotifier;
 
-class DOMWindowLifecycleObserver : public LifecycleObserver<LocalDOMWindow, DOMWindowLifecycleObserver, DOMWindowLifecycleNotifier> {
+class CORE_EXPORT DOMWindowLifecycleObserver : public LifecycleObserver<LocalDOMWindow, DOMWindowLifecycleObserver, DOMWindowLifecycleNotifier> {
 public:
     virtual void contextDestroyed()
     {

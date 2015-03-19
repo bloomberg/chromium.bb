@@ -22,6 +22,7 @@
 #ifndef HitTestResult_h
 #define HitTestResult_h
 
+#include "core/CoreExport.h"
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/HitTestRequest.h"
 #include "platform/geometry/FloatQuad.h"
@@ -46,7 +47,7 @@ class LayoutObject;
 class PositionWithAffinity;
 class Scrollbar;
 
-class HitTestResult {
+class CORE_EXPORT HitTestResult {
     DISALLOW_ALLOCATION();
 public:
     typedef WillBeHeapListHashSet<RefPtrWillBeMember<Node>> NodeSet;

@@ -188,7 +188,7 @@ private:
 // All the derived classes of ScriptWrappable, regardless of directly or
 // indirectly, must write this macro in the class definition as long as the
 // class has a corresponding .idl file.
-#define DEFINE_WRAPPERTYPEINFO() \
+#define DEFINE_WRAPPERTYPEINFO()                \
 public: \
     virtual const WrapperTypeInfo* wrapperTypeInfo() const override \
     { \

@@ -23,6 +23,7 @@
 #ifndef LayoutInline_h
 #define LayoutInline_h
 
+#include "core/CoreExport.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/line/InlineFlowBox.h"
@@ -30,7 +31,7 @@
 
 namespace blink {
 
-class LayoutInline : public LayoutBoxModelObject {
+class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 public:
     explicit LayoutInline(Element*);
 

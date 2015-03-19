@@ -26,6 +26,7 @@
 #ifndef DOMWindowProperty_h
 #define DOMWindowProperty_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -33,7 +34,7 @@ namespace blink {
 class LocalDOMWindow;
 class LocalFrame;
 
-class DOMWindowProperty : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT DOMWindowProperty : public WillBeGarbageCollectedMixin {
 public:
     explicit DOMWindowProperty(LocalFrame*);
 

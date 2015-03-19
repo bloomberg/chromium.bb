@@ -27,6 +27,7 @@
 #ifndef EventQueue_h
 #define EventQueue_h
 
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -36,7 +37,7 @@ namespace blink {
 
 class Event;
 
-class EventQueue : public NoBaseWillBeGarbageCollectedFinalized<EventQueue> {
+class CORE_EXPORT EventQueue : public NoBaseWillBeGarbageCollectedFinalized<EventQueue> {
 public:
     virtual ~EventQueue() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }

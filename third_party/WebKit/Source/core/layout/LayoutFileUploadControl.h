@@ -21,6 +21,7 @@
 #ifndef LayoutFileUploadControl_h
 #define LayoutFileUploadControl_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
@@ -31,7 +32,7 @@ class HTMLInputElement;
 // sufficient space to draw a file icon and filename. The LayoutButton has a shadow node
 // associated with it to receive click/hover events.
 
-class LayoutFileUploadControl final : public LayoutBlockFlow {
+class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
 public:
     LayoutFileUploadControl(HTMLInputElement*);
     virtual ~LayoutFileUploadControl();

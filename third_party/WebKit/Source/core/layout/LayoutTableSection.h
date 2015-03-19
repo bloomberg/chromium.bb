@@ -25,6 +25,7 @@
 #ifndef LayoutTableSection_h
 #define LayoutTableSection_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutTable.h"
 #include "wtf/Vector.h"
 
@@ -63,7 +64,7 @@ private:
 class LayoutTableCell;
 class LayoutTableRow;
 
-class LayoutTableSection final : public LayoutBox {
+class CORE_EXPORT LayoutTableSection final : public LayoutBox {
 public:
     LayoutTableSection(Element*);
     virtual ~LayoutTableSection();

@@ -24,6 +24,7 @@
 #ifndef LayoutBoxModelObject_h
 #define LayoutBoxModelObject_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/style/ShadowData.h"
 #include "platform/geometry/LayoutRect.h"
@@ -65,7 +66,7 @@ class InlineFlowBox;
 // This class is the base for all objects that adhere to the CSS box model as described
 // at http://www.w3.org/TR/CSS21/box.html
 
-class LayoutBoxModelObject : public LayoutObject {
+class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 public:
     LayoutBoxModelObject(ContainerNode*);
     virtual ~LayoutBoxModelObject();

@@ -24,6 +24,7 @@
 #ifndef LayoutMenuList_h
 #define LayoutMenuList_h
 
+#include "core/CoreExport.h"
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "platform/PopupMenu.h"
@@ -34,8 +35,7 @@ namespace blink {
 class HTMLSelectElement;
 class LayoutText;
 
-class LayoutMenuList final : public LayoutFlexibleBox, private PopupMenuClient {
-
+class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox, private PopupMenuClient {
 public:
     explicit LayoutMenuList(Element*);
     virtual ~LayoutMenuList();

@@ -22,11 +22,12 @@
 #ifndef LayoutReplaced_h
 #define LayoutReplaced_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
 
 namespace blink {
 
-class LayoutReplaced : public LayoutBox {
+class CORE_EXPORT LayoutReplaced : public LayoutBox {
 public:
     LayoutReplaced(Element*);
     LayoutReplaced(Element*, const LayoutSize& intrinsicSize);

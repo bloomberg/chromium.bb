@@ -31,6 +31,7 @@
 #ifndef FileReaderLoader_h
 #define FileReaderLoader_h
 
+#include "core/CoreExport.h"
 #include "core/fileapi/FileError.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "platform/weborigin/KURL.h"
@@ -50,7 +51,7 @@ class Stream;
 class TextResourceDecoder;
 class ThreadableLoader;
 
-class FileReaderLoader final : public ThreadableLoaderClient {
+class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
 public:
     enum ReadType {
         ReadAsArrayBuffer,

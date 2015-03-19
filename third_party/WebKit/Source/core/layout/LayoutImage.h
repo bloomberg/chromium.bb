@@ -25,6 +25,7 @@
 #ifndef LayoutImage_h
 #define LayoutImage_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/LayoutReplaced.h"
 
@@ -33,7 +34,7 @@ namespace blink {
 class HTMLAreaElement;
 class HTMLMapElement;
 
-class LayoutImage : public LayoutReplaced {
+class CORE_EXPORT LayoutImage : public LayoutReplaced {
 public:
     // These are the paddings to use when displaying either alt text or an image.
     static const unsigned short paddingWidth = 4;

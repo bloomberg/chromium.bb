@@ -23,6 +23,7 @@
 #ifndef LayoutText_h
 #define LayoutText_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Text.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/line/FloatToLayoutUnit.h"
@@ -36,7 +37,7 @@ namespace blink {
 class AbstractInlineTextBox;
 class InlineTextBox;
 
-class LayoutText : public LayoutObject {
+class CORE_EXPORT LayoutText : public LayoutObject {
 public:
     // FIXME: If the node argument is not a Text node or the string argument is
     // not the content of the Text node, updating text-transform property

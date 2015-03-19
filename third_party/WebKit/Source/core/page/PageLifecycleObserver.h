@@ -27,6 +27,7 @@
 #ifndef PageLifecycleObserver_h
 #define PageLifecycleObserver_h
 
+#include "core/CoreExport.h"
 #include "core/page/Page.h"
 #include "platform/LifecycleObserver.h"
 
@@ -35,7 +36,7 @@ namespace blink {
 class LocalFrame;
 class PageLifecycleNotifier;
 
-class PageLifecycleObserver : public LifecycleObserver<Page, PageLifecycleObserver, PageLifecycleNotifier> {
+class CORE_EXPORT PageLifecycleObserver : public LifecycleObserver<Page, PageLifecycleObserver, PageLifecycleNotifier> {
 public:
     virtual void pageVisibilityChanged() { }
     virtual void didCommitLoad(LocalFrame*) { }

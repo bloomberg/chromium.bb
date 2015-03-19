@@ -31,6 +31,7 @@
 #ifndef AbstractInlineTextBox_h
 #define AbstractInlineTextBox_h
 
+#include "core/CoreExport.h"
 #include "core/dom/Range.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/line/FloatToLayoutUnit.h"
@@ -44,7 +45,7 @@ class InlineTextBox;
 
 // High-level abstraction of InlineTextBox to allow the accessibility module to
 // get information about InlineTextBoxes without tight coupling.
-class AbstractInlineTextBox : public RefCounted<AbstractInlineTextBox> {
+class CORE_EXPORT AbstractInlineTextBox : public RefCounted<AbstractInlineTextBox> {
 private:
     AbstractInlineTextBox(LayoutText* renderText, InlineTextBox* inlineTextBox)
         : m_renderText(renderText)

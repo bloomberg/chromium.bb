@@ -22,6 +22,7 @@
 #ifndef PopupMenuClient_h
 #define PopupMenuClient_h
 
+#include "core/CoreExport.h"
 #include "platform/LayoutUnit.h"
 #include "platform/PlatformExport.h"
 #include "platform/PopupMenuStyle.h"
@@ -32,7 +33,7 @@ namespace blink {
 class Element;
 class LayoutStyle;
 
-class PopupMenuClient {
+class CORE_EXPORT PopupMenuClient {
 public:
     virtual ~PopupMenuClient() { }
     virtual void valueChanged(unsigned listIndex, bool fireEvents = true) = 0;

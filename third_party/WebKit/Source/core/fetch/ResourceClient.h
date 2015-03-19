@@ -25,13 +25,14 @@
 #ifndef ResourceClient_h
 #define ResourceClient_h
 
+#include "core/CoreExport.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 class Resource;
 
-class ResourceClient {
+class CORE_EXPORT ResourceClient {
 public:
     enum ResourceClientType {
         BaseResourceType,

@@ -22,6 +22,7 @@
 #ifndef LayoutTextControl_h
 #define LayoutTextControl_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutFlexibleBox.h"
 
@@ -29,7 +30,7 @@ namespace blink {
 
 class HTMLTextFormControlElement;
 
-class LayoutTextControl : public LayoutBlockFlow {
+class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
 public:
     virtual ~LayoutTextControl();
 

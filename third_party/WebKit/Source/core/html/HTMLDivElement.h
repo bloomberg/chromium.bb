@@ -23,11 +23,12 @@
 #ifndef HTMLDivElement_h
 #define HTMLDivElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {
 
-class HTMLDivElement : public HTMLElement {
+class CORE_EXPORT HTMLDivElement : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
     DECLARE_NODE_FACTORY(HTMLDivElement);

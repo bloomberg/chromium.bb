@@ -26,6 +26,7 @@
 #ifndef VisiblePosition_h
 #define VisiblePosition_h
 
+#include "core/CoreExport.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "platform/heap/Handle.h"
@@ -49,7 +50,7 @@ namespace blink {
 class InlineBox;
 class Range;
 
-class VisiblePosition final {
+class CORE_EXPORT VisiblePosition final {
     DISALLOW_ALLOCATION();
 public:
     // NOTE: UPSTREAM affinity will be used only if pos is at end of a wrapped line,

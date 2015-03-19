@@ -23,6 +23,7 @@
 #ifndef ImageResource_h
 #define ImageResource_h
 
+#include "core/CoreExport.h"
 #include "core/fetch/ResourcePtr.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSizeHash.h"
@@ -41,7 +42,7 @@ class LayoutObject;
 class SecurityOrigin;
 class SVGImageForContainer;
 
-class ImageResource final : public Resource, public ImageObserver {
+class CORE_EXPORT ImageResource final : public Resource, public ImageObserver {
     friend class MemoryCache;
 
 public:

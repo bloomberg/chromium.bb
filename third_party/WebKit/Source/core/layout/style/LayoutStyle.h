@@ -26,6 +26,7 @@
 #define LayoutStyle_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/CoreExport.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/animation/css/CSSTransitionData.h"
 #include "core/css/CSSLineBoxContainValue.h"
@@ -116,7 +117,7 @@ class ContentData;
 
 typedef Vector<RefPtr<LayoutStyle>, 4> PseudoStyleCache;
 
-class LayoutStyle: public RefCounted<LayoutStyle> {
+class CORE_EXPORT LayoutStyle: public RefCounted<LayoutStyle> {
     friend class AnimatedStyleBuilder; // Used by Web Animations CSS. Sets the color styles
     friend class CSSAnimatableValueFactory; // Used by Web Animations CSS. Gets visited and unvisited colors separately.
     friend class CSSPropertyEquality; // Used by CSS animations. We can't allow them to animate based off visited colors.

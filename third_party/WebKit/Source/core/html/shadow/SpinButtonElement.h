@@ -27,13 +27,14 @@
 #ifndef SpinButtonElement_h
 #define SpinButtonElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/page/PopupOpeningObserver.h"
 #include "platform/Timer.h"
 
 namespace blink {
 
-class SpinButtonElement final : public HTMLDivElement, public PopupOpeningObserver {
+class CORE_EXPORT SpinButtonElement final : public HTMLDivElement, public PopupOpeningObserver {
 public:
     enum UpDownState {
         Indeterminate, // Hovered, but the event is not handled.

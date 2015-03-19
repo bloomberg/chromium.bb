@@ -23,6 +23,7 @@
 #ifndef LayoutBox_h
 #define LayoutBox_h
 
+#include "core/CoreExport.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/OverflowModel.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
@@ -72,7 +73,7 @@ public:
     LayoutSize m_previousBorderBoxSize;
 };
 
-class LayoutBox : public LayoutBoxModelObject {
+class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 public:
     explicit LayoutBox(ContainerNode*);
 
