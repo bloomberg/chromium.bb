@@ -3,13 +3,14 @@
 # found in the LICENSE file.
 import time
 
+from profile_creators import profile_extender
 from telemetry.core import browser_finder
 from telemetry.core import browser_finder_exceptions
 from telemetry.core import exceptions
 from telemetry.core import platform
 
 
-class FastNavigationProfileExtender(object):
+class FastNavigationProfileExtender(profile_extender.ProfileExtender):
   """Extends a Chrome profile.
 
   This class creates or extends an existing profile by performing a set of tab

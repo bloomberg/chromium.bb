@@ -12,28 +12,28 @@ import stat
 import sys
 import tempfile
 
-from profile_creators import profile_creator
+from profile_creators import profile_extender
 from telemetry.core import browser_options
 from telemetry.core import discover
 from telemetry.core import util
 from telemetry.user_story import user_story_runner
 
 
-def _DiscoverProfileCreatorClasses():
-  profile_creators_dir = os.path.abspath(os.path.join(util.GetBaseDir(),
+def _DiscoverProfileExtenderClasses():
+  profile_extenders_dir = os.path.abspath(os.path.join(util.GetBaseDir(),
       os.pardir, 'perf', 'profile_creators'))
-  base_dir = os.path.abspath(os.path.join(profile_creators_dir, os.pardir))
+  base_dir = os.path.abspath(os.path.join(profile_extenders_dir, os.pardir))
 
-  profile_creators_unfiltered = discover.DiscoverClasses(
-      profile_creators_dir, base_dir, profile_creator.ProfileCreator)
+  profile_extenders_unfiltered = discover.DiscoverClasses(
+      profile_extenders_dir, base_dir, profile_extender.ProfileExtender)
 
-  # Remove '_creator' suffix from keys.
-  profile_creators = {}
-  for test_name, test_class in profile_creators_unfiltered.iteritems():
-    assert test_name.endswith('_creator')
-    test_name = test_name[:-len('_creator')]
-    profile_creators[test_name] = test_class
-  return profile_creators
+  # Remove 'extender' suffix from keys.
+  profile_extenders = {}
+  for test_name, test_class in profile_extenders_unfiltered.iteritems():
+    assert test_name.endswith('_extender')
+    test_name = test_name[:-len('_extender')]
+    profile_extenders[test_name] = test_class
+  return profile_extenders
 
 
 def _IsPseudoFile(directory, paths):
@@ -64,13 +64,13 @@ def _IsPseudoFile(directory, paths):
   return ignore_list
 
 
-def GenerateProfiles(profile_creator_class, profile_creator_name, options):
+def GenerateProfiles(profile_extender_class, profile_creator_name, options):
   """Generate a profile"""
 
   temp_output_directory = tempfile.mkdtemp()
   options.output_profile_path = temp_output_directory
 
-  profile_creator_instance = profile_creator_class()
+  profile_creator_instance = profile_extender_class()
   try:
     profile_creator_instance.Run(options)
   except Exception as e:
@@ -96,8 +96,8 @@ def GenerateProfiles(profile_creator_class, profile_creator_name, options):
 def AddCommandLineArgs(parser):
   user_story_runner.AddCommandLineArgs(parser)
 
-  profile_creators = _DiscoverProfileCreatorClasses().keys()
-  legal_profile_creators = '|'.join(profile_creators)
+  profile_extenders = _DiscoverProfileExtenderClasses().keys()
+  legal_profile_creators = '|'.join(profile_extenders)
   group = optparse.OptionGroup(parser, 'Profile generation options')
   group.add_option('--profile-type-to-generate',
       dest='profile_type_to_generate',
@@ -113,9 +113,9 @@ def ProcessCommandLineArgs(parser, args):
   if not args.profile_type_to_generate:
     parser.error("Must specify --profile-type-to-generate option.")
 
-  profile_creators = _DiscoverProfileCreatorClasses().keys()
-  if args.profile_type_to_generate not in profile_creators:
-    legal_profile_creators = '|'.join(profile_creators)
+  profile_extenders = _DiscoverProfileExtenderClasses().keys()
+  if args.profile_type_to_generate not in profile_extenders:
+    legal_profile_creators = '|'.join(profile_extenders)
     parser.error("Invalid profile type, legal values are: %s." %
         legal_profile_creators)
 
@@ -138,7 +138,7 @@ def Main():
   ProcessCommandLineArgs(parser, options)
 
   # Generate profile.
-  profile_creators = _DiscoverProfileCreatorClasses()
-  profile_creator_class = profile_creators[options.profile_type_to_generate]
-  return GenerateProfiles(profile_creator_class,
+  profile_extenders = _DiscoverProfileExtenderClasses()
+  profile_extender_class = profile_extenders[options.profile_type_to_generate]
+  return GenerateProfiles(profile_extender_class,
       options.profile_type_to_generate, options)

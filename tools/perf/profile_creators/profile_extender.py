@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-class ProfileCreator(object):
+class ProfileExtender(object):
   """Abstract base class for an object that constructs a Chrome profile."""
 
   def Run(self, options):
-    """Creates the profile.
+    """Creates or extends the profile.
 
     |options| is an instance of BrowserFinderOptions. When subclass
     implementations of this method inevitably attempt to find and launch a
