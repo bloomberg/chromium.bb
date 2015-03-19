@@ -32,8 +32,6 @@ SubtreeRecorder::~SubtreeRecorder()
 
     if (m_begun)
         addDisplayItem(EndSubtreeDisplayItem::create(m_subtreeRoot.displayItemClient(), DisplayItem::paintPhaseToEndSubtreeType(m_paintPhase)));
-    else if (m_displayItemList->clientCacheIsValid(m_subtreeRoot.displayItemClient()))
-        addDisplayItem(SubtreeCachedDisplayItem::create(m_subtreeRoot.displayItemClient(), DisplayItem::paintPhaseToSubtreeCachedType(m_paintPhase)));
 }
 
 void SubtreeRecorder::begin()

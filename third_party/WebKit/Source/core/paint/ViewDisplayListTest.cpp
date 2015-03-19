@@ -558,7 +558,8 @@ TEST_F(ViewDisplayListTest, ComplexUpdateSwapOrder)
         TestDisplayItem(container1, DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 
-TEST_F(ViewDisplayListTest, CachedSubtreeSwapOrder)
+// Enable this when cached subtree flags are ready.
+TEST_F(ViewDisplayListTest, DISABLED_CachedSubtreeSwapOrder)
 {
     setBodyInnerHTML("<div id='container1'><div id='content1'></div></div>"
         "<div id='container2'><div id='content2'></div></div>");
