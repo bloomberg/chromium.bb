@@ -1554,6 +1554,8 @@ class DeviceUtils(object):
     def battery_updates_enabled():
       return self.GetCharging() is True
 
+    self.RunShellCommand(['dumpsys', 'battery', 'set', 'usb', '1'],
+                         check_return=True)
     self.RunShellCommand(['dumpsys', 'battery', 'reset'], check_return=True)
     timeout_retry.WaitFor(battery_updates_enabled, wait_period=1)
 

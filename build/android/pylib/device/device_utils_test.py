@@ -1553,6 +1553,8 @@ class DeviceUtilsSetBatteryMeasurementTest(DeviceUtilsTest):
             ['dumpsys', 'battery', 'set', 'usb', '0'], check_return=True), []),
         (self.call.device.GetCharging(), False),
         (self.call.device.RunShellCommand(
+            ['dumpsys', 'battery', 'set', 'usb', '1'], check_return=True), []),
+        (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'reset'], check_return=True), []),
         (self.call.device.GetCharging(), True)):
       with self.device.BatteryMeasurement():
