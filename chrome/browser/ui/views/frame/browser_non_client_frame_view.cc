@@ -11,17 +11,21 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/taskbar_decorator.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/profiles/new_avatar_button.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 
 #if defined(ENABLE_SUPERVISED_USERS)
@@ -95,6 +99,79 @@ void BrowserNonClientFrameView::OnThemeChanged() {
     supervised_user_avatar_label_->UpdateLabelStyle();
 }
 #endif
+
+bool BrowserNonClientFrameView::ShouldPaintAsThemed() const {
+  return browser_view_->IsBrowserTypeNormal();
+}
+
+SkColor BrowserNonClientFrameView::GetFrameColor() const {
+  const bool incognito = browser_view_->IsOffTheRecord();
+  ThemeProperties::OverwritableByUserThemeProperty color_id;
+  if (ShouldPaintAsActive()) {
+    color_id = incognito ? ThemeProperties::COLOR_FRAME_INCOGNITO
+                         : ThemeProperties::COLOR_FRAME;
+  } else {
+    color_id = incognito ? ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE
+                         : ThemeProperties::COLOR_FRAME_INACTIVE;
+  }
+  return ShouldPaintAsThemed() ? GetThemeProvider()->GetColor(color_id)
+                               : ThemeProperties::GetDefaultColor(color_id);
+}
+
+gfx::ImageSkia* BrowserNonClientFrameView::GetFrameImage() const {
+  const bool incognito = browser_view_->IsOffTheRecord();
+  int resource_id;
+  if (browser_view_->IsBrowserTypeNormal()) {
+    if (ShouldPaintAsActive()) {
+      resource_id = incognito ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+    } else {
+      resource_id = incognito ? IDR_THEME_FRAME_INCOGNITO_INACTIVE
+                              : IDR_THEME_FRAME_INACTIVE;
+    }
+    return GetThemeProvider()->GetImageSkiaNamed(resource_id);
+  }
+
+  if (ShouldPaintAsActive()) {
+    resource_id = incognito ? IDR_THEME_FRAME_INCOGNITO : IDR_FRAME;
+  } else {
+    resource_id = incognito ? IDR_THEME_FRAME_INCOGNITO_INACTIVE
+                            : IDR_THEME_FRAME_INACTIVE;
+  }
+
+  if (ShouldPaintAsThemed()) {
+    // On Linux, we want to use theme images provided by the system theme when
+    // enabled, even if we are an app or popup window.
+    return GetThemeProvider()->GetImageSkiaNamed(resource_id);
+  }
+
+  // Otherwise, never theme app and popup windows.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetImageSkiaNamed(
+      chrome::MapThemeImage(chrome::GetHostDesktopTypeForNativeWindow(
+                                browser_view_->GetNativeWindow()),
+                            resource_id));
+}
+
+gfx::ImageSkia* BrowserNonClientFrameView::GetFrameOverlayImage() const {
+  ui::ThemeProvider* tp = GetThemeProvider();
+  if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
+      browser_view_->IsBrowserTypeNormal() &&
+      !browser_view_->IsOffTheRecord()) {
+    return tp->GetImageSkiaNamed(ShouldPaintAsActive() ?
+        IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE);
+  }
+  return nullptr;
+}
+
+int BrowserNonClientFrameView::GetTopAreaHeight() const {
+  gfx::ImageSkia* frame_image = GetFrameImage();
+  int top_area_height = frame_image->height();
+  if (browser_view_->IsTabStripVisible()) {
+    top_area_height = std::max(top_area_height,
+      GetBoundsForTabStrip(browser_view_->tabstrip()).bottom());
+  }
+  return top_area_height;
+}
 
 void BrowserNonClientFrameView::UpdateAvatar() {
   if (browser_view()->IsRegularOrGuestSession() && switches::IsNewAvatarMenu())

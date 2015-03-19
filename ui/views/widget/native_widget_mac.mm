@@ -123,9 +123,9 @@ bool NativeWidgetMac::ShouldUseNativeFrame() const {
 }
 
 bool NativeWidgetMac::ShouldWindowContentsBeTransparent() const {
-  // On Windows, this returns false when DWM is unavailable (e.g. XP, RDP or
-  // classic mode). OSX always has a compositing window manager.
-  return true;
+  // On Windows, this returns true when Aero is enabled which draws the titlebar
+  // with translucency.
+  return false;
 }
 
 void NativeWidgetMac::FrameTypeChanged() {

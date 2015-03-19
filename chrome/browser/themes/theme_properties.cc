@@ -23,6 +23,9 @@ namespace {
 // Used for theme fallback colors.
 const SkColor kDefaultColorFrame = SkColorSetRGB(109, 109, 109);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
+#elif defined(OS_MACOSX)
+const SkColor kDefaultColorFrame = SkColorSetRGB(224, 224, 224);
+const SkColor kDefaultColorFrameInactive = SkColorSetRGB(246, 246, 246);
 #else
 const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);

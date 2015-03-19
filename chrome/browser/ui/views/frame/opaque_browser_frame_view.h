@@ -97,6 +97,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void OnPaint(gfx::Canvas* canvas) override;
 
   // BrowserNonClientFrameView:
+  bool ShouldPaintAsThemed() const override;
   void UpdateNewStyleAvatar() override;
 
  private:
@@ -143,12 +144,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void PaintMaximizedFrameBorder(gfx::Canvas* canvas);
   void PaintToolbarBackground(gfx::Canvas* canvas);
   void PaintRestoredClientEdge(gfx::Canvas* canvas);
-
-  // Compute aspects of the frame needed to paint the frame background.
-  SkColor GetFrameColor() const;
-  gfx::ImageSkia* GetFrameImage() const;
-  gfx::ImageSkia* GetFrameOverlayImage() const;
-  int GetTopAreaHeight() const;
 
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;

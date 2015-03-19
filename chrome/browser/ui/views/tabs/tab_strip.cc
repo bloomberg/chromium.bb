@@ -114,7 +114,11 @@ const int kTouchResizeLayoutTimeMS = 2000;
 // Amount the left edge of a tab is offset from the rectangle of the tab's
 // favicon/title/close box.  Related to the width of IDR_TAB_ACTIVE_LEFT.
 // Affects the size of the "V" between adjacent tabs.
+#if defined(OS_MACOSX)
+const int kTabHorizontalOffset = -19;
+#else
 const int kTabHorizontalOffset = -26;
+#endif
 
 // Amount to adjust the clip by when the tab is stacked before the active index.
 const int kStackedTabLeftClip = 20;
@@ -521,11 +525,16 @@ void TabStrip::RemoveTabDelegate::AnimationCanceled(
 
 // static
 const char TabStrip::kViewClassName[] = "TabStrip";
-const int TabStrip::kNewTabButtonHorizontalOffset = -11;
 const int TabStrip::kNewTabButtonVerticalOffset = 7;
-const int TabStrip::kMiniToNonMiniGap = 3;
 const int TabStrip::kNewTabButtonAssetWidth = 34;
 const int TabStrip::kNewTabButtonAssetHeight = 18;
+#if defined(OS_MACOSX)
+const int TabStrip::kNewTabButtonHorizontalOffset = -8;
+const int TabStrip::kMiniToNonMiniGap = 2;
+#else
+const int TabStrip::kNewTabButtonHorizontalOffset = -11;
+const int TabStrip::kMiniToNonMiniGap = 3;
+#endif
 
 TabStrip::TabStrip(TabStripController* controller)
     : controller_(controller),

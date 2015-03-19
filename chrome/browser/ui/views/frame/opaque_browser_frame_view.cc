@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/theme_image_mapper.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -480,6 +479,12 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 }
 
 // BrowserNonClientFrameView:
+bool OpaqueBrowserFrameView::ShouldPaintAsThemed() const {
+  // Theme app and popup windows if |platform_observer_| wants it.
+  return browser_view()->IsBrowserTypeNormal() ||
+         platform_observer_->IsUsingSystemTheme();
+}
+
 void OpaqueBrowserFrameView::UpdateNewStyleAvatar() {
   UpdateNewStyleAvatarInfo(this, NewAvatarButton::THEMED_BUTTON);
 }
@@ -837,83 +842,4 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
       kClientEdgeThickness,
       client_area_bottom + kClientEdgeThickness - client_area_top),
       toolbar_color);
-}
-
-SkColor OpaqueBrowserFrameView::GetFrameColor() const {
-  bool is_incognito = browser_view()->IsOffTheRecord();
-  ThemeProperties::OverwritableByUserThemeProperty color_id;
-  if (ShouldPaintAsActive()) {
-    color_id = is_incognito ?
-               ThemeProperties::COLOR_FRAME_INCOGNITO :
-               ThemeProperties::COLOR_FRAME;
-  } else {
-    color_id = is_incognito ?
-               ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE :
-               ThemeProperties::COLOR_FRAME_INACTIVE;
-  }
-
-  if (browser_view()->IsBrowserTypeNormal() ||
-      platform_observer_->IsUsingSystemTheme()) {
-    return GetThemeProvider()->GetColor(color_id);
-  }
-
-  // Never theme app and popup windows unless the |platform_observer_|
-  // requested an override.
-  return ThemeProperties::GetDefaultColor(color_id);
-}
-
-gfx::ImageSkia* OpaqueBrowserFrameView::GetFrameImage() const {
-  bool is_incognito = browser_view()->IsOffTheRecord();
-  int resource_id;
-  if (browser_view()->IsBrowserTypeNormal()) {
-    if (ShouldPaintAsActive()) {
-      resource_id = is_incognito ?
-          IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
-    } else {
-      resource_id = is_incognito ?
-          IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
-    }
-    return GetThemeProvider()->GetImageSkiaNamed(resource_id);
-  }
-  if (ShouldPaintAsActive()) {
-    resource_id = is_incognito ?
-        IDR_THEME_FRAME_INCOGNITO : IDR_FRAME;
-  } else {
-    resource_id = is_incognito ?
-        IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
-  }
-
-  if (platform_observer_->IsUsingSystemTheme()) {
-    // We want to use theme images provided by the system theme when enabled,
-    // even if we are an app or popup window.
-    return GetThemeProvider()->GetImageSkiaNamed(resource_id);
-  }
-
-  // Otherwise, never theme app and popup windows.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetImageSkiaNamed(chrome::MapThemeImage(
-      chrome::GetHostDesktopTypeForNativeWindow(
-          browser_view()->GetNativeWindow()),
-      resource_id));
-}
-
-gfx::ImageSkia* OpaqueBrowserFrameView::GetFrameOverlayImage() const {
-  ui::ThemeProvider* tp = GetThemeProvider();
-  if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
-      browser_view()->IsBrowserTypeNormal() &&
-      !browser_view()->IsOffTheRecord()) {
-    return tp->GetImageSkiaNamed(ShouldPaintAsActive() ?
-        IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE);
-  }
-  return nullptr;
-}
-
-int OpaqueBrowserFrameView::GetTopAreaHeight() const {
-  gfx::ImageSkia* frame_image = GetFrameImage();
-  int top_area_height = frame_image->height();
-  if (browser_view()->IsTabStripVisible()) {
-    top_area_height = std::max(top_area_height,
-      GetBoundsForTabStrip(browser_view()->tabstrip()).bottom());
-  }
-  return top_area_height;
 }

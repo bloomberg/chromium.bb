@@ -67,6 +67,17 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   BrowserView* browser_view() const { return browser_view_; }
   BrowserFrame* frame() const { return frame_; }
 
+  // Whether the frame should be painted with theming.
+  // By default, tabbed browser windows are themed but popup and app windows are
+  // not.
+  virtual bool ShouldPaintAsThemed() const;
+
+  // Compute aspects of the frame needed to paint the frame background.
+  SkColor GetFrameColor() const;
+  gfx::ImageSkia* GetFrameImage() const;
+  gfx::ImageSkia* GetFrameOverlayImage() const;
+  int GetTopAreaHeight() const;
+
   // Updates the avatar button using the old or new UI based on the BrowserView
   // type, and the presence of the --enable-new-avatar-menu flag. Calls either
   // UpdateAvatarInfo() or UpdateNewStyleAvatar() accordingly.

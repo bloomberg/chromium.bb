@@ -2074,6 +2074,8 @@
       'browser/ui/views/frame/browser_non_client_frame_view.h',
       'browser/ui/views/frame/browser_non_client_frame_view_factory_aura.cc',
       'browser/ui/views/frame/browser_non_client_frame_view_factory_mac.mm',
+      'browser/ui/views/frame/browser_non_client_frame_view_mac.h',
+      'browser/ui/views/frame/browser_non_client_frame_view_mac.mm',
       'browser/ui/views/frame/browser_root_view.cc',
       'browser/ui/views/frame/browser_root_view.h',
       'browser/ui/views/frame/browser_shutdown.cc',
