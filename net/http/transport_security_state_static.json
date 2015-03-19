@@ -1562,7 +1562,6 @@
     { "name": "lighting-centres.co.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "marshut.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "meamod.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "movelaria.com.br", "include_subdomains": true, "mode": "force-https" },
     { "name": "myni.io", "include_subdomains": true, "mode": "force-https" },
     { "name": "nameid.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "nginxnudes.com", "include_subdomains": true, "mode": "force-https" },
