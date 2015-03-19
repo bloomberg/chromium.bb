@@ -49,6 +49,7 @@ private:
     bool patternMismatch(const String&) const final;
     bool supportsPlaceholder() const final;
     bool supportsSelectionAPI() const override;
+    bool supportsAutocapitalize() const override;
 };
 
 } // namespace blink

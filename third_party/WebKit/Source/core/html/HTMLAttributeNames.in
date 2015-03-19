@@ -50,6 +50,7 @@ aria-valuemin
 aria-valuenow
 aria-valuetext
 async
+autocapitalize
 autocomplete
 autofocus
 autoplay

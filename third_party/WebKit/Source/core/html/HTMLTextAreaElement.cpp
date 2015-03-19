@@ -639,4 +639,10 @@ void HTMLTextAreaElement::copyNonAttributePropertiesFromElement(const Element& s
     HTMLTextFormControlElement::copyNonAttributePropertiesFromElement(source);
 }
 
+const AtomicString& HTMLTextAreaElement::defaultAutocapitalize() const
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences", AtomicString::ConstructFromLiteral));
+    return sentences;
 }
+
+} // namespace blink

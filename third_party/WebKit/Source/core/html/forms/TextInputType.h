@@ -44,6 +44,7 @@ private:
     void countUsage() override;
     const AtomicString& formControlType() const override;
     bool supportsInputModeAttribute() const override;
+    const AtomicString& defaultAutocapitalize() const override;
 };
 
 } // namespace blink

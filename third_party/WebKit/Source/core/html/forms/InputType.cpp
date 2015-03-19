@@ -705,6 +705,17 @@ const QualifiedName& InputType::subResourceAttributeName() const
     return QualifiedName::null();
 }
 
+bool InputType::supportsAutocapitalize() const
+{
+    return false;
+}
+
+const AtomicString& InputType::defaultAutocapitalize() const
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, none, ("none", AtomicString::ConstructFromLiteral));
+    return none;
+}
+
 bool InputType::shouldAppearIndeterminate() const
 {
     return false;

@@ -2061,6 +2061,7 @@ interface HTMLInputElement
     getter accept
     getter align
     getter alt
+    getter autocapitalize
     getter autocomplete
     getter autofocus
     getter checked
@@ -2120,6 +2121,7 @@ interface HTMLInputElement
     setter accept
     setter align
     setter alt
+    setter autocapitalize
     setter autocomplete
     setter autofocus
     setter checked
@@ -2664,6 +2666,7 @@ interface HTMLTemplateElement
     getter content
     method constructor
 interface HTMLTextAreaElement
+    getter autocapitalize
     getter autofocus
     getter cols
     getter defaultValue
@@ -2696,6 +2699,7 @@ interface HTMLTextAreaElement
     method setCustomValidity
     method setRangeText
     method setSelectionRange
+    setter autocapitalize
     setter autofocus
     setter cols
     setter defaultValue

@@ -1701,6 +1701,16 @@ void HTMLInputElement::updateValueIfNeeded()
         setValue(newValue);
 }
 
+bool HTMLInputElement::supportsAutocapitalize() const
+{
+    return m_inputType->supportsAutocapitalize();
+}
+
+const AtomicString& HTMLInputElement::defaultAutocapitalize() const
+{
+    return m_inputType->defaultAutocapitalize();
+}
+
 String HTMLInputElement::defaultToolTip() const
 {
     return m_inputType->defaultToolTip();

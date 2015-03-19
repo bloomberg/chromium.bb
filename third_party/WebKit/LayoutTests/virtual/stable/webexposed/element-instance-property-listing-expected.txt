@@ -562,6 +562,7 @@ html element input
     property accept
     property align
     property alt
+    property autocapitalize
     property autocomplete
     property autofocus
     property checkValidity
@@ -891,6 +892,7 @@ html element td
 html element template
     property content
 html element textarea
+    property autocapitalize
     property autofocus
     property checkValidity
     property cols

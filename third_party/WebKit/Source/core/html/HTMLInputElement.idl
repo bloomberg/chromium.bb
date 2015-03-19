@@ -24,6 +24,7 @@
 interface HTMLInputElement : HTMLElement {
     [Reflect] attribute DOMString accept;
     [Reflect] attribute DOMString alt;
+    attribute DOMString autocapitalize;
     [Reflect] attribute DOMString autocomplete;
     [Reflect] attribute boolean autofocus;
     [Reflect=checked] attribute boolean defaultChecked;

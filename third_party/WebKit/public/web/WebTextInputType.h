@@ -81,7 +81,11 @@ enum WebTextInputFlags {
     WebTextInputFlagAutocorrectOn = 1 << 2,
     WebTextInputFlagAutocorrectOff = 1 << 3,
     WebTextInputFlagSpellcheckOn = 1 << 4,
-    WebTextInputFlagSpellcheckOff = 1 << 5
+    WebTextInputFlagSpellcheckOff = 1 << 5,
+    WebTextInputFlagAutocapitalizeNone = 1 << 6,
+    WebTextInputFlagAutocapitalizeCharacters = 1 << 7,
+    WebTextInputFlagAutocapitalizeWords = 1 << 8,
+    WebTextInputFlagAutocapitalizeSentences = 1 << 9
 };
 
 } // namespace blink

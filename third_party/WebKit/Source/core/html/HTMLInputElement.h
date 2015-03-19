@@ -335,6 +335,8 @@ private:
     virtual void handleFocusEvent(Element* oldFocusedElement, WebFocusType) override final;
     virtual void handleBlurEvent() override final;
     virtual void dispatchFocusInEvent(const AtomicString& eventType, Element* oldFocusedElement, WebFocusType) override final;
+    virtual bool supportsAutocapitalize() const override final;
+    virtual const AtomicString& defaultAutocapitalize() const override final;
 
     virtual bool isOptionalFormControl() const override final { return !isRequiredFormControl(); }
     virtual bool isRequiredFormControl() const override final;

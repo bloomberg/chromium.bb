@@ -155,6 +155,12 @@ void SearchInputType::updateView()
     updateCancelButtonVisibility();
 }
 
+const AtomicString& SearchInputType::defaultAutocapitalize() const
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences", AtomicString::ConstructFromLiteral));
+    return sentences;
+}
+
 void SearchInputType::updateCancelButtonVisibility()
 {
     Element* button = element().closedShadowRoot()->getElementById(ShadowElementNames::clearButton());

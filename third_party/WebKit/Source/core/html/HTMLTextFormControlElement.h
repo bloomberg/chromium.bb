@@ -81,6 +81,11 @@ public:
     void setSelectionRange(int start, int end, TextFieldSelectionDirection = SelectionHasNoDirection, NeedToDispatchSelectEvent = DispatchSelectEvent, SelectionOption = ChangeSelection);
     PassRefPtrWillBeRawPtr<Range> selection() const;
 
+    virtual bool supportsAutocapitalize() const = 0;
+    virtual const AtomicString& defaultAutocapitalize() const = 0;
+    const AtomicString& autocapitalize() const;
+    void setAutocapitalize(const AtomicString&);
+
     virtual void dispatchFormControlChangeEvent() override final;
 
     virtual String value() const = 0;

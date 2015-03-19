@@ -90,6 +90,8 @@ private:
     virtual void updatePlaceholderText() override;
     virtual bool isEmptyValue() const override { return value().isEmpty(); }
     virtual bool isEmptySuggestedValue() const override final { return suggestedValue().isEmpty(); }
+    virtual bool supportsAutocapitalize() const override { return true; }
+    virtual const AtomicString& defaultAutocapitalize() const override;
 
     virtual bool isOptionalFormControl() const override { return !isRequiredFormControl(); }
     virtual bool isRequiredFormControl() const override { return isRequired(); }

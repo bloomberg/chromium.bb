@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+
+test(function() {
+    assert_true('autocapitalize' in document.createElement('input'));
+}, "Test that the autocapitalize is avaible on HTMLInputElement.")
+
+test(function() {
+    assert_true('autocapitalize' in document.createElement('textarea'));
+}, "Test that the autocapitalize is avaible on HTMLTextAreaElement.")
+
+test(function() {
+  var elements = [ document.createElement('input'),
+                   document.createElement('textarea') ];
+
+  elements.forEach(function(e) {
+    e.autocapitalize = 'on';
+    assert_equals(e.autocapitalize, 'sentences');
+
+    e.autocapitalize = 'off';
+    assert_equals(e.autocapitalize, 'none');
+  });
+}, "Test deprecated values of autocapitalize.");
+
+test(function() {
+  var elements = [ document.createElement('input'),
+                   document.createElement('textarea') ];
+  var knownValues = [ 'none', 'characters', 'words', 'sentences' ];
+
+  var defaultValue = 'sentences';
+  elements.forEach(function(e) {
+    // Default value.
+    assert_equals(e.autocapitalize, defaultValue);
+
+    // Invalid value.
+    e.autocapitalize = 'foo';
+    assert_equals(e.autocapitalize, defaultValue);
+    assert_equals(e.getAttribute('autocapitalize'), 'foo');
+    e.setAttribute('autocapitalize', 'bar');
+    assert_equals(e.autocapitalize, defaultValue);
+    assert_equals(e.getAttribute('autocapitalize'), 'bar');
+
+    // Default value.
+    e.removeAttribute('autocapitalize');
+    assert_equals(defaultValue, e.autocapitalize);
+    assert_equals(e.getAttribute('autocapitalize'), null);
+
+    // Case insensitive.
+    e.setAttribute('autocapitalize', 'NoNe');
+    assert_equals(e.autocapitalize, 'none');
+    assert_equals(e.getAttribute('autocapitalize'), 'NoNe');
+    e.autocapitalize = 'WORDS';
+    assert_equals(e.autocapitalize, 'words');
+    assert_equals(e.getAttribute('autocapitalize'), 'WORDS');
+
+    knownValues.forEach(function(value) {
+      e.setAttribute('autocapitalize', value);
+      assert_equals(e.autocapitalize, value);
+      assert_equals(e.getAttribute('autocapitalize'), value);
+
+      e.removeAttribute('autocapitalize');
+
+      e.autocapitalize = value;
+      assert_equals(e.autocapitalize, value);
+      assert_equals(e.getAttribute('autocapitalize'), value);
+
+      e.removeAttribute('autocapitalize');
+    });
+  });
+}, "Test reflection of autocapitalize.");
+
+test(function() {
+  var testData = [
+    // Types with sentences as default value.
+    { type: 'text', value: 'sentences' },
+    { type: 'search', value: 'sentences' },
+    // Types supporting the features with none as default value.
+    { type: 'email', value: 'none' },
+    { type: 'url', value: 'none' },
+    { type: 'tel', value: 'none' },
+    // Other types that do not support the value.
+    { type: 'number', value: 'none' },
+    { type: 'date', value: 'none' },
+    { type: 'color', value: 'none' }
+  ];
+
+  testData.forEach(function(data) {
+    var input = document.createElement('input');
+    input.type = data.type;
+    assert_equals(input.autocapitalize, data.value);
+  });
+}, "Test the default value depending on <input> type.")
+
+</script>
+</body>
+</html>

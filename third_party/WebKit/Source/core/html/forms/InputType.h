@@ -175,6 +175,8 @@ public:
     virtual void handleDOMActivateEvent(Event*);
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const;
     virtual const QualifiedName& subResourceAttributeName() const;
+    virtual bool supportsAutocapitalize() const;
+    virtual const AtomicString& defaultAutocapitalize() const;
 
     // Parses the specified string for the type, and return
     // the Decimal value for the parsing result if the parsing

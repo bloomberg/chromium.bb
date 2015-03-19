@@ -2505,6 +2505,28 @@ int WebViewImpl::textInputFlags()
     else if (spellcheck == SpellcheckAttributeFalse)
         flags |= WebTextInputFlagSpellcheckOff;
 
+    if (isHTMLTextFormControlElement(element)) {
+        HTMLTextFormControlElement* formElement = static_cast<HTMLTextFormControlElement*>(element);
+        if (formElement->supportsAutocapitalize()) {
+            DEFINE_STATIC_LOCAL(const AtomicString, none, ("none", AtomicString::ConstructFromLiteral));
+            DEFINE_STATIC_LOCAL(const AtomicString, characters, ("characters", AtomicString::ConstructFromLiteral));
+            DEFINE_STATIC_LOCAL(const AtomicString, words, ("words", AtomicString::ConstructFromLiteral));
+            DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences", AtomicString::ConstructFromLiteral));
+
+            const AtomicString& autocapitalize = formElement->autocapitalize();
+            if (autocapitalize == none)
+                flags |= WebTextInputFlagAutocapitalizeNone;
+            else if (autocapitalize == characters)
+                flags |= WebTextInputFlagAutocapitalizeCharacters;
+            else if (autocapitalize == words)
+                flags |= WebTextInputFlagAutocapitalizeWords;
+            else if (autocapitalize == sentences)
+                flags |= WebTextInputFlagAutocapitalizeSentences;
+            else
+                ASSERT_NOT_REACHED();
+        }
+    }
+
     return flags;
 }
 

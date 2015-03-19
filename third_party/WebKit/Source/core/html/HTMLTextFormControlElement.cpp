@@ -548,6 +548,33 @@ PassRefPtrWillBeRawPtr<Range> HTMLTextFormControlElement::selection() const
     return Range::create(document(), startNode, start, endNode, end);
 }
 
+const AtomicString& HTMLTextFormControlElement::autocapitalize() const
+{
+    DEFINE_STATIC_LOCAL(const AtomicString, off, ("off", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, none, ("none", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, characters, ("characters", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, words, ("words", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, sentences, ("sentences", AtomicString::ConstructFromLiteral));
+
+    const AtomicString& value = fastGetAttribute(autocapitalizeAttr);
+    if (equalIgnoringCase(value, none) || equalIgnoringCase(value, off))
+        return none;
+    if (equalIgnoringCase(value, characters))
+        return characters;
+    if (equalIgnoringCase(value, words))
+        return words;
+    if (equalIgnoringCase(value, sentences))
+        return sentences;
+
+    // Invalid or missing value.
+    return defaultAutocapitalize();
+}
+
+void HTMLTextFormControlElement::setAutocapitalize(const AtomicString& autocapitalize)
+{
+    setAttribute(autocapitalizeAttr, autocapitalize);
+}
+
 void HTMLTextFormControlElement::restoreCachedSelection()
 {
     setSelectionRange(m_cachedSelectionStart, m_cachedSelectionEnd, m_cachedSelectionDirection, NotDispatchSelectEvent);

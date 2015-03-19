@@ -53,6 +53,7 @@ private:
     void didSetValueByUserEdit(ValueChangeState) override;
     bool supportsInputModeAttribute() const override;
     void updateView() override;
+    const AtomicString& defaultAutocapitalize() const override;
 
     void searchEventTimerFired(Timer<SearchInputType>*);
     bool searchEventsShouldBeDispatched() const;

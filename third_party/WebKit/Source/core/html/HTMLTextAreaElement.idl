@@ -20,6 +20,7 @@
  */
 
 interface HTMLTextAreaElement : HTMLElement {
+    attribute DOMString autocapitalize;
     [Reflect] attribute boolean autofocus;
     attribute long cols;
     [Reflect] attribute DOMString dirName;
