@@ -82,7 +82,7 @@ bool SysInfo::HasSeekPenalty(const FilePath& path, bool* has_seek_penalty) {
   if (!drive.IsValid())
     return false;
 
-  STORAGE_PROPERTY_QUERY query;
+  STORAGE_PROPERTY_QUERY query = {};
   query.QueryType = PropertyStandardQuery;
   query.PropertyId = StorageDeviceSeekPenaltyProperty;
 
