@@ -12,6 +12,7 @@ import junit.framework.Assert;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -181,6 +182,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
+    @DisabledTest //crbug/468679
     public void testRemovalNotReflectedUntilReload() throws Throwable {
         injectObjectAndReload(new Object() {
             public void method() {
