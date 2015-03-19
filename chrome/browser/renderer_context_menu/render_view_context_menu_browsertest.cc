@@ -254,8 +254,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
 // Check filename on clicking "Save Link As" via a "real" context menu.
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, SuggestedFileName) {
   // Register observer.
-  SaveLinkAsContextMenuObserver menu_observer(
-      content::NotificationService::AllSources());
+  ContextMenuWaiter menu_observer(content::NotificationService::AllSources());
 
   // Go to a page with a link having download attribute.
   const std::string kSuggestedFilename("test_filename.png");
@@ -277,10 +276,10 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, SuggestedFileName) {
   tab->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
 
   // Wait for context menu to be visible.
-  menu_observer.WaitForMenu();
+  menu_observer.WaitForMenuOpenAndClose();
 
   // Compare filename.
-  base::string16 suggested_filename = menu_observer.GetSuggestedFilename();
+  base::string16 suggested_filename = menu_observer.params().suggested_filename;
   ASSERT_EQ(kSuggestedFilename, base::UTF16ToUTF8(suggested_filename).c_str());
 }
 

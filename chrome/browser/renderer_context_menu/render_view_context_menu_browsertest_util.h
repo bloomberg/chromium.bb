@@ -32,21 +32,19 @@ class ContextMenuNotificationObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(ContextMenuNotificationObserver);
 };
 
-class SaveLinkAsContextMenuObserver : public ContextMenuNotificationObserver {
+class ContextMenuWaiter : public content::NotificationObserver {
  public:
   // Register to listen for notifications of
   // NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN from either
   // a specific source, or from all sources if |source| is
   // NotificationService::AllSources().
-  explicit SaveLinkAsContextMenuObserver(
-      const content::NotificationSource& source);
-  ~SaveLinkAsContextMenuObserver() override;
+  explicit ContextMenuWaiter(const content::NotificationSource& source);
+  ~ContextMenuWaiter() override;
 
-  // Suggested filename for file downloaded through "Save Link As" option.
-  base::string16 GetSuggestedFilename();
+  content::ContextMenuParams& params();
 
-  // Wait for context menu to be visible.
-  void WaitForMenu();
+  // Wait until the context menu is opened and closed.
+  void WaitForMenuOpenAndClose();
 
  private:
   void Observe(int type,
@@ -57,8 +55,9 @@ class SaveLinkAsContextMenuObserver : public ContextMenuNotificationObserver {
 
   bool menu_visible_;
   content::ContextMenuParams params_;
+  content::NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(SaveLinkAsContextMenuObserver);
+  DISALLOW_COPY_AND_ASSIGN(ContextMenuWaiter);
 };
 
 #endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_BROWSERTEST_UTIL_H_

@@ -50,29 +50,26 @@ void ContextMenuNotificationObserver::ExecuteCommand(
   context_menu->Cancel();
 }
 
-SaveLinkAsContextMenuObserver::SaveLinkAsContextMenuObserver(
-    const content::NotificationSource& source)
-    : ContextMenuNotificationObserver(IDC_CONTENT_CONTEXT_SAVELINKAS),
-      menu_visible_(false) {
+ContextMenuWaiter::ContextMenuWaiter(const content::NotificationSource& source)
+    : menu_visible_(false) {
+  registrar_.Add(this, chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
+                 content::NotificationService::AllSources());
 }
 
-SaveLinkAsContextMenuObserver::~SaveLinkAsContextMenuObserver() {
+ContextMenuWaiter::~ContextMenuWaiter() {
 }
 
-void SaveLinkAsContextMenuObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void ContextMenuWaiter::Observe(int type,
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN: {
       menu_visible_ = true;
       RenderViewContextMenu* context_menu =
           content::Source<RenderViewContextMenu>(source).ptr();
       base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&SaveLinkAsContextMenuObserver::Cancel,
-                     base::Unretained(this),
-                     context_menu));
+          FROM_HERE, base::Bind(&ContextMenuWaiter::Cancel,
+                                base::Unretained(this), context_menu));
       break;
     }
 
@@ -81,21 +78,22 @@ void SaveLinkAsContextMenuObserver::Observe(
   }
 }
 
-void SaveLinkAsContextMenuObserver::WaitForMenu() {
+void ContextMenuWaiter::WaitForMenuOpenAndClose() {
   content::WindowedNotificationObserver menu_observer(
       chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
       content::NotificationService::AllSources());
   if (!menu_visible_)
     menu_observer.Wait();
+
+  content::RunAllPendingInMessageLoop();
   menu_visible_ = false;
 }
 
-base::string16 SaveLinkAsContextMenuObserver::GetSuggestedFilename() {
-  return params_.suggested_filename;
+content::ContextMenuParams& ContextMenuWaiter::params() {
+  return params_;
 }
 
-void SaveLinkAsContextMenuObserver::Cancel(
-    RenderViewContextMenu* context_menu) {
+void ContextMenuWaiter::Cancel(RenderViewContextMenu* context_menu) {
   params_ = context_menu->params();
   context_menu->Cancel();
 }

@@ -18,6 +18,7 @@
   </style>
   <script>
    var state = '';
+   var hasLeave = false;
    function load() {
      state = 'initial';
      document.getElementById("mystatus").innerHTML = state;
@@ -29,9 +30,15 @@
      document.title = "entered";
    }
    function leave() {
+     hasLeave = true;
      state += ',left';
      document.getElementById("mystatus").innerHTML = state;
      document.title = "left";
+   }
+   function done() {
+     state += ',done';
+     document.getElementById("mystatus").innerHTML = state;
+     document.title = hasLeave ? "with mouseleave" : "without mouseleave";
    }
   </script>
  </head>
