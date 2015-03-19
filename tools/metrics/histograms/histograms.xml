@@ -17761,6 +17761,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.ForceAlternativeService" enum="BooleanForced">
+  <owner>bnc@chromium.org</owner>
+  <summary>
+    Track usage of alternative services forced by the force-alt-protocols
+    command line flag.  Triggered each time alternative services are queried for
+    a given origin and the command line flag would make a difference (that is,
+    there is no advertised alternative service for that origin).
+  </summary>
+</histogram>
+
 <histogram name="Net.FoundSystemTrustRootsAndroid" enum="Boolean">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -45089,6 +45099,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanExpired" type="int">
   <int value="0" label="Unexpired"/>
   <int value="1" label="Expired"/>
+</enum>
+
+<enum name="BooleanForced" type="int">
+  <int value="0" label="Not forced"/>
+  <int value="1" label="Forced"/>
 </enum>
 
 <enum name="BooleanForceDisabled" type="int">

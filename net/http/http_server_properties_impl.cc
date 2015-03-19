@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -247,6 +248,8 @@ AlternativeService HttpServerPropertiesImpl::GetAlternativeService(
     return AlternativeService(it->second.protocol, origin.host(),
                               it->second.port);
 
+  UMA_HISTOGRAM_BOOLEAN("Net.ForceAlternativeService",
+                        g_forced_alternate_protocol != nullptr);
   if (g_forced_alternate_protocol)
     return AlternativeService(g_forced_alternate_protocol->protocol,
                               origin.host(), g_forced_alternate_protocol->port);
