@@ -164,6 +164,12 @@
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
+           Arabic script. -->
+      <message name="IDS_FIXED_FONT_FAMILY_ARABIC" use_name_for_id="true">
+        Courier New
+      </message>
+
+      <!-- The default value for |WebPreference::fixed_font_family_map| for
            Cyrillic script. -->
       <message name="IDS_FIXED_FONT_FAMILY_CYRILLIC" use_name_for_id="true">
         Courier New
