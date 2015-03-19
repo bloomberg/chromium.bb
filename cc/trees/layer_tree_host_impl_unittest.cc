@@ -197,14 +197,13 @@ class LayerTreeHostImplTest : public testing::Test,
 
   static void ExpectContains(const ScrollAndScaleSet& scroll_info,
                              int id,
-                             const gfx::Vector2dF& scroll_delta) {
+                             const gfx::Vector2d& scroll_delta) {
     int times_encountered = 0;
 
     for (size_t i = 0; i < scroll_info.scrolls.size(); ++i) {
       if (scroll_info.scrolls[i].layer_id != id)
         continue;
-      EXPECT_VECTOR2DF_NEAR(scroll_delta, scroll_info.scrolls[i].scroll_delta,
-                            1.0e-10);
+      EXPECT_VECTOR_EQ(scroll_delta, scroll_info.scrolls[i].scroll_delta);
       times_encountered++;
     }
 
@@ -3719,7 +3718,7 @@ TEST_F(LayerTreeHostImplTest, ScrollAxisAlignedRotatedLayer) {
   // The layer should have scrolled down in its local coordinates.
   scoped_ptr<ScrollAndScaleSet> scroll_info = host_impl_->ProcessScrollDeltas();
   ExpectContains(*scroll_info.get(), scroll_layer->id(),
-                 gfx::Vector2dF(0, gesture_scroll_delta.x()));
+                 gfx::Vector2d(0, gesture_scroll_delta.x()));
 
   // Reset and scroll down with the wheel.
   scroll_layer->SetScrollDelta(gfx::Vector2dF());
@@ -3778,7 +3777,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
 
     // The child layer should have scrolled down in its local coordinates an
     // amount proportional to the angle between it and the input scroll delta.
-    gfx::Vector2dF expected_scroll_delta(
+    gfx::Vector2d expected_scroll_delta(
         0, gesture_scroll_delta.y() *
                std::cos(MathUtil::Deg2Rad(child_layer_angle)));
     scoped_ptr<ScrollAndScaleSet> scroll_info =
@@ -3800,7 +3799,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
 
     // The child layer should have scrolled down in its local coordinates an
     // amount proportional to the angle between it and the input scroll delta.
-    gfx::Vector2dF expected_scroll_delta(
+    gfx::Vector2d expected_scroll_delta(
         0, -gesture_scroll_delta.x() *
                std::sin(MathUtil::Deg2Rad(child_layer_angle)));
     scoped_ptr<ScrollAndScaleSet> scroll_info =
@@ -3809,7 +3808,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
 
     // The root scroll layer should have scrolled more, since the input scroll
     // delta was mostly orthogonal to the child layer's vertical scroll axis.
-    gfx::Vector2dF expected_root_scroll_delta(
+    gfx::Vector2d expected_root_scroll_delta(
         gesture_scroll_delta.x() *
             std::pow(std::cos(MathUtil::Deg2Rad(child_layer_angle)), 2),
         0);

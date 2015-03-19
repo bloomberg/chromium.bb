@@ -429,14 +429,19 @@ class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
-        EXPECT_VECTOR_EQ(scroll_layer->BaseScrollOffset(), scroll_amount_);
-        EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), gfx::Vector2dF());
+        EXPECT_VECTOR_EQ(scroll_layer->BaseScrollOffset(),
+                         gfx::ToFlooredVector2d(scroll_amount_));
+        EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(),
+                         gfx::Vector2dF(fmod(scroll_amount_.x(), 1.0f), 0.0f));
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
-        EXPECT_VECTOR_EQ(scroll_layer->BaseScrollOffset(),
-                         (scroll_amount_ + scroll_amount_));
-        EXPECT_VECTOR_EQ(scroll_layer->ScrollDelta(), gfx::Vector2dF());
+        EXPECT_VECTOR_EQ(
+            scroll_layer->BaseScrollOffset(),
+            gfx::ToFlooredVector2d(scroll_amount_ + scroll_amount_));
+        EXPECT_VECTOR_EQ(
+            scroll_layer->ScrollDelta(),
+            gfx::Vector2dF(fmod(2.0f * scroll_amount_.x(), 1.0f), 0.0f));
         EndTest();
         break;
     }

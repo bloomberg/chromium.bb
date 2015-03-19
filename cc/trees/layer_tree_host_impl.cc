@@ -3010,7 +3010,7 @@ static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
   if (!scroll_delta.IsZero()) {
     LayerTreeHostCommon::ScrollUpdateInfo scroll;
     scroll.layer_id = layer_impl->id();
-    scroll.scroll_delta = gfx::Vector2dF(scroll_delta.x(), scroll_delta.y());
+    scroll.scroll_delta = gfx::Vector2d(scroll_delta.x(), scroll_delta.y());
     scroll_info->scrolls.push_back(scroll);
   }
 
