@@ -859,6 +859,36 @@ void PasswordAutofillAgent::OnDynamicFormsSeen() {
   SendPasswordForms(false /* only_visible */);
 }
 
+void PasswordAutofillAgent::XHRSucceeded() {
+  if (!ProvisionallySavedPasswordIsValid())
+    return;
+
+  // Prompt to save only if the form is now gone, either invisible or
+  // removed from the DOM.
+  blink::WebFrame* frame = render_frame()->GetWebFrame();
+  blink::WebVector<blink::WebFormElement> forms;
+  frame->document().forms(forms);
+
+  for (size_t i = 0; i < forms.size(); ++i) {
+    const blink::WebFormElement& form = forms[i];
+    if (!IsWebNodeVisible(form)) {
+      continue;
+    }
+
+    scoped_ptr<PasswordForm> password_form(
+        CreatePasswordForm(form, &nonscript_modified_values_));
+    if (password_form.get()) {
+      if (provisionally_saved_form_->action == password_form->action) {
+        // Form still exists, no save required.
+        return;
+      }
+    }
+  }
+  Send(new AutofillHostMsg_InPageNavigation(routing_id(),
+                                            *provisionally_saved_form_));
+  provisionally_saved_form_.reset();
+}
+
 void PasswordAutofillAgent::FirstUserGestureObserved() {
   gatekeeper_.OnUserGesture();
 }
@@ -1363,6 +1393,13 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
     return;
   }
   provisionally_saved_form_ = password_form.Pass();
+}
+
+bool PasswordAutofillAgent::ProvisionallySavedPasswordIsValid() {
+   return provisionally_saved_form_ &&
+       !provisionally_saved_form_->username_value.empty() &&
+       !(provisionally_saved_form_->password_value.empty() &&
+         provisionally_saved_form_->new_password_value.empty());
 }
 
 // LegacyPasswordAutofillAgent -------------------------------------------------

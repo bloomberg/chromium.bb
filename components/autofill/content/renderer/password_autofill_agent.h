@@ -64,6 +64,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // Called when new form controls are inserted.
   void OnDynamicFormsSeen();
 
+  // Called when an XHR has succesfully completed. Used to determine if
+  // a form has been submitted by XHR without navigation.
+  void XHRSucceeded();
+
   // Called when the user first interacts with the page after a load. This is a
   // signal to make autofilled values of password input elements accessible to
   // JavaScript.
@@ -225,6 +229,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver {
   // |provisionally_saved_form_|, as long as it satisfies |restriction|.
   void ProvisionallySavePassword(const blink::WebFormElement& form,
                                  ProvisionallySaveRestriction restriction);
+
+  // Returns true if |provisionally_saved_form_| has enough information that
+  // it is likely filled out.
+  bool ProvisionallySavedPasswordIsValid();
 
   // Passes through |RenderViewObserver| method to |this|.
   LegacyPasswordAutofillAgent legacy_;

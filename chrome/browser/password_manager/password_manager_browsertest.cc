@@ -742,6 +742,120 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(prompt_observer->IsShowingPrompt());
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       PromptForXHRSubmitWithoutNavigation) {
+  NavigateToFile("/password/password_xhr_submit.html");
+
+  // Need to pay attention for a message that XHR has finished since there
+  // is no navigation to wait for.
+  content::DOMMessageQueue message_queue;
+
+  // Verify that if XHR without navigation occurs and the form has been filled
+  // out we try and save the password. Note that in general the submission
+  // doesn't need to be via form.submit(), but for testing purposes it's
+  // necessary since we otherwise ignore changes made to the value of these
+  // fields by script.
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "navigate = false;"
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "document.getElementById('submit_button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  std::string message;
+  while (message_queue.WaitForMessage(&message)) {
+    if (message == "\"XHR_FINISHED\"")
+      break;
+  }
+
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       PromptForXHRSubmitWithoutNavigation_SignupForm) {
+  NavigateToFile("/password/password_xhr_submit.html");
+
+  // Need to pay attention for a message that XHR has finished since there
+  // is no navigation to wait for.
+  content::DOMMessageQueue message_queue;
+
+  // Verify that if XHR without navigation occurs and the form has been filled
+  // out we try and save the password. Note that in general the submission
+  // doesn't need to be via form.submit(), but for testing purposes it's
+  // necessary since we otherwise ignore changes made to the value of these
+  // fields by script.
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "navigate = false;"
+      "document.getElementById('signup_username_field').value = 'temp';"
+      "document.getElementById('signup_password_field').value = 'random';"
+      "document.getElementById('confirmation_password_field').value = 'random';"
+      "document.getElementById('signup_submit_button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  std::string message;
+  while (message_queue.WaitForMessage(&message)) {
+    if (message == "\"XHR_FINISHED\"")
+      break;
+  }
+
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       NoPromptForXHRSubmitWithoutNavigationWithUnfilledForm) {
+  NavigateToFile("/password/password_xhr_submit.html");
+
+  // Need to pay attention for a message that XHR has finished since there
+  // is no navigation to wait for.
+  content::DOMMessageQueue message_queue;
+
+  // Verify that if XHR without navigation occurs and the form has NOT been
+  // filled out we don't prompt.
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "navigate = false;"
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('submit_button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  std::string message;
+  while (message_queue.WaitForMessage(&message)) {
+    if (message == "\"XHR_FINISHED\"")
+      break;
+  }
+
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTest,
+    NoPromptForXHRSubmitWithoutNavigationWithUnfilledForm_SignupForm) {
+  NavigateToFile("/password/password_xhr_submit.html");
+
+  // Need to pay attention for a message that XHR has finished since there
+  // is no navigation to wait for.
+  content::DOMMessageQueue message_queue;
+
+  // Verify that if XHR without navigation occurs and the form has NOT been
+  // filled out we don't prompt.
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "navigate = false;"
+      "document.getElementById('signup_username_field').value = 'temp';"
+      "document.getElementById('signup_submit_button').click();";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  std::string message;
+  while (message_queue.WaitForMessage(&message)) {
+    if (message == "\"XHR_FINISHED\"")
+      break;
+  }
+
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+}
+
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptIfLinkClicked) {
   NavigateToFile("/password/password_form.html");
 

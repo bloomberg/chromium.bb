@@ -808,6 +808,10 @@ void AutofillAgent::didAssociateFormControls(const WebVector<WebNode>& nodes) {
   }
 }
 
+void AutofillAgent::xhrSucceeded() {
+  password_autofill_agent_->XHRSucceeded();
+}
+
 // LegacyAutofillAgent ---------------------------------------------------------
 
 AutofillAgent::LegacyAutofillAgent::LegacyAutofillAgent(
