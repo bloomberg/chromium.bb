@@ -181,7 +181,13 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
   media::AudioParameters params_;
 };
 
-TEST_F(MediaStreamAudioProcessorTest, WithAudioProcessing) {
+// Test crashing with ASAN on Android. crbug.com/468762
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#define MAYBE_WithAudioProcessing DISABLED_WithAudioProcessing
+#else
+#define MAYBE_WithAudioProcessing WithAudioProcessing
+#endif
+TEST_F(MediaStreamAudioProcessorTest, MAYBE_WithAudioProcessing) {
   MockMediaConstraintFactory constraint_factory;
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
@@ -364,7 +370,13 @@ TEST_F(MediaStreamAudioProcessorTest, ValidateConstraints) {
   EXPECT_FALSE(audio_constraints.IsValid());
 }
 
-TEST_F(MediaStreamAudioProcessorTest, TestAllSampleRates) {
+// Test crashing with ASAN on Android. crbug.com/468762
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#define MAYBE_TestAllSampleRates DISABLED_TestAllSampleRates
+#else
+#define MAYBE_TestAllSampleRates TestAllSampleRates
+#endif
+TEST_F(MediaStreamAudioProcessorTest, MAYBE_TestAllSampleRates) {
   MockMediaConstraintFactory constraint_factory;
   scoped_refptr<WebRtcAudioDeviceImpl> webrtc_audio_device(
       new WebRtcAudioDeviceImpl());
