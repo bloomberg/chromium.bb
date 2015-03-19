@@ -1068,8 +1068,10 @@ bool DisplayManager::UpdateDisplayBounds(int64 display_id,
 }
 
 void DisplayManager::CreateMirrorWindowAsyncIfAny() {
-  // Do not post a task if the software mirroring doesn't exist.
-  if (!HasSoftwareMirroringDisplay())
+  // Do not post a task if the software mirroring doesn't exist, or
+  // during initialization when compositor's init task isn't posted yet.
+  // ash::Shell::Init() will call this after the compositor is initialized.
+  if (!HasSoftwareMirroringDisplay() || !delegate_)
     return;
   base::MessageLoopForUI::current()->PostTask(
       FROM_HERE,
