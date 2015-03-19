@@ -144,6 +144,37 @@ private:
     RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
 };
 
+template<typename S>
+class CallbackPromiseAdapter<S, void> final : public blink::WebCallbacks<typename S::WebType, void> {
+    WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
+public:
+    explicit CallbackPromiseAdapter(PassRefPtrWillBeRawPtr<ScriptPromiseResolver> resolver)
+        : m_resolver(resolver)
+    {
+        ASSERT(m_resolver);
+    }
+    virtual ~CallbackPromiseAdapter() { }
+
+    virtual void onSuccess(typename S::WebType* result) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
+            S::dispose(result);
+            return;
+        }
+        m_resolver->resolve(S::take(m_resolver.get(), result));
+    }
+
+    virtual void onError() override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_resolver->reject();
+    }
+
+private:
+    RefPtrWillBePersistent<ScriptPromiseResolver> m_resolver;
+};
+
 template<typename T>
 class CallbackPromiseAdapter<bool, T> final : public blink::WebCallbacks<bool, typename T::WebType> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);

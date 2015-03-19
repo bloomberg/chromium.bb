@@ -6,16 +6,25 @@
 #define WebNotificationManager_h
 
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
+#include "public/platform/modules/notifications/WebNotificationData.h"
 #include "public/platform/modules/notifications/WebNotificationPermission.h"
 
 namespace blink {
 
-struct WebNotificationData;
 class WebNotificationDelegate;
 class WebSerializedOrigin;
 class WebServiceWorkerRegistration;
-class WebString;
 
+// Structure representing the info associated with a persistent notification.
+struct WebPersistentNotificationInfo {
+    WebString persistentNotificationId;
+    WebNotificationData data;
+};
+
+using WebNotificationGetCallbacks = WebCallbacks<WebVector<WebPersistentNotificationInfo>, void>;
 using WebNotificationShowCallbacks = WebCallbacks<void, void>;
 
 // Provides the services to show platform notifications to the user.
@@ -31,6 +40,14 @@ public:
     // their events delivered to a Service Worker rather than the object's delegate. Will
     // take ownership of the WebNotificationShowCallbacks object.
     virtual void showPersistent(const WebSerializedOrigin&, const WebNotificationData&, WebServiceWorkerRegistration*, WebNotificationShowCallbacks*) = 0;
+
+    // Asynchronously gets the persistent notifications belonging to the Service Worker Registration.
+    // If |filterTag| is not an empty string, only the notification with the given tag will be
+    // considered. Will take ownership of the WebNotificationGetCallbacks object.
+    virtual void getNotifications(const WebString& filterTag, WebServiceWorkerRegistration*, WebNotificationGetCallbacks*)
+    {
+        BLINK_ASSERT_NOT_REACHED();
+    }
 
     // Closes a notification previously shown, and removes it if being shown.
     virtual void close(WebNotificationDelegate*) = 0;
