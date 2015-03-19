@@ -11,7 +11,7 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DisplayItemListScope.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "wtf/RefPtr.h"
 
@@ -73,27 +73,16 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
     if (!buffer)
         return;
 
-    OwnPtr<GraphicsContext> extraGraphicsContext;
-    OwnPtr<DisplayItemList> displayItemList;
-    GraphicsContext* context;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        displayItemList = DisplayItemList::create();
-        extraGraphicsContext = adoptPtr(new GraphicsContext(0, displayItemList.get()));
-        context = extraGraphicsContext.get();
-    } else {
-        context = buffer->context();
-    }
-
     {
-        DrawingRecorder recorder(context, buffer->displayItemClient(), DisplayItem::VideoBitmap, videoRect);
+        DisplayItemListScope displayItemListScope(buffer->context());
+        GraphicsContext* paintContext = displayItemListScope.context();
+
+        DrawingRecorder recorder(paintContext, buffer->displayItemClient(), DisplayItem::VideoBitmap, videoRect);
         if (!recorder.canUseCachedDrawing()) {
-            context->clip(dstRect);
-            context->translate(-srcRect.x(), -srcRect.y());
+            paintContext->clip(dstRect);
+            paintContext->translate(-srcRect.x(), -srcRect.y());
         }
     }
-
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        displayItemList->replay(buffer->context());
 
     video->paintCurrentFrameInContext(buffer->context(), videoRect);
     m_bitmap = buffer->copyImage(DontCopyBackingStore);

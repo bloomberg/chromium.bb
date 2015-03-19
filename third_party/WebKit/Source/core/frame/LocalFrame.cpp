@@ -70,7 +70,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DisplayItemListScope.h"
 #include "platform/text/TextStream.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
@@ -610,30 +610,20 @@ PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
     if (!buffer)
         return nullptr;
 
-    OwnPtr<GraphicsContext> extraGraphicsContext;
-    OwnPtr<DisplayItemList> displayItemList;
-    GraphicsContext* context;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        displayItemList = DisplayItemList::create();
-        extraGraphicsContext = adoptPtr(new GraphicsContext(0, displayItemList.get()));
-        context = extraGraphicsContext.get();
-    } else {
-        context = buffer->context();
-    }
-
     {
+        DisplayItemListScope displayItemListScope(buffer->context());
+        GraphicsContext* paintContext = displayItemListScope.context();
+
         AffineTransform transform;
         transform.scale(deviceScaleFactor, deviceScaleFactor);
         transform.translate(-paintingRect.x(), -paintingRect.y());
-        TransformRecorder transformRecorder(*context, displayItemClient, transform);
+        TransformRecorder transformRecorder(*paintContext, displayItemClient, transform);
 
-        ClipRecorder clipRecorder(displayItemClient, context, clipType, LayoutRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
+        ClipRecorder clipRecorder(displayItemClient, paintContext, clipType,
+            LayoutRect(0, 0, paintingRect.maxX(), paintingRect.maxY()));
 
-        m_view->paintContents(context, paintingRect);
+        m_view->paintContents(paintContext, paintingRect);
     }
-
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        displayItemList->replay(buffer->context());
 
     RefPtr<Image> image = buffer->copyImage();
     return DragImage::create(image.get(), shouldRespectImageOrientation, deviceScaleFactor);

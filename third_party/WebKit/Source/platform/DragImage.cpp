@@ -39,7 +39,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DisplayItemListScope.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/text/BidiTextRun.h"
 #include "platform/text/StringTruncator.h"
@@ -170,28 +170,20 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
     if (!buffer)
         return nullptr;
 
-    OwnPtr<GraphicsContext> extraGraphicsContext;
-    OwnPtr<DisplayItemList> displayItemList;
-    GraphicsContext* context;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        displayItemList = DisplayItemList::create();
-        extraGraphicsContext = adoptPtr(new GraphicsContext(0, displayItemList.get()));
-        context = extraGraphicsContext.get();
-    } else {
-        context = buffer->context();
-    }
-
     {
+        DisplayItemListScope displayItemListScope(buffer->context());
+        GraphicsContext* paintContext = displayItemListScope.context();
+
         IntRect rect(IntPoint(), imageSize);
-        DrawingRecorder drawingRecorder(context, buffer->displayItemClient(), DisplayItem::DragImage, rect);
+        DrawingRecorder drawingRecorder(paintContext, buffer->displayItemClient(), DisplayItem::DragImage, rect);
         if (!drawingRecorder.canUseCachedDrawing()) {
-            context->scale(deviceScaleFactor, deviceScaleFactor);
+            paintContext->scale(deviceScaleFactor, deviceScaleFactor);
 
             const float DragLabelRadius = 5;
             const IntSize radii(DragLabelRadius, DragLabelRadius);
 
             const Color backgroundColor(140, 140, 140);
-            context->fillRoundedRect(rect, radii, radii, radii, radii, backgroundColor);
+            paintContext->fillRoundedRect(rect, radii, radii, radii, radii, backgroundColor);
 
             // Draw the text
             if (drawURLString) {
@@ -199,7 +191,7 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
                     urlString = StringTruncator::centerTruncate(urlString, imageSize.width() - (kDragLabelBorderX * 2.0f), urlFont);
                 IntPoint textPos(kDragLabelBorderX, imageSize.height() - (kLabelBorderYOffset + urlFont.fontMetrics().descent()));
                 TextRun textRun(urlString);
-                context->drawText(urlFont, TextRunPaintInfo(textRun), textPos);
+                paintContext->drawText(urlFont, TextRunPaintInfo(textRun), textPos);
             }
 
             if (clipLabelString)
@@ -213,12 +205,9 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
                 int availableWidth = imageSize.width() - kDragLabelBorderX * 2;
                 textPos.setX(availableWidth - ceilf(textWidth));
             }
-            context->drawBidiText(labelFont, TextRunPaintInfo(textRun), FloatPoint(textPos));
+            paintContext->drawBidiText(labelFont, TextRunPaintInfo(textRun), FloatPoint(textPos));
         }
     }
-
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        displayItemList->replay(buffer->context());
 
     RefPtr<Image> image = buffer->copyImage();
     return DragImage::create(image.get(), DoNotRespectImageOrientation, deviceScaleFactor);

@@ -51,7 +51,7 @@
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/PictureSnapshot.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DisplayItemListScope.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "public/platform/WebFloatPoint.h"
@@ -331,22 +331,13 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString, const Strin
     IntSize size = expandedIntSize(layer->size());
 
     SkPictureRecorder pictureRecorder;
+    GraphicsContext recordingContext(pictureRecorder.beginRecording(size.width(), size.height()), nullptr);
 
-    OwnPtr<GraphicsContext> graphicsContext;
-    OwnPtr<DisplayItemList> displayItemList;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        displayItemList = DisplayItemList::create();
-        graphicsContext = adoptPtr(new GraphicsContext(nullptr, displayItemList.get()));
-    } else {
-        graphicsContext = adoptPtr(new GraphicsContext(pictureRecorder.beginRecording(size.width(), size.height(), 0, 0), nullptr));
+    {
+        DisplayItemListScope displayItemListScope(&recordingContext);
+        layer->paint(*displayItemListScope.context(), IntRect(IntPoint(0, 0), size));
     }
 
-    layer->paint(*graphicsContext, IntRect(IntPoint(0, 0), size));
-
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        GraphicsContext canvasContext(pictureRecorder.beginRecording(size.width(), size.height(), 0, 0), nullptr);
-        displayItemList->replay(&canvasContext);
-    }
     RefPtr<PictureSnapshot> snapshot = adoptRef(new PictureSnapshot(pictureRecorder.endRecording()));
 
     *snapshotId = String::number(++s_lastSnapshotId);

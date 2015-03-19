@@ -39,7 +39,7 @@
 #include "core/layout/style/ShadowData.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DisplayItemListScope.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorAnimationCurve.h"
@@ -248,32 +248,19 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect,
     if (!m_node || !m_node->layoutObject())
         return;
 
-    GraphicsContext::DisabledMode disabledMode = GraphicsContext::NothingDisabled;
-    if (paintingControl == WebContentLayerClient::DisplayListConstructionDisabled)
-        disabledMode = GraphicsContext::FullyDisabled;
+    GraphicsContext context(canvas, nullptr, paintingControl == WebContentLayerClient::DisplayListConstructionDisabled ?
+        GraphicsContext::FullyDisabled : GraphicsContext::NothingDisabled);
 
-    OwnPtr<GraphicsContext> graphicsContext;
-    OwnPtr<DisplayItemList> displayItemList;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        displayItemList = DisplayItemList::create();
-        graphicsContext = adoptPtr(new GraphicsContext(nullptr, displayItemList.get(), disabledMode));
-    } else {
-        graphicsContext = adoptPtr(new GraphicsContext(canvas, nullptr, disabledMode));
-    }
+    DisplayItemListScope displayItemListScope(&context);
 
     IntRect clipRect(IntPoint(webClipRect.x, webClipRect.y), IntSize(webClipRect.width, webClipRect.height));
     {
-        DrawingRecorder drawingRecorder(graphicsContext.get(), displayItemClient(), DisplayItem::LinkHighlight, clipRect);
+        DrawingRecorder drawingRecorder(displayItemListScope.context(), displayItemClient(), DisplayItem::LinkHighlight, clipRect);
         if (!drawingRecorder.canUseCachedDrawing()) {
-            graphicsContext->clip(clipRect);
-            graphicsContext->setFillColor(m_node->layoutObject()->style()->tapHighlightColor());
-            graphicsContext->fillPath(m_path);
+            displayItemListScope.context()->clip(clipRect);
+            displayItemListScope.context()->setFillColor(m_node->layoutObject()->style()->tapHighlightColor());
+            displayItemListScope.context()->fillPath(m_path);
         }
-    }
-
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        GraphicsContext canvasGraphicsContext(canvas, nullptr, disabledMode);
-        displayItemList->replay(&canvasGraphicsContext);
     }
 }
 

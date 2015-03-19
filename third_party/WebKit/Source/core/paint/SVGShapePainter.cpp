@@ -19,7 +19,7 @@
 #include "core/paint/SVGContainerPainter.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DisplayItemListScope.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
@@ -189,27 +189,18 @@ void SVGShapePainter::paintMarker(const PaintInfo& paintInfo, LayoutSVGResourceM
     if (markerElement->hasAttribute(SVGNames::viewBoxAttr) && markerElement->viewBox()->currentValue()->isValid() && markerElement->viewBox()->currentValue()->value().isEmpty())
         return;
 
-    OwnPtr<DisplayItemList> displayItemList;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        displayItemList = DisplayItemList::create();
-    GraphicsContext recordingContext(nullptr, displayItemList.get());
-    recordingContext.beginRecording(m_renderSVGShape.paintInvalidationRectInLocalCoordinates());
-
-    PaintInfo markerPaintInfo(paintInfo);
-    markerPaintInfo.context = &recordingContext;
     {
+        DisplayItemListScope displayItemListScope(paintInfo.context);
+        PaintInfo markerPaintInfo(paintInfo);
+        markerPaintInfo.context = displayItemListScope.context();
+
         TransformRecorder transformRecorder(*markerPaintInfo.context, marker.displayItemClient(), marker.markerTransformation(position.origin, position.angle, strokeWidth));
         OwnPtr<FloatClipRecorder> clipRecorder;
         if (SVGLayoutSupport::isOverflowHidden(&marker))
-            clipRecorder = adoptPtr(new FloatClipRecorder(recordingContext, marker.displayItemClient(), markerPaintInfo.phase, marker.viewport()));
+            clipRecorder = adoptPtr(new FloatClipRecorder(*markerPaintInfo.context, marker.displayItemClient(), markerPaintInfo.phase, marker.viewport()));
 
         SVGContainerPainter(marker).paint(markerPaintInfo);
     }
-
-    if (displayItemList)
-        displayItemList->replay(&recordingContext);
-    RefPtr<const SkPicture> recording = recordingContext.endRecording();
-    paintInfo.context->drawPicture(recording.get());
 }
 
 void SVGShapePainter::strokeZeroLengthLineCaps(GraphicsContext* context)

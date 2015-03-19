@@ -56,7 +56,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DisplayItemList.h"
+#include "platform/graphics/paint/DisplayItemListScope.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/PassRefPtr.h"
 
@@ -244,7 +244,6 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     // for example must be applied atomically during the final fill/composite phase).
     GraphicsContext recordingContext(nullptr, displayItemList.get());
     recordingContext.beginRecording(spacedTile);
-
     {
         // When generating an expanded tile, make sure we don't draw into the spacing area.
         OwnPtr<FloatClipRecorder> clipRecorder;
@@ -278,19 +277,20 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
 
     float opacity = context->getNormalizedAlpha() / 255.f;
 
-    OwnPtr<DisplayItemList> displayItemList;
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
-        displayItemList = DisplayItemList::create();
-    GraphicsContext recordingContext(nullptr, displayItemList.get());
+    // TODO(fmalita): this recorder is only needed because CompositingRecorder below appears to be
+    // dropping the current color filter on the floor. Find a proper fix and get rid of it.
+    GraphicsContext recordingContext(nullptr, nullptr);
     recordingContext.beginRecording(dstRect);
-
     {
-        ClipRecorder clipRecorder(displayItemClient(), &recordingContext, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
+        DisplayItemListScope displayItemListScope(&recordingContext);
+        GraphicsContext* paintContext = displayItemListScope.context();
+
+        ClipRecorder clipRecorder(displayItemClient(), paintContext, DisplayItem::ClipNodeImage, LayoutRect(enclosingIntRect(dstRect)));
 
         bool hasCompositing = compositeOp != SkXfermode::kSrcOver_Mode;
         OwnPtr<CompositingRecorder> compositingRecorder;
         if (hasCompositing || opacity < 1)
-            compositingRecorder = adoptPtr(new CompositingRecorder(&recordingContext, displayItemClient(), compositeOp, opacity));
+            compositingRecorder = adoptPtr(new CompositingRecorder(paintContext, displayItemClient(), compositeOp, opacity));
 
         // We can only draw the entire frame, clipped to the rect we want. So compute where the top left
         // of the image would be if we were drawing without clipping, and translate accordingly.
@@ -299,7 +299,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         FloatPoint destOffset = dstRect.location() - topLeftOffset;
         AffineTransform transform = AffineTransform::translation(destOffset.x(), destOffset.y());
         transform.scale(scale.width(), scale.height());
-        TransformRecorder transformRecorder(recordingContext, displayItemClient(), transform);
+        TransformRecorder transformRecorder(*paintContext, displayItemClient(), transform);
 
         FrameView* view = frameView();
         view->resize(containerSize());
@@ -309,12 +309,9 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         view->scrollToFragment(m_url);
 
         view->updateLayoutAndStyleForPainting();
-        view->paint(&recordingContext, enclosingIntRect(srcRect));
+        view->paint(paintContext, enclosingIntRect(srcRect));
         ASSERT(!view->needsLayout());
     }
-
-    if (displayItemList)
-        displayItemList->replay(&recordingContext);
     RefPtr<const SkPicture> recording = recordingContext.endRecording();
     context->drawPicture(recording.get());
 

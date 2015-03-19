@@ -1608,8 +1608,9 @@ crbug.com/438888 virtual/slimmingpaint/fast/block/positioning/055.html [ NeedsMa
 
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 
-# Bug(fmalita): re-enable after crbug.com/449873
-# crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/borders/border-image-rotate-transform.html [ ImageOnlyFailure ]
+crbug.com/451606 svg/custom/marker-orient-auto.html [ NeedsRebaseline ]
+
+crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/borders/border-image-rotate-transform.html [ ImageOnlyFailure ]
 crbug.com/447085 [ XP ] virtual/slimmingpaint/fast/borders/table-borders.html [ ImageOnlyFailure ]
 
 crbug.com/435864 http/tests/security/shape-image-cors-port.html [ Pass Crash ]

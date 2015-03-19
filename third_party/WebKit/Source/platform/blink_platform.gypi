@@ -647,6 +647,7 @@
       'graphics/paint/DisplayItemClient.h',
       'graphics/paint/DisplayItemList.cpp',
       'graphics/paint/DisplayItemList.h',
+      'graphics/paint/DisplayItemListScope.h',
       'graphics/paint/DisplayItemTransformTree.cpp',
       'graphics/paint/DisplayItemTransformTree.h',
       'graphics/paint/DisplayItemTransformTreeBuilder.cpp',
