@@ -552,6 +552,10 @@ end_element(void *data, const XML_Char *name)
 		   strcmp(name, "event") == 0) {
 		ctx->message = NULL;
 	} else if (strcmp(name, "enum") == 0) {
+		if (wl_list_empty(&ctx->enumeration->entry_list)) {
+			fail(&ctx->loc, "enumeration %s was empty",
+			     ctx->enumeration->name);
+		}
 		ctx->enumeration = NULL;
 	}
 }
