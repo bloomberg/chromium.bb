@@ -300,7 +300,8 @@ class AdbWrapper(object):
           device_serial=self._device_serial)
 
   def Logcat(self, clear=False, dump=False, filter_specs=None,
-             logcat_format=None, timeout=None, retries=_DEFAULT_RETRIES):
+             logcat_format=None, ring_buffer=None, timeout=None,
+             retries=_DEFAULT_RETRIES):
     """Get an iterable over the logcat output.
 
     Args:
@@ -310,6 +311,9 @@ class AdbWrapper(object):
       logcat_format: If set, the format in which the logcat should be output.
         Options include "brief", "process", "tag", "thread", "raw", "time",
         "threadtime", and "long"
+      ring_buffer: If set, a list of alternate ring buffers to request.
+        Options include "main", "system", "radio", "events", "crash" or "all".
+        The default is equivalent to ["main", "system", "crash"].
       timeout: (optional) If set, timeout per try in seconds. If clear or dump
         is set, defaults to _DEFAULT_TIMEOUT.
       retries: (optional) If clear or dump is set, the number of retries to
@@ -328,6 +332,9 @@ class AdbWrapper(object):
       use_iter = False
     if logcat_format:
       cmd.extend(['-v', logcat_format])
+    if ring_buffer:
+      for buffer_name in ring_buffer:
+        cmd.extend(['-b', buffer_name])
     if filter_specs:
       cmd.extend(filter_specs)
 
