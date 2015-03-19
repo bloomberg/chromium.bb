@@ -156,6 +156,9 @@ class OmniboxResultView : public views::View,
                        bool is_ui_rtl,
                        bool is_match_contents_rtl) const;
 
+  int GetAnswerLineHeight() const;
+  int GetContentLineHeight() const;
+
   static int default_icon_size_;
 
   // Default values cached here, may be overridden using the setters above.

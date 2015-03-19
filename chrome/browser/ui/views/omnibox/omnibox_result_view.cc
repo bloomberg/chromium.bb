@@ -27,6 +27,7 @@
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -34,7 +35,6 @@
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_utils.h"
-#include "ui/native_theme/native_theme.h"
 
 using ui::NativeTheme;
 
@@ -248,9 +248,10 @@ void OmniboxResultView::Invalidate() {
 }
 
 gfx::Size OmniboxResultView::GetPreferredSize() const {
-  return gfx::Size(0, std::max(
-      default_icon_size_ + (kMinimumIconVerticalPadding * 2),
-      GetTextHeight() + (kMinimumTextVerticalPadding * 2)));
+  if (!match_.answer)
+    return gfx::Size(0, GetContentLineHeight());
+  // An answer implies a match and a description in a large font.
+  return gfx::Size(0, GetContentLineHeight() + GetAnswerLineHeight());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -291,21 +292,23 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
       &contents_max_width,
       &description_max_width);
 
-  x = DrawRenderText(match, contents, true, canvas, x, y, contents_max_width);
+  int after_contents_x =
+      DrawRenderText(match, contents, true, canvas, x, y, contents_max_width);
 
   if (description_max_width != 0) {
-    x = DrawRenderText(match, separator_rendertext_.get(), false, canvas, x, y,
-                       separator_width_);
-
-    if (!answer_image_.isNull()) {
-      canvas->DrawImageInt(answer_image_,
-                           // Source x, y, w, h.
-                           0, 0, answer_image_.width(), answer_image_.height(),
-                           // Destination x, y, w, h.
-                           GetMirroredXInView(x),
-                           y + kMinimumIconVerticalPadding, default_icon_size_,
-                           default_icon_size_, true);
-      x += default_icon_size_ + LocationBarView::kIconInternalPadding;
+    if (match.answer) {
+      y += GetContentLineHeight();
+      if (!answer_image_.isNull()) {
+        int answer_icon_size = GetAnswerLineHeight();
+        canvas->DrawImageInt(
+            answer_image_,
+            0, 0, answer_image_.width(), answer_image_.height(),
+            GetMirroredXInView(x), y, answer_icon_size, answer_icon_size, true);
+        x += answer_icon_size + LocationBarView::kIconInternalPadding;
+      }
+    } else {
+      x = DrawRenderText(match, separator_rendertext_.get(), false, canvas,
+                         after_contents_x, y, separator_width_);
     }
 
     DrawRenderText(match, description, false, canvas, x, y,
@@ -376,17 +379,17 @@ int OmniboxResultView::DrawRenderText(
         gfx::DIRECTIONALITY_FORCE_RTL : gfx::DIRECTIONALITY_FORCE_LTR);
     prefix_render_text->SetHorizontalAlignment(
           is_match_contents_rtl ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT);
-    prefix_render_text->SetDisplayRect(gfx::Rect(
-          mirroring_context_->mirrored_left_coord(
-              prefix_x, prefix_x + prefix_width), y,
-          prefix_width, height()));
+    prefix_render_text->SetDisplayRect(
+        gfx::Rect(mirroring_context_->mirrored_left_coord(
+                      prefix_x, prefix_x + prefix_width),
+                  y, prefix_width, GetContentLineHeight()));
     prefix_render_text->Draw(canvas);
   }
 
   // Set the display rect to trigger eliding.
-  render_text->SetDisplayRect(gfx::Rect(
-      mirroring_context_->mirrored_left_coord(x, right_x), y,
-      right_x - x, height()));
+  render_text->SetDisplayRect(
+      gfx::Rect(mirroring_context_->mirrored_left_coord(x, right_x), y,
+                right_x - x, GetContentLineHeight()));
   render_text->Draw(canvas);
   return right_x;
 }
@@ -552,10 +555,12 @@ void OmniboxResultView::InitContentsRenderTextIfNecessary() const {
 void OmniboxResultView::Layout() {
   const gfx::ImageSkia icon = GetIcon();
 
-  icon_bounds_.SetRect(edge_item_padding_ +
-      ((icon.width() == default_icon_size_) ?
-          0 : LocationBarView::kIconInternalPadding),
-      (height() - icon.height()) / 2, icon.width(), icon.height());
+  icon_bounds_.SetRect(
+      edge_item_padding_ + ((icon.width() == default_icon_size_)
+                                ? 0
+                                : LocationBarView::kIconInternalPadding),
+      (GetContentLineHeight() - icon.height()) / 2, icon.width(),
+      icon.height());
 
   int text_x = edge_item_padding_ + default_icon_size_ + item_padding_;
   int text_width = width() - text_x - edge_item_padding_;
@@ -603,6 +608,9 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
         for (const auto& textfield : match_.answer->second_line().text_fields())
           text += textfield.text();
         description_rendertext_ = CreateRenderText(text);
+        description_rendertext_->SetFontList(
+            ui::ResourceBundle::GetSharedInstance().GetFontList(
+                ui::ResourceBundle::LargeFont));
       } else if (!match_.description.empty()) {
         description_rendertext_ = CreateClassifiedRenderText(
             match_.description, match_.description_class, true);
@@ -637,4 +645,17 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
 void OmniboxResultView::AnimationProgressed(const gfx::Animation* animation) {
   Layout();
   SchedulePaint();
+}
+
+int OmniboxResultView::GetAnswerLineHeight() const {
+  // LargeFont is the largest font used and so defines the boundary that
+  // all the other answer styles fit within.
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetFontList(ui::ResourceBundle::LargeFont)
+      .GetHeight();
+}
+
+int OmniboxResultView::GetContentLineHeight() const {
+  return std::max(default_icon_size_ + (kMinimumIconVerticalPadding * 2),
+                  GetTextHeight() + (kMinimumTextVerticalPadding * 2));
 }
