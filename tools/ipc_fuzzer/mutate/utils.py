@@ -16,6 +16,7 @@ import tempfile
 APP_PATH_KEY = 'APP_PATH'
 FLAGS_PREFIX = 'flags-'
 FUZZ_PREFIX = 'fuzz-'
+IPC_FUZZER_APPLICATION = 'ipc_fuzzer'
 IPC_REPLAY_APPLICATION = 'ipc_fuzzer_replay'
 IPCDUMP_EXTENSION = '.ipcdump'
 LAUNCH_PREFIXES = [
@@ -47,6 +48,14 @@ def create_temp_file():
   temp_file = tempfile.NamedTemporaryFile(delete=False)
   temp_file.close()
   return temp_file.name
+
+def get_fuzzer_application_name():
+  """Get the application name for the fuzzer binary."""
+  return application_name_for_platform(IPC_FUZZER_APPLICATION)
+
+def get_replay_application_name():
+  """Get the application name for the replay binary."""
+  return application_name_for_platform(IPC_REPLAY_APPLICATION)
 
 def parse_arguments():
   """Parse fuzzer arguments."""

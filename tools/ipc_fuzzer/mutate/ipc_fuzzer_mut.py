@@ -17,9 +17,8 @@ import subprocess
 import sys
 import utils
 
+FUZZER_NAME_OPTION = '--fuzzer-name=mutate'
 IPC_MESSAGE_UTIL_APPLICATION = 'ipc_message_util'
-IPC_MUTATE_APPLICATION = 'ipc_fuzzer_mutate'
-IPC_REPLAY_APPLICATION = 'ipc_fuzzer_replay'
 IPCDUMP_MERGE_LIMIT = 50
 
 class MutationalFuzzer:
@@ -32,14 +31,12 @@ class MutationalFuzzer:
 
     self.ipc_message_util_binary = utils.application_name_for_platform(
         IPC_MESSAGE_UTIL_APPLICATION)
-    self.ipc_mutate_binary = utils.application_name_for_platform(
-        IPC_MUTATE_APPLICATION)
-    self.ipc_replay_binary = utils.application_name_for_platform(
-        IPC_REPLAY_APPLICATION)
+    self.ipc_fuzzer_binary = utils.get_fuzzer_application_name()
+    self.ipc_replay_binary = utils.get_replay_application_name()
     self.ipc_message_util_binary_path = os.path.join(
         chrome_application_directory, self.ipc_message_util_binary)
-    self.ipc_mutate_binary_path = os.path.join(
-        chrome_application_directory, self.ipc_mutate_binary)
+    self.ipc_fuzzer_binary_path = os.path.join(
+        chrome_application_directory, self.ipc_fuzzer_binary)
     self.ipc_replay_binary_path = os.path.join(
         chrome_application_directory, self.ipc_replay_binary)
 
@@ -66,12 +63,13 @@ class MutationalFuzzer:
 
     # Mutate tmp_ipcdump -> mutated_ipcdump.
     cmd = [
-      self.ipc_mutate_binary_path,
+      self.ipc_fuzzer_binary_path,
+      FUZZER_NAME_OPTION,
       tmp_ipcdump_testcase,
       mutated_ipcdump_testcase,
     ]
     if subprocess.call(cmd):
-      sys.exit('%s failed.' % self.ipc_mutate_binary)
+      sys.exit('%s failed.' % self.ipc_fuzzer_binary)
 
     utils.create_flags_file(
         mutated_ipcdump_testcase, self.ipc_replay_binary_path)

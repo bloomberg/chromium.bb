@@ -8,48 +8,26 @@
   },
   'targets': [
     {
-      'target_name': 'ipc_fuzzer_mutate',
+      'target_name': 'ipc_fuzzer',
       'type': 'executable',
       'dependencies': [
         '../message_lib/message_lib.gyp:ipc_message_lib',
       ],
       'sources': [
-        'mutate.cc',
+        'fuzzer.h',
+        'fuzzer.cc',
+        'fuzzer_main.cc',
+        'generator.h',
+        'generator.cc',
+        'mutator.h',
+        'mutator.cc',
         'rand_util.h',
         'rand_util.cc',
       ],
       'conditions': [
         ['asan==1', {
           'cflags!': [
-            # Compiling mutate.cc with ASan takes too long, see
-            # http://crbug.com/360158.
-            '-fsanitize=address',
-            '-fsanitize-coverage=<(sanitizer_coverage)',
-          ],
-        }],
-      ],
-      'include_dirs': [
-        '../../..',
-      ],
-      'defines': [
-        'USE_CUPS',
-      ],
-    },
-    {
-      'target_name': 'ipc_fuzzer_generate',
-      'type': 'executable',
-      'dependencies': [
-        '../message_lib/message_lib.gyp:ipc_message_lib',
-      ],
-      'sources': [
-        'generate.cc',
-        'rand_util.h',
-        'rand_util.cc',
-      ],
-      'conditions': [
-        ['asan==1', {
-          'cflags!': [
-            # Compiling generate.cc with ASan takes too long, see
+            # Compiling fuzzer.cc with ASan takes too long, see
             # http://crbug.com/360158.
             '-fsanitize=address',
             '-fsanitize-coverage=<(sanitizer_coverage)',

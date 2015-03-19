@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/ipc_fuzzer/mutate/rand_util.h"
 #include "base/rand_util.h"
+#include "tools/ipc_fuzzer/mutate/rand_util.h"
 
 namespace ipc_fuzzer {
 

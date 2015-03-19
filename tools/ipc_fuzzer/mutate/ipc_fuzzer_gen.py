@@ -14,8 +14,7 @@ import subprocess
 import sys
 import utils
 
-IPC_GENERATE_APPLICATION = 'ipc_fuzzer_generate'
-IPC_REPLAY_APPLICATION = 'ipc_fuzzer_replay'
+FUZZER_NAME_OPTION = '--fuzzer-name=generate'
 MAX_IPC_MESSAGES_PER_TESTCASE = 1500
 
 
@@ -26,12 +25,10 @@ class GenerationalFuzzer:
   def set_application_paths(self):
     chrome_application_path = utils.get_application_path()
     chrome_application_directory = os.path.dirname(chrome_application_path)
-    self.ipc_generate_binary = utils.application_name_for_platform(
-        IPC_GENERATE_APPLICATION)
-    self.ipc_replay_binary = utils.application_name_for_platform(
-        IPC_REPLAY_APPLICATION)
-    self.ipc_generate_binary_path = os.path.join(
-        chrome_application_directory, self.ipc_generate_binary)
+    self.ipc_fuzzer_binary = utils.get_fuzzer_application_name()
+    self.ipc_replay_binary = utils.get_replay_application_name()
+    self.ipc_fuzzer_binary_path = os.path.join(
+        chrome_application_directory, self.ipc_fuzzer_binary)
     self.ipc_replay_binary_path = os.path.join(
         chrome_application_directory, self.ipc_replay_binary)
 
@@ -41,10 +38,15 @@ class GenerationalFuzzer:
     num_ipc_messages = random.randint(1, MAX_IPC_MESSAGES_PER_TESTCASE)
     count_option = '--count=%d' % num_ipc_messages
 
-    cmd = [self.ipc_generate_binary_path, count_option, ipcdump_testcase_path]
+    cmd = [
+        self.ipc_fuzzer_binary_path,
+        FUZZER_NAME_OPTION,
+        count_option,
+        ipcdump_testcase_path,
+    ]
 
     if subprocess.call(cmd):
-      sys.exit('%s failed.' % self.ipc_generate_binary)
+      sys.exit('%s failed.' % self.ipc_fuzzer_binary)
 
     utils.create_flags_file(ipcdump_testcase_path, self.ipc_replay_binary_path)
 
