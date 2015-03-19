@@ -188,11 +188,19 @@ public final class PrefServiceBridge {
         return nativeGetRememberPasswordsEnabled();
     }
 
+    public boolean isPasswordManagerAutoSigninEnabled() {
+        return nativeGetPasswordManagerAutoSigninEnabled();
+    }
+
     /**
      * @return whether password storage is configured by policy
      */
     public boolean isRememberPasswordsManaged() {
         return nativeGetRememberPasswordsManaged();
+    }
+
+    public boolean isPasswordManagerAutoSigninManaged() {
+        return nativeGetPasswordManagerAutoSigninManaged();
     }
 
     /**
@@ -542,6 +550,10 @@ public final class PrefServiceBridge {
         nativeSetRememberPasswordsEnabled(allow);
     }
 
+    public void setPasswordManagerAutoSigninEnabled(boolean enabled) {
+        nativeSetPasswordManagerAutoSigninEnabled(enabled);
+    }
+
     public void setPushNotificationsEnabled(boolean allow) {
         nativeSetPushNotificationsEnabled(allow);
     }
@@ -773,7 +785,9 @@ public final class PrefServiceBridge {
     private native boolean nativeGetBlockThirdPartyCookiesEnabled();
     private native boolean nativeGetBlockThirdPartyCookiesManaged();
     private native boolean nativeGetRememberPasswordsEnabled();
+    private native boolean nativeGetPasswordManagerAutoSigninEnabled();
     private native boolean nativeGetRememberPasswordsManaged();
+    private native boolean nativeGetPasswordManagerAutoSigninManaged();
     private native boolean nativeGetAllowLocationUserModifiable();
     private native boolean nativeGetAllowLocationManagedByCustodian();
     private native boolean nativeGetDoNotTrackEnabled();
@@ -807,6 +821,7 @@ public final class PrefServiceBridge {
     private native void nativeSetBlockThirdPartyCookiesEnabled(boolean enabled);
     private native void nativeSetDoNotTrackEnabled(boolean enabled);
     private native void nativeSetRememberPasswordsEnabled(boolean allow);
+    private native void nativeSetPasswordManagerAutoSigninEnabled(boolean enabled);
     private native void nativeSetProtectedMediaIdentifierEnabled(boolean enabled);
     private native boolean nativeGetAllowLocationEnabled();
     private native boolean nativeGetPushNotificationsEnabled();

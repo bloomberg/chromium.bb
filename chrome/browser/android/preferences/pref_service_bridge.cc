@@ -173,9 +173,19 @@ static jboolean GetRememberPasswordsEnabled(JNIEnv* env, jobject obj) {
       password_manager::prefs::kPasswordManagerSavingEnabled);
 }
 
+static jboolean GetPasswordManagerAutoSigninEnabled(JNIEnv* env, jobject obj) {
+  return GetPrefService()->GetBoolean(
+      password_manager::prefs::kPasswordManagerAutoSignin);
+}
+
 static jboolean GetRememberPasswordsManaged(JNIEnv* env, jobject obj) {
   return GetPrefService()->IsManagedPreference(
       password_manager::prefs::kPasswordManagerSavingEnabled);
+}
+
+static jboolean GetPasswordManagerAutoSigninManaged(JNIEnv* env, jobject obj) {
+  return GetPrefService()->IsManagedPreference(
+      password_manager::prefs::kPasswordManagerAutoSignin);
 }
 
 static jboolean GetDoNotTrackEnabled(JNIEnv* env, jobject obj) {
@@ -374,6 +384,13 @@ static void SetRememberPasswordsEnabled(JNIEnv* env, jobject obj,
                                         jboolean allow) {
   GetPrefService()->SetBoolean(
       password_manager::prefs::kPasswordManagerSavingEnabled, allow);
+}
+
+static void SetPasswordManagerAutoSigninEnabled(JNIEnv* env,
+                                                jobject obj,
+                                                jboolean enabled) {
+  GetPrefService()->SetBoolean(
+      password_manager::prefs::kPasswordManagerAutoSignin, enabled);
 }
 
 static void SetProtectedMediaIdentifierEnabled(JNIEnv* env,
