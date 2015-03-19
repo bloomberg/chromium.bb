@@ -591,7 +591,7 @@ TEST(PictureLayerTilingTest, SkewportLimits) {
   EXPECT_EQ(350, expand_skewport.height());
   EXPECT_TRUE(expand_skewport.Contains(gfx::Rect(-50, -50, 200, 200)));
 
-  // Expand the viewport past the limit.
+  // Expand the viewport past the limit in all directions.
   gfx::Rect big_expand_skewport =
       tiling->ComputeSkewport(1.5, gfx::Rect(-500, -500, 1500, 1500));
 
@@ -600,6 +600,23 @@ TEST(PictureLayerTilingTest, SkewportLimits) {
   EXPECT_EQ(1650, big_expand_skewport.width());
   EXPECT_EQ(1650, big_expand_skewport.height());
   EXPECT_TRUE(big_expand_skewport.Contains(gfx::Rect(-500, -500, 1500, 1500)));
+
+  // Shrink the skewport in all directions.
+  gfx::Rect shrink_viewport =
+      tiling->ComputeSkewport(1.5, gfx::Rect(0, 0, 100, 100));
+  EXPECT_EQ(0, shrink_viewport.x());
+  EXPECT_EQ(0, shrink_viewport.y());
+  EXPECT_EQ(100, shrink_viewport.width());
+  EXPECT_EQ(100, shrink_viewport.height());
+
+  // Move the skewport really far in one direction.
+  gfx::Rect move_skewport_far =
+      tiling->ComputeSkewport(1.5, gfx::Rect(0, 5000, 100, 100));
+  EXPECT_EQ(0, move_skewport_far.x());
+  EXPECT_EQ(5000, move_skewport_far.y());
+  EXPECT_EQ(100, move_skewport_far.width());
+  EXPECT_EQ(175, move_skewport_far.height());
+  EXPECT_TRUE(move_skewport_far.Contains(gfx::Rect(0, 5000, 100, 100)));
 }
 
 TEST(PictureLayerTilingTest, ComputeSkewport) {
