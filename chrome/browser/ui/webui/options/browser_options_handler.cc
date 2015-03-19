@@ -673,7 +673,6 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 #if defined(OS_CHROMEOS)
   values->SetBoolean(
       "showWakeOnWifi",
-      !Profile::FromWebUI(web_ui())->IsGuestSession() &&
       chromeos::WakeOnWifiManager::Get()->WakeOnWifiSupported() &&
       chromeos::switches::WakeOnWifiEnabled());
   const bool have_disable_time_zone_tracking_option_switch =
