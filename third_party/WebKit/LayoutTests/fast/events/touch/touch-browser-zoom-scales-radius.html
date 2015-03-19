@@ -21,9 +21,7 @@
       function sendTouchStart(x, y, radiusX, radiusY)
       {
         eventSender.clearTouchPoints();
-        eventSender.addTouchPoint(x, y);
-        if (eventSender.setTouchPointRadius)
-          eventSender.setTouchPointRadius(0, radiusX, radiusY, false);
+        eventSender.addTouchPoint(x, y, radiusX, radiusY);
         eventSender.touchStart();
       }
 
@@ -39,28 +37,22 @@
 
           debug("===Initial Zoom===");
           sendTouchStart(100, 100, 4, 10);
-          if (eventSender.setTouchPointRadius) {
-            shouldBe("radiusX", "4");
-            shouldBe("radiusY", "10");
-          }
+          shouldBe("radiusX", "4");
+          shouldBe("radiusY", "10");
 
           window.internals.setZoomFactor(2.0);
 
           debug("===Zoom 2X===");
           sendTouchStart(100, 100, 4, 10);
-          if (eventSender.setTouchPointRadius) {
-            shouldBe("radiusX", "2");
-            shouldBe("radiusY", "5");
-          }
+          shouldBe("radiusX", "2");
+          shouldBe("radiusY", "5");
 
           window.internals.setZoomFactor(0.5);
 
           debug("===Zoom 0.5X===");
           sendTouchStart(100, 100, 4, 10);
-          if (eventSender.setTouchPointRadius) {
-            shouldBe("radiusX", "8");
-            shouldBe("radiusY", "20");
-          }
+          shouldBe("radiusX", "8");
+          shouldBe("radiusY", "20");
 
 
           endTest();

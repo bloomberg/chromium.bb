@@ -71,9 +71,7 @@ iframe {
         }
         
         debug('Testing simple fractional touch');
-        eventSender.addTouchPoint(30.33, 4.5);
-        if (eventSender.setTouchPointRadius)
-          eventSender.setTouchPointRadius(0, 5.2, 6.3, false);
+        eventSender.addTouchPoint(30.33, 4.5, 5.2, 6.3);
         eventSender.touchStart();
         if (expectEvent('touchstart')) {
             shouldBeCloseTo('lastEvent.changedTouches[0].screenX', 30.33, floatPrecision);
@@ -82,10 +80,8 @@ iframe {
             shouldBeCloseTo('lastEvent.changedTouches[0].clientY', 4.5, floatPrecision);
             shouldBeCloseTo('lastEvent.changedTouches[0].pageX', 30.33 + scrollX, floatPrecision);
             shouldBeCloseTo('lastEvent.changedTouches[0].pageY', 4.5 + scrollY, floatPrecision);
-            if (eventSender.setTouchPointRadius) {
-              shouldBeCloseTo('lastEvent.changedTouches[0].webkitRadiusX', 5.2, floatPrecision);
-              shouldBeCloseTo('lastEvent.changedTouches[0].webkitRadiusY', 6.3, floatPrecision);
-            }
+            shouldBeCloseTo('lastEvent.changedTouches[0].webkitRadiusX', 5.2, floatPrecision);
+            shouldBeCloseTo('lastEvent.changedTouches[0].webkitRadiusY', 6.3, floatPrecision);
         }
         eventSender.releaseTouchPoint(0);
         eventSender.touchEnd();

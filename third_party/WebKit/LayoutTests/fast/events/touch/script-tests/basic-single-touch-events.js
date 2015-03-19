@@ -92,13 +92,13 @@ function verifyTouch(which) {
 
 function singleTouchSequence()
 {
-    eventSender.addTouchPoint(10, 10);
     if (eventSender.setTouchPointRadius)
-      eventSender.setTouchPointRadius(0, 10, 10, false);
+        eventSender.setTouchPointRadius(10,10);
+    eventSender.addTouchPoint(10, 10);
     eventSender.touchStart();
 
     if (eventSender.setTouchPointRadius)
-      eventSender.setTouchPointRadius(0, 12, 12, true);
+        eventSender.setTouchPointRadius(12,12);
     eventSender.updateTouchPoint(0, 50, 50);
     eventSender.setTouchModifier("shift", true);
     eventSender.setTouchModifier("alt", true);
