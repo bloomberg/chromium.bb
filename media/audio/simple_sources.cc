@@ -18,26 +18,33 @@
 namespace media {
 
 // Opens |wav_filename|, reads it and loads it as a wav file. This function will
-// bluntly trigger CHECKs if we can't read the file or if it's malformed. The
+// return a null pointer if we can't read the file or if it's malformed. The
 // caller takes ownership of the returned data. The size of the data is stored
 // in |read_length|.
 static scoped_ptr<uint8[]> ReadWavFile(const base::FilePath& wav_filename,
                                        size_t* file_length) {
   base::File wav_file(
       wav_filename, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  CHECK(wav_file.IsValid())
-      << "Failed to read " << wav_filename.value()
-      << " as input to the fake device.";
+  if (!wav_file.IsValid()) {
+    LOG(ERROR) << "Failed to read " << wav_filename.value()
+               << " as input to the fake device.";
+    return nullptr;
+  }
 
   size_t wav_file_length = wav_file.GetLength();
-  CHECK_GT(wav_file_length, 0u)
-      << "Input file to fake device is empty: " << wav_filename.value();
+  if (wav_file_length == 0u) {
+    LOG(ERROR) << "Input file to fake device is empty: "
+               << wav_filename.value();
+    return nullptr;
+  }
 
   uint8* wav_file_data = new uint8[wav_file_length];
   size_t read_bytes = wav_file.Read(0, reinterpret_cast<char*>(wav_file_data),
                                     wav_file_length);
-  CHECK_EQ(read_bytes, wav_file_length)
-      << "Failed to read all bytes of " << wav_filename.value();
+  if (read_bytes != wav_file_length) {
+    LOG(ERROR) << "Failed to read all bytes of " << wav_filename.value();
+    return nullptr;
+  }
   *file_length = wav_file_length;
   return scoped_ptr<uint8[]>(wav_file_data);
 }
@@ -152,16 +159,26 @@ FileSource::FileSource(const AudioParameters& params,
                        const base::FilePath& path_to_wav_file)
     : params_(params),
       path_to_wav_file_(path_to_wav_file),
-      wav_file_read_pos_(0) {
+      wav_file_read_pos_(0),
+      load_failed_(false) {
 }
 
 FileSource::~FileSource() {
 }
 
 void FileSource::LoadWavFile(const base::FilePath& path_to_wav_file) {
+  // Don't try again if we already failed.
+  if (load_failed_)
+    return;
+
   // Read the file, and put its data in a scoped_ptr so it gets deleted later.
   size_t file_length = 0;
   wav_file_data_ = ReadWavFile(path_to_wav_file, &file_length);
+  if (!wav_file_data_) {
+    load_failed_ = true;
+    return;
+  }
+
   wav_audio_handler_ = CreateWavAudioHandler(
       path_to_wav_file, wav_file_data_.get(), file_length, params_);
 
@@ -186,6 +203,8 @@ int FileSource::OnMoreData(AudioBus* audio_bus, uint32 total_bytes_delay) {
   // This will massively delay the first OnMoreData, but we'll catch up.
   if (!wav_audio_handler_)
     LoadWavFile(path_to_wav_file_);
+  if (load_failed_)
+    return 0;
 
   DCHECK(wav_audio_handler_.get());
 

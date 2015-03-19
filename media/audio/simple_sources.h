@@ -66,6 +66,7 @@ class FileSource : public AudioOutputStream::AudioSourceCallback,
   scoped_ptr<WavAudioHandler> wav_audio_handler_;
   scoped_ptr<AudioConverter> file_audio_converter_;
   int wav_file_read_pos_;
+  bool load_failed_;
 
   // Provides audio data from wav_audio_handler_ into the file audio converter.
   double ProvideInput(AudioBus* audio_bus,
