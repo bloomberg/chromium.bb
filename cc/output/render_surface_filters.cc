@@ -206,6 +206,7 @@ skia::RefPtr<SkImageFilter> RenderSurfaceFilters::BuildImageFilter(
             SkIntToScalar(op.amount()),
             SkIntToScalar(op.amount()),
             op.drop_shadow_color(),
+            SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode,
             image_filter.get()));
         break;
       case FilterOperation::COLOR_MATRIX:
