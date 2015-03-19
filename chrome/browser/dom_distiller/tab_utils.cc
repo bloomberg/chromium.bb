@@ -110,7 +110,13 @@ void StartNavigationToDistillerViewer(content::WebContents* web_contents,
   web_contents->GetController().LoadURLWithParams(params);
 }
 
-void StartDistillation(content::WebContents* web_contents) {
+void MaybeStartDistillation(content::WebContents* web_contents) {
+  const GURL& last_committed_url = web_contents->GetLastCommittedURL();
+  if (!dom_distiller::url_utils::IsUrlDistillable(last_committed_url)) {
+    delete web_contents;
+    return;
+  }
+
   // Start distillation using |web_contents|, and ensure ViewerHandle stays
   // around until the viewer requests distillation.
   SelfDeletingRequestDelegate* view_request_delegate =
@@ -125,7 +131,6 @@ void StartDistillation(content::WebContents* web_contents) {
       dom_distiller_service->CreateDefaultDistillerPageWithHandle(
                                  source_page_handle.Pass()).Pass();
 
-  const GURL& last_committed_url = web_contents->GetLastCommittedURL();
   scoped_ptr<ViewerHandle> viewer_handle = dom_distiller_service->ViewUrl(
       view_request_delegate, distiller_page.Pass(), last_committed_url);
   view_request_delegate->TakeViewerHandle(viewer_handle.Pass());
@@ -156,5 +161,5 @@ void DistillCurrentPageAndView(content::WebContents* old_web_contents) {
   CoreTabHelper::FromWebContents(old_web_contents)->delegate()->SwapTabContents(
       old_web_contents, new_web_contents, false, false);
 
-  StartDistillation(old_web_contents);
+  MaybeStartDistillation(old_web_contents);
 }
