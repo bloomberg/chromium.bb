@@ -176,7 +176,7 @@ void SVGLayoutSupport::computeContainerBoundingBoxes(const LayoutObject* contain
         if (current->isSVGHiddenContainer())
             continue;
 
-        // Don't include elements in the union that do not render.
+        // Don't include elements in the union that do not layout.
         if (current->isSVGShape() && toLayoutSVGShape(current)->isShapeEmpty())
             continue;
 
@@ -292,22 +292,22 @@ bool SVGLayoutSupport::isOverflowHidden(const LayoutObject* object)
     return object->style()->overflowX() == OHIDDEN || object->style()->overflowX() == OSCROLL;
 }
 
-void SVGLayoutSupport::intersectPaintInvalidationRectWithResources(const LayoutObject* renderer, FloatRect& paintInvalidationRect)
+void SVGLayoutSupport::intersectPaintInvalidationRectWithResources(const LayoutObject* layoutObject, FloatRect& paintInvalidationRect)
 {
-    ASSERT(renderer);
+    ASSERT(layoutObject);
 
-    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(renderer);
+    SVGResources* resources = SVGResourcesCache::cachedResourcesForLayoutObject(layoutObject);
     if (!resources)
         return;
 
     if (LayoutSVGResourceFilter* filter = resources->filter())
-        paintInvalidationRect = filter->resourceBoundingBox(renderer);
+        paintInvalidationRect = filter->resourceBoundingBox(layoutObject);
 
     if (LayoutSVGResourceClipper* clipper = resources->clipper())
-        paintInvalidationRect.intersect(clipper->resourceBoundingBox(renderer));
+        paintInvalidationRect.intersect(clipper->resourceBoundingBox(layoutObject));
 
     if (LayoutSVGResourceMasker* masker = resources->masker())
-        paintInvalidationRect.intersect(masker->resourceBoundingBox(renderer));
+        paintInvalidationRect.intersect(masker->resourceBoundingBox(layoutObject));
 }
 
 bool SVGLayoutSupport::filtersForceContainerLayout(LayoutObject* object)
@@ -390,7 +390,7 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, cons
     strokeData.setLineDash(dashArray, lengthContext.valueForLength(svgStyle.strokeDashOffset(), style));
 }
 
-bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const LayoutStyle& style, LayoutObject& renderer, LayoutSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
+bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, GraphicsContextStateSaver& stateSaver, const LayoutStyle& style, LayoutObject& layoutObject, LayoutSVGResourceMode resourceMode, const AffineTransform* additionalPaintServerTransform)
 {
     ASSERT(paintInfo.context == stateSaver.context());
 
@@ -402,7 +402,7 @@ bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, Graphic
         return true;
     }
 
-    SVGPaintServer paintServer = SVGPaintServer::requestForRenderer(renderer, style, resourceMode);
+    SVGPaintServer paintServer = SVGPaintServer::requestForLayoutObject(layoutObject, style, resourceMode);
     if (!paintServer.isValid())
         return false;
 
@@ -416,15 +416,15 @@ bool SVGLayoutSupport::updateGraphicsContext(const PaintInfo& paintInfo, Graphic
     if (resourceMode == ApplyToFillMode)
         context.setFillRule(svgStyle.fillRule());
     else
-        applyStrokeStyleToContext(context, style, renderer);
+        applyStrokeStyleToContext(context, style, layoutObject);
 
     return true;
 }
 
-bool SVGLayoutSupport::isRenderableTextNode(const LayoutObject* object)
+bool SVGLayoutSupport::isLayoutableTextNode(const LayoutObject* object)
 {
     ASSERT(object->isText());
-    // <br> is marked as text, but is not handled by the SVG rendering code-path.
+    // <br> is marked as text, but is not handled by the SVG layout code-path.
     return object->isSVGInlineText() && !toLayoutSVGInlineText(object)->hasEmptyText();
 }
 
@@ -468,28 +468,28 @@ SubtreeContentTransformScope::~SubtreeContentTransformScope()
     currentContentTransformation() = m_savedContentTransformation;
 }
 
-float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(const LayoutObject* renderer)
+float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(const LayoutObject* layoutObject)
 {
     // FIXME: trying to compute a device space transform at record time is wrong. All clients
     // should be updated to avoid relying on this information, and the method should be removed.
 
-    ASSERT(renderer);
-    // We're about to possibly clear renderer, so save the deviceScaleFactor now.
-    float deviceScaleFactor = renderer->document().frameHost()->deviceScaleFactor();
+    ASSERT(layoutObject);
+    // We're about to possibly clear the layoutObject, so save the deviceScaleFactor now.
+    float deviceScaleFactor = layoutObject->document().frameHost()->deviceScaleFactor();
 
-    // Walk up the render tree, accumulating SVG transforms.
+    // Walk up the layout tree, accumulating SVG transforms.
     AffineTransform ctm = currentContentTransformation();
-    while (renderer) {
-        ctm = renderer->localToParentTransform() * ctm;
-        if (renderer->isSVGRoot())
+    while (layoutObject) {
+        ctm = layoutObject->localToParentTransform() * ctm;
+        if (layoutObject->isSVGRoot())
             break;
-        renderer = renderer->parent();
+        layoutObject = layoutObject->parent();
     }
 
     // Continue walking up the layer tree, accumulating CSS transforms.
     // FIXME: this queries layer compositing state - which is not
     // supported during layout. Hence, the result may not include all CSS transforms.
-    DeprecatedPaintLayer* layer = renderer ? renderer->enclosingLayer() : 0;
+    DeprecatedPaintLayer* layer = layoutObject ? layoutObject->enclosingLayer() : 0;
     while (layer && layer->isAllowedToQueryCompositingState()) {
         // We can stop at compositing layers, to match the backing resolution.
         // FIXME: should we be computing the transform to the nearest composited layer,

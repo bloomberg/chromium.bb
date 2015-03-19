@@ -73,19 +73,19 @@ public:
 
     static void computeContainerBoundingBoxes(const LayoutObject* container, FloatRect& objectBoundingBox, bool& objectBoundingBoxValid, FloatRect& strokeBoundingBox, FloatRect& paintInvalidationBoundingBox);
 
-    // Important functions used by nearly all SVG renderers centralizing coordinate transformations / paint invalidation rect calculations
+    // Important functions used by nearly all SVG layoutObjects centralizing coordinate transformations / paint invalidation rect calculations
     static LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutObject*, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState*);
     static const LayoutSVGRoot& mapRectToSVGRootForPaintInvalidation(const LayoutObject*, const FloatRect& localPaintInvalidationRect, LayoutRect&);
     static void mapLocalToContainer(const LayoutObject*, const LayoutBoxModelObject* paintInvalidationContainer, TransformState&, bool* wasFixed = 0, const PaintInvalidationState* = 0);
     static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&);
 
-    // Shared between SVG renderers and resources.
+    // Shared between SVG layoutObjects and resources.
     static void applyStrokeStyleToContext(GraphicsContext&, const LayoutStyle&, const LayoutObject&);
     static void applyStrokeStyleToStrokeData(StrokeData&, const LayoutStyle&, const LayoutObject&);
 
     static DashArray resolveSVGDashArray(const SVGDashArray&, const LayoutStyle&, const SVGLengthContext&);
 
-    // Update the GC state (on |paintInfo.context|) for painting |renderer|
+    // Update the GC state (on |paintInfo.context|) for painting |layoutObject|
     // using |style|. |resourceMode| is used to decide between fill/stroke.
     // Previous state will be saved (if needed) using |stateSaver|.
     static bool updateGraphicsContext(const PaintInfo&, GraphicsContextStateSaver&, const LayoutStyle&, LayoutObject&, LayoutSVGResourceMode, const AffineTransform* additionalPaintServerTransform = 0);
@@ -97,8 +97,8 @@ public:
     static const LayoutSVGRoot* findTreeRootObject(const LayoutObject*);
 
     // Helper method for determining if a LayoutObject marked as text (isText()== true)
-    // can/will be rendered as part of a <text>.
-    static bool isRenderableTextNode(const LayoutObject*);
+    // can/will be laid out as part of a <text>.
+    static bool isLayoutableTextNode(const LayoutObject*);
 
     // Determines whether a svg node should isolate or not based on LayoutStyle.
     static bool willIsolateBlendingDescendantsForStyle(const LayoutStyle&);

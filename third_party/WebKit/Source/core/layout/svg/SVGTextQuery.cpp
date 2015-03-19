@@ -36,26 +36,26 @@ struct SVGTextQuery::Data {
     Data()
         : isVerticalText(false)
         , processedCharacters(0)
-        , textRenderer(0)
+        , textLayoutObject(0)
         , textBox(0)
     {
     }
 
     bool isVerticalText;
     unsigned processedCharacters;
-    LayoutSVGInlineText* textRenderer;
+    LayoutSVGInlineText* textLayoutObject;
     const SVGInlineTextBox* textBox;
 };
 
-static inline InlineFlowBox* flowBoxForRenderer(LayoutObject* renderer)
+static inline InlineFlowBox* flowBoxForLayoutObject(LayoutObject* layoutObject)
 {
-    if (!renderer)
+    if (!layoutObject)
         return 0;
 
-    if (renderer->isLayoutBlock()) {
+    if (layoutObject->isLayoutBlock()) {
         // If we're given a block element, it has to be a LayoutSVGText.
-        ASSERT(renderer->isSVGText());
-        LayoutBlockFlow* layoutBlockFlow = toLayoutBlockFlow(renderer);
+        ASSERT(layoutObject->isSVGText());
+        LayoutBlockFlow* layoutBlockFlow = toLayoutBlockFlow(layoutObject);
 
         // LayoutSVGText only ever contains a single line box.
         InlineFlowBox* flowBox = layoutBlockFlow->firstLineBox();
@@ -63,9 +63,9 @@ static inline InlineFlowBox* flowBoxForRenderer(LayoutObject* renderer)
         return flowBox;
     }
 
-    if (renderer->isLayoutInline()) {
+    if (layoutObject->isLayoutInline()) {
         // We're given a LayoutSVGInline or objects that derive from it (LayoutSVGTSpan / LayoutSVGTextPath)
-        LayoutInline* layoutInline = toLayoutInline(renderer);
+        LayoutInline* layoutInline = toLayoutInline(layoutObject);
 
         // LayoutSVGInline only ever contains a single line box.
         InlineFlowBox* flowBox = layoutInline->firstLineBox();
@@ -77,9 +77,9 @@ static inline InlineFlowBox* flowBoxForRenderer(LayoutObject* renderer)
     return 0;
 }
 
-SVGTextQuery::SVGTextQuery(LayoutObject* renderer)
+SVGTextQuery::SVGTextQuery(LayoutObject* layoutObject)
 {
-    collectTextBoxesInFlowBox(flowBoxForRenderer(renderer));
+    collectTextBoxesInFlowBox(flowBoxForLayoutObject(layoutObject));
 }
 
 void SVGTextQuery::collectTextBoxesInFlowBox(InlineFlowBox* flowBox)
@@ -110,10 +110,10 @@ bool SVGTextQuery::executeQuery(Data* queryData, ProcessTextFragmentCallback fra
     // Loop over all text boxes
     for (unsigned textBoxPosition = 0; textBoxPosition < textBoxCount; ++textBoxPosition) {
         queryData->textBox = m_textBoxes.at(textBoxPosition);
-        queryData->textRenderer = &toLayoutSVGInlineText(queryData->textBox->layoutObject());
-        ASSERT(queryData->textRenderer->style());
+        queryData->textLayoutObject = &toLayoutSVGInlineText(queryData->textBox->layoutObject());
+        ASSERT(queryData->textLayoutObject->style());
 
-        queryData->isVerticalText = queryData->textRenderer->style()->svgStyle().isVerticalWritingMode();
+        queryData->isVerticalText = queryData->textLayoutObject->style()->svgStyle().isVerticalWritingMode();
         const Vector<SVGTextFragment>& fragments = queryData->textBox->textFragments();
 
         // Loop over all text fragments in this text box, firing a callback for each.
@@ -160,7 +160,7 @@ bool SVGTextQuery::mapStartEndPositionsIntoFragmentCoordinates(Data* queryData, 
 
 void SVGTextQuery::modifyStartEndPositionsRespectingLigatures(Data* queryData, const SVGTextFragment& fragment, int& startPosition, int& endPosition) const
 {
-    SVGTextLayoutAttributes* layoutAttributes = queryData->textRenderer->layoutAttributes();
+    SVGTextLayoutAttributes* layoutAttributes = queryData->textLayoutObject->layoutAttributes();
     Vector<SVGTextMetrics>& textMetricsValues = layoutAttributes->textMetricsValues();
 
     unsigned textMetricsOffset = fragment.metricsListOffset;
@@ -256,7 +256,7 @@ bool SVGTextQuery::subStringLengthCallback(Data* queryData, const SVGTextFragmen
     if (!mapStartEndPositionsIntoFragmentCoordinates(queryData, fragment, startPosition, endPosition))
         return false;
 
-    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textRenderer, fragment.characterOffset + startPosition, endPosition - startPosition);
+    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLayoutObject, fragment.characterOffset + startPosition, endPosition - startPosition);
     data->subStringLength += queryData->isVerticalText ? metrics.height() : metrics.width();
     return false;
 }
@@ -291,7 +291,7 @@ bool SVGTextQuery::startPositionOfCharacterCallback(Data* queryData, const SVGTe
     data->startPosition = FloatPoint(fragment.x, fragment.y);
 
     if (startPosition) {
-        SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textRenderer, fragment.characterOffset, startPosition);
+        SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLayoutObject, fragment.characterOffset, startPosition);
         if (queryData->isVerticalText)
             data->startPosition.move(0, metrics.height());
         else
@@ -336,7 +336,7 @@ bool SVGTextQuery::endPositionOfCharacterCallback(Data* queryData, const SVGText
 
     data->endPosition = FloatPoint(fragment.x, fragment.y);
 
-    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textRenderer, fragment.characterOffset, startPosition + 1);
+    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLayoutObject, fragment.characterOffset, startPosition + 1);
     if (queryData->isVerticalText)
         data->endPosition.move(0, metrics.height());
     else
@@ -411,20 +411,20 @@ struct ExtentOfCharacterData : SVGTextQuery::Data {
 
 static inline void calculateGlyphBoundaries(SVGTextQuery::Data* queryData, const SVGTextFragment& fragment, int startPosition, FloatRect& extent)
 {
-    float scalingFactor = queryData->textRenderer->scalingFactor();
+    float scalingFactor = queryData->textLayoutObject->scalingFactor();
     ASSERT(scalingFactor);
 
-    extent.setLocation(FloatPoint(fragment.x, fragment.y - queryData->textRenderer->scaledFont().fontMetrics().floatAscent() / scalingFactor));
+    extent.setLocation(FloatPoint(fragment.x, fragment.y - queryData->textLayoutObject->scaledFont().fontMetrics().floatAscent() / scalingFactor));
 
     if (startPosition) {
-        SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textRenderer, fragment.characterOffset, startPosition);
+        SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLayoutObject, fragment.characterOffset, startPosition);
         if (queryData->isVerticalText)
             extent.move(0, metrics.height());
         else
             extent.move(metrics.width(), 0);
     }
 
-    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textRenderer, fragment.characterOffset + startPosition, 1);
+    SVGTextMetrics metrics = SVGTextMetrics::measureCharacterRange(queryData->textLayoutObject, fragment.characterOffset + startPosition, 1);
     extent.setSize(FloatSize(metrics.width(), metrics.height()));
 
     AffineTransform fragmentTransform;
@@ -433,11 +433,11 @@ static inline void calculateGlyphBoundaries(SVGTextQuery::Data* queryData, const
     extent = fragmentTransform.mapRect(extent);
 }
 
-static inline FloatRect calculateFragmentBoundaries(const LayoutSVGInlineText& textRenderer, const SVGTextFragment& fragment)
+static inline FloatRect calculateFragmentBoundaries(const LayoutSVGInlineText& textLayoutObject, const SVGTextFragment& fragment)
 {
-    float scalingFactor = textRenderer.scalingFactor();
+    float scalingFactor = textLayoutObject.scalingFactor();
     ASSERT(scalingFactor);
-    float baseline = textRenderer.scaledFont().fontMetrics().floatAscent() / scalingFactor;
+    float baseline = textLayoutObject.scaledFont().fontMetrics().floatAscent() / scalingFactor;
 
     AffineTransform fragmentTransform;
     FloatRect fragmentRect(fragment.x, fragment.y - baseline, fragment.width, fragment.height);
@@ -480,14 +480,14 @@ bool SVGTextQuery::characterNumberAtPositionCallback(Data* queryData, const SVGT
     CharacterNumberAtPositionData* data = static_cast<CharacterNumberAtPositionData*>(queryData);
 
     // Test the query point against the bounds of the entire fragment first.
-    FloatRect fragmentExtents = calculateFragmentBoundaries(*queryData->textRenderer, fragment);
+    FloatRect fragmentExtents = calculateFragmentBoundaries(*queryData->textLayoutObject, fragment);
     if (!fragmentExtents.contains(data->position))
         return false;
 
     // Iterate through the glyphs in this fragment, and check if their extents
     // contain the query point.
     FloatRect extent;
-    const Vector<SVGTextMetrics>& textMetrics = queryData->textRenderer->layoutAttributes()->textMetricsValues();
+    const Vector<SVGTextMetrics>& textMetrics = queryData->textLayoutObject->layoutAttributes()->textMetricsValues();
     unsigned textMetricsOffset = fragment.metricsListOffset;
     unsigned fragmentOffset = 0;
     while (fragmentOffset < fragment.length) {

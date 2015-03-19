@@ -654,7 +654,7 @@ void SVGResources::dump(const LayoutObject* object)
     ASSERT(object);
     ASSERT(object->node());
 
-    fprintf(stderr, "-> this=%p, SVGResources(renderer=%p, node=%p)\n", this, object, object->node());
+    fprintf(stderr, "-> this=%p, SVGResources(layoutObject=%p, node=%p)\n", this, object, object->node());
     fprintf(stderr, " | DOM Tree:\n");
     object->node()->showTreeForThis();
 

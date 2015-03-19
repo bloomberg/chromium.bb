@@ -36,9 +36,9 @@
 
 namespace blink {
 
-// Most renderers in the SVG rendering tree will inherit from this class
+// Most layoutObjects in the SVG layout tree will inherit from this class
 // but not all. (e.g. LayoutSVGForeignObject, LayoutSVGBlock) thus methods
-// required by SVG renders need to be declared on LayoutObject, but shared
+// required by SVG layoutObjects need to be declared on LayoutObject, but shared
 // logic can go in this class or in SVGLayoutSupport.
 
 class LayoutSVGModelObject : public LayoutObject {

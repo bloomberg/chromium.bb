@@ -33,7 +33,7 @@ class SVGTextPositioningElement;
 // SVGTextLayoutAttributesBuilder performs the first layout phase for SVG text.
 //
 // It extracts the x/y/dx/dy/rotate values from the SVGTextPositioningElements in the DOM.
-// These values are propagated to the corresponding LayoutSVGInlineText renderers.
+// These values are propagated to the corresponding LayoutSVGInlineText layoutObjects.
 // The first layout phase only extracts the relevant information needed in LayoutBlockFlowLine
 // to create the InlineBox tree based on text chunk boundaries & BiDi information.
 // The second layout phase is carried out by SVGTextLayoutEngine.
@@ -43,9 +43,9 @@ class SVGTextLayoutAttributesBuilder {
 public:
     SVGTextLayoutAttributesBuilder();
     bool buildLayoutAttributesForForSubtree(LayoutSVGText&);
-    void buildLayoutAttributesForTextRenderer(LayoutSVGInlineText*);
+    void buildLayoutAttributesForText(LayoutSVGInlineText*);
 
-    void rebuildMetricsForTextRenderer(LayoutSVGInlineText*);
+    void rebuildMetricsForTextLayoutObject(LayoutSVGInlineText*);
 
     // Invoked whenever the underlying DOM tree changes, so that m_textPositions is rebuild.
     void clearTextPositioningElements() { m_textPositions.clear(); }

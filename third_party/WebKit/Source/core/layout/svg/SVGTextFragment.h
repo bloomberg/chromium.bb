@@ -24,7 +24,7 @@
 
 namespace blink {
 
-// A SVGTextFragment describes a text fragment of a LayoutSVGInlineText which can be rendered at once.
+// A SVGTextFragment describes a text fragment of a LayoutSVGInlineText which can be laid out at once.
 struct SVGTextFragment {
     SVGTextFragment()
         : characterOffset(0)
@@ -57,7 +57,7 @@ struct SVGTextFragment {
             buildTransformForTextOnLine(result);
     }
 
-    // The first rendered character starts at LayoutSVGInlineText::characters() + characterOffset.
+    // The first laid out character starts at LayoutSVGInlineText::characters() + characterOffset.
     unsigned characterOffset;
     unsigned metricsListOffset;
     unsigned length : 31;

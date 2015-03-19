@@ -34,7 +34,7 @@ SVGTextLayoutAttributesBuilder::SVGTextLayoutAttributesBuilder()
 {
 }
 
-void SVGTextLayoutAttributesBuilder::buildLayoutAttributesForTextRenderer(LayoutSVGInlineText* text)
+void SVGTextLayoutAttributesBuilder::buildLayoutAttributesForText(LayoutSVGInlineText* text)
 {
     ASSERT(text);
 
@@ -76,10 +76,10 @@ bool SVGTextLayoutAttributesBuilder::buildLayoutAttributesForForSubtree(LayoutSV
     return true;
 }
 
-void SVGTextLayoutAttributesBuilder::rebuildMetricsForTextRenderer(LayoutSVGInlineText* text)
+void SVGTextLayoutAttributesBuilder::rebuildMetricsForTextLayoutObject(LayoutSVGInlineText* text)
 {
     ASSERT(text);
-    SVGTextMetricsBuilder::measureTextRenderer(text);
+    SVGTextMetricsBuilder::measureTextLayoutObject(text);
 }
 
 static inline void processLayoutSVGInlineText(LayoutSVGInlineText* text, unsigned& atCharacter, UChar& lastCharacter)

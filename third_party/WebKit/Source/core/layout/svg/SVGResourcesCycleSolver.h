@@ -43,7 +43,7 @@ private:
     bool resourceContainsCycles(LayoutSVGResourceContainer*);
     void breakCycle(LayoutSVGResourceContainer*);
 
-    LayoutObject* m_renderer;
+    LayoutObject* m_layoutObject;
     SVGResources* m_resources;
 
     ResourceSet m_activeResources;

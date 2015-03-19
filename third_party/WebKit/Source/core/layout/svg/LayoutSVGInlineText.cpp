@@ -69,8 +69,8 @@ LayoutSVGInlineText::LayoutSVGInlineText(Node* n, PassRefPtr<StringImpl> string)
 void LayoutSVGInlineText::setTextInternal(PassRefPtr<StringImpl> text)
 {
     LayoutText::setTextInternal(text);
-    if (LayoutSVGText* textRenderer = LayoutSVGText::locateLayoutSVGTextAncestor(this))
-        textRenderer->subtreeTextDidChange(this);
+    if (LayoutSVGText* textLayoutObject = LayoutSVGText::locateLayoutSVGTextAncestor(this))
+        textLayoutObject->subtreeTextDidChange(this);
 }
 
 void LayoutSVGInlineText::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyle)
@@ -89,8 +89,8 @@ void LayoutSVGInlineText::styleDidChange(StyleDifference diff, const LayoutStyle
         return;
 
     // The text metrics may be influenced by style changes.
-    if (LayoutSVGText* textRenderer = LayoutSVGText::locateLayoutSVGTextAncestor(this))
-        textRenderer->setNeedsLayoutAndFullPaintInvalidation();
+    if (LayoutSVGText* textLayoutObject = LayoutSVGText::locateLayoutSVGTextAncestor(this))
+        textLayoutObject->setNeedsLayoutAndFullPaintInvalidation();
 }
 
 InlineTextBox* LayoutSVGInlineText::createTextBox(int start, unsigned short length)
@@ -208,13 +208,13 @@ void LayoutSVGInlineText::updateScaledFont()
     computeNewScaledFontForStyle(this, style(), m_scalingFactor, m_scaledFont);
 }
 
-void LayoutSVGInlineText::computeNewScaledFontForStyle(LayoutObject* renderer, const LayoutStyle* style, float& scalingFactor, Font& scaledFont)
+void LayoutSVGInlineText::computeNewScaledFontForStyle(LayoutObject* layoutObject, const LayoutStyle* style, float& scalingFactor, Font& scaledFont)
 {
     ASSERT(style);
-    ASSERT(renderer);
+    ASSERT(layoutObject);
 
     // Alter font-size to the right on-screen value to avoid scaling the glyphs themselves, except when GeometricPrecision is specified.
-    scalingFactor = SVGLayoutSupport::calculateScreenFontSizeScalingFactor(renderer);
+    scalingFactor = SVGLayoutSupport::calculateScreenFontSizeScalingFactor(layoutObject);
     if (style->effectiveZoom() == 1 && (scalingFactor == 1 || !scalingFactor)) {
         scalingFactor = 1;
         scaledFont = style->font();
@@ -226,7 +226,7 @@ void LayoutSVGInlineText::computeNewScaledFontForStyle(LayoutObject* renderer, c
 
     FontDescription fontDescription(style->fontDescription());
 
-    Document& document = renderer->document();
+    Document& document = layoutObject->document();
     // FIXME: We need to better handle the case when we compute very small fonts below (below 1pt).
     fontDescription.setComputedSize(FontSize::getComputedSizeFromSpecifiedSize(&document, scalingFactor, fontDescription.isAbsoluteSize(), fontDescription.specifiedSize(), DoNotUseSmartMinimumForFontSize));
 

@@ -34,7 +34,7 @@ namespace blink {
 bool LayoutSVGInline::isChildAllowed(LayoutObject* child, const LayoutStyle& style) const
 {
     if (child->isText())
-        return SVGLayoutSupport::isRenderableTextNode(child);
+        return SVGLayoutSupport::isLayoutableTextNode(child);
 
     if (isSVGAElement(*node())) {
         // Disallow direct descendant 'a'.

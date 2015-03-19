@@ -111,18 +111,18 @@ inline LayoutSVGResourceContainer* getLayoutSVGResourceContainerById(TreeScope& 
     if (id.isEmpty())
         return 0;
 
-    if (LayoutSVGResourceContainer* renderResource = treeScope.document().accessSVGExtensions().resourceById(id))
-        return renderResource;
+    if (LayoutSVGResourceContainer* layoutResource = treeScope.document().accessSVGExtensions().resourceById(id))
+        return layoutResource;
 
     return 0;
 }
 
-template<typename Renderer>
-Renderer* getLayoutSVGResourceById(TreeScope& treeScope, const AtomicString& id)
+template<typename Layout>
+Layout* getLayoutSVGResourceById(TreeScope& treeScope, const AtomicString& id)
 {
     if (LayoutSVGResourceContainer* container = getLayoutSVGResourceContainerById(treeScope, id)) {
-        if (container->resourceType() == Renderer::s_resourceType)
-            return static_cast<Renderer*>(container);
+        if (container->resourceType() == Layout::s_resourceType)
+            return static_cast<Layout*>(container);
     }
     return 0;
 }

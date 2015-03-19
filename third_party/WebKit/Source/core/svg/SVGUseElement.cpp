@@ -478,7 +478,7 @@ void SVGUseElement::toClipPath(Path& path)
     }
 }
 
-LayoutObject* SVGUseElement::rendererClipChild() const
+LayoutObject* SVGUseElement::layoutObjectClipChild() const
 {
     if (Node* n = closedShadowRoot()->firstChild()) {
         if (n->isSVGElement() && isDirectReference(toSVGElement(*n)))

@@ -219,14 +219,14 @@ void LayoutSVGResourceContainer::registerResource()
     for (SVGDocumentExtensions::SVGPendingElements::const_iterator it = clients->begin(); it != end; ++it) {
         ASSERT((*it)->hasPendingResources());
         extensions.clearHasPendingResourcesIfPossible(*it);
-        LayoutObject* renderer = (*it)->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = (*it)->layoutObject();
+        if (!layoutObject)
             continue;
 
         StyleDifference diff;
         diff.setNeedsFullLayout();
-        SVGResourcesCache::clientStyleChanged(renderer, diff, renderer->styleRef());
-        renderer->setNeedsLayoutAndFullPaintInvalidation();
+        SVGResourcesCache::clientStyleChanged(layoutObject, diff, layoutObject->styleRef());
+        layoutObject->setNeedsLayoutAndFullPaintInvalidation();
     }
 }
 
@@ -259,13 +259,13 @@ static inline void removeFromCacheAndInvalidateDependencies(LayoutObject* object
 
     SVGElementSet::iterator end = dependencies->end();
     for (SVGElementSet::iterator it = dependencies->begin(); it != end; ++it) {
-        if (LayoutObject* renderer = (*it)->layoutObject()) {
+        if (LayoutObject* layoutObject = (*it)->layoutObject()) {
             if (UNLIKELY(!invalidatingDependencies->add(*it).isNewEntry)) {
                 // Reference cycle: we are in process of invalidating this dependant.
                 continue;
             }
 
-            LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(renderer, needsLayout);
+            LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(layoutObject, needsLayout);
             invalidatingDependencies->remove(*it);
         }
     }

@@ -102,7 +102,7 @@ bool LayoutSVGRoot::isEmbeddedThroughFrameContainingSVGDocument() const
     if (!frame)
         return false;
 
-    // If our frame has an owner renderer, we're embedded through eg. object/embed/iframe,
+    // If our frame has an owner layoutObject, we're embedded through eg. object/embed/iframe,
     // but we only negotiate if we're in an SVG document inside a embedded object (object/embed).
     if (!frame->ownerLayoutObject() || !frame->ownerLayoutObject()->isEmbeddedObject())
         return false;
@@ -371,7 +371,7 @@ void LayoutSVGRoot::mapRectToPaintInvalidationBacking(const LayoutBoxModelObject
 // to convert from SVG viewport coordinates to local CSS box coordinates.
 void LayoutSVGRoot::mapLocalToContainer(const LayoutBoxModelObject* paintInvalidationContainer, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
 {
-    ASSERT(mode & ~IsFixed); // We should have no fixed content in the SVG rendering tree.
+    ASSERT(mode & ~IsFixed); // We should have no fixed content in the SVG layout tree.
     // We used to have this ASSERT here, but we removed it when enabling layer squashing.
     // See http://crbug.com/364901
     // ASSERT(mode & UseTransforms); // mapping a point through SVG w/o respecting trasnforms is useless.

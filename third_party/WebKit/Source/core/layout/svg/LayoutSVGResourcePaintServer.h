@@ -44,8 +44,8 @@ public:
     explicit SVGPaintServer(PassRefPtr<Gradient>);
     explicit SVGPaintServer(PassRefPtr<Pattern>);
 
-    static SVGPaintServer requestForRenderer(const LayoutObject&, const LayoutStyle&, LayoutSVGResourceMode);
-    static bool existsForRenderer(const LayoutObject&, const LayoutStyle&, LayoutSVGResourceMode);
+    static SVGPaintServer requestForLayoutObject(const LayoutObject&, const LayoutStyle&, LayoutSVGResourceMode);
+    static bool existsForLayoutObject(const LayoutObject&, const LayoutStyle&, LayoutSVGResourceMode);
 
     void apply(GraphicsContext&, LayoutSVGResourceMode, float paintAlpha, GraphicsContextStateSaver&);
 

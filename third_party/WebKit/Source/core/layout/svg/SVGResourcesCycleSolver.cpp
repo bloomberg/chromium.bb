@@ -33,11 +33,11 @@
 
 namespace blink {
 
-SVGResourcesCycleSolver::SVGResourcesCycleSolver(LayoutObject* renderer, SVGResources* resources)
-    : m_renderer(renderer)
+SVGResourcesCycleSolver::SVGResourcesCycleSolver(LayoutObject* layoutObject, SVGResources* resources)
+    : m_layoutObject(layoutObject)
     , m_resources(resources)
 {
-    ASSERT(m_renderer);
+    ASSERT(m_layoutObject);
     ASSERT(m_resources);
 }
 
@@ -106,15 +106,15 @@ void SVGResourcesCycleSolver::resolveCycles()
 
     // If the starting LayoutObject is a resource container itself, then add it
     // to the active set (to break direct self-references.)
-    if (m_renderer->isSVGResourceContainer())
-        m_activeResources.add(toLayoutSVGResourceContainer(m_renderer));
+    if (m_layoutObject->isSVGResourceContainer())
+        m_activeResources.add(toLayoutSVGResourceContainer(m_layoutObject));
 
     ResourceSet localResources;
     m_resources->buildSetOfResources(localResources);
 
     // This performs a depth-first search for a back-edge in all the
     // (potentially disjoint) graphs formed by the resources referenced by
-    // |m_renderer|.
+    // |m_layoutObject|.
     ResourceSet::iterator end = localResources.end();
     for (ResourceSet::iterator it = localResources.begin(); it != end; ++it) {
         if (m_activeResources.contains(*it) || resourceContainsCycles(*it))

@@ -44,7 +44,7 @@ public:
 
     void invalidateShadowTree();
 
-    LayoutObject* rendererClipChild() const;
+    LayoutObject* layoutObjectClipChild() const;
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }

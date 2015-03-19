@@ -74,8 +74,8 @@ static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
     if (!svgElement)
         return false;
 
-    const LayoutObject* renderer = svgElement->layoutObject();
-    const LayoutStyle* style = renderer ? renderer->style() : 0;
+    const LayoutObject* layoutObject = svgElement->layoutObject();
+    const LayoutStyle* style = layoutObject ? layoutObject->style() : 0;
     const SVGLayoutStyle* svgStyle = style ? &style->svgStyle() : 0;
     EColorInterpolation eColorInterpolation = CI_AUTO;
     if (svgStyle) {
@@ -109,12 +109,12 @@ static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
     return true;
 }
 
-PassRefPtrWillBeRawPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, LayoutObject* renderer, FilterEffect* previousEffect, const ReferenceFilterOperation* filterOperation)
+PassRefPtrWillBeRawPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, LayoutObject* layoutObject, FilterEffect* previousEffect, const ReferenceFilterOperation* filterOperation)
 {
-    if (!renderer)
+    if (!layoutObject)
         return nullptr;
 
-    TreeScope* treeScope = &renderer->node()->treeScope();
+    TreeScope* treeScope = &layoutObject->node()->treeScope();
 
     if (DocumentResourceReference* documentResourceRef = documentResourceReference(filterOperation)) {
         DocumentResource* cachedSVGDocument = documentResourceRef->document();
@@ -133,7 +133,7 @@ PassRefPtrWillBeRawPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* paren
     if (!filter) {
         // Although we did not find the referenced filter, it might exist later
         // in the document.
-        treeScope->document().accessSVGExtensions().addPendingResource(filterOperation->fragment(), toElement(renderer->node()));
+        treeScope->document().accessSVGExtensions().addPendingResource(filterOperation->fragment(), toElement(layoutObject->node()));
         return nullptr;
     }
 

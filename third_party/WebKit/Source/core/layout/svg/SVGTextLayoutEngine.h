@@ -39,7 +39,7 @@ class SVGInlineTextBox;
 // The InlineBox tree was created, containing the text chunk information, necessary to apply
 // certain SVG specific text layout properties (text-length adjustments and text-anchor).
 // The second layout phase uses the SVGTextLayoutAttributes stored in the individual
-// LayoutSVGInlineText renderers to compute the final positions for each character
+// LayoutSVGInlineText layoutObjects to compute the final positions for each character
 // which are stored in the SVGInlineTextBox objects.
 
 class SVGTextLayoutEngine {

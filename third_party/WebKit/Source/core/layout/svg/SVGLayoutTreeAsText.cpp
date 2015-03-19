@@ -399,9 +399,9 @@ static inline void writeSVGInlineTextBox(TextStream& ts, SVGInlineTextBox* textB
     if (fragments.isEmpty())
         return;
 
-    LayoutSVGInlineText& textRenderer = toLayoutSVGInlineText(textBox->layoutObject());
+    LayoutSVGInlineText& textLayoutObject = toLayoutSVGInlineText(textBox->layoutObject());
 
-    const SVGLayoutStyle& svgStyle = textRenderer.style()->svgStyle();
+    const SVGLayoutStyle& svgStyle = textLayoutObject.style()->svgStyle();
     String text = textBox->layoutObject().text();
 
     unsigned fragmentsSize = fragments.size();
@@ -530,7 +530,7 @@ void writeSVGResourceContainer(TextStream& ts, const LayoutObject& object, int i
     } else if (resource->resourceType() == PatternResourceType) {
         LayoutSVGResourcePattern* pattern = static_cast<LayoutSVGResourcePattern*>(resource);
 
-        // Dump final results that are used for rendering. No use in asking SVGPatternElement for its patternUnits(), as it may
+        // Dump final results that are used for layout. No use in asking SVGPatternElement for its patternUnits(), as it may
         // link to other patterns using xlink:href, we need to build the full inheritance chain, aka. collectPatternProperties()
         PatternAttributes attributes;
         toSVGPatternElement(pattern->element())->collectPatternAttributes(attributes);
@@ -545,7 +545,7 @@ void writeSVGResourceContainer(TextStream& ts, const LayoutObject& object, int i
     } else if (resource->resourceType() == LinearGradientResourceType) {
         LayoutSVGResourceLinearGradient* gradient = static_cast<LayoutSVGResourceLinearGradient*>(resource);
 
-        // Dump final results that are used for rendering. No use in asking SVGGradientElement for its gradientUnits(), as it may
+        // Dump final results that are used for layout. No use in asking SVGGradientElement for its gradientUnits(), as it may
         // link to other gradients using xlink:href, we need to build the full inheritance chain, aka. collectGradientProperties()
         LinearGradientAttributes attributes;
         toSVGLinearGradientElement(gradient->element())->collectGradientAttributes(attributes);
@@ -555,7 +555,7 @@ void writeSVGResourceContainer(TextStream& ts, const LayoutObject& object, int i
     }  else if (resource->resourceType() == RadialGradientResourceType) {
         LayoutSVGResourceRadialGradient* gradient = toLayoutSVGResourceRadialGradient(resource);
 
-        // Dump final results that are used for rendering. No use in asking SVGGradientElement for its gradientUnits(), as it may
+        // Dump final results that are used for layout. No use in asking SVGGradientElement for its gradientUnits(), as it may
         // link to other gradients using xlink:href, we need to build the full inheritance chain, aka. collectGradientProperties()
         RadialGradientAttributes attributes;
         toSVGRadialGradientElement(gradient->element())->collectGradientAttributes(attributes);
@@ -642,7 +642,7 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent)
 
     // FIXME: We want to use SVGResourcesCache to determine which resources are present, instead of quering the resource <-> id cache.
     // For now leave the DRT output as is, but later on we should change this so cycles are properly ignored in the DRT output.
-    LayoutObject& renderer = const_cast<LayoutObject&>(object);
+    LayoutObject& layoutObject = const_cast<LayoutObject&>(object);
     if (!svgStyle.maskerResource().isEmpty()) {
         if (LayoutSVGResourceMasker* masker = getLayoutSVGResourceById<LayoutSVGResourceMasker>(object.document(), svgStyle.maskerResource())) {
             writeIndent(ts, indent);
@@ -650,7 +650,7 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent)
             writeNameAndQuotedValue(ts, "masker", svgStyle.maskerResource());
             ts << " ";
             writeStandardPrefix(ts, *masker, 0);
-            ts << " " << masker->resourceBoundingBox(&renderer) << "\n";
+            ts << " " << masker->resourceBoundingBox(&layoutObject) << "\n";
         }
     }
     if (!svgStyle.clipperResource().isEmpty()) {
@@ -660,7 +660,7 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent)
             writeNameAndQuotedValue(ts, "clipPath", svgStyle.clipperResource());
             ts << " ";
             writeStandardPrefix(ts, *clipper, 0);
-            ts << " " << clipper->resourceBoundingBox(&renderer) << "\n";
+            ts << " " << clipper->resourceBoundingBox(&layoutObject) << "\n";
         }
     }
     if (!svgStyle.filterResource().isEmpty()) {
@@ -670,7 +670,7 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent)
             writeNameAndQuotedValue(ts, "filter", svgStyle.filterResource());
             ts << " ";
             writeStandardPrefix(ts, *filter, 0);
-            ts << " " << filter->resourceBoundingBox(&renderer) << "\n";
+            ts << " " << filter->resourceBoundingBox(&layoutObject) << "\n";
         }
     }
 }

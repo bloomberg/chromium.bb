@@ -153,16 +153,16 @@ static SVGPaintDescription requestPaint(const LayoutObject& object, const Layout
     return SVGPaintDescription(uriResource);
 }
 
-SVGPaintServer SVGPaintServer::requestForRenderer(const LayoutObject& renderer, const LayoutStyle& style, LayoutSVGResourceMode resourceMode)
+SVGPaintServer SVGPaintServer::requestForLayoutObject(const LayoutObject& layoutObject, const LayoutStyle& style, LayoutSVGResourceMode resourceMode)
 {
     ASSERT(resourceMode == ApplyToFillMode || resourceMode == ApplyToStrokeMode);
 
-    SVGPaintDescription paintDescription = requestPaint(renderer, style, resourceMode);
+    SVGPaintDescription paintDescription = requestPaint(layoutObject, style, resourceMode);
     if (!paintDescription.isValid)
         return invalid();
     if (!paintDescription.resource)
         return SVGPaintServer(paintDescription.color);
-    SVGPaintServer paintServer = paintDescription.resource->preparePaintServer(renderer);
+    SVGPaintServer paintServer = paintDescription.resource->preparePaintServer(layoutObject);
     if (paintServer.isValid())
         return paintServer;
     if (paintDescription.hasFallback)
@@ -170,9 +170,9 @@ SVGPaintServer SVGPaintServer::requestForRenderer(const LayoutObject& renderer, 
     return invalid();
 }
 
-bool SVGPaintServer::existsForRenderer(const LayoutObject& renderer, const LayoutStyle& style, LayoutSVGResourceMode resourceMode)
+bool SVGPaintServer::existsForLayoutObject(const LayoutObject& layoutObject, const LayoutStyle& style, LayoutSVGResourceMode resourceMode)
 {
-    return requestPaint(renderer, style, resourceMode).isValid;
+    return requestPaint(layoutObject, style, resourceMode).isValid;
 }
 
 LayoutSVGResourcePaintServer::LayoutSVGResourcePaintServer(SVGElement* element)
@@ -184,9 +184,9 @@ LayoutSVGResourcePaintServer::~LayoutSVGResourcePaintServer()
 {
 }
 
-SVGPaintDescription LayoutSVGResourcePaintServer::requestPaintDescription(const LayoutObject& renderer, const LayoutStyle& style, LayoutSVGResourceMode resourceMode)
+SVGPaintDescription LayoutSVGResourcePaintServer::requestPaintDescription(const LayoutObject& layoutObject, const LayoutStyle& style, LayoutSVGResourceMode resourceMode)
 {
-    return requestPaint(renderer, style, resourceMode);
+    return requestPaint(layoutObject, style, resourceMode);
 }
 
 }

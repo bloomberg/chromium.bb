@@ -64,7 +64,7 @@ void LayoutSVGResourcePattern::removeClientFromCache(LayoutObject* client, bool 
     markClientForInvalidation(client, markForInvalidation ? PaintInvalidation : ParentOnlyInvalidation);
 }
 
-PatternData* LayoutSVGResourcePattern::patternForRenderer(const LayoutObject& object)
+PatternData* LayoutSVGResourcePattern::patternForLayoutObject(const LayoutObject& object)
 {
     ASSERT(!m_shouldCollectPatternAttributes);
 
@@ -84,7 +84,7 @@ PassOwnPtr<PatternData> LayoutSVGResourcePattern::buildPatternData(const LayoutO
     if (!attributes.patternContentElement())
         return nullptr;
 
-    // An empty viewBox disables rendering.
+    // An empty viewBox disables layout.
     if (attributes.hasViewBox() && attributes.viewBox().isEmpty())
         return nullptr;
 
@@ -147,7 +147,7 @@ SVGPaintServer LayoutSVGResourcePattern::preparePaintServer(const LayoutObject& 
     if (attributes().patternUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX && objectBoundingBox.isEmpty())
         return SVGPaintServer::invalid();
 
-    PatternData* patternData = patternForRenderer(object);
+    PatternData* patternData = patternForLayoutObject(object);
     if (!patternData || !patternData->pattern)
         return SVGPaintServer::invalid();
 
@@ -173,16 +173,16 @@ PassRefPtr<const SkPicture> LayoutSVGResourcePattern::asPicture(const FloatRect&
     recordingContext.beginRecording(FloatRect(FloatPoint(), tileBounds.size()));
 
     ASSERT(attributes().patternContentElement());
-    LayoutSVGResourceContainer* patternRenderer =
+    LayoutSVGResourceContainer* patternLayoutObject =
         toLayoutSVGResourceContainer(attributes().patternContentElement()->layoutObject());
-    ASSERT(patternRenderer);
-    ASSERT(!patternRenderer->needsLayout());
+    ASSERT(patternLayoutObject);
+    ASSERT(!patternLayoutObject->needsLayout());
 
     SubtreeContentTransformScope contentTransformScope(contentTransform);
 
     {
-        TransformRecorder transformRecorder(recordingContext, patternRenderer->displayItemClient(), tileTransform);
-        for (LayoutObject* child = patternRenderer->firstChild(); child; child = child->nextSibling())
+        TransformRecorder transformRecorder(recordingContext, patternLayoutObject->displayItemClient(), tileTransform);
+        for (LayoutObject* child = patternLayoutObject->firstChild(); child; child = child->nextSibling())
             SVGPaintContext::paintSubtree(&recordingContext, child);
     }
 

@@ -41,19 +41,19 @@ public:
 
     static SVGResources* cachedResourcesForLayoutObject(const LayoutObject*);
 
-    // Called from all SVG renderers addChild() methods.
+    // Called from all SVG layoutObjects addChild() methods.
     static void clientWasAddedToTree(LayoutObject*, const LayoutStyle& newStyle);
 
-    // Called from all SVG renderers removeChild() methods.
+    // Called from all SVG layoutObjects removeChild() methods.
     static void clientWillBeRemovedFromTree(LayoutObject*);
 
-    // Called from all SVG renderers destroy() methods - except for LayoutSVGResourceContainer.
+    // Called from all SVG layoutObjects destroy() methods - except for LayoutSVGResourceContainer.
     static void clientDestroyed(LayoutObject*);
 
-    // Called from all SVG renderers layout() methods.
+    // Called from all SVG layoutObjects layout() methods.
     static void clientLayoutChanged(LayoutObject*);
 
-    // Called from all SVG renderers styleDidChange() methods.
+    // Called from all SVG layoutObjects styleDidChange() methods.
     static void clientStyleChanged(LayoutObject*, StyleDifference, const LayoutStyle& newStyle);
 
     // Called from LayoutSVGResourceContainer::willBeDestroyed().

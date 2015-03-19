@@ -74,16 +74,16 @@ bool LayoutSVGResourceClipper::tryPathOnlyClipping(DisplayItemClient client, Gra
     Path clipPath = Path();
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* renderer = childElement->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = childElement->layoutObject();
+        if (!layoutObject)
             continue;
         // Only shapes or paths are supported for direct clipping. We need to fallback to masking for texts.
-        if (renderer->isSVGText())
+        if (layoutObject->isSVGText())
             return false;
         if (!childElement->isSVGGraphicsElement())
             continue;
         SVGGraphicsElement* styled = toSVGGraphicsElement(childElement);
-        const LayoutStyle* style = renderer->style();
+        const LayoutStyle* style = layoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
         const SVGLayoutStyle& svgStyle = style->svgStyle();
@@ -161,11 +161,11 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture(Affin
     context.beginRecording(bounds);
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* renderer = childElement->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = childElement->layoutObject();
+        if (!layoutObject)
             continue;
 
-        const LayoutStyle* style = renderer->style();
+        const LayoutStyle* style = layoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
@@ -173,29 +173,29 @@ PassRefPtr<const SkPicture> LayoutSVGResourceClipper::createContentPicture(Affin
         bool isUseElement = isSVGUseElement(*childElement);
         if (isUseElement) {
             SVGUseElement& useElement = toSVGUseElement(*childElement);
-            renderer = useElement.rendererClipChild();
-            if (!renderer)
+            layoutObject = useElement.layoutObjectClipChild();
+            if (!layoutObject)
                 continue;
             if (!useElement.hasAttribute(SVGNames::clip_ruleAttr))
-                newClipRule = renderer->style()->svgStyle().clipRule();
+                newClipRule = layoutObject->style()->svgStyle().clipRule();
         }
 
         // Only shapes, paths and texts are allowed for clipping.
-        if (!renderer->isSVGShape() && !renderer->isSVGText())
+        if (!layoutObject->isSVGShape() && !layoutObject->isSVGText())
             continue;
 
         context.setFillRule(newClipRule);
 
         if (isUseElement)
-            renderer = childElement->layoutObject();
+            layoutObject = childElement->layoutObject();
 
-        // Switch to a paint behavior where all children of this <clipPath> will be rendered using special constraints:
+        // Switch to a paint behavior where all children of this <clipPath> will be laid out using special constraints:
         // - fill-opacity/stroke-opacity/opacity set to 1
-        // - masker/filter not applied when rendering the children
+        // - masker/filter not applied when laying out the children
         // - fill is set to the initial fill paint server (solid, black)
         // - stroke is set to the initial stroke paint server (none)
         PaintInfo info(&context, LayoutRect::infiniteIntRect(), PaintPhaseForeground, PaintBehaviorRenderingClipPathAsMask);
-        renderer->paint(info, IntPoint());
+        layoutObject->paint(info, IntPoint());
     }
 
     if (displayItemList)
@@ -208,15 +208,15 @@ void LayoutSVGResourceClipper::calculateClipContentPaintInvalidationRect()
 {
     // This is a rough heuristic to appraise the clip size and doesn't consider clip on clip.
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* renderer = childElement->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = childElement->layoutObject();
+        if (!layoutObject)
             continue;
-        if (!renderer->isSVGShape() && !renderer->isSVGText() && !isSVGUseElement(*childElement))
+        if (!layoutObject->isSVGShape() && !layoutObject->isSVGText() && !isSVGUseElement(*childElement))
             continue;
-        const LayoutStyle* style = renderer->style();
+        const LayoutStyle* style = layoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
-        m_clipBoundaries.unite(renderer->localToParentTransform().mapRect(renderer->paintInvalidationRectInLocalCoordinates()));
+        m_clipBoundaries.unite(layoutObject->localToParentTransform().mapRect(layoutObject->paintInvalidationRectInLocalCoordinates()));
     }
     m_clipBoundaries = toSVGClipPathElement(element())->calculateAnimatedLocalTransform().mapRect(m_clipBoundaries);
 }
@@ -241,14 +241,14 @@ bool LayoutSVGResourceClipper::hitTestClipContent(const FloatRect& objectBoundin
     point = animatedLocalTransform.inverse().mapPoint(point);
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* renderer = childElement->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = childElement->layoutObject();
+        if (!layoutObject)
             continue;
-        if (!renderer->isSVGShape() && !renderer->isSVGText() && !isSVGUseElement(*childElement))
+        if (!layoutObject->isSVGShape() && !layoutObject->isSVGText() && !isSVGUseElement(*childElement))
             continue;
         IntPoint hitPoint;
         HitTestResult result(hitPoint);
-        if (renderer->nodeAtFloatPoint(HitTestRequest(HitTestRequest::SVGClipContent), result, point, HitTestForeground))
+        if (layoutObject->nodeAtFloatPoint(HitTestRequest(HitTestRequest::SVGClipContent), result, point, HitTestForeground))
             return true;
     }
 

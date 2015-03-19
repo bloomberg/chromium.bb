@@ -81,14 +81,14 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(Affine
     context.setColorFilter(maskContentFilter);
 
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* renderer = childElement->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = childElement->layoutObject();
+        if (!layoutObject)
             continue;
-        const LayoutStyle* style = renderer->style();
+        const LayoutStyle* style = layoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
 
-        SVGPaintContext::paintSubtree(&context, renderer);
+        SVGPaintContext::paintSubtree(&context, layoutObject);
     }
 
     if (displayItemList)
@@ -100,13 +100,13 @@ PassRefPtr<const SkPicture> LayoutSVGResourceMasker::createContentPicture(Affine
 void LayoutSVGResourceMasker::calculateMaskContentPaintInvalidationRect()
 {
     for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element()); childElement; childElement = Traversal<SVGElement>::nextSibling(*childElement)) {
-        LayoutObject* renderer = childElement->layoutObject();
-        if (!renderer)
+        LayoutObject* layoutObject = childElement->layoutObject();
+        if (!layoutObject)
             continue;
-        const LayoutStyle* style = renderer->style();
+        const LayoutStyle* style = layoutObject->style();
         if (!style || style->display() == NONE || style->visibility() != VISIBLE)
             continue;
-        m_maskContentBoundaries.unite(renderer->localToParentTransform().mapRect(renderer->paintInvalidationRectInLocalCoordinates()));
+        m_maskContentBoundaries.unite(layoutObject->localToParentTransform().mapRect(layoutObject->paintInvalidationRectInLocalCoordinates()));
     }
 }
 

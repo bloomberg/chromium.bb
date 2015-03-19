@@ -56,7 +56,7 @@ public:
     {
         // SVGImage::draw() does a view layout prior to painting,
         // and we need that layout to know of the new size otherwise
-        // the rendering may be incorrectly using the old size.
+        // the layout may be incorrectly using the old size.
         if (m_containerSize != containerSize)
             setNeedsLayoutAndFullPaintInvalidation();
         m_containerSize = containerSize;
