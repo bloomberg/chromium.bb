@@ -8506,6 +8506,9 @@ should be able to be added at any place in this file.
   <description>
     Captive portal authorization bypass proxy is disabled.
   </description>
+  <obsolete>
+    Deprecated as of 03/2015. Option is removed.
+  </obsolete>
 </action>
 
 <action name="Options_CaptivePortalBypassProxy_Enable">
@@ -8513,6 +8516,9 @@ should be able to be added at any place in this file.
   <description>
     Captive portal authorization bypass proxy is enabled.
   </description>
+  <obsolete>
+    Deprecated as of 03/2015. Option is removed.
+  </obsolete>
 </action>
 
 <action name="Options_ChangeDefaultZoomLevel">
