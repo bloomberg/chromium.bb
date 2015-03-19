@@ -45,6 +45,7 @@ public:
     bool parseViewSpec(const String&);
     void reset();
     void detachContextElement();
+    template<typename T> void inheritViewAttributesFromElement(T*);
 
     // JS API
     SVGTransformList* transform() { return m_transform ? m_transform->baseValue() : 0; }
@@ -72,6 +73,21 @@ private:
     RefPtrWillBeMember<SVGAnimatedTransformList> m_transform;
     String m_viewTargetString;
 };
+
+template <typename T>
+void SVGViewSpec::inheritViewAttributesFromElement(T* inheritFromElement)
+{
+    if (inheritFromElement->hasAttribute(SVGNames::viewBoxAttr))
+        viewBox()->baseValue()->setValue(inheritFromElement->viewBox()->currentValue()->value());
+
+    if (inheritFromElement->hasAttribute(SVGNames::preserveAspectRatioAttr)) {
+        preserveAspectRatio()->baseValue()->setAlign(inheritFromElement->preserveAspectRatio()->currentValue()->align());
+        preserveAspectRatio()->baseValue()->setMeetOrSlice(inheritFromElement->preserveAspectRatio()->currentValue()->meetOrSlice());
+    }
+
+    if (inheritFromElement->hasAttribute(SVGNames::zoomAndPanAttr))
+        setZoomAndPan(inheritFromElement->zoomAndPan());
+}
 
 } // namespace blink
 

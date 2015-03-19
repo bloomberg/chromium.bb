@@ -713,6 +713,8 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
         if (!view)
             view = currentView(); // Create the SVGViewSpec.
 
+        view->inheritViewAttributesFromElement(this);
+
         if (view->parseViewSpec(fragmentIdentifier))
             m_useCurrentView = true;
         else
@@ -727,6 +729,10 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
     // or MyDrawing.svg#xpointer(id('MyView'))) then the closest ancestor 'svg' element is displayed in the viewport.
     // Any view specification attributes included on the given 'view' element override the corresponding view specification
     // attributes on the closest ancestor 'svg' element.
+    // TODO(ed): The spec text above is a bit unclear.
+    // Should the transform from outermost svg to nested svg be applied to "display"
+    // the inner svg in the viewport, then let the view element override the inner
+    // svg's view specification attributes. Should it fill/override the outer viewport?
     if (isSVGViewElement(anchorNode)) {
         SVGViewElement& viewElement = toSVGViewElement(*anchorNode);
 
@@ -753,24 +759,8 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
 {
     SVGViewSpec* view = currentView();
     m_useCurrentView = true;
-
-    if (viewElement->hasAttribute(SVGNames::viewBoxAttr))
-        view->viewBox()->baseValue()->setValue(viewElement->viewBox()->currentValue()->value());
-    else
-        view->viewBox()->baseValue()->setValue(viewBox()->currentValue()->value());
-
-    if (viewElement->hasAttribute(SVGNames::preserveAspectRatioAttr)) {
-        view->preserveAspectRatio()->baseValue()->setAlign(viewElement->preserveAspectRatio()->currentValue()->align());
-        view->preserveAspectRatio()->baseValue()->setMeetOrSlice(viewElement->preserveAspectRatio()->currentValue()->meetOrSlice());
-    } else {
-        view->preserveAspectRatio()->baseValue()->setAlign(preserveAspectRatio()->currentValue()->align());
-        view->preserveAspectRatio()->baseValue()->setMeetOrSlice(preserveAspectRatio()->currentValue()->meetOrSlice());
-    }
-
-    if (viewElement->hasAttribute(SVGNames::zoomAndPanAttr))
-        view->setZoomAndPan(viewElement->zoomAndPan());
-    else
-        view->setZoomAndPan(zoomAndPan());
+    view->inheritViewAttributesFromElement(this);
+    view->inheritViewAttributesFromElement(viewElement);
 }
 
 void SVGSVGElement::finishParsingChildren()
