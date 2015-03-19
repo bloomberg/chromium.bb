@@ -15,6 +15,11 @@
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// For fine-grained suppression on flaky tests.
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using content::BrowserThread;
 using base::FilePath;
 
@@ -213,6 +218,11 @@ TEST_F(PnaclTranslationCacheTest, StoreSmallOnDisk) {
 }
 
 TEST_F(PnaclTranslationCacheTest, StoreLargeOnDisk) {
+#if defined(OS_WIN)
+  // Flaky on XP bot http://crbug.com/468741
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
   // Test a value too large(?) for a single I/O operation
   InitBackend(false);
   const std::string large_buffer(kLargeNexeSize, 'a');
@@ -247,6 +257,11 @@ TEST_F(PnaclTranslationCacheTest, GetOneOnDisk) {
 }
 
 TEST_F(PnaclTranslationCacheTest, GetLargeOnDisk) {
+#if defined(OS_WIN)
+  // Flaky on XP bot http://crbug.com/468741
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
   InitBackend(false);
   const std::string large_buffer(kLargeNexeSize, 'a');
   StoreNexe(test_key, large_buffer);
