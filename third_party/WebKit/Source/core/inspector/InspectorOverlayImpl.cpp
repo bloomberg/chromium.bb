@@ -411,10 +411,12 @@ void InspectorOverlayImpl::freePage()
         m_overlayPage->willBeDestroyed();
         m_overlayPage.clear();
         m_overlayChromeClient.clear();
-        // This will clear internal structures and issue update to the client. Safe to call last.
-        hideHighlight();
     }
+    m_drawViewSize = false;
+    m_pausedInDebuggerMessage = String();
+    m_inspectModeEnabled = false;
     m_timer.stop();
+    hideHighlight();
 }
 
 void InspectorOverlayImpl::overlayResumed()
