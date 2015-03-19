@@ -11005,6 +11005,32 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Hardware.Drive.HasSeekPenalty" enum="BooleanHasSeekPenalty">
+  <owner>dbeam@chromium.org</owner>
+  <summary>
+    Whether a drive has a seek penalty (i.e. is a spinning disk). Emitted 0-2
+    times shortly after startup when constructing the initial UMA log.
+  </summary>
+</histogram>
+
+<histogram name="Hardware.Drive.HasSeekPenalty_Success" enum="BooleanSuccess">
+  <owner>dbeam@chromium.org</owner>
+  <summary>
+    Whether it was possible to determine if a drive has a seek penalty. This can
+    fail for various reasons (device drivers don't offer this information, the
+    drive is still mounting, lack of access, etc.). Emitted twice shortly after
+    startup when constructing the initial UMA log.
+  </summary>
+</histogram>
+
+<histogram name="Hardware.Drive.HasSeekPenalty_Time" units="milliseconds">
+  <owner>dbeam@chromium.org</owner>
+  <summary>
+    The amount of time it takes to determine whether a drive has a seek penalty.
+    Emitted twice shortly after startup when constructing the initial UMA log.
+  </summary>
+</histogram>
+
 <histogram name="HIDDetection.OOBEDevicesDetectedOnContinuePressed"
     enum="HIDContinueScenarioType">
   <owner>merkulova@chromium.org</owner>
@@ -45139,6 +45165,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanHasDistilledData" type="int">
   <int value="0" label="No distilled data"/>
   <int value="1" label="Has distilled data"/>
+</enum>
+
+<enum name="BooleanHasSeekPenalty" type="int">
+  <int value="0" label="Has no seek penalty (e.g. is flash memory)"/>
+  <int value="1" label="Has seek penalty (e.g. spinning disk)"/>
 </enum>
 
 <enum name="BooleanHit" type="int">
