@@ -28,8 +28,11 @@ namespace media {
 
 #define GET_V4L2_FOURCC_CHAR(a, index) ((char)( ((a) >> (8 * index)) & 0xff))
 
-// Max number of video buffers VideoCaptureDeviceLinux can allocate.
-const uint32 kMaxVideoBuffers = 2;
+// Desired number of video buffers to allocate. The actual number of allocated
+// buffers by v4l2 driver can be higher or lower than this number.
+// kNumVideoBuffers should not be too small, or Chrome may not return enough
+// buffers back to driver in time.
+const uint32 kNumVideoBuffers = 4;
 // Timeout in milliseconds v4l2_thread_ blocks waiting for a frame from the hw.
 enum { kCaptureTimeoutMs = 200 };
 // The number of continuous timeouts tolerated before treated as error.
@@ -463,13 +466,11 @@ bool VideoCaptureDeviceLinux::V4L2CaptureDelegate::AllocateVideoBuffers() {
   v4l2_requestbuffers r_buffer = {};
   r_buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   r_buffer.memory = V4L2_MEMORY_MMAP;
-  r_buffer.count = kMaxVideoBuffers;
+  r_buffer.count = kNumVideoBuffers;
   if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_REQBUFS, &r_buffer)) < 0) {
     DLOG(ERROR) << "Error requesting MMAP buffers from V4L2";
     return false;
   }
-  DCHECK_EQ(r_buffer.count, kMaxVideoBuffers);
-  r_buffer.count = std::min(r_buffer.count, kMaxVideoBuffers);
   buffer_pool_size_ = r_buffer.count;
   buffer_pool_ = new Buffer[buffer_pool_size_];
   for (unsigned int i = 0; i < r_buffer.count; ++i) {
