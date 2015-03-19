@@ -20,6 +20,7 @@
 #include "config.h"
 #include "core/layout/line/InlineBox.h"
 
+#include "core/layout/HitTestLocation.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/PaintInfo.h"
@@ -213,6 +214,14 @@ bool InlineBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result
     LayoutPoint childPoint = accumulatedOffset;
     if (parent()->layoutObject().hasFlippedBlocksWritingMode()) // Faster than calling containingBlock().
         childPoint = layoutObject().containingBlock()->flipForWritingModeForChild(&toLayoutBox(layoutObject()), childPoint);
+
+    if (layoutObject().style()->hasBorderRadius()) {
+        LayoutRect borderRect = logicalFrameRect();
+        borderRect.moveBy(accumulatedOffset);
+        FloatRoundedRect border = layoutObject().style()->getRoundedBorderFor(borderRect);
+        if (!locationInContainer.intersects(border))
+            return false;
+    }
 
     return layoutObject().hitTest(request, result, locationInContainer, childPoint);
 }
