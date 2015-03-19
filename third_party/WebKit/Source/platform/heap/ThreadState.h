@@ -543,8 +543,8 @@ public:
     template<typename T>
     void unregisterPreFinalizer(T& target)
     {
+        static_assert(sizeof(&T::invokePreFinalizer) > 0, "Declaration of USING_PRE_FINALIZER()'s prefinalizer trampoline not in scope.");
         checkThread();
-        ASSERT(&T::invokePreFinalizer);
         unregisterPreFinalizerInternal(&target);
     }
 
