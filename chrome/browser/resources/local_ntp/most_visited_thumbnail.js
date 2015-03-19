@@ -39,8 +39,11 @@ window.addEventListener('DOMContentLoaded', function() {
           data.provider));
     }
     // Creates and adds an image.
-    function createThumbnail(src) {
+    function createThumbnail(src, imageClass) {
       var image = document.createElement('img');
+      if (imageClass) {
+        image.classList.add(imageClass);
+      }
       image.onload = function() {
         var link = createMostVisitedLink(
             params, data.url, data.title, undefined, data.direction,
@@ -69,8 +72,11 @@ window.addEventListener('DOMContentLoaded', function() {
     if (data.dummy) {
       showEmptyTile();
       logEvent(NTP_LOGGING_EVENT_TYPE.NTP_EXTERNAL_TILE);
+    } else if (data.largeIconUrl) {
+      createThumbnail(data.largeIconUrl, 'large-icon');
+      // TODO(huangs): Log event for large icons.
     } else if (data.thumbnailUrl) {
-      createThumbnail(data.thumbnailUrl);
+      createThumbnail(data.thumbnailUrl, 'thumbnail');
       logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_TILE);
     } else if (data.domain) {
       showDomainElement();
