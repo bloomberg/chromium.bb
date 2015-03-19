@@ -3098,11 +3098,6 @@
                   'VCCLCompilerTool': { 'WarnAsError': 'false' },
                 }
               }],
-              ['clang==1', {
-                'msvs_settings': {
-                  'VCCLCompilerTool': { 'WarnAsError': 'false' },
-                }
-              }],
               [ 'component=="shared_library"', {
               # TODO(darin): Unfortunately, some third_party code depends on base.
                 'msvs_disabled_warnings': [
