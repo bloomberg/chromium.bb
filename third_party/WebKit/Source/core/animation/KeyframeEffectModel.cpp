@@ -68,7 +68,6 @@ void KeyframeEffectModelBase::sample(int iteration, double fraction, double iter
 void KeyframeEffectModelBase::forceConversionsToAnimatableValues(Element& element, const LayoutStyle* baseStyle)
 {
     ensureKeyframeGroups();
-    element.updateDistribution();
     snapshotCompositableProperties(element, baseStyle);
     ensureInterpolationEffect(&element, baseStyle);
 }
