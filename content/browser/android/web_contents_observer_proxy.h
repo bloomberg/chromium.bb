@@ -32,8 +32,8 @@ class WebContentsObserverProxy : public WebContentsObserver {
  private:
   void RenderViewReady() override;
   void RenderProcessGone(base::TerminationStatus termination_status) override;
-  void DidStartLoading(RenderViewHost* render_view_host) override;
-  void DidStopLoading(RenderViewHost* render_view_host) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
   void DidFailProvisionalLoad(RenderFrameHost* render_frame_host,
                               const GURL& validated_url,
                               int error_code,

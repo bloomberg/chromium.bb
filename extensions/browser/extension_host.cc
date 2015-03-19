@@ -267,7 +267,7 @@ void ExtensionHost::RenderProcessGone(base::TerminationStatus status) {
       content::Details<ExtensionHost>(this));
 }
 
-void ExtensionHost::DidStartLoading(content::RenderViewHost* render_view_host) {
+void ExtensionHost::DidStartLoading() {
   if (!has_loaded_once_) {
     FOR_EACH_OBSERVER(DeferredStartRenderHostObserver,
                       deferred_start_render_host_observer_list_,
@@ -275,7 +275,7 @@ void ExtensionHost::DidStartLoading(content::RenderViewHost* render_view_host) {
   }
 }
 
-void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
+void ExtensionHost::DidStopLoading() {
   // Only record UMA for the first load. Subsequent loads will likely behave
   // quite different, and it's first load we're most interested in.
   bool first_load = !has_loaded_once_;

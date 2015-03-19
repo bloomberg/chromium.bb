@@ -180,7 +180,7 @@ bool CoreTabHelper::GetStatusTextForWebContents(
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsObserver overrides
 
-void CoreTabHelper::DidStartLoading(content::RenderViewHost* render_view_host) {
+void CoreTabHelper::DidStartLoading() {
   UpdateContentRestrictions(0);
 }
 

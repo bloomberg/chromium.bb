@@ -275,7 +275,7 @@ class TitleWatcher : public WebContentsObserver {
 
  private:
   // Overridden WebContentsObserver methods.
-  void DidStopLoading(RenderViewHost* render_view_host) override;
+  void DidStopLoading() override;
   void TitleWasSet(NavigationEntry* entry, bool explicit_set) override;
 
   void TestTitle();

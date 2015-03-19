@@ -162,8 +162,7 @@ void ThumbnailTabHelper::RenderViewDeleted(
   }
 }
 
-void ThumbnailTabHelper::DidStartLoading(
-    content::RenderViewHost* render_view_host) {
+void ThumbnailTabHelper::DidStartLoading() {
   load_interrupted_ = false;
 }
 

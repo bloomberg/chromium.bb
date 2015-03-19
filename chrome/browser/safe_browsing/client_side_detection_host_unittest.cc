@@ -245,9 +245,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     csd_host_->OnPhishingDetectionDone(verdict_str);
   }
 
-  void DidStopLoading() {
-    csd_host_->DidStopLoading(pending_rvh());
-  }
+  void DidStopLoading() { csd_host_->DidStopLoading(); }
 
   void UpdateIPUrlMap(const std::string& ip, const std::string& host) {
     csd_host_->UpdateIPUrlMap(ip, host, "", "", content::RESOURCE_TYPE_OBJECT);

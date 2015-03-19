@@ -17,8 +17,8 @@ class PasswordManagerInternalsUI : public content::WebUIController,
   ~PasswordManagerInternalsUI() override;
 
   // WebContentsObserver implementation.
-  void DidStartLoading(content::RenderViewHost* render_view_host) override;
-  void DidStopLoading(content::RenderViewHost* render_view_host) override;
+  void DidStartLoading() override;
+  void DidStopLoading() override;
 
   // LogReceiver implementation.
   void LogSavePasswordProgress(const std::string& text) override;

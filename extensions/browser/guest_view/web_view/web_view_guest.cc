@@ -315,7 +315,7 @@ void WebViewGuest::AttachWebViewHelpers(WebContents* contents) {
   web_view_permission_helper_.reset(new WebViewPermissionHelper(this));
 }
 
-void WebViewGuest::DidStopLoading() {
+void WebViewGuest::GuestViewDidStopLoading() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   DispatchEventToView(
       new GuestViewBase::Event(webview::kEventLoadStop, args.Pass()));

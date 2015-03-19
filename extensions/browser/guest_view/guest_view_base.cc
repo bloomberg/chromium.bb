@@ -545,18 +545,19 @@ double GuestViewBase::PhysicalPixelsToLogicalPixels(int physical_pixels) {
   return physical_pixels / zoom_factor;
 }
 
-void GuestViewBase::DidStopLoading(content::RenderViewHost* render_view_host) {
-  if (IsPreferredSizeModeEnabled()) {
-    render_view_host->EnablePreferredSizeMode();
-  }
+void GuestViewBase::DidStopLoading() {
+  content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
+
+  if (IsPreferredSizeModeEnabled())
+    rvh->EnablePreferredSizeMode();
   if (!IsDragAndDropEnabled()) {
-    const char script[] = "window.addEventListener('dragstart', function() { "
-                          "  window.event.preventDefault(); "
-                          "});";
-    render_view_host->GetMainFrame()->ExecuteJavaScript(
-        base::ASCIIToUTF16(script));
+    const char script[] =
+        "window.addEventListener('dragstart', function() { "
+        "  window.event.preventDefault(); "
+        "});";
+    rvh->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16(script));
   }
-  DidStopLoading();
+  GuestViewDidStopLoading();
 }
 
 void GuestViewBase::RenderViewReady() {

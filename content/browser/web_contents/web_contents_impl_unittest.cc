@@ -2765,12 +2765,8 @@ class LoadingWebContentsObserver : public WebContentsObserver {
   }
   ~LoadingWebContentsObserver() override {}
 
-  void DidStartLoading(RenderViewHost* rvh) override {
-    is_loading_ = true;
-  }
-  void DidStopLoading(RenderViewHost* rvh) override {
-    is_loading_ = false;
-  }
+  void DidStartLoading() override { is_loading_ = true; }
+  void DidStopLoading() override { is_loading_ = false; }
 
   bool is_loading() const { return is_loading_; }
 

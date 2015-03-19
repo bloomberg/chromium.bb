@@ -33,11 +33,12 @@ void NavigationMetricsRecorder::DidNavigateMainFrame(
                                                 details.is_in_page);
 }
 
-void NavigationMetricsRecorder::DidStartLoading(
-    content::RenderViewHost* render_view_host) {
+void NavigationMetricsRecorder::DidStartLoading() {
 #if defined(OS_WIN) && defined(USE_ASH)
-  if (render_view_host && base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    content::RenderWidgetHostView* rwhv = render_view_host->GetView();
+  content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
+
+  if (rvh && base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    content::RenderWidgetHostView* rwhv = rvh->GetView();
     if (rwhv) {
       gfx::NativeView native_view = rwhv->GetNativeView();
       if (native_view) {
@@ -51,5 +52,3 @@ void NavigationMetricsRecorder::DidStartLoading(
   }
 #endif
 }
-
-

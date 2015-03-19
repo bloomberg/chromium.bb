@@ -125,7 +125,7 @@ void ExtensionOptionsGuest::DidInitialize(
                                           std::string());
 }
 
-void ExtensionOptionsGuest::DidStopLoading() {
+void ExtensionOptionsGuest::GuestViewDidStopLoading() {
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   DispatchEventToView(new GuestViewBase::Event(
       extension_options_internal::OnLoad::kEventName, args.Pass()));

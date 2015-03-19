@@ -311,10 +311,8 @@ class NavigationOrSwapObserver : public WebContentsObserver,
   }
 
   // WebContentsObserver implementation:
-  void DidStartLoading(RenderViewHost* render_view_host) override {
-    did_start_loading_ = true;
-  }
-  void DidStopLoading(RenderViewHost* render_view_host) override {
+  void DidStartLoading() override { did_start_loading_ = true; }
+  void DidStopLoading() override {
     if (!did_start_loading_)
       return;
     number_of_loads_--;

@@ -3078,7 +3078,7 @@ TEST_F(NavigationControllerTest, ShowBrowserURLAfterFailUntilModified) {
   params.showing_repost_interstitial = false;
   main_test_rfh()->OnMessageReceived(
       FrameHostMsg_DidFailProvisionalLoadWithError(0, params));
-  contents()->SetIsLoading(test_rvh(), false, true, NULL);
+  contents()->SetIsLoading(false, true, NULL);
   EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
 
   // If something else later modifies the contents of the about:blank page, then

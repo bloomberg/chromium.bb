@@ -100,8 +100,7 @@ void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
                                          web_contents());
 }
 
-void PrerenderTabHelper::DidStopLoading(
-    content::RenderViewHost* render_view_host) {
+void PrerenderTabHelper::DidStopLoading() {
   // Compute the PPLT metric and report it in a histogram, if needed. If the
   // page is still prerendering, record the not swapped in page load time
   // instead.

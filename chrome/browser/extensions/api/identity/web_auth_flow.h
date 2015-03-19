@@ -101,7 +101,7 @@ class WebAuthFlow : public content::NotificationObserver,
                const content::NotificationDetails& details) override;
 
   // WebContentsObserver implementation.
-  void DidStopLoading(content::RenderViewHost* render_view_host) override;
+  void DidStopLoading() override;
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;

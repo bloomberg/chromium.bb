@@ -38,11 +38,11 @@ class TestNavigationObserver::TestWebContentsObserver
     parent_->OnWebContentsDestroyed(this, web_contents());
   }
 
-  void DidStartLoading(RenderViewHost* render_view_host) override {
+  void DidStartLoading() override {
     parent_->OnDidStartLoading(web_contents());
   }
 
-  void DidStopLoading(RenderViewHost* render_view_host) override {
+  void DidStopLoading() override {
     parent_->OnDidStopLoading(web_contents());
   }
 

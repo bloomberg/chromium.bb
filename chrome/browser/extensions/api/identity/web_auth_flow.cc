@@ -231,7 +231,7 @@ void WebAuthFlow::DidFailProvisionalLoad(
     delegate_->OnAuthFlowFailure(LOAD_FAILED);
 }
 
-void WebAuthFlow::DidStopLoading(RenderViewHost* render_view_host) {
+void WebAuthFlow::DidStopLoading() {
   AfterUrlLoaded();
 }
 

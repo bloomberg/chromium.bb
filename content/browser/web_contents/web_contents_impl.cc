@@ -3392,8 +3392,7 @@ bool WebContentsImpl::HasAccessedInitialDocument() {
 
 // Notifies the RenderWidgetHost instance about the fact that the page is
 // loading, or done loading.
-void WebContentsImpl::SetIsLoading(RenderViewHost* render_view_host,
-                                   bool is_loading,
+void WebContentsImpl::SetIsLoading(bool is_loading,
                                    bool to_different_document,
                                    LoadNotificationDetails* details) {
   if (is_loading == is_loading_)
@@ -3421,13 +3420,11 @@ void WebContentsImpl::SetIsLoading(RenderViewHost* render_view_host,
   if (is_loading) {
     TRACE_EVENT_ASYNC_BEGIN1("browser,navigation", "WebContentsImpl Loading",
                              this, "URL", url);
-    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                      DidStartLoading(render_view_host));
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidStartLoading());
   } else {
     TRACE_EVENT_ASYNC_END1("browser,navigation", "WebContentsImpl Loading",
                            this, "URL", url);
-    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                      DidStopLoading(render_view_host));
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_, DidStopLoading());
   }
 
   // TODO(avi): Remove. http://crbug.com/170921
@@ -3835,7 +3832,7 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
   if (delegate_)
     delegate_->HideValidationMessage(this);
 
-  SetIsLoading(rvh, false, true, NULL);
+  SetIsLoading(false, true, nullptr);
   NotifyDisconnected();
   SetIsCrashed(status, error_code);
 
@@ -3943,8 +3940,7 @@ void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {
 
 void WebContentsImpl::DidStartLoading(RenderFrameHost* render_frame_host,
                                       bool to_different_document) {
-  SetIsLoading(render_frame_host->GetRenderViewHost(), true,
-               to_different_document, NULL);
+  SetIsLoading(true, to_different_document, nullptr);
 
   // Notify accessibility that the user is navigating away from the
   // current document.
@@ -3980,8 +3976,7 @@ void WebContentsImpl::DidStopLoading(RenderFrameHost* render_frame_host) {
         controller_.GetCurrentEntryIndex()));
   }
 
-  SetIsLoading(render_frame_host->GetRenderViewHost(), false, true,
-               details.get());
+  SetIsLoading(false, true, details.get());
 }
 
 void WebContentsImpl::DidCancelLoading() {

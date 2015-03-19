@@ -545,8 +545,7 @@ void PrerenderContents::RenderFrameCreated(
       render_frame_host->GetRoutingID(), true));
 }
 
-void PrerenderContents::DidStopLoading(
-    content::RenderViewHost* render_view_host) {
+void PrerenderContents::DidStopLoading() {
   has_stopped_loading_ = true;
   NotifyPrerenderStopLoading();
 }

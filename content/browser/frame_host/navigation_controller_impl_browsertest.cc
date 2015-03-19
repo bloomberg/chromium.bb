@@ -289,7 +289,7 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
       message_loop_runner_->Quit();
   }
 
-  void DidStopLoading(RenderViewHost* render_view_host) override {
+  void DidStopLoading() override {
     if (!navigations_remaining_)
       message_loop_runner_->Quit();
   }
@@ -359,9 +359,7 @@ class LoadCommittedCapturer : public WebContentsObserver {
       message_loop_runner_->Quit();
   }
 
-  void DidStopLoading(RenderViewHost* render_view_host) override {
-    message_loop_runner_->Quit();
-  }
+  void DidStopLoading() override { message_loop_runner_->Quit(); }
 
   // The id of the FrameTreeNode whose navigations to observe.
   int frame_tree_node_id_;

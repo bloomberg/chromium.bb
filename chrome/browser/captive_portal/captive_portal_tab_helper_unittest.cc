@@ -245,12 +245,12 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(CaptivePortalTabHelperTest, HttpSuccess) {
   SimulateSuccess(GURL(kHttpUrl), render_view_host1());
-  tab_helper().DidStopLoading(render_view_host1());
+  tab_helper().DidStopLoading();
 }
 
 TEST_F(CaptivePortalTabHelperTest, HttpTimeout) {
   SimulateTimeout(GURL(kHttpUrl), render_view_host1());
-  tab_helper().DidStopLoading(render_view_host1());
+  tab_helper().DidStopLoading();
 }
 
 // Same as above, but simulates what happens when the Link Doctor is enabled,
@@ -268,12 +268,12 @@ TEST_F(CaptivePortalTabHelperTest, HttpTimeoutLinkDoctor) {
   tab_helper().DidCommitProvisionalLoadForFrame(main_render_frame1(),
                                                 GURL(kErrorPageUrl),
                                                 ui::PAGE_TRANSITION_LINK);
-  tab_helper().DidStopLoading(render_view_host1());
+  tab_helper().DidStopLoading();
 }
 
 TEST_F(CaptivePortalTabHelperTest, HttpsSuccess) {
   SimulateSuccess(GURL(kHttpsUrl), render_view_host1());
-  tab_helper().DidStopLoading(render_view_host1());
+  tab_helper().DidStopLoading();
   EXPECT_FALSE(tab_helper().IsLoginTab());
 }
 

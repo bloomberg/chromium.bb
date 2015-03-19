@@ -795,7 +795,7 @@ const base::string16& TitleWatcher::WaitAndGetTitle() {
   return observed_title_;
 }
 
-void TitleWatcher::DidStopLoading(RenderViewHost* render_view_host) {
+void TitleWatcher::DidStopLoading() {
   // When navigating through the history, the restored NavigationEntry's title
   // will be used. If the entry ends up having the same title after we return
   // to it, as will usually be the case, then WebContentsObserver::TitleSet

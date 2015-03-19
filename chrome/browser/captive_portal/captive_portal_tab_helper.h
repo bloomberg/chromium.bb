@@ -81,7 +81,7 @@ class CaptivePortalTabHelper
                               int error_code,
                               const base::string16& error_description) override;
 
-  void DidStopLoading(content::RenderViewHost* render_view_host) override;
+  void DidStopLoading() override;
 
   // content::NotificationObserver:
   void Observe(int type,

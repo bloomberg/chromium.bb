@@ -510,7 +510,7 @@ void ClientSideDetectionHost::OnMalwarePreClassificationDone(
   MaybeStartMalwareFeatureExtraction();
 }
 
-void ClientSideDetectionHost::DidStopLoading(content::RenderViewHost* rvh) {
+void ClientSideDetectionHost::DidStopLoading() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!csd_service_ || !browse_info_.get())
     return;

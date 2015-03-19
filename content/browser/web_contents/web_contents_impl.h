@@ -660,8 +660,7 @@ class CONTENT_EXPORT WebContentsImpl
   // Changes the IsLoading state and notifies the delegate as needed.
   // |details| is used to provide details on the load that just finished
   // (but can be null if not applicable).
-  void SetIsLoading(RenderViewHost* render_view_host,
-                    bool is_loading,
+  void SetIsLoading(bool is_loading,
                     bool to_different_document,
                     LoadNotificationDetails* details) override;
 

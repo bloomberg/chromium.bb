@@ -525,7 +525,7 @@ class WebContentsLoadedOrDestroyedWatcher
 
   // Overridden WebContentsObserver methods.
   void WebContentsDestroyed() override;
-  void DidStopLoading(content::RenderViewHost* render_view_host) override;
+  void DidStopLoading() override;
 
  private:
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
@@ -549,8 +549,7 @@ void WebContentsLoadedOrDestroyedWatcher::WebContentsDestroyed() {
   message_loop_runner_->Quit();
 }
 
-void WebContentsLoadedOrDestroyedWatcher::DidStopLoading(
-    content::RenderViewHost* render_view_host) {
+void WebContentsLoadedOrDestroyedWatcher::DidStopLoading() {
   message_loop_runner_->Quit();
 }
 

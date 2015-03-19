@@ -162,8 +162,7 @@ void BackgroundContents::RenderProcessGone(base::TerminationStatus status) {
   delete this;
 }
 
-void BackgroundContents::DidStartLoading(
-    content::RenderViewHost* render_view_host) {
+void BackgroundContents::DidStartLoading() {
   // BackgroundContents only loads once, so this can only be the first time it
   // has started loading.
   FOR_EACH_OBSERVER(extensions::DeferredStartRenderHostObserver,
@@ -171,8 +170,7 @@ void BackgroundContents::DidStartLoading(
                     OnDeferredStartRenderHostDidStartFirstLoad(this));
 }
 
-void BackgroundContents::DidStopLoading(
-    content::RenderViewHost* render_view_host) {
+void BackgroundContents::DidStopLoading() {
   // BackgroundContents only loads once, so this can only be the first time
   // it has stopped loading.
   FOR_EACH_OBSERVER(extensions::DeferredStartRenderHostObserver,

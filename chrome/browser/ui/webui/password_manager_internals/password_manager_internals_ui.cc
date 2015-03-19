@@ -49,15 +49,13 @@ PasswordManagerInternalsUI::~PasswordManagerInternalsUI() {
   UnregisterFromLoggingServiceIfNecessary();
 }
 
-void PasswordManagerInternalsUI::DidStartLoading(
-    content::RenderViewHost* /* render_view_host */) {
+void PasswordManagerInternalsUI::DidStartLoading() {
   // In case this tab is being reloaded, unregister itself until the reload is
   // completed.
   UnregisterFromLoggingServiceIfNecessary();
 }
 
-void PasswordManagerInternalsUI::DidStopLoading(
-    content::RenderViewHost* /* render_view_host */) {
+void PasswordManagerInternalsUI::DidStopLoading() {
   DCHECK(!registered_with_logging_service_);
   PasswordManagerInternalsService* service =
       PasswordManagerInternalsServiceFactory::GetForBrowserContext(

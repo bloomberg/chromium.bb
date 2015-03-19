@@ -23,7 +23,7 @@ class NavigationMetricsRecorder
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 
-  void DidStartLoading(content::RenderViewHost* render_view_host) override;
+  void DidStartLoading() override;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationMetricsRecorder);
 };

@@ -128,7 +128,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
 
   // Inherited from WebContentsObserver.  This is called once the page is
   // done loading.
-  void DidStopLoading(content::RenderViewHost* rvh) override;
+  void DidStopLoading() override;
 
   // Returns true if the user has seen a regular SafeBrowsing
   // interstitial for the current page.  This is only true if the user has

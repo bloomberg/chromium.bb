@@ -244,8 +244,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // These two methods correspond to the points in time when the spinner of the
   // tab starts and stops spinning.
-  virtual void DidStartLoading(RenderViewHost* render_view_host) {}
-  virtual void DidStopLoading(RenderViewHost* render_view_host) {}
+  virtual void DidStartLoading() {}
+  virtual void DidStopLoading() {}
 
   // When WebContents::Stop() is called, the WebContents stops loading and then
   // invokes this method. If there are ongoing navigations, their respective

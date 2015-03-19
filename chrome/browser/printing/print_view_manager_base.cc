@@ -202,8 +202,7 @@ void PrintViewManagerBase::OnShowInvalidPrinterSettingsError() {
                          chrome::MESSAGE_BOX_TYPE_WARNING);
 }
 
-void PrintViewManagerBase::DidStartLoading(
-    content::RenderViewHost* render_view_host) {
+void PrintViewManagerBase::DidStartLoading() {
   UpdateScriptedPrintingBlocked();
 }
 

@@ -497,14 +497,14 @@ struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
   }
 
   // WebContentsObserver:
-  void DidStartLoading(RenderViewHost* render_view_host) override {
+  void DidStartLoading() override {
     EXPECT_FALSE(did_start_loading);
     EXPECT_EQ(0U, progresses.size());
     EXPECT_FALSE(did_stop_loading);
     did_start_loading = true;
   }
 
-  void DidStopLoading(RenderViewHost* render_view_host) override {
+  void DidStopLoading() override {
     EXPECT_TRUE(did_start_loading);
     EXPECT_GE(progresses.size(), 1U);
     EXPECT_FALSE(did_stop_loading);
@@ -642,4 +642,3 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 }
 
 }  // namespace content
-

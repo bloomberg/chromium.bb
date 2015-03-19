@@ -97,7 +97,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
   void DidAttachToEmbedder() override;
   void DidDropLink(const GURL& url) override;
   void DidInitialize(const base::DictionaryValue& create_params) override;
-  void DidStopLoading() override;
+  void GuestViewDidStopLoading() override;
   void EmbedderFullscreenToggled(bool entered_fullscreen) override;
   void EmbedderWillBeDestroyed() override;
   const char* GetAPINamespace() const override;

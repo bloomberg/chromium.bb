@@ -41,7 +41,7 @@ class ThumbnailTabHelper
 
   // content::WebContentsObserver overrides.
   void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
-  void DidStartLoading(content::RenderViewHost* render_view_host) override;
+  void DidStartLoading() override;
   void NavigationStopped() override;
 
   // Update the thumbnail of the given tab contents if necessary.

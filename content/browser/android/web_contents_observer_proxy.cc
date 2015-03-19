@@ -79,8 +79,7 @@ void WebContentsObserverProxy::RenderProcessGone(
                                                   was_oom_protected);
 }
 
-void WebContentsObserverProxy::DidStartLoading(
-    RenderViewHost* render_view_host) {
+void WebContentsObserverProxy::DidStartLoading() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
@@ -91,8 +90,7 @@ void WebContentsObserverProxy::DidStartLoading(
                                                 jstring_url.obj());
 }
 
-void WebContentsObserverProxy::DidStopLoading(
-    RenderViewHost* render_view_host) {
+void WebContentsObserverProxy::DidStopLoading() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())

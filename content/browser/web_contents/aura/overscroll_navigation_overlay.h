@@ -89,7 +89,7 @@ class CONTENT_EXPORT OverscrollNavigationOverlay
 
   // Overridden from WebContentsObserver:
   void DidFirstVisuallyNonEmptyPaint() override;
-  void DidStopLoading(RenderViewHost* host) override;
+  void DidStopLoading() override;
 
   // The WebContents which is being navigated.
   WebContentsImpl* web_contents_;

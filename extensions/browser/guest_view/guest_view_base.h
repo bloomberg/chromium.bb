@@ -103,7 +103,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   // This method is called when the initial set of frames within the page have
   // completed loading.
-  virtual void DidStopLoading() {}
+  virtual void GuestViewDidStopLoading() {}
 
   // This method is called before the embedder is destroyed.
   // |owner_web_contents_| should still be valid during this call. This
@@ -323,7 +323,7 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   double PhysicalPixelsToLogicalPixels(int physical_pixels);
 
   // WebContentsObserver implementation.
-  void DidStopLoading(content::RenderViewHost* render_view_host) final;
+  void DidStopLoading() final;
   void RenderViewReady() final;
   void WebContentsDestroyed() final;
 
