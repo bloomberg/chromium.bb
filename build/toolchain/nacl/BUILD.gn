@@ -9,7 +9,7 @@ declare_args() {
   nacl_toolchain_dir = rebase_path("//native_client/toolchain", root_build_dir)
 }
 
-os_toolchain_dir = "${nacl_toolchain_dir}/${os}_x86"
+os_toolchain_dir = "${nacl_toolchain_dir}/${current_os}_x86"
 
 # Add the toolchain revision as a preprocessor define so that sources are
 # rebuilt when a toolchain is updated.
