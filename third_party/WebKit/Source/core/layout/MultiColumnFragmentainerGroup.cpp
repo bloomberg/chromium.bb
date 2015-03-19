@@ -143,7 +143,7 @@ LayoutSize MultiColumnFragmentainerGroup::flowThreadTranslationAtOffset(LayoutUn
 LayoutUnit MultiColumnFragmentainerGroup::columnLogicalTopForOffset(LayoutUnit offsetInFlowThread) const
 {
     unsigned columnIndex = columnIndexAtOffset(offsetInFlowThread, AssumeNewColumns);
-    return m_logicalTopInFlowThread + columnIndex * m_columnHeight;
+    return logicalTopInFlowThreadAt(columnIndex);
 }
 
 LayoutPoint MultiColumnFragmentainerGroup::visualPointToFlowThreadPoint(const LayoutPoint& visualPoint) const
@@ -456,7 +456,7 @@ LayoutRect MultiColumnFragmentainerGroup::columnRectAt(unsigned columnIndex) con
 
 LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionRectAt(unsigned columnIndex) const
 {
-    LayoutUnit logicalTop = m_logicalTopInFlowThread + columnIndex * m_columnHeight;
+    LayoutUnit logicalTop = logicalTopInFlowThreadAt(columnIndex);
     if (m_columnSet.isHorizontalWritingMode())
         return LayoutRect(LayoutUnit(), logicalTop, m_columnSet.pageLogicalWidth(), m_columnHeight);
     return LayoutRect(logicalTop, LayoutUnit(), m_columnHeight, m_columnSet.pageLogicalWidth());
