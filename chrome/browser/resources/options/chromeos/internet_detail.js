@@ -215,6 +215,7 @@ cr.define('options.internet', function() {
       var guid = parseQueryParams(window.location).guid;
       if (!guid || !guid.length)
         return;
+      chrome.send('loadVPNProviders');
       chrome.networkingPrivate.getManagedProperties(
           guid, DetailsInternetPage.initializeDetailsPage);
     },
@@ -756,7 +757,9 @@ cr.define('options.internet', function() {
     populateHeader_: function() {
       var onc = this.onc_;
 
-      $('network-details-title').textContent = onc.getTranslatedValue('Name');
+      $('network-details-title').textContent =
+          this.networkTitle_ || onc.getTranslatedValue('Name');
+
       var connectionState = onc.getActiveValue('ConnectionState');
       var connectionStateString = onc.getTranslatedValue('ConnectionState');
       $('network-details-subtitle-status').textContent = connectionStateString;
@@ -1185,8 +1188,12 @@ cr.define('options.internet', function() {
     } else if (type == 'Cellular') {
       autoConnectCheckboxId = 'auto-connect-network-cellular';
     } else if (type == 'VPN') {
-      oncData.setProperty('VPN.Host', $('inet-server-hostname').value);
-      autoConnectCheckboxId = 'auto-connect-network-vpn';
+      var providerType = detailsPage.onc_.getActiveValue('VPN.Type');
+      if (providerType != 'ThirdPartyVPN') {
+        oncData.setProperty('VPN.Type', providerType);
+        oncData.setProperty('VPN.Host', $('inet-server-hostname').value);
+        autoConnectCheckboxId = 'auto-connect-network-vpn';
+      }
     }
     if (autoConnectCheckboxId != '') {
       var autoConnectCheckbox =
@@ -1304,6 +1311,16 @@ cr.define('options.internet', function() {
     detailsPage.type_ = type;
 
     sendShowDetailsMetrics(type, onc.getActiveValue('ConnectionState'));
+
+    if (type == 'VPN') {
+      // Cache the dialog title, which will contain the provider name in the
+      // case of a third-party VPN provider. This caching is important as the
+      // provider may go away while the details dialog is being shown, causing
+      // subsequent updates to be unable to determine the correct title.
+      detailsPage.networkTitle_ = options.VPNProviders.formatNetworkName(onc);
+    } else {
+      delete detailsPage.networkTitle_;
+    }
 
     detailsPage.populateHeader_();
     detailsPage.updateConnectionButtonVisibilty_();
@@ -1636,33 +1653,50 @@ cr.define('options.internet', function() {
       $('auto-connect-network-cellular').disabled = false;
     } else if (type == 'VPN') {
       OptionsPage.showTab($('vpn-nav-tab'));
+      var providerType = onc.getActiveValue('VPN.Type');
+      var isThirdPartyVPN = providerType == 'ThirdPartyVPN';
+      $('vpn-tab').classList.toggle('third-party-vpn-provider',
+                                    isThirdPartyVPN);
+
       $('inet-service-name').textContent = networkName;
       $('inet-provider-type').textContent =
           onc.getTranslatedValue('VPN.Type');
-      var providerType = onc.getActiveValue('VPN.Type');
-      var usernameKey;
-      if (providerType == 'OpenVPN')
-        usernameKey = 'VPN.OpenVPN.Username';
-      else if (providerType == 'L2TP-IPsec')
-        usernameKey = 'VPN.L2TP.Username';
 
-      if (usernameKey) {
-        $('inet-username').parentElement.hidden = false;
-        $('inet-username').textContent = onc.getActiveValue(usernameKey);
+      if (isThirdPartyVPN) {
+        $('inet-provider-name').textContent = '';
+        var extensionID = onc.getActiveValue('VPN.ThirdPartyVPN.ExtensionID');
+        var providers = options.VPNProviders.getProviders();
+        for (var i = 0; i < providers.length; ++i) {
+          if (extensionID == providers[i].extensionID) {
+            $('inet-provider-name').textContent = providers[i].name;
+            break;
+          }
+        }
       } else {
-        $('inet-username').parentElement.hidden = true;
+        var usernameKey;
+        if (providerType == 'OpenVPN')
+          usernameKey = 'VPN.OpenVPN.Username';
+        else if (providerType == 'L2TP-IPsec')
+          usernameKey = 'VPN.L2TP.Username';
+
+        if (usernameKey) {
+          $('inet-username').parentElement.hidden = false;
+          $('inet-username').textContent = onc.getActiveValue(usernameKey);
+        } else {
+          $('inet-username').parentElement.hidden = true;
+        }
+        var inetServerHostname = $('inet-server-hostname');
+        inetServerHostname.value = onc.getActiveValue('VPN.Host');
+        inetServerHostname.resetHandler = function() {
+          PageManager.hideBubble();
+          var recommended = onc.getRecommendedValue('VPN.Host');
+          if (recommended != undefined)
+            inetServerHostname.value = recommended;
+        };
+        $('auto-connect-network-vpn').checked =
+            onc.getActiveValue('VPN.AutoConnect');
+        $('auto-connect-network-vpn').disabled = false;
       }
-      var inetServerHostname = $('inet-server-hostname');
-      inetServerHostname.value = onc.getActiveValue('VPN.Host');
-      inetServerHostname.resetHandler = function() {
-        PageManager.hideBubble();
-        var recommended = onc.getRecommendedValue('VPN.Host');
-        if (recommended != undefined)
-          inetServerHostname.value = recommended;
-      };
-      $('auto-connect-network-vpn').checked =
-          onc.getActiveValue('VPN.AutoConnect');
-      $('auto-connect-network-vpn').disabled = false;
     } else {
       OptionsPage.showTab($('internet-nav-tab'));
     }

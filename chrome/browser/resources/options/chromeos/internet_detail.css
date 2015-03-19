@@ -53,6 +53,14 @@
   padding: 4px;
 }
 
+#vpn-tab.third-party-vpn-provider tr.built-in-vpn-provider-only {
+  display: none;
+}
+
+#vpn-tab:not(.third-party-vpn-provider) tr.third-party-vpn-provider-only {
+  display: none;
+}
+
 #ip-config-list {
   min-height: 96px !important;
 }

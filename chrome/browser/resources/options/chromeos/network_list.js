@@ -133,6 +133,8 @@ cr.define('options.network', function() {
   function getNetworkName(data) {
     if (data.Type == 'Ethernet')
       return loadTimeData.getString('ethernetName');
+    if (data.Type == 'VPN')
+      return options.VPNProviders.formatNetworkName(new cr.onc.OncData(data));
     return data.Name;
   }
 

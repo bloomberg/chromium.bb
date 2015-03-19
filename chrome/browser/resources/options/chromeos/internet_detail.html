@@ -203,7 +203,7 @@
     <div id="vpn-tab" class="subpages-tab-contents vpn-details">
       <section>
         <table class="option-control-table">
-          <tr class="auto-connect-network">
+          <tr class="auto-connect-network built-in-vpn-provider-only">
             <td>
               <div class="checkbox controlled-setting-with-label">
                 <label>
@@ -222,7 +222,7 @@
             <td class="option-name" i18n-content="inetServiceName"></td>
             <td id="inet-service-name" class="option-value"></td>
           </tr>
-          <tr>
+          <tr class="built-in-vpn-provider-only">
             <td class="option-name" i18n-content="inetServerHostname"></td>
             <td>
               <input class="option-value" id="inet-server-hostname"></input>
@@ -235,7 +235,11 @@
             <td class="option-name" i18n-content="inetProviderType"></td>
             <td id="inet-provider-type" class="option-value"></td>
           </tr>
-          <tr>
+          <tr class="third-party-vpn-provider-only">
+            <td class="option-name" i18n-content="inetProviderName"></td>
+            <td id="inet-provider-name" class="option-value"></td>
+          </tr>
+          <tr class="built-in-vpn-provider-only">
             <td class="option-name" i18n-content="inetUsername"></td>
             <td id="inet-username" class="option-value"></td>
           </tr>

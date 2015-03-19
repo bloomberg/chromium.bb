@@ -1874,6 +1874,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_PRIVATE_NETWORK" desc="Title for Virtual Private Network (VPN) group on the settings page">
     Private network
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_SECTION_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
+    <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADD_CONNECTION" desc="Title for control to add a new network connection." >
     Add connection
   </message>
@@ -2657,6 +2660,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN" desc="In settings Internet options, a string specifying OpenVPN.">
     OpenVPN
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_THIRD_PARTY_VPN" desc="In settings Internet options, a string indicating that a VPN connection is provided by a third party.">
+    Third party
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVICE_NAME" desc="In settings Internet options, a string specifying VPN service name.">
     Service name:
   </message>
@@ -2665,6 +2671,9 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PROVIDER_TYPE" desc="In settings Internet options, a string specifying VPN provider type.">
     Provider type:
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PROVIDER_NAME" desc="In settings Internet options, a string specifying VPN provider name.">
+    Provider name:
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_PSK_PASSPHRASE" desc="In settings Internet options, a string specifying VPN PSK passphrase.">
     Pre-shared key:

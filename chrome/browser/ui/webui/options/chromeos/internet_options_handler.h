@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
@@ -34,9 +35,9 @@ namespace chromeos {
 namespace options {
 
 // ChromeOS internet options page UI handler.
-class InternetOptionsHandler
-    : public ::options::OptionsPageUIHandler,
-      public chromeos::NetworkStateHandlerObserver {
+class InternetOptionsHandler : public ::options::OptionsPageUIHandler,
+                               public chromeos::NetworkStateHandlerObserver,
+                               public extensions::ExtensionRegistryObserver {
  public:
   InternetOptionsHandler();
   ~InternetOptionsHandler() override;
@@ -48,6 +49,15 @@ class InternetOptionsHandler
 
   // WebUIMessageHandler (from OptionsPageUIHandler)
   void RegisterMessages() override;
+
+  // ExtensionRegistryObserver
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) override;
+  void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   // Callbacks to set network state properties.
   void ShowMorePlanInfoCallback(const base::ListValue* args);
@@ -62,6 +72,9 @@ class InternetOptionsHandler
   void GetManagedPropertiesCallback(const base::ListValue* args);
   void StartConnectCallback(const base::ListValue* args);
   void SetPropertiesCallback(const base::ListValue* args);
+
+  // Updates the list of VPN providers enabled in the primary user's profile.
+  void UpdateVPNProviders();
 
   // Refreshes the display of network information.
   void RefreshNetworkData();
@@ -101,6 +114,10 @@ class InternetOptionsHandler
   void ConfigureNetwork(const base::ListValue* args);
   void ActivateNetwork(const base::ListValue* args);
   void RemoveNetwork(const base::ListValue* args);
+
+  // Requests that a list of VPN providers enabled in the primary user's
+  // profile be sent to JavaScript.
+  void LoadVPNProvidersCallback(const base::ListValue* args);
 
   // Creates the map of wired networks.
   base::ListValue* GetWiredList();
