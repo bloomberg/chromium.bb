@@ -57,7 +57,7 @@ ExtensionViewImpl.prototype.onElementDetached = function() {
 
   // Reset all attributes.
   for (var i in this.attributes) {
-    this.attributes[i].reset();
+    this.attributes[i].setValueIgnoreMutation();
   }
 };
 

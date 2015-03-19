@@ -168,11 +168,11 @@ GuestViewContainer.prototype.dispatchEvent = function(event) {
 
 // Implemented by the specific view type, if needed.
 GuestViewContainer.prototype.buildContainerParams = function() { return {}; };
-GuestViewContainer.prototype.handleAttributeMutation = function() {};
+// TODO(paulmeyer): remove once all view types use attribute objects.
+GuestViewContainer.prototype.handleAttributeMutation = function(
+    attributeName, oldValue, newValue) {};
 GuestViewContainer.prototype.onElementAttached = function() {};
-GuestViewContainer.prototype.onElementDetached = function() {
-  this.guest.destroy();
-};
+GuestViewContainer.prototype.onElementDetached = function() {};
 
 // Registers the browser plugin <object> custom element. |viewType| is the
 // name of the specific guestview container (e.g. 'webview').
@@ -243,6 +243,7 @@ function registerGuestViewElement(guestViewContainerType) {
     }
     internal.elementAttached = false;
     internal.internalInstanceId = 0;
+    internal.guest.destroy();
     internal.onElementDetached();
   };
 

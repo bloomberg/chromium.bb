@@ -492,6 +492,8 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair(
       "extensionViewInternal", IDR_EXTENSION_VIEW_INTERNAL_CUSTOM_BINDINGS_JS));
   resources.push_back(std::make_pair("guestView", IDR_GUEST_VIEW_JS));
+  resources.push_back(std::make_pair("guestViewAttributes",
+                                     IDR_GUEST_VIEW_ATTRIBUTES_JS));
   resources.push_back(std::make_pair("guestViewContainer",
                                      IDR_GUEST_VIEW_CONTAINER_JS));
   resources.push_back(std::make_pair("guestViewDeny", IDR_GUEST_VIEW_DENY_JS));
