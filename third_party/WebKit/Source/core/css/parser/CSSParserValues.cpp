@@ -131,6 +131,7 @@ CSSParserValueList::CSSParserValueList(CSSParserTokenRange range, bool& usesRemU
                 value.unit = CSSParserValue::DimensionList;
                 CSSParserValueList* list = new CSSParserValueList;
                 value.valueList = list;
+                value.id = CSSValueInvalid;
 
                 CSSParserValue number;
                 number.setFromNumber(token.numericValue());
