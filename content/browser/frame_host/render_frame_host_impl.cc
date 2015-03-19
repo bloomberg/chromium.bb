@@ -855,7 +855,7 @@ void RenderFrameHostImpl::OnDidDropNavigation() {
   // the spinner to start, even if the renderer didn't yet begin the load. If it
   // turns out that the renderer dropped the navigation, we need to turn off the
   // spinner.
-  delegate_->DidStopLoading(this);
+  delegate_->DidStopLoading();
 }
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {

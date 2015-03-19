@@ -372,7 +372,7 @@ class CONTENT_EXPORT WebContentsImpl
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   void DidStartLoading(RenderFrameHost* render_frame_host,
                        bool to_different_document) override;
-  void DidStopLoading(RenderFrameHost* render_frame_host) override;
+  void DidStopLoading() override;
   void SwappedOut(RenderFrameHost* render_frame_host) override;
   void DidDeferAfterResponseStarted(
       const TransitionLayerData& transition_data) override;

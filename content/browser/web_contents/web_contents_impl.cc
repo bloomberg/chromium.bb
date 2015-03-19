@@ -3027,7 +3027,7 @@ void WebContentsImpl::OnDidStopLoading() {
     tracked_objects::ScopedTracker tracking_profile4(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "465796 WebContentsImpl::OnDidStopLoading::WCIDidStopLoading"));
-    DidStopLoading(rfh);
+    DidStopLoading();
   }
 
   // TODO(erikchen): Remove ScopedTracker below once crbug.com/465796 is
@@ -3954,7 +3954,7 @@ void WebContentsImpl::DidStartLoading(RenderFrameHost* render_frame_host,
     manager->UserIsNavigatingAway();
 }
 
-void WebContentsImpl::DidStopLoading(RenderFrameHost* render_frame_host) {
+void WebContentsImpl::DidStopLoading() {
   scoped_ptr<LoadNotificationDetails> details;
 
   // Use the last committed entry rather than the active one, in case a
@@ -4504,7 +4504,7 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
     // If a beforeunload dialog is canceled, we need to stop the throbber from
     // spinning, since we forced it to start spinning in Navigate.
     if (rfh)
-      DidStopLoading(rfh);
+      DidStopLoading();
     controller_.DiscardNonCommittedEntries();
 
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
