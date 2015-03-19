@@ -10,9 +10,4 @@
 // Indicates that the Widevine CDM is available.
 #define WIDEVINE_CDM_AVAILABLE
 
-// Indicates that AVC1 decoding is available for ISO BMFF CENC.
-#define WIDEVINE_CDM_AVC1_SUPPORT_AVAILABLE
-// Indicates that AAC decoding is available for ISO BMFF CENC.
-#define WIDEVINE_CDM_AAC_SUPPORT_AVAILABLE
-
 #endif  // WIDEVINE_CDM_VERSION_H_
