@@ -2445,7 +2445,7 @@
       'chromecast%': '<(chromecast)',
 
       # See http://msdn.microsoft.com/en-us/library/aa652360(VS.71).aspx
-      'win_release_Optimization%': '2', # 2 = /Os
+      'win_release_Optimization%': '2', # 2 = /O2
       'win_debug_Optimization%': '0',   # 0 = /Od
 
       # See http://msdn.microsoft.com/en-us/library/2kxx5t2c(v=vs.80).aspx
