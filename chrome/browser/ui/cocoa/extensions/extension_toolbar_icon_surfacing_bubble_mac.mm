@@ -71,6 +71,8 @@
             ui::NativeTheme::kColorId_DialogBackground))];
 
     [self layout];
+
+    delegate_->OnToolbarActionsBarBubbleShown();
   }
   return self;
 }

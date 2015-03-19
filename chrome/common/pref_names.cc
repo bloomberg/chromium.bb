@@ -1161,26 +1161,26 @@ const char kMessageCenterDisabledSystemComponentIds[] =
 // by the user. Syncable.
 // Note: This is now read-only. The welcome notification writes the _local
 // version, below.
-extern const char kWelcomeNotificationDismissed[] =
+const char kWelcomeNotificationDismissed[] =
     "message_center.welcome_notification_dismissed";
 
 // Boolean pref indicating the Chrome Now welcome notification was dismissed
 // by the user on this machine.
-extern const char kWelcomeNotificationDismissedLocal[] =
+const char kWelcomeNotificationDismissedLocal[] =
     "message_center.welcome_notification_dismissed_local";
 
 // Boolean pref indicating the welcome notification was previously popped up.
-extern const char kWelcomeNotificationPreviouslyPoppedUp[] =
+const char kWelcomeNotificationPreviouslyPoppedUp[] =
     "message_center.welcome_notification_previously_popped_up";
 
 // Integer pref containing the expiration timestamp of the welcome notification.
-extern const char kWelcomeNotificationExpirationTimestamp[] =
+const char kWelcomeNotificationExpirationTimestamp[] =
     "message_center.welcome_notification_expiration_timestamp";
 
 // Boolean pref that determines whether the user can enter fullscreen mode.
 // Disabling fullscreen mode also makes kiosk mode unavailable on desktop
 // platforms.
-extern const char kFullscreenAllowed[] = "fullscreen.allowed";
+const char kFullscreenAllowed[] = "fullscreen.allowed";
 
 // Enable notifications for new devices on the local network that can be
 // registered to the user's account, e.g. Google Cloud Print printers.
@@ -1218,13 +1218,20 @@ const char kEasyUnlockShowTutorial[] = "easy_unlock.show_tutorial";
 // A cache of zero suggest results using JSON serialized into a string.
 const char kZeroSuggestCachedResults[] = "zerosuggest.cachedresults";
 
+#if defined(ENABLE_EXTENSIONS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 // These device IDs are used by the copresence component, to uniquely identify
 // this device to the server. For privacy, authenticated and unauthenticated
 // calls are made using different device IDs.
-#if defined(ENABLE_EXTENSIONS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 const char kCopresenceAuthenticatedDeviceId[] =
     "apps.copresence.auth_device_id";
 const char kCopresenceAnonymousDeviceId[] = "apps.copresence.unauth_device_id";
+
+// Used to indicate whether or not the toolbar redesign bubble has been shown
+// and acknowledged, and the last time the bubble was shown.
+const char kToolbarIconSurfacingBubbleAcknowledged[] =
+    "toolbar_icon_surfacing_bubble_acknowledged";
+const char kToolbarIconSurfacingBubbleLastShowTime[] =
+    "toolbar_icon_surfacing_bubble_show_time";
 #endif
 
 // Whether WebRTC should bind to individual NICs to explore all possible routing
@@ -1842,11 +1849,11 @@ const char kTimesHIDDialogShown[] = "HIDDialog.shown_how_many_times";
 
 // Dictionary of per-user Least Recently Used input method (used at login
 // screen).
-extern const char kUsersLRUInputMethod[] = "UsersLRUInputMethod";
+const char kUsersLRUInputMethod[] = "UsersLRUInputMethod";
 
 // A dictionary pref of the echo offer check flag. It sets offer info when
 // an offer is checked.
-extern const char kEchoCheckedOffers[] = "EchoCheckedOffers";
+const char kEchoCheckedOffers[] = "EchoCheckedOffers";
 
 // Key name of a dictionary in local state to store cached multiprofle user
 // behavior policy value.
@@ -1897,7 +1904,7 @@ const char kNewOobe[] = "NewOobe";
 
 // A boolean pref. If set to true, experimental webview based signin flow
 // activated.
-extern const char kWebviewSigninEnabled[] =
+const char kWebviewSigninEnabled[] =
     "webview_signin_enabled";
 #endif  // defined(OS_CHROMEOS)
 
@@ -1989,7 +1996,7 @@ const char kCloudPrintXmppPingTimeout[] = "cloud_print.xmpp_ping_timeout_sec";
 // Dictionary with settings stored by connector setup page.
 const char kCloudPrintUserSettings[] = "cloud_print.user_settings";
 // List of printers settings.
-extern const char kCloudPrintPrinters[] = "cloud_print.user_settings.printers";
+const char kCloudPrintPrinters[] = "cloud_print.user_settings.printers";
 // A boolean indicating whether submitting jobs to Google Cloud Print is
 // blocked by policy.
 const char kCloudPrintSubmitEnabled[] = "cloud_print.submit_enabled";
@@ -2214,7 +2221,7 @@ const char kAppLaunchForMetroRestartProfile[] =
 const char kAppShortcutsVersion[] = "apps.shortcuts_version";
 
 // How often the bubble has been shown.
-extern const char kModuleConflictBubbleShown[] = "module_conflict.bubble_shown";
+const char kModuleConflictBubbleShown[] = "module_conflict.bubble_shown";
 
 // A string pref for storing the salt used to compute the pepper device ID.
 const char kDRMSalt[] = "settings.privacy.drm_salt";
@@ -2249,7 +2256,7 @@ const char kBrowserAddPersonEnabled[] = "profile.add_person_enabled";
 // Device identifier used by Easy Unlock stored in local state. This id will be
 // combined with a user id, before being registered with the CryptAuth server,
 // so it can't correlate users on the same device.
-extern const char kEasyUnlockDeviceId[] = "easy_unlock.device_id";
+const char kEasyUnlockDeviceId[] = "easy_unlock.device_id";
 
 // A dictionary that maps user id to hardlock state.
 const char kEasyUnlockHardlockState[] = "easy_unlock.hardlock_state";

@@ -22,6 +22,7 @@ class TestDelegate : public ToolbarActionsBarBubbleDelegate {
   TestDelegate() {}
   ~TestDelegate() {}
 
+  void OnToolbarActionsBarBubbleShown() override {}
   void OnToolbarActionsBarBubbleClosed(CloseAction action) override {
     EXPECT_FALSE(action_);
     action_.reset(new CloseAction(action));

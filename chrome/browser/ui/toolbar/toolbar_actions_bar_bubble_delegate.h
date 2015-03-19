@@ -14,6 +14,7 @@ class ToolbarActionsBarBubbleDelegate {
     DISMISSED,
   };
 
+  virtual void OnToolbarActionsBarBubbleShown() = 0;
   virtual void OnToolbarActionsBarBubbleClosed(CloseAction action) = 0;
 };
 

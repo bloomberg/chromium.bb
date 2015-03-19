@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/toolbar/test_toolbar_actions_bar_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -389,10 +390,61 @@ TEST_F(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
 }
 
-class ToolbarActionsBarPopOutUnitTest
-     : public ToolbarActionsBarUnitTest {
+class ToolbarActionsBarRedesignUnitTest : public ToolbarActionsBarUnitTest {
  public:
-  ToolbarActionsBarPopOutUnitTest() : ToolbarActionsBarUnitTest(true) {}
+  ToolbarActionsBarRedesignUnitTest() : ToolbarActionsBarUnitTest(true) {}
+  ~ToolbarActionsBarRedesignUnitTest() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarRedesignUnitTest);
+};
+
+TEST_F(ToolbarActionsBarRedesignUnitTest, IconSurfacingBubbleAppearance) {
+  // Without showing anything new, we shouldn't show the bubble, and should
+  // auto-acknowledge it.
+  EXPECT_FALSE(toolbar_actions_bar()->ShouldShowInfoBubble());
+  PrefService* prefs = profile()->GetPrefs();
+  EXPECT_TRUE(
+      prefs->GetBoolean(prefs::kToolbarIconSurfacingBubbleAcknowledged));
+
+  // Clear the pref for testing, and add an extension that wouldn't normally
+  // have an icon. We should now show the bubble.
+  prefs->ClearPref(prefs::kToolbarIconSurfacingBubbleAcknowledged);
+  CreateAndAddExtension("extension",
+                        extensions::extension_action_test_util::NO_ACTION);
+  EXPECT_TRUE(toolbar_actions_bar()->ShouldShowInfoBubble());
+
+  // If the bubble was recently shown, we shouldn't show it again...
+  ToolbarActionsBarBubbleDelegate* bubble_delegate =
+      static_cast<ToolbarActionsBarBubbleDelegate*>(toolbar_actions_bar());
+  bubble_delegate->OnToolbarActionsBarBubbleShown();
+  bubble_delegate->OnToolbarActionsBarBubbleClosed(
+      ToolbarActionsBarBubbleDelegate::DISMISSED);
+  EXPECT_FALSE(toolbar_actions_bar()->ShouldShowInfoBubble());
+
+  // ...But if it was only dismissed, we should show it before too long.
+  base::Time two_days_ago = base::Time::Now() - base::TimeDelta::FromDays(2);
+  prefs->SetInt64(prefs::kToolbarIconSurfacingBubbleLastShowTime,
+                  two_days_ago.ToInternalValue());
+  EXPECT_TRUE(toolbar_actions_bar()->ShouldShowInfoBubble());
+
+  // If it's acknowledged, then it should never show again, and should be
+  // recorded as acknowledged.
+  bubble_delegate->OnToolbarActionsBarBubbleShown();
+  bubble_delegate->OnToolbarActionsBarBubbleClosed(
+      ToolbarActionsBarBubbleDelegate::ACKNOWLEDGED);
+  EXPECT_FALSE(toolbar_actions_bar()->ShouldShowInfoBubble());
+  base::Time one_week_ago = base::Time::Now() - base::TimeDelta::FromDays(7);
+  prefs->SetInt64(prefs::kToolbarIconSurfacingBubbleLastShowTime,
+                  one_week_ago.ToInternalValue());
+  EXPECT_TRUE(
+      prefs->GetBoolean(prefs::kToolbarIconSurfacingBubbleAcknowledged));
+}
+
+class ToolbarActionsBarPopOutUnitTest
+    : public ToolbarActionsBarRedesignUnitTest {
+ public:
+  ToolbarActionsBarPopOutUnitTest() {}
 
  protected:
   void SetUp() override {

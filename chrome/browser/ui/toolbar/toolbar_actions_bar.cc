@@ -18,7 +18,9 @@
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
+#include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/runtime_data.h"
 #include "extensions/common/extension.h"
@@ -447,6 +449,19 @@ int ToolbarActionsBar::IconHeight() {
   return GetIconDimension(HEIGHT);
 }
 
+// static
+void ToolbarActionsBar::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kToolbarIconSurfacingBubbleAcknowledged,
+      false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterInt64Pref(
+      prefs::kToolbarIconSurfacingBubbleLastShowTime,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
 gfx::Size ToolbarActionsBar::GetPreferredSize() const {
   int icon_count = GetIconCount();
   if (in_overflow_mode()) {
@@ -687,7 +702,31 @@ void ToolbarActionsBar::OnDragDrop(int dragged_index,
 }
 
 bool ToolbarActionsBar::ShouldShowInfoBubble() {
-  return false;
+  // If the redesign isn't running, or the user has already acknowledged it,
+  // we don't show the bubble.
+  PrefService* prefs = browser_->profile()->GetPrefs();
+  if (!extensions::FeatureSwitch::extension_action_redesign()->IsEnabled() ||
+      (prefs->HasPrefPath(prefs::kToolbarIconSurfacingBubbleAcknowledged) &&
+       prefs->GetBoolean(prefs::kToolbarIconSurfacingBubbleAcknowledged)))
+    return false;
+
+  // We don't show more than once per day.
+  if (prefs->HasPrefPath(prefs::kToolbarIconSurfacingBubbleLastShowTime)) {
+    base::Time last_shown_time = base::Time::FromInternalValue(
+        prefs->GetInt64(prefs::kToolbarIconSurfacingBubbleLastShowTime));
+    if (base::Time::Now() - last_shown_time < base::TimeDelta::FromDays(1))
+      return false;
+  }
+
+  if (!model_->RedesignIsShowingNewIcons()) {
+    // We only show the bubble if there are any new icons present - otherwise,
+    // the user won't see anything different, so we treat it as acknowledged.
+    OnToolbarActionsBarBubbleClosed(
+        ToolbarActionsBarBubbleDelegate::ACKNOWLEDGED);
+    return false;
+  }
+
+  return true;
 }
 
 void ToolbarActionsBar::OnToolbarExtensionAdded(
@@ -859,7 +898,22 @@ Browser* ToolbarActionsBar::GetBrowser() {
   return browser_;
 }
 
+void ToolbarActionsBar::OnToolbarActionsBarBubbleShown() {
+  // Record the last time the bubble was shown.
+  browser_->profile()->GetPrefs()->SetInt64(
+      prefs::kToolbarIconSurfacingBubbleLastShowTime,
+      base::Time::Now().ToInternalValue());
+}
+
 void ToolbarActionsBar::OnToolbarActionsBarBubbleClosed(CloseAction action) {
+  if (action == ToolbarActionsBarBubbleDelegate::ACKNOWLEDGED) {
+    PrefService* prefs = browser_->profile()->GetPrefs();
+    prefs->SetBoolean(prefs::kToolbarIconSurfacingBubbleAcknowledged, true);
+    // Once the bubble is acknowledged, we no longer need to store the last
+    // show time.
+    if (prefs->HasPrefPath(prefs::kToolbarIconSurfacingBubbleLastShowTime))
+      prefs->ClearPref(prefs::kToolbarIconSurfacingBubbleLastShowTime);
+  }
 }
 
 void ToolbarActionsBar::ReorderActions() {

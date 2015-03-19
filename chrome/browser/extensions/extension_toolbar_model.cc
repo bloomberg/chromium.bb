@@ -32,6 +32,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/one_shot_event.h"
 
 namespace extensions {
@@ -740,6 +741,17 @@ void ExtensionToolbarModel::StopHighlighting() {
     FOR_EACH_OBSERVER(Observer, observers_,
                       OnToolbarHighlightModeChanged(false));
   }
+}
+
+bool ExtensionToolbarModel::RedesignIsShowingNewIcons() const {
+  for (const scoped_refptr<const Extension>& extension : toolbar_items_) {
+    // Without the redesign, we only show extensions with browser actions.
+    // Any extension without a browser action is an indication that we're
+    // showing something new.
+    if (!extension->manifest()->HasKey(manifest_keys::kBrowserAction))
+      return true;
+  }
+  return false;
 }
 
 }  // namespace extensions

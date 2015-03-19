@@ -414,6 +414,8 @@ extern const char kZeroSuggestCachedResults[];
 #if defined(ENABLE_EXTENSIONS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 extern const char kCopresenceAuthenticatedDeviceId[];
 extern const char kCopresenceAnonymousDeviceId[];
+extern const char kToolbarIconSurfacingBubbleAcknowledged[];
+extern const char kToolbarIconSurfacingBubbleLastShowTime[];
 #endif
 
 #if defined(ENABLE_WEBRTC)

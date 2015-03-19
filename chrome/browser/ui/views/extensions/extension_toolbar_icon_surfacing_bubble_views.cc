@@ -19,6 +19,7 @@ ExtensionToolbarIconSurfacingBubble::ExtensionToolbarIconSurfacingBubble(
     : views::BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       delegate_(delegate),
       acknowledged_(false) {
+  delegate_->OnToolbarActionsBarBubbleShown();
 }
 
 ExtensionToolbarIconSurfacingBubble::~ExtensionToolbarIconSurfacingBubble() {

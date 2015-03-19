@@ -125,6 +125,7 @@
 #include "extensions/browser/extension_prefs.h"
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/extensions/api/copresence/copresence_api.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #endif
 #endif  // defined(ENABLE_EXTENSIONS)
 
@@ -425,6 +426,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ExtensionWebUI::RegisterProfilePrefs(registry);
   extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+  ToolbarActionsBar::RegisterProfilePrefs(registry);
   extensions::CopresenceService::RegisterProfilePrefs(registry);
 #endif
   RegisterAnimationPolicyPrefs(registry);

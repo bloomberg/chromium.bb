@@ -17,6 +17,10 @@ namespace extensions {
 class Extension;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 class ToolbarActionsBarDelegate;
 class ToolbarActionViewController;
 
@@ -72,6 +76,9 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
 
   // Returns the height of a browser action icon.
   static int IconHeight();
+
+  // Registers profile preferences.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns the preferred size for the toolbar; this does *not* reflect any
   // animations that may be running.
@@ -170,6 +177,7 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer,
   Browser* GetBrowser() override;
 
   // ToolbarActionsBarBubbleDelegate:
+  void OnToolbarActionsBarBubbleShown() override;
   void OnToolbarActionsBarBubbleClosed(CloseAction action) override;
 
   // Resizes the delegate (if necessary) to the preferred size using the given
