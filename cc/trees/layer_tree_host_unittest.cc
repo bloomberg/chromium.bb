@@ -70,7 +70,17 @@ using testing::Mock;
 namespace cc {
 namespace {
 
-class LayerTreeHostTest : public LayerTreeTest {};
+class LayerTreeHostTest : public LayerTreeTest {
+ public:
+  LayerTreeHostTest() : contents_texture_manager_(nullptr) {}
+
+  void DidInitializeOutputSurface() override {
+    contents_texture_manager_ = layer_tree_host()->contents_texture_manager();
+  }
+
+ protected:
+  PrioritizedResourceManager* contents_texture_manager_;
+};
 
 // Test if the LTHI receives ReadyToActivate notifications from the TileManager
 // when no raster tasks get scheduled.
@@ -1463,7 +1473,7 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
+    ASSERT_EQ(0u, impl->settings().max_partial_texture_updates);
 
     TestWebGraphicsContext3D* context = TestContext();
 
@@ -1542,7 +1552,7 @@ class LayerTreeHostTestDelegatingRendererAtomicCommit
     : public LayerTreeHostTestDirectRendererAtomicCommit {
  public:
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
+    ASSERT_EQ(0u, impl->settings().max_partial_texture_updates);
 
     TestWebGraphicsContext3D* context = TestContext();
 
@@ -1659,7 +1669,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
-    ASSERT_EQ(1u, layer_tree_host()->settings().max_partial_texture_updates);
+    ASSERT_EQ(1u, impl->settings().max_partial_texture_updates);
 
     TestWebGraphicsContext3D* context = TestContext();
 
@@ -2383,12 +2393,10 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
                                bool visible) override {
     if (visible) {
       // One backing should remain unevicted.
-      EXPECT_EQ(
-          100u * 100u * 4u * 1u,
-          layer_tree_host()->contents_texture_manager()->MemoryUseBytes());
+      EXPECT_EQ(100u * 100u * 4u * 1u,
+                contents_texture_manager_->MemoryUseBytes());
     } else {
-      EXPECT_EQ(
-          0u, layer_tree_host()->contents_texture_manager()->MemoryUseBytes());
+      EXPECT_EQ(0u, contents_texture_manager_->MemoryUseBytes());
     }
 
     // Make sure that contents textures are marked as having been
@@ -2403,9 +2411,9 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
     switch (num_commits_) {
       case 1:
         // All three backings should have memory.
-        EXPECT_EQ(
-            100u * 100u * 4u * 3u,
-            layer_tree_host()->contents_texture_manager()->MemoryUseBytes());
+        EXPECT_EQ(100u * 100u * 4u * 3u,
+                  contents_texture_manager_->MemoryUseBytes());
+
         // Set a new policy that will kick out 1 of the 3 resources.
         // Because a resource was evicted, a commit will be kicked off.
         host_impl->SetMemoryPolicy(
@@ -2415,9 +2423,8 @@ class LayerTreeHostTestShutdownWithOnlySomeResourcesEvicted
         break;
       case 2:
         // Only two backings should have memory.
-        EXPECT_EQ(
-            100u * 100u * 4u * 2u,
-            layer_tree_host()->contents_texture_manager()->MemoryUseBytes());
+        EXPECT_EQ(100u * 100u * 4u * 2u,
+                  contents_texture_manager_->MemoryUseBytes());
         // Become backgrounded, which will cause 1 more resource to be
         // evicted.
         PostSetVisibleToMainThread(false);
@@ -3246,12 +3253,12 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
-    if (!layer_tree_host()->settings().impl_side_painting)
+    if (!impl->settings().impl_side_painting)
       PerformTest(impl);
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    if (layer_tree_host()->settings().impl_side_painting)
+    if (impl->settings().impl_side_painting)
       PerformTest(impl);
   }
 

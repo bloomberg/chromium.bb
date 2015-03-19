@@ -878,4 +878,13 @@ void LayerTreeTest::DestroyLayerTreeHost() {
   layer_tree_host_ = nullptr;
 }
 
+LayerTreeHost* LayerTreeTest::layer_tree_host() {
+  // We check for a null proxy here as we sometimes ask for the layer tree host
+  // when the proxy does not exist, often for checking settings after a test has
+  // completed. For example, LTHPixelResourceTest::RunPixelResourceTest. See
+  // elsewhere in this file for other examples.
+  DCHECK(!proxy() || proxy()->IsMainThread() || proxy()->IsMainThreadBlocked());
+  return layer_tree_host_.get();
+}
+
 }  // namespace cc

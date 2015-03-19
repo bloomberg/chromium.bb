@@ -110,7 +110,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
       // Only valid for single-threaded impl-side painting, which activates
       // immediately and will try to draw again when content has finished.
       DCHECK(!host_impl->proxy()->HasImplThread());
-      DCHECK(layer_tree_host()->settings().impl_side_painting);
+      DCHECK(host_impl->settings().impl_side_painting);
       return draw_result;
     }
     EXPECT_EQ(DRAW_SUCCESS, draw_result);
@@ -883,7 +883,7 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
     FakeContentLayerImpl* child_content = NULL;
     FakeContentLayerImpl* grandchild_content = NULL;
 
-    if (layer_tree_host()->settings().impl_side_painting) {
+    if (host_impl->settings().impl_side_painting) {
       root_picture = static_cast<FakePictureLayerImpl*>(
           host_impl->active_tree()->root_layer());
       child_picture =
@@ -903,7 +903,7 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
     ++num_commits_;
     switch (num_commits_) {
       case 1:
-        if (layer_tree_host()->settings().impl_side_painting) {
+        if (host_impl->settings().impl_side_painting) {
           EXPECT_EQ(0u, root_picture->release_resources_count());
           EXPECT_EQ(0u, child_picture->release_resources_count());
           EXPECT_EQ(0u, grandchild_picture->release_resources_count());
@@ -918,7 +918,7 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
         times_to_fail_create_ = 1;
         break;
       case 2:
-        if (layer_tree_host()->settings().impl_side_painting) {
+        if (host_impl->settings().impl_side_painting) {
           EXPECT_TRUE(root_picture->release_resources_count());
           EXPECT_TRUE(child_picture->release_resources_count());
           EXPECT_TRUE(grandchild_picture->release_resources_count());
@@ -1327,7 +1327,7 @@ class UIResourceLostTestSimple : public UIResourceLostTest {
   virtual void StepCompleteOnImplThread(LayerTreeHostImpl* impl) = 0;
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
-    if (!layer_tree_host()->settings().impl_side_painting) {
+    if (!impl->settings().impl_side_painting) {
       StepCompleteOnImplThread(impl);
       PostStepCompleteToMainThread();
       ++time_step_;
@@ -1335,7 +1335,7 @@ class UIResourceLostTestSimple : public UIResourceLostTest {
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    if (layer_tree_host()->settings().impl_side_painting) {
+    if (impl->settings().impl_side_painting) {
       StepCompleteOnImplThread(impl);
       PostStepCompleteToMainThread();
       ++time_step_;
