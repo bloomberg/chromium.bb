@@ -2653,11 +2653,6 @@ _release.add_config('bobcat-release',
   signer_tests=False,
 )
 
-_release.add_config('daisy_freon-release',
-  _base_configs['daisy_freon'],
-  important=True,
-)
-
 _release.add_config('gizmo-release',
   _base_configs['gizmo'],
   important=True,
@@ -2986,10 +2981,26 @@ _AddGroupConfig('daisy', 'daisy', (
     'daisy_skate',
 ))
 
+# daisy-based boards (Freon)
+_AddGroupConfig('daisy-freon', 'daisy_freon', (
+    'daisy_spring-freon',
+    'daisy_skate-freon',
+),
+    important=False
+)
+
 # peach-based boards
 _AddGroupConfig('peach', 'peach_pit', (
     'peach_pi',
 ))
+
+# peach-based boards (Freon)
+_AddGroupConfig('peach-freon', 'peach_pit-freon', (
+    'peach_pi-freon',
+),
+    important=False
+)
+
 
 # nyan-based boards
 _AddGroupConfig('nyan', 'nyan', (
@@ -3327,7 +3338,9 @@ _waterfall_config_map = {
       'whirlwind-paladin',
 
       # Experimental Canaries (Group)
+      'daisy-freon-release-group',
       'jecht-release-group',
+      'peach-freon-release-group',
       'rambi-d-release-group',
       'rambi-freon-b-release-group',
       'veyron-b-release-group',
