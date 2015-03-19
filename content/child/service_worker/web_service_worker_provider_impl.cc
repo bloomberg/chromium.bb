@@ -4,16 +4,11 @@
 
 #include "content/child/service_worker/web_service_worker_provider_impl.h"
 
-#include "base/atomic_sequence_num.h"
-#include "base/logging.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
-#include "content/child/service_worker/service_worker_registration_handle_reference.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
-#include "content/child/service_worker/web_service_worker_registration_impl.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/service_worker/service_worker_messages.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProviderClient.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
@@ -25,8 +20,7 @@ WebServiceWorkerProviderImpl::WebServiceWorkerProviderImpl(
     ThreadSafeSender* thread_safe_sender,
     ServiceWorkerProviderContext* context)
     : thread_safe_sender_(thread_safe_sender),
-      context_(context),
-      provider_id_(context->provider_id()) {
+      context_(context) {
 }
 
 WebServiceWorkerProviderImpl::~WebServiceWorkerProviderImpl() {
@@ -46,19 +40,13 @@ void WebServiceWorkerProviderImpl::setClient(
   // (e.g. on document and on dedicated workers) can properly share
   // the single provider context across threads. (http://crbug.com/366538
   // for more context)
-  GetDispatcher()->AddProviderClient(provider_id_, client);
+  GetDispatcher()->AddProviderClient(context_->provider_id(), client);
 
-  ServiceWorkerRegistrationObjectInfo info;
-  ServiceWorkerVersionAttributes attrs;
-  if (!context_->GetRegistrationInfoAndVersionAttributes(&info, &attrs)) {
-    // This provider is not associated with any registration.
+  if (!context_->controller())
     return;
-  }
-  if (context_->controller_handle_id() != kInvalidServiceWorkerHandleId) {
-    client->setController(GetDispatcher()->GetServiceWorker(
-        context_->controller()->info(), false),
-        false /* shouldNotifyControllerChange */);
-  }
+  client->setController(
+      GetDispatcher()->GetServiceWorker(context_->controller()->info(), false),
+      false /* shouldNotifyControllerChange */);
 }
 
 void WebServiceWorkerProviderImpl::registerServiceWorker(
@@ -66,25 +54,26 @@ void WebServiceWorkerProviderImpl::registerServiceWorker(
     const WebURL& script_url,
     WebServiceWorkerRegistrationCallbacks* callbacks) {
   GetDispatcher()->RegisterServiceWorker(
-      provider_id_, pattern, script_url, callbacks);
+      context_->provider_id(), pattern, script_url, callbacks);
 }
 
 void WebServiceWorkerProviderImpl::unregisterServiceWorker(
     const WebURL& pattern,
     WebServiceWorkerUnregistrationCallbacks* callbacks) {
   GetDispatcher()->UnregisterServiceWorker(
-      provider_id_, pattern, callbacks);
+      context_->provider_id(), pattern, callbacks);
 }
 
 void WebServiceWorkerProviderImpl::getRegistration(
     const blink::WebURL& document_url,
     WebServiceWorkerRegistrationCallbacks* callbacks) {
-  GetDispatcher()->GetRegistration(provider_id_, document_url, callbacks);
+  GetDispatcher()->GetRegistration(
+      context_->provider_id(), document_url, callbacks);
 }
 
 void WebServiceWorkerProviderImpl::getRegistrationForReady(
     WebServiceWorkerGetRegistrationForReadyCallbacks* callbacks) {
-  GetDispatcher()->GetRegistrationForReady(provider_id_, callbacks);
+  GetDispatcher()->GetRegistrationForReady(context_->provider_id(), callbacks);
 }
 
 void WebServiceWorkerProviderImpl::RemoveProviderClient() {
@@ -93,7 +82,7 @@ void WebServiceWorkerProviderImpl::RemoveProviderClient() {
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   if (dispatcher)
-    dispatcher->RemoveProviderClient(provider_id_);
+    dispatcher->RemoveProviderClient(context_->provider_id());
 }
 
 ServiceWorkerDispatcher* WebServiceWorkerProviderImpl::GetDispatcher() {
