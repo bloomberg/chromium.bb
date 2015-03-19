@@ -20391,6 +20391,20 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.SSL_EVWhitelistValidityForNonCompliantCert"
+    enum="EVWhitelistStatus">
+  <owner>eranm@chromium.org</owner>
+  <owner>rsleevi@chromium.org</owner>
+  <summary>
+    Whether the client holds a valid EV Certificates whitelist or not. Only
+    emitted when an EV cert that is not compliant with the Certificate
+    Transparency requirement is encountered. This histogram is intended to be
+    short-lived and help determine if EV certificates are considered
+    non-compliant because they are not whitelisted or if the client does not
+    hold a valid instance of the whitelist.
+  </summary>
+</histogram>
+
 <histogram name="Net.SSLCertBlacklisted">
   <owner>agl@chromium.org</owner>
   <summary>
@@ -48002,6 +48016,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="11002" label="WSATRY_AGAIN"/>
   <int value="11003" label="WSA_ANO_RECOVERY"/>
   <int value="11004" label="WSANO_DATA"/>
+</enum>
+
+<enum name="EVWhitelistStatus" type="int">
+  <int value="0" label="Not present"/>
+  <int value="1" label="Invalid"/>
+  <int value="2" label="Valid"/>
 </enum>
 
 <enum name="ExecutionPhase" type="int">

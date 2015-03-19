@@ -126,9 +126,29 @@ const char* ComplianceStatusToString(CTComplianceStatus status) {
   return "unknown";
 }
 
-void LogCTComplianceStatusToUMA(CTComplianceStatus status) {
+enum EVWhitelistStatus {
+  EV_WHITELIST_NOT_PRESENT = 0,
+  EV_WHITELIST_INVALID = 1,
+  EV_WHITELIST_VALID = 2,
+  EV_WHITELIST_MAX,
+};
+
+void LogCTComplianceStatusToUMA(CTComplianceStatus status,
+                                const ct::EVCertsWhitelist* ev_whitelist) {
   UMA_HISTOGRAM_ENUMERATION("Net.SSL_EVCertificateCTCompliance", status,
                             CT_COMPLIANCE_MAX);
+  if (status == CT_NOT_COMPLIANT) {
+    EVWhitelistStatus ev_whitelist_status = EV_WHITELIST_NOT_PRESENT;
+    if (ev_whitelist != NULL) {
+      if (ev_whitelist->IsValid())
+        ev_whitelist_status = EV_WHITELIST_VALID;
+      else
+        ev_whitelist_status = EV_WHITELIST_INVALID;
+    }
+
+    UMA_HISTOGRAM_ENUMERATION("Net.SSL_EVWhitelistValidityForNonCompliantCert",
+                              ev_whitelist_status, EV_WHITELIST_MAX);
+  }
 }
 
 struct ComplianceDetails {
@@ -244,7 +264,7 @@ bool CertPolicyEnforcer::DoesConformToCTEVPolicy(
   if (!details.build_timely)
     return false;
 
-  LogCTComplianceStatusToUMA(details.status);
+  LogCTComplianceStatusToUMA(details.status, ev_whitelist);
 
   if (details.status == CT_IN_WHITELIST || details.status == CT_ENOUGH_SCTS)
     return true;
