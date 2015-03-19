@@ -298,7 +298,7 @@ class FindInPathParentsTest(cros_test_lib.TempDirTestCase):
 
 
 class SourceEnvironmentTest(cros_test_lib.TempDirTestCase):
-  """Test ostuil's environmental variable related methods."""
+  """Test osutil's environmental variable related methods."""
 
   ENV_WHITELIST = {
       'ENV1': 'monkeys like bananas',
@@ -320,9 +320,16 @@ declare -x ENV6=''
 declare -x ENVA=('a b c' 'd' 'e 1234 %')
 """
 
+  ENV_MULTILINE = """
+declare -x ENVM="gentil
+mechant"
+"""
+
   def setUp(self):
     self.env_file = os.path.join(self.tempdir, 'environment')
+    self.env_file_multiline = os.path.join(self.tempdir, 'multiline')
     osutils.WriteFile(self.env_file, self.ENV)
+    osutils.WriteFile(self.env_file_multiline, self.ENV_MULTILINE)
 
   def testWhiteList(self):
     env_dict = osutils.SourceEnvironment(
@@ -335,6 +342,10 @@ declare -x ENVA=('a b c' 'd' 'e 1234 %')
 
     env_dict = osutils.SourceEnvironment(self.env_file, ('ENVA',), ifs=' ')
     self.assertEquals(env_dict, {'ENVA': 'a b c d e 1234 %'})
+
+    env_dict = osutils.SourceEnvironment(self.env_file_multiline, ('ENVM',),
+                                         multiline=True)
+    self.assertEquals(env_dict, {'ENVM': 'gentil\nmechant'})
 
 
 class DeviceInfoTests(cros_build_lib_unittest.RunCommandTestCase):

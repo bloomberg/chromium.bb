@@ -657,8 +657,11 @@ def SourceEnvironment(script, whitelist, ifs=',', env=None, multiline=False):
   dump_script = ['source "%s" >/dev/null' % script,
                  'IFS="%s"' % ifs]
   for var in whitelist:
+    # Note: If we want to get more exact results out of bash, we should switch
+    # to using `declare -p "${var}"`.  It would require writing a custom parser
+    # here, but it would be more robust.
     dump_script.append(
-        '[[ "${%(var)s+set}" == "set" ]] && echo %(var)s="${%(var)s[*]}"'
+        '[[ "${%(var)s+set}" == "set" ]] && echo "%(var)s=\\"${%(var)s[*]}\\""'
         % {'var': var})
   dump_script.append('exit 0')
 
