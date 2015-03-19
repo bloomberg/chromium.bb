@@ -964,6 +964,10 @@ bool BoxPainter::paintNinePieceImage(LayoutBoxModelObject& obj, GraphicsContext*
     float topSideScale = drawTop ? (float)topWidth / topSlice : 1;
     float bottomSideScale = drawBottom ? (float)bottomWidth / bottomSlice : 1;
 
+    InterpolationQuality interpolationQuality = chooseInterpolationQuality(obj, graphicsContext, image.get(), 0, rectWithOutsets.size());
+    InterpolationQuality previousInterpolationQuality = graphicsContext->imageInterpolationQuality();
+    graphicsContext->setImageInterpolationQuality(interpolationQuality);
+
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(obj, *styleImage));
     if (drawLeft) {
         // Paint the top and bottom left corners.
@@ -1059,6 +1063,7 @@ bool BoxPainter::paintNinePieceImage(LayoutBoxModelObject& obj, GraphicsContext*
             IntRect(leftSlice, topSlice, sourceWidth, sourceHeight),
             middleScaleFactor, (Image::TileRule)hRule, (Image::TileRule)vRule, op);
     }
+    graphicsContext->setImageInterpolationQuality(previousInterpolationQuality);
     return true;
 }
 

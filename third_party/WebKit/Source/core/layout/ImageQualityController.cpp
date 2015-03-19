@@ -157,6 +157,9 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, L
     if (!image || !image->isBitmapImage())
         return false;
 
+    if (!layer)
+        return false;
+
     if (object->style()->imageRendering() == ImageRenderingOptimizeContrast)
         return true;
 
