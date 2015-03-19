@@ -49,14 +49,14 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/privacy_mode.h"
 #include "net/cert/cert_verifier.h"
+#include "net/http/http_request_info.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/quic_utils.h"
-#include "net/tools/epoll_server/epoll_server.h"
-#include "net/tools/quic/quic_client.h"
-#include "net/tools/quic/spdy_utils.h"
+#include "net/spdy/spdy_http_utils.h"
+#include "net/tools/quic/quic_simple_client.h"
 #include "url/gurl.h"
 
 using base::StringPiece;
@@ -161,6 +161,7 @@ int main(int argc, char *argv[]) {
           << " redirect_is_success: " << FLAGS_redirect_is_success;
 
   base::AtExitManager exit_manager;
+  base::MessageLoopForIO message_loop;
 
   // Determine IP address to connect to from supplied hostname.
   net::IPAddressNumber ip_addr;
@@ -184,7 +185,6 @@ int main(int argc, char *argv[]) {
 
   // Build the client, and try to connect.
   bool is_https = (FLAGS_port == 443);
-  net::EpollServer epoll_server;
   net::QuicServerId server_id(host, FLAGS_port, is_https,
                               net::PRIVACY_MODE_DISABLED);
   net::QuicVersionVector versions = net::QuicSupportedVersions();
@@ -192,8 +192,8 @@ int main(int argc, char *argv[]) {
     versions.clear();
     versions.push_back(static_cast<net::QuicVersion>(FLAGS_quic_version));
   }
-  net::tools::QuicClient client(net::IPEndPoint(ip_addr, FLAGS_port), server_id,
-                                versions, &epoll_server);
+  net::tools::QuicSimpleClient client(net::IPEndPoint(ip_addr, FLAGS_port),
+                                      server_id, versions);
   scoped_ptr<CertVerifier> cert_verifier;
   scoped_ptr<TransportSecurityState> transport_security_state;
   if (is_https) {
@@ -223,9 +223,9 @@ int main(int argc, char *argv[]) {
   cout << "Connected to " << host_port << endl;
 
   // Construct a GET or POST request for supplied URL.
-  net::BalsaHeaders headers;
-  headers.SetRequestFirstlineFromStringPieces(
-      FLAGS_body.empty() ? "GET" : "POST", url.spec(), "HTTP/1.1");
+  net::HttpRequestInfo request;
+  request.method = FLAGS_body.empty() ? "GET" : "POST";
+  request.url = url;
 
   // Append any additional headers supplied on the command line.
   vector<string> headers_tokenized;
@@ -243,16 +243,18 @@ int main(int argc, char *argv[]) {
     base::TrimWhitespaceASCII(kv[0], base::TRIM_ALL, &key);
     string value;
     base::TrimWhitespaceASCII(kv[1], base::TRIM_ALL, &value);
-    headers.AppendHeader(key, value);
+    request.extra_headers.SetHeader(key, value);
   }
 
   // Make sure to store the response, for later output.
   client.set_store_response(true);
 
   // Send the request.
-  map<string, string> header_block =
-      net::tools::SpdyUtils::RequestHeadersToSpdy4Headers(headers);
-  client.SendRequestAndWaitForResponse(headers, FLAGS_body, /*fin=*/true);
+  net::SpdyHeaderBlock header_block;
+  net::CreateSpdyHeadersFromHttpRequest(request, request.extra_headers,
+                                        net::SPDY3, /*direct=*/ true,
+                                        &header_block);
+  client.SendRequestAndWaitForResponse(request, FLAGS_body, /*fin=*/true);
 
   // Print request and response details.
   if (!FLAGS_quiet) {
@@ -262,7 +264,8 @@ int main(int argc, char *argv[]) {
       cout << " " << kv.first << ": " << kv.second << endl;
     }
     cout << "body: " << FLAGS_body << endl;
-    cout << endl << "Response:";
+    cout << endl;
+    cout << "Response:" << endl;
     cout << "headers: " << client.latest_response_headers() << endl;
     cout << "body: " << client.latest_response_body() << endl;
   }

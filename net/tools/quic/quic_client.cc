@@ -27,6 +27,7 @@
 #endif
 
 using std::string;
+using std::vector;
 
 namespace net {
 namespace tools {
@@ -252,19 +253,19 @@ void QuicClient::SendRequest(const BalsaHeaders& headers,
   stream->set_visitor(this);
 }
 
-void QuicClient::SendRequestAndWaitForResponse(const BalsaHeaders& headers,
-                                               StringPiece body,
-                                               bool fin) {
-  SendRequest(headers, "", true);
-  while (WaitForEvents()) {
-  }
+void QuicClient::SendRequestAndWaitForResponse(
+    const BalsaHeaders& headers,
+    StringPiece body,
+    bool fin) {
+  SendRequest(headers, body, fin);
+  while (WaitForEvents()) {}
 }
 
 void QuicClient::SendRequestsAndWaitForResponse(
-    const base::CommandLine::StringVector& args) {
-  for (size_t i = 0; i < args.size(); ++i) {
+    const vector<string>& url_list) {
+  for (size_t i = 0; i < url_list.size(); ++i) {
     BalsaHeaders headers;
-    headers.SetRequestFirstlineFromStringPieces("GET", args[i], "HTTP/1.1");
+    headers.SetRequestFirstlineFromStringPieces("GET", url_list[i], "HTTP/1.1");
     SendRequest(headers, "", true);
   }
   while (WaitForEvents()) {}
@@ -282,7 +283,7 @@ void QuicClient::WaitForStreamToClose(QuicStreamId id) {
   DCHECK(connected());
 
   while (connected() && !session_->IsClosedStream(id)) {
-    epoll_server_->WaitForEventsAndExecuteCallbacks();
+    WaitForEvents();
   }
 }
 
@@ -290,7 +291,7 @@ void QuicClient::WaitForCryptoHandshakeConfirmed() {
   DCHECK(connected());
 
   while (connected() && !session_->IsCryptoHandshakeConfirmed()) {
-    epoll_server_->WaitForEventsAndExecuteCallbacks();
+    WaitForEvents();
   }
 }
 

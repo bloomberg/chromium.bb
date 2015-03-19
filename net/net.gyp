@@ -1063,6 +1063,24 @@
           ],
         },
         {
+          'target_name': 'simple_quic_client',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../url/url.gyp:url_lib',
+            'net',
+          ],
+          'sources': [
+            'tools/quic/quic_simple_client.cc',
+            'tools/quic/quic_simple_client.h',
+            'tools/quic/quic_simple_client_bin.cc',
+            'tools/quic/quic_simple_client_session.cc',
+            'tools/quic/quic_simple_client_session.h',
+            'tools/quic/quic_simple_client_stream.cc',
+            'tools/quic/quic_simple_client_stream.h',
+          ],
+        },
+        {
           'target_name': 'stress_cache',
           'type': 'executable',
           'dependencies': [
