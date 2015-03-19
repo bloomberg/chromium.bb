@@ -1752,9 +1752,8 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterBeginFrameStarted) {
 
   client_->Reset();
   scheduler_->DidLoseOutputSurface();
-  // Do nothing when impl frame is in deadine pending state.
-  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 0, 2);
-  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
+  // SetNeedsBeginFrames(false) is not called until the end of the frame.
+  EXPECT_NO_ACTION(client_);
 
   client_->Reset();
   scheduler_->NotifyBeginMainFrameStarted();
@@ -1762,8 +1761,10 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterBeginFrameStarted) {
   EXPECT_ACTION("ScheduledActionCommit", client_, 0, 1);
 
   client_->Reset();
-  task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_);
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 3);
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
 }
 
 void SchedulerTest::DidLoseOutputSurfaceAfterBeginFrameStartedWithHighLatency(
@@ -1785,19 +1786,20 @@ void SchedulerTest::DidLoseOutputSurfaceAfterBeginFrameStartedWithHighLatency(
   client_->Reset();
   scheduler_->DidLoseOutputSurface();
   // Do nothing when impl frame is in deadine pending state.
-  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 0, 2);
-  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
+  EXPECT_NO_ACTION(client_);
 
   client_->Reset();
   // Run posted deadline.
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
   task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
-  // OnBeginImplFrameDeadline didn't schedule any actions because main frame is
-  // not yet completed.
-  EXPECT_NO_ACTION(client_);
+  // OnBeginImplFrameDeadline didn't schedule output surface creation because
+  // main frame is not yet completed.
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 0, 2);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
 
   // BeginImplFrame is not started.
+  client_->Reset();
   task_runner().RunUntilTime(now_src()->Now() +
                              base::TimeDelta::FromMilliseconds(10));
   EXPECT_NO_ACTION(client_);
@@ -1851,19 +1853,19 @@ void SchedulerTest::DidLoseOutputSurfaceAfterReadyToCommit(
 
   client_->Reset();
   scheduler_->DidLoseOutputSurface();
+  // SetNeedsBeginFrames(false) is not called until the end of the frame.
   if (impl_side_painting) {
     // Sync tree should be forced to activate.
-    EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 0, 3);
-    EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
-    EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
+    EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
   } else {
-    EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 0, 2);
-    EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
+    EXPECT_NO_ACTION(client_);
   }
 
   client_->Reset();
-  task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_);
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 3);
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
 }
 
 TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterReadyToCommit) {
@@ -1890,13 +1892,15 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterSetNeedsPrepareTiles) {
 
   client_->Reset();
   scheduler_->DidLoseOutputSurface();
-  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 0, 2);
-  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
+  // SetNeedsBeginFrames(false) is not called until the end of the frame.
+  EXPECT_NO_ACTION(client_);
 
   client_->Reset();
-  task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 0, 2);
-  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 1, 2);
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_ACTION("ScheduledActionPrepareTiles", client_, 0, 4);
+  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 1, 4);
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 2, 4);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 3, 4);
 }
 
 TEST_F(SchedulerTest, DidLoseOutputSurfaceAfterBeginRetroFramePosted) {
@@ -2004,14 +2008,15 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceDuringBeginRetroFrameRunning) {
   client_->Reset();
   EXPECT_FALSE(scheduler_->IsBeginRetroFrameArgsEmpty());
   scheduler_->DidLoseOutputSurface();
-  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 0, 2);
-  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
+  EXPECT_NO_ACTION(client_);
   EXPECT_TRUE(scheduler_->IsBeginRetroFrameArgsEmpty());
 
   // BeginImplFrame deadline should abort drawing.
   client_->Reset();
-  task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_);
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 3);
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
   EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
   EXPECT_FALSE(client_->needs_begin_frames());
 
@@ -2021,8 +2026,7 @@ TEST_F(SchedulerTest, DidLoseOutputSurfaceDuringBeginRetroFrameRunning) {
   EXPECT_NO_ACTION(client_);
 }
 
-TEST_F(SchedulerTest,
-       StopBeginFrameAfterDidLoseOutputSurfaceWithSyntheticBeginFrameSource) {
+TEST_F(SchedulerTest, DidLoseOutputSurfaceWithSyntheticBeginFrameSource) {
   SetUpScheduler(true);
 
   // SetNeedsCommit should begin the frame on the next BeginImplFrame.
@@ -2031,7 +2035,7 @@ TEST_F(SchedulerTest,
   EXPECT_TRUE(scheduler_->frame_source().NeedsBeginFrames());
 
   client_->Reset();
-  task_runner().RunPendingTasks();  // Run posted Tick.
+  AdvanceFrame();
   EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
   EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
@@ -2046,13 +2050,47 @@ TEST_F(SchedulerTest,
 
   client_->Reset();
   scheduler_->DidLoseOutputSurface();
-  EXPECT_SINGLE_ACTION("SendBeginMainFrameNotExpectedSoon", client_);
-  EXPECT_FALSE(scheduler_->frame_source().NeedsBeginFrames());
+  // SetNeedsBeginFrames(false) is not called until the end of the frame.
+  EXPECT_NO_ACTION(client_);
+  EXPECT_TRUE(scheduler_->frame_source().NeedsBeginFrames());
 
   client_->Reset();
-  task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_SINGLE_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_);
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 2);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 1, 2);
   EXPECT_FALSE(scheduler_->frame_source().NeedsBeginFrames());
+}
+
+TEST_F(SchedulerTest, DidLoseOutputSurfaceWhenIdle) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  // SetNeedsCommit should begin the frame.
+  scheduler_->SetNeedsCommit();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+
+  client_->Reset();
+  scheduler_->NotifyBeginMainFrameStarted();
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
+
+  client_->Reset();
+  task_runner().RunTasksWhile(client_->ImplFrameDeadlinePending(true));
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 1, 2);
+
+  // Idle time between BeginFrames.
+  client_->Reset();
+  scheduler_->DidLoseOutputSurface();
+  EXPECT_ACTION("ScheduledActionBeginOutputSurfaceCreation", client_, 0, 3);
+  EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
+  EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
 }
 
 TEST_F(SchedulerTest, ScheduledActionActivateAfterBecomingInvisible) {

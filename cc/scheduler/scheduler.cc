@@ -304,24 +304,21 @@ base::TimeTicks Scheduler::LastBeginImplFrameTime() {
 }
 
 void Scheduler::SetupNextBeginFrameIfNeeded() {
-  if (!task_runner_.get())
-    return;
-
-  if (state_machine_.ShouldSetNeedsBeginFrames(
-          frame_source_->NeedsBeginFrames())) {
-    frame_source_->SetNeedsBeginFrames(state_machine_.BeginFrameNeeded());
-    if (!frame_source_->NeedsBeginFrames()) {
+  // Never call SetNeedsBeginFrames if the frame source already has the right
+  // value.
+  if (frame_source_->NeedsBeginFrames() != state_machine_.BeginFrameNeeded()) {
+    if (state_machine_.BeginFrameNeeded()) {
+      // Call SetNeedsBeginFrames(true) as soon as possible.
+      frame_source_->SetNeedsBeginFrames(true);
+    } else if (state_machine_.begin_impl_frame_state() ==
+               SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE) {
+      // Call SetNeedsBeginFrames(false) in between frames only.
+      frame_source_->SetNeedsBeginFrames(false);
       client_->SendBeginMainFrameNotExpectedSoon();
     }
   }
 
-  if (state_machine_.begin_impl_frame_state() ==
-      SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE) {
-    frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
-  }
-
   PostBeginRetroFrameIfNeeded();
-  SetupPollingMechanisms();
 }
 
 // We may need to poll when we can't rely on BeginFrame to advance certain
@@ -640,6 +637,7 @@ void Scheduler::OnBeginImplFrameDeadline() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "461509 Scheduler::OnBeginImplFrameDeadline3"));
   client_->DidBeginImplFrameDeadline();
+  frame_source_->DidFinishFrame(begin_retro_frame_args_.size());
 }
 
 void Scheduler::PollForAnticipatedDrawTriggers() {
@@ -780,14 +778,19 @@ void Scheduler::ProcessScheduledActions() {
   tracked_objects::ScopedTracker tracking_profile10(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "461509 Scheduler::ProcessScheduledActions10"));
-  SetupNextBeginFrameIfNeeded();
+
+  SetupPollingMechanisms();
+
   client_->DidAnticipatedDrawTimeChange(AnticipatedDrawTime());
 
   // TODO(robliao): Remove ScopedTracker below once crbug.com/461509 is fixed.
   tracked_objects::ScopedTracker tracking_profile11(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "461509 Scheduler::ProcessScheduledActions11"));
+
   RescheduleBeginImplFrameDeadlineIfNeeded();
+
+  SetupNextBeginFrameIfNeeded();
 }
 
 scoped_refptr<base::trace_event::ConvertableToTraceFormat> Scheduler::AsValue()

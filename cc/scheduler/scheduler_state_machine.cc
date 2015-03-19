@@ -720,29 +720,6 @@ bool SchedulerStateMachine::BeginFrameNeeded() const {
   return BeginFrameNeededToAnimateOrDraw();
 }
 
-bool SchedulerStateMachine::ShouldSetNeedsBeginFrames(
-    bool frame_source_needs_begin_frames) const {
-  bool needs_begin_frame = BeginFrameNeeded();
-
-  // Never call SetNeedsBeginFrames if the frame source has the right value.
-  if (needs_begin_frame == frame_source_needs_begin_frames)
-    return false;
-
-  // Always request the BeginFrame immediately if it's needed.
-  if (needs_begin_frame)
-    return true;
-
-  // Stop requesting BeginFrames after a deadline.
-  if (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
-    return true;
-
-  // Stop requesting BeginFrames immediately when output surface is lost.
-  if (!HasInitializedOutputSurface())
-    return true;
-
-  return false;
-}
-
 bool SchedulerStateMachine::ShouldPollForAnticipatedDrawTriggers() const {
   // ShouldPollForAnticipatedDrawTriggers is what we use in place of
   // ProactiveBeginFrameWanted when we are using the synchronous

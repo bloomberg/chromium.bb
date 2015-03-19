@@ -125,10 +125,6 @@ class CC_EXPORT SchedulerStateMachine {
   // to make progress.
   bool BeginFrameNeeded() const;
 
-  // Indicates whether the scheduler should call
-  // SetNeedsBeginFrames(BeginFrameNeeded()) on the frame source.
-  bool ShouldSetNeedsBeginFrames(bool frame_source_needs_begin_frames) const;
-
   // Indicates that we need to independently poll for new state and actions
   // because we can't expect a BeginImplFrame. This is mostly used to avoid
   // drawing repeat frames with the synchronous compositor without dropping
