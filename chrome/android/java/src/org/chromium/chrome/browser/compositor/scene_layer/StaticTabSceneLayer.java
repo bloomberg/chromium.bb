@@ -44,13 +44,16 @@ public class StaticTabSceneLayer extends SceneLayer {
             return;
         }
 
+        float contentOffset =
+                fullscreenManager != null ? fullscreenManager.getContentOffset() : 0.f;
+
         // TODO(dtrainor, clholgat): remove "* dpToPx" once the native part is fully supporting dp.
         nativeUpdateTabLayer(mNativePtr, contentViewport.left, contentViewport.top,
                 contentViewport.width(), contentViewport.height(), tabContentManager,
                 layoutTab.getId(), mResToolbarControlContainer, layoutTab.canUseLiveTexture(),
                 false, layoutTab.getBackgroundColor(), layoutTab.getRenderX() * dpToPx,
                 layoutTab.getRenderY() * dpToPx, layoutTab.getScaledContentWidth() * dpToPx,
-                layoutTab.getScaledContentHeight() * dpToPx, fullscreenManager.getContentOffset(),
+                layoutTab.getScaledContentHeight() * dpToPx, contentOffset,
                 layoutTab.getStaticToViewBlend(), layoutTab.getSaturation());
     }
 

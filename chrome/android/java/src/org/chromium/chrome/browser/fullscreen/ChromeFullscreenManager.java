@@ -62,12 +62,10 @@ public class ChromeFullscreenManager
     private final Handler mHandler;
     private final int mControlContainerHeight;
 
-    private View mControlContainer;
+    private final View mControlContainer;
 
     private long mMinShowNotificationMs = MINIMUM_SHOW_DURATION_MS;
     private long mMaxAnimationDurationMs = MAX_ANIMATION_DURATION_MS;
-
-    private final boolean mEnabled;
 
     private float mBrowserControlOffset = Float.NaN;
     private float mRendererControlOffset = Float.NaN;
@@ -182,6 +180,7 @@ public class ChromeFullscreenManager
         }
     }
 
+    // TODO(changwan): remove this constructor
     /**
      * Creates an instance of the fullscreen mode manager.
      * @param activity The activity that supports fullscreen.
@@ -191,12 +190,29 @@ public class ChromeFullscreenManager
      * @param modelSelector The model selector providing access to the current tab.
      * @param resControlContainerHeight The dimension resource ID for the control container height.
      * @param supportsBrowserOverride Whether we want to disable the token system used by the
+     *                                browser.
+     */
+    public ChromeFullscreenManager(Activity activity, View controlContainer,
+            boolean enabled, boolean persistentFullscreenSupported,
+            TabModelSelector modelSelector, int resControlContainerHeight,
+            boolean supportsBrowserOverride) {
+        this(activity, controlContainer, modelSelector, resControlContainerHeight,
+                supportsBrowserOverride);
+    }
+
+    /**
+     * Creates an instance of the fullscreen mode manager.
+     * @param activity The activity that supports fullscreen.
+     * @param controlContainer Container holding the controls (Toolbar).
+     * @param modelSelector The model selector providing access to the current tab.
+     * @param resControlContainerHeight The dimension resource ID for the control container height.
+     * @param supportsBrowserOverride Whether we want to disable the token system used by the
                                       browser.
      */
-    public ChromeFullscreenManager(Activity activity, View controlContainer, boolean enabled,
-            boolean persistentFullscreenSupported, TabModelSelector modelSelector,
-            int resControlContainerHeight, boolean supportsBrowserOverride) {
-        super(activity.getWindow(), modelSelector, enabled, persistentFullscreenSupported);
+    public ChromeFullscreenManager(Activity activity, View controlContainer,
+            TabModelSelector modelSelector, int resControlContainerHeight,
+            boolean supportsBrowserOverride) {
+        super(activity.getWindow(), modelSelector);
 
         mActivity = activity;
         ApplicationStatus.registerStateListenerForActivity(this, activity);
@@ -205,30 +221,21 @@ public class ChromeFullscreenManager
 
         mWindow = activity.getWindow();
         mHandler = new FullscreenHandler(this);
-        setControlContainer(controlContainer);
+        assert controlContainer != null;
+        mControlContainer = controlContainer;
         Resources resources = mWindow.getContext().getResources();
         mControlContainerHeight = resources.getDimensionPixelSize(resControlContainerHeight);
         mRendererContentOffset = mControlContainerHeight;
-        mEnabled = enabled;
         mSupportsBrowserOverride = supportsBrowserOverride;
         updateControlOffset();
     }
 
+    // TODO(changwan): remove
     /**
      * @return Whether or not fullscreen is enabled.
      */
     public boolean isEnabled() {
-        return mEnabled;
-    }
-
-    /**
-     * Set the control container that is being hidden and shown when manipulating the fullscreen
-     * state.
-     * @param controlContainer The container at the top of the screen that contains the controls.
-     */
-    public void setControlContainer(View controlContainer) {
-        assert controlContainer != null;
-        mControlContainer = controlContainer;
+        return true;
     }
 
     @Override
@@ -391,12 +398,12 @@ public class ChromeFullscreenManager
      * @return The height of the top controls in pixels.
      */
     public int getTopControlsHeight() {
-        return mEnabled ? mControlContainerHeight : 0;
+        return mControlContainerHeight;
     }
 
     @Override
     public float getContentOffset() {
-        if (!mEnabled || mTopControlsPermanentlyHidden) return 0;
+        if (mTopControlsPermanentlyHidden) return 0;
         return rendererContentOffset();
     }
 
@@ -404,7 +411,6 @@ public class ChromeFullscreenManager
      * @return The offset of the controls from the top of the screen.
      */
     public float getControlOffset() {
-        if (!mEnabled) return 0;
         if (mTopControlsPermanentlyHidden) return -getTopControlsHeight();
         return mControlOffset;
     }
@@ -450,12 +456,10 @@ public class ChromeFullscreenManager
     }
 
     private float rendererContentOffset() {
-        if (!mEnabled) return mControlContainerHeight;
         return mRendererContentOffset;
     }
 
     private float rendererControlOffset() {
-        if (!mEnabled) return 0;
         return mRendererControlOffset;
     }
 
@@ -463,7 +467,6 @@ public class ChromeFullscreenManager
      * @return The visible offset of the content from the top of the screen.
      */
     public float getVisibleContentOffset() {
-        if (!mEnabled) return 0;
         return mControlContainerHeight + getControlOffset();
     }
 
@@ -488,7 +491,7 @@ public class ChromeFullscreenManager
      * @param viewCore The ContentViewCore to update.
      */
     public void updateContentViewViewportSize(ContentViewCore viewCore) {
-        if (!mEnabled || viewCore == null) return;
+        if (viewCore == null) return;
         if (mInGesture || mContentViewScrolling) return;
 
         // Update content viewport size only when the top controls are not animating.
@@ -500,7 +503,7 @@ public class ChromeFullscreenManager
     @Override
     public void updateContentViewChildrenState() {
         ContentViewCore contentViewCore = getActiveContentViewCore();
-        if (contentViewCore == null || !mEnabled) return;
+        if (contentViewCore == null) return;
         ViewGroup view = contentViewCore.getContainerView();
 
         float topViewsTranslation = (getControlOffset() + mControlContainerHeight);
@@ -521,8 +524,6 @@ public class ChromeFullscreenManager
     }
 
     private void updateVisuals() {
-        if (!mEnabled) return;
-
         TraceEvent.begin("FullscreenManager:updateVisuals");
 
         float offset = getControlOffset();
@@ -653,8 +654,6 @@ public class ChromeFullscreenManager
 
     @Override
     public void setPositionsForTab(float controlsOffset, float contentOffset) {
-        if (!mEnabled) return;
-
         // Once we get an update from a tab, clear the activity show token and allow the render
         // to control the positions of the top controls.
         if (mActivityShowToken != INVALID_TOKEN) {
@@ -685,7 +684,7 @@ public class ChromeFullscreenManager
      *         consumed.
      */
     public boolean onInterceptMotionEvent(MotionEvent e) {
-        return mEnabled && e.getY() < getControlOffset() + mControlContainerHeight
+        return e.getY() < getControlOffset() + mControlContainerHeight
                 && !mTopControlsAndroidViewHidden;
     }
 
@@ -694,7 +693,6 @@ public class ChromeFullscreenManager
      * @param e The dispatched motion event.
      */
     public void onMotionEvent(MotionEvent e) {
-        if (!mEnabled) return;
         int eventAction = e.getActionMasked();
         if (eventAction == MotionEvent.ACTION_DOWN
                 || eventAction == MotionEvent.ACTION_POINTER_DOWN) {
@@ -713,8 +711,6 @@ public class ChromeFullscreenManager
         // flag set based on the previous ContentView's scrolling state.
         mInGesture = false;
         mContentViewScrolling = false;
-
-        if (!mEnabled) return;
 
         if (show) mCurrentShowTime = SystemClock.uptimeMillis();
 

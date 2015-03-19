@@ -55,8 +55,6 @@ public class FullscreenHtmlApiHandler {
     private final FullscreenHtmlApiDelegate mDelegate;
     private final int mNotificationMaxDimension;
 
-    private final boolean mPersistentFullscreenSupported;
-
     // We still need this since we are setting fullscreen UI state on the contentviewcore's
     // container view, and a tab can have null content view core, i.e., if you navigate
     // to a native page.
@@ -193,13 +191,10 @@ public class FullscreenHtmlApiHandler {
      *
      * @param window The window containing the view going to fullscreen.
      * @param delegate The delegate that allows embedders to handle fullscreen transitions.
-     * @param persistentFullscreenSupported
      */
-    public FullscreenHtmlApiHandler(Window window, FullscreenHtmlApiDelegate delegate,
-            boolean persistentFullscreenSupported) {
+    public FullscreenHtmlApiHandler(Window window, FullscreenHtmlApiDelegate delegate) {
         mWindow = window;
         mDelegate = delegate;
-        mPersistentFullscreenSupported = persistentFullscreenSupported;
         mHandler = new FullscreenHandler(this);
         Resources resources = mWindow.getContext().getResources();
         float density = resources.getDisplayMetrics().density;
@@ -213,8 +208,6 @@ public class FullscreenHtmlApiHandler {
      * @param enabled Whether to enable persistent fullscreen mode.
      */
     public void setPersistentFullscreenMode(boolean enabled) {
-        if (!mPersistentFullscreenSupported) return;
-
         if (mIsPersistentMode == enabled) return;
 
         mIsPersistentMode = enabled;

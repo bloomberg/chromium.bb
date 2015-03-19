@@ -2410,8 +2410,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *         {@link TopControlsState} defines the valid return options.
      */
     protected int getTopControlsStateConstraints() {
-        if (mFullscreenManager == null) return TopControlsState.SHOWN;
-
         boolean enableHidingTopControls = isHidingTopControlsEnabled();
         boolean enableShowingTopControls = isShowingTopControlsEnabled();
 

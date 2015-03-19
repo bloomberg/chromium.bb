@@ -146,7 +146,6 @@ void TabLayer::SetProperties(int id,
   const gfx::RectF border_padding(border_resource->padding);
   const gfx::RectF shadow_padding(shadow_resource->padding);
   const gfx::RectF contour_padding(contour_resource->padding);
-  const gfx::RectF toolbar_padding(toolbar_resource->padding);
 
   // If we're in portrait and we're RTL, the close button is on the left.
   // Similarly if we're in landscape and we're in LTR, the close button is on
@@ -175,20 +174,18 @@ void TabLayer::SetProperties(int id,
       contour_resource->size.width() - contour_padding.width(),
       contour_resource->size.height() - contour_padding.height());
 
-  gfx::Size toolbar_impact_size(toolbar_padding.size().width(),
-                                toolbar_padding.size().height());
-  if (!show_toolbar || back_visible)
-    toolbar_impact_size.SetSize(0, 0);
   const float close_btn_effective_width = close_btn_width * close_alpha;
 
-  //----------------------------------------------------------------------------
-  // Update Resource Ids For Layers That Impact Layout
-  //----------------------------------------------------------------------------
-  toolbar_layer_->PushResource(toolbar_resource,
-                               nullptr,
-                               anonymize_toolbar,
-                               incognito_,
-                               false);
+  float toolbar_impact_height = 0;
+  if (toolbar_resource) {
+    //--------------------------------------------------------------------------
+    // Update Resource Ids For Layers That Impact Layout
+    //--------------------------------------------------------------------------
+    toolbar_layer_->PushResource(toolbar_resource, nullptr, anonymize_toolbar,
+                                 incognito_, false);
+    if (show_toolbar && !back_visible)
+      toolbar_impact_height = toolbar_resource->padding.height();
+  }
 
   //----------------------------------------------------------------------------
   // Compute Alpha and Visibility
@@ -227,7 +224,7 @@ void TabLayer::SetProperties(int id,
   // calculations.
   gfx::Point desired_content_size_pt(
       descaled_local_content_area.width(),
-      descaled_local_content_area.height() - toolbar_impact_size.height());
+      descaled_local_content_area.height() - toolbar_impact_height);
 
   // Shrink the toolbar layer so we properly clip if it's offset.
   gfx::Size toolbar_size(
@@ -245,7 +242,7 @@ void TabLayer::SetProperties(int id,
                                -contour_padding.y());
   gfx::PointF toolbar_position(
       0.f, toolbar_layer_->layer()->bounds().height() - toolbar_size.height());
-  gfx::PointF content_position(0.f, toolbar_impact_size.height());
+  gfx::PointF content_position(0.f, toolbar_impact_height);
   gfx::PointF back_logo_position(
       ((descaled_local_content_area.width() - back_logo_->bounds().width()) *
        content_scale) /
@@ -299,7 +296,7 @@ void TabLayer::SetProperties(int id,
 
   const bool inset_toolbar = !inset_border;
   if (!inset_toolbar) {
-    float inset_diff = toolbar_impact_size.height();
+    float inset_diff = toolbar_impact_height;
     toolbar_position.set_y(toolbar_position.y() - inset_diff);
     content_position.set_y(content_position.y() - inset_diff);
     desired_content_size_pt.set_y(desired_content_size_pt.y() + inset_diff);
