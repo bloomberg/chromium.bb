@@ -801,24 +801,6 @@
         'quic/quic_time_wait_list_manager.h',
       ],
     },
-    {
-      'target_name': 'simple_quic_client',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../url/url.gyp:url_lib',
-        'net',
-      ],
-      'sources': [
-        'tools/quic/quic_simple_client.cc',
-        'tools/quic/quic_simple_client.h',
-        'tools/quic/quic_simple_client_bin.cc',
-        'tools/quic/quic_simple_client_session.cc',
-        'tools/quic/quic_simple_client_session.h',
-        'tools/quic/quic_simple_client_stream.cc',
-        'tools/quic/quic_simple_client_stream.h',
-      ],
-    },
   ],
   'conditions': [
     ['use_v8_in_net == 1', {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_QUIC_QUIC_SIMPLE_CLIENT_STREAM_H_
-#define NET_TOOLS_QUIC_QUIC_SIMPLE_CLIENT_STREAM_H_
+#ifndef NET_TOOLS_QUIC_QUIC_SPDY_CLIENT_STREAM_H_
+#define NET_TOOLS_QUIC_QUIC_SPDY_CLIENT_STREAM_H_
 
 #include <sys/types.h>
 #include <string>
@@ -11,8 +11,6 @@
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
 #include "net/base/io_buffer.h"
-#include "net/http/http_request_info.h"
-#include "net/http/http_response_headers.h"
 #include "net/quic/quic_data_stream.h"
 #include "net/quic/quic_protocol.h"
 #include "net/tools/balsa/balsa_frame.h"
@@ -22,14 +20,14 @@ namespace net {
 
 namespace tools {
 
-class QuicSimpleClientSession;
+class QuicClientSession;
 
 // All this does right now is send an SPDY request, and aggregate the
 // SPDY response.
-class QuicSimpleClientStream : public QuicDataStream {
+class QuicSpdyClientStream : public QuicDataStream {
  public:
-  QuicSimpleClientStream(QuicStreamId id, QuicSimpleClientSession* session);
-  ~QuicSimpleClientStream() override;
+  QuicSpdyClientStream(QuicStreamId id, QuicClientSession* session);
+  ~QuicSpdyClientStream() override;
 
   // Override the base class to close the write side as soon as we get a
   // response.
@@ -47,9 +45,9 @@ class QuicSimpleClientStream : public QuicDataStream {
 
   // Serializes the headers and body, sends it to the server, and
   // returns the number of bytes sent.
-  size_t SendRequest(const HttpRequestInfo& headers,
-                     base::StringPiece body,
-                     bool fin);
+  ssize_t SendRequest(const BalsaHeaders& headers,
+                      base::StringPiece body,
+                      bool fin);
 
   // Sends body data to the server, or buffers if it can't be sent immediately.
   void SendBody(const std::string& data, bool fin);
@@ -62,7 +60,7 @@ class QuicSimpleClientStream : public QuicDataStream {
   const std::string& data() { return data_; }
 
   // Returns whatever headers have been received for this stream.
-  scoped_refptr<HttpResponseHeaders> headers() { return headers_; }
+  const BalsaHeaders& headers() { return headers_; }
 
   size_t header_bytes_read() const { return header_bytes_read_; }
 
@@ -75,7 +73,7 @@ class QuicSimpleClientStream : public QuicDataStream {
  private:
   int ParseResponseHeaders();
 
-  scoped_refptr<HttpResponseHeaders> headers_;
+  BalsaHeaders headers_;
   std::string data_;
 
   scoped_refptr<GrowableIOBuffer> read_buf_;
@@ -83,10 +81,10 @@ class QuicSimpleClientStream : public QuicDataStream {
   size_t header_bytes_read_;
   size_t header_bytes_written_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuicSimpleClientStream);
+  DISALLOW_COPY_AND_ASSIGN(QuicSpdyClientStream);
 };
 
 }  // namespace tools
 }  // namespace net
 
-#endif  // NET_TOOLS_QUIC_QUIC_SIMPLE_CLIENT_STREAM_H_
+#endif  // NET_TOOLS_QUIC_QUIC_SPDY_CLIENT_STREAM_H_

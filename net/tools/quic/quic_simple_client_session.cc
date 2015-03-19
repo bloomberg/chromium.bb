@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/quic_simple_client_session.h"
+#include "net/tools/quic/quic_client_session.h"
 
 #include "base/logging.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_server_id.h"
-#include "net/tools/quic/quic_simple_client_stream.h"
+#include "net/tools/quic/quic_spdy_client_stream.h"
 
 using std::string;
 
 namespace net {
 namespace tools {
 
-QuicSimpleClientSession::QuicSimpleClientSession(const QuicConfig& config,
-                                                 QuicConnection* connection)
+QuicClientSession::QuicClientSession(const QuicConfig& config,
+                                     QuicConnection* connection)
     : QuicClientSessionBase(connection, config), respect_goaway_(true) {
 }
 
-QuicSimpleClientSession::~QuicSimpleClientSession() {
+QuicClientSession::~QuicClientSession() {
 }
 
-void QuicSimpleClientSession::InitializeSession(
+void QuicClientSession::InitializeSession(
     const QuicServerId& server_id,
     QuicCryptoClientConfig* crypto_config) {
   crypto_stream_.reset(
@@ -30,13 +30,13 @@ void QuicSimpleClientSession::InitializeSession(
   QuicClientSessionBase::InitializeSession();
 }
 
-void QuicSimpleClientSession::OnProofValid(
+void QuicClientSession::OnProofValid(
     const QuicCryptoClientConfig::CachedState& /*cached*/) {}
 
-void QuicSimpleClientSession::OnProofVerifyDetailsAvailable(
+void QuicClientSession::OnProofVerifyDetailsAvailable(
     const ProofVerifyDetails& /*verify_details*/) {}
 
-QuicSimpleClientStream* QuicSimpleClientSession::CreateOutgoingDataStream() {
+QuicSpdyClientStream* QuicClientSession::CreateOutgoingDataStream() {
   if (!crypto_stream_->encryption_established()) {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return nullptr;
@@ -51,26 +51,26 @@ QuicSimpleClientStream* QuicSimpleClientSession::CreateOutgoingDataStream() {
              << "Already received goaway.";
     return nullptr;
   }
-  QuicSimpleClientStream* stream
-      = new QuicSimpleClientStream(GetNextStreamId(), this);
+  QuicSpdyClientStream* stream
+      = new QuicSpdyClientStream(GetNextStreamId(), this);
   ActivateStream(stream);
   return stream;
 }
 
-QuicCryptoClientStream* QuicSimpleClientSession::GetCryptoStream() {
+QuicCryptoClientStream* QuicClientSession::GetCryptoStream() {
   return crypto_stream_.get();
 }
 
-void QuicSimpleClientSession::CryptoConnect() {
+void QuicClientSession::CryptoConnect() {
   DCHECK(flow_controller());
   crypto_stream_->CryptoConnect();
 }
 
-int QuicSimpleClientSession::GetNumSentClientHellos() const {
+int QuicClientSession::GetNumSentClientHellos() const {
   return crypto_stream_->num_sent_client_hellos();
 }
 
-QuicDataStream* QuicSimpleClientSession::CreateIncomingDataStream(
+QuicDataStream* QuicClientSession::CreateIncomingDataStream(
     QuicStreamId id) {
   DLOG(ERROR) << "Server push not supported";
   return nullptr;

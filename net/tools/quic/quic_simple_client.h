@@ -5,8 +5,8 @@
 // A toy client, which connects to a specified port and sends QUIC
 // request to that endpoint.
 
-#ifndef NET_TOOLS_QUIC_QUIC_SIMPLE_CLIENT_H_
-#define NET_TOOLS_QUIC_QUIC_SIMPLE_CLIENT_H_
+#ifndef NET_TOOLS_QUIC_QUIC_CLIENT_H_
+#define NET_TOOLS_QUIC_QUIC_CLIENT_H_
 
 #include <string>
 
@@ -14,53 +14,54 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
-#include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_log.h"
-#include "net/http/http_response_headers.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
-#include "net/tools/quic/quic_simple_client_session.h"
-#include "net/tools/quic/quic_simple_client_stream.h"
+#include "net/tools/balsa/balsa_headers.h"
+#include "net/tools/epoll_server/epoll_server.h"
+#include "net/tools/quic/quic_client_session.h"
+#include "net/tools/quic/quic_spdy_client_stream.h"
 
 namespace net {
 
-struct HttpRequestInfo;
 class ProofVerifier;
 class QuicServerId;
-class QuicConnectionHelper;
-class UDPClientSocket;
 
 namespace tools {
+
+class QuicEpollConnectionHelper;
 
 namespace test {
 class QuicClientPeer;
 }  // namespace test
 
-class QuicSimpleClient : public QuicDataStream::Visitor {
+class QuicClient : public EpollCallbackInterface,
+                   public QuicDataStream::Visitor {
  public:
   class ResponseListener {
    public:
     ResponseListener() {}
     virtual ~ResponseListener() {}
     virtual void OnCompleteResponse(QuicStreamId id,
-                                    const HttpResponseHeaders& response_headers,
+                                    const BalsaHeaders& response_headers,
                                     const std::string& response_body) = 0;
   };
 
   // Create a quic client, which will have events managed by an externally owned
   // EpollServer.
-  QuicSimpleClient(IPEndPoint server_address,
-                   const QuicServerId& server_id,
-                   const QuicVersionVector& supported_versions);
-  QuicSimpleClient(IPEndPoint server_address,
-                   const QuicServerId& server_id,
-                   const QuicVersionVector& supported_versions,
-                   const QuicConfig& config);
+  QuicClient(IPEndPoint server_address,
+             const QuicServerId& server_id,
+             const QuicVersionVector& supported_versions,
+             EpollServer* epoll_server);
+  QuicClient(IPEndPoint server_address,
+             const QuicServerId& server_id,
+             const QuicVersionVector& supported_versions,
+             const QuicConfig& config,
+             EpollServer* epoll_server);
 
-  ~QuicSimpleClient() override;
+  ~QuicClient() override;
 
   // Initializes the client to create a connection. Should be called exactly
   // once before calling StartConnect or Connect. Returns true if the
@@ -85,23 +86,23 @@ class QuicSimpleClient : public QuicDataStream::Visitor {
   void Disconnect();
 
   // Sends an HTTP request and does not wait for response before returning.
-  void SendRequest(const HttpRequestInfo& headers,
+  void SendRequest(const BalsaHeaders& headers,
                    base::StringPiece body,
                    bool fin);
 
   // Sends an HTTP request and waits for response before returning.
-  void SendRequestAndWaitForResponse(const HttpRequestInfo& headers,
+  void SendRequestAndWaitForResponse(const BalsaHeaders& headers,
                                      base::StringPiece body,
                                      bool fin);
 
   // Sends a request simple GET for each URL in |args|, and then waits for
   // each to complete.
-  void SendRequestsAndWaitForResponse(
-      const base::CommandLine::StringVector& url_list);
+  void SendRequestsAndWaitForResponse(const
+      base::CommandLine::StringVector& args);
 
-  // Returns a newly created QuicSimpleClientStream, owned by the
-  // QuicSimpleClient.
-  QuicSimpleClientStream* CreateReliableClientStream();
+  // Returns a newly created QuicSpdyClientStream, owned by the
+  // QuicClient.
+  QuicSpdyClientStream* CreateReliableClientStream();
 
   // Wait for events until the stream with the given ID is closed.
   void WaitForStreamToClose(QuicStreamId id);
@@ -113,17 +114,20 @@ class QuicSimpleClient : public QuicDataStream::Visitor {
   // Returns true if there are any outstanding requests.
   bool WaitForEvents();
 
-  // Start the read loop on the socket.
-  void StartReading();
-
-  // Called on reads that complete asynchronously. Dispatches the packet and
-  // calls StartReading() again.
-  void OnReadComplete(int result);
+  // From EpollCallbackInterface
+  void OnRegistration(EpollServer* eps, int fd, int event_mask) override {}
+  void OnModification(int fd, int event_mask) override {}
+  void OnEvent(int fd, EpollEvent* event) override;
+  // |fd_| can be unregistered without the client being disconnected. This
+  // happens in b3m QuicProber where we unregister |fd_| to feed in events to
+  // the client from the SelectServer.
+  void OnUnregistration(int fd, bool replaced) override {}
+  void OnShutdown(EpollServer* eps, int fd) override {}
 
   // QuicDataStream::Visitor
   void OnClose(QuicDataStream* stream) override;
 
-  QuicSimpleClientSession* session() { return session_.get(); }
+  QuicClientSession* session() { return session_.get(); }
 
   bool connected() const;
   bool goaway_received() const;
@@ -139,6 +143,8 @@ class QuicSimpleClient : public QuicDataStream::Visitor {
   const IPEndPoint& server_address() const { return server_address_; }
 
   const IPEndPoint& client_address() const { return client_address_; }
+
+  int fd() { return fd_; }
 
   const QuicServerId& server_id() const { return server_id_; }
 
@@ -185,8 +191,15 @@ class QuicSimpleClient : public QuicDataStream::Visitor {
 
  protected:
   virtual QuicConnectionId GenerateConnectionId();
-  virtual QuicConnectionHelper* CreateQuicConnectionHelper();
+  virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper();
   virtual QuicPacketWriter* CreateQuicPacketWriter();
+
+  virtual int ReadPacket(char* buffer,
+                         int buffer_len,
+                         IPEndPoint* server_address,
+                         IPAddressNumber* client_ip);
+
+  EpollServer* epoll_server() { return epoll_server_; }
 
  private:
   friend class net::tools::test::QuicClientPeer;
@@ -207,11 +220,11 @@ class QuicSimpleClient : public QuicDataStream::Visitor {
   // and binds the socket to our address.
   bool CreateUDPSocket();
 
+  // If the socket has been created, then unregister and close() the FD.
+  void CleanUpUDPSocket();
+
   // Read a UDP packet and hand it to the framer.
   bool ReadAndProcessPacket();
-
-  //  Used by |helper_| to time alarms.
-  QuicClock clock_;
 
   // Address of the server.
   const IPEndPoint server_address_;
@@ -237,16 +250,14 @@ class QuicSimpleClient : public QuicDataStream::Visitor {
   scoped_ptr<QuicPacketWriter> writer_;
 
   // Session which manages streams.
-  scoped_ptr<QuicSimpleClientSession> session_;
-
-  // UDP socket connected to the server.
-  scoped_ptr<UDPClientSocket> socket_;
-
-  // Connection on the socket. Owned by |session_|.
-  QuicConnection* connection_;
+  scoped_ptr<QuicClientSession> session_;
+  // Listens for events on the client socket.
+  EpollServer* epoll_server_;
+  // UDP socket.
+  int fd_;
 
   // Helper to be used by created connections.
-  scoped_ptr<QuicConnectionHelper> helper_;
+  scoped_ptr<QuicEpollConnectionHelper> helper_;
 
   // Listens for full responses.
   scoped_ptr<ResponseListener> response_listener_;
@@ -278,24 +289,10 @@ class QuicSimpleClient : public QuicDataStream::Visitor {
   // Body of most recent response.
   std::string latest_response_body_;
 
-  bool read_pending_;
-
-  // The number of iterations of the read loop that have completed synchronously
-  // and without posting a new task to the message loop.
-  int synchronous_read_count_;
-
-  // The target buffer of the current read.
-  scoped_refptr<IOBufferWithSize> read_buffer_;
-
-  // The log used for the sockets.
-  NetLog net_log_;
-
-  base::WeakPtrFactory<QuicSimpleClient> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicSimpleClient);
+  DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };
 
 }  // namespace tools
 }  // namespace net
 
-#endif  // NET_TOOLS_QUIC_QUIC_SIMPLE_CLIENT_H_
+#endif  // NET_TOOLS_QUIC_QUIC_CLIENT_H_
