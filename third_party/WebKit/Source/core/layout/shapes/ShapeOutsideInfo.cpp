@@ -76,6 +76,8 @@ void ShapeOutsideInfo::setReferenceBoxLogicalSize(LayoutSize newReferenceBoxLogi
         break;
     }
 
+    newReferenceBoxLogicalSize.clampNegativeToZero();
+
     if (m_referenceBoxLogicalSize == newReferenceBoxLogicalSize)
         return;
     markShapeAsDirty();
@@ -287,7 +289,7 @@ ShapeOutsideDeltas ShapeOutsideInfo::computeDeltasForContainingBlockLine(const L
 
     if (isShapeDirty() || !m_shapeOutsideDeltas.isForLine(borderBoxLineTop, lineHeight)) {
         LayoutUnit referenceBoxLineTop = borderBoxLineTop - logicalTopOffset();
-        LayoutUnit floatMarginBoxWidth = containingBlock.logicalWidthForFloat(&floatingObject);
+        LayoutUnit floatMarginBoxWidth = std::max(containingBlock.logicalWidthForFloat(&floatingObject), LayoutUnit());
 
         if (computedShape().lineOverlapsShapeMarginBounds(referenceBoxLineTop, lineHeight)) {
             LineSegment segment = computedShape().getExcludedInterval((borderBoxLineTop - logicalTopOffset()), std::min(lineHeight, shapeLogicalBottom() - borderBoxLineTop));
