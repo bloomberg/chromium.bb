@@ -13,6 +13,9 @@ namespace appviewTag {
   // allow the embedding and what to embed based on the embedder making the
   // request.
   dictionary EmbedRequest {
+    // The ID of the app that sent the embedding request.
+    string embedderId;
+
     // Optional developer specified data that the app to be embedded can use
     // when making an embedding decision.
     object data;
