@@ -58,7 +58,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
         error_label_(nullptr),
         storage_checkbox_(nullptr),
         progress_overlay_(nullptr),
-        progress_label_(nullptr) {}
+        progress_label_(nullptr),
+        weak_ptr_factory_(this) {}
 
   ~CardUnmaskPromptViews() override {
     if (controller_)
@@ -90,7 +91,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
           IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_SUCCESS));
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE, base::Bind(&CardUnmaskPromptViews::ClosePrompt,
-                                base::Unretained(this)),
+                                weak_ptr_factory_.GetWeakPtr()),
           base::TimeDelta::FromSeconds(1));
     } else {
       // TODO(estade): it's somewhat jarring when the error comes back too
@@ -418,6 +419,8 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
   views::View* progress_overlay_;
   views::Label* progress_label_;
+
+  base::WeakPtrFactory<CardUnmaskPromptViews> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptViews);
 };
