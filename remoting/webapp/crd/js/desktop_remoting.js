@@ -287,15 +287,6 @@ remoting.DesktopRemoting.prototype.handleConnectionFailed = function(
 };
 
 /**
- * Called when the current session has reached the point where the host has
- * started streaming video frames to the client.
- *
- * @return {void} Nothing.
- */
-remoting.DesktopRemoting.prototype.handleVideoStreamingStarted = function() {
-};
-
-/**
  * Called when an error needs to be displayed to the user.
  *
  * @param {!remoting.Error} error The error to be localized and displayed.

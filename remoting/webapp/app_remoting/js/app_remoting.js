@@ -31,10 +31,7 @@ remoting.AppRemoting = function(app) {
   /** @private {remoting.WindowActivationMenu} */
   this.windowActivationMenu_ = null;
 
-  /** @private {base.RepeatingTimer} */
-  this.pingTimer_ = null;
-
-  /** @private {remoting.DesktopConnectedView} */
+  /** @private {remoting.AppConnectedView} */
   this.connectedView_ = null;
 };
 
@@ -226,17 +223,7 @@ remoting.AppRemoting.prototype.handleConnected = function(connectionInfo) {
 
   remoting.app.getSessionConnector().registerProtocolExtension(this);
 
-  var clientSession = connectionInfo.session();
-  // Set up a ping at 10-second intervals to test the connection speed.
-  var CONNECTION_SPEED_PING_INTERVAL = 10 * 1000;
-  this.pingTimer_ = new base.RepeatingTimer(function () {
-    var message = { timestamp: new Date().getTime() };
-    clientSession.sendClientMessage('pingRequest', JSON.stringify(message));
-  }, CONNECTION_SPEED_PING_INTERVAL);
-
-  // TODO(kelvinp): Move all app remoting specific logic into
-  // remoting.AppRemotingView.
-  this.connectedView_ = new remoting.DesktopConnectedView(
+  this.connectedView_ = new remoting.AppConnectedView(
       document.getElementById('client-container'), connectionInfo);
 
   // Map Cmd to Ctrl on Mac since hosts typically use Ctrl for keyboard
@@ -252,10 +239,6 @@ remoting.AppRemoting.prototype.handleConnected = function(connectionInfo) {
  * @return {void} Nothing.
  */
 remoting.AppRemoting.prototype.handleDisconnected = function() {
-  // Cancel the ping when the connection closes.
-  base.dispose(this.pingTimer_);
-  this.pingTimer_ = null;
-
   base.dispose(this.connectedView_);
   this.connectedView_ = null;
 
@@ -273,17 +256,6 @@ remoting.AppRemoting.prototype.handleConnectionFailed = function(
     connector, error) {
   this.handleError(error);
 };
-
-/**
- * Called when the current session has reached the point where the host has
- * started streaming video frames to the client.
- *
- * @return {void} Nothing.
- */
-remoting.AppRemoting.prototype.handleVideoStreamingStarted = function() {
-  remoting.LoadingWindow.close();
-};
-
 
 /** @return {Array<string>} */
 remoting.AppRemoting.prototype.getExtensionTypes = function() {

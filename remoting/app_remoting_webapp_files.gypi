@@ -46,6 +46,7 @@
     ],
     'ar_main_js_files': [
       'webapp/app_remoting/js/application_context_menu.js',
+      'webapp/app_remoting/js/app_connected_view.js',
       'webapp/app_remoting/js/app_remoting.js',
       'webapp/app_remoting/js/ar_main.js',
       'webapp/app_remoting/js/context_menu_adapter.js',

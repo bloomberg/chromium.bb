@@ -53,16 +53,9 @@ remoting.DesktopViewport = function(rootElement, hostDesktop, hostOptions) {
   this.eventHooks_ = new base.Disposables(
       new base.EventHook(
         this.hostDesktop_, remoting.HostDesktop.Events.sizeChanged,
-        this.onDesktopSizeChanged_.bind(this)),
-      // TODO(kelvinp): Move window shape related logic into
-      // remoting.AppConnectedView.
-      new base.EventHook(
-        this.hostDesktop_, remoting.HostDesktop.Events.shapeChanged,
-        remoting.windowShape.setDesktopRects.bind(remoting.windowShape)));
+        this.onDesktopSizeChanged_.bind(this)));
 
   if (this.hostOptions_.resizeToClient) {
-    // TODO(kelvinp): This call is required in app remoting to set the host
-    // desktop size.  Move this to remoting.AppConnectedView later.
     this.resizeHostDesktop_();
   } else {
     this.onDesktopSizeChanged_();
@@ -346,10 +339,6 @@ remoting.DesktopViewport.prototype.updateDimensions_ = function() {
   console.log('plugin dimensions:' + newSize.width + 'x' + newSize.height);
   this.pluginElement_.style.width = newSize.width + 'px';
   this.pluginElement_.style.height = newSize.height + 'px';
-
-  // When we receive the first plugin dimensions from the host, we know that
-  // remote host has started.
-  remoting.app.onVideoStreamingStarted();
 };
 
 /**

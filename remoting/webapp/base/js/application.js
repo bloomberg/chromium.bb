@@ -149,16 +149,6 @@ remoting.Application.prototype.onConnectionFailed = function(error) {
 };
 
 /**
- * Called when the current session has reached the point where the host has
- * started streaming video frames to the client.
- *
- * @return {void} Nothing.
- */
-remoting.Application.prototype.onVideoStreamingStarted = function() {
-  this.delegate_.handleVideoStreamingStarted();
-};
-
-/**
  * Called when an error needs to be displayed to the user.
  *
  * @param {!remoting.Error} errorTag The error to be localized and displayed.
@@ -290,15 +280,6 @@ remoting.Application.Delegate.prototype.handleDisconnected = function() {};
  */
 remoting.Application.Delegate.prototype.handleConnectionFailed =
     function(connector, error) {};
-
-/**
- * Called when the current session has reached the point where the host has
- * started streaming video frames to the client.
- *
- * @return {void} Nothing.
- */
-remoting.Application.Delegate.prototype.handleVideoStreamingStarted =
-    function() {};
 
 /**
  * Called when an error needs to be displayed to the user.
