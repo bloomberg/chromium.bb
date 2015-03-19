@@ -225,9 +225,9 @@ def FindFullConfigsForBoard(board=None):
   for name, c in config.iteritems():
     if c['boards'] and (board is None or board in c['boards']):
       if name.endswith('-%s' % CONFIG_TYPE_RELEASE) and c['internal']:
-        int_cfgs.append(copy.deepcopy(c))
+        int_cfgs.append(c.deepcopy())
       elif name.endswith('-%s' % CONFIG_TYPE_FULL) and not c['internal']:
-        ext_cfgs.append(copy.deepcopy(c))
+        ext_cfgs.append(c.deepcopy())
 
   return ext_cfgs, int_cfgs
 
@@ -1044,6 +1044,26 @@ class _config(dict):
     """
     return 'trybot-%s' % self.name if remote_trybot else self.name
 
+  def deepcopy(self):
+    """Create a deep copy of this object.
+
+    This function is identical to copy.deepcopy(), but faster.
+    """
+    new_config = _config(self)
+    for k, v in self.iteritems():
+      # type(v) is faster than isinstance.
+      if type(v) is list:
+        new_config[k] = v[:]
+
+    if new_config.get('child_configs'):
+      new_config['child_configs'] = [
+          x.deepcopy() for x in new_config['child_configs']]
+
+    if new_config.get('hw_tests'):
+      new_config['hw_tests'] = [copy.copy(x) for x in new_config['hw_tests']]
+
+    return new_config
+
   def derive(self, *args, **kwargs):
     """Create a new config derived from this one.
 
@@ -1059,7 +1079,7 @@ class _config(dict):
     """
     inherits = list(args)
     inherits.append(kwargs)
-    new_config = copy.deepcopy(self)
+    new_config = self.deepcopy()
 
     for update_config in inherits:
       for k, v in update_config.iteritems():
@@ -1074,7 +1094,7 @@ class _config(dict):
       for k in keys_to_delete:
         new_config.pop(k, None)
 
-    return copy.deepcopy(new_config)
+    return new_config
 
   def add_config(self, name, *args, **kwargs):
     """Derive and add the config to cbuildbot's usable config targets

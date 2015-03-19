@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import copy
 import mock
 import os
 import re
@@ -55,6 +56,28 @@ class ConfigPickleTest(cros_test_lib.TestCase):
     self.assertEquals(bc1.name, bc2.name)
 
 
+class _CustomObject(object):
+  """Simple object. For testing deepcopy."""
+
+  def __init__(self, x):
+    self.x = x
+
+  def __eq__(self, other):
+    return self.x == other.x
+
+
+class _CustomObjectWithSlots(object):
+  """Simple object with slots. For testing deepcopy."""
+
+  __slots__ = ['x']
+
+  def __init__(self, x):
+    self.x = x
+
+  def __eq__(self, other):
+    return self.x == other.x
+
+
 class ConfigClassTest(cros_test_lib.TestCase):
   """Tests of the config class itself."""
 
@@ -97,6 +120,71 @@ class ConfigClassTest(cros_test_lib.TestCase):
         useflags=cbuildbot_config.append_useflags(['-bar', 'baz']))
     self.assertEqual(inherited_config_1.useflags, ['-baz', 'bar', 'foo'])
     self.assertEqual(inherited_config_2.useflags, ['-bar', 'baz', 'foo'])
+
+  def AssertDeepCopy(self, obj1, obj2, obj3):
+    """Assert that |obj3| is a deep copy of |obj1|.
+
+    Args:
+      obj1: Object that was copied.
+      obj2: A true deep copy of obj1 (produced using copy.deepcopy).
+      obj3: The purported deep copy of obj1.
+    """
+    # Objects that are hashable are guaranteed to be immutable.
+    # If an object is not hashable, it needs to be deeply copied.
+    if obj1 is not obj2:
+      self.assertTrue(obj1 is not obj3, '%r vs. %r' % (obj1, obj3))
+
+    # Assert the three items are all equal.
+    self.assertEqual(obj1, obj2)
+    self.assertEqual(obj1, obj3)
+
+    if isinstance(obj1, (tuple, list)):
+      # Copy tuples and lists item by item.
+      for i in range(len(obj1)):
+        self.AssertDeepCopy(obj1[i], obj2[i], obj3[i])
+    elif isinstance(obj1, set):
+      # Compare sorted versions of the set.
+      self.AssertDeepCopy(list(sorted(obj1)), list(sorted(obj2)),
+                          list(sorted(obj3)))
+    elif isinstance(obj1, dict):
+      # Copy dicts item by item.
+      for k in obj1:
+        self.AssertDeepCopy(obj1[k], obj2[k], obj3[k])
+    elif hasattr(obj1, '__dict__'):
+      # Make sure the dicts are copied.
+      self.AssertDeepCopy(obj1.__dict__, obj2.__dict__, obj3.__dict__)
+    elif hasattr(obj1, '__slots__'):
+      # Make sure the slots are copied.
+      for attr in obj1.__slots__:
+        self.AssertDeepCopy(getattr(obj1, attr), getattr(obj2, attr),
+                            getattr(obj3, attr))
+    else:
+      # This should be an immutable object.
+      self.assertTrue(obj1 is obj2)
+
+  def testDeepCopy(self):
+    """Test that we deep copy correctly."""
+    for cfg in cbuildbot_config.config.itervalues():
+      self.AssertDeepCopy(cfg, copy.deepcopy(cfg), cfg.deepcopy())
+
+  def testAssertDeepCopy(self):
+    """Test that we test deep copy correctly."""
+    test1 = ['foo', 'bar', ['hey']]
+    tests = [test1,
+             set([tuple(x) for x in test1]),
+             dict(zip([tuple(x) for x in test1], test1)),
+             _CustomObject(test1),
+             _CustomObjectWithSlots(test1)]
+
+    for x in tests + [[tests]]:
+      copy_x = copy.deepcopy(x)
+      self.AssertDeepCopy(x, copy_x, copy.deepcopy(x))
+      self.AssertDeepCopy(x, copy_x, cPickle.loads(cPickle.dumps(x, -1)))
+      self.assertRaises(AssertionError, self.AssertDeepCopy, x,
+                        copy_x, x)
+      if not isinstance(x, set):
+        self.assertRaises(AssertionError, self.AssertDeepCopy, x,
+                          copy_x, copy.copy(x))
 
 
 class CBuildBotTest(cros_test_lib.TestCase):
