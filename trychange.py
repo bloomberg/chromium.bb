@@ -727,6 +727,7 @@ def _SendChangeGerrit(bot_spec, options):
   Gerrit message format: starts with !tryjob, optionally followed by a tryjob
   definition in JSON format:
       buildNames: list of strings specifying build names.
+      build_properties: a dict of build properties.
   """
 
   logging.info('Sending by Gerrit')
@@ -752,9 +753,14 @@ def _SendChangeGerrit(bot_spec, options):
   def FormatMessage():
     # Build job definition.
     job_def = {}
+    build_properties = {}
+    if options.testfilter:
+      build_properties['testfilter'] = options.testfilter
     builderNames = [builder for builder, _ in bot_spec]
     if builderNames:
       job_def['builderNames'] = builderNames
+    if build_properties:
+      job_def['build_properties'] = build_properties
 
     # Format message.
     msg = '!tryjob'
