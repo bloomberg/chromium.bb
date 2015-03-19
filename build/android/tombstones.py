@@ -10,6 +10,8 @@
 # Assumes tombstone file was created with current symbols.
 
 import datetime
+import itertools
+import logging
 import multiprocessing
 import os
 import re
@@ -20,6 +22,7 @@ import optparse
 from pylib import android_commands
 from pylib.device import device_errors
 from pylib.device import device_utils
+from pylib.utils import run_tests_helper
 
 
 _TZ_UTC = {'TZ': 'UTC'}
@@ -33,15 +36,18 @@ def _ListTombstones(device):
   Yields:
     Tuples of (tombstone filename, date time of file on device).
   """
-  lines = device.RunShellCommand(
-      ['ls', '-a', '-l', '/data/tombstones'],
-      as_root=True, check_return=True, env=_TZ_UTC, timeout=60)
-  for line in lines:
-    if 'tombstone' in line and not 'No such file or directory' in line:
-      details = line.split()
-      t = datetime.datetime.strptime(details[-3] + ' ' + details[-2],
-                                     '%Y-%m-%d %H:%M')
-      yield details[-1], t
+  try:
+    lines = device.RunShellCommand(
+        ['ls', '-a', '-l', '/data/tombstones'],
+        as_root=True, check_return=True, env=_TZ_UTC, timeout=60)
+    for line in lines:
+      if 'tombstone' in line and not 'No such file or directory' in line:
+        details = line.split()
+        t = datetime.datetime.strptime(details[-3] + ' ' + details[-2],
+                                       '%Y-%m-%d %H:%M')
+        yield details[-1], t
+  except device_errors.CommandFailedError:
+    logging.exception('Could not retrieve tombstones.')
 
 
 def _GetDeviceDateTime(device):
@@ -133,8 +139,8 @@ def _ResolveTombstone(tombstone):
             ', about this long ago: ' +
             (str(tombstone['device_now'] - tombstone['time']) +
             ' Device: ' + tombstone['serial'])]
-  print '\n'.join(lines)
-  print 'Resolving...'
+  logging.info('\n'.join(lines))
+  logging.info('Resolving...')
   lines += _ResolveSymbols(tombstone['data'], tombstone['stack'],
                            tombstone['device_abi'])
   return lines
@@ -148,15 +154,15 @@ def _ResolveTombstones(jobs, tombstones):
     tombstones: a list of tombstones.
   """
   if not tombstones:
-    print 'No device attached?  Or no tombstones?'
+    logging.warning('No tombstones to resolve.')
     return
   if len(tombstones) == 1:
     data = _ResolveTombstone(tombstones[0])
   else:
     pool = multiprocessing.Pool(processes=jobs)
     data = pool.map(_ResolveTombstone, tombstones)
-    data = ['\n'.join(d) for d in data]
-  print '\n'.join(data)
+  for d in data:
+    logging.info(d)
 
 
 def _GetTombstonesForDevice(device, options):
@@ -169,7 +175,7 @@ def _GetTombstonesForDevice(device, options):
   ret = []
   all_tombstones = list(_ListTombstones(device))
   if not all_tombstones:
-    print 'No device attached?  Or no tombstones?'
+    logging.warning('No tombstones.')
     return ret
 
   # Sort the tombstones in date order, descending
@@ -192,7 +198,7 @@ def _GetTombstonesForDevice(device, options):
     for line in device.RunShellCommand(
         ['ls', '-a', '-l', '/data/tombstones'],
         as_root=True, check_return=True, env=_TZ_UTC, timeout=60):
-      print '%s: %s' % (str(device), line)
+      logging.info('%s: %s', str(device), line)
     raise
 
   # Erase all the tombstones if desired.
@@ -204,6 +210,11 @@ def _GetTombstonesForDevice(device, options):
 
 
 def main():
+  custom_handler = logging.StreamHandler(sys.stdout)
+  custom_handler.setFormatter(run_tests_helper.CustomFormatter())
+  logging.getLogger().addHandler(custom_handler)
+  logging.getLogger().setLevel(logging.INFO)
+
   parser = optparse.OptionParser()
   parser.add_option('--device',
                     help='The serial number of the device. If not specified '
@@ -226,6 +237,9 @@ def main():
   else:
     devices = android_commands.GetAttachedDevices()
 
+  # This must be done serially because strptime can hit a race condition if
+  # used for the first time in a multithreaded environment.
+  # http://bugs.python.org/issue7980
   tombstones = []
   for device_serial in devices:
     device = device_utils.DeviceUtils(device_serial)
