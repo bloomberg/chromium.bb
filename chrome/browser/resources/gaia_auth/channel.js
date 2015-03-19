@@ -109,3 +109,11 @@ Channel.prototype = {
     }
   }
 };
+
+/**
+ * Class factory.
+ * @return {Channel}
+ */
+Channel.create = function() {
+  return new Channel();
+};

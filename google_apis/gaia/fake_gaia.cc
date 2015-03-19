@@ -133,7 +133,7 @@ FakeGaia::MergeSessionParams::MergeSessionParams() {
 FakeGaia::MergeSessionParams::~MergeSessionParams() {
 }
 
-FakeGaia::FakeGaia() {
+FakeGaia::FakeGaia() : issue_oauth_code_cookie_(false) {
   base::FilePath source_root_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
   CHECK(base::ReadFileToString(
@@ -187,6 +187,15 @@ void FakeGaia::AddGoogleAccountsSigninHeader(
       base::StringPrintf(
           "email=\"%s\", obfuscatedid=\"%s\", sessionindex=0",
           email.c_str(), GetGaiaIdOfEmail(email).c_str()));
+}
+
+void FakeGaia::SetOAuthCodeCookie(
+    net::test_server::BasicHttpResponse* http_response) const {
+  http_response->AddCustomHeader(
+      "Set-Cookie",
+      base::StringPrintf(
+          "oauth_code=%s; Path=/o/GetOAuth2Token; Secure; HttpOnly;",
+          merge_session_params_.auth_code.c_str()));
 }
 
 void FakeGaia::Initialize() {
@@ -483,6 +492,8 @@ void FakeGaia::HandleServiceLoginAuth(const HttpRequest& request,
     return;
 
   AddGoogleAccountsSigninHeader(http_response, email);
+  if (issue_oauth_code_cookie_)
+    SetOAuthCodeCookie(http_response);
 }
 
 void FakeGaia::HandleSSO(const HttpRequest& request,
@@ -502,6 +513,9 @@ void FakeGaia::HandleSSO(const HttpRequest& request,
 
   if (!merge_session_params_.email.empty())
     AddGoogleAccountsSigninHeader(http_response, merge_session_params_.email);
+
+  if (issue_oauth_code_cookie_)
+    SetOAuthCodeCookie(http_response);
 }
 
 void FakeGaia::HandleAuthToken(const HttpRequest& request,

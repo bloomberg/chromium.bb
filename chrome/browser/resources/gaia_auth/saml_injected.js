@@ -187,9 +187,6 @@
 
     channel.send({name: 'pageLoaded', url: pageURL});
 
-    var apiCallForwarder = new APICallForwarder();
-    apiCallForwarder.init(channel);
-
     var initPasswordScraper = function() {
       var passwordScraper = new PasswordInputScraper();
       passwordScraper.init(channel, pageURL, document.documentElement);
@@ -207,8 +204,11 @@
     }
   }
 
-  var channel = new Channel();
+  var channel = Channel.create();
   channel.connect('injected');
   channel.sendWithCallback({name: 'getSAMLFlag'},
                            onGetSAMLFlag.bind(undefined, channel));
+
+  var apiCallForwarder = new APICallForwarder();
+  apiCallForwarder.init(channel);
 })();
