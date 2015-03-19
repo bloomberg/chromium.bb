@@ -60,6 +60,14 @@ function getInitData(initDataType)
      ]);
   }
 
+  if (initDataType == 'keyids') {
+      var keyId = new Uint8Array([
+          0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+          0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
+      ]);
+      return stringToUint8Array(createKeyIDs(keyId));
+  }
+
   throw 'initDataType ' + initDataType + ' not supported.';
 }
 
@@ -210,6 +218,21 @@ function createJWKSet()
     }
     jwkSet += ']}';
     return jwkSet;
+}
+
+// Clear Key can also support Key IDs Initialization Data.
+// ref: http://w3c.github.io/encrypted-media/keyids-format.html
+// Each parameter is expected to be a key id in an Uint8Array.
+function createKeyIDs()
+{
+    var keyIds = '{"kids":["';
+    for (var i = 0; i < arguments.length; i++) {
+        if (i != 0)
+            keyIds += '","';
+        keyIds += base64urlEncode(arguments[i]);
+    }
+    keyIds += '"]}';
+    return keyIds;
 }
 
 function forceTestFailureFromPromise(test, error, message)
