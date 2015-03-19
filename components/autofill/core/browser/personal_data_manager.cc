@@ -1342,6 +1342,11 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
 
 void PersonalDataManager::EnabledPrefChanged() {
   default_country_code_.clear();
+  if (!pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
+    // Re-mask all server cards when the user turns off wallet card
+    // integration.
+    ResetFullServerCards();
+  }
   NotifyPersonalDataChanged();
 }
 

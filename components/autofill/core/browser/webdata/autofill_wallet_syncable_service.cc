@@ -84,7 +84,6 @@ AutofillProfile ProfileFromSpecifics(
   profile.SetRawInfo(ADDRESS_HOME_STREET_ADDRESS,
                      base::UTF8ToUTF16(JoinString(street_address, '\n')));
 
-  profile.SetRawInfo(NAME_FULL, base::UTF8ToUTF16(address.recipient_name()));
   profile.SetRawInfo(COMPANY_NAME, base::UTF8ToUTF16(address.company_name()));
   profile.SetRawInfo(ADDRESS_HOME_STATE,
                      base::UTF8ToUTF16(address.address_1()));
@@ -99,27 +98,30 @@ AutofillProfile ProfileFromSpecifics(
                      base::UTF8ToUTF16(address.sorting_code()));
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY,
                      base::UTF8ToUTF16(address.country_code()));
-  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER,
-                     base::UTF8ToUTF16(address.phone_number()));
   profile.set_language_code(address.language_code());
+
+  // SetInfo instead of SetRawInfo so the constituent pieces will be parsed
+  // for these data types.
+  profile.SetInfo(AutofillType(NAME_FULL),
+                  base::UTF8ToUTF16(address.recipient_name()),
+                  profile.language_code());
+  profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
+                  base::UTF8ToUTF16(address.phone_number()),
+                  profile.language_code());
 
   return profile;
 }
-
-// Implements operator< for two objects given their pointers.
-template<class Data> struct AutofillDataPtrLessThan {
-  bool operator()(const Data* a, const Data* b) const {
-    return a->Compare(*b) < 0;
-  }
-};
 
 // This function handles conditionally updating the AutofillTable with either
 // a set of CreditCards or AutocompleteProfiles only when the existing data
 // doesn't match.
 //
 // It's passed the getter and setter function on the AutofillTable for the
-// corresponding data type, and expects the types to implement a server_id()
-// and a Compare function.
+// corresponding data type, and expects the types to implement a Compare
+// function. Note that the guid can't be used here as a key since these are
+// generated locally and will be different each time, and the server ID can't
+// be used because it's empty for addresses (though it could be used for credit
+// cards if we wanted separate implementations).
 //
 // Returns true if anything changed. The previous number of items in the table
 // (for sync tracking) will be placed into *prev_item_count.
@@ -134,18 +136,31 @@ bool SetDataIfChanged(
   (table->*getter)(&existing_data.get());
   *prev_item_count = existing_data.size();
 
-  bool difference_found = true;
-  if (existing_data.size() == data.size()) {
+  // If the user has a large number of addresses, don't bother verifying
+  // anything changed and just rewrite the data.
+  const size_t kTooBigToCheckThreshold = 8;
+
+  bool difference_found;
+  if (existing_data.size() != data.size() ||
+      data.size() > kTooBigToCheckThreshold) {
+    difference_found = true;
+  } else {
     difference_found = false;
 
-    // Implement this set with pointers using our custom operator that takes
-    // pointers which avoids any copies.
-    std::set<const Data*, AutofillDataPtrLessThan<Data>> existing_data_set;
-    for (const Data* cur : existing_data)
-      existing_data_set.insert(cur);
-
-    for (const Data& new_data : data) {
-      if (existing_data_set.find(&new_data) == existing_data_set.end()) {
+    // Implement brute-force searching. Address and card counts are typically
+    // small, and comparing them is relatively expensive (many string
+    // compares). A std::set only uses operator< requiring multiple calls to
+    // check equality, giving 8 compares for 2 elements and 16 for 3. For these
+    // set sizes, brute force O(n^2) is faster.
+    for (const Data* cur_existing : existing_data) {
+      bool found_match_for_cur_existing = false;
+      for (const Data& cur_new : data) {
+        if (cur_existing->Compare(cur_new) == 0) {
+          found_match_for_cur_existing = true;
+          break;
+        }
+      }
+      if (!found_match_for_cur_existing) {
         difference_found = true;
         break;
       }
@@ -184,6 +199,12 @@ AutofillWalletSyncableService::MergeDataAndStartSyncing(
 void AutofillWalletSyncableService::StopSyncing(syncer::ModelType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(type, syncer::AUTOFILL_WALLET_DATA);
+  sync_processor_.reset();
+
+  // This data type is special. Normal sync data stays on the client when
+  // sync is disabled, but this one is supposed to represent the data you
+  // have on the server. Explicitly clear our local copy.
+  SetSyncData(syncer::SyncDataList());
 }
 
 syncer::SyncDataList AutofillWalletSyncableService::GetAllSyncData(

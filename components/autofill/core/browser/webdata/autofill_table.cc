@@ -952,6 +952,10 @@ bool AutofillTable::GetServerProfiles(std::vector<AutofillProfile*>* profiles) {
 
 void AutofillTable::SetServerProfiles(
     const std::vector<AutofillProfile>& profiles) {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return;
+
   // Delete all old ones first.
   sql::Statement delete_old(db_->GetUniqueStatement(
       "DELETE FROM server_addresses"));
@@ -996,6 +1000,8 @@ void AutofillTable::SetServerProfiles(
     insert.Run();
     insert.Reset(true);
   }
+
+  transaction.Commit();
 }
 
 bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
