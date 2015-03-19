@@ -17,7 +17,6 @@ class ConvertableToTraceFormat;
 }
 
 namespace cc {
-class LayerTreeSettings;
 
 class CC_EXPORT SchedulerSettings {
  public:
