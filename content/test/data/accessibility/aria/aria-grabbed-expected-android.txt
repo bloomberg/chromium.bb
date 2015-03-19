@@ -1,14 +1,14 @@
 android.webkit.WebView focusable focused scrollable
 ++android.widget.ListView collection hierarchical item_count=3 row_count=3
-++++android.view.View collection_item name='grabbed-true'
+++++android.view.View collection_item name='grabbed-true blue'
 ++++++android.view.View clickable name='•'
-++++++android.view.View clickable name='grabbed-true'
+++++++android.view.View clickable name='grabbed-true '
 ++++++android.widget.Image clickable name='blue'
-++++android.view.View collection_item name='grabbed-false' item_index=1 row_index=1
+++++android.view.View collection_item name='grabbed-false blue' item_index=1 row_index=1
 ++++++android.view.View clickable name='•'
-++++++android.view.View clickable name='grabbed-false'
+++++++android.view.View clickable name='grabbed-false '
 ++++++android.widget.Image clickable name='blue'
-++++android.view.View collection_item name='grabbed-undefined' item_index=2 row_index=2
+++++android.view.View collection_item name='grabbed-undefined blue' item_index=2 row_index=2
 ++++++android.view.View clickable name='•'
-++++++android.view.View clickable name='grabbed-undefined'
+++++++android.view.View clickable name='grabbed-undefined '
 ++++++android.widget.Image clickable name='blue'
