@@ -256,6 +256,12 @@ void PresentationServiceImpl::SetDefaultPresentationURL(
   DoSetDefaultPresentationUrl(new_default_url, default_presentation_id);
 }
 
+void PresentationServiceImpl::CloseSession(
+    const mojo::String& presentation_url,
+    const mojo::String& presentation_id) {
+  NOTIMPLEMENTED();
+}
+
 void PresentationServiceImpl::DidNavigateAnyFrame(
     content::RenderFrameHost* render_frame_host,
     const content::LoadCommittedDetails& details,

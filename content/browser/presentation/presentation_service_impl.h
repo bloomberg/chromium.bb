@@ -161,6 +161,9 @@ class CONTENT_EXPORT PresentationServiceImpl
       const mojo::String& presentation_url,
       const mojo::String& presentation_id,
       const NewSessionMojoCallback& callback) override;
+  void CloseSession(
+      const mojo::String& presentation_url,
+      const mojo::String& presentation_id) override;
 
   // mojo::InterfaceImpl override.
   // Note that this is called when the RenderFrameHost is deleted.

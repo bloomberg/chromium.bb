@@ -41,6 +41,9 @@ class CONTENT_EXPORT PresentationDispatcher
       const blink::WebString& presentationUrl,
       const blink::WebString& presentationId,
       blink::WebPresentationSessionClientCallbacks* callback);
+  virtual void closeSession(
+      const blink::WebString& presentationUrl,
+      const blink::WebString& presentationId);
 
   // RenderFrameObserver
   void DidChangeDefaultPresentation() override;

@@ -69,4 +69,7 @@ interface PresentationService {
     // silently and without user action.
     JoinSession(string presentation_url, string? presentation_id)
         => (PresentationSessionInfo? sessionInfo, PresentationError? error);
+
+    // Called when closeSession() is called by the frame.
+    CloseSession(string presentation_url, string presentation_id);
 };

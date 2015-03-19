@@ -120,6 +120,16 @@ void PresentationDispatcher::joinSession(
           base::Owned(callback)));
 }
 
+void PresentationDispatcher::closeSession(
+    const blink::WebString& presentationUrl,
+    const blink::WebString& presentationId) {
+  ConnectToPresentationServiceIfNeeded();
+
+  presentation_service_->CloseSession(
+      presentationUrl.utf8(),
+      presentationId.utf8());
+}
+
 void PresentationDispatcher::DidChangeDefaultPresentation() {
   GURL presentation_url(GetPresentationURLFromFrame(render_frame()));
 
