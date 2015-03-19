@@ -47,27 +47,27 @@ def DoPresubmitMain(argv, original_filename, backup_filename, script_name,
   if '\r' in original_xml:
     logging.error('DOS-style line endings (CR characters) detected - these are '
                   'not allowed. Please run dos2unix %s', original_filename)
-    return 1
+    sys.exit(1)
 
   try:
     pretty = prettyFn(original_xml)
   except Error:
     logging.error('Aborting parsing due to fatal errors.')
-    return 1
+    sys.exit(1)
 
   if original_xml == pretty:
     logging.info('%s is correctly pretty-printed.', original_filename)
-    return 0
+    sys.exit(0)
   if presubmit:
     logging.error('%s is not formatted correctly; run %s to fix.',
                   original_filename, script_name)
-    return 1
+    sys.exit(1)
 
   # Prompt user to consent on the change.
   if not diff_util.PromptUserToAcceptDiff(
       original_xml, pretty, 'Is the new version acceptable?'):
     logging.error('Diff not accepted. Aborting.')
-    return 1
+    sys.exit(1)
 
   logging.info('Creating backup file: %s', backup_filename)
   shutil.move(xml_path, os.path.join(xml_dir, backup_filename))
@@ -76,4 +76,4 @@ def DoPresubmitMain(argv, original_filename, backup_filename, script_name,
     f.write(pretty)
   logging.info('Updated %s. Don\'t forget to add it to your changelist',
                xml_path)
-  return 0
+  sys.exit(0)
