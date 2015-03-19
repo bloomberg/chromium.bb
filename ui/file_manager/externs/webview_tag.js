@@ -192,6 +192,9 @@ var SelectionRect;
  */
 function WebRequestEventInteface() {}
 
+/** @type {!WebRequestEvent} */
+WebRequestEventInteface.prototype.onBeforeSendHeaders;
+
 /**
  * @constructor
  * @extends {HTMLIFrameElement}

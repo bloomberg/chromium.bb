@@ -115,8 +115,8 @@ FileOperationManager.prototype.requestTaskCancel = function(taskId) {
  * Filters the entry in the same directory
  *
  * @param {Array.<Entry>} sourceEntries Entries of the source files.
- * @param {DirectoryEntry} targetEntry The destination entry of the target
- *     directory.
+ * @param {DirectoryEntry|FakeEntry} targetEntry The destination entry of the
+ *     target directory.
  * @param {boolean} isMove True if the operation is "move", otherwise (i.e.
  *     if the operation is "copy") false.
  * @return {Promise} Promise fulfilled with the filtered entry. This is not

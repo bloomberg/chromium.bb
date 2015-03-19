@@ -193,3 +193,14 @@ VolumeManagerCommon.VolumeInfoProvider = function() {};
  * @return {?VolumeInfo} The VolumeInfo instance or null if not found.
  */
 VolumeManagerCommon.VolumeInfoProvider.prototype.getVolumeInfo;
+
+/**
+ * Fake entries for Google Drive's virtual folders.
+ * (OFFLINE, RECENT, and SHARED_WITH_ME)
+ * @typedef {?{
+ *   isDirectory: boolean,
+ *   rootType: VolumeManagerCommon.RootType,
+ *   toURL: function(): string
+ * }}
+ */
+var FakeEntry;

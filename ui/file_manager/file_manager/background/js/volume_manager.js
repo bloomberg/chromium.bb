@@ -44,9 +44,11 @@ function VolumeInfo(
   this.fileSystem_ = fileSystem;
   this.label_ = label;
   this.displayRoot_ = null;
+
+  /** @type {Object.<string, !FakeEntry>} */
   this.fakeEntries_ = {};
 
-  /** @type {Promise.<DirectoryEntry>} */
+  /** @type {Promise.<!DirectoryEntry>} */
   this.displayRootPromise_ = null;
 
   if (volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
@@ -107,7 +109,7 @@ VolumeInfo.prototype = /** @struct */ {
     return this.displayRoot_;
   },
   /**
-   * @return {Object.<string, Object>} Fake entries.
+   * @return {Object.<string, !FakeEntry>} Fake entries.
    */
   get fakeEntries() {
     return this.fakeEntries_;
@@ -166,10 +168,10 @@ VolumeInfo.prototype = /** @struct */ {
  * Starts resolving the display root and obtains it.  It may take long time for
  * Drive. Once resolved, it is cached.
  *
- * @param {function(DirectoryEntry)=} opt_onSuccess Success callback with the
+ * @param {function(!DirectoryEntry)=} opt_onSuccess Success callback with the
  *     display root directory as an argument.
  * @param {function(*)=} opt_onFailure Failure callback.
- * @return {Promise.<DirectoryEntry>}
+ * @return {Promise.<!DirectoryEntry>}
  */
 VolumeInfo.prototype.resolveDisplayRoot = function(opt_onSuccess,
                                                    opt_onFailure) {
@@ -178,10 +180,10 @@ VolumeInfo.prototype.resolveDisplayRoot = function(opt_onSuccess,
     // remove this if logic. Call opt_onSuccess() always, instead.
     if (this.volumeType !== VolumeManagerCommon.VolumeType.DRIVE) {
       if (this.fileSystem_)
-        this.displayRootPromise_ = /** @type {Promise.<DirectoryEntry>} */ (
+        this.displayRootPromise_ = /** @type {Promise.<!DirectoryEntry>} */ (
             Promise.resolve(this.fileSystem_.root));
       else
-        this.displayRootPromise_ = /** @type {Promise.<DirectoryEntry>} */ (
+        this.displayRootPromise_ = /** @type {Promise.<!DirectoryEntry>} */ (
             Promise.reject(this.error));
     } else {
       // For Drive, we need to resolve.
@@ -417,7 +419,7 @@ VolumeInfoList.prototype.findIndex = function(volumeId) {
 
 /**
  * Searches the information of the volume that contains the passed entry.
- * @param {!Entry|!Object} entry Entry on the volume to be found.
+ * @param {!Entry|!FakeEntry} entry Entry on the volume to be found.
  * @return {VolumeInfo} The volume's information, or null if not found.
  */
 VolumeInfoList.prototype.findByEntry = function(entry) {
@@ -821,7 +823,7 @@ VolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
 /**
  * Obtains location information from an entry.
  *
- * @param {(!Entry|!Object)} entry File or directory entry. It can be a fake
+ * @param {(!Entry|!FakeEntry)} entry File or directory entry. It can be a fake
  *     entry.
  * @return {EntryLocation} Location information.
  */

@@ -153,7 +153,7 @@ importer.TaskQueue.Task = function() {};
  * importer.TaskQueue.UpdateType, but child classes may add supplementary update
  * types of their own.  The second argument is an Object containing
  * supplementary information pertaining to the update.
- * @typedef {function(string, Object=)}
+ * @typedef {function(!importer.TaskQueue.UpdateType, Object=)}
  */
 importer.TaskQueue.Task.Observer;
 

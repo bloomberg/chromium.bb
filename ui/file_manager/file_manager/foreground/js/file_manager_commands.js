@@ -1000,7 +1000,7 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
       return;
     var selectionEntries = fileManager.getSelection().entries;
     fileManager.fileOperationManager_.zipSelection(
-        dirEntry, selectionEntries);
+        /** @type {!DirectoryEntry} */ (dirEntry), selectionEntries);
   },
   /**
    * @param {!Event} event Command event.

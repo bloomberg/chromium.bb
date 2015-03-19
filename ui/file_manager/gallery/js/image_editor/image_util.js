@@ -513,7 +513,7 @@ ImageUtil.ImageLoader.prototype.load = function(item, callback, opt_delay) {
 
   var loadImage = function() {
     ImageUtil.metrics.startInterval(ImageUtil.getMetricName('LoadTime'));
-    this.timeout_ = null;
+    this.timeout_ = 0;
 
     this.image_.onload = function() {
       this.image_.onerror = null;

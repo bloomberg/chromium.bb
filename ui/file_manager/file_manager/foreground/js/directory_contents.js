@@ -598,7 +598,8 @@ FileListContext.createPrefetchPropertyNames_ = function() {
  * @param {FileListContext} context The file list context.
  * @param {boolean} isSearch True for search directory contents, otherwise
  *     false.
- * @param {DirectoryEntry} directoryEntry The entry of the current directory.
+ * @param {DirectoryEntry|FakeEntry} directoryEntry The entry of the current
+ *     directory.
  * @param {function():ContentScanner} scannerFactory The factory to create
  *     ContentScanner instance.
  * @constructor
@@ -736,8 +737,8 @@ DirectoryContents.prototype.isSearch = function() {
 };
 
 /**
- * @return {DirectoryEntry} A DirectoryEntry for current directory. In case of
- *     search -- the top directory from which search is run.
+ * @return {DirectoryEntry|FakeEntry} A DirectoryEntry for current directory.
+ *     In case of search -- the top directory from which search is run.
  */
 DirectoryContents.prototype.getDirectoryEntry = function() {
   return this.directoryEntry_;
@@ -1047,9 +1048,8 @@ DirectoryContents.createForLocalSearch = function(
  * on Drive File System.
  *
  * @param {FileListContext} context File list context.
- * @param {DirectoryEntry} fakeDirectoryEntry Fake directory entry representing
- *     the set of result entries. This serves as a top directory for the
- *     search.
+ * @param {!FakeEntry} fakeDirectoryEntry Fake directory entry representing the
+ *     set of result entries. This serves as a top directory for the search.
  * @param {!DriveMetadataSearchContentScanner.SearchType} searchType The type of
  *     the search. The scanner will restricts the entries based on the given
  *     type.

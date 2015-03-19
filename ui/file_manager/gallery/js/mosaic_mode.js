@@ -317,7 +317,7 @@ Mosaic.prototype.animatedScrollTo = function(targetPosition) {
       this.scrollLeft = newScrollLeft;
 
     if (step === 0 || this.scrollLeft !== newScrollLeft) {
-      this.scrollAnimation_ = null;
+      this.scrollAnimation_ = 0;
       // Release the hovering lock after a safe delay to avoid hovering
       // a tile because of altering |this.scrollLeft|.
       setTimeout(function() {

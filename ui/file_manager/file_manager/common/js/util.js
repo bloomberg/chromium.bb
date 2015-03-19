@@ -589,7 +589,7 @@ Object.freeze(util.EntryChangedKind);
 
 /**
  * Obtains whether an entry is fake or not.
- * @param {(!Entry|!Object)} entry Entry or a fake entry.
+ * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is fake.
  */
 util.isFakeEntry = function(entry) {
@@ -633,8 +633,8 @@ util.UserDOMError.prototype = {
 
 /**
  * Compares two entries.
- * @param {Entry|Object} entry1 The entry to be compared. Can be a fake.
- * @param {Entry|Object} entry2 The entry to be compared. Can be a fake.
+ * @param {Entry|FakeEntry} entry1 The entry to be compared. Can be a fake.
+ * @param {Entry|FakeEntry} entry2 The entry to be compared. Can be a fake.
  * @return {boolean} True if the both entry represents a same file or
  *     directory. Returns true if both entries are null.
  */
@@ -692,7 +692,7 @@ util.comparePath = function(entry1, entry2) {
  * Checks if {@code entry} is an immediate child of {@code directory}.
  *
  * @param {Entry} entry The presumptive child.
- * @param {DirectoryEntry} directory The presumptive parent.
+ * @param {DirectoryEntry|FakeEntry} directory The presumptive parent.
  * @return {!Promise.<boolean>} Resolves with true if {@code directory} is
  *     parent of {@code entry}.
  */
@@ -715,9 +715,9 @@ util.isChildEntry = function(entry, directory) {
  * Checks if the child entry is a descendant of another entry. If the entries
  * point to the same file or directory, then returns false.
  *
- * @param {!DirectoryEntry|!Object} ancestorEntry The ancestor directory entry.
- *     Can be a fake.
- * @param {!Entry|!Object} childEntry The child entry. Can be a fake.
+ * @param {!DirectoryEntry|!FakeEntry} ancestorEntry The ancestor directory
+ *     entry. Can be a fake.
+ * @param {!Entry|!FakeEntry} childEntry The child entry. Can be a fake.
  * @return {boolean} True if the child entry is contained in the ancestor path.
  */
 util.isDescendantEntry = function(ancestorEntry, childEntry) {

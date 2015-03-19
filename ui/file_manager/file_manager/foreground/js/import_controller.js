@@ -880,7 +880,7 @@ importer.ControllerEnvironment.prototype.getSelection;
 
 /**
  * Returns the directory entry for the current directory.
- * @return {DirectoryEntry}
+ * @return {DirectoryEntry|FakeEntry}
  */
 importer.ControllerEnvironment.prototype.getCurrentDirectory;
 

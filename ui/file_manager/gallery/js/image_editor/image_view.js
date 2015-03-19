@@ -644,7 +644,7 @@ ImageView.prototype.replace = function(
         newScreenImage,
         this.viewport_,
         null,
-        opt_effect && opt_effect.getDuration());
+        opt_effect ? opt_effect.getDuration() : undefined);
     if (oldScreenImage) {
       ImageUtil.setAttribute(newScreenImage, 'fade', false);
       ImageUtil.setAttribute(oldScreenImage, 'fade', true);

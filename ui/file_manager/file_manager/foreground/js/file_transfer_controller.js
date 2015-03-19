@@ -482,7 +482,8 @@ FileTransferController.prototype.paste =
       (!util.isDropEffectAllowed(effectAllowed, 'copy') ||
        opt_effect === 'move');
   var destinationEntry =
-      opt_destinationEntry || this.directoryModel_.getCurrentDirEntry();
+      opt_destinationEntry ||
+      /** @type {DirectoryEntry} */ (this.directoryModel_.getCurrentDirEntry());
   var entries = [];
   var failureUrls;
   var taskId = this.fileOperationManager_.generateTaskId();
@@ -850,7 +851,8 @@ FileTransferController.prototype.onDrop_ =
   if (!this.canPasteOrDrop_(event.dataTransfer, destinationEntry))
     return;
   event.preventDefault();
-  this.paste(event.dataTransfer, destinationEntry,
+  this.paste(event.dataTransfer,
+             /** @type {DirectoryEntry} */ (destinationEntry),
              this.selectDropEffect_(event, destinationEntry));
   this.clearDropTarget_();
 };
@@ -1055,7 +1057,7 @@ FileTransferController.prototype.onBeforePaste_ = function(event) {
 
 /**
  * @param {!ClipboardData} clipboardData Clipboard data object.
- * @param {DirectoryEntry} destinationEntry Destination entry.
+ * @param {DirectoryEntry|FakeEntry} destinationEntry Destination entry.
  * @return {boolean} Returns true if items stored in {@code clipboardData} can
  *     be pasted to {@code destinationEntry}. Otherwise, returns false.
  * @private
@@ -1175,7 +1177,7 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
 
 /**
  * @param {!Event} event Drag event.
- * @param {DirectoryEntry} destinationEntry Destination entry.
+ * @param {DirectoryEntry|FakeEntry} destinationEntry Destination entry.
  * @return {string}  Returns the appropriate drop query type ('none', 'move'
  *     or copy') to the current modifiers status and the destination.
  * @private

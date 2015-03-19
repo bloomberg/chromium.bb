@@ -17,8 +17,8 @@ var DirectoryItemTreeBaseMethods = {};
  * Finds a parent directory of the {@code entry} in {@code this}, and
  * invokes the DirectoryItem.selectByEntry() of the found directory.
  *
- * @param {!DirectoryEntry|!Object} entry The entry to be searched for. Can be
- *     a fake.
+ * @param {!DirectoryEntry|!FakeEntry} entry The entry to be searched for. Can
+ *     be a fake.
  * @return {boolean} True if the parent item is found.
  * @this {(DirectoryItem|VolumeItem|DirectoryTree)}
  */
@@ -153,8 +153,8 @@ DirectoryItem.prototype.updateSubElementsFromList = function(recursive) {
 /**
  * Calls DirectoryItemTreeBaseMethods.updateSubElementsFromList().
  *
- * @param {!DirectoryEntry|!Object} entry The entry to be searched for. Can be
- *     a fake.
+ * @param {!DirectoryEntry|!FakeEntry} entry The entry to be searched for. Can
+ *     be a fake.
  * @return {boolean} True if the parent item is found.
  */
 DirectoryItem.prototype.searchAndSelectByEntry = function(entry) {
@@ -292,7 +292,7 @@ DirectoryItem.prototype.updateSharedStatusIcon = function() {
 
 /**
  * Select the item corresponding to the given {@code entry}.
- * @param {!DirectoryEntry|!Object} entry The entry to be selected. Can be a
+ * @param {!DirectoryEntry|!FakeEntry} entry The entry to be selected. Can be a
  *     fake.
  */
 DirectoryItem.prototype.selectByEntry = function(entry) {
@@ -651,7 +651,7 @@ DriveVolumeItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
 
 /**
  * Select the item corresponding to the given entry.
- * @param {!DirectoryEntry|!Object} entry The directory entry to be selected.
+ * @param {!DirectoryEntry|!FakeEntry} entry The directory entry to be selected.
  *     Can be a fake.
  * @override
  */
@@ -710,8 +710,8 @@ ShortcutItem.prototype = {
  * Finds a parent directory of the {@code entry} in {@code this}, and
  * invokes the DirectoryItem.selectByEntry() of the found directory.
  *
- * @param {!DirectoryEntry|!Object} entry The entry to be searched for. Can be
- *     a fake.
+ * @param {!DirectoryEntry|!FakeEntry} entry The entry to be searched for. Can
+ *     be a fake.
  * @return {boolean} True if the parent item is found.
  */
 ShortcutItem.prototype.searchAndSelectByEntry = function(entry) {
@@ -930,8 +930,8 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
  * Finds a parent directory of the {@code entry} in {@code this}, and
  * invokes the DirectoryItem.selectByEntry() of the found directory.
  *
- * @param {!DirectoryEntry|!Object} entry The entry to be searched for. Can be
- *     a fake.
+ * @param {!DirectoryEntry|!FakeEntry} entry The entry to be searched for. Can
+ *     be a fake.
  * @return {boolean} True if the parent item is found.
  */
 DirectoryTree.prototype.searchAndSelectByEntry = function(entry) {
@@ -996,7 +996,7 @@ DirectoryTree.prototype.decorateDirectoryTree = function(
 
 /**
  * Select the item corresponding to the given entry.
- * @param {!DirectoryEntry|!Object} entry The directory entry to be selected.
+ * @param {!DirectoryEntry|!FakeEntry} entry The directory entry to be selected.
  *     Can be a fake.
  */
 DirectoryTree.prototype.selectByEntry = function(entry) {

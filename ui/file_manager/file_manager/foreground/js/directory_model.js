@@ -269,7 +269,7 @@ DirectoryModel.prototype.getFileFilter = function() {
 };
 
 /**
- * @return {DirectoryEntry} Current directory.
+ * @return {DirectoryEntry|FakeEntry} Current directory.
  */
 DirectoryModel.prototype.getCurrentDirEntry = function() {
   return this.currentDirContents_.getDirectoryEntry();
@@ -607,7 +607,8 @@ DirectoryModel.prototype.scan_ = function(
     // Record metric for Downloads directory.
     if (!dirContents.isSearch()) {
       var locationInfo =
-          this.volumeManager_.getLocationInfo(dirContents.getDirectoryEntry());
+          this.volumeManager_.getLocationInfo(
+              assert(dirContents.getDirectoryEntry()));
       if (locationInfo.volumeInfo.volumeType ===
           VolumeManagerCommon.VolumeType.DOWNLOADS &&
           locationInfo.isRootEntry) {
@@ -768,8 +769,8 @@ DirectoryModel.prototype.findIndexByEntry_ = function(entry) {
  * correctly.
  * TODO(hidehiko): investigate more background, and remove this if possible.
  *
- * @param {Entry} oldEntry The old entry.
- * @param {Entry} newEntry The new entry.
+ * @param {!Entry} oldEntry The old entry.
+ * @param {!Entry} newEntry The new entry.
  * @param {function()=} opt_callback Called on completion.
  */
 DirectoryModel.prototype.onRenameEntry = function(
@@ -777,8 +778,10 @@ DirectoryModel.prototype.onRenameEntry = function(
   this.currentDirContents_.prefetchMetadata([newEntry], true, function() {
     // If the current directory is the old entry, then quietly change to the
     // new one.
-    if (util.isSameEntry(oldEntry, this.getCurrentDirEntry()))
-      this.changeDirectoryEntry(newEntry);
+    if (util.isSameEntry(oldEntry, this.getCurrentDirEntry())) {
+      this.changeDirectoryEntry(
+          /** @type {!DirectoryEntry|!FakeEntry} */ (newEntry));
+    }
 
     // Replace the old item with the new item. oldEntry instance itself may
     // have been removed/replaced from the list during the async process, we
@@ -830,11 +833,12 @@ DirectoryModel.prototype.createDirectory = function(name,
                                                     abortCallback) {
   // Obtain and check the current directory.
   var entry = this.getCurrentDirEntry();
-  if (!entry || this.isSearching()) {
+  if (!entry || this.isSearching() || util.isFakeEntry(entry)) {
     errorCallback(util.createDOMError(
         util.FileError.INVALID_MODIFICATION_ERR));
     return;
   }
+  entry = /** @type {DirectoryEntry} */ (entry);
 
   var dirContents = this.currentDirContents_;
   var sequence = this.changeDirectorySequence_;
@@ -888,8 +892,8 @@ DirectoryModel.prototype.createDirectory = function(name,
  * activateDirectoryEntry instead of this, which is higher-level function and
  * cares about the selection.
  *
- * @param {DirectoryEntry|Object} dirEntry The entry of the new directory to
- *     be opened.
+ * @param {!DirectoryEntry|!FakeEntry} dirEntry The entry of the new directory
+ *     to be opened.
  * @param {function()=} opt_callback Executed if the directory loads
  *     successfully.
  */
@@ -953,8 +957,8 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
  *    directory.
  *  - Clears the selection, if the given directory is the current directory.
  *
- * @param {DirectoryEntry|Object} dirEntry The entry of the new directory to
- *     be opened.
+ * @param {!DirectoryEntry|!FakeEntry} dirEntry The entry of the new directory
+ *     to be opened.
  * @param {function()=} opt_callback Executed if the directory loads
  *     successfully.
  */
@@ -1089,7 +1093,7 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
  * Creates directory contents for the entry and query.
  *
  * @param {FileListContext} context File list context.
- * @param {!DirectoryEntry} entry Current directory.
+ * @param {!DirectoryEntry|!FakeEntry} entry Current directory.
  * @param {string=} opt_query Search query string.
  * @return {DirectoryContents} Directory contents.
  * @private
@@ -1106,10 +1110,12 @@ DirectoryModel.prototype.createDirectoryContents_ =
 
   if (query && canUseDriveSearch) {
     // Drive search.
-    return DirectoryContents.createForDriveSearch(context, entry, query);
+    return DirectoryContents.createForDriveSearch(
+        context, /** @type {!DirectoryEntry} */ (entry), query);
   } else if (query) {
     // Local search.
-    return DirectoryContents.createForLocalSearch(context, entry, query);
+    return DirectoryContents.createForLocalSearch(
+        context, /** @type {!DirectoryEntry} */ (entry), query);
   } if (locationInfo.isSpecialSearchRoot) {
     // Drive special search.
     var searchType;
@@ -1132,11 +1138,12 @@ DirectoryModel.prototype.createDirectoryContents_ =
     }
     return DirectoryContents.createForDriveMetadataSearch(
         context,
-        entry,
+        /** @type {!FakeEntry} */ (entry),
         searchType);
   } else {
     // Local fetch or search.
-    return DirectoryContents.createForDirectory(context, entry);
+    return DirectoryContents.createForDirectory(
+        context, /** @type {!DirectoryEntry} */ (entry));
   }
 };
 
@@ -1174,7 +1181,7 @@ DirectoryModel.prototype.search = function(query,
       if (this.isSearching()) {
         var newDirContents = this.createDirectoryContents_(
             this.currentFileListContext_,
-            currentDirEntry);
+            assert(currentDirEntry));
         this.clearAndScan_(newDirContents,
                            callback);
       } else {
@@ -1184,7 +1191,7 @@ DirectoryModel.prototype.search = function(query,
     }
 
     var newDirContents = this.createDirectoryContents_(
-        this.currentFileListContext_, currentDirEntry, query);
+        this.currentFileListContext_, assert(currentDirEntry), query);
     if (!newDirContents) {
       callback();
       return;

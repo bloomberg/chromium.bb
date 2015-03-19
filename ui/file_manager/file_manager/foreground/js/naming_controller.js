@@ -94,7 +94,8 @@ NamingController.prototype.validateFileName = function(
  * @return {Promise.<string>}
  */
 NamingController.prototype.validateFileNameForSaving = function(filename) {
-  var directory = this.directoryModel_.getCurrentDirEntry();
+  var directory = /** @type {DirectoryEntry} */ (
+      this.directoryModel_.getCurrentDirEntry());
   var currentDirUrl = directory.toURL().replace(/\/?$/, '/');
   var fileUrl = currentDirUrl + encodeURIComponent(filename);
 
@@ -339,7 +340,7 @@ NamingController.prototype.commitRename_ = function() {
   // parent if the directory content is a search result. Fix it to do proper
   // validation.
   this.validateFileName(
-      this.directoryModel_.getCurrentDirEntry(),
+      /** @type {DirectoryEntry} */ (this.directoryModel_.getCurrentDirEntry()),
       newName,
       validationDone.bind(this));
 };

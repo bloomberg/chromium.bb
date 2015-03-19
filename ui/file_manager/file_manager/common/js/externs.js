@@ -66,7 +66,7 @@ var DirectoryChangeEvent = function() {};
 /** @type {DirectoryEntry} */
 DirectoryChangeEvent.prototype.previousDirEntry;
 
-/** @type {DirectoryEntry|Object} */
+/** @type {DirectoryEntry|FakeEntry} */
 DirectoryChangeEvent.prototype.newDirEntry;
 
 /** @type {boolean} */

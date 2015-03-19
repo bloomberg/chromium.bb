@@ -24,7 +24,7 @@ LocationLine.prototype.__proto__ = cr.EventTarget.prototype;
 /**
  * Shows breadcrumbs. This operation is done without IO.
  *
- * @param {!Entry|!Object} entry Target entry or fake entry.
+ * @param {!Entry|!FakeEntry} entry Target entry or fake entry.
  */
 LocationLine.prototype.show = function(entry) {
   if (entry === this.entry_)
@@ -35,7 +35,7 @@ LocationLine.prototype.show = function(entry) {
 
 /**
  * Get components for the path of entry.
- * @param {!Entry|!Object} entry An entry.
+ * @param {!Entry|!FakeEntry} entry An entry.
  * @return {!Array<!LocationLine.PathComponent>} Components.
  * @private
  */
@@ -48,7 +48,8 @@ LocationLine.prototype.getComponents_ = function(entry) {
 
   if (util.isFakeEntry(entry)) {
     components.push(new LocationLine.PathComponent(
-        util.getRootTypeLabel(locationInfo), entry.toURL(), entry));
+        util.getRootTypeLabel(locationInfo), entry.toURL(),
+        /** @type {!FakeEntry} */ (entry)));
     return components;
   }
 
@@ -252,8 +253,8 @@ LocationLine.prototype.execute_ = function(element, pathComponent) {
  * Path component.
  * @param {string} name Name.
  * @param {string} url Url.
- * @param {Object=} opt_fakeEntry Fake entry should be set when this component
- *     represents fake entry.
+ * @param {FakeEntry=} opt_fakeEntry Fake entry should be set when this
+ *     component represents fake entry.
  * @constructor
  * @struct
  */
@@ -265,11 +266,13 @@ LocationLine.PathComponent = function(name, url, opt_fakeEntry) {
 
 /**
  * Resolve an entry of the component.
- * @return {!Promise<!Entry|!Object>} A promise which is resolved with an entry.
+ * @return {!Promise<!Entry|!FakeEntry>} A promise which is resolved with an
+ *     entry.
  */
 LocationLine.PathComponent.prototype.resolveEntry = function() {
   if (this.fakeEntry_)
-    return Promise.resolve(this.fakeEntry_);
+    return /** @type {!Promise<!Entry|!FakeEntry>} */ (
+        Promise.resolve(this.fakeEntry_));
   else
     return new Promise(
         window.webkitResolveLocalFileSystemURL.bind(null, this.url_));

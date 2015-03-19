@@ -46,7 +46,7 @@ Object.freeze(ShareDialog.Result);
 /**
  * Wraps a Web View element and adds authorization headers to it.
  * @param {string} urlPattern Pattern of urls to be authorized.
- * @param {Element} webView Web View element to be wrapped.
+ * @param {WebView} webView Web View element to be wrapped.
  * @constructor
  */
 ShareDialog.WebViewAuthorizer = function(urlPattern, webView) {
@@ -71,7 +71,7 @@ ShareDialog.WebViewAuthorizer.prototype.initialize = function(callback) {
     this.webView_.removeEventListener('loadstop', registerInjectionHooks);
     this.webView_.request.onBeforeSendHeaders.addListener(
         this.authorizeRequest_.bind(this),
-        {urls: [this.urlPattern_]},
+        /** @type {!RequestFilter} */ ({urls: [this.urlPattern_]}),
         ['blocking', 'requestHeaders']);
     this.initialized_ = true;
     callback();
@@ -97,7 +97,7 @@ ShareDialog.WebViewAuthorizer.prototype.authorize = function(callback) {
 /**
  * Injects headers into the passed request.
  * @param {!Object} e Request event.
- * @return {!{requestHeaders: Array.<!HttpHeader>}} Modified headers.
+ * @return {!BlockingResponse} Modified headers.
  * @private
  */
 ShareDialog.WebViewAuthorizer.prototype.authorizeRequest_ = function(e) {
@@ -105,7 +105,7 @@ ShareDialog.WebViewAuthorizer.prototype.authorizeRequest_ = function(e) {
     name: 'Authorization',
     value: 'Bearer ' + this.accessToken_
   });
-  return {requestHeaders: e.requestHeaders};
+  return /** @type {!BlockingResponse} */ ({requestHeaders: e.requestHeaders});
 };
 
 ShareDialog.prototype = {
@@ -254,8 +254,8 @@ ShareDialog.prototype.showEntry = function(entry, callback) {
 
   // TODO(mtomasz): Move to initDom_() once and reuse <webview> once it gets
   // fixed. See: crbug.com/260622.
-  this.webView_ = util.createChild(
-      this.webViewWrapper_, 'share-dialog-webview', 'webview');
+  this.webView_ = /** @type {WebView} */ (util.createChild(
+      this.webViewWrapper_, 'share-dialog-webview', 'webview'));
   this.webView_.setAttribute('tabIndex', '-1');
   this.webViewAuthorizer_ = new ShareDialog.WebViewAuthorizer(
       !window.IN_TEST ? (ShareClient.SHARE_TARGET + '/*') : '<all_urls>',

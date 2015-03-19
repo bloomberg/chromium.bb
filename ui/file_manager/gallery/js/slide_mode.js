@@ -560,7 +560,7 @@ SlideMode.prototype.enter = function(
 
     // Load the image of the item.
     this.loadItem_(
-        selectedItem,
+        assert(selectedItem),
         zoomFromRect ?
             this.imageView_.createZoomEffect(zoomFromRect) :
             new ImageView.Effect.None(),

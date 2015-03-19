@@ -1150,7 +1150,7 @@ FileManager.prototype = /** @struct */ {
   };
 
   /**
-   * @param {DirectoryEntry} directoryEntry Directory to be opened.
+   * @param {!DirectoryEntry} directoryEntry Directory to be opened.
    * @param {Entry=} opt_selectionEntry Entry to be selected.
    * @param {string=} opt_suggestedName Suggested name for a non-existing\
    *     selection.
@@ -1225,9 +1225,9 @@ FileManager.prototype = /** @struct */ {
 
   /**
    * Return DirectoryEntry of the current directory or null.
-   * @return {DirectoryEntry} DirectoryEntry of the current directory. Returns
-   *     null if the directory model is not ready or the current directory is
-   *     not set.
+   * @return {DirectoryEntry|FakeEntry} DirectoryEntry of the current directory.
+   *     Returns null if the directory model is not ready or the current
+   *     directory is not set.
    */
   FileManager.prototype.getCurrentDirectoryEntry = function() {
     return this.directoryModel_ && this.directoryModel_.getCurrentDirEntry();

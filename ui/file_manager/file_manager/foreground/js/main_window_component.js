@@ -185,7 +185,8 @@ MainWindowComponent.prototype.onDetailClick_ = function(event) {
 
   var entry = selection.entries[0];
   if (entry.isDirectory) {
-    this.directoryModel_.changeDirectoryEntry(entry);
+    this.directoryModel_.changeDirectoryEntry(
+        /** @type {!DirectoryEntry} */ (entry));
   } else {
     this.taskController_.dispatchSelectionAction();
   }
@@ -278,7 +279,8 @@ MainWindowComponent.prototype.onListKeyDown_ = function(event) {
         // directory.
         if (item && !item.hasAttribute('renaming')) {
           event.preventDefault();
-          this.directoryModel_.changeDirectoryEntry(selection.entries[0]);
+          this.directoryModel_.changeDirectoryEntry(
+              /** @type {!DirectoryEntry} */ (selection.entries[0]));
         }
       } else if (this.taskController_.dispatchSelectionAction()) {
         event.preventDefault();
