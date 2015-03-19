@@ -50,11 +50,11 @@ class LogcatMonitorTest(unittest.TestCase):
       self.assertIsNotNone(
           actual,
           msg='actual is missing elements starting with %s' % str(expected))
-      self.assertEqual(actual.proc_id, expected[0])
-      self.assertEqual(actual.thread_id, expected[1])
-      self.assertEqual(actual.log_level, expected[2])
-      self.assertEqual(actual.component, expected[3])
-      self.assertEqual(actual.message, expected[4])
+      self.assertEqual(actual.group('proc_id'), expected[0])
+      self.assertEqual(actual.group('thread_id'), expected[1])
+      self.assertEqual(actual.group('log_level'), expected[2])
+      self.assertEqual(actual.group('component'), expected[3])
+      self.assertEqual(actual.group('message'), expected[4])
 
     with self.assertRaises(StopIteration):
       next(actual_iter)

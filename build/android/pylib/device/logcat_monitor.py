@@ -19,8 +19,9 @@ from pylib.device import device_errors
 
 class LogcatMonitor(object):
 
-  # Format: <DATE> <TIME> <PID> <TID> <LEVEL> <COMPONENT>: <MESSAGE>
-  _THREADTIME_RE_FORMAT = r'\S* +\S* +(%s) +(%s) +(%s) +(%s): +(%s)$'
+  _THREADTIME_RE_FORMAT = (
+      r'(?P<date>\S*) +(?P<time>\S*) +(?P<proc_id>%s) +(?P<thread_id>%s) +'
+      r'(?P<log_level>%s) +(?P<component>%s) *: +(?P<message>%s)$')
 
   def __init__(self, adb, clear=True, filter_specs=None):
     """Create a LogcatMonitor instance.
@@ -97,18 +98,12 @@ class LogcatMonitor(object):
       log_level: The log level to match. If None, matches any log level.
       component: The component to match. If None, matches any component.
 
-    Returns:
-      An iterable containing objects with five attributes:
-        |proc_id|: the process ID
-        |thread_id|: the thread ID
-        |log_level|: the log level
-        |component|: the component
-        |message|: the logcat message
+    Yields:
+      A match object for each matching line in the logcat. The match object
+      will always contain, in addition to groups defined in |message_regex|,
+      the following named groups: 'date', 'time', 'proc_id', 'thread_id',
+      'log_level', 'component', and 'message'.
     """
-    LogcatLine = collections.namedtuple(
-        'LogcatLine',
-        ['proc_id', 'thread_id', 'log_level', 'component', 'message'])
-
     if proc_id is None:
       proc_id = r'\d+'
     if thread_id is None:
@@ -121,11 +116,10 @@ class LogcatMonitor(object):
         type(self)._THREADTIME_RE_FORMAT % (
             proc_id, thread_id, log_level, component, message_regex))
 
-    regexed_lines = (
-        re.match(threadtime_re, l)
-        for l in self._adb.Logcat(dump=True, logcat_format='threadtime'))
-    only_matches = (m for m in regexed_lines if m)
-    return (LogcatLine(*m.group(1, 2, 3, 4, 5)) for m in only_matches)
+    for line in self._adb.Logcat(dump=True, logcat_format='threadtime'):
+      m = re.match(threadtime_re, line)
+      if m:
+        yield m
 
   def Start(self):
     """Starts the logcat monitor.
