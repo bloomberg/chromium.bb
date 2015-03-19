@@ -51,7 +51,7 @@ Follow these steps to release a new version of libdrm:
 
   7) Use the release.sh script from the xorg/util/modular repo to
      upload the tarballs to the freedesktop.org download area and
-     create an annouce email template.  The script takes one argument:
+     create an announce email template.  The script takes one argument:
      the path to the libdrm checkout. So, if a checkout of modular is
      at the same level than the libdrm repo:
 
