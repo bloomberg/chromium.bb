@@ -14,6 +14,7 @@
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/common_param_traits.h"
@@ -591,9 +592,10 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DidRetrieveMetaTagContent,
 #endif  // defined(OS_ANDROID)
 
 // Logs events from InstantExtended New Tab Pages.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_LogEvent,
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_LogEvent,
                     int /* page_seq_no */,
-                    NTPLoggingEventType /* event */)
+                    NTPLoggingEventType /* event */,
+                    base::TimeDelta /* time */)
 
 // Logs an impression on one of the Most Visited tile on the InstantExtended
 // New Tab Page.

@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/favicon/favicon_url_parser.h"
 #include "chrome/common/omnibox_focus_state.h"
@@ -16,10 +17,13 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "components/favicon_base/favicon_types.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebPerformance.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
 
@@ -156,8 +160,15 @@ SearchBox::~SearchBox() {
 }
 
 void SearchBox::LogEvent(NTPLoggingEventType event) {
+  // navigation_start in ms.
+  uint64 start = 1000 * (render_view()->GetMainRenderFrame()->GetWebFrame()->
+      performance().navigationStart());
+  uint64 now =
+      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InMilliseconds();
+  DCHECK(now >= start);
+  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(now - start);
   render_view()->Send(new ChromeViewHostMsg_LogEvent(
-      render_view()->GetRoutingID(), page_seq_no_, event));
+      render_view()->GetRoutingID(), page_seq_no_, event, delta));
 }
 
 void SearchBox::LogMostVisitedImpression(int position,

@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/search/instant_unittest_base.h"
@@ -60,7 +61,8 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD1(OnDeleteMostVisitedItem, void(const GURL& url));
   MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
-  MOCK_METHOD1(OnLogEvent, void(NTPLoggingEventType event));
+  MOCK_METHOD2(OnLogEvent, void(NTPLoggingEventType event,
+                                base::TimeDelta time));
   MOCK_METHOD2(OnLogMostVisitedImpression,
                void(int position, const base::string16& provider));
   MOCK_METHOD2(OnLogMostVisitedNavigation,

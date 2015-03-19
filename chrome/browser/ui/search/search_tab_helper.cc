@@ -478,11 +478,12 @@ void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
     instant_service_->UndoAllMostVisitedDeletions();
 }
 
-void SearchTabHelper::OnLogEvent(NTPLoggingEventType event) {
+void SearchTabHelper::OnLogEvent(NTPLoggingEventType event,
+                                 base::TimeDelta time) {
 // TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
 #if !defined(OS_ANDROID)
-  NTPUserDataLogger::GetOrCreateFromWebContents(
-      web_contents())->LogEvent(event);
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
+      ->LogEvent(event, time);
 #endif
 }
 

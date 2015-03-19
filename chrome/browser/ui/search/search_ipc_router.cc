@@ -283,7 +283,8 @@ void SearchIPCRouter::OnUndoAllMostVisitedDeletions(int page_seq_no) const {
 }
 
 void SearchIPCRouter::OnLogEvent(int page_seq_no,
-                                 NTPLoggingEventType event) const {
+                                 NTPLoggingEventType event,
+                                 base::TimeDelta time) const {
   if (page_seq_no != commit_counter_)
     return;
 
@@ -291,7 +292,7 @@ void SearchIPCRouter::OnLogEvent(int page_seq_no,
   if (!policy_->ShouldProcessLogEvent())
     return;
 
-  delegate_->OnLogEvent(event);
+  delegate_->OnLogEvent(event, time);
 }
 
 void SearchIPCRouter::OnLogMostVisitedImpression(

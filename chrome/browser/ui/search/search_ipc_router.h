@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "chrome/common/instant_types.h"
 #include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/omnibox_focus_state.h"
@@ -59,8 +60,10 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // Called when the SearchBox wants to undo all Most Visited deletions.
     virtual void OnUndoAllMostVisitedDeletions() = 0;
 
-    // Called to signal that an event has occurred on the New Tab Page.
-    virtual void OnLogEvent(NTPLoggingEventType event) = 0;
+    // Called to signal that an event has occurred on the New Tab Page at a
+    // particular time since navigation start.
+    virtual void OnLogEvent(NTPLoggingEventType event,
+                            base::TimeDelta time) = 0;
 
     // Called to log an impression from a given provider on the New Tab Page.
     virtual void OnLogMostVisitedImpression(int position,
@@ -206,7 +209,9 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void OnDeleteMostVisitedItem(int page_seq_no, const GURL& url) const;
   void OnUndoMostVisitedDeletion(int page_seq_no, const GURL& url) const;
   void OnUndoAllMostVisitedDeletions(int page_seq_no) const;
-  void OnLogEvent(int page_seq_no, NTPLoggingEventType event) const;
+  void OnLogEvent(int page_seq_no,
+                  NTPLoggingEventType event,
+                  base::TimeDelta time) const;
   void OnLogMostVisitedImpression(int page_seq_no,
                                   int position,
                                   const base::string16& provider) const;

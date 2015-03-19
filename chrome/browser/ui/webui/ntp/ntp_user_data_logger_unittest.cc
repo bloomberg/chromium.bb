@@ -46,21 +46,23 @@ TEST(NTPUserDataLoggerTest, TestLogging) {
   // Enusure non-zero statistics.
   TestNTPUserDataLogger logger;
 
+  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(0);
+
   for (int i = 0; i < 20; ++i)
-    logger.LogEvent(NTP_MOUSEOVER);
+    logger.LogEvent(NTP_MOUSEOVER, delta);
   for (int i = 0; i < 8; ++i)
-    logger.LogEvent(NTP_TILE);
+    logger.LogEvent(NTP_TILE, delta);
   for (int i = 0; i < 4; ++i)
-    logger.LogEvent(NTP_THUMBNAIL_TILE);
+    logger.LogEvent(NTP_THUMBNAIL_TILE, delta);
   for (int i = 0; i < 2; ++i)
-    logger.LogEvent(NTP_THUMBNAIL_ERROR);
-  logger.LogEvent(NTP_GRAY_TILE_FALLBACK);
-  logger.LogEvent(NTP_EXTERNAL_TILE_FALLBACK);
+    logger.LogEvent(NTP_THUMBNAIL_ERROR, delta);
+  logger.LogEvent(NTP_GRAY_TILE_FALLBACK, delta);
+  logger.LogEvent(NTP_EXTERNAL_TILE_FALLBACK, delta);
   for (int i = 0; i < 2; ++i)
-    logger.LogEvent(NTP_EXTERNAL_TILE);
+    logger.LogEvent(NTP_EXTERNAL_TILE, delta);
   for (int i = 0; i < 2; ++i)
-    logger.LogEvent(NTP_GRAY_TILE);
-  logger.LogEvent(NTP_SERVER_SIDE_SUGGESTION);
+    logger.LogEvent(NTP_GRAY_TILE, delta);
+  logger.LogEvent(NTP_SERVER_SIDE_SUGGESTION, delta);
 
   logger.EmitNtpStatistics();
 

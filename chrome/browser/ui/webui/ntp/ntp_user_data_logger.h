@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "chrome/common/ntp_logging_events.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -41,9 +42,10 @@ class NTPUserDataLogger
   // the tab/shutting down Chrome), or when the user navigates to a URL.
   void EmitNtpStatistics();
 
-  // Called each time an event occurs on the NTP that requires a counter to be
-  // incremented.
-  void LogEvent(NTPLoggingEventType event);
+  // Called when an event occurs on the NTP that requires a counter to be
+  // incremented. |time| is the delta time in ms from navigation start until
+  // this event happened.
+  void LogEvent(NTPLoggingEventType event, base::TimeDelta time);
 
   // Logs an impression on one of the Most Visited tiles by a given provider.
   void LogMostVisitedImpression(int position, const base::string16& provider);

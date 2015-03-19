@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
 #include "chrome/browser/ui/search/search_model.h"
@@ -171,7 +172,7 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnDeleteMostVisitedItem(const GURL& url) override;
   void OnUndoMostVisitedDeletion(const GURL& url) override;
   void OnUndoAllMostVisitedDeletions() override;
-  void OnLogEvent(NTPLoggingEventType event) override;
+  void OnLogEvent(NTPLoggingEventType event, base::TimeDelta time) override;
   void OnLogMostVisitedImpression(int position,
                                   const base::string16& provider) override;
   void OnLogMostVisitedNavigation(int position,

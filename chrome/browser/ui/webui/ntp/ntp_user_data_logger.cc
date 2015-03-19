@@ -127,7 +127,8 @@ void NTPUserDataLogger::EmitNtpStatistics() {
   }
 }
 
-void NTPUserDataLogger::LogEvent(NTPLoggingEventType event) {
+void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
+                                 base::TimeDelta time) {
   switch (event) {
     case NTP_SERVER_SIDE_SUGGESTION:
       has_server_side_suggestions_ = true;
