@@ -44,6 +44,10 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
+#if defined(OS_IOS)
+#include "base/ios/scoped_critical_action.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
@@ -259,6 +263,12 @@ void HistoryBackend::Closing() {
   // history service alive.
   delegate_.reset();
 }
+
+#if defined(OS_IOS)
+void HistoryBackend::PersistState() {
+  Commit();
+}
+#endif
 
 void HistoryBackend::ClearCachedDataForContextID(ContextID context_id) {
   tracker_.ClearCachedDataForContextID(context_id);
@@ -2167,6 +2177,12 @@ void HistoryBackend::SendFaviconChangedNotificationForPageAndRedirects(
 void HistoryBackend::Commit() {
   if (!db_)
     return;
+
+#if defined(OS_IOS)
+  // Attempts to get the application running long enough to commit the database
+  // transaction if it is currently being backgrounded.
+  base::ios::ScopedCriticalAction scoped_critical_action;
+#endif
 
   // Note that a commit may not actually have been scheduled if a caller
   // explicitly calls this instead of using ScheduleCommit. Likewise, we

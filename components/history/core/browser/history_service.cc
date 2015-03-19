@@ -46,6 +46,10 @@
 #include "sync/api/sync_error_factory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+#if defined(OS_IOS)
+#include "base/critical_closure.h"
+#endif
+
 using base::Time;
 
 namespace history {
@@ -204,6 +208,17 @@ bool HistoryService::BackendLoaded() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return backend_loaded_;
 }
+
+#if defined(OS_IOS)
+void HistoryService::HandleBackgrounding() {
+  if (!thread_ || !history_backend_.get())
+    return;
+
+  ScheduleTask(PRIORITY_NORMAL,
+               base::MakeCriticalClosure(base::Bind(
+                   &HistoryBackend::PersistState, history_backend_.get())));
+}
+#endif
 
 void HistoryService::ClearCachedDataForContextID(ContextID context_id) {
   DCHECK(thread_) << "History service being called after cleanup";

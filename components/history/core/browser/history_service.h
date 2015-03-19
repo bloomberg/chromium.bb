@@ -105,6 +105,12 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Returns true if the backend has finished loading.
   bool backend_loaded() const { return backend_loaded_; }
 
+#if defined(OS_IOS)
+  // Causes the history backend to commit any in-progress transactions. Called
+  // when the application is being backgrounded.
+  void HandleBackgrounding();
+#endif
+
   // Context ids are used to scope page IDs (see AddPage). These contexts
   // must tell us when they are being invalidated so that we can clear
   // out any cached data associated with that context.
