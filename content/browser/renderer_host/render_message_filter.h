@@ -245,10 +245,14 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
   // Browser side discardable shared memory allocation.
-  void OnAllocateLockedDiscardableSharedMemory(
+  void AllocateLockedDiscardableSharedMemoryOnFileThread(
       uint32 size,
       DiscardableSharedMemoryId id,
-      base::SharedMemoryHandle* handle);
+      IPC::Message* reply_message);
+  void OnAllocateLockedDiscardableSharedMemory(uint32 size,
+                                               DiscardableSharedMemoryId id,
+                                               IPC::Message* reply_message);
+  void DeletedDiscardableSharedMemoryOnFileThread(DiscardableSharedMemoryId id);
   void OnDeletedDiscardableSharedMemory(DiscardableSharedMemoryId id);
 
   void OnCacheableMetadataAvailable(const GURL& url,

@@ -418,7 +418,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnAllocatedSharedBitmap)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedSharedBitmap,
                         OnDeletedSharedBitmap)
-    IPC_MESSAGE_HANDLER(
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(
         ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory,
         OnAllocateLockedDiscardableSharedMemory)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedDiscardableSharedMemory,
@@ -965,19 +965,43 @@ void RenderMessageFilter::OnDeletedSharedBitmap(const cc::SharedBitmapId& id) {
   bitmap_manager_client_.ChildDeletedSharedBitmap(id);
 }
 
+void RenderMessageFilter::AllocateLockedDiscardableSharedMemoryOnFileThread(
+    uint32 size,
+    DiscardableSharedMemoryId id,
+    IPC::Message* reply_msg) {
+  base::SharedMemoryHandle handle;
+  HostDiscardableSharedMemoryManager::current()
+      ->AllocateLockedDiscardableSharedMemoryForChild(PeerHandle(), size, id,
+                                                      &handle);
+  ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory::
+      WriteReplyParams(reply_msg, handle);
+  Send(reply_msg);
+}
+
 void RenderMessageFilter::OnAllocateLockedDiscardableSharedMemory(
     uint32 size,
     DiscardableSharedMemoryId id,
-    base::SharedMemoryHandle* handle) {
+    IPC::Message* reply_msg) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
+      base::Bind(&RenderMessageFilter::
+                     AllocateLockedDiscardableSharedMemoryOnFileThread,
+                 this, size, id, reply_msg));
+}
+
+void RenderMessageFilter::DeletedDiscardableSharedMemoryOnFileThread(
+    DiscardableSharedMemoryId id) {
   HostDiscardableSharedMemoryManager::current()
-      ->AllocateLockedDiscardableSharedMemoryForChild(PeerHandle(), size, id,
-                                                      handle);
+      ->ChildDeletedDiscardableSharedMemory(id, PeerHandle());
 }
 
 void RenderMessageFilter::OnDeletedDiscardableSharedMemory(
     DiscardableSharedMemoryId id) {
-  HostDiscardableSharedMemoryManager::current()
-      ->ChildDeletedDiscardableSharedMemory(id, PeerHandle());
+  BrowserThread::PostTask(
+      BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
+      base::Bind(
+          &RenderMessageFilter::DeletedDiscardableSharedMemoryOnFileThread,
+          this, id));
 }
 
 net::CookieStore* RenderMessageFilter::GetCookieStoreForURL(
