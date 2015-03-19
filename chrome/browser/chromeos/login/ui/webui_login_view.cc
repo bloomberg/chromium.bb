@@ -68,7 +68,6 @@ const char kAccelNameDeviceRequisitionRemora[] = "device_requisition_remora";
 const char kAccelNameDeviceRequisitionShark[] = "device_requisition_shark";
 const char kAccelNameAppLaunchBailout[] = "app_launch_bailout";
 const char kAccelNameAppLaunchNetworkConfig[] = "app_launch_network_config";
-const char kAccelNameEmbeddedSignin[] = "embedded_signin";
 const char kAccelNameNewOobe[] = "new_oobe";
 const char kAccelNameToggleWebviewSignin[] = "toggle_webview_signin";
 const char kAccelNameToggleEasyBootstrap[] = "toggle_easy_bootstrap";
@@ -120,9 +119,6 @@ WebUILoginView::WebUILoginView()
   accel_map_[ui::Accelerator(ui::VKEY_E,
                              ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameEnrollment;
-  accel_map_[ui::Accelerator(
-      ui::VKEY_G, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameEmbeddedSignin;
   accel_map_[ui::Accelerator(ui::VKEY_K,
                              ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameKioskEnable;

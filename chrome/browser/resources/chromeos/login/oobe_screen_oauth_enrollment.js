@@ -33,12 +33,6 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     currentStep_: null,
 
     /**
-     * Opaque token used to correlate request and response while retrieving the
-     * authenticated user's e-mail address from GAIA.
-     */
-    attemptToken_: null,
-
-    /**
      * The help topic to show when the user clicks the learn more link.
      */
     learnMoreHelpTopicID_: null,

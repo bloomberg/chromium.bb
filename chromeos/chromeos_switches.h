@@ -57,7 +57,6 @@ CHROMEOS_EXPORT extern const char kEafeUrl[];
 CHROMEOS_EXPORT extern const char kEafePath[];
 CHROMEOS_EXPORT extern const char kEnableCarrierSwitching[];
 CHROMEOS_EXPORT extern const char kEnableConsumerManagement[];
-CHROMEOS_EXPORT extern const char kEnableEmbeddedSignin[];
 CHROMEOS_EXPORT extern const char kEnableExtensionAssetsSharing[];
 CHROMEOS_EXPORT extern const char kEnableFirewallHolePunching[];
 CHROMEOS_EXPORT extern const char kEnableFirstRunUITransitions[];

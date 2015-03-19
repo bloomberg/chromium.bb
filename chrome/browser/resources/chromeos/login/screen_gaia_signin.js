@@ -22,8 +22,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       'updateAuthExtension',
       'doReload',
       'onFrameError',
-      'updateCancelButtonState',
-      'switchToFullTab'
+      'updateCancelButtonState'
     ],
 
     /**
@@ -315,7 +314,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         if (data.enterpriseDomain)
           params.enterpriseDomain = data.enterpriseDomain;
         params.chromeType = data.chromeType;
-        data.useEmbedded = false;
         params.isMinuteMaidChromeOS = true;
         $('login-header-bar').showGuestButton = true;
       }
@@ -325,9 +323,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
 
       $('login-header-bar').minuteMaid = this.isMinuteMaid;
 
-      if (data.useEmbedded)
-        params.gaiaPath = 'EmbeddedSignIn';
-
       if (data.forceReload ||
           JSON.stringify(this.gaiaAuthParams_) != JSON.stringify(params)) {
         this.error_ = 0;
@@ -335,8 +330,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
         var authMode = cr.login.GaiaAuthHost.AuthMode.DEFAULT;
         if (data.useOffline)
           authMode = cr.login.GaiaAuthHost.AuthMode.OFFLINE;
-        else if (data.useEmbedded)
-          authMode = cr.login.GaiaAuthHost.AuthMode.DESKTOP;
 
         this.gaiaAuthHost_.load(authMode,
                                 params,
@@ -411,11 +404,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('login-header-bar').allowCancel = this.cancelAllowed_;
       if (this.isMinuteMaid)
         $('close-button-item').hidden = !this.cancelAllowed_;
-    },
-
-    switchToFullTab: function() {
-      this.classList.toggle('no-right-panel', true);
-      this.classList.toggle('full-width', true);
     },
 
     /**

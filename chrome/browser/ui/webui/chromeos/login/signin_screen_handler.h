@@ -346,7 +346,7 @@ class SigninScreenHandler
   void HandleCancelUserAdding();
   void HandleMigrateUserData(const std::string& password);
   void HandleResyncUserData();
-  void HandleLoginUIStateChanged(const std::string& source, bool new_value);
+  void HandleLoginUIStateChanged(const std::string& source, bool active);
   void HandleUnlockOnLoginSuccess();
   void HandleLoginScreenUpdate();
   void HandleShowLoadingTimeoutError();
@@ -359,7 +359,6 @@ class SigninScreenHandler
                                              const std::string& locale);
   void HandleCancelConsumerManagementEnrollment();
   void HandleGetTouchViewState();
-  void HandleSwitchToEmbeddedSignin();
 
   // Sends the list of |keyboard_layouts| available for the |locale| that is
   // currently selected for the public session identified by |user_id|.

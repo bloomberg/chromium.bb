@@ -175,7 +175,6 @@ GaiaScreenHandler::GaiaScreenHandler(
       using_saml_api_(false),
       is_enrolling_consumer_management_(false),
       test_expects_complete_login_(false),
-      embedded_signin_enabled_by_shortcut_(false),
       use_easy_bootstrap_(false),
       signin_screen_handler_(NULL),
       weak_factory_(this) {
@@ -278,12 +277,6 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
     params.SetString("gaiaEndpoint", command_line->GetSwitchValueASCII(
                                          switches::kGaiaEndpointChromeOS));
   }
-  if (context.embedded_signin_enabled) {
-    params.SetBoolean("useEmbedded", true);
-    // We set 'constrained' here to switch troubleshooting page on embedded
-    // signin to full tab.
-    params.SetInteger("constrained", 1);
-  }
 
   if (use_easy_bootstrap_) {
     params.SetBoolean("useEafe", true);
@@ -326,22 +319,6 @@ void GaiaScreenHandler::ReloadGaia(bool force_reload) {
   VLOG(1) << "Reloading Gaia.";
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("doReload");
-}
-
-void GaiaScreenHandler::SwitchToEmbeddedSignin() {
-  // This feature should not be working on Stable,Beta images.
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_STABLE ||
-      channel == chrome::VersionInfo::CHANNEL_BETA) {
-    return;
-  }
-  embedded_signin_enabled_by_shortcut_ = true;
-  LoadAuthExtension(
-      true /* force */, true /* silent_load */, false /* offline */);
-}
-
-void GaiaScreenHandler::CancelEmbeddedSignin() {
-  embedded_signin_enabled_by_shortcut_ = false;
 }
 
 void GaiaScreenHandler::DeclareLocalizedValues(
@@ -393,7 +370,6 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("scrapedPasswordVerificationFailed",
               &GaiaScreenHandler::HandleScrapedPasswordVerificationFailed);
   AddCallback("loginWebuiReady", &GaiaScreenHandler::HandleGaiaUIReady);
-  AddCallback("switchToFullTab", &GaiaScreenHandler::HandleSwitchToFullTab);
   AddCallback("toggleWebviewSignin",
               &GaiaScreenHandler::HandleToggleWebviewSignin);
   AddCallback("toggleEasyBootstrap",
@@ -503,10 +479,6 @@ void GaiaScreenHandler::HandleScrapedPasswordCount(int password_count) {
 
 void GaiaScreenHandler::HandleScrapedPasswordVerificationFailed() {
   RecordSAMLScrapingVerificationResultInHistogram(false);
-}
-
-void GaiaScreenHandler::HandleSwitchToFullTab() {
-  CallJS("switchToFullTab");
 }
 
 void GaiaScreenHandler::HandleToggleWebviewSignin() {
@@ -835,11 +807,6 @@ void GaiaScreenHandler::LoadAuthExtension(bool force,
     context.show_users = Delegate()->IsShowUsers();
     context.has_users = !Delegate()->GetUsers().empty();
   }
-
-  context.embedded_signin_enabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableEmbeddedSignin) ||
-      embedded_signin_enabled_by_shortcut_;
 
   populated_email_.clear();
 
