@@ -82,6 +82,7 @@ _CAPABILITY_FLAGS = [
   {'name': 'scissor_test'},
   {'name': 'stencil_test',
    'state_flag': 'framebuffer_state_.clear_state_dirty'},
+  {'name': 'rasterizer_discard', 'es3': True},
 ]
 
 _STATES = {
@@ -898,7 +899,10 @@ _NAMED_TYPE_INFO = {
   },
   'Capability': {
     'type': 'GLenum',
-    'valid': ["GL_%s" % cap['name'].upper() for cap in _CAPABILITY_FLAGS],
+    'valid': ["GL_%s" % cap['name'].upper() for cap in _CAPABILITY_FLAGS
+        if 'es3' not in cap or cap['es3'] != True],
+    'valid_es3': ["GL_%s" % cap['name'].upper() for cap in _CAPABILITY_FLAGS
+        if 'es3' in cap and cap['es3'] == True],
     'invalid': [
       'GL_CLIP_PLANE0',
       'GL_POINT_SPRITE',
@@ -9534,20 +9538,31 @@ bool %s::GetStateAs%s(
     file.Write("""
 void ContextState::InitCapabilities(const ContextState* prev_state) const {
 """)
-    def WriteCapabilities(test_prev):
+    def WriteCapabilities(test_prev, es3_caps):
       for capability in _CAPABILITY_FLAGS:
         capability_name = capability['name']
+        capability_es3 = 'es3' in capability and capability['es3'] == True
+        if capability_es3 and not es3_caps or not capability_es3 and es3_caps:
+          continue
         if test_prev:
           file.Write("""  if (prev_state->enable_flags.cached_%s !=
-                              enable_flags.cached_%s)\n""" %
+                              enable_flags.cached_%s) {\n""" %
                      (capability_name, capability_name))
         file.Write("    EnableDisable(GL_%s, enable_flags.cached_%s);\n" %
                    (capability_name.upper(), capability_name))
+        if test_prev:
+          file.Write("  }")
 
     file.Write("  if (prev_state) {")
-    WriteCapabilities(True)
+    WriteCapabilities(True, False)
+    file.Write("    if (feature_info_->IsES3Capable()) {\n")
+    WriteCapabilities(True, True)
+    file.Write("    }\n")
     file.Write("  } else {")
-    WriteCapabilities(False)
+    WriteCapabilities(False, False)
+    file.Write("    if (feature_info_->IsES3Capable()) {\n")
+    WriteCapabilities(False, True)
+    file.Write("    }\n")
     file.Write("  }")
 
     file.Write("""}
@@ -9783,13 +9798,24 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
         filename % 0,
         "// It is included by gles2_cmd_decoder_unittest_base.cc\n")
     file.Write(
-"""void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations() {
-""")
+"""void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations(
+      bool es3_capable) {""")
     for capability in _CAPABILITY_FLAGS:
-      file.Write("  ExpectEnableDisable(GL_%s, %s);\n" %
-                 (capability['name'].upper(),
-                  ('false', 'true')['default' in capability]))
-    file.Write("""}
+      capability_es3 = 'es3' in capability and capability['es3'] == True
+      if not capability_es3:
+        file.Write("  ExpectEnableDisable(GL_%s, %s);\n" %
+                   (capability['name'].upper(),
+                    ('false', 'true')['default' in capability]))
+
+    file.Write("  if (es3_capable) {")
+    for capability in _CAPABILITY_FLAGS:
+      capability_es3 = 'es3' in capability and capability['es3'] == True
+      if capability_es3:
+        file.Write("    ExpectEnableDisable(GL_%s, %s);\n" %
+                   (capability['name'].upper(),
+                    ('false', 'true')['default' in capability]))
+    file.Write("""  }
+}
 
 void GLES2DecoderTestBase::SetupInitStateExpectations() {
 """)

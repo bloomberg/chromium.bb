@@ -338,7 +338,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
           max_viewport_dims, max_viewport_dims + arraysize(max_viewport_dims)))
       .RetiresOnSaturation();
 
-  SetupInitCapabilitiesExpectations();
+  SetupInitCapabilitiesExpectations(group_->feature_info()->IsES3Capable());
   SetupInitStateExpectations();
 
   EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))

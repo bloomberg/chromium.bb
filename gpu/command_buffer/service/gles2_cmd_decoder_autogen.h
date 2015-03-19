@@ -4871,6 +4871,14 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
         framebuffer_state_.clear_state_dirty = true;
       }
       return false;
+    case GL_RASTERIZER_DISCARD:
+      state_.enable_flags.rasterizer_discard = enabled;
+      if (state_.enable_flags.cached_rasterizer_discard != enabled ||
+          state_.ignore_cached_state) {
+        state_.enable_flags.cached_rasterizer_discard = enabled;
+        return true;
+      }
+      return false;
     default:
       NOTREACHED();
       return false;

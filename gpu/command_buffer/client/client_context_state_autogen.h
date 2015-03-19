@@ -23,6 +23,7 @@ struct EnableFlags {
   bool sample_coverage;
   bool scissor_test;
   bool stencil_test;
+  bool rasterizer_discard;
 };
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_CLIENT_CONTEXT_STATE_AUTOGEN_H_

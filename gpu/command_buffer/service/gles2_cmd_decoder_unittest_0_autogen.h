@@ -12,7 +12,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_0_AUTOGEN_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_0_AUTOGEN_H_
 
-void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations() {
+void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations(bool es3_capable) {
   ExpectEnableDisable(GL_BLEND, false);
   ExpectEnableDisable(GL_CULL_FACE, false);
   ExpectEnableDisable(GL_DEPTH_TEST, false);
@@ -22,6 +22,9 @@ void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations() {
   ExpectEnableDisable(GL_SAMPLE_COVERAGE, false);
   ExpectEnableDisable(GL_SCISSOR_TEST, false);
   ExpectEnableDisable(GL_STENCIL_TEST, false);
+  if (es3_capable) {
+    ExpectEnableDisable(GL_RASTERIZER_DISCARD, false);
+  }
 }
 
 void GLES2DecoderTestBase::SetupInitStateExpectations() {

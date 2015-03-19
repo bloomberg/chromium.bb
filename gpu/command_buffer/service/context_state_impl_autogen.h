@@ -30,7 +30,9 @@ ContextState::EnableFlags::EnableFlags()
       scissor_test(false),
       cached_scissor_test(false),
       stencil_test(false),
-      cached_stencil_test(false) {
+      cached_stencil_test(false),
+      rasterizer_discard(false),
+      cached_rasterizer_discard(false) {
 }
 
 void ContextState::Initialize() {
@@ -134,33 +136,49 @@ void ContextState::Initialize() {
 
 void ContextState::InitCapabilities(const ContextState* prev_state) const {
   if (prev_state) {
-    if (prev_state->enable_flags.cached_blend != enable_flags.cached_blend)
+    if (prev_state->enable_flags.cached_blend != enable_flags.cached_blend) {
       EnableDisable(GL_BLEND, enable_flags.cached_blend);
+    }
     if (prev_state->enable_flags.cached_cull_face !=
-        enable_flags.cached_cull_face)
+        enable_flags.cached_cull_face) {
       EnableDisable(GL_CULL_FACE, enable_flags.cached_cull_face);
+    }
     if (prev_state->enable_flags.cached_depth_test !=
-        enable_flags.cached_depth_test)
+        enable_flags.cached_depth_test) {
       EnableDisable(GL_DEPTH_TEST, enable_flags.cached_depth_test);
-    if (prev_state->enable_flags.cached_dither != enable_flags.cached_dither)
+    }
+    if (prev_state->enable_flags.cached_dither != enable_flags.cached_dither) {
       EnableDisable(GL_DITHER, enable_flags.cached_dither);
+    }
     if (prev_state->enable_flags.cached_polygon_offset_fill !=
-        enable_flags.cached_polygon_offset_fill)
+        enable_flags.cached_polygon_offset_fill) {
       EnableDisable(GL_POLYGON_OFFSET_FILL,
                     enable_flags.cached_polygon_offset_fill);
+    }
     if (prev_state->enable_flags.cached_sample_alpha_to_coverage !=
-        enable_flags.cached_sample_alpha_to_coverage)
+        enable_flags.cached_sample_alpha_to_coverage) {
       EnableDisable(GL_SAMPLE_ALPHA_TO_COVERAGE,
                     enable_flags.cached_sample_alpha_to_coverage);
+    }
     if (prev_state->enable_flags.cached_sample_coverage !=
-        enable_flags.cached_sample_coverage)
+        enable_flags.cached_sample_coverage) {
       EnableDisable(GL_SAMPLE_COVERAGE, enable_flags.cached_sample_coverage);
+    }
     if (prev_state->enable_flags.cached_scissor_test !=
-        enable_flags.cached_scissor_test)
+        enable_flags.cached_scissor_test) {
       EnableDisable(GL_SCISSOR_TEST, enable_flags.cached_scissor_test);
+    }
     if (prev_state->enable_flags.cached_stencil_test !=
-        enable_flags.cached_stencil_test)
+        enable_flags.cached_stencil_test) {
       EnableDisable(GL_STENCIL_TEST, enable_flags.cached_stencil_test);
+    }
+    if (feature_info_->IsES3Capable()) {
+      if (prev_state->enable_flags.cached_rasterizer_discard !=
+          enable_flags.cached_rasterizer_discard) {
+        EnableDisable(GL_RASTERIZER_DISCARD,
+                      enable_flags.cached_rasterizer_discard);
+      }
+    }
   } else {
     EnableDisable(GL_BLEND, enable_flags.cached_blend);
     EnableDisable(GL_CULL_FACE, enable_flags.cached_cull_face);
@@ -173,6 +191,10 @@ void ContextState::InitCapabilities(const ContextState* prev_state) const {
     EnableDisable(GL_SAMPLE_COVERAGE, enable_flags.cached_sample_coverage);
     EnableDisable(GL_SCISSOR_TEST, enable_flags.cached_scissor_test);
     EnableDisable(GL_STENCIL_TEST, enable_flags.cached_stencil_test);
+    if (feature_info_->IsES3Capable()) {
+      EnableDisable(GL_RASTERIZER_DISCARD,
+                    enable_flags.cached_rasterizer_discard);
+    }
   }
 }
 
@@ -358,6 +380,8 @@ bool ContextState::GetEnabled(GLenum cap) const {
       return enable_flags.scissor_test;
     case GL_STENCIL_TEST:
       return enable_flags.stencil_test;
+    case GL_RASTERIZER_DISCARD:
+      return enable_flags.rasterizer_discard;
     default:
       NOTREACHED();
       return false;
@@ -700,6 +724,12 @@ bool ContextState::GetStateAsGLint(GLenum pname,
         params[0] = static_cast<GLint>(enable_flags.stencil_test);
       }
       return true;
+    case GL_RASTERIZER_DISCARD:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(enable_flags.rasterizer_discard);
+      }
+      return true;
     default:
       return false;
   }
@@ -1035,6 +1065,12 @@ bool ContextState::GetStateAsGLfloat(GLenum pname,
       *num_written = 1;
       if (params) {
         params[0] = static_cast<GLfloat>(enable_flags.stencil_test);
+      }
+      return true;
+    case GL_RASTERIZER_DISCARD:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(enable_flags.rasterizer_discard);
       }
       return true;
     default:

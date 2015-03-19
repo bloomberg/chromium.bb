@@ -88,6 +88,10 @@ static const GLenum valid_capability_table[] = {
     GL_STENCIL_TEST,
 };
 
+static const GLenum valid_capability_table_es3[] = {
+    GL_RASTERIZER_DISCARD,
+};
+
 static const GLenum valid_cmp_function_table[] = {
     GL_NEVER,
     GL_LESS,
@@ -246,6 +250,7 @@ static const GLenum valid_g_l_state_table[] = {
     GL_SAMPLE_COVERAGE,
     GL_SCISSOR_TEST,
     GL_STENCIL_TEST,
+    GL_RASTERIZER_DISCARD,
 };
 
 static const GLenum valid_get_max_index_type_table[] = {
@@ -936,6 +941,8 @@ Validators::Validators()
 void Validators::UpdateValuesES3() {
   buffer_target.AddValues(valid_buffer_target_table_es3,
                           arraysize(valid_buffer_target_table_es3));
+  capability.AddValues(valid_capability_table_es3,
+                       arraysize(valid_capability_table_es3));
   pixel_type.AddValues(valid_pixel_type_table_es3,
                        arraysize(valid_pixel_type_table_es3));
   texture_bind_target.AddValues(valid_texture_bind_target_table_es3,
