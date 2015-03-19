@@ -565,7 +565,8 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
 
 // Multi-thread only because in single thread you can't pinch zoom on the
 // compositor thread.
-MULTI_THREAD_IMPL_TEST_F(LayerTreeHostPictureTestRSLLMembershipWithScale);
+// Disabled due to flakiness. See http://crbug.com/460581
+// MULTI_THREAD_IMPL_TEST_F(LayerTreeHostPictureTestRSLLMembershipWithScale);
 
 }  // namespace
 }  // namespace cc
