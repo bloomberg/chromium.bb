@@ -250,7 +250,7 @@ void HTMLCanvasElement::getContext(const String& type, const CanvasContextCreati
             } else {
                 m_context = WebGLRenderingContext::create(this, attributes);
             }
-            LayoutStyle* style = computedStyle();
+            const LayoutStyle* style = computedStyle();
             if (style && m_context)
                 toWebGLRenderingContextBase(m_context.get())->setFilterQuality(style->imageRendering() == ImageRenderingPixelated ? kNone_SkFilterQuality : kLow_SkFilterQuality);
             setNeedsCompositingUpdate();
@@ -661,7 +661,7 @@ void HTMLCanvasElement::createImageBufferInternal(PassOwnPtr<ImageBufferSurface>
     m_imageBuffer->setClient(this);
 
     document().updateRenderTreeIfNeeded();
-    LayoutStyle* style = computedStyle();
+    const LayoutStyle* style = computedStyle();
     m_imageBuffer->setFilterQuality((style && (style->imageRendering() == ImageRenderingPixelated)) ? kNone_SkFilterQuality : kLow_SkFilterQuality);
 
     m_didFailToCreateImageBuffer = false;

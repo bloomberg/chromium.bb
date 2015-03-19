@@ -1005,7 +1005,7 @@ WebString WebAXObject::computedStyleDisplay() const
     if (!node)
         return WebString();
 
-    LayoutStyle* layoutStyle = node->computedStyle();
+    const LayoutStyle* layoutStyle = node->computedStyle();
     if (!layoutStyle)
         return WebString();
 

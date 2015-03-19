@@ -84,7 +84,7 @@ private:
     virtual CSSRule* parentRule() const override;
     virtual unsigned length() const override;
     virtual String item(unsigned index) const override;
-    PassRefPtr<LayoutStyle> computeLayoutStyle() const;
+    const LayoutStyle* computeLayoutStyle() const;
     virtual String getPropertyValue(const String& propertyName) override;
     virtual String getPropertyPriority(const String& propertyName) override;
     virtual String getPropertyShorthand(const String& propertyName) override;

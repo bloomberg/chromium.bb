@@ -151,9 +151,9 @@ private:
     explicit EditingStyle(const StylePropertySet*);
     EditingStyle(CSSPropertyID, const String& value);
     void init(Node*, PropertiesToInclude);
-    void removeTextFillAndStrokeColorsIfNeeded(LayoutStyle*);
+    void removeTextFillAndStrokeColorsIfNeeded(const LayoutStyle*);
     void setProperty(CSSPropertyID, const String& value, bool important = false);
-    void replaceFontSizeByKeywordIfPossible(LayoutStyle*, CSSComputedStyleDeclaration*);
+    void replaceFontSizeByKeywordIfPossible(const LayoutStyle*, CSSComputedStyleDeclaration*);
     void extractFontSizeDelta();
     TriState triStateOfStyle(CSSStyleDeclaration* styleToCompare, ShouldIgnoreTextOnlyProperties) const;
     bool conflictsWithInlineStyleOfElement(HTMLElement*, EditingStyle* extractedStyle, Vector<CSSPropertyID>* conflictingProperties) const;

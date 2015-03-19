@@ -431,7 +431,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValu
 
     m_node->document().updateLayoutIgnorePendingStylesheets();
 
-    RefPtr<LayoutStyle> style = m_node->computedStyle(m_pseudoElementSpecifier);
+    const LayoutStyle* style = m_node->computedStyle(m_pseudoElementSpecifier);
     if (!style)
         return nullptr;
 
@@ -447,7 +447,7 @@ FixedPitchFontType CSSComputedStyleDeclaration::fixedPitchFontType() const
     if (!m_node)
         return NonFixedPitchFont;
 
-    RefPtr<LayoutStyle> style = m_node->computedStyle(m_pseudoElementSpecifier);
+    const LayoutStyle* style = m_node->computedStyle(m_pseudoElementSpecifier);
     if (!style)
         return NonFixedPitchFont;
 
@@ -463,7 +463,7 @@ static void logUnimplementedPropertyID(CSSPropertyID propertyID)
     WTF_LOG_ERROR("WebKit does not yet implement getComputedStyle for '%s'.", getPropertyName(propertyID));
 }
 
-static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<LayoutStyle> style, LayoutObject* renderer)
+static bool isLayoutDependent(CSSPropertyID propertyID, const LayoutStyle* style, LayoutObject* renderer)
 {
     // Some properties only depend on layout in certain conditions which
     // are specified in the main switch statement below. So we can avoid
@@ -519,7 +519,7 @@ static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<LayoutStyle> 
     }
 }
 
-PassRefPtr<LayoutStyle> CSSComputedStyleDeclaration::computeLayoutStyle() const
+const LayoutStyle* CSSComputedStyleDeclaration::computeLayoutStyle() const
 {
     Node* styledNode = this->styledNode();
     ASSERT(styledNode);
@@ -543,7 +543,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
     if (!styledNode)
         return nullptr;
     LayoutObject* renderer = styledNode->layoutObject();
-    RefPtr<LayoutStyle> style;
+    const LayoutStyle* style;
 
     Document& document = styledNode->document();
 
@@ -609,7 +609,7 @@ bool CSSComputedStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, c
 {
     if (propertyID == CSSPropertyFontSize && propertyValue->isPrimitiveValue() && m_node) {
         m_node->document().updateLayoutIgnorePendingStylesheets();
-        LayoutStyle* style = m_node->computedStyle(m_pseudoElementSpecifier);
+        const LayoutStyle* style = m_node->computedStyle(m_pseudoElementSpecifier);
         if (style && style->fontDescription().keywordSize()) {
             CSSValueID sizeValue = cssIdentifierForFontSizeKeyword(style->fontDescription().keywordSize());
             const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(propertyValue);

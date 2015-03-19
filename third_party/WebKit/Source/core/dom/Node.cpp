@@ -1052,7 +1052,7 @@ Node* Node::nextLeafNode() const
     return nullptr;
 }
 
-LayoutStyle* Node::virtualComputedStyle(PseudoId pseudoElementSpecifier)
+const LayoutStyle* Node::virtualComputedStyle(PseudoId pseudoElementSpecifier)
 {
     return parentOrShadowHostNode() ? parentOrShadowHostNode()->computedStyle(pseudoElementSpecifier) : nullptr;
 }

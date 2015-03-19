@@ -938,7 +938,7 @@ void SVGElement::setUseOverrideComputedStyle(bool value)
         svgRareData()->setUseOverrideComputedStyle(value);
 }
 
-LayoutStyle* SVGElement::computedStyle(PseudoId pseudoElementSpecifier)
+const LayoutStyle* SVGElement::computedStyle(PseudoId pseudoElementSpecifier)
 {
     if (!hasSVGRareData() || !svgRareData()->useOverrideComputedStyle())
         return Element::computedStyle(pseudoElementSpecifier);

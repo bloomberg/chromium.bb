@@ -231,8 +231,8 @@ private:
     bool isSVGElement() const = delete; // This will catch anyone doing an unnecessary check.
     bool isStyledElement() const = delete; // This will catch anyone doing an unnecessary check.
 
-    LayoutStyle* computedStyle(PseudoId = NOPSEUDO);
-    virtual LayoutStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) override final { return computedStyle(pseudoElementSpecifier); }
+    const LayoutStyle* computedStyle(PseudoId = NOPSEUDO);
+    virtual const LayoutStyle* virtualComputedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) override final { return computedStyle(pseudoElementSpecifier); }
     virtual void willRecalcStyle(StyleRecalcChange) override;
 
     void buildPendingResourcesIfNeeded();

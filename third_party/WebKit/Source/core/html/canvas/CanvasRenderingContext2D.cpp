@@ -1822,7 +1822,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     // relative to the canvas.
     RefPtr<LayoutStyle> newStyle = LayoutStyle::create();
     canvas()->document().updateRenderTreeIfNeeded();
-    if (LayoutStyle* computedStyle = canvas()->computedStyle()) {
+    if (const LayoutStyle* computedStyle = canvas()->computedStyle()) {
         FontDescription elementFontDescription(computedStyle->fontDescription());
         // Reset the computed size to avoid inheriting the zoom factor from the <canvas> element.
         elementFontDescription.setComputedSize(elementFontDescription.specifiedSize());
@@ -1889,9 +1889,9 @@ void CanvasRenderingContext2D::setTextBaseline(const String& s)
     modifiableState().setTextBaseline(baseline);
 }
 
-static inline TextDirection toTextDirection(CanvasRenderingContext2DState::Direction direction, HTMLCanvasElement* canvas, LayoutStyle** computedStyle = 0)
+static inline TextDirection toTextDirection(CanvasRenderingContext2DState::Direction direction, HTMLCanvasElement* canvas, const LayoutStyle** computedStyle = 0)
 {
-    LayoutStyle* style = (computedStyle || direction == CanvasRenderingContext2DState::DirectionInherit) ? canvas->computedStyle() : nullptr;
+    const LayoutStyle* style = (computedStyle || direction == CanvasRenderingContext2DState::DirectionInherit) ? canvas->computedStyle() : nullptr;
     if (computedStyle)
         *computedStyle = style;
     switch (direction) {
@@ -2035,7 +2035,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
 
     // FIXME: Need to turn off font smoothing.
 
-    LayoutStyle* computedStyle = 0;
+    const LayoutStyle* computedStyle = 0;
     TextDirection direction = toTextDirection(state().direction(), canvas(), &computedStyle);
     bool isRTL = direction == RTL;
     bool override = computedStyle ? isOverride(computedStyle->unicodeBidi()) : false;

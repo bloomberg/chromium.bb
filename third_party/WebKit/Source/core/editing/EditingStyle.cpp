@@ -472,7 +472,7 @@ void EditingStyle::init(Node* node, PropertiesToInclude propertiesToInclude)
     }
 
     if (node && node->computedStyle()) {
-        LayoutStyle* layoutStyle = node->computedStyle();
+        const LayoutStyle* layoutStyle = node->computedStyle();
         removeTextFillAndStrokeColorsIfNeeded(layoutStyle);
         replaceFontSizeByKeywordIfPossible(layoutStyle, computedStyleAtPosition.get());
     }
@@ -481,7 +481,7 @@ void EditingStyle::init(Node* node, PropertiesToInclude propertiesToInclude)
     extractFontSizeDelta();
 }
 
-void EditingStyle::removeTextFillAndStrokeColorsIfNeeded(LayoutStyle* layoutStyle)
+void EditingStyle::removeTextFillAndStrokeColorsIfNeeded(const LayoutStyle* layoutStyle)
 {
     // If a node's text fill color is currentColor, then its children use
     // their font-color as their text fill color (they don't
@@ -500,7 +500,7 @@ void EditingStyle::setProperty(CSSPropertyID propertyID, const String& value, bo
     m_mutableStyle->setProperty(propertyID, value, important);
 }
 
-void EditingStyle::replaceFontSizeByKeywordIfPossible(LayoutStyle* layoutStyle, CSSComputedStyleDeclaration* computedStyle)
+void EditingStyle::replaceFontSizeByKeywordIfPossible(const LayoutStyle* layoutStyle, CSSComputedStyleDeclaration* computedStyle)
 {
     ASSERT(layoutStyle);
     if (layoutStyle->fontDescription().keywordSize())

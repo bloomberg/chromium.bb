@@ -2521,7 +2521,7 @@ void Element::setMinimumSizeForResizing(const LayoutSize& size)
     ensureElementRareData().setMinimumSizeForResizing(size);
 }
 
-LayoutStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
+const LayoutStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
 {
     if (PseudoElement* element = pseudoElement(pseudoElementSpecifier))
         return element->computedStyle();

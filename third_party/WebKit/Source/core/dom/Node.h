@@ -547,7 +547,7 @@ public:
 
     const LayoutStyle& layoutStyleRef() const;
 
-    LayoutStyle* computedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return virtualComputedStyle(pseudoElementSpecifier); }
+    const LayoutStyle* computedStyle(PseudoId pseudoElementSpecifier = NOPSEUDO) { return virtualComputedStyle(pseudoElementSpecifier); }
 
     // -----------------------------------------------------------------------------
     // Notification of document structure changes (see ContainerNode.h for more notification methods)
@@ -804,7 +804,7 @@ private:
 
     virtual LayoutStyle* nonRendererStyle() const { return nullptr; }
 
-    virtual LayoutStyle* virtualComputedStyle(PseudoId = NOPSEUDO);
+    virtual const LayoutStyle* virtualComputedStyle(PseudoId = NOPSEUDO);
 
     void trackForDebugging();
 
