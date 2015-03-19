@@ -16,8 +16,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/linux_font_delegate.h"
+#include "ui/gfx/screen.h"
 #include "ui/gfx/switches.h"
 
 namespace gfx {
@@ -61,15 +63,6 @@ struct SynchronizedCache {
 
 base::LazyInstance<SynchronizedCache>::Leaky g_synchronized_cache =
     LAZY_INSTANCE_INITIALIZER;
-
-bool IsBrowserTextSubpixelPositioningEnabled(
-    const FontRenderParamsQuery& query) {
-#if defined(OS_CHROMEOS)
-  return query.device_scale_factor > 1.0f;
-#else
-  return false;
-#endif
-}
 
 // Converts Fontconfig FC_HINT_STYLE to FontRenderParams::Hinting.
 FontRenderParams::Hinting ConvertFontconfigHintStyle(int hint_style) {
@@ -208,10 +201,19 @@ uint32 HashFontRenderParamsQuery(const FontRenderParamsQuery& query) {
 FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
                                      std::string* family_out) {
   FontRenderParamsQuery actual_query(query);
+  if (actual_query.device_scale_factor == 0) {
 #if defined(OS_CHROMEOS)
-  if (actual_query.device_scale_factor == 0)
     actual_query.device_scale_factor = device_scale_factor_for_internal_display;
+#else
+    // Linux does not support per-display DPI, so we use a slightly simpler
+    // code path than on Chrome OS to figure out the device scale factor.
+    gfx::Screen* screen = gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE);
+    if (screen) {
+      gfx::Display display = screen->GetPrimaryDisplay();
+      actual_query.device_scale_factor = display.device_scale_factor();
+    }
 #endif
+  }
   const uint32 hash = HashFontRenderParamsQuery(actual_query);
   SynchronizedCache* synchronized_cache = g_synchronized_cache.Pointer();
 
@@ -252,7 +254,7 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
         actual_query.for_web_contents
             ? base::CommandLine::ForCurrentProcess()->HasSwitch(
                   switches::kEnableWebkitTextSubpixelPositioning)
-            : IsBrowserTextSubpixelPositioningEnabled(actual_query);
+            : actual_query.device_scale_factor > 1.0f;
 
     // To enable subpixel positioning, we need to disable hinting.
     if (params.subpixel_positioning)

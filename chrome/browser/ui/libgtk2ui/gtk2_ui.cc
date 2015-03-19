@@ -382,7 +382,7 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
 
 // Queries GTK for its font DPI setting and returns the number of pixels in a
 // point.
-double GetPixelsInPoint() {
+double GetPixelsInPoint(float device_scale_factor) {
   GtkSettings* gtk_settings = gtk_settings_get_default();
   CHECK(gtk_settings);
   gint gtk_dpi = -1;
@@ -390,6 +390,10 @@ double GetPixelsInPoint() {
 
   // GTK multiplies the DPI by 1024 before storing it.
   double dpi = (gtk_dpi > 0) ? gtk_dpi / 1024.0 : 96.0;
+
+  // Take device_scale_factor into account — if Chrome already scales the
+  // entire UI up by 2x, we should not also scale up.
+  dpi /= device_scale_factor;
 
   // There are 72 points in an inch.
   return dpi / 72.0;
@@ -414,7 +418,8 @@ views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
 Gtk2UI::Gtk2UI()
     : default_font_size_pixels_(0),
       default_font_style_(gfx::Font::NORMAL),
-      middle_click_action_(GetDefaultMiddleClickAction()) {
+      middle_click_action_(GetDefaultMiddleClickAction()),
+      device_scale_factor_(1.0) {
   GtkInitFromCommandLine(*base::CommandLine::ForCurrentProcess());
 }
 
@@ -1386,7 +1391,7 @@ void Gtk2UI::UpdateDefaultFont(const PangoFontDescription* desc) {
     const double size_points = pango_font_description_get_size(desc) /
         static_cast<double>(PANGO_SCALE);
     default_font_size_pixels_ = static_cast<int>(
-        GetPixelsInPoint() * size_points + 0.5);
+        GetPixelsInPoint(device_scale_factor_) * size_points + 0.5);
     query.point_size = static_cast<int>(size_points);
   }
 
@@ -1407,6 +1412,12 @@ void Gtk2UI::OnStyleSet(GtkWidget* widget, GtkStyle* previous_style) {
   ClearAllThemeData();
   LoadGtkValues();
   NativeThemeGtk2::instance()->NotifyObservers();
+}
+
+void Gtk2UI::UpdateDeviceScaleFactor(float device_scale_factor) {
+  device_scale_factor_ = device_scale_factor;
+  GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
+  UpdateDefaultFont(label_style->font_desc);
 }
 
 }  // namespace libgtk2ui

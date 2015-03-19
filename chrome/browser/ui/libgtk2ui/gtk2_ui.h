@@ -119,6 +119,9 @@ class Gtk2UI : public views::LinuxUI {
   bool MatchEvent(const ui::Event& event,
                   std::vector<ui::TextEditCommandAuraLinux>* commands) override;
 
+  // ui::Views::LinuxUI:
+  void UpdateDeviceScaleFactor(float device_scale_factor) override;
+
  private:
   typedef std::map<int, SkColor> ColorMap;
   typedef std::map<int, color_utils::HSL> TintMap;
@@ -262,6 +265,8 @@ class Gtk2UI : public views::LinuxUI {
   // or the callback returns NULL, Gtk2UI will default to a NativeThemeGtk2
   // instance.
   NativeThemeGetter native_theme_overrider_;
+
+  float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(Gtk2UI);
 };
