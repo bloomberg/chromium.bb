@@ -110,10 +110,9 @@ public:
 
     virtual void updateDisplay(HTMLDivElement& container) override;
 
-    virtual void updateDisplayTree(double movieTime) override;
-    virtual void removeDisplayTree(RemovalNotification) override;
+    virtual void updatePastAndFutureNodes(double movieTime) override;
 
-    void markFutureAndPastNodes(ContainerNode*, double previousTimestamp, double movieTime);
+    virtual void removeDisplayTree(RemovalNotification) override;
 
     float calculateComputedLinePosition() const;
 

@@ -106,6 +106,7 @@ void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement)
     // 10. For each text track cue cue in cues that has not yet had
     // corresponding CSS boxes added to output, in text track cue order, run the
     // following substeps:
+    double movieTime = video.currentTime();
     for (size_t i = 0; i < activeCues.size(); ++i) {
         TextTrackCue* cue = activeCues[i].data();
 
@@ -114,6 +115,7 @@ void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement)
             continue;
 
         cue->updateDisplay(*this);
+        cue->updatePastAndFutureNodes(movieTime);
     }
 
     // 11. Return output.

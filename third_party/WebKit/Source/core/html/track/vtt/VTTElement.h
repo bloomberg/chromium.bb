@@ -54,7 +54,7 @@ public:
     VTTNodeType webVTTNodeType() const { return static_cast<VTTNodeType>(m_webVTTNodeType); }
 
     bool isPastNode() const { return m_isPastNode; }
-    void setIsPastNode(bool value) { m_isPastNode = value; }
+    void setIsPastNode(bool);
 
     virtual bool isVTTElement() const override { return true; }
     AtomicString language() const { return m_language; }

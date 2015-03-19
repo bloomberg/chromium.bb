@@ -117,5 +117,13 @@ PassRefPtrWillBeRawPtr<HTMLElement> VTTElement::createEquivalentHTMLElement(Docu
     return htmlElement;
 }
 
-} // namespace blink
+void VTTElement::setIsPastNode(bool isPastNode)
+{
+    if (!!m_isPastNode == isPastNode)
+        return;
 
+    m_isPastNode = isPastNode;
+    setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Past));
+}
+
+} // namespace blink

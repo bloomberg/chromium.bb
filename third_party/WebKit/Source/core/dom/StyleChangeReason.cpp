@@ -50,6 +50,7 @@ DEFINE_GLOBAL(AtomicString, Active)
 DEFINE_GLOBAL(AtomicString, Disabled)
 DEFINE_GLOBAL(AtomicString, Focus)
 DEFINE_GLOBAL(AtomicString, Hover)
+DEFINE_GLOBAL(AtomicString, Past)
 DEFINE_GLOBAL(AtomicString, Unresolved)
 
 void init()
@@ -60,6 +61,7 @@ void init()
     new (NotNull, (void*)&Disabled) AtomicString(":disabled", AtomicString::ConstructFromLiteral);
     new (NotNull, (void*)&Focus) AtomicString(":focus", AtomicString::ConstructFromLiteral);
     new (NotNull, (void*)&Hover) AtomicString(":hover", AtomicString::ConstructFromLiteral);
+    new (NotNull, (void*)&Past) AtomicString(":past", AtomicString::ConstructFromLiteral);
     new (NotNull, (void*)&Unresolved) AtomicString(":unresolved", AtomicString::ConstructFromLiteral);
 }
 

@@ -744,16 +744,30 @@ VTTDisplayParameters VTTCue::calculateDisplayParameters() const
     return displayParameters;
 }
 
-void VTTCue::markFutureAndPastNodes(ContainerNode* root, double previousTimestamp, double movieTime)
+void VTTCue::updatePastAndFutureNodes(double movieTime)
 {
     DEFINE_STATIC_LOCAL(const String, timestampTag, ("timestamp"));
 
+    ASSERT(isActive());
+
+    // An active cue may still not have a display tree, e.g. if its track is
+    // hidden or if the track belongs to an audio element.
+    if (!m_displayTree)
+        return;
+
+    // FIXME: Per spec it's possible for neither :past nor :future to match, but
+    // as implemented here and in SelectorChecker they are simply each others
+    // negations. For a cue with no internal timestamps, :past will match but
+    // should not per spec. :future is correct, however. See the spec bug to
+    // determine what the correct behavior should be:
+    // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28237
+
     bool isPastNode = true;
-    double currentTimestamp = previousTimestamp;
+    double currentTimestamp = startTime();
     if (currentTimestamp > movieTime)
         isPastNode = false;
 
-    for (Node& child : NodeTraversal::descendantsOf(*root)) {
+    for (Node& child : NodeTraversal::descendantsOf(*m_displayTree)) {
         if (child.nodeName() == timestampTag) {
             double currentTimestamp;
             bool check = VTTParser::collectTimeStamp(child.nodeValue(), currentTimestamp);
@@ -772,25 +786,6 @@ void VTTCue::markFutureAndPastNodes(ContainerNode* root, double previousTimestam
     }
 }
 
-void VTTCue::updateDisplayTree(double movieTime)
-{
-    // The display tree may contain WebVTT timestamp objects representing
-    // timestamps (processing instructions), along with displayable nodes.
-
-    if (!track()->isRendered())
-        return;
-
-    // Clear the contents of the set.
-    m_cueBackgroundBox->removeChildren();
-
-    // Update the two sets containing past and future WebVTT objects.
-    createVTTNodeTree();
-    RefPtrWillBeRawPtr<DocumentFragment> referenceTree = DocumentFragment::create(document());
-    m_vttNodeTree->cloneChildNodes(referenceTree.get());
-    markFutureAndPastNodes(referenceTree.get(), startTime(), movieTime);
-    m_cueBackgroundBox->appendChild(referenceTree, ASSERT_NO_EXCEPTION);
-}
-
 PassRefPtrWillBeRawPtr<VTTCueBox> VTTCue::getDisplayTree()
 {
     ASSERT(track() && track()->isRendered() && isActive());
@@ -802,13 +797,14 @@ PassRefPtrWillBeRawPtr<VTTCueBox> VTTCue::getDisplayTree()
 
     ASSERT(m_displayTree->firstChild() == m_cueBackgroundBox);
 
-    // Note: It is updateDisplayTree() which actually adds the child
-    // nodes to m_cueBackgroundBox.
-
     if (!m_displayTreeShouldChange)
         return m_displayTree;
 
     createVTTNodeTree();
+
+    m_cueBackgroundBox->removeChildren();
+    m_vttNodeTree->cloneChildNodes(m_cueBackgroundBox.get());
+
     VTTDisplayParameters displayParameters = calculateDisplayParameters();
     m_displayTree->applyCSSProperties(displayParameters);
 

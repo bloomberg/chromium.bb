@@ -206,9 +206,13 @@ void CueTimeline::updateActiveCues(double movieTime)
     }
 
     for (CueInterval currentCue : currentCues) {
-        currentCue.data()->updateDisplayTree(movieTime);
-
-        if (!currentCue.data()->isActive())
+        // Notify any cues that are already active of the current time to mark
+        // past and future nodes. Any inactive cues have an empty display state;
+        // they will be notified of the current time when the display state is
+        // updated.
+        if (currentCue.data()->isActive())
+            currentCue.data()->updatePastAndFutureNodes(movieTime);
+        else
             activeSetChanged = true;
     }
 
