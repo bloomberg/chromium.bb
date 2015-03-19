@@ -609,6 +609,10 @@ static_library("browser") {
       "//components/web_modal",
     ]
     defines += [ "ENABLE_DATA_REDUCTION_PROXY_DEBUGGING" ]
+
+    if (use_seccomp_bpf) {
+      defines += [ "USE_SECCOMP_BPF" ]
+    }
   }
 
   if (is_mac) {

@@ -137,6 +137,13 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetSaveFileName,
                      ChromeUtilityMsg_GetSaveFileName_Params /* params */)
 #endif  // defined(OS_WIN)
 
+#if defined(OS_ANDROID)
+// Instructs the utility process to detect support for seccomp-bpf,
+// and the result is reported through
+// ChromeUtilityHostMsg_DetectSeccompSupport_Result.
+IPC_MESSAGE_CONTROL0(ChromeUtilityMsg_DetectSeccompSupport)
+#endif
+
 //------------------------------------------------------------------------------
 // Utility process host messages:
 // These are messages from the utility process to the browser.
@@ -200,3 +207,12 @@ IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GetSaveFileName_Result,
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_BuildDirectWriteFontCache,
                      base::FilePath /* cache file path */)
 #endif  // defined(OS_WIN)
+
+#if defined(OS_ANDROID)
+// Reply to ChromeUtilityMsg_DetectSeccompSupport to report the level
+// of kernel support for seccomp-bpf.
+IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_DetectSeccompSupport_ResultPrctl,
+                     bool /* seccomp prctl supported */)
+IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_DetectSeccompSupport_ResultSyscall,
+                     bool /* seccomp syscall supported */)
+#endif

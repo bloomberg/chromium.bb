@@ -149,6 +149,8 @@
       'browser/android/resource_id.h',
       'browser/android/resource_mapper.cc',
       'browser/android/resource_mapper.h',
+      'browser/android/seccomp_support_detector.cc',
+      'browser/android/seccomp_support_detector.h',
       'browser/android/service_tab_launcher.cc',
       'browser/android/service_tab_launcher.h',
       'browser/android/shortcut_helper.cc',
@@ -3427,6 +3429,11 @@
           ],
           'sources': [ '<@(chrome_browser_android_sources)' ],
           'defines': [ 'ENABLE_DATA_REDUCTION_PROXY_DEBUGGING' ],
+          'conditions': [
+            ['use_seccomp_bpf==1', {
+              'defines': ['USE_SECCOMP_BPF'],
+            }],
+          ],
         }],
         ['OS=="mac"', {
           'dependencies': [

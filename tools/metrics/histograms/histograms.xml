@@ -247,6 +247,32 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Android.KernelVersion" enum="AndroidKernelVersion">
+  <owner>rsesek@chromium.org</owner>
+  <summary>
+    Reports the kernel major and minor version from the utsname.release field.
+    The low 16 bits of each version are combined into a 32-bit integer. The
+    range is from [0x00020006,0x0004000a] to track kernel versions 2.6 through
+    4.10.
+  </summary>
+</histogram>
+
+<histogram name="Android.SeccompStatus.Prctl" enum="AndroidSeccompStatus">
+  <owner>rsesek@chromium.org</owner>
+  <summary>
+    Reports the level of kernel support for the seccomp-bpf sandbox using
+    prctl(PR_SET_SECCOMP).
+  </summary>
+</histogram>
+
+<histogram name="Android.SeccompStatus.Syscall" enum="AndroidSeccompStatus">
+  <owner>rsesek@chromium.org</owner>
+  <summary>
+    Reports the level of kernel support for the seccomp-bpf sandbox using the
+    seccomp system call.
+  </summary>
+</histogram>
+
 <histogram name="AndroidTabCloseUndo.Toast"
     enum="AndroidTabCloseUndoToastEvent">
   <owner>dtrainor@chromium.org</owner>
@@ -44292,6 +44318,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="EvictAll"/>
 </enum>
 
+<enum name="AndroidKernelVersion" type="int">
+  <int value="131078" label="2.6"/>
+  <int value="196608" label="3.0"/>
+  <int value="196611" label="3.3"/>
+  <int value="196612" label="3.4"/>
+  <int value="196616" label="3.8"/>
+  <int value="196618" label="3.10"/>
+  <int value="196622" label="3.14"/>
+  <int value="196625" label="3.17"/>
+  <int value="196626" label="3.18"/>
+  <int value="196627" label="3.19"/>
+  <int value="262144" label="4.0"/>
+  <int value="262145" label="4.01"/>
+  <int value="262154" label="4.10"/>
+</enum>
+
 <enum name="AndroidMemoryNotificationBackground" type="int">
   <int value="0" label="TrimMemoryUiHidden"/>
   <int value="1" label="TrimMemoryBackground"/>
@@ -44304,6 +44346,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="TrimMemoryRunningLow"/>
   <int value="2" label="TrimMemoryRunningCritical"/>
   <int value="3" label="LowMemory"/>
+</enum>
+
+<enum name="AndroidSeccompStatus" type="int">
+  <int value="0" label="Detection Failed"/>
+  <int value="1" label="Not Supported"/>
+  <int value="2" label="Supported"/>
 </enum>
 
 <enum name="AndroidSigninPromoAction" type="int">

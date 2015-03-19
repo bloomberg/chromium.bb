@@ -56,6 +56,10 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
                        const base::FileDescriptor& dest_fd);
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_ANDROID) && defined(USE_SECCOMP_BPF)
+  void OnDetectSeccompSupport();
+#endif
+
   void OnParseJSON(const std::string& json);
   void OnPatchFileBsdiff(const base::FilePath& input_file,
                          const base::FilePath& patch_file,
