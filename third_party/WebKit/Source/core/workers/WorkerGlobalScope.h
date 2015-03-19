@@ -120,8 +120,6 @@ public:
 
     bool isClosing() { return m_closing; }
 
-    bool idleNotification();
-
     double timeOrigin() const { return m_timeOrigin; }
 
     WorkerClients* clients() { return m_workerClients.get(); }

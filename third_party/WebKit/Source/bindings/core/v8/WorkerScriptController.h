@@ -76,10 +76,6 @@ public:
     // Used by WorkerGlobalScope:
     void rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent>, ExceptionState&);
     void disableEval(const String&);
-    // Send a notification about current thread is going to be idle.
-    // Returns true if the embedder should stop calling idleNotification
-    // until real work has been done.
-    bool idleNotification() { return isolate()->IdleNotification(1000); }
 
     // Used by Inspector agents:
     ScriptState* scriptState() { return m_scriptState.get(); }

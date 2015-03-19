@@ -521,7 +521,7 @@ void WorkerThread::idleHandler()
     // Do a script engine idle notification if the next event is distant enough.
     const double kMinIdleTimespan = 0.3;
     if (m_sharedTimer->nextFireTime() == 0.0 || m_sharedTimer->nextFireTime() > currentTime() + kMinIdleTimespan) {
-        bool hasMoreWork = !m_workerGlobalScope->idleNotification();
+        bool hasMoreWork = !isolate()->IdleNotification(1000);
         if (hasMoreWork)
             delay = kShortIdleHandlerDelayMs;
     }

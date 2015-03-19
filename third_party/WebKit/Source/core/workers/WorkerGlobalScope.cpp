@@ -324,11 +324,6 @@ bool WorkerGlobalScope::isJSExecutionForbidden() const
     return m_script->isExecutionForbidden();
 }
 
-bool WorkerGlobalScope::idleNotification()
-{
-    return script()->idleNotification();
-}
-
 WorkerEventQueue* WorkerGlobalScope::eventQueue() const
 {
     return m_eventQueue.get();
