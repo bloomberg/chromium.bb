@@ -330,6 +330,9 @@ class NinjaWriter(object):
       obj += '.' + self.toolset
 
     path_dir, path_basename = os.path.split(path)
+    assert not os.path.isabs(path_dir), (
+        "'%s' can not be absolute path (see crbug.com/462153)." % path_dir)
+
     if qualified:
       path_basename = self.name + '.' + path_basename
     return os.path.normpath(os.path.join(obj, self.base_dir, path_dir,
