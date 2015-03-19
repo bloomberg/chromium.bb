@@ -254,6 +254,8 @@ class Traversal {
                          const syncable::Directory::Metahandles& traversed,
                          syncable::Directory::Metahandles* result) const;
 
+  bool SupportsHierarchy(const syncable::Entry& item) const;
+
   // Returns true if we've collected enough items.
   bool IsFull() const;
 
@@ -288,6 +290,7 @@ bool Traversal::AddUncommittedParentsAndTheirPredecessors(
     const std::set<int64>& ready_unsynced_set,
     const syncable::Entry& item,
     syncable::Directory::Metahandles* result) const {
+  DCHECK(SupportsHierarchy(item));
   syncable::Directory::Metahandles dependencies;
   syncable::Id parent_id = item.GetParentId();
 
@@ -393,6 +396,7 @@ bool Traversal::AddDeletedParents(
     const syncable::Entry& item,
     const syncable::Directory::Metahandles& traversed,
     syncable::Directory::Metahandles* result) const {
+  DCHECK(SupportsHierarchy(item));
   syncable::Directory::Metahandles dependencies;
   syncable::Id parent_id = item.GetParentId();
 
@@ -448,6 +452,10 @@ bool Traversal::HaveItem(int64 handle) const {
   return added_handles_.find(handle) != added_handles_.end();
 }
 
+bool Traversal::SupportsHierarchy(const syncable::Entry& item) const {
+  return !item.GetParentId().IsNull();
+}
+
 void Traversal::AppendManyToTraversal(
     const syncable::Directory::Metahandles& handles) {
   out_->insert(out_->end(), handles.begin(), handles.end());
@@ -472,17 +480,19 @@ void Traversal::AddCreatesAndMoves(
                           syncable::GET_BY_HANDLE,
                           metahandle);
     if (!entry.GetIsDel()) {
-      // We only commit an item + its dependencies if it and all its
-      // dependencies are not in conflict.
-      syncable::Directory::Metahandles item_dependencies;
-      if (AddUncommittedParentsAndTheirPredecessors(
-              ready_unsynced_set,
-              entry,
-              &item_dependencies)) {
-        AddPredecessorsThenItem(ready_unsynced_set,
-                                entry,
-                                &item_dependencies);
-        AppendManyToTraversal(item_dependencies);
+      if (SupportsHierarchy(entry)) {
+        // We only commit an item + its dependencies if it and all its
+        // dependencies are not in conflict.
+        syncable::Directory::Metahandles item_dependencies;
+        if (AddUncommittedParentsAndTheirPredecessors(ready_unsynced_set, entry,
+                                                      &item_dependencies)) {
+          AddPredecessorsThenItem(ready_unsynced_set, entry,
+                                  &item_dependencies);
+          AppendManyToTraversal(item_dependencies);
+        }
+      } else {
+        // No hierarchy dependencies, just commit the item itself.
+        AppendToTraversal(metahandle);
       }
     }
   }
@@ -515,13 +525,16 @@ void Traversal::AddDeletes(const std::set<int64>& ready_unsynced_set) {
                           metahandle);
 
     if (entry.GetIsDel()) {
-      syncable::Directory::Metahandles parents;
-      if (AddDeletedParents(
-              ready_unsynced_set, entry, deletion_list, &parents)) {
-        // Append parents and chilren in top to bottom order.
-        deletion_list.insert(deletion_list.end(),
-                             parents.begin(),
-                             parents.end());
+      if (SupportsHierarchy(entry)) {
+        syncable::Directory::Metahandles parents;
+        if (AddDeletedParents(ready_unsynced_set, entry, deletion_list,
+                              &parents)) {
+          // Append parents and chilren in top to bottom order.
+          deletion_list.insert(deletion_list.end(), parents.begin(),
+                               parents.end());
+          deletion_list.push_back(metahandle);
+        }
+      } else {
         deletion_list.push_back(metahandle);
       }
     }

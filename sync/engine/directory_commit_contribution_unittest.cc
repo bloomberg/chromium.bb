@@ -38,13 +38,15 @@ class DirectoryCommitContributionTest : public ::testing::Test {
       ModelType type,
       const std::string& tag,
       const sync_pb::AttachmentMetadata& attachment_metadata) {
-    syncable::Entry parent_entry(trans, syncable::GET_TYPE_ROOT, type);
-    syncable::MutableEntry entry(
-        trans,
-        syncable::CREATE,
-        type,
-        parent_entry.GetId(),
-        tag);
+    // For bookmarks specify the Bookmarks root folder as the parent;
+    // for other types leave the parent ID empty
+    syncable::Id parent_id;
+    if (type == BOOKMARKS) {
+      syncable::Entry parent_entry(trans, syncable::GET_TYPE_ROOT, type);
+      parent_id = parent_entry.GetId();
+    }
+
+    syncable::MutableEntry entry(trans, syncable::CREATE, type, parent_id, tag);
     if (attachment_metadata.record_size() > 0) {
       entry.PutAttachmentMetadata(attachment_metadata);
     }
