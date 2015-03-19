@@ -129,6 +129,21 @@ bool IsElementInsideFormOrFieldSet(const WebElement& element) {
   return false;
 }
 
+// Returns true if |node| is an element and it is a container type that
+// InferLabelForElement() can traverse.
+bool IsTraversableContainerElement(const WebNode& node) {
+  if (!node.isElementNode())
+    return false;
+
+  std::string tag_name = node.toConst<WebElement>().tagName().utf8();
+  return (tag_name == "DD" ||
+          tag_name == "DIV" ||
+          tag_name == "FIELDSET" ||
+          tag_name == "LI" ||
+          tag_name == "TD" ||
+          tag_name == "TABLE");
+}
+
 // Check whether the given field satisfies the REQUIRE_AUTOCOMPLETE requirement.
 bool SatisfiesRequireAutocomplete(const WebInputElement& input_element) {
   return input_element.autoComplete();
@@ -546,8 +561,6 @@ base::string16 InferLabelFromDivTable(const WebFormControlElement& element) {
   // Search the sibling and parent <div>s until we find a candidate label.
   base::string16 inferred_label;
   CR_DEFINE_STATIC_LOCAL(WebString, kDiv, ("div"));
-  CR_DEFINE_STATIC_LOCAL(WebString, kTable, ("table"));
-  CR_DEFINE_STATIC_LOCAL(WebString, kFieldSet, ("fieldset"));
   CR_DEFINE_STATIC_LOCAL(WebString, kLabel, ("label"));
   while (inferred_label.empty() && !node.isNull()) {
     if (HasTagName(node, kDiv)) {
@@ -573,9 +586,8 @@ base::string16 InferLabelFromDivTable(const WebFormControlElement& element) {
       WebLabelElement label_element = node.to<WebLabelElement>();
       if (label_element.correspondingControl().isNull())
         inferred_label = FindChildText(node);
-    } else if (looking_for_parent &&
-               (HasTagName(node, kTable) || HasTagName(node, kFieldSet))) {
-      // If the element is in a table or fieldset, its label most likely is too.
+    } else if (looking_for_parent && IsTraversableContainerElement(node)) {
+      // If the element is in a non-div container, its label most likely is too.
       break;
     }
 
@@ -617,23 +629,20 @@ base::string16 InferLabelFromDefinitionList(
   return FindChildText(previous);
 }
 
-// Returns true if the closest ancestor is a <div> and not a <td>.
-// Returns false if the closest ancestor is a <td> tag,
-// or if there is no <div> or <td> ancestor.
-bool ClosestAncestorIsDivAndNotTD(const WebFormControlElement& element) {
+// Returns the element type for all ancestor nodes in CAPS, starting with the
+// parent node.
+std::vector<std::string> AncestorTagNames(
+    const WebFormControlElement& element) {
+  std::vector<std::string> tag_names;
   for (WebNode parent_node = element.parentNode();
        !parent_node.isNull();
        parent_node = parent_node.parentNode()) {
     if (!parent_node.isElementNode())
       continue;
 
-    WebElement cur_element = parent_node.to<WebElement>();
-    if (cur_element.hasHTMLTagName("div"))
-      return true;
-    if (cur_element.hasHTMLTagName("td"))
-      return false;
+    tag_names.push_back(parent_node.to<WebElement>().tagName().utf8());
   }
-  return false;
+  return tag_names;
 }
 
 // Infers corresponding label for |element| from surrounding context in the DOM,
@@ -655,40 +664,33 @@ base::string16 InferLabelForElement(const WebFormControlElement& element) {
   if (!inferred_label.empty())
     return inferred_label;
 
-  // If we didn't find a label, check for list item case.
-  inferred_label = InferLabelFromListItem(element);
-  if (!inferred_label.empty())
-    return inferred_label;
+  // For all other searches that involve traversing up the tree, the search
+  // order is based on which tag is the closest ancestor to |element|.
+  std::vector<std::string> tag_names = AncestorTagNames(element);
+  std::set<std::string> seen_tag_names;
+  for (const std::string& tag_name : tag_names) {
+    if (ContainsKey(seen_tag_names, tag_name))
+      continue;
 
-  // If we didn't find a label, check for definition list case.
-  inferred_label = InferLabelFromDefinitionList(element);
-  if (!inferred_label.empty())
-    return inferred_label;
+    seen_tag_names.insert(tag_name);
+    if (tag_name == "DIV") {
+      inferred_label = InferLabelFromDivTable(element);
+    } else if (tag_name == "TD") {
+      inferred_label = InferLabelFromTableColumn(element);
+      if (inferred_label.empty())
+        inferred_label = InferLabelFromTableRow(element);
+    } else if (tag_name == "DD") {
+      inferred_label = InferLabelFromDefinitionList(element);
+    } else if (tag_name == "LI") {
+      inferred_label = InferLabelFromListItem(element);
+    } else if (tag_name == "FIELDSET") {
+      break;
+    }
 
-  bool check_div_first = ClosestAncestorIsDivAndNotTD(element);
-  if (check_div_first) {
-    // If we didn't find a label, check for div table case first since it's the
-    // closest ancestor.
-    inferred_label = InferLabelFromDivTable(element);
     if (!inferred_label.empty())
-      return inferred_label;
+      break;
   }
 
-  // If we didn't find a label, check for table cell case.
-  inferred_label = InferLabelFromTableColumn(element);
-  if (!inferred_label.empty())
-    return inferred_label;
-
-  // If we didn't find a label, check for table row case.
-  inferred_label = InferLabelFromTableRow(element);
-  if (!inferred_label.empty())
-    return inferred_label;
-
-  if (!check_div_first) {
-    // If we didn't find a label from the table, check for div table case if we
-    // haven't already.
-    inferred_label = InferLabelFromDivTable(element);
-  }
   return inferred_label;
 }
 

@@ -3,7 +3,7 @@ NAME_MIDDLE_INITIAL | addrsForm[0].middleInitial | Middle Initial: |  | addrsFor
 NAME_LAST | addrsForm[0].lastName | *Last Name: |  | addrsForm[0].firstName_1-default
 COMPANY_NAME | addrsForm[0].shiptoName | Company Name |  | addrsForm[0].firstName_1-default
 ADDRESS_HOME_LINE1 | addrsForm[0].address1 | *Address |  | addrsForm[0].firstName_1-default
-ADDRESS_HOME_LINE2 | addrsForm[0].address2 | *First Name:Middle Initial:*Last Name:Company Name |  | addrsForm[0].firstName_1-default
+ADDRESS_HOME_LINE2 | addrsForm[0].address2 |  |  | addrsForm[0].firstName_1-default
 ADDRESS_HOME_CITY | addrsForm[0].city | *City |  | addrsForm[0].firstName_1-default
 ADDRESS_HOME_STATE | addrsForm[0].state | *State | {blank} | addrsForm[0].firstName_1-default
 ADDRESS_HOME_ZIP | addrsForm[0].postalCode1 | *Zip Code |  | addrsForm[0].firstName_1-default
@@ -26,7 +26,7 @@ NAME_MIDDLE_INITIAL | addrsForm[2].middleInitial | Middle Initial: |  | addrsFor
 NAME_LAST | addrsForm[2].lastName | *Last Name: |  | addrsForm[2].firstName_1-default
 COMPANY_NAME | addrsForm[2].shiptoName | Company Name |  | addrsForm[2].firstName_1-default
 ADDRESS_HOME_LINE1 | addrsForm[2].address1 | *Address |  | addrsForm[2].firstName_1-default
-ADDRESS_HOME_LINE2 | addrsForm[2].address2 | * Indicates required field *First Name:Middle Initial:*Last Name:Company Name |  | addrsForm[2].firstName_1-default
+ADDRESS_HOME_LINE2 | addrsForm[2].address2 |  |  | addrsForm[2].firstName_1-default
 ADDRESS_HOME_CITY | addrsForm[2].city | *City |  | addrsForm[2].firstName_1-default
 ADDRESS_HOME_STATE | addrsForm[2].state | *State | {blank} | addrsForm[2].firstName_1-default
 ADDRESS_HOME_ZIP | addrsForm[2].postalCode1 | *Zip Code |  | addrsForm[2].firstName_1-default

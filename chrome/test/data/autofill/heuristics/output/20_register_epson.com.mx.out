@@ -1,5 +1,5 @@
 UNKNOWN_TYPE | doAction |  |  | doAction_1-default
-ADDRESS_HOME_COUNTRY | idPaiseReg | n del producto *dd/mm/yyyySerial *Acerca del nro. de Serie | MX | doAction_1-default
+ADDRESS_HOME_COUNTRY | idPaiseReg |  | MX | doAction_1-default
 UNKNOWN_TYPE | fechaCompra | *dd/mm/yyyy |  | doAction_1-default
 UNKNOWN_TYPE | serialNumber | Serial * |  | doAction_1-default
 UNKNOWN_TYPE | idProducto | Serial * |  | doAction_1-default
