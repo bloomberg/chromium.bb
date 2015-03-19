@@ -63,7 +63,9 @@ namespace blink {
 template <typename T>
 class WebVector {
 public:
-    typedef T ValueType;
+    using ValueType = T;
+    using iterator = T*;
+    using const_iterator = const T*;
 
     ~WebVector()
     {
@@ -145,6 +147,11 @@ public:
 
     T* data() { return m_ptr; }
     const T* data() const { return m_ptr; }
+
+    iterator begin() { return data(); }
+    iterator end() { return begin() + m_size; }
+    const_iterator begin() const { return data(); }
+    const_iterator end() const { return begin() + m_size; }
 
     void swap(WebVector<T>& other)
     {
