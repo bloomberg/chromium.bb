@@ -20,7 +20,7 @@ class DISPLAY_EXPORT UpdateDisplayConfigurationTask {
  public:
   typedef base::Callback<void(
       bool /* success */,
-      const std::vector<DisplayConfigurator::DisplayState>& /* displays */,
+      const std::vector<DisplaySnapshot*>& /* displays */,
       const gfx::Size& /* framebuffer_size */,
       MultipleDisplayState /* new_display_state */,
       chromeos::DisplayPowerState /* new_power_state */)> ResponseCallback;
@@ -91,7 +91,7 @@ class DISPLAY_EXPORT UpdateDisplayConfigurationTask {
   bool force_dpms_;
 
   // List of updated displays.
-  std::vector<DisplayConfigurator::DisplayState> cached_displays_;
+  std::vector<DisplaySnapshot*> cached_displays_;
 
   gfx::Size framebuffer_size_;
 

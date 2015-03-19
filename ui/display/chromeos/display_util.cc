@@ -4,6 +4,7 @@
 
 #include "ui/display/chromeos/display_util.h"
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "ui/display/types/display_snapshot.h"
@@ -44,17 +45,15 @@ std::string MultipleDisplayStateToString(MultipleDisplayState state) {
   return "INVALID";
 }
 
-int GetDisplayPower(
-    const std::vector<DisplayConfigurator::DisplayState>& display_states,
-    chromeos::DisplayPowerState state,
-    std::vector<bool>* display_power) {
+int GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
+                    chromeos::DisplayPowerState state,
+                    std::vector<bool>* display_power) {
   int num_on_displays = 0;
   if (display_power)
-    display_power->resize(display_states.size());
+    display_power->resize(displays.size());
 
-  for (size_t i = 0; i < display_states.size(); ++i) {
-    bool internal =
-        display_states[i].display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
+  for (size_t i = 0; i < displays.size(); ++i) {
+    bool internal = displays[i]->type() == DISPLAY_CONNECTION_TYPE_INTERNAL;
     bool on =
         state == chromeos::DISPLAY_POWER_ALL_ON ||
         (state == chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON &&

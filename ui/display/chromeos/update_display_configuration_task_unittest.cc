@@ -51,47 +51,28 @@ class TestDisplayLayoutManager
     return power_state_;
   }
 
-  std::vector<DisplayConfigurator::DisplayState> ParseDisplays(
-      const std::vector<DisplaySnapshot*>& displays) const override {
-    std::vector<DisplayConfigurator::DisplayState> parsed_displays;
-    for (DisplaySnapshot* display : displays) {
-      DisplayConfigurator::DisplayState state;
-      state.display = display;
-      state.selected_mode = display->native_mode();
-      if (should_mirror_)
-        state.mirror_mode = FindMirrorMode(displays);
-
-      parsed_displays.push_back(state);
-    }
-
-    return parsed_displays;
-  }
-
-  bool GetDisplayLayout(
-      const std::vector<DisplayConfigurator::DisplayState>& displays,
-      MultipleDisplayState new_display_state,
-      chromeos::DisplayPowerState new_power_state,
-      std::vector<DisplayConfigureRequest>* requests,
-      gfx::Size* framebuffer_size) const override {
+  bool GetDisplayLayout(const std::vector<DisplaySnapshot*>& displays,
+                        MultipleDisplayState new_display_state,
+                        chromeos::DisplayPowerState new_power_state,
+                        std::vector<DisplayConfigureRequest>* requests,
+                        gfx::Size* framebuffer_size) const override {
     gfx::Point origin;
-    for (const DisplayConfigurator::DisplayState& state : displays) {
-      const DisplayMode* mode = state.selected_mode;
+    for (DisplaySnapshot* display : displays) {
+      const DisplayMode* mode = display->native_mode();
       if (new_display_state == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR)
-        mode = state.mirror_mode;
+        mode = should_mirror_ ? FindMirrorMode(displays) : nullptr;
 
       if (!mode)
         return false;
 
       if (new_power_state == chromeos::DISPLAY_POWER_ALL_ON) {
-        requests->push_back(
-            DisplayConfigureRequest(state.display, mode, origin));
+        requests->push_back(DisplayConfigureRequest(display, mode, origin));
       } else {
-        requests->push_back(
-            DisplayConfigureRequest(state.display, nullptr, origin));
+        requests->push_back(DisplayConfigureRequest(display, nullptr, origin));
       }
 
       if (new_display_state != MULTIPLE_DISPLAY_STATE_DUAL_MIRROR) {
-        origin.Offset(0, state.selected_mode->size().height());
+        origin.Offset(0, mode->size().height());
         framebuffer_size->SetToMax(gfx::Size(mode->size().width(), origin.y()));
       } else {
         *framebuffer_size = mode->size();
@@ -155,12 +136,11 @@ class UpdateDisplayConfigurationTaskTest : public testing::Test {
     delegate_.set_outputs(displays);
   }
 
-  void ResponseCallback(
-      bool success,
-      const std::vector<DisplayConfigurator::DisplayState>& displays,
-      const gfx::Size& framebuffer_size,
-      MultipleDisplayState new_display_state,
-      chromeos::DisplayPowerState new_power_state) {
+  void ResponseCallback(bool success,
+                        const std::vector<DisplaySnapshot*>& displays,
+                        const gfx::Size& framebuffer_size,
+                        MultipleDisplayState new_display_state,
+                        chromeos::DisplayPowerState new_power_state) {
     configured_ = true;
     configuration_status_ = success;
     display_states_ = displays;
@@ -185,7 +165,7 @@ class UpdateDisplayConfigurationTaskTest : public testing::Test {
 
   bool configured_;
   bool configuration_status_;
-  std::vector<DisplayConfigurator::DisplayState> display_states_;
+  std::vector<DisplaySnapshot*> display_states_;
   MultipleDisplayState display_state_;
   chromeos::DisplayPowerState power_state_;
 

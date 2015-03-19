@@ -65,8 +65,8 @@ const float kAdditionalDeviceScaleFactorsFor4k[] = {1.25f, 2.0f};
 // static
 std::vector<DisplayMode> DisplayChangeObserver::GetInternalDisplayModeList(
     const DisplayInfo& display_info,
-    const DisplayConfigurator::DisplayState& output) {
-  const ui::DisplayMode* ui_native_mode = output.display->native_mode();
+    const ui::DisplaySnapshot& output) {
+  const ui::DisplayMode* ui_native_mode = output.native_mode();
   DisplayMode native_mode(ui_native_mode->size(),
                           ui_native_mode->refresh_rate(),
                           ui_native_mode->is_interlaced(),
@@ -78,22 +78,17 @@ std::vector<DisplayMode> DisplayChangeObserver::GetInternalDisplayModeList(
 
 // static
 std::vector<DisplayMode> DisplayChangeObserver::GetExternalDisplayModeList(
-    const DisplayConfigurator::DisplayState& output) {
+    const ui::DisplaySnapshot& output) {
   typedef std::map<std::pair<int, int>, DisplayMode> DisplayModeMap;
   DisplayModeMap display_mode_map;
 
   DisplayMode native_mode;
-  for (std::vector<const ui::DisplayMode*>::const_iterator it =
-           output.display->modes().begin();
-       it != output.display->modes().end();
-       ++it) {
-    const ui::DisplayMode& mode_info = **it;
-    const std::pair<int, int> size(mode_info.size().width(),
-                                   mode_info.size().height());
-    const DisplayMode display_mode(mode_info.size(),
-                                   mode_info.refresh_rate(),
-                                   mode_info.is_interlaced(),
-                                   output.display->native_mode() == *it);
+  for (const ui::DisplayMode* mode_info : output.modes()) {
+    const std::pair<int, int> size(mode_info->size().width(),
+                                   mode_info->size().height());
+    const DisplayMode display_mode(mode_info->size(), mode_info->refresh_rate(),
+                                   mode_info->is_interlaced(),
+                                   output.native_mode() == mode_info);
     if (display_mode.native)
       native_mode = display_mode;
 
@@ -107,13 +102,10 @@ std::vector<DisplayMode> DisplayChangeObserver::GetExternalDisplayModeList(
   }
 
   std::vector<DisplayMode> display_mode_list;
-  for (DisplayModeMap::const_iterator iter = display_mode_map.begin();
-       iter != display_mode_map.end();
-       ++iter) {
-    display_mode_list.push_back(iter->second);
-  }
+  for (const auto& display_mode_pair : display_mode_map)
+    display_mode_list.push_back(display_mode_pair.second);
 
-  if (output.display->native_mode()) {
+  if (output.native_mode()) {
     const std::pair<int, int> size(native_mode.size.width(),
                                    native_mode.size.height());
     DisplayModeMap::iterator it = display_mode_map.find(size);
@@ -170,56 +162,53 @@ bool DisplayChangeObserver::GetResolutionForDisplayId(int64 display_id,
 }
 
 void DisplayChangeObserver::OnDisplayModeChanged(
-    const std::vector<DisplayConfigurator::DisplayState>& display_states) {
+    const ui::DisplayConfigurator::DisplayStateList& display_states) {
   std::vector<DisplayInfo> displays;
   std::set<int64> ids;
-  for (size_t i = 0; i < display_states.size(); ++i) {
-    const DisplayConfigurator::DisplayState& state = display_states[i];
-
-    if (state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
+  for (const ui::DisplaySnapshot* state : display_states) {
+    if (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
       if (gfx::Display::InternalDisplayId() ==
           gfx::Display::kInvalidDisplayID) {
-        gfx::Display::SetInternalDisplayId(state.display->display_id());
+        gfx::Display::SetInternalDisplayId(state->display_id());
       } else {
 #if defined(USE_OZONE)
         // TODO(dnicoara) Remove when Ozone can properly perform the initial
         // display configuration.
-        gfx::Display::SetInternalDisplayId(state.display->display_id());
+        gfx::Display::SetInternalDisplayId(state->display_id());
 #endif
-        DCHECK_EQ(gfx::Display::InternalDisplayId(),
-                  state.display->display_id());
+        DCHECK_EQ(gfx::Display::InternalDisplayId(), state->display_id());
       }
     }
 
-    const ui::DisplayMode* mode_info = state.display->current_mode();
+    const ui::DisplayMode* mode_info = state->current_mode();
     if (!mode_info)
       continue;
 
     float device_scale_factor = 1.0f;
-    if (state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
-      if (!ui::IsDisplaySizeBlackListed(state.display->physical_size())) {
+    if (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
+      if (!ui::IsDisplaySizeBlackListed(state->physical_size())) {
         device_scale_factor =
             FindDeviceScaleFactor((kInchInMm * mode_info->size().width() /
-                                   state.display->physical_size().width()));
+                                   state->physical_size().width()));
       }
     } else {
       DisplayMode mode;
       if (Shell::GetInstance()->display_manager()->GetSelectedModeForDisplayId(
-              state.display->display_id(), &mode)) {
+              state->display_id(), &mode)) {
         device_scale_factor = mode.device_scale_factor;
       }
     }
-    gfx::Rect display_bounds(state.display->origin(), mode_info->size());
+    gfx::Rect display_bounds(state->origin(), mode_info->size());
 
     std::string name =
-        state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL ?
-            l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME) :
-            state.display->display_name();
+        state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL
+            ? l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME)
+            : state->display_name();
     if (name.empty())
       name = l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
 
-    bool has_overscan = state.display->has_overscan();
-    int64 id = state.display->display_id();
+    bool has_overscan = state->has_overscan();
+    int64 id = state->display_id();
     ids.insert(id);
 
     displays.push_back(DisplayInfo(id, name, has_overscan));
@@ -228,12 +217,12 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     new_info.SetBounds(display_bounds);
     new_info.set_native(true);
     new_info.set_is_aspect_preserving_scaling(
-        state.display->is_aspect_preserving_scaling());
+        state->is_aspect_preserving_scaling());
 
     std::vector<DisplayMode> display_modes =
-        (state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) ?
-        GetInternalDisplayModeList(new_info, state) :
-        GetExternalDisplayModeList(state);
+        (state->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+            ? GetInternalDisplayModeList(new_info, *state)
+            : GetExternalDisplayModeList(*state);
     new_info.SetDisplayModes(display_modes);
 
     new_info.set_available_color_profiles(

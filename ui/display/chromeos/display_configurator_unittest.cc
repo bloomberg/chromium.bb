@@ -854,7 +854,7 @@ TEST_F(DisplayConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
   const DisplayConfigurator::DisplayStateList* cached =
       &configurator_.cached_displays();
   ASSERT_EQ(static_cast<size_t>(1), cached->size());
-  EXPECT_EQ(outputs_[0].current_mode(), (*cached)[0].display->current_mode());
+  EXPECT_EQ(outputs_[0].current_mode(), (*cached)[0]->current_mode());
 
   // After connecting a second output, check that it shows up in
   // |cached_displays_| even if an invalid state is requested.
@@ -862,8 +862,8 @@ TEST_F(DisplayConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
   UpdateOutputs(2, true);
   cached = &configurator_.cached_displays();
   ASSERT_EQ(static_cast<size_t>(2), cached->size());
-  EXPECT_EQ(outputs_[0].current_mode(), (*cached)[0].display->current_mode());
-  EXPECT_EQ(outputs_[1].current_mode(), (*cached)[1].display->current_mode());
+  EXPECT_EQ(outputs_[0].current_mode(), (*cached)[0]->current_mode());
+  EXPECT_EQ(outputs_[1].current_mode(), (*cached)[1]->current_mode());
 }
 
 TEST_F(DisplayConfiguratorTest, PanelFitting) {
@@ -898,21 +898,15 @@ TEST_F(DisplayConfiguratorTest, PanelFitting) {
   // Both outputs should be using the small mode.
   ASSERT_EQ(1, observer_.num_changes());
   ASSERT_EQ(static_cast<size_t>(2), observer_.latest_outputs().size());
-  EXPECT_EQ(&small_mode_, observer_.latest_outputs()[0].mirror_mode);
-  EXPECT_EQ(&small_mode_,
-            observer_.latest_outputs()[0].display->current_mode());
-  EXPECT_EQ(&small_mode_, observer_.latest_outputs()[1].mirror_mode);
-  EXPECT_EQ(&small_mode_,
-            observer_.latest_outputs()[1].display->current_mode());
+  EXPECT_EQ(&small_mode_, observer_.latest_outputs()[0]->current_mode());
+  EXPECT_EQ(&small_mode_, observer_.latest_outputs()[1]->current_mode());
 
   // Also check that the newly-added small mode is present in the internal
   // snapshot that was passed to the observer (http://crbug.com/289159).
-  const DisplayConfigurator::DisplayState& state =
-      observer_.latest_outputs()[0];
-  ASSERT_NE(state.display->modes().end(),
-            std::find(state.display->modes().begin(),
-                      state.display->modes().end(),
-                      &small_mode_));
+  DisplaySnapshot* state = observer_.latest_outputs()[0];
+  ASSERT_NE(
+      state->modes().end(),
+      std::find(state->modes().begin(), state->modes().end(), &small_mode_));
 }
 
 TEST_F(DisplayConfiguratorTest, ContentProtection) {

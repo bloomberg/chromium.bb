@@ -87,8 +87,7 @@ class ShellDesktopControllerAura
 
   // ui::DisplayConfigurator::Observer overrides.
   void OnDisplayModeChanged(
-      const std::vector<ui::DisplayConfigurator::DisplayState>& displays)
-      override;
+      const ui::DisplayConfigurator::DisplayStateList& displays) override;
 #endif
 
   // aura::WindowTreeHostObserver overrides:

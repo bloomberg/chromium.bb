@@ -8,10 +8,13 @@
 #include <string>
 #include <vector>
 
-#include "ui/display/chromeos/display_configurator.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/display/display_export.h"
 #include "ui/display/types/display_constants.h"
 
 namespace ui {
+
+class DisplaySnapshot;
 
 // Returns a string describing |state|.
 std::string DisplayPowerStateToString(chromeos::DisplayPowerState state);
@@ -22,10 +25,10 @@ std::string MultipleDisplayStateToString(MultipleDisplayState state);
 // Returns the number of displays in |displays| that should be turned on, per
 // |state|.  If |display_power| is non-NULL, it is updated to contain the
 // on/off state of each corresponding entry in |displays|.
-int DISPLAY_EXPORT GetDisplayPower(
-    const std::vector<DisplayConfigurator::DisplayState>& display_states,
-    chromeos::DisplayPowerState state,
-    std::vector<bool>* display_power);
+int DISPLAY_EXPORT
+GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
+                chromeos::DisplayPowerState state,
+                std::vector<bool>* display_power);
 
 }  // namespace ui
 

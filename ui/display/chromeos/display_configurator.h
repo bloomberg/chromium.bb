@@ -42,19 +42,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   typedef base::Callback<void(bool)> ConfigurationCallback;
 
-  struct DisplayState {
-    DisplayState();
-
-    DisplaySnapshot* display;  // Not owned.
-
-    // User-selected mode for the display.
-    const DisplayMode* selected_mode;
-
-    // Mode used when displaying the same desktop on multiple displays.
-    const DisplayMode* mirror_mode;
-  };
-
-  typedef std::vector<DisplayState> DisplayStateList;
+  typedef std::vector<DisplaySnapshot*> DisplayStateList;
 
   class Observer {
    public:
@@ -116,20 +104,12 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     // Returns the current power state.
     virtual chromeos::DisplayPowerState GetPowerState() const = 0;
 
-    // Parses the |displays| into a list of DisplayStates. This effectively adds
-    // |mirror_mode| and |selected_mode| to the returned results.
-    // TODO(dnicoara): This operation doesn't depend on state and could be done
-    // directly in |GetDisplayLayout()|. Though I need to make sure that there
-    // are no uses for those fields outside DisplayConfigurator.
-    virtual std::vector<DisplayState> ParseDisplays(
-        const std::vector<DisplaySnapshot*>& displays) const = 0;
-
     // Based on the given |displays|, display state and power state, it will
     // create display configuration requests which will then be used to
     // configure the hardware. The requested configuration is stored in
     // |requests| and |framebuffer_size|.
     virtual bool GetDisplayLayout(
-        const std::vector<DisplayState>& displays,
+        const std::vector<DisplaySnapshot*>& displays,
         MultipleDisplayState new_display_state,
         chromeos::DisplayPowerState new_power_state,
         std::vector<DisplayConfigureRequest>* requests,
@@ -183,7 +163,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     return requested_power_state_;
   }
   const gfx::Size framebuffer_size() const { return framebuffer_size_; }
-  const std::vector<DisplayState>& cached_displays() const {
+  const std::vector<DisplaySnapshot*>& cached_displays() const {
     return cached_displays_;
   }
 
@@ -314,10 +294,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   MultipleDisplayState ChooseDisplayState(
       chromeos::DisplayPowerState power_state) const;
 
-  // Returns the ratio between mirrored mode area and native mode area:
-  // (mirror_mode_width * mirrow_mode_height) / (native_width * native_height)
-  float GetMirroredDisplayAreaRatio(const DisplayState& display);
-
   // Returns true if in either hardware or software mirroring mode.
   bool IsMirroring() const;
 
@@ -331,7 +307,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Callback for |configuration_taks_|. When the configuration process finishes
   // this is called with the result (|success|) and the updated display state.
   void OnConfigured(bool success,
-                    const std::vector<DisplayState>& displays,
+                    const std::vector<DisplaySnapshot*>& displays,
                     const gfx::Size& framebuffer_size,
                     MultipleDisplayState new_display_state,
                     chromeos::DisplayPowerState new_power_state);

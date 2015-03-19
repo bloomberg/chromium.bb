@@ -907,27 +907,21 @@ TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
 
   // Create two outputs, the first internal and the second external.
   ui::DisplayConfigurator::DisplayStateList outputs;
-  ui::DisplayConfigurator::DisplayState internal_output;
   ui::TestDisplaySnapshot internal_display;
   internal_display.set_type(ui::DISPLAY_CONNECTION_TYPE_INTERNAL);
   internal_display.set_modes(modes.get());
-  internal_output.display = &internal_display;
-  outputs.push_back(internal_output);
+  outputs.push_back(&internal_display);
 
-  ui::DisplayConfigurator::DisplayState external_output;
   ui::TestDisplaySnapshot external_display;
   external_display.set_type(ui::DISPLAY_CONNECTION_TYPE_HDMI);
   external_display.set_modes(modes.get());
-  external_output.display = &external_display;
-  outputs.push_back(external_output);
+  outputs.push_back(&external_display);
 
   // When all of the displays are turned off (e.g. due to user inactivity), the
   // power button should be ignored.
   power_button_controller_->OnScreenBrightnessChanged(0.0);
-  static_cast<ui::TestDisplaySnapshot*>(outputs[0].display)
-      ->set_current_mode(NULL);
-  static_cast<ui::TestDisplaySnapshot*>(outputs[1].display)
-      ->set_current_mode(NULL);
+  internal_display.set_current_mode(nullptr);
+  external_display.set_current_mode(nullptr);
   power_button_controller_->OnDisplayModeChanged(outputs);
   PressPowerButton();
   EXPECT_FALSE(test_api_->is_animating_lock());
@@ -936,8 +930,7 @@ TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
   // When the screen brightness is 0% but the external display is still turned
   // on (indicating either docked mode or the user having manually decreased the
   // brightness to 0%), the power button should still be handled.
-  static_cast<ui::TestDisplaySnapshot*>(outputs[1].display)
-      ->set_current_mode(modes[0]);
+  external_display.set_current_mode(modes[0]);
   power_button_controller_->OnDisplayModeChanged(outputs);
   PressPowerButton();
   EXPECT_TRUE(test_api_->is_animating_lock());

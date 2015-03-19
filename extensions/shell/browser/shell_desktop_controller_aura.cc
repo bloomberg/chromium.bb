@@ -236,7 +236,7 @@ void ShellDesktopControllerAura::PowerButtonEventReceived(
 }
 
 void ShellDesktopControllerAura::OnDisplayModeChanged(
-    const std::vector<ui::DisplayConfigurator::DisplayState>& displays) {
+    const ui::DisplayConfigurator::DisplayStateList& displays) {
   gfx::Size size = GetPrimaryDisplaySize();
   if (!size.IsEmpty())
     host_->UpdateRootWindowSize(size);
@@ -349,11 +349,11 @@ void ShellDesktopControllerAura::DestroyRootWindow() {
 
 gfx::Size ShellDesktopControllerAura::GetPrimaryDisplaySize() {
 #if defined(OS_CHROMEOS)
-  const std::vector<ui::DisplayConfigurator::DisplayState>& displays =
+  const ui::DisplayConfigurator::DisplayStateList& displays =
       display_configurator_->cached_displays();
   if (displays.empty())
     return gfx::Size();
-  const ui::DisplayMode* mode = displays[0].display->current_mode();
+  const ui::DisplayMode* mode = displays[0]->current_mode();
   return mode ? mode->size() : gfx::Size();
 #else
   return gfx::Size();

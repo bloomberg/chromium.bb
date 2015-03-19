@@ -45,7 +45,7 @@ void UpdateDisplayConfigurationTask::Run() {
 
 void UpdateDisplayConfigurationTask::OnDisplaysUpdated(
     const std::vector<DisplaySnapshot*>& displays) {
-  cached_displays_ = layout_manager_->ParseDisplays(displays);
+  cached_displays_ = displays;
 
   if (cached_displays_.size() > 1 && background_color_argb_)
     delegate_->SetBackgroundColor(background_color_argb_);
@@ -159,7 +159,7 @@ bool UpdateDisplayConfigurationTask::ShouldConfigure() const {
     return true;
 
   if (cached_displays_.size() == 1 &&
-      cached_displays_[0].display->type() == DISPLAY_CONNECTION_TYPE_INTERNAL)
+      cached_displays_[0]->type() == DISPLAY_CONNECTION_TYPE_INTERNAL)
     return true;
 
   if (!(power_flags_ &
@@ -196,7 +196,7 @@ MultipleDisplayState UpdateDisplayConfigurationTask::ChooseDisplayState()
         // dual modes.
         std::vector<int64_t> display_ids;
         for (size_t i = 0; i < cached_displays_.size(); ++i)
-          display_ids.push_back(cached_displays_[i].display->display_id());
+          display_ids.push_back(cached_displays_[i]->display_id());
 
         return layout_manager_->GetStateController()->GetStateForDisplayIds(
             display_ids);

@@ -27,8 +27,7 @@ void ProjectingObserver::OnDisplayModeChanged(
   output_count_ = display_states.size();
 
   for (size_t i = 0; i < display_states.size(); ++i) {
-    if (display_states[i].display->type() ==
-        ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
+    if (display_states[i]->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
       has_internal_output_ = true;
       break;
     }
