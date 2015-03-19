@@ -13,6 +13,7 @@
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/platform_notification_context.h"
 #include "content/public/browser/platform_notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 
 namespace content {
@@ -81,6 +82,10 @@ void NotificationMessageFilter::OnShowPlatformNotification(
     const GURL& origin,
     const SkBitmap& icon,
     const PlatformNotificationData& notification_data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!RenderProcessHost::FromID(process_id_))
+    return;
+
   scoped_ptr<DesktopNotificationDelegate> delegate(
       new PageNotificationDelegate(process_id_, notification_id));
 
@@ -109,6 +114,8 @@ void NotificationMessageFilter::OnShowPersistentNotification(
     const SkBitmap& icon,
     const PlatformNotificationData& notification_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!RenderProcessHost::FromID(process_id_))
+    return;
 
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
@@ -124,6 +131,10 @@ void NotificationMessageFilter::OnShowPersistentNotification(
 
 void NotificationMessageFilter::OnClosePlatformNotification(
     int notification_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!RenderProcessHost::FromID(process_id_))
+    return;
+
   if (!close_closures_.count(notification_id))
     return;
 
@@ -135,6 +146,8 @@ void NotificationMessageFilter::OnClosePersistentNotification(
     const GURL& origin,
     const std::string& persistent_notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!RenderProcessHost::FromID(process_id_))
+    return;
 
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
