@@ -401,6 +401,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
               IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL));
   blocked_label_->SetMultiLine(true);
   blocked_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  blocked_label_->SizeToFit(kTreeViewWidth);
   blocked_cookies_tree_model_ =
       content_settings->CreateBlockedCookiesTreeModel();
   blocked_cookies_tree_ = new views::TreeView();
