@@ -352,7 +352,7 @@ MediaDrmBridge::~MediaDrmBridge() {
   JNIEnv* env = AttachCurrentThread();
   player_tracker_.NotifyCdmUnset();
   if (!j_media_drm_.is_null())
-    Java_MediaDrmBridge_release(env, j_media_drm_.obj());
+    Java_MediaDrmBridge_destroy(env, j_media_drm_.obj());
 }
 
 // static

@@ -65,6 +65,7 @@ public class MediaDrmBridge {
     private static final String ENABLE = "enable";
     private static final int INVALID_SESSION_ID = 0;
     private static final char[] HEX_CHAR_LOOKUP = "0123456789ABCDEF".toCharArray();
+    private static final long INVALID_NATIVE_MEDIA_DRM_BRIDGE = 0;
 
     // KeyStatus for CDM key information. MUST keep this value in sync with
     // CdmKeyInformation::KeyStatus.
@@ -156,11 +157,18 @@ public class MediaDrmBridge {
         return hexString.toString();
     }
 
+    private boolean isNativeMediaDrmBridgeValid() {
+        return mNativeMediaDrmBridge != INVALID_NATIVE_MEDIA_DRM_BRIDGE;
+    }
+
     private MediaDrmBridge(UUID schemeUUID, long nativeMediaDrmBridge)
             throws android.media.UnsupportedSchemeException {
         mSchemeUUID = schemeUUID;
         mMediaDrm = new MediaDrm(schemeUUID);
+
         mNativeMediaDrmBridge = nativeMediaDrmBridge;
+        assert isNativeMediaDrmBridgeValid();
+
         mHandler = new Handler();
         mSessionIds = new HashMap<ByteBuffer, String>();
         mPendingCreateSessionDataQueue = new ArrayDeque<PendingCreateSessionData>();
@@ -206,7 +214,7 @@ public class MediaDrmBridge {
                 mMediaCrypto = new MediaCrypto(mSchemeUUID, mMediaCryptoSession);
                 Log.d(TAG, "MediaCrypto successfully created!");
                 // Notify the native code that MediaCrypto is ready.
-                nativeOnMediaCryptoReady(mNativeMediaDrmBridge);
+                onMediaCryptoReady();
                 return true;
             } else {
                 Log.e(TAG, "Cannot create MediaCrypto for unsupported scheme.");
@@ -349,12 +357,20 @@ public class MediaDrmBridge {
     }
 
     /**
-     * Release the MediaDrmBridge object.
+     * Destroy the MediaDrmBridge object.
      */
     @CalledByNative
+    private void destroy() {
+        mNativeMediaDrmBridge = INVALID_NATIVE_MEDIA_DRM_BRIDGE;
+        release();
+    }
+
+    /**
+     * Release all allocated resources and finish all pending operations.
+     */
     private void release() {
-        // Do not reset mHandler and mNativeMediaDrmBridge so that we can still
-        // post KeyError back to native code.
+        // Do not reset mHandler so that we can still post tasks back to native code.
+        // Note that mNativeMediaDrmBridge may have already been reset (see destroy()).
 
         for (PendingCreateSessionData data : mPendingCreateSessionDataQueue) {
             onPromiseRejected(data.promiseId(), "Create session aborted.");
@@ -646,7 +662,7 @@ public class MediaDrmBridge {
         boolean success = provideProvisionResponse(response);
 
         if (mResetDeviceCredentialsPending) {
-            nativeOnResetDeviceCredentialsCompleted(mNativeMediaDrmBridge, success);
+            onResetDeviceCredentialsCompleted(success);
             mResetDeviceCredentialsPending = false;
         }
 
@@ -679,11 +695,24 @@ public class MediaDrmBridge {
 
     // Helper functions to post native calls to prevent reentrancy.
 
+    private void onMediaCryptoReady() {
+        mHandler.post(new Runnable(){
+            @Override
+            public void run() {
+                if (isNativeMediaDrmBridgeValid()) {
+                    nativeOnMediaCryptoReady(mNativeMediaDrmBridge);
+                }
+            }
+        });
+    }
+
     private void onPromiseResolved(final long promiseId) {
         mHandler.post(new Runnable(){
             @Override
             public void run() {
-                nativeOnPromiseResolved(mNativeMediaDrmBridge, promiseId);
+                if (isNativeMediaDrmBridgeValid()) {
+                    nativeOnPromiseResolved(mNativeMediaDrmBridge, promiseId);
+                }
             }
         });
     }
@@ -692,7 +721,9 @@ public class MediaDrmBridge {
         mHandler.post(new Runnable(){
             @Override
             public void run() {
-                nativeOnPromiseResolvedWithSession(mNativeMediaDrmBridge, promiseId, sessionId);
+                if (isNativeMediaDrmBridgeValid()) {
+                    nativeOnPromiseResolvedWithSession(mNativeMediaDrmBridge, promiseId, sessionId);
+                }
             }
         });
     }
@@ -702,7 +733,9 @@ public class MediaDrmBridge {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                nativeOnPromiseRejected(mNativeMediaDrmBridge, promiseId, errorMessage);
+                if (isNativeMediaDrmBridgeValid()) {
+                    nativeOnPromiseRejected(mNativeMediaDrmBridge, promiseId, errorMessage);
+                }
             }
         });
     }
@@ -711,8 +744,10 @@ public class MediaDrmBridge {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                nativeOnSessionMessage(mNativeMediaDrmBridge, sessionId, request.getData(),
-                        request.getDefaultUrl());
+                if (isNativeMediaDrmBridgeValid()) {
+                    nativeOnSessionMessage(mNativeMediaDrmBridge, sessionId, request.getData(),
+                            request.getDefaultUrl());
+                }
             }
         });
     }
@@ -721,7 +756,9 @@ public class MediaDrmBridge {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                nativeOnSessionClosed(mNativeMediaDrmBridge, sessionId);
+                if (isNativeMediaDrmBridgeValid()) {
+                    nativeOnSessionClosed(mNativeMediaDrmBridge, sessionId);
+                }
             }
         });
     }
@@ -731,8 +768,10 @@ public class MediaDrmBridge {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                nativeOnSessionKeysChange(
-                        mNativeMediaDrmBridge, sessionId, hasAdditionalUsableKey, keyStatus);
+                if (isNativeMediaDrmBridgeValid()) {
+                    nativeOnSessionKeysChange(
+                            mNativeMediaDrmBridge, sessionId, hasAdditionalUsableKey, keyStatus);
+                }
             }
         });
     }
@@ -742,7 +781,20 @@ public class MediaDrmBridge {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                nativeOnLegacySessionError(mNativeMediaDrmBridge, sessionId, errorMessage);
+                if (isNativeMediaDrmBridgeValid()) {
+                    nativeOnLegacySessionError(mNativeMediaDrmBridge, sessionId, errorMessage);
+                }
+            }
+        });
+    }
+
+    private void onResetDeviceCredentialsCompleted(final boolean success) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (isNativeMediaDrmBridgeValid()) {
+                    nativeOnResetDeviceCredentialsCompleted(mNativeMediaDrmBridge, success);
+                }
             }
         });
     }
