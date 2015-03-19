@@ -1917,13 +1917,6 @@ name=bug_468169
 *!vp9_encode_tile
 
 UNINITIALIZED READ
-name=bug_468631
-system call NtDeviceIoControlFile InputBuffer
-KERNELBASE.dll!DeviceIoControl
-KERNEL32.dll!DeviceIoControl
-base.dll!base::SysInfo::HasSeekPenalty
-
-UNINITIALIZED READ
 name=bug_468638
 *!egl::ConfigSorter::operator()
 *!std::_Insertion_sort1<>
