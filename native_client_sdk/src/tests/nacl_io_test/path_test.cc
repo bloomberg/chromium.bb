@@ -11,253 +11,217 @@
 
 using namespace nacl_io;
 
-TEST(PathTest, SanityChecks) {
-  // can we construct and delete?
-  Path ph1(".");
-  Path *ph2 = new Path(".");
-  delete ph2;
-
-  Path p1(".");
-  EXPECT_FALSE(p1.IsAbsolute());
-  EXPECT_EQ(".", p1.Join());
-  Path p2("/");
-  EXPECT_TRUE(p2.IsAbsolute());
-  EXPECT_EQ("/", p2.Join());
+TEST(PathTest, Empty) {
+  Path p;
+  EXPECT_FALSE(p.IsAbsolute());
+  EXPECT_FALSE(p.IsRoot());
+  EXPECT_EQ(0, p.Size());
+  EXPECT_EQ("", p.Basename());
+  EXPECT_EQ("", p.Join());
+  EXPECT_EQ("", p.Range(0, 0));
+  EXPECT_EQ("", p.Parent().Join());
 }
 
-TEST(PathTest, Assignment) {
-  Path empty;
-  Path dot(".");
-  Path root("/");
-  Path abs_str("/abs/from/string");
-  Path rel_str("rel/from/string");
-  Path self_str("./rel/from/string");
-
-  EXPECT_EQ(0, empty.Size());
-  EXPECT_FALSE(empty.IsAbsolute());
-  EXPECT_EQ("", empty.Join());
-
-  EXPECT_EQ(1, dot.Size());
-  EXPECT_FALSE(dot.IsAbsolute());
-  EXPECT_EQ(".", dot.Join());
-
-  EXPECT_EQ(1, root.Size());
-  EXPECT_TRUE(root.IsAbsolute());
-  EXPECT_EQ("/", root.Join());
-
-  EXPECT_EQ(4, abs_str.Size());
-  EXPECT_TRUE(abs_str.IsAbsolute());
-  EXPECT_EQ("/abs/from/string", abs_str.Join());
-
-  EXPECT_EQ(3, rel_str.Size());
-  EXPECT_FALSE(rel_str.IsAbsolute());
-  EXPECT_EQ("rel/from/string", rel_str.Join());
-
-  EXPECT_EQ(3, self_str.Size());
-  EXPECT_FALSE(self_str.IsAbsolute());
-  EXPECT_EQ("rel/from/string", self_str.Join());
-
-  empty = "";
-  dot = ".";
-  root = "/";
-  abs_str = "/abs/from/assign";
-  rel_str = "rel/from/assign";
-  self_str = "./rel/from/assign";
-
-  EXPECT_EQ(1, empty.Size());
-  EXPECT_FALSE(empty.IsAbsolute());
-  EXPECT_EQ(".", empty.Join());
-
-  EXPECT_EQ(1, dot.Size());
-  EXPECT_FALSE(dot.IsAbsolute());
-  EXPECT_EQ(".", dot.Join());
-
-  EXPECT_EQ(1, root.Size());
-  EXPECT_TRUE(root.IsAbsolute());
-  EXPECT_EQ("/", root.Join());
-
-  EXPECT_EQ(4, abs_str.Size());
-  EXPECT_TRUE(abs_str.IsAbsolute());
-  EXPECT_EQ("/abs/from/assign", abs_str.Join());
-
-  EXPECT_EQ(3, rel_str.Size());
-  EXPECT_FALSE(rel_str.IsAbsolute());
-  EXPECT_EQ("rel/from/assign", rel_str.Join());
-
-  EXPECT_EQ(3, self_str.Size());
-  EXPECT_FALSE(self_str.IsAbsolute());
-  EXPECT_EQ("rel/from/assign", self_str.Join());
-
-  Path cpy_str;
-  cpy_str = empty;
-  EXPECT_EQ(1, cpy_str.Size());
-  EXPECT_FALSE(cpy_str.IsAbsolute());
-  EXPECT_EQ(".", cpy_str.Join());
-
-  cpy_str = dot;
-  EXPECT_EQ(1, cpy_str.Size());
-  EXPECT_FALSE(cpy_str.IsAbsolute());
-  EXPECT_EQ(".", cpy_str.Join());
-
-  cpy_str = root;
-  EXPECT_EQ(1, cpy_str.Size());
-  EXPECT_TRUE(cpy_str.IsAbsolute());
-  EXPECT_EQ("/", cpy_str.Join());
-
-  cpy_str = abs_str;
-  EXPECT_EQ(4, cpy_str.Size());
-  EXPECT_TRUE(cpy_str.IsAbsolute());
-  EXPECT_EQ("/abs/from/assign", cpy_str.Join());
-
-  cpy_str = rel_str;
-  EXPECT_EQ(3, cpy_str.Size());
-  EXPECT_FALSE(cpy_str.IsAbsolute());
-  EXPECT_EQ("rel/from/assign", cpy_str.Join());
-
-  cpy_str = self_str;
-  EXPECT_EQ(3, cpy_str.Size());
-  EXPECT_FALSE(cpy_str.IsAbsolute());
-  EXPECT_EQ("rel/from/assign", cpy_str.Join());
+TEST(PathTest, Dot) {
+  Path p(".");
+  EXPECT_FALSE(p.IsAbsolute());
+  EXPECT_FALSE(p.IsRoot());
+  EXPECT_EQ(1, p.Size());
+  EXPECT_EQ(".", p.Part(0));
+  EXPECT_EQ(".", p.Basename());
+  EXPECT_EQ(".", p.Join());
+  EXPECT_EQ(".", p.Range(0, 1));
+  EXPECT_EQ(".", p.Parent().Join());  // TODO(binji): this is unexpected.
 }
 
-
-TEST(PathTest, Collapse) {
-  StringArray_t path_components;
-
-  Path p1("/simple/splitter/test");
-  path_components = p1.Split();
-  EXPECT_EQ("/", path_components[0]);
-  EXPECT_EQ("/", p1.Part(0));
-
-  EXPECT_EQ("simple", path_components[1]);
-  EXPECT_EQ("simple", p1.Part(1));
-
-  EXPECT_EQ("splitter",path_components[2]);
-  EXPECT_EQ("splitter",p1.Part(2));
-
-  EXPECT_EQ("test", path_components[3]);
-  EXPECT_EQ("test", p1.Part(3));
-
-  Path p2("///simple//splitter///test/");
-  path_components = p2.Split();
-  EXPECT_EQ(4, static_cast<int>(path_components.size()));
-  EXPECT_EQ(4, static_cast<int>(p2.Size()));
-  EXPECT_EQ("/", path_components[0]);
-  EXPECT_EQ("simple", path_components[1]);
-  EXPECT_EQ("splitter", path_components[2]);
-  EXPECT_EQ("test", path_components[3]);
-
-  Path p3("sim/ple//spli/tter/te/st/");
-  path_components = p3.Split();
-  EXPECT_EQ(6, static_cast<int>(path_components.size()));
-  EXPECT_FALSE(p3.IsAbsolute());
-  EXPECT_EQ("sim", path_components[0]);
-  EXPECT_EQ("ple", path_components[1]);
-  EXPECT_EQ("spli", path_components[2]);
-  EXPECT_EQ("tter", path_components[3]);
-  EXPECT_EQ("te", path_components[4]);
-  EXPECT_EQ("st", path_components[5]);
-
-  Path p4("");
-  path_components = p4.Split();
-  EXPECT_EQ(1, static_cast<int>(path_components.size()));
-
-  Path p5("/");
-  path_components = p5.Split();
-  EXPECT_EQ(1, static_cast<int>(path_components.size()));
+TEST(PathTest, Root) {
+  Path p("/");
+  EXPECT_TRUE(p.IsAbsolute());
+  EXPECT_TRUE(p.IsRoot());
+  EXPECT_EQ(1, p.Size());
+  EXPECT_EQ("/", p.Part(0));
+  EXPECT_EQ("/", p.Basename());
+  EXPECT_EQ("/", p.Join());
+  EXPECT_EQ("/", p.Range(0, 1));
+  EXPECT_EQ("/", p.Parent().Join());
 }
 
-TEST(PathTest, AppendAndJoin) {
-  Path ph1("/usr/local/hi/there");
-
-  EXPECT_EQ("/usr/local/hi/there", ph1.Join());
-  ph1 = ph1.Append("..");
-  EXPECT_EQ("/usr/local/hi", ph1.Join());
-  ph1 = ph1.Append(".././././hi/there/../.././././");
-  EXPECT_EQ("/usr/local", ph1.Join());
-  ph1 = ph1.Append("../../../../../../../../././../");
-  EXPECT_EQ("/", ph1.Join());
-  ph1 = ph1.Append("usr/lib/../bin/.././etc/../local/../share");
-  EXPECT_EQ("/usr/share", ph1.Join());
-
-  Path ph2("./");
-  EXPECT_EQ(".", ph2.Join());
-
-  Path ph3("/");
-  EXPECT_EQ("/", ph3.Join());
-  ph3 = ph3.Append("");
-  EXPECT_EQ("/", ph3.Join());
-  ph3 = ph3.Append("USR/local/SHARE");
-  EXPECT_EQ("/USR/local/SHARE", ph3.Join());
-
-  Path ph4("..");
-  EXPECT_EQ("..", ph4.Join());
-  ph4 = ph4.Append("node1/node3/../../node1/./");
-  EXPECT_EQ("../node1", ph4.Join());
-  ph4 = ph4.Append("node4/../../node1/./node5");
-  EXPECT_EQ("../node1/node5", ph4.Join());
+TEST(PathTest, OnePart_Relative) {
+  Path p("foo");
+  EXPECT_FALSE(p.IsAbsolute());
+  EXPECT_FALSE(p.IsRoot());
+  EXPECT_EQ(1, p.Size());
+  EXPECT_EQ("foo", p.Part(0));
+  EXPECT_EQ("foo", p.Basename());
+  EXPECT_EQ("foo", p.Join());
+  EXPECT_EQ("foo", p.Range(0, 1));
+  EXPECT_EQ("foo", p.Parent().Join());
 }
 
-TEST(PathTest, AppendAbsolute) {
-  Path path("/usr/local");
-  path.Append("/foo");
-  EXPECT_EQ("/foo", path.Join());
+TEST(PathTest, OnePart_Absolute) {
+  Path p("/foo");
+  EXPECT_TRUE(p.IsAbsolute());
+  EXPECT_FALSE(p.IsRoot());
+  EXPECT_EQ(2, p.Size());
+  EXPECT_EQ("/", p.Part(0));
+  EXPECT_EQ("foo", p.Part(1));
+  EXPECT_EQ("foo", p.Basename());
+  EXPECT_EQ("/foo", p.Join());
+  EXPECT_EQ("/", p.Range(0, 1));
+  EXPECT_EQ("foo", p.Range(1, 2));
+  EXPECT_EQ("/foo", p.Range(0, 2));
+  EXPECT_EQ("/", p.Parent().Join());
 }
 
-TEST(PathTest, Invalid) {
-  Path absolute("/usr/local");
-  Path current("./usr/local");
-  Path relative("usr/local");
-
-  Path test;
-
-  test = absolute;
-  test.Append("../..");
-  EXPECT_EQ("/", test.Join());
-
-  test = absolute;
-  test.Append("../../..");
-  EXPECT_EQ("/", test.Join());
-
-  test = absolute;
-  test.Append("../../../foo");
-  EXPECT_EQ("/foo", test.Join());
-
-  test = current;
-  test.Append("../..");
-  EXPECT_EQ(".", test.Join());
-
-  test = current;
-  test.Append("../../..");
-  EXPECT_EQ("..", test.Join());
-
-  test = current;
-  test.Append("../../../foo");
-  EXPECT_EQ("../foo", test.Join());
-
-  test = relative;
-  test.Append("../..");
-  EXPECT_EQ(".", test.Join());
-
-  test = relative;
-  test.Append("../../..");
-  EXPECT_EQ("..", test.Join());
-
-  test = relative;
-  test.Append("../../../foo");
-  EXPECT_EQ("../foo", test.Join());
+TEST(PathTest, TwoPart_Relative) {
+  Path p("foo/bar");
+  EXPECT_FALSE(p.IsAbsolute());
+  EXPECT_FALSE(p.IsRoot());
+  EXPECT_EQ(2, p.Size());
+  EXPECT_EQ("foo", p.Part(0));
+  EXPECT_EQ("bar", p.Part(1));
+  EXPECT_EQ("bar", p.Basename());
+  EXPECT_EQ("foo/bar", p.Join());
+  EXPECT_EQ("foo", p.Range(0, 1));
+  EXPECT_EQ("bar", p.Range(1, 2));
+  EXPECT_EQ("foo/bar", p.Range(0, 2));
+  EXPECT_EQ("foo", p.Parent().Join());
 }
 
-TEST(PathTest, Range) {
+TEST(PathTest, MakeRelative) {
+  EXPECT_EQ("", Path("/").MakeRelative().Join());
+  EXPECT_EQ("foo/bar/baz", Path("/foo/bar/baz").MakeRelative().Join());
+  EXPECT_EQ("foo/bar/baz", Path("foo/bar/baz").MakeRelative().Join());
+}
+
+TEST(PathTest, Normalize_EmptyComponent) {
+  EXPECT_EQ("foo/bar", Path("foo//bar").Join());
+  EXPECT_EQ("/blah", Path("//blah").Join());
+  EXPECT_EQ("/a/b/c", Path("//a//b//c").Join());
+  EXPECT_EQ("path/to/dir", Path("path/to/dir/").Join());
+}
+
+TEST(PathTest, Normalize_Dot) {
+  EXPECT_EQ(".", Path(".").Join());
+  EXPECT_EQ("foo", Path("foo/.").Join());
+  EXPECT_EQ("foo/bar", Path("foo/./bar").Join());
+  EXPECT_EQ("blah", Path("./blah").Join());
+  EXPECT_EQ("stuff", Path("stuff/./.").Join());
+  EXPECT_EQ("/", Path("/.").Join());
+}
+
+TEST(PathTest, Normalize_DotDot_Relative) {
+  EXPECT_EQ("..", Path("..").Join());
+  EXPECT_EQ("../..", Path("../..").Join());
+  EXPECT_EQ(".", Path("foo/..").Join());
+  EXPECT_EQ("foo", Path("foo/bar/..").Join());
+  EXPECT_EQ("bar", Path("foo/../bar").Join());
+  EXPECT_EQ("foo/baz", Path("foo/bar/../baz").Join());
+}
+
+TEST(PathTest, Normalize_DotDot_Absolute) {
+  EXPECT_EQ("/", Path("/..").Join());
+  EXPECT_EQ("/", Path("/../..").Join());
+  EXPECT_EQ("/", Path("/foo/..").Join());
+  EXPECT_EQ("/foo", Path("/foo/bar/..").Join());
+  EXPECT_EQ("/bar", Path("/foo/../bar").Join());
+  EXPECT_EQ("/foo/baz", Path("/foo/bar/../baz").Join());
+}
+
+TEST(PathTest, Append) {
+  EXPECT_EQ(".", Path("").Append(Path("")).Join());
+  EXPECT_EQ("foo", Path("").Append(Path("foo")).Join());
+  EXPECT_EQ(".", Path(".").Append(Path("")).Join());
+  EXPECT_EQ("foo", Path(".").Append(Path("foo")).Join());
+  EXPECT_EQ("foo/bar", Path(".").Append(Path("foo/bar")).Join());
+  EXPECT_EQ("foo", Path("foo").Append(Path("")).Join());
+  EXPECT_EQ("foo/bar", Path("foo").Append(Path("bar")).Join());
+  EXPECT_EQ("foo/bar/quux", Path("foo").Append(Path("bar/quux")).Join());
+  EXPECT_EQ("foo/and", Path("foo/and/more").Append(Path("..")).Join());
+}
+
+TEST(PathTest, Append_Absolute) {
+  EXPECT_EQ("/", Path("").Append(Path("/")).Join());
+  EXPECT_EQ("/hello/world", Path("").Append(Path("/hello/world")).Join());
+  EXPECT_EQ("/", Path(".").Append(Path("/")).Join());
+  EXPECT_EQ("/goodbye", Path(".").Append(Path("/goodbye")).Join());
+  EXPECT_EQ("/foo/bar/baz", Path("/a/b").Append(Path("/foo/bar/baz")).Join());
+}
+
+TEST(PathTest, Append_Overflow) {
+  std::string big(PATH_MAX - 5, 'A');
+  Path p(big.c_str());
+  p.Append(Path("0123456789"));
+
+  std::string part(p.Join());
+  EXPECT_EQ(PATH_MAX - 1, part.size());
+}
+
+TEST(PathTest, Set) {
+  Path p("/random/path");
+  EXPECT_EQ("something/else", p.Set("something/else").Join());
+  // Set should change p, not just return a copy.
+  EXPECT_EQ("something/else", p.Join());
+}
+
+TEST(PathTest, Set_Overflow) {
+  std::string big(PATH_MAX * 2, 'A');
+  Path p(big.c_str());
+  EXPECT_EQ(PATH_MAX - 1, p.Part(0).size());
+}
+
+TEST(PathTest, Range_Empty) {
+  EXPECT_EQ("", Path("/").Range(1, 1));
+}
+
+TEST(PathTest, Range_Relative) {
+  Path p("a/relative/path");
+
+  EXPECT_EQ("a", p.Range(0, 1));
+  EXPECT_EQ("a/relative", p.Range(0, 2));
+  EXPECT_EQ("a/relative/path", p.Range(0, 3));
+
+  EXPECT_EQ("relative", p.Range(1, 2));
+  EXPECT_EQ("relative/path", p.Range(1, 3));
+
+  EXPECT_EQ("path", p.Range(2, 3));
+}
+
+TEST(PathTest, Range_Absolute) {
   Path p("/an/absolute/path");
 
-  // p's parts should be ["/", "an", "absolute", "path"].
-  EXPECT_EQ("/an/absolute/path", p.Range(0, 4));
-  EXPECT_EQ("an/absolute/path", p.Range(1, 4));
-  EXPECT_EQ("absolute/path", p.Range(2, 4));
-  EXPECT_EQ("path", p.Range(3, 4));
-
+  EXPECT_EQ("/", p.Range(0, 1));
+  EXPECT_EQ("/an", p.Range(0, 2));
   EXPECT_EQ("/an/absolute", p.Range(0, 3));
+  EXPECT_EQ("/an/absolute/path", p.Range(0, 4));
+
+  EXPECT_EQ("an", p.Range(1, 2));
   EXPECT_EQ("an/absolute", p.Range(1, 3));
+  EXPECT_EQ("an/absolute/path", p.Range(1, 4));
+
   EXPECT_EQ("absolute", p.Range(2, 3));
+  EXPECT_EQ("absolute/path", p.Range(2, 4));
+
+  EXPECT_EQ("path", p.Range(3, 4));
 }
+
+TEST(PathTest, Assign) {
+  Path p;
+
+  p = "foo/bar";
+  EXPECT_EQ("foo/bar", p.Join());
+
+  // Should normalize.
+  p = "/foo/../bar";
+  EXPECT_EQ("/bar", p.Join());
+
+  p = Path("hi/planet");
+  EXPECT_EQ("hi/planet", p.Join());
+}
+
+TEST(PathTest, Equals) {
+  EXPECT_TRUE(Path("/foo") == Path("/foo"));
+  EXPECT_TRUE(Path("foo/../bar") == Path("bar"));
+  EXPECT_TRUE(Path("one/path") != Path("another/path"));
+}
+

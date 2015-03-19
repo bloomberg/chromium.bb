@@ -5,6 +5,8 @@
 #ifndef LIBRARIES_NACL_IO_PATH_H_
 #define LIBRARIES_NACL_IO_PATH_H_
 
+#include <limits.h>
+
 #include <string>
 #include <vector>
 
@@ -12,16 +14,10 @@
 
 namespace nacl_io {
 
-typedef std::vector<std::string> StringArray_t;
-
 class Path {
  public:
-  Path() {}
+  Path();
   Path(const Path& path);
-
-  // This constructor splits path by '/' as a starting point for this Path.
-  // If the path begins with the character '/', the path is considered
-  // to be absolute.
   explicit Path(const std::string& path);
 
   // Return true of the first path item is '/'.
@@ -31,7 +27,7 @@ class Path {
   bool IsRoot() const;
 
   // Return a part of the path
-  const std::string& Part(size_t index) const;
+  std::string Part(size_t index) const;
 
   // Return the number of path parts
   size_t Size() const;
@@ -41,7 +37,6 @@ class Path {
   Path& Append(const std::string& path);
   Path& Set(const std::string& path);
   Path& MakeRelative();
-  Path& Set(const StringArray_t path);
 
   // Return the parent path.
   Path Parent() const;
@@ -49,26 +44,19 @@ class Path {
 
   std::string Join() const;
   std::string Range(size_t start, size_t end) const;
-  StringArray_t Split() const;
 
-  // Collapse the string list removing extraneous '.', '..' path components
-  static StringArray_t Normalize(const StringArray_t& paths);
-  static std::string Join(const StringArray_t& paths);
-  static std::string Range(const StringArray_t& paths,
-                           size_t start,
-                           size_t end);
-  static StringArray_t Split(const std::string& paths);
   // Operator versions
   Path& operator=(const Path& p);
   Path& operator=(const std::string& str);
-  bool operator==(const Path& other) { return Split() == other.Split(); }
-  bool operator!=(const Path& other) { return !operator==(other); }
+  bool operator==(const Path& other);
+  bool operator!=(const Path& other);
 
  private:
-  // Internal representation of the path stored an array of string representing
-  // the directory traversal.  The first string is a "/" if this is an absolute
-  // path.
-  StringArray_t paths_;
+  // Collapse the string list removing extraneous '.', '..' path components
+  void Normalize();
+
+  size_t len_;
+  char path_[PATH_MAX];
 };
 
 }  // namespace nacl_io
