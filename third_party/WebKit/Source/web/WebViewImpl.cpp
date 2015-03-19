@@ -144,6 +144,7 @@
 #include "web/FullscreenController.h"
 #include "web/GraphicsLayerFactoryChromium.h"
 #include "web/InspectorEmulationAgent.h"
+#include "web/InspectorOverlayImpl.h"
 #include "web/InspectorRenderingAgent.h"
 #include "web/LinkHighlight.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
@@ -356,11 +357,13 @@ void WebViewImpl::setCredentialManagerClient(WebCredentialManagerClient* webCred
 void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 {
     if (devToolsClient) {
-        m_devToolsAgent = adoptPtrWillBeNoop(new WebDevToolsAgentImpl(this, devToolsClient));
+        m_inspectorOverlay = InspectorOverlayImpl::create(this);
+        m_devToolsAgent = adoptPtrWillBeNoop(new WebDevToolsAgentImpl(this, devToolsClient, m_inspectorOverlay.get()));
         m_devToolsAgent->registerAgent(InspectorRenderingAgent::create(this));
         m_devToolsAgent->registerAgent(InspectorEmulationAgent::create(this));
     } else {
         m_devToolsAgent.clear();
+        m_inspectorOverlay.clear();
     }
 }
 
@@ -2120,6 +2123,9 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         return true;
 
     if (m_devToolsAgent && m_devToolsAgent->handleInputEvent(m_page.get(), inputEvent))
+        return true;
+
+    if (m_inspectorOverlay && m_inspectorOverlay->handleInputEvent(inputEvent))
         return true;
 
     // Report the event to be NOT processed by WebKit, so that the browser can handle it appropriately.

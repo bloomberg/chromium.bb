@@ -37,6 +37,8 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
+#include "public/web/WebInputEvent.h"
+#include "public/web/WebPageOverlay.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -46,36 +48,26 @@ namespace blink {
 
 class Color;
 class EmptyChromeClient;
+class LocalFrame;
 class GraphicsContext;
 class JSONValue;
 class Node;
 class Page;
-class PlatformGestureEvent;
-class PlatformKeyboardEvent;
-class PlatformMouseEvent;
-class PlatformTouchEvent;
+class WebViewImpl;
 
-class InspectorOverlayImpl final : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlayImpl>, public InspectorOverlay, public InspectorOverlayHost::Listener {
+class InspectorOverlayImpl final : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlayImpl>, public InspectorOverlay, public WebPageOverlay, public InspectorOverlayHost::Listener {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorOverlayImpl);
 public:
-    class Client {
-    public:
-        virtual ~Client() { }
-
-        virtual void highlight() = 0;
-        virtual void hideHighlight() = 0;
-    };
-
-    static PassOwnPtrWillBeRawPtr<InspectorOverlayImpl> create(Page* page, Client* client)
+    static PassOwnPtrWillBeRawPtr<InspectorOverlayImpl> create(WebViewImpl* webViewImpl)
     {
-        return adoptPtrWillBeNoop(new InspectorOverlayImpl(page, client));
+        return adoptPtrWillBeNoop(new InspectorOverlayImpl(webViewImpl));
     }
 
     ~InspectorOverlayImpl() override;
     DECLARE_TRACE();
 
-    // InspectorOverlay implementation
+    // InspectorOverlay implementation.
     void update() override;
     void setPausedInDebuggerMessage(const String*) override;
     void setInspectModeEnabled(bool) override;
@@ -86,39 +78,34 @@ public:
     void setListener(InspectorOverlay::Listener* listener) override { m_listener = listener; }
     void suspendUpdates() override;
     void resumeUpdates() override;
+    void clear() override;
 
-    // InspectorOverlayImpl.
-    void paint(GraphicsContext&);
-    void freePage();
-    bool handleGestureEvent(const PlatformGestureEvent&);
-    bool handleMouseEvent(const PlatformMouseEvent&);
-    bool handleTouchEvent(const PlatformTouchEvent&);
-    bool handleKeyboardEvent(const PlatformKeyboardEvent&);
-
-    // Methods supporting underlying overlay page.
+    bool handleInputEvent(const WebInputEvent&);
     void invalidate();
 private:
-    InspectorOverlayImpl(Page*, Client*);
+    explicit InspectorOverlayImpl(WebViewImpl*);
 
     // InspectorOverlayHost::Listener implementation.
     void overlayResumed() override;
     void overlaySteppedOver() override;
 
-    bool isEmpty();
+    // WebPageOverlay implementation.
+    void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) override;
 
+    bool isEmpty();
     void drawNodeHighlight();
     void drawQuadHighlight();
     void drawPausedInDebuggerMessage();
     void drawViewSize();
 
     Page* overlayPage();
+    LocalFrame* overlayMainFrame();
     void reset(const IntSize& viewportSize, int scrollX, int scrollY);
     void evaluateInOverlay(const String& method, const String& argument);
     void evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument);
     void onTimer(Timer<InspectorOverlayImpl>*);
 
-    RawPtrWillBeMember<Page> m_page;
-    Client* m_client;
+    WebViewImpl* m_webViewImpl;
     String m_pausedInDebuggerMessage;
     bool m_inspectModeEnabled;
     RefPtrWillBeMember<Node> m_highlightNode;

@@ -45,6 +45,8 @@
       'IndexedDBClientImpl.h',
       'InspectorEmulationAgent.cpp',
       'InspectorEmulationAgent.h',
+      'InspectorOverlayImpl.cpp',
+      'InspectorOverlayImpl.h',
       'InspectorRenderingAgent.cpp',
       'InspectorRenderingAgent.h',
       'LinkHighlight.cpp',

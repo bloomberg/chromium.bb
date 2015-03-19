@@ -1609,8 +1609,6 @@
             'inspector/InspectorMemoryAgent.h',
             'inspector/InspectorNodeIds.cpp',
             'inspector/InspectorNodeIds.h',
-            'inspector/InspectorOverlayImpl.cpp',
-            'inspector/InspectorOverlayImpl.h',
             'inspector/InspectorOverlay.h',
             'inspector/InspectorOverlayHost.cpp',
             'inspector/InspectorOverlayHost.h',

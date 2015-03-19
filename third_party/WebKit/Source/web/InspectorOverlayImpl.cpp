@@ -27,12 +27,10 @@
  */
 
 #include "config.h"
-#include "core/inspector/InspectorOverlayImpl.h"
+#include "web/InspectorOverlayImpl.h"
 
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8InspectorOverlayHost.h"
-#include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -44,14 +42,20 @@
 #include "core/page/EventHandler.h"
 #include "core/page/Page.h"
 #include "platform/JSONValues.h"
-#include "platform/PlatformMouseEvent.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
-#include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
+#include "web/WebGraphicsContextImpl.h"
+#include "web/WebInputEventConversion.h"
+#include "web/WebLocalFrameImpl.h"
+#include "web/WebViewImpl.h"
 #include <v8.h>
+
+namespace OverlayZOrders {
+// Use 99 as a big z-order number so that highlight is above other overlays.
+static const int highlight = 99;
+}
 
 namespace blink {
 
@@ -86,9 +90,8 @@ private:
 
 } // anonymous namespace
 
-InspectorOverlayImpl::InspectorOverlayImpl(Page* page, Client* client)
-    : m_page(page)
-    , m_client(client)
+InspectorOverlayImpl::InspectorOverlayImpl(WebViewImpl* webViewImpl)
+    : m_webViewImpl(webViewImpl)
     , m_inspectModeEnabled(false)
     , m_overlayHost(InspectorOverlayHost::create())
     , m_drawViewSize(false)
@@ -108,7 +111,6 @@ InspectorOverlayImpl::~InspectorOverlayImpl()
 
 DEFINE_TRACE(InspectorOverlayImpl)
 {
-    visitor->trace(m_page);
     visitor->trace(m_highlightNode);
     visitor->trace(m_eventTargetNode);
     visitor->trace(m_overlayPage);
@@ -117,13 +119,15 @@ DEFINE_TRACE(InspectorOverlayImpl)
     InspectorOverlay::trace(visitor);
 }
 
-void InspectorOverlayImpl::paint(GraphicsContext& context)
+void InspectorOverlayImpl::paintPageOverlay(WebGraphicsContext* context, const WebSize& webViewSize)
 {
     if (isEmpty())
         return;
-    FrameView* view = toLocalFrame(overlayPage()->mainFrame())->view();
+
+    GraphicsContext& graphicsContext = toWebGraphicsContextImpl(context)->graphicsContext();
+    FrameView* view = overlayMainFrame()->view();
     ASSERT(!view->needsLayout());
-    view->paint(&context, IntRect(0, 0, view->width(), view->height()));
+    view->paint(&graphicsContext, IntRect(0, 0, view->width(), view->height()));
 }
 
 void InspectorOverlayImpl::invalidate()
@@ -133,49 +137,40 @@ void InspectorOverlayImpl::invalidate()
     if (m_updating)
         return;
 
-    m_client->highlight();
+    m_webViewImpl->addPageOverlay(this, OverlayZOrders::highlight);
 }
 
-bool InspectorOverlayImpl::handleGestureEvent(const PlatformGestureEvent& event)
+bool InspectorOverlayImpl::handleInputEvent(const WebInputEvent& inputEvent)
 {
     if (isEmpty())
         return false;
 
-    return toLocalFrame(overlayPage()->mainFrame())->eventHandler().handleGestureEvent(event);
-}
-
-bool InspectorOverlayImpl::handleMouseEvent(const PlatformMouseEvent& event)
-{
-    if (isEmpty())
-        return false;
-
-    EventHandler& eventHandler = toLocalFrame(overlayPage()->mainFrame())->eventHandler();
-    switch (event.type()) {
-    case PlatformEvent::MouseMoved:
-        return eventHandler.handleMouseMoveEvent(event);
-    case PlatformEvent::MousePressed:
-        return eventHandler.handleMousePressEvent(event);
-    case PlatformEvent::MouseReleased:
-        return eventHandler.handleMouseReleaseEvent(event);
-    default:
-        return false;
+    if (WebInputEvent::isGestureEventType(inputEvent.type) && inputEvent.type == WebInputEvent::GestureTap) {
+        // Only let GestureTab in (we only need it and we know PlatformGestureEventBuilder supports it).
+        PlatformGestureEvent gestureEvent = PlatformGestureEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), static_cast<const WebGestureEvent&>(inputEvent));
+        overlayMainFrame()->eventHandler().handleGestureEvent(gestureEvent);
     }
-}
+    if (WebInputEvent::isMouseEventType(inputEvent.type) && inputEvent.type != WebInputEvent::MouseEnter) {
+        // PlatformMouseEventBuilder does not work with MouseEnter type, so we filter it out manually.
+        PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), static_cast<const WebMouseEvent&>(inputEvent));
+        if (mouseEvent.type() == PlatformEvent::MouseMoved)
+            overlayMainFrame()->eventHandler().handleMouseMoveEvent(mouseEvent);
+        if (mouseEvent.type() == PlatformEvent::MousePressed)
+            overlayMainFrame()->eventHandler().handleMousePressEvent(mouseEvent);
+        if (mouseEvent.type() == PlatformEvent::MouseReleased)
+            overlayMainFrame()->eventHandler().handleMouseReleaseEvent(mouseEvent);
+    }
+    if (WebInputEvent::isTouchEventType(inputEvent.type)) {
+        PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), static_cast<const WebTouchEvent&>(inputEvent));
+        overlayMainFrame()->eventHandler().handleTouchEvent(touchEvent);
+    }
+    if (WebInputEvent::isKeyboardEventType(inputEvent.type)) {
+        PlatformKeyboardEvent keyboardEvent = PlatformKeyboardEventBuilder(static_cast<const WebKeyboardEvent&>(inputEvent));
+        overlayMainFrame()->eventHandler().keyEvent(keyboardEvent);
+    }
 
-bool InspectorOverlayImpl::handleTouchEvent(const PlatformTouchEvent& event)
-{
-    if (isEmpty())
-        return false;
-
-    return toLocalFrame(overlayPage()->mainFrame())->eventHandler().handleTouchEvent(event);
-}
-
-bool InspectorOverlayImpl::handleKeyboardEvent(const PlatformKeyboardEvent& event)
-{
-    if (isEmpty())
-        return false;
-
-    return toLocalFrame(overlayPage()->mainFrame())->eventHandler().keyEvent(event);
+    // Overlay should not consume events.
+    return false;
 }
 
 void InspectorOverlayImpl::setPausedInDebuggerMessage(const String* message)
@@ -237,11 +232,11 @@ void InspectorOverlayImpl::update()
     TemporaryChange<bool> scoped(m_updating, true);
 
     if (isEmpty()) {
-        m_client->hideHighlight();
+        m_webViewImpl->removePageOverlay(this);
         return;
     }
 
-    FrameView* view = m_page->deprecatedLocalMainFrame()->view();
+    FrameView* view = m_webViewImpl->mainFrameImpl()->frameView();
     if (!view)
         return;
 
@@ -261,7 +256,7 @@ void InspectorOverlayImpl::update()
 
     toLocalFrame(overlayPage()->mainFrame())->view()->updateLayoutAndStyleForPainting();
 
-    m_client->highlight();
+    m_webViewImpl->addPageOverlay(this, OverlayZOrders::highlight);
 }
 
 static PassRefPtr<JSONObject> buildObjectForSize(const IntSize& size)
@@ -317,11 +312,11 @@ Page* InspectorOverlayImpl::overlayPage()
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
     ASSERT(!m_overlayChromeClient);
-    m_overlayChromeClient = adoptPtr(new InspectorOverlayChromeClient(m_page->chrome().client(), this));
+    m_overlayChromeClient = adoptPtr(new InspectorOverlayChromeClient(m_webViewImpl->page()->chrome().client(), this));
     pageClients.chromeClient = m_overlayChromeClient.get();
     m_overlayPage = adoptPtrWillBeNoop(new Page(pageClients));
 
-    Settings& settings = m_page->settings();
+    Settings& settings = m_webViewImpl->page()->settings();
     Settings& overlaySettings = m_overlayPage->settings();
 
     overlaySettings.genericFontFamilySettings().updateStandard(settings.genericFontFamilySettings().standard());
@@ -369,13 +364,18 @@ Page* InspectorOverlayImpl::overlayPage()
     return m_overlayPage.get();
 }
 
+LocalFrame* InspectorOverlayImpl::overlayMainFrame()
+{
+    return toLocalFrame(overlayPage()->mainFrame());
+}
+
 void InspectorOverlayImpl::reset(const IntSize& viewportSize, int scrollX, int scrollY)
 {
     RefPtr<JSONObject> resetData = JSONObject::create();
-    resetData->setNumber("pageScaleFactor", m_page->settings().pinchVirtualViewportEnabled() ? 1 : m_page->pageScaleFactor());
-    resetData->setNumber("deviceScaleFactor", m_page->deviceScaleFactor());
+    resetData->setNumber("pageScaleFactor", m_webViewImpl->page()->settings().pinchVirtualViewportEnabled() ? 1 : m_webViewImpl->page()->pageScaleFactor());
+    resetData->setNumber("deviceScaleFactor", m_webViewImpl->page()->deviceScaleFactor());
     resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
-    resetData->setNumber("pageZoomFactor", m_page->deprecatedLocalMainFrame()->pageZoomFactor());
+    resetData->setNumber("pageZoomFactor", m_webViewImpl->mainFrameImpl()->frame()->pageZoomFactor());
     resetData->setNumber("scrollX", scrollX);
     resetData->setNumber("scrollY", scrollY);
     evaluateInOverlay("reset", resetData.release());
@@ -405,7 +405,7 @@ void InspectorOverlayImpl::onTimer(Timer<InspectorOverlayImpl>*)
     update();
 }
 
-void InspectorOverlayImpl::freePage()
+void InspectorOverlayImpl::clear()
 {
     if (m_overlayPage) {
         m_overlayPage->willBeDestroyed();
@@ -434,7 +434,7 @@ void InspectorOverlayImpl::overlaySteppedOver()
 void InspectorOverlayImpl::suspendUpdates()
 {
     if (!m_suspendCount++)
-        freePage();
+        clear();
 }
 
 void InspectorOverlayImpl::resumeUpdates()

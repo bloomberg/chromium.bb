@@ -51,6 +51,7 @@ public:
     virtual void showAndHideViewSize(bool showGrid) = 0;
     virtual void suspendUpdates() = 0;
     virtual void resumeUpdates() = 0;
+    virtual void clear() = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 

@@ -70,6 +70,7 @@ class DevToolsEmulator;
 class Frame;
 class FullscreenController;
 class InputMethodContext;
+class InspectorOverlayImpl;
 class LinkHighlight;
 class PopupContainer;
 class DeprecatedPaintLayerCompositor;
@@ -736,6 +737,7 @@ private:
     RefPtr<WebPagePopupImpl> m_pagePopup;
 
     OwnPtrWillBePersistent<WebDevToolsAgentImpl> m_devToolsAgent;
+    OwnPtrWillBePersistent<InspectorOverlayImpl> m_inspectorOverlay;
     OwnPtr<DevToolsEmulator> m_devToolsEmulator;
     OwnPtr<PageOverlayList> m_pageOverlays;
 

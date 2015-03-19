@@ -55,6 +55,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorLayerTreeAgent.h"
 #include "core/inspector/InspectorMemoryAgent.h"
+#include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
@@ -88,7 +89,6 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
 #include "web/DevToolsEmulator.h"
-#include "web/WebGraphicsContextImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
@@ -97,11 +97,6 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/ProcessID.h"
 #include "wtf/text/WTFString.h"
-
-namespace OverlayZOrders {
-// Use 99 as a big z-order number so that highlight is above other overlays.
-static const int highlight = 99;
-}
 
 namespace blink {
 
@@ -231,7 +226,8 @@ private:
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* webViewImpl,
-    WebDevToolsAgentClient* client)
+    WebDevToolsAgentClient* client,
+    InspectorOverlay* overlay)
     : m_client(client)
     , m_webViewImpl(webViewImpl)
     , m_attached(false)
@@ -241,7 +237,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_instrumentingAgents(webViewImpl->page()->instrumentingAgents())
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(this)))
-    , m_overlay(InspectorOverlayImpl::create(webViewImpl->page(), this))
+    , m_overlay(overlay)
     , m_cssAgent(nullptr)
     , m_resourceAgent(nullptr)
     , m_layerTreeAgent(nullptr)
@@ -257,15 +253,14 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     Page* page = m_webViewImpl->page();
 
     InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
-    InspectorOverlay* overlay = m_overlay.get();
 
     m_agents.append(InspectorInspectorAgent::create(injectedScriptManager));
 
-    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(page, injectedScriptManager, this, overlay));
+    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(page, injectedScriptManager, this, m_overlay));
     m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
-    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(m_pageAgent, injectedScriptManager, overlay));
+    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(m_pageAgent, injectedScriptManager, m_overlay));
     m_domAgent = domAgentPtr.get();
     m_agents.append(domAgentPtr.release());
 
@@ -359,7 +354,6 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_deferredAgentsInitialized = true;
 
     InjectedScriptManager* injectedScriptManager = m_injectedScriptManager.get();
-    InspectorOverlay* overlay = m_overlay.get();
 
     OwnPtrWillBeRawPtr<InspectorResourceAgent> resourceAgentPtr(InspectorResourceAgent::create(m_pageAgent));
     m_resourceAgent = resourceAgentPtr.get();
@@ -375,7 +369,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorApplicationCacheAgent::create(m_pageAgent));
 
-    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(PageScriptDebugServer::instance(), m_pageAgent, injectedScriptManager, overlay, m_pageRuntimeAgent->debuggerId()));
+    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(PageScriptDebugServer::instance(), m_pageAgent, injectedScriptManager, m_overlay, m_pageRuntimeAgent->debuggerId()));
     InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
     m_agents.append(debuggerAgentPtr.release());
     m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(debuggerAgent, m_instrumentingAgents.get()));
@@ -384,7 +378,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorInputAgent::create(m_pageAgent, this));
 
-    m_agents.append(InspectorProfilerAgent::create(injectedScriptManager, overlay));
+    m_agents.append(InspectorProfilerAgent::create(injectedScriptManager, m_overlay));
 
     m_agents.append(InspectorHeapProfilerAgent::create(injectedScriptManager));
 
@@ -449,8 +443,8 @@ void WebDevToolsAgentImpl::detach()
     m_agents.clearFrontend();
     m_inspectorFrontend.clear();
 
-    // Release overlay page resources
-    m_overlay->freePage();
+    // Release overlay resources.
+    m_overlay->clear();
     InspectorInstrumentation::frontendDeleted();
     InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());
 
@@ -481,17 +475,11 @@ bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inp
         PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(page->deprecatedLocalMainFrame()->view(), static_cast<const WebTouchEvent&>(inputEvent));
         return handleTouchEvent(toLocalFrame(page->mainFrame()), touchEvent);
     }
-    if (WebInputEvent::isKeyboardEventType(inputEvent.type)) {
-        PlatformKeyboardEvent keyboardEvent = PlatformKeyboardEventBuilder(static_cast<const WebKeyboardEvent&>(inputEvent));
-        return handleKeyboardEvent(page->deprecatedLocalMainFrame(), keyboardEvent);
-    }
     return false;
 }
 
 bool WebDevToolsAgentImpl::handleGestureEvent(LocalFrame* frame, const PlatformGestureEvent& event)
 {
-    // Overlay should not consume events.
-    m_overlay->handleGestureEvent(event);
     if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
         return domAgent->handleGestureEvent(frame, event);
     return false;
@@ -499,9 +487,6 @@ bool WebDevToolsAgentImpl::handleGestureEvent(LocalFrame* frame, const PlatformG
 
 bool WebDevToolsAgentImpl::handleMouseEvent(LocalFrame* frame, const PlatformMouseEvent& event)
 {
-    // Overlay should not consume events.
-    m_overlay->handleMouseEvent(event);
-
     if (event.type() == PlatformEvent::MouseMoved) {
         if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
             return domAgent->handleMouseMove(frame, event);
@@ -516,17 +501,8 @@ bool WebDevToolsAgentImpl::handleMouseEvent(LocalFrame* frame, const PlatformMou
 
 bool WebDevToolsAgentImpl::handleTouchEvent(LocalFrame* frame, const PlatformTouchEvent& event)
 {
-    // Overlay should not consume events.
-    m_overlay->handleTouchEvent(event);
     if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
         return domAgent->handleTouchEvent(frame, event);
-    return false;
-}
-
-bool WebDevToolsAgentImpl::handleKeyboardEvent(LocalFrame* frame, const PlatformKeyboardEvent& event)
-{
-    // Overlay should not consume events.
-    m_overlay->handleKeyboardEvent(event);
     return false;
 }
 
@@ -629,21 +605,6 @@ void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& point)
     if (!node && page->deprecatedLocalMainFrame()->document())
         node = page->deprecatedLocalMainFrame()->document()->documentElement();
     m_domAgent->inspect(node);
-}
-
-void WebDevToolsAgentImpl::paintPageOverlay(WebGraphicsContext* context, const WebSize& webViewSize)
-{
-    m_overlay->paint(toWebGraphicsContextImpl(context)->graphicsContext());
-}
-
-void WebDevToolsAgentImpl::highlight()
-{
-    m_webViewImpl->addPageOverlay(this, OverlayZOrders::highlight);
-}
-
-void WebDevToolsAgentImpl::hideHighlight()
-{
-    m_webViewImpl->removePageOverlay(this);
 }
 
 void WebDevToolsAgentImpl::resetScrollAndPageScaleFactor()

@@ -33,7 +33,6 @@
 
 #include "core/inspector/InspectorFrontendChannel.h"
 #include "core/inspector/InspectorInputAgent.h"
-#include "core/inspector/InspectorOverlayImpl.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorStateClient.h"
 #include "core/inspector/InspectorTracingAgent.h"
@@ -42,7 +41,6 @@
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
 #include "public/web/WebDevToolsAgent.h"
-#include "public/web/WebPageOverlay.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
@@ -50,9 +48,13 @@
 namespace blink {
 
 class GraphicsLayer;
+class InspectorOverlay;
 class LocalFrame;
 class Page;
+class PlatformGestureEvent;
 class PlatformKeyboardEvent;
+class PlatformMouseEvent;
+class PlatformTouchEvent;
 class WebDevToolsAgentClient;
 class WebInputEvent;
 class WebLocalFrameImpl;
@@ -65,15 +67,13 @@ class WebDevToolsAgentImpl final
     , public WebDevToolsAgent
     , public InspectorStateClient
     , public InspectorInputAgent::Client
-    , public InspectorOverlayImpl::Client
     , public InspectorPageAgent::Client
     , public InspectorTracingAgent::Client
     , public PageRuntimeAgent::Client
     , public InspectorFrontendChannel
-    , public WebPageOverlay
     , private WebThread::TaskObserver {
 public:
-    WebDevToolsAgentImpl(WebViewImpl*, WebDevToolsAgentClient*);
+    WebDevToolsAgentImpl(WebViewImpl*, WebDevToolsAgentClient*, InspectorOverlay*);
     ~WebDevToolsAgentImpl() override;
     void dispose();
     DECLARE_VIRTUAL_TRACE();
@@ -110,10 +110,6 @@ private:
     void dispatchKeyEvent(const PlatformKeyboardEvent&) override;
     void dispatchMouseEvent(const PlatformMouseEvent&) override;
 
-    // InspectorOverlayImpl::Client implementation.
-    void highlight() override;
-    void hideHighlight() override;
-
     // InspectorPageAgent::Client implementation.
     void resetScrollAndPageScaleFactor() override;
     float minimumPageScaleFactor() override;
@@ -133,9 +129,6 @@ private:
     void sendProtocolNotification(PassRefPtr<JSONObject> message) override;
     void flush() override;
 
-    // WebPageOverlay implementation.
-    void paintPageOverlay(WebGraphicsContext*, const WebSize& webViewSize) override;
-
     // WebThread::TaskObserver implementation.
     void willProcessTask() override;
     void didProcessTask() override;
@@ -144,7 +137,6 @@ private:
     bool handleGestureEvent(LocalFrame*, const PlatformGestureEvent&);
     bool handleMouseEvent(LocalFrame*, const PlatformMouseEvent&);
     bool handleTouchEvent(LocalFrame*, const PlatformTouchEvent&);
-    bool handleKeyboardEvent(LocalFrame*, const PlatformKeyboardEvent&);
 
     WebDevToolsAgentClient* m_client;
     WebViewImpl* m_webViewImpl;
@@ -156,7 +148,7 @@ private:
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
     OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     OwnPtrWillBeMember<InspectorCompositeState> m_state;
-    OwnPtrWillBeMember<InspectorOverlayImpl> m_overlay;
+    RawPtrWillBeMember<InspectorOverlay> m_overlay;
     OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
