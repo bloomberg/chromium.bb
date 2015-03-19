@@ -167,7 +167,7 @@
       <!-- The default value for |WebPreference::standard_font_family_map| for
            Japanese script. -->
       <message name="IDS_STANDARD_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        Hiragino Kaku Gothic Pro
+        Hiragino Kaku Gothic ProN
       </message>
 
       <!-- The default value for |WebPreference::fixed_font_family_map| for
@@ -179,13 +179,13 @@
       <!-- The default value for |WebPreference::serif_font_family_map| for
            Japanese script. -->
       <message name="IDS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        Hiragino Mincho Pro
+        Hiragino Mincho ProN
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family_map| for
            Japanese script.  -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
-        Hiragino Kaku Gothic Pro
+        Hiragino Kaku Gothic ProN
       </message>
 
       <!-- The default value for |WebPreference::standard_font_family_map| for
