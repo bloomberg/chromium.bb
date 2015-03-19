@@ -269,20 +269,20 @@ void ThumbnailStore::UpdateVisibleIds(const TabIdList& priority) {
   if (visible_ids_.size() == ids_size) {
     // Early out if called with the same input as last time (We only care
     // about the first mCache.MaximumCacheSize() entries).
-    bool lists_differ = false;
+    bool needs_update = false;
     TabIdList::const_iterator visible_iter = visible_ids_.begin();
     TabIdList::const_iterator priority_iter = priority.begin();
     while (visible_iter != visible_ids_.end() &&
            priority_iter != priority.end()) {
-      if (*priority_iter != *visible_iter) {
-        lists_differ = true;
+      if (*priority_iter != *visible_iter || !cache_.Get(*priority_iter)) {
+        needs_update = true;
         break;
       }
       visible_iter++;
       priority_iter++;
     }
 
-    if (!lists_differ)
+    if (!needs_update)
       return;
   }
 
