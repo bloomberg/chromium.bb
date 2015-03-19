@@ -42,9 +42,10 @@ void FakeShillThirdPartyVpnDriverClient::RemoveShillThirdPartyVpnObserver(
 void FakeShillThirdPartyVpnDriverClient::SetParameters(
     const std::string& object_path_value,
     const base::DictionaryValue& parameters,
-    const base::Closure& callback,
+    const ShillClientHelper::StringCallback& callback,
     const ShillClientHelper::ErrorCallback& error_callback) {
-  base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(callback, std::string()));
 }
 
 void FakeShillThirdPartyVpnDriverClient::UpdateConnectionState(

@@ -53,6 +53,7 @@ class VpnService : public KeyedService,
                    public extensions::ExtensionRegistryObserver {
  public:
   using SuccessCallback = base::Closure;
+  using StringCallback = base::Callback<void(const std::string& result)>;
   using FailureCallback =
       base::Callback<void(const std::string& error_name,
                           const std::string& error_message)>;
@@ -126,7 +127,7 @@ class VpnService : public KeyedService,
   // Calls |success| or |failure| based on the outcome.
   void SetParameters(const std::string& extension_id,
                      const base::DictionaryValue& parameters,
-                     const SuccessCallback& success,
+                     const StringCallback& success,
                      const FailureCallback& failure);
 
   // Sends an IP packet contained in |data| to the active VPN configuration

@@ -155,6 +155,14 @@ void VpnThreadExtensionFunction::SignalCallCompletionSuccessWithId(
   Respond(OneArgument(new base::StringValue(configuration_id)));
 }
 
+void VpnThreadExtensionFunction::SignalCallCompletionSuccessWithWarning(
+    const std::string& warning) {
+  if (!warning.empty()) {
+    WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING, warning);
+  }
+  Respond(NoArguments());
+}
+
 void VpnThreadExtensionFunction::SignalCallCompletionFailure(
     const std::string& error_name,
     const std::string& error_message) {
@@ -249,7 +257,8 @@ ExtensionFunction::ResponseAction VpnProviderSetParametersFunction::Run() {
 
   service->SetParameters(
       extension_id(), parameter_value,
-      base::Bind(&VpnProviderSetParametersFunction::SignalCallCompletionSuccess,
+      base::Bind(&VpnProviderSetParametersFunction::
+                     SignalCallCompletionSuccessWithWarning,
                  this),
       base::Bind(&VpnProviderNotifyConnectionStateChangedFunction::
                      SignalCallCompletionFailure,

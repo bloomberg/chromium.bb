@@ -33,7 +33,7 @@ class CHROMEOS_EXPORT FakeShillThirdPartyVpnDriverClient
   void SetParameters(
       const std::string& object_path_value,
       const base::DictionaryValue& parameters,
-      const base::Closure& callback,
+      const ShillClientHelper::StringCallback& callback,
       const ShillClientHelper::ErrorCallback& error_callback) override;
   void UpdateConnectionState(
       const std::string& object_path_value,

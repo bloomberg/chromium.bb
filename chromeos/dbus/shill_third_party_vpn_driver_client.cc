@@ -44,7 +44,7 @@ class ShillThirdPartyVpnDriverClientImpl
   void SetParameters(
       const std::string& object_path_value,
       const base::DictionaryValue& parameters,
-      const base::Closure& callback,
+      const ShillClientHelper::StringCallback& callback,
       const ShillClientHelper::ErrorCallback& error_callback) override;
 
   void UpdateConnectionState(
@@ -200,7 +200,7 @@ void ShillThirdPartyVpnDriverClientImpl::DeleteHelper(
 void ShillThirdPartyVpnDriverClientImpl::SetParameters(
     const std::string& object_path_value,
     const base::DictionaryValue& parameters,
-    const base::Closure& callback,
+    const ShillClientHelper::StringCallback& callback,
     const ShillClientHelper::ErrorCallback& error_callback) {
   dbus::MethodCall method_call(shill::kFlimflamThirdPartyVpnInterface,
                                shill::kSetParametersFunction);
@@ -226,7 +226,8 @@ void ShillThirdPartyVpnDriverClientImpl::SetParameters(
   }
   writer.CloseContainer(&array_writer);
   GetHelper(object_path_value)
-      ->CallVoidMethodWithErrorCallback(&method_call, callback, error_callback);
+      ->CallStringMethodWithErrorCallback(&method_call, callback,
+                                          error_callback);
 }
 
 void ShillThirdPartyVpnDriverClientImpl::UpdateConnectionState(

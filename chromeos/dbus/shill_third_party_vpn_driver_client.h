@@ -56,7 +56,7 @@ class CHROMEOS_EXPORT ShillThirdPartyVpnDriverClient : public DBusClient {
   virtual void SetParameters(
       const std::string& object_path_value,
       const base::DictionaryValue& parameters,
-      const base::Closure& callback,
+      const ShillClientHelper::StringCallback& callback,
       const ShillClientHelper::ErrorCallback& error_callback) = 0;
 
   // Calls UpdateConnectionState method.

@@ -15,6 +15,7 @@ class VpnThreadExtensionFunction : public UIThreadExtensionFunction {
  public:
   void SignalCallCompletionSuccess();
   void SignalCallCompletionSuccessWithId(const std::string& configuration_id);
+  void SignalCallCompletionSuccessWithWarning(const std::string& warning);
 
   void SignalCallCompletionFailure(const std::string& error_name,
                                    const std::string& error_message);

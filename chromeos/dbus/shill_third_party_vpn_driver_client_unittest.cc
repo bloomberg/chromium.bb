@@ -48,6 +48,7 @@ class ShillThirdPartyVpnDriverClientTest : public ShillClientUnittestBase {
   void TearDown() override { ShillClientUnittestBase::TearDown(); }
 
   MOCK_METHOD0(MockSuccess, void());
+  MOCK_METHOD1(MockSuccessWithWarning, void(const std::string& warning));
   static void Failure(const std::string& error_name,
                       const std::string& error_message) {
     ADD_FAILURE() << error_name << ": " << error_message;
@@ -124,13 +125,15 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
 
 TEST_F(ShillThirdPartyVpnDriverClientTest, SetParameters) {
   scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  writer.AppendString(std::string("deadbeef"));
 
   base::DictionaryValue parameters;
   const std::string kAddress("1.1.1.1");
   parameters.SetStringWithoutPathExpansion(
       shill::kAddressParameterThirdPartyVpn, kAddress);
 
-  EXPECT_CALL(*this, MockSuccess()).Times(1);
+  EXPECT_CALL(*this, MockSuccessWithWarning(std::string("deadbeef"))).Times(1);
 
   PrepareForMethodCall(
       shill::kSetParametersFunction,
@@ -139,7 +142,7 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, SetParameters) {
 
   client_->SetParameters(
       kExampleIPConfigPath, parameters,
-      base::Bind(&ShillThirdPartyVpnDriverClientTest::MockSuccess,
+      base::Bind(&ShillThirdPartyVpnDriverClientTest::MockSuccessWithWarning,
                  base::Unretained(this)),
       base::Bind(&Failure));
 

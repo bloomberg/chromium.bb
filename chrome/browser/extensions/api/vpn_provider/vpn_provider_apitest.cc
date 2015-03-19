@@ -70,7 +70,7 @@ class TestShillThirdPartyVpnDriverClient
   void SetParameters(
       const std::string& object_path_value,
       const base::DictionaryValue& parameters,
-      const base::Closure& callback,
+      const ShillClientHelper::StringCallback& callback,
       const ShillClientHelper::ErrorCallback& error_callback) override {
     set_parameters_counter_++;
     parameters_ = parameters.DeepCopy();

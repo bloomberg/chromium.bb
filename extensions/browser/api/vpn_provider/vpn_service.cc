@@ -376,7 +376,7 @@ void VpnService::DestroyConfiguration(const std::string& extension_id,
 
 void VpnService::SetParameters(const std::string& extension_id,
                                const base::DictionaryValue& parameters,
-                               const SuccessCallback& success,
+                               const StringCallback& success,
                                const FailureCallback& failure) {
   if (!DoesActiveConfigurationExistAndIsAccessAuthorized(extension_id)) {
     failure.Run(std::string(), std::string("Unauthorized access."));
