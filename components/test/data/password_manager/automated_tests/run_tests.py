@@ -18,6 +18,14 @@ of the following structure:
   tests_in_parallel=<number of parallel tests>
   # |tests_to_runs| field is optional, if it is absent all tests will be run.
   tests_to_run=<test names to run, comma delimited>
+
+The script uses the Python's logging library to report the test results,
+as well as debugging information. It emits three levels of logs (in
+descending order of severity):
+  logging.INFO: Summary of the tests.
+  logging.DEBUG: Details about tests failures.
+  SCRIPT_DEBUG (see below): Debug info of this script.
+You have to set up appropriate logging handlers to have the logs appear.
 """
 import argparse
 import ConfigParser
