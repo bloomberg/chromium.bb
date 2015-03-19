@@ -32,8 +32,8 @@ static const char kAdviseOnGclientSolution[] =
     "You need to add this solution to your .gclient to run this test:\n"
     "{\n"
     "  \"name\"        : \"webrtc.DEPS\",\n"
-    "  \"url\"         : \"svn://svn.chromium.org/chrome/trunk/deps/"
-    "third_party/webrtc/webrtc.DEPS\",\n"
+    "  \"url\"         : \"https://chromium.googlesource.com/chromium/deps/"
+    "webrtc/webrtc.DEPS\",\n"
     "}";
 
 const int kDefaultPollIntervalMsec = 250;
