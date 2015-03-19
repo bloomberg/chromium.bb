@@ -22,20 +22,18 @@ function isInitDataTypeSupported(initDataType)
 }
 
 // Returns a promise that is fulfilled with an initDataType that is supported,
-// rejected if neither 'webm' or 'cenc' are supported.
+// rejected if none are supported.
 function getSupportedInitDataType()
 {
-    return isInitDataTypeSupported('webm').then(function(result) {
-        if (result) {
-            return Promise.resolve('webm');
-        }
-        return isInitDataTypeSupported('cenc').then(function(result) {
-            if (result) {
-                return Promise.resolve('cenc');
-            }
+    var configuration = [{ initDataTypes : [ 'webm', 'cenc', 'keyids' ] }];
+    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', configuration)
+        .then(function(access) {
+            var initDataTypes = access.getConfiguration().initDataTypes;
+            assert_greater_than(initDataTypes.length, 0);
+            return Promise.resolve(initDataTypes[0]);
+        }, function(error) {
             return Promise.reject('No supported initDataType.');
         });
-    });
 }
 
 function getInitData(initDataType)
