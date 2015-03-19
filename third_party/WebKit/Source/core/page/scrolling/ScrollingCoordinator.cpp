@@ -896,15 +896,6 @@ void ScrollingCoordinator::frameViewFixedObjectsDidChange(FrameView* frameView)
         scrollableAreaScrollLayerDidChange(frameView);
     }
 
-    if (const FrameView::ScrollableAreaSet* scrollableAreas = frameView->scrollableAreas()) {
-        for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it) {
-            if ((*it)->hasViewportConstrainedObjectsForScrollCompensation() != viewportConstrainedObjectsForScrollCompensation) {
-                (*it)->setHasViewportConstrainedObjectsForScrollCompensation(viewportConstrainedObjectsForScrollCompensation);
-                scrollableAreaScrollLayerDidChange(*it);
-            }
-        }
-    }
-
     if (!coordinatesScrollingForFrameView(frameView))
         return;
 
