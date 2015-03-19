@@ -1764,7 +1764,7 @@
     <enum name="subpixel">
       <description summary="subpixel geometry information">
 	This enumeration describes how the physical
-	pixels on an output are layed out.
+	pixels on an output are laid out.
       </description>
       <entry name="unknown" value="0"/>
       <entry name="none" value="1"/>
@@ -2113,7 +2113,7 @@
     <request name="set_sync">
       <description summary="set sub-surface to synchronized mode">
 	Change the commit behaviour of the sub-surface to synchronized
-	mode, also described as the parent dependant mode.
+	mode, also described as the parent dependent mode.
 
 	In synchronized mode, wl_surface.commit on a sub-surface will
 	accumulate the committed state in a cache, but the state will

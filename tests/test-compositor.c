@@ -73,7 +73,7 @@ enum {
 	DISPLAY_RESUMED = 0
 };
 
-/* Since tests can run parallely, we need unique socket names
+/* Since tests can run parallelly, we need unique socket names
  * for each test, otherwise the test can fail on wl_display_add_socket. */
 static const char *
 get_socket_name(void)
@@ -471,7 +471,7 @@ client_disconnect(struct client *c)
 }
 
 /* num is number of clients that requests to stop display.
- * Display is stopped after it recieve num STOP_DISPLAY requests */
+ * Display is stopped after it receive num STOP_DISPLAY requests */
 int
 stop_display(struct client *c, int num)
 {

@@ -112,7 +112,7 @@ static int debug_client = 0;
 /**
  * This helper function wakes up all threads that are
  * waiting for display->reader_cond (i. e. when reading is done,
- * canceled, or an error occured)
+ * canceled, or an error occurred)
  *
  * NOTE: must be called with display->mutex locked
  */
@@ -153,7 +153,7 @@ display_fatal_error(struct wl_display *display, int error)
 
 /**
  * This function is called for error events
- * and indicates that in some object an error occured.
+ * and indicates that in some object an error occurred.
  * Difference between this function and display_fatal_error()
  * is that this one handles errors that will come by wire,
  * whereas display_fatal_error() is called for local errors.

@@ -22,7 +22,7 @@
     created and manages each open connection to a server. At least one
     <link linkend="Client-classwl__event__queue">wl_event_queue</link>
     object is created for each wl_display, this holds events as they
-    are recieved from the server until they can be
+    are received from the server until they can be
     processed. Multi-threading is supported by creating an additional
     wl_event_queue for each additional thread, each object can have
     it's events placed in a particular queue, so potentially a
