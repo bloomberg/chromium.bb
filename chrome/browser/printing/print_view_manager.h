@@ -56,6 +56,9 @@ class PrintViewManager : public PrintViewManagerBase,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // content::WebContentsObserver implementation.
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+
+  // content::WebContentsObserver implementation.
   // Terminates or cancels the print job if one was pending.
   void RenderProcessGone(base::TerminationStatus status) override;
 

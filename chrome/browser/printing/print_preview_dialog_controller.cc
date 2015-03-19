@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -24,7 +23,6 @@
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -34,13 +32,9 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/plugin_service.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/webplugininfo.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
@@ -49,22 +43,6 @@ using content::WebContents;
 using content::WebUIMessageHandler;
 
 namespace {
-
-void EnableInternalPDFPluginForContents(WebContents* preview_dialog) {
-  // Always enable the internal PDF plugin for the print preview page.
-  base::FilePath pdf_plugin_path = base::FilePath::FromUTF8Unsafe(
-      ChromeContentClient::kPDFPluginPath);
-
-  content::WebPluginInfo pdf_plugin;
-  if (!content::PluginService::GetInstance()->GetPluginInfoByPath(
-      pdf_plugin_path, &pdf_plugin))
-    return;
-
-  ChromePluginServiceFilter::GetInstance()->OverridePluginForFrame(
-      preview_dialog->GetRenderProcessHost()->GetID(),
-      preview_dialog->GetMainFrame()->GetRoutingID(),
-      GURL(), pdf_plugin);
-}
 
 // A ui::WebDialogDelegate that specifies the print preview dialog appearance.
 class PrintPreviewDialogDelegate : public ui::WebDialogDelegate {
@@ -391,7 +369,6 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
   GURL print_url(chrome::kChromeUIPrintURL);
   content::HostZoomMap::Get(preview_dialog->GetSiteInstance())
       ->SetZoomLevelForHostAndScheme(print_url.scheme(), print_url.host(), 0);
-  EnableInternalPDFPluginForContents(preview_dialog);
   PrintViewManager::CreateForWebContents(preview_dialog);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       preview_dialog);

@@ -10,13 +10,19 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
+#include "chrome/common/chrome_content_client.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/webplugininfo.h"
 
 using content::BrowserThread;
 
@@ -31,6 +37,22 @@ typedef std::map<content::RenderProcessHost*, base::Closure>
 static base::LazyInstance<ScriptedPrintPreviewClosureMap>
     g_scripted_print_preview_closure_map = LAZY_INSTANCE_INITIALIZER;
 
+void EnableInternalPDFPluginForContents(int render_process_id,
+                                        int render_frame_id) {
+  // Always enable the internal PDF plugin for the print preview page.
+  base::FilePath pdf_plugin_path = base::FilePath::FromUTF8Unsafe(
+      ChromeContentClient::kPDFPluginPath);
+
+  content::WebPluginInfo pdf_plugin;
+  if (!content::PluginService::GetInstance()->GetPluginInfoByPath(
+      pdf_plugin_path, &pdf_plugin)) {
+    return;
+  }
+
+  ChromePluginServiceFilter::GetInstance()->OverridePluginForFrame(
+      render_process_id, render_frame_id, GURL(), pdf_plugin);
+}
+
 }  // namespace
 
 namespace printing {
@@ -40,6 +62,11 @@ PrintViewManager::PrintViewManager(content::WebContents* web_contents)
       observer_(NULL),
       print_preview_state_(NOT_PREVIEWING),
       scripted_print_preview_rph_(NULL) {
+  if (PrintPreviewDialogController::IsPrintPreviewDialog(web_contents)) {
+    EnableInternalPDFPluginForContents(
+        web_contents->GetRenderProcessHost()->GetID(),
+        web_contents->GetMainFrame()->GetRoutingID());
+  }
 }
 
 PrintViewManager::~PrintViewManager() {
@@ -70,6 +97,7 @@ bool PrintViewManager::BasicPrint() {
   }
 }
 #endif  // ENABLE_BASIC_PRINTING
+
 bool PrintViewManager::PrintPreviewNow(bool selection_only) {
   // Users can send print commands all they want and it is beyond
   // PrintViewManager's control. Just ignore the extra commands.
@@ -112,6 +140,14 @@ void PrintViewManager::PrintPreviewDone() {
 void PrintViewManager::set_observer(PrintViewManagerObserver* observer) {
   DCHECK(!observer || !observer_);
   observer_ = observer;
+}
+
+void PrintViewManager::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  if (PrintPreviewDialogController::IsPrintPreviewDialog(web_contents())) {
+    EnableInternalPDFPluginForContents(render_frame_host->GetProcess()->GetID(),
+                                       render_frame_host->GetRoutingID());
+  }
 }
 
 void PrintViewManager::RenderProcessGone(base::TerminationStatus status) {
