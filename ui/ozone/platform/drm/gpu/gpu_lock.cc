@@ -4,7 +4,7 @@
 
 #include "ui/ozone/platform/drm/gpu/gpu_lock.h"
 
-#include <fcntl.h>
+#include <sys/file.h>
 #include <unistd.h>
 
 #include "base/logging.h"
@@ -23,13 +23,8 @@ GpuLock::GpuLock() {
     return;
   }
 
-  struct flock data;
-  memset(&data, 0, sizeof(data));
-  data.l_type = F_WRLCK;
-  data.l_whence = SEEK_SET;
-
   VLOG(1) << "Taking write lock on '" << kGpuLockFile << "'";
-  if (HANDLE_EINTR(fcntl(fd_, F_SETLKW, &data)))
+  if (HANDLE_EINTR(flock(fd_, LOCK_EX)))
     PLOG(ERROR) << "Error while trying to get lock on '" << kGpuLockFile << "'";
 
   VLOG(1) << "Done trying to take write lock on '" << kGpuLockFile << "'";
