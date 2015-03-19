@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #include "base/at_exit.h"
-#include "tools/ipc_fuzzer/replay/replay_process.h"
+#include "tools/ipc_fuzzer/message_replay/replay_process.h"
 
 int main(int argc, const char** argv) {
   base::AtExitManager exit_manager;

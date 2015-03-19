@@ -9,11 +9,11 @@
 #include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "ipc/ipc_message_macros.h"
+#include "tools/ipc_fuzzer/fuzzer/fuzzer.h"
+#include "tools/ipc_fuzzer/fuzzer/generator.h"
+#include "tools/ipc_fuzzer/fuzzer/mutator.h"
+#include "tools/ipc_fuzzer/fuzzer/rand_util.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
-#include "tools/ipc_fuzzer/mutate/fuzzer.h"
-#include "tools/ipc_fuzzer/mutate/generator.h"
-#include "tools/ipc_fuzzer/mutate/mutator.h"
-#include "tools/ipc_fuzzer/mutate/rand_util.h"
 
 namespace ipc_fuzzer {
 

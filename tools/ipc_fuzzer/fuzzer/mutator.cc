@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "tools/ipc_fuzzer/mutate/mutator.h"
-#include "tools/ipc_fuzzer/mutate/rand_util.h"
+#include "tools/ipc_fuzzer/fuzzer/mutator.h"
+#include "tools/ipc_fuzzer/fuzzer/rand_util.h"
 
 namespace ipc_fuzzer {
 

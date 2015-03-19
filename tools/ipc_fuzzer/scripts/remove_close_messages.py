@@ -37,7 +37,7 @@ def main():
   message_util_binary = 'ipc_message_util'
 
   script_path = os.path.realpath(__file__)
-  ipc_fuzzer_dir = os.path.dirname(script_path)
+  ipc_fuzzer_dir = os.path.join(os.path.dirname(script_path), os.pardir)
   src_dir = os.path.abspath(os.path.join(ipc_fuzzer_dir, os.pardir, os.pardir))
   out_dir =  os.path.join(src_dir, parsed.out_dir);
   build_dir = os.path.join(out_dir, parsed.build_type)

@@ -14,10 +14,10 @@
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message.h"
+#include "tools/ipc_fuzzer/fuzzer/fuzzer.h"
+#include "tools/ipc_fuzzer/fuzzer/rand_util.h"
 #include "tools/ipc_fuzzer/message_lib/message_cracker.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
-#include "tools/ipc_fuzzer/mutate/fuzzer.h"
-#include "tools/ipc_fuzzer/mutate/rand_util.h"
 
 #if defined(OS_POSIX)
 #include <unistd.h>

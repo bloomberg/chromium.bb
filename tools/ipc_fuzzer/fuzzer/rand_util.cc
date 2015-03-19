@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/rand_util.h"
-#include "tools/ipc_fuzzer/mutate/rand_util.h"
+#include "tools/ipc_fuzzer/fuzzer/rand_util.h"
 
 namespace ipc_fuzzer {
 

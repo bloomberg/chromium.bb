@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "tools/ipc_fuzzer/mutate/fuzzer.h"
+#include "tools/ipc_fuzzer/fuzzer/fuzzer.h"
 
 namespace ipc_fuzzer {
 

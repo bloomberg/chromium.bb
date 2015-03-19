@@ -59,7 +59,7 @@ def main():
     fuzzer_binary += '.exe'
 
   script_path = os.path.realpath(__file__)
-  ipc_fuzzer_dir = os.path.dirname(script_path)
+  ipc_fuzzer_dir = os.path.join(os.path.dirname(script_path), os.pardir)
   src_dir = os.path.abspath(os.path.join(ipc_fuzzer_dir, os.pardir, os.pardir))
   out_dir =  os.path.join(src_dir, args.out_dir)
   build_dir = os.path.join(out_dir, args.build_type)

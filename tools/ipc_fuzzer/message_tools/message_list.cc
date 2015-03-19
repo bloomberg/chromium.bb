@@ -176,8 +176,8 @@ int main(int argc, char **argv) {
       skip_check = true;
     } else {
       std::cout <<
-          "usage: ipclist [--args] [--ids] [--no-check] [--filter prefix] "
-          "[--comma]\n";
+          "usage: ipc_message_list [--args] [--ids] [--no-check] "
+          "[--filter prefix] [--comma]\n";
       return 1;
     }
   }

@@ -6,8 +6,8 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string_util.h"
-#include "tools/ipc_fuzzer/mutate/generator.h"
-#include "tools/ipc_fuzzer/mutate/rand_util.h"
+#include "tools/ipc_fuzzer/fuzzer/generator.h"
+#include "tools/ipc_fuzzer/fuzzer/rand_util.h"
 
 namespace ipc_fuzzer {
 
