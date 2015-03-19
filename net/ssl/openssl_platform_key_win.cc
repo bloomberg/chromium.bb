@@ -22,6 +22,7 @@
 #include <openssl/obj_mac.h>
 #include <openssl/rsa.h>
 #include <openssl/sha.h>
+#include <openssl/x509.h>
 
 #include "base/debug/debugger.h"
 #include "base/debug/stack_trace.h"
@@ -30,24 +31,19 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/win/windows_version.h"
+#include "crypto/openssl_util.h"
 #include "crypto/scoped_capi_types.h"
 #include "crypto/wincrypt_shim.h"
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/openssl_ssl_util.h"
+#include "net/ssl/scoped_openssl_types.h"
 
 namespace net {
 
 namespace {
 
 using NCryptFreeObjectFunc = SECURITY_STATUS(WINAPI*)(NCRYPT_HANDLE);
-using NCryptGetPropertyFunc =
-    SECURITY_STATUS(WINAPI*)(NCRYPT_HANDLE,  // hObject
-                             LPCWSTR,  // pszProperty
-                             PBYTE,  // pbOutput
-                             DWORD,  // cbOutput
-                             DWORD*,  // pcbResult
-                             DWORD);  // dwFlags
 using NCryptSignHashFunc =
     SECURITY_STATUS(WINAPI*)(NCRYPT_KEY_HANDLE,  // hKey
                              VOID*,  // pPaddingInfo
@@ -62,14 +58,11 @@ class CNGFunctions {
  public:
   CNGFunctions()
       : ncrypt_free_object_(nullptr),
-        ncrypt_get_property_(nullptr),
         ncrypt_sign_hash_(nullptr) {
     HMODULE ncrypt = GetModuleHandle(L"ncrypt.dll");
     if (ncrypt != nullptr) {
       ncrypt_free_object_ = reinterpret_cast<NCryptFreeObjectFunc>(
           GetProcAddress(ncrypt, "NCryptFreeObject"));
-      ncrypt_get_property_ = reinterpret_cast<NCryptGetPropertyFunc>(
-          GetProcAddress(ncrypt, "NCryptGetProperty"));
       ncrypt_sign_hash_ = reinterpret_cast<NCryptSignHashFunc>(
           GetProcAddress(ncrypt, "NCryptSignHash"));
     }
@@ -79,15 +72,10 @@ class CNGFunctions {
     return ncrypt_free_object_;
   }
 
-  NCryptGetPropertyFunc ncrypt_get_property() const {
-    return ncrypt_get_property_;
-  }
-
   NCryptSignHashFunc ncrypt_sign_hash() const { return ncrypt_sign_hash_; }
 
  private:
   NCryptFreeObjectFunc ncrypt_free_object_;
-  NCryptGetPropertyFunc ncrypt_get_property_;
   NCryptSignHashFunc ncrypt_sign_hash_;
 };
 
@@ -111,11 +99,11 @@ using ScopedCERT_KEY_CONTEXT =
 // KeyExData contains the data that is contained in the EX_DATA of the
 // RSA and ECDSA objects that are created to wrap Windows system keys.
 struct KeyExData {
-  KeyExData(ScopedCERT_KEY_CONTEXT key, DWORD key_length)
+  KeyExData(ScopedCERT_KEY_CONTEXT key, size_t key_length)
       : key(key.Pass()), key_length(key_length) {}
 
   ScopedCERT_KEY_CONTEXT key;
-  DWORD key_length;
+  size_t key_length;
 };
 
 // ExDataDup is called when one of the RSA or EC_KEY objects is
@@ -420,14 +408,7 @@ const KeyExData* EcKeyGetExData(const EC_KEY* ec_key) {
 
 size_t EcdsaMethodGroupOrderSize(const EC_KEY* ec_key) {
   const KeyExData* ex_data = EcKeyGetExData(ec_key);
-  // Windows doesn't distinguish the sizes of the curve's degree (which
-  // determines the size of a point on the curve) and the base point's order
-  // (which determines the size of a scalar). For P-256, P-384, and P-521, these
-  // two sizes are the same.
-  //
-  // See
-  // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375520(v=vs.85).aspx
-  // which uses the same length for both.
+  // key_length is the size of the group order for EC keys.
   return (ex_data->key_length + 7) / 8;
 }
 
@@ -448,13 +429,14 @@ int EcdsaMethodSign(const uint8_t* digest,
     return 0;
   }
 
-  size_t degree = (ex_data->key_length + 7) / 8;
-  if (degree == 0) {
+  // An ECDSA signature is two integers, modulo the order of the group.
+  size_t order_len = (ex_data->key_length + 7) / 8;
+  if (order_len == 0) {
     NOTREACHED();
     OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
     return 0;
   }
-  std::vector<uint8_t> raw_sig(degree * 2);
+  std::vector<uint8_t> raw_sig(order_len * 2);
 
   DWORD signature_len;
   SECURITY_STATUS ncrypt_status = g_cng_functions.Get().ncrypt_sign_hash()(
@@ -471,8 +453,8 @@ int EcdsaMethodSign(const uint8_t* digest,
     OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
     return 0;
   }
-  sig->r = BN_bin2bn(&raw_sig[0], degree, nullptr);
-  sig->s = BN_bin2bn(&raw_sig[degree], degree, nullptr);
+  sig->r = BN_bin2bn(&raw_sig[0], order_len, nullptr);
+  sig->s = BN_bin2bn(&raw_sig[order_len], order_len, nullptr);
   if (!sig->r || !sig->s) {
     OpenSSLPutNetError(FROM_HERE, ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED);
     return 0;
@@ -519,96 +501,33 @@ const ECDSA_METHOD win_ecdsa_method = {
     ECDSA_FLAG_OPAQUE,
 };
 
-// Determines the key type and length of |key|. The type is returned as an
-// OpenSSL EVP_PKEY type. The key length for RSA key is the size of the RSA
-// modulus in bits. For an ECDSA key, it is the number of bits to represent the
-// group order. It returns true on success and false on failure.
-bool GetKeyInfo(PCERT_KEY_CONTEXT key, int* out_type, DWORD* out_length) {
-  if (key->dwKeySpec == CERT_NCRYPT_KEY_SPEC) {
-    DWORD prop_len;
-    SECURITY_STATUS status = g_cng_functions.Get().ncrypt_get_property()(
-        key->hNCryptKey, NCRYPT_ALGORITHM_GROUP_PROPERTY, nullptr, 0, &prop_len,
-        0);
-    if (FAILED(status) || prop_len == 0 || prop_len % 2 != 0) {
-      LOG(ERROR) << "Could not query CNG key type: " << status;
-      return false;
-    }
+// Determines the key type and length of |certificate|'s public key. The type is
+// returned as an OpenSSL EVP_PKEY type. The key length for RSA key is the size
+// of the RSA modulus in bits. For an ECDSA key, it is the number of bits to
+// represent the group order. It returns true on success and false on failure.
+bool GetKeyInfo(const X509Certificate* certificate,
+                int* out_type,
+                size_t* out_length) {
+  crypto::OpenSSLErrStackTracer tracker(FROM_HERE);
 
-    std::vector<BYTE> prop_buf(prop_len);
-    status = g_cng_functions.Get().ncrypt_get_property()(
-        key->hNCryptKey, NCRYPT_ALGORITHM_GROUP_PROPERTY, &prop_buf[0],
-        prop_buf.size(), &prop_len, 0);
-    if (FAILED(status) || prop_len == 0 || prop_len % 2 != 0) {
-      LOG(ERROR) << "Could not query CNG key type: " << status;
-      return false;
-    }
-
-    int type;
-    const wchar_t* alg = reinterpret_cast<const wchar_t*>(&prop_buf[0]);
-    if (wcsncmp(NCRYPT_RSA_ALGORITHM_GROUP, alg, prop_len / 2) == 0) {
-      type = EVP_PKEY_RSA;
-    } else if (wcsncmp(NCRYPT_ECDSA_ALGORITHM_GROUP, alg, prop_len / 2) == 0 ||
-               wcsncmp(NCRYPT_ECDH_ALGORITHM_GROUP, alg, prop_len / 2) == 0) {
-      // Importing an ECDSA key via PKCS #12 seems to label it as ECDH rather
-      // than ECDSA, so also allow ECDH.
-      type = EVP_PKEY_EC;
-    } else {
-      LOG(ERROR) << "Unknown CNG key type: "
-                 << std::wstring(alg, wcsnlen(alg, prop_len / 2));
-      return false;
-    }
-
-    DWORD length;
-    prop_len;
-    status = g_cng_functions.Get().ncrypt_get_property()(
-        key->hNCryptKey, NCRYPT_LENGTH_PROPERTY,
-        reinterpret_cast<BYTE*>(&length), sizeof(DWORD), &prop_len, 0);
-    if (FAILED(status)) {
-      LOG(ERROR) << "Could not get CNG key length " << status;
-      return false;
-    }
-    DCHECK_EQ(sizeof(DWORD), prop_len);
-
-    *out_type = type;
-    *out_length = length;
-    return true;
-  }
-
-  crypto::ScopedHCRYPTKEY hcryptkey;
-  if (!CryptGetUserKey(key->hCryptProv, key->dwKeySpec, hcryptkey.receive())) {
-    PLOG(ERROR) << "Could not get CAPI key handle";
+  std::string der_encoded;
+  if (!X509Certificate::GetDEREncoded(certificate->os_cert_handle(),
+                                      &der_encoded))
     return false;
-  }
-
-  ALG_ID alg_id;
-  DWORD prop_len = sizeof(alg_id);
-  if (!CryptGetKeyParam(hcryptkey.get(), KP_ALGID,
-                        reinterpret_cast<BYTE*>(&alg_id), &prop_len, 0)) {
-    PLOG(ERROR) << "Could not query CAPI key type";
+  const uint8_t* bytes = reinterpret_cast<const uint8_t*>(der_encoded.data());
+  ScopedX509 x509(d2i_X509(NULL, &bytes, der_encoded.size()));
+  if (!x509)
     return false;
-  }
-
-  if (alg_id != CALG_RSA_SIGN && alg_id != CALG_RSA_KEYX) {
-    LOG(ERROR) << "Unknown CAPI key type: " << alg_id;
+  crypto::ScopedEVP_PKEY key(X509_get_pubkey(x509.get()));
+  if (!key)
     return false;
-  }
-
-  DWORD length;
-  prop_len = sizeof(DWORD);
-  if (!CryptGetKeyParam(hcryptkey.get(), KP_KEYLEN,
-                        reinterpret_cast<BYTE*>(&length), &prop_len, 0)) {
-    PLOG(ERROR) << "Could not get CAPI key length";
-    return false;
-  }
-  DCHECK_EQ(sizeof(DWORD), prop_len);
-
-  *out_type = EVP_PKEY_RSA;
-  *out_length = length;
+  *out_type = EVP_PKEY_id(key.get());
+  *out_length = EVP_PKEY_bits(key.get());
   return true;
 }
 
 crypto::ScopedEVP_PKEY CreateRSAWrapper(ScopedCERT_KEY_CONTEXT key,
-                                        DWORD key_length) {
+                                        size_t key_length) {
   crypto::ScopedRSA rsa(RSA_new_method(global_boringssl_engine.Get().engine()));
   if (!rsa)
     return nullptr;
@@ -623,7 +542,7 @@ crypto::ScopedEVP_PKEY CreateRSAWrapper(ScopedCERT_KEY_CONTEXT key,
 }
 
 crypto::ScopedEVP_PKEY CreateECDSAWrapper(ScopedCERT_KEY_CONTEXT key,
-                                          DWORD key_length) {
+                                          size_t key_length) {
   crypto::ScopedEC_KEY ec_key(
       EC_KEY_new_method(global_boringssl_engine.Get().engine()));
   if (!ec_key)
@@ -666,9 +585,12 @@ crypto::ScopedEVP_PKEY FetchClientCertPrivateKey(
   key->dwKeySpec = key_spec;
   key->hCryptProv = crypt_prov;
 
+  // Rather than query the private key for metadata, extract the public key from
+  // the certificate without using Windows APIs. CAPI and CNG do not
+  // consistently work depending on the system. See https://crbug.com/468345.
   int key_type;
-  DWORD key_length;
-  if (!GetKeyInfo(key.get(), &key_type, &key_length))
+  size_t key_length;
+  if (!GetKeyInfo(certificate, &key_type, &key_length))
     return nullptr;
 
   switch (key_type) {
