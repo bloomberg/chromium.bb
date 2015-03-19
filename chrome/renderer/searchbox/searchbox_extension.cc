@@ -6,6 +6,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/json/string_escape.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -61,6 +62,12 @@ base::string16 V8ValueToUTF16(v8::Handle<v8::Value> v) {
   return base::string16(reinterpret_cast<const base::char16*>(*s), s.length());
 }
 
+// Returns whether we should use large icons on NTP.
+bool IsIconNTPEnabled() {
+  return StartsWithASCII(base::FieldTrialList::FindFullName("IconNTP"),
+                         "Enabled", true);
+}
+
 // Converts string16 to V8 String.
 v8::Handle<v8::String> UTF16ToV8String(v8::Isolate* isolate,
                                        const base::string16& s) {
@@ -97,6 +104,27 @@ v8::Handle<v8::String> GenerateThumbnailURL(
       isolate,
       base::StringPrintf(
           "chrome-search://thumb/%d/%d", render_view_id, most_visited_item_id));
+}
+
+v8::Handle<v8::String> GenerateLargeIconURL(
+    v8::Isolate* isolate,
+    int render_view_id,
+    InstantRestrictedID most_visited_item_id) {
+  const int kIconSize = 96;  // To support high DPI; on screen it's 48 dp.
+  return UTF8ToV8String(
+      isolate,
+      base::StringPrintf("chrome-search://large-icon/%d/%d/%d",
+                         kIconSize, render_view_id, most_visited_item_id));
+}
+
+v8::Handle<v8::String> GenerateFallbackIconURL(
+    v8::Isolate* isolate,
+    int render_view_id,
+    InstantRestrictedID most_visited_item_id) {
+  return UTF8ToV8String(
+      isolate,
+      base::StringPrintf("chrome-search://fallback-icon/,,,,1/%d/%d",
+                         render_view_id, most_visited_item_id));
 }
 
 // Populates a Javascript MostVisitedItem object from |mv_item|.
@@ -136,6 +164,14 @@ v8::Handle<v8::Object> GenerateMostVisitedItem(
            v8::Int32::New(isolate, restricted_id));
   obj->Set(v8::String::NewFromUtf8(isolate, "thumbnailUrl"),
            GenerateThumbnailURL(isolate, render_view_id, restricted_id));
+  if (IsIconNTPEnabled()) {
+    // Update website http://www.chromium.org/embeddedsearch when we make this
+    // permanent.
+    obj->Set(v8::String::NewFromUtf8(isolate, "largeIconUrl"),
+             GenerateLargeIconURL(isolate, render_view_id, restricted_id));
+    obj->Set(v8::String::NewFromUtf8(isolate, "fallbackIconUrl"),
+             GenerateFallbackIconURL(isolate, render_view_id, restricted_id));
+  }
   obj->Set(v8::String::NewFromUtf8(isolate, "title"),
            UTF16ToV8String(isolate, title));
   obj->Set(v8::String::NewFromUtf8(isolate, "domain"),
