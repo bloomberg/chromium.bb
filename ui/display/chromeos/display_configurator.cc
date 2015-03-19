@@ -90,6 +90,8 @@ class DisplayConfigurator::DisplayLayoutManagerImpl
   std::vector<DisplayState> ParseDisplays(
       const std::vector<DisplaySnapshot*>& displays) const;
 
+  const DisplayMode* GetUserSelectedMode(const DisplaySnapshot& display) const;
+
   // Helper method for ParseDisplays() that initializes the passed-in
   // displays' |mirror_mode| fields by looking for a mode in |internal_display|
   // and |external_display| having the same resolution. Returns false if a
@@ -148,23 +150,8 @@ DisplayConfigurator::DisplayLayoutManagerImpl::ParseDisplays(
   for (auto snapshot : snapshots) {
     DisplayState display_state;
     display_state.display = snapshot;
+    display_state.selected_mode = GetUserSelectedMode(*snapshot);
     cached_displays.push_back(display_state);
-  }
-
-  // Set |selected_mode| fields.
-  for (size_t i = 0; i < cached_displays.size(); ++i) {
-    DisplayState* display_state = &cached_displays[i];
-    gfx::Size size;
-    if (GetStateController() &&
-        GetStateController()->GetResolutionForDisplayId(
-            display_state->display->display_id(), &size)) {
-      display_state->selected_mode =
-          FindDisplayModeMatchingSize(*display_state->display, size);
-    }
-
-    // Fall back to native mode.
-    if (!display_state->selected_mode)
-      display_state->selected_mode = display_state->display->native_mode();
   }
 
   // Set |mirror_mode| fields.
@@ -341,6 +328,21 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
   return true;
 }
 
+const DisplayMode*
+DisplayConfigurator::DisplayLayoutManagerImpl::GetUserSelectedMode(
+    const DisplaySnapshot& display) const {
+  gfx::Size size;
+  const DisplayMode* selected_mode = nullptr;
+  if (GetStateController() &&
+      GetStateController()->GetResolutionForDisplayId(display.display_id(),
+                                                      &size)) {
+    selected_mode = FindDisplayModeMatchingSize(display, size);
+  }
+
+  // Fall back to native mode.
+  return selected_mode ? selected_mode : display.native_mode();
+}
+
 bool DisplayConfigurator::DisplayLayoutManagerImpl::FindMirrorMode(
     DisplayState* internal_display,
     DisplayState* external_display,
@@ -356,27 +358,19 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::FindMirrorMode(
   // Check if some external display resolution can be mirrored on internal.
   // Prefer the modes in the order they're present in DisplaySnapshot, assuming
   // this is the order in which they look better on the monitor.
-  for (DisplayModeList::const_iterator external_it =
-           external_display->display->modes().begin();
-       external_it != external_display->display->modes().end(); ++external_it) {
-    const DisplayMode& external_info = **external_it;
+  for (const auto* external_mode : external_display->display->modes()) {
     bool is_native_aspect_ratio =
-        external_native_info->size().width() * external_info.size().height() ==
-        external_native_info->size().height() * external_info.size().width();
+        external_native_info->size().width() * external_mode->size().height() ==
+        external_native_info->size().height() * external_mode->size().width();
     if (preserve_aspect && !is_native_aspect_ratio)
       continue;  // Allow only aspect ratio preserving modes for mirroring.
 
     // Try finding an exact match.
-    for (DisplayModeList::const_iterator internal_it =
-             internal_display->display->modes().begin();
-         internal_it != internal_display->display->modes().end();
-         ++internal_it) {
-      const DisplayMode& internal_info = **internal_it;
-      if (internal_info.size().width() == external_info.size().width() &&
-          internal_info.size().height() == external_info.size().height() &&
-          internal_info.is_interlaced() == external_info.is_interlaced()) {
-        internal_display->mirror_mode = *internal_it;
-        external_display->mirror_mode = *external_it;
+    for (const auto* internal_mode : internal_display->display->modes()) {
+      if (internal_mode->size() == external_mode->size() &&
+          internal_mode->is_interlaced() == external_mode->is_interlaced()) {
+        internal_display->mirror_mode = internal_mode;
+        external_display->mirror_mode = external_mode;
         return true;  // Mirror mode found.
       }
     }
@@ -387,16 +381,16 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::FindMirrorMode(
       // ugly, so, can fit == can upscale. Also, internal panels don't support
       // fitting interlaced modes.
       bool can_fit = internal_native_info->size().width() >=
-                         external_info.size().width() &&
+                         external_mode->size().width() &&
                      internal_native_info->size().height() >=
-                         external_info.size().height() &&
-                     !external_info.is_interlaced();
+                         external_mode->size().height() &&
+                     !external_mode->is_interlaced();
       if (can_fit) {
         configurator_->native_display_delegate_->AddMode(
-            *internal_display->display, *external_it);
-        internal_display->display->add_mode(*external_it);
-        internal_display->mirror_mode = *external_it;
-        external_display->mirror_mode = *external_it;
+            *internal_display->display, external_mode);
+        internal_display->display->add_mode(external_mode);
+        internal_display->mirror_mode = external_mode;
+        external_display->mirror_mode = external_mode;
         return true;  // Mirror mode created.
       }
     }
@@ -413,11 +407,7 @@ const DisplayMode* DisplayConfigurator::FindDisplayModeMatchingSize(
     const DisplaySnapshot& display,
     const gfx::Size& size) {
   const DisplayMode* best_mode = NULL;
-  for (DisplayModeList::const_iterator it = display.modes().begin();
-       it != display.modes().end();
-       ++it) {
-    const DisplayMode* mode = *it;
-
+  for (const DisplayMode* mode : display.modes()) {
     if (mode->size() != size)
       continue;
 
@@ -555,27 +545,23 @@ bool DisplayConfigurator::IsMirroring() const {
 }
 
 bool DisplayConfigurator::ApplyProtections(const ContentProtections& requests) {
-  for (DisplayStateList::const_iterator it = cached_displays_.begin();
-       it != cached_displays_.end();
-       ++it) {
+  for (const DisplaySnapshot* display : cached_displays_) {
     uint32_t all_desired = 0;
 
     // In mirror mode, protection request of all displays need to be fulfilled.
     // In non-mirror mode, only request of client's display needs to be
     // fulfilled.
-    ContentProtections::const_iterator request_it;
     if (IsMirroring()) {
-      for (request_it = requests.begin();
-           request_it != requests.end();
-           ++request_it)
-        all_desired |= request_it->second;
+      for (const auto& protections_pair : requests)
+        all_desired |= protections_pair.second;
     } else {
-      request_it = requests.find((*it)->display_id());
+      ContentProtections::const_iterator request_it =
+          requests.find(display->display_id());
       if (request_it != requests.end())
         all_desired = request_it->second;
     }
 
-    switch ((*it)->type()) {
+    switch (display->type()) {
       case DISPLAY_CONNECTION_TYPE_UNKNOWN:
         return false;
       // DisplayPort, DVI, and HDMI all support HDCP.
@@ -585,7 +571,7 @@ bool DisplayConfigurator::ApplyProtections(const ContentProtections& requests) {
         HDCPState current_state;
         // Need to poll the driver for updates since other applications may
         // have updated the state.
-        if (!native_display_delegate_->GetHDCPState(**it, &current_state))
+        if (!native_display_delegate_->GetHDCPState(*display, &current_state))
           return false;
         bool current_desired = (current_state != HDCP_STATE_UNDESIRED);
         bool new_desired = (all_desired & CONTENT_PROTECTION_METHOD_HDCP);
@@ -594,7 +580,7 @@ bool DisplayConfigurator::ApplyProtections(const ContentProtections& requests) {
         if (current_desired != new_desired) {
           HDCPState new_state =
               new_desired ? HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED;
-          if (!native_display_delegate_->SetHDCPState(**it, new_state))
+          if (!native_display_delegate_->SetHDCPState(*display, new_state))
             return false;
         }
         break;
@@ -626,14 +612,9 @@ void DisplayConfigurator::UnregisterContentProtectionClient(
   client_protection_requests_.erase(client_id);
 
   ContentProtections protections;
-  for (ProtectionRequests::const_iterator it =
-           client_protection_requests_.begin();
-       it != client_protection_requests_.end();
-       ++it) {
-    for (ContentProtections::const_iterator it2 = it->second.begin();
-         it2 != it->second.end();
-         ++it2) {
-      protections[it2->first] |= it2->second;
+  for (const auto& requests_pair : client_protection_requests_) {
+    for (const auto& protections_pair : requests_pair.second) {
+      protections[protections_pair.first] |= protections_pair.second;
     }
   }
 
@@ -651,15 +632,13 @@ bool DisplayConfigurator::QueryContentProtectionStatus(
   uint32_t enabled = 0;
   uint32_t unfulfilled = 0;
   *link_mask = 0;
-  for (DisplayStateList::const_iterator it = cached_displays_.begin();
-       it != cached_displays_.end();
-       ++it) {
+  for (const DisplaySnapshot* display : cached_displays_) {
     // Query display if it is in mirror mode or client on the same display.
-    if (!IsMirroring() && (*it)->display_id() != display_id)
+    if (!IsMirroring() && display->display_id() != display_id)
       continue;
 
-    *link_mask |= (*it)->type();
-    switch ((*it)->type()) {
+    *link_mask |= display->type();
+    switch (display->type()) {
       case DISPLAY_CONNECTION_TYPE_UNKNOWN:
         return false;
       // DisplayPort, DVI, and HDMI all support HDCP.
@@ -667,7 +646,7 @@ bool DisplayConfigurator::QueryContentProtectionStatus(
       case DISPLAY_CONNECTION_TYPE_DVI:
       case DISPLAY_CONNECTION_TYPE_HDMI: {
         HDCPState state;
-        if (!native_display_delegate_->GetHDCPState(**it, &state))
+        if (!native_display_delegate_->GetHDCPState(*display, &state))
           return false;
         if (state == HDCP_STATE_ENABLED)
           enabled |= CONTENT_PROTECTION_METHOD_HDCP;
@@ -707,16 +686,13 @@ bool DisplayConfigurator::EnableContentProtection(
     return false;
 
   ContentProtections protections;
-  for (ProtectionRequests::const_iterator it =
-           client_protection_requests_.begin();
-       it != client_protection_requests_.end();
-       ++it) {
-    for (ContentProtections::const_iterator it2 = it->second.begin();
-         it2 != it->second.end();
-         ++it2) {
-      if (it->first == client_id && it2->first == display_id)
+  for (const auto& requests_pair : client_protection_requests_) {
+    for (const auto& protections_pair : requests_pair.second) {
+      if (requests_pair.first == client_id &&
+          protections_pair.first == display_id)
         continue;
-      protections[it2->first] |= it2->second;
+
+      protections[protections_pair.first] |= protections_pair.second;
     }
   }
   protections[display_id] |= desired_method_mask;
@@ -742,10 +718,10 @@ std::vector<ui::ColorCalibrationProfile>
 DisplayConfigurator::GetAvailableColorCalibrationProfiles(int64_t display_id) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableDisplayColorCalibration)) {
-    for (size_t i = 0; i < cached_displays_.size(); ++i) {
-      if (cached_displays_[i]->display_id() == display_id) {
+    for (const DisplaySnapshot* display : cached_displays_) {
+      if (display->display_id() == display_id) {
         return native_display_delegate_->GetAvailableColorCalibrationProfiles(
-            *cached_displays_[i]);
+            *display);
       }
     }
   }
@@ -756,10 +732,10 @@ DisplayConfigurator::GetAvailableColorCalibrationProfiles(int64_t display_id) {
 bool DisplayConfigurator::SetColorCalibrationProfile(
     int64_t display_id,
     ui::ColorCalibrationProfile new_profile) {
-  for (size_t i = 0; i < cached_displays_.size(); ++i) {
-    if (cached_displays_[i]->display_id() == display_id) {
-      return native_display_delegate_->SetColorCalibrationProfile(
-          *cached_displays_[i], new_profile);
+  for (const DisplaySnapshot* display : cached_displays_) {
+    if (display->display_id() == display_id) {
+      return native_display_delegate_->SetColorCalibrationProfile(*display,
+                                                                  new_profile);
     }
   }
 
