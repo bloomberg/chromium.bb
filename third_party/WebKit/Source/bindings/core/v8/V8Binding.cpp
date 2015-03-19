@@ -677,7 +677,7 @@ LocalDOMWindow* callingDOMWindow(v8::Isolate* isolate)
 {
     v8::Handle<v8::Context> context = isolate->GetCallingContext();
     if (context.IsEmpty()) {
-        // Unfortunately, when processing script from a plug-in, we might not
+        // Unfortunately, when processing script from a plugin, we might not
         // have a calling context. In those cases, we fall back to the
         // entered context.
         context = isolate->GetEnteredContext();
@@ -709,7 +709,7 @@ ExecutionContext* callingExecutionContext(v8::Isolate* isolate)
 {
     v8::Handle<v8::Context> context = isolate->GetCallingContext();
     if (context.IsEmpty()) {
-        // Unfortunately, when processing script from a plug-in, we might not
+        // Unfortunately, when processing script from a plugin, we might not
         // have a calling context. In those cases, we fall back to the
         // entered context.
         context = isolate->GetEnteredContext();

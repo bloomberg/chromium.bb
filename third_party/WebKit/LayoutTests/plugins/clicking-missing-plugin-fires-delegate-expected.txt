@@ -1,2 +1,2 @@
 
-This test checks if the missing plug-in button can be clicked. This is a test for Bug 41721.
+This test checks if the missing plugin button can be clicked. This is a test for Bug 41721.

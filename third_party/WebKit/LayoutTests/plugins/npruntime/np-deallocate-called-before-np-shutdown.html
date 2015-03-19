@@ -5,7 +5,7 @@ function runTest() {
 
     var testObject = document.getElementById('plugin').testObject;
 
-    // Remove the plug-in. The plug-in asserts that shutdown isn't called before
+    // Remove the plugin. The plugin asserts that shutdown isn't called before
     // any calls to NP_Deallocate, so this test will time out if that happens.
     document.getElementById('container').innerHTML = '';
     document.getElementById('result').innerHTML = 'SUCCESS';

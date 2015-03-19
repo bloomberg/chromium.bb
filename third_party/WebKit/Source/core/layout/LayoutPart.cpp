@@ -220,7 +220,7 @@ void LayoutPart::paintContents(const PaintInfo& paintInfo, const LayoutPoint& pa
 CursorDirective LayoutPart::getCursor(const LayoutPoint& point, Cursor& cursor) const
 {
     if (widget() && widget()->isPluginView()) {
-        // A plug-in is responsible for setting the cursor when the pointer is over it.
+        // A plugin is responsible for setting the cursor when the pointer is over it.
         return DoNotSetCursor;
     }
     return LayoutReplaced::getCursor(point, cursor);

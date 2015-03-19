@@ -14,7 +14,7 @@ function runTest() {
     }
 
     var url = 'data:text/html,<scri' + 'pt>if (window.testRunner) testRunner.notifyDone();</scri' + 'pt>';
-    url += '<div>This tests that a plug-in that calls NPP_GetURLNotify from its NPP_DestroyStream during teardown '
+    url += '<div>This tests that a plugin that calls NPP_GetURLNotify from its NPP_DestroyStream during teardown '
     url += 'will not cause a crash.</div><div>SUCCESS! Did not crash!</div>';
 
     setTimeout(function() { window.location.href = url; }, 100);

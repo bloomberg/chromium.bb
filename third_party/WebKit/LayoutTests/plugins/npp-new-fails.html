@@ -10,7 +10,7 @@ function runTest()
 {
 	var foo = document.getElementById("TestElement").someMadeUpBar;
 
-	testPassed("Did not crash trying to access the plug-in script object.");
+	testPassed("Did not crash trying to access the plugin script object.");
 
     if (window.testRunner)
         testRunner.notifyDone();
@@ -26,5 +26,5 @@ function runTest()
 </body>
 
 <script>
-description("http://webkit.org/b/95026 - Tests that access to the plug-in script object after the plug-in fails to initialize doesn't crash");
+description("http://webkit.org/b/95026 - Tests that access to the plugin script object after the plugin fails to initialize doesn't crash");
 </script>

@@ -78,7 +78,7 @@ public:
     // but it's been named for consistency with the rest of the interface.
     virtual bool allowMutationEvents(bool defaultValue) { return defaultValue; }
 
-    // Notifies the client that the frame would have instantiated a plug-in if plug-ins were enabled.
+    // Notifies the client that the frame would have instantiated a plugin if plugins were enabled.
     virtual void didNotAllowPlugins() { }
 
     // Notifies the client that the frame would have executed script if script were enabled.

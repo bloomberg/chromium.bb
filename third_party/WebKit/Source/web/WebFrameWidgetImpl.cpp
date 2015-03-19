@@ -745,7 +745,7 @@ bool WebFrameWidgetImpl::handleKeyEvent(const WebKeyboardEvent& event)
 
     if (frame->eventHandler().keyEvent(evt)) {
         if (WebInputEvent::RawKeyDown == event.type) {
-            // Suppress the next keypress event unless the focused node is a plug-in node.
+            // Suppress the next keypress event unless the focused node is a plugin node.
             // (Flash needs these keypress events to handle non-US keyboards.)
             Element* element = focusedElement();
             if (!element || !element->layoutObject() || !element->layoutObject()->isEmbeddedObject())

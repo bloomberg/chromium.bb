@@ -265,7 +265,7 @@ void Page::refreshPlugins()
     PluginData::refresh();
 
     for (const Page* page : allPages()) {
-        // Clear out the page's plug-in data.
+        // Clear out the page's plugin data.
         if (page->m_pluginData)
             page->m_pluginData = nullptr;
     }

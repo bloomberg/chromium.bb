@@ -1,9 +1,9 @@
 <p>
-    Test that a plug-in that causes its Widget to be destroyed during setWindow does not cause a crash.
+    Test that a plugin that causes its Widget to be destroyed during setWindow does not cause a crash.
 </p>
-<embed id="plug-in" type="application/x-webkit-test-netscape" onSetWindow="handleSetWindow()">
+<embed id="plugin" type="application/x-webkit-test-netscape" onSetWindow="handleSetWindow()">
 <script>
-    var plugIn = document.getElementById("plug-in");
+    var plugIn = document.getElementById("plugin");
     var count = 0;
 
     if (window.testRunner)

@@ -6,5 +6,5 @@ CONSOLE ERROR: line 1: Uncaught SecurityError: Blocked a frame with origin "http
 Frame: 'childFrame'
 --------
 
-This tests that plug-ins can access objects in other frames as allowed by the security model enforced in WebCore.
+This tests that plugins can access objects in other frames as allowed by the security model enforced in WebCore.
 SUCCESS

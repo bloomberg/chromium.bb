@@ -11,7 +11,7 @@ function runTest() {
 
     var plugin = subframe.contentWindow.document.getElementById('plugin');
 
-    // Get a reference to the plug-in test object.
+    // Get a reference to the plugin test object.
     testObject = plugin.testObject;
 
     plugin.evaluate('window.top.subframe.parentNode.removeChild(window.top.subframe)')
@@ -30,6 +30,6 @@ function runTest() {
 <div id="console"></div>
 
 <script>
-description("Test various operation on an NPObject whose plug-in (that lives in a subframe) has been destroyed");
+description("Test various operation on an NPObject whose plugin (that lives in a subframe) has been destroyed");
 
 </script>

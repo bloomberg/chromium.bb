@@ -108,7 +108,7 @@ int main(NPNetscapeFuncs *browserFuncs, NPPluginFuncs *pluginFuncs, NPP_Shutdown
     browser->size = browserFuncs->size;
     browser->version = browserFuncs->version;
     
-    // Since this is a mach-o plug-in and the browser is CFM because it is calling main, translate
+    // Since this is a mach-o plugin and the browser is CFM because it is calling main, translate
     // our function points into TVectors so the browser can call them.
     browser->geturl = (NPN_GetURLProcPtr)functionPointerForTVector((TransitionVector)browserFuncs->geturl);
     browser->posturl = (NPN_PostURLProcPtr)functionPointerForTVector((TransitionVector)browserFuncs->posturl);

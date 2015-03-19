@@ -8,4 +8,4 @@ CONSOLE MESSAGE: line 23: PLUGIN: keyUp 'B'
 CONSOLE MESSAGE: line 24: PLUGIN: keyDown 'C'
 CONSOLE MESSAGE: line 24: PLUGIN: keyUp 'C'
 
-This test checks if a plug-in can receive keyboard events sent from eventSender. This is a test for Bug 34936.
+This test checks if a plugin can receive keyboard events sent from eventSender. This is a test for Bug 34936.

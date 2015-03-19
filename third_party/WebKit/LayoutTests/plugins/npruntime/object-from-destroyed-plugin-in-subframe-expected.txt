@@ -1,4 +1,4 @@
-Test various operation on an NPObject whose plug-in (that lives in a subframe) has been destroyed
+Test various operation on an NPObject whose plugin (that lives in a subframe) has been destroyed
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

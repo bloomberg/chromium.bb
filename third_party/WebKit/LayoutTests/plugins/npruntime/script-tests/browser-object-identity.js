@@ -1,4 +1,4 @@
-description("Test that plug-in doesn't get a new browser object instance each time")
+description("Test that plugin doesn't get a new browser object instance each time")
 
 function gc()
 {

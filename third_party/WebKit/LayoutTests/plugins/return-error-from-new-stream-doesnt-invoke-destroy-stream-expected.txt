@@ -1,4 +1,4 @@
-This tests that NPP_DestroyStream is not called if a plug-in returns an error from its NPP_NewStream callback.
+This tests that NPP_DestroyStream is not called if a plugin returns an error from its NPP_NewStream callback.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

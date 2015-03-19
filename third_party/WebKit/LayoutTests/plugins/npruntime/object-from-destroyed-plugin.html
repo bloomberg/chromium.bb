@@ -8,7 +8,7 @@ function runTest() {
     // Get our test object.
     testObject = plugin.testObject;
     
-    // Now destroy the plug-in. 
+    // Now destroy the plugin. 
     plugin.parentNode.removeChild(plugin);
 
     // testObject is now a dangling object and every operation on it should throw.
@@ -24,6 +24,6 @@ function runTest() {
 <div id="console"></div>
 
 <script>
-description("Test various operation on an NPObject whose plug-in has been destroyed");
+description("Test various operation on an NPObject whose plugin has been destroyed");
 
 </script>

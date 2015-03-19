@@ -364,14 +364,14 @@ void HTMLPlugInElement::collectStyleForPresentationAttribute(const QualifiedName
 
 void HTMLPlugInElement::defaultEventHandler(Event* event)
 {
-    // Firefox seems to use a fake event listener to dispatch events to plug-in
+    // Firefox seems to use a fake event listener to dispatch events to plugin
     // (tested with mouse events only). This is observable via different order
     // of events - in Firefox, event listeners specified in HTML attributes
-    // fires first, then an event gets dispatched to plug-in, and only then
+    // fires first, then an event gets dispatched to plugin, and only then
     // other event listeners fire. Hopefully, this difference does not matter in
     // practice.
 
-    // FIXME: Mouse down and scroll events are passed down to plug-in via custom
+    // FIXME: Mouse down and scroll events are passed down to plugin via custom
     // code in EventHandler; these code paths should be united.
 
     LayoutObject* r = layoutObject();
@@ -509,7 +509,7 @@ bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType,
     if (shouldUsePlugin(completedURL, mimeType, hasFallbackContent(), useFallback))
         return loadPlugin(completedURL, mimeType, paramNames, paramValues, useFallback, true);
 
-    // If the plug-in element already contains a subframe,
+    // If the plugin element already contains a subframe,
     // loadOrRedirectSubframe will re-use it. Otherwise, it will create a new
     // frame and set it as the LayoutPart's widget, causing what was previously
     // in the widget to be torn down.
@@ -528,7 +528,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     if ((!renderer && requireRenderer) || useFallback)
         return false;
 
-    WTF_LOG(Plugins, "%p Plug-in URL: %s", this, m_url.utf8().data());
+    WTF_LOG(Plugins, "%p Plugin URL: %s", this, m_url.utf8().data());
     WTF_LOG(Plugins, "   Loaded URL: %s", url.string().utf8().data());
     m_loadedUrl = url;
 
@@ -574,8 +574,8 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
 
 bool HTMLPlugInElement::shouldUsePlugin(const KURL& url, const String& mimeType, bool hasFallback, bool& useFallback)
 {
-    // Allow other plug-ins to win over QuickTime because if the user has
-    // installed a plug-in that can handle TIFF (which QuickTime can also
+    // Allow other plugins to win over QuickTime because if the user has
+    // installed a plugin that can handle TIFF (which QuickTime can also
     // handle) they probably intended to override QT.
     if (document().frame()->page() && (mimeType == "image/tiff" || mimeType == "image/tif" || mimeType == "image/x-tiff")) {
         const PluginData* pluginData = document().frame()->page()->pluginData();

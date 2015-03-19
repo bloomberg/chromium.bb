@@ -89,7 +89,7 @@ void PartPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& p
 
     IntSize widgetPaintOffset = paintLocation - widgetLocation;
     // When painting widgets into compositing layers, tx and ty are relative to the enclosing compositing layer,
-    // not the root. In this case, shift the CTM and adjust the paintRect to be root-relative to fix plug-in drawing.
+    // not the root. In this case, shift the CTM and adjust the paintRect to be root-relative to fix plugin drawing.
     TransformRecorder transform(*paintInfo.context, m_layoutPart.displayItemClient(),
         AffineTransform::translation(widgetPaintOffset.width(), widgetPaintOffset.height()));
     paintRect.move(-widgetPaintOffset);

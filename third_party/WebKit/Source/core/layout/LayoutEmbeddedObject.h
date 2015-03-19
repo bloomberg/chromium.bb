@@ -29,8 +29,8 @@ namespace blink {
 
 class TextRun;
 
-// Renderer for embeds and objects, often, but not always, rendered via plug-ins.
-// For example, <embed src="foo.html"> does not invoke a plug-in.
+// Renderer for embeds and objects, often, but not always, rendered via plugins.
+// For example, <embed src="foo.html"> does not invoke a plugin.
 class LayoutEmbeddedObject : public LayoutPart {
 public:
     LayoutEmbeddedObject(Element*);
