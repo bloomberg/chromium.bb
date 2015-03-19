@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification_test_util.h"
@@ -83,6 +84,10 @@ void InfoBarResponder::Respond(ConfirmInfoBarDelegate* delegate) {
 
 // -----------------------------------------------------------------------------
 
+// Dimensions of the icon.png resource in the notification test data directory.
+const int kIconWidth = 100;
+const int kIconHeight = 100;
+
 class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
  public:
   PlatformNotificationServiceBrowserTest();
@@ -98,6 +103,10 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   PlatformNotificationServiceImpl* service() const {
     return PlatformNotificationServiceImpl::GetInstance();
   }
+
+  // Grants permission to display Web Notifications for origin of the test
+  // page that's being used in this browser test.
+  void GrantNotificationPermissionForTest() const;
 
   // Returns the UI Manager on which notifications will be displayed.
   StubNotificationUIManager* ui_manager() const { return ui_manager_.get(); }
@@ -155,6 +164,16 @@ void PlatformNotificationServiceBrowserTest::SetUpOnMainThread() {
 
 void PlatformNotificationServiceBrowserTest::TearDown() {
   service()->SetNotificationUIManagerForTesting(nullptr);
+}
+
+void PlatformNotificationServiceBrowserTest::
+    GrantNotificationPermissionForTest() const {
+  GURL origin = TestPageUrl().GetOrigin();
+
+  DesktopNotificationProfileUtil::GrantPermission(browser()->profile(), origin);
+  ASSERT_EQ(CONTENT_SETTING_ALLOW,
+            DesktopNotificationProfileUtil::GetContentSetting(
+                browser()->profile(), origin));
 }
 
 void PlatformNotificationServiceBrowserTest::NavigateToTestPage(
@@ -246,6 +265,9 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_EQ("replace-id", notification.tag());
   EXPECT_FALSE(notification.icon().IsEmpty());
   EXPECT_TRUE(notification.silent());
+
+  EXPECT_EQ(kIconWidth, notification.icon().Width());
+  EXPECT_EQ(kIconHeight, notification.icon().Height());
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
@@ -328,4 +350,42 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
       << "If this test fails, you may have fixed a bug preventing file origins "
       << "from sending their origin from Blink; if so you need to update the "
       << "display function for notification origins to show the file path.";
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       DataUrlAsNotificationImage) {
+  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
+
+  std::string script_result;
+  ASSERT_TRUE(RunScript("DisplayPersistentNotificationDataUrlImage()",
+                        &script_result));
+  EXPECT_EQ("ok", script_result);
+
+  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+
+  const Notification& notification = ui_manager()->GetNotificationAt(0);
+  EXPECT_FALSE(notification.icon().IsEmpty());
+
+  EXPECT_EQ("Data URL Title", base::UTF16ToUTF8(notification.title()));
+  EXPECT_EQ(kIconWidth, notification.icon().Width());
+  EXPECT_EQ(kIconHeight, notification.icon().Height());
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
+                       BlobAsNotificationImage) {
+  ASSERT_NO_FATAL_FAILURE(GrantNotificationPermissionForTest());
+
+  std::string script_result;
+  ASSERT_TRUE(RunScript("DisplayPersistentNotificationBlobImage()",
+                        &script_result));
+  EXPECT_EQ("ok", script_result);
+
+  ASSERT_EQ(1u, ui_manager()->GetNotificationCount());
+
+  const Notification& notification = ui_manager()->GetNotificationAt(0);
+  EXPECT_FALSE(notification.icon().IsEmpty());
+
+  EXPECT_EQ("Blob Title", base::UTF16ToUTF8(notification.title()));
+  EXPECT_EQ(kIconWidth, notification.icon().Width());
+  EXPECT_EQ(kIconHeight, notification.icon().Height());
 }

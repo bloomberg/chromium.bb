@@ -58,6 +58,34 @@
         });
       }
 
+      // Displays a persistent notification with a data: URL as its image.
+      function DisplayPersistentNotificationDataUrlImage() {
+        fetch('icon.png').then(function(response) {
+          return response.blob();
+        }).then(function(blob) {
+          var reader = new FileReader();
+          reader.readAsDataURL(blob);
+          reader.onloadend = function() {
+            DisplayPersistentNotification('Data URL Title', {
+              body: 'Contents',
+              icon: reader.result
+            });
+          };
+        });
+      }
+
+      // Displays a persistent notification with a blob URL as its image.
+      function DisplayPersistentNotificationBlobImage() {
+        fetch('icon.png').then(function(response) {
+          return response.blob();
+        }).then(function(blob) {
+          DisplayPersistentNotification('Blob Title', {
+            body: 'Contents',
+            icon: URL.createObjectURL(blob)
+          });
+        });
+      }
+
       // Returns the latest received message from the worker. If no message has
       // been received, nothing will be done. For successfully registered
       // Service Workers this is OK, however, since the "message" event handler
