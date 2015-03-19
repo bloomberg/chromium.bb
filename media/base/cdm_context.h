@@ -17,22 +17,22 @@ class Decryptor;
 // content decryption module (CDM) to decrypt (and decode) encrypted buffers.
 class MEDIA_EXPORT CdmContext {
  public:
-#if defined(ENABLE_BROWSER_CDMS)
+  // Indicates an invalid CDM ID. See GetCdmId() for details.
   static const int kInvalidCdmId = 0;
-#endif
 
   virtual ~CdmContext();
 
-  // Gets the Decryptor object associated with the CDM. Returns NULL if no
-  // Decryptor object is associated. The returned object is only guaranteed
-  // to be valid during the CDM's lifetime.
+  // Gets the Decryptor object associated with the CDM. Returns NULL if the CDM
+  // does not support a Decryptor. The returned object is only guaranteed to be
+  // valid during the CDM's lifetime.
   virtual Decryptor* GetDecryptor() = 0;
 
-#if defined(ENABLE_BROWSER_CDMS)
-  // Returns the CDM ID associated with |this|. May be kInvalidCdmId if no CDM
-  // ID is associated.
+  // Returns an ID associated with the CDM, which can be used to locate the real
+  // CDM instance. This is useful when the CDM is hosted remotely, e.g. in a
+  // different process.
+  // Returns kInvalidCdmId if the CDM cannot be used remotely. In this case,
+  // GetDecryptor() should return a non-null Decryptor.
   virtual int GetCdmId() const = 0;
-#endif
 
  protected:
   CdmContext();

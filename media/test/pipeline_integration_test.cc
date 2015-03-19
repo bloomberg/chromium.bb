@@ -219,10 +219,7 @@ class FakeEncryptedMedia {
     TestCdmContext(Decryptor* decryptor) : decryptor_(decryptor) {}
 
     Decryptor* GetDecryptor() final { return decryptor_; }
-
-#if defined(ENABLE_BROWSER_CDMS)
     int GetCdmId() const final { return kInvalidCdmId; }
-#endif
 
    private:
     Decryptor* decryptor_;

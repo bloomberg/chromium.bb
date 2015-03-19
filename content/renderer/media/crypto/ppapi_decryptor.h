@@ -74,6 +74,7 @@ class PpapiDecryptor : public media::MediaKeys,
 
   // media::CdmContext implementation.
   Decryptor* GetDecryptor() override;
+  int GetCdmId() const override;
 
   // media::Decryptor implementation.
   void RegisterNewKeyCB(StreamType stream_type,

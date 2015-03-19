@@ -193,6 +193,10 @@ media::Decryptor* PpapiDecryptor::GetDecryptor() {
   return this;
 }
 
+int PpapiDecryptor::GetCdmId() const {
+  return kInvalidCdmId;
+}
+
 void PpapiDecryptor::RegisterNewKeyCB(StreamType stream_type,
                                       const NewKeyCB& new_key_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {

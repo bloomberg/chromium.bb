@@ -125,7 +125,7 @@ media::CdmContext* ProxyMediaKeys::GetCdmContext() {
 }
 
 media::Decryptor* ProxyMediaKeys::GetDecryptor() {
-  return NULL;
+  return nullptr;
 }
 
 int ProxyMediaKeys::GetCdmId() const {
