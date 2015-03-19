@@ -592,7 +592,11 @@ remoting.ClientSession.prototype.sendGoogleDriveAccessToken_ = function() {
   var sendError = function(error) {
     console.log('Failed to refresh access token: ' + error.toString());
   };
-  remoting.identity.getNewToken().
+  var googleDriveScopes = [
+    'https://docs.google.com/feeds/',
+    'https://www.googleapis.com/auth/drive'
+  ];
+  remoting.identity.getNewToken(googleDriveScopes).
       then(sendToken).
       catch(remoting.Error.handler(sendError));
   window.setTimeout(this.sendGoogleDriveAccessToken_.bind(this),

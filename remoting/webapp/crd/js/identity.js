@@ -83,14 +83,16 @@ remoting.Identity.prototype.getToken = function(opt_scopes) {
 /**
  * Gets a fresh access token.
  *
+ * @param {Array<string>=} opt_scopes Optional OAuth2 scopes to request, as
+ *     documented in getToken().
  * @return {!Promise<string>} A promise resolved with an access token
  *     or rejected with a remoting.Error.
  */
-remoting.Identity.prototype.getNewToken = function() {
+remoting.Identity.prototype.getNewToken = function(opt_scopes) {
   /** @type {remoting.Identity} */
   var that = this;
 
-  return this.getToken().then(function(/** string */ token) {
+  return this.getToken(opt_scopes).then(function(/** string */ token) {
     return new Promise(function(resolve, reject) {
       chrome.identity.removeCachedAuthToken({'token': token }, function() {
         resolve(that.getToken());
