@@ -20,7 +20,7 @@ cr.define('options', function() {
     /**
      * The VPN providers enabled in the primary user's profile. Each provider
      * has a name. Third-party VPN providers additionally have an extension ID.
-     * @type {!Array<{name: string, extensionID: ?string>}}
+     * @type {!Array<{name: string, extensionID: ?string}>}
      * @private
      */
     providers_: [],
@@ -33,7 +33,7 @@ cr.define('options', function() {
      * @return {string} The resulting display name.
      * @private
      */
-    formatNetworkName_(onc) {
+    formatNetworkName_: function(onc) {
       var networkName = onc.getTranslatedValue('Name');
       if (onc.getActiveValue('VPN.Type') != 'ThirdPartyVPN')
         return networkName;
@@ -51,7 +51,7 @@ cr.define('options', function() {
 
   /**
    * Returns the list of VPN providers enabled in the primary user's profile.
-   * @return {!Array<{name: string, extensionID: ?string>}} The list of VPN
+   * @return {!Array<{name: string, extensionID: ?string}>} The list of VPN
    *     providers enabled in the primary user's profile.
    */
   VPNProviders.getProviders = function() {
@@ -60,7 +60,7 @@ cr.define('options', function() {
 
   /**
    * Replaces the list of VPN providers enabled in the primary user's profile.
-   * @param {!Array<{name: string, extensionID: ?string>}} providers The list
+   * @param {!Array<{name: string, extensionID: ?string}>} providers The list
    *     of VPN providers enabled in the primary user's profile.
    */
   VPNProviders.setProviders = function(providers) {
