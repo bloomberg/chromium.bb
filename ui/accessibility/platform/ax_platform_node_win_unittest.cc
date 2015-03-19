@@ -369,4 +369,40 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleChildAndParent) {
   }
 }
 
+TEST_F(AXPlatformNodeWinTest, TestIAccessible2IndexInParent) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = AX_ROLE_ROOT_WEB_AREA;
+  root.child_ids.push_back(2);
+  root.child_ids.push_back(3);
+
+  AXNodeData left;
+  left.id = 2;
+
+  AXNodeData right;
+  right.id = 3;
+
+  Init(root, left, right);
+  ScopedComPtr<IAccessible> root_iaccessible(GetRootIAccessible());
+  ScopedComPtr<IAccessible2> root_iaccessible2 =
+      ToIAccessible2(root_iaccessible);
+  ScopedComPtr<IAccessible> left_iaccessible(
+      IAccessibleFromNode(GetRootNode()->children()[0]));
+  ScopedComPtr<IAccessible2> left_iaccessible2 =
+      ToIAccessible2(left_iaccessible);
+  ScopedComPtr<IAccessible> right_iaccessible(
+      IAccessibleFromNode(GetRootNode()->children()[1]));
+  ScopedComPtr<IAccessible2> right_iaccessible2 =
+      ToIAccessible2(right_iaccessible);
+
+  LONG index;
+  ASSERT_EQ(E_FAIL, root_iaccessible2->get_indexInParent(&index));
+
+  ASSERT_EQ(S_OK, left_iaccessible2->get_indexInParent(&index));
+  EXPECT_EQ(0, index);
+
+  ASSERT_EQ(S_OK, right_iaccessible2->get_indexInParent(&index));
+  EXPECT_EQ(1, index);
+}
+
 }  // namespace ui

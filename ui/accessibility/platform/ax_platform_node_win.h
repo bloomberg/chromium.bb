@@ -129,14 +129,13 @@ AXPlatformNodeWin
 
   STDMETHODIMP get_attributes(BSTR* attributes) override;
 
+  STDMETHODIMP get_indexInParent(LONG* index_in_parent) override;
+
   //
   // IAccessible2 methods not implemented.
   //
 
   STDMETHODIMP get_attribute(BSTR name, VARIANT* attribute) override {
-    return E_NOTIMPL;
-  }
-  STDMETHODIMP get_indexInParent(LONG* index_in_parent) override {
     return E_NOTIMPL;
   }
   STDMETHODIMP get_extendedRole(BSTR* extended_role) override {

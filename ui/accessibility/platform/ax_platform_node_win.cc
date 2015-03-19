@@ -572,6 +572,15 @@ STDMETHODIMP AXPlatformNodeWin::get_attributes(BSTR* attributes) {
   return S_OK;
 }
 
+STDMETHODIMP AXPlatformNodeWin::get_indexInParent(LONG* index_in_parent) {
+  COM_OBJECT_VALIDATE_1_ARG(index_in_parent);
+  *index_in_parent = GetIndexInParent();
+  if (*index_in_parent < 0)
+    return E_FAIL;
+
+  return S_OK;
+}
+
 //
 // IAccessibleText
 //
