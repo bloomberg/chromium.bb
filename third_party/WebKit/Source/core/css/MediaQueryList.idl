@@ -28,8 +28,8 @@
     // exist as aliases for addEventListener for backwards compatibility
     // with older versions of this interface. See the note at
     // http://dev.w3.org/csswg/cssom-view/#dom-mediaquerylist-removelistener
-    [ImplementedAs=addDeprecatedListener] void addListener(EventListener? listener);
-    [ImplementedAs=removeDeprecatedListener]void removeListener(EventListener? listener);
+    [ImplementedAs=addDeprecatedListener, Custom=CallEpilogue] void addListener(EventListener? listener);
+    [ImplementedAs=removeDeprecatedListener, Custom=CallEpilogue]void removeListener(EventListener? listener);
 
     attribute EventHandler onchange;
 };

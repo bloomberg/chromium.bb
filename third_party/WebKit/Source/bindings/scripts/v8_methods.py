@@ -114,6 +114,7 @@ def method_context(interface, method, is_visible=True):
         not is_do_not_check_security)
 
     is_raises_exception = 'RaisesException' in extended_attributes
+    is_custom_call_epilogue = has_extended_attribute_value(method, 'Custom', 'CallEpilogue')
 
     return {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
@@ -151,7 +152,8 @@ def method_context(interface, method, is_visible=True):
         'is_check_security_for_frame': is_check_security_for_frame,
         'is_check_security_for_node': is_check_security_for_node,
         'is_check_security_for_window': is_check_security_for_window,
-        'is_custom': 'Custom' in extended_attributes,
+        'is_custom': 'Custom' in extended_attributes and not is_custom_call_epilogue,
+        'is_custom_call_epilogue': is_custom_call_epilogue,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_do_not_check_security': is_do_not_check_security,
         'is_do_not_check_signature': 'DoNotCheckSignature' in extended_attributes,

@@ -87,6 +87,11 @@ public:
     static void {{method.name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     {% endfilter %}
     {% endif %}
+    {% if method.is_custom_call_epilogue %}
+    {% filter conditional(method.conditional_string) %}
+    static void {{method.name}}MethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>&, {{cpp_class}}*);
+    {% endfilter %}
+    {% endif %}
     {% endfor %}
     {% if constructors or has_custom_constructor or has_event_constructor %}
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);

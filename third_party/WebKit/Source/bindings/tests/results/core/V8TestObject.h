@@ -57,6 +57,7 @@ public:
     {
     }
     static void customVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void customCallEpilogueVoidMethodMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>&, TestObject*);
 #if ENABLE(CONDITION)
     static void conditionalConditionCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
 #endif // ENABLE(CONDITION)

@@ -514,6 +514,7 @@ interface TestObject {
     [Conditional=CONDITION] void conditionalConditionVoidMethod();
     [Conditional=CONDITION] static void conditionalConditionStaticVoidMethod();
     [Custom] void customVoidMethod();
+    [Custom=CallEpilogue] void customCallEpilogueVoidMethod();
     [Conditional=CONDITION, Custom] void conditionalConditionCustomVoidMethod();
     [CustomElementCallbacks] void customElementCallbacksVoidMethod();
     [DeprecateAs=voidMethod] void deprecatedVoidMethod();

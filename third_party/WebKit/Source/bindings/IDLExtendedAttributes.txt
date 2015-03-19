@@ -43,7 +43,7 @@ Constructor
 # FIXME: remove [ConstructorCallWith=Document], as can instead use
 # [ConstructorCallWith=ExecutionContext] + toDocument(executionContext)
 ConstructorCallWith=ExecutionContext|ScriptState|Document
-Custom=|Getter|Setter|LegacyCallAsFunction|ToV8|VisitDOMWrapper|PropertyGetter|PropertyEnumerator|PropertyQuery
+Custom=|Getter|Setter|LegacyCallAsFunction|ToV8|VisitDOMWrapper|PropertyGetter|PropertyEnumerator|PropertyQuery|CallEpilogue
 CustomConstructor
 CustomElementCallbacks
 Default=Undefined

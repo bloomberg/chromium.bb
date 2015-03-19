@@ -30,7 +30,7 @@
     // legacy content.  http://crbug.com/353484
     // FIXME: type should not be nullable.
     // FIXME: capture should have a default value false.
-    void addEventListener(optional DOMString? type, optional EventListener? listener, optional boolean capture);
-    void removeEventListener(optional DOMString? type, optional EventListener? listener, optional boolean capture);
+    [Custom=CallEpilogue] void addEventListener(optional DOMString? type, optional EventListener? listener, optional boolean capture);
+    [Custom=CallEpilogue] void removeEventListener(optional DOMString? type, optional EventListener? listener, optional boolean capture);
     [RaisesException] boolean dispatchEvent(Event event);
 };

@@ -42,50 +42,14 @@
 
 namespace blink {
 
-void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8History::pushStateMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, History*)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "pushState", "History", info.Holder(), info.GetIsolate());
-
-    if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
-        exceptionState.throwIfNeeded();
-        return;
-    }
-
-    RefPtr<SerializedScriptValue> historyState = SerializedScriptValueFactory::instance().create(info[0], 0, 0, exceptionState, info.GetIsolate());
-    if (exceptionState.throwIfNeeded())
-        return;
-
-    TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, title, info[1]);
-    TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, url, info[2]);
-
-    History* history = V8History::toImpl(info.Holder());
-    history->stateObjectAdded(historyState.release(), title, url, FrameLoadTypeStandard, exceptionState);
     V8HiddenValue::deleteHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::state(info.GetIsolate()));
-    exceptionState.throwIfNeeded();
 }
 
-void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+void V8History::replaceStateMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, History*)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "replaceState", "History", info.Holder(), info.GetIsolate());
-
-    if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
-        exceptionState.throwIfNeeded();
-        return;
-    }
-
-    RefPtr<SerializedScriptValue> historyState = SerializedScriptValueFactory::instance().create(info[0], 0, 0, exceptionState, info.GetIsolate());
-    if (exceptionState.throwIfNeeded())
-        return;
-
-    TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, title, info[1]);
-    TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>, url, info[2]);
-
-    History* history = V8History::toImpl(info.Holder());
-    history->stateObjectAdded(historyState.release(), title, url, FrameLoadTypeRedirectWithLockedBackForwardList, exceptionState);
     V8HiddenValue::deleteHiddenValue(info.GetIsolate(), info.Holder(), V8HiddenValue::state(info.GetIsolate()));
-    exceptionState.throwIfNeeded();
 }
 
 } // namespace blink

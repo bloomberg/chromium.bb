@@ -270,16 +270,8 @@ else
 {{v8_set_return_value}};
 {% endif %}
 {%- endif %}{# None for void #}
-{# Post-set #}
-{% if interface_name in ('EventTarget', 'MediaQueryList')
-    and method.name in ('addEventListener', 'removeEventListener', 'addListener', 'removeListener') %}
-{% set hidden_dependency_action = 'addHiddenValueToArray'
-       if method.name in ('addEventListener', 'addListener') else 'removeHiddenValueFromArray' %}
-{% set argument_index = '1' if interface_name == 'EventTarget' else '0' %}
-{# Length check needed to skip action on legacy calls without enough arguments.
-   http://crbug.com/353484 #}
-if (info.Length() >= {{argument_index}} + 1 && listener && !impl->toNode())
-    {{hidden_dependency_action}}(info.GetIsolate(), info.Holder(), info[{{argument_index}}], {{v8_class}}::eventListenerCacheIndex);
+{% if method.is_custom_call_epilogue %}
+{{v8_class}}::{{method.name}}MethodEpilogueCustom(info, impl);
 {% endif %}
 {% endmacro %}
 

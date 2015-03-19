@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2015 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,38 +29,20 @@
  */
 
 #include "config.h"
-#include "bindings/core/v8/V8EventTarget.h"
-
-#include "bindings/core/v8/V8Window.h"
-#include "core/EventTargetNames.h"
+#include "bindings/core/v8/V8MediaQueryList.h"
 
 namespace blink {
 
-v8::Handle<v8::Value> toV8(EventTarget* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+void V8MediaQueryList::addListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, MediaQueryList* impl)
 {
-    if (UNLIKELY(!impl))
-        return v8::Null(isolate);
-
-    // FIXME: This naming seems broken.
-    if (impl->interfaceName() == EventTargetNames::LocalDOMWindow)
-        return toV8(static_cast<DOMWindow*>(impl), creationContext, isolate);
-
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return impl->wrap(creationContext, isolate);
+    if (info.Length() >= 1 && info[0]->IsObject() && !impl->toNode())
+        addHiddenValueToArray(info.GetIsolate(), info.Holder(), info[0], V8EventTarget::eventListenerCacheIndex);
 }
 
-void V8EventTarget::addEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget* impl)
+void V8MediaQueryList::removeListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, MediaQueryList* impl)
 {
-    if (info.Length() >= 2 && info[1]->IsObject() && !impl->toNode())
-        addHiddenValueToArray(info.GetIsolate(), info.Holder(), info[1], V8EventTarget::eventListenerCacheIndex);
-}
-
-void V8EventTarget::removeEventListenerMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, EventTarget* impl)
-{
-    if (info.Length() >= 2 && info[1]->IsObject() && !impl->toNode())
-        removeHiddenValueFromArray(info.GetIsolate(), info.Holder(), info[1], V8EventTarget::eventListenerCacheIndex);
+    if (info.Length() >= 1 && info[0]->IsObject() && !impl->toNode())
+        removeHiddenValueFromArray(info.GetIsolate(), info.Holder(), info[0], V8EventTarget::eventListenerCacheIndex);
 }
 
 } // namespace blink

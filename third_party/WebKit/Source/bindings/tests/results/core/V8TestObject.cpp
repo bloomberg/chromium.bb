@@ -10017,6 +10017,20 @@ static void customVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void customCallEpilogueVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    impl->customCallEpilogueVoidMethod();
+    V8TestObject::customCallEpilogueVoidMethodMethodEpilogueCustom(info, impl);
+}
+
+static void customCallEpilogueVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::customCallEpilogueVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 #if ENABLE(CONDITION)
 static void conditionalConditionCustomVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -12430,6 +12444,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"conditionalConditionVoidMethod", TestObjectV8Internal::conditionalConditionVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 #endif // ENABLE(CONDITION)
     {"customVoidMethod", TestObjectV8Internal::customVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"customCallEpilogueVoidMethod", TestObjectV8Internal::customCallEpilogueVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 #if ENABLE(CONDITION)
     {"conditionalConditionCustomVoidMethod", TestObjectV8Internal::conditionalConditionCustomVoidMethodMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
 #endif // ENABLE(CONDITION)

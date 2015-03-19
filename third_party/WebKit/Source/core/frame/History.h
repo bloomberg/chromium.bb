@@ -58,6 +58,16 @@ public:
     void forward(ExecutionContext*);
     void go(ExecutionContext*, int distance);
 
+    void pushState(PassRefPtr<SerializedScriptValue> data, const String& title, const String& url, ExceptionState& exceptionState)
+    {
+        stateObjectAdded(data, title, url, FrameLoadTypeStandard, exceptionState);
+    }
+
+    void replaceState(PassRefPtr<SerializedScriptValue> data, const String& title, const String& url, ExceptionState& exceptionState)
+    {
+        stateObjectAdded(data, title, url, FrameLoadTypeRedirectWithLockedBackForwardList, exceptionState);
+    }
+
     bool stateChanged() const;
     bool isSameAsCurrentState(SerializedScriptValue*) const;
 
