@@ -52,10 +52,6 @@ void WebSchedulerImpl::postTimerTask(
       base::TimeDelta::FromMilliseconds(delayMs));
 }
 
-void WebSchedulerImpl::shutdown() {
-  task_runner_ = nullptr;
-}
-
 // static
 void WebSchedulerImpl::RunIdleTask(
     scoped_ptr<blink::WebScheduler::IdleTask> task) {

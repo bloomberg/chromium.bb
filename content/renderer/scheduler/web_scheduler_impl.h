@@ -39,7 +39,6 @@ class CONTENT_EXPORT WebSchedulerImpl : public blink::WebScheduler {
   virtual void postTimerTask(const blink::WebTraceLocation& location,
                              blink::WebThread::Task* task,
                              long long delayMs);
-  virtual void shutdown();
 
  private:
   static void runIdleTask(scoped_ptr<blink::WebScheduler::IdleTask> task,

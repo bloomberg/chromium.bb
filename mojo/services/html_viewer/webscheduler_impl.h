@@ -26,7 +26,6 @@ class WebSchedulerImpl : public blink::WebScheduler {
   virtual void postTimerTask(const blink::WebTraceLocation& location,
                              blink::WebThread::Task* task,
                              long long delayMs);
-  virtual void shutdown();
 
   static void RunIdleTask(scoped_ptr<blink::WebScheduler::IdleTask> task);
   static void RunTask(scoped_ptr<blink::WebThread::Task> task);

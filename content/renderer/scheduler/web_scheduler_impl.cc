@@ -99,8 +99,4 @@ void WebSchedulerImpl::postTimerTask(
       base::TimeDelta::FromMilliseconds(delayMs));
 }
 
-void WebSchedulerImpl::shutdown() {
-  // TODO(rmcilroy): Delete this method once the blink side is removed.
-}
-
 }  // namespace content
