@@ -571,6 +571,8 @@
             'layout/PointerEventsHitRules.h',
             'layout/LayoutDeprecatedFlexibleBox.cpp',
             'layout/LayoutDeprecatedFlexibleBox.h',
+            'layout/LayoutAnalyzer.cpp',
+            'layout/LayoutAnalyzer.h',
             'layout/LayoutApplet.cpp',
             'layout/LayoutApplet.h',
             'layout/LayoutBlock.cpp',
