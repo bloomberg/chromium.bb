@@ -98,6 +98,9 @@ remoting.ClientPluginImpl = function(container,
 
   /** @private {remoting.CredentialsProvider} */
   this.credentials_ = null;
+
+  /** @private {string} */
+  this.keyRemappings_ = '';
 };
 
 /**
@@ -494,6 +497,73 @@ remoting.ClientPluginImpl.prototype.connect =
 remoting.ClientPluginImpl.prototype.releaseAllKeys = function() {
   this.plugin_.postMessage(JSON.stringify(
       { method: 'releaseAllKeys', data: {} }));
+};
+
+/**
+ * Sets and stores the key remapping setting for the current host.
+ *
+ * @param {string} remappings Comma separated list of key remappings.
+ */
+remoting.ClientPluginImpl.prototype.setRemapKeys =
+    function(remappings) {
+  // Cancel any existing remappings and apply the new ones.
+  this.applyRemapKeys_(this.keyRemappings_, false);
+  this.applyRemapKeys_(remappings, true);
+  this.keyRemappings_ = remappings;
+};
+
+/**
+ * Applies the configured key remappings to the session, or resets them.
+ *
+ * @param {string} remapKeys
+ * @param {boolean} apply True to apply remappings, false to cancel them.
+ * @private
+ */
+remoting.ClientPluginImpl.prototype.applyRemapKeys_ =
+    function(remapKeys, apply) {
+  if (remapKeys == '') {
+    return;
+  }
+
+  var remappings = remapKeys.split(',');
+  for (var i = 0; i < remappings.length; ++i) {
+    var keyCodes = remappings[i].split('>');
+    if (keyCodes.length != 2) {
+      console.log('bad remapKey: ' + remappings[i]);
+      continue;
+    }
+    var fromKey = parseInt(keyCodes[0], 0);
+    var toKey = parseInt(keyCodes[1], 0);
+    if (!fromKey || !toKey) {
+      console.log('bad remapKey code: ' + remappings[i]);
+      continue;
+    }
+    if (apply) {
+      console.log('remapKey 0x' + fromKey.toString(16) +
+                  '>0x' + toKey.toString(16));
+      this.remapKey(fromKey, toKey);
+    } else {
+      console.log('cancel remapKey 0x' + fromKey.toString(16));
+      this.remapKey(fromKey, fromKey);
+    }
+  }
+};
+
+/**
+ * Sends a key combination to the remoting host, by sending down events for
+ * the given keys, followed by up events in reverse order.
+ *
+ * @param {Array<number>} keys Key codes to be sent.
+ * @return {void} Nothing.
+ */
+remoting.ClientPluginImpl.prototype.injectKeyCombination =
+    function(keys) {
+  for (var i = 0; i < keys.length; i++) {
+    this.injectKeyEvent(keys[i], true);
+  }
+  for (var i = 0; i < keys.length; i++) {
+    this.injectKeyEvent(keys[i], false);
+  }
 };
 
 /**

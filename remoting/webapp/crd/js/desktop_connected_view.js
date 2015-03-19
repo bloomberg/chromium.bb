@@ -15,14 +15,11 @@ var remoting = remoting || {};
 /**
  * @param {HTMLElement} container
  * @param {remoting.ConnectionInfo} connectionInfo
- * @param {string} defaultRemapKeys The default set of remap keys, to use
- *     when the client doesn't define any.
  * @constructor
  * @extends {base.EventSourceImpl}
  * @implements {base.Disposable}
  */
-remoting.DesktopConnectedView = function(container, connectionInfo,
-                                         defaultRemapKeys) {
+remoting.DesktopConnectedView = function(container, connectionInfo) {
 
   /** @private {HTMLElement} */
   this.container_ = container;
@@ -38,9 +35,6 @@ remoting.DesktopConnectedView = function(container, connectionInfo,
 
   /** @private */
   this.mode_ = connectionInfo.mode();
-
-  /** @private {string} */
-  this.defaultRemapKeys_ = defaultRemapKeys;
 
   /** @private {remoting.DesktopViewport} */
   this.viewport_ = null;
@@ -156,11 +150,6 @@ remoting.DesktopConnectedView.prototype.initPlugin_ = function() {
     sendCadElement.hidden = true;
   }
 
-  // Apply customized key remappings if the plugin supports remapKeys.
-  if (this.plugin_.hasFeature(remoting.ClientPlugin.Feature.REMAP_KEY)) {
-    this.applyRemapKeys_(true);
-  }
-
   if (this.session_.hasCapability(
           remoting.ClientSession.Capability.VIDEO_RECORDER)) {
     this.videoFrameRecorder_ = new remoting.VideoFrameRecorder(this.plugin_);
@@ -254,83 +243,13 @@ remoting.DesktopConnectedView.prototype.onFullScreenChanged_ = function (
 };
 
 /**
- * Sets and stores the key remapping setting for the current host.
- *
- * @param {string} remappings Comma separated list of key remappings.
- */
-remoting.DesktopConnectedView.prototype.setRemapKeys = function(remappings) {
-  // Cancel any existing remappings and apply the new ones.
-  this.applyRemapKeys_(false);
-  this.host_.options.remapKeys = remappings;
-  this.applyRemapKeys_(true);
-
-  // Save the new remapping setting.
-  this.host_.options.save();
-};
-
-/**
- * Applies the configured key remappings to the session, or resets them.
- *
- * @param {boolean} apply True to apply remappings, false to cancel them.
- */
-remoting.DesktopConnectedView.prototype.applyRemapKeys_ = function(apply) {
-  var remapKeys = this.host_.options.remapKeys;
-  if (remapKeys == '') {
-    remapKeys = this.defaultRemapKeys_;
-    if (remapKeys == '') {
-      return;
-    }
-  }
-
-  var remappings = remapKeys.split(',');
-  for (var i = 0; i < remappings.length; ++i) {
-    var keyCodes = remappings[i].split('>');
-    if (keyCodes.length != 2) {
-      console.log('bad remapKey: ' + remappings[i]);
-      continue;
-    }
-    var fromKey = parseInt(keyCodes[0], 0);
-    var toKey = parseInt(keyCodes[1], 0);
-    if (!fromKey || !toKey) {
-      console.log('bad remapKey code: ' + remappings[i]);
-      continue;
-    }
-    if (apply) {
-      console.log('remapKey 0x' + fromKey.toString(16) +
-                  '>0x' + toKey.toString(16));
-      this.plugin_.remapKey(fromKey, toKey);
-    } else {
-      console.log('cancel remapKey 0x' + fromKey.toString(16));
-      this.plugin_.remapKey(fromKey, fromKey);
-    }
-  }
-};
-
-/**
- * Sends a key combination to the remoting client, by sending down events for
- * the given keys, followed by up events in reverse order.
- *
- * @param {Array<number>} keys Key codes to be sent.
- * @return {void} Nothing.
- * @private
- */
-remoting.DesktopConnectedView.prototype.sendKeyCombination_ = function(keys) {
-  for (var i = 0; i < keys.length; i++) {
-    this.plugin_.injectKeyEvent(keys[i], true);
-  }
-  for (var i = 0; i < keys.length; i++) {
-    this.plugin_.injectKeyEvent(keys[i], false);
-  }
-};
-
-/**
  * Sends a Ctrl-Alt-Del sequence to the remoting client.
  *
  * @return {void} Nothing.
  */
 remoting.DesktopConnectedView.prototype.sendCtrlAltDel = function() {
   console.log('Sending Ctrl-Alt-Del.');
-  this.sendKeyCombination_([0x0700e0, 0x0700e2, 0x07004c]);
+  this.plugin_.injectKeyCombination([0x0700e0, 0x0700e2, 0x07004c]);
 };
 
 /**
@@ -340,7 +259,7 @@ remoting.DesktopConnectedView.prototype.sendCtrlAltDel = function() {
  */
 remoting.DesktopConnectedView.prototype.sendPrintScreen = function() {
   console.log('Sending Print Screen.');
-  this.sendKeyCombination_([0x070046]);
+  this.plugin_.injectKeyCombination([0x070046]);
 };
 
 /**

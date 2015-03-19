@@ -28,15 +28,12 @@ remoting.clientSession = null;
  *     the connection fails.
  * @param {Array<string>} requiredCapabilities Connector capabilities
  *     required by this application.
- * @param {string} defaultRemapKeys The default set of key mappings for the
- *     client session to use.
  * @constructor
  * @implements {remoting.SessionConnector}
  */
 remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
                                          onConnectionFailed,
-                                         requiredCapabilities,
-                                         defaultRemapKeys) {
+                                         requiredCapabilities) {
   /** @private {HTMLElement} */
   this.clientContainer_ = clientContainer;
 
@@ -51,9 +48,6 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
 
   /** @private {Array<string>} */
   this.requiredCapabilities_ = requiredCapabilities;
-
-  /** @private {string} */
-  this.defaultRemapKeys_ = defaultRemapKeys;
 
   /** @private {remoting.DesktopConnectedView.Mode} */
   this.connectionMode_ = remoting.DesktopConnectedView.Mode.ME2ME;
@@ -555,16 +549,13 @@ remoting.DefaultSessionConnectorFactory = function() {};
  *     the connection fails.
  * @param {Array<string>} requiredCapabilities Connector capabilities
  *     required by this application.
- * @param {string} defaultRemapKeys The default set of key mappings to use
- *     in the client session.
  * @return {remoting.SessionConnector}
  */
 remoting.DefaultSessionConnectorFactory.prototype.createConnector =
     function(clientContainer, onConnected, onError,
-             onConnectionFailed, requiredCapabilities, defaultRemapKeys) {
+             onConnectionFailed, requiredCapabilities) {
   return new remoting.SessionConnectorImpl(clientContainer, onConnected,
                                            onError,
                                            onConnectionFailed,
-                                           requiredCapabilities,
-                                           defaultRemapKeys);
+                                           requiredCapabilities);
 };

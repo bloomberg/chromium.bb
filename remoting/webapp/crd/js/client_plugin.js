@@ -49,6 +49,22 @@ remoting.ClientPlugin.prototype.injectKeyEvent =
     function(key, down) {};
 
 /**
+ * Sends a key combination to the host, by sending down events for
+ * the given keys, followed by up events in reverse order.
+ *
+ * @param {Array<number>} keys Key codes to be sent.
+ * @return {void} Nothing.
+ */
+remoting.ClientPlugin.prototype.injectKeyCombination = function(keys) {};
+
+/**
+ * Sets and stores the key remapping setting for the current host.
+ *
+ * @param {string} remappings Comma separated list of key remappings.
+ */
+remoting.ClientPlugin.prototype.setRemapKeys = function(remappings) {};
+
+/**
  * @param {number} from
  * @param {number} to
  */

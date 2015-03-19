@@ -211,18 +211,6 @@ remoting.AppRemoting.prototype.runApplicationUrl = function() {
 };
 
 /**
- * @return {string} The default remap keys for the current platform.
- */
-remoting.AppRemoting.prototype.getDefaultRemapKeys = function() {
-  // Map Cmd to Ctrl on Mac since hosts typically use Ctrl for keyboard
-  // shortcuts, but we want them to act as natively as possible.
-  if (remoting.platformIsMac()) {
-    return '0x0700e3>0x0700e0,0x0700e7>0x0700e4';
-  }
-  return '';
-};
-
-/**
  * Called when a new session has been connected.
  *
  * @param {remoting.ConnectionInfo} connectionInfo
@@ -249,8 +237,13 @@ remoting.AppRemoting.prototype.handleConnected = function(connectionInfo) {
   // TODO(kelvinp): Move all app remoting specific logic into
   // remoting.AppRemotingView.
   this.connectedView_ = new remoting.DesktopConnectedView(
-      document.getElementById('client-container'), connectionInfo,
-      this.getDefaultRemapKeys());
+      document.getElementById('client-container'), connectionInfo);
+
+  // Map Cmd to Ctrl on Mac since hosts typically use Ctrl for keyboard
+  // shortcuts, but we want them to act as natively as possible.
+  if (remoting.platformIsMac()) {
+    connectionInfo.plugin().setRemapKeys('0x0700e3>0x0700e0,0x0700e7>0x0700e4');
+  }
 };
 
 /**

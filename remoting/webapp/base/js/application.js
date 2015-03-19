@@ -180,8 +180,7 @@ remoting.Application.prototype.getSessionConnector = function() {
         this.onConnected.bind(this),
         this.onError.bind(this),
         this.onConnectionFailed.bind(this),
-        this.appCapabilities_,
-        this.delegate_.getDefaultRemapKeys());
+        this.appCapabilities_);
   }
   return this.sessionConnector_;
 };
@@ -265,11 +264,6 @@ remoting.Application.Delegate.prototype.signInFailed = function(error) {};
  * @return {string} Application product name to be used in UI.
  */
 remoting.Application.Delegate.prototype.getApplicationName = function() {};
-
-/**
- * @return {string} The default remap keys for the current platform.
- */
-remoting.Application.Delegate.prototype.getDefaultRemapKeys = function() {};
 
 /**
  * Called when a new session has been connected.

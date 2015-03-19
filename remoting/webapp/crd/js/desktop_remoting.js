@@ -156,19 +156,6 @@ remoting.DesktopRemoting.prototype.getApplicationName = function() {
 };
 
 /**
- * @return {string} The default remap keys for the current platform.
- */
-remoting.DesktopRemoting.prototype.getDefaultRemapKeys = function() {
-  var remapKeys = '';
-  // By default, under ChromeOS, remap the right Control key to the right
-  // Win / Cmd key.
-  if (remoting.platformIsChromeOS()) {
-    remapKeys = '0x0700e4>0x0700e7';
-  }
-  return remapKeys;
-};
-
-/**
  * Called when a new session has been connected.
  *
  * @param {remoting.ConnectionInfo} connectionInfo
@@ -198,8 +185,13 @@ remoting.DesktopRemoting.prototype.handleConnected = function(connectionInfo) {
   }
 
   this.connectedView_ = new remoting.DesktopConnectedView(
-      document.getElementById('client-container'), connectionInfo,
-      this.getDefaultRemapKeys());
+      document.getElementById('client-container'), connectionInfo);
+
+  // By default, under ChromeOS, remap the right Control key to the right
+  // Win / Cmd key.
+  if (remoting.platformIsChromeOS()) {
+    connectionInfo.plugin().setRemapKeys('0x0700e4>0x0700e7');
+  }
 
   if (connectionInfo.mode() === remoting.DesktopConnectedView.Mode.ME2ME) {
     var sessionConnector = remoting.app.getSessionConnector();
