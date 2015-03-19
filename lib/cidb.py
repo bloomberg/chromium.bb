@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import collections
 import datetime
 import glob
 import logging
@@ -25,6 +26,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import retry_stats
 from chromite.lib import clactions
 from chromite.lib import factory
+from chromite.lib import osutils
 
 CIDB_MIGRATIONS_DIR = os.path.join(constants.CHROMITE_DIR, 'cidb',
                                    'migrations')
@@ -95,13 +97,51 @@ class StrictModeListener(sqlalchemy.interfaces.PoolListener):
     cur.close()
 
 
+# Tuple to keep arguments that modify SQL query retry behaviour of
+# SchemaVersionedMySQLConnection.
+SqlConnectionRetryArgs = collections.namedtuple(
+    'SqlConnectionRetryArgs',
+    ('max_retry', 'sleep', 'backoff_factor'))
+
+
 class SchemaVersionedMySQLConnection(object):
   """Connection to a database that is aware of its schema version."""
 
   SCHEMA_VERSION_TABLE_NAME = 'schemaVersionTable'
   SCHEMA_VERSION_COL = 'schemaVersion'
 
-  def __init__(self, db_name, db_migrations_dir, db_credentials_dir):
+  def _UpdateConnectUrlArgs(self, key, db_credentials_dir, filename):
+    """Read an argument for the sql connection from the given file.
+
+    side effect: store argument in self._connect_url_args
+
+    Args:
+      key: Name of the argument to read.
+      db_credentials_dir: The directory containing the credentials.
+      filename: Name of the file to read.
+    """
+    file_path = os.path.join(db_credentials_dir, filename)
+    if os.path.exists(file_path):
+      self._connect_url_args[key] = osutils.ReadFile(file_path).strip()
+
+  def _UpdateSslArgs(self, key, db_credentials_dir, filename):
+    """Read an ssl argument for the sql connection from the given file.
+
+    side effect: store argument in self._ssl_args
+
+    Args:
+      key: Name of the ssl argument to read.
+      db_credentials_dir: The directory containing the credentials.
+      filename: Name of the file to read.
+    """
+    file_path = os.path.join(db_credentials_dir, filename)
+    if os.path.exists(file_path):
+      if 'ssl' not in self._ssl_args:
+        self._ssl_args['ssl'] = {}
+      self._ssl_args['ssl'][key] = file_path
+
+  def __init__(self, db_name, db_migrations_dir, db_credentials_dir,
+               query_retry_args=SqlConnectionRetryArgs(8, 4, 2)):
     """SchemaVersionedMySQLConnection constructor.
 
     Args:
@@ -110,9 +150,13 @@ class SchemaVersionedMySQLConnection(object):
                          for this database.
       db_credentials_dir: Absolute path to directory containing connection
                           information to the database. Specifically, this
-                          directory should contain files names user.txt,
-                          password.txt, host.txt, client-cert.pem,
-                          client-key.pem, and server-ca.pem
+                          directory may contain files names user.txt,
+                          password.txt, host.txt, port.txt, client-cert.pem,
+                          client-key.pem, and server-ca.pem This object will
+                          silently drop the relevant mysql commandline flags for
+                          missing files in the directory.
+      query_retry_args: An optional SqlConnectionRetryArgs tuple to tweak the
+                        retry behaviour of SQL queries.
     """
     # None, or a sqlalchemy.MetaData instance
     self._meta = None
@@ -125,22 +169,22 @@ class SchemaVersionedMySQLConnection(object):
     self.db_migrations_dir = db_migrations_dir
     self.db_credentials_dir = db_credentials_dir
     self.db_name = db_name
+    self.query_retry_args = query_retry_args
 
-    with open(os.path.join(db_credentials_dir, 'password.txt')) as f:
-      password = f.read().strip()
-    with open(os.path.join(db_credentials_dir, 'host.txt')) as f:
-      host = f.read().strip()
-    with open(os.path.join(db_credentials_dir, 'user.txt')) as f:
-      user = f.read().strip()
+    # mysql args that are optionally provided by files in db_credentials_dir
+    self._connect_url_args = {}
+    self._ssl_args = {}
 
-    cert = os.path.join(db_credentials_dir, 'client-cert.pem')
-    key = os.path.join(db_credentials_dir, 'client-key.pem')
-    ca = os.path.join(db_credentials_dir, 'server-ca.pem')
-    self._ssl_args = {'ssl': {'cert': cert, 'key': key, 'ca': ca}}
+    self._UpdateConnectUrlArgs('host', db_credentials_dir, 'host.txt')
+    self._UpdateConnectUrlArgs('port', db_credentials_dir, 'port.txt')
+    self._UpdateConnectUrlArgs('username', db_credentials_dir, 'user.txt')
+    self._UpdateConnectUrlArgs('password', db_credentials_dir, 'password.txt')
 
-    connect_url = sqlalchemy.engine.url.URL('mysql', username=user,
-                                            password=password,
-                                            host=host)
+    self._UpdateSslArgs('cert', db_credentials_dir, 'client-cert.pem')
+    self._UpdateSslArgs('key', db_credentials_dir, 'client-key.pem')
+    self._UpdateSslArgs('ca', db_credentials_dir, 'server-ca.pem')
+
+    connect_url = sqlalchemy.engine.url.URL('mysql', **self._connect_url_args)
 
     # Create a temporary engine to connect to the mysql instance, and check if
     # a database named |db_name| exists. If not, create one. We use a temporary
@@ -160,9 +204,9 @@ class SchemaVersionedMySQLConnection(object):
     # Now create the persistent connection to the database named |db_name|.
     # If there is a schema version table, read the current schema version
     # from it. Otherwise, assume schema_version 0.
-    self._connect_url = sqlalchemy.engine.url.URL('mysql', username=user,
-                                                  password=password,
-                                                  host=host, database=db_name)
+    self._connect_url_args['database'] = db_name
+    self._connect_url = sqlalchemy.engine.url.URL('mysql',
+                                                  **self._connect_url_args)
 
     self.schema_version = self.QuerySchemaVersion()
 
@@ -453,9 +497,9 @@ class SchemaVersionedMySQLConnection(object):
     return retry_stats.RetryWithStats(
         retry_stats.CIDB,
         handler=_IsRetryableException,
-        max_retry=8,
-        sleep=4,
-        backoff_factor=2,
+        max_retry=self.query_retry_args.max_retry,
+        sleep=self.query_retry_args.sleep,
+        backoff_factor=self.query_retry_args.backoff_factor,
         functor=f)
 
   def _GetEngine(self):
@@ -502,9 +546,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
   NUM_RESULTS_NO_LIMIT = -1
 
-  def __init__(self, db_credentials_dir):
+  def __init__(self, db_credentials_dir, *args, **kwargs):
     super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
-                                         db_credentials_dir)
+                                         db_credentials_dir, *args, **kwargs)
 
   def GetTime(self):
     """Gets the current time, according to database.
