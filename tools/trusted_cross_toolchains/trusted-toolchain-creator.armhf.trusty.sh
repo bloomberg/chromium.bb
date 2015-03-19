@@ -324,27 +324,6 @@ InstallCrossArmBasePackages() {
 #
 ######################################################################
 
-#@
-#@ InstallTrustedLinkerScript
-#@
-#@     This forces the loading address of sel_ldr like programs
-#@     to higher memory areas where they do not conflict with
-#@     untrusted binaries.
-#@     This likely no longer used because of "nacl_helper_bootstrap".
-InstallTrustedLinkerScript() {
-  local trusted_ld_script=${INSTALL_ROOT}/ld_script_arm_trusted
-  # We are using the output of "ld --verbose" which contains
-  # the linker script delimited by "=========".
-  # We are changing the image start address to 70000000
-  # to move the sel_ldr and other images "out of the way"
-  Banner "installing trusted linker script to ${trusted_ld_script}"
-
-  arm-linux-gnueabihf-ld  --verbose |\
-      grep -A 10000 "=======" |\
-      grep -v "=======" |\
-      sed -e 's/00008000/70000000/g' > ${trusted_ld_script}
-}
-
 HacksAndPatches() {
   rel_path=toolchain/linux_x86/arm_trusted
   Banner "Misc Hacks & Patches"
@@ -356,12 +335,6 @@ HacksAndPatches() {
   SubBanner "Rewriting Linker Scripts"
   sed -i -e 's|/usr/lib/arm-linux-gnueabihf/||g' ${lscripts}
   sed -i -e 's|/lib/arm-linux-gnueabihf/||g' ${lscripts}
-
-  # This is for chrome's ./build/linux/pkg-config-wrapper
-  # which overwrites PKG_CONFIG_PATH internally
-  SubBanner "Package Configs Symlink"
-  mkdir -p ${rel_path}/usr/share
-  ln -s ../lib/arm-linux-gnueabihf/pkgconfig ${rel_path}/usr/share/pkgconfig
 }
 
 
@@ -459,11 +432,12 @@ BuildAndInstallQemu() {
   patch -p1 < ${QEMU_PATCH}
 
   SubBanner "Configuring"
-  env -i PATH=/usr/bin/:/bin \
+  env -i PATH=/usr/bin/:/bin LIBS=-lrt \
     ./configure \
     --extra-cflags="-m32" \
     --extra-ldflags="-Wl,-rpath=/lib32" \
     --disable-system \
+    --disable-docs \
     --enable-linux-user \
     --disable-darwin-user \
     --disable-bsd-user \
@@ -495,7 +469,6 @@ BuildJail() {
     ${ARMHF_BASE_DEP_FILES} \
     ${ARMHF_EXTRA_DEP_FILES}
   CleanupJailSymlinks
-  InstallTrustedLinkerScript
   HacksAndPatches
   BuildAndInstallQemu
   CreateTarBall $1

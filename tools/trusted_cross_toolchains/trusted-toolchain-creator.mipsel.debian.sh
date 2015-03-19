@@ -391,21 +391,6 @@ DownloadOrCopyAndInstallToolchain() {
 }
 
 
-InstallTrustedLinkerScript() {
-  local trusted_ld_script=${INSTALL_ROOT}/ld_script_mips_trusted
-  # We are using the output of "ld --verbose" which contains
-  # the linker script delimited by "=========".
-  # We are changing the image start address to 70000000
-  # to move the sel_ldr and other images "out of the way"
-  Banner "installing trusted linker script to ${trusted_ld_script}"
-
-  ${INSTALL_ROOT}/bin/mipsel-linux-gnu-ld  --verbose |\
-      grep -A 10000 "=======" |\
-      grep -v "=======" |\
-      sed -e 's/0400000/70000000/g' > ${trusted_ld_script}
-}
-
-
 # ----------------------------------------------------------------------
 # mips32 deb files to complete our code sourcery jail
 # ----------------------------------------------------------------------
@@ -601,7 +586,6 @@ elif [[ $1 == "nacl_sdk" || $1 == "chrome_sdk" ]] ; then
   InstallMissingLibraries $1
   FixLinks
   if [[ $1 == "nacl_sdk" ]] ; then
-    InstallTrustedLinkerScript
     BuildAndInstallQemu
     CreateTarBall $1
   else
