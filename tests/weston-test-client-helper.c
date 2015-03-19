@@ -579,8 +579,10 @@ client_create(int x, int y, int width, int height)
 	client->wl_registry = wl_display_get_registry(client->wl_display);
 	wl_registry_add_listener(client->wl_registry, &registry_listener, client);
 
-	/* trigger global listener */
-	wl_display_dispatch(client->wl_display);
+	/* trigger global listener. Need to dispatch two times, because wl_shm
+	 * will emit new events after binding and we need them to arrive
+	 * before continuing */
+	wl_display_roundtrip(client->wl_display);
 	wl_display_roundtrip(client->wl_display);
 
 	/* must have WL_SHM_FORMAT_ARGB32 */
