@@ -28,6 +28,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -119,6 +120,7 @@ void RecordSSLExpirationPageEventState(bool expired_but_previously_allowed,
 }
 
 void LaunchDateAndTimeSettings() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   // The code for each OS is completely separate, in order to avoid bugs like
   // https://crbug.com/430877 .
 #if defined(OS_ANDROID)
@@ -492,7 +494,8 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
     case CMD_OPEN_DATE_SETTINGS: {
       metrics_helper_->RecordUserInteraction(
           SecurityInterstitialMetricsHelper::OPEN_TIME_SETTINGS);
-      LaunchDateAndTimeSettings();
+      content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+                                       base::Bind(&LaunchDateAndTimeSettings));
       break;
     }
     case CMD_OPEN_DIAGNOSTIC:
