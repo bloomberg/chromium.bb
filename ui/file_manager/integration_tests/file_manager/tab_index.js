@@ -32,11 +32,11 @@ testcase.searchBoxFocus = function() {
       remoteCall.waitForElement(appId, ['#search-box input:focus']).
           then(this.next);
     },
-    // Press the Tab key.
+    // Press the Esc key.
     function(element) {
       remoteCall.callRemoteTestUtil('fakeKeyDown',
                                     appId,
-                                    ['body', 'U+0009', false],
+                                    ['#search-box input', 'U+001B', false],
                                     this.next);
     },
     // Check that the file list has the focus.
