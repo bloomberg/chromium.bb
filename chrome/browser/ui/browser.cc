@@ -55,6 +55,7 @@
 #include "chrome/browser/extensions/api/tabs/tabs_windows_api.h"
 #include "chrome/browser/extensions/browser_extension_window_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
@@ -2413,19 +2414,33 @@ bool Browser::ShouldShowLocationBar() const {
   if (is_type_tabbed())
     return true;
 
-  // Trusted app windows and system windows never show a location bar.
-  return !is_app() && !is_trusted_source();
+  // Non-app windows that aren't tabbed or system windows should always show a
+  // location bar, unless they are from a trusted source.
+  if (!is_app())
+    return !is_trusted_source();
+
+  if (ShouldUseWebAppFrame())
+    return false;
+
+  // Bookmark apps should show the location bar.
+  const std::string extension_id =
+      web_app::GetExtensionIdFromApplicationName(app_name());
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
+          extension_id, extensions::ExtensionRegistry::EVERYTHING);
+  return extensions::ui_util::ShouldShowLocationBar(
+      extension, tab_strip_model_->GetActiveWebContents());
 }
 
 bool Browser::ShouldUseWebAppFrame() const {
-  // Only use the web app frame for apps in ash, and only if bookmark apps are
-  // enabled.
+  // Only use the web app frame for apps in ash, and only if the web app frame
+  // is enabled.
   if (!is_app() || host_desktop_type() != chrome::HOST_DESKTOP_TYPE_ASH ||
       !IsWebAppFrameEnabled()) {
     return false;
   }
 
-  // Use the web app frame for hosted apps (which include bookmark apps).
+  // Use the web app frame for hosted apps.
   const std::string extension_id =
       web_app::GetExtensionIdFromApplicationName(app_name());
   const extensions::Extension* extension =

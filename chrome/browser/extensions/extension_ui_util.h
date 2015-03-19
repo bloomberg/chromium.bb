@@ -7,6 +7,7 @@
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 namespace extensions {
@@ -45,6 +46,11 @@ bool ShouldDisplayInExtensionSettings(const Extension* extension,
 // as well as ephemeral apps.
 bool ShouldNotBeVisible(const Extension* extension,
                         content::BrowserContext* context);
+
+// Returns true if the location bar should be shown for |web_contents| when
+// viewed in the context of the app represented by |extension|.
+bool ShouldShowLocationBar(const Extension* extension,
+                           const content::WebContents* web_contents);
 
 }  // namespace ui_util
 }  // namespace extensions

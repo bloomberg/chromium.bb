@@ -1,0 +1,13 @@
+{
+  "name": "App Test",
+  "version": "1",
+  "manifest_version": 2,
+  "permissions": [
+    "notifications"
+  ],
+  "app": {
+    "launch": {
+      "web_url": "https://www.example.com/empty.html"
+    }
+  }
+}

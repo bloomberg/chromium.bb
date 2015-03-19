@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
@@ -1385,6 +1386,128 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
       app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
+}
+
+// Check that the location bar is shown correctly for bookmark apps.
+IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBarForBookmarkApp) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableNewBookmarkApps);
+  ASSERT_TRUE(test_server()->Start());
+
+  // Setup the test server.
+  host_resolver()->AddRule("www.foo.com", "127.0.0.1");
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+
+  // Load a http bookmark app.
+  const Extension* http_bookmark_app = InstallExtensionWithSourceAndFlags(
+      test_data_dir_.AppendASCII("app/"),
+      1,
+      extensions::Manifest::INTERNAL,
+      extensions::Extension::FROM_BOOKMARK);
+  ASSERT_TRUE(http_bookmark_app);
+
+  // Load a https bookmark app.
+  const Extension* https_bookmark_app = InstallExtensionWithSourceAndFlags(
+      test_data_dir_.AppendASCII("https_app/"),
+      1,
+      extensions::Manifest::INTERNAL,
+      extensions::Extension::FROM_BOOKMARK);
+  ASSERT_TRUE(https_bookmark_app);
+
+  // Load a https bookmark app.
+
+  // Launch them in window.
+  WebContents* app_window = OpenApplication(AppLaunchParams(
+      browser()->profile(), http_bookmark_app,
+      extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW,
+      extensions::SOURCE_TEST));
+  ASSERT_TRUE(app_window);
+  app_window = OpenApplication(AppLaunchParams(
+      browser()->profile(), https_bookmark_app,
+      extensions::LAUNCH_CONTAINER_WINDOW, NEW_WINDOW,
+      extensions::SOURCE_TEST));
+  ASSERT_TRUE(app_window);
+
+  // Find the new browsers.
+  Browser* http_app_browser = NULL;
+  Browser* https_app_browser = NULL;
+  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+    std::string app_id =
+        web_app::GetExtensionIdFromApplicationName((*it)->app_name());
+    if (*it == browser()) {
+      continue;
+    } else if (app_id == http_bookmark_app->id()) {
+      http_app_browser = *it;
+    } else if (app_id == https_bookmark_app->id()) {
+      https_app_browser = *it;
+    }
+  }
+  ASSERT_TRUE(http_app_browser);
+  ASSERT_TRUE(https_app_browser);
+  ASSERT_TRUE(http_app_browser != browser());
+  ASSERT_TRUE(https_app_browser != browser());
+  ASSERT_TRUE(http_app_browser != https_app_browser);
+
+  // Navigate to the app's launch page; the location bar should be hidden.
+  GURL url("http://www.example.com/empty.html");
+  ui_test_utils::NavigateToURL(http_app_browser, url);
+  EXPECT_FALSE(
+      http_app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+  url = GURL("https://www.example.com/empty.html");
+  ui_test_utils::NavigateToURL(https_app_browser, url);
+  EXPECT_FALSE(
+      https_app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+
+  // Navigate to another page on the same origin; the location bar should still
+  // hidden.
+  url = GURL("http://www.example.com/blah");
+  ui_test_utils::NavigateToURL(http_app_browser, url);
+  EXPECT_FALSE(
+      http_app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+  url = GURL("https://www.example.com/blah");
+  ui_test_utils::NavigateToURL(http_app_browser, url);
+  EXPECT_FALSE(
+      https_app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+
+  // Navigate to the https version of the site; the location bar should
+  // be hidden for both browsers.
+  url = GURL("https://www.example.com/blah");
+  ui_test_utils::NavigateToURL(http_app_browser, url);
+  EXPECT_FALSE(
+      http_app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+  ui_test_utils::NavigateToURL(https_app_browser, url);
+  EXPECT_FALSE(
+      https_app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+
+  // Navigate to the http version of the site; the location bar should
+  // be visible for the https version as it is now on a less secure version
+  // of its host.
+  url = GURL("http://www.example.com/blah");
+  ui_test_utils::NavigateToURL(http_app_browser, url);
+  EXPECT_FALSE(
+      http_app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+  ui_test_utils::NavigateToURL(https_app_browser, url);
+  EXPECT_TRUE(
+      https_app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+
+  // Navigate to different origin; the location bar should now be visible.
+  url = GURL("http://www.foo.com/blah");
+  ui_test_utils::NavigateToURL(http_app_browser, url);
+  EXPECT_TRUE(
+      http_app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+  ui_test_utils::NavigateToURL(https_app_browser, url);
+  EXPECT_TRUE(
+      https_app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+
+  // Navigate back to the app's origin; the location bar should now be hidden.
+  url = GURL("http://www.example.com/blah");
+  ui_test_utils::NavigateToURL(http_app_browser, url);
+  EXPECT_FALSE(
+      http_app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+  url = GURL("https://www.example.com/blah");
+  ui_test_utils::NavigateToURL(https_app_browser, url);
+  EXPECT_FALSE(
+      https_app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
 }
 #endif
 
