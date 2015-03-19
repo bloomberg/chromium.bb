@@ -338,6 +338,11 @@ static double currentAge(const ResourceResponse& response, double responseTimest
     return correctedReceivedAge + residentTime;
 }
 
+double Resource::currentAge() const
+{
+    return blink::currentAge(m_response, m_responseTimestamp);
+}
+
 static double freshnessLifetime(ResourceResponse& response, double responseTimestamp)
 {
 #if !OS(ANDROID)
@@ -365,6 +370,16 @@ static double freshnessLifetime(ResourceResponse& response, double responseTimes
         return (creationTime - lastModifiedValue) * 0.1;
     // If no cache headers are present, the specification leaves the decision to the UA. Other browsers seem to opt for 0.
     return 0;
+}
+
+double Resource::freshnessLifetime()
+{
+    return blink::freshnessLifetime(m_response, m_responseTimestamp);
+}
+
+double Resource::stalenessLifetime()
+{
+    return m_response.cacheControlStaleWhileRevalidate();
 }
 
 static bool canUseResponse(ResourceResponse& response, double responseTimestamp)

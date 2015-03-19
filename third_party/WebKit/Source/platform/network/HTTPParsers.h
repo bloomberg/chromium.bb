@@ -77,6 +77,7 @@ struct CacheControlHeader {
     bool containsNoStore : 1;
     bool containsMustRevalidate : 1;
     double maxAge;
+    double staleWhileRevalidate;
 
     CacheControlHeader()
         : parsed(false)
@@ -84,6 +85,7 @@ struct CacheControlHeader {
         , containsNoStore(false)
         , containsMustRevalidate(false)
         , maxAge(0.0)
+        , staleWhileRevalidate(0.0)
     {
     }
 };

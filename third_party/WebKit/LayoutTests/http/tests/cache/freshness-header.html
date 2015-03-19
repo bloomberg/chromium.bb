@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<script src="/js-test-resources/js-test.js"></script>
+<script>
+description("Resource-Freshness header is sent when a revalidation request is initiated by the Blink memory cache within the stale-while-revalidate window.");
+
+var resourceFreshnessHeader;
+function report(value) {
+  resourceFreshnessHeader = value;
+}
+
+window.jsTestIsAsync = true;
+
+window.onload = function () {
+    // We set the timeout to 500 msec here because we expect age=1 in the
+    // ResourceFreshness header if the age is [0.5, 1.5) seconds.
+    setTimeout(
+        function() {
+            var script = document.createElement("script");
+            script.src = "resources/stale-while-revalidate.php";
+            script.onload = function() {
+                shouldBeEqualToString(
+                    'resourceFreshnessHeader',
+                    'max-age=0,stale-while-revalidate=1,age=1');
+                finishJSTest();
+            };
+            document.body.appendChild(script);
+        },
+        500);
+};
+</script>
+<script src="resources/stale-while-revalidate.php"></script>

@@ -369,6 +369,13 @@ double ResourceResponse::cacheControlMaxAge()
     return m_cacheControlHeader.maxAge;
 }
 
+double ResourceResponse::cacheControlStaleWhileRevalidate()
+{
+    if (!m_cacheControlHeader.parsed)
+        m_cacheControlHeader = parseCacheControlDirectives(m_httpHeaderFields.get(cacheControlHeaderString()), m_httpHeaderFields.get(pragmaHeaderString()));
+    return m_cacheControlHeader.staleWhileRevalidate;
+}
+
 static double parseDateValueInHeader(const HTTPHeaderMap& headers, const AtomicString& headerName)
 {
     const AtomicString& headerValue = headers.get(headerName);

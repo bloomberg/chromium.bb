@@ -110,6 +110,7 @@ public:
     bool cacheControlContainsMustRevalidate();
     bool hasCacheValidatorFields() const;
     double cacheControlMaxAge();
+    double cacheControlStaleWhileRevalidate();
     double date() const;
     double age() const;
     double expires() const;

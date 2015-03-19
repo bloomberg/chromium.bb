@@ -814,11 +814,13 @@ CacheControlHeader parseCacheControlDirectives(const AtomicString& cacheControlV
     CacheControlHeader cacheControlHeader;
     cacheControlHeader.parsed = true;
     cacheControlHeader.maxAge = std::numeric_limits<double>::quiet_NaN();
+    cacheControlHeader.staleWhileRevalidate = std::numeric_limits<double>::quiet_NaN();
 
     DEFINE_STATIC_LOCAL(const AtomicString, noCacheDirective, ("no-cache", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, noStoreDirective, ("no-store", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, mustRevalidateDirective, ("must-revalidate", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, maxAgeDirective, ("max-age", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, staleWhileRevalidateDirective, ("stale-while-revalidate", AtomicString::ConstructFromLiteral));
 
     if (!cacheControlValue.isEmpty()) {
         Vector<pair<String, String>> directives;
@@ -843,6 +845,15 @@ CacheControlHeader parseCacheControlDirectives(const AtomicString& cacheControlV
                 double maxAge = directives[i].second.toDouble(&ok);
                 if (ok)
                     cacheControlHeader.maxAge = maxAge;
+            } else if (equalIgnoringCase(directives[i].first, staleWhileRevalidateDirective)) {
+                if (!std::isnan(cacheControlHeader.staleWhileRevalidate)) {
+                    // First stale-while-revalidate directive wins if there are multiple ones.
+                    continue;
+                }
+                bool ok;
+                double staleWhileRevalidate = directives[i].second.toDouble(&ok);
+                if (ok)
+                    cacheControlHeader.staleWhileRevalidate = staleWhileRevalidate;
             }
         }
     }

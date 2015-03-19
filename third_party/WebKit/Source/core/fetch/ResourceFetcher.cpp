@@ -626,6 +626,11 @@ ResourcePtr<Resource> ResourceFetcher::createResourceForRevalidation(const Fetch
     if (!eTag.isEmpty())
         revalidatingRequest.setHTTPHeaderField("If-None-Match", eTag);
 
+    double stalenessLifetime = resource->stalenessLifetime();
+    if (std::isfinite(stalenessLifetime) && stalenessLifetime > 0) {
+        revalidatingRequest.setHTTPHeaderField("Resource-Freshness", AtomicString(String::format("max-age=%.0lf,stale-while-revalidate=%.0lf,age=%.0lf", resource->freshnessLifetime(), stalenessLifetime, resource->currentAge())));
+    }
+
     ResourcePtr<Resource> newResource = createResource(resource->type(), revalidatingRequest, resource->encoding());
     WTF_LOG(ResourceLoading, "Resource %p created to revalidate %p", newResource.get(), resource);
 

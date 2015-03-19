@@ -231,6 +231,10 @@ public:
     void setResourceToRevalidate(Resource*);
     bool hasCacheControlNoStoreHeader();
 
+    double currentAge() const;
+    double freshnessLifetime();
+    double stalenessLifetime();
+
     bool isPurgeable() const;
     bool wasPurged() const;
     bool lock();
