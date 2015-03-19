@@ -7,9 +7,9 @@
 
 #include <map>
 
+#include "base/atomic_sequence_num.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -32,7 +32,6 @@ struct ViewMsg_SwapOut_Params;
 namespace content {
 class GpuProcessHost;
 class ResourceDispatcherHostImpl;
-class RoutingIDIssuer;
 class SessionStorageNamespace;
 
 // Instantiated per RenderProcessHost to provide various optimizations on
@@ -80,9 +79,6 @@ class RenderWidgetHelper
 
   // Gets the next available routing id.  This is thread safe.
   int GetNextRoutingID();
-  // Probablistically verify if the ID is issued by this helper.
-  // Thread safe.
-  bool IsRoutingIDProbablyValid(int routing_id) const;
 
   // IO THREAD ONLY -----------------------------------------------------------
 
@@ -154,7 +150,8 @@ class RenderWidgetHelper
 
   int render_process_id_;
 
-  scoped_ptr<RoutingIDIssuer> routing_id_issuer_;
+  // The next routing id to use.
+  base::AtomicSequenceNumber next_routing_id_;
 
   ResourceDispatcherHostImpl* resource_dispatcher_host_;
 

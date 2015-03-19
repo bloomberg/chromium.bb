@@ -21,7 +21,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/test/routing_id_mangling_disabler.h"
 #include "crypto/sha2.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -200,7 +199,6 @@ class PhishingClassifierTest : public InProcessBrowserTest {
   scoped_ptr<Scorer> scorer_;
   scoped_ptr<PhishingClassifier> classifier_;
   MockFeatureExtractorClock* clock_;  // Owned by classifier_.
-  content::RoutingIDManglingDisabler mangling_disabler_;
 
   // Features that are in the model.
   const std::string url_tld_token_net_;

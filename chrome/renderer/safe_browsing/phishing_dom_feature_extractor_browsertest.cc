@@ -29,7 +29,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/routing_id_mangling_disabler.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -180,7 +179,6 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
   // Any urls not in this map are served a 404 error.
   std::map<std::string, std::string> responses_;
 
-  content::RoutingIDManglingDisabler mangling_disabler_;
   scoped_ptr<net::test_server::EmbeddedTestServer> embedded_test_server_;
   MockFeatureExtractorClock clock_;
   scoped_ptr<PhishingDOMFeatureExtractor> extractor_;

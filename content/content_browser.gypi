@@ -1218,8 +1218,6 @@
       'browser/renderer_host/render_widget_resize_helper.h',
       'browser/renderer_host/renderer_frame_manager.cc',
       'browser/renderer_host/renderer_frame_manager.h',
-      'browser/renderer_host/routing_id_issuer.cc',
-      'browser/renderer_host/routing_id_issuer.h',
       'browser/renderer_host/sandbox_ipc_linux.cc',
       'browser/renderer_host/sandbox_ipc_linux.h',
       'browser/renderer_host/text_input_client_mac.h',
