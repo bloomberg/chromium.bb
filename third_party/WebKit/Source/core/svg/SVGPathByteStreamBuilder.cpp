@@ -73,7 +73,7 @@ SVGPathByteStreamBuilder::SVGPathByteStreamBuilder(SVGPathByteStream& byteStream
 {
 }
 
-void SVGPathByteStreamBuilder::moveTo(const FloatPoint& targetPoint, bool, PathCoordinateMode mode)
+void SVGPathByteStreamBuilder::moveTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
 {
     CoalescingBuffer buffer(m_byteStream);
     buffer.writeSegmentType(mode == RelativeCoordinates ?  PathSegMoveToRel : PathSegMoveToAbs);

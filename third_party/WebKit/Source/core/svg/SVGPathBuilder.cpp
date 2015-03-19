@@ -28,12 +28,13 @@
 
 namespace blink {
 
-void SVGPathBuilder::moveTo(const FloatPoint& targetPoint, bool closed, PathCoordinateMode mode)
+void SVGPathBuilder::moveTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
 {
     ASSERT(mode == AbsoluteCoordinates);
-    if (closed && !m_path.isEmpty())
-        m_path.closeSubpath();
+    if (m_closed && !m_path.isEmpty())
+        closePath();
     m_path.moveTo(targetPoint);
+    m_closed = false;
 }
 
 void SVGPathBuilder::lineTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
@@ -51,6 +52,7 @@ void SVGPathBuilder::curveToCubic(const FloatPoint& point1, const FloatPoint& po
 void SVGPathBuilder::closePath()
 {
     m_path.closeSubpath();
+    m_closed = true;
 }
 
 }

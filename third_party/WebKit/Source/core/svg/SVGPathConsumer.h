@@ -52,7 +52,7 @@ public:
     virtual bool continueConsuming() = 0;
 
     // Used in UnalteredParsing/NormalizedParsing modes.
-    virtual void moveTo(const FloatPoint&, bool closed, PathCoordinateMode) = 0;
+    virtual void moveTo(const FloatPoint&, PathCoordinateMode) = 0;
     virtual void lineTo(const FloatPoint&, PathCoordinateMode) = 0;
     virtual void curveToCubic(const FloatPoint&, const FloatPoint&, const FloatPoint&, PathCoordinateMode) = 0;
     virtual void closePath() = 0;

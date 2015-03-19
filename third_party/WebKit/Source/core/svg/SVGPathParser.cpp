@@ -43,7 +43,6 @@ void SVGPathParser::parseClosePathSegment()
     // Reset m_currentPoint for the next path.
     if (m_pathParsingMode == NormalizedParsing)
         m_currentPoint = m_subPathPoint;
-    m_closePath = true;
     m_consumer->closePath();
 }
 
@@ -54,8 +53,7 @@ bool SVGPathParser::parseMoveToSegment()
         return false;
 
     if (m_pathParsingMode == UnalteredParsing) {
-        m_consumer->moveTo(targetPoint, m_closePath, m_mode);
-        m_closePath = false;
+        m_consumer->moveTo(targetPoint, m_mode);
         return true;
     }
     if (m_mode == RelativeCoordinates)
@@ -63,8 +61,7 @@ bool SVGPathParser::parseMoveToSegment()
     else
         m_currentPoint = targetPoint;
     m_subPathPoint = m_currentPoint;
-    m_consumer->moveTo(m_currentPoint, m_closePath, AbsoluteCoordinates);
-    m_closePath = false;
+    m_consumer->moveTo(m_currentPoint, AbsoluteCoordinates);
     return true;
 }
 
@@ -291,7 +288,6 @@ bool SVGPathParser::parsePathDataFromSource(PathParsingMode pathParsingMode, boo
     m_controlPoint = FloatPoint();
     m_currentPoint = FloatPoint();
     m_subPathPoint = FloatPoint();
-    m_closePath = true;
 
     // Skip any leading spaces.
     if (!m_source->moveToNextToken())

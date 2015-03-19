@@ -33,14 +33,14 @@ class Path;
 
 class SVGPathBuilder final : public SVGPathConsumer {
 public:
-    SVGPathBuilder(Path& path) : m_path(path) { }
+    SVGPathBuilder(Path& path) : m_path(path), m_closed(true) { }
 
 private:
     virtual void incrementPathSegmentCount() override { }
     virtual bool continueConsuming() override { return true; }
 
     // Used in UnalteredParsing/NormalizedParsing modes.
-    virtual void moveTo(const FloatPoint&, bool closed, PathCoordinateMode) override;
+    virtual void moveTo(const FloatPoint&, PathCoordinateMode) override;
     virtual void lineTo(const FloatPoint&, PathCoordinateMode) override;
     virtual void curveToCubic(const FloatPoint&, const FloatPoint&, const FloatPoint&, PathCoordinateMode) override;
     virtual void closePath() override;
@@ -54,6 +54,7 @@ private:
     virtual void arcTo(float, float, float, bool, bool, const FloatPoint&, PathCoordinateMode) override { ASSERT_NOT_REACHED(); }
 
     Path& m_path;
+    bool m_closed;
 };
 
 } // namespace blink

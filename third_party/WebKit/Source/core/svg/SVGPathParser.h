@@ -65,7 +65,6 @@ private:
     PathCoordinateMode m_mode;
     PathParsingMode m_pathParsingMode;
     SVGPathSegType m_lastCommand;
-    bool m_closePath;
     FloatPoint m_controlPoint;
     FloatPoint m_currentPoint;
     FloatPoint m_subPathPoint;

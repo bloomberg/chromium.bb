@@ -75,7 +75,7 @@ static void emitCommand2Arg(StringBuilder& stringBuilder, char commandChar, cons
     stringBuilder.append(' ');
 }
 
-void SVGPathStringBuilder::moveTo(const FloatPoint& targetPoint, bool, PathCoordinateMode mode)
+void SVGPathStringBuilder::moveTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
 {
     emitCommand1Arg(m_stringBuilder, (mode == AbsoluteCoordinates) ? 'M' : 'm', targetPoint);
 }

@@ -61,7 +61,7 @@ DEFINE_TRACE(SVGPathSegListBuilder)
     SVGPathConsumer::trace(visitor);
 }
 
-void SVGPathSegListBuilder::moveTo(const FloatPoint& targetPoint, bool, PathCoordinateMode mode)
+void SVGPathSegListBuilder::moveTo(const FloatPoint& targetPoint, PathCoordinateMode mode)
 {
     ASSERT(m_pathElement);
     ASSERT(m_pathSegList);

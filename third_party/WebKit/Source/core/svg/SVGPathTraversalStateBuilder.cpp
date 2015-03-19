@@ -33,7 +33,7 @@ SVGPathTraversalStateBuilder::SVGPathTraversalStateBuilder(PathTraversalState& t
     m_traversalState.m_desiredLength = desiredLength;
 }
 
-void SVGPathTraversalStateBuilder::moveTo(const FloatPoint& targetPoint, bool, PathCoordinateMode)
+void SVGPathTraversalStateBuilder::moveTo(const FloatPoint& targetPoint, PathCoordinateMode)
 {
     m_traversalState.m_totalLength += m_traversalState.moveTo(targetPoint);
 }

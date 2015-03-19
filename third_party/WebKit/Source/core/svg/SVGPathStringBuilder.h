@@ -35,7 +35,7 @@ private:
     virtual bool continueConsuming() override { return true; }
 
     // Used in UnalteredParsing/NormalizedParsing modes.
-    virtual void moveTo(const FloatPoint&, bool closed, PathCoordinateMode) override;
+    virtual void moveTo(const FloatPoint&, PathCoordinateMode) override;
     virtual void lineTo(const FloatPoint&, PathCoordinateMode) override;
     virtual void curveToCubic(const FloatPoint&, const FloatPoint&, const FloatPoint&, PathCoordinateMode) override;
     virtual void closePath() override;
