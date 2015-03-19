@@ -6,6 +6,7 @@
 #define WebFontRendering_h
 
 #include "public/platform/WebCommon.h"
+#include <SkFontHost.h>
 
 class SkTypeface;
 struct IDWriteFactory;
@@ -22,6 +23,8 @@ public:
     BLINK_EXPORT static void setMenuFontMetrics(const wchar_t* familyName, int32_t fontHeight);
     BLINK_EXPORT static void setSmallCaptionFontMetrics(const wchar_t* familyName, int32_t fontHeight);
     BLINK_EXPORT static void setStatusFontMetrics(const wchar_t* familyName, int32_t fontHeight);
+    BLINK_EXPORT static void setLCDOrder(SkFontHost::LCDOrder);
+    BLINK_EXPORT static void setLCDOrientation(SkFontHost::LCDOrientation);
 };
 
 } // namespace blink

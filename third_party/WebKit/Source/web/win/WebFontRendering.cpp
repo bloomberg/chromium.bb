@@ -57,5 +57,16 @@ void WebFontRendering::setStatusFontMetrics(const wchar_t* familyName, int32_t f
     blink::FontCache::setStatusFontMetrics(familyName, fontHeight);
 }
 
+// static
+void WebFontRendering::setLCDOrder(SkFontHost::LCDOrder order)
+{
+    SkFontHost::SetSubpixelOrder(order);
+}
+
+// static
+void WebFontRendering::setLCDOrientation(SkFontHost::LCDOrientation orientation)
+{
+    SkFontHost::SetSubpixelOrientation(orientation);
+}
 
 } // namespace blink
