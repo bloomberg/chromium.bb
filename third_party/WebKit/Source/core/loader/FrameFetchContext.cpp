@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/dom/Document.h"
-#include "core/fetch/AcceptClientHints.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -44,6 +43,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/loader/AcceptClientHints.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
