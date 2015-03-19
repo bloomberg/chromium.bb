@@ -5,10 +5,10 @@
 #include "config.h"
 #include "core/loader/BeaconLoader.h"
 
-#include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FetchContext.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fileapi/File.h"
 #include "core/frame/LocalFrame.h"

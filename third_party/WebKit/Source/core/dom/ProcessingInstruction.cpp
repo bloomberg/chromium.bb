@@ -21,7 +21,6 @@
 #include "config.h"
 #include "core/dom/ProcessingInstruction.h"
 
-#include "core/FetchInitiatorTypeNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
@@ -29,6 +28,7 @@
 #include "core/dom/IncrementLoadEventDelayCount.h"
 #include "core/dom/StyleEngine.h"
 #include "core/fetch/CSSStyleSheetResource.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/XSLStyleSheetResource.h"

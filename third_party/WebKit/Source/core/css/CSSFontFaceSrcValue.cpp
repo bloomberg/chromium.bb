@@ -26,10 +26,10 @@
 #include "config.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 
-#include "core/FetchInitiatorTypeNames.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceFetcher.h"

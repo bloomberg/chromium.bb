@@ -73,7 +73,6 @@
       '<(blink_core_output_dir)/EventTargetNames.h',
       '<(blink_core_output_dir)/EventTypeNames.cpp',
       '<(blink_core_output_dir)/EventTypeNames.h',
-      '<(blink_core_output_dir)/FetchInitiatorTypeNames.cpp',
       '<(blink_core_output_dir)/HTMLElementFactory.cpp',
       '<(blink_core_output_dir)/HTMLElementFactory.h',
       '<(blink_core_output_dir)/HTMLElementLookupTrie.cpp',
@@ -86,6 +85,7 @@
       '<(blink_core_output_dir)/XLinkNames.cpp',
       '<(blink_core_output_dir)/XMLNSNames.cpp',
       '<(blink_core_output_dir)/XMLNames.cpp',
+      '<(blink_core_output_dir)/fetch/FetchInitiatorTypeNames.cpp',
 
       # Generated from HTMLEntityNames.in
       '<(blink_core_output_dir)/HTMLEntityTable.cpp',

@@ -33,10 +33,10 @@
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptCallStackFactory.h"
-#include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"

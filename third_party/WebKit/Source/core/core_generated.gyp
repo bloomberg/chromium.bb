@@ -558,15 +558,15 @@
             'fetch/FetchInitiatorTypeNames.in',
           ],
           'outputs': [
-            '<(blink_core_output_dir)/FetchInitiatorTypeNames.cpp',
-            '<(blink_core_output_dir)/FetchInitiatorTypeNames.h',
+            '<(blink_core_output_dir)/fetch/FetchInitiatorTypeNames.cpp',
+            '<(blink_core_output_dir)/fetch/FetchInitiatorTypeNames.h',
           ],
           'action': [
             'python',
             '../build/scripts/make_names.py',
             'fetch/FetchInitiatorTypeNames.in',
             '--output_dir',
-            '<(blink_core_output_dir)',
+            '<(blink_core_output_dir)/fetch',
           ],
         },
         {

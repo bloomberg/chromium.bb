@@ -26,10 +26,10 @@
 #include "config.h"
 #include "core/css/CSSImageSetValue.h"
 
-#include "core/FetchInitiatorTypeNames.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Document.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"

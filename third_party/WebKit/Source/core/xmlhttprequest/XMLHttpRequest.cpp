@@ -24,7 +24,6 @@
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
@@ -36,6 +35,7 @@
 #include "core/editing/markup.h"
 #include "core/events/Event.h"
 #include "core/fetch/CrossOriginAccessControl.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchUtils.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"

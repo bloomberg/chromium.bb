@@ -28,11 +28,11 @@
 #include "core/fetch/ResourceFetcher.h"
 
 #include "bindings/core/v8/V8DOMActivityLogger.h"
-#include "core/FetchInitiatorTypeNames.h"
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/DocumentResource.h"
 #include "core/fetch/FetchContext.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"

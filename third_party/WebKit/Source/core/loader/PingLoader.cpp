@@ -32,9 +32,9 @@
 #include "config.h"
 #include "core/loader/PingLoader.h"
 
-#include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FetchContext.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/frame/FrameConsole.h"

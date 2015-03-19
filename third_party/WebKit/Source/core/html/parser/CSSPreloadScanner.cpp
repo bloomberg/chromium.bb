@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/html/parser/CSSPreloadScanner.h"
 
-#include "core/FetchInitiatorTypeNames.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/text/SegmentedString.h"
 

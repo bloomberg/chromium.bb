@@ -32,9 +32,9 @@
 
 #include "core/fileapi/FileReaderLoader.h"
 
-#include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/html/parser/TextResourceDecoder.h"

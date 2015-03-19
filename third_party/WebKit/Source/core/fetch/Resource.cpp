@@ -24,9 +24,9 @@
 #include "config.h"
 #include "core/fetch/Resource.h"
 
-#include "core/FetchInitiatorTypeNames.h"
 #include "core/fetch/CachedMetadata.h"
 #include "core/fetch/CrossOriginAccessControl.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceClientWalker.h"

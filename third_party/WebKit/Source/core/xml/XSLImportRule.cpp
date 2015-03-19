@@ -22,8 +22,8 @@
 #include "config.h"
 #include "core/xml/XSLImportRule.h"
 
-#include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/XSLStyleSheetResource.h"

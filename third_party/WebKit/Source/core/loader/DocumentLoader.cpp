@@ -30,10 +30,10 @@
 #include "config.h"
 #include "core/loader/DocumentLoader.h"
 
-#include "core/FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/events/Event.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
