@@ -313,6 +313,10 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_ERROR_REMOTE_SOFTWARE_OUT_OF_DATE));
   strings->SetString(
+      "setupErrorRemoteSoftwareOutOfDateGeneric",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_ERROR_REMOTE_SOFTWARE_OUT_OF_DATE_GENERIC));
+  strings->SetString(
       "setupErrorFindingPhone",
       l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_ERROR_FINDING_PHONE));
   strings->SetString(
