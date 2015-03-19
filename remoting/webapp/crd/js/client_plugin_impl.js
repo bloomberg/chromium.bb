@@ -212,35 +212,36 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     var handler = this.connectionEventHandler_;
 
     if (message.method == 'sendOutgoingIq') {
-      handler.onOutgoingIq(getStringAttr(message.data, 'iq'));
+      handler.onOutgoingIq(base.getStringAttr(message.data, 'iq'));
 
     } else if (message.method == 'logDebugMessage') {
-      handler.onDebugMessage(getStringAttr(message.data, 'message'));
+      handler.onDebugMessage(base.getStringAttr(message.data, 'message'));
 
     } else if (message.method == 'onConnectionStatus') {
       var state = remoting.ClientSession.State.fromString(
-          getStringAttr(message.data, 'state'));
+          base.getStringAttr(message.data, 'state'));
       var error = remoting.ClientSession.ConnectionError.fromString(
-          getStringAttr(message.data, 'error'));
+          base.getStringAttr(message.data, 'error'));
       handler.onConnectionStatusUpdate(state, error);
 
     } else if (message.method == 'onRouteChanged') {
-      var channel = getStringAttr(message.data, 'channel');
-      var connectionType = getStringAttr(message.data, 'connectionType');
+      var channel = base.getStringAttr(message.data, 'channel');
+      var connectionType = base.getStringAttr(message.data, 'connectionType');
       handler.onRouteChanged(channel, connectionType);
 
     } else if (message.method == 'onConnectionReady') {
-      var ready = getBooleanAttr(message.data, 'ready');
+      var ready = base.getBooleanAttr(message.data, 'ready');
       handler.onConnectionReady(ready);
 
     } else if (message.method == 'setCapabilities') {
       /** @type {!Array<string>} */
-      var capabilities = tokenize(getStringAttr(message.data, 'capabilities'));
+      var capabilities = tokenize(
+          base.getStringAttr(message.data, 'capabilities'));
       handler.onSetCapabilities(capabilities);
 
     } else if (message.method == 'extensionMessage') {
-      var extMsgType = getStringAttr(message.data, 'type');
-      var extMsgData = getStringAttr(message.data, 'data');
+      var extMsgType = base.getStringAttr(message.data, 'type');
+      var extMsgData = base.getStringAttr(message.data, 'data');
       handler.onExtensionMessage(extMsgType, extMsgData);
     }
   }
@@ -248,19 +249,20 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
   if (message.method == 'hello') {
     // Resize in case we had to enlarge it to support click-to-play.
     this.hidePluginForClickToPlay_();
-    this.pluginApiVersion_ = getNumberAttr(message.data, 'apiVersion');
-    this.pluginApiMinVersion_ = getNumberAttr(message.data, 'apiMinVersion');
+    this.pluginApiVersion_ = base.getNumberAttr(message.data, 'apiVersion');
+    this.pluginApiMinVersion_ =
+        base.getNumberAttr(message.data, 'apiMinVersion');
 
     if (this.pluginApiVersion_ >= 7) {
       this.pluginApiFeatures_ =
-          tokenize(getStringAttr(message.data, 'apiFeatures'));
+          tokenize(base.getStringAttr(message.data, 'apiFeatures'));
 
       // Negotiate capabilities.
       /** @type {!Array<string>} */
       var supportedCapabilities = [];
       if ('supportedCapabilities' in message.data) {
         supportedCapabilities =
-            tokenize(getStringAttr(message.data, 'supportedCapabilities'));
+            tokenize(base.getStringAttr(message.data, 'supportedCapabilities'));
       }
       // At the moment the webapp does not recognize any of
       // 'requestedCapabilities' capabilities (so they all should be disabled)
@@ -287,19 +289,19 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
   } else if (message.method == 'onPerfStats') {
     // Return value is ignored. These calls will throw an error if the value
     // is not a number.
-    getNumberAttr(message.data, 'videoBandwidth');
-    getNumberAttr(message.data, 'videoFrameRate');
-    getNumberAttr(message.data, 'captureLatency');
-    getNumberAttr(message.data, 'encodeLatency');
-    getNumberAttr(message.data, 'decodeLatency');
-    getNumberAttr(message.data, 'renderLatency');
-    getNumberAttr(message.data, 'roundtripLatency');
+    base.getNumberAttr(message.data, 'videoBandwidth');
+    base.getNumberAttr(message.data, 'videoFrameRate');
+    base.getNumberAttr(message.data, 'captureLatency');
+    base.getNumberAttr(message.data, 'encodeLatency');
+    base.getNumberAttr(message.data, 'decodeLatency');
+    base.getNumberAttr(message.data, 'renderLatency');
+    base.getNumberAttr(message.data, 'roundtripLatency');
     this.perfStats_ =
         /** @type {remoting.ClientSession.PerfStats} */ (message.data);
 
   } else if (message.method == 'injectClipboardItem') {
-    var mimetype = getStringAttr(message.data, 'mimeType');
-    var item = getStringAttr(message.data, 'item');
+    var mimetype = base.getStringAttr(message.data, 'mimeType');
+    var item = base.getStringAttr(message.data, 'item');
     if (remoting.clipboard) {
       remoting.clipboard.fromHost(mimetype, item);
     }
@@ -313,33 +315,33 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     // The pairingSupported value in the dictionary indicates whether both
     // client and host support pairing. If the client doesn't support pairing,
     // then the value won't be there at all, so give it a default of false.
-    var pairingSupported = getBooleanAttr(message.data, 'pairingSupported',
+    var pairingSupported = base.getBooleanAttr(message.data, 'pairingSupported',
                                           false);
     this.credentials_.getPIN(pairingSupported).then(
         this.onPinFetched_.bind(this)
     );
 
   } else if (message.method == 'fetchThirdPartyToken') {
-    var tokenUrl = getStringAttr(message.data, 'tokenUrl');
-    var hostPublicKey = getStringAttr(message.data, 'hostPublicKey');
-    var scope = getStringAttr(message.data, 'scope');
+    var tokenUrl = base.getStringAttr(message.data, 'tokenUrl');
+    var hostPublicKey = base.getStringAttr(message.data, 'hostPublicKey');
+    var scope = base.getStringAttr(message.data, 'scope');
     this.credentials_.getThirdPartyToken(tokenUrl, hostPublicKey, scope).then(
       this.onThirdPartyTokenFetched_.bind(this)
     );
   } else if (message.method == 'pairingResponse') {
-    var clientId = getStringAttr(message.data, 'clientId');
-    var sharedSecret = getStringAttr(message.data, 'sharedSecret');
+    var clientId = base.getStringAttr(message.data, 'clientId');
+    var sharedSecret = base.getStringAttr(message.data, 'sharedSecret');
     this.onPairingComplete_(clientId, sharedSecret);
 
   } else if (message.method == 'unsetCursorShape') {
     this.updateMouseCursorImage_('', 0, 0);
 
   } else if (message.method == 'setCursorShape') {
-    var width = getNumberAttr(message.data, 'width');
-    var height = getNumberAttr(message.data, 'height');
-    var hotspotX = getNumberAttr(message.data, 'hotspotX');
-    var hotspotY = getNumberAttr(message.data, 'hotspotY');
-    var srcArrayBuffer = getObjectAttr(message.data, 'data');
+    var width = base.getNumberAttr(message.data, 'width');
+    var height = base.getNumberAttr(message.data, 'height');
+    var hotspotX = base.getNumberAttr(message.data, 'hotspotX');
+    var hotspotY = base.getNumberAttr(message.data, 'hotspotY');
+    var srcArrayBuffer = base.getObjectAttr(message.data, 'data');
 
     var canvas =
         /** @type {HTMLCanvasElement} */ (document.createElement('canvas'));

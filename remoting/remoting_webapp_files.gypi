@@ -77,6 +77,7 @@
       'webapp/crd/js/identity_unittest.js',
       'webapp/crd/js/l10n_unittest.js',
       'webapp/crd/js/menu_button_unittest.js',
+      'webapp/crd/js/typecheck_unittest.js',
       'webapp/crd/js/xhr_unittest.js',
       'webapp/crd/js/xmpp_connection_unittest.js',
       'webapp/crd/js/xmpp_login_handler_unittest.js',

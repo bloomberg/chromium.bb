@@ -208,11 +208,11 @@ remoting.It2MeHostFacade.prototype.getClient = function() {
  */
 remoting.It2MeHostFacade.prototype.onIncomingMessage_ =
     function(message) {
-  var type = getStringAttr(message, 'type');
+  var type = base.getStringAttr(message, 'type');
 
   switch (type) {
     case 'helloResponse':
-      var version = getStringAttr(message, 'version');
+      var version = base.getStringAttr(message, 'version');
       console.log('Host version: ', version);
       this.initialized_ = true;
       // A "hello" request is sent immediately after the native messaging host
@@ -236,19 +236,20 @@ remoting.It2MeHostFacade.prototype.onIncomingMessage_ =
       break;
 
     case 'hostStateChanged':
-      var stateString = getStringAttr(message, 'state');
+      var stateString = base.getStringAttr(message, 'state');
       console.log('hostStateChanged received: ', stateString);
       var state = remoting.HostSession.State.fromString(stateString);
 
       switch (state) {
         case remoting.HostSession.State.RECEIVED_ACCESS_CODE:
-          var accessCode = getStringAttr(message, 'accessCode');
-          var accessCodeLifetime = getNumberAttr(message, 'accessCodeLifetime');
+          var accessCode = base.getStringAttr(message, 'accessCode');
+          var accessCodeLifetime =
+              base.getNumberAttr(message, 'accessCodeLifetime');
           this.onReceivedAccessCode_(accessCode, accessCodeLifetime);
           break;
 
         case remoting.HostSession.State.CONNECTED:
-          var client = getStringAttr(message, 'client');
+          var client = base.getStringAttr(message, 'client');
           this.onConnected_(client);
           break;
       }
@@ -260,13 +261,13 @@ remoting.It2MeHostFacade.prototype.onIncomingMessage_ =
     case 'natPolicyChanged':
       if (this.onNatPolicyChanged_) {
         var natTraversalEnabled =
-            getBooleanAttr(message, 'natTraversalEnabled');
+            base.getBooleanAttr(message, 'natTraversalEnabled');
         this.onNatPolicyChanged_(natTraversalEnabled);
       }
       break;
 
     case 'error':
-      console.error(getStringAttr(message, 'description'));
+      console.error(base.getStringAttr(message, 'description'));
       if (this.onError_) {
         this.onError_(remoting.Error.unexpected());
       }

@@ -251,7 +251,7 @@ remoting.CastExtensionHandler.prototype.chromotingMessageListener =
     function(ns, message) {
   if (ns === this.kCastNamespace_) {
     try {
-        var messageObj = getJsonObjectFromString(message);
+        var messageObj = base.getJsonObjectFromString(message);
         this.sendMessageToHost_(messageObj);
     } catch (err) {
       console.error('Failed to process message from Cast device.');

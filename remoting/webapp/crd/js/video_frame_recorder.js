@@ -63,8 +63,8 @@ remoting.VideoFrameRecorder.prototype.handleMessage =
     return false;
   }
 
-  var messageType = getStringAttr(message, 'type');
-  var messageData = getStringAttr(message, 'data');
+  var messageType = base.getStringAttr(message, 'type');
+  var messageData = base.getStringAttr(message, 'data');
 
   if (messageType == 'next-frame-reply') {
     if (!this.fileWriter_) {

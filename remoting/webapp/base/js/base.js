@@ -34,7 +34,6 @@ base.debug.assert = function(expr, opt_msg) {
     if (opt_msg) {
       msg += ' ' + opt_msg;
     }
-    console.error(msg);
     if (base.debug.breakOnAssert) {
       alert(msg);
       debugger;

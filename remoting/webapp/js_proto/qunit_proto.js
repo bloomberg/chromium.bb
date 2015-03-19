@@ -69,6 +69,20 @@ QUnit.Assert.prototype.equal = function(a, b, opt_message) {};
 QUnit.Assert.prototype.expect = function(assertionCount) {};
 
 /**
+ * @param {*} a
+ * @param {*} b
+ * @param {string=} opt_message
+ */
+QUnit.Assert.prototype.strictEqual = function(a, b, opt_message) {};
+
+/**
+ * @param {function()} a
+ * @param {*=} opt_b
+ * @param {string=} opt_message
+ */
+QUnit.Assert.prototype.throws = function(a, opt_b, opt_message) {};
+
+/**
  * @typedef {{
  *   beforeEach: (function(QUnit.Assert=) | undefined),
  *   afterEach: (function(QUnit.Assert=) | undefined)

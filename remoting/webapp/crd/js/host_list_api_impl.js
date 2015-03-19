@@ -118,15 +118,17 @@ remoting.HostListApiImpl.prototype.parseHostListResponse_ =
       var hosts = items.map(
         function(/** Object */ item) {
           var host = new remoting.Host();
-          host.hostName = getStringAttr(item, 'hostName', '');
-          host.hostId = getStringAttr(item, 'hostId', '');
-          host.status = getStringAttr(item, 'status', '');
-          host.jabberId = getStringAttr(item, 'jabberId', '');
-          host.publicKey = getStringAttr(item, 'publicKey', '');
-          host.hostVersion = getStringAttr(item, 'hostVersion', '');
-          host.tokenUrlPatterns = getArrayAttr(item, 'tokenUrlPatterns', []);
-          host.updatedTime = getStringAttr(item, 'updatedTime', '');
-          host.hostOfflineReason = getStringAttr(item, 'hostOfflineReason', '');
+          host.hostName = base.getStringAttr(item, 'hostName', '');
+          host.hostId = base.getStringAttr(item, 'hostId', '');
+          host.status = base.getStringAttr(item, 'status', '');
+          host.jabberId = base.getStringAttr(item, 'jabberId', '');
+          host.publicKey = base.getStringAttr(item, 'publicKey', '');
+          host.hostVersion = base.getStringAttr(item, 'hostVersion', '');
+          host.tokenUrlPatterns =
+              base.getArrayAttr(item, 'tokenUrlPatterns', []);
+          host.updatedTime = base.getStringAttr(item, 'updatedTime', '');
+          host.hostOfflineReason =
+              base.getStringAttr(item, 'hostOfflineReason', '');
           return host;
       });
       onDone(hosts);

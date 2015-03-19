@@ -86,13 +86,13 @@ remoting.Host.Options.prototype.load = function() {
       // TODO(kelvinp): Uses a separate host options for app-remoting that
       // hardcodes resizeToClient to true.
       that.resizeToClient =
-          getBooleanAttr(options, 'resizeToClient', true);
-      that.shrinkToFit = getBooleanAttr(options, 'shrinkToFit', true);
-      that.desktopScale = getNumberAttr(options, 'desktopScale', 1);
-      that.remapKeys = getStringAttr(options, 'remapKeys', '');
+          base.getBooleanAttr(options, 'resizeToClient', true);
+      that.shrinkToFit = base.getBooleanAttr(options, 'shrinkToFit', true);
+      that.desktopScale = base.getNumberAttr(options, 'desktopScale', 1);
+      that.remapKeys = base.getStringAttr(options, 'remapKeys', '');
       that.pairingInfo =
           /** @type {remoting.PairingInfo} */ (
-              getObjectAttr(options, 'pairingInfo', that.pairingInfo));
+              base.getObjectAttr(options, 'pairingInfo', that.pairingInfo));
     });
 };
 

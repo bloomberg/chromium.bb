@@ -199,7 +199,7 @@ remoting.HostDaemonFacade.prototype.onIncomingMessage_ = function(message) {
   delete this.pendingReplies_[id];
 
   try {
-    var type = getStringAttr(message, 'type');
+    var type = base.getStringAttr(message, 'type');
     if (type != reply.type) {
       throw 'Expected reply type: ' + reply.type + ', got: ' + type;
     }
@@ -222,58 +222,59 @@ remoting.HostDaemonFacade.prototype.onIncomingMessage_ = function(message) {
  */
 remoting.HostDaemonFacade.prototype.handleIncomingMessage_ =
     function(message, onDone) {
-  var type = getStringAttr(message, 'type');
+  var type = base.getStringAttr(message, 'type');
 
   switch (type) {
     case 'helloResponse':
-      this.version_ = getStringAttr(message, 'version');
+      this.version_ = base.getStringAttr(message, 'version');
       // Old versions of the native messaging host do not return this list.
       // Those versions default to the empty list of supported features.
-      this.supportedFeatures_ = getArrayAttr(message, 'supportedFeatures', []);
+      this.supportedFeatures_ =
+          base.getArrayAttr(message, 'supportedFeatures', []);
       onDone();
       break;
 
     case 'getHostNameResponse':
-      onDone(getStringAttr(message, 'hostname'));
+      onDone(base.getStringAttr(message, 'hostname'));
       break;
 
     case 'getPinHashResponse':
-      onDone(getStringAttr(message, 'hash'));
+      onDone(base.getStringAttr(message, 'hash'));
       break;
 
     case 'generateKeyPairResponse':
-      var privateKey = getStringAttr(message, 'privateKey');
-      var publicKey = getStringAttr(message, 'publicKey');
+      var privateKey = base.getStringAttr(message, 'privateKey');
+      var publicKey = base.getStringAttr(message, 'publicKey');
       onDone(privateKey, publicKey);
       break;
 
     case 'updateDaemonConfigResponse':
       var result = remoting.HostController.AsyncResult.fromString(
-          getStringAttr(message, 'result'));
+          base.getStringAttr(message, 'result'));
       onDone(result);
       break;
 
     case 'getDaemonConfigResponse':
-      onDone(getObjectAttr(message, 'config'));
+      onDone(base.getObjectAttr(message, 'config'));
       break;
 
     case 'getUsageStatsConsentResponse':
-      var supported = getBooleanAttr(message, 'supported');
-      var allowed = getBooleanAttr(message, 'allowed');
-      var setByPolicy = getBooleanAttr(message, 'setByPolicy');
+      var supported = base.getBooleanAttr(message, 'supported');
+      var allowed = base.getBooleanAttr(message, 'allowed');
+      var setByPolicy = base.getBooleanAttr(message, 'setByPolicy');
       onDone(supported, allowed, setByPolicy);
       break;
 
     case 'startDaemonResponse':
     case 'stopDaemonResponse':
       var result = remoting.HostController.AsyncResult.fromString(
-          getStringAttr(message, 'result'));
+          base.getStringAttr(message, 'result'));
       onDone(result);
       break;
 
     case 'getDaemonStateResponse':
       var state = remoting.HostController.State.fromString(
-        getStringAttr(message, 'state'));
+        base.getStringAttr(message, 'state'));
       onDone(state);
       break;
 
@@ -289,16 +290,16 @@ remoting.HostDaemonFacade.prototype.handleIncomingMessage_ =
 
     case 'clearPairedClientsResponse':
     case 'deletePairedClientResponse':
-      onDone(getBooleanAttr(message, 'result'));
+      onDone(base.getBooleanAttr(message, 'result'));
       break;
 
     case 'getHostClientIdResponse':
-      onDone(getStringAttr(message, 'clientId'));
+      onDone(base.getStringAttr(message, 'clientId'));
       break;
 
     case 'getCredentialsFromAuthCodeResponse':
-      var userEmail = getStringAttr(message, 'userEmail');
-      var refreshToken = getStringAttr(message, 'refreshToken');
+      var userEmail = base.getStringAttr(message, 'userEmail');
+      var refreshToken = base.getStringAttr(message, 'refreshToken');
       if (userEmail && refreshToken) {
         onDone(userEmail, refreshToken);
       } else {

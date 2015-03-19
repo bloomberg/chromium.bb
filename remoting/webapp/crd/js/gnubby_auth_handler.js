@@ -62,12 +62,12 @@ remoting.GnubbyAuthHandler.prototype.sendMessageToHost_ = function(data) {
  */
 remoting.GnubbyAuthHandler.prototype.onExtensionMessage =
     function(type, message) {
-  var messageType = getStringAttr(message, 'type');
+  var messageType = base.getStringAttr(message, 'type');
   if (messageType == 'data') {
     this.sendMessageToGnubbyd_({
       'type': 'auth-agent@openssh.com',
-      'data': getArrayAttr(message, 'data')
-    }, this.callback_.bind(this, getNumberAttr(message, 'connectionId')));
+      'data': base.getArrayAttr(message, 'data')
+    }, this.callback_.bind(this, base.getNumberAttr(message, 'connectionId')));
   } else {
     console.error('Invalid gnubby-auth message: ' + messageType);
     return false;
@@ -87,7 +87,7 @@ remoting.GnubbyAuthHandler.prototype.callback_ =
     this.sendMessageToHost_({
       'type': 'data',
       'connectionId': connectionId,
-      'data': getArrayAttr(response, 'data')
+      'data': base.getArrayAttr(response, 'data')
     });
   } catch (/** @type {*} */ err) {
     console.error('gnubby callback failed: ', err);

@@ -315,7 +315,7 @@ remoting.AppRemoting.prototype.onExtensionMessage = function(type, message) {
     case 'openURL':
       // URL requests from the hosted app are untrusted, so disallow anything
       // other than HTTP or HTTPS.
-      var url = getStringAttr(message, 'url');
+      var url = base.getStringAttr(message, 'url');
       if (url.indexOf('http:') != 0 && url.indexOf('https:') != 0) {
         console.error('Bad URL: ' + url);
       } else {
@@ -324,13 +324,13 @@ remoting.AppRemoting.prototype.onExtensionMessage = function(type, message) {
       return true;
 
     case 'onWindowRemoved':
-      var id = getNumberAttr(message, 'id');
+      var id = base.getNumberAttr(message, 'id');
       this.windowActivationMenu_.remove(id);
       return true;
 
     case 'onWindowAdded':
-      var id = getNumberAttr(message, 'id');
-      var title = getStringAttr(message, 'title');
+      var id = base.getNumberAttr(message, 'id');
+      var title = base.getStringAttr(message, 'title');
       this.windowActivationMenu_.add(id, title);
       return true;
 
@@ -339,15 +339,15 @@ remoting.AppRemoting.prototype.onExtensionMessage = function(type, message) {
       return true;
 
     case 'setKeyboardLayouts':
-      var supportedLayouts = getArrayAttr(message, 'supportedLayouts');
-      var currentLayout = getStringAttr(message, 'currentLayout');
+      var supportedLayouts = base.getArrayAttr(message, 'supportedLayouts');
+      var currentLayout = base.getStringAttr(message, 'currentLayout');
       console.log('Current host keyboard layout: ' + currentLayout);
       console.log('Supported host keyboard layouts: ' + supportedLayouts);
       this.keyboardLayoutsMenu_.setLayouts(supportedLayouts, currentLayout);
       return true;
 
     case 'pingResponse':
-      var then = getNumberAttr(message, 'timestamp');
+      var then = base.getNumberAttr(message, 'timestamp');
       var now = new Date().getTime();
       this.contextMenu_.updateConnectionRTT(now - then);
       return true;

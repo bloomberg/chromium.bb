@@ -86,10 +86,10 @@ remoting.ClientPlugin.HostDesktopImpl.prototype.resize = function(
  */
 remoting.ClientPlugin.HostDesktopImpl.prototype.onSizeUpdated = function(
     message) {
-  this.width_ = getNumberAttr(message.data, 'width');
-  this.height_ = getNumberAttr(message.data, 'height');
-  this.xDpi_ = getNumberAttr(message.data, 'x_dpi', 96);
-  this.yDpi_ = getNumberAttr(message.data, 'y_dpi', 96);
+  this.width_ = base.getNumberAttr(message.data, 'width');
+  this.height_ = base.getNumberAttr(message.data, 'height');
+  this.xDpi_ = base.getNumberAttr(message.data, 'x_dpi', 96);
+  this.yDpi_ = base.getNumberAttr(message.data, 'y_dpi', 96);
   this.raiseEvent(remoting.HostDesktop.Events.sizeChanged,
                   this.getDimensions());
 };
@@ -104,7 +104,7 @@ remoting.ClientPlugin.HostDesktopImpl.prototype.onSizeUpdated = function(
  */
 remoting.ClientPlugin.HostDesktopImpl.prototype.onShapeUpdated =
     function(message) {
-  var shapes = getArrayAttr(message.data, 'rects');
+  var shapes = base.getArrayAttr(message.data, 'rects');
   var rects = shapes.map(
     /** @param {Array.<number>} shape */
     function(shape) {
