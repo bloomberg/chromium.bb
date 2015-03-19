@@ -1915,3 +1915,10 @@ name=bug_468169
 *!nonrd_select_partition
 *!encode_nonrd_sb_row
 *!vp9_encode_tile
+
+UNINITIALIZED READ
+name=bug_468631
+system call NtDeviceIoControlFile InputBuffer
+KERNELBASE.dll!DeviceIoControl
+KERNEL32.dll!DeviceIoControl
+base.dll!base::SysInfo::HasSeekPenalty
