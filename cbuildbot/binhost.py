@@ -154,6 +154,21 @@ class PrebuiltMapping(_PrebuiltMapping):
 
     return cls.Get(compat_ids.keys(), compat_ids)
 
+  def GetPrebuilts(self, compat_id):
+    """Get the matching BoardKey objects associated with |compat_id|.
+
+    Args:
+      compat_id: The CompatId to use to look up prebuilts.
+    """
+    if compat_id in self.by_compat_id:
+      return self.by_compat_id[compat_id]
+
+    partial_compat_id = (compat_id.arch, compat_id.useflags)
+    if partial_compat_id in self.by_arch_useflags:
+      return self.by_arch_useflags[partial_compat_id]
+
+    return set()
+
 
 def GetChromeUseFlags(board, extra_useflags):
   """Get a list of the use flags turned on for Chrome on a given board.
