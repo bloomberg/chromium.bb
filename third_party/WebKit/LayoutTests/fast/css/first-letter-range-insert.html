@@ -8,6 +8,8 @@ div:first-letter {
 }
 </style>
 <script>
+if (window.testRunner)
+    testRunner.dumpAsText();
 document.addEventListener("readystatechange", function() {
   document.execCommand("SelectAll")
   window.getSelection().deleteFromDocument();
