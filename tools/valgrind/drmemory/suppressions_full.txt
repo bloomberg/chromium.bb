@@ -1922,3 +1922,11 @@ system call NtDeviceIoControlFile InputBuffer
 KERNELBASE.dll!DeviceIoControl
 KERNEL32.dll!DeviceIoControl
 base.dll!base::SysInfo::HasSeekPenalty
+
+UNINITIALIZED READ
+name=bug_468638
+*!egl::ConfigSorter::operator()
+*!std::_Insertion_sort1<>
+*!std::_Sort<>
+*!egl::ConfigSet::filter
+*!ConfigSetTest_*_BitSizes_Test::TestBody
