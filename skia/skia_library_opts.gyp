@@ -64,11 +64,16 @@
         }],
         [ 'target_arch == "arm"', {
           'conditions': [
+            [ 'arm_version >= 7', {
+              'sources': [ '<@(armv7_sources)' ],
+            }, {  # arm_version < 7
+              'sources': [ '<@(none_sources)' ],
+            }],
             [ 'arm_version >= 7 and (arm_neon == 1 or arm_neon_optional == 1)', {
               'dependencies': [
                 'skia_opts_neon',
               ]
-           }],
+            }],
           ],
           # The assembly uses the frame pointer register (r7 in Thumb/r11 in
           # ARM), the compiler doesn't like that. Explicitly remove the
@@ -83,13 +88,17 @@
             '-fomit-frame-pointer',
           ],
         }],
-        [ 'target_arch == "arm" and arm_version < 7', {
-          'sources': [ '<@(none_sources)' ],
+        [ 'target_arch == "mipsel"',{
+          'cflags': [ '-fomit-frame-pointer' ],
+          'conditions': [
+            [ 'mips_dsp_rev >= 1', {
+              'sources': [ '<@(mips_dsp_sources)' ],
+            }, {  # mips_dsp_rev == 0
+              'sources': [ '<@(none_sources)' ],
+            }],
+          ],
         }],
-        [ 'target_arch == "arm" and arm_version >= 7', {
-          'sources': [ '<@(armv7_sources)' ],
-        }],
-        [ 'target_arch == "mipsel" or target_arch == "mips64el"',{
+        [ 'target_arch == "mips64el"',{
           'cflags': [ '-fomit-frame-pointer' ],
           'sources': [ '<@(none_sources)' ],
         }],
