@@ -508,6 +508,9 @@ bool areElementsOnSameLine(const FocusCandidate& firstCandidate, const FocusCand
 
 void distanceDataForNode(WebFocusType type, const FocusCandidate& current, FocusCandidate& candidate)
 {
+    if (!isRectInDirection(type, current.rect, candidate.rect))
+        return;
+
     if (areElementsOnSameLine(current, candidate)) {
         if ((type == WebFocusTypeUp && current.rect.y() > candidate.rect.y()) || (type == WebFocusTypeDown && candidate.rect.y() > current.rect.y())) {
             candidate.distance = 0;
@@ -518,9 +521,6 @@ void distanceDataForNode(WebFocusType type, const FocusCandidate& current, Focus
     LayoutRect nodeRect = candidate.rect;
     LayoutRect currentRect = current.rect;
     deflateIfOverlapped(currentRect, nodeRect);
-
-    if (!isRectInDirection(type, currentRect, nodeRect))
-        return;
 
     LayoutPoint exitPoint;
     LayoutPoint entryPoint;
