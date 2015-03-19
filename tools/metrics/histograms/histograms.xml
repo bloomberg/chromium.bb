@@ -2061,6 +2061,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Autofill.UnmaskPrompt.Events" enum="AutofillUnmaskPromptEvent">
+  <owner>waltercacau@chromium.org</owner>
+  <summary>
+    Events tracking the usage of the unmasking prompt. This prompt is
+    triggered when a user selects a masked card in a autofill dropdown.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.UnmaskPrompt.GetRealPanResult" enum="AutofillGetRealPanResult">
+  <owner>waltercacau@chromium.org</owner>
+  <summary>
+    Tracks the result of the GetRealPan API call. This API call is triggered
+    by the unmasking prompt when the user types information to verify his
+    ownership of the card being fetched.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.UserHappiness" enum="AutofillUserHappiness">
   <owner>isherman@chromium.org</owner>
   <summary>
@@ -44832,6 +44849,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="14" label="Masked server card suggestion selected (once)"/>
 </enum>
 
+<enum name="AutofillGetRealPanResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Retriable failure"/>
+  <int value="2" label="Non retriable failure"/>
+  <int value="3" label="Network error"/>
+</enum>
+
 <enum name="AutofillMacAddressBook" type="int">
   <int value="0" label="Showed popup entry"/>
   <int value="1" label="Selected popup entry"/>
@@ -44925,6 +44949,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="51" label="Addr. line 3, Unknown"/>
   <int value="52" label="Addr. line 3, Match"/>
   <int value="53" label="Addr. line 3, Mismatch"/>
+</enum>
+
+<enum name="AutofillUnmaskPromptEvent" type="int">
+  <int value="0" label="Shown"/>
+  <int value="1" label="Closed with no attempts"/>
+  <int value="2" label="Closed, retriable failure"/>
+  <int value="3" label="Closed, non retriable failure"/>
+  <int value="4" label="Closed, success w/ 0 failures">
+    Closed with successful unmask on the first attempt.
+  </int>
+  <int value="5" label="Closed, success w/ 1+ failures">
+    Closed with successful unmask after failed attempts.
+  </int>
+  <int value="6" label="Card saved locally"/>
+  <int value="7" label="Did opt in of local save"/>
+  <int value="8" label="Local save stayed disabled"/>
+  <int value="9" label="Did opt out of local save"/>
+  <int value="10" label="Local save stayed enabled"/>
 </enum>
 
 <enum name="AutofillUserHappiness" type="int">

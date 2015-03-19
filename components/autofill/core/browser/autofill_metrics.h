@@ -284,6 +284,52 @@ class AutofillMetrics {
     NUM_FORM_EVENTS,
   };
 
+  // Events related to the Unmask Credit Card Prompt.
+  enum UnmaskPromptEvent {
+    // The prompt was shown.
+    UNMASK_PROMPT_SHOWN = 0,
+    // The prompt was closed without attempting to unmask the card.
+    UNMASK_PROMPT_CLOSED_NO_ATTEMPTS,
+    // The prompt was closed without unmasking the card, but with at least
+    // one attempt. The last failure was retriable.
+    UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE,
+    // The prompt was closed without unmasking the card, but with at least
+    // one attempt. The last failure was non retriable.
+    UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE,
+    // Successfully unmasked the card in the first attempt.
+    UNMASK_PROMPT_UNMASKED_CARD_FIRST_ATTEMPT,
+    // Successfully unmasked the card after retriable failures.
+    UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS,
+    // Saved the card locally (masked card was upgraded to a full card).
+    UNMASK_PROMPT_SAVED_CARD_LOCALLY,
+    // User chose to opt in (checked the checkbox when it was empty).
+    // Only logged if there was an attempt to unmask.
+    UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN,
+    // User did not opt in when he had the chance (left the checkbox unchecked).
+    // Only logged if there was an attempt to unmask.
+    UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN,
+    // User chose to opt out (unchecked the checkbox when it was check).
+    // Only logged if there was an attempt to unmask.
+    UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT,
+    // User did not opt out when he had a chance (left the checkbox checked).
+    // Only logged if there was an attempt to unmask.
+    UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT,
+    NUM_UNMASK_PROMPT_EVENTS,
+  };
+
+  // Possible results of the GetRealPan call.
+  enum GetRealPanResult {
+    // Request succeeded.
+    GET_REAL_PAN_RESULT_SUCCESS = 0,
+    // Request failed; try again.
+    GET_REAL_PAN_RESULT_TRY_AGAIN_FAILURE,
+    // Request failed; don't try again.
+    GET_REAL_PAN_RESULT_PERMANENT_FAILURE,
+    // Unable to connect to Wallet servers.
+    GET_REAL_PAN_RESULT_NETWORK_ERROR,
+    NUM_GET_REAL_PAN_RESULTS,
+  };
+
   // For measuring the network request time of various Wallet API calls. See
   // WalletClient::RequestType.
   enum WalletApiCallMetric {
@@ -409,6 +455,12 @@ class AutofillMetrics {
 
   // Logs |event| to the UI events histogram.
   static void LogDialogUiEvent(DialogUiEvent event);
+
+  // Logs |event| to the unmask prompt events histogram.
+  static void LogUnmaskPromptEvent(UnmaskPromptEvent event);
+
+  // Logs |result| to the get real pan result histogram.
+  static void LogRealPanResult(AutofillClient::GetRealPanResult result);
 
   // Logs |metric| to the Wallet errors histogram.
   static void LogWalletErrorMetric(WalletErrorMetric metric);

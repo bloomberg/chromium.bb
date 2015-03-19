@@ -341,6 +341,38 @@ void AutofillMetrics::LogDialogUiEvent(DialogUiEvent event) {
 }
 
 // static
+void AutofillMetrics::LogUnmaskPromptEvent(UnmaskPromptEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Autofill.UnmaskPrompt.Events", event,
+                            NUM_UNMASK_PROMPT_EVENTS);
+}
+
+// static
+void AutofillMetrics::LogRealPanResult(
+    AutofillClient::GetRealPanResult result) {
+  GetRealPanResult metric_result;
+  switch (result) {
+    case AutofillClient::SUCCESS:
+      metric_result = GET_REAL_PAN_RESULT_SUCCESS;
+      break;
+    case AutofillClient::TRY_AGAIN_FAILURE:
+      metric_result = GET_REAL_PAN_RESULT_TRY_AGAIN_FAILURE;
+      break;
+    case AutofillClient::PERMANENT_FAILURE:
+      metric_result = GET_REAL_PAN_RESULT_PERMANENT_FAILURE;
+      break;
+    case AutofillClient::NETWORK_ERROR:
+      metric_result = GET_REAL_PAN_RESULT_NETWORK_ERROR;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Autofill.UnmaskPrompt.GetRealPanResult",
+                            metric_result,
+                            NUM_GET_REAL_PAN_RESULTS);
+}
+
+// static
 void AutofillMetrics::LogWalletErrorMetric(WalletErrorMetric metric) {
   UMA_HISTOGRAM_ENUMERATION("RequestAutocomplete.WalletErrors", metric,
                             NUM_WALLET_ERROR_METRICS);

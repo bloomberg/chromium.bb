@@ -45,18 +45,29 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
                               const base::string16& year) const override;
 
  protected:
+  // Virtual so tests can suppress it.
+  virtual CardUnmaskPromptView* CreateAndShowView();
+  virtual void LoadRiskFingerprint();
+
   virtual void OnDidLoadRiskFingerprint(const std::string& risk_data);
 
   // Exposed for testing.
   CardUnmaskPromptView* view() { return card_unmask_view_; }
 
  private:
-  void LoadRiskFingerprint();
+
+  bool AllowsRetry(AutofillClient::GetRealPanResult result);
+  void LogOnCloseEvents();
 
   content::WebContents* web_contents_;
   CreditCard card_;
   base::WeakPtr<CardUnmaskDelegate> delegate_;
   CardUnmaskPromptView* card_unmask_view_;
+
+  AutofillClient::GetRealPanResult unmasking_result_;
+  bool unmasking_initial_should_store_pan_;
+  int unmasking_number_of_attempts_;
+  bool unmasking_allow_retry_;
 
   CardUnmaskDelegate::UnmaskResponse pending_response_;
 

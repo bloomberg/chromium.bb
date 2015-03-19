@@ -12,6 +12,7 @@
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
@@ -24,12 +25,19 @@ CardUnmaskPromptControllerImpl::CardUnmaskPromptControllerImpl(
     content::WebContents* web_contents)
     : web_contents_(web_contents),
       card_unmask_view_(nullptr),
+      unmasking_result_(AutofillClient::TRY_AGAIN_FAILURE),
+      unmasking_initial_should_store_pan_(false),
+      unmasking_number_of_attempts_(0),
       weak_pointer_factory_(this) {
 }
 
 CardUnmaskPromptControllerImpl::~CardUnmaskPromptControllerImpl() {
   if (card_unmask_view_)
     card_unmask_view_->ControllerGone();
+}
+
+CardUnmaskPromptView* CardUnmaskPromptControllerImpl::CreateAndShowView() {
+  return CardUnmaskPromptView::CreateAndShow(this);
 }
 
 void CardUnmaskPromptControllerImpl::ShowPrompt(
@@ -42,7 +50,20 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
   LoadRiskFingerprint();
   card_ = card;
   delegate_ = delegate;
-  card_unmask_view_ = CardUnmaskPromptView::CreateAndShow(this);
+  card_unmask_view_ = CreateAndShowView();
+  unmasking_result_ = AutofillClient::TRY_AGAIN_FAILURE;
+  unmasking_number_of_attempts_ = 0;
+  unmasking_initial_should_store_pan_ = GetStoreLocallyStartState();
+  AutofillMetrics::LogUnmaskPromptEvent(AutofillMetrics::UNMASK_PROMPT_SHOWN);
+}
+
+bool CardUnmaskPromptControllerImpl::AllowsRetry(
+    AutofillClient::GetRealPanResult result) {
+  if (result == AutofillClient::NETWORK_ERROR
+      || result == AutofillClient::PERMANENT_FAILURE) {
+    return false;
+  }
+  return true;
 }
 
 void CardUnmaskPromptControllerImpl::OnVerificationResult(
@@ -51,7 +72,7 @@ void CardUnmaskPromptControllerImpl::OnVerificationResult(
     return;
 
   base::string16 error_message;
-  bool allow_retry = true;
+  unmasking_result_ = result;
   switch (result) {
     case AutofillClient::SUCCESS:
       break;
@@ -65,24 +86,71 @@ void CardUnmaskPromptControllerImpl::OnVerificationResult(
     case AutofillClient::PERMANENT_FAILURE: {
       error_message = l10n_util::GetStringUTF16(
           IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_PERMANENT);
-      allow_retry = false;
       break;
     }
 
     case AutofillClient::NETWORK_ERROR: {
       error_message = l10n_util::GetStringUTF16(
           IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_NETWORK);
-      allow_retry = false;
       break;
     }
   }
 
-  card_unmask_view_->GotVerificationResult(error_message, allow_retry);
+  AutofillMetrics::LogRealPanResult(result);
+  unmasking_allow_retry_ = AllowsRetry(result);
+  card_unmask_view_->GotVerificationResult(error_message,
+                                           AllowsRetry(result));
 }
 
 void CardUnmaskPromptControllerImpl::OnUnmaskDialogClosed() {
   card_unmask_view_ = nullptr;
+  LogOnCloseEvents();
   delegate_->OnUnmaskPromptClosed();
+}
+
+void CardUnmaskPromptControllerImpl::LogOnCloseEvents() {
+  if (unmasking_number_of_attempts_ == 0) {
+    AutofillMetrics::LogUnmaskPromptEvent(
+        AutofillMetrics::UNMASK_PROMPT_CLOSED_NO_ATTEMPTS);
+    return;
+  }
+
+  bool final_should_store_pan =
+      user_prefs::UserPrefs::Get(web_contents_->GetBrowserContext())
+          ->GetBoolean(prefs::kAutofillWalletImportStorageCheckboxState);
+
+  if (unmasking_result_ == AutofillClient::SUCCESS) {
+    AutofillMetrics::LogUnmaskPromptEvent(
+        unmasking_number_of_attempts_ == 1
+        ? AutofillMetrics::UNMASK_PROMPT_UNMASKED_CARD_FIRST_ATTEMPT
+        : AutofillMetrics::UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS);
+    if (final_should_store_pan) {
+      AutofillMetrics::LogUnmaskPromptEvent(
+          AutofillMetrics::UNMASK_PROMPT_SAVED_CARD_LOCALLY);
+    }
+  } else {
+    AutofillMetrics::LogUnmaskPromptEvent(
+        AllowsRetry(unmasking_result_)
+        ? AutofillMetrics
+              ::UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_RETRIABLE_FAILURE
+        : AutofillMetrics
+              ::UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE);
+  }
+
+  // Tracking changes in local save preference.
+  AutofillMetrics::UnmaskPromptEvent event;
+  if (unmasking_initial_should_store_pan_ && final_should_store_pan) {
+    event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT;
+  } else if (!unmasking_initial_should_store_pan_
+             && !final_should_store_pan) {
+    event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN;
+  } else if (unmasking_initial_should_store_pan_
+             && !final_should_store_pan) {
+    event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT;
+  } else {
+    event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN;
+  }
+  AutofillMetrics::LogUnmaskPromptEvent(event);
 }
 
 void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
@@ -90,6 +158,7 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
     const base::string16& exp_month,
     const base::string16& exp_year,
     bool should_store_pan) {
+  unmasking_number_of_attempts_++;
   card_unmask_view_->DisableAndWaitForVerification();
 
   DCHECK(!cvc.empty());
