@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/binary_feature_extractor.h"
+#include "chrome/common/safe_browsing/binary_feature_extractor.h"
 
 #include <windows.h>
 #include <softpub.h>
@@ -11,8 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
-#include "chrome/browser/safe_browsing/pe_image_reader_win.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/common/safe_browsing/pe_image_reader_win.h"
 
 #pragma comment(lib, "wintrust.lib")
 

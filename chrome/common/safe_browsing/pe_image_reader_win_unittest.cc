@@ -5,8 +5,8 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/path_service.h"
-#include "chrome/browser/safe_browsing/pe_image_reader_win.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/safe_browsing/pe_image_reader_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 struct TestData {

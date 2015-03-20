@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/binary_feature_extractor.h"
+#include "chrome/common/safe_browsing/binary_feature_extractor.h"
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"

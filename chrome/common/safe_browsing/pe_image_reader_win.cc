@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/pe_image_reader_win.h"
+#include "chrome/common/safe_browsing/pe_image_reader_win.h"
 
 #include "base/logging.h"
 

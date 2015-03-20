@@ -5,8 +5,8 @@
 // Utility functions to extract file features for malicious binary detection.
 // Each platform has its own implementation of this class.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_BINARY_FEATURE_EXTRACTOR_H_
-#define CHROME_BROWSER_SAFE_BROWSING_BINARY_FEATURE_EXTRACTOR_H_
+#ifndef CHROME_COMMON_SAFE_BROWSING_BINARY_FEATURE_EXTRACTOR_H_
+#define CHROME_COMMON_SAFE_BROWSING_BINARY_FEATURE_EXTRACTOR_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -58,4 +58,4 @@ class BinaryFeatureExtractor
 };
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_BINARY_FEATURE_EXTRACTOR_H_
+#endif  // CHROME_COMMON_SAFE_BROWSING_BINARY_FEATURE_EXTRACTOR_H_
