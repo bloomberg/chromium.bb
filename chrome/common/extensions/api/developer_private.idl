@@ -29,6 +29,14 @@ namespace developerPrivate {
     boolean generatedBackgroundPage;
   };
 
+  // DEPRECATED: Use OpenDevTools.
+  dictionary InspectOptions {
+    DOMString extension_id;
+    (DOMString or long) render_process_id;
+    (DOMString or long) render_view_id;
+    boolean incognito;
+  };
+
   dictionary InstallWarning {
     DOMString message;
   };
@@ -218,14 +226,6 @@ namespace developerPrivate {
     boolean? includeTerminated;
   };
 
-  // TODO(devlin): Combine inspect and openDevTools?
-  dictionary InspectOptions {
-    DOMString extension_id;
-    (DOMString or long) render_process_id;
-    (DOMString or long) render_view_id;
-    boolean incognito;
-  };
-
   dictionary ExtensionConfigurationUpdate {
     DOMString extensionId;
     boolean? fileAccess;
@@ -341,11 +341,17 @@ namespace developerPrivate {
   };
 
   dictionary OpenDevToolsProperties {
+    // The ID of the extension. This is only needed if opening the background
+    // page (where renderViewId and renderProcessId are -1).
+    DOMString? extensionId;
+
     // The ID of the render view in which the error occurred.
     long renderViewId;
 
     // The ID of the process in which the error occurred.
     long renderProcessId;
+
+    boolean? incognito;
 
     // The URL in which the error occurred.
     DOMString? url;
@@ -401,11 +407,6 @@ namespace developerPrivate {
     static void showPermissionsDialog(DOMString extensionId,
                                       optional VoidCallback callback);
 
-    // Opens a developer tools inspection window.
-    // |options| : The details about the inspection.
-    static void inspect(InspectOptions options,
-                        optional VoidCallback callback);
-
     // Reloads a given extension.
     // |extensionId| : The id of the extension to reload.
     // |options| : Additional configuration parameters.
@@ -459,7 +460,18 @@ namespace developerPrivate {
                                   RequestFileSourceCallback callback);
 
     // Open the developer tools to focus on a particular error.
-    static void openDevTools(OpenDevToolsProperties properties);
+    static void openDevTools(OpenDevToolsProperties properties,
+                             optional VoidCallback callback);
+
+    // Deprecated api methods, retained for compatability.
+    [nocompile] static void allowIncognito(DOMString extensionId,
+                                           boolean allow,
+                                           optional VoidCallback callback);
+    [nocompile] static void allowFileAccess(DOMString extensionId,
+                                            boolean allow,
+                                            optional VoidCallback callback);
+    [nocompile] static void inspect(InspectOptions options,
+                                    optional VoidCallback callback);
   };
 
   interface Events {

@@ -26,15 +26,38 @@ binding.registerCustomHook(function(bindingsAPI) {
   // TODO(devlin): Migrate callers off developerPrivate.enable.
   bindingsAPI.compiledApi.enable = chrome.management.setEnabled;
 
-  bindingsAPI.compiledApi.allowFileAccess = function(id, allow, callback) {
+  apiFunctions.setHandleRequest('allowFileAccess',
+                                function(id, allow, callback) {
     chrome.developerPrivate.updateExtensionConfiguration(
         {extensionId: id, fileAccess: allow}, callback);
-  };
+  });
 
-  bindingsAPI.compiledApi.allowIncognito = function(id, allow, callback) {
+  apiFunctions.setHandleRequest('allowIncognito',
+                                function(id, allow, callback) {
     chrome.developerPrivate.updateExtensionConfiguration(
         {extensionId: id, incognitoAccess: allow}, callback);
-  };
+  });
+
+  apiFunctions.setHandleRequest('inspect', function(options, callback) {
+    var renderViewId = options.render_view_id;
+    if (typeof renderViewId == 'string') {
+      renderViewId = parseInt(renderViewId);
+      if (isNaN(renderViewId))
+        throw new Error('Invalid value for render_view_id');
+    }
+    var renderProcessId = options.render_process_id;
+    if (typeof renderProcessId == 'string') {
+      renderProcessId = parseInt(renderProcessId);
+      if (isNaN(renderProcessId))
+        throw new Error('Invalid value for render_process_id');
+    }
+    chrome.developerPrivate.openDevTools({
+        extensionId: options.extension_id,
+        renderProcessId: renderProcessId,
+        renderViewId: renderViewId,
+        incognito: options.incognito
+    }, callback);
+  });
 });
 
 exports.binding = binding.generate();

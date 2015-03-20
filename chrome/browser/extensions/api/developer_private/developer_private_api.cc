@@ -194,7 +194,6 @@ bool UserCanModifyExtensionConfiguration(
 
 namespace ChoosePath = api::developer_private::ChoosePath;
 namespace GetItemsInfo = api::developer_private::GetItemsInfo;
-namespace Inspect = api::developer_private::Inspect;
 namespace PackDirectory = api::developer_private::PackDirectory;
 namespace Reload = api::developer_private::Reload;
 
@@ -611,58 +610,6 @@ DeveloperPrivateShowPermissionsDialogFunction::Run() {
 void DeveloperPrivateShowPermissionsDialogFunction::Finish() {
   Respond(NoArguments());
 }
-
-ExtensionFunction::ResponseAction DeveloperPrivateInspectFunction::Run() {
-  scoped_ptr<developer::Inspect::Params> params(
-      developer::Inspect::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-  const developer::InspectOptions& options = params->options;
-
-  int render_process_id = 0;
-  if (options.render_process_id.as_string &&
-      !base::StringToInt(*options.render_process_id.as_string,
-                         &render_process_id)) {
-    return RespondNow(Error(kNoSuchRendererError));
-  } else if (options.render_process_id.as_integer) {
-    render_process_id = *options.render_process_id.as_integer;
-  }
-
-  int render_view_id = 0;
-  if (options.render_view_id.as_string &&
-      !base::StringToInt(*options.render_view_id.as_string, &render_view_id)) {
-    return RespondNow(Error(kNoSuchRendererError));
-  } else if (options.render_view_id.as_integer) {
-    render_view_id = *options.render_view_id.as_integer;
-  }
-
-  if (render_process_id == -1) {
-    // This is a lazy background page.
-    const Extension* extension = ExtensionRegistry::Get(
-        browser_context())->enabled_extensions().GetByID(options.extension_id);
-    if (!extension)
-      return RespondNow(Error(kNoSuchExtensionError));
-
-    Profile* profile = Profile::FromBrowserContext(browser_context());
-    if (options.incognito)
-      profile = profile->GetOffTheRecordProfile();
-
-    // Wakes up the background page and opens the inspect window.
-    devtools_util::InspectBackgroundPage(extension, profile);
-    return RespondNow(NoArguments());
-  }
-
-  content::RenderViewHost* host = content::RenderViewHost::FromID(
-      render_process_id, render_view_id);
-
-  if (!host || !content::WebContents::FromRenderViewHost(host))
-    return RespondNow(Error(kNoSuchRendererError));
-
-  DevToolsWindow::OpenDevToolsWindow(
-      content::WebContents::FromRenderViewHost(host));
-  return RespondNow(NoArguments());
-}
-
-DeveloperPrivateInspectFunction::~DeveloperPrivateInspectFunction() {}
 
 DeveloperPrivateLoadUnpackedFunction::DeveloperPrivateLoadUnpackedFunction()
     : fail_quietly_(false) {
@@ -1202,9 +1149,27 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
   const developer::OpenDevToolsProperties& properties = params->properties;
 
+  if (properties.render_process_id == -1) {
+    // This is a lazy background page.
+    const Extension* extension = properties.extension_id ?
+        ExtensionRegistry::Get(browser_context())->enabled_extensions().GetByID(
+            *properties.extension_id) : nullptr;
+    if (!extension)
+      return RespondNow(Error(kNoSuchExtensionError));
+
+    Profile* profile = Profile::FromBrowserContext(browser_context());
+    if (properties.incognito && *properties.incognito)
+      profile = profile->GetOffTheRecordProfile();
+
+    // Wakes up the background page and opens the inspect window.
+    devtools_util::InspectBackgroundPage(extension, profile);
+    return RespondNow(NoArguments());
+  }
+
   content::RenderViewHost* rvh =
       content::RenderViewHost::FromID(properties.render_process_id,
                                       properties.render_view_id);
+
   content::WebContents* web_contents =
       rvh ? content::WebContents::FromRenderViewHost(rvh) : nullptr;
   // It's possible that the render view was closed since we last updated the

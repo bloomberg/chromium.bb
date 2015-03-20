@@ -226,18 +226,6 @@ class DeveloperPrivateGetExtensionInfoFunction
   ResponseAction Run() override;
 };
 
-class DeveloperPrivateInspectFunction : public UIThreadExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("developerPrivate.inspect",
-                             DEVELOPERPRIVATE_INSPECT)
-
- protected:
-  ~DeveloperPrivateInspectFunction() override;
-
-  // ExtensionFunction:
-  ResponseAction Run() override;
-};
-
 class DeveloperPrivateUpdateExtensionConfigurationFunction
     : public DeveloperPrivateAPIFunction {
  public:

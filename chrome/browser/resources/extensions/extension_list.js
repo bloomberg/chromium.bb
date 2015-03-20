@@ -759,10 +759,10 @@ cr.define('extensions', function() {
                   ' ' + loadTimeData.getString('viewInactive') : '');
           link.textContent = label;
           link.clickHandler = function(e) {
-            chrome.developerPrivate.inspect({
-              extension_id: extension.id,
-              render_process_id: view.renderProcessId,
-              render_view_id: view.renderViewId,
+            chrome.developerPrivate.openDevTools({
+              extensionId: extension.id,
+              renderProcessId: view.renderProcessId,
+              renderViewId: view.renderViewId,
               incognito: view.incognito
             });
           };
