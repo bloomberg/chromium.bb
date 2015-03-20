@@ -141,9 +141,7 @@ DriveSyncHandler.prototype.showDisabledMobileSyncNotification = function() {
  */
 DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(status) {
   switch (status.transferState) {
-    case 'added':
     case 'in_progress':
-    case 'started':
       this.updateItem_(status);
       break;
     case 'completed':

@@ -49,7 +49,7 @@ enum MountCompletedStatus {
 };
 
 // File transfer progress state.
-enum TransferState { added, started, in_progress, completed, failed };
+enum TransferState { in_progress, completed, failed };
 
 // Defines file transfer direction.
 enum TransferType { upload, download };
@@ -352,10 +352,10 @@ dictionary FileTransferStatus {
   TransferType transferType;
 
   // Approximated completed portion of the transfer operation.
-  double? processed;
+  double processed;
 
   // Approximated total size of transfer operation.
-  double? total;
+  double total;
 
   // Total number of jobs.
   long num_total_jobs;

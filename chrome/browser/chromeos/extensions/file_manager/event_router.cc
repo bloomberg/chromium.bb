@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/chromeos/extensions/file_manager/device_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -59,12 +58,6 @@ namespace file_manager_private = extensions::api::file_manager_private;
 
 namespace file_manager {
 namespace {
-// Constants for the "transferState" field of onFileTransferUpdated event.
-const char kFileTransferStateAdded[] = "added";
-const char kFileTransferStateStarted[] = "started";
-const char kFileTransferStateInProgress[] = "in_progress";
-const char kFileTransferStateCompleted[] = "completed";
-const char kFileTransferStateFailed[] = "failed";
 
 // Frequency of sending onFileTransferUpdated.
 const int64 kProgressEventFrequencyInMilliseconds = 1000;
@@ -76,53 +69,6 @@ const size_t kDirectoryChangeEventMaxDetailInfoSize = 1000;
 
 // This time(millisecond) is used for confirm following event exists.
 const int64 kFileTransferEventDelayTimeInMilliseconds = 300;
-
-// Utility function to check if |job_info| is a file uploading job.
-bool IsUploadJob(drive::JobType type) {
-  return (type == drive::TYPE_UPLOAD_NEW_FILE ||
-          type == drive::TYPE_UPLOAD_EXISTING_FILE);
-}
-
-size_t CountActiveFileTransferJobInfo(
-    const std::vector<drive::JobInfo>& job_info_list) {
-  size_t num_active_file_transfer_job_info = 0;
-  for (size_t i = 0; i < job_info_list.size(); ++i) {
-    if (IsActiveFileTransferJobInfo(job_info_list[i]))
-      ++num_active_file_transfer_job_info;
-  }
-  return num_active_file_transfer_job_info;
-}
-
-// Converts the job info to a IDL generated type.
-void JobInfoToTransferStatus(
-    Profile* profile,
-    const std::string& extension_id,
-    const std::string& job_status,
-    const drive::JobInfo& job_info,
-    file_manager_private::FileTransferStatus* status) {
-  DCHECK(IsActiveFileTransferJobInfo(job_info));
-
-  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
-  GURL url = util::ConvertDrivePathToFileSystemUrl(
-      profile, job_info.file_path, extension_id);
-  status->file_url = url.spec();
-  status->transfer_state = file_manager_private::ParseTransferState(job_status);
-  status->transfer_type =
-      IsUploadJob(job_info.job_type) ?
-      file_manager_private::TRANSFER_TYPE_UPLOAD :
-      file_manager_private::TRANSFER_TYPE_DOWNLOAD;
-  DriveIntegrationService* const integration_service =
-      DriveIntegrationServiceFactory::FindForProfile(profile);
-  status->num_total_jobs = CountActiveFileTransferJobInfo(
-      integration_service->job_list()->GetJobInfoList());
-  // JavaScript does not have 64-bit integers. Instead we use double, which
-  // is in IEEE 754 formant and accurate up to 52-bits in JS, and in practice
-  // in C++. Larger values are rounded.
-  status->processed.reset(
-      new double(static_cast<double>(job_info.num_completed_bytes)));
-  status->total.reset(
-      new double(static_cast<double>(job_info.num_total_bytes)));
-}
 
 // Checks if the Recovery Tool is running. This is a temporary solution.
 // TODO(mtomasz): Replace with crbug.com/341902 solution.
@@ -364,22 +310,37 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
   DISALLOW_COPY_AND_ASSIGN(DeviceEventRouterImpl);
 };
 
+class JobEventRouterImpl : public JobEventRouter {
+ public:
+  explicit JobEventRouterImpl(Profile* profile)
+      : JobEventRouter(base::TimeDelta::FromMilliseconds(
+            kFileTransferEventDelayTimeInMilliseconds)),
+        profile_(profile) {}
+
+ protected:
+  GURL ConvertDrivePathToFileSystemUrl(const base::FilePath& path,
+                                       const std::string& id) const override {
+    return file_manager::util::ConvertDrivePathToFileSystemUrl(profile_, path,
+                                                               id);
+  }
+  void BroadcastEvent(const std::string& event_name,
+                      scoped_ptr<base::ListValue> event_args) override {
+    ::file_manager::BroadcastEvent(profile_, event_name, event_args.Pass());
+  }
+
+ private:
+  Profile* const profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(JobEventRouterImpl);
+};
+
 }  // namespace
-
-// Pass dummy value to JobInfo's constructor for make it default constructible.
-EventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus()
-    : job_info(drive::TYPE_DOWNLOAD_FILE) {
-}
-
-EventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus(
-    const drive::JobInfo& info, const std::string& status)
-    : job_info(info), status(status) {
-}
 
 EventRouter::EventRouter(Profile* profile)
     : pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
       device_event_router_(new DeviceEventRouterImpl(profile)),
+      job_event_router_(new JobEventRouterImpl(profile)),
       dispatch_directory_change_event_impl_(
           base::Bind(&EventRouter::DispatchDirectoryChangeEventImpl,
                      base::Unretained(this))),
@@ -415,7 +376,7 @@ void EventRouter::Shutdown() {
   if (integration_service) {
     integration_service->file_system()->RemoveObserver(this);
     integration_service->drive_service()->RemoveObserver(this);
-    integration_service->job_list()->RemoveObserver(this);
+    integration_service->job_list()->RemoveObserver(job_event_router_.get());
   }
 
   VolumeManager* const volume_manager = VolumeManager::Get(profile_);
@@ -462,7 +423,7 @@ void EventRouter::ObserveEvents() {
   if (integration_service) {
     integration_service->drive_service()->AddObserver(this);
     integration_service->file_system()->AddObserver(this);
-    integration_service->job_list()->AddObserver(this);
+    integration_service->job_list()->AddObserver(job_event_router_.get());
   }
 
   if (NetworkHandler::IsInitialized()) {
@@ -630,84 +591,6 @@ void EventRouter::OnFileManagerPrefsChanged() {
       profile_,
       file_manager_private::OnPreferencesChanged::kEventName,
       file_manager_private::OnPreferencesChanged::Create());
-}
-
-void EventRouter::OnJobAdded(const drive::JobInfo& job_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!drive::IsActiveFileTransferJobInfo(job_info))
-    return;
-  ScheduleDriveFileTransferEvent(
-      job_info, kFileTransferStateAdded, false /* immediate */);
-}
-
-void EventRouter::OnJobUpdated(const drive::JobInfo& job_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!drive::IsActiveFileTransferJobInfo(job_info))
-    return;
-
-  bool is_new_job = (drive_jobs_.find(job_info.job_id) == drive_jobs_.end());
-
-  const std::string status =
-      is_new_job ? kFileTransferStateStarted : kFileTransferStateInProgress;
-
-  // Replace with the latest job info.
-  drive_jobs_[job_info.job_id] = DriveJobInfoWithStatus(job_info, status);
-
-  ScheduleDriveFileTransferEvent(job_info, status, false /* immediate */);
-}
-
-void EventRouter::OnJobDone(const drive::JobInfo& job_info,
-                            drive::FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!drive::IsActiveFileTransferJobInfo(job_info))
-    return;
-
-  const std::string status = error == drive::FILE_ERROR_OK
-                                 ? kFileTransferStateCompleted
-                                 : kFileTransferStateFailed;
-
-  ScheduleDriveFileTransferEvent(job_info, status, true /* immediate */);
-
-  // Forget about the job.
-  drive_jobs_.erase(job_info.job_id);
-}
-
-void EventRouter::ScheduleDriveFileTransferEvent(const drive::JobInfo& job_info,
-                                                 const std::string& status,
-                                                 bool immediate) {
-  const bool no_pending_task = !drive_job_info_for_scheduled_event_;
-  // Update the latest event.
-  drive_job_info_for_scheduled_event_.reset(
-      new DriveJobInfoWithStatus(job_info, status));
-  if (immediate) {
-    SendDriveFileTransferEvent();
-  } else if (no_pending_task) {
-    const base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
-        kFileTransferEventDelayTimeInMilliseconds);
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&EventRouter::SendDriveFileTransferEvent,
-                   weak_factory_.GetWeakPtr()),
-        delay);
-  }
-}
-
-void EventRouter::SendDriveFileTransferEvent() {
-  if (!drive_job_info_for_scheduled_event_)
-    return;
-
-  file_manager_private::FileTransferStatus status;
-  JobInfoToTransferStatus(profile_,
-                          kFileManagerAppId,
-                          drive_job_info_for_scheduled_event_->status,
-                          drive_job_info_for_scheduled_event_->job_info,
-                          &status);
-
-  drive_job_info_for_scheduled_event_.reset();
-
-  BroadcastEvent(profile_,
-                 file_manager_private::OnFileTransfersUpdated::kEventName,
-                 file_manager_private::OnFileTransfersUpdated::Create(status));
 }
 
 void EventRouter::OnDirectoryChanged(const base::FilePath& drive_path) {

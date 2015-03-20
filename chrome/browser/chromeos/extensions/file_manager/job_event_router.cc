@@ -124,8 +124,8 @@ void JobEventRouter::SendDriveFileTransferEvent() {
   // is in IEEE 754 formant and accurate up to 52-bits in JS, and in practice
   // in C++. Larger values are rounded.
   pending_event_->num_total_jobs = drive_jobs_.size();
-  pending_event_->processed.reset(new double(num_completed_bytes_));
-  pending_event_->total.reset(new double(num_total_bytes_));
+  pending_event_->processed = num_completed_bytes_;
+  pending_event_->total = num_total_bytes_;
 
   BroadcastEvent(
       file_manager_private::OnFileTransfersUpdated::kEventName,

@@ -89,8 +89,8 @@ var MountCompletedEvent;
  *   fileUrl: string,
  *   transferState: string,
  *   transferType: string,
- *   processed: (number|undefined),
- *   total: (number|undefined),
+ *   processed: number,
+ *   total: number,
  *   num_total_jobs: number
  * }}
  */
