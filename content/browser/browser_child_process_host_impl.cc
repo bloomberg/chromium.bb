@@ -256,6 +256,8 @@ void BrowserChildProcessHostImpl::OnBadMessageReceived(
           switches::kDisableKillAfterBadIPC)) {
     return;
   }
+  LOG(ERROR) << "Terminating child process for bad IPC message of type "
+      << message.type();
   child_process_->GetProcess().Terminate(RESULT_CODE_KILLED_BAD_MESSAGE, false);
 }
 

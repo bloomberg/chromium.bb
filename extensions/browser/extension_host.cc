@@ -19,6 +19,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/bad_message.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_host_delegate.h"
@@ -365,7 +366,8 @@ void ExtensionHost::OnEventAck(int event_id) {
     DCHECK(render_process_host());
     LOG(ERROR) << "Killing renderer for extension " << extension_id() << " for "
                << "sending an EventAck message with a bad event id.";
-    render_process_host()->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(render_process_host(),
+                                    bad_message::EH_BAD_EVENT_ID);
   }
 }
 

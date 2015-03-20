@@ -4,7 +4,6 @@
 
 #include "extensions/browser/guest_view/extension_options/extension_options_guest.h"
 
-#include "base/metrics/user_metrics.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/navigation_details.h"
@@ -13,6 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/bad_message.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_web_contents_observer.h"
@@ -224,9 +224,8 @@ void ExtensionOptionsGuest::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   if (attached() && (params.url.GetOrigin() != options_page_.GetOrigin())) {
-    base::RecordAction(base::UserMetricsAction("BadMessageTerminate_EOG"));
-    web_contents()->GetRenderProcessHost()->Shutdown(
-        content::RESULT_CODE_KILLED_BAD_MESSAGE, false /* wait */);
+    bad_message::ReceivedBadMessage(web_contents()->GetRenderProcessHost(),
+                                    bad_message::EOG_BAD_ORIGIN);
   }
 }
 

@@ -20,6 +20,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -640,8 +641,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
 bool WebContentsImpl::HasValidFrameSource() {
   if (!render_frame_message_source_) {
     DCHECK(render_view_message_source_);
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_WC"));
-    GetRenderProcessHost()->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(GetRenderProcessHost(),
+                                    bad_message::WC_INVALID_FRAME_SOURCE);
     return false;
   }
 

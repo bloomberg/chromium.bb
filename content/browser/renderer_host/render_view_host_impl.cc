@@ -24,6 +24,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -1003,7 +1004,8 @@ void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
   if (!CanAccessFilesOfPageState(state)) {
-    GetProcess()->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RVH_CAN_ACCESS_FILES_OF_PAGE_STATE);
     return;
   }
 
@@ -1369,7 +1371,8 @@ void RenderViewHostImpl::OnRunFileChooser(const FileChooserParams& params) {
   // renderer to coerce the browser to perform I/O on a renderer controlled
   // path.
   if (params.default_file_name != params.default_file_name.BaseName()) {
-    GetProcess()->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RVH_FILE_CHOOSER_PATH);
     return;
   }
 

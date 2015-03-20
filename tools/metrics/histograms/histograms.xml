@@ -37738,6 +37738,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Stability.BadMessageTerminated.Content"
+    enum="BadMessageReasonContent">
+  <owner>jam@chromium.org</owner>
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Count of child processes killed because they sent an IPC that couldn't be
+    properly handled. Categories are the reasons (code locations) for the kills.
+  </summary>
+</histogram>
+
+<histogram name="Stability.BadMessageTerminated.Extensions"
+    enum="BadMessageReasonExtensions">
+  <owner>kalman@chromium.org</owner>
+  <owner>jamescook@chromium.org</owner>
+  <summary>
+    Count of extension processes killed because they sent an IPC that couldn't
+    be properly handled. Categories are the reasons (code locations) for the
+    kills.
+  </summary>
+</histogram>
+
 <histogram name="Stability.BrowserExitCodes" enum="WindowsExitCode">
   <owner>siggi@chromium.org</owner>
   <owner>erikwright@chromium.org</owner>
@@ -45064,6 +45085,33 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Unused"/>
   <int value="1" label="Success"/>
   <int value="2" label="Failure"/>
+</enum>
+
+<enum name="BadMessageReasonContent" type="int">
+  <int value="0" label="NC_IN_PAGE_NAVIGATION"/>
+  <int value="1" label="RFH_CAN_COMMIT_URL_BLOCKED"/>
+  <int value="2" label="RFH_CAN_ACCESS_FILES_OF_PAGE_STATE"/>
+  <int value="3" label="RFH_SANDBOX_FLAGS"/>
+  <int value="4" label="RFH_NO_PROXY_TO_PARENT"/>
+  <int value="5" label="RPH_DESERIALIZATION_FAILED"/>
+  <int value="6" label="RVH_CAN_ACCESS_FILES_OF_PAGE_STATE"/>
+  <int value="7" label="RVH_FILE_CHOOSER_PATH"/>
+  <int value="8" label="RWH_SYNTHETIC_GESTURE"/>
+  <int value="9" label="RWH_FOCUS"/>
+  <int value="10" label="RWH_BLUR"/>
+  <int value="11" label="RWH_SHARED_BITMAP"/>
+  <int value="12" label="RWH_BAD_ACK_MESSAGE"/>
+  <int value="13" label="RWHVA_SHARED_MEMORY"/>
+  <int value="14" label="SERVICE_WORKER_BAD_URL"/>
+  <int value="15" label="WC_INVALID_FRAME_SOURCE"/>
+  <int value="16" label="RWHVM_UNEXPECTED_FRAME_TYPE"/>
+</enum>
+
+<enum name="BadMessageReasonExtensions" type="int">
+  <int value="0" label="EOG_BAD_ORIGIN"/>
+  <int value="1" label="EVG_BAD_ORIGIN"/>
+  <int value="2" label="BH_BLOB_NOT_OWNED"/>
+  <int value="3" label="EH_BAD_EVENT_ID"/>
 </enum>
 
 <enum name="BadSyncDataReason" type="int">

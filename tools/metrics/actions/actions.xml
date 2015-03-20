@@ -1125,6 +1125,10 @@ should be able to be added at any place in this file.
     Indicates that an ExtensionOptionsGuest was terminated due to a navigation
     to an origin other than the extension it is embedding.
   </description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Extensions.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_EVG">
@@ -1133,6 +1137,10 @@ should be able to be added at any place in this file.
     Indicates that an ExtensionViewGuest was terminated due to a navigation to
     an origin other than the extension it is embedding.
   </description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Extensions.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_FAMF">
@@ -1182,6 +1190,10 @@ should be able to be added at any place in this file.
     Indicates that a renderer process was terminated because it tried to change
     iframe sandbox flags for an invalid frame.
   </description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Content.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_RVD">
@@ -1212,31 +1224,55 @@ should be able to be added at any place in this file.
 <action name="BadMessageTerminate_RWH1">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Content.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_RWH2">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Content.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_RWH3">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Content.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_RWH4">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Content.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_RWH5">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Content.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_RWH6">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Content.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_RWH7">
@@ -1246,6 +1282,10 @@ should be able to be added at any place in this file.
     Emitted when a InputHostMsg_QueueSyntheticGesture message is received while
     the --enable-gpu-benchmarking flag is not present.
   </description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Content.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_RWHVA1">
@@ -1264,6 +1304,10 @@ should be able to be added at any place in this file.
     Emitted when a renderer is terminated due to it attempting to swap a shared
     memory surface in aura.
   </description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Content.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_SharedMemoryManager1">
@@ -1279,6 +1323,10 @@ should be able to be added at any place in this file.
 <action name="BadMessageTerminate_UnexpectedFrameType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Content.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_WC">
@@ -1288,6 +1336,10 @@ should be able to be added at any place in this file.
     malformed or unexpected IPC message. The process was terminated by the
     WebContentsImpl class.
   </description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Content.
+  </obsolete>
 </action>
 
 <action name="BadMessageTerminate_WPH">
@@ -1884,6 +1936,10 @@ should be able to be added at any place in this file.
 <action name="CanCommitURL_BlockedAndKilled">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated 3/2015. Replaced by the histogram
+    Stability.BadMessageTerminate.Content.
+  </obsolete>
 </action>
 
 <action name="Cancel">

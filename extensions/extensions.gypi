@@ -520,6 +520,8 @@
       'browser/app_window/native_app_window.h',
       'browser/app_window/size_constraints.cc',
       'browser/app_window/size_constraints.h',
+      'browser/bad_message.cc',
+      'browser/bad_message.h',
       'browser/blacklist_state.h',
       'browser/blob_holder.cc',
       'browser/blob_holder.h',

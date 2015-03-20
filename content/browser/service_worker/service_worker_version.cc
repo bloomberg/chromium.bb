@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
@@ -248,8 +249,10 @@ void KillEmbeddedWorkerProcess(int process_id, ResultCode code) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* render_process_host =
       RenderProcessHost::FromID(process_id);
-  if (render_process_host->GetHandle() != base::kNullProcessHandle)
-    render_process_host->ReceivedBadMessage();
+  if (render_process_host->GetHandle() != base::kNullProcessHandle) {
+    bad_message::ReceivedBadMessage(render_process_host,
+                                    bad_message::SERVICE_WORKER_BAD_URL);
+  }
 }
 
 void ClearTick(base::TimeTicks* time) {

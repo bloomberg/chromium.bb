@@ -28,6 +28,7 @@
 #include "base/trace_event/trace_event.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
+#include "content/browser/bad_message.h"
 #import "content/browser/cocoa/system_hotkey_helper_mac.h"
 #import "content/browser/cocoa/system_hotkey_map.h"
 #include "content/browser/compositor/resize_lock.h"
@@ -52,7 +53,6 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -1475,9 +1475,8 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
         frame->metadata.latency_info);
   } else {
     DLOG(ERROR) << "Received unexpected frame type.";
-    RecordAction(
-        base::UserMetricsAction("BadMessageTerminate_UnexpectedFrameType"));
-    render_widget_host_->GetProcess()->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(render_widget_host_->GetProcess(),
+                                    bad_message::RWHVM_UNEXPECTED_FRAME_TYPE);
   }
 }
 

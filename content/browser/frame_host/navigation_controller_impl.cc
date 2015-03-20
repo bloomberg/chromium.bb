@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/switches.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -133,8 +134,10 @@ bool AreURLsInPageNavigation(const GURL& existing_url,
                         !prefs.web_security_enabled ||
                         (prefs.allow_universal_access_from_file_urls &&
                          existing_url.SchemeIs(url::kFileScheme));
-  if (!is_same_origin && renderer_says_in_page)
-      rfh->GetProcess()->ReceivedBadMessage();
+  if (!is_same_origin && renderer_says_in_page) {
+    bad_message::ReceivedBadMessage(rfh->GetProcess(),
+                                    bad_message::NC_IN_PAGE_NAVIGATION);
+  }
   return is_same_origin && renderer_says_in_page;
 }
 

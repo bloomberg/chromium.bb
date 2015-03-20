@@ -20,6 +20,7 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -1079,9 +1080,8 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
 
   if (frame->software_frame_data) {
     DLOG(ERROR) << "Unable to use software frame in aura";
-    RecordAction(
-        base::UserMetricsAction("BadMessageTerminate_SharedMemoryAura"));
-    host_->GetProcess()->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(host_->GetProcess(),
+                                    bad_message::RWHVA_SHARED_MEMORY);
     return;
   }
 }

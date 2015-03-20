@@ -36,6 +36,7 @@
 #include "cc/base/switches.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main.h"
@@ -1051,7 +1052,7 @@ void RenderProcessHostImpl::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void RenderProcessHostImpl::ReceivedBadMessage() {
+void RenderProcessHostImpl::ShutdownForBadMessage() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableKillAfterBadIPC))
     return;
@@ -1568,7 +1569,8 @@ void RenderProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
   LOG(ERROR) << "bad message " << message.type() << " terminating renderer.";
   BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
       PROCESS_TYPE_RENDERER);
-  ReceivedBadMessage();
+  bad_message::ReceivedBadMessage(this,
+                                  bad_message::RPH_DESERIALIZATION_FAILED);
 }
 
 BrowserContext* RenderProcessHostImpl::GetBrowserContext() const {

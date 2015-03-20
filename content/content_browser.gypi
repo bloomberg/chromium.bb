@@ -428,6 +428,8 @@
       'browser/appcache/chrome_appcache_service.h',
       'browser/appcache/view_appcache_internals_job.cc',
       'browser/appcache/view_appcache_internals_job.h',
+      'browser/bad_message.cc',
+      'browser/bad_message.h',
       'browser/bluetooth/bluetooth_dispatcher_host.cc',
       'browser/bluetooth/bluetooth_dispatcher_host.h',
       'browser/bootstrap_sandbox_mac.cc',

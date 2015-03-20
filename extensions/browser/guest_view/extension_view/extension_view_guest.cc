@@ -4,12 +4,12 @@
 
 #include "extensions/browser/guest_view/extension_view/extension_view_guest.h"
 
-#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/bad_message.h"
 #include "extensions/browser/guest_view/extension_view/extension_view_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
@@ -149,9 +149,8 @@ void ExtensionViewGuest::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   if (attached() && (params.url.GetOrigin() != view_page_.GetOrigin())) {
-    base::RecordAction(base::UserMetricsAction("BadMessageTerminate_EVG"));
-    web_contents()->GetRenderProcessHost()->Shutdown(
-        content::RESULT_CODE_KILLED_BAD_MESSAGE, false /* wait */);
+    bad_message::ReceivedBadMessage(web_contents()->GetRenderProcessHost(),
+                                    bad_message::EVG_BAD_ORIGIN);
   }
 }
 

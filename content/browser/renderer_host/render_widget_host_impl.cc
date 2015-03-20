@@ -26,6 +26,7 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -57,7 +58,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_iterator.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -1594,8 +1594,8 @@ void RenderWidgetHostImpl::OnQueueSyntheticGesture(
   // Only allow untrustworthy gestures if explicitly enabled.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           cc::switches::kEnableGpuBenchmarking)) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH7"));
-    GetProcess()->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RWH_SYNTHETIC_GESTURE);
     return;
   }
 
@@ -1607,14 +1607,12 @@ void RenderWidgetHostImpl::OnQueueSyntheticGesture(
 
 void RenderWidgetHostImpl::OnFocus() {
   // Only RenderViewHost can deal with that message.
-  RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH4"));
-  GetProcess()->ReceivedBadMessage();
+  bad_message::ReceivedBadMessage(GetProcess(), bad_message::RWH_FOCUS);
 }
 
 void RenderWidgetHostImpl::OnBlur() {
   // Only RenderViewHost can deal with that message.
-  RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH5"));
-  GetProcess()->ReceivedBadMessage();
+  bad_message::ReceivedBadMessage(GetProcess(), bad_message::RWH_BLUR);
 }
 
 void RenderWidgetHostImpl::OnSetCursor(const WebCursor& cursor) {
@@ -1689,8 +1687,8 @@ void RenderWidgetHostImpl::OnShowDisambiguationPopup(
   scoped_ptr<cc::SharedBitmap> bitmap =
       HostSharedBitmapManager::current()->GetSharedBitmapFromId(size, id);
   if (!bitmap) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH6"));
-    GetProcess()->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RWH_SHARED_BITMAP);
     return;
   }
 
@@ -1888,8 +1886,7 @@ void RenderWidgetHostImpl::OnTouchEventAck(
 
 void RenderWidgetHostImpl::OnUnexpectedEventAck(UnexpectedEventAckType type) {
   if (type == BAD_ACK_MESSAGE) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH2"));
-    process_->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(process_, bad_message::RWH_BAD_ACK_MESSAGE);
   } else if (type == UNEXPECTED_EVENT_TYPE) {
     suppress_next_char_events_ = false;
   }

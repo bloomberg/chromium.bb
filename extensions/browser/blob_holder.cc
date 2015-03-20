@@ -11,6 +11,7 @@
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/bad_message.h"
 
 namespace extensions {
 
@@ -77,7 +78,8 @@ void BlobHolder::DropBlobs(const std::vector<std::string>& blob_uuids) {
     } else {
       DLOG(ERROR) << "Tried to release a Blob we don't have ownership to."
                   << "UUID: " << *uuid_it;
-      render_process_host_->ReceivedBadMessage();
+      bad_message::ReceivedBadMessage(render_process_host_,
+                                      bad_message::BH_BLOB_NOT_OWNED);
     }
   }
 }

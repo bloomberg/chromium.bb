@@ -88,8 +88,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void AddObserver(RenderProcessHostObserver* observer) = 0;
   virtual void RemoveObserver(RenderProcessHostObserver* observer) = 0;
 
-  // Called when a received message cannot be decoded.
-  virtual void ReceivedBadMessage() = 0;
+  // Called when a received message cannot be decoded. Terminates the renderer.
+  // Most callers should not call this directly, but instead should call
+  // bad_message::BadMessageReceived() or an equivalent method outside of the
+  // content module.
+  virtual void ShutdownForBadMessage() = 0;
 
   // Track the count of visible widgets. Called by listeners to register and
   // unregister visibility.

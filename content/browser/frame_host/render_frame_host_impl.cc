@@ -9,12 +9,12 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/user_metrics_action.h"
 #include "base/process/kill.h"
 #include "base/time/time.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
@@ -818,9 +818,9 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   if (!CanCommitURL(validated_params.url)) {
     VLOG(1) << "Blocked URL " << validated_params.url.spec();
     validated_params.url = GURL(url::kAboutBlankURL);
-    RecordAction(base::UserMetricsAction("CanCommitURL_BlockedAndKilled"));
     // Kills the process.
-    process->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(process,
+                                    bad_message::RFH_CAN_COMMIT_URL_BLOCKED);
   }
 
   // Without this check, an evil renderer can trick the browser into creating
@@ -842,7 +842,8 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // filenames it can't access in a future session restore.
   if (!render_view_host_->CanAccessFilesOfPageState(
           validated_params.page_state)) {
-    GetProcess()->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE);
     return;
   }
 
@@ -1223,8 +1224,8 @@ void RenderFrameHostImpl::OnDidChangeSandboxFlags(int32 frame_routing_id,
   // children.  If this is not the case, the renderer is considered malicious
   // and is killed.
   if (child->parent() != frame_tree_node()) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_RFH"));
-    GetProcess()->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RFH_SANDBOX_FLAGS);
     return;
   }
 
@@ -1281,7 +1282,8 @@ void RenderFrameHostImpl::OnDispatchLoad() {
   RenderFrameProxyHost* proxy =
       frame_tree_node()->render_manager()->GetProxyToParent();
   if (!proxy) {
-    GetProcess()->ReceivedBadMessage();
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RFH_NO_PROXY_TO_PARENT);
     return;
   }
 

@@ -82,7 +82,7 @@ void MockRenderProcessHost::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void MockRenderProcessHost::ReceivedBadMessage() {
+void MockRenderProcessHost::ShutdownForBadMessage() {
   ++bad_msg_count_;
 }
 
