@@ -387,9 +387,9 @@ public:
 #undef ADD_BOOLEAN_BITFIELD
 
 private:
-    // Converts the given point from the logical space of the InlineBox to the physical space of the
-    // containing block.
-    FloatPointWillBeLayoutPoint logicalPointToPhysicalPoint(const FloatPoint&);
+    // Converts the given (top-left) position from the logical space of the InlineBox to the physical space of the
+    // containing block. The size indicates the size of the box whose point is being flipped.
+    FloatPointWillBeLayoutPoint logicalPositionToPhysicalPoint(const FloatPoint&, const FloatSize&);
 
     InlineBox* m_next; // The next element on the same line as us.
     InlineBox* m_prev; // The previous element on the same line as us.

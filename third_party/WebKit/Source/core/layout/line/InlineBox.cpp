@@ -319,19 +319,19 @@ void InlineBox::clearKnownToHaveNoOverflow()
 
 FloatPointWillBeLayoutPoint InlineBox::locationIncludingFlipping()
 {
-    return logicalPointToPhysicalPoint(m_topLeft.toFloatPoint());
+    return logicalPositionToPhysicalPoint(m_topLeft.toFloatPoint(), size().toFloatSize());
 }
 
-FloatPointWillBeLayoutPoint InlineBox::logicalPointToPhysicalPoint(const FloatPoint& point)
+FloatPointWillBeLayoutPoint InlineBox::logicalPositionToPhysicalPoint(const FloatPoint& point, const FloatSize& size)
 {
     if (!UNLIKELY(layoutObject().hasFlippedBlocksWritingMode()))
         return FloatPointWillBeLayoutPoint(point.x(), point.y());
 
     LayoutBlockFlow& block = root().block();
     if (block.style()->isHorizontalWritingMode())
-        return FloatPointWillBeLayoutPoint(point.x(), block.size().height() - size().height() - point.y());
+        return FloatPointWillBeLayoutPoint(point.x(), block.size().height() - size.height() - point.y());
 
-    return FloatPointWillBeLayoutPoint(block.size().width() - size().width() - point.x(), point.y());
+    return FloatPointWillBeLayoutPoint(block.size().width() - size.width() - point.x(), point.y());
 }
 
 LayoutRect InlineBox::logicalRectToPhysicalRect(const LayoutRect& current)
@@ -340,7 +340,7 @@ LayoutRect InlineBox::logicalRectToPhysicalRect(const LayoutRect& current)
     if (!isHorizontal()) {
         retval = retval.transposedRect();
     }
-    retval.setLocation(logicalPointToPhysicalPoint(FloatPoint(retval.location())).toLayoutPoint());
+    retval.setLocation(logicalPositionToPhysicalPoint(FloatPoint(retval.location()), FloatSize(retval.size())).toLayoutPoint());
     return retval;
 }
 
