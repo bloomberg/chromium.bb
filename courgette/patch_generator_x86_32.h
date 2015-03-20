@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This is the transformation and adjustment for Windows X86 executables.
-// The same code can be used for Windows X64 executables.
+// This is the transformation and adjustment for all executables.
+// The executable type is determined by ParseDetectedExecutable function.
 
 #ifndef COURGETTE_WIN32_X86_GENERATOR_H_
 #define COURGETTE_WIN32_X86_GENERATOR_H_
@@ -67,7 +67,7 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
                                 old_element_->region().length(),
                                 &old_program);
     if (old_parse_status != C_OK) {
-      LOG(ERROR) << "Cannot parse as WinPE " << old_element_->Name();
+      LOG(ERROR) << "Cannot parse an executable " << old_element_->Name();
       return old_parse_status;
     }
 
@@ -78,7 +78,7 @@ class PatchGeneratorX86_32 : public TransformationPatchGenerator {
                                 &new_program);
     if (new_parse_status != C_OK) {
       DeleteAssemblyProgram(old_program);
-      LOG(ERROR) << "Cannot parse as WinPE " << new_element_->Name();
+      LOG(ERROR) << "Cannot parse an executable " << new_element_->Name();
       return new_parse_status;
     }
 
