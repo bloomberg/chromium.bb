@@ -387,6 +387,7 @@ void TaskQueue::AsValueInto(base::trace_event::TracedValue* state) const {
   state->EndArray();
   state->BeginArray("work_queue");
   QueueAsValueInto(work_queue_, state);
+  state->EndArray();
   state->BeginArray("delayed_task_queue");
   QueueAsValueInto(delayed_task_queue_, state);
   state->EndArray();
