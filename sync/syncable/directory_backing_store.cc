@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -175,8 +176,9 @@ DirectoryBackingStore::DirectoryBackingStore(const string& dir_name)
     dir_name_(dir_name),
     needs_column_refresh_(false) {
   db_->set_histogram_tag("SyncDirectory");
-  db_->set_page_size(4096);
   db_->set_cache_size(32);
+  databasePageSize_ = IsSyncBackingDatabase32KEnabled() ? 32768 : 4096;
+  db_->set_page_size(databasePageSize_);
 }
 
 DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
@@ -308,6 +310,11 @@ bool DirectoryBackingStore::SaveChanges(
 }
 
 bool DirectoryBackingStore::InitializeTables() {
+  int page_size = 0;
+  if (IsSyncBackingDatabase32KEnabled() && GetDatabasePageSize(&page_size) &&
+      page_size == 4096) {
+    IncreasePageSizeTo32K();
+  }
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin())
     return false;
@@ -1590,6 +1597,36 @@ void DirectoryBackingStore::PrepareSaveEntryStatement(
   query.append(values);
   save_statement->Assign(db_->GetUniqueStatement(
       base::StringPrintf(query.c_str(), "metas").c_str()));
+}
+
+// Get page size for the database.
+bool DirectoryBackingStore::GetDatabasePageSize(int* page_size) {
+  sql::Statement s(db_->GetUniqueStatement("PRAGMA page_size"));
+  if (!s.Step())
+    return false;
+  *page_size = s.ColumnInt(0);
+  return true;
+}
+
+bool DirectoryBackingStore::IsSyncBackingDatabase32KEnabled() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("SyncBackingDatabase32K");
+  return group_name == "Enabled";
+}
+
+bool DirectoryBackingStore::IncreasePageSizeTo32K() {
+  if (!db_->Execute("PRAGMA page_size=32768;") || !Vacuum()) {
+    return false;
+  }
+  return true;
+}
+
+bool DirectoryBackingStore::Vacuum() {
+  DCHECK_EQ(db_->transaction_nesting(), 0);
+  if (!db_->Execute("VACUUM;")) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace syncable

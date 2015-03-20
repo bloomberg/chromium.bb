@@ -29,7 +29,7 @@ OnDiskDirectoryBackingStore::OnDiskDirectoryBackingStore(
       allow_failure_for_test_(false),
       backing_filepath_(backing_filepath) {
   db_->set_exclusive_locking();
-  db_->set_page_size(4096);
+  db_->set_page_size(databasePageSize_);
 }
 
 OnDiskDirectoryBackingStore::~OnDiskDirectoryBackingStore() { }
@@ -85,7 +85,7 @@ DirOpenResult OnDiskDirectoryBackingStore::Load(
   // brittle.  Either have a helper to set these up (or generate a new
   // connection), or add something like Reset() to sql::Connection.
   db_->set_exclusive_locking();
-  db_->set_page_size(4096);
+  db_->set_page_size(databasePageSize_);
   db_->set_histogram_tag("SyncDirectory");
   base::DeleteFile(backing_filepath_, false);
 

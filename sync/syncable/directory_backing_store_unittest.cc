@@ -18,6 +18,7 @@
 #include "sync/internal_api/public/base/node_ordinal.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/syncable/directory.h"
 #include "sync/syncable/directory_backing_store.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
 #include "sync/syncable/syncable-inl.h"
@@ -3964,6 +3965,34 @@ TEST_F(DirectoryBackingStoreTest, GenerateCacheGUID) {
   // In theory this test can fail, but it won't before the universe
   // dies of heat death.
   EXPECT_NE(guid1, guid2);
+}
+
+TEST_F(DirectoryBackingStoreTest, IncreaseDatabasePageSizeFrom4KTo32K) {
+  sql::Connection connection;
+  ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+  SetUpCurrentDatabaseAndCheckVersion(&connection);
+  scoped_ptr<TestDirectoryBackingStore> dbs(
+      new TestDirectoryBackingStore(GetUsername(), &connection));
+  Directory::MetahandlesMap handles_map;
+  JournalIndex delete_journals;
+  MetahandleSet metahandles_to_purge;
+  Directory::KernelLoadInfo kernel_load_info;
+  STLValueDeleter<Directory::MetahandlesMap> index_deleter(&handles_map);
+
+  DirOpenResult open_result = dbs->Load(
+      &handles_map, &delete_journals, &metahandles_to_purge, &kernel_load_info);
+  EXPECT_EQ(open_result, OPENED);
+
+  // Check if update is successful.
+  int pageSize = 0;
+  dbs->GetDatabasePageSize(&pageSize);
+  EXPECT_TRUE(32768 != pageSize);
+  dbs->db_->set_page_size(32768);
+  dbs->IncreasePageSizeTo32K();
+  pageSize = 0;
+  dbs->GetDatabasePageSize(&pageSize);
+  EXPECT_EQ(32768, pageSize);
 }
 
 }  // namespace syncable

@@ -44,6 +44,10 @@ struct ColumnSpec;
 // in tests.  The concrete class used in non-test scenarios is
 // OnDiskDirectoryBackingStore.
 class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
+  friend class DirectoryBackingStoreTest;
+  FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest,
+                           IncreaseDatabasePageSizeFrom4KTo32K);
+
  public:
   explicit DirectoryBackingStore(const std::string& dir_name);
   virtual ~DirectoryBackingStore();
@@ -144,6 +148,12 @@ class SYNC_EXPORT_PRIVATE DirectoryBackingStore : public base::NonThreadSafe {
   bool RefreshColumns();
   bool SetVersion(int version);
   int GetVersion();
+
+  bool GetDatabasePageSize(int* page_size);
+  bool IsSyncBackingDatabase32KEnabled();
+  bool IncreasePageSizeTo32K();
+  bool Vacuum();
+  int databasePageSize_;
 
   bool MigrateToSpecifics(const char* old_columns,
                           const char* specifics_column,
