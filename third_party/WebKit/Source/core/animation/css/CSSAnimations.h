@@ -58,7 +58,7 @@ public:
     const AtomicString getAnimationNameForInspector(const AnimationPlayer&);
     bool isTransitionAnimationForInspector(const AnimationPlayer&) const;
 
-    static const StylePropertyShorthand& animatableProperties();
+    static const StylePropertyShorthand& propertiesForTransitionAll();
     static bool isAllowedAnimation(CSSPropertyID);
     static PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> calculateUpdate(const Element* animatingElement, Element&, const LayoutStyle&, LayoutStyle* parentStyle, StyleResolver*);
 

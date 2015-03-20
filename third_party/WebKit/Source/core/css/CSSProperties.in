@@ -356,8 +356,8 @@ y animatable, svg, converter=convertLength
 -webkit-mask-size animatable, custom_all
 -webkit-perspective use_handlers_for=CSSPropertyPerspective
 -webkit-perspective-origin use_handlers_for=CSSPropertyPerspectiveOrigin
--webkit-perspective-origin-x converter=convertLength
--webkit-perspective-origin-y converter=convertLength
+-webkit-perspective-origin-x animatable, converter=convertLength
+-webkit-perspective-origin-y animatable, converter=convertLength
 -webkit-print-color-adjust inherited, type_name=PrintColorAdjust
 -webkit-rtl-ordering inherited, type_name=Order, setter=setRTLOrdering, initial=initialRTLOrdering
 -webkit-ruby-position inherited, type_name=RubyPosition
@@ -372,9 +372,9 @@ y animatable, svg, converter=convertLength
 -webkit-text-stroke-width inherited, converter=convertTextStrokeWidth
 -webkit-transform use_handlers_for=CSSPropertyTransform
 -webkit-transform-origin use_handlers_for=CSSPropertyTransformOrigin
--webkit-transform-origin-x converter=convertLength
--webkit-transform-origin-y converter=convertLength
--webkit-transform-origin-z converter=convertComputedLength<float>
+-webkit-transform-origin-x animatable, converter=convertLength
+-webkit-transform-origin-y animatable, converter=convertLength
+-webkit-transform-origin-z animatable, converter=convertComputedLength<float>
 -webkit-transform-style name_for_methods=TransformStyle3D
 -webkit-transition-delay custom_all
 -webkit-transition-duration custom_all

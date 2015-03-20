@@ -71,13 +71,8 @@ CSSPropertyID propertyForAnimation(CSSPropertyID property)
         return CSSPropertyPerspective;
     case CSSPropertyWebkitTransform:
         return CSSPropertyTransform;
-    case CSSPropertyWebkitPerspectiveOriginX:
-    case CSSPropertyWebkitPerspectiveOriginY:
     case CSSPropertyWebkitPerspectiveOrigin:
         return CSSPropertyPerspectiveOrigin;
-    case CSSPropertyWebkitTransformOriginX:
-    case CSSPropertyWebkitTransformOriginY:
-    case CSSPropertyWebkitTransformOriginZ:
     case CSSPropertyWebkitTransformOrigin:
         return CSSPropertyTransformOrigin;
     default:
@@ -557,7 +552,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
             ASSERT(animateAll || mode == CSSTransitionData::TransitionSingleProperty);
             if (animateAll)
                 anyTransitionHadTransitionAll = true;
-            const StylePropertyShorthand& propertyList = animateAll ? CSSAnimations::animatableProperties() : shorthandForProperty(property);
+            const StylePropertyShorthand& propertyList = animateAll ? CSSAnimations::propertiesForTransitionAll() : shorthandForProperty(property);
             // If not a shorthand we only execute one iteration of this loop, and refer to the property directly.
             for (unsigned j = 0; !j || j < propertyList.length(); ++j) {
                 CSSPropertyID id = propertyList.length() ? propertyList.properties()[j] : property;
@@ -750,13 +745,20 @@ DEFINE_TRACE(CSSAnimations::TransitionEventDelegate)
     AnimationNode::EventDelegate::trace(visitor);
 }
 
-const StylePropertyShorthand& CSSAnimations::animatableProperties()
+const StylePropertyShorthand& CSSAnimations::propertiesForTransitionAll()
 {
     DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
     DEFINE_STATIC_LOCAL(StylePropertyShorthand, propertyShorthand, ());
     if (properties.isEmpty()) {
         for (int i = firstCSSProperty; i < lastCSSProperty; ++i) {
             CSSPropertyID id = convertToCSSPropertyID(i);
+            // Avoid creating overlapping transitions with perspective-origin and transition-origin.
+            if (id == CSSPropertyWebkitPerspectiveOriginX
+                || id == CSSPropertyWebkitPerspectiveOriginY
+                || id == CSSPropertyWebkitTransformOriginX
+                || id == CSSPropertyWebkitTransformOriginY
+                || id == CSSPropertyWebkitTransformOriginZ)
+                continue;
             if (CSSPropertyMetadata::isAnimatableProperty(id))
                 properties.append(id);
         }

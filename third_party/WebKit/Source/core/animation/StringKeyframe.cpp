@@ -202,6 +202,11 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyVerticalAlign:
     case CSSPropertyWordSpacing:
     case CSSPropertyWebkitColumnRuleWidth:
+    case CSSPropertyWebkitPerspectiveOriginX:
+    case CSSPropertyWebkitPerspectiveOriginY:
+    case CSSPropertyWebkitTransformOriginX:
+    case CSSPropertyWebkitTransformOriginY:
+    case CSSPropertyWebkitTransformOriginZ:
     case CSSPropertyX:
     case CSSPropertyY:
         if (LengthStyleInterpolation::canCreateFrom(*fromCSSValue, property) && LengthStyleInterpolation::canCreateFrom(*toCSSValue, property))

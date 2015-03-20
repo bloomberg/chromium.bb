@@ -41,5 +41,31 @@ assertInterpolation({
   {at: 1, is: '100% 150%'},
   {at: 1.5, is: '150% 200%'}
 ]);
+
+assertInterpolation({
+  property: '-webkit-perspective-origin-x',
+  from: '0%',
+  to: '100%'
+}, [
+  {at: -0.3, is: '-30%'},
+  {at: 0, is: '0%'},
+  {at: 0.3, is: '30%'},
+  {at: 0.6, is: '60%'},
+  {at: 1, is: '100%'},
+  {at: 1.5, is: '150%'}
+]);
+
+assertInterpolation({
+  property: '-webkit-perspective-origin-y',
+  from: '0%',
+  to: '100%'
+}, [
+  {at: -0.3, is: '-30%'},
+  {at: 0, is: '0%'},
+  {at: 0.3, is: '30%'},
+  {at: 0.6, is: '60%'},
+  {at: 1, is: '100%'},
+  {at: 1.5, is: '150%'}
+]);
 </script>
 </body>

@@ -181,6 +181,14 @@ LengthStyleInterpolation::LengthSetter LengthStyleInterpolation::lengthSetterFor
         return &LayoutStyle::setTop;
     case CSSPropertyWidth:
         return &LayoutStyle::setWidth;
+    case CSSPropertyWebkitPerspectiveOriginX:
+        return &LayoutStyle::setPerspectiveOriginX;
+    case CSSPropertyWebkitPerspectiveOriginY:
+        return &LayoutStyle::setPerspectiveOriginY;
+    case CSSPropertyWebkitTransformOriginX:
+        return &LayoutStyle::setTransformOriginX;
+    case CSSPropertyWebkitTransformOriginY:
+        return &LayoutStyle::setTransformOriginY;
     case CSSPropertyX:
         return &LayoutStyle::setX;
     case CSSPropertyY:
@@ -203,6 +211,7 @@ LengthStyleInterpolation::LengthSetter LengthStyleInterpolation::lengthSetterFor
     case CSSPropertyWebkitColumnGap:
     case CSSPropertyWebkitColumnRuleWidth:
     case CSSPropertyWebkitColumnWidth:
+    case CSSPropertyWebkitTransformOriginZ:
     case CSSPropertyWordSpacing:
         return nullptr;
     default:

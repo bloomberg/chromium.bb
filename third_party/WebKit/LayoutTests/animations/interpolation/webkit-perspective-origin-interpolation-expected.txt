@@ -5,4 +5,16 @@ PASS: -webkit-perspective-origin from [0% 50%] to [100% 150%] was [30% 80%] at 0
 PASS: -webkit-perspective-origin from [0% 50%] to [100% 150%] was [60% 110%] at 0.6
 PASS: -webkit-perspective-origin from [0% 50%] to [100% 150%] was [100% 150%] at 1
 PASS: -webkit-perspective-origin from [0% 50%] to [100% 150%] was [150% 200%] at 1.5
+PASS: -webkit-perspective-origin-x from [0%] to [100%] was [-30%] at -0.3
+PASS: -webkit-perspective-origin-x from [0%] to [100%] was [0%] at 0
+PASS: -webkit-perspective-origin-x from [0%] to [100%] was [30%] at 0.3
+PASS: -webkit-perspective-origin-x from [0%] to [100%] was [60%] at 0.6
+PASS: -webkit-perspective-origin-x from [0%] to [100%] was [100%] at 1
+PASS: -webkit-perspective-origin-x from [0%] to [100%] was [150%] at 1.5
+PASS: -webkit-perspective-origin-y from [0%] to [100%] was [-30%] at -0.3
+PASS: -webkit-perspective-origin-y from [0%] to [100%] was [0%] at 0
+PASS: -webkit-perspective-origin-y from [0%] to [100%] was [30%] at 0.3
+PASS: -webkit-perspective-origin-y from [0%] to [100%] was [60%] at 0.6
+PASS: -webkit-perspective-origin-y from [0%] to [100%] was [100%] at 1
+PASS: -webkit-perspective-origin-y from [0%] to [100%] was [150%] at 1.5
 

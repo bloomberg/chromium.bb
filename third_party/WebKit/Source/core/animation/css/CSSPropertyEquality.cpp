@@ -296,6 +296,16 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const LayoutStyle&
         return a.transform() == b.transform();
     case CSSPropertyTransformOrigin:
         return a.transformOriginX() == b.transformOriginX() && a.transformOriginY() == b.transformOriginY() && a.transformOriginZ() == b.transformOriginZ();
+    case CSSPropertyWebkitPerspectiveOriginX:
+        return a.perspectiveOriginX() == b.perspectiveOriginX();
+    case CSSPropertyWebkitPerspectiveOriginY:
+        return a.perspectiveOriginY() == b.perspectiveOriginY();
+    case CSSPropertyWebkitTransformOriginX:
+        return a.transformOriginX() == b.transformOriginX();
+    case CSSPropertyWebkitTransformOriginY:
+        return a.transformOriginY() == b.transformOriginY();
+    case CSSPropertyWebkitTransformOriginZ:
+        return a.transformOriginZ() == b.transformOriginZ();
     case CSSPropertyWidows:
         return a.widows() == b.widows();
     case CSSPropertyWidth:

@@ -5,4 +5,22 @@ PASS: -webkit-transform-origin from [0% 50% 5px] to [100% 150% 0px] was [30% 80%
 PASS: -webkit-transform-origin from [0% 50% 5px] to [100% 150% 0px] was [60% 110% 2px] at 0.6
 PASS: -webkit-transform-origin from [0% 50% 5px] to [100% 150% 0px] was [100% 150% 0px] at 1
 PASS: -webkit-transform-origin from [0% 50% 5px] to [100% 150% 0px] was [150% 200% -2.5px] at 1.5
+PASS: -webkit-transform-origin-x from [5px] to [0px] was [-6.5px] at -0.3
+PASS: -webkit-transform-origin-x from [5px] to [0px] was [5px] at 0
+PASS: -webkit-transform-origin-x from [5px] to [0px] was [3.5px] at 0.3
+PASS: -webkit-transform-origin-x from [5px] to [0px] was [2px] at 0.6
+PASS: -webkit-transform-origin-x from [5px] to [0px] was [0px] at 1
+PASS: -webkit-transform-origin-x from [5px] to [0px] was [-2.5px] at 1.5
+PASS: -webkit-transform-origin-y from [5px] to [0px] was [-6.5px] at -0.3
+PASS: -webkit-transform-origin-y from [5px] to [0px] was [5px] at 0
+PASS: -webkit-transform-origin-y from [5px] to [0px] was [3.5px] at 0.3
+PASS: -webkit-transform-origin-y from [5px] to [0px] was [2px] at 0.6
+PASS: -webkit-transform-origin-y from [5px] to [0px] was [0px] at 1
+PASS: -webkit-transform-origin-y from [5px] to [0px] was [-2.5px] at 1.5
+PASS: -webkit-transform-origin-z from [5px] to [0px] was [-6.5px] at -0.3
+PASS: -webkit-transform-origin-z from [5px] to [0px] was [5px] at 0
+PASS: -webkit-transform-origin-z from [5px] to [0px] was [3.5px] at 0.3
+PASS: -webkit-transform-origin-z from [5px] to [0px] was [2px] at 0.6
+PASS: -webkit-transform-origin-z from [5px] to [0px] was [0px] at 1
+PASS: -webkit-transform-origin-z from [5px] to [0px] was [-2.5px] at 1.5
 

@@ -527,6 +527,16 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromLength(style.motionOffset(), style);
     case CSSPropertyMotionRotation:
         return createFromDoubleAndBool(style.motionRotation(), style.motionRotationType() == MotionRotationAuto, style);
+    case CSSPropertyWebkitPerspectiveOriginX:
+        return createFromLength(style.perspectiveOriginX(), style);
+    case CSSPropertyWebkitPerspectiveOriginY:
+        return createFromLength(style.perspectiveOriginY(), style);
+    case CSSPropertyWebkitTransformOriginX:
+        return createFromLength(style.transformOriginX(), style);
+    case CSSPropertyWebkitTransformOriginY:
+        return createFromLength(style.transformOriginY(), style);
+    case CSSPropertyWebkitTransformOriginZ:
+        return createFromDouble(style.transformOriginZ());
     case CSSPropertyWidows:
         return createFromDouble(style.widows());
     case CSSPropertyWidth:
