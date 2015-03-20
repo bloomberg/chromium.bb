@@ -59,15 +59,15 @@ static v8::Handle<v8::Value> compileAndRunPrivateScript(v8::Isolate* isolate, St
             privateScriptControllerObject->Set(v8String(isolate, "import"), v8::FunctionTemplate::New(isolate, importFunction)->GetFunction());
     }
 
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(v8String(isolate, sourceString), fileName, String(), TextPosition::minimumPosition(), isolate, nullptr, nullptr, nullptr, NotSharableCrossOrigin);
-    if (block.HasCaught()) {
+    v8::Local<v8::Script> script;
+    if (!v8Call(V8ScriptRunner::compileScript(v8String(isolate, sourceString), fileName, String(), TextPosition::minimumPosition(), isolate, nullptr, nullptr, nullptr, NotSharableCrossOrigin), script, block)) {
         fprintf(stderr, "Private script error: Compile failed. (Class name = %s)\n", scriptClassName.utf8().data());
         dumpV8Message(block.Message());
         RELEASE_ASSERT_NOT_REACHED();
     }
 
-    v8::Handle<v8::Value> result = V8ScriptRunner::runCompiledInternalScript(isolate, script);
-    if (block.HasCaught()) {
+    v8::Local<v8::Value> result;
+    if (!v8Call(V8ScriptRunner::runCompiledInternalScript(isolate, script), result, block)) {
         fprintf(stderr, "Private script error: installClass() failed. (Class name = %s)\n", scriptClassName.utf8().data());
         dumpV8Message(block.Message());
         RELEASE_ASSERT_NOT_REACHED();

@@ -80,12 +80,17 @@ V8CompileHistogram::~V8CompileHistogram()
 }
 
 // In order to make sure all pending messages to be processed in
-// v8::Function::Call, we don't call handleMaxRecursionDepthExceeded
+// v8::Function::Call, we don't call throwStackOverflowException
 // directly. Instead, we create a v8::Function of
 // throwStackOverflowException and call it.
 void throwStackOverflowException(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     V8ThrowException::throwRangeError(info.GetIsolate(), "Maximum call stack size exceeded.");
+}
+
+void throwScriptForbiddenException(v8::Isolate* isolate)
+{
+    V8ThrowException::throwGeneralError(isolate, "Script execution is forbidden.");
 }
 
 v8::Local<v8::Value> throwStackOverflowExceptionIfNeeded(v8::Isolate* isolate)
@@ -102,15 +107,15 @@ v8::Local<v8::Value> throwStackOverflowExceptionIfNeeded(v8::Isolate* isolate)
 }
 
 // Compile a script without any caching or compile options.
-v8::Local<v8::Script> compileWithoutOptions(V8CompileHistogram::Cacheability cacheability, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
+v8::MaybeLocal<v8::Script> compileWithoutOptions(V8CompileHistogram::Cacheability cacheability, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
 {
     V8CompileHistogram histogramScope(cacheability);
     v8::ScriptCompiler::Source source(code, origin);
-    return v8::ScriptCompiler::Compile(isolate, &source, v8::ScriptCompiler::kNoCompileOptions);
+    return v8::ScriptCompiler::Compile(isolate->GetCurrentContext(), &source, v8::ScriptCompiler::kNoCompileOptions);
 }
 
 // Compile a script, and consume a V8 cache that was generated previously.
-v8::Local<v8::Script> compileAndConsumeCache(CachedMetadataHandler* cacheHandler, unsigned tag, v8::ScriptCompiler::CompileOptions compileOptions, bool compressed, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
+v8::MaybeLocal<v8::Script> compileAndConsumeCache(CachedMetadataHandler* cacheHandler, unsigned tag, v8::ScriptCompiler::CompileOptions compileOptions, bool compressed, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
 {
     V8CompileHistogram histogramScope(V8CompileHistogram::Cacheable);
     CachedMetadata* cachedMetadata = cacheHandler->cachedMetadata(tag);
@@ -126,15 +131,15 @@ v8::Local<v8::Script> compileAndConsumeCache(CachedMetadataHandler* cacheHandler
             invalidCache = true;
         }
     }
-    v8::Local<v8::Script> script;
+    v8::MaybeLocal<v8::Script> script;
     if (invalidCache) {
         v8::ScriptCompiler::Source source(code, origin);
-        script = v8::ScriptCompiler::Compile(isolate, &source, v8::ScriptCompiler::kNoCompileOptions);
+        script = v8::ScriptCompiler::Compile(isolate->GetCurrentContext(), &source, v8::ScriptCompiler::kNoCompileOptions);
     } else {
         v8::ScriptCompiler::CachedData* cachedData = new v8::ScriptCompiler::CachedData(
             reinterpret_cast<const uint8_t*>(data), length, v8::ScriptCompiler::CachedData::BufferNotOwned);
         v8::ScriptCompiler::Source source(code, origin, cachedData);
-        script = v8::ScriptCompiler::Compile(isolate, &source, compileOptions);
+        script = v8::ScriptCompiler::Compile(isolate->GetCurrentContext(), &source, compileOptions);
         invalidCache = cachedData->rejected;
     }
     if (invalidCache)
@@ -143,11 +148,11 @@ v8::Local<v8::Script> compileAndConsumeCache(CachedMetadataHandler* cacheHandler
 }
 
 // Compile a script, and produce a V8 cache for future use.
-v8::Local<v8::Script> compileAndProduceCache(CachedMetadataHandler* cacheHandler, unsigned tag, v8::ScriptCompiler::CompileOptions compileOptions, bool compressed, CachedMetadataHandler::CacheType cacheType, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
+v8::MaybeLocal<v8::Script> compileAndProduceCache(CachedMetadataHandler* cacheHandler, unsigned tag, v8::ScriptCompiler::CompileOptions compileOptions, bool compressed, CachedMetadataHandler::CacheType cacheType, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
 {
     V8CompileHistogram histogramScope(V8CompileHistogram::Cacheable);
     v8::ScriptCompiler::Source source(code, origin);
-    v8::Local<v8::Script> script = v8::ScriptCompiler::Compile(isolate, &source, compileOptions);
+    v8::MaybeLocal<v8::Script> script = v8::ScriptCompiler::Compile(isolate->GetCurrentContext(), &source, compileOptions);
     const v8::ScriptCompiler::CachedData* cachedData = source.GetCachedData();
     if (cachedData) {
         const char* data = reinterpret_cast<const char*>(cachedData->data);
@@ -171,7 +176,7 @@ v8::Local<v8::Script> compileAndProduceCache(CachedMetadataHandler* cacheHandler
 
 // Compile a script, and consume or produce a V8 Cache, depending on whether the
 // given resource already has cached data available.
-v8::Local<v8::Script> compileAndConsumeOrProduce(CachedMetadataHandler* cacheHandler, unsigned tag, v8::ScriptCompiler::CompileOptions consumeOptions, v8::ScriptCompiler::CompileOptions produceOptions, bool compressed, CachedMetadataHandler::CacheType cacheType, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
+v8::MaybeLocal<v8::Script> compileAndConsumeOrProduce(CachedMetadataHandler* cacheHandler, unsigned tag, v8::ScriptCompiler::CompileOptions consumeOptions, v8::ScriptCompiler::CompileOptions produceOptions, bool compressed, CachedMetadataHandler::CacheType cacheType, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
 {
     return cacheHandler->cachedMetadata(tag)
         ? compileAndConsumeCache(cacheHandler, tag, consumeOptions, compressed, isolate, code, origin)
@@ -227,10 +232,10 @@ bool isResourceHotForCaching(CachedMetadataHandler* cacheHandler, int hotHours)
 
 // Final compile call for a streamed compilation. Most decisions have already
 // been made, but we need to write back data into the cache.
-v8::Local<v8::Script> postStreamCompile(CachedMetadataHandler* cacheHandler, ScriptStreamer* streamer, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
+v8::MaybeLocal<v8::Script> postStreamCompile(CachedMetadataHandler* cacheHandler, ScriptStreamer* streamer, v8::Isolate* isolate, v8::Handle<v8::String> code, v8::ScriptOrigin origin)
 {
     V8CompileHistogram histogramScope(V8CompileHistogram::Noncacheable);
-    v8::Local<v8::Script> script = v8::ScriptCompiler::Compile(isolate, streamer->source(), code, origin);
+    v8::MaybeLocal<v8::Script> script = v8::ScriptCompiler::Compile(isolate->GetCurrentContext(), streamer->source(), code, origin);
 
     if (!cacheHandler)
         return script;
@@ -256,7 +261,7 @@ v8::Local<v8::Script> postStreamCompile(CachedMetadataHandler* cacheHandler, Scr
     return script;
 }
 
-typedef Function<v8::Local<v8::Script>(v8::Isolate*, v8::Handle<v8::String>, v8::ScriptOrigin)> CompileFn;
+typedef Function<v8::MaybeLocal<v8::Script>(v8::Isolate*, v8::Handle<v8::String>, v8::ScriptOrigin)> CompileFn;
 
 // A notation convenience: WTF::bind<...> needs to be given the right argument
 // types. We have an awful lot of bind calls below, all with the same types, so
@@ -360,7 +365,7 @@ PassOwnPtr<CompileFn> selectCompileFunction(ScriptResource* resource, ScriptStre
 }
 } // namespace
 
-v8::Local<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions)
+v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& source, v8::Isolate* isolate, AccessControlStatus corsStatus, V8CacheOptions cacheOptions)
 {
     v8::Handle<v8::String> sourceAsV8String(v8String(isolate, source.source()));
     if (sourceAsV8String.IsEmpty()) {
@@ -370,7 +375,7 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(const ScriptSourceCode& sour
     return compileScript(sourceAsV8String, source.url(), source.sourceMapUrl(), source.startPosition(), isolate, source.resource(), source.streamer(), source.resource() ? source.resource()->cacheHandler() : nullptr, corsStatus, cacheOptions);
 }
 
-v8::Local<v8::Script> V8ScriptRunner::compileScript(const String& code, const String& fileName, const String& sourceMapUrl, const TextPosition& textPosition, v8::Isolate* isolate, CachedMetadataHandler* cacheMetadataHandler, AccessControlStatus accessControlStatus, V8CacheOptions v8CacheOptions)
+v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(const String& code, const String& fileName, const String& sourceMapUrl, const TextPosition& textPosition, v8::Isolate* isolate, CachedMetadataHandler* cacheMetadataHandler, AccessControlStatus accessControlStatus, V8CacheOptions v8CacheOptions)
 {
     v8::Handle<v8::String> codeAsV8String(v8String(isolate, code));
     if (codeAsV8String.IsEmpty()) {
@@ -380,7 +385,7 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(const String& code, const St
     return compileScript(codeAsV8String, fileName, sourceMapUrl, textPosition, isolate, nullptr, nullptr, cacheMetadataHandler, accessControlStatus, v8CacheOptions);
 }
 
-v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const String& sourceMapUrl, const TextPosition& scriptStartPosition, v8::Isolate* isolate, ScriptResource* resource, ScriptStreamer* streamer, CachedMetadataHandler* cacheHandler, AccessControlStatus corsStatus, V8CacheOptions cacheOptions, bool isInternalScript)
+v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code, const String& fileName, const String& sourceMapUrl, const TextPosition& scriptStartPosition, v8::Isolate* isolate, ScriptResource* resource, ScriptStreamer* streamer, CachedMetadataHandler* cacheHandler, AccessControlStatus corsStatus, V8CacheOptions cacheOptions, bool isInternalScript)
 {
     TRACE_EVENT1("v8", "v8.compile", "fileName", fileName.utf8());
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Compile");
@@ -406,10 +411,9 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
     return (*compileFn)(isolate, code, origin);
 }
 
-v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate, v8::Handle<v8::Script> script, ExecutionContext* context)
+v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate, v8::Local<v8::Script> script, ExecutionContext* context)
 {
-    if (script.IsEmpty())
-        return v8::Local<v8::Value>();
+    ASSERT(!script.IsEmpty());
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     TRACE_EVENT1("v8", "v8.run", "fileName", TRACE_STR_COPY(*v8::String::Utf8Value(script->GetUnboundScript()->GetScriptName())));
 
@@ -419,41 +423,40 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Isolate* isolate, v8:
     RELEASE_ASSERT(!context->isIteratingOverObservers());
 
     // Run the script and keep track of the current recursion depth.
-    v8::Local<v8::Value> result;
+    v8::MaybeLocal<v8::Value> result;
     {
-        if (ScriptForbiddenScope::isScriptForbidden())
-            return v8::Local<v8::Value>();
+        if (ScriptForbiddenScope::isScriptForbidden()) {
+            throwScriptForbiddenException(isolate);
+            return v8::MaybeLocal<v8::Value>();
+        }
         V8RecursionScope recursionScope(isolate);
-        result = script->Run();
+        result = script->Run(isolate->GetCurrentContext());
     }
 
-    if (result.IsEmpty())
-        return v8::Local<v8::Value>();
-
     crashIfV8IsDead();
     return result;
 }
 
-v8::Local<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, const String& fileName, const TextPosition& scriptStartPosition)
+v8::MaybeLocal<v8::Value> V8ScriptRunner::compileAndRunInternalScript(v8::Handle<v8::String> source, v8::Isolate* isolate, const String& fileName, const TextPosition& scriptStartPosition)
 {
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, fileName, String(), scriptStartPosition, isolate, nullptr, nullptr, nullptr, SharableCrossOrigin, V8CacheOptionsDefault, true);
-    if (script.IsEmpty())
-        return v8::Local<v8::Value>();
+    v8::Local<v8::Script> script;
+    if (!V8ScriptRunner::compileScript(source, fileName, String(), scriptStartPosition, isolate, nullptr, nullptr, nullptr, SharableCrossOrigin, V8CacheOptionsDefault, true).ToLocal(&script))
+        return v8::MaybeLocal<v8::Value>();
 
     TRACE_EVENT0("v8", "v8.run");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
-    v8::Local<v8::Value> result = script->Run();
+    v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
     crashIfV8IsDead();
     return result;
 }
 
-v8::Local<v8::Value> V8ScriptRunner::runCompiledInternalScript(v8::Isolate* isolate, v8::Handle<v8::Script> script)
+v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledInternalScript(v8::Isolate* isolate, v8::Local<v8::Script> script)
 {
     TRACE_EVENT0("v8", "v8.run");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
     V8RecursionScope::MicrotaskSuppression recursionScope(isolate);
-    v8::Local<v8::Value> result = script->Run();
+    v8::MaybeLocal<v8::Value> result = script->Run(isolate->GetCurrentContext());
     crashIfV8IsDead();
     return result;
 }
@@ -468,8 +471,10 @@ v8::Local<v8::Value> V8ScriptRunner::callFunction(v8::Handle<v8::Function> funct
 
     RELEASE_ASSERT(!context->isIteratingOverObservers());
 
-    if (ScriptForbiddenScope::isScriptForbidden())
+    if (ScriptForbiddenScope::isScriptForbidden()) {
+        throwScriptForbiddenException(isolate);
         return v8::Local<v8::Value>();
+    }
     V8RecursionScope recursionScope(isolate);
     v8::Local<v8::Value> result = function->Call(receiver, argc, args);
     crashIfV8IsDead();

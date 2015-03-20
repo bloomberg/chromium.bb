@@ -163,8 +163,8 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScript)
     EXPECT_FALSE(errorOccurred);
     EXPECT_TRUE(sourceCode.streamer());
     v8::TryCatch tryCatch;
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(sourceCode, isolate());
-    EXPECT_FALSE(script.IsEmpty());
+    v8::Local<v8::Script> script;
+    EXPECT_TRUE(V8ScriptRunner::compileScript(sourceCode, isolate()).ToLocal(&script));
     EXPECT_FALSE(tryCatch.HasCaught());
 }
 
@@ -196,8 +196,8 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScriptWithParseError)
     EXPECT_FALSE(errorOccurred);
     EXPECT_TRUE(sourceCode.streamer());
     v8::TryCatch tryCatch;
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(sourceCode, isolate());
-    EXPECT_TRUE(script.IsEmpty());
+    v8::Local<v8::Script> script;
+    EXPECT_FALSE(V8ScriptRunner::compileScript(sourceCode, isolate()).ToLocal(&script));
     EXPECT_TRUE(tryCatch.HasCaught());
 }
 
@@ -327,8 +327,8 @@ TEST_F(ScriptStreamingTest, ScriptsWithSmallFirstChunk)
     EXPECT_FALSE(errorOccurred);
     EXPECT_TRUE(sourceCode.streamer());
     v8::TryCatch tryCatch;
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(sourceCode, isolate());
-    EXPECT_FALSE(script.IsEmpty());
+    v8::Local<v8::Script> script;
+    EXPECT_TRUE(V8ScriptRunner::compileScript(sourceCode, isolate()).ToLocal(&script));
     EXPECT_FALSE(tryCatch.HasCaught());
 }
 
@@ -355,8 +355,8 @@ TEST_F(ScriptStreamingTest, EncodingChanges)
     EXPECT_FALSE(errorOccurred);
     EXPECT_TRUE(sourceCode.streamer());
     v8::TryCatch tryCatch;
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(sourceCode, isolate());
-    EXPECT_FALSE(script.IsEmpty());
+    v8::Local<v8::Script> script;
+    EXPECT_TRUE(V8ScriptRunner::compileScript(sourceCode, isolate()).ToLocal(&script));
     EXPECT_FALSE(tryCatch.HasCaught());
 }
 
@@ -383,8 +383,8 @@ TEST_F(ScriptStreamingTest, EncodingFromBOM)
     EXPECT_FALSE(errorOccurred);
     EXPECT_TRUE(sourceCode.streamer());
     v8::TryCatch tryCatch;
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(sourceCode, isolate());
-    EXPECT_FALSE(script.IsEmpty());
+    v8::Local<v8::Script> script;
+    EXPECT_TRUE(V8ScriptRunner::compileScript(sourceCode, isolate()).ToLocal(&script));
     EXPECT_FALSE(tryCatch.HasCaught());
 }
 

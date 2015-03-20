@@ -46,16 +46,17 @@ class V8ScriptRunner {
 public:
     // For the following methods, the caller sites have to hold
     // a HandleScope and a ContextScope.
-    static v8::Local<v8::Script> compileScript(const ScriptSourceCode&, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault);
-    static v8::Local<v8::Script> compileScript(const String&, const String& fileName, const String& sourceMapUrl, const TextPosition&, v8::Isolate*, CachedMetadataHandler* = nullptr, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault);
+    static v8::MaybeLocal<v8::Script> compileScript(const ScriptSourceCode&, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault);
+    static v8::MaybeLocal<v8::Script> compileScript(const String&, const String& fileName, const String& sourceMapUrl, const TextPosition&, v8::Isolate*, CachedMetadataHandler* = nullptr, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault);
     // CachedMetadataHandler is set when metadata caching is supported. For
     // normal scripe resources, CachedMetadataHandler is from ScriptResource.
     // For worker script, ScriptResource is null but CachedMetadataHandler may be
     // set. When ScriptStreamer is set, ScriptResource must be set.
-    static v8::Local<v8::Script> compileScript(v8::Handle<v8::String>, const String& fileName, const String& sourceMapUrl, const TextPosition&, v8::Isolate*, ScriptResource* = nullptr, ScriptStreamer* = nullptr, CachedMetadataHandler* = nullptr, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault, bool isInternalScript = false);
-    static v8::Local<v8::Value> runCompiledScript(v8::Isolate*, v8::Handle<v8::Script>, ExecutionContext*);
-    static v8::Local<v8::Value> compileAndRunInternalScript(v8::Handle<v8::String>, v8::Isolate*, const String& = String(), const TextPosition& = TextPosition());
-    static v8::Local<v8::Value> runCompiledInternalScript(v8::Isolate*, v8::Handle<v8::Script>);
+    static v8::MaybeLocal<v8::Script> compileScript(v8::Handle<v8::String>, const String& fileName, const String& sourceMapUrl, const TextPosition&, v8::Isolate*, ScriptResource* = nullptr, ScriptStreamer* = nullptr, CachedMetadataHandler* = nullptr, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault, bool isInternalScript = false);
+    static v8::MaybeLocal<v8::Value> runCompiledScript(v8::Isolate*, v8::Local<v8::Script>, ExecutionContext*);
+    static v8::MaybeLocal<v8::Value> compileAndRunInternalScript(v8::Handle<v8::String>, v8::Isolate*, const String& = String(), const TextPosition& = TextPosition());
+    static v8::MaybeLocal<v8::Value> runCompiledInternalScript(v8::Isolate*, v8::Local<v8::Script>);
+    // FIXME: Use v8::MaybeLocal<T> instead of v8::Local<T>.
     static v8::Local<v8::Value> callInternalFunction(v8::Handle<v8::Function>, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate*);
     static v8::Local<v8::Value> callFunction(v8::Handle<v8::Function>, ExecutionContext*, v8::Handle<v8::Value> receiver, int argc, v8::Handle<v8::Value> info[], v8::Isolate*);
     static v8::Local<v8::Object> instantiateObject(v8::Isolate*, v8::Handle<v8::ObjectTemplate>);

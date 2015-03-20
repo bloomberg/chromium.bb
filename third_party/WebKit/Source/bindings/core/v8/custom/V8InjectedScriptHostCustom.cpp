@@ -378,12 +378,20 @@ void V8InjectedScriptHost::evalMethodCustom(const v8::FunctionCallbackInfo<v8::V
 
     ASSERT(isolate->InContext());
     v8::TryCatch tryCatch;
-    v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(expression, info.GetIsolate());
-    if (tryCatch.HasCaught()) {
+    v8::Local<v8::Value> result;
+    if (!v8Call(V8ScriptRunner::compileAndRunInternalScript(expression, info.GetIsolate()), result, tryCatch)) {
         v8SetReturnValue(info, tryCatch.ReThrow());
         return;
     }
     v8SetReturnValue(info, result);
+}
+
+static void setExceptionAsReturnValue(const v8::FunctionCallbackInfo<v8::Value>& info, v8::Local<v8::Object> returnValue, v8::TryCatch& tryCatch)
+{
+    v8::Isolate* isolate = info.GetIsolate();
+    returnValue->Set(v8::String::NewFromUtf8(isolate, "result"), tryCatch.Exception());
+    returnValue->Set(v8::String::NewFromUtf8(isolate, "exceptionDetails"), JavaScriptCallFrame::createExceptionDetails(isolate, tryCatch.Message()));
+    v8SetReturnValue(info, returnValue);
 }
 
 void V8InjectedScriptHost::evaluateWithExceptionDetailsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -401,18 +409,23 @@ void V8InjectedScriptHost::evaluateWithExceptionDetailsMethodCustom(const v8::Fu
     }
 
     ASSERT(isolate->InContext());
-    v8::TryCatch tryCatch;
-    v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(expression, String(), String(), TextPosition(), isolate);
-    v8::Handle<v8::Value> result = V8ScriptRunner::runCompiledScript(isolate, script, currentExecutionContext(isolate));
-
     v8::Local<v8::Object> wrappedResult = v8::Object::New(isolate);
-    if (tryCatch.HasCaught()) {
-        wrappedResult->Set(v8::String::NewFromUtf8(isolate, "result"), tryCatch.Exception());
-        wrappedResult->Set(v8::String::NewFromUtf8(isolate, "exceptionDetails"), JavaScriptCallFrame::createExceptionDetails(isolate, tryCatch.Message()));
-    } else {
-        wrappedResult->Set(v8::String::NewFromUtf8(isolate, "result"), result);
-        wrappedResult->Set(v8::String::NewFromUtf8(isolate, "exceptionDetails"), v8::Undefined(isolate));
+    if (wrappedResult.IsEmpty())
+        return;
+    v8::TryCatch tryCatch;
+    v8::Local<v8::Script> script;
+    v8::Local<v8::Value> result;
+    if (!v8Call(V8ScriptRunner::compileScript(expression, String(), String(), TextPosition(), isolate), script, tryCatch)) {
+        setExceptionAsReturnValue(info, wrappedResult, tryCatch);
+        return;
     }
+    if (!v8Call(V8ScriptRunner::runCompiledScript(isolate, script, currentExecutionContext(isolate)), result, tryCatch)) {
+        setExceptionAsReturnValue(info, wrappedResult, tryCatch);
+        return;
+    }
+
+    wrappedResult->Set(v8::String::NewFromUtf8(isolate, "result"), result);
+    wrappedResult->Set(v8::String::NewFromUtf8(isolate, "exceptionDetails"), v8::Undefined(isolate));
     v8SetReturnValue(info, wrappedResult);
 }
 

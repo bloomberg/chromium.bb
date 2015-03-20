@@ -647,8 +647,9 @@ void ScriptDebugServer::ensureDebuggerScriptCompiled()
     v8::Context::Scope contextScope(v8::Debug::GetDebugContext());
     const blink::WebData& debuggerScriptSourceResource = blink::Platform::current()->loadResource("DebuggerScriptSource.js");
     v8::Handle<v8::String> source = v8String(m_isolate, String(debuggerScriptSourceResource.data(), debuggerScriptSourceResource.size()));
-    v8::Local<v8::Value> value = V8ScriptRunner::compileAndRunInternalScript(source, m_isolate);
-    ASSERT(!value.IsEmpty());
+    v8::Local<v8::Value> value;
+    if (!V8ScriptRunner::compileAndRunInternalScript(source, m_isolate).ToLocal(&value))
+        return;
     ASSERT(value->IsObject());
     m_debuggerScript.Reset(m_isolate, v8::Handle<v8::Object>::Cast(value));
 }
@@ -730,8 +731,8 @@ void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& ex
 
     v8::Handle<v8::String> source = v8String(m_isolate, expression);
     v8::TryCatch tryCatch;
-    v8::Local<v8::Script> script = V8ScriptRunner::compileScript(source, sourceURL, String(), TextPosition(), m_isolate);
-    if (tryCatch.HasCaught()) {
+    v8::Local<v8::Script> script;
+    if (!v8Call(V8ScriptRunner::compileScript(source, sourceURL, String(), TextPosition(), m_isolate), script, tryCatch)) {
         v8::Local<v8::Message> message = tryCatch.Message();
         if (!message.IsEmpty()) {
             *exceptionDetailsText = toCoreStringWithUndefinedOrNullCheck(message->Get());
@@ -743,7 +744,7 @@ void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& ex
         }
         return;
     }
-    if (script.IsEmpty() || !persistScript)
+    if (!persistScript)
         return;
 
     *scriptId = String::number(script->GetUnboundScript()->GetId());
@@ -768,9 +769,11 @@ void ScriptDebugServer::runScript(ScriptState* scriptState, const String& script
         return;
     ScriptState::Scope scope(scriptState);
     v8::TryCatch tryCatch;
-    v8::Local<v8::Value> value = V8ScriptRunner::runCompiledScript(m_isolate, script, scriptState->executionContext());
+    v8::Local<v8::Value> value;
     *wasThrown = false;
-    if (tryCatch.HasCaught()) {
+    if (v8Call(V8ScriptRunner::runCompiledScript(m_isolate, script, scriptState->executionContext()), value, tryCatch)) {
+        *result = ScriptValue(scriptState, value);
+    } else {
         *wasThrown = true;
         *result = ScriptValue(scriptState, tryCatch.Exception());
         v8::Local<v8::Message> message = tryCatch.Message();
@@ -782,8 +785,6 @@ void ScriptDebugServer::runScript(ScriptState* scriptState, const String& script
             if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
                 *stackTrace = createScriptCallStack(m_isolate, messageStackTrace, messageStackTrace->GetFrameCount());
         }
-    } else {
-        *result = ScriptValue(scriptState, value);
     }
 }
 

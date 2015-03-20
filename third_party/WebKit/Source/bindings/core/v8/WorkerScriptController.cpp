@@ -183,8 +183,10 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
 
     v8::TryCatch block;
 
-    v8::Handle<v8::Script> compiledScript = V8ScriptRunner::compileScript(script, fileName, String(), scriptStartPosition, isolate(), cacheHandler, SharableCrossOrigin, v8CacheOptions);
-    v8::Local<v8::Value> result = V8ScriptRunner::runCompiledScript(isolate(), compiledScript, &m_workerGlobalScope);
+    v8::Local<v8::Script> compiledScript;
+    v8::MaybeLocal<v8::Value> maybeResult;
+    if (v8Call(V8ScriptRunner::compileScript(script, fileName, String(), scriptStartPosition, isolate(), cacheHandler, SharableCrossOrigin, v8CacheOptions), compiledScript, block))
+        maybeResult = V8ScriptRunner::runCompiledScript(isolate(), compiledScript, &m_workerGlobalScope);
 
     if (!block.CanContinue()) {
         forbidExecution();
@@ -205,7 +207,8 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
         m_globalScopeExecutionState->hadException = false;
     }
 
-    if (result.IsEmpty() || result->IsUndefined())
+    v8::Local<v8::Value> result;
+    if (!maybeResult.ToLocal(&result) || result->IsUndefined())
         return ScriptValue();
 
     return ScriptValue(m_scriptState.get(), result);

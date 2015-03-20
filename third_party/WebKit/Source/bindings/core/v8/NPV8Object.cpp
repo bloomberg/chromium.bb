@@ -555,8 +555,9 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
             "  return props;"
             "});";
         v8::Handle<v8::String> source = v8AtomicString(isolate, enumeratorCode);
-        v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(source, isolate);
-        ASSERT(!result.IsEmpty());
+        v8::Local<v8::Value> result;
+        if (!V8ScriptRunner::compileAndRunInternalScript(source, isolate).ToLocal(&result))
+            return false;
         ASSERT(result->IsFunction());
         v8::Handle<v8::Function> enumerator = v8::Handle<v8::Function>::Cast(result);
         v8::Handle<v8::Value> argv[] = { obj };

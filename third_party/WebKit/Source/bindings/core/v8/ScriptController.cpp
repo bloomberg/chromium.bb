@@ -175,15 +175,17 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(true);
 
-        v8::Handle<v8::Script> script = V8ScriptRunner::compileScript(source, isolate(), corsStatus, v8CacheOptions);
+        v8::Local<v8::Script> script;
+        if (!v8Call(V8ScriptRunner::compileScript(source, isolate(), corsStatus, v8CacheOptions), script, tryCatch))
+            return result;
 
         if (compilationFinishTime) {
             *compilationFinishTime = WTF::monotonicallyIncreasingTime();
         }
         // Keep LocalFrame (and therefore ScriptController) alive.
         RefPtrWillBeRawPtr<LocalFrame> protect(frame());
-        result = V8ScriptRunner::runCompiledScript(isolate(), script, frame()->document());
-        ASSERT(!tryCatch.HasCaught() || result.IsEmpty());
+        if (!v8Call(V8ScriptRunner::runCompiledScript(isolate(), script, frame()->document()), result, tryCatch))
+            return result;
     }
 
     InspectorInstrumentation::didEvaluateScript(cookie);
