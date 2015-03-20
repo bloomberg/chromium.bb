@@ -183,6 +183,13 @@ private:
         WebSocketSendTypeMax,
     };
 
+    enum WebSocketReceiveType {
+        WebSocketReceiveTypeString,
+        WebSocketReceiveTypeArrayBuffer,
+        WebSocketReceiveTypeBlob,
+        WebSocketReceiveTypeMax,
+    };
+
     // This function is virtual for unittests.
     // FIXME: Move WebSocketChannel::create here.
     virtual WebSocketChannel* createChannel(ExecutionContext* context, WebSocketChannelClient* client)
