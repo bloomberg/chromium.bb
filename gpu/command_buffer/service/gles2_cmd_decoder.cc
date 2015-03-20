@@ -1641,11 +1641,16 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Validates the program and location for a glGetUniform call and returns
   // a SizeResult setup to receive the result. Returns true if glGetUniform
   // should be called.
-  bool GetUniformSetup(
-      GLuint program, GLint fake_location,
-      uint32 shm_id, uint32 shm_offset,
-      error::Error* error, GLint* real_location, GLuint* service_id,
-      void** result, GLenum* result_type);
+  bool GetUniformSetup(GLuint program,
+                       GLint fake_location,
+                       uint32 shm_id,
+                       uint32 shm_offset,
+                       error::Error* error,
+                       GLint* real_location,
+                       GLuint* service_id,
+                       void** result,
+                       GLenum* result_type,
+                       GLsizei* result_size);
 
   void MaybeExitOnContextLost();
   bool WasContextLost() override;
@@ -9602,11 +9607,16 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
   return error::kNoError;
 }
 
-bool GLES2DecoderImpl::GetUniformSetup(
-    GLuint program_id, GLint fake_location,
-    uint32 shm_id, uint32 shm_offset,
-    error::Error* error, GLint* real_location,
-    GLuint* service_id, void** result_pointer, GLenum* result_type) {
+bool GLES2DecoderImpl::GetUniformSetup(GLuint program_id,
+                                       GLint fake_location,
+                                       uint32 shm_id,
+                                       uint32 shm_offset,
+                                       error::Error* error,
+                                       GLint* real_location,
+                                       GLuint* service_id,
+                                       void** result_pointer,
+                                       GLenum* result_type,
+                                       GLsizei* result_size) {
   DCHECK(error);
   DCHECK(service_id);
   DCHECK(result_pointer);
@@ -9658,6 +9668,7 @@ bool GLES2DecoderImpl::GetUniformSetup(
     return false;
   }
   result->size = size;
+  *result_size = size;
   *result_type = type;
   return true;
 }
@@ -9670,12 +9681,13 @@ error::Error GLES2DecoderImpl::HandleGetUniformiv(uint32 immediate_data_size,
   GLint fake_location = c.location;
   GLuint service_id;
   GLenum result_type;
+  GLsizei result_size;
   GLint real_location = -1;
   Error error;
   void* result;
-  if (GetUniformSetup(
-      program, fake_location, c.params_shm_id, c.params_shm_offset,
-      &error, &real_location, &service_id, &result, &result_type)) {
+  if (GetUniformSetup(program, fake_location, c.params_shm_id,
+                      c.params_shm_offset, &error, &real_location, &service_id,
+                      &result, &result_type, &result_size)) {
     glGetUniformiv(
         service_id, real_location,
         static_cast<cmds::GetUniformiv::Result*>(result)->GetData());
@@ -9695,13 +9707,14 @@ error::Error GLES2DecoderImpl::HandleGetUniformfv(uint32 immediate_data_size,
   typedef cmds::GetUniformfv::Result Result;
   Result* result;
   GLenum result_type;
-  if (GetUniformSetup(
-      program, fake_location, c.params_shm_id, c.params_shm_offset,
-      &error, &real_location, &service_id,
-      reinterpret_cast<void**>(&result), &result_type)) {
+  GLsizei result_size;
+  if (GetUniformSetup(program, fake_location, c.params_shm_id,
+                      c.params_shm_offset, &error, &real_location, &service_id,
+                      reinterpret_cast<void**>(&result), &result_type,
+                      &result_size)) {
     if (result_type == GL_BOOL || result_type == GL_BOOL_VEC2 ||
         result_type == GL_BOOL_VEC3 || result_type == GL_BOOL_VEC4) {
-      GLsizei num_values = result->GetNumResults();
+      GLsizei num_values = result_size / sizeof(Result::Type);
       scoped_ptr<GLint[]> temp(new GLint[num_values]);
       glGetUniformiv(service_id, real_location, temp.get());
       GLfloat* dst = result->GetData();
