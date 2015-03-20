@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -33,6 +34,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 import java.util.Calendar;
@@ -168,8 +170,9 @@ public class CardUnmaskPrompt
         setInputsEnabled(false);
         setOverlayVisibility(View.VISIBLE);
         mVerificationProgressBar.setVisibility(View.VISIBLE);
-        mVerificationView.setText(
-                R.string.autofill_card_unmask_verification_in_progress);
+        mVerificationView.setText(R.string.autofill_card_unmask_verification_in_progress);
+        ApiCompatibilityUtils.announceForAccessibility(
+                mVerificationView, mVerificationView.getText());
         setInputError(null);
     }
 
@@ -253,8 +256,9 @@ public class CardUnmaskPrompt
     private void setInitialFocus() {
         InputMethodManager imm = (InputMethodManager) mDialog.getContext().getSystemService(
                 Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(mShouldRequestExpirationDate ? mMonthInput : mCardUnmaskInput,
-                InputMethodManager.SHOW_IMPLICIT);
+        View view = mShouldRequestExpirationDate ? mMonthInput : mCardUnmaskInput;
+        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+        view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
     }
 
     private boolean areInputsValid() {
@@ -309,6 +313,12 @@ public class CardUnmaskPrompt
         mErrorMessage.setText(message);
         mErrorMessage.setVisibility(message == null ? View.GONE : View.VISIBLE);
 
+        // A null message is passed in during card verification, which also makes an announcement.
+        // Announcing twice in a row may cancel the first announcement.
+        if (message != null) {
+            ApiCompatibilityUtils.announceForAccessibility(mErrorMessage, message);
+        }
+
         // The rest of this code makes L-specific assumptions about the background being used to
         // draw the TextInput.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
@@ -332,6 +342,7 @@ public class CardUnmaskPrompt
     private void setNoRetryError(String message) {
         mNoRetryErrorMessage.setText(message);
         mNoRetryErrorMessage.setVisibility(View.VISIBLE);
+        ApiCompatibilityUtils.announceForAccessibility(mNoRetryErrorMessage, message);
     }
 
     /**

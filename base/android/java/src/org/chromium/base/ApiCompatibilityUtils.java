@@ -480,4 +480,13 @@ public class ApiCompatibilityUtils {
             window.setStatusBarColor(statusBarColor);
         }
     }
+
+    /**
+     * @see android.view.View#announceForAccessibility(CharSequence text)
+     */
+    public static void announceForAccessibility(View view, CharSequence text) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            view.announceForAccessibility(text);
+        }
+    }
 }
