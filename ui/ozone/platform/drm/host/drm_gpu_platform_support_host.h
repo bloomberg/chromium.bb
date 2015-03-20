@@ -21,11 +21,12 @@ class Point;
 namespace ui {
 
 class ChannelObserver;
+class DrmCursor;
 
 class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
                                   public IPC::Sender {
  public:
-  DrmGpuPlatformSupportHost();
+  DrmGpuPlatformSupportHost(DrmCursor* cursor);
   ~DrmGpuPlatformSupportHost() override;
 
   void RegisterHandler(GpuPlatformSupportHost* handler);
@@ -55,7 +56,8 @@ class DrmGpuPlatformSupportHost : public GpuPlatformSupportHost,
   scoped_refptr<base::SingleThreadTaskRunner> send_runner_;
   base::Callback<void(IPC::Message*)> send_callback_;
 
-  std::vector<GpuPlatformSupportHost*> handlers_;
+  std::vector<GpuPlatformSupportHost*> handlers_;  // Not owned.
+  DrmCursor* cursor_;                              // Not owned.
   ObserverList<ChannelObserver> channel_observers_;
 };
 

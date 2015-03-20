@@ -31,11 +31,8 @@ class DrmWindowHostManager;
 
 class DrmCursor : public CursorDelegateEvdev, public GpuPlatformSupportHost {
  public:
-  explicit DrmCursor(DrmWindowHostManager* window_manager,
-                     DrmGpuPlatformSupportHost* sender);
+  explicit DrmCursor(DrmWindowHostManager* window_manager);
   ~DrmCursor() override;
-
-  void Init();
 
   // Change the cursor over the specifed window.
   void SetCursor(gfx::AcceleratedWidget window, PlatformCursor platform_cursor);
@@ -90,7 +87,6 @@ class DrmCursor : public CursorDelegateEvdev, public GpuPlatformSupportHost {
   void SendLocked(IPC::Message* message);
 
   DrmWindowHostManager* window_manager_;                  // Not owned.
-  DrmGpuPlatformSupportHost* gpu_platform_support_host_;  // Not owned.
 
   // Task runner for main thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

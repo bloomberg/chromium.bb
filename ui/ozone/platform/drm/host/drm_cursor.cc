@@ -10,7 +10,6 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
-#include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
 
@@ -20,18 +19,11 @@
 
 namespace ui {
 
-DrmCursor::DrmCursor(DrmWindowHostManager* window_manager,
-                     DrmGpuPlatformSupportHost* gpu_platform_support_host)
-    : window_manager_(window_manager),
-      gpu_platform_support_host_(gpu_platform_support_host) {
+DrmCursor::DrmCursor(DrmWindowHostManager* window_manager)
+    : window_manager_(window_manager) {
 }
 
 DrmCursor::~DrmCursor() {
-  gpu_platform_support_host_->UnregisterHandler(this);
-}
-
-void DrmCursor::Init() {
-  gpu_platform_support_host_->RegisterHandler(this);
 }
 
 void DrmCursor::SetCursor(gfx::AcceleratedWidget window,

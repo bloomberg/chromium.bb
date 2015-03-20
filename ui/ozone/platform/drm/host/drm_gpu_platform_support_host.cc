@@ -8,10 +8,12 @@
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/drm/host/channel_observer.h"
+#include "ui/ozone/platform/drm/host/drm_cursor.h"
 
 namespace ui {
 
-DrmGpuPlatformSupportHost::DrmGpuPlatformSupportHost() : host_id_(-1) {
+DrmGpuPlatformSupportHost::DrmGpuPlatformSupportHost(DrmCursor* cursor)
+    : host_id_(-1), cursor_(cursor) {
 }
 
 DrmGpuPlatformSupportHost::~DrmGpuPlatformSupportHost() {
@@ -64,11 +66,20 @@ void DrmGpuPlatformSupportHost::OnChannelEstablished(
 
   FOR_EACH_OBSERVER(ChannelObserver, channel_observers_,
                     OnChannelEstablished());
+
+  // The cursor is special since it will process input events on the IO thread
+  // and can by-pass the UI thread. This means that we need to special case it
+  // and notify it after all other observers/handlers are notified such that the
+  // (windowing) state on the GPU can be initialized before the cursor is
+  // allowed to IPC messages (which are targeted to a specific window).
+  cursor_->OnChannelEstablished(host_id, send_runner_, send_callback_);
 }
 
 void DrmGpuPlatformSupportHost::OnChannelDestroyed(int host_id) {
   TRACE_EVENT1("drm", "DrmGpuPlatformSupportHost::OnChannelDestroyed",
                "host_id", host_id);
+  cursor_->OnChannelDestroyed(host_id);
+
   if (host_id_ == host_id) {
     host_id_ = -1;
     send_runner_ = nullptr;
