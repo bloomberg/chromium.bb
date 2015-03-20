@@ -572,7 +572,7 @@ InjectedScript.prototype = {
 
         /**
          * @param {?Object} o
-         * @param {!Iterator.<string|symbol>|!Array.<string|symbol>} properties
+         * @param {!Iterable.<string|symbol>|!Array.<string|symbol>} properties
          */
         function* process(o, properties)
         {
@@ -582,7 +582,7 @@ InjectedScript.prototype = {
 
                 var name = property;
                 if (isSymbol(property))
-                    name = injectedScript._describe(property);
+                    name = /** @type {string} */ (injectedScript._describe(property));
 
                 try {
                     propertyProcessed[property] = true;
@@ -1387,7 +1387,7 @@ InjectedScript.RemoteObject.prototype = {
 
     /**
      * @param {!RuntimeAgent.ObjectPreview} preview
-     * @param {!Iterator.<!Object>|!Array.<!Object>} descriptors
+     * @param {!Array.<*>|!Iterable.<*>} descriptors
      * @param {!Object} propertiesThreshold
      * @param {?Array.<string>=} secondLevelKeys
      * @param {boolean=} isTable
