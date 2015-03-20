@@ -23,7 +23,6 @@
   "light": {
     "switches": [
       "-cultures:en-us",
-      "-sval",
       "-sw1076"
     ]
   }
