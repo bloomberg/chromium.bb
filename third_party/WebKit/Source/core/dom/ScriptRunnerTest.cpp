@@ -382,9 +382,13 @@ TEST_F(ScriptRunnerTest, ShouldYield_AsyncScripts)
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts)
 {
-    OwnPtr<MockScriptLoader> scriptLoaders[20];
-    for (int i = 0; i < 20; i++) {
-        scriptLoaders[i] = adoptPtr(new MockScriptLoader(m_element.get()));
+    const int loaderCount = 20;
+    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoaders[loaderCount];
+    for (int i = 0; i < loaderCount; i++)
+        scriptLoaders[i] = nullptr;
+
+    for (int i = 0; i < loaderCount; i++) {
+        scriptLoaders[i] = adoptPtrWillBeNoop(new MockScriptLoader(m_element.get()));
         EXPECT_CALL(*scriptLoaders[i], isReady()).WillRepeatedly(Return(true));
 
         m_scriptRunner->queueScriptForExecution(scriptLoaders[i].get(), ScriptRunner::ASYNC_EXECUTION);
@@ -401,7 +405,7 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts)
     m_scriptRunner->resume();
 
     EXPECT_CALL(*scriptLoaders[0], execute()).WillOnce(Invoke([&scriptLoaders, this] {
-        for (int i = 2; i < 20; i++)
+        for (int i = 2; i < loaderCount; i++)
             m_scriptRunner->notifyScriptReady(scriptLoaders[i].get(), ScriptRunner::ASYNC_EXECUTION);
         m_scriptRunner->resume();
         m_order.push_back(0);
