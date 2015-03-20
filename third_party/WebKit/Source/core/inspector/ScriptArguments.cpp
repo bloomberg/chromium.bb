@@ -99,8 +99,12 @@ private:
             && !value->IsDate()
             && !value->IsFunction()
             && !value->IsNativeError()
-            && !value->IsRegExp())
-            return append(v8::Local<v8::Object>::Cast(value)->ObjectProtoToString());
+            && !value->IsRegExp()) {
+            v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
+            v8::Local<v8::String> stringValue;
+            if (object->ObjectProtoToString(m_isolate->GetCurrentContext()).ToLocal(&stringValue))
+                return append(stringValue);
+        }
         return append(value->ToString(m_isolate));
     }
 

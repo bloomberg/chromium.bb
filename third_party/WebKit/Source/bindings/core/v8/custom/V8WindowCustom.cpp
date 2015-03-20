@@ -214,11 +214,10 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
 void V8Window::toStringMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> domWrapper = V8Window::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
-    if (domWrapper.IsEmpty()) {
-        v8SetReturnValue(info, info.This()->ObjectProtoToString());
-        return;
-    }
-    v8SetReturnValue(info, domWrapper->ObjectProtoToString());
+    v8::Local<v8::Object> target = domWrapper.IsEmpty() ? info.This() : domWrapper;
+    v8::Local<v8::String> value;
+    if (target->ObjectProtoToString(info.GetIsolate()->GetCurrentContext()).ToLocal(&value))
+        v8SetReturnValue(info, value);
 }
 
 void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
