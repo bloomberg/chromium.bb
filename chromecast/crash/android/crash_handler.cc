@@ -45,7 +45,7 @@ bool UploadCrashToStaging() {
   return true;
 #else
   int build_number;
-  if (base::StringToInt(CAST_BUILD_REVISION, &build_number))
+  if (base::StringToInt(CAST_BUILD_INCREMENTAL, &build_number))
     return build_number == 0;
   return true;
 #endif

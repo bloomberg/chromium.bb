@@ -191,7 +191,8 @@ public final class CastCrashUploader {
 
                     int statusCode = response.getStatusLine().getStatusCode();
                     if (statusCode == HttpStatus.SC_OK) {
-                        Log.d(TAG, "Successfully uploaded as report ID: " + responseLine);
+                        Log.d(TAG, "Successfully uploaded to " + mCrashReportUploadUrl
+                                + ", report ID: " + responseLine);
                     } else {
                         Log.e(TAG, "Failed response (" + statusCode + "): " + responseLine);
 
