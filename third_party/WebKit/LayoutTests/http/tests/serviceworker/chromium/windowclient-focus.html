@@ -32,31 +32,31 @@ t.step(function() {
         'focus() error is InvalidAccessError',
         'focus() succeeded',
         'focus() result: [object WindowClient]',
-        ' url: ' + location.origin + '/serviceworker/chromium/resources/windowclient-focus.html',
         ' visibilityState: visible',
         ' focused: true',
-        ' frameType: nested',
+        ' url is the same',
+        ' frameType is the same',
         'focused clients: 1',
         'focus() succeeded',
         'focus() result: [object WindowClient]',
-        ' url: ' + location.origin + '/serviceworker/chromium/resources/windowclient-focus.html?1',
         ' visibilityState: visible',
         ' focused: true',
-        ' frameType: nested',
+        ' url is the same',
+        ' frameType is the same',
         'focused clients: 2',
         'focus() succeeded',
         'focus() result: [object WindowClient]',
-        ' url: ' + location.origin + '/serviceworker/chromium/resources/windowclient-focus.html?2',
         ' visibilityState: visible',
         ' focused: true',
-        ' frameType: nested',
+        ' url is the same',
+        ' frameType is the same',
         'focused clients: 2',
         'focus() succeeded',
         'focus() result: [object WindowClient]',
-        ' url: ' + location.origin + '/serviceworker/chromium/resources/windowclient-focus.html?3',
         ' visibilityState: visible',
         ' focused: true',
-        ' frameType: top-level',
+        ' url is the same',
+        ' frameType is the same',
         'focused clients: 1',
     ];
 
@@ -64,7 +64,6 @@ t.step(function() {
     // above |expected| array to match Mac's expectations.
     var isMac = navigator.platform.indexOf('Mac') == 0;
     if (isMac) {
-        expected[27] = ' focused: false';
         expected[29] = 'focused clients: 3';
     }
 

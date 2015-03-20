@@ -46,10 +46,12 @@ var TESTS = [
             client.focus().then(function(c) {
                 self.postMessage('focus() succeeded');
                 self.postMessage('focus() result: ' + c);
-                self.postMessage(' url: ' + c.url);
                 self.postMessage(' visibilityState: ' + c.visibilityState);
                 self.postMessage(' focused: ' + c.focused);
-                self.postMessage(' frameType: ' + c.frameType);
+                if (c.url == client.url)
+                    self.postMessage(' url is the same');
+                if (c.frameType == client.frameType)
+                    self.postMessage(' frameType is the same');
             }).then(getNumberOfFocusedClients)
             .then(function(count) {
                 // There should be 1 focused client at this point.
@@ -63,10 +65,12 @@ var TESTS = [
             nestedClients[0].focus().then(function(c) {
                 self.postMessage('focus() succeeded');
                 self.postMessage('focus() result: ' + c);
-                self.postMessage(' url: ' + c.url);
                 self.postMessage(' visibilityState: ' + c.visibilityState);
                 self.postMessage(' focused: ' + c.focused);
-                self.postMessage(' frameType: ' + c.frameType);
+                if (c.url == nestedClients[0].url)
+                    self.postMessage(' url is the same');
+                if (c.frameType == nestedClients[0].frameType)
+                    self.postMessage(' frameType is the same');
             }).then(getNumberOfFocusedClients)
             .then(function(count) {
                 // There should be 2 focused clients at this point.
@@ -81,10 +85,12 @@ var TESTS = [
             nestedClients[1].focus().then(function(c) {
                 self.postMessage('focus() succeeded');
                 self.postMessage('focus() result: ' + c);
-                self.postMessage(' url: ' + c.url);
                 self.postMessage(' visibilityState: ' + c.visibilityState);
                 self.postMessage(' focused: ' + c.focused);
-                self.postMessage(' frameType: ' + c.frameType);
+                if (c.url == nestedClients[1].url)
+                    self.postMessage(' url is the same');
+                if (c.frameType == nestedClients[1].frameType)
+                    self.postMessage(' frameType is the same');
             }).then(getNumberOfFocusedClients)
             .then(function(count) {
                 // There should still be 2 focused clients at this point.
@@ -97,15 +103,17 @@ var TESTS = [
     function testFocusOpenedWindow() {
         synthesizeNotificationClick().then(function(e) {
             return self.clients.openWindow('windowclient-focus.html?3');
-        }).then(function(c) {
+        }).then(function(openedClient) {
             synthesizeNotificationClick().then(function(e) {
-                c.focus().then(function() {
+                openedClient.focus().then(function(focusedClient) {
                     self.postMessage('focus() succeeded');
-                    self.postMessage('focus() result: ' + c);
-                    self.postMessage(' url: ' + c.url);
-                    self.postMessage(' visibilityState: ' + c.visibilityState);
-                    self.postMessage(' focused: ' + c.focused);
-                    self.postMessage(' frameType: ' + c.frameType);
+                    self.postMessage('focus() result: ' + focusedClient);
+                    self.postMessage(' visibilityState: ' + focusedClient.visibilityState);
+                    self.postMessage(' focused: ' + focusedClient.focused);
+                    if (openedClient.url == focusedClient.url)
+                        self.postMessage(' url is the same');
+                    if (openedClient.frameType == focusedClient.frameType)
+                        self.postMessage(' frameType is the same');
                 }).then(getNumberOfFocusedClients)
                 .then(function(count) {
                     // There should be 1 focused clients at this point.
