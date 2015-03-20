@@ -5213,7 +5213,7 @@ weston_transform_to_string(uint32_t output_transform)
 
 int main(int argc, char *argv[])
 {
-	int ret = EXIT_SUCCESS;
+	int ret = EXIT_FAILURE;
 	struct wl_display *display;
 	struct weston_compositor *ec;
 	struct wl_event_source *signals[4];
@@ -5289,10 +5289,8 @@ int main(int argc, char *argv[])
 	signals[3] = wl_event_loop_add_signal(loop, SIGCHLD, sigchld_handler,
 					      NULL);
 
-	if (!signals[0] || !signals[1] || !signals[2] || !signals[3]) {
-		ret = EXIT_FAILURE;
+	if (!signals[0] || !signals[1] || !signals[2] || !signals[3])
 		goto out_signals;
-	}
 
 	if (noconfig == 0)
 		config = weston_config_parse("weston.ini");
@@ -5312,15 +5310,12 @@ int main(int argc, char *argv[])
 	}
 
 	backend_init = weston_load_module(backend, "backend_init");
-	if (!backend_init) {
-		ret = EXIT_FAILURE;
+	if (!backend_init)
 		goto out_signals;
-	}
 
 	ec = backend_init(display, &argc, argv, config);
 	if (ec == NULL) {
 		weston_log("fatal: failed to create compositor\n");
-		ret = EXIT_FAILURE;
 		goto out_signals;
 	}
 
@@ -5337,10 +5332,8 @@ int main(int argc, char *argv[])
 
 	for (i = 1; i < argc; i++)
 		weston_log("fatal: unhandled option: %s\n", argv[i]);
-	if (argc > 1) {
-		ret = EXIT_FAILURE;
+	if (argc > 1)
 		goto out;
-	}
 
 	weston_compositor_log_capabilities(ec);
 
@@ -5358,7 +5351,6 @@ int main(int argc, char *argv[])
 		primary_client = wl_client_create(display, fd);
 		if (!primary_client) {
 			weston_log("fatal: failed to add client: %m\n");
-			ret = EXIT_FAILURE;
 			goto out;
 		}
 		primary_client_destroyed.notify =
@@ -5366,7 +5358,6 @@ int main(int argc, char *argv[])
 		wl_client_add_destroy_listener(primary_client,
 					       &primary_client_destroyed);
 	} else if (weston_create_listening_socket(display, socket_name)) {
-		ret = EXIT_FAILURE;
 		goto out;
 	}
 
