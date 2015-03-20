@@ -39,9 +39,6 @@
                             "android_amp_rel_tests_recipe": [
                                 "defaulttests"
                             ],
-                            "android_n5_rel_tests_recipe": [
-                                "defaulttests"
-                            ],
                             "cast_shell": [
                                 "defaulttests"
                             ],
