@@ -3,29 +3,17 @@
 // found in the LICENSE file.
 'use strict';
 
-/**
- * Test target.
- * @type {ProgressCenterItemGroup}
- */
-var group;
-
-/**
- * Set up before each test.
- */
-function setUp() {
-  // Prepare the string assets.
-  loadTimeData.data = {
-    COPY_PROGRESS_SUMMARY: 'Copying...',
-    ERROR_PROGRESS_SUMMARY: '1 Error.',
-    ERROR_PROGRESS_SUMMARY_PLURAL: '$1 Errors.'
-  };
-
-  // Make the test target.
-  group = new ProgressCenterItemGroup();
-  assertEquals(ProgressCenterItemGroup.State.EMPTY, group.state);
-}
+// Prepare the string assets.
+loadTimeData.data = {
+  COPY_PROGRESS_SUMMARY: 'Copying...',
+  ERROR_PROGRESS_SUMMARY: '1 Error.',
+  ERROR_PROGRESS_SUMMARY_PLURAL: '$1 Errors.'
+};
 
 function testSimpleProgress() {
+  var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
+  assertEquals(ProgressCenterItemGroup.State.EMPTY, group.state);
+
   var item = new ProgressCenterItem();
   item.id = 'test-item-1';
   item.message = 'TestItemMessage1';
@@ -73,6 +61,7 @@ function testSimpleProgress() {
 }
 
 function testCompleteAnimationDuringProgress() {
+  var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
   var item = new ProgressCenterItem();
   item.id = 'test-item-1';
   item.message = 'TestItemMessage1';
@@ -134,6 +123,7 @@ function testCompleteAnimationDuringProgress() {
 }
 
 function testAddMaxProgressItem() {
+  var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
   var item = new ProgressCenterItem();
   item.id = 'test-item-1';
   item.message = 'TestItemMessage1';
@@ -161,6 +151,7 @@ function testAddMaxProgressItem() {
 }
 
 function testCompleteDuringAnimation() {
+  var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
   var item = new ProgressCenterItem();
   item.id = 'test-item-1';
   item.message = 'TestItemMessage1';
@@ -197,6 +188,7 @@ function testCompleteDuringAnimation() {
 }
 
 function testTwoItems() {
+  var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
   var item1 = new ProgressCenterItem();
   item1.id = 'test-item-1';
   item1.message = 'TestItemMessage1';
@@ -286,6 +278,7 @@ function testTwoItems() {
 }
 
 function testOneError() {
+  var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
   var item = new ProgressCenterItem();
   item.id = 'test-item-1';
   item.message = 'TestItemMessage1';
@@ -310,6 +303,7 @@ function testOneError() {
 }
 
 function testOneItemWithError() {
+  var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
   var item1 = new ProgressCenterItem();
   item1.id = 'test-item-1';
   item1.message = 'TestItemMessage1';
@@ -385,6 +379,7 @@ function testOneItemWithError() {
 }
 
 function testOneItemWithErrorDuringAnimation() {
+  var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
   var item1 = new ProgressCenterItem();
   item1.id = 'test-item-1';
   item1.message = 'TestItemMessage1';
@@ -427,6 +422,7 @@ function testOneItemWithErrorDuringAnimation() {
 }
 
 function testTwoErrors() {
+  var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
   var item1 = new ProgressCenterItem();
   item1.id = 'test-item-1';
   item1.message = 'Error message 1';
@@ -458,6 +454,7 @@ function testTwoErrors() {
 }
 
 function testCancel() {
+  var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
   var item = new ProgressCenterItem();
   item.id = 'test-item-1';
   item.message = 'TestItemMessage1';
@@ -484,6 +481,7 @@ function testCancel() {
 }
 
 function testCancelWithError() {
+  var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ false);
   var item1 = new ProgressCenterItem();
   item1.id = 'test-item-1';
   item1.message = 'TestItemMessage1';
@@ -520,4 +518,49 @@ function testCancelWithError() {
   assertEquals('Error message 2',
                ProgressCenterItemGroup.getSummarizedErrorItem(group).message);
   assertEquals(ProgressCenterItemGroup.State.INACTIVE, group.state);
+}
+
+function testQuietItem() {
+  var group = new ProgressCenterItemGroup(/* name */ 'test', /* quite */ true);
+  var item = new ProgressCenterItem();
+  item.id = 'test-item-1';
+  item.message = 'TestItemMessage1';
+  item.state = ProgressItemState.PROGRESSING;
+  item.progressMax = 1.0;
+  item.quiet = true;
+
+  // Add an item.
+  group.update(item);
+  assertFalse(group.isAnimated(item.id));
+  assertFalse(group.isSummarizedAnimated());
+  assertEquals(ProgressCenterItemGroup.State.ACTIVE, group.state);
+
+  // Start an animation of the item.
+  item.progressValue = 0.5;
+  group.update(item, 0);
+  assertTrue(group.isAnimated(item.id));
+  // Summarized item should not animated because the panel does not show
+  // progress bar for quiet and summarized item.
+  assertFalse(group.isSummarizedAnimated());
+  assertEquals(0.5, group.getItem(item.id).progressValue);
+  assertEquals(0.5, group.getSummarizedItem(0).progressValue);
+  assertEquals(ProgressCenterItemGroup.State.ACTIVE, group.state);
+
+  // Item is completed, but the animation is still on going.
+  item.progressValue = 1.0;
+  item.state = ProgressItemState.COMPLETED;
+  group.update(item, 0);
+  assertTrue(group.isAnimated(item.id));
+  assertFalse(group.isSummarizedAnimated());
+  assertEquals(100, group.getItem(item.id).progressRateInPercent);
+  assertEquals(100, group.getSummarizedItem(0).progressRateInPercent);
+  assertEquals(ProgressCenterItemGroup.State.ACTIVE, group.state);
+
+  // The animation of the item is completed.
+  group.completeItemAnimation(item.id);
+  assertFalse(group.isAnimated(item.id));
+  assertFalse(group.isSummarizedAnimated());
+  assertEquals(null, group.getItem(item.id));
+  assertFalse(!!group.getSummarizedItem(0));
+  assertEquals(ProgressCenterItemGroup.State.EMPTY, group.state);
 }

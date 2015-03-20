@@ -1922,7 +1922,7 @@ list.autocomplete-suggestions > [lead] {
 }
 
 #progress-center li.error .progress-bar,
-#progress-center li.quiet .progress-bar {
+#progress-center-close-view.quiet .progress-bar {
   display: none;
 }
 
@@ -1993,10 +1993,11 @@ list.autocomplete-suggestions > [lead] {
   display: none;
 }
 
-#progress-center-close-view.single button.open {
+#progress-center-close-view.single:not(.quiet) button.open {
   display: none;
 }
 
+#progress-center-close-view.quiet button.cancel,
 #progress-center li:not(.cancelable) button.cancel {
   visibility: hidden;
 }

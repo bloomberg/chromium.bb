@@ -130,17 +130,25 @@ ProgressCenterItemGroup.getSummarizedErrorItem = function(var_args) {
 };
 
 /**
- * Obtains Whether the item should be animated or not.
+ * Obtains whether the item should be animated or not.
  * @param {boolean} previousAnimated Whether the item is previously animated or
  *     not.
  * @param {ProgressCenterItem} previousItem Item before updating.
  * @param {ProgressCenterItem} item New item.
+ * @param {boolean} summarized If the item is summarized one or not.
  * @return {boolean} Whether the item should be animated or not.
  * @private
  */
 ProgressCenterItemGroup.shouldAnimate_ = function(
-    previousAnimated, previousItem, item) {
-  if (!previousItem || !item || previousItem.quiet || item.quiet)
+    previousAnimated, previousItem, item, summarized) {
+  // Check visibility of previous and current progress bar.
+  var previousShow =
+      previousItem && (!summarized || !previousItem.quiet);
+  var currentShow =
+      item && (!summarized || !item.quiet);
+  // If previous or current item does not show progress bar, we should not
+  // animate.
+  if (!previousShow || !currentShow)
     return false;
   if (previousItem.progressRateInPercent < item.progressRateInPercent)
     return true;
@@ -233,7 +241,8 @@ ProgressCenterItemGroup.prototype.update = function(item) {
       this.animated_[item.id] = ProgressCenterItemGroup.shouldAnimate_(
           !!this.animated_[item.id],
           previousItem,
-          item);
+          item,
+          /* summarized */ false);
       if (!this.animated_[item.id])
         this.completeItemAnimation(item.id);
       break;
@@ -253,7 +262,8 @@ ProgressCenterItemGroup.prototype.update = function(item) {
   this.summarizedItemAnimated_ = ProgressCenterItemGroup.shouldAnimate_(
       !!this.summarizedItemAnimated_,
       previousSummarizedItem,
-      this.summarizedItem_);
+      this.summarizedItem_,
+      /* summarized */ true);
   if (!this.summarizedItemAnimated_)
     this.completeSummarizedItemAnimation();
 };
