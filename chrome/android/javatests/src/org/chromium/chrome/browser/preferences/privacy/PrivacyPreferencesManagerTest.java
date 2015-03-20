@@ -15,6 +15,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
 public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
 
@@ -33,6 +34,13 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
     private static final UserUploadPreference UPLOAD_ALWAYS = UserUploadPreference.ALWAYS;
     private static final UserUploadPreference UPLOAD_WIFI_ONLY = UserUploadPreference.WIFI_ONLY;
     private static final UserUploadPreference UPLOAD_NEVER = UserUploadPreference.NEVER;
+
+    private static final boolean EXPERIMENT_ENABLED = true;
+    private static final boolean EXPERIMENT_DISABLED = false;
+    private static final boolean METRIC_REPORTING_SET = true;
+    private static final boolean METRIC_REPORTING_NOT_SET = false;
+    private static final boolean METRIC_REPORTING_ENABLED = true;
+    private static final boolean METRIC_REPORTING_DISABLED = false;
 
     // Perform the same test a few times to make sure any sort of
     // caching still works.
@@ -61,25 +69,60 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
         }
     }
 
+    // Instance of PermissionContext used for creating PrivacyPreferencesManager.
+    private PermissionContext mContext;
+    // Singleton value of PrefServiceBridge restored after test run.
+    private PrefServiceBridge mPrevInstance;
+
     @SmallTest
     @Feature({"Android-AppBase"})
     @UiThreadTest
     public void testAllowCrashDumpUploadNowCellDev() {
         CommandLine.init(null);
-        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_ON, UPLOAD_OK);
-        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, DISCONNECTED, WIFI_ON, UPLOAD_NOT_PERMITTED);
-        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_OFF, UPLOAD_OK);
-        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, DISCONNECTED, WIFI_OFF, UPLOAD_NOT_PERMITTED);
+        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_ON, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_OK);
+        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, DISCONNECTED, WIFI_ON, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
+        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_OFF, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_OK);
+        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, DISCONNECTED, WIFI_OFF, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
 
-        runTest(CELLULAR_DEVICE, UPLOAD_WIFI_ONLY, CONNECTED, WIFI_ON, UPLOAD_OK);
-        runTest(CELLULAR_DEVICE, UPLOAD_WIFI_ONLY, DISCONNECTED, WIFI_ON, UPLOAD_NOT_PERMITTED);
-        runTest(CELLULAR_DEVICE, UPLOAD_WIFI_ONLY, CONNECTED, WIFI_OFF, UPLOAD_NOT_PERMITTED);
-        runTest(CELLULAR_DEVICE, UPLOAD_WIFI_ONLY, DISCONNECTED, WIFI_OFF, UPLOAD_NOT_PERMITTED);
+        runTest(CELLULAR_DEVICE, UPLOAD_WIFI_ONLY, CONNECTED, WIFI_ON, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_OK);
+        runTest(CELLULAR_DEVICE, UPLOAD_WIFI_ONLY, DISCONNECTED, WIFI_ON, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
+        runTest(CELLULAR_DEVICE, UPLOAD_WIFI_ONLY, CONNECTED, WIFI_OFF, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
+        runTest(CELLULAR_DEVICE, UPLOAD_WIFI_ONLY, DISCONNECTED, WIFI_OFF, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
 
-        runTest(CELLULAR_DEVICE, UPLOAD_NEVER, CONNECTED, WIFI_ON, UPLOAD_NOT_PERMITTED);
-        runTest(CELLULAR_DEVICE, UPLOAD_NEVER, DISCONNECTED, WIFI_ON, UPLOAD_NOT_PERMITTED);
-        runTest(CELLULAR_DEVICE, UPLOAD_NEVER, CONNECTED, WIFI_OFF, UPLOAD_NOT_PERMITTED);
-        runTest(CELLULAR_DEVICE, UPLOAD_NEVER, DISCONNECTED, WIFI_OFF, UPLOAD_NOT_PERMITTED);
+        runTest(CELLULAR_DEVICE, UPLOAD_NEVER, CONNECTED, WIFI_ON, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
+        runTest(CELLULAR_DEVICE, UPLOAD_NEVER, DISCONNECTED, WIFI_ON, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
+        runTest(CELLULAR_DEVICE, UPLOAD_NEVER, CONNECTED, WIFI_OFF, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
+        runTest(CELLULAR_DEVICE, UPLOAD_NEVER, DISCONNECTED, WIFI_OFF, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
+
+        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_ON, EXPERIMENT_ENABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_DISABLED, UPLOAD_OK);
+        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, DISCONNECTED, WIFI_ON, EXPERIMENT_ENABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_DISABLED, UPLOAD_NOT_PERMITTED);
+        runTest(CELLULAR_DEVICE, UPLOAD_WIFI_ONLY, CONNECTED, WIFI_ON, EXPERIMENT_ENABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_DISABLED, UPLOAD_OK);
+        runTest(CELLULAR_DEVICE, UPLOAD_NEVER, CONNECTED, WIFI_ON, EXPERIMENT_ENABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
+
+        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_ON, EXPERIMENT_ENABLED,
+                METRIC_REPORTING_SET, METRIC_REPORTING_ENABLED, UPLOAD_OK);
+        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_OFF, EXPERIMENT_ENABLED,
+                METRIC_REPORTING_SET, METRIC_REPORTING_ENABLED, UPLOAD_OK);
+        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_ON, EXPERIMENT_ENABLED,
+                METRIC_REPORTING_SET, METRIC_REPORTING_DISABLED, UPLOAD_NOT_PERMITTED);
+        runTest(CELLULAR_DEVICE, UPLOAD_ALWAYS, DISCONNECTED, WIFI_ON, EXPERIMENT_ENABLED,
+                METRIC_REPORTING_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
     }
 
     @SmallTest
@@ -87,24 +130,52 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
     @UiThreadTest
     public void testAllowCrashDumpUploadNowWifiDev() {
         CommandLine.init(null);
-        runTest(WIFI_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_ON, UPLOAD_OK);
-        runTest(WIFI_DEVICE, UPLOAD_ALWAYS, DISCONNECTED, WIFI_OFF, UPLOAD_NOT_PERMITTED);
+        runTest(WIFI_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_ON, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_OK);
+        runTest(WIFI_DEVICE, UPLOAD_ALWAYS, DISCONNECTED, WIFI_OFF, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
 
-        runTest(WIFI_DEVICE, UPLOAD_NEVER, CONNECTED, WIFI_ON, UPLOAD_NOT_PERMITTED);
-        runTest(WIFI_DEVICE, UPLOAD_NEVER, DISCONNECTED, WIFI_OFF, UPLOAD_NOT_PERMITTED);
+        runTest(WIFI_DEVICE, UPLOAD_NEVER, CONNECTED, WIFI_ON, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
+        runTest(WIFI_DEVICE, UPLOAD_NEVER, DISCONNECTED, WIFI_OFF, EXPERIMENT_DISABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
+
+        runTest(WIFI_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_ON, EXPERIMENT_ENABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_OK);
+        runTest(WIFI_DEVICE, UPLOAD_NEVER, CONNECTED, WIFI_ON, EXPERIMENT_ENABLED,
+                METRIC_REPORTING_NOT_SET, METRIC_REPORTING_ENABLED, UPLOAD_NOT_PERMITTED);
+
+        runTest(WIFI_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_ON, EXPERIMENT_ENABLED,
+                METRIC_REPORTING_SET, METRIC_REPORTING_ENABLED, UPLOAD_OK);
+        runTest(WIFI_DEVICE, UPLOAD_ALWAYS, CONNECTED, WIFI_ON, EXPERIMENT_ENABLED,
+                METRIC_REPORTING_SET, METRIC_REPORTING_DISABLED, UPLOAD_NOT_PERMITTED);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mPrevInstance = PrefServiceBridge.getInstanceForTesting();
+        mContext = new PermissionContext(getInstrumentation().getTargetContext());
     }
 
     private void runTest(boolean mobileCapable, UserUploadPreference userPreference,
-            boolean isConnected, boolean wifiOn, boolean uploadPermitted) {
-        PermissionContext context = new PermissionContext(getInstrumentation().getTargetContext());
+            boolean isConnected, boolean wifiOn, boolean experimentEnabled,
+            boolean hasSetMetricsReporting, boolean isMetricsReportinEnabled,
+            boolean uploadPermitted) {
         PrivacyPreferencesManager preferenceManager =
-                new MockPrivacyPreferencesManager(context, mobileCapable, isConnected, wifiOn);
+                new MockPrivacyPreferencesManager(mContext, mobileCapable, isConnected, wifiOn);
+        preferenceManager.setCellularExperimentForTesting(experimentEnabled);
+        PrefServiceBridge prefServiceBridge =
+                new MockPrefServiceBridge(hasSetMetricsReporting, isMetricsReportinEnabled);
+        PrefServiceBridge.setInstanceForTesting(prefServiceBridge);
 
         for (int i = 0; i < REPS; i++) {
-            setUpUserPreferences(context, userPreference);
-            String state = String.format(
-                    "[cellular = %b, preference = %b, connected = %b, wifi = %b]",
-                    mobileCapable, userPreference.toBooleanValue(), isConnected, wifiOn);
+            setUpUserPreferences(mContext, userPreference);
+            String state =
+                    String.format("[cellular = %b, preference = %b, connected = %b, wifi = %b,"
+                                    + "experiment = %b, reporting_set = %b, reporting = %b]",
+                            mobileCapable, userPreference.toBooleanValue(), isConnected, wifiOn,
+                            experimentEnabled, hasSetMetricsReporting, isMetricsReportinEnabled);
             boolean res = preferenceManager.isUploadPermitted();
             if (uploadPermitted) {
                 assertTrue("Upload should be permitted for " + state, res);
@@ -112,6 +183,12 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
                 assertFalse("Upload should NOT be permitted for " + state, res);
             }
         }
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        PrefServiceBridge.setInstanceForTesting(mPrevInstance);
+        super.tearDown();
     }
 
     private void setUpUserPreferences(Context context, UserUploadPreference userPreference) {
@@ -165,6 +242,27 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
             }
             fail("Should not ask for any other service than the ConnectionManager.");
             return super.getSystemService(name);
+        }
+    }
+
+    private static class MockPrefServiceBridge extends PrefServiceBridge {
+        private final boolean mHasSetMetricsReporting;
+        private final boolean mIsMetricsReportingEnabled;
+
+        MockPrefServiceBridge(boolean hasSetMetricsReporting, boolean isMetricsReportingEnabled) {
+            super(false);
+            mHasSetMetricsReporting = hasSetMetricsReporting;
+            mIsMetricsReportingEnabled = isMetricsReportingEnabled;
+        }
+
+        @Override
+        public boolean hasSetMetricsReporting() {
+            return mHasSetMetricsReporting;
+        }
+
+        @Override
+        public boolean isMetricsReportingEnabled() {
+            return mIsMetricsReportingEnabled;
         }
     }
 }

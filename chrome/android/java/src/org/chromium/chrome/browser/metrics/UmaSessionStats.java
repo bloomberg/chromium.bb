@@ -151,8 +151,8 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
      * Updates the state of the MetricsService to account for the user's preferences.
      */
     public void updateMetricsServiceState() {
-        boolean mayRecordStats = !PrivacyPreferencesManager.getInstance(mContext)
-                .isNeverUploadCrashDump();
+        boolean mayRecordStats =
+                PrivacyPreferencesManager.getInstance(mContext).isUsageAndCrashReportingEnabled();
         boolean mayUploadStats = mReportingPermissionManager.isUploadPermitted();
 
         // Re-start the MetricsService with the given parameters.

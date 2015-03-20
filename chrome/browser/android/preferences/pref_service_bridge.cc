@@ -305,6 +305,23 @@ static jboolean GetIncognitoModeManaged(JNIEnv* env, jobject obj) {
       prefs::kIncognitoModeAvailability);
 }
 
+static jboolean GetMetricsReportingEnabled(JNIEnv* env, jobject obj) {
+  PrefService* local_state = g_browser_process->local_state();
+  return local_state->GetBoolean(prefs::kMetricsReportingEnabled);
+}
+
+static void SetMetricsReportingEnabled(JNIEnv* env,
+                                       jobject obj,
+                                       jboolean enabled) {
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetBoolean(prefs::kMetricsReportingEnabled, enabled);
+}
+
+static jboolean HasSetMetricsReporting(JNIEnv* env, jobject obj) {
+  PrefService* local_state = g_browser_process->local_state();
+  return local_state->HasPrefPath(prefs::kMetricsReportingEnabled);
+}
+
 namespace {
 
 // Redirects a BrowsingDataRemover completion callback back into Java.

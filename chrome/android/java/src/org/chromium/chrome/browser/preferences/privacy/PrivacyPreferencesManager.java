@@ -11,6 +11,7 @@ import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.ChromeSwitches;
 import org.chromium.chrome.R;
@@ -41,6 +42,10 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     private final String mCrashDumpWifiOnlyUpload;
     private final String mCrashDumpAlwaysUpload;
 
+    // Using Boolean class type here for distinguishing set and unset modes. Helps to for testing
+    // and also for querying user experiments once.
+    private Boolean mIsCellularUploadingEnabled;
+
     @VisibleForTesting
     PrivacyPreferencesManager(Context context) {
         mContext = context;
@@ -49,6 +54,14 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         mCrashDumpNeverUpload = context.getString(R.string.crash_dump_never_upload_value);
         mCrashDumpWifiOnlyUpload = context.getString(R.string.crash_dump_only_with_wifi_value);
         mCrashDumpAlwaysUpload = context.getString(R.string.crash_dump_always_upload_value);
+    }
+
+    /*
+    * Sets whether cellular experiment is enabled or not. Used for testing.
+    */
+    @VisibleForTesting
+    public void setCellularExperimentForTesting(boolean isCellularUploadingEnabled) {
+        mIsCellularUploadingEnabled = Boolean.valueOf(isCellularUploadingEnabled);
     }
 
     public static PrivacyPreferencesManager getInstance(Context context) {
@@ -207,17 +220,75 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      * Check whether to allow uploading crash dump. The option should be either
      * "always upload", or "wifi only" with current connection being wifi/ethernet.
      *
-     * @return boolean to whether to allow uploading crash dump.
+     * @return boolean whether to allow uploading crash dump.
      */
     private boolean allowUploadCrashDump() {
-        if (!isMobileNetworkCapable()) {
-            return mSharedPreferences.getBoolean(PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, false);
-        } else {
+        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
+
+        if (isCellularUploadingEnabled() && prefServiceBridge.hasSetMetricsReporting()) {
+            return prefServiceBridge.isMetricsReportingEnabled();
+        }
+
+        if (isMobileNetworkCapable()) {
             String option =
                     mSharedPreferences.getString(PREF_CRASH_DUMP_UPLOAD, mCrashDumpNeverUpload);
             return option.equals(mCrashDumpAlwaysUpload)
                     || (option.equals(mCrashDumpWifiOnlyUpload) && isWiFiOrEthernetNetwork());
         }
+
+        return mSharedPreferences.getBoolean(PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, false);
+    }
+
+    /**
+     * Checks whether uploads are allowed by new preference or old preference
+     * based on the experiment assigned to the user. Also sets the new pref if it
+     * needs to be set.
+     *
+     * @return boolean whether uploads are allowed at all or not.
+     */
+    public boolean isUsageAndCrashReportingEnabled() {
+        boolean isCellularEnabledByExperiment = isCellularUploadingEnabled();
+        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
+
+        if (isCellularEnabledByExperiment && prefServiceBridge.hasSetMetricsReporting()) {
+            return prefServiceBridge.isMetricsReportingEnabled();
+        }
+        boolean isEnabled = isUploadCrashDumpEnabled();
+        if (isCellularEnabledByExperiment && !prefServiceBridge.hasSetMetricsReporting()) {
+            prefServiceBridge.setMetricsReportingEnabled(isEnabled);
+        }
+        return isEnabled;
+    }
+
+    /**
+     * Checks whether old Crash_dump_upload pref allows any (e.g. always on or
+     * only wifi) uploads or not.
+     *
+     * @return boolean whether uploads are enabled by old pref.
+     */
+    public boolean isUploadCrashDumpEnabled() {
+        if (isMobileNetworkCapable()) {
+            String option =
+                    mSharedPreferences.getString(PREF_CRASH_DUMP_UPLOAD, mCrashDumpNeverUpload);
+            if (option.equals(mCrashDumpNeverUpload)) return false;
+            return true;
+        }
+
+        return mSharedPreferences.getBoolean(PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, false);
+    }
+
+    /**
+     * Checks whether user is assigned to experimental group for enabling new cellular uploads
+     * functionality or returns the value explicitly set by tests.
+     *
+     * @return boolean whether user is assigned to experimental group.
+     */
+    public boolean isCellularUploadingEnabled() {
+        if (mIsCellularUploadingEnabled == null) {
+            String group_name = FieldTrialList.findFullName("UMA_EnableCellularLogUpload");
+            mIsCellularUploadingEnabled = Boolean.valueOf(group_name.equals("Enabled"));
+        }
+        return mIsCellularUploadingEnabled;
     }
 
     /**
@@ -239,22 +310,6 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      */
     public void disableCrashUploading() {
         mCrashUploadingEnabled = false;
-    }
-
-    /**
-     * Check whether crash dump upload preference is set to NEVER only.
-     *
-     * @return boolean {@code true} if the option is set to NEVER
-     */
-    public boolean isNeverUploadCrashDump() {
-        boolean option;
-        if (isMobileNetworkCapable()) {
-            option = mSharedPreferences.getString(PREF_CRASH_DUMP_UPLOAD, mCrashDumpNeverUpload)
-                    .equals(mCrashDumpNeverUpload);
-        } else {
-            option = !mSharedPreferences.getBoolean(PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, false);
-        }
-        return option;
     }
 
     /**

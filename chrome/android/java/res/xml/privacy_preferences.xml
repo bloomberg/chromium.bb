@@ -45,6 +45,10 @@
         android:key="crash_dump_upload_no_cellular"
         android:title="@string/crash_dump_upload_title"
         android:defaultValue="false" />
+    <Preference
+        android:key="usage_and_crash_reports"
+        android:title="@string/usage_and_crash_reports_title"
+        android:fragment="org.chromium.chrome.browser.preferences.privacy.UsageAndCrashReportsPreferenceFragment" />
 
     <Preference
         android:fragment="org.chromium.chrome.browser.preferences.privacy.DoNotTrackPreference"

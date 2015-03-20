@@ -366,6 +366,17 @@ For example, some websites may respond to this request by showing you ads that a
       <message name="IDS_CAN_NOT_CLEAR_BROWSING_HISTORY_TOAST" desc="Message on the toast explaining that child account users can not clear their browsing history.">
         Browsing history can't be cleared with accounts for kids
       </message>
+      <message name="IDS_USAGE_AND_CRASH_REPORTS_TITLE" desc="Title for 'Usage and crash reports' preference">
+        Usage and crash reports
+      </message>
+      <message name="IDS_USAGE_AND_CRASH_REPORTS_DESCRIPTION" desc="Description for 'Usage and crash reports' preference">
+        Help us prioritize the features and improvements we should work on by sending Google information about the files, applications, and services running whenever you experience a crash.
+
+        Usage statistics include information such as preferences, button clicks, and memory usage. They do not include webpage URLs or any personal information. Crash reports contain system information at the time of the crash, and may contain web page URLs or personal information, depending on what was happening at the time of the crash.
+      </message>
+      <message name="IDS_USAGE_AND_CRASH_REPORTS_LEARN_MORE_URL" desc="URL for learning more about 'Usage and crash reports' preference" translateable="false">
+        https://support.google.com/chrome/answer/96817
+      </message>
 
       <!-- Accessibility preferences -->
       <message name="IDS_PREFS_ACCESSIBILITY" desc="Title of Accessibility settings, which allows the user to change webpage font sizes. [CHAR-LIMIT=32]">
@@ -1434,7 +1445,7 @@ Drag from top to exit.
       <message name="IDS_ACCESSIBILITY_FRE_ACCOUNT_SPINNER" desc="Content description for the first run account drop down spinner.">
         Choose account
       </message>
-      
+
       <!-- External Navigation Strings -->
       <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_WARNING" desc="Alert dialog text warning that user that incognito mode does not continue into external apps.">
         Leaving incognito mode if this link is opened in an external application. Continue?

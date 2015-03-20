@@ -12,6 +12,7 @@ import android.util.Log;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.JavaScriptExceptionInfo;
 import org.chromium.chrome.browser.preferences.website.PopupExceptionInfo;
@@ -25,8 +26,7 @@ import java.util.List;
  * preferences should be grouped with their relevant functionality but this is a grab-bag for other
  * preferences.
  */
-public final class PrefServiceBridge {
-
+public class PrefServiceBridge {
     // Does not need sync with native; used for the popup settings check
     public static final String EXCEPTION_SETTING_ALLOW = "allow";
     public static final String EXCEPTION_SETTING_BLOCK = "block";
@@ -104,7 +104,15 @@ public final class PrefServiceBridge {
     }
 
     private PrefServiceBridge() {
-        TemplateUrlService.getInstance().load();
+        this(true);
+    }
+
+    /**
+     * Constructor used for mock PrefServiceBridge without accessing TemplateUrlService.
+     */
+    @VisibleForTesting
+    protected PrefServiceBridge(boolean loadTemplateUrlService) {
+        if (loadTemplateUrlService) TemplateUrlService.getInstance().load();
     }
 
     private static PrefServiceBridge sInstance;
@@ -116,6 +124,23 @@ public final class PrefServiceBridge {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) sInstance = new PrefServiceBridge();
         return sInstance;
+    }
+
+    /**
+     * @return The singleton preferences object without initiating it even if it is null.
+     */
+    @VisibleForTesting
+    public static PrefServiceBridge getInstanceForTesting() {
+        return sInstance;
+    }
+
+    /**
+     * Sets the PrefServiceBridge instance with the passed instance. Used in
+     * testing to reset the instance to its previous value.
+     */
+    @VisibleForTesting
+    public static void setInstanceForTesting(PrefServiceBridge instance) {
+        sInstance = instance;
     }
 
     /**
@@ -780,6 +805,30 @@ public final class PrefServiceBridge {
         return nativeGetSupervisedUserSecondCustodianProfileImageURL();
     }
 
+    /**
+     * @return whether Metrics reporting is enabled.
+     */
+    @VisibleForTesting
+    public boolean isMetricsReportingEnabled() {
+        return nativeGetMetricsReportingEnabled();
+    }
+
+    /**
+     * Sets whether the metrics reporting should be enabled.
+     */
+    @VisibleForTesting
+    public void setMetricsReportingEnabled(boolean enabled) {
+        nativeSetMetricsReportingEnabled(enabled);
+    }
+
+    /**
+     * @return whether the metrics reporting preference has been set by user.
+     */
+    @VisibleForTesting
+    public boolean hasSetMetricsReporting() {
+        return nativeHasSetMetricsReporting();
+    }
+
     private native boolean nativeGetAcceptCookiesEnabled();
     private native boolean nativeGetAcceptCookiesManaged();
     private native boolean nativeGetBlockThirdPartyCookiesEnabled();
@@ -864,4 +913,7 @@ public final class PrefServiceBridge {
     private native String nativeGetSupervisedUserSecondCustodianName();
     private native String nativeGetSupervisedUserSecondCustodianEmail();
     private native String nativeGetSupervisedUserSecondCustodianProfileImageURL();
+    private native boolean nativeGetMetricsReportingEnabled();
+    private native void nativeSetMetricsReportingEnabled(boolean enabled);
+    private native boolean nativeHasSetMetricsReporting();
 }
