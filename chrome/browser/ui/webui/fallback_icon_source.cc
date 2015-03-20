@@ -15,6 +15,7 @@
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/favicon_size.h"
+#include "url/gurl.h"
 
 FallbackIconSource::FallbackIconSource() {
   std::vector<std::string> font_list;
@@ -47,8 +48,11 @@ void FallbackIconSource::StartDataRequest(
     SendDefaultResponse(callback);
     return;
   }
-
-  GURL url(parsed.url());
+  GURL url(parsed.url_string());
+  if (url.is_empty() || !url.is_valid()) {
+    SendDefaultResponse(callback);
+    return;
+  }
   std::vector<unsigned char> bitmap_data =
       fallback_icon_service_->RenderFallbackIconBitmap(
           url, parsed.size_in_pixels(), parsed.style());

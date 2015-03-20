@@ -213,39 +213,57 @@ TEST_F(FallbackIconUrlParserTest, ParseFallbackIconPathSuccess) {
   {
     chrome::ParsedFallbackIconPath parsed;
     EXPECT_TRUE(parsed.Parse(specs + "/" + kTestUrlStr));
-    EXPECT_EQ(GURL(kTestUrlStr), parsed.url());
     EXPECT_EQ(31, parsed.size_in_pixels());
     const favicon_base::FallbackIconStyle& style = parsed.style();
     EXPECT_EQ(SkColorSetRGB(0x00, 0x00, 0x00), style.background_color);
     EXPECT_EQ(SkColorSetRGB(0xFF, 0xFF, 0xFF), style.text_color);
     EXPECT_EQ(0.75, style.font_size_ratio);
     EXPECT_EQ(0.25, style.roundness);
+    EXPECT_EQ(GURL(kTestUrlStr), GURL(parsed.url_string()));
+    EXPECT_EQ(specs.length() + 1, parsed.path_index());
   }
 
   // Empty URL.
   {
     chrome::ParsedFallbackIconPath parsed;
     EXPECT_TRUE(parsed.Parse(specs + "/"));
-    EXPECT_EQ(GURL(), parsed.url());
     EXPECT_EQ(31, parsed.size_in_pixels());
     const favicon_base::FallbackIconStyle& style = parsed.style();
     EXPECT_EQ(SkColorSetRGB(0x00, 0x00, 0x00), style.background_color);
     EXPECT_EQ(SkColorSetRGB(0xFF, 0xFF, 0xFF), style.text_color);
     EXPECT_EQ(0.75, style.font_size_ratio);
     EXPECT_EQ(0.25, style.roundness);
+    EXPECT_EQ(GURL(), GURL(parsed.url_string()));
+    EXPECT_EQ(specs.length() + 1, parsed.path_index());
+  }
+
+  // Tolerate invalid URL.
+  {
+    chrome::ParsedFallbackIconPath parsed;
+    EXPECT_TRUE(parsed.Parse(specs + "/NOT A VALID URL"));
+    EXPECT_EQ(31, parsed.size_in_pixels());
+    const favicon_base::FallbackIconStyle& style = parsed.style();
+    EXPECT_EQ(SkColorSetRGB(0x00, 0x00, 0x00), style.background_color);
+    EXPECT_EQ(SkColorSetRGB(0xFF, 0xFF, 0xFF), style.text_color);
+    EXPECT_EQ(0.75, style.font_size_ratio);
+    EXPECT_EQ(0.25, style.roundness);
+    EXPECT_EQ("NOT A VALID URL", parsed.url_string());
+    EXPECT_EQ(specs.length() + 1, parsed.path_index());
   }
 
   // Size and style are default.
   {
+    std::string specs2 = ",,,,";
     chrome::ParsedFallbackIconPath parsed;
-    EXPECT_TRUE(parsed.Parse(std::string(",,,,/") + kTestUrlStr));
-    EXPECT_EQ(GURL(kTestUrlStr), parsed.url());
+    EXPECT_TRUE(parsed.Parse(specs2 + "/" + kTestUrlStr));
     EXPECT_EQ(gfx::kFaviconSize, parsed.size_in_pixels());
     const favicon_base::FallbackIconStyle& style = parsed.style();
     EXPECT_EQ(kDefaultBackgroundColor, style.background_color);
     EXPECT_EQ(kDefaultTextColorLight, style.text_color);
     EXPECT_EQ(kDefaultFontSizeRatio, style.font_size_ratio);
     EXPECT_EQ(kDefaultRoundness, style.roundness);
+    EXPECT_EQ(GURL(kTestUrlStr), GURL(parsed.url_string()));
+    EXPECT_EQ(specs2.length() + 1, parsed.path_index());
   }
 }
 
@@ -255,8 +273,6 @@ TEST_F(FallbackIconUrlParserTest, ParseFallbackIconPathFailure) {
     "-1,000,fff,0.75,0.25/http://www.google.com/",
     // Bad specs.
     "32,#junk,fff,0.75,0.25/http://www.google.com/",
-    // Bad URL.
-    "32,000,fff,0.75,0.25/NOT A VALID URL",
   };
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     chrome::ParsedFallbackIconPath parsed;

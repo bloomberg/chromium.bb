@@ -54,10 +54,15 @@ bool ParsedFallbackIconPath::Parse(const std::string& path) {
   if (!ParseSpecs(spec_str, &size_in_pixels_, &style_))
     return false;  // Parse failed.
 
-  // Extract URL, which may be empty (if first slash appears at the end).
-  std::string url_str = path.substr(slash + 1);
-  url_ = GURL(url_str);
-  return url_str.empty() || url_.is_valid();  // Allow empty URL.
+  // Need to store the index of the URL field, so Instant Extended can translate
+  // fallback icon URLs using advanced parameters.
+  // Example:
+  //   "chrome-search://fallback-icon/48/<renderer-id>/<most-visited-id>"
+  // would be translated to:
+  //   "chrome-search://fallback-icon/48/<most-visited-item-with-given-id>".
+  path_index_ = slash + 1;
+  url_string_ = path.substr(path_index_);
+  return true;
 }
 
 // static

@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "url/gurl.h"
 
 namespace chrome {
 
@@ -20,11 +19,13 @@ class ParsedFallbackIconPath {
   ParsedFallbackIconPath();
   ~ParsedFallbackIconPath();
 
-  const GURL& url() const { return url_; }
+  const std::string& url_string() const { return url_string_; }
 
   int size_in_pixels() const { return size_in_pixels_; }
 
   const favicon_base::FallbackIconStyle& style() const { return style_; }
+
+  size_t path_index() const { return path_index_; }
 
   // Parses |path|, which should be in the format described at the top of the
   // file "chrome/browser/ui/webui/fallback_icon_source.h".
@@ -50,14 +51,18 @@ class ParsedFallbackIconPath {
   FRIEND_TEST_ALL_PREFIXES(FallbackIconUrlParserTest, ParseSpecsFull);
   FRIEND_TEST_ALL_PREFIXES(FallbackIconUrlParserTest, ParseSpecsFailure);
 
-  // The page URL the fallback icon is requested for.
-  GURL url_;
+  // The page URL string the fallback icon is requested for.
+  std::string url_string_;
 
   // The size of the requested fallback icon in pixels.
   int size_in_pixels_;
 
   // Styling specifications of fallback icon.
   favicon_base::FallbackIconStyle style_;
+
+  // The index of the first character (relative to the path) where the the URL
+  // from which the fallback icon is being requested is located.
+  size_t path_index_;
 
   DISALLOW_COPY_AND_ASSIGN(ParsedFallbackIconPath);
 };
