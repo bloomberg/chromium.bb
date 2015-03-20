@@ -2726,10 +2726,10 @@ TEST_F(RenderTextTest, TextDoesntClip) {
       // as if it is ignoring the SetDisplayRect shift by kTestSize.  This
       // appears to be a preexisting issue that wasn't revealed by the prior
       // unit tests.
-#elif defined(OS_MACOSX)
-      // TODO(dschuyler): On Windows (non-XP) and Mac smoothing draws left of
-      // text.  This appears to be a preexisting issue that wasn't revealed by
-      // the prior unit tests.
+#elif defined(OS_MACOSX) || defined(OS_CHROMEOS)
+      // TODO(dschuyler): On Windows (non-XP), Chrome OS and Mac smoothing draws
+      // left of text.  This appears to be a preexisting issue that wasn't
+      // revealed by the prior unit tests.
       rect_buffer.EnsureSolidRect(SK_ColorWHITE, 0, kTestSize, kTestSize - 1,
                                   string_size.height());
 #else
