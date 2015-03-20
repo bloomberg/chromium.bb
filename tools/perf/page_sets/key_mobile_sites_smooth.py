@@ -276,8 +276,6 @@ class KeyMobileSitesSmoothPageSet(page_set_module.PageSet):
       # Why: #1 Alexa recreation
       # pylint: disable=line-too-long
       'http://www.booking.com/searchresults.html?src=searchresults&latitude=65.0500&longitude=25.4667',
-      # Why: #1 Alexa sports
-      'http://sports.yahoo.com/',
       # Why: Top tech blog
       'http://techcrunch.com',
       # Why: #6 Alexa sports

@@ -33,6 +33,7 @@ class PathologicalMobileSitesPageSet(page_set_module.PageSet):
     sites = ['http://edition.cnn.com',
              'http://m.espn.go.com/nhl/rankings',
              'http://recode.net',
+             'http://sports.yahoo.com/',
              'http://www.latimes.com',
              ('http://www.pbs.org/newshour/bb/'
               'much-really-cost-live-city-like-seattle/#the-rundown'),

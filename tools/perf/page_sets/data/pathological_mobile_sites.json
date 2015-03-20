@@ -17,6 +17,9 @@
         ], 
         "pathological_mobile_sites_010.wpr": [
             "http://www.theguardian.com/politics/2015/mar/09/ed-balls-tory-spending-plans-nhs-charging"
+        ],
+        "pathological_mobile_sites_001.wpr": [
+            "http://sports.yahoo.com/"
         ]
     }
 }
