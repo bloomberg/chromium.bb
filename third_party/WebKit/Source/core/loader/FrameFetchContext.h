@@ -94,7 +94,6 @@ public:
     bool updateTimingInfoForIFrameNavigation(ResourceTimingInfo*) override;
     void sendImagePing(const KURL&) override;
     void addConsoleMessage(const String&) const override;
-    ExecutionContext* executionContext() const override;
     SecurityOrigin* securityOrigin() const override;
     String charset() const override;
     void upgradeInsecureRequest(FetchRequest&) override;

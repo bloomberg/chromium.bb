@@ -105,7 +105,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(ScriptState* scriptState, 
         return ScriptPromise();
     }
     Document* document = eventTarget.toDOMWindow()->document();
-    if (!image->cachedImage()->passesAccessControlCheck(document, document->securityOrigin()) && document->securityOrigin()->taintsCanvas(image->src())) {
+    if (!image->cachedImage()->passesAccessControlCheck(document->securityOrigin()) && document->securityOrigin()->taintsCanvas(image->src())) {
         exceptionState.throwSecurityError("Cross-origin access to the source image is denied.");
         return ScriptPromise();
     }

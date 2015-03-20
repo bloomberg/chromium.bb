@@ -42,7 +42,6 @@
 
 namespace blink {
 
-class ExecutionContext;
 struct FetchInitiatorInfo;
 class CachedMetadata;
 class ResourceClient;
@@ -177,10 +176,10 @@ public:
     void finish();
 
     // FIXME: Remove the stringless variant once all the callsites' error messages are updated.
-    bool passesAccessControlCheck(ExecutionContext*, SecurityOrigin*) const;
-    bool passesAccessControlCheck(ExecutionContext*, SecurityOrigin*, String& errorDescription) const;
+    bool passesAccessControlCheck(SecurityOrigin*) const;
+    bool passesAccessControlCheck(SecurityOrigin*, String& errorDescription) const;
 
-    bool isEligibleForIntegrityCheck(ExecutionContext*) const;
+    bool isEligibleForIntegrityCheck(SecurityOrigin*) const;
 
     void clearLoader();
 

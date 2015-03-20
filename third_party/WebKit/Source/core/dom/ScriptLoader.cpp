@@ -359,7 +359,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
         return;
 
     AccessControlStatus corsCheck = NotSharableCrossOrigin;
-    if (!m_isExternalScript || (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(&m_element->document(), m_element->document().securityOrigin())))
+    if (!m_isExternalScript || (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(m_element->document().securityOrigin())))
         corsCheck = SharableCrossOrigin;
 
     if (m_isExternalScript) {

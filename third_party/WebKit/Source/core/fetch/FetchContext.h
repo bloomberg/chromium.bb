@@ -41,7 +41,6 @@
 
 namespace blink {
 
-class ExecutionContext;
 class KURL;
 class ResourceError;
 class ResourceLoader;
@@ -100,7 +99,6 @@ public:
     virtual bool updateTimingInfoForIFrameNavigation(ResourceTimingInfo*) { return false; }
     virtual void sendImagePing(const KURL&);
     virtual void addConsoleMessage(const String&) const;
-    virtual ExecutionContext* executionContext() const { return nullptr; }
     virtual SecurityOrigin* securityOrigin() const { return nullptr; }
     virtual String charset() const { return String(); }
     virtual void upgradeInsecureRequest(FetchRequest&);

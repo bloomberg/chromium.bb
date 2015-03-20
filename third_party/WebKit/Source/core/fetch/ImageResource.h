@@ -85,7 +85,7 @@ public:
     LayoutSize imageSizeForLayoutObject(const LayoutObject*, float multiplier, SizeType = NormalSize); // returns the size of the complete image.
     void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio);
 
-    bool isAccessAllowed(ExecutionContext*, SecurityOrigin*);
+    bool isAccessAllowed(SecurityOrigin*);
 
     void updateImageAnimationPolicy();
 

@@ -551,7 +551,6 @@ public:
         MixedContentPlugin = 616,
         MixedContentPrefetch = 617,
         MixedContentVideo = 618,
-        CORSCredentialedNullOriginAccessAllowed = 619,
         AudioListenerDopplerFactor = 620,
         AudioListenerSpeedOfSound = 621,
         AudioListenerSetVelocity = 622,

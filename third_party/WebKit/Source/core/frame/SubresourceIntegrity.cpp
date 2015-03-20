@@ -93,7 +93,7 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
 
     Document& document = element.document();
 
-    if (!resource.isEligibleForIntegrityCheck(&document)) {
+    if (!resource.isEligibleForIntegrityCheck(document.securityOrigin())) {
         logErrorToConsole("Subresource Integrity: The resource '" + resourceUrl.elidedString() + "' has an integrity attribute, but the resource requires CORS to be enabled to check the integrity, and it is not. The resource has been blocked.", document);
         return false;
     }

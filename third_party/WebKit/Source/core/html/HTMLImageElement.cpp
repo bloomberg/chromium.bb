@@ -611,7 +611,7 @@ bool HTMLImageElement::wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigi
     ImageResource* image = cachedImage();
     if (!image)
         return false;
-    return !image->isAccessAllowed(&document(), destinationSecurityOrigin);
+    return !image->isAccessAllowed(destinationSecurityOrigin);
 }
 
 FloatSize HTMLImageElement::sourceSize() const

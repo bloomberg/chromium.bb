@@ -613,11 +613,6 @@ void FrameFetchContext::addConsoleMessage(const String& message) const
         frame()->document()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
 }
 
-ExecutionContext* FrameFetchContext::executionContext() const
-{
-    return m_document.get();
-}
-
 SecurityOrigin* FrameFetchContext::securityOrigin() const
 {
     return m_document ? m_document->securityOrigin() : nullptr;

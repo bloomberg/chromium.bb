@@ -91,7 +91,7 @@ static bool checkShapeImageOrigin(Document& document, const StyleImage& styleIma
 
     ASSERT(styleImage.cachedImage());
     ImageResource& imageResource = *(styleImage.cachedImage());
-    if (imageResource.isAccessAllowed(&document, document.securityOrigin()))
+    if (imageResource.isAccessAllowed(document.securityOrigin()))
         return true;
 
     const KURL& url = imageResource.url();
