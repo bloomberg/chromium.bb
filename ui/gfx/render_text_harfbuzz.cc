@@ -1302,6 +1302,19 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
       default_fallback_families.begin(), default_fallback_families.end());
 #endif
 
+  // Get rid of duplicate fonts in the fallback list. We use the std::unique
+  // algorithm for this. However for this function to work we need to sort
+  // the font list as the unique algorithm relies on duplicates being adjacent.
+  // TODO(ananta)
+  // Sorting the list changes the order in which fonts are evaluated. This may
+  // cause problems in the way some characters appear. It may be best to do
+  // font fallback on the same lines as blink or skia which do this based on
+  // character glyph mapping.
+  std::sort(fallback_families.begin(), fallback_families.end());
+  fallback_families.erase(std::unique(
+      fallback_families.begin(), fallback_families.end()),
+      fallback_families.end());
+
   // Try shaping with the fallback fonts.
   for (const auto& family : fallback_families) {
     if (family == primary_family)
