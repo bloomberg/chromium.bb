@@ -445,10 +445,10 @@ static v8::Handle<v8::Value> getNamedProperty(HTMLDocument* htmlDocument, const 
     return toV8(PassRefPtrWillBeRawPtr<HTMLCollection>(items.release()), creationContext, isolate);
 }
 
-static void getter(v8::Local<v8::String> property, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void getter(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     // FIXME: Consider passing StringImpl directly.
-    AtomicString name = toCoreAtomicString(property);
+    AtomicString name = toCoreAtomicString(property.As<v8::String>());
     HTMLDocument* htmlDocument = V8HTMLDocument::toImpl(info.Holder());
     ASSERT(htmlDocument);
     v8::Handle<v8::Value> result = getNamedProperty(htmlDocument, name, info.Holder(), info.GetIsolate());
@@ -467,14 +467,15 @@ void WindowProxy::namedItemAdded(HTMLDocument* document, const AtomicString& nam
 {
     ASSERT(m_world->isMainWorld());
 
-    if (!isContextInitialized())
+    if (!isContextInitialized() || !m_scriptState->contextIsValid())
         return;
 
     ScriptState::Scope scope(m_scriptState.get());
     ASSERT(!m_document.isEmpty());
-    v8::Handle<v8::Object> documentHandle = m_document.newLocal(m_isolate);
+    v8::Local<v8::Context> context = m_scriptState->context();
+    v8::Local<v8::Object> documentHandle = m_document.newLocal(m_isolate);
     checkDocumentWrapper(documentHandle, document);
-    documentHandle->SetAccessor(v8String(m_isolate, name), getter);
+    documentHandle->SetAccessor(context, v8String(m_isolate, name), getter);
 }
 
 void WindowProxy::namedItemRemoved(HTMLDocument* document, const AtomicString& name)
