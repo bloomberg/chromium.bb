@@ -49,11 +49,12 @@ private:
     explicit MediaControlPanelElement(MediaControls&);
 
     virtual void defaultEventHandler(Event*) override;
+    virtual bool keepEventInNode(Event*) override;
 
     void startTimer();
     void stopTimer();
     void transitionTimerFired(Timer<MediaControlPanelElement>*);
-    virtual bool keepEventInNode(Event*) override;
+    void didBecomeVisible();
 
     bool m_isDisplayed;
     bool m_opaque;

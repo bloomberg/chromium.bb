@@ -193,11 +193,16 @@ void MediaControls::reset()
     makeOpaque();
 }
 
+LayoutObject* MediaControls::layoutObjectForTextTrackLayout()
+{
+    return m_panel->layoutObject();
+}
+
 void MediaControls::show()
 {
     makeOpaque();
-    m_panel->setIsDisplayed(true);
     m_panel->show();
+    m_panel->setIsDisplayed(true);
     if (m_overlayPlayButton)
         m_overlayPlayButton->updateDisplayType();
 }
@@ -212,8 +217,8 @@ void MediaControls::mediaElementFocused()
 
 void MediaControls::hide()
 {
-    m_panel->setIsDisplayed(false);
     m_panel->hide();
+    m_panel->setIsDisplayed(false);
     if (m_overlayPlayButton)
         m_overlayPlayButton->hide();
 }

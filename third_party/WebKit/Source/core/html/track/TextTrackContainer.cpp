@@ -53,7 +53,7 @@ LayoutObject* TextTrackContainer::createLayoutObject(const LayoutStyle&)
     return new LayoutTextTrackContainer(this);
 }
 
-void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement)
+void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement, ExposingControls exposingControls)
 {
     if (!mediaElement.closedCaptionsVisible()) {
         removeChildren();
@@ -82,11 +82,13 @@ void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement)
     // output one or more completely transparent positioned CSS block boxes that
     // cover the same region as the user interface.
 
-    // 5. If the last time these rules were run, the user agent was not exposing
-    // a user interface for video, but now it is, let reset be true. Otherwise,
-    // let reset be false.
+    // Note: Overlap checking for the controls is implemented in LayoutVTTCue
+    // without a placeholder box (element or layout object).
 
-    // TODO(philipj): Implement step 4 and 5.
+    // 5. If the last time these rules were run, the user agent was not exposing
+    // a user interface for video, but now it is, optionally let reset be true.
+    // Otherwise, let reset be false.
+    bool reset = exposingControls == DidStartExposingControls;
 
     // 6. Let tracks be the subset of video's list of text tracks that have as
     // their rules for updating the text track rendering these rules for
@@ -101,9 +103,11 @@ void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement)
     // text track cue display state has a set of CSS boxes, then add those boxes
     // to output, and remove cue from cues.
 
-    // There is nothing explicitly to be done here, as all the caching occurs
-    // within the TextTrackCue instance itself. If parameters of the cue change,
-    // the display tree is cleared.
+    // Note: Removing all children will cause them to be re-inserted below,
+    // invalidating the layout.
+    // effect
+    if (reset)
+        removeChildren();
 
     // 10. For each text track cue cue in cues that has not yet had
     // corresponding CSS boxes added to output, in text track cue order, run the

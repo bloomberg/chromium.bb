@@ -3226,7 +3226,18 @@ void HTMLMediaElement::updateTextTrackDisplay()
 {
     WTF_LOG(Media, "HTMLMediaElement::updateTextTrackDisplay(%p)", this);
 
-    ensureTextTrackContainer().updateDisplay(*this);
+    ensureTextTrackContainer().updateDisplay(*this, TextTrackContainer::DidNotStartExposingControls);
+}
+
+void HTMLMediaElement::mediaControlsDidBecomeVisible()
+{
+    WTF_LOG(Media, "HTMLMediaElement::mediaControlsDidBecomeVisible(%p)", this);
+
+    // When the user agent starts exposing a user interface for a video element,
+    // the user agent should run the rules for updating the text track rendering
+    // of each of the text tracks in the video element's list of text tracks ...
+    if (isHTMLVideoElement() && closedCaptionsVisible())
+        ensureTextTrackContainer().updateDisplay(*this, TextTrackContainer::DidStartExposingControls);
 }
 
 void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)

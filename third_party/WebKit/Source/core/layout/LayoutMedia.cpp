@@ -57,8 +57,22 @@ void LayoutMedia::layout()
 
     LayoutState state(*this, locationOffset());
 
-    for (LayoutObject* child = m_children.firstChild(); child; child = child->nextSibling()) {
-        ASSERT(child->node()->isMediaControls() || child->node()->isTextTrackContainer());
+    // Iterate the children in reverse order so that the media controls are laid
+    // out before the text track container. This is to ensure that the text
+    // track rendering has an up-to-date position of the media controls for
+    // overlap checking, see LayoutVTTCue.
+#if ENABLE(ASSERT)
+    bool seenTextTrackContainer = false;
+#endif
+    for (LayoutObject* child = m_children.lastChild(); child; child = child->previousSibling()) {
+#if ENABLE(ASSERT)
+        if (child->node()->isMediaControls())
+            ASSERT(!seenTextTrackContainer);
+        else if (child->node()->isTextTrackContainer())
+            seenTextTrackContainer = true;
+        else
+            ASSERT_NOT_REACHED();
+#endif
 
         if (newSize == oldSize && !child->needsLayout())
             continue;

@@ -70,6 +70,10 @@ public:
 
     void mediaElementFocused();
 
+    // Returns the layout object for the part of the controls that should be
+    // used for overlap checking during text track layout. May be null.
+    LayoutObject* layoutObjectForTextTrackLayout();
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

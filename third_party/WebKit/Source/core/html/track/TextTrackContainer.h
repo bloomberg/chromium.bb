@@ -40,7 +40,14 @@ class TextTrackContainer final : public HTMLDivElement {
 public:
     static PassRefPtrWillBeRawPtr<TextTrackContainer> create(Document&);
 
-    void updateDisplay(HTMLMediaElement&);
+    // Runs the "rules for updating the text track rendering". The
+    // ExposingControls enum is used in the WebVTT processing model to reset the
+    // layout when the media controls become visible, to avoid overlapping them.
+    enum ExposingControls {
+        DidNotStartExposingControls,
+        DidStartExposingControls
+    };
+    void updateDisplay(HTMLMediaElement&, ExposingControls);
 
 private:
     TextTrackContainer(Document&);

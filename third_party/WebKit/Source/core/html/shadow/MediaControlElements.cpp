@@ -131,6 +131,12 @@ void MediaControlPanelElement::transitionTimerFired(Timer<MediaControlPanelEleme
     stopTimer();
 }
 
+void MediaControlPanelElement::didBecomeVisible()
+{
+    ASSERT(m_isDisplayed && m_opaque);
+    mediaElement().mediaControlsDidBecomeVisible();
+}
+
 void MediaControlPanelElement::makeOpaque()
 {
     if (m_opaque)
@@ -139,8 +145,10 @@ void MediaControlPanelElement::makeOpaque()
     setInlineStyleProperty(CSSPropertyOpacity, 1.0, CSSPrimitiveValue::CSS_NUMBER);
     m_opaque = true;
 
-    if (m_isDisplayed)
+    if (m_isDisplayed) {
         show();
+        didBecomeVisible();
+    }
 }
 
 void MediaControlPanelElement::makeTransparent()
@@ -156,7 +164,12 @@ void MediaControlPanelElement::makeTransparent()
 
 void MediaControlPanelElement::setIsDisplayed(bool isDisplayed)
 {
+    if (m_isDisplayed == isDisplayed)
+        return;
+
     m_isDisplayed = isDisplayed;
+    if (m_isDisplayed && m_opaque)
+        didBecomeVisible();
 }
 
 bool MediaControlPanelElement::keepEventInNode(Event* event)

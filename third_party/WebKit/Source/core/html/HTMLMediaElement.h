@@ -236,6 +236,10 @@ public:
     // Note that this can be non-null even if there is no controls attribute.
     MediaControls* mediaControls() const;
 
+    // Notifies the media element that the media controls became visible, so
+    // that text track layout may be updated to avoid overlapping them.
+    void mediaControlsDidBecomeVisible();
+
     void sourceWasRemoved(HTMLSourceElement*);
     void sourceWasAdded(HTMLSourceElement*);
 
