@@ -51,6 +51,8 @@
   'variables': {
     'public_browser_sources': [
       'public/browser/access_token_store.h',
+      'public/browser/android/browser_media_player_manager.cc',
+      'public/browser/android/browser_media_player_manager.h',
       'public/browser/android/compositor.h',
       'public/browser/android/compositor_client.h',
       'public/browser/android/content_protocol_handler.h',

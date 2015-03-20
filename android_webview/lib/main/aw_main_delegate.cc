@@ -25,7 +25,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
-#include "content/browser/media/android/browser_media_player_manager.h"
+#include "content/public/browser/android/browser_media_player_manager.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_descriptors.h"
@@ -55,8 +55,7 @@ AwMainDelegate::~AwMainDelegate() {
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   content::SetContentClient(&content_client_);
 
-  content::BrowserMediaPlayerManager::RegisterMediaUrlInterceptor(
-      new AwMediaUrlInterceptor());
+  content::RegisterMediaUrlInterceptor(new AwMediaUrlInterceptor());
 
   BrowserViewRenderer::CalculateTileMemoryPolicy();
 
