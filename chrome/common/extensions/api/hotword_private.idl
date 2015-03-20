@@ -42,6 +42,9 @@ namespace hotwordPrivate {
 
     // Whether the user corresponding to this profile is the active user.
     boolean userIsActive;
+
+    // Whether hotword hardware is available if requested.
+    boolean hotwordHardwareAvailable;
   };
 
   dictionary LaunchState {

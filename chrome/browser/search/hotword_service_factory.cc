@@ -17,7 +17,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/common/chrome_version_info.h"
-#include "chromeos/audio/cras_audio_handler.h"
 #endif
 
 using content::BrowserContext;
@@ -53,15 +52,8 @@ bool HotwordServiceFactory::IsAlwaysOnAvailable() {
   if ((channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
        channel == chrome::VersionInfo::CHANNEL_CANARY ||
        channel == chrome::VersionInfo::CHANNEL_DEV) &&
-      chromeos::CrasAudioHandler::IsInitialized()) {
-    chromeos::AudioDeviceList devices;
-    chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
-    for (size_t i = 0; i < devices.size(); ++i) {
-      if (devices[i].type == chromeos::AUDIO_TYPE_AOKR) {
-        DCHECK(devices[i].is_input);
-        return true;
-      }
-    }
+      HotwordService::IsHotwordHardwareAvailable()) {
+    return true;
   }
 #endif
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

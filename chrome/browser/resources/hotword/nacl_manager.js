@@ -11,10 +11,12 @@ cr.define('hotword', function() {
  * shutdown.
  *
  * @param {boolean} loggingEnabled Whether audio logging is enabled.
+ * @param {boolean} hotwordStream Whether the audio input stream is from a
+ *     hotword stream.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function NaClManager(loggingEnabled) {
+function NaClManager(loggingEnabled, hotwordStream) {
   /**
    * Current state of this manager.
    * @private {hotword.NaClManager.ManagerState_}
@@ -68,6 +70,12 @@ function NaClManager(loggingEnabled) {
    * @private {boolean}
    */
   this.loggingEnabled_ = loggingEnabled;
+
+  /**
+   * Whether the audio input stream is from a hotword stream.
+   * @private {boolean}
+   */
+  this.hotwordStream_ = hotwordStream;
 
   /**
    * Audio log of X seconds before hotword triggered.
@@ -431,6 +439,13 @@ NaClManager.prototype.handleRequestModel_ = function() {
     this.sendDataToPlugin_(
         hotword.constants.NaClPlugin.LOG + ':' +
         hotword.constants.AUDIO_LOG_SECONDS);
+  }
+
+  // If the audio stream is from a hotword stream, tell the plugin.
+  if (this.hotwordStream_) {
+    this.sendDataToPlugin_(
+        hotword.constants.NaClPlugin.DSP + ':' +
+        hotword.constants.HOTWORD_STREAM_TIMEOUT_SECONDS);
   }
 };
 

@@ -301,7 +301,10 @@ cr.define('hotword', function() {
 
       if (!this.pluginManager_) {
         this.state_ = State_.STARTING;
-        this.pluginManager_ = new hotword.NaClManager(this.loggingEnabled_);
+        var isHotwordStream = this.isAlwaysOnEnabled() &&
+            this.hotwordStatus_.hotwordHardwareAvailable;
+        this.pluginManager_ = new hotword.NaClManager(this.loggingEnabled_,
+                                                      isHotwordStream);
         this.pluginManager_.addEventListener(hotword.constants.Event.READY,
                                              this.onReady_.bind(this));
         this.pluginManager_.addEventListener(hotword.constants.Event.ERROR,

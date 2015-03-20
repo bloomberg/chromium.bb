@@ -50,6 +50,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/audio/cras_audio_handler.h"
+#endif
+
 using extensions::BrowserContextKeyedAPIFactory;
 using extensions::HotwordPrivateEventService;
 
@@ -296,6 +300,23 @@ bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
 // static
 bool HotwordService::IsExperimentalHotwordingEnabled() {
   return true;
+}
+
+// static
+bool HotwordService::IsHotwordHardwareAvailable() {
+#if defined(OS_CHROMEOS)
+  if (chromeos::CrasAudioHandler::IsInitialized()) {
+    chromeos::AudioDeviceList devices;
+    chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
+    for (size_t i = 0; i < devices.size(); ++i) {
+      if (devices[i].type == chromeos::AUDIO_TYPE_AOKR) {
+        DCHECK(devices[i].is_input);
+        return true;
+      }
+    }
+  }
+#endif
+  return false;
 }
 
 #if defined(OS_CHROMEOS)

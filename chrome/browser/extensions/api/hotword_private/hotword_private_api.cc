@@ -160,6 +160,7 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
     result.audio_logging_enabled = false;
     result.always_on_enabled = false;
     result.user_is_active = false;
+    result.hotword_hardware_available = false;
   } else {
     result.available = false;
     result.always_on_available = false;
@@ -173,6 +174,8 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
     result.training_enabled = hotword_service->IsTraining();
     result.always_on_enabled = hotword_service->IsAlwaysOnEnabled();
     result.user_is_active = hotword_service->UserIsActive();
+    result.hotword_hardware_available =
+        HotwordService::IsHotwordHardwareAvailable();
   }
 
   PrefService* prefs = GetProfile()->GetPrefs();

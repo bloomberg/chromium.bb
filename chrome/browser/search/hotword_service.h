@@ -64,6 +64,9 @@ class HotwordService : public extensions::ExtensionRegistryObserver,
   // TODO(amistry): Remove this.
   static bool IsExperimentalHotwordingEnabled();
 
+  // Returns true if hotwording hardware is available.
+  static bool IsHotwordHardwareAvailable();
+
   explicit HotwordService(Profile* profile);
   ~HotwordService() override;
 
