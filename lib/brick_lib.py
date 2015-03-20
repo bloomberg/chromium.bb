@@ -197,7 +197,9 @@ class Brick(object):
         {'masters': ' '.join(['portage-stable', 'chromiumos'] + deps),
          'repo-name': self.config['name']})
 
-    self._WriteParents([m + ':base' for m in deps])
+    parents = self.config.get('experimental_profiles',
+                              [m + ':base' for m in deps])
+    self._WriteParents(parents)
 
   def Dependencies(self):
     """Returns the dependent bricks."""

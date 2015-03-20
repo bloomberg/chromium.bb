@@ -281,3 +281,13 @@ class BrickLibTest(cros_test_lib.MockTempDirTestCase):
 
     self.assertEqual(['//first', '//second', '//fourth'],
                      [b.brick_locator for b in fourth.BrickStack()])
+
+  def testProfilesOverride(self):
+    """Tests that the 'experimental_profiles' field is respected."""
+    profiles = ['chromiumos:base', '../foo']
+    config = {'name': 'foo', 'experimental_profiles': profiles}
+    b = brick_lib.Brick('//foo', initial_config=config)
+
+    parents = osutils.ReadFile(os.path.join(b.OverlayDir(), 'profiles', 'base',
+                                            'parent'))
+    self.assertEquals(profiles, parents.splitlines())
