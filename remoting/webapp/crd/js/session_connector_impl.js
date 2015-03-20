@@ -75,6 +75,9 @@ remoting.SessionConnectorImpl = function(clientContainer, onConnected, onError,
 remoting.SessionConnectorImpl.prototype.resetConnection_ = function() {
   this.closeSession();
 
+  // It's OK to initialize these member variables here because the
+  // constructor calls this method.
+
   /** @private {remoting.Host} */
   this.host_ = null;
 
@@ -87,8 +90,6 @@ remoting.SessionConnectorImpl.prototype.resetConnection_ = function() {
   /** @private {remoting.ClientSession} */
   this.clientSession_ = null;
 
-  /** @private {XMLHttpRequest} */
-  this.pendingXhr_ = null;
 
   /** @private {remoting.CredentialsProvider} */
   this.credentialsProvider_ = null;

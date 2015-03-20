@@ -127,21 +127,19 @@ function onToken(token) {
           '/applications/' + remoting.settings.getAppRemotingApplicationId() +
           '/hosts/'  + hostId +
           '/reportIssue';
-      /** @param {XMLHttpRequest} xhr */
-      var onDone = function(xhr) {
-        if (xhr.status >= 200 && xhr.status < 300) {
+      var onDone = function(/** !remoting.Xhr.Response */ response) {
+        if (response.status >= 200 && response.status < 300) {
           getUserInfo();
         } else {
           showError();
         }
       };
-      remoting.xhr.start({
+      new remoting.Xhr({
         method: 'POST',
         url: uri,
-        onDone: onDone,
         jsonContent: body,
         oauthToken: token
-      });
+      }).start().then(onDone);
     } else {
       getUserInfo();
     }

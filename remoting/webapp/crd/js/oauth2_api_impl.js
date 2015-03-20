@@ -75,37 +75,36 @@ remoting.OAuth2ApiImpl.prototype.interpretXhrStatus_ =
  */
 remoting.OAuth2ApiImpl.prototype.refreshAccessToken = function(
     onDone, onError, clientId, clientSecret, refreshToken) {
-  /** @param {XMLHttpRequest} xhr */
-  var onResponse = function(xhr) {
-    if (xhr.status == 200) {
+  /** @param {!remoting.Xhr.Response} response */
+  var onResponse = function(response) {
+    if (response.status == 200) {
       try {
         // Don't use base.jsonParseSafe here unless you also include base.js,
         // otherwise this won't work from the OAuth trampoline.
         // TODO(jamiewalch): Fix this once we're no longer using the trampoline.
-        var tokens = JSON.parse(xhr.responseText);
+        var tokens = JSON.parse(response.getText());
         onDone(tokens['access_token'], tokens['expires_in']);
       } catch (/** @type {Error} */ err) {
         console.error('Invalid "token" response from server:', err);
         onError(remoting.Error.unexpected());
       }
     } else {
-      console.error('Failed to refresh token. Status: ' + xhr.status +
-                    ' response: ' + xhr.responseText);
-      onError(fromHttpStatus(xhr.status));
+      console.error('Failed to refresh token. Status: ' + response.status +
+                    ' response: ' + response.getText());
+      onError(remoting.Error.fromHttpStatus(response.status));
     }
   };
 
-  remoting.xhr.start({
+  new remoting.Xhr({
     method: 'POST',
     url: this.getOAuth2TokenEndpoint_(),
-    onDone: onResponse,
     formContent: {
       'client_id': clientId,
       'client_secret': clientSecret,
       'refresh_token': refreshToken,
       'grant_type': 'refresh_token'
     }
-  });
+  }).start().then(onResponse);
 };
 
 /**
@@ -124,14 +123,14 @@ remoting.OAuth2ApiImpl.prototype.refreshAccessToken = function(
  */
 remoting.OAuth2ApiImpl.prototype.exchangeCodeForTokens = function(
     onDone, onError, clientId, clientSecret, code, redirectUri) {
-  /** @param {XMLHttpRequest} xhr */
-  var onResponse = function(xhr) {
-    if (xhr.status == 200) {
+  /** @param {!remoting.Xhr.Response} response */
+  var onResponse = function(response) {
+    if (response.status == 200) {
       try {
         // Don't use base.jsonParseSafe here unless you also include base.js,
         // otherwise this won't work from the OAuth trampoline.
         // TODO(jamiewalch): Fix this once we're no longer using the trampoline.
-        var tokens = JSON.parse(xhr.responseText);
+        var tokens = JSON.parse(response.getText());
         onDone(tokens['refresh_token'],
                tokens['access_token'], tokens['expires_in']);
       } catch (/** @type {Error} */ err) {
@@ -139,16 +138,15 @@ remoting.OAuth2ApiImpl.prototype.exchangeCodeForTokens = function(
         onError(remoting.Error.unexpected());
       }
     } else {
-      console.error('Failed to exchange code for token. Status: ' + xhr.status +
-                    ' response: ' + xhr.responseText);
-      onError(fromHttpStatus(xhr.status));
+      console.error('Failed to exchange code for token. Status: ' +
+                    response.status + ' response: ' + response.getText());
+      onError(remoting.Error.fromHttpStatus(response.status));
     }
   };
 
-  remoting.xhr.start({
+  new remoting.Xhr({
     method: 'POST',
     url: this.getOAuth2TokenEndpoint_(),
-    onDone: onResponse,
     formContent: {
       'client_id': clientId,
       'client_secret': clientSecret,
@@ -156,7 +154,7 @@ remoting.OAuth2ApiImpl.prototype.exchangeCodeForTokens = function(
       'code': code,
       'grant_type': 'authorization_code'
     }
-  });
+  }).start().then(onResponse);
 };
 
 /**
@@ -170,28 +168,27 @@ remoting.OAuth2ApiImpl.prototype.exchangeCodeForTokens = function(
  * @return {void} Nothing.
  */
 remoting.OAuth2ApiImpl.prototype.getEmail = function(onDone, onError, token) {
-  /** @param {XMLHttpRequest} xhr */
-  var onResponse = function(xhr) {
-    if (xhr.status == 200) {
+  /** @param {!remoting.Xhr.Response} response */
+  var onResponse = function(response) {
+    if (response.status == 200) {
       try {
-        var result = JSON.parse(xhr.responseText);
+        var result = JSON.parse(response.getText());
         onDone(result['email']);
       } catch (/** @type {Error} */ err) {
         console.error('Invalid "userinfo" response from server:', err);
         onError(remoting.Error.unexpected());
       }
     } else {
-      console.error('Failed to get email. Status: ' + xhr.status +
-                    ' response: ' + xhr.responseText);
-      onError(fromHttpStatus(xhr.status));
+      console.error('Failed to get email. Status: ' + response.status +
+                    ' response: ' + response.getText());
+      onError(remoting.Error.fromHttpStatus(response.status));
     }
   };
-  remoting.xhr.start({
+  new remoting.Xhr({
     method: 'GET',
     url: this.getOAuth2ApiUserInfoEndpoint_(),
-    onDone: onResponse,
     oauthToken: token
-  });
+  }).start().then(onResponse);
 };
 
 /**
@@ -206,28 +203,27 @@ remoting.OAuth2ApiImpl.prototype.getEmail = function(onDone, onError, token) {
  */
 remoting.OAuth2ApiImpl.prototype.getUserInfo =
     function(onDone, onError, token) {
-  /** @param {XMLHttpRequest} xhr */
-  var onResponse = function(xhr) {
-    if (xhr.status == 200) {
+  /** @param {!remoting.Xhr.Response} response */
+  var onResponse = function(response) {
+    if (response.status == 200) {
       try {
-        var result = JSON.parse(xhr.responseText);
+        var result = JSON.parse(response.getText());
         onDone(result['email'], result['name']);
       } catch (/** @type {Error} */ err) {
         console.error('Invalid "userinfo" response from server:', err);
         onError(remoting.Error.unexpected());
       }
     } else {
-      console.error('Failed to get user info. Status: ' + xhr.status +
-                    ' response: ' + xhr.responseText);
-      onError(fromHttpStatus(xhr.status));
+      console.error('Failed to get user info. Status: ' + response.status +
+                    ' response: ' + response.getText());
+      onError(remoting.Error.fromHttpStatus(response.status));
     }
   };
-  remoting.xhr.start({
+  new remoting.Xhr({
     method: 'GET',
     url: this.getOAuth2ApiUserInfoEndpoint_(),
-    onDone: onResponse,
     oauthToken: token
-  });
+  }).start().then(onResponse);
 };
 
 /** @returns {!remoting.Error} */

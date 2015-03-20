@@ -234,14 +234,14 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
    * @param {string} hostName
    * @param {string} publicKey
    * @param {string} privateKey
-   * @param {XMLHttpRequest} xhr
+   * @param {!remoting.Xhr.Response} response
    */
   function onRegistered(
-      hostName, publicKey, privateKey, xhr) {
-    var success = (xhr.status == 200);
+      hostName, publicKey, privateKey, response) {
+    var success = (response.status == 200);
 
     if (success) {
-      var result = base.jsonParseSafe(xhr.responseText);
+      var result = base.jsonParseSafe(response.getText());
       if ('data' in result && 'authorizationCode' in result['data']) {
         that.hostDaemonFacade_.getCredentialsFromAuthCode(
             result['data']['authorizationCode'],
@@ -260,8 +260,8 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
             });
       }
     } else {
-      console.log('Failed to register the host. Status: ' + xhr.status +
-                  ' response: ' + xhr.responseText);
+      console.log('Failed to register the host. Status: ' + response.status +
+                  ' response: ' + response.getText());
       onError(new remoting.Error(remoting.Error.Tag.REGISTRATION_FAILED));
     }
   }
@@ -281,16 +281,15 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
        publicKey: publicKey
     } };
 
-    remoting.xhr.start({
+    new remoting.Xhr({
       method: 'POST',
       url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
       urlParams: {
         hostClientId: hostClientId
       },
-      onDone: onRegistered.bind(null, hostName, publicKey, privateKey),
       jsonContent: newHostDetails,
       oauthToken: oauthToken
-    });
+    }).start().then(onRegistered.bind(null, hostName, publicKey, privateKey));
   }
 
   /**

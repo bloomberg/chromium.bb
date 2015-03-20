@@ -23,13 +23,15 @@ var checker = null;
 
 /** @type {remoting.MockSignalStrategy} */
 var signalStrategy = null;
-var fakeXhrs;
+
+/** @type {sinon.FakeXhr} */
+var fakeXhr = null;
 
 QUnit.module('dns_blackhole_checker', {
   beforeEach: function(assert) {
-    fakeXhrs = [];
     sinon.useFakeXMLHttpRequest().onCreate = function(xhr) {
-      fakeXhrs.push(xhr);
+      QUnit.equal(fakeXhr, null, 'exactly one XHR is issued');
+      fakeXhr = xhr;
     };
 
     onStateChange = sinon.spy();
@@ -46,9 +48,8 @@ QUnit.module('dns_blackhole_checker', {
     sinon.assert.calledWith(signalStrategy.connect, 'server', 'username',
                             'authToken');
 
-    assert.equal(fakeXhrs.length, 1, 'exactly one XHR is issued');
     assert.equal(
-        fakeXhrs[0].url, remoting.DnsBlackholeChecker.URL_TO_REQUEST_,
+        fakeXhr.url, remoting.DnsBlackholeChecker.URL_TO_REQUEST_,
         'the correct URL is requested');
   },
   afterEach: function() {
@@ -59,112 +60,136 @@ QUnit.module('dns_blackhole_checker', {
     onStateChange = null;
     onIncomingStanzaCallback = null;
     checker = null;
-  },
+    fakeXhr = null;
+  }
 });
 
 QUnit.test('success',
   function(assert) {
-    fakeXhrs[0].respond(200);
-    sinon.assert.notCalled(onStateChange);
-
-    [
-      remoting.SignalStrategy.State.CONNECTING,
-      remoting.SignalStrategy.State.HANDSHAKE,
-      remoting.SignalStrategy.State.CONNECTED
-    ].forEach(function(state) {
+    function checkState(state) {
       signalStrategy.setStateForTesting(state);
       sinon.assert.calledWith(onStateChange, state);
       assert.equal(checker.getState(), state);
+    }
+
+    return base.SpyPromise.run(function() {
+      fakeXhr.respond(200);
+    }).then(function() {
+      sinon.assert.notCalled(onStateChange);
+      checkState(remoting.SignalStrategy.State.CONNECTING);
+      checkState(remoting.SignalStrategy.State.HANDSHAKE);
+      checkState(remoting.SignalStrategy.State.CONNECTED);
     });
-  }
-);
+  });
 
 QUnit.test('http response after connected',
   function(assert) {
-    [
-      remoting.SignalStrategy.State.CONNECTING,
-      remoting.SignalStrategy.State.HANDSHAKE,
-    ].forEach(function(state) {
+    function checkState(state) {
       signalStrategy.setStateForTesting(state);
       sinon.assert.calledWith(onStateChange, state);
       assert.equal(checker.getState(), state);
-    });
+    }
+
+    checkState(remoting.SignalStrategy.State.CONNECTING);
+    checkState(remoting.SignalStrategy.State.HANDSHAKE);
     onStateChange.reset();
 
     // Verify that DnsBlackholeChecker stays in HANDSHAKE state even if the
     // signal strategy has connected.
-    signalStrategy.setStateForTesting(remoting.SignalStrategy.State.CONNECTED);
-    sinon.assert.notCalled(onStateChange);
+    return base.SpyPromise.run(function() {
+      signalStrategy.setStateForTesting(
+          remoting.SignalStrategy.State.CONNECTED);
+    }).then(function() {
+      sinon.assert.notCalled(onStateChange);
     assert.equal(checker.getState(), remoting.SignalStrategy.State.HANDSHAKE);
 
-    // Verify that DnsBlackholeChecker goes to CONNECTED state after the
-    // the HTTP request has succeeded.
-    fakeXhrs[0].respond(200);
-    sinon.assert.calledWith(onStateChange,
-                            remoting.SignalStrategy.State.CONNECTED);
-  }
-);
+      // Verify that DnsBlackholeChecker goes to CONNECTED state after the
+      // the HTTP request has succeeded.
+      return base.SpyPromise.run(function() {
+        fakeXhr.respond(200);
+      });
+    }).then(function() {
+      sinon.assert.calledWith(onStateChange,
+                              remoting.SignalStrategy.State.CONNECTED);
+    });
+  });
 
 QUnit.test('connect failed',
   function(assert) {
-    fakeXhrs[0].respond(200);
-    sinon.assert.notCalled(onStateChange);
-
-    [
-      remoting.SignalStrategy.State.CONNECTING,
-      remoting.SignalStrategy.State.FAILED
-    ].forEach(function(state) {
+    function checkState(state) {
       signalStrategy.setStateForTesting(state);
       sinon.assert.calledWith(onStateChange, state);
+    };
+
+    return base.SpyPromise.run(function() {
+      fakeXhr.respond(200);
+    }).then(function() {
+      sinon.assert.notCalled(onStateChange);
+      checkState(remoting.SignalStrategy.State.CONNECTING);
+      checkState(remoting.SignalStrategy.State.FAILED);
     });
-}
-);
+  });
 
 QUnit.test('blocked',
   function(assert) {
-    fakeXhrs[0].respond(400);
-    sinon.assert.calledWith(onStateChange,
-                            remoting.SignalStrategy.State.FAILED);
+    function checkState(state) {
     assert.equal(checker.getError().getTag(),
                  remoting.Error.Tag.NOT_AUTHORIZED);
-    onStateChange.reset();
-
-    [
-      remoting.SignalStrategy.State.CONNECTING,
-      remoting.SignalStrategy.State.HANDSHAKE,
-      remoting.SignalStrategy.State.CONNECTED
-    ].forEach(function(state) {
+      onStateChange.reset();
       signalStrategy.setStateForTesting(state);
       sinon.assert.notCalled(onStateChange);
-      assert.equal(checker.getState(), remoting.SignalStrategy.State.FAILED);
+      assert.equal(checker.getState(),
+          checker.getState(),
+          remoting.SignalStrategy.State.FAILED,
+          'checker state is still FAILED');
+    };
+
+    return base.SpyPromise.run(function() {
+      fakeXhr.respond(400);
+    }).then(function() {
+      sinon.assert.calledWith(
+          onStateChange, remoting.SignalStrategy.State.FAILED);
+      assert.equal(
+          checker.getError().getTag(),
+          remoting.Error.Tag.NOT_AUTHORIZED,
+          'checker error is NOT_AUTHORIZED');
+      checkState(remoting.SignalStrategy.State.CONNECTING);
+      checkState(remoting.SignalStrategy.State.HANDSHAKE);
+      checkState(remoting.SignalStrategy.State.FAILED);
     });
-  }
-);
+  });
 
 QUnit.test('blocked after connected',
   function(assert) {
-    [
-      remoting.SignalStrategy.State.CONNECTING,
-      remoting.SignalStrategy.State.HANDSHAKE,
-    ].forEach(function(state) {
+    function checkState(state) {
       signalStrategy.setStateForTesting(state);
       sinon.assert.calledWith(onStateChange, state);
       assert.equal(checker.getState(), state);
-    });
+    };
+
+    checkState(remoting.SignalStrategy.State.CONNECTING);
+    checkState(remoting.SignalStrategy.State.HANDSHAKE);
     onStateChange.reset();
 
-    // Verify that DnsBlackholeChecker stays in HANDSHAKE state even if the
-    // signal strategy has connected.
-    signalStrategy.setStateForTesting(remoting.SignalStrategy.State.CONNECTED);
-    sinon.assert.notCalled(onStateChange);
+    // Verify that DnsBlackholeChecker stays in HANDSHAKE state even
+    // if the signal strategy has connected.
+    return base.SpyPromise.run(function() {
+      signalStrategy.setStateForTesting(
+          remoting.SignalStrategy.State.CONNECTED);
+    }).then(function() {
+      sinon.assert.notCalled(onStateChange);
     assert.equal(checker.getState(), remoting.SignalStrategy.State.HANDSHAKE);
 
-    // Verify that DnsBlackholeChecker goes to FAILED state after it gets the
-    // blocked HTTP response.
-    fakeXhrs[0].respond(400);
-    sinon.assert.calledWith(onStateChange,
-                            remoting.SignalStrategy.State.FAILED);
+      // Verify that DnsBlackholeChecker goes to FAILED state after it
+      // gets the blocked HTTP response.
+      return base.SpyPromise.run(function() {
+        fakeXhr.respond(400);
+      });
+    }).then(function() {
+      sinon.assert.calledWith(onStateChange,
+                              remoting.SignalStrategy.State.FAILED);
     assert.ok(checker.getError().hasTag(remoting.Error.Tag.NOT_AUTHORIZED));
+    });
   }
 );
 

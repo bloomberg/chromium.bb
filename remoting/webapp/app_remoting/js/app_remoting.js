@@ -105,11 +105,11 @@ remoting.AppRemoting.prototype.start = function(connector, token) {
   /** @type {remoting.AppRemoting} */
   var that = this;
 
-  /** @param {XMLHttpRequest} xhr */
-  var parseAppHostResponse = function(xhr) {
-    if (xhr.status == 200) {
+  /** @param {!remoting.Xhr.Response} xhrResponse */
+  var parseAppHostResponse = function(xhrResponse) {
+    if (xhrResponse.status == 200) {
       var response = /** @type {remoting.AppRemoting.AppHostResponse} */
-          (base.jsonParseSafe(xhr.responseText));
+          (base.jsonParseSafe(xhrResponse.getText()));
       if (response &&
           response.status &&
           response.status == 'done' &&
@@ -157,16 +157,16 @@ remoting.AppRemoting.prototype.start = function(connector, token) {
       // TODO(garykac) Start using remoting.Error.fromHttpStatus once it has
       // been updated to properly report 'unknown' errors (rather than
       // reporting them as AUTHENTICATION_FAILED).
-      if (xhr.status == 0) {
+      if (xhrResponse.status == 0) {
         that.handleError(new remoting.Error(
             remoting.Error.Tag.NETWORK_FAILURE));
-      } else if (xhr.status == 401) {
+      } else if (xhrResponse.status == 401) {
         that.handleError(new remoting.Error(
             remoting.Error.Tag.AUTHENTICATION_FAILED));
-      } else if (xhr.status == 403) {
+      } else if (xhrResponse.status == 403) {
         that.handleError(new remoting.Error(
             remoting.Error.Tag.APP_NOT_AUTHORIZED));
-      } else if (xhr.status == 502 || xhr.status == 503) {
+      } else if (xhrResponse.status == 502 || xhrResponse.status == 503) {
         that.handleError(new remoting.Error(
             remoting.Error.Tag.SERVICE_UNAVAILABLE));
       } else {
@@ -175,12 +175,11 @@ remoting.AppRemoting.prototype.start = function(connector, token) {
     }
   };
 
-  remoting.xhr.start({
+  new remoting.Xhr({
     method: 'POST',
     url: that.runApplicationUrl(),
-    onDone: parseAppHostResponse,
     oauthToken: token
-  });
+  }).start().then(parseAppHostResponse);
 };
 
 /**

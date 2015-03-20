@@ -38,7 +38,7 @@ remoting.DnsBlackholeChecker = function(signalStrategy) {
   /** @private */
   this.blackholeState_ = BlackholeState.PENDING;
 
-  /** @private {?XMLHttpRequest} */
+  /** @private {?remoting.Xhr} */
   this.xhr_ = null;
 };
 
@@ -85,11 +85,11 @@ remoting.DnsBlackholeChecker.prototype.connect = function(server,
 
   this.signalStrategy_.connect(server, username, authToken);
 
-  this.xhr_ = remoting.xhr.start({
+  this.xhr_ = new remoting.Xhr({
     method: 'GET',
-    url: remoting.DnsBlackholeChecker.URL_TO_REQUEST_,
-    onDone: this.onHttpRequestDone_.bind(this)
+    url: remoting.DnsBlackholeChecker.URL_TO_REQUEST_
   });
+  this.xhr_.start().then(this.onHttpRequestDone_.bind(this));
 };
 
 remoting.DnsBlackholeChecker.prototype.getState = function() {
@@ -153,12 +153,12 @@ remoting.DnsBlackholeChecker.prototype.onWrappedSignalStrategyStateChanged_ =
 };
 
 /**
- * @param {XMLHttpRequest} xhr
+ * @param {!remoting.Xhr.Response} response
  * @private
  */
-remoting.DnsBlackholeChecker.prototype.onHttpRequestDone_ = function(xhr) {
+remoting.DnsBlackholeChecker.prototype.onHttpRequestDone_ = function(response) {
   this.xhr_ = null;
-  if (xhr.status >= 200 && xhr.status <= 299) {
+  if (response.status >= 200 && response.status <= 299) {
     console.log("DNS blackhole check succeeded.");
     this.blackholeState_ = BlackholeState.OPEN;
     if (this.signalStrategy_.getState() ==
@@ -166,14 +166,15 @@ remoting.DnsBlackholeChecker.prototype.onHttpRequestDone_ = function(xhr) {
       this.setState_(remoting.SignalStrategy.State.CONNECTED);
     }
   } else {
-    console.error("DNS blackhole check failed: " + xhr.status + " " +
-                  xhr.statusText + ". Response URL: " + xhr.responseURL +
-                  ". Response Text: " + xhr.responseText);
+    console.error("DNS blackhole check failed: " + response.status + " " +
+                  response.statusText + ". Response URL: " +
+                  response.url + ". Response Text: " +
+                  response.getText());
     this.blackholeState_ = BlackholeState.BLOCKED;
     base.dispose(this.signalStrategy_);
     this.setState_(remoting.SignalStrategy.State.FAILED);
   }
-}
+};
 
 /**
  * @param {remoting.SignalStrategy.State} newState

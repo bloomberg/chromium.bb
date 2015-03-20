@@ -28,17 +28,16 @@ remoting.HostListApiImpl = function() {
  * @param {function(!remoting.Error):void} onError
  */
 remoting.HostListApiImpl.prototype.get = function(onDone, onError) {
-  /** @type {function(XMLHttpRequest):void} */
+  /** @type {function(!remoting.Xhr.Response):void} */
   var parseHostListResponse =
       this.parseHostListResponse_.bind(this, onDone, onError);
   /** @param {string} token */
   var onToken = function(token) {
-    remoting.xhr.start({
+    new remoting.Xhr({
       method: 'GET',
       url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts',
-      onDone: parseHostListResponse,
       oauthToken: token
-    });
+    }).start().then(parseHostListResponse);
   };
   remoting.identity.getToken().then(onToken, remoting.Error.handler(onError));
 };
@@ -63,13 +62,12 @@ remoting.HostListApiImpl.prototype.put =
         'publicKey': hostPublicKey
       }
     };
-    remoting.xhr.start({
+    new remoting.Xhr({
       method: 'PUT',
       url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
-      onDone: remoting.xhr.defaultResponse(onDone, onError),
       jsonContent: newHostDetails,
       oauthToken: token
-    });
+    }).start().then(remoting.Xhr.defaultResponse(onDone, onError));
   };
   remoting.identity.getToken().then(onToken, remoting.Error.handler(onError));
 };
@@ -84,13 +82,12 @@ remoting.HostListApiImpl.prototype.put =
 remoting.HostListApiImpl.prototype.remove = function(hostId, onDone, onError) {
   /** @param {string} token */
   var onToken = function(token) {
-    remoting.xhr.start({
+    new remoting.Xhr({
       method: 'DELETE',
       url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/' + hostId,
-      onDone: remoting.xhr.defaultResponse(onDone, onError,
-                                           [remoting.Error.Tag.NOT_FOUND]),
       oauthToken: token
-    });
+    }).start().then(remoting.Xhr.defaultResponse(
+        onDone, onError, [remoting.Error.Tag.NOT_FOUND]));
   };
   remoting.identity.getToken().then(onToken, remoting.Error.handler(onError));
 };
@@ -102,19 +99,19 @@ remoting.HostListApiImpl.prototype.remove = function(hostId, onDone, onError) {
  *
  * @param {function(Array<remoting.Host>):void} onDone
  * @param {function(!remoting.Error):void} onError
- * @param {XMLHttpRequest} xhr
+ * @param {!remoting.Xhr.Response} response
  * @private
  */
 remoting.HostListApiImpl.prototype.parseHostListResponse_ =
-    function(onDone, onError, xhr) {
-  if (xhr.status == 200) {
-    var response = /** @type {{data: {items: Array}}} */
-        (base.jsonParseSafe(xhr.responseText));
-    if (!response || !response.data) {
+    function(onDone, onError, response) {
+  if (response.status == 200) {
+    var obj = /** @type {{data: {items: Array}}} */
+        (base.jsonParseSafe(response.getText()));
+    if (!obj || !obj.data) {
       console.error('Invalid "hosts" response from server.');
       onError(remoting.Error.unexpected());
     } else {
-      var items = response.data.items || [];
+      var items = obj.data.items || [];
       var hosts = items.map(
         function(/** Object */ item) {
           var host = new remoting.Host();
@@ -134,7 +131,7 @@ remoting.HostListApiImpl.prototype.parseHostListResponse_ =
       onDone(hosts);
     }
   } else {
-    onError(remoting.Error.fromHttpStatus(xhr.status));
+    onError(remoting.Error.fromHttpStatus(response.status));
   }
 };
 
@@ -142,4 +139,3 @@ remoting.HostListApiImpl.prototype.parseHostListResponse_ =
 remoting.hostListApi = new remoting.HostListApiImpl();
 
 })();
-

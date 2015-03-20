@@ -126,3 +126,36 @@ sinon.TestStub.prototype.onFirstCall = function() {};
 
 /** @returns {Object}  */
 sinon.createStubInstance = function (/** * */ constructor) {};
+
+/** @return {sinon.FakeXhr} */
+sinon.useFakeXMLHttpRequest = function() {};
+
+/** @interface */
+sinon.FakeXhr = function() {};
+
+/** @type {string} */
+sinon.FakeXhr.prototype.method;
+
+/** @type {string} */
+sinon.FakeXhr.prototype.url;
+
+/** @type {boolean} */
+sinon.FakeXhr.prototype.withCredentials;
+
+/** @type {?string} */
+sinon.FakeXhr.prototype.requestBody;
+
+/** @type {!Object<string,string>} */
+sinon.FakeXhr.prototype.requestHeaders;
+
+/**
+ * @param {number} status
+ * @param {!Object<string,string>} headers
+ * @param {?string} content
+ */
+sinon.FakeXhr.prototype.respond;
+
+/**
+ * @type {?function(!sinon.FakeXhr)}
+ */
+sinon.FakeXhr.prototype.onCreate;

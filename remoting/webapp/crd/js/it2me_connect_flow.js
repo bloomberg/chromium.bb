@@ -54,8 +54,8 @@ remoting.It2MeConnectFlow.prototype.connect_ = function(accessCode) {
     return remoting.identity.getToken();
   }).then(function(/** string */ token) {
     return that.getHostInfo_(token);
-  }).then(function(/** XMLHttpRequest */ xhr) {
-    return that.onHostInfo_(xhr);
+  }).then(function(/** !remoting.Xhr.Response */ response) {
+    return that.onHostInfo_(response);
   }).then(function(/** remoting.Host */ host) {
     that.sessionConnector_.connect(
         remoting.DesktopConnectedView.Mode.IT2ME,
@@ -88,33 +88,31 @@ remoting.It2MeConnectFlow.prototype.verifyAccessCode_ = function(accessCode) {
  * Continues an IT2Me connection once an access token has been obtained.
  *
  * @param {string} token An OAuth2 access token.
- * @return {Promise<XMLHttpRequest>}
+ * @return {Promise<!remoting.Xhr.Response>}
  * @private
  */
 remoting.It2MeConnectFlow.prototype.getHostInfo_ = function(token) {
   var that = this;
-  return new Promise(function(resolve) {
-    remoting.xhr.start({
-      method: 'GET',
-      url: remoting.settings.DIRECTORY_API_BASE_URL + '/support-hosts/' +
-           encodeURIComponent(that.hostId_),
-      onDone: resolve,
-      oauthToken: token
-    });
-  });
+  return new remoting.Xhr({
+    method: 'GET',
+    url: remoting.settings.DIRECTORY_API_BASE_URL + '/support-hosts/' +
+        encodeURIComponent(that.hostId_),
+    oauthToken: token
+  }).start();
 };
 
 /**
  * Continues an IT2Me connection once the host JID has been looked up.
  *
- * @param {XMLHttpRequest} xhr The server response to the support-hosts query.
+ * @param {!remoting.Xhr.Response} xhrResponse The server response to the
+ *     support-hosts query.
  * @return {!Promise<!remoting.Host>} Rejects on error.
  * @private
  */
-remoting.It2MeConnectFlow.prototype.onHostInfo_ = function(xhr) {
-  if (xhr.status == 200) {
+remoting.It2MeConnectFlow.prototype.onHostInfo_ = function(xhrResponse) {
+  if (xhrResponse.status == 200) {
     var response = /** @type {{data: {jabberId: string, publicKey: string}}} */
-        (base.jsonParseSafe(xhr.responseText));
+        (base.jsonParseSafe(xhrResponse.getText()));
     if (response && response.data &&
         response.data.jabberId && response.data.publicKey) {
       var host = new remoting.Host();
@@ -128,11 +126,12 @@ remoting.It2MeConnectFlow.prototype.onHostInfo_ = function(xhr) {
       return Promise.reject(remoting.Error.unexpected());
     }
   } else {
-    return Promise.reject(translateSupportHostsError(xhr.status));
+    return Promise.reject(translateSupportHostsError(xhrResponse.status));
   }
 };
 
 /**
+ * TODO(jrw): Replace with remoting.Error.fromHttpStatus.
  * @param {number} error An HTTP error code returned by the support-hosts
  *     endpoint.
  * @return {remoting.Error} The equivalent remoting.Error code.

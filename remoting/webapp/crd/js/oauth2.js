@@ -250,7 +250,7 @@ remoting.OAuth2.prototype.onTokens_ =
 remoting.OAuth2.prototype.getAuthorizationCode = function(onDone) {
   var xsrf_token = base.generateXsrfToken();
   var GET_CODE_URL = this.getOAuth2AuthEndpoint_() + '?' +
-    remoting.xhr.urlencodeParamHash({
+    remoting.Xhr.urlencodeParamHash({
           'client_id': this.getClientId_(),
           'redirect_uri': this.getRedirectUri_(),
           'scope': this.SCOPE_,
