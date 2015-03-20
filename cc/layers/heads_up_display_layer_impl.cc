@@ -555,23 +555,23 @@ SkRect HeadsUpDisplayLayerImpl::DrawGpuRasterizationStatus(SkCanvas* canvas,
   SkColor color = SK_ColorRED;
   switch (layer_tree_impl()->GetGpuRasterizationStatus()) {
     case GpuRasterizationStatus::ON:
-      status = "GPU raster: on";
+      status = "on";
       color = SK_ColorGREEN;
       break;
     case GpuRasterizationStatus::ON_FORCED:
-      status = "GPU raster: on (forced)";
+      status = "on (forced)";
       color = SK_ColorGREEN;
       break;
     case GpuRasterizationStatus::OFF_DEVICE:
-      status = "GPU raster: off (device)";
+      status = "off (device)";
       color = SK_ColorRED;
       break;
     case GpuRasterizationStatus::OFF_VIEWPORT:
-      status = "GPU raster: off (viewport)";
+      status = "off (viewport)";
       color = SK_ColorYELLOW;
       break;
     case GpuRasterizationStatus::OFF_CONTENT:
-      status = "GPU raster: off (content)";
+      status = "off (content)";
       color = SK_ColorYELLOW;
       break;
   }
@@ -582,17 +582,20 @@ SkRect HeadsUpDisplayLayerImpl::DrawGpuRasterizationStatus(SkCanvas* canvas,
   const int kPadding = 4;
   const int kFontHeight = 13;
 
-  const int height = kFontHeight + 2 * kPadding;
+  const int height = 2 * kFontHeight + 3 * kPadding;
   const int left = bounds().width() - width - right;
   const SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
   SkPaint paint = CreatePaint();
   DrawGraphBackground(canvas, &paint, area);
 
-  SkPoint gpu_status_pos = SkPoint::Make(left + kPadding, top + kFontHeight);
+  SkPoint gpu_status_pos = SkPoint::Make(left + width - kPadding,
+                                         top + 2 * kFontHeight + 2 * kPadding);
 
   paint.setColor(color);
-  DrawText(canvas, &paint, status, SkPaint::kLeft_Align, kFontHeight,
+  DrawText(canvas, &paint, "GPU raster: ", SkPaint::kLeft_Align, kFontHeight,
+           left + kPadding, top + kFontHeight + kPadding);
+  DrawText(canvas, &paint, status, SkPaint::kRight_Align, kFontHeight,
            gpu_status_pos);
 
   return area;
@@ -604,7 +607,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawPaintTimeDisplay(
     int right,
     int top) const {
   const int kPadding = 4;
-  const int kFontHeight = 15;
+  const int kFontHeight = 14;
 
   const int kGraphWidth = paint_time_counter->HistorySize();
   const int kGraphHeight = 40;
@@ -636,7 +639,7 @@ SkRect HeadsUpDisplayLayerImpl::DrawPaintTimeDisplay(
       "%.1f-%.1f", paint_time_graph_.min, paint_time_graph_.max);
 
   paint.setColor(DebugColors::PaintTimeDisplayTextAndGraphColor());
-  DrawText(canvas, &paint, "Compositor frame time (ms)", SkPaint::kLeft_Align,
+  DrawText(canvas, &paint, "Compositor frame time(ms)", SkPaint::kLeft_Align,
            kFontHeight, text_bounds.left(), text_bounds.bottom());
   DrawText(canvas,
            &paint,
