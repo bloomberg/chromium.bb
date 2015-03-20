@@ -281,8 +281,9 @@ void AudioRendererImpl::Initialize(
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
 
+  const AudioParameters& hw_params = hardware_config_.GetOutputConfig();
   expecting_config_changes_ = stream->SupportsConfigChanges();
-  if (!expecting_config_changes_) {
+  if (!expecting_config_changes_ || !hw_params.IsValid()) {
     // The actual buffer size is controlled via the size of the AudioBus
     // provided to Render(), so just choose something reasonable here for looks.
     int buffer_size = stream->audio_decoder_config().samples_per_second() / 100;
@@ -296,8 +297,6 @@ void AudioRendererImpl::Initialize(
         buffer_size);
     buffer_converter_.reset();
   } else {
-    // TODO(rileya): Support hardware config changes
-    const AudioParameters& hw_params = hardware_config_.GetOutputConfig();
     audio_parameters_.Reset(
         hw_params.format(),
         // Always use the source's channel layout and channel count to avoid

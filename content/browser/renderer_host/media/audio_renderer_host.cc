@@ -73,7 +73,6 @@ class AudioRendererHost::AudioEntry
   void OnPlaying() override;
   void OnPaused() override;
   void OnError() override;
-  void OnDeviceChange(int new_buffer_size, int new_sample_rate) override;
 
   AudioRendererHost* const host_;
   const int stream_id_;
@@ -197,16 +196,6 @@ void AudioRendererHost::AudioEntry::OnError() {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(&AudioRendererHost::ReportErrorAndClose, host_, stream_id_));
-}
-
-void AudioRendererHost::AudioEntry::OnDeviceChange(int new_buffer_size,
-                                                   int new_sample_rate) {
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&AudioRendererHost::Send), host_,
-                 new AudioMsg_NotifyDeviceChanged(
-                     stream_id_, new_buffer_size, new_sample_rate)));
 }
 
 void AudioRendererHost::DoCompleteCreation(int stream_id) {

@@ -41,7 +41,6 @@ class MockAudioOutputControllerEventHandler
   MOCK_METHOD0(OnPlaying, void());
   MOCK_METHOD0(OnPaused, void());
   MOCK_METHOD0(OnError, void());
-  MOCK_METHOD2(OnDeviceChange, void(int new_buffer_size, int new_sample_rate));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioOutputControllerEventHandler);

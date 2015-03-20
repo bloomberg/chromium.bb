@@ -426,8 +426,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetAudioHardwareConfig,
-                        OnGetAudioHardwareConfig)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetMonitorColorProfile,
                         OnGetMonitorColorProfile)
@@ -457,9 +455,6 @@ base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
   if (message.type() == ViewHostMsg_GetMonitorColorProfile::ID)
     return BrowserThread::GetBlockingPool();
 #endif
-  // Always query audio device parameters on the audio thread.
-  if (message.type() == ViewHostMsg_GetAudioHardwareConfig::ID)
-    return audio_manager_->GetTaskRunner().get();
   return NULL;
 }
 
@@ -833,18 +828,6 @@ void RenderMessageFilter::OnPluginInstanceThrottleStateChange(
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();
-}
-
-void RenderMessageFilter::OnGetAudioHardwareConfig(
-    media::AudioParameters* input_params,
-    media::AudioParameters* output_params) {
-  DCHECK(input_params);
-  DCHECK(output_params);
-  *output_params = audio_manager_->GetDefaultOutputStreamParameters();
-
-  // TODO(henrika): add support for all available input devices.
-  *input_params = audio_manager_->GetInputStreamParameters(
-      media::AudioManagerBase::kDefaultDeviceId);
 }
 
 #if defined(OS_WIN)

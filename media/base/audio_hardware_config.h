@@ -16,6 +16,7 @@ namespace media {
 // Provides thread safe access to the audio hardware configuration.
 class MEDIA_EXPORT AudioHardwareConfig {
  public:
+  AudioHardwareConfig();
   AudioHardwareConfig(const media::AudioParameters& input_params,
                       const media::AudioParameters& output_params);
   virtual ~AudioHardwareConfig();

@@ -1291,18 +1291,7 @@ AudioRendererMixerManager* RenderThreadImpl::GetAudioRendererMixerManager() {
 }
 
 media::AudioHardwareConfig* RenderThreadImpl::GetAudioHardwareConfig() {
-  if (!audio_hardware_config_) {
-    media::AudioParameters input_params;
-    media::AudioParameters output_params;
-    Send(new ViewHostMsg_GetAudioHardwareConfig(
-        &input_params, &output_params));
-
-    audio_hardware_config_.reset(new media::AudioHardwareConfig(
-        input_params, output_params));
-    audio_message_filter_->SetAudioHardwareConfig(audio_hardware_config_.get());
-  }
-
-  return audio_hardware_config_.get();
+  return &audio_hardware_config_;
 }
 
 base::WaitableEvent* RenderThreadImpl::GetShutdownEvent() {
@@ -1477,6 +1466,8 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     // is there a new non-windows message I should add here?
     IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkTypeChanged, OnNetworkTypeChanged)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetAudioHardwareConfig,
+                        OnSetAudioHardwareConfig)
     IPC_MESSAGE_HANDLER(ViewMsg_TempCrashWithData, OnTempCrashWithData)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_CreateWorker, OnCreateNewSharedWorker)
     IPC_MESSAGE_HANDLER(ViewMsg_TimezoneChange, OnUpdateTimezone)
@@ -1637,6 +1628,13 @@ void RenderThreadImpl::OnNetworkTypeChanged(
       RenderProcessObserver, observers_, NetworkStateChanged(online));
   WebNetworkStateNotifier::setWebConnectionType(
       NetConnectionTypeToWebConnectionType(type));
+}
+
+void RenderThreadImpl::OnSetAudioHardwareConfig(
+    const media::AudioParameters& input,
+    const media::AudioParameters& output) {
+  audio_hardware_config_.UpdateInputConfig(input);
+  audio_hardware_config_.UpdateOutputConfig(output);
 }
 
 void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {

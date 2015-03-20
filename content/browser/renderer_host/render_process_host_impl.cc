@@ -209,6 +209,14 @@ void RemoveShaderInfo(int32 id) {
   ShaderCacheFactory::GetInstance()->RemoveCacheInfo(id);
 }
 
+scoped_ptr<IPC::Message> SendAudioHardwareConfig() {
+  media::AudioManager* am = media::AudioManager::Get();
+  DCHECK(am->GetTaskRunner()->BelongsToCurrentThread());
+  return make_scoped_ptr(new ViewMsg_SetAudioHardwareConfig(
+      am->GetDefaultOutputStreamParameters(),
+      am->GetInputStreamParameters(media::AudioManagerBase::kDefaultDeviceId)));
+}
+
 net::URLRequestContext* GetRequestContext(
     scoped_refptr<net::URLRequestContextGetter> request_context,
     scoped_refptr<net::URLRequestContextGetter> media_request_context,
@@ -1498,6 +1506,11 @@ bool RenderProcessHostImpl::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }
 
+bool RenderProcessHostImpl::SendHelper(scoped_ptr<IPC::Message> msg) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return Send(msg.release());
+}
+
 bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
   // If we're about to be deleted, or have initiated the fast shutdown sequence,
   // we ignore incoming messages.
@@ -2308,6 +2321,12 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     Send(queued_messages_.front());
     queued_messages_.pop();
   }
+
+  base::PostTaskAndReplyWithResult(
+      media::AudioManager::Get()->GetTaskRunner().get(), FROM_HERE,
+      base::Bind(&SendAudioHardwareConfig),
+      base::Bind(base::IgnoreResult(&RenderProcessHostImpl::SendHelper),
+                 weak_factory_.GetWeakPtr()));
 
 #if defined(ENABLE_WEBRTC)
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841

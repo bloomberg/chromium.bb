@@ -84,21 +84,12 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
   void OnStreamStateChanged(int stream_id,
                             media::AudioOutputIPCDelegate::State state);
 
-  // Received when the browser process detects an output device change.
-  void OnOutputDeviceChanged(int stream_id, int new_buffer_size,
-                             int new_sample_rate);
-
   // IPC sender for Send(); must only be accesed on |io_message_loop_|.
   IPC::Sender* sender_;
 
   // A map of stream ids to delegates; must only be accessed on
   // |io_message_loop_|.
   IDMap<media::AudioOutputIPCDelegate> delegates_;
-
-  // Audio hardware configuration to update when OnOutputDeviceChanged() fires.
-  // Access is guarded by |lock_|.
-  base::Lock lock_;
-  media::AudioHardwareConfig* audio_hardware_config_;
 
   // Message loop on which IPC calls are driven.
   const scoped_refptr<base::MessageLoopProxy> io_message_loop_;

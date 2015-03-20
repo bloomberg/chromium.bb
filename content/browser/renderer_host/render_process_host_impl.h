@@ -154,8 +154,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
                                    int cdm_id) const override;
 #endif
 
-  // IPC::Sender via RenderProcessHost.
+  // IPC::Sender via RenderProcessHost.  SendHelper() can be used to ensure
+  // allocated messages are not leaked after RPHI is destructed.
   bool Send(IPC::Message* msg) override;
+  bool SendHelper(scoped_ptr<IPC::Message> msg);
 
   // IPC::Listener via RenderProcessHost.
   bool OnMessageReceived(const IPC::Message& msg) override;

@@ -56,13 +56,6 @@ IPC_MESSAGE_CONTROL5(
    uint32 /* length */,
    uint32 /* segment count */)
 
-// Notification message sent from AudioRendererHost to renderer after an output
-// device change has occurred.
-IPC_MESSAGE_CONTROL3(AudioMsg_NotifyDeviceChanged,
-                     int /* stream_id */,
-                     int /* new_buffer_size */,
-                     int /* new_sample_rate */)
-
 // Notification message sent from AudioRendererHost to renderer for state
 // update after the renderer has requested a Create/Start/Close.
 IPC_MESSAGE_CONTROL2(AudioMsg_NotifyStreamStateChanged,
