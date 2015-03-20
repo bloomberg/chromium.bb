@@ -138,7 +138,7 @@ private:
 
 template<>
 struct NativeValueTraits<Dictionary> {
-    static inline Dictionary nativeValue(v8::Handle<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
+    static inline Dictionary nativeValue(v8::Isolate* isolate, v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     {
         return Dictionary(value, isolate, exceptionState);
     }

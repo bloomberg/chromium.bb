@@ -51,7 +51,7 @@ void toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Loca
 
 }
 
-TestPermissiveDictionary NativeValueTraits<TestPermissiveDictionary>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
+TestPermissiveDictionary NativeValueTraits<TestPermissiveDictionary>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     TestPermissiveDictionary impl;
     V8TestPermissiveDictionary::toImpl(isolate, value, impl, exceptionState);

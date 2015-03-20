@@ -31,7 +31,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}& im
 
 template <>
 struct NativeValueTraits<{{cpp_class}}> {
-    static {{cpp_class}} nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
+    static {{cpp_class}} nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 } // namespace blink

@@ -32,7 +32,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceEven
 
 template <>
 struct NativeValueTraits<TestInterfaceEventInit> {
-    static TestInterfaceEventInit nativeValue(v8::Local<v8::Value>, v8::Isolate*, ExceptionState&);
+    static TestInterfaceEventInit nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 };
 
 } // namespace blink

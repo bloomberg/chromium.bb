@@ -55,7 +55,7 @@ public:
     template<typename T>
     inline T to(ExceptionState& exceptionState) const
     {
-        return NativeValueTraits<T>::nativeValue(v8Value(), isolate(), exceptionState);
+        return NativeValueTraits<T>::nativeValue(isolate(), v8Value(), exceptionState);
     }
 
     ScriptValue() { }

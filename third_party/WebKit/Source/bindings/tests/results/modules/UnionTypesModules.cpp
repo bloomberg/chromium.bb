@@ -90,7 +90,7 @@ v8::Local<v8::Value> toV8(const BooleanOrString& impl, v8::Local<v8::Object> cre
     return v8::Local<v8::Value>();
 }
 
-BooleanOrString NativeValueTraits<BooleanOrString>::nativeValue(v8::Local<v8::Value> value, v8::Isolate* isolate, ExceptionState& exceptionState)
+BooleanOrString NativeValueTraits<BooleanOrString>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     BooleanOrString impl;
     V8BooleanOrString::toImpl(isolate, value, impl, exceptionState);
