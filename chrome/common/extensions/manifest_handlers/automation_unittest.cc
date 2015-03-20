@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/permission_message_test_util.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -34,9 +34,7 @@ TEST_F(AutomationManifestTest, AsBooleanFalse) {
       LoadAndExpectSuccess("automation_boolean_false.json");
   ASSERT_TRUE(extension.get());
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  EXPECT_EQ(0u, warnings.size());
+  EXPECT_TRUE(VerifyNoPermissionMessages(extension->permissions_data()));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_FALSE(info);
@@ -47,11 +45,9 @@ TEST_F(AutomationManifestTest, AsBooleanTrue) {
       LoadAndExpectSuccess("automation_boolean_true.json");
   ASSERT_TRUE(extension.get());
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Read and change your data on www.google.com",
-            base::UTF16ToUTF8(warnings[0]));
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      "Read and change your data on www.google.com"));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);
@@ -66,11 +62,9 @@ TEST_F(AutomationManifestTest, InteractTrue) {
       LoadAndExpectSuccess("automation_interact_true.json");
   ASSERT_TRUE(extension.get());
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Read and change your data on www.google.com",
-            base::UTF16ToUTF8(warnings[0]));
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      "Read and change your data on www.google.com"));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);
@@ -90,11 +84,9 @@ TEST_F(AutomationManifestTest, Matches) {
               URLPattern::PARSE_ERROR_MISSING_SCHEME_SEPARATOR)));
   ASSERT_TRUE(extension.get());
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Read your data on www.google.com and www.twitter.com",
-            base::UTF16ToUTF8(warnings[0]));
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      "Read your data on www.google.com and www.twitter.com"));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);
@@ -117,13 +109,10 @@ TEST_F(AutomationManifestTest, MatchesAndPermissions) {
       LoadAndExpectSuccess("automation_matches_and_permissions.json");
   ASSERT_TRUE(extension.get());
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(2u, warnings.size());
-  EXPECT_EQ("Read and change your data on www.google.com",
-            base::UTF16ToUTF8(warnings[0]));
-  EXPECT_EQ("Read your data on www.twitter.com",
-            base::UTF16ToUTF8(warnings[1]));
+  EXPECT_TRUE(
+      VerifyTwoPermissionMessages(extension->permissions_data(),
+                                  "Read and change your data on www.google.com",
+                                  "Read your data on www.twitter.com", false));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);
@@ -142,9 +131,7 @@ TEST_F(AutomationManifestTest, EmptyMatches) {
                            automation_errors::kErrorNoMatchesProvided);
   ASSERT_TRUE(extension.get());
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  EXPECT_EQ(0u, warnings.size());
+  EXPECT_TRUE(VerifyNoPermissionMessages(extension->permissions_data()));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);
@@ -170,9 +157,7 @@ TEST_F(AutomationManifestTest, NoValidMatches) {
   EXPECT_EQ(automation_errors::kErrorNoMatchesProvided,
             extension->install_warnings()[1].message);
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(0u, warnings.size());
+  EXPECT_TRUE(VerifyNoPermissionMessages(extension->permissions_data()));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);
@@ -187,11 +172,9 @@ TEST_F(AutomationManifestTest, DesktopFalse) {
       LoadAndExpectSuccess("automation_desktop_false.json");
   ASSERT_TRUE(extension.get());
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Read and change your data on www.google.com",
-            base::UTF16ToUTF8(warnings[0]));
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      "Read and change your data on www.google.com"));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);
@@ -206,11 +189,9 @@ TEST_F(AutomationManifestTest, DesktopTrue) {
       LoadAndExpectSuccess("automation_desktop_true.json");
   ASSERT_TRUE(extension.get());
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS),
-            warnings[0]);
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS)));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);
@@ -224,11 +205,10 @@ TEST_F(AutomationManifestTest, Desktop_InteractTrue) {
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("automation_desktop_interact_true.json");
   ASSERT_TRUE(extension.get());
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS),
-            warnings[0]);
+
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS)));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);
@@ -244,11 +224,9 @@ TEST_F(AutomationManifestTest, Desktop_InteractFalse) {
                            automation_errors::kErrorDesktopTrueInteractFalse);
   ASSERT_TRUE(extension.get());
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS),
-            warnings[0]);
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS)));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);
@@ -264,11 +242,9 @@ TEST_F(AutomationManifestTest, Desktop_MatchesSpecified) {
       automation_errors::kErrorDesktopTrueMatchesSpecified);
   ASSERT_TRUE(extension.get());
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS),
-            warnings[0]);
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS)));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);
@@ -283,12 +259,10 @@ TEST_F(AutomationManifestTest, AllHostsInteractFalse) {
       LoadAndExpectSuccess("automation_all_hosts_interact_false.json");
   ASSERT_TRUE(extension.get());
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_READ_ONLY),
-            warnings[0]);
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      l10n_util::GetStringUTF16(
+          IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_READ_ONLY)));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);
@@ -304,11 +278,9 @@ TEST_F(AutomationManifestTest, AllHostsInteractTrue) {
       LoadAndExpectSuccess("automation_all_hosts_interact_true.json");
   ASSERT_TRUE(extension.get());
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS),
-            warnings[0]);
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
   ASSERT_TRUE(info);

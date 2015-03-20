@@ -42,12 +42,6 @@ class ShellPermissionMessageProvider : public PermissionMessageProvider {
   ~ShellPermissionMessageProvider() override {}
 
   // PermissionMessageProvider implementation.
-  PermissionMessageStrings GetPermissionMessageStrings(
-      const PermissionSet* permissions,
-      Manifest::Type extension_type) const override {
-    return PermissionMessageStrings();
-  }
-
   PermissionMessageIDs GetLegacyPermissionMessageIDs(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const override {

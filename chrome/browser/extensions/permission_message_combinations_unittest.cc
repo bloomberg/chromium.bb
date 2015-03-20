@@ -4,20 +4,15 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/extensions/test_extension_environment.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_provider.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/permissions/permission_message_test_util.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using testing::Contains;
-using testing::Eq;
 
 namespace extensions {
 
@@ -54,27 +49,19 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
   // permission messages. Call this after installing an app with the expected
   // permission messages. The messages are tested for existence in any order.
   testing::AssertionResult CheckManifestProducesPermissions() {
-    return CheckManifestProducesPermissions(
-        std::vector<std::string>(), GetPermissionMessages(),
-        GetCoalescedPermissionMessages(), "messages");
+    return VerifyNoPermissionMessages(app_->permissions_data());
   }
   testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1) {
-    std::vector<std::string> expected_messages;
-    expected_messages.push_back(expected_message_1);
-    return CheckManifestProducesPermissions(
-        expected_messages, GetPermissionMessages(),
-        GetCoalescedPermissionMessages(), "messages");
+    return VerifyOnePermissionMessage(app_->permissions_data(),
+                                      expected_message_1);
   }
   testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1,
       const std::string& expected_message_2) {
-    std::vector<std::string> expected_messages;
-    expected_messages.push_back(expected_message_1);
-    expected_messages.push_back(expected_message_2);
-    return CheckManifestProducesPermissions(
-        expected_messages, GetPermissionMessages(),
-        GetCoalescedPermissionMessages(), "messages");
+    return VerifyTwoPermissionMessages(app_->permissions_data(),
+                                       expected_message_1, expected_message_2,
+                                       false);
   }
   testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1,
@@ -84,9 +71,8 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     expected_messages.push_back(expected_message_1);
     expected_messages.push_back(expected_message_2);
     expected_messages.push_back(expected_message_3);
-    return CheckManifestProducesPermissions(
-        expected_messages, GetPermissionMessages(),
-        GetCoalescedPermissionMessages(), "messages");
+    return VerifyPermissionMessages(app_->permissions_data(), expected_messages,
+                                    false);
   }
   testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1,
@@ -98,9 +84,8 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     expected_messages.push_back(expected_message_2);
     expected_messages.push_back(expected_message_3);
     expected_messages.push_back(expected_message_4);
-    return CheckManifestProducesPermissions(
-        expected_messages, GetPermissionMessages(),
-        GetCoalescedPermissionMessages(), "messages");
+    return VerifyPermissionMessages(app_->permissions_data(), expected_messages,
+                                    false);
   }
   testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1,
@@ -114,192 +99,101 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
     expected_messages.push_back(expected_message_3);
     expected_messages.push_back(expected_message_4);
     expected_messages.push_back(expected_message_5);
-    return CheckManifestProducesPermissions(
-        expected_messages, GetPermissionMessages(),
-        GetCoalescedPermissionMessages(), "messages");
+    return VerifyPermissionMessages(app_->permissions_data(), expected_messages,
+                                    false);
   }
-
-  // Checks whether the currently installed app or extension produces the given
-  // host permission messages. Call this after installing an app with the
-  // expected permission messages. The messages are tested for existence in any
-  // order.
-  testing::AssertionResult CheckManifestProducesHostPermissions() {
-    return CheckManifestProducesPermissions(
-        std::vector<std::string>(), GetHostPermissionMessages(),
-        GetCoalescedHostPermissionMessages(), "host messages");
-  }
-  testing::AssertionResult CheckManifestProducesHostPermissions(
-      const std::string& expected_message_1) {
-    std::vector<std::string> expected_messages;
-    expected_messages.push_back(expected_message_1);
-    return CheckManifestProducesPermissions(
-        expected_messages, GetHostPermissionMessages(),
-        GetCoalescedHostPermissionMessages(), "host messages");
-  }
-  testing::AssertionResult CheckManifestProducesHostPermissions(
+  testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1,
-      const std::string& expected_message_2) {
+      const std::vector<std::string>& expected_submessages_1) {
+    return VerifyOnePermissionMessageWithSubmessages(
+        app_->permissions_data(), expected_message_1, expected_submessages_1);
+  }
+  testing::AssertionResult CheckManifestProducesPermissions(
+      const std::string& expected_message_1,
+      const std::vector<std::string>& expected_submessages_1,
+      const std::string& expected_message_2,
+      const std::vector<std::string>& expected_submessages_2) {
     std::vector<std::string> expected_messages;
     expected_messages.push_back(expected_message_1);
     expected_messages.push_back(expected_message_2);
-    return CheckManifestProducesPermissions(
-        expected_messages, GetHostPermissionMessages(),
-        GetCoalescedHostPermissionMessages(), "host messages");
+    std::vector<std::vector<std::string>> expected_submessages;
+    expected_submessages.push_back(expected_submessages_1);
+    expected_submessages.push_back(expected_submessages_2);
+    return VerifyPermissionMessagesWithSubmessages(app_->permissions_data(),
+                                                   expected_messages,
+                                                   expected_submessages, false);
   }
-  testing::AssertionResult CheckManifestProducesHostPermissions(
+  testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1,
+      const std::vector<std::string>& expected_submessages_1,
       const std::string& expected_message_2,
-      const std::string& expected_message_3) {
+      const std::vector<std::string>& expected_submessages_2,
+      const std::string& expected_message_3,
+      const std::vector<std::string>& expected_submessages_3) {
     std::vector<std::string> expected_messages;
     expected_messages.push_back(expected_message_1);
     expected_messages.push_back(expected_message_2);
     expected_messages.push_back(expected_message_3);
-    return CheckManifestProducesPermissions(
-        expected_messages, GetHostPermissionMessages(),
-        GetCoalescedHostPermissionMessages(), "host messages");
+    std::vector<std::vector<std::string>> expected_submessages;
+    expected_submessages.push_back(expected_submessages_1);
+    expected_submessages.push_back(expected_submessages_2);
+    expected_submessages.push_back(expected_submessages_3);
+    return VerifyPermissionMessagesWithSubmessages(app_->permissions_data(),
+                                                   expected_messages,
+                                                   expected_submessages, false);
   }
-  testing::AssertionResult CheckManifestProducesHostPermissions(
+  testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1,
+      const std::vector<std::string>& expected_submessages_1,
       const std::string& expected_message_2,
+      const std::vector<std::string>& expected_submessages_2,
       const std::string& expected_message_3,
-      const std::string& expected_message_4) {
+      const std::vector<std::string>& expected_submessages_3,
+      const std::string& expected_message_4,
+      const std::vector<std::string>& expected_submessages_4) {
     std::vector<std::string> expected_messages;
     expected_messages.push_back(expected_message_1);
     expected_messages.push_back(expected_message_2);
     expected_messages.push_back(expected_message_3);
     expected_messages.push_back(expected_message_4);
-    return CheckManifestProducesPermissions(
-        expected_messages, GetHostPermissionMessages(),
-        GetCoalescedHostPermissionMessages(), "host messages");
+    std::vector<std::vector<std::string>> expected_submessages;
+    expected_submessages.push_back(expected_submessages_1);
+    expected_submessages.push_back(expected_submessages_2);
+    expected_submessages.push_back(expected_submessages_3);
+    expected_submessages.push_back(expected_submessages_4);
+    return VerifyPermissionMessagesWithSubmessages(app_->permissions_data(),
+                                                   expected_messages,
+                                                   expected_submessages, false);
   }
-  testing::AssertionResult CheckManifestProducesHostPermissions(
+  testing::AssertionResult CheckManifestProducesPermissions(
       const std::string& expected_message_1,
+      const std::vector<std::string>& expected_submessages_1,
       const std::string& expected_message_2,
+      const std::vector<std::string>& expected_submessages_2,
       const std::string& expected_message_3,
+      const std::vector<std::string>& expected_submessages_3,
       const std::string& expected_message_4,
-      const std::string& expected_message_5) {
+      const std::vector<std::string>& expected_submessages_4,
+      const std::string& expected_message_5,
+      const std::vector<std::string>& expected_submessages_5) {
     std::vector<std::string> expected_messages;
     expected_messages.push_back(expected_message_1);
     expected_messages.push_back(expected_message_2);
     expected_messages.push_back(expected_message_3);
     expected_messages.push_back(expected_message_4);
     expected_messages.push_back(expected_message_5);
-    return CheckManifestProducesPermissions(
-        expected_messages, GetHostPermissionMessages(),
-        GetCoalescedHostPermissionMessages(), "host messages");
+    std::vector<std::vector<std::string>> expected_submessages;
+    expected_submessages.push_back(expected_submessages_1);
+    expected_submessages.push_back(expected_submessages_2);
+    expected_submessages.push_back(expected_submessages_3);
+    expected_submessages.push_back(expected_submessages_4);
+    expected_submessages.push_back(expected_submessages_5);
+    return VerifyPermissionMessagesWithSubmessages(app_->permissions_data(),
+                                                   expected_messages,
+                                                   expected_submessages, false);
   }
 
  private:
-  std::vector<base::string16> GetPermissionMessages() {
-    return app_->permissions_data()->GetPermissionMessageStrings();
-  }
-
-  std::vector<base::string16> GetCoalescedPermissionMessages() {
-    CoalescedPermissionMessages messages =
-        app_->permissions_data()->GetCoalescedPermissionMessages();
-    std::vector<base::string16> message_strings;
-    for (const auto& message : messages) {
-      message_strings.push_back(message.message());
-    }
-    return message_strings;
-  }
-
-  std::vector<base::string16> GetHostPermissionMessages() {
-    std::vector<base::string16> details =
-        app_->permissions_data()->GetPermissionMessageDetailsStrings();
-    // If we have a host permission, exactly one message will contain the
-    // details for it.
-    for (const auto& host_string : details) {
-      if (!host_string.empty()) {
-        // The host_string will be a newline-separated string of entries.
-        std::vector<base::string16> pieces;
-        base::SplitString(host_string, base::char16('\n'), &pieces);
-        return pieces;
-      }
-    }
-    return std::vector<base::string16>();
-  }
-
-  std::vector<base::string16> GetCoalescedHostPermissionMessages() {
-    // If we have a host permission, exactly one message will contain the
-    // details for it.
-    CoalescedPermissionMessages messages =
-        app_->permissions_data()->GetCoalescedPermissionMessages();
-    for (const auto& message : messages) {
-      if (!message.submessages().empty())
-        return message.submessages();
-    }
-    return std::vector<base::string16>();
-  }
-
-  // TODO(sashab): Remove the legacy messages from this function once the legacy
-  // messages system is no longer used.
-  testing::AssertionResult CheckManifestProducesPermissions(
-      const std::vector<std::string>& expected_messages,
-      const std::vector<base::string16>& actual_legacy_messages,
-      const std::vector<base::string16>& actual_messages,
-      const std::string& message_type_name) {
-    // Check the new messages system matches the legacy one.
-    if (actual_legacy_messages.size() != actual_messages.size()) {
-      // Message: Got 2 messages in the legacy system { "Bar", "Baz" }, but 0 in
-      // the new system {}
-      return testing::AssertionFailure()
-             << "Got " << actual_legacy_messages.size() << " "
-             << message_type_name << " in the legacy system "
-             << MessagesVectorToString(actual_legacy_messages) << ", but "
-             << actual_messages.size() << " in the new system "
-             << MessagesVectorToString(actual_messages);
-    }
-
-    for (const auto& actual_message : actual_messages) {
-      if (std::find(actual_legacy_messages.begin(),
-                    actual_legacy_messages.end(),
-                    actual_message) == actual_legacy_messages.end()) {
-        // Message: Got { "Foo" } in the legacy messages system, but { "Bar",
-        // "Baz" } in the new system
-        return testing::AssertionFailure()
-               << "Got " << MessagesVectorToString(actual_legacy_messages)
-               << " in the legacy " << message_type_name << " system, but "
-               << MessagesVectorToString(actual_messages)
-               << " in the new system";
-      }
-    }
-
-    // Check the non-legacy & actual messages are equal.
-    if (expected_messages.size() != actual_messages.size()) {
-      // Message: Expected 7 messages, got 5
-      return testing::AssertionFailure()
-             << "Expected " << expected_messages.size() << " "
-             << message_type_name << ", got " << actual_messages.size() << ": "
-             << MessagesVectorToString(actual_messages);
-    }
-
-    for (const auto& expected_message : expected_messages) {
-      if (std::find(actual_messages.begin(), actual_messages.end(),
-                    base::ASCIIToUTF16(expected_message)) ==
-          actual_messages.end()) {
-        // Message: Expected messages to contain "Foo", got { "Bar", "Baz" }
-        return testing::AssertionFailure()
-               << "Expected " << message_type_name << " to contain \""
-               << expected_message << "\", got "
-               << MessagesVectorToString(actual_messages);
-      }
-    }
-
-    return testing::AssertionSuccess();
-  }
-
-  // Returns the vector of messages in a human-readable string format, e.g.:
-  // { "Bar", "Baz" }
-  base::string16 MessagesVectorToString(
-      const std::vector<base::string16>& messages) {
-    if (messages.empty())
-      return base::ASCIIToUTF16("{}");
-    return base::ASCIIToUTF16("{ \"") +
-           JoinString(messages, base::ASCIIToUTF16("\", \"")) +
-           base::ASCIIToUTF16("\" }");
-  }
-
   extensions::TestExtensionEnvironment env_;
   scoped_ptr<ChromePermissionMessageProvider> message_provider_;
   scoped_refptr<const Extension> app_;
@@ -324,7 +218,6 @@ TEST_F(PermissionMessageCombinationsUnittest, USBSerialBluetoothCoalescing) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Access USB devices from an unknown vendor"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -339,7 +232,6 @@ TEST_F(PermissionMessageCombinationsUnittest, USBSerialBluetoothCoalescing) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Access USB devices from an unknown vendor"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   // Test that the serial permission does not coalesce on its own.
   CreateAndInstall(
@@ -354,7 +246,6 @@ TEST_F(PermissionMessageCombinationsUnittest, USBSerialBluetoothCoalescing) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions("Access your serial devices"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   // Test that the bluetooth permission does not coalesce on its own.
   CreateAndInstall(
@@ -369,7 +260,6 @@ TEST_F(PermissionMessageCombinationsUnittest, USBSerialBluetoothCoalescing) {
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Access information about Bluetooth devices paired with your system and "
       "discover nearby Bluetooth devices."));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   // Test that the bluetooth permission does not coalesce on its own, even
   // when it specifies additional permissions.
@@ -387,7 +277,6 @@ TEST_F(PermissionMessageCombinationsUnittest, USBSerialBluetoothCoalescing) {
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Access information about Bluetooth devices paired with your system and "
       "discover nearby Bluetooth devices."));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   // Test that the USB and Serial permissions coalesce.
   CreateAndInstall(
@@ -405,7 +294,6 @@ TEST_F(PermissionMessageCombinationsUnittest, USBSerialBluetoothCoalescing) {
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Access USB devices from an unknown vendor",
       "Access your serial devices"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   // Test that the USB, Serial and Bluetooth permissions coalesce.
   CreateAndInstall(
@@ -424,7 +312,6 @@ TEST_F(PermissionMessageCombinationsUnittest, USBSerialBluetoothCoalescing) {
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Access USB devices from an unknown vendor",
       "Access your Bluetooth and Serial devices"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   // Test that the USB, Serial and Bluetooth permissions coalesce even when
   // Bluetooth specifies multiple additional permissions.
@@ -448,7 +335,6 @@ TEST_F(PermissionMessageCombinationsUnittest, USBSerialBluetoothCoalescing) {
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Access USB devices from an unknown vendor",
       "Access your Bluetooth and Serial devices"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }
 
 // Test that the History permission takes precedence over the Tabs permission,
@@ -461,7 +347,6 @@ TEST_F(PermissionMessageCombinationsUnittest, TabsHistorySessionsCoalescing) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions("Read your browsing history"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -471,7 +356,6 @@ TEST_F(PermissionMessageCombinationsUnittest, TabsHistorySessionsCoalescing) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read your browsing history on all your signed-in devices"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -481,7 +365,6 @@ TEST_F(PermissionMessageCombinationsUnittest, TabsHistorySessionsCoalescing) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read and change your browsing history"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -491,7 +374,6 @@ TEST_F(PermissionMessageCombinationsUnittest, TabsHistorySessionsCoalescing) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read and change your browsing history on all your signed-in devices"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }
 
 // Test that the fileSystem permission produces no messages by itself, unless it
@@ -510,7 +392,6 @@ TEST_F(PermissionMessageCombinationsUnittest, FileSystemReadWriteCoalescing) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions());
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -524,7 +405,6 @@ TEST_F(PermissionMessageCombinationsUnittest, FileSystemReadWriteCoalescing) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions());
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -541,7 +421,6 @@ TEST_F(PermissionMessageCombinationsUnittest, FileSystemReadWriteCoalescing) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Write to files and folders that you open in the application"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }
 
 // Check that host permission messages are generated correctly when URLs are
@@ -555,7 +434,6 @@ TEST_F(PermissionMessageCombinationsUnittest, HostsPermissionMessages) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read and change your data on www.blogger.com"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -565,7 +443,6 @@ TEST_F(PermissionMessageCombinationsUnittest, HostsPermissionMessages) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read and change your data on all google.com sites"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -577,7 +454,6 @@ TEST_F(PermissionMessageCombinationsUnittest, HostsPermissionMessages) {
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read and change your data on all google.com sites and "
       "www.blogger.com"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -590,7 +466,6 @@ TEST_F(PermissionMessageCombinationsUnittest, HostsPermissionMessages) {
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read and change your data on all google.com sites, all news.com sites, "
       "and www.blogger.com"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -601,11 +476,13 @@ TEST_F(PermissionMessageCombinationsUnittest, HostsPermissionMessages) {
       "    'http://www.foobar.com/',"
       "  ]"
       "}");
+  std::vector<std::string> submessages;
+  submessages.push_back("All google.com sites");
+  submessages.push_back("All news.com sites");
+  submessages.push_back("www.blogger.com");
+  submessages.push_back("www.foobar.com");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Read and change your data on a number of websites"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions(
-      "All google.com sites", "All news.com sites", "www.blogger.com",
-      "www.foobar.com"));
+      "Read and change your data on a number of websites", submessages));
 
   CreateAndInstall(
       "{"
@@ -617,11 +494,14 @@ TEST_F(PermissionMessageCombinationsUnittest, HostsPermissionMessages) {
       "    'http://*.go.com/',"
       "  ]"
       "}");
+  submessages.clear();
+  submessages.push_back("All go.com sites");
+  submessages.push_back("All google.com sites");
+  submessages.push_back("All news.com sites");
+  submessages.push_back("www.blogger.com");
+  submessages.push_back("www.foobar.com");
   ASSERT_TRUE(CheckManifestProducesPermissions(
-      "Read and change your data on a number of websites"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions(
-      "All go.com sites", "All google.com sites", "All news.com sites",
-      "www.blogger.com", "www.foobar.com"));
+      "Read and change your data on a number of websites", submessages));
 
   CreateAndInstall(
       "{"
@@ -633,7 +513,6 @@ TEST_F(PermissionMessageCombinationsUnittest, HostsPermissionMessages) {
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read and change your data on all go.com sites",
       "Read the icons of the websites you visit"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   // Having the 'all sites' permission doesn't change the permission message,
   // since its pseudo-granted at runtime.
@@ -648,7 +527,6 @@ TEST_F(PermissionMessageCombinationsUnittest, HostsPermissionMessages) {
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read and change your data on all go.com sites",
       "Read the icons of the websites you visit"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }
 
 // Check that permission messages are generated correctly for
@@ -668,7 +546,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with any computer on the local network or internet"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -683,7 +560,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with any computer on the local network or internet"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -698,7 +574,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with the computer named 127.0.0.1"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -713,7 +588,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with the computer named www.example.com"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -728,7 +602,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with the computer named 127.0.0.1"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -743,7 +616,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with any computer on the local network or internet"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -767,7 +639,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with the computers named: 127.0.0.1 www.bar.com "
       "www.example.com www.foo.com www.google.com"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -800,7 +671,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "Exchange data with the computers named: 127.0.0.1 www.abc.com "
       "www.example.com www.foo.com www.freestuff.com www.google.com "
       "www.mywebsite.com www.test.com"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -816,7 +686,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with any computer on the local network or internet"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }
 
 // Check that permission messages are generated correctly for
@@ -835,7 +704,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions());
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -850,7 +718,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Access photos, music, and other media from your computer"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   // TODO(sashab): Add a test for the
   // IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE message (generated
@@ -870,7 +737,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read and delete photos, music, and other media from your computer"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -887,7 +753,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read, change and delete photos, music, and other media from your "
       "computer"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   // Without the allAutoDetected permission, there should be no install-time
   // permission messages.
@@ -903,7 +768,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions());
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }
 
 // TODO(sashab): Add tests for SettingsOverrideAPIPermission (an API permission
@@ -925,7 +789,6 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with any computer on the local network or internet"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -944,7 +807,6 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with any computer on the local network or internet"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -959,7 +821,6 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with the computer named foo.example.com"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -974,7 +835,6 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with any computer on the local network or internet"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -992,7 +852,6 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with the computers named: foo.example.com test.ping.com"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -1014,7 +873,6 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with the computers named: foo.example.com test.ping.com "
       "test2.ping.com www.ping.com"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -1033,7 +891,6 @@ TEST_F(PermissionMessageCombinationsUnittest, SocketPermissionMessages) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Exchange data with any computer on the local network or internet"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }
 
 // Check that permission messages are generated correctly for
@@ -1054,7 +911,6 @@ TEST_F(PermissionMessageCombinationsUnittest, USBDevicePermissionMessages) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Access USB devices from an unknown vendor"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -1071,7 +927,6 @@ TEST_F(PermissionMessageCombinationsUnittest, USBDevicePermissionMessages) {
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Access USB devices from Immanuel Electronics Co., Ltd"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -1088,7 +943,6 @@ TEST_F(PermissionMessageCombinationsUnittest, USBDevicePermissionMessages) {
       "}");
   ASSERT_TRUE(
       CheckManifestProducesPermissions("Access USB devices from Google Inc."));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -1104,20 +958,11 @@ TEST_F(PermissionMessageCombinationsUnittest, USBDevicePermissionMessages) {
       "    ] }"
       "  ]"
       "}");
-  ASSERT_TRUE(
-      CheckManifestProducesPermissions("Access any of these USB devices"));
-
-  // Although technically not host permissions, devices are currently stored in
-  // the 'host permissions' (details list) for the USB permission, in the same
-  // format.
-  // TODO(sashab): Rename host permissions to 'details list' or 'nested
-  // permissions', and change this test system to allow specifying each message
-  // as well as its corresponding nested messages, if any. Also add a test that
-  // uses this to test an app with multiple nested permission lists (e.g. both
-  // USB and host permissions).
-  ASSERT_TRUE(CheckManifestProducesHostPermissions(
-      "unknown devices from Immanuel Electronics Co., Ltd",
-      "unknown devices from Google Inc."));
+  std::vector<std::string> submessages;
+  submessages.push_back("unknown devices from Immanuel Electronics Co., Ltd");
+  submessages.push_back("unknown devices from Google Inc.");
+  ASSERT_TRUE(CheckManifestProducesPermissions(
+      "Access any of these USB devices", submessages));
 
   // TODO(sashab): Add a test with a valid product/vendor USB device.
 }
@@ -1138,7 +983,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions());
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -1154,7 +998,6 @@ TEST_F(PermissionMessageCombinationsUnittest,
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions("Access your serial devices"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }
 
 // Test various apps with lots of permissions, including those with no
@@ -1174,7 +1017,6 @@ TEST_F(PermissionMessageCombinationsUnittest, PermissionMessageCombos) {
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read and change your data on all google.com sites and www.blogger.com",
       "Read your browsing history", "Read and change your bookmarks"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 
   CreateAndInstall(
       "{"
@@ -1191,13 +1033,17 @@ TEST_F(PermissionMessageCombinationsUnittest, PermissionMessageCombos) {
       "    'http://*.go.com/',"
       "  ]"
       "}");
+  std::vector<std::string> submessages;
+  submessages.push_back("All go.com sites");
+  submessages.push_back("All google.com sites");
+  submessages.push_back("All news.com sites");
+  submessages.push_back("www.blogger.com");
+  submessages.push_back("www.foobar.com");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read your browsing history on all your signed-in devices",
-      "Read and change your bookmarks",
-      "Read and change your data on a number of websites"));
-  ASSERT_TRUE(CheckManifestProducesHostPermissions(
-      "All go.com sites", "All google.com sites", "All news.com sites",
-      "www.blogger.com", "www.foobar.com"));
+      std::vector<std::string>(), "Read and change your bookmarks",
+      std::vector<std::string>(),
+      "Read and change your data on a number of websites", submessages));
 
   CreateAndInstall(
       "{"
@@ -1224,15 +1070,20 @@ TEST_F(PermissionMessageCombinationsUnittest, PermissionMessageCombos) {
       "  ]"
       "}");
 
+  submessages.clear();
+  submessages.push_back("All go.com sites");
+  submessages.push_back("All google.com sites");
+  submessages.push_back("All news.com sites");
+  submessages.push_back("www.blogger.com");
+  submessages.push_back("www.foobar.com");
   ASSERT_TRUE(CheckManifestProducesPermissions(
       "Read your browsing history on all your signed-in devices",
-      "Capture content of your screen", "Read and change your bookmarks",
-      "Read and change your data on a number of websites",
-      "Read and change your accessibility settings"));
-
-  ASSERT_TRUE(CheckManifestProducesHostPermissions(
-      "All go.com sites", "All google.com sites", "All news.com sites",
-      "www.blogger.com", "www.foobar.com"));
+      std::vector<std::string>(), "Capture content of your screen",
+      std::vector<std::string>(), "Read and change your bookmarks",
+      std::vector<std::string>(),
+      "Read and change your data on a number of websites", submessages,
+      "Read and change your accessibility settings",
+      std::vector<std::string>()));
 
   // Create an App instead, ensuring that the host permission messages are not
   // added.
@@ -1271,7 +1122,6 @@ TEST_F(PermissionMessageCombinationsUnittest, PermissionMessageCombos) {
       "Access your serial devices", "Store data in your Google Drive account",
       "Read and change your accessibility settings"));
 
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }
 
 // Tests that the 'plugin' manifest key produces the correct permission.
@@ -1292,8 +1142,6 @@ TEST_F(PermissionMessageCombinationsUnittest, PluginPermission) {
       "visit"));
 #endif
 
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
-
   // Apps can't have plugins.
   CreateAndInstall(
       "{"
@@ -1307,7 +1155,6 @@ TEST_F(PermissionMessageCombinationsUnittest, PluginPermission) {
       "  ]"
       "}");
   ASSERT_TRUE(CheckManifestProducesPermissions());
-  ASSERT_TRUE(CheckManifestProducesHostPermissions());
 }
 
 // TODO(sashab): Add a test that checks that messages are generated correctly

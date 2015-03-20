@@ -29,9 +29,6 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
   // See comments in permission_message_provider.h. TL;DR: You want to use only
   // GetPermissionMessageStrings to get messages, not the *Legacy* or
   // *Coalesced* methods.
-  PermissionMessageStrings GetPermissionMessageStrings(
-      const PermissionSet* permissions,
-      Manifest::Type extension_type) const override;
   PermissionMessageIDs GetLegacyPermissionMessageIDs(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const override;
@@ -52,8 +49,9 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
 
  private:
   // TODO(treib): Remove this once we've switched to the new system.
-  PermissionMessages GetPermissionMessages(const PermissionSet* permissions,
-                                           Manifest::Type extension_type) const;
+  PermissionMessages GetLegacyPermissionMessages(
+      const PermissionSet* permissions,
+      Manifest::Type extension_type) const;
 
   // Gets the permission messages for the API permissions. Also adds any
   // permission IDs from API Permissions to |permission_ids|.
@@ -61,7 +59,8 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
   // AddAPIPermissions().
   std::set<PermissionMessage> GetAPIPermissionMessages(
       const PermissionSet* permissions,
-      PermissionIDSet* permission_ids) const;
+      PermissionIDSet* permission_ids,
+      Manifest::Type extension_type) const;
 
   // Gets the permission messages for the Manifest permissions. Also adds any
   // permission IDs from manifest Permissions to |permission_ids|.
@@ -92,9 +91,9 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
 
   // Returns true if |new_permissions| has an elevated API privilege level
   // compared to |old_permissions|.
-  bool IsAPIPrivilegeIncrease(
-      const PermissionSet* old_permissions,
-      const PermissionSet* new_permissions) const;
+  bool IsAPIPrivilegeIncrease(const PermissionSet* old_permissions,
+                              const PermissionSet* new_permissions,
+                              Manifest::Type extension_type) const;
 
   // Returns true if |new_permissions| has an elevated manifest permission
   // privilege level compared to |old_permissions|.

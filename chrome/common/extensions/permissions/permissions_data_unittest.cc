@@ -17,6 +17,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
+#include "extensions/common/permissions/permission_message_test_util.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/socket_permission.h"
@@ -292,32 +293,29 @@ TEST(PermissionsDataTest, IsRestrictedUrl) {
 TEST(PermissionsDataTest, GetPermissionMessages_ManyAPIPermissions) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-apis.json");
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
   // Warning for "tabs" is suppressed by "history" permission.
-  ASSERT_EQ(5u, warnings.size());
-  EXPECT_EQ("Read and change your data on api.flickr.com",
-            UTF16ToUTF8(warnings[0]));
-  EXPECT_EQ("Read and change your bookmarks", UTF16ToUTF8(warnings[1]));
-  EXPECT_EQ("Detect your physical location", UTF16ToUTF8(warnings[2]));
-  EXPECT_EQ("Read and change your browsing history", UTF16ToUTF8(warnings[3]));
-  EXPECT_EQ("Manage your apps, extensions, and themes",
-            UTF16ToUTF8(warnings[4]));
+  std::vector<std::string> expected_messages;
+  expected_messages.push_back("Read and change your data on api.flickr.com");
+  expected_messages.push_back("Read and change your bookmarks");
+  expected_messages.push_back("Detect your physical location");
+  expected_messages.push_back("Read and change your browsing history");
+  expected_messages.push_back("Manage your apps, extensions, and themes");
+  EXPECT_TRUE(VerifyPermissionMessages(extension->permissions_data(),
+                                       expected_messages, false));
 }
 
 TEST(PermissionsDataTest, GetPermissionMessages_ManyHostsPermissions) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "more-than-3-hosts.json");
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  std::vector<base::string16> warnings_details =
-      extension->permissions_data()->GetPermissionMessageDetailsStrings();
-  ASSERT_EQ(1u, warnings.size());
-  ASSERT_EQ(1u, warnings_details.size());
-  EXPECT_EQ("Read and change your data on a number of websites",
-            UTF16ToUTF8(warnings[0]));
-  EXPECT_EQ("www.a.com\nwww.b.com\nwww.c.com\nwww.d.com\nwww.e.com",
-            UTF16ToUTF8(warnings_details[0]));
+  std::vector<std::string> submessages;
+  submessages.push_back("www.a.com");
+  submessages.push_back("www.b.com");
+  submessages.push_back("www.c.com");
+  submessages.push_back("www.d.com");
+  submessages.push_back("www.e.com");
+  EXPECT_TRUE(VerifyOnePermissionMessageWithSubmessages(
+      extension->permissions_data(),
+      "Read and change your data on a number of websites", submessages));
 }
 
 TEST(PermissionsDataTest, GetPermissionMessages_LocationApiPermission) {
@@ -326,38 +324,30 @@ TEST(PermissionsDataTest, GetPermissionMessages_LocationApiPermission) {
                            "location-api.json",
                            Manifest::COMPONENT,
                            Extension::NO_FLAGS);
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Detect your physical location", UTF16ToUTF8(warnings[0]));
+  EXPECT_TRUE(VerifyOnePermissionMessage(extension->permissions_data(),
+                                         "Detect your physical location"));
 }
 
 TEST(PermissionsDataTest, GetPermissionMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-hosts.json");
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ(
-      "Read and change your data on encrypted.google.com and www.google.com",
-      UTF16ToUTF8(warnings[0]));
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      "Read and change your data on encrypted.google.com and www.google.com"));
 }
 
 TEST(PermissionsDataTest, GetPermissionMessages_Plugins) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "plugins.json");
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
 // We don't parse the plugins key on Chrome OS, so it should not ask for any
 // permissions.
 #if defined(OS_CHROMEOS)
-  ASSERT_EQ(0u, warnings.size());
+  EXPECT_TRUE(VerifyNoPermissionMessages(extension->permissions_data()));
 #else
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ(
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
       "Read and change all your data on your computer and the websites you "
-      "visit",
-      UTF16ToUTF8(warnings[0]));
+      "visit"));
 #endif
 }
 

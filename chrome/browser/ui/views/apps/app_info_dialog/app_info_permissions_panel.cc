@@ -263,9 +263,9 @@ const std::vector<PermissionStringAndDetailsPair>
 AppInfoPermissionsPanel::GetActivePermissionMessages() const {
   std::vector<PermissionStringAndDetailsPair> messages_with_details;
   std::vector<base::string16> permission_messages =
-      app_->permissions_data()->GetPermissionMessageStrings();
+      app_->permissions_data()->GetLegacyPermissionMessageStrings();
   std::vector<base::string16> permission_message_details =
-      app_->permissions_data()->GetPermissionMessageDetailsStrings();
+      app_->permissions_data()->GetLegacyPermissionMessageDetailsStrings();
   DCHECK_EQ(permission_messages.size(), permission_message_details.size());
 
   for (size_t i = 0; i < permission_messages.size(); i++) {

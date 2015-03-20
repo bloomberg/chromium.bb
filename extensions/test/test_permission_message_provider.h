@@ -16,9 +16,6 @@ class TestPermissionMessageProvider : public PermissionMessageProvider {
   ~TestPermissionMessageProvider() override;
 
  private:
-  PermissionMessageStrings GetPermissionMessageStrings(
-      const PermissionSet* permissions,
-      Manifest::Type extension_type) const override;
   PermissionMessageIDs GetLegacyPermissionMessageIDs(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const override;

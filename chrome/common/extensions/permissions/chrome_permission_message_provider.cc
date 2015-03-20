@@ -25,12 +25,6 @@ namespace extensions {
 
 namespace {
 
-bool IsNewPermissionMessageSystemEnabled() {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("PermissionMessageSystem");
-  return group_name == "NewSystem";
-}
-
 typedef std::set<PermissionMessage> PermissionMsgSet;
 
 template<typename T>
@@ -88,7 +82,7 @@ ChromePermissionMessageProvider::ChromePermissionMessageProvider() {
 ChromePermissionMessageProvider::~ChromePermissionMessageProvider() {
 }
 
-PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
+PermissionMessages ChromePermissionMessageProvider::GetLegacyPermissionMessages(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
   PermissionMessages messages;
@@ -143,7 +137,8 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
 
   PermissionMsgSet host_msgs =
       GetHostPermissionMessages(permissions, NULL, extension_type);
-  PermissionMsgSet api_msgs = GetAPIPermissionMessages(permissions, NULL);
+  PermissionMsgSet api_msgs =
+      GetAPIPermissionMessages(permissions, NULL, extension_type);
   PermissionMsgSet manifest_permission_msgs =
       GetManifestPermissionMessages(permissions, NULL);
   messages.insert(messages.end(), host_msgs.begin(), host_msgs.end());
@@ -162,35 +157,13 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
   return messages;
 }
 
-PermissionMessageStrings
-ChromePermissionMessageProvider::GetPermissionMessageStrings(
-    const PermissionSet* permissions,
-    Manifest::Type extension_type) const {
-  PermissionMessageStrings strings;
-  if (IsNewPermissionMessageSystemEnabled()) {
-    CoalescedPermissionMessages messages = GetCoalescedPermissionMessages(
-        GetAllPermissionIDs(permissions, extension_type));
-    for (const CoalescedPermissionMessage& msg : messages)
-      strings.push_back(PermissionMessageString(msg));
-  } else {
-    std::vector<base::string16> messages =
-        GetLegacyWarningMessages(permissions, extension_type);
-    std::vector<base::string16> details =
-        GetLegacyWarningMessagesDetails(permissions, extension_type);
-    DCHECK_EQ(messages.size(), details.size());
-    for (size_t i = 0; i < messages.size(); i++)
-      strings.push_back(PermissionMessageString(messages[i], details[i]));
-  }
-  return strings;
-}
-
 PermissionMessageIDs
 ChromePermissionMessageProvider::GetLegacyPermissionMessageIDs(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
   PermissionMessageIDs ids;
   for (const PermissionMessage& msg :
-       GetPermissionMessages(permissions, extension_type)) {
+       GetLegacyPermissionMessages(permissions, extension_type)) {
     ids.push_back(msg.id());
   }
   return ids;
@@ -267,7 +240,7 @@ bool ChromePermissionMessageProvider::IsPrivilegeIncrease(
   if (IsHostPrivilegeIncrease(old_permissions, new_permissions, extension_type))
     return true;
 
-  if (IsAPIPrivilegeIncrease(old_permissions, new_permissions))
+  if (IsAPIPrivilegeIncrease(old_permissions, new_permissions, extension_type))
     return true;
 
   if (IsManifestPermissionPrivilegeIncrease(old_permissions, new_permissions))
@@ -280,7 +253,7 @@ PermissionIDSet ChromePermissionMessageProvider::GetAllPermissionIDs(
     const PermissionSet* permissions,
     Manifest::Type extension_type) const {
   PermissionIDSet permission_ids;
-  GetAPIPermissionMessages(permissions, &permission_ids);
+  GetAPIPermissionMessages(permissions, &permission_ids, extension_type);
   GetManifestPermissionMessages(permissions, &permission_ids);
   GetHostPermissionMessages(permissions, &permission_ids, extension_type);
   return permission_ids;
@@ -289,7 +262,8 @@ PermissionIDSet ChromePermissionMessageProvider::GetAllPermissionIDs(
 std::set<PermissionMessage>
 ChromePermissionMessageProvider::GetAPIPermissionMessages(
     const PermissionSet* permissions,
-    PermissionIDSet* permission_ids) const {
+    PermissionIDSet* permission_ids,
+    Manifest::Type extension_type) const {
   PermissionMsgSet messages;
   for (APIPermissionSet::const_iterator permission_it =
            permissions->apis().begin();
@@ -308,7 +282,8 @@ ChromePermissionMessageProvider::GetAPIPermissionMessages(
   // display only the "<all_urls>" warning message if both permissions
   // are required.
   if (permissions->ShouldWarnAllHosts()) {
-    if (permission_ids != NULL)
+    // Platform apps don't show hosts warnings. See crbug.com/255229.
+    if (permission_ids != NULL && extension_type != Manifest::TYPE_PLATFORM_APP)
       permission_ids->insert(APIPermission::kHostsAll);
     messages.erase(
         PermissionMessage(
@@ -384,7 +359,7 @@ void ChromePermissionMessageProvider::CoalesceWarningMessages(
     std::vector<base::string16>* message_strings,
     std::vector<base::string16>* message_details_strings) const {
   PermissionMessages messages =
-      GetPermissionMessages(permissions, extension_type);
+      GetLegacyPermissionMessages(permissions, extension_type);
 
   // WARNING: When modifying a coalescing rule in this list, be sure to also
   // modify the corresponding rule in
@@ -494,14 +469,15 @@ void ChromePermissionMessageProvider::CoalesceWarningMessages(
 
 bool ChromePermissionMessageProvider::IsAPIPrivilegeIncrease(
     const PermissionSet* old_permissions,
-    const PermissionSet* new_permissions) const {
+    const PermissionSet* new_permissions,
+    Manifest::Type extension_type) const {
   if (new_permissions == NULL)
     return false;
 
   PermissionMsgSet old_warnings =
-      GetAPIPermissionMessages(old_permissions, NULL);
+      GetAPIPermissionMessages(old_permissions, NULL, extension_type);
   PermissionMsgSet new_warnings =
-      GetAPIPermissionMessages(new_permissions, NULL);
+      GetAPIPermissionMessages(new_permissions, NULL, extension_type);
   PermissionMsgSet delta_warnings =
       base::STLSetDifference<PermissionMsgSet>(new_warnings, old_warnings);
 

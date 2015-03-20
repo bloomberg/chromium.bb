@@ -13,7 +13,6 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
-#include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_message_util.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
@@ -205,7 +204,14 @@ PermissionMessageIDs PermissionsData::GetLegacyPermissionMessageIDs() const {
   }
 }
 
-std::vector<base::string16> PermissionsData::GetPermissionMessageStrings()
+PermissionMessageStrings PermissionsData::GetPermissionMessageStrings() const {
+  if (ShouldSkipPermissionWarnings(extension_id_))
+    return PermissionMessageStrings();
+  return PermissionMessageProvider::Get()->GetPermissionMessageStrings(
+      active_permissions().get(), manifest_type_);
+}
+
+std::vector<base::string16> PermissionsData::GetLegacyPermissionMessageStrings()
     const {
   if (ShouldSkipPermissionWarnings(extension_id_))
     return std::vector<base::string16>();
@@ -214,7 +220,7 @@ std::vector<base::string16> PermissionsData::GetPermissionMessageStrings()
 }
 
 std::vector<base::string16>
-PermissionsData::GetPermissionMessageDetailsStrings() const {
+PermissionsData::GetLegacyPermissionMessageDetailsStrings() const {
   if (ShouldSkipPermissionWarnings(extension_id_))
     return std::vector<base::string16>();
   return PermissionMessageProvider::Get()->GetLegacyWarningMessagesDetails(

@@ -21,6 +21,9 @@ class PermissionSet;
 // TODO(treib): Remove this once we've switched to the new system.
 struct PermissionMessageString {
   PermissionMessageString(const CoalescedPermissionMessage& message);
+  PermissionMessageString(const base::string16& message);
+  PermissionMessageString(const base::string16& message,
+                          const std::vector<base::string16>& submessages);
   PermissionMessageString(const base::string16& message,
                           const base::string16& details);
   ~PermissionMessageString();
@@ -29,6 +32,14 @@ struct PermissionMessageString {
   std::vector<base::string16> submessages;
 };
 typedef std::vector<PermissionMessageString> PermissionMessageStrings;
+
+enum class ForceForTesting {
+  DONT_FORCE,
+  FORCE_OLD,
+  FORCE_NEW
+};
+
+void ForcePermissionMessageSystemForTesting(ForceForTesting force);
 
 // The PermissionMessageProvider interprets permissions, translating them
 // into warning messages to show to the user. It also determines whether
@@ -47,9 +58,9 @@ class PermissionMessageProvider {
   // cmdline flag.
   // TODO(treib): Remove this once we've switched to the new system, and update
   // all callers to use GetCoalescedPermissionMessages directly.
-  virtual PermissionMessageStrings GetPermissionMessageStrings(
+  PermissionMessageStrings GetPermissionMessageStrings(
       const PermissionSet* permissions,
-      Manifest::Type extension_type) const = 0;
+      Manifest::Type extension_type) const;
 
   // Gets the legacy permission message IDs that represent this set.
   // Deprecated. You DO NOT want to call this!

@@ -12,13 +12,6 @@ TestPermissionMessageProvider::TestPermissionMessageProvider() {
 TestPermissionMessageProvider::~TestPermissionMessageProvider() {
 }
 
-PermissionMessageStrings
-TestPermissionMessageProvider::GetPermissionMessageStrings(
-    const PermissionSet* permissions,
-    Manifest::Type extension_type) const {
-  return PermissionMessageStrings();
-}
-
 PermissionMessageIDs
 TestPermissionMessageProvider::GetLegacyPermissionMessageIDs(
     const PermissionSet* permissions,

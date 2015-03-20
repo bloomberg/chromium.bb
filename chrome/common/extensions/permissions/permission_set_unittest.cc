@@ -16,6 +16,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/permissions/permission_message_provider.h"
+#include "extensions/common/permissions/permission_message_test_util.h"
 #include "extensions/common/permissions/permission_message_util.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -37,19 +38,14 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
-size_t IndexOf(const std::vector<base::string16>& warnings,
+size_t IndexOf(const PermissionMessageStrings& warnings,
                const std::string& warning) {
   for (size_t i = 0; i < warnings.size(); ++i) {
-    if (warnings[i] == base::ASCIIToUTF16(warning))
+    if (warnings[i].message == base::ASCIIToUTF16(warning))
       return i;
   }
 
   return warnings.size();
-}
-
-bool Contains(const std::vector<base::string16>& warnings,
-              const std::string& warning) {
-  return IndexOf(warnings, warning) != warnings.size();
 }
 
 }  // namespace
@@ -975,12 +971,9 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
                           ManifestPermissionSet(),
                           URLPatternSet(),
                           URLPatternSet()));
-    std::vector<base::string16> messages =
-        PermissionMessageProvider::Get()->GetLegacyWarningMessages(
-            permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, messages.size());
-    EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_SERIAL),
-              messages[0]);
+    VerifyOnePermissionMessage(
+        permissions.get(), Manifest::TYPE_EXTENSION,
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_SERIAL));
   }
   {
     // Testing that multiple permissions will show the one message.
@@ -992,34 +985,25 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
                           ManifestPermissionSet(),
                           URLPatternSet(),
                           URLPatternSet()));
-    std::vector<base::string16> messages =
-        PermissionMessageProvider::Get()->GetLegacyWarningMessages(
-            permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, messages.size());
-    EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_SERIAL),
-              messages[0]);
+    VerifyOnePermissionMessage(
+        permissions.get(), Manifest::TYPE_EXTENSION,
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_SERIAL));
   }
   {
     scoped_refptr<Extension> extension =
         LoadManifest("permissions", "access_to_devices_bluetooth.json");
-    const PermissionMessageProvider* provider =
-        PermissionMessageProvider::Get();
     PermissionSet* set = const_cast<PermissionSet*>(
         extension->permissions_data()->active_permissions().get());
-    std::vector<base::string16> warnings =
-        provider->GetLegacyWarningMessages(set, extension->GetType());
-    EXPECT_EQ(1u, warnings.size());
-    EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH),
-              warnings[0]);
+    VerifyOnePermissionMessage(
+        set, extension->GetType(),
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH));
 
     // Test Bluetooth and Serial
     set->apis_.insert(APIPermission::kSerial);
-    warnings = provider->GetLegacyWarningMessages(set, extension->GetType());
-    EXPECT_EQ(1u, warnings.size());
-    EXPECT_EQ(l10n_util::GetStringUTF16(
-                  IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_SERIAL),
-              warnings[0]);
-    set->apis_.erase(APIPermission::kSerial);
+    VerifyOnePermissionMessage(
+        set, extension->GetType(),
+        l10n_util::GetStringUTF16(
+            IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_SERIAL));
   }
 }
 
@@ -1068,34 +1052,24 @@ TEST(PermissionsTest, MergedFileSystemPermissionComparison) {
 
 TEST(PermissionsTest, GetWarningMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
-
   extension = LoadManifest("permissions", "many-hosts.json");
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ(
-      "Read and change your data on encrypted.google.com and "
-      "www.google.com",
-      base::UTF16ToUTF8(warnings[0]));
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      "Read and change your data on encrypted.google.com and www.google.com"));
 }
 
 TEST(PermissionsTest, GetWarningMessages_Plugins) {
   scoped_refptr<Extension> extension;
-  scoped_refptr<PermissionSet> permissions;
-
   extension = LoadManifest("permissions", "plugins.json");
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
 // We don't parse the plugins key on Chrome OS, so it should not ask for any
-  // permissions.
+// permissions.
 #if defined(OS_CHROMEOS)
-  ASSERT_EQ(0u, warnings.size());
+  EXPECT_TRUE(VerifyNoPermissionMessages(extension->permissions_data()));
 #else
-  ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ(
-      "Read and change all your data on your computer and the websites "
-      "you visit",
-      base::UTF16ToUTF8(warnings[0]));
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      "Read and change all your data on your computer and the websites you "
+      "visit"));
 #endif
 }
 
@@ -1106,30 +1080,40 @@ TEST(PermissionsTest, GetWarningMessages_AudioVideo) {
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
   PermissionSet* set = const_cast<PermissionSet*>(
       extension->permissions_data()->active_permissions().get());
-  std::vector<base::string16> warnings =
-      provider->GetLegacyWarningMessages(set, extension->GetType());
-  EXPECT_FALSE(Contains(warnings, "Use your microphone"));
-  EXPECT_FALSE(Contains(warnings, "Use your camera"));
-  EXPECT_TRUE(Contains(warnings, "Use your microphone and camera"));
+  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(),
+                                          "Use your microphone"));
+  EXPECT_FALSE(
+      VerifyHasPermissionMessage(set, extension->GetType(), "Use your camera"));
+  EXPECT_TRUE(VerifyHasPermissionMessage(set, extension->GetType(),
+                                         "Use your microphone and camera"));
+  PermissionMessageStrings warnings =
+      provider->GetPermissionMessageStrings(set, extension->GetType());
   size_t combined_index = IndexOf(warnings, "Use your microphone and camera");
   size_t combined_size = warnings.size();
 
   // Just audio present.
   set->apis_.erase(APIPermission::kVideoCapture);
-  warnings = provider->GetLegacyWarningMessages(set, extension->GetType());
+  EXPECT_TRUE(VerifyHasPermissionMessage(set, extension->GetType(),
+                                         "Use your microphone"));
+  EXPECT_FALSE(
+      VerifyHasPermissionMessage(set, extension->GetType(), "Use your camera"));
+  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(),
+                                          "Use your microphone and camera"));
+  warnings = provider->GetPermissionMessageStrings(set, extension->GetType());
   EXPECT_EQ(combined_size, warnings.size());
   EXPECT_EQ(combined_index, IndexOf(warnings, "Use your microphone"));
-  EXPECT_FALSE(Contains(warnings, "Use your camera"));
-  EXPECT_FALSE(Contains(warnings, "Use your microphone and camera"));
 
   // Just video present.
   set->apis_.erase(APIPermission::kAudioCapture);
   set->apis_.insert(APIPermission::kVideoCapture);
-  warnings = provider->GetLegacyWarningMessages(set, extension->GetType());
+  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(),
+                                          "Use your microphone"));
+  EXPECT_TRUE(
+      VerifyHasPermissionMessage(set, extension->GetType(), "Use your camera"));
+  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(),
+                                          "Use your microphone and camera"));
+  warnings = provider->GetPermissionMessageStrings(set, extension->GetType());
   EXPECT_EQ(combined_size, warnings.size());
-  EXPECT_FALSE(Contains(warnings, "Use your microphone"));
-  EXPECT_FALSE(Contains(warnings, "Use your microphone and camera"));
-  EXPECT_TRUE(Contains(warnings, "Use your camera"));
 }
 
 TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
@@ -1143,13 +1127,10 @@ TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
     scoped_refptr<PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
-    std::vector<base::string16> messages =
-        PermissionMessageProvider::Get()->GetLegacyWarningMessages(
-            permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, messages.size());
-    EXPECT_EQ(l10n_util::GetStringUTF16(
-                  IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ_AND_SESSIONS),
-              messages[0]);
+    EXPECT_TRUE(VerifyOnePermissionMessage(
+        permissions.get(), Manifest::TYPE_EXTENSION,
+        l10n_util::GetStringUTF16(
+            IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ_AND_SESSIONS)));
   }
   {
     APIPermissionSet api_permissions;
@@ -1162,13 +1143,10 @@ TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
     scoped_refptr<PermissionSet> permissions(
         new PermissionSet(api_permissions, ManifestPermissionSet(),
                           URLPatternSet(), URLPatternSet()));
-    std::vector<base::string16> messages =
-        PermissionMessageProvider::Get()->GetLegacyWarningMessages(
-            permissions.get(), Manifest::TYPE_EXTENSION);
-    EXPECT_EQ(1u, messages.size());
-    EXPECT_EQ(l10n_util::GetStringUTF16(
-                  IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE_AND_SESSIONS),
-              messages[0]);
+    EXPECT_TRUE(VerifyOnePermissionMessage(
+        permissions.get(), Manifest::TYPE_EXTENSION,
+        l10n_util::GetStringUTF16(
+            IDS_EXTENSION_PROMPT_WARNING_HISTORY_WRITE_AND_SESSIONS)));
   }
 }
 
@@ -1186,24 +1164,24 @@ TEST(PermissionsTest, GetWarningMessages_DeclarativeWebRequest) {
   // permissions do not cover all hosts.
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "web_request_not_all_host_permissions.json");
-  const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
   const PermissionSet* set =
       extension->permissions_data()->active_permissions().get();
-  std::vector<base::string16> warnings =
-      provider->GetLegacyWarningMessages(set, extension->GetType());
-  EXPECT_TRUE(Contains(warnings, "Block parts of web pages"));
-  EXPECT_FALSE(Contains(
-      warnings, "Read and change all your data on the websites you visit"));
+  EXPECT_TRUE(VerifyHasPermissionMessage(set, extension->GetType(),
+                                         "Block parts of web pages"));
+  EXPECT_FALSE(VerifyHasPermissionMessage(
+      set, extension->GetType(),
+      "Read and change all your data on the websites you visit"));
 
   // Now verify that declarativeWebRequest does not produce a message when host
   // permissions do cover all hosts.
   extension =
       LoadManifest("permissions", "web_request_all_host_permissions.json");
   set = extension->permissions_data()->active_permissions().get();
-  warnings = provider->GetLegacyWarningMessages(set, extension->GetType());
-  EXPECT_FALSE(Contains(warnings, "Block parts of web pages"));
-  EXPECT_TRUE(Contains(
-      warnings, "Read and change all your data on the websites you visit"));
+  EXPECT_FALSE(VerifyHasPermissionMessage(set, extension->GetType(),
+                                          "Block parts of web pages"));
+  EXPECT_TRUE(VerifyHasPermissionMessage(
+      set, extension->GetType(),
+      "Read and change all your data on the websites you visit"));
 }
 
 TEST(PermissionsTest, GetWarningMessages_Serial) {
@@ -1213,10 +1191,8 @@ TEST(PermissionsTest, GetWarningMessages_Serial) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(
       extension->permissions_data()->HasAPIPermission(APIPermission::kSerial));
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  EXPECT_TRUE(Contains(warnings, "Access your serial devices"));
-  ASSERT_EQ(1u, warnings.size());
+  EXPECT_TRUE(VerifyOnePermissionMessage(extension->permissions_data(),
+                                         "Access your serial devices"));
 }
 
 TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
@@ -1227,11 +1203,9 @@ TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(
       extension->permissions_data()->HasAPIPermission(APIPermission::kSocket));
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  EXPECT_EQ(1u, warnings.size());
-  EXPECT_TRUE(Contains(warnings, "Exchange data with any computer "
-                                 "on the local network or internet"));
+  EXPECT_TRUE(VerifyOnePermissionMessage(
+      extension->permissions_data(),
+      "Exchange data with any computer on the local network or internet"));
 }
 
 TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
@@ -1242,23 +1216,18 @@ TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(
       extension->permissions_data()->HasAPIPermission(APIPermission::kSocket));
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
 
   // Verify the warnings, including support for unicode characters, the fact
   // that domain host warnings come before specific host warnings, and the fact
   // that domains and hostnames are in alphabetical order regardless of the
   // order in the manifest file.
-  EXPECT_EQ(2u, warnings.size());
-  if (warnings.size() > 0)
-    EXPECT_EQ(warnings[0],
-              base::UTF8ToUTF16("Exchange data with any computer in the domain "
-                          "example.org"));
-  if (warnings.size() > 1)
-    EXPECT_EQ(warnings[1],
-              base::UTF8ToUTF16("Exchange data with the computers named: "
-                          "b\xC3\xA5r.example.com foo.example.com"));
-                          // "\xC3\xA5" = UTF-8 for lowercase A with ring above
+  EXPECT_TRUE(VerifyTwoPermissionMessages(
+      extension->permissions_data(),
+      "Exchange data with any computer in the domain example.org",
+      "Exchange data with the computers named: "
+      "b\xC3\xA5r.example.com foo.example.com",
+      // "\xC3\xA5" = UTF-8 for lowercase A with ring above
+      true));
 }
 
 TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
@@ -1269,39 +1238,33 @@ TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(
       extension->permissions_data()->HasAPIPermission(APIPermission::kSocket));
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
 
   // Verify the warnings, including the fact that domain host warnings come
   // before specific host warnings and the fact that domains and hostnames are
   // in alphabetical order regardless of the order in the manifest file.
-  EXPECT_EQ(2u, warnings.size());
-  if (warnings.size() > 0)
-    EXPECT_EQ(warnings[0],
-              base::UTF8ToUTF16("Exchange data with any computer in the "
-                                "domains: example.com foo.example.org"));
-  if (warnings.size() > 1)
-    EXPECT_EQ(warnings[1],
-              base::UTF8ToUTF16("Exchange data with the computer named "
-                                "bar.example.org"));
+  EXPECT_TRUE(VerifyTwoPermissionMessages(
+      extension->permissions_data(),
+      "Exchange data with any computer in the domains: "
+      "example.com foo.example.org",
+      "Exchange data with the computer named bar.example.org", true));
 }
 
-TEST(PermissionsTest, GetWarningMessages_PlatformApppHosts) {
+// Since platform apps always use isolated storage, they can't (silently)
+// access user data on other domains, so there's no need to prompt about host
+// permissions. See crbug.com/255229.
+TEST(PermissionsTest, GetWarningMessages_PlatformAppHosts) {
   scoped_refptr<Extension> extension;
 
   extension = LoadManifest("permissions", "platform_app_hosts.json");
   EXPECT_TRUE(extension->is_platform_app());
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(0u, warnings.size());
+  EXPECT_TRUE(VerifyNoPermissionMessages(extension->permissions_data()));
 
   extension = LoadManifest("permissions", "platform_app_all_urls.json");
   EXPECT_TRUE(extension->is_platform_app());
-  warnings = extension->permissions_data()->GetPermissionMessageStrings();
-  ASSERT_EQ(0u, warnings.size());
+  EXPECT_TRUE(VerifyNoPermissionMessages(extension->permissions_data()));
 }
 
-bool ShowsAllHostsWarning(const std::string& pattern) {
+testing::AssertionResult ShowsAllHostsWarning(const std::string& pattern) {
   scoped_refptr<Extension> extension =
       ExtensionBuilder()
           .SetManifest(DictionaryBuilder()
@@ -1311,18 +1274,9 @@ bool ShowsAllHostsWarning(const std::string& pattern) {
                            .Build())
           .Build();
 
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-
-  if (warnings.empty())
-    return false;
-
-  if (warnings[0] !=
-      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)) {
-    return false;
-  }
-
-  return true;
+  return VerifyHasPermissionMessage(
+      extension->permissions_data(),
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS));
 }
 
 TEST(PermissionsTest, GetWarningMessages_TLDWildcardTreatedAsAllHosts) {
@@ -1745,10 +1699,9 @@ TEST(PermissionsTest, SyncFileSystemPermission) {
   EXPECT_TRUE(extension->is_platform_app());
   EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
       APIPermission::kSyncFileSystem));
-  std::vector<base::string16> warnings =
-      extension->permissions_data()->GetPermissionMessageStrings();
-  EXPECT_TRUE(Contains(warnings, "Store data in your Google Drive account"));
-  ASSERT_EQ(1u, warnings.size());
+  EXPECT_TRUE(
+      VerifyOnePermissionMessage(extension->permissions_data(),
+                                 "Store data in your Google Drive account"));
 }
 
 // Make sure that we don't crash when we're trying to show the permissions

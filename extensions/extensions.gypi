@@ -1013,6 +1013,8 @@
       'common/extension_builder.h',
       'common/manifest_test.cc',
       'common/manifest_test.h',
+      'common/permissions/permission_message_test_util.cc',
+      'common/permissions/permission_message_test_util.h',
       'common/test_util.cc',
       'common/test_util.h',
       'renderer/test_extensions_renderer_client.cc',
