@@ -254,7 +254,7 @@ class AndroidProviderBackendTest : public testing::Test {
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  ChromeHistoryClient* history_client_;
+  history::HistoryClient* history_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidProviderBackendTest);
 };

@@ -12,17 +12,10 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
-ChromeHistoryClient* ChromeHistoryClientFactory::GetForProfile(
+history::HistoryClient* ChromeHistoryClientFactory::GetForProfile(
     Profile* profile) {
-  return static_cast<ChromeHistoryClient*>(
+  return static_cast<history::HistoryClient*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
-}
-
-// static
-ChromeHistoryClient* ChromeHistoryClientFactory::GetForProfileWithoutCreating(
-    Profile* profile) {
-  return static_cast<ChromeHistoryClient*>(
-      GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
 // static
@@ -42,7 +35,7 @@ ChromeHistoryClientFactory::~ChromeHistoryClientFactory() {
 
 KeyedService* ChromeHistoryClientFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
+  Profile* profile = Profile::FromBrowserContext(context);
   return new ChromeHistoryClient(BookmarkModelFactory::GetForProfile(profile));
 }
 

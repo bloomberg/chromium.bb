@@ -10,20 +10,17 @@
 template <typename T>
 struct DefaultSingletonTraits;
 
-class ChromeHistoryClient;
 class Profile;
+
+namespace history {
+class HistoryClient;
+}
 
 // Singleton that owns all ChromeHistoryClients and associates them with
 // Profiles.
 class ChromeHistoryClientFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static ChromeHistoryClient* GetForProfile(Profile* profile);
-
-  // TODO(sdefresne): remove this once ChromeHistoryClient is no longer an
-  // HistoryServiceObserver and can follow the regular shutdown even during
-  // tests.
-  static ChromeHistoryClient* GetForProfileWithoutCreating(Profile* profile);
-
+  static history::HistoryClient* GetForProfile(Profile* profile);
   static ChromeHistoryClientFactory* GetInstance();
 
  private:
