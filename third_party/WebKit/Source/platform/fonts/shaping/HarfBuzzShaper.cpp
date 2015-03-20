@@ -364,12 +364,14 @@ static void normalizeCharacters(const TextRun& run, unsigned length, UChar* dest
         UChar32 character;
         U16_NEXT(source, position, length, character);
         // Don't normalize tabs as they are not treated as spaces for word-end.
-        if (run.normalizeSpace() && Character::isNormalizedCanvasSpaceCharacter(character))
+        if (run.normalizeSpace() && Character::isNormalizedCanvasSpaceCharacter(character)) {
             character = space;
-        else if (Character::treatAsSpace(character) && character != characterTabulation)
-            character = space;
-        else if (Character::treatAsZeroWidthSpaceInComplexScript(character))
-            character = zeroWidthSpace;
+        } else if (character != characterTabulation) {
+            if (Character::treatAsSpace(character))
+                character = space;
+            else if (Character::treatAsZeroWidthSpaceInComplexScript(character))
+                character = zeroWidthSpace;
+        }
 
         U16_APPEND(destination, *destinationLength, length, character, error);
         ASSERT_UNUSED(error, !error);
@@ -988,7 +990,7 @@ float HarfBuzzShaper::adjustSpacing(HarfBuzzRun* currentRun, size_t glyphIndex, 
         spacing += m_letterSpacing;
 
     bool treatAsSpace = Character::treatAsSpace(character);
-    if (treatAsSpace && currentCharacterIndex && (character != '\t' || !m_run.allowTabs()))
+    if (treatAsSpace && currentCharacterIndex && (character != characterTabulation || !m_run.allowTabs()))
         spacing += m_wordSpacingAdjustment;
 
     if (!m_expansionOpportunityCount)
