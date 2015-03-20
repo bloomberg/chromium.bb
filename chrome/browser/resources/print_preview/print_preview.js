@@ -872,15 +872,12 @@ cr.define('print_preview', function() {
       // Escape key closes the dialog.
       if (e.keyCode == 27 && !e.shiftKey && !e.ctrlKey && !e.altKey &&
           !e.metaKey) {
-<if expr="toolkit_views">
-        // On the toolkit_views environment, ESC key is handled by C++-side
-        // instead of JS-side.
-        return;
-</if>
-<if expr="not toolkit_views">
-        this.close_();
-</if>
-        e.preventDefault();
+        // On non-mac with toolkit-views, ESC key is handled by C++-side instead
+        // of JS-side.
+        if (cr.isMac) {
+          this.close_();
+          e.preventDefault();
+        }
         return;
       }
 
