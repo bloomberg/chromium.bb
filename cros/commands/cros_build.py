@@ -10,6 +10,7 @@ import os
 
 from chromite import cros
 from chromite.cbuildbot import constants
+from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -59,22 +60,33 @@ To just build a single package:
       self.host = True
     elif self.options.board:
       self.board = self.options.board
+    elif self.options.blueprint:
+      bricks = blueprint_lib.GetBricks(self.options.blueprint)
+      # TODO(bsimonnet): Support multiple bricks per blueprint (brbug.com/635).
+      if len(bricks) != 1:
+        cros_build_lib.Die('Blueprint contains multiple bricks, but we can '
+                           'only build a single brick at a time')
+      self.brick = brick_lib.Brick(bricks[0])
     elif self.options.brick or self.curr_brick_locator:
       self.brick = brick_lib.Brick(self.options.brick
                                    or self.curr_brick_locator)
-      self.board = self.brick.FriendlyName()
     else:
       # If nothing is explicitly set, use the default board.
       self.board = cros_build_lib.GetDefaultBoard()
 
+    if self.brick:
+      self.board = self.brick.FriendlyName()
+
   @classmethod
   def AddParser(cls, parser):
     super(cls, BuildCommand).AddParser(parser)
-    board = parser.add_mutually_exclusive_group()
-    board.add_argument('--board', help='The board to build packages for.')
-    board.add_argument('--brick', help='The brick to build packages for.')
-    board.add_argument('--host', help='Build packages for the chroot itself',
-                       default=False, action='store_true')
+    target = parser.add_mutually_exclusive_group()
+    target.add_argument('--board', help='The board to build packages for.')
+    target.add_argument('--brick', help='The brick to build packages for.')
+    target.add_argument('--blueprint',
+                        help='The blueprint to build packages for.')
+    target.add_argument('--host', help='Build packages for the chroot itself',
+                        default=False, action='store_true')
     parser.add_argument('--no-binary', help="Don't use binary packages",
                         default=True, dest='binary', action='store_false')
     parser.add_argument('--no-chroot-update', help="Don't update chroot",
