@@ -82,17 +82,6 @@ class AppBannerSettingsHelper {
       const std::string& package_name_or_start_url,
       AppBannerEvent event);
 
-  // Checks if a URL is allowed to show a banner for the given package or start
-  // url.
-  static bool IsAllowed(content::WebContents* web_contents,
-                        const GURL& origin_url,
-                        const std::string& package_name_or_start_url);
-
-  // Blocks a URL from showing a banner for the given package or start url.
-  static void Block(content::WebContents* web_contents,
-                    const GURL& origin_url,
-                    const std::string& package_name_or_start_url);
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AppBannerSettingsHelper);
 };

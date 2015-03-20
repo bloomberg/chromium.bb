@@ -36,20 +36,6 @@ class AppBannerSettingsHelperTest : public ChromeRenderViewHostTestHarness {};
 
 }  // namespace
 
-TEST_F(AppBannerSettingsHelperTest, Block) {
-  GURL url(kTestURL);
-  NavigateAndCommit(url);
-
-  // Check that by default, showing the banner is allowed.
-  EXPECT_TRUE(AppBannerSettingsHelper::IsAllowed(web_contents(), url,
-                                                 kTestPackageName));
-
-  // Block the banner and test it is no longer allowed.
-  AppBannerSettingsHelper::Block(web_contents(), url, kTestPackageName);
-  EXPECT_FALSE(AppBannerSettingsHelper::IsAllowed(web_contents(), url,
-                                                  kTestPackageName));
-}
-
 TEST_F(AppBannerSettingsHelperTest, CouldShowEvents) {
   GURL url(kTestURL);
   NavigateAndCommit(url);

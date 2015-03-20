@@ -18,6 +18,7 @@
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -114,7 +115,8 @@ void AppBannerDataFetcher::WebContentsDestroyed() {
 void AppBannerDataFetcher::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  Cancel();
+  if (!details.is_in_page)
+    Cancel();
 }
 
 bool AppBannerDataFetcher::OnMessageReceived(

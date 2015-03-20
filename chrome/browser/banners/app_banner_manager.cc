@@ -6,6 +6,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/banners/app_banner_data_fetcher.h"
+#include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -18,6 +19,12 @@ bool gDisableSecureCheckForTesting = false;
 }  // anonymous namespace
 
 namespace banners {
+
+bool AppBannerManager::URLsAreForTheSamePage(const GURL& first,
+                                             const GURL& second) {
+  return first.GetWithEmptyPath() == second.GetWithEmptyPath() &&
+         first.path() == second.path() && first.query() == second.query();
+}
 
 AppBannerManager::AppBannerManager(int icon_size)
     : ideal_icon_size_(icon_size),
@@ -34,6 +41,11 @@ void AppBannerManager::DidFinishLoad(
     const GURL& validated_url) {
   if (render_frame_host->GetParent())
     return;
+
+  if (data_fetcher_.get() && data_fetcher_->is_active() &&
+      URLsAreForTheSamePage(data_fetcher_->validated_url(), validated_url)) {
+    return;
+  }
 
   // A secure scheme is required to show banners, so exit early if we see the
   // URL is invalid.

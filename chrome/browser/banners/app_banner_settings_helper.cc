@@ -45,9 +45,6 @@ const char* kBannerEventKeys[] = {
     "didAddToHomescreenEvent",
 };
 
-// Dictionary key to use whether the banner has been blocked.
-const char kHasBlockedKey[] = "hasBlocked";
-
 scoped_ptr<base::DictionaryValue> GetOriginDict(
     HostContentSettingsMap* settings,
     const GURL& origin_url) {
@@ -105,10 +102,8 @@ void AppBannerSettingsHelper::RecordBannerEvent(
     base::Time time) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->IsOffTheRecord() || web_contents->GetURL() != origin_url ||
-      package_name_or_start_url.empty()) {
+  if (profile->IsOffTheRecord() || package_name_or_start_url.empty())
     return;
-  }
 
   ContentSettingsPattern pattern(ContentSettingsPattern::FromURL(origin_url));
   if (!pattern.IsValid())
@@ -296,68 +291,4 @@ base::Time AppBannerSettingsHelper::GetSingleBannerEvent(
     return base::Time();
 
   return base::Time::FromInternalValue(internal_time);
-}
-
-bool AppBannerSettingsHelper::IsAllowed(
-    content::WebContents* web_contents,
-    const GURL& origin_url,
-    const std::string& package_name_or_start_url) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->IsOffTheRecord() || web_contents->GetURL() != origin_url ||
-      package_name_or_start_url.empty()) {
-    return false;
-  }
-
-  HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
-  scoped_ptr<base::DictionaryValue> origin_dict =
-      GetOriginDict(settings, origin_url);
-
-  if (!origin_dict)
-    return true;
-
-  base::DictionaryValue* app_dict =
-      GetAppDict(origin_dict.get(), package_name_or_start_url);
-  if (!app_dict)
-    return true;
-
-  bool has_blocked;
-  if (!app_dict->GetBoolean(kHasBlockedKey, &has_blocked))
-    return true;
-
-  return !has_blocked;
-}
-
-void AppBannerSettingsHelper::Block(
-    content::WebContents* web_contents,
-    const GURL& origin_url,
-    const std::string& package_name_or_start_url) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (profile->IsOffTheRecord() || web_contents->GetURL() != origin_url ||
-      package_name_or_start_url.empty()) {
-    return;
-  }
-
-  ContentSettingsPattern pattern(ContentSettingsPattern::FromURL(origin_url));
-  if (!pattern.IsValid())
-    return;
-
-  HostContentSettingsMap* settings = profile->GetHostContentSettingsMap();
-  scoped_ptr<base::DictionaryValue> origin_dict =
-      GetOriginDict(settings, origin_url);
-
-  if (!origin_dict)
-    return;
-
-  base::DictionaryValue* app_dict =
-      GetAppDict(origin_dict.get(), package_name_or_start_url);
-  if (!app_dict)
-    return;
-
-  // Update the setting and save it back.
-  app_dict->SetBoolean(kHasBlockedKey, true);
-  settings->SetWebsiteSetting(pattern, ContentSettingsPattern::Wildcard(),
-                              CONTENT_SETTINGS_TYPE_APP_BANNER, std::string(),
-                              origin_dict.release());
 }

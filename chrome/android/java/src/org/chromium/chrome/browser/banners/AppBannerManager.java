@@ -133,10 +133,10 @@ public class AppBannerManager extends EmptyTabObserver {
         };
     }
 
-    /** Enables the app banners for testing. */
+    /** Enables or disables the app banners for testing. */
     @VisibleForTesting
-    static void setIsEnabledForTesting() {
-        sIsEnabled = true;
+    static void setIsEnabledForTesting(boolean state) {
+        sIsEnabled = state;
     }
 
     /** Sets a constant (in days) that gets added to the time when the current time is requested. */

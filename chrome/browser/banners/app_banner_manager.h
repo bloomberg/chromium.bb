@@ -33,6 +33,9 @@ class AppBannerManager : public content::WebContentsObserver,
   static bool IsEnabled();
   static void DisableSecureSchemeCheckForTesting();
 
+  // Returns whether or not the URLs match for everything except for the ref.
+  static bool URLsAreForTheSamePage(const GURL& first, const GURL& second);
+
   explicit AppBannerManager(int icon_size);
   ~AppBannerManager() override;
 
