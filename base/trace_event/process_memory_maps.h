@@ -28,9 +28,13 @@ class BASE_EXPORT ProcessMemoryMaps {
     uint64 size_in_bytes;
     uint32 protection_flags;
     std::string mapped_file;
-    uint64 mapped_file_offset;
-    uint64 byte_stats_resident;
-    uint64 byte_stats_anonymous;
+
+    // private_resident + shared_resident = resident set size.
+    uint64 byte_stats_private_resident;
+    uint64 byte_stats_shared_resident;
+
+    // For multiprocess accounting.
+    uint64 byte_stats_proportional_resident;
   };
 
   ProcessMemoryMaps();

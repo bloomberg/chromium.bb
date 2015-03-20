@@ -60,7 +60,7 @@ bool ParseSmapsHeader(std::istream* smaps,
     region->protection_flags |=
         ProcessMemoryMaps::VMRegion::kProtectionFlagsExec;
   }
-  *smaps >> std::hex >> region->mapped_file_offset;
+  *smaps >> ignored;  // Ignore mapped file offset.
   *smaps >> ignored;  // Ignore device maj-min (fc:01 in the example above).
   *smaps >> ignored;  // Ignore inode number (1234 in the example above).
 
@@ -73,9 +73,15 @@ bool ParseSmapsHeader(std::istream* smaps,
   return res;
 }
 
+uint64 ReadCounterBytes(std::istream* smaps) {
+  uint64 counter_value = 0;
+  *smaps >> std::dec >> counter_value;
+  return counter_value * 1024;
+}
+
 uint32 ParseSmapsCounter(std::istream* smaps,
                          ProcessMemoryMaps::VMRegion* region) {
-  // e.g., "RSS:  0 Kb\n"
+  // A smaps counter lines looks as follows: "RSS:  0 Kb\n"
   uint32 res = 0;
   std::string counter_name;
   *smaps >> counter_name;
@@ -83,13 +89,17 @@ uint32 ParseSmapsCounter(std::istream* smaps,
   // TODO(primiano): "Swap" should also be accounted as resident. Check
   // whether Rss isn't already counting swapped and fix below if that is
   // the case.
-  if (counter_name == "Rss:") {
-    *smaps >> std::dec >> region->byte_stats_resident;
-    region->byte_stats_resident *= 1024;
+  if (counter_name == "Pss:") {
+    region->byte_stats_proportional_resident = ReadCounterBytes(smaps);
     res = 1;
-  } else if (counter_name == "Anonymous:") {
-    *smaps >> std::dec >> region->byte_stats_anonymous;
-    region->byte_stats_anonymous *= 1024;
+  } else if (counter_name == "Private_Dirty:" ||
+             counter_name == "Private_Clean:") {
+    // For Private and Shared counters keep the sum of the dirty + clean stats.
+    region->byte_stats_private_resident += ReadCounterBytes(smaps);
+    res = 1;
+  } else if (counter_name == "Shared_Dirty:" ||
+             counter_name == "Shared_Clean:") {
+    region->byte_stats_shared_resident += ReadCounterBytes(smaps);
     res = 1;
   }
 
@@ -111,7 +121,7 @@ uint32 ReadLinuxProcSmapsFile(std::istream* smaps, ProcessMemoryMaps* pmm) {
   if (!smaps->good())
     return 0;
 
-  const uint32 kNumExpectedCountersPerRegion = 2;
+  const uint32 kNumExpectedCountersPerRegion = 5;
   uint32 counters_parsed_for_current_region = 0;
   uint32 num_valid_regions = 0;
   ProcessMemoryMaps::VMRegion region;

@@ -4,6 +4,8 @@
 
 #include "base/trace_event/process_memory_maps.h"
 
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
 
 namespace base {
@@ -21,19 +23,25 @@ ProcessMemoryMaps::~ProcessMemoryMaps() {
 }
 
 void ProcessMemoryMaps::AsValueInto(TracedValue* value) const {
+  static const char kHexFmt[] = "%" PRIx64;
+
+  // Refer to the design doc goo.gl/sxfFY8 for the semantic of these fields.
   value->BeginArray("vm_regions");
   for (const auto& region : vm_regions_) {
     value->BeginDictionary();
 
-    value->SetDouble("start_address", region.start_address);
-    value->SetDouble("size_in_bytes", region.size_in_bytes);
-    value->SetInteger("protection_flags", region.protection_flags);
-    value->SetString("mapped_file", region.mapped_file);
-    value->SetDouble("mapped_file_offset", region.mapped_file_offset);
+    value->SetString("sa", StringPrintf(kHexFmt, region.start_address));
+    value->SetString("sz", StringPrintf(kHexFmt, region.size_in_bytes));
+    value->SetInteger("pf", region.protection_flags);
+    value->SetString("mf", region.mapped_file);
 
-    value->BeginDictionary("byte_stats");
-    value->SetDouble("resident", region.byte_stats_resident);
-    value->SetDouble("anonymous", region.byte_stats_anonymous);
+    value->BeginDictionary("bs");  // byte stats
+    value->SetString(
+        "pss", StringPrintf(kHexFmt, region.byte_stats_proportional_resident));
+    value->SetString("prv",
+                     StringPrintf(kHexFmt, region.byte_stats_private_resident));
+    value->SetString("shr",
+                     StringPrintf(kHexFmt, region.byte_stats_shared_resident));
     value->EndDictionary();
 
     value->EndDictionary();

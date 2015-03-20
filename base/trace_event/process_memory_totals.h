@@ -13,7 +13,7 @@ namespace trace_event {
 
 class TracedValue;
 
-// Dump provider which collects process-wide memory stats.
+// Data model for process-wide memory stats.
 class BASE_EXPORT ProcessMemoryTotals {
  public:
   ProcessMemoryTotals() : resident_set_bytes_(0) {}

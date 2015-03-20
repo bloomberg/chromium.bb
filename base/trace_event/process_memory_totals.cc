@@ -4,13 +4,16 @@
 
 #include "base/trace_event/process_memory_totals.h"
 
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
 
 namespace base {
 namespace trace_event {
 
 void ProcessMemoryTotals::AsValueInto(TracedValue* value) const {
-  value->SetDouble("resident_set_bytes", resident_set_bytes_);
+  value->SetString("resident_set_bytes",
+                   StringPrintf("%" PRIx64, resident_set_bytes_));
 }
 
 }  // namespace trace_event
