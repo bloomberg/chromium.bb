@@ -18,8 +18,11 @@
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/top_sites.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
+
+using content::BrowserThread;
 
 namespace {
 
@@ -79,7 +82,7 @@ void RenderMostVisitedURLList(
 
 ThumbnailListSource::ThumbnailListSource(Profile* profile)
     : thumbnail_service_(ThumbnailServiceFactory::GetForProfile(profile)),
-      profile_(profile),
+      top_sites_(TopSitesFactory::GetForProfile(profile)),
       weak_ptr_factory_(this) {
 }
 
@@ -95,14 +98,13 @@ void ThumbnailListSource::StartDataRequest(
     int render_process_id,
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  scoped_refptr<history::TopSites> top_sites =
-      TopSitesFactory::GetForProfile(profile_);
-  if (!top_sites) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!top_sites_) {
     callback.Run(NULL);
     return;
   }
 
-  top_sites->GetMostVisitedURLs(
+  top_sites_->GetMostVisitedURLs(
       base::Bind(&ThumbnailListSource::OnMostVisitedURLsAvailable,
                  weak_ptr_factory_.GetWeakPtr(), callback),
       true);
@@ -133,6 +135,7 @@ bool ThumbnailListSource::ShouldReplaceExistingSource() const {
 void ThumbnailListSource::OnMostVisitedURLsAvailable(
     const content::URLDataSource::GotDataCallback& callback,
     const history::MostVisitedURLList& mvurl_list) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const size_t num_mv = mvurl_list.size();
   size_t num_mv_with_thumb = 0;
 

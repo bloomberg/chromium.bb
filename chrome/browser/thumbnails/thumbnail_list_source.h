@@ -19,6 +19,10 @@ namespace base {
 class RefCountedMemory;
 }
 
+namespace history {
+class TopSites;
+}
+
 namespace thumbnails {
 class ThumbnailService;
 }
@@ -33,11 +37,13 @@ class ThumbnailListSource : public content::URLDataSource {
 
   // content::URLDataSource implementation.
   std::string GetSource() const override;
+  // Called on the IO thread.
   void StartDataRequest(
       const std::string& path,
       int render_process_id,
       int render_frame_id,
       const content::URLDataSource::GotDataCallback& callback) override;
+
   std::string GetMimeType(const std::string& path) const override;
   base::MessageLoop* MessageLoopForRequestPath(
       const std::string& path) const override;
@@ -47,6 +53,7 @@ class ThumbnailListSource : public content::URLDataSource {
  private:
   ~ThumbnailListSource() override;
 
+  // Called on the IO thread.
   void OnMostVisitedURLsAvailable(
     const content::URLDataSource::GotDataCallback& callback,
     const history::MostVisitedURLList& mvurl_list);
@@ -54,8 +61,7 @@ class ThumbnailListSource : public content::URLDataSource {
   // ThumbnailService.
   scoped_refptr<thumbnails::ThumbnailService> thumbnail_service_;
 
-  // Only used when servicing requests on the UI thread.
-  Profile* const profile_;
+  scoped_refptr<history::TopSites> top_sites_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<ThumbnailListSource> weak_ptr_factory_;
