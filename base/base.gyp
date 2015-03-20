@@ -595,6 +595,7 @@
         'process/process_metrics_unittest_ios.cc',
         'process/process_unittest.cc',
         'process/process_util_unittest.cc',
+        'profiler/stack_sampling_profiler_unittest.cc',
         'profiler/tracked_time_unittest.cc',
         'rand_util_unittest.cc',
         'scoped_clear_errno_unittest.cc',
