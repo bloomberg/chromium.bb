@@ -462,18 +462,36 @@ void DisassemblerWin32X64::ParseRel32RelocsFromSection(const Section* section) {
     // next few bytes the start of an instruction containing a rel32
     // addressing mode?
     const uint8* rel32 = NULL;
+    bool is_rip_relative = false;
 
     if (p + 5 <= end_pointer) {
-      if (*p == 0xE8 || *p == 0xE9) {  // jmp rel32 and call rel32
+      if (*p == 0xE8 || *p == 0xE9)  // jmp rel32 and call rel32
         rel32 = p + 1;
-      }
     }
     if (p + 6 <= end_pointer) {
-      if (*p == 0x0F  &&  (*(p+1) & 0xF0) == 0x80) {  // Jcc long form
+      if (*p == 0x0F && (*(p + 1) & 0xF0) == 0x80) {  // Jcc long form
         if (p[1] != 0x8A && p[1] != 0x8B)  // JPE/JPO unlikely
           rel32 = p + 2;
+      } else if (*p == 0xFF && (*(p + 1) == 0x15 || *(p + 1) == 0x25)) {
+        // rip relative call/jmp
+        rel32 = p + 2;
+        is_rip_relative = true;
       }
     }
+    if (p + 7 <= end_pointer) {
+      if ((*p & 0xFB) == 0x48 && *(p + 1) == 0x8D &&
+          (*(p + 2) & 0xC7) == 0x05) {
+        // rip relative lea
+        rel32 = p + 3;
+        is_rip_relative = true;
+      } else if ((*p & 0xFB) == 0x48 && *(p + 1) == 0x8B &&
+                 (*(p + 2) & 0xC7) == 0x05) {
+        // rip relative mov
+        rel32 = p + 3;
+        is_rip_relative = true;
+      }
+    }
+
     if (rel32) {
       RVA rel32_rva = static_cast<RVA>(rel32 - adjust_pointer_to_rva);
 
@@ -495,7 +513,8 @@ void DisassemblerWin32X64::ParseRel32RelocsFromSection(const Section* section) {
       // To be valid, rel32 target must be within image, and within this
       // section.
       if (IsValidRVA(target_rva) &&
-          start_rva <= target_rva && target_rva < end_rva) {
+          (is_rip_relative ||
+           (start_rva <= target_rva && target_rva < end_rva))) {
         rel32_locations_.push_back(rel32_rva);
 #if COURGETTE_HISTOGRAM_TARGETS
         ++rel32_target_rvas_[target_rva];
