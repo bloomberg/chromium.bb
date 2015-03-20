@@ -84,8 +84,8 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   // Removes the profile or credit card represented by |jguid|.
   void RemoveByGUID(JNIEnv* env, jobject unused_obj, jstring jguid);
 
-  // Rests all unmasked cards back to the masked state.
-  void ClearUnmaskedCache(JNIEnv* env, jobject unused_obj);
+  // Resets the given unmasked card back to the masked state.
+  void ClearUnmaskedCache(JNIEnv* env, jobject unused_obj, jstring jguid);
 
   // PersonalDataManagerObserver:
   void OnPersonalDataChanged() override;

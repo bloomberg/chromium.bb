@@ -10,8 +10,7 @@
         android:summaryOn="@string/text_on"
         android:summaryOff="@string/text_off" />
 
-    <org.chromium.chrome.browser.preferences.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.preferences.autofill.AutofillWalletPreferences"
+    <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
         android:key="autofill_wallet"
         android:title="@string/autofill_wallet_title" />
 

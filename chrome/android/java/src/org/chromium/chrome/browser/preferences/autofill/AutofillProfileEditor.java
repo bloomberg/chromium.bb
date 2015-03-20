@@ -270,21 +270,14 @@ public class AutofillProfileEditor extends Fragment implements TextWatcher,
     // Read edited data; save in the associated Chrome profile.
     // Ignore empty fields.
     private void saveProfile() {
-        AutofillProfile profile = new PersonalDataManager.AutofillProfile(
-                mGUID,
-                AutofillPreferences.SETTINGS_ORIGIN,
-                getFieldText(AddressField.RECIPIENT),
-                getFieldText(AddressField.ORGANIZATION),
-                getFieldText(AddressField.STREET_ADDRESS),
-                getFieldText(AddressField.ADMIN_AREA),
-                getFieldText(AddressField.LOCALITY),
-                getFieldText(AddressField.DEPENDENT_LOCALITY),
-                getFieldText(AddressField.POSTAL_CODE),
-                getFieldText(AddressField.SORTING_CODE),
-                mCountryCodes.get(mCurrentCountryPos),
-                mPhoneText.getText().toString(),
-                mEmailText.getText().toString(),
-                mLanguageCodeString);
+        AutofillProfile profile = new PersonalDataManager.AutofillProfile(mGUID,
+                AutofillPreferences.SETTINGS_ORIGIN, true /* isLocal */,
+                getFieldText(AddressField.RECIPIENT), getFieldText(AddressField.ORGANIZATION),
+                getFieldText(AddressField.STREET_ADDRESS), getFieldText(AddressField.ADMIN_AREA),
+                getFieldText(AddressField.LOCALITY), getFieldText(AddressField.DEPENDENT_LOCALITY),
+                getFieldText(AddressField.POSTAL_CODE), getFieldText(AddressField.SORTING_CODE),
+                mCountryCodes.get(mCurrentCountryPos), mPhoneText.getText().toString(),
+                mEmailText.getText().toString(), mLanguageCodeString);
         PersonalDataManager.getInstance().setProfile(profile);
     }
 

@@ -33,8 +33,8 @@ import java.util.Locale;
  */
 public class AutofillCreditCardEditor extends Fragment implements OnItemSelectedListener,
         TextWatcher {
-    // GUID of the profile we are editing.
-    // May be the empty string if creating a new profile.
+    // GUID of the card profile we are editing.
+    // May be the empty string if creating a new card.
     private String mGUID;
 
     private FloatLabelLayout mNameLabel;
@@ -192,12 +192,9 @@ public class AutofillCreditCardEditor extends Fragment implements OnItemSelected
     private void saveCreditCard() {
         // Remove all spaces in editText.
         String cardNumber = mNumberText.getText().toString().replaceAll("\\s+", "");
-        CreditCard card = new CreditCard(
-                mGUID,
-                AutofillPreferences.SETTINGS_ORIGIN,
-                mNameText.getText().toString().trim(),
-                cardNumber,
-                cardNumber, // obfuscated number, it will be obfuscated by native code.
+        CreditCard card = new CreditCard(mGUID, AutofillPreferences.SETTINGS_ORIGIN,
+                true /* isLocal */, false /* isCached */, mNameText.getText().toString().trim(),
+                cardNumber, "" /* obfuscatedNumber */,
                 String.valueOf(mExpirationMonth.getSelectedItemPosition() + 1),
                 (String) mExpirationYear.getSelectedItem());
 

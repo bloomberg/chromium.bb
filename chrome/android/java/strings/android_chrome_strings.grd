@@ -204,25 +204,25 @@
       <message name="IDS_AUTOFILL_CREDIT_CARD_EDITOR_EXPIRATION_DATE" desc="Label for text input field containing a credit card expiration date. [CHAR-LIMIT=32]">
         Expiration date
       </message>
+      <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that described a Wallet credit card which has been copied to the local Chrome instance.">
+         Copied to Chrome
+       </message>
 
       <!-- Autofill/Wallet integration preferences -->
-      <message name="IDS_AUTOFILL_WALLET_TITLE" desc="Title for Autofill Wallet settings, which controls import of Wallet cards.">
-        Import Wallet data
+      <message name="IDS_AUTOFILL_WALLET_TITLE" desc="Text for checkbox that enables or disables import of Wallet data for Autofill.">
+        Show addresses and credit cards from Google Wallet
       </message>
-      <message name="IDS_AUTOFILL_WALLET_DESCRIPTION" desc="Description of the Wallet import feature.">
-        With this feature is turned on, Chrome will offer to fill forms using addresses and credit cards from your Wallet.
-      </message>
-      <message name="IDS_AUTOFILL_WALLET_MANAGEMENT_LINK_TEXT" desc="Text for hyperlink to manage wallet address and credit cards.">
-        Manage Wallet data
-      </message>
-      <message name="IDS_AUTOFILL_WALLET_CACHE_EXPLANATION" desc="Explanation of how Chrome caches imported Wallet cards.">
-        After you authenticate a card, Chrome will cache it locally.
-      </message>
-      <message name="IDS_AUTOFILL_WALLET_CLEAR_UNMASKED_CARDS" desc="Text for button that allows user to clear Wallet card cache.">
-        Clear cache
+      <message name="IDS_AUTOFILL_WALLET_MANAGEMENT_LINK_TEXT" desc="Text for link that allows users to see and edit their Wallet information.">
+        Edit
       </message>
       <message name="IDS_AUTOFILL_MANAGE_WALLET_CARDS_URL" desc="URL for managing wallet credit cards" translateable="false">
-        https://wallet.google.com/manage/w/0/paymentMethods
+        https://wallet.google.com/manage/paymentMethods
+      </message>
+      <message name="IDS_AUTOFILL_MANAGE_WALLET_ADDRESSES_URL" desc="URL for managing wallet addresses" translateable="false">
+        https://wallet.google.com/manage/addressBook
+      </message>
+      <message name="IDS_AUTOFILL_FROM_GOOGLE_ACCOUNT_LONG" desc="Text that indicates an address or credit card came from Google servers.">
+        From Google Wallet
       </message>
 
       <!-- Save passwords preferences -->

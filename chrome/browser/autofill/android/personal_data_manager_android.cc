@@ -46,9 +46,9 @@ ScopedJavaLocalRef<jobject> CreateJavaProfileFromNative(
     JNIEnv* env,
     const AutofillProfile& profile) {
   return Java_AutofillProfile_create(
-      env,
-      ConvertUTF8ToJavaString(env, profile.guid()).obj(),
+      env, ConvertUTF8ToJavaString(env, profile.guid()).obj(),
       ConvertUTF8ToJavaString(env, profile.origin()).obj(),
+      profile.record_type() == AutofillProfile::LOCAL_PROFILE,
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(NAME_FULL)).obj(),
       ConvertUTF16ToJavaString(env, profile.GetRawInfo(COMPANY_NAME)).obj(),
       ConvertUTF16ToJavaString(
@@ -140,18 +140,17 @@ ScopedJavaLocalRef<jobject> CreateJavaCreditCardFromNative(
     JNIEnv* env,
     const CreditCard& card) {
   return Java_CreditCard_create(
-      env,
-      ConvertUTF8ToJavaString(env, card.guid()).obj(),
+      env, ConvertUTF8ToJavaString(env, card.guid()).obj(),
       ConvertUTF8ToJavaString(env, card.origin()).obj(),
+      card.record_type() == CreditCard::LOCAL_CARD,
+      card.record_type() == CreditCard::FULL_SERVER_CARD,
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NAME)).obj(),
       ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_NUMBER)).obj(),
       ConvertUTF16ToJavaString(env, card.TypeAndLastFourDigits()).obj(),
+      ConvertUTF16ToJavaString(env, card.GetRawInfo(CREDIT_CARD_EXP_MONTH))
+          .obj(),
       ConvertUTF16ToJavaString(
-          env,
-          card.GetRawInfo(CREDIT_CARD_EXP_MONTH)).obj(),
-      ConvertUTF16ToJavaString(
-          env,
-          card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR)).obj());
+          env, card.GetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR)).obj());
 }
 
 void PopulateNativeCreditCardFromJava(
@@ -190,7 +189,7 @@ PersonalDataManagerAndroid::~PersonalDataManagerAndroid() {
 
 jint PersonalDataManagerAndroid::GetProfileCount(JNIEnv* unused_env,
                                                  jobject unused_obj) {
-  return personal_data_manager_->web_profiles().size();
+  return personal_data_manager_->GetProfiles().size();
 }
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetProfileByIndex(
@@ -198,7 +197,7 @@ ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetProfileByIndex(
     jobject unused_obj,
     jint index) {
   const std::vector<AutofillProfile*>& profiles =
-      personal_data_manager_->web_profiles();
+      personal_data_manager_->GetProfiles();
   size_t index_size_t = static_cast<size_t>(index);
   DCHECK_LT(index_size_t, profiles.size());
   return CreateJavaProfileFromNative(env, *profiles[index_size_t]);
@@ -242,19 +241,15 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
     jobject unused_obj) {
   std::vector<base::string16> labels;
   AutofillProfile::CreateInferredLabels(
-      personal_data_manager_->web_profiles(),
-      NULL,
-      NAME_FULL,
-      2,
-      g_browser_process->GetApplicationLocale(),
-      &labels);
+      personal_data_manager_->GetProfiles(), NULL, NAME_FULL, 2,
+      g_browser_process->GetApplicationLocale(), &labels);
 
   return base::android::ToJavaArrayOfStrings(env, labels);
 }
 
 jint PersonalDataManagerAndroid::GetCreditCardCount(JNIEnv* unused_env,
                                                     jobject unused_obj) {
-  return personal_data_manager_->GetLocalCreditCards().size();
+  return personal_data_manager_->GetCreditCards().size();
 }
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByIndex(
@@ -262,7 +257,7 @@ ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByIndex(
     jobject unused_obj,
     jint index) {
   const std::vector<CreditCard*>& credit_cards =
-      personal_data_manager_->GetLocalCreditCards();
+      personal_data_manager_->GetCreditCards();
   size_t index_size_t = static_cast<size_t>(index);
   DCHECK_LT(index_size_t, credit_cards.size());
   return CreateJavaCreditCardFromNative(env, *credit_cards[index_size_t]);
@@ -307,8 +302,10 @@ void PersonalDataManagerAndroid::RemoveByGUID(JNIEnv* env,
 }
 
 void PersonalDataManagerAndroid::ClearUnmaskedCache(JNIEnv* env,
-                                                    jobject unused_obj) {
-  personal_data_manager_->ResetFullServerCards();
+                                                    jobject unused_obj,
+                                                    jstring guid) {
+  personal_data_manager_->ResetFullServerCard(
+      ConvertJavaStringToUTF8(env, guid));
 }
 
 void PersonalDataManagerAndroid::OnPersonalDataChanged() {
