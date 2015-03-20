@@ -1774,3 +1774,30 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   observer.Wait();
   EXPECT_TRUE(prompt_observer->IsShowingPrompt());
 }
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       SaveWhenIFrameDestroyedOnFormSubmit) {
+  NavigateToFile("/password/frame_detached_on_submit.html");
+
+  // Need to pay attention for a message that XHR has finished since there
+  // is no navigation to wait for.
+  content::DOMMessageQueue message_queue;
+
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "var iframe = document.getElementById('login_iframe');"
+      "var frame_doc = iframe.contentDocument;"
+      "frame_doc.getElementById('username_field').value = 'temp';"
+      "frame_doc.getElementById('password_field').value = 'random';"
+      "frame_doc.getElementById('submit_button').click();";
+
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  std::string message;
+  while (message_queue.WaitForMessage(&message)) {
+    if (message == "\"SUBMISSION_FINISHED\"")
+      break;
+  }
+
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}

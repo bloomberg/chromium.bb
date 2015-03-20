@@ -1030,6 +1030,14 @@ void PasswordAutofillAgent::DidStopLoading() {
 }
 
 void PasswordAutofillAgent::FrameDetached() {
+  // If a sub frame has been destroyed while the user was entering information
+  // into a password form, try to save the data. See https://crbug.com/450806
+  // for examples of sites that perform login using this technique.
+  if (render_frame()->GetWebFrame()->parent() &&
+      ProvisionallySavedPasswordIsValid()) {
+    Send(new AutofillHostMsg_InPageNavigation(routing_id(),
+                                              *provisionally_saved_form_));
+  }
   FrameClosing();
 }
 
