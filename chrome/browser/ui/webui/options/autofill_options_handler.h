@@ -8,6 +8,8 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 
@@ -24,7 +26,8 @@ class ListValue;
 namespace options {
 
 class AutofillOptionsHandler : public OptionsPageUIHandler,
-                               public autofill::PersonalDataManagerObserver {
+                               public autofill::PersonalDataManagerObserver,
+                               public ProfileSyncServiceObserver {
  public:
   AutofillOptionsHandler();
   ~AutofillOptionsHandler() override;
@@ -37,6 +40,9 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
 
   // PersonalDataManagerObserver implementation.
   void OnPersonalDataChanged() override;
+
+  // ProfileSyncServiceObserver implementation.
+  void OnStateChanged() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillOptionsHandlerTest, AddressToDictionary);
@@ -109,6 +115,9 @@ class AutofillOptionsHandler : public OptionsPageUIHandler,
   // The personal data manager, used to load Autofill profiles and credit cards.
   // Unowned pointer, may not be NULL.
   autofill::PersonalDataManager* personal_data_;
+
+  ScopedObserver<ProfileSyncService, ProfileSyncServiceBase::Observer>
+      observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillOptionsHandler);
 };

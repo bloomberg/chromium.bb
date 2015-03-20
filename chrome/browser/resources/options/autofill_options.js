@@ -89,9 +89,8 @@ cr.define('options', function() {
         return true;  // Always follow the href
       };
 
-      var enableWalletIntegration =
-          loadTimeData.getBoolean('enableAutofillWalletIntegration');
-      $('autofill-wallet-setting-area').hidden = !enableWalletIntegration;
+      this.walletIntegrationAvailableStateChanged_(
+          loadTimeData.getBoolean('autofillWalletIntegrationAvailable'));
 
       // TODO(jhawkins): What happens when Autofill is disabled whilst on the
       // Autofill options page?
@@ -229,6 +228,16 @@ cr.define('options', function() {
       AutofillEditCreditCardOverlay.loadCreditCard(creditCard);
       PageManager.showPageByName('autofillEditCreditCard');
     },
+
+    /**
+     * Toggles the visibility of the Wallet integration checkbox.
+     * @param {boolean} available Whether the user has the option of using
+     *     Wallet data.
+     * @private
+     */
+    walletIntegrationAvailableStateChanged_: function(available) {
+      $('autofill-wallet-setting-area').hidden = !available;
+    },
   };
 
   AutofillOptions.setAddressList = function(entries) {
@@ -253,6 +262,11 @@ cr.define('options', function() {
 
   AutofillOptions.editAddress = function(address) {
     AutofillOptions.getInstance().showEditAddressOverlay_(address);
+  };
+
+  AutofillOptions.walletIntegrationAvailableStateChanged = function(available) {
+    AutofillOptions.getInstance().
+        walletIntegrationAvailableStateChanged_(available);
   };
 
   /**
