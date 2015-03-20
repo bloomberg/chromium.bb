@@ -31,7 +31,9 @@ void FakeVideoCaptureDeviceFactory::GetDeviceNames(
   for (int n = 0; n < number_of_devices_; ++n) {
     VideoCaptureDevice::Name name(base::StringPrintf("fake_device_%d", n),
                                   base::StringPrintf("/dev/video%d", n)
-#if defined(OS_MACOSX)
+#if defined(OS_LINUX)
+                                  , VideoCaptureDevice::Name::V4L2_SINGLE_PLANE
+#elif defined(OS_MACOSX)
                                   , VideoCaptureDevice::Name::AVFOUNDATION
 #elif defined(OS_WIN)
                                   , VideoCaptureDevice::Name::DIRECT_SHOW

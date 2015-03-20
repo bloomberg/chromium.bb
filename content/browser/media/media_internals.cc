@@ -487,7 +487,7 @@ void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
     device_dict->SetString(
         "name", video_capture_device_info.name.GetNameAndModel());
     device_dict->Set("formats", format_list);
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
     device_dict->SetString(
         "captureApi",
         video_capture_device_info.name.GetCaptureApiTypeString());

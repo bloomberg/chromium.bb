@@ -67,6 +67,16 @@ class MockClient : public VideoCaptureDevice::Client {
   MOCK_METHOD2(ReserveOutputBuffer,
                scoped_refptr<Buffer>(VideoFrame::Format format,
                                      const gfx::Size& dimensions));
+  MOCK_METHOD9(OnIncomingCapturedYuvData,
+               void (const uint8* y_data,
+                     const uint8* u_data,
+                     const uint8* v_data,
+                     size_t y_stride,
+                     size_t u_stride,
+                     size_t v_stride,
+                     const VideoCaptureFormat& frame_format,
+                     int clockwise_rotation,
+                     const base::TimeTicks& timestamp));
   MOCK_METHOD3(OnIncomingCapturedVideoFrame,
                void(const scoped_refptr<Buffer>& buffer,
                     const scoped_refptr<VideoFrame>& frame,
@@ -127,6 +137,8 @@ class VideoCaptureDeviceTest : public testing::Test {
     VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(
         base::android::AttachCurrentThread());
 #endif
+    EXPECT_CALL(*client_, OnIncomingCapturedYuvData(_,_,_,_,_,_,_,_,_))
+               .Times(0);
     EXPECT_CALL(*client_, ReserveOutputBuffer(_,_)).Times(0);
     EXPECT_CALL(*client_, OnIncomingCapturedVideoFrame(_,_,_)).Times(0);
   }
@@ -179,7 +191,8 @@ class VideoCaptureDeviceTest : public testing::Test {
         }
       }
     }
-    DVLOG(1) << "No camera can capture the format: " << pixel_format;
+    DVLOG_IF(1, pixel_format != PIXEL_FORMAT_MAX) << "No camera can capture the"
+        << " format: " << VideoCaptureFormat::PixelFormatToString(pixel_format);
     return scoped_ptr<VideoCaptureDevice::Name>();
   }
 

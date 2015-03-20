@@ -568,6 +568,12 @@
         'video/capture/file_video_capture_device.h',
         'video/capture/file_video_capture_device_factory.cc',
         'video/capture/file_video_capture_device_factory.h',
+        'video/capture/linux/v4l2_capture_delegate.cc',
+        'video/capture/linux/v4l2_capture_delegate.h',
+        'video/capture/linux/v4l2_capture_delegate_multi_plane.cc',
+        'video/capture/linux/v4l2_capture_delegate_multi_plane.h',
+        'video/capture/linux/v4l2_capture_delegate_single_plane.cc',
+        'video/capture/linux/v4l2_capture_delegate_single_plane.h',
         'video/capture/linux/video_capture_device_chromeos.cc',
         'video/capture/linux/video_capture_device_chromeos.h',
         'video/capture/linux/video_capture_device_factory_linux.cc',
@@ -757,6 +763,11 @@
           'sources!': [
             'audio/openbsd/audio_manager_openbsd.cc',
             'audio/openbsd/audio_manager_openbsd.h',
+          ],
+        }, {  # else: openbsd==1
+          'sources!': [
+            'video/capture/linux/v4l2_capture_delegate_multi_plane.cc',
+            'video/capture/linux/v4l2_capture_delegate_multi_plane.h',
           ],
         }],
         ['OS=="linux"', {
