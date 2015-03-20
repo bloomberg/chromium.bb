@@ -346,6 +346,11 @@ class JobScheduler
   void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 
+  // Updates total_bytes in JobInfo.
+  void OnGotFileSizeForJob(JobID job_id,
+                           const std::string& histogram_name,
+                           int64* size);
+
   // Get the type of queue the specified job should be put in.
   QueueType GetJobQueueType(JobType type);
 

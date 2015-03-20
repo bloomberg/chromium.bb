@@ -147,29 +147,16 @@ void CollectCopyHistogramSample(const std::string& histogram_name, int64 size) {
   counter->Add(size / 1024);
 }
 
-// Callback for GetSizeAndCollectCopyHistogramSample().
-void OnGotSizeForCollectCopyHistogramSample(const std::string& histogram_name,
-                                            int64* size) {
-  if (*size != -1)
-    CollectCopyHistogramSample(histogram_name, *size);
-}
-
-// Collects information about sizes of files copied or moved from or to Drive
-// Otherwise does nothing. Temporary for crbug.com/229650.
-void GetSizeAndCollectCopyHistogramSample(
-    base::SequencedTaskRunner* blocking_task_runner,
-    const base::FilePath& local_file_path,
-    const std::string& histogram_name) {
+// Obtains file size to be uploaded for setting total bytes of JobInfo.
+void GetFileSizeForJob(base::SequencedTaskRunner* blocking_task_runner,
+                       const base::FilePath& local_file_path,
+                       const base::Callback<void(int64* size)>& callback) {
   int64* const size = new int64;
   *size = -1;
   blocking_task_runner->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::GetFileSize),
-                 local_file_path,
-                 base::Unretained(size)),
-      base::Bind(&OnGotSizeForCollectCopyHistogramSample,
-                 histogram_name,
-                 base::Owned(size)));
+      FROM_HERE, base::Bind(base::IgnoreResult(&base::GetFileSize),
+                            local_file_path, base::Unretained(size)),
+      base::Bind(callback, base::Owned(size)));
 }
 
 }  // namespace
@@ -646,13 +633,15 @@ void JobScheduler::UploadNewFile(
     const google_apis::FileResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Temporary histogram for crbug.com/229650.
-  GetSizeAndCollectCopyHistogramSample(
-      blocking_task_runner_, local_file_path, "Drive.UploadToDriveFileSize");
-
   JobEntry* new_job = CreateNewJob(TYPE_UPLOAD_NEW_FILE);
   new_job->job_info.file_path = drive_file_path;
   new_job->context = context;
+
+  GetFileSizeForJob(
+      blocking_task_runner_, local_file_path,
+      base::Bind(&JobScheduler::OnGotFileSizeForJob,
+                 weak_ptr_factory_.GetWeakPtr(), new_job->job_info.job_id,
+                 "Drive.UploadToDriveFileSize"));
 
   UploadNewFileParams params;
   params.parent_resource_id = parent_resource_id;
@@ -688,13 +677,15 @@ void JobScheduler::UploadExistingFile(
     const google_apis::FileResourceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // Temporary histogram for crbug.com/229650.
-  GetSizeAndCollectCopyHistogramSample(
-      blocking_task_runner_, local_file_path, "Drive.UploadToDriveFileSize");
-
   JobEntry* new_job = CreateNewJob(TYPE_UPLOAD_EXISTING_FILE);
   new_job->job_info.file_path = drive_file_path;
   new_job->context = context;
+
+  GetFileSizeForJob(
+      blocking_task_runner_, local_file_path,
+      base::Bind(&JobScheduler::OnGotFileSizeForJob,
+                 weak_ptr_factory_.GetWeakPtr(), new_job->job_info.job_id,
+                 "Drive.UploadToDriveFileSize"));
 
   UploadExistingFileParams params;
   params.resource_id = resource_id;
@@ -1111,6 +1102,24 @@ void JobScheduler::OnConnectionTypeChanged(
   // be checked in GetCurrentAcceptedPriority().
   for (int i = METADATA_QUEUE; i < NUM_QUEUES; ++i)
     DoJobLoop(static_cast<QueueType>(i));
+}
+
+void JobScheduler::OnGotFileSizeForJob(JobID job_id,
+                                       const std::string& histogram_name,
+                                       int64* size) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (*size == -1)
+    return;
+
+  // Temporary histogram for crbug.com/229650.
+  CollectCopyHistogramSample(histogram_name, *size);
+
+  JobEntry* const job_entry = job_map_.Lookup(job_id);
+  if (!job_entry)
+    return;
+
+  job_entry->job_info.num_total_bytes = *size;
+  NotifyJobUpdated(job_entry->job_info);
 }
 
 JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
