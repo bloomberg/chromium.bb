@@ -33,7 +33,12 @@
 
 namespace blink {
 
-inline LayoutStyle* Node::layoutStyle() const
+inline const LayoutStyle* Node::layoutStyle() const
+{
+    return mutableLayoutStyle();
+}
+
+inline LayoutStyle* Node::mutableLayoutStyle() const
 {
     if (LayoutObject* renderer = this->layoutObject())
         return renderer->style();
@@ -45,7 +50,7 @@ inline LayoutStyle* Node::layoutStyle() const
     return 0;
 }
 
-inline LayoutStyle* Node::parentLayoutStyle() const
+inline const LayoutStyle* Node::parentLayoutStyle() const
 {
     ContainerNode* parent = NodeRenderingTraversal::parent(*this);
     return parent ? parent->layoutStyle() : 0;

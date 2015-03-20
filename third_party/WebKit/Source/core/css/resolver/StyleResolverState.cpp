@@ -40,8 +40,10 @@ StyleResolverState::StyleResolverState(Document& document, const ElementResolveC
     , m_hasDirAutoAttribute(false)
     , m_fontBuilder(document)
 {
-    if (!m_parentStyle)
-        m_parentStyle = m_elementContext.parentStyle();
+    if (!m_parentStyle) {
+        // TODO(jchaffraix): We should make m_parentStyle const (https://crbug.com/468152)
+        m_parentStyle = const_cast<LayoutStyle*>(m_elementContext.parentStyle());
+    }
 
     ASSERT(document.isActive());
     m_elementStyleResources.setDeviceScaleFactor(document.frameHost()->deviceScaleFactor());

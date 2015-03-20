@@ -165,7 +165,7 @@ int WebFormControlElement::selectionEnd() const
 
 WebString WebFormControlElement::directionForFormData() const
 {
-    if (LayoutStyle* style = constUnwrap<HTMLFormControlElement>()->layoutStyle())
+    if (const LayoutStyle* style = constUnwrap<HTMLFormControlElement>()->layoutStyle())
         return style->isLeftToRightDirection() ? WebString::fromUTF8("ltr") : WebString::fromUTF8("rtl");
     return WebString::fromUTF8("ltr");
 }

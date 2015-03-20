@@ -587,7 +587,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForElement(Element* element, const L
     // be propagated from shadow host to distributed node.
     if (state.distributedToInsertionPoint()) {
         if (Element* parent = element->parentElement()) {
-            if (LayoutStyle* styleOfShadowHost = parent->layoutStyle())
+            if (LayoutStyle* styleOfShadowHost = parent->mutableLayoutStyle())
                 state.style()->setUserModify(styleOfShadowHost->userModify());
         }
     }
@@ -902,7 +902,7 @@ PassRefPtr<LayoutStyle> StyleResolver::styleForText(Text* textNode)
     Node* parentNode = NodeRenderingTraversal::parent(*textNode);
     if (!parentNode || !parentNode->layoutStyle())
         return initialStyleForElement();
-    return parentNode->layoutStyle();
+    return parentNode->mutableLayoutStyle();
 }
 
 void StyleResolver::updateFont(StyleResolverState& state)

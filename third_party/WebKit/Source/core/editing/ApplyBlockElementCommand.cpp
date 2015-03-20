@@ -173,7 +173,7 @@ static bool isNewLineAtPosition(const Position& position)
     return textAtPosition[0] == '\n';
 }
 
-static LayoutStyle* layoutStyleOfEnclosingTextNode(const Position& position)
+static const LayoutStyle* layoutStyleOfEnclosingTextNode(const Position& position)
 {
     if (position.anchorType() != Position::PositionIsOffsetInAnchor || !position.containerNode() || !position.containerNode()->isTextNode())
         return 0;
@@ -188,7 +188,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
     document().updateRenderTreeIfNeeded();
 
     bool isStartAndEndOnSameNode = false;
-    if (LayoutStyle* startStyle = layoutStyleOfEnclosingTextNode(start)) {
+    if (const LayoutStyle* startStyle = layoutStyleOfEnclosingTextNode(start)) {
         isStartAndEndOnSameNode = layoutStyleOfEnclosingTextNode(end) && start.containerNode() == end.containerNode();
         bool isStartAndEndOfLastParagraphOnSameNode = layoutStyleOfEnclosingTextNode(m_endOfLastParagraph) && start.containerNode() == m_endOfLastParagraph.containerNode();
 
@@ -215,7 +215,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
 
     document().updateRenderTreeIfNeeded();
 
-    if (LayoutStyle* endStyle = layoutStyleOfEnclosingTextNode(end)) {
+    if (const LayoutStyle* endStyle = layoutStyleOfEnclosingTextNode(end)) {
         bool isEndAndEndOfLastParagraphOnSameNode = layoutStyleOfEnclosingTextNode(m_endOfLastParagraph) && end.deprecatedNode() == m_endOfLastParagraph.deprecatedNode();
         // Include \n at the end of line if we're at an empty paragraph
         if (endStyle->preserveNewline() && start == end && end.offsetInContainerNode() < end.containerNode()->maxCharacterOffset()) {
@@ -247,7 +247,7 @@ VisiblePosition ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfN
 {
     VisiblePosition endOfNextParagraph = endOfParagraph(endOfCurrentParagraph.next());
     Position position = endOfNextParagraph.deepEquivalent();
-    LayoutStyle* style = layoutStyleOfEnclosingTextNode(position);
+    const LayoutStyle* style = layoutStyleOfEnclosingTextNode(position);
     if (!style)
         return endOfNextParagraph;
 

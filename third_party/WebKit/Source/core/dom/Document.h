@@ -789,7 +789,7 @@ public:
     // that as the style for the root element, rather than obtaining it on our own. The reason for
     // this is that style may not have been associated with the elements yet - in which case it may
     // have been calculated on the fly (without associating it with the actual element) somewhere.
-    Element* viewportDefiningElement(LayoutStyle* rootStyle = nullptr) const;
+    Element* viewportDefiningElement(const LayoutStyle* rootStyle = nullptr) const;
 
     DocumentMarkerController& markers() const { return *m_markers; }
 

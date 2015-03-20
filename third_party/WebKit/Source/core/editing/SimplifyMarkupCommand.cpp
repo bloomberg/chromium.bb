@@ -55,7 +55,7 @@ void SimplifyMarkupCommand::doApply()
         ContainerNode* startingNode = node->parentNode();
         if (!startingNode)
             continue;
-        LayoutStyle* startingStyle = startingNode->layoutStyle();
+        const LayoutStyle* startingStyle = startingNode->layoutStyle();
         if (!startingStyle)
             continue;
         ContainerNode* currentNode = startingNode;

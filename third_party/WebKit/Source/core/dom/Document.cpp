@@ -1603,7 +1603,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     ASSERT(documentElement());
 
     bool didRecalcDocumentElement = false;
-    RefPtr<LayoutStyle> documentElementStyle = documentElement()->layoutStyle();
+    RefPtr<LayoutStyle> documentElementStyle = documentElement()->mutableLayoutStyle();
     if (change == Force)
         documentElement()->clearAnimationStyleChange();
     if (!documentElementStyle || documentElement()->needsStyleRecalc() || change == Force) {
@@ -1618,7 +1618,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     RefPtr<LayoutStyle> bodyStyle;
 
     if (body) {
-        bodyStyle = body->layoutStyle();
+        bodyStyle = body->mutableLayoutStyle();
         if (didRecalcDocumentElement)
             body->clearAnimationStyleChange();
         if (!bodyStyle || body->needsStyleRecalc() || didRecalcDocumentElement)
@@ -1686,13 +1686,13 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     }
 
     if (body) {
-        if (LayoutStyle* style = body->layoutStyle()) {
+        if (const LayoutStyle* style = body->layoutStyle()) {
             if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
                 body->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
         }
     }
 
-    if (LayoutStyle* style = documentElement()->layoutStyle()) {
+    if (const LayoutStyle* style = documentElement()->layoutStyle()) {
         if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
             documentElement()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::WritingModeChange));
     }
@@ -2385,7 +2385,7 @@ HTMLHeadElement* Document::head() const
     return Traversal<HTMLHeadElement>::firstChild(*de);
 }
 
-Element* Document::viewportDefiningElement(LayoutStyle* rootStyle) const
+Element* Document::viewportDefiningElement(const LayoutStyle* rootStyle) const
 {
     // If a BODY element sets non-visible overflow, it is to be propagated to the viewport, as long
     // as the following conditions are all met:

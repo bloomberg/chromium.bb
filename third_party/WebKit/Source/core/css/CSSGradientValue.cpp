@@ -69,7 +69,7 @@ PassRefPtr<Image> CSSGradientValue::image(LayoutObject* renderer, const IntSize&
     // We need to create an image.
     RefPtr<Gradient> gradient;
 
-    LayoutStyle* rootStyle = renderer->document().documentElement()->layoutStyle();
+    const LayoutStyle* rootStyle = renderer->document().documentElement()->layoutStyle();
     CSSToLengthConversionData conversionData(renderer->style(), rootStyle, renderer->view(), renderer->style()->effectiveZoom());
     if (isLinearGradientValue())
         gradient = toCSSLinearGradientValue(this)->createGradient(conversionData, size, *renderer);

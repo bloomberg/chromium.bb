@@ -1642,7 +1642,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     ASSERT(change >= Inherit || needsStyleRecalc());
     ASSERT(parentLayoutStyle());
 
-    RefPtr<LayoutStyle> oldStyle = layoutStyle();
+    RefPtr<LayoutStyle> oldStyle = mutableLayoutStyle();
     RefPtr<LayoutStyle> newStyle = styleForLayoutObject();
     StyleRecalcChange localChange = LayoutStyle::stylePropagationDiff(oldStyle.get(), newStyle.get());
 
@@ -1687,7 +1687,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     return localChange;
 }
 
-void Element::updateCallbackSelectors(LayoutStyle* oldStyle, LayoutStyle* newStyle)
+void Element::updateCallbackSelectors(const LayoutStyle* oldStyle, const LayoutStyle* newStyle)
 {
     Vector<String> emptyVector;
     const Vector<String>& oldCallbackSelectors = oldStyle ? oldStyle->callbackSelectors() : emptyVector;
@@ -1854,7 +1854,7 @@ bool Element::childTypeAllowed(NodeType type) const
 
 void Element::checkForEmptyStyleChange()
 {
-    LayoutStyle* style = layoutStyle();
+    const LayoutStyle* style = layoutStyle();
 
     if (!style && !styleAffectedByEmpty())
         return;
@@ -2545,7 +2545,7 @@ const LayoutStyle* Element::computedStyle(PseudoId pseudoElementSpecifier)
     // FIXME: Find and use the renderer from the pseudo element instead of the actual element so that the 'length'
     // properties, which are only known by the renderer because it did the layout, will be correct and so that the
     // values returned for the ":selection" pseudo-element will be correct.
-    LayoutStyle* elementStyle = layoutStyle();
+    LayoutStyle* elementStyle = mutableLayoutStyle();
     if (!elementStyle) {
         ElementRareData& rareData = ensureElementRareData();
         if (!rareData.computedStyle())

@@ -43,14 +43,14 @@ public:
     Element* element() const { return m_element; }
     const ContainerNode* parentNode() const { return m_parentNode; }
     const LayoutStyle* rootElementStyle() const { return m_rootElementStyle; }
-    LayoutStyle* parentStyle() const { return parentNode() ? parentNode()->layoutStyle() : nullptr; }
+    const LayoutStyle* parentStyle() const { return parentNode() ? parentNode()->layoutStyle() : nullptr; }
     EInsideLink elementLinkState() const { return m_elementLinkState; }
     bool distributedToInsertionPoint() const { return m_distributedToInsertionPoint; }
 
 private:
     RawPtrWillBeMember<Element> m_element;
     RawPtrWillBeMember<ContainerNode> m_parentNode;
-    LayoutStyle* m_rootElementStyle;
+    const LayoutStyle* m_rootElementStyle;
     EInsideLink m_elementLinkState;
     bool m_distributedToInsertionPoint;
 };

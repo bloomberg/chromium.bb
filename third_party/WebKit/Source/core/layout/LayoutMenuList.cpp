@@ -245,7 +245,7 @@ void LayoutMenuList::setTextFromOption(int optionIndex)
             HTMLOptionElement* selectedOptionElement = toHTMLOptionElement(listItems[firstSelectedIndex]);
             ASSERT(selectedOptionElement->selected());
             text = selectedOptionElement->textIndentedToRespectGroupLabel();
-            m_optionStyle = selectedOptionElement->layoutStyle();
+            m_optionStyle = selectedOptionElement->mutableLayoutStyle();
         } else {
             Locale& locale = select->locale();
             String localizedNumberString = locale.convertToLocalizedNumber(String::number(selectedCount));
@@ -258,7 +258,7 @@ void LayoutMenuList::setTextFromOption(int optionIndex)
             Element* element = listItems[i];
             if (isHTMLOptionElement(*element)) {
                 text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-                m_optionStyle = element->layoutStyle();
+                m_optionStyle = element->mutableLayoutStyle();
             }
         }
     }

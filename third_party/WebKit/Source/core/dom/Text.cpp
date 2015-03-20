@@ -418,7 +418,7 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 bool Text::needsWhitespaceRenderer()
 {
     ASSERT(!layoutObject());
-    if (LayoutStyle* style = parentLayoutStyle())
+    if (const LayoutStyle* style = parentLayoutStyle())
         return style->preserveNewline();
     return false;
 }

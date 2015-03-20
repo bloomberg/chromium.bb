@@ -562,7 +562,7 @@ void TreeScope::setNeedsStyleRecalcForViewportUnits()
     for (Element* element = ElementTraversal::firstWithin(rootNode()); element; element = ElementTraversal::nextIncludingPseudo(*element)) {
         for (ShadowRoot* root = element->youngestShadowRoot(); root; root = root->olderShadowRoot())
             root->setNeedsStyleRecalcForViewportUnits();
-        LayoutStyle* style = element->layoutStyle();
+        const LayoutStyle* style = element->layoutStyle();
         if (style && style->hasViewportUnits())
             element->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::ViewportUnits));
     }
