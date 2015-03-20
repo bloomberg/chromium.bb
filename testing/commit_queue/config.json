@@ -105,9 +105,6 @@
         "try_job_verifier": {
             "launched": {
                 "tryserver.chromium.linux": {
-                    "android_aosp": [
-                        "compile"
-                    ],
                     "android_arm64_dbg_recipe": [
                         "defaulttests"
                     ],
