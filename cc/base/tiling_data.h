@@ -101,19 +101,21 @@ class CC_EXPORT TilingData {
     int bottom_;
   };
 
-  // Iterate through all indices whose bounds (not including borders) intersect
-  // with |consider| but which also do not intersect with |ignore|.
-  class CC_EXPORT DifferenceIterator : public BaseIterator {
-   public:
-    DifferenceIterator(const TilingData* tiling_data,
-                       const gfx::Rect& consider_rect,
-                       const gfx::Rect& ignore_rect);
-    DifferenceIterator& operator++();
+  class CC_EXPORT BaseDifferenceIterator : public BaseIterator {
+   protected:
+    BaseDifferenceIterator();
+    BaseDifferenceIterator(const TilingData* tiling_data,
+                           const gfx::Rect& consider_rect,
+                           const gfx::Rect& ignore_rect);
 
-   private:
+    bool HasConsiderRect() const;
+    bool in_consider_rect() const {
+      return index_x_ >= consider_left_ && index_x_ <= consider_right_ &&
+             index_y_ >= consider_top_ && index_y_ <= consider_bottom_;
+    }
     bool in_ignore_rect() const {
-     return index_x_ >= ignore_left_ && index_x_ <= ignore_right_ &&
-       index_y_ >= ignore_top_ && index_y_ <= ignore_bottom_;
+      return index_x_ >= ignore_left_ && index_x_ <= ignore_right_ &&
+             index_y_ >= ignore_top_ && index_y_ <= ignore_bottom_;
     }
 
     int consider_left_;
@@ -126,10 +128,20 @@ class CC_EXPORT TilingData {
     int ignore_bottom_;
   };
 
+  // Iterate through all indices whose bounds (not including borders) intersect
+  // with |consider| but which also do not intersect with |ignore|.
+  class CC_EXPORT DifferenceIterator : public BaseDifferenceIterator {
+   public:
+    DifferenceIterator(const TilingData* tiling_data,
+                       const gfx::Rect& consider_rect,
+                       const gfx::Rect& ignore_rect);
+    DifferenceIterator& operator++();
+  };
+
   // Iterate through all indices whose bounds + border intersect with
   // |consider| but which also do not intersect with |ignore|. The iterator
   // order is a counterclockwise spiral around the given center.
-  class CC_EXPORT SpiralDifferenceIterator : public BaseIterator {
+  class CC_EXPORT SpiralDifferenceIterator : public BaseDifferenceIterator {
    public:
     SpiralDifferenceIterator();
     SpiralDifferenceIterator(const TilingData* tiling_data,
@@ -139,14 +151,6 @@ class CC_EXPORT TilingData {
     SpiralDifferenceIterator& operator++();
 
    private:
-    bool in_consider_rect() const {
-      return index_x_ >= consider_left_ && index_x_ <= consider_right_ &&
-             index_y_ >= consider_top_ && index_y_ <= consider_bottom_;
-    }
-    bool in_ignore_rect() const {
-      return index_x_ >= ignore_left_ && index_x_ <= ignore_right_ &&
-             index_y_ >= ignore_top_ && index_y_ <= ignore_bottom_;
-    }
     bool valid_column() const {
       return index_x_ >= consider_left_ && index_x_ <= consider_right_;
     }
@@ -161,15 +165,6 @@ class CC_EXPORT TilingData {
 
     bool needs_direction_switch() const;
     void switch_direction();
-
-    int consider_left_;
-    int consider_top_;
-    int consider_right_;
-    int consider_bottom_;
-    int ignore_left_;
-    int ignore_top_;
-    int ignore_right_;
-    int ignore_bottom_;
 
     enum Direction { UP, LEFT, DOWN, RIGHT };
 
@@ -181,7 +176,8 @@ class CC_EXPORT TilingData {
     int vertical_step_count_;
   };
 
-  class CC_EXPORT ReverseSpiralDifferenceIterator : public BaseIterator {
+  class CC_EXPORT ReverseSpiralDifferenceIterator
+      : public BaseDifferenceIterator {
    public:
     ReverseSpiralDifferenceIterator();
     ReverseSpiralDifferenceIterator(const TilingData* tiling_data,
@@ -191,17 +187,9 @@ class CC_EXPORT TilingData {
     ReverseSpiralDifferenceIterator& operator++();
 
    private:
-    bool in_consider_rect() const {
-      return index_x_ >= consider_left_ && index_x_ <= consider_right_ &&
-             index_y_ >= consider_top_ && index_y_ <= consider_bottom_;
-    }
     bool in_around_rect() const {
       return index_x_ >= around_left_ && index_x_ <= around_right_ &&
              index_y_ >= around_top_ && index_y_ <= around_bottom_;
-    }
-    bool in_ignore_rect() const {
-      return index_x_ >= ignore_left_ && index_x_ <= ignore_right_ &&
-             index_y_ >= ignore_top_ && index_y_ <= ignore_bottom_;
     }
     bool valid_column() const {
       return index_x_ >= consider_left_ && index_x_ <= consider_right_;
@@ -218,18 +206,10 @@ class CC_EXPORT TilingData {
     bool needs_direction_switch() const;
     void switch_direction();
 
-    int consider_left_;
-    int consider_top_;
-    int consider_right_;
-    int consider_bottom_;
     int around_left_;
     int around_top_;
     int around_right_;
     int around_bottom_;
-    int ignore_left_;
-    int ignore_top_;
-    int ignore_right_;
-    int ignore_bottom_;
 
     enum Direction { LEFT, UP, RIGHT, DOWN };
 
