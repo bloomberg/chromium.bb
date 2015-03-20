@@ -5,6 +5,7 @@
 #ifndef CSPDirectiveList_h
 #define CSPDirectiveList_h
 
+#include "core/fetch/Resource.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/frame/csp/MediaListDirective.h"
 #include "core/frame/csp/SourceListDirective.h"
@@ -74,6 +75,8 @@ public:
     // browsing context.
     bool hasPluginTypes() const { return !!m_pluginTypes; };
     const String& pluginTypesText() const;
+
+    bool shouldSendCSPHeader(Resource::Type) const;
 
 private:
     CSPDirectiveList(ContentSecurityPolicy*, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);

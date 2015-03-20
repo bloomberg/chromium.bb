@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/SecurityContext.h"
+#include "core/fetch/Resource.h"
 #include "core/frame/ConsoleTypes.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/HTTPParsers.h"
@@ -232,6 +233,8 @@ public:
     bool protocolMatchesSelf(const KURL&) const;
 
     bool experimentalFeaturesEnabled() const;
+
+    bool shouldSendCSPHeader(Resource::Type) const;
 
     static bool shouldBypassMainWorld(const ExecutionContext*);
 

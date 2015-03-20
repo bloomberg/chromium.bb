@@ -904,6 +904,15 @@ bool ContentSecurityPolicy::experimentalFeaturesEnabled() const
     return RuntimeEnabledFeatures::experimentalContentSecurityPolicyFeaturesEnabled();
 }
 
+bool ContentSecurityPolicy::shouldSendCSPHeader(Resource::Type type) const
+{
+    for (const auto& policy : m_policies) {
+        if (policy->shouldSendCSPHeader(type))
+            return true;
+    }
+    return false;
+}
+
 bool ContentSecurityPolicy::urlMatchesSelf(const KURL& url) const
 {
     return m_selfSource->matches(url, DidNotRedirect);

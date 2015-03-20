@@ -103,6 +103,7 @@ public:
     virtual String charset() const { return String(); }
     virtual void upgradeInsecureRequest(FetchRequest&);
     virtual void addClientHintsIfNecessary(FetchRequest&);
+    virtual void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&);
 
 protected:
     FetchContext() { }

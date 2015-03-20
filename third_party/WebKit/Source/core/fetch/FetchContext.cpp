@@ -120,4 +120,8 @@ void FetchContext::addClientHintsIfNecessary(FetchRequest&)
 {
 }
 
+void FetchContext::addCSPHeaderIfNecessary(Resource::Type, FetchRequest&)
+{
+}
+
 } // namespace blink

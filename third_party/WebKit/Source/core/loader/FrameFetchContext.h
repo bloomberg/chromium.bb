@@ -98,6 +98,7 @@ public:
     String charset() const override;
     void upgradeInsecureRequest(FetchRequest&) override;
     void addClientHintsIfNecessary(FetchRequest&) override;
+    void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) override;
 
     DECLARE_VIRTUAL_TRACE();
 

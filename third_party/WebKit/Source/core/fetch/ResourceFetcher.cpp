@@ -461,6 +461,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
 
     context().upgradeInsecureRequest(request);
     context().addClientHintsIfNecessary(request);
+    context().addCSPHeaderIfNecessary(type, request);
 
     KURL url = request.resourceRequest().url();
 

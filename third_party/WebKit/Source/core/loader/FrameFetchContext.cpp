@@ -670,6 +670,16 @@ void FrameFetchContext::addClientHintsIfNecessary(FetchRequest& fetchRequest)
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("RW", AtomicString(String::number(frame()->view()->viewportWidth())));
 }
 
+void FrameFetchContext::addCSPHeaderIfNecessary(Resource::Type type, FetchRequest& fetchRequest)
+{
+    if (!document() || !frame())
+        return;
+
+    const ContentSecurityPolicy* csp = document()->contentSecurityPolicy();
+    if (csp->shouldSendCSPHeader(type))
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("CSP", "active");
+}
+
 DEFINE_TRACE(FrameFetchContext)
 {
     visitor->trace(m_document);
