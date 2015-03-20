@@ -6,6 +6,7 @@
 #include "core/paint/FramePainter.h"
 
 #include "core/dom/DocumentMarkerController.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameView.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -157,7 +158,7 @@ void FramePainter::paintContents(GraphicsContext* context, const IntRect& rect)
     if (isTopLevelPainter) {
         // Everything that happens after paintContents completions is considered
         // to be part of the next frame.
-        m_frameView.setCurrentFrameTimeStamp(currentTime());
+        memoryCache()->updateFramePaintTimestamp();
         s_inPaintContents = false;
     }
 

@@ -94,8 +94,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-double FrameView::s_currentFrameTimeStamp = 0.0;
-
 // The maximum number of updateWidgets iterations that should be done before returning.
 static const unsigned maxUpdateWidgetsIterations = 2;
 static const double resourcePriorityUpdateDelayAfterScroll = 0.250;

@@ -224,9 +224,6 @@ public:
 
     Color documentBackgroundColor() const;
 
-    static double currentFrameTimeStamp() { return s_currentFrameTimeStamp; }
-    void setCurrentFrameTimeStamp(double val) { s_currentFrameTimeStamp = val; }
-
     void updateLayoutAndStyleForPainting();
     void updateLayoutAndStyleIfNeededRecursive();
 
@@ -708,8 +705,6 @@ private:
     bool isFrameViewScrollbar(const Widget* child) const { return horizontalScrollbar() == child || verticalScrollbar() == child; }
 
     ScrollingCoordinator* scrollingCoordinator();
-
-    static double s_currentFrameTimeStamp; // used for detecting decoded resource thrash in the cache
 
     LayoutSize m_size;
 

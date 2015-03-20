@@ -229,6 +229,8 @@ public:
 
     void pruneAll();
 
+    void updateFramePaintTimestamp();
+
 private:
     enum PruneStrategy {
         // Automatically decide how much to prune.
@@ -276,6 +278,7 @@ private:
     double m_maxPruneDeferralDelay;
     double m_pruneTimeStamp;
     double m_pruneFrameTimeStamp;
+    double m_lastFramePaintTimeStamp; // used for detecting decoded resource thrash in the cache
 
     size_t m_capacity;
     size_t m_minDeadCapacity;

@@ -96,6 +96,9 @@ inline MemoryCache::MemoryCache()
     : m_inPruneResources(false)
     , m_prunePending(false)
     , m_maxPruneDeferralDelay(cMaxPruneDeferralDelay)
+    , m_pruneTimeStamp(0.0)
+    , m_pruneFrameTimeStamp(0.0)
+    , m_lastFramePaintTimeStamp(0.0)
     , m_capacity(cDefaultCacheCapacity)
     , m_minDeadCapacity(0)
     , m_maxDeadCapacity(cDefaultCacheCapacity)
@@ -111,7 +114,6 @@ inline MemoryCache::MemoryCache()
     const double statsIntervalInSeconds = 15;
     m_statsTimer.startRepeating(statsIntervalInSeconds, FROM_HERE);
 #endif
-    m_pruneTimeStamp = m_pruneFrameTimeStamp = FrameView::currentFrameTimeStamp();
 }
 
 PassOwnPtrWillBeRawPtr<MemoryCache> MemoryCache::create()
@@ -614,7 +616,7 @@ void MemoryCache::updateDecodedResource(Resource* resource, UpdateReason reason,
     if (reason != UpdateForAccess)
         return;
 
-    double timestamp = resource->isImage() ? FrameView::currentFrameTimeStamp() : 0.0;
+    double timestamp = resource->isImage() ? m_lastFramePaintTimeStamp : 0.0;
     if (!timestamp)
         timestamp = currentTime();
     entry->m_lastDecodedAccessTime = timestamp;
@@ -776,8 +778,13 @@ void MemoryCache::pruneNow(double currentTime, PruneStrategy strategy)
     TemporaryChange<bool> reentrancyProtector(m_inPruneResources, true);
     pruneDeadResources(strategy); // Prune dead first, in case it was "borrowing" capacity from live.
     pruneLiveResources(strategy);
-    m_pruneFrameTimeStamp = FrameView::currentFrameTimeStamp();
+    m_pruneFrameTimeStamp = m_lastFramePaintTimeStamp;
     m_pruneTimeStamp = currentTime;
+}
+
+void MemoryCache::updateFramePaintTimestamp()
+{
+    m_lastFramePaintTimeStamp = currentTime();
 }
 
 #if ENABLE(OILPAN)
