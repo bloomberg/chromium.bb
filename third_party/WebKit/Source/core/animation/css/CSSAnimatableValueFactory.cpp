@@ -557,8 +557,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromDouble(style.zIndex());
     default:
         ASSERT_NOT_REACHED();
-        // This return value is to avoid a release crash if possible.
-        return AnimatableUnknown::create(nullptr);
+        return nullptr;
     }
 }
 
