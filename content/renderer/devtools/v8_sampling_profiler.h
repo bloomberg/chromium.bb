@@ -30,9 +30,12 @@ class CONTENT_EXPORT V8SamplingProfiler final
   void WaitSamplingEventForTesting();
 
  private:
+  void StartSamplingThread();
+
   scoped_ptr<base::WaitableEvent> waitable_event_for_testing_;
   scoped_ptr<V8SamplingThread> sampling_thread_;
   scoped_ptr<Sampler> render_thread_sampler_;
+  scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(V8SamplingProfiler);
 };

@@ -77,6 +77,39 @@ class V8SamplingProfilerTest : public RenderViewTest {
       flush_complete_event->Signal();
   }
 
+  void CollectTrace() {
+    TraceLog* trace_log = TraceLog::GetInstance();
+    sampling_profiler_->EnableSamplingEventForTesting();
+    trace_log->SetEnabled(
+        CategoryFilter(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile")),
+        TraceLog::RECORDING_MODE, TraceOptions());
+    base::RunLoop().RunUntilIdle();
+    KickV8();  // Make a call to V8 so it can invoke interrupt request
+               // callbacks.
+    base::RunLoop().RunUntilIdle();
+    sampling_profiler_->WaitSamplingEventForTesting();
+    trace_log->SetDisabled();
+    SyncFlush(trace_log);
+  }
+
+  int CountEvents(const std::string& name) const {
+    size_t trace_parsed_count = trace_parsed_.GetSize();
+    int events_count = 0;
+    for (size_t i = 0; i < trace_parsed_count; i++) {
+      const DictionaryValue* dict;
+      if (!trace_parsed_.GetDictionary(i, &dict))
+        continue;
+      std::string value;
+      if (!dict->GetString("cat", &value) ||
+          value != TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"))
+        continue;
+      if (!dict->GetString("name", &value) || value != name)
+        continue;
+      ++events_count;
+    }
+    return events_count;
+  }
+
   scoped_ptr<V8SamplingProfiler> sampling_profiler_;
   base::Lock lock_;
 
@@ -85,40 +118,37 @@ class V8SamplingProfilerTest : public RenderViewTest {
   TraceResultBuffer::SimpleOutput json_output_;
 };
 
-TEST_F(V8SamplingProfilerTest, V8SamplingEventFired) {
-  scoped_ptr<V8SamplingProfiler> sampling_profiler(
-      new V8SamplingProfiler(true));
-  sampling_profiler->EnableSamplingEventForTesting();
+// TODO(alph): Implement on Windows and Android
+// The SamplingEventForTesting is fired when the framework collected at
+// least one JitCodeAdded event and one sample event.
+
+#if defined(OS_WIN) || defined(OS_ANDROID)
+#define MAYBE(x) DISABLED_##x
+#else
+#define MAYBE(x) x
+#endif
+
+TEST_F(V8SamplingProfilerTest, MAYBE(V8SamplingEventFired)) {
+  sampling_profiler_->EnableSamplingEventForTesting();
   TraceLog::GetInstance()->SetEnabled(
       CategoryFilter(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile")),
       TraceLog::RECORDING_MODE, TraceOptions());
-  sampling_profiler->WaitSamplingEventForTesting();
+  base::RunLoop().RunUntilIdle();
+  sampling_profiler_->WaitSamplingEventForTesting();
   TraceLog::GetInstance()->SetDisabled();
 }
 
-TEST_F(V8SamplingProfilerTest, V8SamplingJitCodeEventsCollected) {
-  TraceLog* trace_log = TraceLog::GetInstance();
-  trace_log->SetEnabled(
-      CategoryFilter(TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile")),
-      TraceLog::RECORDING_MODE, TraceOptions());
-  KickV8();  // Make a call to V8 so it can invoke interrupt request callbacks.
-  trace_log->SetDisabled();
-  SyncFlush(trace_log);
-  size_t trace_parsed_count = trace_parsed_.GetSize();
-  int jit_code_added_events_count = 0;
-  for (size_t i = 0; i < trace_parsed_count; i++) {
-    const DictionaryValue* dict;
-    if (!trace_parsed_.GetDictionary(i, &dict))
-      continue;
-    std::string value;
-    if (!dict->GetString("cat", &value) ||
-        value != TRACE_DISABLED_BY_DEFAULT("v8.cpu_profile"))
-      continue;
-    if (!dict->GetString("name", &value) || value != "JitCodeAdded")
-      continue;
-    ++jit_code_added_events_count;
-  }
+TEST_F(V8SamplingProfilerTest, MAYBE(V8SamplingJitCodeEventsCollected)) {
+  CollectTrace();
+  int jit_code_added_events_count = CountEvents("JitCodeAdded");
   CHECK_LT(0, jit_code_added_events_count);
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(V8SamplingProfilerTest, MAYBE(V8SamplingSamplesCollected)) {
+  CollectTrace();
+  int sample_events_count = CountEvents("V8Sample");
+  CHECK_LT(0, sample_events_count);
   base::RunLoop().RunUntilIdle();
 }
 
