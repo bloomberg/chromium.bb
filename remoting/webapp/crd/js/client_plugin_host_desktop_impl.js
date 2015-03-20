@@ -24,6 +24,7 @@ remoting.ClientPlugin = remoting.ClientPlugin || {};
  * @constructor
  */
 remoting.ClientPlugin.HostDesktopImpl = function(plugin, postMessageCallback) {
+  base.inherits(this, base.EventSourceImpl);
   /** @private */
   this.plugin_ = plugin;
   /** @private */
@@ -39,7 +40,6 @@ remoting.ClientPlugin.HostDesktopImpl = function(plugin, postMessageCallback) {
 
   this.defineEvents(base.values(remoting.HostDesktop.Events));
 };
-base.extend(remoting.ClientPlugin.HostDesktopImpl, base.EventSourceImpl);
 
 /** @return {boolean} Whether the host supports desktop resizing. */
 remoting.ClientPlugin.HostDesktopImpl.prototype.isResizable = function() {

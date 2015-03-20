@@ -21,7 +21,7 @@ base.debug = function() {};
  * Set it to true for debugging.
  * @type {boolean}
  */
-base.debug.breakOnAssert = false;
+base.debug.throwOnAssert = false;
 
 /**
  * Assert that |expr| is true else print the |opt_msg|.
@@ -30,13 +30,12 @@ base.debug.breakOnAssert = false;
  */
 base.debug.assert = function(expr, opt_msg) {
   if (!expr) {
-    var msg = 'Assertion Failed.';
-    if (opt_msg) {
-      msg += ' ' + opt_msg;
+    if (!opt_msg) {
+      opt_msg = 'Assertion Failed.';
     }
-    if (base.debug.breakOnAssert) {
-      alert(msg);
-      debugger;
+    console.error(opt_msg);
+    if (base.debug.throwOnAssert) {
+      throw new Error(opt_msg);
     }
   }
 };
@@ -129,8 +128,7 @@ base.dispose = function(obj) {
  */
 base.mix = function(dest, src) {
   for (var prop in src) {
-    if (src.hasOwnProperty(prop)) {
-      base.debug.assert(!dest.hasOwnProperty(prop),"Don't override properties");
+    if (src.hasOwnProperty(prop) && !(prop in dest)) {
       dest[prop] = src[prop];
     }
   }
@@ -144,6 +142,49 @@ base.mix = function(dest, src) {
  */
 base.extend = function(dest, src) {
   base.mix(dest.prototype, src.prototype || src);
+};
+
+/**
+ * Inherits properties and methods from |parentCtor| at object construction time
+ * using prototypical inheritance. e.g.
+ *
+ * var ParentClass = function(parentArg) {
+ *   this.parentProperty = parentArg;
+ * }
+ *
+ * var ChildClass = function() {
+ *   base.inherits(this, ParentClass, 'parentArg'); // must be the first line.
+ * }
+ *
+ * var child = new ChildClass();
+ * child instanceof ParentClass // true
+ *
+ * See base_inherits_unittest.js for the guaranteed behavior of base.inherits().
+ * This lazy approach is chosen so that it is not necessary to maintain proper
+ * script loading order between the parent class and the child class.
+ *
+ * @param {*} childObject
+ * @param {*} parentCtor
+ * @param {...} parentCtorAargs
+ * @suppress {checkTypes|reportUnknownTypes}
+ */
+base.inherits = function(childObject, parentCtor, parentCtorAargs) {
+  base.debug.assert(parentCtor && parentCtor.prototype,
+                    'Invalid parent constructor.');
+  var parentArgs = Array.prototype.slice.call(arguments, 2);
+  parentCtor.apply(childObject, parentArgs);
+
+  // Note that __proto__ is deprecated.
+  //   https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/
+  //   Global_Objects/Object/proto.
+  // It is used so that childObject instanceof parentCtor will
+  // return true.
+  //
+  // Alternatively, this could be implemented using mixins, e.g.
+  //   base.mix(childObject, parentCtor.prototype);
+  // if we don't care about the correctness of instanceof in the future.
+  childObject.__proto__.__proto__ = parentCtor.prototype;
+  base.debug.assert(childObject instanceof parentCtor);
 };
 
 base.doNothing = function() {};
@@ -371,9 +412,9 @@ base.Promise.as = function(method, params, opt_context, opt_hasErrorHandler) {
  *
  * For example, to create an alarm event for SmokeDetector:
  * functionSmokeDetector() {
+ *    base.inherits(this, base.EventSourceImpl);
  *    this.defineEvents(['alarm']);
  * };
- * base.extend(SmokeDetector, base.EventSourceImpl);
  *
  * To fire an event:
  * SmokeDetector.prototype.onCarbonMonoxideDetected = function() {

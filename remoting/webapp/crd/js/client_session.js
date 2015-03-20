@@ -47,6 +47,8 @@ remoting.ACCESS_TOKEN_RESEND_INTERVAL_MS = 15 * 60 * 1000;
  */
 remoting.ClientSession = function(plugin, host, signalStrategy, mode,
                                   onExtensionMessage) {
+  base.inherits(this, base.EventSourceImpl);
+
   /** @private */
   this.state_ = remoting.ClientSession.State.CREATED;
 
@@ -88,8 +90,6 @@ remoting.ClientSession = function(plugin, host, signalStrategy, mode,
 
   this.defineEvents(Object.keys(remoting.ClientSession.Events));
 };
-
-base.extend(remoting.ClientSession, base.EventSourceImpl);
 
 /** @enum {string} */
 remoting.ClientSession.Events = {

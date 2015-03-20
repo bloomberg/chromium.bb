@@ -17,20 +17,12 @@ QUnit.test('mix(dest, src) should copy properties from |src| to |dest|',
     assert.deepEqual(dest, {a: 'a', b: 'b', c: 'c'});
 });
 
-QUnit.test('mix(dest, src) should assert if properties are overwritten',
-  function(assert) {
+QUnit.test('mix(dest, src) should not override property.', function(assert) {
     var src = { a: 'a', b: 'b'};
-    var dest = { a: 'a'};
-
-    sinon.stub(base.debug, 'assert');
-
-    try {
-      base.mix(dest, src);
-    } catch (e) {
-    } finally {
-      sinon.assert.called(base.debug.assert);
-      $testStub(base.debug.assert).restore();
-    }
+    var dest = { a: 'a2'};
+    base.mix(dest, src);
+    assert.equal(dest['a'], 'a2');
+    assert.equal(dest['b'], 'b');
 });
 
 QUnit.test('values(obj) should return an array containing the values of |obj|',

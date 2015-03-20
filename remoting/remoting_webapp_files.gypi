@@ -67,6 +67,7 @@
       'webapp/unittests/spy_promise_unittest.js',
       'webapp/base/js/base_unittest.js',
       'webapp/base/js/base_event_hook_unittest.js',
+      'webapp/base/js/base_inherits_unittest.js',
       'webapp/base/js/ipc_unittest.js',
       'webapp/crd/js/apps_v2_migration_unittest.js',
       'webapp/crd/js/desktop_viewport_unittest.js',

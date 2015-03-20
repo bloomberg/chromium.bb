@@ -23,6 +23,8 @@ var remoting = remoting || {};
  * @extends {base.EventSourceImpl}
  */
 remoting.BumpScroller = function(viewport) {
+  base.inherits(this, base.EventSourceImpl);
+
   /** @private */
   this.viewport_ = viewport;
   /** @private {number?} */
@@ -33,7 +35,6 @@ remoting.BumpScroller = function(viewport) {
 
   this.defineEvents(base.values(remoting.BumpScroller.Events));
 };
-base.extend(remoting.BumpScroller, base.EventSourceImpl);
 
 /** @enum {string} */
 remoting.BumpScroller.Events = {

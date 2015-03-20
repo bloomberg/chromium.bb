@@ -140,6 +140,7 @@ remoting.MockClientPlugin.prototype.setMouseCursorHandler =
  * @extends {base.EventSourceImpl}
  */
 remoting.MockClientPlugin.HostDesktop = function() {
+  base.inherits(this, base.EventSourceImpl);
   /** @private */
   this.width_ = 0;
   /** @private */
@@ -152,7 +153,6 @@ remoting.MockClientPlugin.HostDesktop = function() {
   this.resizable_ = true;
   this.defineEvents(base.values(remoting.HostDesktop.Events));
 };
-base.extend(remoting.MockClientPlugin.HostDesktop, base.EventSourceImpl);
 
 /**
  * @return {{width:number, height:number, xDpi:number, yDpi:number}}
