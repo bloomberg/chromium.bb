@@ -416,17 +416,8 @@ void ChromeSpeechRecognitionManagerDelegate::CheckRenderViewType(
     return;
   }
 
-  WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
-
-  // chrome://app-list/ uses speech recognition.
-  if (web_contents->GetCommittedWebUI() &&
-      web_contents->GetLastCommittedURL().spec() ==
-      chrome::kChromeUIAppListStartPageURL) {
-    allowed = true;
-    check_permission = false;
-  }
-
 #if defined(ENABLE_EXTENSIONS)
+  WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
   extensions::ViewType view_type = extensions::GetViewType(web_contents);
 
   if (view_type == extensions::VIEW_TYPE_TAB_CONTENTS ||
