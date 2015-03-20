@@ -127,12 +127,6 @@ public:
         float pageScaleDelta,
         float topControlsShownRatioDelta) override;
     virtual void applyViewportDeltas(
-        const WebSize& pinchViewportDelta,
-        const WebSize& mainFrameDelta,
-        const WebFloatSize& elasticOverscrollDelta,
-        float pageScaleDelta,
-        float topControlsShownRatioDelta) override;
-    virtual void applyViewportDeltas(
         const WebFloatSize& pinchViewportDelta,
         const WebFloatSize& mainFrameDelta,
         const WebFloatSize& elasticOverscrollDelta,

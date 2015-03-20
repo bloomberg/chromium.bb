@@ -438,16 +438,6 @@ void WebFrameWidgetImpl::scheduleAnimation()
 }
 
 void WebFrameWidgetImpl::applyViewportDeltas(
-    const WebSize& pinchViewportDelta,
-    const WebSize& mainFrameDelta,
-    const WebFloatSize& elasticOverscrollDelta,
-    float pageScaleDelta,
-    float topControlsDelta)
-{
-    // FIXME: To be implemented.
-}
-
-void WebFrameWidgetImpl::applyViewportDeltas(
     const WebFloatSize& pinchViewportDelta,
     const WebFloatSize& mainFrameDelta,
     const WebFloatSize& elasticOverscrollDelta,
