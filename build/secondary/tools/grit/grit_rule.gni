@@ -285,6 +285,12 @@ if (enable_service_discovery) {
     "enable_service_discovery",
   ]
 }
+if (mac_views_browser) {
+  grit_defines += [
+    "-D",
+    "mac_views_browser",
+  ]
+}
 
 grit_resource_id_file = "//tools/gritsettings/resource_ids"
 grit_info_script = "//tools/grit/grit_info.py"

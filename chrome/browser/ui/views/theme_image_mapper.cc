@@ -8,8 +8,10 @@
 
 namespace chrome {
 
+// On platforms where there is both Ash and a desktop browser, provide DESKTOP
+// resources for the latter.
 int MapThemeImage(HostDesktopType desktop_type, int resource) {
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
   if (desktop_type != HOST_DESKTOP_TYPE_NATIVE)
     return resource;
 

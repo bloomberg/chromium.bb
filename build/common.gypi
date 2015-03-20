@@ -647,6 +647,9 @@
       # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
       'cfi_vptr%': 0,
 
+      # Whether the entire browser uses toolkit-views on Mac instead of Cocoa.
+      'mac_views_browser%': 0,
+
       'conditions': [
         # A flag for POSIX platforms
         ['OS=="win"', {
@@ -1214,6 +1217,7 @@
     'video_hole%': '<(video_hole)',
     'v8_use_external_startup_data%': '<(v8_use_external_startup_data)',
     'cfi_vptr%': '<(cfi_vptr)',
+    'mac_views_browser%': '<(mac_views_browser)',
 
     # Use system protobuf instead of bundled one.
     'use_system_protobuf%': 0,
@@ -1498,9 +1502,6 @@
     'ozone_platform_gbm%': 0,
     'ozone_platform_ozonex%': 0,
     'ozone_platform_test%': 0,
-
-    # Whether the browser is non-native (using Views Toolkit) on Mac.
-    'mac_views_browser%': 0,
 
     # Experiment: http://crbug.com/426914
     'envoy%': 0,
@@ -2153,6 +2154,9 @@
       }],
       ['enable_wifi_bootstrapping==1', {
         'grit_defines': ['-D', 'enable_wifi_bootstrapping'],
+      }],
+      ['mac_views_browser==1', {
+        'grit_defines': ['-D', 'mac_views_browser'],
       }],
       ['enable_resource_whitelist_generation==1 and OS!="win"', {
         'grit_rc_header_format': ['-h', '#define {textual_id} _Pragma("whitelisted_resource_{numeric_id}") {numeric_id}'],

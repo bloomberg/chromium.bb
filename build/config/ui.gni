@@ -30,6 +30,9 @@ declare_args() {
   # True means the UI is built using the "views" framework.
   toolkit_views = is_mac || is_win || is_chromeos || use_aura
 
+  # Whether the entire browser uses toolkit-views on Mac instead of Cocoa.
+  mac_views_browser = false
+
   # Whether we should use glib, a low level C utility library.
   use_glib = is_linux && !use_ozone
 }
