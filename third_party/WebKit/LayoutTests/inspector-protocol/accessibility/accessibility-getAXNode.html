@@ -26,10 +26,10 @@ function test()
             return;
         }
         var node = msg.result;
-        InspectorTest.sendCommand("Accessibility.getAXNode", { "nodeId": node.nodeId }, onGotAccessibilityNode);
+        InspectorTest.sendCommand("Accessibility.getAXNode", { "nodeId": node.nodeId }, onGotAccessibilityNode.bind(null, node));
     }
 
-    function onGotAccessibilityNode(msg)
+    function onGotAccessibilityNode(domNode, msg)
     {
         if (msg.error) {
             InspectorTest.log(msg.error.message);

@@ -1,0 +1,198 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.sendCommand("DOM.getDocument", {}, onGotDocument);
+
+    var numPendingQuerySelectors = 0;
+    var nodeInfo = {};
+    InspectorTest.trackGetChildNodesEvents(nodeInfo);
+    function onGotDocument(msg)
+    {
+        if (msg.error) {
+            InspectorTest.log(msg.error.message);
+            InspectorTest.completeTest();
+            return;
+        }
+        var rootNode = msg.result.root;
+
+        InspectorTest.sendCommand("DOM.querySelector", { "nodeId": rootNode.nodeId, "selector": "ul#rg1" }, onQuerySelector.bind(null, { labelledby: ["h3#rg1_label"], activedescendant: "li#rg1-r4" }));
+        numPendingQuerySelectors++;
+        InspectorTest.sendCommand("DOM.querySelector", { "nodeId": rootNode.nodeId, "selector": "ul#rg2" }, onQuerySelector.bind(null, { labelledby: ["h3#rg2_label"], activedescendant: null }));
+        numPendingQuerySelectors++;
+    }
+
+    function onQuerySelector(expectation, msg)
+    {
+        if (msg.error) {
+            InspectorTest.log(msg.error.message);
+            InspectorTest.completeTest();
+            return;
+        }
+        var node = msg.result;
+        InspectorTest.sendCommand("Accessibility.getAXNode", { "nodeId": node.nodeId }, rewriteNodes);
+    }
+
+    function describeNode(nodeData)
+    {
+        var description = nodeData.nodeName.toLowerCase();
+        switch (nodeData.nodeType) {
+        case Node.ELEMENT_NODE:
+            var p = nodeData.attributes.indexOf("id");
+            if (p >= 0)
+                description += "#" + nodeData.attributes[p + 1];
+        }
+        return description;
+    }
+
+    function rewriteNode(relatedNode)
+    {
+        function rewriteNodePromise(resolve, reject) {
+            if (!("backendNodeId" in relatedNode)) {
+                reject("Could not find backendNodeId in " + JSON.stringify(relatedNode));
+                return;
+            }
+            var backendNodeId = relatedNode.backendNodeId;
+
+            function onNodeResolved(backendNodeId, message) {
+                var nodeId = message.result.nodeIds[0];
+                if (!(nodeId in nodeInfo)) {
+                    relatedNode.nodeResult = "[NODE NOT FOUND]";
+                    resolve();
+                    return;
+                }
+                var node = nodeInfo[nodeId];
+                delete relatedNode.backendNodeId;
+                relatedNode.nodeResult = describeNode(node);
+                resolve();
+            }
+            InspectorTest.sendCommand("DOM.pushNodesByBackendIdsToFrontend", { "backendNodeIds": [ backendNodeId ] }, onNodeResolved.bind(null, backendNodeId));
+        }
+        return new Promise(rewriteNodePromise);
+    }
+
+    function checkExists(path, obj)
+    {
+        var pathComponents = path.split(".");
+        var currentPath = [];
+        var currentObject = obj;
+        for (var component of pathComponents) {
+            currentPath.push(component);
+            if (!(component in currentObject)) {
+                InspectorTest.log("Could not find " + currentPath.join(".") + " in " + JSON.stringify(obj, null, "  "));
+                InspectorTest.completeTest();
+            }
+            currentObject = currentObject[component];
+        }
+    }
+
+    function check(condition, errorMsg, obj)
+    {
+        if (condition)
+            return;
+        InspectorTest.log(errorMsg + " in " + JSON.stringify(obj, null, "  "));
+        InspectorTest.completeTest();
+    }
+
+    function rewriteNodes(msg)
+    {
+        if (msg.error) {
+            InspectorTest.log(msg.error.message);
+            InspectorTest.completeTest();
+            return;
+        }
+
+        checkExists("result.accessibilityNode.properties", msg);
+        var properties = msg.result.accessibilityNode.properties;
+        var promises = [];
+        for (var property of properties) {
+            if (property.value.type === "idrefList") {
+                checkExists("value.relatedNodeArrayValue", property);
+                var relatedNodeArray = property.value.relatedNodeArrayValue;
+                check(Array.isArray(relatedNodeArray), "value.relatedNodeArrayValue should be an array", JSON.stringify(property));
+                 for (var relatedNode of relatedNodeArray) {
+                     promises.push(rewriteNode(relatedNode));
+                 }
+            } else if (property.value.type === "idref") {
+                checkExists("value.relatedNodeValue", property);
+                var relatedNode = property.value.relatedNodeValue;
+                promises.push(rewriteNode(relatedNode));
+            }
+        }
+
+        function onSuccess()
+        {
+            function stripIds(key, value) {
+                if (key == "id")
+                    return "<int>"
+                if (key == "nodeId")
+                    return "<string>"
+                return value;
+            }
+            InspectorTest.log(JSON.stringify(msg, stripIds, "  "));
+            numPendingQuerySelectors--;
+
+            if (!numPendingQuerySelectors)
+                InspectorTest.completeTest();
+        }
+
+        function onError(err)
+        {
+            InpectorTest.log("error: " + JSON.stringify(err, null, "  "));
+            numPendingQuerySelectors--;
+
+            if (!numPendingQuerySelectors)
+                InspectorTest.completeTest();
+        }
+        Promise.all(promises).then(onSuccess, onError);
+    }
+}
+
+</script>
+</head>
+<body onLoad="runTest();">
+  <h3 id="rg1_label">Lunch Options</h3>
+  <ul id="rg1" class="radiogroup" role="radiogroup" aria-labelledby="rg1_label" aria-activedescendant="rg1-r4" tabindex="0">
+    <li id="rg1-r1" tabindex="-1" role="radio" aria-checked="false">
+      Thai
+    </li>
+    <li id="rg1-r2" tabindex="-1" role="radio" aria-checked="false">
+      Subway
+    </li>
+    <li id="rg1-r3" tabindex="-1" role="radio" aria-checked="false">
+      Jimmy Johns
+    </li>
+    <li id="rg1-r4" tabindex="-1" role="radio" aria-checked="true">
+      Radio Maria
+    </li>
+    <li id="rg1-r5" tabindex="-1" role="radio" aria-checked="false">
+      Rainbow Gardens
+    </li>
+  </ul>
+
+ <!-- Start of second Radio Group  -->
+  <h3 id="rg2_label">Drink Options</h3>
+  <ul id="rg2" role="radiogroup" aria-labelledby="rg2_label" aria-activedescendant="" tabindex="0">
+    <li id="rg2-r1" tabindex="-1" role="radio" aria-checked="false">
+      Water
+    </li>
+    <li id="rg2-r2" tabindex="-1" role="radio" aria-checked="false">
+      Tea
+    </li>
+    <li id="rg2-r3" tabindex="-1" role="radio" aria-checked="false">
+      Coffee
+    </li>
+    <li id="rg2-r4" tabindex="-1" role="radio" aria-checked="false">
+      Cola
+    </li>
+    <li id="rg2-r5" tabindex="-1" role="radio" aria-checked="false">
+      Ginger Ale
+    </li>
+  </ul>
+</body>
+</html>

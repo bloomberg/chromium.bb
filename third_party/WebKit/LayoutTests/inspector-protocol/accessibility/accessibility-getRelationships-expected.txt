@@ -1,0 +1,107 @@
+Lunch Options
+
+Thai
+Subway
+Jimmy Johns
+Radio Maria
+Rainbow Gardens
+Drink Options
+
+Water
+Tea
+Coffee
+Cola
+Ginger Ale
+{
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "role": {
+        "type": "string",
+        "value": "radiogroup"
+      },
+      "properties": [
+        {
+          "name": "required",
+          "value": {
+            "type": "boolean",
+            "value": false
+          }
+        },
+        {
+          "name": "activedescendant",
+          "value": {
+            "type": "idref",
+            "relatedNodeValue": {
+              "idref": "rg1-r4",
+              "nodeResult": "li#rg1-r4"
+            }
+          }
+        },
+        {
+          "name": "labelledby",
+          "value": {
+            "type": "idrefList",
+            "relatedNodeArrayValue": [
+              {
+                "idref": "rg1_label",
+                "nodeResult": "h3#rg1_label"
+              }
+            ]
+          }
+        }
+      ],
+      "name": {
+        "type": "string",
+        "value": "Lunch Options"
+      },
+      "description": {
+        "type": "string",
+        "value": "Lunch Options"
+      }
+    }
+  }
+}
+{
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "role": {
+        "type": "string",
+        "value": "radiogroup"
+      },
+      "properties": [
+        {
+          "name": "required",
+          "value": {
+            "type": "boolean",
+            "value": false
+          }
+        },
+        {
+          "name": "labelledby",
+          "value": {
+            "type": "idrefList",
+            "relatedNodeArrayValue": [
+              {
+                "idref": "rg2_label",
+                "nodeResult": "h3#rg2_label"
+              }
+            ]
+          }
+        }
+      ],
+      "name": {
+        "type": "string",
+        "value": "Drink Options"
+      },
+      "description": {
+        "type": "string",
+        "value": "Drink Options"
+      }
+    }
+  }
+}
+

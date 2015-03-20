@@ -423,6 +423,7 @@ public:
     AXObjectInclusion accessibilityPlatformIncludesObject() const;
     virtual AXObjectInclusion defaultObjectInclusion() const;
     bool isInertOrAriaHidden() const;
+    const AXObject* ariaHiddenRoot() const;
     bool computeIsInertOrAriaHidden() const;
     bool isDescendantOfBarrenParent() const;
     bool computeIsDescendantOfBarrenParent() const;
