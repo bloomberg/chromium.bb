@@ -56,6 +56,7 @@
 #include "chromeos/dbus/fake_nfc_tag_client.h"
 #include "chromeos/dbus/fake_peer_daemon_manager_client.h"
 #include "chromeos/dbus/fake_permission_broker_client.h"
+#include "chromeos/dbus/fake_privet_daemon_manager_client.h"
 #include "chromeos/dbus/fake_shill_device_client.h"
 #include "chromeos/dbus/fake_shill_ipconfig_client.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
@@ -80,6 +81,7 @@
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/power_policy_controller.h"
+#include "chromeos/dbus/privet_daemon_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
@@ -119,6 +121,7 @@ const struct {
     { "peer_daemon",  DBusClientBundle::PEER_DAEMON },
     { "permission_broker",  DBusClientBundle::PERMISSION_BROKER },
     { "power_manager",  DBusClientBundle::POWER_MANAGER },
+    { "privet_daemon", DBusClientBundle::PRIVET_DAEMON },
     { "session_manager",  DBusClientBundle::SESSION_MANAGER },
     { "sms",  DBusClientBundle::SMS },
     { "system_clock",  DBusClientBundle::SYSTEM_CLOCK },
@@ -280,6 +283,11 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     permission_broker_client_.reset(PermissionBrokerClient::Create());
   else
     permission_broker_client_.reset(new FakePermissionBrokerClient);
+
+  if (!IsUsingStub(PRIVET_DAEMON))
+    privet_daemon_manager_client_.reset(PrivetDaemonManagerClient::Create());
+  else
+    privet_daemon_manager_client_.reset(new FakePrivetDaemonManagerClient);
 
   if (!IsUsingStub(LEADERSHIP_DAEMON)) {
     leadership_daemon_manager_client_.reset(
