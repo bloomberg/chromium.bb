@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
@@ -35,6 +36,7 @@ class WebContents;
 // captive_portal::CaptivePortalService which can only be accessed on the UI
 // thread.
 class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
+                        public content::WebContentsObserver,
                         public content::NotificationObserver {
  public:
   // Type of the delay to display the SSL interstitial.
@@ -91,12 +93,17 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
       const content::NotificationSource& source,
       const content::NotificationDetails& details) override;
 
+  // content::WebContentsObserver:
+  void DidStartNavigationToPendingEntry(
+      const GURL& url,
+      content::NavigationController::ReloadType reload_type) override;
+
   content::WebContents* web_contents_;
   const int cert_error_;
   const net::SSLInfo ssl_info_;
   const GURL request_url_;
   const int options_mask_;
-  const base::Callback<void(bool)> callback_;
+  base::Callback<void(bool)> callback_;
 
   content::NotificationRegistrar registrar_;
   base::OneShotTimer<SSLErrorHandler> timer_;

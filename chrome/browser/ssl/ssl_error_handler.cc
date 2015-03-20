@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ssl/ssl_error_handler.h"
 
+#include "base/callback_helpers.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
@@ -126,7 +127,8 @@ SSLErrorHandler::SSLErrorHandler(content::WebContents* web_contents,
                                  const GURL& request_url,
                                  int options_mask,
                                  const base::Callback<void(bool)>& callback)
-    : web_contents_(web_contents),
+    : content::WebContentsObserver(web_contents),
+      web_contents_(web_contents),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
       request_url_(request_url),
@@ -222,4 +224,18 @@ void SSLErrorHandler::Observe(
       ShowSSLInterstitial();
   }
 #endif
+}
+
+// Destroy the error handler on all new navigations. This ensures that the
+// handler is properly recreated when a hanging page is navigated to an SSL
+// error, even when the tab's WebContents doesn't change.
+void SSLErrorHandler::DidStartNavigationToPendingEntry(
+    const GURL& url,
+    content::NavigationController::ReloadType reload_type) {
+  // Need to explicity deny the certificate via the callback, otherwise memory
+  // is leaked.
+  if (!callback_.is_null()) {
+    base::ResetAndReturn(&callback_).Run(false);
+  }
+  web_contents_->RemoveUserData(UserDataKey());
 }
