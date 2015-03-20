@@ -1358,6 +1358,8 @@
             'editing/SplitTextNodeCommand.h',
             'editing/SplitTextNodeContainingElementCommand.cpp',
             'editing/SplitTextNodeContainingElementCommand.h',
+            'editing/StyledMarkupAccumulator.cpp',
+            'editing/StyledMarkupAccumulator.h',
             'editing/SurroundingText.cpp',
             'editing/SurroundingText.h',
             'editing/TextCheckingHelper.cpp',

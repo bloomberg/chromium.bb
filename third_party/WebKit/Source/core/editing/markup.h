@@ -26,6 +26,7 @@
 #ifndef markup_h
 #define markup_h
 
+#include "core/CSSPropertyNames.h"
 #include "core/dom/ParserContentPolicy.h"
 #include "core/editing/HTMLInterchange.h"
 #include "platform/heap/Handle.h"
@@ -41,6 +42,7 @@ class ExceptionState;
 class KURL;
 class Node;
 class Range;
+class StylePropertySet;
 
 enum EChildrenOnly { IncludeNode, ChildrenOnly };
 enum EAbsoluteURLs { DoNotResolveURLs, ResolveAllURLs, ResolveNonLocalURLs };
@@ -66,6 +68,8 @@ String createStyledMarkupForNavigationTransition(Node*);
 
 String urlToMarkup(const KURL&, const String& title);
 void mergeWithNextTextNode(Text*, ExceptionState&);
+
+bool propertyMissingOrEqualToNone(StylePropertySet*, CSSPropertyID);
 
 }
 
