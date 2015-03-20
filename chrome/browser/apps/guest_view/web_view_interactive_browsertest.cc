@@ -1023,34 +1023,29 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
 // "*** Assertion failure in -[_NSWindowFullScreenTransition
 //     transitionedWindowFrame],"
 // See similar bug: http://crbug.com/169820.
-// Also flaky on Windows: http://crbug.com/468660
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_FullscreenAllow_EmbedderHasPermission \
-    DISABLED_FullscreenAllow_EmbedderHasPermission
-#else
-#define MAYBE_FullscreenAllow_EmbedderHasPermission \
-    FullscreenAllow_EmbedderHasPermission
-#endif
+//
+// In addition to the above, these tests are flaky on many platforms:
+// http://crbug.com/468660
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
-                       MAYBE_FullscreenAllow_EmbedderHasPermission) {
+                       DISABLED_FullscreenAllow_EmbedderHasPermission) {
   FullscreenTestHelper("testFullscreenAllow",
                        "web_view/fullscreen/embedder_has_permission");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
-                       FullscreenDeny_EmbedderHasPermission) {
+                       DISABLED_FullscreenDeny_EmbedderHasPermission) {
   FullscreenTestHelper("testFullscreenDeny",
                        "web_view/fullscreen/embedder_has_permission");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
-                       FullscreenAllow_EmbedderHasNoPermission) {
+                       DISABLED_FullscreenAllow_EmbedderHasNoPermission) {
   FullscreenTestHelper("testFullscreenAllow",
                        "web_view/fullscreen/embedder_has_no_permission");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
-                       FullscreenDeny_EmbedderHasNoPermission) {
+                       DISABLED_FullscreenDeny_EmbedderHasNoPermission) {
   FullscreenTestHelper("testFullscreenDeny",
                        "web_view/fullscreen/embedder_has_no_permission");
 }
