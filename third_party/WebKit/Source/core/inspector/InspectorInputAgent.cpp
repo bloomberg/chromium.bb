@@ -129,6 +129,11 @@ void InspectorInputAgent::dispatchKeyEvent(ErrorString* error, const String& typ
         asBool(isSystemKey),
         static_cast<PlatformEvent::Modifiers>(modifiers ? *modifiers : 0),
         timestamp ? *timestamp : currentTime());
+
+    if (!m_client) {
+        *error = "Not supported";
+        return;
+    }
     m_client->dispatchKeyEvent(event);
 }
 
@@ -180,6 +185,10 @@ void InspectorInputAgent::dispatchMouseEvent(ErrorString* error, const String& t
         PlatformMouseEvent::RealOrIndistinguishable,
         timestamp ? *timestamp : currentTime());
 
+    if (!m_client) {
+        *error = "Not supported";
+        return;
+    }
     m_client->dispatchMouseEvent(event);
 }
 

@@ -254,7 +254,8 @@ private:
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* webViewImpl,
     WebDevToolsAgentClient* client,
-    InspectorOverlay* overlay)
+    InspectorOverlay* overlay,
+    PassOwnPtrWillBeRawPtr<InspectorInputAgent::Client> inputClient)
     : m_client(client)
     , m_webViewImpl(webViewImpl)
     , m_attached(false)
@@ -265,6 +266,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(this)))
     , m_overlay(overlay)
+    , m_inputClient(inputClient)
     , m_cssAgent(nullptr)
     , m_resourceAgent(nullptr)
     , m_layerTreeAgent(nullptr)
@@ -358,6 +360,7 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_state);
     visitor->trace(m_overlay);
+    visitor->trace(m_inputClient);
     visitor->trace(m_asyncCallTracker);
     visitor->trace(m_domAgent);
     visitor->trace(m_pageAgent);
@@ -413,7 +416,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorDOMDebuggerAgent::create(m_domAgent, debuggerAgent));
 
-    m_agents.append(InspectorInputAgent::create(m_pageAgent, this));
+    m_agents.append(InspectorInputAgent::create(m_pageAgent, m_inputClient.get()));
 
     m_agents.append(InspectorProfilerAgent::create(injectedScriptManager, m_overlay));
 
@@ -571,26 +574,6 @@ void WebDevToolsAgentImpl::enableTracing(const String& categoryFilter)
 void WebDevToolsAgentImpl::disableTracing()
 {
     m_client->disableTracing();
-}
-
-void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
-{
-    if (!m_webViewImpl->page()->focusController().isFocused())
-        m_webViewImpl->setFocus(true);
-
-    WebKeyboardEvent webEvent = WebKeyboardEventBuilder(event);
-    if (!webEvent.keyIdentifier[0] && webEvent.type != WebInputEvent::Char)
-        webEvent.setKeyIdentifierFromWindowsKeyCode();
-    m_webViewImpl->handleInputEvent(webEvent);
-}
-
-void WebDevToolsAgentImpl::dispatchMouseEvent(const PlatformMouseEvent& event)
-{
-    if (!m_webViewImpl->page()->focusController().isFocused())
-        m_webViewImpl->setFocus(true);
-
-    WebMouseEvent webEvent = WebMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), event);
-    m_webViewImpl->handleInputEvent(webEvent);
 }
 
 void WebDevToolsAgentImpl::dispatchOnInspectorBackend(const WebString& message)

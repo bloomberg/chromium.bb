@@ -66,6 +66,7 @@
 #include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/forms/PopupMenuClient.h"
 #include "core/html/ime/InputMethodContext.h"
+#include "core/inspector/InspectorInputAgent.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
@@ -291,6 +292,36 @@ private:
     }
 };
 
+class InspectorInputClient : public InspectorInputAgent::Client {
+public:
+    explicit InspectorInputClient(WebViewImpl* webViewImpl) : m_webViewImpl(webViewImpl) { }
+    ~InspectorInputClient() override { }
+
+    // InspectorInputAgent::Client implementation.
+    void dispatchKeyEvent(const PlatformKeyboardEvent& event) override
+    {
+        if (!m_webViewImpl->page()->focusController().isFocused())
+            m_webViewImpl->setFocus(true);
+
+        WebKeyboardEvent webEvent = WebKeyboardEventBuilder(event);
+        if (!webEvent.keyIdentifier[0] && webEvent.type != WebInputEvent::Char)
+            webEvent.setKeyIdentifierFromWindowsKeyCode();
+        m_webViewImpl->handleInputEvent(webEvent);
+    }
+
+    void dispatchMouseEvent(const PlatformMouseEvent& event) override
+    {
+        if (!m_webViewImpl->page()->focusController().isFocused())
+            m_webViewImpl->setFocus(true);
+
+        WebMouseEvent webEvent = WebMouseEventBuilder(m_webViewImpl->mainFrameImpl()->frameView(), event);
+        m_webViewImpl->handleInputEvent(webEvent);
+    }
+
+private:
+    WebViewImpl* m_webViewImpl;
+};
+
 } // namespace
 
 // WebView ----------------------------------------------------------------
@@ -358,7 +389,7 @@ void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 {
     if (devToolsClient) {
         m_inspectorOverlay = InspectorOverlayImpl::create(this);
-        m_devToolsAgent = adoptPtrWillBeNoop(new WebDevToolsAgentImpl(this, devToolsClient, m_inspectorOverlay.get()));
+        m_devToolsAgent = adoptPtrWillBeNoop(new WebDevToolsAgentImpl(this, devToolsClient, m_inspectorOverlay.get(), adoptPtrWillBeNoop(new InspectorInputClient(this))));
         m_devToolsAgent->registerAgent(InspectorRenderingAgent::create(this));
         m_devToolsAgent->registerAgent(InspectorEmulationAgent::create(this));
     } else {

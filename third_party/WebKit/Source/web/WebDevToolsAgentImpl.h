@@ -67,13 +67,12 @@ class WebDevToolsAgentImpl final
     : public NoBaseWillBeGarbageCollectedFinalized<WebDevToolsAgentImpl>
     , public WebDevToolsAgent
     , public InspectorStateClient
-    , public InspectorInputAgent::Client
     , public InspectorTracingAgent::Client
     , public PageRuntimeAgent::Client
     , public InspectorFrontendChannel
     , private WebThread::TaskObserver {
 public:
-    WebDevToolsAgentImpl(WebViewImpl*, WebDevToolsAgentClient*, InspectorOverlay*);
+    WebDevToolsAgentImpl(WebViewImpl*, WebDevToolsAgentClient*, InspectorOverlay*, PassOwnPtrWillBeRawPtr<InspectorInputAgent::Client>);
     ~WebDevToolsAgentImpl() override;
     void dispose();
     DECLARE_VIRTUAL_TRACE();
@@ -107,10 +106,6 @@ private:
     // InspectorStateClient implementation.
     void updateInspectorStateCookie(const WTF::String&) override;
 
-    // InspectorInputAgent::Client implementation.
-    void dispatchKeyEvent(const PlatformKeyboardEvent&) override;
-    void dispatchMouseEvent(const PlatformMouseEvent&) override;
-
     // InspectorTracingAgent::Client implementation.
     void enableTracing(const WTF::String& categoryFilter) override;
     void disableTracing() override;
@@ -143,6 +138,7 @@ private:
     OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     OwnPtrWillBeMember<InspectorCompositeState> m_state;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
+    OwnPtrWillBeMember<InspectorInputAgent::Client> m_inputClient;
     OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
