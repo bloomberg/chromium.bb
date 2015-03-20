@@ -135,18 +135,6 @@ void V8PerContextData::addCustomElementBinding(CustomElementDefinition* definiti
     m_customElementBindings.append(binding);
 }
 
-void V8PerContextDebugData::setContextDebugData(v8::Handle<v8::Context> context, const String& data)
-{
-    v8::HandleScope scope(context->GetIsolate());
-    v8::Context::Scope contextScope(context);
-    context->SetEmbedderData(static_cast<int>(gin::kDebugIdIndex), v8String(context->GetIsolate(), data));
-}
-
-v8::Handle<v8::Value> V8PerContextDebugData::contextDebugData(v8::Handle<v8::Context> context)
-{
-    return context->GetEmbedderData(static_cast<int>(gin::kDebugIdIndex));
-}
-
 v8::Handle<v8::Value> V8PerContextData::compiledPrivateScript(String className)
 {
     return m_compiledPrivateScript.Get(className);

@@ -126,12 +126,6 @@ private:
     V8PersistentValueMap<String, v8::Value, false> m_compiledPrivateScript;
 };
 
-class V8PerContextDebugData {
-public:
-    static void setContextDebugData(v8::Handle<v8::Context>, const String& data);
-    static v8::Handle<v8::Value> contextDebugData(v8::Handle<v8::Context>);
-};
-
 } // namespace blink
 
 #endif // V8PerContextData_h

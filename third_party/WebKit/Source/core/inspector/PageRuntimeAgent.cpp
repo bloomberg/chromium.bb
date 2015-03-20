@@ -32,6 +32,7 @@
 #include "core/inspector/PageRuntimeAgent.h"
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/PageScriptDebugServer.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/frame/FrameConsole.h"
@@ -110,8 +111,7 @@ void PageRuntimeAgent::didCreateScriptContext(LocalFrame* frame, ScriptState* sc
 
     // Name the context for debugging.
     String type = isMainWorld ? "page" : "injected";
-    String debugData = "[" + type + "," + String::number(m_debuggerId) + "]";
-    V8PerContextDebugData::setContextDebugData(scriptState->context(), debugData);
+    PageScriptDebugServer::setContextDebugData(scriptState->context(), type, m_debuggerId);
 
     if (!m_enabled)
         return;

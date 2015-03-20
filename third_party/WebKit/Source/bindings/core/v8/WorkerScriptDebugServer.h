@@ -49,6 +49,7 @@ public:
     ~WorkerScriptDebugServer() override { }
     DECLARE_VIRTUAL_TRACE();
 
+    static void setContextDebugData(v8::Handle<v8::Context>);
     void addListener(ScriptDebugListener*);
     void removeListener(ScriptDebugListener*);
 

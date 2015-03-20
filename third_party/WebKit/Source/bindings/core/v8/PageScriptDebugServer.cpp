@@ -93,6 +93,12 @@ DEFINE_TRACE(PageScriptDebugServer)
     ScriptDebugServer::trace(visitor);
 }
 
+void PageScriptDebugServer::setContextDebugData(v8::Handle<v8::Context> context, const String& type, int contextDebugId)
+{
+    String debugData = "[" + type + "," + String::number(contextDebugId) + "]";
+    ScriptDebugServer::setContextDebugData(context, debugData);
+}
+
 void PageScriptDebugServer::addListener(ScriptDebugListener* listener, LocalFrame* localFrameRoot, int contextDebugId)
 {
     ASSERT(localFrameRoot == localFrameRoot->localFrameRoot());
@@ -105,7 +111,7 @@ void PageScriptDebugServer::addListener(ScriptDebugListener* listener, LocalFram
         enable();
     m_listenersMap.set(localFrameRoot, listener);
     String contextDataSubstring = "," + String::number(contextDebugId) + "]";
-    reportParsedScripts(contextDataSubstring, listener);
+    reportCompiledScripts(contextDataSubstring, listener);
 }
 
 void PageScriptDebugServer::removeListener(ScriptDebugListener* listener, LocalFrame* localFrame)

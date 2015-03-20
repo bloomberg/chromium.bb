@@ -101,7 +101,14 @@ void ScriptDebugServer::disable()
     // FIXME: Remove all breakpoints set by the agent.
 }
 
-void ScriptDebugServer::reportParsedScripts(const String& contextDataSubstring, ScriptDebugListener* listener)
+void ScriptDebugServer::setContextDebugData(v8::Handle<v8::Context> context, const String& contextDebugData)
+{
+    v8::HandleScope scope(context->GetIsolate());
+    v8::Context::Scope contextScope(context);
+    context->SetEmbedderData(static_cast<int>(gin::kDebugIdIndex), v8String(context->GetIsolate(), contextDebugData));
+}
+
+void ScriptDebugServer::reportCompiledScripts(const String& contextDebugDataSubstring, ScriptDebugListener* listener)
 {
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext();
@@ -110,7 +117,7 @@ void ScriptDebugServer::reportParsedScripts(const String& contextDataSubstring, 
     v8::Local<v8::Object> debuggerScript = debuggerScriptLocal();
     ASSERT(!debuggerScript->IsUndefined());
     v8::Handle<v8::Function> getScriptsFunction = v8::Local<v8::Function>::Cast(debuggerScript->Get(v8AtomicString(m_isolate, "getScripts")));
-    v8::Handle<v8::Value> argv[] = { v8String(m_isolate, contextDataSubstring) };
+    v8::Handle<v8::Value> argv[] = { v8String(m_isolate, contextDebugDataSubstring) };
     v8::Handle<v8::Value> value = V8ScriptRunner::callInternalFunction(getScriptsFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
     if (value.IsEmpty())
         return;

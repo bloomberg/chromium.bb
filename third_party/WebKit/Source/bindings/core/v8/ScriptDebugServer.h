@@ -57,7 +57,11 @@ public:
     void enable();
     void disable();
 
-    void reportParsedScripts(const String& contextDataSubstring, ScriptDebugListener*);
+    static void setContextDebugData(v8::Handle<v8::Context>, const String& contextDebugData);
+    // Each script inherits debug data from v8::Context where it has been compiled.
+    // Only scripts whose debug data contains |contextDebugDataSubstring| substring will be reported.
+    // Passing empty string will result in reporting all scripts.
+    void reportCompiledScripts(const String& contextDebugDataSubstring, ScriptDebugListener*);
 
     String setBreakpoint(const String& sourceID, const ScriptBreakpoint&, int* actualLineNumber, int* actualColumnNumber, bool interstatementLocation);
     void removeBreakpoint(const String& breakpointId);

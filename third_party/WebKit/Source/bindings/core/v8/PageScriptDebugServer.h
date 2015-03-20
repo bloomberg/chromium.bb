@@ -56,6 +56,7 @@ public:
     ~PageScriptDebugServer() override;
     DECLARE_VIRTUAL_TRACE();
 
+    static void setContextDebugData(v8::Handle<v8::Context>, const String& type, int contextDebugId);
     void addListener(ScriptDebugListener*, LocalFrame*, int contextDebugId);
     void removeListener(ScriptDebugListener*, LocalFrame*);
 

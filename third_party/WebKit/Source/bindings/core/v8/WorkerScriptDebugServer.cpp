@@ -41,6 +41,8 @@
 
 namespace blink {
 
+static const char* workerContextDebugId = "[worker]";
+
 WorkerScriptDebugServer::WorkerScriptDebugServer(WorkerGlobalScope* workerGlobalScope)
     : ScriptDebugServer(v8::Isolate::GetCurrent())
     , m_listener(0)
@@ -55,12 +57,17 @@ DEFINE_TRACE(WorkerScriptDebugServer)
     ScriptDebugServer::trace(visitor);
 }
 
+void WorkerScriptDebugServer::setContextDebugData(v8::Handle<v8::Context> context)
+{
+    ScriptDebugServer::setContextDebugData(context, workerContextDebugId);
+}
+
 void WorkerScriptDebugServer::addListener(ScriptDebugListener* listener)
 {
     ASSERT(!m_listener);
     enable();
     m_listener = listener;
-    reportParsedScripts("[worker,0]", listener);
+    reportCompiledScripts(workerContextDebugId, listener);
 }
 
 void WorkerScriptDebugServer::removeListener(ScriptDebugListener* listener)
