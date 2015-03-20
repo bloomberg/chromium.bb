@@ -813,3 +813,9 @@ class OverrideForTrybotTest(cros_test_lib.TestCase):
     self.assertFalse(redundant,
                      "Manual waterfall configs are automatically included: "
                      "%s" % (sorted(redundant),))
+
+  def testBinhostTest(self):
+    """Builders with the binhost_test setting shouldn't have boards."""
+    for config in cbuildbot_config.config.values():
+      if config.binhost_test:
+        self.assertEqual(config.boards, [])

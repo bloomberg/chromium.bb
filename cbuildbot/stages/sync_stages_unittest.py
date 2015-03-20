@@ -468,36 +468,52 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     return_string = ' '.join(configs_to_test)
     self.PatchObject(triage_lib, 'GetOptionForChange',
                      return_value=return_string)
-    self.assertEqual(self.sync_stage.VerificationsForChange(change),
-                     configs_to_test)
+    self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
+                          configs_to_test)
 
   def testVerificationsForChangeMalformedConfigFile(self):
     change = MockPatch()
     self.PatchObject(triage_lib, 'GetOptionForChange',
                      side_effect=ConfigParser.Error)
-    self.assertEqual(self.sync_stage.VerificationsForChange(change),
-                     constants.PRE_CQ_DEFAULT_CONFIGS)
+    self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
+                          constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def testVerificationsForChangeNoSuchConfig(self):
     change = MockPatch()
     self.PatchObject(triage_lib, 'GetOptionForChange',
                      return_value='this_config_does_not_exist')
-    self.assertEqual(self.sync_stage.VerificationsForChange(change),
-                     constants.PRE_CQ_DEFAULT_CONFIGS)
+    self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
+                          constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def testVerificationsForChangeEmptyField(self):
     change = MockPatch()
     self.PatchObject(triage_lib, 'GetOptionForChange',
                      return_value=' ')
-    self.assertEqual(self.sync_stage.VerificationsForChange(change),
-                     constants.PRE_CQ_DEFAULT_CONFIGS)
+    self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
+                          constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def testVerificationsForChangeNoneField(self):
     change = MockPatch()
     self.PatchObject(triage_lib, 'GetOptionForChange',
                      return_value=None)
-    self.assertEqual(self.sync_stage.VerificationsForChange(change),
-                     constants.PRE_CQ_DEFAULT_CONFIGS)
+    self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
+                          constants.PRE_CQ_DEFAULT_CONFIGS)
+
+  def testOverlayVerifications(self):
+    change = MockPatch(project='chromiumos/overlays/chromiumos-overlay')
+    self.PatchObject(triage_lib, 'GetOptionForChange',
+                     return_value=None)
+    configs = constants.PRE_CQ_DEFAULT_CONFIGS + [constants.BINHOST_PRE_CQ]
+    self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
+                          configs)
+
+  def testRequestedDefaultVerifications(self):
+    change = MockPatch()
+    self.PatchObject(triage_lib, 'GetOptionForChange',
+                     return_value='default x86-zgb-pre-cq')
+    configs = constants.PRE_CQ_DEFAULT_CONFIGS + ['x86-zgb-pre-cq']
+    self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
+                          configs)
 
   def testVerificationsForChangeFromInvalidCommitMessage(self):
     change = MockPatch(commit_message="""First line.
@@ -507,8 +523,8 @@ pre-cq-configs: insect-pre-cq
 """)
     self.PatchObject(triage_lib, 'GetOptionForChange',
                      return_value='lumpy-pre-cq')
-    self.assertEqual(self.sync_stage.VerificationsForChange(change),
-                     ['lumpy-pre-cq'])
+    self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
+                          ['lumpy-pre-cq'])
 
   def testVerificationsForChangeFromCommitMessage(self):
     change = MockPatch(commit_message="""First line.
@@ -518,8 +534,8 @@ pre-cq-configs: stumpy-pre-cq
 """)
     self.PatchObject(triage_lib, 'GetOptionForChange',
                      return_value='lumpy-pre-cq')
-    self.assertEqual(self.sync_stage.VerificationsForChange(change),
-                     ['stumpy-pre-cq'])
+    self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
+                          ['stumpy-pre-cq'])
 
   def testMultiVerificationsForChangeFromCommitMessage(self):
     change = MockPatch(commit_message="""First line.
@@ -530,8 +546,8 @@ pre-cq-configs: link-pre-cq
 """)
     self.PatchObject(triage_lib, 'GetOptionForChange',
                      return_value='lumpy-pre-cq')
-    self.assertEqual(self.sync_stage.VerificationsForChange(change),
-                     ['stumpy-pre-cq', 'link-pre-cq'])
+    self.assertItemsEqual(self.sync_stage.VerificationsForChange(change),
+                          ['stumpy-pre-cq', 'link-pre-cq'])
 
   def _PrepareChangesWithPendingVerifications(self, verifications=None):
     """Prepare changes and pending verifications for them.

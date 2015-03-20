@@ -724,6 +724,8 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
 class BinhostTestStage(generic_stages.ForgivingBuilderStage):
   """Stage that verifies Chrome prebuilts."""
 
+  config_name = 'binhost_test'
+
   def PerformStage(self):
     # Verify our binhosts.
     commands.RunBinhostTest(self._build_root)

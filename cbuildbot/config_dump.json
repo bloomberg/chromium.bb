@@ -10,6 +10,7 @@
         "binhost_base_url": null,
         "binhost_bucket": null,
         "binhost_key": null,
+        "binhost_test": false,
         "board_replace": false,
         "boards": null,
         "branch": false,
@@ -6369,6 +6370,29 @@
         "vm_tests": [
             "smoke_suite"
         ]
+    },
+    "binhost-pre-cq": {
+        "archive": false,
+        "binhost_test": true,
+        "boards": [],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, building an image, and unit tests if supported.",
+        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Pre-CQ",
+        "health_alert_recipients": [
+            "chromeos-infra-eng@grotations.appspotmail.com"
+        ],
+        "important": true,
+        "manifest_version": true,
+        "name": "binhost-pre-cq",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "vm_tests": []
     },
     "bobcat-chrome-pfq": {
         "boards": [
@@ -30510,6 +30534,7 @@
     "master-chromium-pfq": {
         "active_waterfall": "chromeos",
         "afdo_update_ebuild": true,
+        "binhost_test": true,
         "boards": [],
         "build_type": "chrome",
         "chrome_rev": "latest_release",
@@ -30528,6 +30553,7 @@
     },
     "master-paladin": {
         "active_waterfall": "chromeos",
+        "binhost_test": true,
         "boards": [],
         "build_type": "paladin",
         "chrome_sdk": true,

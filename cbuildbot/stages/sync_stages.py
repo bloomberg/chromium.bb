@@ -1033,15 +1033,18 @@ class PreCQLauncherStage(SyncStage):
     )
     cros_build_lib.PrintBuildbotLink(' | '.join(items), patch.url)
 
-
-  def VerificationsForChange(self, change):
+  def _ConfiguredVerificationsForChange(self, change):
     """Determine which configs to test |change| with.
+
+    This method returns only the configs that are asked for by the config
+    file. It does not include special-case logic for adding additional bots
+    based on the type of the repository (see VerificationsForChange for that).
 
     Args:
       change: GerritPatch instance to get configs-to-test for.
 
     Returns:
-      A list of configs.
+      A set of configs to test.
     """
     configs_to_test = None
     try:
@@ -1060,16 +1063,40 @@ class PreCQLauncherStage(SyncStage):
       cros_build_lib.Error('%s has malformed config file', change,
                            exc_info=True)
 
-    return configs_to_test or constants.PRE_CQ_DEFAULT_CONFIGS
+    return set(configs_to_test or constants.PRE_CQ_DEFAULT_CONFIGS)
+
+  def VerificationsForChange(self, change):
+    """Determine which configs to test |change| with.
+
+    Args:
+      change: GerritPatch instance to get configs-to-test for.
+
+    Returns:
+      A set of configs to test.
+    """
+    configs_to_test = set(self._ConfiguredVerificationsForChange(change))
+
+    # Add the BINHOST_PRE_CQ to any changes that affect an overlay.
+    if '/overlays/' in change.project:
+      configs_to_test.add(constants.BINHOST_PRE_CQ)
+
+    return configs_to_test
 
   def _ParsePreCQOption(self, pre_cq_option):
     """Gets a valid config list, or None, from |pre_cq_option|."""
-    if (pre_cq_option and
-        pre_cq_option.split() and
-        all(c in cbuildbot_config.config for c in pre_cq_option.split())):
-      return pre_cq_option.split()
-    else:
-      return None
+    if pre_cq_option and pre_cq_option.split():
+      configs_to_test = set(pre_cq_option.split())
+
+      # Replace 'default' with the default configs.
+      if 'default' in configs_to_test:
+        configs_to_test.discard('default')
+        configs_to_test.update(constants.PRE_CQ_DEFAULT_CONFIGS)
+
+      # Verify that all of the configs are valid.
+      if all(c in cbuildbot_config.config for c in configs_to_test):
+        return configs_to_test
+
+    return None
 
   def ScreenChangeForPreCQ(self, change):
     """Record which pre-cq tryjobs to test |change| with.

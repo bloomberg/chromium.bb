@@ -228,6 +228,7 @@ class SimpleBuilder(generic_builders.Builder):
     self.RunSetupBoard()
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(chrome_stages.PatchChromeStage)
+    self._RunStage(artifact_stages.BinhostTestStage)
 
     # Prepare stages to run in background.  If child_configs exist then
     # run each of those here, otherwise use default config.

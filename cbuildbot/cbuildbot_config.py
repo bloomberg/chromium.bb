@@ -646,8 +646,12 @@ _settings = dict(
   postsync_reexec=True,
 
 # create_delta_sysroot -- Create delta sysroot during ArchiveStage. Disabled by
-#                          default.
+#                         default.
   create_delta_sysroot=False,
+
+# binhost_test -- Run the binhost_test stage. Only makes sense for builders that
+#                 have no boards.
+  binhost_test=False,
 
 # TODO(sosa): Collapse to one option.
 # ====================== Dev installer prebuilts options =======================
@@ -1334,6 +1338,7 @@ internal_chromium_pfq = internal.derive(
 internal_chromium_pfq.add_config('master-chromium-pfq',
   boards=[],
   master=True,
+  binhost_test=True,
   push_overlays=constants.BOTH_OVERLAYS,
   afdo_update_ebuild=True,
   chrome_sdk=False,
@@ -2149,6 +2154,7 @@ _config.add_group('test-ap-group',
 internal_paladin.add_config('master-paladin',
   boards=[],
   master=True,
+  binhost_test=True,
   push_overlays=constants.BOTH_OVERLAYS,
   description='Commit Queue master (all others are slaves)',
 
@@ -2397,6 +2403,11 @@ ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
 _CreateConfigsForBoards(pre_cq, _all_boards, 'pre-cq')
 _CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
 _CreateConfigsForBoards(compile_only_pre_cq, _all_boards, 'compile-only-pre-cq')
+
+no_vmtest_pre_cq.add_config(constants.BINHOST_PRE_CQ,
+  boards=[],
+  binhost_test=True,
+)
 
 # TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
 # TODO(davidjames): Update daisy_spring to build images again.
