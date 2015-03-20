@@ -51,6 +51,7 @@ void AudioCallbackCombined::Run(void* sample_buffer,
 PPB_Audio_Shared::PPB_Audio_Shared()
     : playing_(false),
       shared_memory_size_(0),
+      nacl_thread_id_(0),
       nacl_thread_active_(false),
       user_data_(NULL),
       client_buffer_size_bytes_(0),

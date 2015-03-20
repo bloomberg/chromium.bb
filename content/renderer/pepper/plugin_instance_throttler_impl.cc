@@ -26,6 +26,11 @@ const double kAcceptableFrameMaximumBoringness = 0.94;
 
 const int kMinimumConsecutiveInterestingFrames = 4;
 
+// When plugin audio is throttled, the plugin will sometimes stop generating
+// video frames. We use this timeout to prevent waiting forever for a good
+// poster image. Chosen arbitrarily.
+const int kAudioThrottledFrameTimeoutMilliseconds = 500;
+
 }  // namespace
 
 // static
@@ -53,6 +58,13 @@ PluginInstanceThrottlerImpl::PluginInstanceThrottlerImpl(
       web_plugin_(nullptr),
       consecutive_interesting_frames_(0),
       frames_examined_(0),
+      audio_throttled_(false),
+      audio_throttled_frame_timeout_(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(
+              kAudioThrottledFrameTimeoutMilliseconds),
+          this,
+          &PluginInstanceThrottlerImpl::EngageThrottle),
       weak_factory_(this) {
 }
 
@@ -99,6 +111,11 @@ void PluginInstanceThrottlerImpl::SetHiddenForPlaceholder(bool hidden) {
 blink::WebPlugin* PluginInstanceThrottlerImpl::GetWebPlugin() const {
   DCHECK(web_plugin_);
   return web_plugin_;
+}
+
+void PluginInstanceThrottlerImpl::NotifyAudioThrottled() {
+  audio_throttled_ = true;
+  audio_throttled_frame_timeout_.Reset();
 }
 
 void PluginInstanceThrottlerImpl::SetWebPlugin(blink::WebPlugin* web_plugin) {
@@ -148,9 +165,14 @@ void PluginInstanceThrottlerImpl::OnImageFlush(const SkBitmap* bitmap) {
   else
     consecutive_interesting_frames_ = 0;
 
+  // Does not make a copy, just takes a reference to the underlying pixel data.
+  last_received_frame_ = *bitmap;
+
+  if (audio_throttled_)
+    audio_throttled_frame_timeout_.Reset();
+
   if (frames_examined_ >= kMaximumFramesToExamine ||
       consecutive_interesting_frames_ >= kMinimumConsecutiveInterestingFrames) {
-    FOR_EACH_OBSERVER(Observer, observer_list_, OnKeyframeExtracted(bitmap));
     EngageThrottle();
   }
 }
@@ -178,6 +200,14 @@ bool PluginInstanceThrottlerImpl::ConsumeInputEvent(
 void PluginInstanceThrottlerImpl::EngageThrottle() {
   if (state_ != THROTTLER_STATE_AWAITING_KEYFRAME)
     return;
+
+  if (!last_received_frame_.empty()) {
+    FOR_EACH_OBSERVER(Observer, observer_list_,
+                      OnKeyframeExtracted(&last_received_frame_));
+
+    // Release our reference to the underlying pixel data.
+    last_received_frame_.reset();
+  }
 
   state_ = THROTTLER_STATE_PLUGIN_THROTTLED;
   FOR_EACH_OBSERVER(Observer, observer_list_, OnThrottleStateChange());

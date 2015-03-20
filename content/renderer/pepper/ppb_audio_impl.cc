@@ -30,9 +30,24 @@ namespace content {
 // PPB_Audio_Impl --------------------------------------------------------------
 
 PPB_Audio_Impl::PPB_Audio_Impl(PP_Instance instance)
-    : Resource(ppapi::OBJECT_IS_IMPL, instance), audio_(NULL) {}
+    : Resource(ppapi::OBJECT_IS_IMPL, instance),
+      audio_(NULL),
+      playback_throttled_(false) {
+  PepperPluginInstanceImpl* plugin_instance =
+      static_cast<PepperPluginInstanceImpl*>(
+          PepperPluginInstance::Get(pp_instance()));
+  if (plugin_instance && plugin_instance->throttler()) {
+    plugin_instance->throttler()->AddObserver(this);
+  }
+}
 
 PPB_Audio_Impl::~PPB_Audio_Impl() {
+  PepperPluginInstanceImpl* instance = static_cast<PepperPluginInstanceImpl*>(
+      PepperPluginInstance::Get(pp_instance()));
+  if (instance && instance->throttler()) {
+    instance->throttler()->RemoveObserver(this);
+  }
+
   // Calling ShutDown() makes sure StreamCreated cannot be called anymore and
   // releases the audio data associated with the pointer. Note however, that
   // until ShutDown returns, StreamCreated may still be called. This will be
@@ -57,6 +72,17 @@ PP_Bool PPB_Audio_Impl::StartPlayback() {
     return PP_FALSE;
   if (playing())
     return PP_TRUE;
+
+  // If plugin is in power saver mode, defer audio IPC communication.
+  PepperPluginInstanceImpl* instance = static_cast<PepperPluginInstanceImpl*>(
+      PepperPluginInstance::Get(pp_instance()));
+  if (instance && instance->throttler() &&
+      instance->throttler()->power_saver_enabled()) {
+    instance->throttler()->NotifyAudioThrottled();
+    playback_throttled_ = true;
+    return PP_TRUE;
+  }
+
   SetStartPlaybackState();
   return PP_FromBool(audio_->StartPlayback());
 }
@@ -64,11 +90,19 @@ PP_Bool PPB_Audio_Impl::StartPlayback() {
 PP_Bool PPB_Audio_Impl::StopPlayback() {
   if (!audio_)
     return PP_FALSE;
+
+  if (playback_throttled_) {
+    // If a start playback request is still deferred, we must fulfill it first
+    // to shut down the audio thread correctly.
+    StartDeferredPlayback();
+  }
+
   if (!playing())
     return PP_TRUE;
   if (!audio_->StopPlayback())
     return PP_FALSE;
   SetStopPlaybackState();
+
   return PP_TRUE;
 }
 
@@ -84,13 +118,6 @@ int32_t PPB_Audio_Impl::Open(PP_Resource config,
       PepperPluginInstance::Get(pp_instance()));
   if (!instance)
     return PP_ERROR_FAILED;
-
-  // Prevent any throttling since we are playing audio. This stopgap prevents
-  // video from appearing 'frozen' while the audio track plays.
-  if (instance->throttler() && instance->throttler()->power_saver_enabled()) {
-    instance->throttler()->MarkPluginEssential(
-        PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_AUDIO);
-  }
 
   // When the stream is created, we'll get called back on StreamCreated().
   DCHECK(!audio_);
@@ -130,6 +157,24 @@ void PPB_Audio_Impl::OnSetStreamInfo(
                 socket_handle,
                 enter.object()->GetSampleRate(),
                 enter.object()->GetSampleFrameCount());
+}
+
+void PPB_Audio_Impl::OnThrottleStateChange() {
+  PepperPluginInstanceImpl* instance = static_cast<PepperPluginInstanceImpl*>(
+      PepperPluginInstance::Get(pp_instance()));
+  if (playback_throttled_ && instance && instance->throttler() &&
+      !instance->throttler()->power_saver_enabled()) {
+    // If we have become unthrottled, and we have a pending playback, start it.
+    StartDeferredPlayback();
+  }
+}
+
+void PPB_Audio_Impl::StartDeferredPlayback() {
+  DCHECK(playback_throttled_);
+  playback_throttled_ = false;
+
+  SetStartPlaybackState();
+  audio_->StartPlayback();
 }
 
 }  // namespace content

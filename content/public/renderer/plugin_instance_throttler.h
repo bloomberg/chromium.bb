@@ -84,6 +84,10 @@ class CONTENT_EXPORT PluginInstanceThrottler {
 
   virtual blink::WebPlugin* GetWebPlugin() const = 0;
 
+  // Throttler needs to know when the plugin audio is throttled, as this may
+  // prevent the plugin from generating new frames.
+  virtual void NotifyAudioThrottled() = 0;
+
  protected:
   PluginInstanceThrottler() {}
 
