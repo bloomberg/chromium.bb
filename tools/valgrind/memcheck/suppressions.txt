@@ -2151,6 +2151,7 @@
    fun:_ZN3WTF9BitVector15resizeOutOfLineEm
    fun:_ZN3WTF9BitVector10ensureSizeEm
    fun:_ZN3WTF9BitVectorC*
+   ...
    fun:_ZN5blink10UseCounter17recordMeasurementENS0_7FeatureE
 }
 {
@@ -3350,7 +3351,6 @@
    fun:_ZNK8SkBitmap12copyPixelsToEPvmmb
    fun:_ZN5blink19ImageFrameGenerator14decodeAndScaleERK11SkImageInfomPvm
    fun:_ZN5blink22DecodingImageGenerator11onGetPixelsERK11SkImageInfoPvmPjPi
-   fun:_ZN16SkImageGenerator9getPixelsERK11SkImageInfoPvmPjPi
 }
 {
    bug_424056a
@@ -3628,6 +3628,7 @@
    bug_455732
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN4mojo7BindingINS_15ServiceProviderEE4BindENS_16ScopedHandleBaseINS_17MessagePipeHandleEEEPK15MojoAsyncWaiter
    fun:_ZN4mojo7BindingINS_15ServiceProviderEE4BindENS_16InterfaceRequestIS1_EEPK15MojoAsyncWaiter
    fun:_ZN7content19ServiceRegistryImpl4BindEN4mojo16InterfaceRequestINS1_15ServiceProviderEEE
