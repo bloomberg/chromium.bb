@@ -279,9 +279,7 @@ void StartPageView::MaybeOpenCustomLauncherPage() {
                             AppListModel::STATE_CUSTOM_LAUNCHER_PAGE,
                             AppListModel::STATE_LAST);
 
-  int custom_page_index = contents_view->GetPageIndexForState(
-      AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
-  contents_view->SetActivePage(custom_page_index);
+  contents_view->SetActiveState(AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
 }
 
 void StartPageView::Reset() {

@@ -144,10 +144,9 @@ void AppListMainView::ShowAppListWhenReady() {
 }
 
 void AppListMainView::ResetForShow() {
-  if (switches::IsExperimentalAppListEnabled()) {
-    contents_view_->SetActivePage(
-        contents_view_->GetPageIndexForState(AppListModel::STATE_START));
-  }
+  if (switches::IsExperimentalAppListEnabled())
+    contents_view_->SetActiveState(AppListModel::STATE_START);
+
   contents_view_->apps_container_view()->ResetForShowApps();
   // We clear the search when hiding so when app list appears it is not showing
   // search results.
@@ -262,8 +261,7 @@ void AppListMainView::UpdateCustomLauncherPageVisibility() {
                  AppListModel::STATE_CUSTOM_LAUNCHER_PAGE)) {
     // Animate to the start page if currently on the custom page view. The view
     // will hide on animation completion.
-    contents_view_->SetActivePage(
-        contents_view_->GetPageIndexForState(AppListModel::STATE_START));
+    contents_view_->SetActiveState(AppListModel::STATE_START);
   } else {
     // Hide the view immediately otherwise.
     custom_page->SetVisible(false);

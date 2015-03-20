@@ -88,10 +88,10 @@ class CustomLauncherPageBrowserTest
 
   // Set the active page on the app list, according to |state|. Does not wait
   // for any animation or custom page to complete.
-  void SetActivePageAndVerify(app_list::AppListModel::State state) {
+  void SetActiveStateAndVerify(app_list::AppListModel::State state) {
     app_list::ContentsView* contents_view =
         GetAppListView()->app_list_main_view()->contents_view();
-    contents_view->SetActivePage(contents_view->GetPageIndexForState(state));
+    contents_view->SetActiveState(state);
     EXPECT_TRUE(contents_view->IsStateActive(state));
   }
 
@@ -133,15 +133,14 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
 
   {
     ExtensionTestMessageListener listener("onPageProgressAt1", false);
-    contents_view->SetActivePage(contents_view->GetPageIndexForState(
-        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+    contents_view->SetActiveState(
+        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
 
     listener.WaitUntilSatisfied();
   }
   {
     ExtensionTestMessageListener listener("onPageProgressAt0", false);
-    contents_view->SetActivePage(contents_view->GetPageIndexForState(
-        app_list::AppListModel::STATE_START));
+    contents_view->SetActiveState(app_list::AppListModel::STATE_START);
 
     listener.WaitUntilSatisfied();
   }
@@ -193,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
       app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
 
   // Back to the start page. And send a mouse wheel event.
-  SetActivePageAndVerify(app_list::AppListModel::STATE_START);
+  SetActiveStateAndVerify(app_list::AppListModel::STATE_START);
   // Generate wheel events above the clickzone.
   event_generator.MoveMouseRelativeTo(window, point_above_clickzone);
   // Scrolling left, right or up should do nothing.
@@ -224,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
 #endif
 
   // Back to the start page. And send a scroll gesture.
-  SetActivePageAndVerify(app_list::AppListModel::STATE_START);
+  SetActiveStateAndVerify(app_list::AppListModel::STATE_START);
   // Going down should do nothing.
   event_generator.GestureScrollSequence(
       point_above_clickzone, point_in_clickzone, step_delay, num_steps);
@@ -237,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
       app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
 
   // Back to the start page. And send a trackpad scroll event.
-  SetActivePageAndVerify(app_list::AppListModel::STATE_START);
+  SetActiveStateAndVerify(app_list::AppListModel::STATE_START);
   // Going down left, right or up should do nothing.
   event_generator.ScrollSequence(point_in_clickzone, step_delay, -5, 0,
                                  num_steps, num_fingers);
@@ -254,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
       app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
 
   // Back to the start page. And send a tap gesture.
-  SetActivePageAndVerify(app_list::AppListModel::STATE_START);
+  SetActiveStateAndVerify(app_list::AppListModel::STATE_START);
   // Tapping outside the clickzone should do nothing.
   event_generator.GestureTapAt(point_above_clickzone);
   EXPECT_TRUE(
@@ -278,8 +277,8 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LauncherPageSubpages) {
 
   {
     ExtensionTestMessageListener listener("onPageProgressAt1", false);
-    contents_view->SetActivePage(contents_view->GetPageIndexForState(
-        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+    contents_view->SetActiveState(
+        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
     listener.WaitUntilSatisfied();
     EXPECT_TRUE(contents_view->IsStateActive(
         app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
@@ -405,8 +404,8 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
 
   {
     ExtensionTestMessageListener listener("onPageProgressAt1", false);
-    contents_view->SetActivePage(contents_view->GetPageIndexForState(
-        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+    contents_view->SetActiveState(
+        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
     listener.WaitUntilSatisfied();
     EXPECT_TRUE(contents_view->IsStateActive(
         app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));

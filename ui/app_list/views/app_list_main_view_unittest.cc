@@ -278,8 +278,7 @@ TEST_F(AppListMainViewTest, MouseHoverToHighlight) {
 
   // If experimental launcher, switch to All Apps page
   if (app_list::switches::IsExperimentalAppListEnabled()) {
-    GetContentsView()->SetActivePage(
-        GetContentsView()->GetPageIndexForState(AppListModel::STATE_APPS));
+    GetContentsView()->SetActiveState(AppListModel::STATE_APPS);
     GetContentsView()->Layout();
   }
 
@@ -314,8 +313,7 @@ TEST_F(AppListMainViewTest, MAYBE_TapGestureToHighlight) {
 
   // If experimental launcher, switch to All Apps page
   if (app_list::switches::IsExperimentalAppListEnabled()) {
-    GetContentsView()->SetActivePage(
-        GetContentsView()->GetPageIndexForState(AppListModel::STATE_APPS));
+    GetContentsView()->SetActiveState(AppListModel::STATE_APPS);
     GetContentsView()->Layout();
   }
 
@@ -371,8 +369,7 @@ TEST_F(AppListMainViewTest, DragReparentItemOntoPageSwitcher) {
 
   // Ensure we are on the apps grid view page.
   app_list::ContentsView* contents_view = GetContentsView();
-  contents_view->SetActivePage(
-      contents_view->GetPageIndexForState(AppListModel::STATE_APPS));
+  contents_view->SetActiveState(AppListModel::STATE_APPS);
   contents_view->Layout();
 
   AppListItemView* folder_item_view = CreateAndOpenSingleItemFolder();

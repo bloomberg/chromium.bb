@@ -234,8 +234,7 @@ void AppListViewTestContext::CheckView(views::View* subview) {
 
 bool AppListViewTestContext::SetAppListState(AppListModel::State state) {
   ContentsView* contents_view = view_->app_list_main_view()->contents_view();
-  int index = contents_view->GetPageIndexForState(state);
-  contents_view->SetActivePage(index);
+  contents_view->SetActiveState(state);
   contents_view->Layout();
   return IsStateShown(state);
 }
@@ -509,47 +508,51 @@ void AppListViewTestContext::RunPageSwitchingAnimationTest() {
     EXPECT_NO_FATAL_FAILURE(CheckView(main_view->contents_view()));
 
     ContentsView* contents_view = main_view->contents_view();
-    // Pad the ContentsView with blank pages so we have at least 3 views.
-    while (contents_view->NumLauncherPages() < 3)
-      contents_view->AddBlankPageForTesting();
 
-    contents_view->SetActivePage(0);
+    int start_page_index =
+        contents_view->GetPageIndexForState(AppListModel::STATE_START);
+    int search_results_page_index =
+        contents_view->GetPageIndexForState(AppListModel::STATE_SEARCH_RESULTS);
+    int apps_page_index =
+        contents_view->GetPageIndexForState(AppListModel::STATE_APPS);
+
+    contents_view->SetActiveState(AppListModel::STATE_START);
     contents_view->Layout();
 
-    EXPECT_EQ(contents_view->GetOnscreenPageBounds(0),
-              contents_view->GetPageView(0)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(1),
-              contents_view->GetPageView(1)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(2),
-              contents_view->GetPageView(2)->bounds());
+    EXPECT_EQ(contents_view->GetOnscreenPageBounds(start_page_index),
+              contents_view->GetPageView(start_page_index)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(search_results_page_index),
+              contents_view->GetPageView(search_results_page_index)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(apps_page_index),
+              contents_view->GetPageView(apps_page_index)->bounds());
 
     // Change pages. View should not have moved without Layout().
-    contents_view->SetActivePage(1);
-    EXPECT_EQ(contents_view->GetOnscreenPageBounds(0),
-              contents_view->GetPageView(0)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(1),
-              contents_view->GetPageView(1)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(2),
-              contents_view->GetPageView(2)->bounds());
+    contents_view->SetActiveState(AppListModel::STATE_SEARCH_RESULTS);
+    EXPECT_EQ(contents_view->GetOnscreenPageBounds(start_page_index),
+              contents_view->GetPageView(start_page_index)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(search_results_page_index),
+              contents_view->GetPageView(search_results_page_index)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(apps_page_index),
+              contents_view->GetPageView(apps_page_index)->bounds());
 
     // Change to a third page. This queues up the second animation behind the
     // first.
-    contents_view->SetActivePage(2);
-    EXPECT_EQ(contents_view->GetOnscreenPageBounds(0),
-              contents_view->GetPageView(0)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(1),
-              contents_view->GetPageView(1)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(2),
-              contents_view->GetPageView(2)->bounds());
+    contents_view->SetActiveState(AppListModel::STATE_APPS);
+    EXPECT_EQ(contents_view->GetOnscreenPageBounds(start_page_index),
+              contents_view->GetPageView(start_page_index)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(search_results_page_index),
+              contents_view->GetPageView(search_results_page_index)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(apps_page_index),
+              contents_view->GetPageView(apps_page_index)->bounds());
 
     // Call Layout(). Should jump to the third page.
     contents_view->Layout();
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(0),
-              contents_view->GetPageView(0)->bounds());
-    EXPECT_NE(contents_view->GetOnscreenPageBounds(1),
-              contents_view->GetPageView(1)->bounds());
-    EXPECT_EQ(contents_view->GetOnscreenPageBounds(2),
-              contents_view->GetPageView(2)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(start_page_index),
+              contents_view->GetPageView(start_page_index)->bounds());
+    EXPECT_NE(contents_view->GetOnscreenPageBounds(search_results_page_index),
+              contents_view->GetPageView(search_results_page_index)->bounds());
+    EXPECT_EQ(contents_view->GetOnscreenPageBounds(apps_page_index),
+              contents_view->GetPageView(apps_page_index)->bounds());
   }
 
   Close();

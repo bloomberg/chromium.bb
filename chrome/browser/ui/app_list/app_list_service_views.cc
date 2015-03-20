@@ -105,8 +105,8 @@ void AppListServiceViews::ShowForProfileInternal(
   if (state != app_list::AppListModel::INVALID_STATE) {
     app_list::ContentsView* contents_view =
         shower_.app_list()->app_list_main_view()->contents_view();
-    contents_view->SetActivePage(contents_view->GetPageIndexForState(state),
-                                 shower_.IsAppListVisible()  /* animate */);
+    contents_view->SetActiveState(state,
+                                 shower_.IsAppListVisible() /* animate */);
   }
 
   shower_.ShowForCurrentProfile();

@@ -32,8 +32,7 @@ void AllAppsTileItemView::ButtonPressed(views::Button* sender,
   UMA_HISTOGRAM_ENUMERATION(kPageOpenedHistogram, AppListModel::STATE_APPS,
                             AppListModel::STATE_LAST);
 
-  contents_view_->SetActivePage(
-      contents_view_->GetPageIndexForState(AppListModel::STATE_APPS));
+  contents_view_->SetActiveState(AppListModel::STATE_APPS);
 }
 
 void AllAppsTileItemView::OnFolderImageUpdated() {

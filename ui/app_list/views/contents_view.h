@@ -70,8 +70,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void ShowFolderContent(AppListFolderItem* folder);
 
   // Sets the active launcher page and animates the pages into place.
-  void SetActivePage(int page_index);
-  void SetActivePage(int page_index, bool animate);
+  void SetActiveState(AppListModel::State state);
+  void SetActiveState(AppListModel::State state, bool animate);
 
   // The index of the currently active launcher page.
   int GetActivePageIndex() const;
@@ -107,9 +107,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   SearchBoxView* GetSearchBoxView() const;
 
   AppListMainView* app_list_main_view() const { return app_list_main_view_; }
-
-  // Adds a blank launcher page. For use in tests only.
-  void AddBlankPageForTesting();
 
   // Returns the pagination model for the ContentsView.
   const PaginationModel& pagination_model() { return pagination_model_; }
@@ -166,9 +163,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
  private:
   // Sets the active launcher page, accounting for whether the change is for
   // search results.
-  void SetActivePageInternal(int page_index,
-                             bool show_search_results,
-                             bool animate);
+  void SetActiveStateInternal(int page_index,
+                              bool show_search_results,
+                              bool animate);
 
   // Invoked when active view is changed.
   void ActivePageChanged();

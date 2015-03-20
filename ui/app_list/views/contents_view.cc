@@ -131,15 +131,15 @@ void ContentsView::SetDragAndDropHostOfCurrentAppList(
   apps_container_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 
-void ContentsView::SetActivePage(int page_index) {
-  SetActivePage(page_index, true);
+void ContentsView::SetActiveState(AppListModel::State state) {
+  SetActiveState(state, true);
 }
 
-void ContentsView::SetActivePage(int page_index, bool animate) {
-  if (GetActivePageIndex() == page_index)
+void ContentsView::SetActiveState(AppListModel::State state, bool animate) {
+  if (IsStateActive(state))
     return;
 
-  SetActivePageInternal(page_index, false, animate);
+  SetActiveStateInternal(GetPageIndexForState(state), false, animate);
 }
 
 int ContentsView::GetActivePageIndex() const {
@@ -180,9 +180,9 @@ int ContentsView::NumLauncherPages() const {
   return pagination_model_.total_pages();
 }
 
-void ContentsView::SetActivePageInternal(int page_index,
-                                         bool show_search_results,
-                                         bool animate) {
+void ContentsView::SetActiveStateInternal(int page_index,
+                                          bool show_search_results,
+                                          bool animate) {
   if (!GetPageView(page_index)->visible())
     return;
 
@@ -237,7 +237,7 @@ void ContentsView::ShowSearchResults(bool show) {
   int search_page = GetPageIndexForState(AppListModel::STATE_SEARCH_RESULTS);
   DCHECK_GE(search_page, 0);
 
-  SetActivePageInternal(show ? search_page : page_before_search_, show, true);
+  SetActiveStateInternal(show ? search_page : page_before_search_, show, true);
 }
 
 bool ContentsView::IsShowingSearchResults() const {
@@ -335,11 +335,6 @@ SearchBoxView* ContentsView::GetSearchBoxView() const {
   return app_list_main_view_->search_box_view();
 }
 
-void ContentsView::AddBlankPageForTesting() {
-  AddLauncherPage(new views::View);
-  pagination_model_.SetTotalPages(view_model_->view_size());
-}
-
 int ContentsView::AddLauncherPage(views::View* view) {
   int page_index = view_model_->view_size();
   AddChildView(view);
@@ -432,13 +427,13 @@ bool ContentsView::Back() {
       if (app_list_main_view_->model()->PopCustomLauncherPageSubpage())
         app_list_main_view_->view_delegate()->CustomLauncherPagePopSubpage();
       else
-        SetActivePage(GetPageIndexForState(AppListModel::STATE_START));
+        SetActiveState(AppListModel::STATE_START);
       break;
     case AppListModel::STATE_APPS:
       if (apps_container_view_->IsInFolderView())
         apps_container_view_->app_list_folder_view()->CloseFolderPage();
       else
-        SetActivePage(GetPageIndexForState(AppListModel::STATE_START));
+        SetActiveState(AppListModel::STATE_START);
       break;
     case AppListModel::STATE_SEARCH_RESULTS:
       GetSearchBoxView()->ClearSearch();
