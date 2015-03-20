@@ -4,20 +4,23 @@
 
 #include "content/child/notifications/notification_dispatcher.h"
 
+#include <limits>
+
 #include "content/child/notifications/notification_manager.h"
-#include "content/common/platform_notification_messages.h"
 
 namespace content {
 
 NotificationDispatcher::NotificationDispatcher(
     ThreadSafeSender* thread_safe_sender)
-    : WorkerThreadMessageFilter(thread_safe_sender), next_notification_id_(0) {
+    : WorkerThreadMessageFilter(thread_safe_sender) {
 }
 
 NotificationDispatcher::~NotificationDispatcher() {}
 
 int NotificationDispatcher::GenerateNotificationId(int thread_id) {
   base::AutoLock lock(notification_id_map_lock_);
+  CHECK_LT(next_notification_id_, std::numeric_limits<int>::max());
+
   notification_id_map_[next_notification_id_] = thread_id;
   return next_notification_id_++;
 }

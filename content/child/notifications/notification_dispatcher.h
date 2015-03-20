@@ -34,7 +34,7 @@ class NotificationDispatcher : public WorkerThreadMessageFilter {
 
   base::Lock notification_id_map_lock_;
   NotificationIdToThreadId notification_id_map_;
-  int next_notification_id_;
+  int next_notification_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationDispatcher);
 };

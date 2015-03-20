@@ -44,6 +44,8 @@ bool NotificationMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnShowPlatformNotification)
     IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_ShowPersistent,
                         OnShowPersistentNotification)
+    IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_GetNotifications,
+                        OnGetNotifications)
     IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_Close,
                         OnClosePlatformNotification)
     IPC_MESSAGE_HANDLER(PlatformNotificationHostMsg_ClosePersistent,
@@ -127,6 +129,22 @@ void NotificationMessageFilter::OnShowPersistentNotification(
   service->DisplayPersistentNotification(browser_context_,
                                          service_worker_registration_id, origin,
                                          icon, notification_data);
+}
+
+void NotificationMessageFilter::OnGetNotifications(
+    int request_id,
+    int64_t service_worker_registration_id,
+    const GURL& origin,
+    const std::string& filter_tag) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // TODO(peter): Implement retrieval of persistent Web Notifications from the
+  // database. Reply with an empty vector until this has been implemented.
+  // Tracked in https://crbug.com/442143.
+
+  Send(new PlatformNotificationMsg_DidGetNotifications(
+      request_id,
+      std::vector<PersistentNotificationInfo>()));
 }
 
 void NotificationMessageFilter::OnClosePlatformNotification(

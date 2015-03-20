@@ -5,10 +5,26 @@
 // Messages for platform-native notifications using the Web Notification API.
 // Multiply-included message file, hence no include guard.
 
+#include <stdint.h>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "content/public/common/platform_notification_data.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationPermission.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+// Singly-included section for type definitions.
+#ifndef CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
+#define CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
+
+// Defines the pair of [persistent notification id] => [notification data] used
+// when getting the notifications for a given Service Worker registration.
+using PersistentNotificationInfo =
+    std::pair<std::string, content::PlatformNotificationData>;
+
+#endif  // CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_
 
 #define IPC_MESSAGE_START PlatformNotificationMsgStart
 
@@ -43,6 +59,13 @@ IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidClose,
 IPC_MESSAGE_CONTROL1(PlatformNotificationMsg_DidClick,
                      int /* notification_id */)
 
+// Reply to PlatformNotificationHostMsg_GetNotifications sharing a vector of
+// available notifications per the request's constraints.
+IPC_MESSAGE_CONTROL2(PlatformNotificationMsg_DidGetNotifications,
+                     int /* request_id */,
+                     std::vector<PersistentNotificationInfo>
+                         /* notifications */)
+
 // Messages sent from the renderer to the browser.
 
 IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_Show,
@@ -52,10 +75,16 @@ IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_Show,
                      content::PlatformNotificationData /* notification_data */)
 
 IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_ShowPersistent,
-                     int64 /* service_worker_provider_id */,
+                     int64_t /* service_worker_registration_id */,
                      GURL /* origin */,
                      SkBitmap /* icon */,
                      content::PlatformNotificationData /* notification_data */)
+
+IPC_MESSAGE_CONTROL4(PlatformNotificationHostMsg_GetNotifications,
+                     int /* request_id */,
+                     int64_t /* service_worker_registration_id */,
+                     GURL /* origin */,
+                     std::string /* filter_tag */)
 
 IPC_MESSAGE_CONTROL1(PlatformNotificationHostMsg_Close,
                      int /* notification_id */)

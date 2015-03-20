@@ -55,6 +55,10 @@ class NotificationMessageFilter : public BrowserMessageFilter {
       const GURL& origin,
       const SkBitmap& icon,
       const PlatformNotificationData& notification_data);
+  void OnGetNotifications(int request_id,
+                          int64_t service_worker_registration_id,
+                          const GURL& origin,
+                          const std::string& filter_tag);
   void OnClosePlatformNotification(int notification_id);
   void OnClosePersistentNotification(
       const GURL& origin,
