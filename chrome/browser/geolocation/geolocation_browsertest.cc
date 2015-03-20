@@ -181,7 +181,8 @@ GeolocationNotificationObserver::GeolocationNotificationObserver(
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
                    content::NotificationService::AllSources());
   }
-  mock_view_->SetBrowserTest(true);
+  if (PermissionBubbleManager::Enabled())
+    mock_view_->SetBrowserTest(true);
 }
 
 GeolocationNotificationObserver::~GeolocationNotificationObserver() {
