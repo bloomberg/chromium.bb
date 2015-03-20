@@ -1300,7 +1300,8 @@ cr.define('options.network', function() {
       entries.push({
         label: loadTimeData.getStringF('addConnectionVPNTemplate',
                                        providers[i].name),
-        command: createVPNConnectionCallback_(providers[i].extensionID),
+        command: createVPNConnectionCallback_(
+            providers[i].extensionID || undefined),
         data: {}
       });
     }
