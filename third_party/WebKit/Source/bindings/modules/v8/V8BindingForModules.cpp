@@ -303,7 +303,7 @@ static v8::Local<v8::Value> ensureNthValueOnKeyPath(v8::Isolate* isolate, v8::Lo
     return currentValue;
 }
 
-static IDBKey* createIDBKeyFromScriptValueAndKeyPathInternal(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath, bool allowExperimentalTypes)
+static IDBKey* createIDBKeyFromScriptValueAndKeyPathInternal(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, const String& keyPath, bool allowExperimentalTypes)
 {
     Vector<String> keyPathElements;
     IDBKeyPathParseError error;
@@ -312,14 +312,13 @@ static IDBKey* createIDBKeyFromScriptValueAndKeyPathInternal(v8::Isolate* isolat
     ASSERT(isolate->InContext());
 
     v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Value> v8Value(value.v8Value());
     v8::Local<v8::Value> v8Key(getNthValueOnKeyPath(isolate, v8Value, keyPathElements, keyPathElements.size()));
     if (v8Key.IsEmpty())
         return 0;
     return createIDBKeyFromValue(isolate, v8Key, allowExperimentalTypes);
 }
 
-static IDBKey* createIDBKeyFromScriptValueAndKeyPathInternal(v8::Isolate* isolate, const ScriptValue& value, const IDBKeyPath& keyPath, bool allowExperimentalTypes = false)
+static IDBKey* createIDBKeyFromScriptValueAndKeyPathInternal(v8::Isolate* isolate, v8::Local<v8::Value> value, const IDBKeyPath& keyPath, bool allowExperimentalTypes = false)
 {
     ASSERT(!keyPath.isNull());
     v8::HandleScope handleScope(isolate);
@@ -337,12 +336,6 @@ static IDBKey* createIDBKeyFromScriptValueAndKeyPathInternal(v8::Isolate* isolat
 
     ASSERT(keyPath.type() == IDBKeyPath::StringType);
     return createIDBKeyFromScriptValueAndKeyPathInternal(isolate, value, keyPath.string(), allowExperimentalTypes);
-}
-
-IDBKey* createIDBKeyFromScriptValueAndKeyPath(v8::Isolate* isolate, const ScriptValue& value, const IDBKeyPath& keyPath)
-{
-    IDB_TRACE("createIDBKeyFromScriptValueAndKeyPath");
-    return createIDBKeyFromScriptValueAndKeyPathInternal(isolate, value, keyPath);
 }
 
 static v8::Local<v8::Value> deserializeIDBValueBuffer(v8::Isolate* isolate, SharedBuffer* buffer, const Vector<blink::WebBlobInfo>* blobInfo)
@@ -440,6 +433,12 @@ IDBKey* NativeValueTraits<IDBKey*>::nativeValue(v8::Isolate* isolate, v8::Local<
     return createIDBKeyFromValue(isolate, value);
 }
 
+IDBKey* NativeValueTraits<IDBKey*>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState, const IDBKeyPath& keyPath)
+{
+    IDB_TRACE("createIDBKeyFromScriptValueAndKeyPath");
+    return createIDBKeyFromScriptValueAndKeyPathInternal(isolate, value, keyPath);
+}
+
 IDBKeyRange* NativeValueTraits<IDBKeyRange*>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState)
 {
     return V8IDBKeyRange::toImplWithTypeCheck(isolate, value);
@@ -455,7 +454,7 @@ void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, PassRefPtr<Shar
 
     // This assertion is about already persisted data, so allow experimental types.
     const bool allowExperimentalTypes = true;
-    IDBKey* expectedKey = createIDBKeyFromScriptValueAndKeyPathInternal(isolate, scriptValue, keyPath, allowExperimentalTypes);
+    IDBKey* expectedKey = createIDBKeyFromScriptValueAndKeyPathInternal(isolate, scriptValue.v8Value(), keyPath, allowExperimentalTypes);
     ASSERT(!expectedKey || expectedKey->isEqual(key));
 
     bool injected = injectV8KeyIntoV8Value(isolate, keyValue.v8Value(), scriptValue.v8Value(), keyPath);

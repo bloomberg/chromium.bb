@@ -43,7 +43,8 @@ IDBKey* checkKeyFromValueAndKeyPathInternal(v8::Isolate* isolate, const ScriptVa
     IDBKeyPath idbKeyPath(keyPath);
     EXPECT_TRUE(idbKeyPath.isValid());
 
-    return createIDBKeyFromScriptValueAndKeyPath(isolate, value, idbKeyPath);
+    NonThrowableExceptionState exceptionState;
+    return ScriptValue::to<IDBKey*>(isolate, value, exceptionState, idbKeyPath);
 }
 
 void checkKeyPathNullValue(v8::Isolate* isolate, const ScriptValue& value, const String& keyPath)

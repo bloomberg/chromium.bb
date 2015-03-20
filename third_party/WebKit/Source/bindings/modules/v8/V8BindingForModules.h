@@ -22,7 +22,6 @@ class WebBlobInfo;
 bool injectV8KeyIntoV8Value(v8::Isolate*, v8::Local<v8::Value> key, v8::Local<v8::Value>, const IDBKeyPath&);
 
 // For use by Source/modules/indexeddb:
-IDBKey* createIDBKeyFromScriptValueAndKeyPath(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
 bool canInjectIDBKeyIntoScriptValue(v8::Isolate*, const ScriptValue&, const IDBKeyPath&);
 ScriptValue deserializeScriptValue(ScriptState*, SerializedScriptValue*, const Vector<blink::WebBlobInfo>*);
 
@@ -38,6 +37,7 @@ struct NativeValueTraits<SQLValue> {
 template <>
 struct NativeValueTraits<IDBKey*> {
     static IDBKey* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    static IDBKey* nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&, const IDBKeyPath&);
 };
 
 template <>

@@ -39,11 +39,11 @@ IDBKeyRange* IDBKeyRange::fromScriptValue(ExecutionContext* context, const Scrip
     if (value.isUndefined() || value.isNull())
         return 0;
 
-    IDBKeyRange* range = value.to<IDBKeyRange*>(exceptionState);
+    IDBKeyRange* range = ScriptValue::to<IDBKeyRange*>(toIsolate(context), value, exceptionState);
     if (range)
         return range;
 
-    IDBKey* key = value.to<IDBKey*>(exceptionState);
+    IDBKey* key = ScriptValue::to<IDBKey*>(toIsolate(context), value, exceptionState);
     if (!key || !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return 0;
@@ -88,7 +88,7 @@ IDBKeyRange* IDBKeyRange::only(IDBKey* key, ExceptionState& exceptionState)
 
 IDBKeyRange* IDBKeyRange::only(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
-    IDBKey* key = keyValue.to<IDBKey*>(exceptionState);
+    IDBKey* key = ScriptValue::to<IDBKey*>(toIsolate(context), keyValue, exceptionState);
     if (!key || !key->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return 0;
@@ -99,7 +99,7 @@ IDBKeyRange* IDBKeyRange::only(ExecutionContext* context, const ScriptValue& key
 
 IDBKeyRange* IDBKeyRange::lowerBound(ExecutionContext* context, const ScriptValue& boundValue, bool open, ExceptionState& exceptionState)
 {
-    IDBKey* bound = boundValue.to<IDBKey*>(exceptionState);
+    IDBKey* bound = ScriptValue::to<IDBKey*>(toIsolate(context), boundValue, exceptionState);
     if (!bound || !bound->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return 0;
@@ -110,7 +110,7 @@ IDBKeyRange* IDBKeyRange::lowerBound(ExecutionContext* context, const ScriptValu
 
 IDBKeyRange* IDBKeyRange::upperBound(ExecutionContext* context, const ScriptValue& boundValue, bool open, ExceptionState& exceptionState)
 {
-    IDBKey* bound = boundValue.to<IDBKey*>(exceptionState);
+    IDBKey* bound = ScriptValue::to<IDBKey*>(toIsolate(context), boundValue, exceptionState);
     if (!bound || !bound->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);
         return 0;
@@ -121,8 +121,8 @@ IDBKeyRange* IDBKeyRange::upperBound(ExecutionContext* context, const ScriptValu
 
 IDBKeyRange* IDBKeyRange::bound(ExecutionContext* context, const ScriptValue& lowerValue, const ScriptValue& upperValue, bool lowerOpen, bool upperOpen, ExceptionState& exceptionState)
 {
-    IDBKey* lower = lowerValue.to<IDBKey*>(exceptionState);
-    IDBKey* upper = upperValue.to<IDBKey*>(exceptionState);
+    IDBKey* lower = ScriptValue::to<IDBKey*>(toIsolate(context), lowerValue, exceptionState);
+    IDBKey* upper = ScriptValue::to<IDBKey*>(toIsolate(context), upperValue, exceptionState);
 
     if (!lower || !lower->isValid() || !upper || !upper->isValid()) {
         exceptionState.throwDOMException(DataError, IDBDatabase::notValidKeyErrorMessage);

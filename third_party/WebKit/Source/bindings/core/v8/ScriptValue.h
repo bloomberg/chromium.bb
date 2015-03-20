@@ -52,10 +52,10 @@ public:
         return ScriptValue(scriptState, toV8(value, scriptState->context()->Global(), scriptState->isolate()));
     }
 
-    template<typename T>
-    inline T to(ExceptionState& exceptionState) const
+    template<typename T, typename... Arguments>
+    static inline T to(v8::Isolate* isolate, const ScriptValue& value, ExceptionState& exceptionState, Arguments const&... arguments)
     {
-        return NativeValueTraits<T>::nativeValue(isolate(), v8Value(), exceptionState);
+        return NativeValueTraits<T>::nativeValue(isolate, value.v8Value(), exceptionState, arguments...);
     }
 
     ScriptValue() { }

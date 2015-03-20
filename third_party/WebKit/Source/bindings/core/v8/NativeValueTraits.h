@@ -11,9 +11,9 @@ namespace blink {
 
 class ExceptionState;
 
-template <typename T>
+template <typename T, typename... Arguments>
 struct NativeValueTraits {
-    static T nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
+    static T nativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&, Arguments... args);
 };
 
 } // namespace blink
