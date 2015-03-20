@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_H_
 #define CHROME_BROWSER_UI_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_H_
 
+#include "base/strings/string16.h"
+
 namespace autofill {
 
 class CardUnmaskPromptController;

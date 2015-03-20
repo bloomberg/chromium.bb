@@ -36,10 +36,6 @@ CardUnmaskPromptControllerImpl::~CardUnmaskPromptControllerImpl() {
     card_unmask_view_->ControllerGone();
 }
 
-CardUnmaskPromptView* CardUnmaskPromptControllerImpl::CreateAndShowView() {
-  return CardUnmaskPromptView::CreateAndShow(this);
-}
-
 void CardUnmaskPromptControllerImpl::ShowPrompt(
     const CreditCard& card,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
@@ -259,6 +255,15 @@ bool CardUnmaskPromptControllerImpl::InputExpirationIsValid(
     return true;
 
   return month_value >= now.month;
+}
+
+base::TimeDelta CardUnmaskPromptControllerImpl::GetSuccessMessageDuration()
+    const {
+  return base::TimeDelta::FromMilliseconds(500);
+}
+
+CardUnmaskPromptView* CardUnmaskPromptControllerImpl::CreateAndShowView() {
+  return CardUnmaskPromptView::CreateAndShow(this);
 }
 
 void CardUnmaskPromptControllerImpl::LoadRiskFingerprint() {

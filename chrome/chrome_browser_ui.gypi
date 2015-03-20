@@ -1941,6 +1941,7 @@
       'browser/ui/views/autofill/autofill_popup_view_views.cc',
       'browser/ui/views/autofill/autofill_popup_view_views.h',
       'browser/ui/views/autofill/card_unmask_prompt_views.cc',
+      'browser/ui/views/autofill/card_unmask_prompt_views.h',
       'browser/ui/views/autofill/decorated_textfield.cc',
       'browser/ui/views/autofill/decorated_textfield.h',
       'browser/ui/views/autofill/expanding_textfield.cc',

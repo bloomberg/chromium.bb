@@ -43,19 +43,20 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   bool InputCvcIsValid(const base::string16& input_text) const override;
   bool InputExpirationIsValid(const base::string16& month,
                               const base::string16& year) const override;
+  base::TimeDelta GetSuccessMessageDuration() const override;
 
  protected:
   // Virtual so tests can suppress it.
   virtual CardUnmaskPromptView* CreateAndShowView();
   virtual void LoadRiskFingerprint();
 
-  virtual void OnDidLoadRiskFingerprint(const std::string& risk_data);
+  // Protected so tests can call it.
+  void OnDidLoadRiskFingerprint(const std::string& risk_data);
 
   // Exposed for testing.
   CardUnmaskPromptView* view() { return card_unmask_view_; }
 
  private:
-
   bool AllowsRetry(AutofillClient::GetRealPanResult result);
   void LogOnCloseEvents();
 

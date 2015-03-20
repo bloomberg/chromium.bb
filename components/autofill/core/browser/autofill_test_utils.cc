@@ -209,6 +209,14 @@ CreditCard GetVerifiedCreditCard2() {
   return credit_card;
 }
 
+CreditCard GetMaskedServerCard() {
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
+                          "2109" /* Mastercard */, "12", "2012");
+  credit_card.SetTypeForMaskedCard(kMasterCard);
+  return credit_card;
+}
+
 void SetProfileInfo(AutofillProfile* profile,
     const char* first_name, const char* middle_name,
     const char* last_name, const char* email, const char* company,

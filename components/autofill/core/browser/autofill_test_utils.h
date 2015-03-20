@@ -69,6 +69,9 @@ CreditCard GetVerifiedCreditCard();
 // Returns a verified credit card full of dummy info, different to the above.
 CreditCard GetVerifiedCreditCard2();
 
+// Returns a masked server card full of dummy info.
+CreditCard GetMaskedServerCard();
+
 // A unit testing utility that is common to a number of the Autofill unit
 // tests.  |SetProfileInfo| provides a quick way to populate a profile with
 // c-strings.

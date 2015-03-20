@@ -4,7 +4,9 @@
 
 #include "base/guid.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller_impl.h"
+#include "chrome/browser/ui/autofill/card_unmask_prompt_view_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -24,14 +26,20 @@ class TestCardUnmaskDelegate : public CardUnmaskDelegate {
   virtual ~TestCardUnmaskDelegate() {}
 
   // CardUnmaskDelegate implementation.
-  void OnUnmaskResponse(const UnmaskResponse& response) override {}
+  void OnUnmaskResponse(const UnmaskResponse& response) override {
+    response_ = response;
+  }
   void OnUnmaskPromptClosed() override {}
 
   base::WeakPtr<TestCardUnmaskDelegate> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
+  UnmaskResponse response() { return response_; }
+
  private:
+  UnmaskResponse response_;
+
   base::WeakPtrFactory<TestCardUnmaskDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskDelegate);
@@ -47,23 +55,19 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
         weak_factory_(this) {}
 
   // CardUnmaskPromptControllerImpl implementation.
-  void OnDidLoadRiskFingerprint(const std::string& risk_data) override {
-    CardUnmaskPromptControllerImpl::OnDidLoadRiskFingerprint(risk_data);
-
-    // Call Quit() from here rather than from OnUnmaskDialogClosed().
-    // FingerprintDataLoader starts several async tasks that take a while to
-    // complete. If Quit() is called before FingerprintDataLoader is all done
-    // then LeakTracker will detect that some resources have not been freed
-    // and cause the browser test to fail. This is not a real leak though -
-    // normally the async tasks would complete and encounter weak callbacks.
-    runner_->Quit();
+  base::TimeDelta GetSuccessMessageDuration() const override {
+    return base::TimeDelta::FromMilliseconds(10);
   }
 
-  void RunMessageLoop() { runner_->Run(); }
+  void LoadRiskFingerprint() override {
+    OnDidLoadRiskFingerprint(std::string("risk_data"));
+  }
 
   base::WeakPtr<TestCardUnmaskPromptController> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
+
+  using CardUnmaskPromptControllerImpl::view;
 
  private:
   scoped_refptr<content::MessageLoopRunner> runner_;
@@ -88,10 +92,11 @@ class CardUnmaskPromptViewBrowserTest : public InProcessBrowserTest {
   TestCardUnmaskPromptController* controller() { return controller_.get(); }
   TestCardUnmaskDelegate* delegate() { return delegate_.get(); }
 
- private:
+ protected:
   // This member must outlive the controller.
   scoped_refptr<content::MessageLoopRunner> runner_;
 
+ private:
   scoped_ptr<TestCardUnmaskPromptController> controller_;
   scoped_ptr<TestCardUnmaskDelegate> delegate_;
 
@@ -99,14 +104,34 @@ class CardUnmaskPromptViewBrowserTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, DisplayUI) {
-  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
-  test::SetCreditCardInfo(&credit_card, "Bonnie Parker",
-                          "2109" /* Mastercard */, "12", "2012");
-  credit_card.SetTypeForMaskedCard(kMasterCard);
-
-  controller()->ShowPrompt(credit_card, delegate()->GetWeakPtr());
-  controller()->RunMessageLoop();
+  controller()->ShowPrompt(test::GetMaskedServerCard(),
+                           delegate()->GetWeakPtr());
 }
+
+// TODO(bondd): bring up on Mac.
+#if !defined(OS_MACOSX)
+// Makes sure the user can close the dialog while the verification success
+// message is showing.
+IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
+                       EarlyCloseAfterSuccess) {
+  controller()->ShowPrompt(test::GetMaskedServerCard(),
+                           delegate()->GetWeakPtr());
+  controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
+                                 base::ASCIIToUTF16("10"),
+                                 base::ASCIIToUTF16("19"), false);
+  EXPECT_EQ(base::ASCIIToUTF16("123"), delegate()->response().cvc);
+  controller()->OnVerificationResult(AutofillClient::SUCCESS);
+
+  // Simulate the user clicking [x] before the "Success!" message disappears.
+  CardUnmaskPromptViewTester::For(controller()->view())->Close();
+  // Wait a little while; there should be no crash.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&content::MessageLoopRunner::Quit,
+                            base::Unretained(runner_.get())),
+      2 * controller()->GetSuccessMessageDuration());
+  runner_->Run();
+}
+#endif
 
 }  // namespace
 
