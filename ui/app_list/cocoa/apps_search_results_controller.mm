@@ -29,6 +29,11 @@ const NSBackgroundStyle kBackgroundNormal = NSBackgroundStyleLight;
 const NSBackgroundStyle kBackgroundSelected = NSBackgroundStyleDark;
 const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
 
+// The mouse hover colour (3% black over kContentsBackgroundColor).
+const SkColor kHighlightedRowColor = SkColorSetRGB(0xEE, 0xEE, 0xEE);
+// The keyboard select colour (6% black over kContentsBackgroundColor).
+const SkColor kSelectedRowColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
+
 }  // namespace
 
 @interface AppsSearchResultsController ()
@@ -421,9 +426,9 @@ const NSBackgroundStyle kBackgroundHovered = NSBackgroundStyleRaised;
                inView:(NSView*)controlView {
   if ([self backgroundStyle] != kBackgroundNormal) {
     if ([self backgroundStyle] == kBackgroundSelected)
-      [gfx::SkColorToSRGBNSColor(app_list::kSelectedColor) set];
+      [gfx::SkColorToSRGBNSColor(kSelectedRowColor) set];
     else
-      [gfx::SkColorToSRGBNSColor(app_list::kHighlightedColor) set];
+      [gfx::SkColorToSRGBNSColor(kHighlightedRowColor) set];
 
     // Extend up by one pixel to draw over cell border.
     NSRect backgroundRect = cellFrame;

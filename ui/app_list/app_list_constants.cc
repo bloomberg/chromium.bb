@@ -25,18 +25,10 @@ const SkColor kBottomSeparatorColor = SkColorSetRGB(0xC0, 0xC0, 0xC0);
 // The color of the separator used inside dialogs in the app list.
 const SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
 
-// Non-views Mac requires opaque colors to paint correctly.
-#if defined(OS_MACOSX) && !defined(TOOLKIT_VIEWS)
-// The mouse hover colour (3% black over kContentsBackgroundColor).
-const SkColor kHighlightedColor = SkColorSetRGB(0xEE, 0xEE, 0xEE);
-// The keyboard select colour (6% black over kContentsBackgroundColor).
-const SkColor kSelectedColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
-#else
 // The mouse hover colour (3% black).
 const SkColor kHighlightedColor = SkColorSetARGB(8, 0, 0, 0);
 // The keyboard select colour (6% black).
 const SkColor kSelectedColor = SkColorSetARGB(15, 0, 0, 0);
-#endif
 
 const SkColor kPagerHoverColor = SkColorSetRGB(0xB4, 0xB4, 0xB4);
 const SkColor kPagerNormalColor = SkColorSetRGB(0xE2, 0xE2, 0xE2);
