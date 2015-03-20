@@ -307,10 +307,9 @@ nested_client_create(void)
 	client->native = wl_egl_window_create(client->surface,
 					      client->width, client->height);
 
-	client->egl_surface =
-		eglCreateWindowSurface(client->egl_display,
-				       client->egl_config,
-				       client->native, NULL);
+	client->egl_surface = weston_platform_create_egl_window (client->egl_display,
+								 client->egl_config,
+								 client->native, NULL);
 
 	eglMakeCurrent(client->egl_display, client->egl_surface,
 		       client->egl_surface, client->egl_context);

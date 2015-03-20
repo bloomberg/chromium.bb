@@ -34,6 +34,7 @@ extern "C" {
 
 #ifdef EGL_EXT_platform_base
 static PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display_ext = NULL;
+static PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC create_platform_window_surface_ext = NULL;
 
 #ifndef EGL_PLATFORM_WAYLAND_KHR
 #define EGL_PLATFORM_WAYLAND_KHR 0x31D8
@@ -51,6 +52,8 @@ weston_platform_get_egl_proc_addresses(void)
 		    || strstr(extensions, "EGL_KHR_platform_wayland")) {
 			get_platform_display_ext =
 				(void *) eglGetProcAddress("eglGetPlatformDisplayEXT");
+			create_platform_window_surface_ext =
+				(void *) eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
 		}
 	}
 #endif
@@ -70,6 +73,26 @@ weston_platform_get_egl_display(EGLenum platform, void *native_display,
 	else
 #endif
 		return eglGetDisplay((EGLNativeDisplayType) native_display);
+}
+
+static inline EGLSurface
+weston_platform_create_egl_window(EGLDisplay dpy, EGLConfig config,
+				  void *native_window,
+				  const EGLint *attrib_list)
+{
+#ifdef EGL_EXT_platform_base
+	if (!create_platform_window_surface_ext)
+		weston_platform_get_egl_proc_addresses();
+
+	if (create_platform_window_surface_ext)
+		return create_platform_window_surface_ext(dpy, config,
+							  native_window,
+							  attrib_list);
+#endif
+
+	return eglCreateWindowSurface(dpy, config,
+				      (EGLNativeWindowType) native_window,
+				      attrib_list);
 }
 
 #ifdef  __cplusplus

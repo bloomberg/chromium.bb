@@ -386,9 +386,10 @@ create_surface(struct window *window)
 				     window->geometry.width,
 				     window->geometry.height);
 	window->egl_surface =
-		eglCreateWindowSurface(display->egl.dpy,
-				       display->egl.conf,
-				       window->native, NULL);
+		weston_platform_create_egl_window(display->egl.dpy,
+						  display->egl.conf,
+						  window->native, NULL);
+
 
 	if (display->shell) {
 		create_xdg_surface(window, display);

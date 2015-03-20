@@ -95,10 +95,9 @@ init_egl(struct test_data *test_data)
 				     surface->width,
 				     surface->height);
 	test_data->egl_surface =
-		eglCreateWindowSurface(test_data->egl_dpy,
-				       test_data->egl_conf,
-				       (EGLNativeWindowType) native_window,
-				       NULL);
+		weston_platform_create_egl_window(test_data->egl_dpy,
+						  test_data->egl_conf,
+						  native_window, NULL);
 
 	ret = eglMakeCurrent(test_data->egl_dpy, test_data->egl_surface,
 			     test_data->egl_surface, test_data->egl_ctx);
