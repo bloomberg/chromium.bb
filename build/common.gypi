@@ -2072,6 +2072,11 @@
           '-E', 'ANDROID_JAVA_TAGGED_ONLY=true',
           '--no-output-all-resource-defines',
         ],
+        'conditions': [
+          ['<(android_webview_build)==1', {
+            'grit_defines': ['-D', 'is_android_webview_build'],
+          }],
+        ],
       }],
       ['OS=="mac" or OS=="ios"', {
         'grit_defines': ['-D', 'scale_factors=2x'],

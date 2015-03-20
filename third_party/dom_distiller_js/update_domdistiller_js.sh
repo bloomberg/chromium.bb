@@ -15,7 +15,6 @@
   set -e
 
   dom_distiller_js_path=third_party/dom_distiller_js
-  dom_distiller_js_package=$dom_distiller_js_path/package
   readme_chromium=$dom_distiller_js_path/README.chromium
   tmpdir=/tmp/domdistiller-$$
   changes=$tmpdir/domdistiller.changes
@@ -24,9 +23,10 @@
 
   rm -rf $tmpdir
   mkdir $tmpdir
-
   pushd $tmpdir
-  git clone https://github.com/chromium/dom-distiller/ .
+
+  git clone https://github.com/chromium/dom-distiller.git
+  pushd dom-distiller
 
   # The new git SHA1 is HEAD or the first command line parameter.
   [[ -z "$1" ]] && gitsha_target="HEAD" || gitsha_target="$1"
@@ -52,17 +52,40 @@
   echo >> $bugs  # add a newline
 
   ant package
-  popd
+  popd # dom-distiller
 
-  rm -rf $dom_distiller_js_package
-  mkdir $dom_distiller_js_package
-  cp -rf $tmpdir/out/package/* $dom_distiller_js_package
-  git add $dom_distiller_js_package
-  cp $tmpdir/LICENSE $dom_distiller_js_path/
-  sed -i "s/Version: [0-9a-f]*/Version: $new_gitsha/" $readme_chromium
+  git clone https://github.com/chromium/dom-distiller-dist.git $tmpdir/dom-distiller-dist
+  rm -rf $tmpdir/dom-distiller-dist/*
+  pushd dom-distiller-dist
+  cp -r $tmpdir/dom-distiller/out/package/* .
+  git add .
+  if [[ $(git status --short | wc -l) -ne 0 ]]; then
+    git commit -a -m "Package for ${new_gitsha}"
+    git push origin master
+  else
+    # No changes to external repo, but need to check if DEPS refers to same SHA1.
+    echo "WARNING: There were no changes to the distribution package."
+  fi
+  new_dist_gitsha=$(git rev-parse HEAD)
+  popd # dom-distiller-dist
+
+  popd # tmpdir
+  curr_dist_gitsha=$(grep -e "/external\/github.com\/chromium\/dom-distiller-dist.git" DEPS | sed -e "s/.*'\([A-Za-z0-9]\{40\}\)'.*/\1/g")
+  if [[ "${new_dist_gitsha}" == "${curr_dist_gitsha}" ]]; then
+    echo "The roll does not include any changes to the dist package. Exiting."
+    rm -rf $tmpdir
+    exit 1
+  fi
+
+  cp $tmpdir/dom-distiller/LICENSE $dom_distiller_js_path/
+  sed -i "s/Version: [0-9a-f]*/Version: ${new_gitsha}/" $readme_chromium
+  sed -i -e "s/\('\/external\/github.com\/chromium\/dom-distiller-dist.git' + '@' + '\)\([0-9a-f]\+\)'/\1${new_dist_gitsha}'/" DEPS
 
   gen_message () {
-    echo "Roll DomDistillerJS"
+    echo "Roll DOM Distiller JavaScript distribution package"
+    echo
+    echo "Diff since last roll:"
+    echo "https://github.com/chromium/dom-distiller/compare/${curr_gitsha}...${new_gitsha}"
     echo
     echo "Picked up changes:"
     cat $changes

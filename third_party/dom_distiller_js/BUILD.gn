@@ -5,7 +5,7 @@
 import("//third_party/protobuf/proto_library.gni")
 
 config("dependent_config") {
-  include_dirs = [ "//third_party/dom_distiller_js/package/proto_gen" ]
+  include_dirs = [ "//third_party/dom_distiller_js/dist/proto_gen" ]
 }
 
 source_set("proto") {
@@ -18,7 +18,7 @@ source_set("proto") {
 proto_library("dom_distiller_proto") {
   visibility = [ ":*" ]
   sources = [
-    "package/proto/dom_distiller.proto",
+    "dist/proto/dom_distiller.proto",
   ]
   proto_out_dir = "third_party/dom_distiller_js"
 }

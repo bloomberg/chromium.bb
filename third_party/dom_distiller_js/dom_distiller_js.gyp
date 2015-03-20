@@ -7,13 +7,13 @@
             # GN version: //third_party/dom_distiller_js:proto
             'target_name': 'dom_distiller_js_proto',
             'type': 'static_library',
-            'sources': [ 'package/proto/dom_distiller.proto', ],
+            'sources': [ 'dist/proto/dom_distiller.proto', ],
             'variables': {
-              'proto_in_dir': 'package/proto',
+              'proto_in_dir': 'dist/proto',
               'proto_out_dir': 'third_party/dom_distiller_js',
             },
             'direct_dependent_settings': {
-              'include_dirs': ['package/proto_gen'],
+              'include_dirs': ['dist/proto_gen'],
             },
             'includes': [ '../../build/protoc.gypi', ],
         }

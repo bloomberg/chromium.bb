@@ -9,7 +9,9 @@
   <release seq="1">
     <includes>
       <part file="data_reduction_proxy_resources.grdp" />
-      <part file="dom_distiller_resources.grdp" />
+      <if expr="not is_android_webview_build">
+        <part file="dom_distiller_resources.grdp" />
+      </if>
       <part file="printing_resources.grdp" />
       <part file="translate_resources.grdp" />
       <part file="webui_generator_resources.grdp" />

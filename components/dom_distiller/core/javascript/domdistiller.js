@@ -12,7 +12,7 @@
     // context so that it doesn't change the real window object.
     function initialize(window) {
       // This include will be processed at build time by grit.
-      <include src="../../../../third_party/dom_distiller_js/package/js/domdistiller.js"/>
+      <include src="../../../../third_party/dom_distiller_js/dist/js/domdistiller.js"/>
     }
     var context = use_new_context ? Object.create(window) : window
     context.setTimeout = function() {};
