@@ -1123,7 +1123,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                                     "unloadFileDialog")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
+// Disabled under MSAN as well. http://crbug.com/468980.
+#if !defined(NDEBUG) || defined(MEMORY_SANITIZER)
 #define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
 #else
 #define MAYBE_CopyBetweenWindows CopyBetweenWindows
@@ -1238,7 +1239,8 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
-#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
+// Disabled under MSAN as well. http://crbug.com/468982.
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD) || defined(MEMORY_SANITIZER)
 #define MAYBE_PRE_BasicDownloads DISABLED_PRE_BasicDownloads
 #define MAYBE_BasicDownloads DISABLED_BasicDownloads
 #else

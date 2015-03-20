@@ -270,16 +270,10 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Flaky on Windows: http://crbug.com/177163
-// Flaky on Linux ASan: http://crbug.com/468256
-#if (defined(OS_WIN) && !defined(NDEBUG)) || \
-    (defined(OS_LINUX) && defined(ADDRESS_SANITIZER))
-#define MAYBE_CaptureInSplitIncognitoMode DISABLED_CaptureInSplitIncognitoMode
-#else
-#define MAYBE_CaptureInSplitIncognitoMode CaptureInSplitIncognitoMode
-#endif
 // Tests that a tab in incognito mode can be captured.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_CaptureInSplitIncognitoMode) {
+// Disabled due to flakiness. http://crbug.com/468608.
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest,
+                       DISABLED_CaptureInSplitIncognitoMode) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture",
                                   "start_tab_capture.html",
