@@ -116,6 +116,10 @@ static const AEADTest kAEADTests[] = {
      FILE_PATH_LITERAL("aes_256_cbc_sha1_ssl3_tests.txt")},
     {FILE_PATH_LITERAL("des-ede3-cbc-sha1-ssl3"),
      FILE_PATH_LITERAL("des_ede3_cbc_sha1_ssl3_tests.txt")},
+    {FILE_PATH_LITERAL("aes-128-ctr-hmac-sha256"),
+     FILE_PATH_LITERAL("aes_128_ctr_hmac_sha256.txt")},
+    {FILE_PATH_LITERAL("aes-256-ctr-hmac-sha256"),
+     FILE_PATH_LITERAL("aes_256_ctr_hmac_sha256.txt")},
 };
 
 TEST(BoringSSL, AEADs) {
