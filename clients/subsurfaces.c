@@ -38,6 +38,7 @@
 #include <wayland-egl.h>
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 #include "window.h"
 
@@ -215,7 +216,9 @@ egl_state_create(struct wl_display *display)
 	egl = calloc(1, sizeof *egl);
 	assert(egl);
 
-	egl->dpy = eglGetDisplay(display);
+	egl->dpy =
+		weston_platform_get_egl_display(EGL_PLATFORM_WAYLAND_KHR,
+						display, NULL);
 	assert(egl->dpy);
 
 	ret = eglInitialize(egl->dpy, &major, &minor);

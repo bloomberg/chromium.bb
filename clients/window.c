@@ -5392,7 +5392,10 @@ init_egl(struct display *d)
 	EGLint api = EGL_OPENGL_API;
 #endif
 
-	d->dpy = eglGetDisplay(d->display);
+	d->dpy =
+		weston_platform_get_egl_display(EGL_PLATFORM_WAYLAND_KHR,
+						d->display, NULL);
+
 	if (!eglInitialize(d->dpy, &major, &minor)) {
 		fprintf(stderr, "failed to initialize EGL\n");
 		return -1;

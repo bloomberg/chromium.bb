@@ -277,7 +277,9 @@ nested_client_create(void)
 	/* get globals */
 	wl_display_roundtrip(client->display);
 
-	client->egl_display = eglGetDisplay(client->display);
+	client->egl_display =
+		weston_platform_get_egl_display(EGL_PLATFORM_WAYLAND_KHR,
+						client->display, NULL);
 	if (client->egl_display == NULL)
 		return NULL;
 

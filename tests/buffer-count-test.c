@@ -29,6 +29,7 @@
 #include <GLES2/gl2.h>
 
 #include "weston-test-client-helper.h"
+#include "../shared/platform.h"
 
 #define fail(msg) { fprintf(stderr, "%s failed\n", msg); return -1; }
 
@@ -66,10 +67,12 @@ init_egl(struct test_data *test_data)
 	EGLint major, minor, n;
 	EGLBoolean ret;
 
-	test_data->egl_dpy = eglGetDisplay((EGLNativeDisplayType)
-					   test_data->client->wl_display);
+	test_data->egl_dpy =
+		weston_platform_get_egl_display(EGL_PLATFORM_WAYLAND_KHR,
+						test_data->client->wl_display,
+						NULL);
 	if (!test_data->egl_dpy)
-		fail("eglGetDisplay");
+		fail("eglGetPlatformDisplay or eglGetDisplay");
 
 	if (eglInitialize(test_data->egl_dpy, &major, &minor) != EGL_TRUE)
 		fail("eglInitialize");

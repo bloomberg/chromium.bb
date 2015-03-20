@@ -74,6 +74,7 @@ weston_SOURCES =					\
 	shared/matrix.c					\
 	shared/matrix.h					\
 	shared/zalloc.h					\
+	shared/platform.h				\
 	src/weston-egl-ext.h
 
 nodist_weston_SOURCES =					\
@@ -166,7 +167,8 @@ westoninclude_HEADERS =				\
 	src/timeline-object.h			\
 	shared/matrix.h				\
 	shared/config-parser.h			\
-	shared/zalloc.h
+	shared/zalloc.h				\
+	shared/platform.h
 
 if ENABLE_EGL
 module_LTLIBRARIES += gl-renderer.la

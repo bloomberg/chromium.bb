@@ -46,6 +46,8 @@
 #include "protocol/ivi-application-client-protocol.h"
 #define IVI_SURFACE_ID 9000
 
+#include "../shared/platform.h"
+
 #ifndef EGL_EXT_swap_buffers_with_damage
 #define EGL_EXT_swap_buffers_with_damage 1
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC)(EGLDisplay dpy, EGLSurface surface, EGLint *rects, EGLint n_rects);
@@ -151,7 +153,9 @@ init_egl(struct display *display, struct window *window)
 	if (window->opaque || window->buffer_size == 16)
 		config_attribs[9] = 0;
 
-	display->egl.dpy = eglGetDisplay(display->display);
+	display->egl.dpy =
+		weston_platform_get_egl_display(EGL_PLATFORM_WAYLAND_KHR,
+						display->display, NULL);
 	assert(display->egl.dpy);
 
 	ret = eglInitialize(display->egl.dpy, &major, &minor);
