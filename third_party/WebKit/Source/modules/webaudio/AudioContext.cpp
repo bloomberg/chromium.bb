@@ -87,8 +87,11 @@ AudioContext* AudioContext::create(Document& document, ExceptionState& exception
     ASSERT(isMainThread());
     if (s_hardwareContextCount >= MaxHardwareContexts) {
         exceptionState.throwDOMException(
-            SyntaxError,
-            "number of hardware contexts reached maximum (" + String::number(MaxHardwareContexts) + ").");
+            NotSupportedError,
+            ExceptionMessages::indexExceedsMaximumBound(
+                "number of hardware contexts",
+                s_hardwareContextCount,
+                MaxHardwareContexts));
         return nullptr;
     }
 
