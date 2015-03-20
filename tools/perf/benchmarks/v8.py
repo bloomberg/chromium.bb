@@ -44,6 +44,7 @@ class V8KeyMobileSites(benchmark.Benchmark):
   def Name(cls):
     return 'v8.key_mobile_sites_smooth'
 
+@benchmark.Disabled  # http://crbug.com/469146
 class V8DetachedContextAgeInGC(benchmark.Benchmark):
   """Measures the number of GCs needed to collect a detached context.
 
