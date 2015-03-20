@@ -45,7 +45,9 @@
               # Run net_unittests first to avoid random failures due to slow python startup
               # KeygenHandlerTest.SmokeTest and KeygenHandlerTest.ConcurrencyTest fail due to
               # readonly certdb (b/8153161)
-             'net_unittests --gtest_filter=-KeygenHandlerTest.SmokeTest:KeygenHandlerTest.ConcurrencyTest',
+              # URLRequestTestHTTP.GetTest_ManyCookies takes roughly 55s to run. Increase
+              # timeout to 75s from 45s to allow it to pass (b/19821476)
+             'net_unittests --gtest_filter=-KeygenHandlerTest.SmokeTest:KeygenHandlerTest.ConcurrencyTest --test-launcher-timeout=75000',
               # Disable OutOfMemoryDeathTest.ViaSharedLibraries due to gTrusty eglibc incompatibility (crbug/428211)
               # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
               # Disable ProcessUtilTest.* (need to define OS_ANDROID)
