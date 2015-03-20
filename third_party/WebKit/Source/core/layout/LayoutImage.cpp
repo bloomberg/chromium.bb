@@ -39,6 +39,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMapElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/TextRunConstructor.h"
@@ -174,6 +175,30 @@ void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded()
     // Tell any potential compositing layers that the image needs updating.
     contentChanged(ImageChanged);
 }
+
+bool LayoutImage::rectIntersectsVisibleViewport(const LayoutRect& localRect)
+{
+    LayoutRect rect = localRect;
+    LayoutView* layoutView = view();
+    while (layoutView->frame()->ownerLayoutObject())
+        layoutView = layoutView->frame()->ownerLayoutObject()->view();
+    mapRectToPaintInvalidationBacking(layoutView, rect, 0);
+    return rect.intersects(LayoutRect(layoutView->frameView()->visualViewportRect()));
+}
+
+PaintInvalidationReason LayoutImage::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState, const LayoutBoxModelObject& paintInvalidationContainer)
+{
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
+        return LayoutReplaced::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
+
+    if (!imageResource() || !imageResource()->image() || !imageResource()->image()->maybeAnimated()
+        || rectIntersectsVisibleViewport(visualOverflowRect())) {
+        return LayoutReplaced::invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationContainer);
+    }
+
+    return PaintInvalidationDelayedFull;
+}
+
 
 void LayoutImage::notifyFinished(Resource* newImage)
 {

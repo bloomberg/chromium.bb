@@ -4,10 +4,10 @@ window.testIsAsync = false;
 window.outputRepaintRects = true;
 window.generateMinimumRepaint = false; // See comments about 'Minimum repaint' below.
 
-function runRepaintTest()
+function runRepaintTest(timeout)
 {
     if (!window.testRunner || !window.internals) {
-        setTimeout(repaintTest, 500);
+        setTimeout(repaintTest, timeout || 500);
         return;
     }
 

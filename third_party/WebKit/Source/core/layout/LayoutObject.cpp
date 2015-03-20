@@ -1200,8 +1200,14 @@ void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
     if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
-    invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
-    clearPaintInvalidationState(paintInvalidationState);
+    PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, paintInvalidationState.paintInvalidationContainer());
+    if (reason != PaintInvalidationDelayedFull) {
+        clearPaintInvalidationState(paintInvalidationState);
+    } else {
+        // Mark this object as needing paint invalidation again in the next frame, due to the request for delayed paint invalidation.
+        setShouldDoFullPaintInvalidation();
+    }
+
     invalidatePaintOfSubtreesIfNeeded(paintInvalidationState);
 }
 
@@ -3114,7 +3120,6 @@ void LayoutObject::setShouldDoFullPaintInvalidation(PaintInvalidationReason reas
         m_bitfields.setFullPaintInvalidationReason(reason);
     }
 
-    ASSERT(document().lifecycle().state() != DocumentLifecycle::InPaintInvalidation);
     frame()->page()->animator().scheduleVisualUpdate(); // In case that this is called outside of FrameView::updateLayoutAndStyleForPainting().
     markContainerChainForPaintInvalidation();
 }
