@@ -1011,6 +1011,9 @@ void WebGLRenderingContextBase::reshape(int width, int height)
     // This is an approximation because at WebGLRenderingContextBase level we don't
     // know if the underlying FBO uses textures or renderbuffers.
     GLint maxSize = std::min(m_maxTextureSize, m_maxRenderbufferSize);
+    // Limit drawing buffer size to 4k to avoid memory exhaustion.
+    const int sizeUpperLimit = 4096;
+    maxSize = std::min(maxSize, sizeUpperLimit);
     GLint maxWidth = std::min(maxSize, m_maxViewportDims[0]);
     GLint maxHeight = std::min(maxSize, m_maxViewportDims[1]);
     width = clamp(width, 1, maxWidth);
