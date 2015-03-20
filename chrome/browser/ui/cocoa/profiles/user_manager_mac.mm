@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
@@ -26,7 +27,7 @@
 namespace {
 
 // Update the App Controller with a new Profile. Used when a Profile is locked
-// to set the Controller to the Guest Profile so the old Profile's bookmarks,
+// to set the Controller to the Guest profile so the old Profile's bookmarks,
 // etc... cannot be accessed.
 void ChangeAppControllerForProfile(Profile* profile,
                                    Profile::CreateStatus status) {
@@ -194,6 +195,7 @@ void UserManager::Show(
   if (instance_) {
     // If there's a user manager window open already, just activate it.
     [instance_->window_controller() show];
+    instance_->set_user_manager_started_showing(base::Time::Now());
     return;
   }
 
@@ -203,7 +205,7 @@ void UserManager::Show(
       profile_path_to_focus,
       tutorial_mode,
       profile_open_action,
-      base::Bind(&UserManagerMac::OnSystemProfileCreated));
+      base::Bind(&UserManagerMac::OnSystemProfileCreated, base::Time::Now()));
 }
 
 void UserManager::Hide() {
@@ -215,6 +217,11 @@ bool UserManager::IsShowing() {
   return instance_ ? [instance_->window_controller() isVisible]: false;
 }
 
+void UserManager::OnUserManagerShown() {
+  if (instance_)
+    instance_->LogTimeToOpen();
+}
+
 UserManagerMac::UserManagerMac(Profile* profile) {
   window_controller_.reset([[UserManagerWindowController alloc]
       initWithProfile:profile withObserver:this]);
@@ -224,11 +231,22 @@ UserManagerMac::~UserManagerMac() {
 }
 
 // static
-void UserManagerMac::OnSystemProfileCreated(Profile* system_profile,
+void UserManagerMac::OnSystemProfileCreated(const base::Time& start_time,
+                                            Profile* system_profile,
                                             const std::string& url) {
   DCHECK(!instance_);
   instance_ = new UserManagerMac(system_profile);
+  instance_->set_user_manager_started_showing(start_time);
   [instance_->window_controller() showURL:GURL(url)];
+}
+
+void UserManagerMac::LogTimeToOpen() {
+  if (user_manager_started_showing_ == base::Time())
+    return;
+
+  ProfileMetrics::LogTimeToOpenUserManager(
+      base::Time::Now() - user_manager_started_showing_);
+  user_manager_started_showing_ = base::Time();
 }
 
 void UserManagerMac::WindowWasClosed() {

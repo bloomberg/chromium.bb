@@ -30,12 +30,20 @@ class UserManagerMac {
 
   // Called from the UserManager class once the |system_profile| is ready. Will
   // construct a UserManagerMac object and show |url|.
-  static void OnSystemProfileCreated(Profile* system_profile,
+  static void OnSystemProfileCreated(const base::Time& start_time,
+                                     Profile* system_profile,
                                      const std::string& url);
 
   UserManagerWindowController* window_controller() {
     return window_controller_.get();
   }
+
+  void set_user_manager_started_showing(
+      const base::Time& user_manager_started_showing) {
+    user_manager_started_showing_ = user_manager_started_showing;
+  }
+
+  void LogTimeToOpen();
 
  private:
   explicit UserManagerMac(Profile* profile);
@@ -43,6 +51,8 @@ class UserManagerMac {
 
   // Controller of the window.
   base::scoped_nsobject<UserManagerWindowController> window_controller_;
+
+  base::Time user_manager_started_showing_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerMac);
 };

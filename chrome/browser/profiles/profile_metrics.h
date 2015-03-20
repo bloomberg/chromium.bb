@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/time/time.h"
 #include "chrome/browser/signin/signin_header_helper.h"
 
 class Profile;
@@ -226,6 +227,7 @@ class ProfileMetrics {
   static void LogProfileNewAvatarMenuSignin(ProfileNewAvatarMenuSignin metric);
   static void LogProfileNewAvatarMenuUpgrade(
       ProfileNewAvatarMenuUpgrade metric);
+  static void LogTimeToOpenUserManager(const base::TimeDelta& time_to_open);
 
 #if defined(OS_ANDROID)
   static void LogProfileAndroidAccountManagementMenu(

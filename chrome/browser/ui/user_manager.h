@@ -29,6 +29,9 @@ class UserManager {
   // Returns whether the User Manager is showing.
   static bool IsShowing();
 
+  // To be called once the User Manager's contents are showing.
+  static void OnUserManagerShown();
+
   // TODO(noms): Figure out if this size can be computed dynamically or adjusted
   // for smaller screens.
   static const int kWindowWidth = 800;

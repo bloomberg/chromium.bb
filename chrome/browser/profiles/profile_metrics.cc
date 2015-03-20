@@ -458,6 +458,11 @@ void ProfileMetrics::LogProfileNewAvatarMenuUpgrade(
                             NUM_PROFILE_AVATAR_MENU_UPGRADE_METRICS);
 }
 
+void ProfileMetrics::LogTimeToOpenUserManager(
+    const base::TimeDelta& time_to_open) {
+  UMA_HISTOGRAM_TIMES("Profile.TimeToOpenUserManager", time_to_open);
+}
+
 #if defined(OS_ANDROID)
 void ProfileMetrics::LogProfileAndroidAccountManagementMenu(
     ProfileAndroidAccountManagementMenu metric,

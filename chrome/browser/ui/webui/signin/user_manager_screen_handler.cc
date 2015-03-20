@@ -757,6 +757,11 @@ void UserManagerScreenHandler::SendUserList() {
 
   web_ui()->CallJavascriptFunction("login.AccountPickerScreen.loadUsers",
       users_list, base::FundamentalValue(IsGuestModeEnabled()));
+
+  // This is the latest C++ code we have in the flow to show the UserManager.
+  // This may be invoked more than once per UserManager lifetime; the
+  // UserManager will ensure all relevant logging only happens once.
+  UserManager::OnUserManagerShown();
 }
 
 void UserManagerScreenHandler::ReportAuthenticationResult(

@@ -29582,6 +29582,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Size of the thumbnails database.</summary>
 </histogram>
 
+<histogram name="Profile.TimeToOpenUserManager" units="milliseconds">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Time required to open the UserManager, from when it started to show until
+    when its javascript started executing.
+  </summary>
+</histogram>
+
 <histogram name="Profile.TopSitesSize" units="MB">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Size of the top sites database.</summary>

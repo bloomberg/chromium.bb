@@ -28,6 +28,14 @@ class UserManagerView : public views::DialogDelegateView {
                                      Profile* system_profile,
                                      const std::string& url);
 
+  void set_user_manager_started_showing(
+      const base::Time& user_manager_started_showing) {
+    user_manager_started_showing_ = user_manager_started_showing;
+  }
+
+  // Logs how long it took the UserManager to open.
+  void LogTimeToOpen();
+
  private:
   ~UserManagerView() override;
 
@@ -52,6 +60,7 @@ class UserManagerView : public views::DialogDelegateView {
   views::WebView* web_view_;
 
   scoped_ptr<AutoKeepAlive> keep_alive_;
+  base::Time user_manager_started_showing_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerView);
 };
