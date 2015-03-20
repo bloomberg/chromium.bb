@@ -4153,8 +4153,8 @@ void WebViewImpl::pageScaleFactorChanged()
 {
     m_pageScaleConstraintsSet.setNeedsReset(false);
     updateLayerTreeViewport();
-    if (m_devToolsAgent)
-        m_devToolsAgent->pageScaleFactorChanged();
+    if (m_inspectorOverlay)
+        m_inspectorOverlay->update();
     m_devToolsEmulator->viewportChanged();
     m_client->pageScaleFactorChanged();
 }

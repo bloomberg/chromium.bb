@@ -548,11 +548,6 @@ void WebDevToolsAgentImpl::didCommitLoadForLocalFrame(LocalFrame* frame)
     m_agents.didCommitLoadForLocalFrame(frame);
 }
 
-void WebDevToolsAgentImpl::pageScaleFactorChanged()
-{
-    m_pageAgent->pageScaleFactorChanged();
-}
-
 bool WebDevToolsAgentImpl::screencastEnabled()
 {
     return m_pageAgent->screencastEnabled();

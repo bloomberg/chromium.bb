@@ -138,7 +138,6 @@ public:
     String loaderId(DocumentLoader*);
     LocalFrame* findFrameWithSecurityOrigin(const String& originRawString);
     LocalFrame* assertFrame(ErrorString*, const String& frameId);
-    void pageScaleFactorChanged();
     bool screencastEnabled();
     static DocumentLoader* assertDocumentLoader(ErrorString*, LocalFrame*);
     InspectorResourceContentLoader* resourceContentLoader() { return m_inspectorResourceContentLoader.get(); }

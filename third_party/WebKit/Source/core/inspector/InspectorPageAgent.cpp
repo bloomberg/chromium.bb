@@ -910,12 +910,6 @@ void InspectorPageAgent::didRecalculateStyle(int)
         m_overlay->update();
 }
 
-void InspectorPageAgent::pageScaleFactorChanged()
-{
-    if (m_enabled)
-        m_overlay->update();
-}
-
 PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
 {
     RefPtr<TypeBuilder::Page::Frame> frameObject = TypeBuilder::Page::Frame::create()
