@@ -262,9 +262,15 @@ void P2PSocketDispatcherHost::OnAcceptIncomingTcpConnection(
   P2PSocketHost* socket = LookupSocket(listen_socket_id);
   if (!socket) {
     LOG(ERROR) << "Received P2PHostMsg_AcceptIncomingTcpConnection "
-        "for invalid socket_id.";
+        "for invalid listen_socket_id.";
     return;
   }
+  if (LookupSocket(connected_socket_id) != NULL) {
+    LOG(ERROR) << "Received P2PHostMsg_AcceptIncomingTcpConnection "
+        "for duplicated connected_socket_id.";
+    return;
+  }
+
   P2PSocketHost* accepted_connection =
       socket->AcceptIncomingTcpConnection(remote_address, connected_socket_id);
   if (accepted_connection) {
