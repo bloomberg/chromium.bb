@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/image_loader.h"
@@ -17,8 +18,11 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -121,6 +125,21 @@ std::string ExtensionUninstallDialog::GetHeadingText() {
   }
   return l10n_util::GetStringFUTF8(IDS_EXTENSION_UNINSTALL_PROMPT_HEADING,
                                    base::UTF8ToUTF16(extension_->name()));
+}
+
+bool ExtensionUninstallDialog::ShouldShowReportAbuseCheckbox() const {
+  // TODO(devlin): Add a field trial for reporting abuse on uninstallation.
+  // See crbug.com/441377.
+  return false;
+}
+
+void ExtensionUninstallDialog::HandleReportAbuse() {
+  chrome::NavigateParams params(
+      profile_,
+      extension_urls::GetWebstoreReportAbuseUrl(extension_->id()),
+      ui::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
 }
 
 }  // namespace extensions

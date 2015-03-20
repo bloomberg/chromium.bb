@@ -72,6 +72,10 @@ GURL GetWebstoreUpdateUrl() {
   return GURL(kChromeWebstoreUpdateURL);
 }
 
+GURL GetWebstoreReportAbuseUrl(const std::string& extension_id) {
+  return GURL(GetWebstoreLaunchURL() + "/report/" + extension_id);
+}
+
 bool IsWebstoreUpdateUrl(const GURL& update_url) {
   GURL store_url = GetWebstoreUpdateUrl();
   if (update_url == store_url) {

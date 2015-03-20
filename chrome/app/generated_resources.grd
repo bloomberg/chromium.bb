@@ -5237,6 +5237,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON" desc="Text for the uninstall button on the extension uninstall prompt">
         Remove
       </message>
+      <message name="IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE" desc="Message to indicate the user can report abuse for the extension about to be uninstalled.">
+        Report abuse
+      </message>
       <message name="IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON" desc="Text for the enable button on the extension re-enable prompt">
         Re-enable
       </message>

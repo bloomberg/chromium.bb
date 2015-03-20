@@ -8,7 +8,8 @@
 
 #include <string>
 
-#include "base/strings/sys_string_conversions.h"
+#import "base/mac/scoped_nsobject.h"
+#import "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/extension.h"
@@ -57,10 +58,23 @@ void ExtensionUninstallDialogCocoa::Show() {
   [alert setAlertStyle:NSWarningAlertStyle];
   [alert setIcon:gfx::NSImageFromImageSkia(icon_)];
 
-  if ([alert runModal] == NSAlertFirstButtonReturn)
+  base::scoped_nsobject<NSButton> reportAbuseCheckbox;
+  if (ShouldShowReportAbuseCheckbox()) {
+    reportAbuseCheckbox.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
+    [reportAbuseCheckbox setButtonType:NSSwitchButton];
+    [reportAbuseCheckbox setTitle:l10n_util::GetNSString(
+        IDS_EXTENSION_PROMPT_UNINSTALL_REPORT_ABUSE)];
+    [reportAbuseCheckbox sizeToFit];
+    [alert setAccessoryView:reportAbuseCheckbox];
+  }
+
+  if ([alert runModal] == NSAlertFirstButtonReturn) {
+    if (reportAbuseCheckbox.get() && [reportAbuseCheckbox state] == NSOnState)
+      HandleReportAbuse();
     delegate_->ExtensionUninstallAccepted();
-  else
+  } else {
     delegate_->ExtensionUninstallCanceled();
+  }
 }
 
 }  // namespace

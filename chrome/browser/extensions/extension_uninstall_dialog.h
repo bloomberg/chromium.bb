@@ -61,9 +61,16 @@ class ExtensionUninstallDialog
 
   std::string GetHeadingText();
 
+  // Returns true if a checkbox for reporting abuse should be shown.
+  bool ShouldShowReportAbuseCheckbox() const;
+
  protected:
   // Constructor used by the derived classes.
   ExtensionUninstallDialog(Profile* profile, Delegate* delegate);
+
+  // Handles the "report abuse" checkbox being checked at the close of the
+  // dialog.
+  void HandleReportAbuse();
 
   // TODO(sashab): Remove protected members: crbug.com/397395
   Profile* const profile_;
