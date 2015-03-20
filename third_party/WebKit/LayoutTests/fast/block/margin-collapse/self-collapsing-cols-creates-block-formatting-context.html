@@ -1,5 +1,4 @@
-<!DOCTYPE HTML>
-<html>
+<!DOCTYPE html>
 <style>
 .item {
     margin-bottom: 5px;
@@ -22,11 +21,10 @@
     padding: 0px;
 }
 </style>
-<body>
 https://code.google.com/p/chromium/issues/detail?id=321295
 The top and bottom margins of a box collapse together only if they are the  "top and bottom margins of a box that does not establish a new block formatting context".
 <br>
-There should be no red below.  
+There should be no red below.
 <div class="container">
     <div class="ref"></div>
     <div>
@@ -35,13 +33,3 @@ There should be no red below.
         <div class="test"></div>
     </div>
 </div>
-<div class="container">
-    <div class="ref"></div>
-    <div>
-        <div class="item" style="-webkit-column-span: all;"></div>
-        <div class="item" style="-webkit-column-span: all;"></div>
-        <div class="test"></div>
-    </div>
-</div>
-</body>
-</html>
