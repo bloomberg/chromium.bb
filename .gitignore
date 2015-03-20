@@ -12,3 +12,4 @@ buildbot/.completed_stages
 tags
 .ctags
 cscope.out
+sdk_checkouts/
