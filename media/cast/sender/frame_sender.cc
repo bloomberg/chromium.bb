@@ -25,7 +25,6 @@ const int kMaxFrameBurst = 5;
 FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
                          bool is_audio,
                          CastTransportSender* const transport_sender,
-                         base::TimeDelta rtcp_interval,
                          int rtp_timebase,
                          uint32 ssrc,
                          double max_frame_rate,
@@ -35,7 +34,6 @@ FrameSender::FrameSender(scoped_refptr<CastEnvironment> cast_environment,
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
       ssrc_(ssrc),
-      rtcp_interval_(rtcp_interval),
       min_playout_delay_(min_playout_delay == base::TimeDelta() ?
                          max_playout_delay : min_playout_delay),
       max_playout_delay_(max_playout_delay),
@@ -62,17 +60,12 @@ FrameSender::~FrameSender() {
 
 void FrameSender::ScheduleNextRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  base::TimeDelta time_to_next = rtcp_interval_;
-
-  time_to_next = std::max(
-      time_to_next, base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
 
   cast_environment_->PostDelayedTask(
-      CastEnvironment::MAIN,
-      FROM_HERE,
+      CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&FrameSender::SendRtcpReport, weak_factory_.GetWeakPtr(),
                  true),
-      time_to_next);
+      base::TimeDelta::FromMilliseconds(kDefaultRtcpIntervalMs));
 }
 
 void FrameSender::SendRtcpReport(bool schedule_future_reports) {

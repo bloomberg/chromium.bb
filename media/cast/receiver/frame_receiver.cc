@@ -50,7 +50,6 @@ FrameReceiver::FrameReceiver(
             config.sender_ssrc),
       is_waiting_for_consecutive_frame_(false),
       lip_sync_drift_(ClockDriftSmoother::GetDefaultTimeConstant()),
-      rtcp_interval_(base::TimeDelta::FromMilliseconds(config.rtcp_interval)),
       weak_factory_(this) {
   transport_->AddValidSsrc(config.sender_ssrc);
   DCHECK_GT(config.rtp_max_delay_ms, 0);
@@ -320,16 +319,12 @@ void FrameReceiver::SendNextCastMessage() {
 
 void FrameReceiver::ScheduleNextRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  base::TimeDelta time_to_next = rtcp_interval_;
-  time_to_next = std::max(
-      time_to_next, base::TimeDelta::FromMilliseconds(kMinSchedulingDelayMs));
 
   cast_environment_->PostDelayedTask(
-      CastEnvironment::MAIN,
-      FROM_HERE,
+      CastEnvironment::MAIN, FROM_HERE,
       base::Bind(&FrameReceiver::SendNextRtcpReport,
                  weak_factory_.GetWeakPtr()),
-      time_to_next);
+      base::TimeDelta::FromMilliseconds(kDefaultRtcpIntervalMs));
 }
 
 void FrameReceiver::SendNextRtcpReport() {

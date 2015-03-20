@@ -35,8 +35,6 @@ struct AudioSenderConfig {
   // The receiver's SSRC identifier.
   uint32 receiver_ssrc;
 
-  int rtcp_interval;
-
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This should be
   // set to a value large enough to give the system sufficient time to encode,
@@ -71,8 +69,6 @@ struct VideoSenderConfig {
 
   // The receiver's SSRC identifier.
   uint32 receiver_ssrc;
-
-  int rtcp_interval;
 
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This should be
@@ -128,10 +124,6 @@ struct FrameReceiverConfig {
 
   // The sender's SSRC identifier.
   uint32 sender_ssrc;
-
-  // Mean interval (in milliseconds) between RTCP reports.
-  // TODO(miu): Remove this since it's never not kDefaultRtcpIntervalMs.
-  int rtcp_interval;
 
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This is fixed as

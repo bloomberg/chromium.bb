@@ -69,22 +69,21 @@ VideoSender::VideoSender(
     CastTransportSender* const transport_sender,
     const PlayoutDelayChangeCB& playout_delay_change_cb)
     : FrameSender(
-        cast_environment,
-        false,
-        transport_sender,
-        base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
-        kVideoFrequency,
-        video_config.ssrc,
-        video_config.max_frame_rate,
-        video_config.min_playout_delay,
-        video_config.max_playout_delay,
-        video_config.use_external_encoder ?
-            NewFixedCongestionControl(
-                (video_config.min_bitrate + video_config.max_bitrate) / 2) :
-            NewAdaptiveCongestionControl(cast_environment->Clock(),
-                                         video_config.max_bitrate,
-                                         video_config.min_bitrate,
-                                         video_config.max_frame_rate)),
+          cast_environment,
+          false,
+          transport_sender,
+          kVideoFrequency,
+          video_config.ssrc,
+          video_config.max_frame_rate,
+          video_config.min_playout_delay,
+          video_config.max_playout_delay,
+          video_config.use_external_encoder
+              ? NewFixedCongestionControl(
+                    (video_config.min_bitrate + video_config.max_bitrate) / 2)
+              : NewAdaptiveCongestionControl(cast_environment->Clock(),
+                                             video_config.max_bitrate,
+                                             video_config.min_bitrate,
+                                             video_config.max_frame_rate)),
       frames_in_encoder_(0),
       last_bitrate_(0),
       playout_delay_change_cb_(playout_delay_change_cb),

@@ -21,7 +21,6 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
     : FrameSender(cast_environment,
                   true,
                   transport_sender,
-                  base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval),
                   audio_config.frequency,
                   audio_config.ssrc,
                   0,  // |max_frame_rate_| is set after encoder initialization.

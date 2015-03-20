@@ -25,7 +25,6 @@ class FrameSender {
   FrameSender(scoped_refptr<CastEnvironment> cast_environment,
               bool is_audio,
               CastTransportSender* const transport_sender,
-              base::TimeDelta rtcp_interval,
               int rtp_timebase,
               uint32 ssrc,
               double max_frame_rate,
@@ -106,8 +105,6 @@ class FrameSender {
 
   // Returns the number of frames that were sent but not yet acknowledged.
   int GetUnacknowledgedFrameCount() const;
-
-  const base::TimeDelta rtcp_interval_;
 
   // The total amount of time between a frame's capture/recording on the sender
   // and its playback on the receiver (i.e., shown to a user).  This is fixed as
