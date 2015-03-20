@@ -94,7 +94,8 @@ class _SpaceportMeasurement(page_test.PageTest):
 
 
 # crbug.com/166703: This test frequently times out on Windows.
-@benchmark.Disabled('mac', 'win')
+# crbug.com/469224: Test is failing on linux as well.
+@benchmark.Disabled('mac', 'win', 'linux')
 class Spaceport(benchmark.Benchmark):
   """spaceport.io's PerfMarks benchmark.
 
