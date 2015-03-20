@@ -114,20 +114,4 @@ template <class T> class WDDestroyableResult : public WDTypedResult {
   DISALLOW_COPY_AND_ASSIGN(WDDestroyableResult);
 };
 
-template <class T> class WDObjectResult : public WDTypedResult {
- public:
-  explicit WDObjectResult(WDResultType type)
-    : WDTypedResult(type) {
-  }
-
-  T* GetValue() const {
-    return &value_;
-  }
-
- private:
-  // mutable to keep GetValue() const.
-  mutable T value_;
-  DISALLOW_COPY_AND_ASSIGN(WDObjectResult);
-};
-
 #endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATA_RESULTS_H_
