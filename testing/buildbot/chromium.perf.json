@@ -47,11 +47,6 @@
   "Android Nexus6 Perf": {
     "scripts": [
       {
-        "name": "gpu_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["gpu_perftests"]
-      },
-      {
         "name": "cc_perftests",
         "script": "gtest_perf_test.py",
         "args": ["cc_perftests"]
@@ -110,11 +105,6 @@
   },
   "Android One Perf": {
     "scripts": [
-      {
-        "name": "cc_perftests",
-        "script": "gtest_perf_test.py",
-        "args": ["cc_perftests"]
-      }
     ]
   },
   "Android MotoE Perf": {
