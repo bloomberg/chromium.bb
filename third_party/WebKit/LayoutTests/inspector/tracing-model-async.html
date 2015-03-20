@@ -58,7 +58,12 @@ function test()
         { "cat": "blink.console", "name": "nestableNested1", "ph": "e", "ts": 179000, "args": {}, "id": 123, "tid": mainThread, "pid": pid },
 
         { "cat": "blink.console", "name": "nestableEndWithoutBegin", "ph": "e", "ts": 181000, "args": {}, "id": 124, "tid": mainThread, "pid": pid },
-        { "cat": "blink.console", "name": "nestableUnterminated", "ph": "b", "ts": 182000, "args": {}, "id": 124, "tid": mainThread, "pid": pid }
+        { "cat": "blink.console", "name": "nestableUnterminated", "ph": "b", "ts": 182000, "args": {}, "id": 124, "tid": mainThread, "pid": pid },
+
+        { "cat": "blink.console", "name": "crossProcess", "ph": "S", "ts": 190000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "blink.console", "name": "crossProcess", "ph": "T", "ts": 190800, "args": {"step": "s2"}, "id": 1, "tid": mainThread + 10, "pid": pid + 1 },
+        { "cat": "blink.console", "name": "crossProcess", "ph": "F", "ts": 191000, "args": {}, "id": 1, "tid": mainThread + 100, "pid": pid + 2 },
+
     ];
 
     var model = InspectorTest.createTracingModel();

@@ -13,8 +13,6 @@ timestamp 2
 Running: testStartStopMultiple
 error: Event Timeline 'one' has already been started
 error: Event Timeline 'two' has already been started
-error: Unexpected async event Timeline 'two', phase F
-error: Unexpected async event Timeline 'one', phase F
 timestamp 0
 Timeline 'one'
 timestamp 1
@@ -44,7 +42,6 @@ Timeline 'one'
 timestamp 6 - FAIL
 
 Running: testStopUnknown
-error: Unexpected async event Timeline 'two', phase F
 timestamp 0
 Timeline 'one'
 timestamp 1
