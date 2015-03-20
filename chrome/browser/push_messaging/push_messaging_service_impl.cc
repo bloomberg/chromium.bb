@@ -34,6 +34,7 @@
 #include "components/content_settings/core/common/permission_request_id.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/rappor/rappor_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -199,6 +200,11 @@ void PushMessagingServiceImpl::OnMessage(
                            content::PUSH_DELIVERY_STATUS_PERMISSION_DENIED);
     return;
   }
+
+  rappor::SampleDomainAndRegistryFromGURL(
+      g_browser_process->rappor_service(),
+      "PushMessaging.MessageReceived.Origin",
+      application_id.origin());
 
   // The Push API only exposes a single string of data in the push event fired
   // on the Service Worker. When developers send messages using GCM to the Push

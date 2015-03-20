@@ -173,6 +173,13 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="PushMessaging.MessageReceived.Origin" type="ETLD_PLUS_ONE">
+  <owner>miguelg@chromium.org</owner>
+  <summary>
+    Push Messages received per Origin.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="Search.DefaultSearchProvider" type="ETLD_PLUS_ONE">
   <owner>holte@chromium.org</owner>
   <summary>
