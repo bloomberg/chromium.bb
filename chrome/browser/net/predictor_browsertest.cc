@@ -269,7 +269,13 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ShutdownStartupCycle) {
   WaitUntilHostHasBeenRequested(target_url_.host());
 }
 
-IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, DnsPrefetch) {
+// Flaky on Windows: http://crbug.com/469120
+#if defined(OS_WIN)
+#define MAYBE_DnsPrefetch DISABLED_DnsPrefetch
+#else
+#define MAYBE_DnsPrefetch DnsPrefetch
+#endif
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, MAYBE_DnsPrefetch) {
   ASSERT_TRUE(test_server()->Start());
   int hostnames_requested_before_load = RequestedHostnameCount();
   ui_test_utils::NavigateToURL(
