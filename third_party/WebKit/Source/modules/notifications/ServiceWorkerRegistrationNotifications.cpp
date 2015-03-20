@@ -14,6 +14,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "modules/notifications/GetNotificationOptions.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationOptions.h"
 #include "platform/weborigin/KURL.h"
@@ -23,6 +24,35 @@
 #include "public/platform/modules/notifications/WebNotificationManager.h"
 
 namespace blink {
+namespace {
+
+// Allows using a CallbackPromiseAdapter with a WebVector to resolve the
+// getNotifications() promise with a HeapVector owning Notifications.
+class NotificationArray {
+public:
+    using WebType = WebVector<WebPersistentNotificationInfo>;
+
+    static HeapVector<Member<Notification>> take(ScriptPromiseResolver* resolver, WebType* notificationInfosRaw)
+    {
+        OwnPtr<WebType> notificationInfos = adoptPtr(notificationInfosRaw);
+        HeapVector<Member<Notification>> notifications;
+
+        for (const WebPersistentNotificationInfo& notificationInfo : *notificationInfos)
+            notifications.append(Notification::create(resolver->executionContext(), notificationInfo.persistentNotificationId, notificationInfo.data));
+
+        return notifications;
+    }
+
+    static void dispose(WebType* notificationInfosRaw)
+    {
+        delete notificationInfosRaw;
+    }
+
+private:
+    NotificationArray() = delete;
+};
+
+} // namespace
 
 ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptState* scriptState, ServiceWorkerRegistration& serviceWorkerRegistration, const String& title, const NotificationOptions& options, ExceptionState& exceptionState)
 {
@@ -68,6 +98,20 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     ASSERT(notificationManager);
 
     notificationManager->showPersistent(WebSerializedOrigin(*origin), notification, serviceWorkerRegistration.webRegistration(), callbacks);
+    return promise;
+}
+
+ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(ScriptState* scriptState, ServiceWorkerRegistration& serviceWorkerRegistration, const GetNotificationOptions& options)
+{
+    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    WebNotificationGetCallbacks* callbacks = new CallbackPromiseAdapter<NotificationArray, void>(resolver);
+
+    WebNotificationManager* notificationManager = Platform::current()->notificationManager();
+    ASSERT(notificationManager);
+
+    notificationManager->getNotifications(options.tag(), serviceWorkerRegistration.webRegistration(), callbacks);
     return promise;
 }
 

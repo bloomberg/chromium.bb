@@ -11,12 +11,14 @@
 namespace blink {
 
 class ExceptionState;
+class GetNotificationOptions;
 class NotificationOptions;
 class ScriptState;
 
 class ServiceWorkerRegistrationNotifications {
 public:
     static ScriptPromise showNotification(ScriptState*, ServiceWorkerRegistration&, const String& title, const NotificationOptions&, ExceptionState&);
+    static ScriptPromise getNotifications(ScriptState*, ServiceWorkerRegistration&, const GetNotificationOptions&);
 };
 
 } // namespace blink
