@@ -186,8 +186,8 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, LoadOptionsByURL) {
   VerifyNavbar();
 }
 
-// Flaky on Mac and Win: http://crbug.com/469113
-#if defined(OS_WIN) || defined(OS_MACOSX)
+// Flaky on Linux, Mac and Win: http://crbug.com/469113
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 #define MAYBE_VerifyManagedSignout DISABLED_VerifyManagedSignout
 #else
 #define MAYBE_VerifyManagedSignout VerifyManagedSignout
