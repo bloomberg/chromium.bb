@@ -50055,17 +50055,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="542" label="SRIElementWithUnparsableIntegrityAttribute"/>
   <int value="543" label="SRIElementWithIntegrityAttributeAndInsecureOrigin"/>
   <int value="544" label="SRIElementWithIntegrityAttributeAndInsecureResource"/>
-  <int value="545" label="AnimationPlayerGetStartTime"/>
-  <int value="546" label="AnimationPlayerSetStartTime"/>
-  <int value="547" label="AnimationPlayerGetCurrentTime"/>
-  <int value="548" label="AnimationPlayerSetCurrentTime"/>
-  <int value="549" label="AnimationPlayerGetPlaybackRate"/>
-  <int value="550" label="AnimationPlayerSetPlaybackRate"/>
-  <int value="551" label="AnimationPlayerGetPlayState"/>
-  <int value="552" label="AnimationPlayerFinish"/>
-  <int value="553" label="AnimationPlayerPlay"/>
-  <int value="554" label="AnimationPlayerPause"/>
-  <int value="555" label="AnimationPlayerReverse"/>
+  <int value="545" label="V8AnimationPlayer_StartTime_AttributeGetter"/>
+  <int value="546" label="V8AnimationPlayer_StartTime_AttributeSetter"/>
+  <int value="547" label="V8AnimationPlayer_CurrentTime_AttributeGetter"/>
+  <int value="548" label="V8AnimationPlayer_CurrentTime_AttributeSetter"/>
+  <int value="549" label="V8AnimationPlayer_PlaybackRate_AttributeGetter"/>
+  <int value="550" label="V8AnimationPlayer_PlaybackRate_AttributeSetter"/>
+  <int value="551" label="V8AnimationPlayer_PlayState_AttributeGetter"/>
+  <int value="552" label="V8AnimationPlayer_Finish_Method"/>
+  <int value="553" label="V8AnimationPlayer_Play_Method"/>
+  <int value="554" label="V8AnimationPlayer_Pause_Method"/>
+  <int value="555" label="V8AnimationPlayer_Reverse_Method"/>
   <int value="556" label="BreakIterator"/>
   <int value="557" label="ScreenOrientationAngle"/>
   <int value="558" label="ScreenOrientationType"/>
@@ -50192,6 +50192,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="676" label="FetchBodyStream"/>
   <int value="677" label="XMLHttpRequestAsynchronous"/>
   <int value="678" label="AudioBufferSourceBufferOnce"/>
+  <int value="679" label="WhiteSpacePreFromXMLSpace"/>
+  <int value="680" label="WhiteSpaceNowrapFromXMLSpace"/>
+  <int value="681" label="SVGElementXmlbase"/>
+  <int value="682" label="SVGElementXmllang"/>
+  <int value="683" label="SVGElementXmlspace"/>
+  <int value="684" label="WindowMoveResizeMissingArguments"/>
+  <int value="685" label="SVGSVGElementForceRedraw"/>
+  <int value="686" label="SVGSVGElementSuspendRedraw"/>
+  <int value="687" label="SVGSVGElementUnsuspendRedraw"/>
+  <int value="688" label="SVGSVGElementUnsuspendRedrawAll"/>
+  <int value="689" label="AudioContextClose"/>
+  <int value="690" label="ServiceWorkerClientPostMessage"/>
+  <int value="691" label="CSSZoomNotEqualToOne"/>
+  <int value="692" label="SVGGraphicsElementGetTransformToElement"/>
+  <int value="693" label="ServiceWorkerClientsGetAll"/>
+  <int value="694" label="ClientRectListItem"/>
+  <int value="695" label="WindowClientInformation"/>
+  <int value="696" label="WindowFind"/>
+  <int value="697" label="WindowScreenLeft"/>
+  <int value="698" label="WindowScreenTop"/>
+  <int value="699" label="V8AnimationPlayer_Cancel_Method"/>
+  <int value="700" label="V8AnimationPlayer_Onfinish_AttributeGetter"/>
+  <int value="701" label="V8AnimationPlayer_Onfinish_AttributeSetter"/>
+  <int value="702" label="ElementOffsetParent"/>
+  <int value="703" label="ElementOffsetTop"/>
+  <int value="704" label="ElementOffsetLeft"/>
+  <int value="705" label="ElementOffsetWidth"/>
+  <int value="706" label="ElementOffsetHeight"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
@@ -53803,6 +53831,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="454" label="all"/>
   <int value="455" label="justify-items"/>
   <int value="456" label="scroll-blocks-on"/>
+  <int value="457" label="motion-path"/>
+  <int value="458" label="motion-offset"/>
+  <int value="459" label="motion-rotation"/>
+  <int value="460" label="motion"/>
+  <int value="461" label="x"/>
+  <int value="462" label="y"/>
+  <int value="463" label="rx"/>
+  <int value="464" label="ry"/>
+  <int value="465" label="font-size-adjust"/>
+  <int value="466" label="cx"/>
+  <int value="467" label="cy"/>
+  <int value="468" label="r"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">
