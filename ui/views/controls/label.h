@@ -172,7 +172,7 @@ class VIEWS_EXPORT Label : public View {
   // Get the text broken into lines as needed to fit the given |width|.
   std::vector<base::string16> GetLinesForWidth(int width) const;
 
-  // Get the natural text size, unelided and only wrapped on newlines.
+  // Get the text size for the current layout.
   gfx::Size GetTextSize() const;
 
   void RecalculateColors();

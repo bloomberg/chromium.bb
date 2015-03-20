@@ -515,12 +515,14 @@ gfx::Size Label::GetTextSize() const {
     // Cancel the display rect of |render_text_|. The display rect may be
     // specified in GetHeightForWidth(), and specifying empty Rect cancels
     // its effect. See also the comment in GetHeightForWidth().
-    render_text_->SetDisplayRect(gfx::Rect());
+    // TODO(mukai): use gfx::Rect() to compute the ideal size rather than
+    // the current width(). See crbug.com/468494, crbug.com/467526, and
+    // the comment for MultilinePreferredSizeTest in label_unittest.cc.
+    render_text_->SetDisplayRect(gfx::Rect(0, 0, width(), 0));
     size = render_text_->GetStringSize();
   } else {
     // Get the natural text size, unelided and only wrapped on newlines.
-    std::vector<base::string16> lines;
-    base::SplitString(render_text_->GetDisplayText(), '\n', &lines);
+    std::vector<base::string16> lines = GetLinesForWidth(width());
     scoped_ptr<gfx::RenderText> render_text(gfx::RenderText::CreateInstance());
     render_text->SetFontList(font_list());
     for (size_t i = 0; i < lines.size(); ++i) {

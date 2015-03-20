@@ -183,6 +183,30 @@ TEST_F(LabelTest, ObscuredSurrogatePair) {
   EXPECT_EQ(test_text, label.text());
 }
 
+// This test case verifies the label preferred size will change based on the
+// current layout, which may seem wrong. However many of our code base assumes
+// this behavior, therefore this behavior will have to be kept until the code
+// with this assumption is fixed. See http://crbug.com/468494 and
+// http://crbug.com/467526.
+// TODO(mukai): fix the code assuming this behavior and then fix Label
+// implementation, and remove this test case.
+TEST_F(LabelTest, MultilinePreferredSizeTest) {
+  Label label;
+  label.SetText(ASCIIToUTF16("This is an example."));
+
+  gfx::Size single_line_size = label.GetPreferredSize();
+
+  label.SetMultiLine(true);
+  gfx::Size multi_line_size = label.GetPreferredSize();
+  EXPECT_EQ(single_line_size, multi_line_size);
+
+  int new_width = multi_line_size.width() / 2;
+  label.SetBounds(0, 0, new_width, label.GetHeightForWidth(new_width));
+  gfx::Size new_size = label.GetPreferredSize();
+  EXPECT_GT(multi_line_size.width(), new_size.width());
+  EXPECT_LT(multi_line_size.height(), new_size.height());
+}
+
 TEST_F(LabelTest, TooltipProperty) {
   Label label;
   label.SetText(ASCIIToUTF16("My cool string."));
