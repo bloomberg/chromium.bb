@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_TAB_HELPER_OBSERVER_H_
-#define COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_TAB_HELPER_OBSERVER_H_
+#ifndef COMPONENTS_FAVICON_CORE_FAVICON_TAB_HELPER_OBSERVER_H_
+#define COMPONENTS_FAVICON_CORE_FAVICON_TAB_HELPER_OBSERVER_H_
 
 namespace gfx {
 class Image;
@@ -21,4 +21,4 @@ class FaviconTabHelperObserver {
   virtual ~FaviconTabHelperObserver() {}
 };
 
-#endif  // COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_TAB_HELPER_OBSERVER_H_
+#endif  // COMPONENTS_FAVICON_CORE_FAVICON_TAB_HELPER_OBSERVER_H_

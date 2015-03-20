@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/observer_list.h"
-#include "components/favicon/core/browser/favicon_client.h"
+#include "components/favicon/core/favicon_client.h"
 #include "components/favicon/core/favicon_driver.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"

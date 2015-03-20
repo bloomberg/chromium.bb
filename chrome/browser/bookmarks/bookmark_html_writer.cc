@@ -20,7 +20,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "components/bookmarks/browser/bookmark_codec.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/favicon/core/browser/favicon_service.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"

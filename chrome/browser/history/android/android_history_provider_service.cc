@@ -8,7 +8,7 @@
 #include "chrome/browser/history/android/android_provider_backend.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/favicon/core/browser/favicon_service.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/android/android_history_types.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_db_task.h"

@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/url_constants.h"
-#include "components/favicon/core/browser/favicon_service.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "jni/NavigationPopup_jni.h"
 #include "third_party/skia/include/core/SkBitmap.h"

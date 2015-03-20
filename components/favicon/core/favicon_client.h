@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_CLIENT_H_
-#define COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_CLIENT_H_
+#ifndef COMPONENTS_FAVICON_CORE_FAVICON_CLIENT_H_
+#define COMPONENTS_FAVICON_CORE_FAVICON_CLIENT_H_
 
 #include <vector>
 
@@ -44,4 +44,4 @@ class FaviconClient : public KeyedService {
   DISALLOW_COPY_AND_ASSIGN(FaviconClient);
 };
 
-#endif  // COMPONENTS_FAVICON_CORE_BROWSER_FAVICON_CLIENT_H_
+#endif  // COMPONENTS_FAVICON_CORE_FAVICON_CLIENT_H_

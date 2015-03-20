@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/favicon/core/browser/favicon_handler.h"
+#include "components/favicon/core/favicon_handler.h"
 
 #include <algorithm>
 #include <cmath>
@@ -12,9 +12,9 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
-#include "components/favicon/core/browser/favicon_client.h"
-#include "components/favicon/core/browser/favicon_service.h"
+#include "components/favicon/core/favicon_client.h"
 #include "components/favicon/core/favicon_driver.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_util.h"
 #include "components/favicon_base/select_favicon_frames.h"
 #include "skia/ext/image_operations.h"

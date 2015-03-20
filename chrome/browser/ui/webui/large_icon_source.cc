@@ -13,7 +13,7 @@
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/common/favicon/large_icon_url_parser.h"
 #include "chrome/common/url_constants.h"
-#include "components/favicon/core/browser/favicon_service.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "grit/platform_locale_settings.h"
 #include "net/url_request/url_request.h"

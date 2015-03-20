@@ -3,6 +3,6 @@ include_rules = [
   # chrome/browser/history, so it is allowed to use chrome/browser and
   # components/.
   "+chrome/browser",
-  "+components/bookmarks/browser",
-  "+components/favicon/core/browser",
+  "+components/bookmarks",
+  "+components/favicon",
 ]

@@ -2922,7 +2922,7 @@
         '../components/components.gyp:domain_reliability',
         '../components/components.gyp:enhanced_bookmarks',
         '../components/components.gyp:favicon_base',
-        '../components/components.gyp:favicon_core_browser',
+        '../components/components.gyp:favicon_core',
         '../components/components.gyp:gcm_driver',
         '../components/components.gyp:google_core_browser',
         '../components/components.gyp:handoff',

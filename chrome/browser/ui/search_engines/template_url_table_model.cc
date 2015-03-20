@@ -8,7 +8,7 @@
 #include "base/i18n/rtl.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/favicon/core/browser/favicon_service.h"
+#include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"

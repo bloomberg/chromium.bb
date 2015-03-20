@@ -4,14 +4,24 @@
 
 static_library("core") {
   sources = [
+    "favicon_client.h",
     "favicon_driver.h",
+    "favicon_handler.cc",
+    "favicon_handler.h",
+    "favicon_service.cc",
+    "favicon_service.h",
+    "favicon_tab_helper_observer.h",
     "favicon_url.cc",
     "favicon_url.h",
   ]
 
   deps = [
+    "//components/bookmarks/browser",
     "//components/favicon_base",
-    "//ui/gfx/geometry",
+    "//components/history/core/browser",
+    "//components/keyed_service/core",
+    "//skia",
+    "//ui/gfx",
     "//url",
   ]
 }
