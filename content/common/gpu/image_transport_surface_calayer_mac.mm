@@ -332,6 +332,7 @@ void CALayerStorageProvider::LayerDoDraw() {
   glDisable(GL_STENCIL_TEST);
   glDisable(GL_SCISSOR_TEST);
   glColor4f(1, 1, 1, 1);
+  glActiveTexture(GL_TEXTURE0);
   glEnable(GL_TEXTURE_RECTANGLE_ARB);
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, fbo_texture_);
   glBegin(GL_QUADS);
