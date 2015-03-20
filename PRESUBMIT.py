@@ -1749,9 +1749,11 @@ def GetPreferredTryMasters(project, change):
   with open(os.path.join(
       change.RepositoryRoot(), 'testing', 'commit_queue', 'config.json')) as f:
     cq_config = json.load(f)
-    cq_trybots = cq_config.get('trybots', {})
-    builders = cq_trybots.get('launched', {})
-    for master, master_config in cq_trybots.get('triggered', {}).iteritems():
+    cq_verifiers = cq_config.get('verifiers_no_patch', {})
+    cq_try_jobs = cq_verifiers.get('try_job_verifier', {})
+    builders = cq_try_jobs.get('launched', {})
+
+    for master, master_config in cq_try_jobs.get('triggered', {}).iteritems():
       for triggered_bot in master_config:
         builders.get(master, {}).pop(triggered_bot, None)
 
