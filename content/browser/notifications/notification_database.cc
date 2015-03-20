@@ -189,15 +189,18 @@ NotificationDatabase::Status NotificationDatabase::WriteNotificationData(
   DCHECK(notification_id);
   DCHECK(origin.is_valid());
 
+  DCHECK_GE(next_notification_id_, kFirstNotificationId);
+
+  NotificationDatabaseData storage_data = notification_database_data;
+  storage_data.notification_id = next_notification_id_;
+
   std::string serialized_data;
-  if (!SerializeNotificationDatabaseData(notification_database_data,
+  if (!SerializeNotificationDatabaseData(storage_data,
                                          &serialized_data)) {
     DLOG(ERROR) << "Unable to serialize data for a notification belonging "
                 << "to: " << origin;
     return STATUS_ERROR_FAILED;
   }
-
-  DCHECK_GE(next_notification_id_, kFirstNotificationId);
 
   leveldb::WriteBatch batch;
   batch.Put(CreateDataKey(origin, next_notification_id_), serialized_data);

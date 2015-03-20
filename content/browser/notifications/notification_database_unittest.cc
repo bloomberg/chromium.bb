@@ -199,6 +199,30 @@ TEST_F(NotificationDatabaseTest, NotificationIdIncrements) {
   EXPECT_EQ(notification_id, 3);
 }
 
+TEST_F(NotificationDatabaseTest, NotificationIdIncrementsStorage) {
+  scoped_ptr<NotificationDatabase> database(CreateDatabaseInMemory());
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->Open(true /* create_if_missing */));
+
+  GURL origin("https://example.com");
+
+  NotificationDatabaseData database_data;
+  database_data.notification_id = -1;
+
+  int64_t notification_id = 0;
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->WriteNotificationData(origin,
+                                            database_data,
+                                            &notification_id));
+
+  ASSERT_EQ(NotificationDatabase::STATUS_OK,
+            database->ReadNotificationData(notification_id,
+                                           origin,
+                                           &database_data));
+
+  EXPECT_EQ(notification_id, database_data.notification_id);
+}
+
 TEST_F(NotificationDatabaseTest, NotificationIdCorruption) {
   base::ScopedTempDir database_dir;
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
@@ -322,7 +346,8 @@ TEST_F(NotificationDatabaseTest, ReadNotificationDataReflection) {
   // Verify that all members retrieved from the database are exactly the same
   // as the ones that were written to it. This tests the serialization behavior.
 
-  EXPECT_EQ(database_data.notification_id, read_database_data.notification_id);
+  EXPECT_EQ(notification_id, read_database_data.notification_id);
+
   EXPECT_EQ(database_data.origin, read_database_data.origin);
   EXPECT_EQ(database_data.service_worker_registration_id,
             read_database_data.service_worker_registration_id);
