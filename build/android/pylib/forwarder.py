@@ -51,16 +51,10 @@ class Forwarder(object):
   _DEVICE_FORWARDER_PATH = (constants.TEST_EXECUTABLE_DIR +
                             '/forwarder/device_forwarder')
   _LOCK_PATH = '/tmp/chrome.forwarder.lock'
-  _MULTIPROCESSING_ENV_VAR = 'CHROME_FORWARDER_USE_MULTIPROCESSING'
   # Defined in host_forwarder_main.cc
   _HOST_FORWARDER_LOG = '/tmp/host_forwarder_log'
 
   _instance = None
-
-  @staticmethod
-  def UseMultiprocessing():
-    """Tells the forwarder that multiprocessing is used."""
-    os.environ[Forwarder._MULTIPROCESSING_ENV_VAR] = '1'
 
   @staticmethod
   def Map(port_pairs, device, tool=None):
@@ -245,13 +239,10 @@ class Forwarder(object):
   def _GetPidForLock():
     """Returns the PID used for host_forwarder initialization.
 
-    In case multi-process sharding is used, the PID of the "sharder" is used.
-    The "sharder" is the initial process that forks that is the parent process.
-    By default, multi-processing is not used. In that case the PID of the
-    current process is returned.
+    The PID of the "sharder" is used to handle multiprocessing. The "sharder"
+    is the initial process that forks that is the parent process.
     """
-    use_multiprocessing = Forwarder._MULTIPROCESSING_ENV_VAR in os.environ
-    return os.getpgrp() if use_multiprocessing else os.getpid()
+    return os.getpgrp()
 
   def _InitHostLocked(self):
     """Initializes the host forwarder daemon.

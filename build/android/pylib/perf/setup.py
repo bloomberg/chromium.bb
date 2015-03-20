@@ -72,7 +72,6 @@ def Setup(test_options):
 
   # Before running the tests, kill any leftover server.
   test_environment.CleanupLeftoverProcesses()
-  forwarder.Forwarder.UseMultiprocessing()
 
   # We want to keep device affinity, so return all devices ever seen.
   all_devices = _GetAllDevices()
