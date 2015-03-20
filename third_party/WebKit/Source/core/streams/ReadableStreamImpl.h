@@ -14,6 +14,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/DOMException.h"
 #include "core/streams/ReadableStream.h"
 #include "wtf/Deque.h"
@@ -45,6 +46,19 @@ class ReadableStreamChunkTypeTraits<DOMArrayBuffer> {
 public:
     typedef RefPtr<DOMArrayBuffer> HoldType;
     typedef PassRefPtr<DOMArrayBuffer> PassType;
+
+    static size_t size(const PassType& chunk) { return chunk->byteLength(); }
+    static ScriptValue toScriptValue(ScriptState* scriptState, const HoldType& value)
+    {
+        return ScriptValue(scriptState, toV8(value.get(), scriptState->context()->Global(), scriptState->isolate()));
+    }
+};
+
+template<>
+class ReadableStreamChunkTypeTraits<DOMArrayBufferView> {
+public:
+    typedef RefPtr<DOMArrayBufferView> HoldType;
+    typedef PassRefPtr<DOMArrayBufferView> PassType;
 
     static size_t size(const PassType& chunk) { return chunk->byteLength(); }
     static ScriptValue toScriptValue(ScriptState* scriptState, const HoldType& value)

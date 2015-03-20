@@ -66,6 +66,7 @@ test.step(function() {
                     [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
                 var size = 0;
                 for (var i = 0; i < chunks.length; ++i) {
+                    assert_equals(chunks[i].constructor, Uint8Array, 'chunk[' + i + ']\'s type');
                     size += chunks[i].byteLength;
                 }
                 assert_equals(size, 103746, 'response size');

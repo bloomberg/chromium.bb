@@ -394,11 +394,18 @@ TEST_F(ReadableStreamTest, CancelWhenLocked)
     EXPECT_EQ(ReadableStream::Readable, stream->stateInternal());
 }
 
-TEST_F(ReadableStreamTest, ReadableArrayBufferCompileTest)
+TEST_F(ReadableStreamTest, ReadableArrayBufferStreamCompileTest)
 {
     // This test tests if ReadableStreamImpl<DOMArrayBuffer> can be
     // instantiated.
     new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>(scriptState()->executionContext(), m_underlyingSource);
+}
+
+TEST_F(ReadableStreamTest, ReadableArrayBufferViewStreamCompileTest)
+{
+    // This test tests if ReadableStreamImpl<DOMArrayBufferVIew> can be
+    // instantiated.
+    new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(scriptState()->executionContext(), m_underlyingSource);
 }
 
 TEST_F(ReadableStreamTest, BackpressureOnEnqueueing)

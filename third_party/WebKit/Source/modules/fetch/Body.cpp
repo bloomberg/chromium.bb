@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/DOMArrayBuffer.h"
+#include "core/dom/DOMTypedArray.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
@@ -70,7 +71,7 @@ public:
         }
     }
     ~ReadableStreamSource() override { }
-    void startStream(ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer> >* stream)
+    void startStream(ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>* stream)
     {
         ASSERT(m_state == Initial);
         ASSERT(!m_stream);
@@ -112,12 +113,12 @@ public:
             return m_drainingStreamBuffer;
         }
         // Take back the data in |m_stream|.
-        Deque<std::pair<RefPtr<DOMArrayBuffer>, size_t>> tmp_queue;
+        Deque<std::pair<RefPtr<DOMArrayBufferView>, size_t>> tmp_queue;
         if (m_stream->stateInternal() == ReadableStream::Readable)
             m_stream->readInternal(tmp_queue);
         while (!tmp_queue.isEmpty()) {
-            std::pair<RefPtr<DOMArrayBuffer>, size_t> data = tmp_queue.takeFirst();
-            m_drainingStreamBuffer->write(data.first);
+            std::pair<RefPtr<DOMArrayBufferView>, size_t> data = tmp_queue.takeFirst();
+            m_drainingStreamBuffer->write(data.first->buffer());
         }
         if (m_state == Closed)
             m_drainingStreamBuffer->close();
@@ -181,10 +182,12 @@ private:
 
     void write(PassRefPtr<DOMArrayBuffer> buf)
     {
-        if (m_drainingStreamBuffer)
+        if (m_drainingStreamBuffer) {
             m_drainingStreamBuffer->write(buf);
-        else
-            m_stream->enqueue(buf);
+        } else {
+            auto size = buf->byteLength();
+            m_stream->enqueue(DOMUint8Array::create(buf, 0, size));
+        }
     }
     void close()
     {
@@ -222,7 +225,7 @@ private:
     OwnPtr<FileReaderLoader> m_loader;
     // Created when createDrainingStream is called to drain the data.
     Member<BodyStreamBuffer> m_drainingStreamBuffer;
-    Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>> m_stream;
+    Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>> m_stream;
     State m_state;
 };
 
@@ -332,7 +335,7 @@ ReadableStream* Body::body()
     if (!m_stream) {
         ASSERT(!m_streamSource);
         m_streamSource = new ReadableStreamSource(this);
-        m_stream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>(executionContext(), m_streamSource);
+        m_stream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(executionContext(), m_streamSource);
         m_streamSource->startStream(m_stream);
     }
     return m_stream;

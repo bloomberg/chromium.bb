@@ -29,6 +29,7 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/DOMImplementation.h"
+#include "core/dom/DOMTypedArray.h"
 #include "core/dom/DocumentParser.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/XMLDocument.h"
@@ -186,7 +187,7 @@ public:
         enqueueToStreamFromHandle();
     }
 
-    void startStream(ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>* stream)
+    void startStream(ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>* stream)
     {
         m_stream = stream;
         stream->didSourceStart();
@@ -194,7 +195,7 @@ public:
 
     void didReceiveData(const char* data, size_t size)
     {
-        m_stream->enqueue(DOMArrayBuffer::create(data, size));
+        m_stream->enqueue(DOMUint8Array::create(DOMArrayBuffer::create(data, size), 0, size));
     }
 
     void didReceiveFinishLoadingNotification()
@@ -255,7 +256,7 @@ private:
                 m_needsMore = false;
                 return;
             }
-            m_needsMore = m_stream->enqueue(arrayBuffer.release());
+            m_needsMore = m_stream->enqueue(DOMUint8Array::create(arrayBuffer.release(), 0, size));
         }
     }
 
@@ -263,7 +264,7 @@ private:
     // avoid use-after free, the associated ReadableStream must be closed
     // or errored when m_owner is gone.
     RawPtrWillBeMember<XMLHttpRequest> m_owner;
-    Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>> m_stream;
+    Member<ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>> m_stream;
     OwnPtr<WebDataConsumerHandle> m_body;
     bool m_needsMore;
     bool m_hasReadBody;
@@ -1620,7 +1621,7 @@ void XMLHttpRequest::didReceiveResponse(unsigned long identifier, const Resource
         ASSERT(!m_responseStream);
         ASSERT(!m_responseStreamSource);
         m_responseStreamSource = new ReadableStreamSource(this, handle);
-        m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>(executionContext(), m_responseStreamSource);
+        m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(executionContext(), m_responseStreamSource);
         m_responseStreamSource->startStream(m_responseStream);
 
         changeState(HEADERS_RECEIVED);
@@ -1718,7 +1719,7 @@ void XMLHttpRequest::didReceiveData(const char* data, unsigned len)
         if (!m_responseStream) {
             ASSERT(!m_responseStreamSource);
             m_responseStreamSource = new ReadableStreamSource(this, nullptr);
-            m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBuffer>>(executionContext(), m_responseStreamSource);
+            m_responseStream = new ReadableStreamImpl<ReadableStreamChunkTypeTraits<DOMArrayBufferView>>(executionContext(), m_responseStreamSource);
             m_responseStreamSource->startStream(m_responseStream);
         }
         m_responseStreamSource->didReceiveData(data, len);

@@ -35,6 +35,7 @@ sequential_promise_test(function(t) {
       }).then(function(chunks) {
         var size = 0;
         for (var chunk of chunks) {
+          assert_equals(chunk.constructor, Uint8Array, 'chunk\'s type');
           size += chunk.byteLength;
         }
         var buffer = new Uint8Array(size);
