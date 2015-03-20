@@ -5050,6 +5050,7 @@ interface ServiceWorkerRegistration
     getter onupdatefound
     getter pushManager
     getter scope
+    getter syncManager
     method constructor
     method showNotification
     method unregister
@@ -5212,6 +5213,22 @@ interface Symbol
     method constructor
     method toString
     method valueOf
+interface SyncManager
+    getter minAllowablePeriod
+    method constructor
+    method getRegistration
+    method getRegistrations
+    method register
+interface SyncRegistration
+    getter allowOnBattery
+    getter id
+    getter idleRequired
+    getter maxDelay
+    getter minDelay
+    getter minPeriod
+    getter minRequiredNetwork
+    method constructor
+    method unregister
 interface SyntaxError
     attribute name
     getter stack

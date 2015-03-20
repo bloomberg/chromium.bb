@@ -105,6 +105,7 @@ class WebSocketHandle;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebStorageNamespace;
+class WebSyncProvider;
 struct WebFloatPoint;
 class WebThemeEngine;
 class WebThread;
@@ -683,6 +684,10 @@ public:
 
     virtual WebPermissionClient* permissionClient() { return 0; }
 
+
+    // Background Sync API------------------------------------------------------------
+
+    virtual WebSyncProvider* backgroundSyncProvider() { return 0; }
 
 protected:
     BLINK_PLATFORM_EXPORT Platform();

@@ -15,6 +15,9 @@
     'modules_idl_files': [
       '<@(extra_blink_module_idl_files)',
       'app_banner/BeforeInstallPromptEvent.idl',
+      'background_sync/SyncEvent.idl',
+      'background_sync/SyncManager.idl',
+      'background_sync/SyncRegistration.idl',
       'battery/BatteryManager.idl',
       'bluetooth/Bluetooth.idl',
       'bluetooth/BluetoothDevice.idl',
@@ -231,6 +234,8 @@
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_dependency_idl_files': [
+      'background_sync/ServiceWorkerGlobalScopeSync.idl',
+      'background_sync/ServiceWorkerRegistrationSync.idl',
       'battery/NavigatorBattery.idl',
       'beacon/NavigatorBeacon.idl',
       'bluetooth/NavigatorBluetooth.idl',
@@ -292,6 +297,7 @@
     # interfaces that inherit from Event
     'modules_event_idl_files': [
       'app_banner/BeforeInstallPromptEvent.idl',
+      'background_sync/SyncEvent.idl',
       'device_light/DeviceLightEvent.idl',
       'device_orientation/DeviceMotionEvent.idl',
       'device_orientation/DeviceOrientationEvent.idl',
@@ -325,6 +331,8 @@
     ],
     'modules_dictionary_idl_files': [
       'app_banner/BeforeInstallPromptEventInit.idl',
+      'background_sync/SyncEventInit.idl',
+      'background_sync/SyncRegistrationOptions.idl',
       'device_light/DeviceLightEventInit.idl',
       'encoding/TextDecodeOptions.idl',
       'encoding/TextDecoderOptions.idl',
@@ -376,6 +384,10 @@
     'generated_modules_dictionary_files': [
       '<(blink_modules_output_dir)/app_banner/BeforeInstallPromptEventInit.cpp',
       '<(blink_modules_output_dir)/app_banner/BeforeInstallPromptEventInit.h',
+      '<(blink_modules_output_dir)/background_sync/SyncEventInit.cpp',
+      '<(blink_modules_output_dir)/background_sync/SyncEventInit.h',
+      '<(blink_modules_output_dir)/background_sync/SyncRegistrationOptions.cpp',
+      '<(blink_modules_output_dir)/background_sync/SyncRegistrationOptions.h',
       '<(blink_modules_output_dir)/device_light/DeviceLightEventInit.cpp',
       '<(blink_modules_output_dir)/device_light/DeviceLightEventInit.h',
       '<(blink_modules_output_dir)/encoding/TextDecodeOptions.cpp',
@@ -517,6 +529,19 @@
       'app_banner/AppBannerController.h',
       'app_banner/BeforeInstallPromptEvent.cpp',
       'app_banner/BeforeInstallPromptEvent.h',
+      'background_sync/ServiceWorkerGlobalScopeSync.h',
+      'background_sync/ServiceWorkerRegistrationSync.cpp',
+      'background_sync/ServiceWorkerRegistrationSync.h',
+      'background_sync/SyncCallbacks.cpp',
+      'background_sync/SyncCallbacks.h',
+      'background_sync/SyncError.cpp',
+      'background_sync/SyncError.h',
+      'background_sync/SyncEvent.cpp',
+      'background_sync/SyncEvent.h',
+      'background_sync/SyncManager.cpp',
+      'background_sync/SyncManager.h',
+      'background_sync/SyncRegistration.cpp',
+      'background_sync/SyncRegistration.h',
       'battery/BatteryDispatcher.cpp',
       'battery/BatteryDispatcher.h',
       'battery/BatteryManager.cpp',

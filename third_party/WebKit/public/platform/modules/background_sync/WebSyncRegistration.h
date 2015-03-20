@@ -10,7 +10,7 @@
 
 namespace blink {
 
-struct WebSyncRegistrationOptions {
+struct WebSyncRegistration {
     enum NetworkType {
         NetworkTypeAny = 0,
         NetworkTypeOffline,
@@ -19,28 +19,40 @@ struct WebSyncRegistrationOptions {
         NetworkTypeLast = NetworkTypeNonMobile
     };
 
-    WebSyncRegistrationOptions(NetworkType networkType, bool allowOnBattery, bool idleRequired)
-        : networkType(networkType)
+    WebSyncRegistration(const WebString& registrationId, unsigned long minDelayMs,
+        unsigned long maxDelayMs, unsigned long minPeriodMs, NetworkType minRequiredNetwork,
+        bool allowOnBattery, bool idleRequired)
+        : id(registrationId)
+        , minDelayMs(minDelayMs)
+        , maxDelayMs(maxDelayMs)
+        , minPeriodMs(minPeriodMs)
+        , minRequiredNetwork(minRequiredNetwork)
         , allowOnBattery(allowOnBattery)
         , idleRequired(idleRequired)
     {
     }
 
-    NetworkType networkType;
+    WebString id;
+
+    /* Minimum delay before sync event (or first sync event, if periodic,) in
+     * milliseconds. */
+    unsigned long minDelayMs;
+
+    /* Maximum delay before sync event (or first sync event, if periodic,) in
+     * milliseconds. 0 means no maximum delay. If this value is greater than 0,
+     * then it should not be less than minDelayMs for the registration to be
+     * meaningful.
+     */
+    unsigned long maxDelayMs;
+
+    /* Minimum time between periodic sync events, in milliseconds. A 0 value
+     * here means that the event is a one-shot (not periodic.)
+     */
+    unsigned long minPeriodMs;
+
+    NetworkType minRequiredNetwork;
     bool allowOnBattery;
     bool idleRequired;
-};
-
-
-struct WebSyncRegistration {
-    WebSyncRegistration(const WebString& registrationId, const WebSyncRegistrationOptions& options)
-        : id(registrationId)
-        , options(options)
-    {
-    }
-
-    WebString id;
-    WebSyncRegistrationOptions options;
 };
 
 } // namespace blink
