@@ -19,7 +19,7 @@ namespace gin {
 // The field at kDebugIdIndex is treated specially by V8 and is reserved for
 // a V8 debugger implementation (not used by gin).
 enum ContextEmbedderDataFields {
-  kDebugIdIndex = 0,
+  kDebugIdIndex = v8::Context::kDebugIdIndex,
   kPerContextDataStartIndex,
 };
 
