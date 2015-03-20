@@ -413,7 +413,6 @@ DevToolsUIBindings::DevToolsUIBindings(content::WebContents* web_contents)
       devices_updates_enabled_(false),
       frontend_loaded_(false),
       weak_factory_(this) {
-  DCHECK(android_bridge_);
   g_instances.Get().push_back(this);
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
   web_contents_->GetMutableRendererPrefs()->can_accept_load_drops = false;
@@ -784,6 +783,10 @@ void DevToolsUIBindings::RecordActionUMA(const std::string& name, int action) {
 void DevToolsUIBindings::SendJsonRequest(const DispatchCallback& callback,
                                          const std::string& browser_id,
                                          const std::string& url) {
+  if (!android_bridge_) {
+    callback.Run(nullptr);
+    return;
+  }
   android_bridge_->SendJsonRequest(browser_id, url,
       base::Bind(&DevToolsUIBindings::JsonReceived,
                  weak_factory_.GetWeakPtr(),
