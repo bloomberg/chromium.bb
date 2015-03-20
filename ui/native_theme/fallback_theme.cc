@@ -89,6 +89,22 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
       kResultsTableHoveredText, kResultsTableHoveredBackground, 0x34);
   static const SkColor kResultsTabSelectedDivider = color_utils::AlphaBlend(
       kResultsTableSelectedText, kTextfieldSelectionBackgroundFocused, 0x34);
+  static const SkColor kResultsTablePositiveText =
+      color_utils::AlphaBlend(SK_ColorGREEN, kTextfieldDefaultBackground, 0xDD);
+  static const SkColor kResultsTablePositiveHoveredText =
+      color_utils::AlphaBlend(SK_ColorGREEN, kResultsTableHoveredBackground,
+                              0xDD);
+  static const SkColor kResultsTablePositiveSelectedText =
+      color_utils::AlphaBlend(SK_ColorGREEN,
+                              kTextfieldSelectionBackgroundFocused, 0xDD);
+  static const SkColor kResultsTableNegativeText =
+      color_utils::AlphaBlend(SK_ColorRED, kTextfieldDefaultBackground, 0xDD);
+  static const SkColor kResultsTableNegativeHoveredText =
+      color_utils::AlphaBlend(SK_ColorRED, kResultsTableHoveredBackground,
+                              0xDD);
+  static const SkColor kResultsTableNegativeSelectedText =
+      color_utils::AlphaBlend(SK_ColorRED, kTextfieldSelectionBackgroundFocused,
+                              0xDD);
 
   SkColor color;
   if (CommonThemeGetSystemColor(color_id, &color))
@@ -205,6 +221,18 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
       return kResultsTableHoveredDivider;
     case kColorId_ResultsTableSelectedDivider:
       return kResultsTabSelectedDivider;
+    case kColorId_ResultsTablePositiveText:
+      return kResultsTablePositiveText;
+    case kColorId_ResultsTablePositiveHoveredText:
+      return kResultsTablePositiveHoveredText;
+    case kColorId_ResultsTablePositiveSelectedText:
+      return kResultsTablePositiveSelectedText;
+    case kColorId_ResultsTableNegativeText:
+      return kResultsTableNegativeText;
+    case kColorId_ResultsTableNegativeHoveredText:
+      return kResultsTableNegativeHoveredText;
+    case kColorId_ResultsTableNegativeSelectedText:
+      return kResultsTableNegativeSelectedText;
 
     default:
       NOTREACHED();

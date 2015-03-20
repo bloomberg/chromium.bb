@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/skia_utils_gtk2.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -91,6 +92,11 @@ GdkColor SelectedURLColor(GdkColor foreground, GdkColor background) {
 
   color_utils::HSL output = { hue_hsl.h, s, l };
   return libgtk2ui::SkColorToGdkColor(color_utils::HSLToSkColor(output, 255));
+}
+
+GdkColor GetReadableColor(SkColor color, const GdkColor& background) {
+  return libgtk2ui::SkColorToGdkColor(color_utils::GetReadableColor(
+      color, libgtk2ui::GdkColorToSkColor(background)));
 }
 
 }  // namespace
@@ -372,6 +378,30 @@ GdkColor NativeThemeGtk2::GetSystemGdkColor(ColorId color_id) const {
       GtkStyle* win_style = GetWindowStyle();
       return GdkAlphaBlend(win_style->text[GTK_STATE_SELECTED],
                            win_style->bg[GTK_STATE_SELECTED], 0x34);
+    }
+    case kColorId_ResultsTablePositiveText: {
+      return GetReadableColor(SK_ColorGREEN,
+                              GetEntryStyle()->base[GTK_STATE_NORMAL]);
+    }
+    case kColorId_ResultsTablePositiveHoveredText: {
+      return GetReadableColor(SK_ColorGREEN,
+                              GetEntryStyle()->base[GTK_STATE_PRELIGHT]);
+    }
+    case kColorId_ResultsTablePositiveSelectedText: {
+      return GetReadableColor(SK_ColorGREEN,
+                              GetEntryStyle()->base[GTK_STATE_SELECTED]);
+    }
+    case kColorId_ResultsTableNegativeText: {
+      return GetReadableColor(SK_ColorRED,
+                              GetEntryStyle()->base[GTK_STATE_NORMAL]);
+    }
+    case kColorId_ResultsTableNegativeHoveredText: {
+      return GetReadableColor(SK_ColorRED,
+                              GetEntryStyle()->base[GTK_STATE_PRELIGHT]);
+    }
+    case kColorId_ResultsTableNegativeSelectedText: {
+      return GetReadableColor(SK_ColorRED,
+                              GetEntryStyle()->base[GTK_STATE_SELECTED]);
     }
     case kColorId_NumColors:
       NOTREACHED();

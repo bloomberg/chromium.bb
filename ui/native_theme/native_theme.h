@@ -298,7 +298,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_TableSelectionBackgroundFocused,
     kColorId_TableSelectionBackgroundUnfocused,
     kColorId_TableGroupingIndicatorColor,
-    // Results Tables, such as the chrome omnibox.
+    // Results Tables, such as the omnibox.
     kColorId_ResultsTableNormalBackground,
     kColorId_ResultsTableHoveredBackground,
     kColorId_ResultsTableSelectedBackground,
@@ -314,6 +314,16 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_ResultsTableNormalDivider,
     kColorId_ResultsTableHoveredDivider,
     kColorId_ResultsTableSelectedDivider,
+    // Positive text refers to good (often rendered in green) text, such as the
+    // stock value went up.
+    kColorId_ResultsTablePositiveText,
+    kColorId_ResultsTablePositiveHoveredText,
+    kColorId_ResultsTablePositiveSelectedText,
+    // Negative text refers to something alarming (often rendered in red), such
+    // as the stock value went down.
+    kColorId_ResultsTableNegativeText,
+    kColorId_ResultsTableNegativeHoveredText,
+    kColorId_ResultsTableNegativeSelectedText,
     // TODO(benrg): move other hardcoded colors here.
 
     kColorId_NumColors,

@@ -20,6 +20,7 @@
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/color_utils.h"
@@ -607,8 +608,11 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableSelectedBackground:
       return system_colors_[COLOR_HIGHLIGHT];
     case kColorId_ResultsTableNormalText:
-    case kColorId_ResultsTableHoveredText:
       return system_colors_[COLOR_WINDOWTEXT];
+    case kColorId_ResultsTableHoveredText:
+      return color_utils::GetReadableColor(
+          system_colors_[COLOR_WINDOWTEXT],
+          GetSystemColor(kColorId_ResultsTableHoveredBackground));
     case kColorId_ResultsTableSelectedText:
       return system_colors_[COLOR_HIGHLIGHTTEXT];
     case kColorId_ResultsTableNormalDimmedText:
@@ -641,6 +645,25 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableSelectedDivider:
       return color_utils::AlphaBlend(system_colors_[COLOR_HIGHLIGHTTEXT],
                                      system_colors_[COLOR_HIGHLIGHT], 0x34);
+    case kColorId_ResultsTablePositiveText:
+      return color_utils::GetReadableColor(SK_ColorGREEN,
+                                           system_colors_[COLOR_WINDOW]);
+    case kColorId_ResultsTablePositiveHoveredText:
+      return color_utils::GetReadableColor(
+          SK_ColorGREEN,
+          GetSystemColor(kColorId_ResultsTableHoveredBackground));
+    case kColorId_ResultsTablePositiveSelectedText:
+      return color_utils::GetReadableColor(SK_ColorGREEN,
+                                           system_colors_[COLOR_HIGHLIGHT]);
+    case kColorId_ResultsTableNegativeText:
+      return color_utils::GetReadableColor(SK_ColorRED,
+                                           system_colors_[COLOR_WINDOW]);
+    case kColorId_ResultsTableNegativeHoveredText:
+      return color_utils::GetReadableColor(
+          SK_ColorRED, GetSystemColor(kColorId_ResultsTableHoveredBackground));
+    case kColorId_ResultsTableNegativeSelectedText:
+      return color_utils::GetReadableColor(SK_ColorRED,
+                                           system_colors_[COLOR_HIGHLIGHT]);
   }
   NOTREACHED();
   return kInvalidColorIdColor;
