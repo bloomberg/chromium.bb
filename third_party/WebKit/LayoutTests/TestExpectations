@@ -2132,6 +2132,7 @@ crbug.com/461238 [ Linux Win Debug ] editing/execCommand/delete-non-editable-ran
 
 crbug.com/364614 [ Mac ] fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 crbug.com/364614 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
+crbug.com/469271 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Failure ]
 crbug.com/364614 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
 
 crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
