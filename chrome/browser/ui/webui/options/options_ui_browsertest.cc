@@ -186,9 +186,8 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, LoadOptionsByURL) {
   VerifyNavbar();
 }
 
-// Flaky on win_rel when the profile is deleted crbug.com/103355
-// Also related to crbug.com/104851
-#if defined(OS_WIN)
+// Flaky on Mac and Win: http://crbug.com/469113
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_VerifyManagedSignout DISABLED_VerifyManagedSignout
 #else
 #define MAYBE_VerifyManagedSignout VerifyManagedSignout
