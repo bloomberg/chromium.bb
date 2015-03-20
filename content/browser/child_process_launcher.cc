@@ -65,16 +65,6 @@ class ChildProcessLauncher::Context
               int child_process_id,
               Client* client);
 
-#if defined(OS_ANDROID)
-  // Called on the UI thread with the operation result. Calls Notify().
-  static void OnChildProcessStarted(
-      // |this_object| is NOT thread safe. Only use it to post a task back.
-      scoped_refptr<Context> this_object,
-      BrowserThread::ID client_thread_id,
-      const base::TimeTicks begin_launch_time,
-      base::ProcessHandle handle);
-#endif
-
   // Resets the client (the client is going away).
   void ResetClient();
 
@@ -85,18 +75,25 @@ class ChildProcessLauncher::Context
   int exit_code() const { return exit_code_; }
 
   base::TerminationStatus termination_status() const {
+    DCHECK_CURRENTLY_ON(client_thread_id_);
     return termination_status_;
   }
 
-  void set_terminate_child_on_shutdown(bool terminate_on_shutdown) {
+  void SetTerminateChildOnShutdown(bool terminate_on_shutdown) {
+    DCHECK_CURRENTLY_ON(client_thread_id_);
     terminate_child_on_shutdown_ = terminate_on_shutdown;
   }
 
   void UpdateTerminationStatus(bool known_dead);
 
-  void Close() { process_.Close(); }
+  void Close() {
+    DCHECK_CURRENTLY_ON(client_thread_id_);
+    process_.Close();
+  }
 
   void SetProcessBackgrounded(bool background);
+
+  BrowserThread::ID client_thread_id() const { return client_thread_id_; }
 
  private:
   friend class base::RefCountedThreadSafe<ChildProcessLauncher::Context>;
@@ -105,12 +102,20 @@ class ChildProcessLauncher::Context
     Terminate();
   }
 
-  static void RecordHistograms(base::TimeTicks begin_launch_time);
-  static void RecordLaunchHistograms(base::TimeDelta launch_time);
+#if defined(OS_ANDROID)
+  static void OnChildProcessStartedAndroid(
+      // |this_object| is NOT thread safe. Only use it to post a task back.
+      scoped_refptr<Context> this_object,
+      BrowserThread::ID client_thread_id,
+      const base::TimeTicks begin_launch_time,
+      base::ProcessHandle handle);
+#endif
+
+  static void RecordHistogramsOnLauncherThread(base::TimeDelta launch_time);
 
   // Performs the actual work of launching the process.
   // Runs on the PROCESS_LAUNCHER thread.
-  static void LaunchInternal(
+  static void LaunchOnLauncherThread(
       // |this_object| is NOT thread safe. Only use it to post a task back.
       scoped_refptr<Context> this_object,
       BrowserThread::ID client_thread_id,
@@ -128,10 +133,10 @@ class ChildProcessLauncher::Context
 
   void Terminate();
 
-  static void SetProcessBackgroundedInternal(base::Process process,
-                                             bool background);
+  static void SetProcessBackgroundedOnLauncherThread(base::Process process,
+                                                     bool background);
 
-  static void TerminateInternal(
+  static void TerminateOnLauncherThread(
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
       bool zygote,
 #endif
@@ -156,7 +161,6 @@ class ChildProcessLauncher::Context
 
 ChildProcessLauncher::Context::Context()
     : client_(NULL),
-      client_thread_id_(BrowserThread::UI),
       termination_status_(base::TERMINATION_STATUS_NORMAL_TERMINATION),
       exit_code_(RESULT_CODE_NORMAL_EXIT),
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
@@ -170,6 +174,7 @@ ChildProcessLauncher::Context::Context()
 #else
       terminate_child_on_shutdown_(true) {
 #endif
+  CHECK(BrowserThread::GetCurrentThreadIdentifier(&client_thread_id_));
 }
 
 void ChildProcessLauncher::Context::Launch(
@@ -177,7 +182,7 @@ void ChildProcessLauncher::Context::Launch(
     base::CommandLine* cmd_line,
     int child_process_id,
     Client* client) {
-  CHECK(BrowserThread::GetCurrentThreadIdentifier(&client_thread_id_));
+  DCHECK_CURRENTLY_ON(client_thread_id_);
   client_ = client;
 
 #if defined(OS_ANDROID)
@@ -200,7 +205,7 @@ void ChildProcessLauncher::Context::Launch(
 #endif
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      base::Bind(&Context::LaunchInternal,
+      base::Bind(&Context::LaunchOnLauncherThread,
                  make_scoped_refptr(this),
                  client_thread_id_,
                  child_process_id,
@@ -209,17 +214,23 @@ void ChildProcessLauncher::Context::Launch(
 }
 
 #if defined(OS_ANDROID)
-// static
-void ChildProcessLauncher::Context::OnChildProcessStarted(
+// TODO(sievers): Remove this by defining better what happens on what
+// thread in the corresponding Java code.
+void ChildProcessLauncher::Context::OnChildProcessStartedAndroid(
     // |this_object| is NOT thread safe. Only use it to post a task back.
     scoped_refptr<Context> this_object,
     BrowserThread::ID client_thread_id,
     const base::TimeTicks begin_launch_time,
     base::ProcessHandle handle) {
-  RecordHistograms(begin_launch_time);
+  // This can be called on the launcher thread or UI thread.
+  base::TimeDelta launch_time = base::TimeTicks::Now() - begin_launch_time;
+  BrowserThread::PostTask(
+      BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+      base::Bind(
+          &ChildProcessLauncher::Context::RecordHistogramsOnLauncherThread,
+          launch_time));
+
   if (BrowserThread::CurrentlyOn(client_thread_id)) {
-    // This is always invoked on the UI thread which is commonly the
-    // |client_thread_id| so we can shortcut one PostTask.
     this_object->Notify(base::Process(handle));
   } else {
     BrowserThread::PostTask(
@@ -234,11 +245,12 @@ void ChildProcessLauncher::Context::OnChildProcessStarted(
 void ChildProcessLauncher::Context::ResetClient() {
   // No need for locking as this function gets called on the same thread that
   // client_ would be used.
-  CHECK(BrowserThread::CurrentlyOn(client_thread_id_));
+  DCHECK_CURRENTLY_ON(client_thread_id_);
   client_ = NULL;
 }
 
 void ChildProcessLauncher::Context::UpdateTerminationStatus(bool known_dead) {
+  DCHECK_CURRENTLY_ON(client_thread_id_);
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   if (zygote_) {
     termination_status_ = ZygoteHostImpl::GetInstance()->
@@ -265,30 +277,18 @@ void ChildProcessLauncher::Context::UpdateTerminationStatus(bool known_dead) {
 }
 
 void ChildProcessLauncher::Context::SetProcessBackgrounded(bool background) {
+  DCHECK_CURRENTLY_ON(client_thread_id_);
   base::Process to_pass = process_.Duplicate();
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      base::Bind(&Context::SetProcessBackgroundedInternal,
+      base::Bind(&Context::SetProcessBackgroundedOnLauncherThread,
                  base::Passed(&to_pass), background));
 }
 
 // static
-void ChildProcessLauncher::Context::RecordHistograms(
-    base::TimeTicks begin_launch_time) {
-  base::TimeDelta launch_time = base::TimeTicks::Now() - begin_launch_time;
-  if (BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER)) {
-    RecordLaunchHistograms(launch_time);
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-        base::Bind(&ChildProcessLauncher::Context::RecordLaunchHistograms,
-                   launch_time));
-  }
-}
-
-// static
-void ChildProcessLauncher::Context::RecordLaunchHistograms(
+void ChildProcessLauncher::Context::RecordHistogramsOnLauncherThread(
     base::TimeDelta launch_time) {
+  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
   // Log the launch time, separating out the first one (which will likely be
   // slower due to the rest of the browser initializing at the same time).
   static bool done_first_launch = false;
@@ -301,13 +301,14 @@ void ChildProcessLauncher::Context::RecordLaunchHistograms(
 }
 
 // static
-void ChildProcessLauncher::Context::LaunchInternal(
+void ChildProcessLauncher::Context::LaunchOnLauncherThread(
     // |this_object| is NOT thread safe. Only use it to post a task back.
     scoped_refptr<Context> this_object,
     BrowserThread::ID client_thread_id,
     int child_process_id,
     SandboxedProcessLauncherDelegate* delegate,
     base::CommandLine* cmd_line) {
+  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
   scoped_ptr<SandboxedProcessLauncherDelegate> delegate_deleter(delegate);
 #if defined(OS_WIN)
   bool launch_elevated = delegate->ShouldLaunchElevated();
@@ -355,13 +356,10 @@ void ChildProcessLauncher::Context::LaunchInternal(
       *cmd_line, child_process_id, files_to_register.get());
 
   StartChildProcess(
-      cmd_line->argv(),
-      child_process_id,
-      files_to_register.Pass(),
-      base::Bind(&ChildProcessLauncher::Context::OnChildProcessStarted,
-                 this_object,
-                 client_thread_id,
-                 begin_launch_time));
+      cmd_line->argv(), child_process_id, files_to_register.Pass(),
+      base::Bind(
+          &ChildProcessLauncher::Context::OnChildProcessStartedAndroid,
+          this_object, client_thread_id, begin_launch_time));
 
 #elif defined(OS_POSIX)
   // We need to close the client end of the IPC channel to reliably detect
@@ -441,8 +439,10 @@ void ChildProcessLauncher::Context::LaunchInternal(
   }
 #endif  // else defined(OS_POSIX)
 #if !defined(OS_ANDROID)
-  if (process.IsValid())
-    RecordHistograms(begin_launch_time);
+  if (process.IsValid()) {
+    RecordHistogramsOnLauncherThread(base::TimeTicks::Now() -
+                                     begin_launch_time);
+  }
   BrowserThread::PostTask(
       client_thread_id, FROM_HERE,
       base::Bind(&Context::Notify,
@@ -459,6 +459,7 @@ void ChildProcessLauncher::Context::Notify(
     bool zygote,
 #endif
     base::Process process) {
+  DCHECK_CURRENTLY_ON(client_thread_id_);
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/465841
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile1(
@@ -504,6 +505,7 @@ void ChildProcessLauncher::Context::Notify(
 }
 
 void ChildProcessLauncher::Context::Terminate() {
+  DCHECK_CURRENTLY_ON(client_thread_id_);
   if (!process_.IsValid())
     return;
 
@@ -514,7 +516,7 @@ void ChildProcessLauncher::Context::Terminate() {
   // don't this on the UI/IO threads.
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      base::Bind(&Context::TerminateInternal,
+      base::Bind(&Context::TerminateOnLauncherThread,
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
                 zygote_,
 #endif
@@ -522,9 +524,10 @@ void ChildProcessLauncher::Context::Terminate() {
 }
 
 // static
-void ChildProcessLauncher::Context::SetProcessBackgroundedInternal(
+void ChildProcessLauncher::Context::SetProcessBackgroundedOnLauncherThread(
     base::Process process,
     bool background) {
+  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
   process.SetProcessBackgrounded(background);
 #if defined(OS_ANDROID)
   SetChildProcessInForeground(process.Handle(), !background);
@@ -532,11 +535,12 @@ void ChildProcessLauncher::Context::SetProcessBackgroundedInternal(
 }
 
 // static
-void ChildProcessLauncher::Context::TerminateInternal(
+void ChildProcessLauncher::Context::TerminateOnLauncherThread(
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
     bool zygote,
 #endif
     base::Process process) {
+  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
 #if defined(OS_ANDROID)
   VLOG(1) << "ChromeProcess: Stopping process with handle "
           << process.Handle();
@@ -579,10 +583,14 @@ ChildProcessLauncher::~ChildProcessLauncher() {
 }
 
 bool ChildProcessLauncher::IsStarting() {
+  // TODO(crbug.com/469248): This fails in some tests.
+  // DCHECK_CURRENTLY_ON(context_->client_thread_id());
   return context_->starting();
 }
 
 const base::Process& ChildProcessLauncher::GetProcess() const {
+  // TODO(crbug.com/469248): This fails in some tests.
+  // DCHECK_CURRENTLY_ON(context_->client_thread_id());
   DCHECK(!context_->starting());
   return context_->process();
 }
@@ -590,6 +598,7 @@ const base::Process& ChildProcessLauncher::GetProcess() const {
 base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
     bool known_dead,
     int* exit_code) {
+  DCHECK_CURRENTLY_ON(context_->client_thread_id());
   if (!context_->process().IsValid()) {
     // Process is already gone, so return the cached termination status.
     if (exit_code)
@@ -620,7 +629,7 @@ void ChildProcessLauncher::SetProcessBackgrounded(bool background) {
 void ChildProcessLauncher::SetTerminateChildOnShutdown(
     bool terminate_on_shutdown) {
   if (context_.get())
-    context_->set_terminate_child_on_shutdown(terminate_on_shutdown);
+    context_->SetTerminateChildOnShutdown(terminate_on_shutdown);
 }
 
 }  // namespace content
