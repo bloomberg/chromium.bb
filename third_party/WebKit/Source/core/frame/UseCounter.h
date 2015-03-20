@@ -672,6 +672,7 @@ public:
         CryptoAlgorithmEcdh = 736,
         CryptoAlgorithmHkdf = 737,
         CryptoAlgorithmPbkdf2 = 738,
+        DocumentSetDomain = 739,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -3925,6 +3925,8 @@ String Document::domain() const
 
 void Document::setDomain(const String& newDomain, ExceptionState& exceptionState)
 {
+    UseCounter::count(*this, UseCounter::DocumentSetDomain);
+
     if (isSandboxed(SandboxDocumentDomain)) {
         exceptionState.throwSecurityError("Assignment is forbidden for sandboxed iframes.");
         return;
