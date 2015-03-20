@@ -11,6 +11,7 @@
     'libjingle_additional_deps%': [],
     'libjingle_peerconnection_additional_deps%': [],
     'libjingle_source%': "source",
+    'libpeer_target_type%': 'static_library',
     'webrtc_p2p': "../webrtc/p2p",
     'webrtc_xmpp': "../webrtc/libjingle/xmpp",
   },
@@ -19,19 +20,18 @@
   # :jingle_all_dependent_configs in the GN build.
   'target_defaults': {
     'defines': [
-      'ENABLE_EXTERNAL_AUTH',
       'EXPAT_RELATIVE_PATH',
       'FEATURE_ENABLE_SSL',
       'GTEST_RELATIVE_PATH',
       'HAVE_SRTP',
       'HAVE_WEBRTC_VIDEO',
       'HAVE_WEBRTC_VOICE',
-      'LIBPEERCONNECTION_LIB=1',
       'LOGGING_INSIDE_WEBRTC',
       'NO_MAIN_THREAD_WRAPPING',
       'NO_SOUND_SYSTEM',
       'SRTP_RELATIVE_PATH',
       'USE_WEBRTC_DEV_BRANCH',
+      'ENABLE_EXTERNAL_AUTH',
       'WEBRTC_CHROMIUM_BUILD',
     ],
     'configurations': {
@@ -174,6 +174,9 @@
       ],
     },
     'conditions': [
+      ['"<(libpeer_target_type)"=="static_library"', {
+        'defines': [ 'LIBPEERCONNECTION_LIB=1' ],
+      }],
       ['use_openssl==1', {
         'defines': [
           'SSL_USE_OPENSSL',
@@ -328,7 +331,11 @@
           'target_name': 'libjingle_webrtc_common',
           'type': 'static_library',
           'all_dependent_settings': {
-            'defines': [ 'LIBPEERCONNECTION_LIB=1' ],
+            'conditions': [
+              ['"<(libpeer_target_type)"=="static_library"', {
+                'defines': [ 'LIBPEERCONNECTION_LIB=1' ],
+              }],
+            ],
           },
           'sources': [
             'overrides/talk/media/webrtc/webrtcexport.h',
@@ -552,14 +559,20 @@
             'overrides/init_webrtc.h',
           ],
           'dependencies': [
-            '<(DEPTH)/third_party/webrtc/modules/modules.gyp:audio_processing',
             'libjingle_webrtc_common',
+          ],
+          'conditions': [
+            ['libpeer_target_type=="static_library"', {
+              'dependencies': [
+                '<(DEPTH)/third_party/webrtc/modules/modules.gyp:audio_processing',
+              ],
+            }],
           ],
         },
         {
           # GN version: //third_party/libjingle:libpeerconnection
           'target_name': 'libpeerconnection',
-          'type': 'static_library',
+          'type': '<(libpeer_target_type)',
           'sources': [
             # Note: sources list duplicated in GN build.
             '<(libjingle_source)/talk/media/webrtc/simulcast.cc',
@@ -580,8 +593,51 @@
             'libjingle_webrtc_common',
           ],
           'conditions': [
-            ['OS=="android"', {
+            ['libpeer_target_type!="static_library"', {
+              'sources': [
+                'overrides/initialize_module.cc',
+              ],
+              'conditions': [
+                ['OS!="mac" and OS!="android"', {
+                  'sources': [
+                    'overrides/allocator_shim/allocator_proxy.cc',
+                  ],
+                }],
+              ],
+            }],
+            ['"<(libpeer_target_type)"!="static_library"', {
+              # Used to control symbol export/import.
+              'defines': [ 'LIBPEERCONNECTION_IMPLEMENTATION=1' ],
+            }],
+            ['OS=="win" and "<(libpeer_target_type)"!="static_library"', {
+              'link_settings': {
+                'libraries': [
+                  '-lsecur32.lib',
+                  '-lcrypt32.lib',
+                  '-liphlpapi.lib',
+                ],
+              },
+            }],
+            ['OS!="win" and "<(libpeer_target_type)"!="static_library"', {
+              'cflags': [
+                # For compatibility with how we export symbols from this
+                # target on Windows.  This also prevents the linker from
+                # picking up symbols from this target that should be linked
+                # in from other libjingle libs.
+                '-fvisibility=hidden',
+              ],
+            }],
+            ['OS=="mac" and libpeer_target_type!="static_library"', {
+              'product_name': 'libpeerconnection',
+            }],
+            ['OS=="android" and "<(libpeer_target_type)"=="static_library"', {
               'standalone_static_library': 1,
+            }],
+            ['OS=="linux" and libpeer_target_type!="static_library"', {
+              # The installer and various tools depend on finding the .so
+              # in this directory and not lib.target as will otherwise be
+              # the case with make builds.
+              'product_dir': '<(PRODUCT_DIR)/lib',
             }],
           ],
         },  # target libpeerconnection
