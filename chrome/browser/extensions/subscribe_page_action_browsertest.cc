@@ -156,7 +156,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed1) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed2) {
+// This test is flaky on all platforms; see http://crbug.com/340354
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed2) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = LoadExtension(
@@ -171,7 +172,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed2) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed3) {
+// This test is flaky on all platforms; see http://crbug.com/340354
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed3) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = LoadExtension(
@@ -186,7 +188,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed3) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed4) {
+// This test is flaky on all platforms; see http://crbug.com/340354
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed4) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = LoadExtension(
@@ -201,7 +204,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed4) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed0) {
+// This test is flaky on all platforms; see http://crbug.com/340354
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed0) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = LoadExtension(
@@ -218,7 +222,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed0) {
                             "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed5) {
+// This test is flaky on all platforms; see http://crbug.com/340354
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed5) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = LoadExtension(
@@ -234,7 +239,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed5) {
                             "This feed contains no entries.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeed6) {
+// This test is flaky on all platforms; see http://crbug.com/340354
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_RSSParseFeedValidFeed6) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = LoadExtension(
@@ -321,7 +327,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedInvalidFeed4) {
       "This feed contains no entries.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSParseFeedValidFeedNoLinks) {
+// This test is flaky on all platforms; see http://crbug.com/340354
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
+                       DISABLED_RSSParseFeedValidFeedNoLinks) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = LoadExtension(
