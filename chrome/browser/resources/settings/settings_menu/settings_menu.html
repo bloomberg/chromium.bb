@@ -4,7 +4,11 @@
 <polymer-element name="cr-settings-menu">
   <template>
     <link rel="stylesheet" href="settings_menu.css">
-    <core-menu selected="{{selectedId}}" valueattr="data-id">
+    <!-- TODO(jlklein): selectedAttribute here is a workaround for
+         https://github.com/Polymer/polymer/issues/946. Remove when core-menu
+         is updated. -->
+    <core-menu selected="{{selectedId}}" valueattr="data-id"
+        selectedAttribute="">
       <template repeat="{{pages}}">
         <paper-item data-id="{{PAGE_ID}}">
           <core-icon icon="{{icon}}"></core-icon>
