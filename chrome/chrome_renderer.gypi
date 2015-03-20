@@ -34,8 +34,6 @@
       'renderer/net_benchmarking_extension.h',
       'renderer/page_load_histograms.cc',
       'renderer/page_load_histograms.h',
-      'renderer/playback_extension.cc',
-      'renderer/playback_extension.h',
       'renderer/plugins/chrome_plugin_placeholder.cc',
       'renderer/plugins/chrome_plugin_placeholder.h',
       'renderer/plugins/plugin_uma.cc',

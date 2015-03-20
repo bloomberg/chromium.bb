@@ -38,7 +38,6 @@
 #include "chrome/renderer/net_benchmarking_extension.h"
 #include "chrome/renderer/page_load_histograms.h"
 #include "chrome/renderer/pepper/pepper_helper.h"
-#include "chrome/renderer/playback_extension.h"
 #include "chrome/renderer/plugins/chrome_plugin_placeholder.h"
 #include "chrome/renderer/plugins/plugin_preroller.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
@@ -430,11 +429,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     thread->RegisterExtension(extensions_v8::NetBenchmarkingExtension::Get());
   if (command_line->HasSwitch(switches::kInstantProcess))
     thread->RegisterExtension(extensions_v8::SearchBoxExtension::Get());
-
-  if (command_line->HasSwitch(switches::kPlaybackMode) ||
-      command_line->HasSwitch(switches::kRecordMode)) {
-    thread->RegisterExtension(extensions_v8::PlaybackExtension::Get());
-  }
 
   // chrome:, chrome-search:, chrome-devtools:, and chrome-distiller: pages
   // should not be accessible by normal content, and should also be unable to

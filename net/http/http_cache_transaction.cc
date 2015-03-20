@@ -1421,8 +1421,6 @@ int HttpCache::Transaction::DoOpenEntryComplete(int result) {
     next_state_ = STATE_SEND_REQUEST;
     return OK;
   }
-  if (cache_->mode() == PLAYBACK)
-    DVLOG(1) << "Playback Cache Miss: " << request_->url;
 
   // The entry does not exist, and we are not permitted to create a new entry,
   // so we must fail.
@@ -2257,24 +2255,8 @@ void HttpCache::Transaction::SetRequest(const BoundNetLog& net_log,
   request_ = request;
   effective_load_flags_ = request_->load_flags;
 
-  switch (cache_->mode()) {
-    case NORMAL:
-      break;
-    case RECORD:
-      // When in record mode, we want to NEVER load from the cache.
-      // The reason for this is because we save the Set-Cookie headers
-      // (intentionally).  If we read from the cache, we replay them
-      // prematurely.
-      effective_load_flags_ |= LOAD_BYPASS_CACHE;
-      break;
-    case PLAYBACK:
-      // When in playback mode, we want to load exclusively from the cache.
-      effective_load_flags_ |= LOAD_ONLY_FROM_CACHE;
-      break;
-    case DISABLE:
-      effective_load_flags_ |= LOAD_DISABLE_CACHE;
-      break;
-  }
+  if (cache_->mode() == DISABLE)
+    effective_load_flags_ |= LOAD_DISABLE_CACHE;
 
   // Some headers imply load flags.  The order here is significant.
   //
@@ -2372,11 +2354,6 @@ bool HttpCache::Transaction::ShouldPassThrough() {
   // like not enough disk space, or sharing violations.
   if (!cache_->disk_cache_.get())
     return true;
-
-  // When using the record/playback modes, we always use the cache
-  // and we never pass through.
-  if (cache_->mode() == RECORD || cache_->mode() == PLAYBACK)
-    return false;
 
   if (effective_load_flags_ & LOAD_DISABLE_CACHE)
     return true;
@@ -2620,10 +2597,6 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
   // TODO(darin): need to do more work here:
   //  - make sure we have a matching request method
   //  - watch out for cached responses that depend on authentication
-
-  // In playback mode, nothing requires validation.
-  if (cache_->mode() == net::HttpCache::PLAYBACK)
-    return VALIDATION_NONE;
 
   if (response_.vary_data.is_valid() &&
       !response_.vary_data.MatchesRequest(*request_,
@@ -2986,17 +2959,16 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
   if (!entry_)
     return OK;
 
-  // Do not cache no-store content (unless we are record mode).  Do not cache
-  // content with cert errors either.  This is to prevent not reporting net
-  // errors when loading a resource from the cache.  When we load a page over
-  // HTTPS with a cert error we show an SSL blocking page.  If the user clicks
-  // proceed we reload the resource ignoring the errors.  The loaded resource
-  // is then cached.  If that resource is subsequently loaded from the cache,
-  // no net error is reported (even though the cert status contains the actual
-  // errors) and no SSL blocking page is shown.  An alternative would be to
-  // reverse-map the cert status to a net error and replay the net error.
-  if ((cache_->mode() != RECORD &&
-       response_.headers->HasHeaderValue("cache-control", "no-store")) ||
+  // Do not cache no-store content.  Do not cache content with cert errors
+  // either.  This is to prevent not reporting net errors when loading a
+  // resource from the cache.  When we load a page over HTTPS with a cert error
+  // we show an SSL blocking page.  If the user clicks proceed we reload the
+  // resource ignoring the errors.  The loaded resource is then cached.  If that
+  // resource is subsequently loaded from the cache, no net error is reported
+  // (even though the cert status contains the actual errors) and no SSL
+  // blocking page is shown.  An alternative would be to reverse-map the cert
+  // status to a net error and replay the net error.
+  if ((response_.headers->HasHeaderValue("cache-control", "no-store")) ||
       net::IsCertStatusError(response_.ssl_info.cert_status)) {
     DoneWritingToEntry(false);
     if (net_log_.IsLogging())
@@ -3008,13 +2980,11 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(bool truncated) {
   if (cache_->cert_cache() && response_.ssl_info.is_valid())
     WriteCertChain();
 
-  // When writing headers, we normally only write the non-transient
-  // headers; when in record mode, record everything.
-  bool skip_transient_headers = (cache_->mode() != RECORD);
-
   if (truncated)
     DCHECK_EQ(200, response_.headers->response_code());
 
+  // When writing headers, we normally only write the non-transient headers.
+  bool skip_transient_headers = true;
   scoped_refptr<PickledIOBuffer> data(new PickledIOBuffer());
   response_.Persist(data->pickle(), skip_transient_headers, truncated);
   data->Done();

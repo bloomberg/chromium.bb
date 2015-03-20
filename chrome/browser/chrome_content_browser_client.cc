@@ -1427,14 +1427,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnablePluginPlaceholderShadowDom,
       switches::kJavaScriptHarmony,
       switches::kMessageLoopHistogrammer,
-      switches::kPlaybackMode,
       switches::kPpapiFlashArgs,
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,
       switches::kProfilingAtStart,
       switches::kProfilingFile,
       switches::kProfilingFlush,
-      switches::kRecordMode,
       translate::switches::kTranslateSecurityOrigin,
     };
 

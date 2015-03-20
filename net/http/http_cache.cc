@@ -721,39 +721,16 @@ std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
   // Strip out the reference, username, and password sections of the URL.
   std::string url = HttpUtil::SpecForRequest(request->url);
 
-  DCHECK(mode_ != DISABLE);
-  if (mode_ == NORMAL) {
-    // No valid URL can begin with numerals, so we should not have to worry
-    // about collisions with normal URLs.
-    if (request->upload_data_stream &&
-        request->upload_data_stream->identifier()) {
-      url.insert(0, base::StringPrintf(
-          "%" PRId64 "/", request->upload_data_stream->identifier()));
-    }
-    return url;
+  DCHECK_NE(DISABLE, mode_);
+  // No valid URL can begin with numerals, so we should not have to worry
+  // about collisions with normal URLs.
+  if (request->upload_data_stream &&
+      request->upload_data_stream->identifier()) {
+    url.insert(0,
+               base::StringPrintf("%" PRId64 "/",
+                                  request->upload_data_stream->identifier()));
   }
-
-  // In playback and record mode, we cache everything.
-
-  // Lazily initialize.
-  if (playback_cache_map_ == NULL)
-    playback_cache_map_.reset(new PlaybackCacheMap());
-
-  // Each time we request an item from the cache, we tag it with a
-  // generation number.  During playback, multiple fetches for the same
-  // item will use the same generation number and pull the proper
-  // instance of an URL from the cache.
-  int generation = 0;
-  DCHECK(playback_cache_map_ != NULL);
-  if (playback_cache_map_->find(url) != playback_cache_map_->end())
-    generation = (*playback_cache_map_)[url];
-  (*playback_cache_map_)[url] = generation + 1;
-
-  // The key into the cache is GENERATION # + METHOD + URL.
-  std::string result = base::IntToString(generation);
-  result.append(request->method);
-  result.append(url);
-  return result;
+  return url;
 }
 
 void HttpCache::DoomActiveEntry(const std::string& key) {

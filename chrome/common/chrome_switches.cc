@@ -878,10 +878,6 @@ const char kPermissionRequestApiScope[]     = "permission-request-api-scope";
 // TODO(bauerb): Remove when this flag is not needed anymore.
 const char kPermissionRequestApiUrl[]       = "permission-request-api-url";
 
-// Read previously recorded data from the cache. Only cached data is read.
-// See kRecordMode.
-const char kPlaybackMode[]                  = "playback-mode";
-
 // Use the PPAPI (Pepper) Flash found at the given path.
 const char kPpapiFlashPath[]                = "ppapi-flash-path";
 
@@ -972,12 +968,6 @@ const char kQuicMaxPacketLength[]           = "quic-max-packet-length";
 
 // Specifies the version of QUIC to use.
 const char kQuicVersion[]                   = "quic-version";
-
-// Chrome supports a playback and record mode.  Record mode saves *everything*
-// to the cache.  Playback mode reads data exclusively from the cache.  This
-// allows us to record a session into the cache and then replay it at will.
-// See also kPlaybackMode.
-const char kRecordMode[]                    = "record-mode";
 
 // Remember user proceeds through SSL interstitials for a specified amount of
 // time. In particular, remember these decisions through session restart. The

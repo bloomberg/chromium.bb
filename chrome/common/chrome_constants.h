@@ -104,8 +104,6 @@ extern const base::FilePath::CharType kPepperFlashPluginFilename[];
 // directory names
 extern const wchar_t kUserDataDirname[];
 
-extern const bool kRecordModeEnabled;
-
 // Are touch icons enabled? False by default.
 extern const bool kEnableTouchIcon;
 

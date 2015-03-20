@@ -72,11 +72,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory,
   enum Mode {
     // Normal mode just behaves like a standard web cache.
     NORMAL = 0,
-    // Record mode caches everything for purposes of offline playback.
-    RECORD,
-    // Playback mode replays from a cache without considering any
-    // standard invalidations.
-    PLAYBACK,
     // Disables reads and writes from the cache.
     // Equivalent to setting LOAD_DISABLE_CACHE on every request.
     DISABLE

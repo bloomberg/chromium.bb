@@ -510,19 +510,6 @@ void ProfileImplIOData::InitializeInternal(
 
   scoped_refptr<net::CookieStore> cookie_store = NULL;
   net::ChannelIDService* channel_id_service = NULL;
-  if (chrome_browser_net::ShouldUseInMemoryCookiesAndCache()) {
-    // Don't use existing cookies and use an in-memory store.
-    using content::CookieStoreConfig;
-    cookie_store = content::CreateCookieStore(CookieStoreConfig(
-        base::FilePath(),
-        CookieStoreConfig::EPHEMERAL_SESSION_COOKIES,
-        NULL,
-        profile_params->cookie_monster_delegate.get()));
-    // Don't use existing channel ids and use an in-memory store.
-    channel_id_service = new net::ChannelIDService(
-        new net::DefaultChannelIDStore(NULL),
-        base::WorkerPool::GetTaskRunner(true));
-  }
 
   // TODO(vadimt): Remove ScopedTracker below once crbug.com/436671 is fixed.
   tracked_objects::ScopedTracker tracking_profile5(
@@ -589,12 +576,6 @@ void ProfileImplIOData::InitializeInternal(
           "436671 ProfileImplIOData::InitializeInternal71"));
 
   main_cache->InitializeInfiniteCache(lazy_params_->infinite_cache_path);
-
-  if (chrome_browser_net::ShouldUseInMemoryCookiesAndCache()) {
-    main_cache->set_mode(
-        chrome_browser_net::IsCookieRecordMode() ?
-        net::HttpCache::RECORD : net::HttpCache::PLAYBACK);
-  }
 
   main_http_factory_.reset(main_cache.release());
   main_context->set_http_transaction_factory(main_http_factory_.get());
@@ -736,15 +717,6 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   scoped_refptr<net::CookieStore> cookie_store = NULL;
   if (partition_descriptor.in_memory) {
     cookie_store = content::CreateCookieStore(content::CookieStoreConfig());
-  } else if (chrome_browser_net::ShouldUseInMemoryCookiesAndCache()) {
-    // Don't use existing cookies and use an in-memory store.
-    // TODO(creis): We should have a cookie delegate for notifying the cookie
-    // extensions API, but we need to update it to understand isolated apps
-    // first.
-    cookie_store = content::CreateCookieStore(content::CookieStoreConfig());
-    app_http_cache->set_mode(
-        chrome_browser_net::IsCookieRecordMode() ?
-        net::HttpCache::RECORD : net::HttpCache::PLAYBACK);
   }
 
   // Use an app-specific cookie store.

@@ -16,14 +16,6 @@ class CookieMonsterDelegate;
 
 namespace chrome_browser_net {
 
-// Returns true if cookie-like storage systems should enter record mode for
-// debugging.
-bool IsCookieRecordMode();
-
-// Returns true if command line flags indicate that cookie-like storage systems
-// should be forced to be in memory only.
-bool ShouldUseInMemoryCookiesAndCache();
-
 // Factory method for creating a CookieStore delegate that sends
 // chrome::NOTIFICATION_COOKIE_CHANGED for the given profile. This
 // delegate is stateless so only one is necessary per profile.
