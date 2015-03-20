@@ -57,13 +57,6 @@ void RecordExperimentStatistics(content::WebContents* web_contents,
   password_bubble_experiment::RecordBubbleClosed(profile->GetPrefs(), reason);
 }
 
-base::string16 PendingStateTitleBasedOnSavePasswordPref(
-    bool never_save_passwords) {
-  return l10n_util::GetStringUTF16(
-      never_save_passwords ? IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE
-                           : IDS_SAVE_PASSWORD);
-}
-
 ScopedVector<const autofill::PasswordForm> DeepCopyForms(
     const std::vector<const autofill::PasswordForm*>& forms) {
   ScopedVector<const autofill::PasswordForm> result;
@@ -103,7 +96,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   }
 
   if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
-    title_ = PendingStateTitleBasedOnSavePasswordPref(never_save_passwords_);
+    title_ = PendingStateTitleBasedOnSavePasswordPref();
   } else if (state_ == password_manager::ui::BLACKLIST_STATE) {
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BLACKLISTED_TITLE);
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
@@ -197,12 +190,12 @@ void ManagePasswordsBubbleModel::OnNopeClicked() {
 
 void ManagePasswordsBubbleModel::OnConfirmationForNeverForThisSite() {
   never_save_passwords_ = true;
-  title_ = PendingStateTitleBasedOnSavePasswordPref(never_save_passwords_);
+  title_ = PendingStateTitleBasedOnSavePasswordPref();
 }
 
 void ManagePasswordsBubbleModel::OnUndoNeverForThisSite() {
   never_save_passwords_ = false;
-  title_ = PendingStateTitleBasedOnSavePasswordPref(never_save_passwords_);
+  title_ = PendingStateTitleBasedOnSavePasswordPref();
 }
 
 void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
@@ -305,4 +298,16 @@ int ManagePasswordsBubbleModel::UsernameFieldWidth() {
 // static
 int ManagePasswordsBubbleModel::PasswordFieldWidth() {
   return GetFieldWidth(PASSWORD_FIELD);
+}
+
+base::string16
+ManagePasswordsBubbleModel::PendingStateTitleBasedOnSavePasswordPref() const {
+  int message_id = 0;
+  if (never_save_passwords_)
+    message_id = IDS_MANAGE_PASSWORDS_BLACKLIST_CONFIRMATION_TITLE;
+  else if (IsNewUIActive())
+    message_id = IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SMART_LOCK_PROMPT;
+  else
+    message_id = IDS_SAVE_PASSWORD;
+  return l10n_util::GetStringUTF16(message_id);
 }

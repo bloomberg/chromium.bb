@@ -146,6 +146,8 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   static int PasswordFieldWidth();
 
  private:
+  // Returns the title for the PENDING_PASSWORD_STATE.
+  base::string16 PendingStateTitleBasedOnSavePasswordPref() const;
   // URL of the page from where this bubble was triggered.
   GURL origin_;
   password_manager::ui::State state_;

@@ -2221,6 +2221,8 @@
       'browser/ui/views/passwords/manage_passwords_bubble_view.h',
       'browser/ui/views/passwords/manage_passwords_icon_view.cc',
       'browser/ui/views/passwords/manage_passwords_icon_view.h',
+      'browser/ui/views/passwords/save_account_more_combobox_model.cc',
+      'browser/ui/views/passwords/save_account_more_combobox_model.h',
       'browser/ui/views/pdf_password_dialog.cc',
       'browser/ui/views/process_singleton_dialog_linux.cc',
       'browser/ui/views/profiles/avatar_menu_bubble_view.cc',

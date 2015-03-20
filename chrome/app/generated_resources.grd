@@ -7707,6 +7707,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
           Save password
         </message>
+        <message name="IDS_PASSWORD_MANAGER_SAVE_ACCOUNT_BUTTON" desc="Save button text for password manager">
+          Save
+        </message>
         <message name="IDS_PASSWORD_MANAGER_UNBLACKLIST_BUTTON" desc="Buton text to re-enable the password manager after blacklisting.">
           Undo
         </message>
@@ -7721,6 +7724,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE" desc="Text for the 'Manage Passwords' icon's 'saving passwords' state">
           Manage your passwords
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_MORE_BUTTON" desc="Text for the 'More' drop down button in the 'Save password' dialog">
+          More
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_SETTINGS_LINK" desc="Text for the link to chrome://settings/passwords in the 'Save password' dialog">
+          Settings
         </message>
       </if>
       <if expr="is_android">
