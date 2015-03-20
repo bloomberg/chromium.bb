@@ -8333,6 +8333,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_About">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: About Chrome</description>
+</action>
+
 <action name="Options_AccessibilityHighContrastMode">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Accessibility: Toggle high contrast mode</description>
