@@ -1657,9 +1657,6 @@ AXObject::PlainTextRange AXLayoutObject::selectedTextRange() const
     if (!isTextControl())
         return PlainTextRange();
 
-    if (isPasswordFieldAndShouldHideValue())
-        return PlainTextRange();
-
     AccessibilityRole ariaRole = ariaRoleAttribute();
     if (isNativeTextControl() && ariaRole == UnknownRole && m_layoutObject->isTextControl()) {
         HTMLTextFormControlElement* textControl = toLayoutTextControl(m_layoutObject)->textFormControlElement();
