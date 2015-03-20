@@ -189,8 +189,9 @@ shared_library("main_dll") {
       #deps += [ 'chrome_user32_delay_imports' ]  TODO(GYP)
     }
 
-    # TODO(GYP) incremental linking flags in debug builds
-    #'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+    # This is a large module that can't do incremental linking in some cases.
+    configs -= [ "//build/config/win:default_incremental_linking" ]
+    configs += [ "//build/config/win:default_large_module_incremental_linking" ]
 
     # TODO(GYP) Lots of VCLinkerTool stuff on Windows.
 

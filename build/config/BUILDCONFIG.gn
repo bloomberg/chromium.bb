@@ -416,15 +416,8 @@ _native_compiler_configs += [ _default_symbols_config ]
 
 # Windows linker setup for EXEs and DLLs.
 if (is_win) {
-  if (is_debug) {
-    _default_incremental_linking_config =
-        "//build/config/win:incremental_linking"
-  } else {
-    _default_incremental_linking_config =
-        "//build/config/win:no_incremental_linking"
-  }
   _windows_linker_configs = [
-    _default_incremental_linking_config,
+    "//build/config/win:default_incremental_linking",
     "//build/config/win:sdk_link",
     "//build/config/win:common_linker_setup",
 
