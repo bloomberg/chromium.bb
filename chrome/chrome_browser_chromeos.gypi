@@ -1027,6 +1027,8 @@
             'browser/chromeos/extensions/file_manager/file_browser_handler_api.cc',
             'browser/chromeos/extensions/file_manager/file_browser_handler_api.h',
             'browser/chromeos/extensions/file_manager/file_manager_private_api_functions.h',
+            'browser/chromeos/extensions/file_manager/job_event_router.cc',
+            'browser/chromeos/extensions/file_manager/job_event_router.h',
             'browser/chromeos/extensions/file_manager/private_api_base.cc',
             'browser/chromeos/extensions/file_manager/private_api_base.h',
             'browser/chromeos/extensions/file_manager/private_api_dialog.cc',
