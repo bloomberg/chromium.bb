@@ -1,0 +1,13 @@
+Tests that removing node while editing its styles does not cause styles sidebar pane to refresh.
+
+
+Running: selectInspectedNode
+
+Running: startEditingAndRemoveNode
+
+Running: verifySelectedNodeDidNotChange
+
+Running: finishNodeEditing
+
+Running: verifySidebarPaneNodeChanged
+

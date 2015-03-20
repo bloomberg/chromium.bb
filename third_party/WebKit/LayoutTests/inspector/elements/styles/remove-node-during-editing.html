@@ -1,0 +1,72 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function removeInspectedNode()
+{
+    document.querySelector("#inspected").remove();
+}
+
+function test()
+{
+    var originalNode;
+    var treeElement;
+    var stylesSidebarPane = WebInspector.panels.elements.sidebarPanes.styles;
+    InspectorTest.runTestSuite([
+        function selectInspectedNode(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+        },
+
+        function startEditingAndRemoveNode(next)
+        {
+            originalNode = stylesSidebarPane.node();
+            treeElement = InspectorTest.getElementStylePropertyTreeItem("color");
+            treeElement.startEditing(treeElement.valueElement);
+
+            InspectorTest.addSniffer(WebInspector.ElementsPanel.prototype, "_selectedNodeChangedForTest", next);
+            InspectorTest.evaluateInPage("removeInspectedNode();");
+        },
+
+        function verifySelectedNodeDidNotChange(next)
+        {
+            var currentNode = stylesSidebarPane.node();
+            if (currentNode !== originalNode) {
+                InspectorTest.addResult("StylesSidebarPane changed node!");
+                InspectorTest.completeTest();
+                return;
+            }
+            next();
+        },
+
+        function finishNodeEditing(next)
+        {
+            InspectorTest.addSniffer(WebInspector.StylePropertyTreeElement.prototype, "editingEnded", next);
+            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B")); // Escape
+        },
+
+        function verifySidebarPaneNodeChanged(next)
+        {
+            var currentNode = stylesSidebarPane.node();
+            if (currentNode === originalNode) {
+                InspectorTest.addResult("StylesSidebarPane should have changed node");
+                InspectorTest.completeTest();
+                return;
+            }
+            next();
+        },
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that removing node while editing its styles does not cause styles sidebar pane to refresh.
+</p>
+<div id="inspected" style="color: blue">Text</div>
+</body>
+</html>
