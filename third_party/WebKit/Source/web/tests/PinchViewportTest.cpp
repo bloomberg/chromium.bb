@@ -14,7 +14,9 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/DeprecatedPaintLayerCompositor.h"
+#include "core/page/EventHandler.h"
 #include "core/page/Page.h"
+#include "platform/PlatformGestureEvent.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayerTreeView.h"
@@ -1567,6 +1569,42 @@ TEST_F(PinchViewportTest, FractionalMaxScrollOffset)
 
     webViewImpl()->setPageScaleFactor(2);
     EXPECT_FLOAT_POINT_EQ(DoublePoint(101. / 2., 201. / 2.), scrollableArea->maximumScrollPositionDouble());
+}
+
+// Tests that the slow scrolling after an impl scroll on the pinch viewport
+// is continuous. crbug.com/453460 was caused by the impl-path not updating the
+// ScrollAnimator class.
+TEST_F(PinchViewportTest, SlowScrollAfterImplScroll)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(800, 600));
+    navigateTo("about:blank");
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+
+    // Apply some scroll and scale from the impl-side.
+    webViewImpl()->applyViewportDeltas(
+        WebFloatSize(300, 200),
+        WebFloatSize(0, 0),
+        WebFloatSize(0, 0),
+        2,
+        0);
+
+    EXPECT_POINT_EQ(FloatPoint(300, 200), pinchViewport.location());
+
+    // Send a scroll event on the main thread path.
+    PlatformGestureEvent gsu(
+        PlatformEvent::GestureScrollUpdate,
+        IntPoint(0, 0),
+        IntPoint(0, 0),
+        IntSize(5, 5),
+        0, false, false, false, false);
+    gsu.setScrollGestureData(-50, -60, 1, 1, false, false);
+
+    frame()->eventHandler().handleGestureEvent(gsu);
+
+    // The scroll sent from the impl-side must not be overwritten.
+    EXPECT_POINT_EQ(FloatPoint(350, 260), pinchViewport.location());
 }
 
 static void accessibilitySettings(WebSettings* settings)

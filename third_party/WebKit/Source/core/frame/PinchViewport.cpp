@@ -231,6 +231,7 @@ void PinchViewport::setScaleAndLocation(float scale, const FloatPoint& location)
 
     if (clampedOffset != m_offset) {
         m_offset = clampedOffset;
+        scrollAnimator()->setCurrentPosition(m_offset);
 
         ScrollingCoordinator* coordinator = frameHost().page().scrollingCoordinator();
         ASSERT(coordinator);
