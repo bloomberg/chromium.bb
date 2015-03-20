@@ -45,13 +45,4 @@ LOCAL_CFLAGS := \
 
 include $(BUILD_SHARED_LIBRARY)
 
-SUBDIRS := \
-	freedreno \
-	intel \
-	nouveau \
-	radeon \
-	libkms \
-	tests/modetest
-
-mkfiles := $(patsubst %,$(LIBDRM_TOP)/%/Android.mk,$(SUBDIRS))
-include $(mkfiles)
+include $(call all-makefiles-under,$(LOCAL_PATH))
