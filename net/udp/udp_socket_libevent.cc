@@ -13,6 +13,7 @@
 #include <sys/socket.h>
 
 #include "base/callback.h"
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/sparse_histogram.h"
@@ -126,7 +127,12 @@ void UDPSocketLibevent::Close() {
   ok = write_socket_watcher_.StopWatchingFileDescriptor();
   DCHECK(ok);
 
-  PCHECK(0 == IGNORE_EINTR(close(socket_)));
+  if (IGNORE_EINTR(close(socket_)) == -1) {
+    int last_error = errno;
+    base::debug::Alias(&last_error);
+    // Crash on any error other than EIO.
+    PCHECK(last_error == EIO);
+  }
 
   socket_ = kInvalidSocket;
   addr_family_ = 0;
