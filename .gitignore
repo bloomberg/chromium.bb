@@ -74,6 +74,7 @@ tdfx.kld
 via.kld
 tests/auth
 tests/dristat
+tests/drmsl
 tests/drmstat
 tests/getclient
 tests/getstats

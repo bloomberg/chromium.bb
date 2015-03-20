@@ -35,6 +35,9 @@ if HAVE_NOUVEAU
 SUBDIRS += nouveau
 endif
 
+TESTS = \
+	drmsl
+
 if HAVE_LIBUDEV
 
 check_LTLIBRARIES = libdrmtest.la
@@ -52,7 +55,7 @@ XFAIL_TESTS =					\
 	auth					\
 	lock
 
-TESTS =						\
+TESTS +=					\
 	openclose				\
 	getversion				\
 	getclient				\
@@ -60,7 +63,6 @@ TESTS =						\
 	setversion				\
 	updatedraw				\
 	name_from_fd
+endif
 
 check_PROGRAMS += $(TESTS)
-
-endif

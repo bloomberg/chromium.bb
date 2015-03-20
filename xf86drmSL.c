@@ -41,13 +41,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SL_MAIN 0
-
-#if !SL_MAIN
-# include "xf86drm.h"
-#else
-# include <sys/time.h>
-#endif
+#include "xf86drm.h"
 
 #define SL_LIST_MAGIC  0xfacade00LU
 #define SL_ENTRY_MAGIC 0x00fab1edLU
@@ -56,20 +50,9 @@
 #define SL_DEBUG       0
 #define SL_RANDOM_SEED 0xc01055a1LU
 
-#if SL_MAIN
-#define SL_ALLOC malloc
-#define SL_FREE  free
-#define SL_RANDOM_DECL        static int state = 0;
-#define SL_RANDOM_INIT(seed)  if (!state) { srandom(seed); ++state; }
-#define SL_RANDOM             random()
-#else
-#define SL_ALLOC drmMalloc
-#define SL_FREE  drmFree
 #define SL_RANDOM_DECL        static void *state = NULL
 #define SL_RANDOM_INIT(seed)  if (!state) state = drmRandomCreate(seed)
 #define SL_RANDOM             drmRandom(state)
-
-#endif
 
 typedef struct SLEntry {
     unsigned long     magic;	   /* SL_ENTRY_MAGIC */
@@ -87,27 +70,13 @@ typedef struct SkipList {
     SLEntryPtr       p0;	/* Position for iteration */
 } SkipList, *SkipListPtr;
 
-#if SL_MAIN
-extern void *drmSLCreate(void);
-extern int  drmSLDestroy(void *l);
-extern int  drmSLLookup(void *l, unsigned long key, void **value);
-extern int  drmSLInsert(void *l, unsigned long key, void *value);
-extern int  drmSLDelete(void *l, unsigned long key);
-extern int  drmSLNext(void *l, unsigned long *key, void **value);
-extern int  drmSLFirst(void *l, unsigned long *key, void **value);
-extern void drmSLDump(void *l);
-extern int  drmSLLookupNeighbors(void *l, unsigned long key,
-				 unsigned long *prev_key, void **prev_value,
-				 unsigned long *next_key, void **next_value);
-#endif
-
 static SLEntryPtr SLCreateEntry(int max_level, unsigned long key, void *value)
 {
     SLEntryPtr entry;
     
     if (max_level < 0 || max_level > SL_MAX_LEVEL) max_level = SL_MAX_LEVEL;
 
-    entry         = SL_ALLOC(sizeof(*entry)
+    entry         = drmMalloc(sizeof(*entry)
 			     + (max_level + 1) * sizeof(entry->forward[0]));
     if (!entry) return NULL;
     entry->magic  = SL_ENTRY_MAGIC;
@@ -134,7 +103,7 @@ void *drmSLCreate(void)
     SkipListPtr  list;
     int          i;
 
-    list           = SL_ALLOC(sizeof(*list));
+    list           = drmMalloc(sizeof(*list));
     if (!list) return NULL;
     list->magic    = SL_LIST_MAGIC;
     list->level    = 0;
@@ -158,11 +127,11 @@ int drmSLDestroy(void *l)
 	if (entry->magic != SL_ENTRY_MAGIC) return -1; /* Bad magic */
 	next         = entry->forward[0];
 	entry->magic = SL_FREED_MAGIC;
-	SL_FREE(entry);
+	drmFree(entry);
     }
 
     list->magic = SL_FREED_MAGIC;
-    SL_FREE(list);
+    drmFree(list);
     return 0;
 }
 
@@ -236,7 +205,7 @@ int drmSLDelete(void *l, unsigned long key)
     }
 
     entry->magic = SL_FREED_MAGIC;
-    SL_FREE(entry);
+    drmFree(entry);
 
     while (list->level && !list->head->forward[list->level]) --list->level;
     --list->count;
@@ -348,132 +317,3 @@ void drmSLDump(void *l)
 	}
     }
 }
-
-#if SL_MAIN
-static void print(SkipListPtr list)
-{
-    unsigned long key;
-    void          *value;
-    
-    if (drmSLFirst(list, &key, &value)) {
-	do {
-	    printf("key = %5lu, value = %p\n", key, value);
-	} while (drmSLNext(list, &key, &value));
-    }
-}
-
-static double do_time(int size, int iter)
-{
-    SkipListPtr    list;
-    int            i, j;
-    unsigned long  keys[1000000];
-    unsigned long  previous;
-    unsigned long  key;
-    void           *value;
-    struct timeval start, stop;
-    double         usec;
-    SL_RANDOM_DECL;
-
-    SL_RANDOM_INIT(12345);
-    
-    list = drmSLCreate();
-
-    for (i = 0; i < size; i++) {
-	keys[i] = SL_RANDOM;
-	drmSLInsert(list, keys[i], NULL);
-    }
-
-    previous = 0;
-    if (drmSLFirst(list, &key, &value)) {
-	do {
-	    if (key <= previous) {
-		printf( "%lu !< %lu\n", previous, key);
-	    }
-	    previous = key;
-	} while (drmSLNext(list, &key, &value));
-    }
-    
-    gettimeofday(&start, NULL);
-    for (j = 0; j < iter; j++) {
-	for (i = 0; i < size; i++) {
-	    if (drmSLLookup(list, keys[i], &value))
-		printf("Error %lu %d\n", keys[i], i);
-	}
-    }
-    gettimeofday(&stop, NULL);
-    
-    usec = (double)(stop.tv_sec * 1000000 + stop.tv_usec
-		    - start.tv_sec * 1000000 - start.tv_usec) / (size * iter);
-    
-    printf("%0.2f microseconds for list length %d\n", usec, size);
-
-    drmSLDestroy(list);
-    
-    return usec;
-}
-
-static void print_neighbors(void *list, unsigned long key)
-{
-    unsigned long prev_key = 0;
-    unsigned long next_key = 0;
-    void          *prev_value;
-    void          *next_value;
-    int           retval;
-
-    retval = drmSLLookupNeighbors(list, key,
-				  &prev_key, &prev_value,
-				  &next_key, &next_value);
-    printf("Neighbors of %5lu: %d %5lu %5lu\n",
-	   key, retval, prev_key, next_key);
-}
-
-int main(void)
-{
-    SkipListPtr    list;
-    double         usec, usec2, usec3, usec4;
-
-    list = drmSLCreate();
-    printf( "list at %p\n", list);
-
-    print(list);
-    printf("\n==============================\n\n");
-
-    drmSLInsert(list, 123, NULL);
-    drmSLInsert(list, 213, NULL);
-    drmSLInsert(list, 50, NULL);
-    print(list);
-    printf("\n==============================\n\n");
-    
-    print_neighbors(list, 0);
-    print_neighbors(list, 50);
-    print_neighbors(list, 51);
-    print_neighbors(list, 123);
-    print_neighbors(list, 200);
-    print_neighbors(list, 213);
-    print_neighbors(list, 256);
-    printf("\n==============================\n\n");    
-    
-    drmSLDelete(list, 50);
-    print(list);
-    printf("\n==============================\n\n");
-
-    drmSLDump(list);
-    drmSLDestroy(list);
-    printf("\n==============================\n\n");
-
-    usec  = do_time(100, 10000);
-    usec2 = do_time(1000, 500);
-    printf("Table size increased by %0.2f, search time increased by %0.2f\n",
-	   1000.0/100.0, usec2 / usec);
-    
-    usec3 = do_time(10000, 50);
-    printf("Table size increased by %0.2f, search time increased by %0.2f\n",
-	   10000.0/100.0, usec3 / usec);
-    
-    usec4 = do_time(100000, 4);
-    printf("Table size increased by %0.2f, search time increased by %0.2f\n",
-	   100000.0/100.0, usec4 / usec);
-
-    return 0;
-}
-#endif
