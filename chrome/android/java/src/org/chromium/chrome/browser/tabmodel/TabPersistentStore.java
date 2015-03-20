@@ -303,22 +303,51 @@ public class TabPersistentStore extends TabPersister {
         loadNextTab();
     }
 
+    /** TODO(tedchoc): Remove this after migrating all callers to restoreTabStateForUrl. */
+    public boolean restoreTabState(String url) {
+        return restoreTabStateForUrl(url);
+    }
+
     /**
      * If a tab is being restored with the given url, then restore the tab
      * in a frozen state synchronously.
      *
      * @return Whether the tab was restored.
      */
-    public boolean restoreTabState(String url) {
+    public boolean restoreTabStateForUrl(String url) {
+        return restoreTabStateInternal(url, Tab.INVALID_TAB_ID);
+    }
+
+    /**
+     * If a tab is being restored with the given id, then restore the tab
+     * in a frozen state synchronously.
+     *
+     * @return Whether the tab was restored.
+     */
+    public boolean restoreTabStateForId(int id) {
+        return restoreTabStateInternal(null, id);
+    }
+
+    private boolean restoreTabStateInternal(String url, int id) {
         TabRestoreDetails tabToRestore = null;
-        if (mLoadTabTask != null && TextUtils.equals(mLoadTabTask.mTabToRestore.url, url)) {
-            // Steal the task of restoring the tab from the active load tab task.
-            mLoadTabTask.cancel(false);
-            tabToRestore = mLoadTabTask.mTabToRestore;
-            loadNextTab();  // Queue up async task to load next tab after we're done here.
-        } else {
-            tabToRestore = getTabToRestoreByUrl(url);
+        if (mLoadTabTask != null) {
+            if ((url == null && mLoadTabTask.mTabToRestore.id == id)
+                    || (url != null && TextUtils.equals(mLoadTabTask.mTabToRestore.url, url))) {
+                // Steal the task of restoring the tab from the active load tab task.
+                mLoadTabTask.cancel(false);
+                tabToRestore = mLoadTabTask.mTabToRestore;
+                loadNextTab();  // Queue up async task to load next tab after we're done here.
+            }
         }
+
+        if (tabToRestore == null) {
+            if (url == null) {
+                tabToRestore = getTabToRestoreById(id);
+            } else {
+                tabToRestore = getTabToRestoreByUrl(url);
+            }
+        }
+
         if (tabToRestore != null) {
             mTabsToRestore.remove(tabToRestore);
             return restoreTab(tabToRestore, false);
