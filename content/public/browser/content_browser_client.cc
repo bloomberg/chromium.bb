@@ -327,11 +327,6 @@ bool ContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
   return false;
 }
 
-net::CookieStore* ContentBrowserClient::OverrideCookieStoreForRenderProcess(
-    int render_process_id) {
-  return nullptr;
-}
-
 bool ContentBrowserClient::CheckMediaAccessPermission(
     BrowserContext* browser_context,
     const GURL& security_origin,

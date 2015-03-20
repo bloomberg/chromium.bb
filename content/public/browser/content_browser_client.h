@@ -57,7 +57,6 @@ class ImageSkia;
 
 namespace net {
 class CookieOptions;
-class CookieStore;
 class NetLog;
 class SSLCertRequestInfo;
 class SSLInfo;
@@ -586,12 +585,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool IsPluginAllowedToUseDevChannelAPIs(
       BrowserContext* browser_context,
       const GURL& url);
-
-  // Returns a special cookie store to use for a given render process, or
-  // nullptr if the default cookie store should be used.
-  // This is called on the IO thread.
-  virtual net::CookieStore* OverrideCookieStoreForRenderProcess(
-      int render_process_id);
 
   // Checks if |security_origin| has permission to access the microphone or
   // camera. Note that this does not query the user. |type| must be

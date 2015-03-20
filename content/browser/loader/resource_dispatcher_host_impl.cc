@@ -1153,12 +1153,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
   }
 
   // Construct the request.
-  net::CookieStore* cookie_store =
-      GetContentClient()->browser()->OverrideCookieStoreForRenderProcess(
-          child_id);
   scoped_ptr<net::URLRequest> new_request;
   new_request = request_context->CreateRequest(
-      request_data.url, request_data.priority, NULL, cookie_store);
+      request_data.url, request_data.priority, NULL, NULL);
 
   new_request->set_method(request_data.method);
   new_request->set_first_party_for_cookies(
@@ -1594,13 +1591,8 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
     return;
   }
 
-  net::CookieStore* cookie_store =
-      GetContentClient()->browser()->OverrideCookieStoreForRenderProcess(
-          child_id);
   scoped_ptr<net::URLRequest> request(
-      request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL,
-                                     cookie_store));
-
+      request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL, NULL));
   request->set_method("GET");
   SetReferrerForRequest(request.get(), referrer);
 
@@ -1903,9 +1895,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   // requests that have the ignore limits flag set.
   DCHECK(!(load_flags & net::LOAD_IGNORE_LIMITS));
 
-  // TODO(davidben): OverrideCookieStoreForRenderProcess handling for
-  // prerender. There may not be a renderer process yet, so we need to use the
-  // ResourceContext or something.
   scoped_ptr<net::URLRequest> new_request;
   new_request = request_context->CreateRequest(
       info.common_params.url, net::HIGHEST, nullptr, nullptr);
