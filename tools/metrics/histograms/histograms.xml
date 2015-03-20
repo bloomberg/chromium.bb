@@ -51130,8 +51130,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <enum name="GoogleUpdateInfoBarActions" type="int">
   <int value="0" label="Clicked close"/>
-  <int value="1" label="Clicked to update but failed"/>
-  <int value="2" label="Clicked to update appears successful"/>
+  <int value="1" label="Clicked to update appears successful"/>
+  <int value="2" label="Clicked to update but failed"/>
   <int value="3" label="InfoBar dismissed implicitly (no interaction)"/>
 </enum>
 
