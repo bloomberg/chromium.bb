@@ -89,6 +89,7 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
 #include "web/DevToolsEmulator.h"
+#include "web/WebFrameWidgetImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
@@ -118,13 +119,19 @@ public:
         data->setScriptDebugServer(adoptPtrWillBeNoop(new PageScriptDebugServer(instance.release(), isolate)));
     }
 
-    static void inspectedViewClosed(WebViewImpl* view)
+    static void webViewImplClosed(WebViewImpl* view)
     {
         if (s_instance)
             s_instance->m_frozenViews.remove(view);
     }
 
-    static void didNavigate()
+    static void webFrameWidgetImplClosed(WebFrameWidgetImpl* widget)
+    {
+        if (s_instance)
+            s_instance->m_frozenWidgets.remove(widget);
+    }
+
+    static void continueProgram()
     {
         // Release render thread if necessary.
         if (s_instance && s_instance->m_running)
@@ -148,41 +155,59 @@ private:
         agent->flushPendingProtocolNotifications();
 
         Vector<WebViewImpl*> views;
+        Vector<WebFrameWidgetImpl*> widgets;
 
         // 1. Disable input events.
-        const HashSet<Page*>& pages = Page::ordinaryPages();
-        HashSet<Page*>::const_iterator end = pages.end();
-        for (HashSet<Page*>::const_iterator it =  pages.begin(); it != end; ++it) {
-            WebViewImpl* view = WebViewImpl::fromPage(*it);
-            if (!view)
-                continue;
+        const HashSet<WebViewImpl*>& viewImpls = WebViewImpl::allInstances();
+        HashSet<WebViewImpl*>::const_iterator viewImplsEnd = viewImpls.end();
+        for (HashSet<WebViewImpl*>::const_iterator it =  viewImpls.begin(); it != viewImplsEnd; ++it) {
+            WebViewImpl* view = *it;
             m_frozenViews.add(view);
             views.append(view);
             view->setIgnoreInputEvents(true);
         }
-        // Notify embedder about pausing.
+
+        const HashSet<WebFrameWidgetImpl*>& widgetImpls = WebFrameWidgetImpl::allInstances();
+        HashSet<WebFrameWidgetImpl*>::const_iterator widgetImplsEnd = widgetImpls.end();
+        for (HashSet<WebFrameWidgetImpl*>::const_iterator it =  widgetImpls.begin(); it != widgetImplsEnd; ++it) {
+            WebFrameWidgetImpl* widget = *it;
+            m_frozenWidgets.add(widget);
+            widgets.append(widget);
+            widget->setIgnoreInputEvents(true);
+        }
+
+        // 2. Notify embedder about pausing.
         agent->client()->willEnterDebugLoop();
 
-        // 2. Disable active objects
+        // 3. Disable active objects
         WebView::willEnterModalLoop();
 
-        // 3. Process messages until quitNow is called.
+        // 4. Process messages until quitNow is called.
         m_messageLoop->run();
 
-        // 4. Resume active objects
+        // 5. Resume active objects
         WebView::didExitModalLoop();
 
-        // 5. Resume input events.
+        // 6. Resume input events.
         for (Vector<WebViewImpl*>::iterator it = views.begin(); it != views.end(); ++it) {
             if (m_frozenViews.contains(*it)) {
                 // The view was not closed during the dispatch.
                 (*it)->setIgnoreInputEvents(false);
             }
         }
+        for (Vector<WebFrameWidgetImpl*>::iterator it = widgets.begin(); it != widgets.end(); ++it) {
+            if (m_frozenWidgets.contains(*it)) {
+                // The widget was not closed during the dispatch.
+                (*it)->setIgnoreInputEvents(false);
+            }
+        }
+
+        // 7. Notify embedder about resuming.
         agent->client()->didExitDebugLoop();
 
-        // 6. All views have been resumed, clear the set.
+        // 8. All views have been resumed, clear the set.
         m_frozenViews.clear();
+        m_frozenWidgets.clear();
 
         m_running = false;
     }
@@ -196,6 +221,8 @@ private:
     OwnPtr<WebDevToolsAgentClient::WebKitClientMessageLoop> m_messageLoop;
     typedef HashSet<WebViewImpl*> FrozenViewsSet;
     FrozenViewsSet m_frozenViews;
+    typedef HashSet<WebFrameWidgetImpl*> FrozenWidgetsSet;
+    FrozenWidgetsSet m_frozenWidgets;
     static ClientMessageLoopAdapter* s_instance;
 };
 
@@ -305,13 +332,24 @@ void WebDevToolsAgentImpl::dispose()
 {
     // Explicitly dispose of the agent before destructing to ensure
     // same behavior (and correctness) with and without Oilpan.
-    ClientMessageLoopAdapter::inspectedViewClosed(m_webViewImpl);
     if (m_attached)
         Platform::current()->currentThread()->removeTaskObserver(this);
 #if ENABLE(ASSERT)
     ASSERT(!m_hasBeenDisposed);
     m_hasBeenDisposed = true;
 #endif
+}
+
+// static
+void WebDevToolsAgentImpl::webViewImplClosed(WebViewImpl* webViewImpl)
+{
+    ClientMessageLoopAdapter::webViewImplClosed(webViewImpl);
+}
+
+// static
+void WebDevToolsAgentImpl::webFrameWidgetImplClosed(WebFrameWidgetImpl* webFrameWidgetImpl)
+{
+    ClientMessageLoopAdapter::webFrameWidgetImplClosed(webFrameWidgetImpl);
 }
 
 DEFINE_TRACE(WebDevToolsAgentImpl)
@@ -452,7 +490,7 @@ void WebDevToolsAgentImpl::detach()
 
 void WebDevToolsAgentImpl::continueProgram()
 {
-    ClientMessageLoopAdapter::didNavigate();
+    ClientMessageLoopAdapter::continueProgram();
 }
 
 bool WebDevToolsAgentImpl::handleInputEvent(Page* page, const WebInputEvent& inputEvent)

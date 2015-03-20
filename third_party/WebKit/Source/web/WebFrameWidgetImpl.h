@@ -38,6 +38,7 @@
 #include "public/web/WebFrameWidget.h"
 #include "public/web/WebInputEvent.h"
 #include "web/PageWidgetDelegate.h"
+#include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 
@@ -60,6 +61,7 @@ class WebFrameWidgetImpl final : public WebFrameWidget
     , public RefCounted<WebFrameWidgetImpl> {
 public:
     static WebFrameWidgetImpl* create(WebWidgetClient*, WebLocalFrame*);
+    static HashSet<WebFrameWidgetImpl*>& allInstances();
 
     // WebWidget functions:
     void close() override;
@@ -140,6 +142,8 @@ public:
     void sendResizeEventAndRepaint();
 
     void updateMainFrameLayoutSize();
+
+    void setIgnoreInputEvents(bool newValue);
 
     // Returns the page object associated with this widget. This may be null when
     // the page is shutting down, but will be valid at all other times.

@@ -378,6 +378,13 @@ void WebViewImpl::setSpellCheckClient(WebSpellCheckClient* spellCheckClient)
     m_spellCheckClient = spellCheckClient;
 }
 
+// static
+HashSet<WebViewImpl*>& WebViewImpl::allInstances()
+{
+    DEFINE_STATIC_LOCAL(HashSet<WebViewImpl*>, allInstances, ());
+    return allInstances;
+}
+
 WebViewImpl::WebViewImpl(WebViewClient* client)
     : m_client(client)
     , m_spellCheckClient(0)
@@ -462,6 +469,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     initializeLayerTreeView();
 
     m_devToolsEmulator = adoptPtr(new DevToolsEmulator(this));
+
+    allInstances().add(this);
 }
 
 WebViewImpl::~WebViewImpl()
@@ -1684,6 +1693,10 @@ void WebViewImpl::close()
     // Should happen before m_page.clear().
     if (m_devToolsAgent)
         m_devToolsAgent->willBeDestroyed();
+
+    WebDevToolsAgentImpl::webViewImplClosed(this);
+    ASSERT(allInstances().contains(this));
+    allInstances().remove(this);
 
     if (m_page) {
         // Initiate shutdown for the entire frameset.  This will cause a lot of

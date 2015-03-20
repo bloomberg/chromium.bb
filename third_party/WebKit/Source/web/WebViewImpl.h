@@ -59,6 +59,7 @@
 #include "web/PageWidgetDelegate.h"
 #include "web/SpellCheckerClientImpl.h"
 #include "web/StorageClientImpl.h"
+#include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -93,6 +94,7 @@ class WebViewImpl final : public WebView
     , public PageWidgetEventHandler {
 public:
     static WebViewImpl* create(WebViewClient*);
+    static HashSet<WebViewImpl*>& allInstances();
 
     // WebWidget methods:
     virtual void close() override;

@@ -47,6 +47,7 @@
 #include "platform/NotImplemented.h"
 #include "public/web/WebBeginFrameArgs.h"
 #include "public/web/WebWidgetClient.h"
+#include "web/WebDevToolsAgentImpl.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebPluginContainerImpl.h"
@@ -69,6 +70,13 @@ WebFrameWidgetImpl* WebFrameWidgetImpl::create(WebWidgetClient* client, WebLocal
     return adoptRef(new WebFrameWidgetImpl(client, localRoot)).leakRef();
 }
 
+// static
+HashSet<WebFrameWidgetImpl*>& WebFrameWidgetImpl::allInstances()
+{
+    DEFINE_STATIC_LOCAL(HashSet<WebFrameWidgetImpl*>, allInstances, ());
+    return allInstances;
+}
+
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client, WebLocalFrame* localRoot)
     : m_client(client)
     , m_localRoot(toWebLocalFrameImpl(localRoot))
@@ -85,6 +93,7 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client, WebLocalFrame* l
     ASSERT(m_localRoot->frame()->isLocalRoot());
     initializeLayerTreeView();
     m_localRoot->setFrameWidget(this);
+    allInstances().add(this);
 }
 
 WebFrameWidgetImpl::~WebFrameWidgetImpl()
@@ -95,6 +104,10 @@ WebFrameWidgetImpl::~WebFrameWidgetImpl()
 
 void WebFrameWidgetImpl::close()
 {
+    WebDevToolsAgentImpl::webFrameWidgetImplClosed(this);
+    ASSERT(allInstances().contains(this));
+    allInstances().remove(this);
+
     // Reset the delegate to prevent notifications being sent as we're being
     // deleted.
     m_client = nullptr;
@@ -180,6 +193,12 @@ void WebFrameWidgetImpl::updateMainFrameLayoutSize()
     WebSize layoutSize = m_size;
 
     view->setLayoutSize(layoutSize);
+}
+
+void WebFrameWidgetImpl::setIgnoreInputEvents(bool newValue)
+{
+    ASSERT(m_ignoreInputEvents != newValue);
+    m_ignoreInputEvents = newValue;
 }
 
 void WebFrameWidgetImpl::willEndLiveResize()
@@ -351,6 +370,8 @@ bool WebFrameWidgetImpl::handleInputEvent(const WebInputEvent& inputEvent)
     // Report the event to be NOT processed by WebKit, so that the browser can handle it appropriately.
     if (m_ignoreInputEvents)
         return false;
+
+    // FIXME: pass event to m_localRoot's WebDevToolsAgentImpl once available.
 
     TemporaryChange<const WebInputEvent*> currentEventChange(m_currentInputEvent, &inputEvent);
 

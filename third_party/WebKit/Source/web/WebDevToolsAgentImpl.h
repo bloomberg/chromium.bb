@@ -57,6 +57,7 @@ class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 class PlatformTouchEvent;
 class WebDevToolsAgentClient;
+class WebFrameWidgetImpl;
 class WebInputEvent;
 class WebLocalFrameImpl;
 class WebString;
@@ -83,6 +84,8 @@ public:
     void flushPendingProtocolNotifications();
     void dispatchMessageFromFrontend(const String& message);
     void registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
+    static void webViewImplClosed(WebViewImpl*);
+    static void webFrameWidgetImplClosed(WebFrameWidgetImpl*);
 
     // Instrumentation from web/ layer.
     void didCommitLoadForLocalFrame(LocalFrame*);
