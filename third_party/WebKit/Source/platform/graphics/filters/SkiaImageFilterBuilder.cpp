@@ -29,7 +29,6 @@
 #include "SkBlurImageFilter.h"
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
-#include "SkMatrixImageFilter.h"
 #include "SkTableColorFilter.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/filters/FilterEffect.h"
@@ -187,7 +186,7 @@ void SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
 
 PassRefPtr<SkImageFilter> SkiaImageFilterBuilder::buildTransform(const AffineTransform& transform, SkImageFilter* input)
 {
-    return adoptRef(SkMatrixImageFilter::Create(affineTransformToSkMatrix(transform), kHigh_SkFilterQuality, input));
+    return adoptRef(SkImageFilter::CreateMatrixFilter(affineTransformToSkMatrix(transform), kHigh_SkFilterQuality, input));
 }
 
 } // namespace blink
