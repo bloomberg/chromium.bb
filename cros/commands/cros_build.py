@@ -104,8 +104,6 @@ To just build a single package:
 
     # Advanced options.
     advanced = parser.add_argument_group('Advanced options')
-    advanced.add_argument('--nofast', help='Disable parallel emerge.',
-                          default=True, action='store_false', dest='fast')
     advanced.add_argument('--jobs', default=None, type=int,
                           help='Maximium job count to run in parallel '
                                '(Default: Use all available cores)')
@@ -136,12 +134,9 @@ To just build a single package:
         raise
 
   def _GetEmergeCommand(self, board):
-    if self.options.fast:
-      cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')]
-      if board is not None:
-        cmd += ['--board=%s' % board]
-    else:
-      cmd = ['emerge'] if board is None else ['emerge-%s' % board]
+    cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')]
+    if board is not None:
+      cmd += ['--board=%s' % board]
     return cmd
 
   def _Emerge(self, packages, host=False):
