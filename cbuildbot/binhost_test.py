@@ -37,8 +37,9 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
   def setUpClass(cls):
     assert cros_build_lib.IsInsideChroot()
     cros_build_lib.Info('Generating board configs. This takes about 10m...')
-    for key in sorted(binhost.GetAllBoardKeys()):
-      binhost.GenConfigsForBoard(key.board, regen=not cls.CACHING,
+    boards = set(key.board for key in binhost.GetAllBoardKeys())
+    for board in sorted(boards):
+      binhost.GenConfigsForBoard(board, regen=not cls.CACHING,
                                  error_code_ok=True)
     fetcher = binhost.CompatIdFetcher(caching=cls.CACHING)
     cls.COMPAT_IDS = fetcher.FetchCompatIds(binhost.GetAllBoardKeys())
