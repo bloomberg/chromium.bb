@@ -6,9 +6,9 @@
 
 // Container for the extensionview constants.
 var ExtensionViewConstants = {
-
+  // Attributes.
   ATTRIBUTE_EXTENSION: 'extension',
   ATTRIBUTE_SRC: 'src',
 };
 
-exports.ExtensionViewConstants = ExtensionViewConstants;
+exports.ExtensionViewConstants = $Object.freeze(ExtensionViewConstants);

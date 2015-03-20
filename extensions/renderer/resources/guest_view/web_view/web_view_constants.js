@@ -40,4 +40,4 @@ var WebViewConstants = {
       'The permission request for "%1" has been denied.'
 };
 
-exports.WebViewConstants = WebViewConstants;
+exports.WebViewConstants = $Object.freeze(WebViewConstants);
