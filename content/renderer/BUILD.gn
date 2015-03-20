@@ -98,6 +98,8 @@ source_set("renderer") {
       "java/gin_java_bridge_object.h",
       "java/gin_java_bridge_value_converter.cc",
       "java/gin_java_bridge_value_converter.h",
+      "java/gin_java_function_invocation_helper.cc",
+      "java/gin_java_function_invocation_helper.h",
     ]
   }
 

@@ -6,7 +6,6 @@ package org.chromium.content.browser;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import junit.framework.Assert;
@@ -180,12 +179,8 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testObject"));
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView", "Android-JavaBridge"})
-     * http://crbug.com/468679
-     */
-    @FlakyTest
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
     public void testRemovalNotReflectedUntilReload() throws Throwable {
         injectObjectAndReload(new Object() {
             public void method() {
@@ -257,6 +252,29 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             }
         }, "testObject");
         assertRaisesException("testObject.method()");
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testCallingAsConstructorRaisesException() throws Throwable {
+        assertRaisesException("new testController.setStringValue('foo')");
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testCallingOnNonInjectedObjectRaisesException() throws Throwable {
+        assertRaisesException("testController.setStringValue.call({}, 'foo')");
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testCallingOnInstanceOfOtherClassRaisesException() throws Throwable {
+        injectObjectAndReload(new Object(), "testObject");
+        assertEquals("object", executeJavaScriptAndGetStringResult("typeof testObject"));
+        assertEquals("object", executeJavaScriptAndGetStringResult("typeof testController"));
+        assertEquals("function",
+                executeJavaScriptAndGetStringResult("typeof testController.setStringValue"));
+        assertRaisesException("testController.setStringValue.call(testObject, 'foo')");
     }
 
     // Note that this requires that we can pass a JavaScript string to Java.
@@ -1004,5 +1022,39 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         // simply replaces the old object with the new one.
         injectObjectAndReload(new Test(42), "testObject");
         assertEquals("42", executeJavaScriptAndGetStringResult("testObject.getValue()"));
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-JavaBridge"})
+    public void testMethodCalledOnAnotherInstance() throws Throwable {
+        class TestObject {
+            private int mIndex;
+            TestObject(int index) {
+                mIndex = index;
+            }
+            public void method() {
+                mTestController.setIntValue(mIndex);
+            }
+        }
+        final TestObject testObject1 = new TestObject(1);
+        final TestObject testObject2 = new TestObject(2);
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
+                        testObject1, "testObject1", null);
+                getContentViewCore().addPossiblyUnsafeJavascriptInterface(
+                        testObject2, "testObject2", null);
+                getContentViewCore().getWebContents().getNavigationController().reload(true);
+            }
+        });
+        executeJavaScript("testObject1.method()");
+        assertEquals(1, mTestController.waitForIntValue());
+        executeJavaScript("testObject2.method()");
+        assertEquals(2, mTestController.waitForIntValue());
+        executeJavaScript("testObject1.method.call(testObject2)");
+        assertEquals(2, mTestController.waitForIntValue());
+        executeJavaScript("testObject2.method.call(testObject1)");
+        assertEquals(1, mTestController.waitForIntValue());
     }
 }

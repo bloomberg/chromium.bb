@@ -123,9 +123,11 @@ GinJavaBridgeObject* GinJavaBridgeDispatcher::GetObject(ObjectID object_id) {
   return result;
 }
 
-void GinJavaBridgeDispatcher::OnGinJavaBridgeObjectDeleted(ObjectID object_id) {
-  if (!objects_.Lookup(object_id))
-    return;
+void GinJavaBridgeDispatcher::OnGinJavaBridgeObjectDeleted(
+    GinJavaBridgeObject* object) {
+  int object_id = object->object_id();
+  // Ignore cleaning up of old object wrappers.
+  if (objects_.Lookup(object_id) != object) return;
   objects_.Remove(object_id);
   render_frame()->Send(
       new GinJavaBridgeHostMsg_ObjectWrapperDeleted(routing_id(), object_id));

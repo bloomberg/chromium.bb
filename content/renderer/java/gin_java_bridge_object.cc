@@ -4,24 +4,12 @@
 
 #include "content/renderer/java/gin_java_bridge_object.h"
 
-#include "base/strings/utf_string_conversions.h"
-#include "content/common/android/gin_java_bridge_errors.h"
-#include "content/common/android/gin_java_bridge_value.h"
-#include "content/public/child/v8_value_converter.h"
-#include "content/renderer/java/gin_java_bridge_value_converter.h"
+#include "content/renderer/java/gin_java_function_invocation_helper.h"
 #include "gin/function_template.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 
 namespace content {
-
-namespace {
-
-const char kMethodInvocationErrorMessage[] =
-    "Java bridge method invocation error";
-
-}  // namespace
-
 
 // static
 GinJavaBridgeObject* GinJavaBridgeObject::InjectNamed(
@@ -66,13 +54,12 @@ GinJavaBridgeObject::GinJavaBridgeObject(
     : gin::NamedPropertyInterceptor(isolate, this),
       dispatcher_(dispatcher),
       object_id_(object_id),
-      converter_(new GinJavaBridgeValueConverter()),
       template_cache_(isolate) {
 }
 
 GinJavaBridgeObject::~GinJavaBridgeObject() {
   if (dispatcher_)
-    dispatcher_->OnGinJavaBridgeObjectDeleted(object_id_);
+    dispatcher_->OnGinJavaBridgeObjectDeleted(this);
 }
 
 gin::ObjectTemplateBuilder GinJavaBridgeObject::GetObjectTemplateBuilder(
@@ -113,70 +100,11 @@ v8::Local<v8::FunctionTemplate> GinJavaBridgeObject::GetFunctionTemplate(
   if (!function_template.IsEmpty())
     return function_template;
   function_template = gin::CreateFunctionTemplate(
-      isolate, base::Bind(&GinJavaBridgeObject::InvokeMethod,
-                          base::Unretained(this), name));
+      isolate, base::Bind(&GinJavaFunctionInvocationHelper::Invoke,
+                          base::Owned(new GinJavaFunctionInvocationHelper(
+                              name, dispatcher_))));
   template_cache_.Set(name, function_template);
   return function_template;
-}
-
-v8::Handle<v8::Value> GinJavaBridgeObject::InvokeMethod(
-    const std::string& name,
-    gin::Arguments* args) {
-  if (!dispatcher_) {
-    args->isolate()->ThrowException(v8::Exception::Error(gin::StringToV8(
-        args->isolate(), kMethodInvocationErrorMessage)));
-    return v8::Undefined(args->isolate());
-  }
-
-  base::ListValue arguments;
-  {
-    v8::HandleScope handle_scope(args->isolate());
-    v8::Handle<v8::Context> context = args->isolate()->GetCurrentContext();
-    v8::Handle<v8::Value> val;
-    while (args->GetNext(&val)) {
-      scoped_ptr<base::Value> arg(converter_->FromV8Value(val, context));
-      if (arg.get()) {
-        arguments.Append(arg.release());
-      } else {
-        arguments.Append(base::Value::CreateNullValue());
-      }
-    }
-  }
-
-  GinJavaBridgeError error;
-  scoped_ptr<base::Value> result = dispatcher_->InvokeJavaMethod(
-      object_id_, name, arguments, &error);
-  if (!result.get()) {
-    args->isolate()->ThrowException(v8::Exception::Error(gin::StringToV8(
-        args->isolate(), GinJavaBridgeErrorToString(error))));
-    return v8::Undefined(args->isolate());
-  }
-  if (!result->IsType(base::Value::TYPE_BINARY)) {
-    return converter_->ToV8Value(result.get(),
-                                 args->isolate()->GetCurrentContext());
-  }
-
-  scoped_ptr<const GinJavaBridgeValue> gin_value =
-      GinJavaBridgeValue::FromValue(result.get());
-  if (gin_value->IsType(GinJavaBridgeValue::TYPE_OBJECT_ID)) {
-    GinJavaBridgeObject* result = NULL;
-    GinJavaBridgeDispatcher::ObjectID object_id;
-    if (gin_value->GetAsObjectID(&object_id)) {
-      result = dispatcher_->GetObject(object_id);
-    }
-    if (result) {
-      gin::Handle<GinJavaBridgeObject> controller =
-          gin::CreateHandle(args->isolate(), result);
-      if (controller.IsEmpty())
-        return v8::Undefined(args->isolate());
-      return controller.ToV8();
-    }
-  } else if (gin_value->IsType(GinJavaBridgeValue::TYPE_NONFINITE)) {
-    float float_value;
-    gin_value->GetAsNonFinite(&float_value);
-    return v8::Number::New(args->isolate(), float_value);
-  }
-  return v8::Undefined(args->isolate());
 }
 
 gin::WrapperInfo GinJavaBridgeObject::kWrapperInfo = {gin::kEmbedderNativeGin};

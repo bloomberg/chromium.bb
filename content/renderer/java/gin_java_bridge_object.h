@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/renderer/java/gin_java_bridge_dispatcher.h"
 #include "gin/handle.h"
@@ -21,8 +20,6 @@ class WebFrame;
 }
 
 namespace content {
-
-class GinJavaBridgeValueConverter;
 
 class GinJavaBridgeObject : public gin::Wrappable<GinJavaBridgeObject>,
                             public gin::NamedPropertyInterceptor {
@@ -58,12 +55,9 @@ class GinJavaBridgeObject : public gin::Wrappable<GinJavaBridgeObject>,
 
   v8::Local<v8::FunctionTemplate> GetFunctionTemplate(v8::Isolate* isolate,
                                                       const std::string& name);
-  v8::Handle<v8::Value> InvokeMethod(const std::string& name,
-                                     gin::Arguments* args);
 
   base::WeakPtr<GinJavaBridgeDispatcher> dispatcher_;
   GinJavaBridgeDispatcher::ObjectID object_id_;
-  scoped_ptr<GinJavaBridgeValueConverter> converter_;
   std::map<std::string, bool> known_methods_;
   v8::StdPersistentValueMap<std::string, v8::FunctionTemplate> template_cache_;
 

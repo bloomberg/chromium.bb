@@ -54,7 +54,7 @@ class GinJavaBridgeDispatcher
                                            const base::ListValue& arguments,
                                            GinJavaBridgeError* error);
   GinJavaBridgeObject* GetObject(ObjectID object_id);
-  void OnGinJavaBridgeObjectDeleted(ObjectID object_id);
+  void OnGinJavaBridgeObjectDeleted(GinJavaBridgeObject* object);
 
  private:
   void OnAddNamedObject(const std::string& name,
