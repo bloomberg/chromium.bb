@@ -7,15 +7,17 @@
 // Also note that we are only allowed to call InitLogging() twice so the test
 // cases are more dense than normal.
 
-// The following include must be first in this file. It ensures that
+// We must include Chromium headers before including the overrides header
+// since webrtc's logging.h file may conflict with chromium.
+#include "base/command_line.h"
+#include "base/files/file_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+// The following include come before including logging.h. It ensures that
 // libjingle style logging is used.
 #define LOGGING_INSIDE_WEBRTC
 
 #include "third_party/webrtc/overrides/webrtc/base/logging.h"
-
-#include "base/command_line.h"
-#include "base/files/file_util.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
 static const wchar_t* const log_file_name = L"libjingle_logging.log";
