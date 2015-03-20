@@ -15,6 +15,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.text.format.DateUtils;
 
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.infobar.DataReductionProxyInfoBar;
@@ -36,6 +37,9 @@ public class BandwidthReductionPreferences extends PreferenceFragment {
     public static final String PREF_REDUCE_DATA_USAGE_SWITCH = "reduce_data_usage_switch";
 
     private static final String SHARED_PREF_DISPLAYED_INFOBAR = "displayed_data_reduction_infobar";
+
+    // This is the same as Chromium data_reduction_proxy::switches::kEnableDataReductionProxy.
+    private static final String ENABLE_DATA_REDUCTION_PROXY = "enable-spdy-proxy-auth";
 
     private boolean mIsEnabled;
     private boolean mWasEnabledAtCreation;
@@ -218,7 +222,8 @@ public class BandwidthReductionPreferences extends PreferenceFragment {
         reduceDataUsageSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return DataReductionProxySettings.getInstance().isDataReductionProxyManaged();
+                return CommandLine.getInstance().hasSwitch(ENABLE_DATA_REDUCTION_PROXY)
+                        || DataReductionProxySettings.getInstance().isDataReductionProxyManaged();
             }
         });
 
