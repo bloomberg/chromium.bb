@@ -116,14 +116,11 @@ void AXTableRow::headerObjectsForRow(AccessibilityChildrenVector& headers)
     if (!m_layoutObject || !m_layoutObject->isTableRow())
         return;
 
-    const AccessibilityChildrenVector& rowChildren = children();
-    unsigned childrenCount = rowChildren.size();
-    for (unsigned i = 0; i < childrenCount; i++) {
-        AXObject* cell = rowChildren[i].get();
+    for (const auto& cell : children()) {
         if (!cell->isTableCell())
             continue;
 
-        if (toAXTableCell(cell)->scanToDecideHeaderRole() == RowHeaderRole)
+        if (toAXTableCell(cell.get())->scanToDecideHeaderRole() == RowHeaderRole)
             headers.append(cell);
     }
 }

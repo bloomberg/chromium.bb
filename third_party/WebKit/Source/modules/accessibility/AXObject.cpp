@@ -545,17 +545,13 @@ bool AXObject::supportsRangeValue() const
 
 void AXObject::ariaTreeRows(AccessibilityChildrenVector& result)
 {
-    const AccessibilityChildrenVector& axChildren = children();
-    unsigned count = axChildren.size();
-    for (unsigned k = 0; k < count; ++k) {
-        AXObject* obj = axChildren[k].get();
-
+    for (const auto& child : children()) {
         // Add tree items as the rows.
-        if (obj->roleValue() == TreeItemRole)
-            result.append(obj);
+        if (child->roleValue() == TreeItemRole)
+            result.append(child);
 
         // Now see if this item also has rows hiding inside of it.
-        obj->ariaTreeRows(result);
+        child->ariaTreeRows(result);
     }
 }
 
@@ -597,8 +593,8 @@ bool AXObject::containerLiveRegionBusy() const
 
 void AXObject::markCachedElementRectDirty() const
 {
-    for (unsigned i = 0; i < m_children.size(); ++i)
-        m_children[i].get()->markCachedElementRectDirty();
+    for (const auto& child : m_children)
+        child->markCachedElementRectDirty();
 }
 
 IntPoint AXObject::clickPoint()
@@ -640,10 +636,9 @@ AXObject* AXObject::elementAccessibilityHitTest(const IntPoint& point) const
     }
 
     // Check if there are any mock elements that need to be handled.
-    size_t count = m_children.size();
-    for (size_t k = 0; k < count; k++) {
-        if (m_children[k]->isMockObject() && m_children[k]->elementRect().contains(point))
-            return m_children[k]->elementAccessibilityHitTest(point);
+    for (const auto& child : m_children) {
+        if (child->isMockObject() && child->elementRect().contains(point))
+            return child->elementAccessibilityHitTest(point);
     }
 
     return const_cast<AXObject*>(this);
@@ -696,9 +691,8 @@ void AXObject::updateChildrenIfNecessary()
 void AXObject::clearChildren()
 {
     // Detach all weak pointers from objects to their parents.
-    size_t length = m_children.size();
-    for (size_t i = 0; i < length; i++)
-        m_children[i]->detachFromParent();
+    for (const auto& child : m_children)
+        child->detachFromParent();
 
     m_children.clear();
     m_haveChildren = false;
@@ -1056,10 +1050,8 @@ AccessibilityRole AXObject::ariaRoleToWebCoreRole(const String& value)
     Vector<String> roleVector;
     value.split(' ', roleVector);
     AccessibilityRole role = UnknownRole;
-    unsigned size = roleVector.size();
-    for (unsigned i = 0; i < size; ++i) {
-        String roleName = roleVector[i];
-        role = roleMap->get(roleName);
+    for (const auto& child : roleVector) {
+        role = roleMap->get(child);
         if (role)
             return role;
     }
@@ -1103,10 +1095,8 @@ bool AXObject::includesARIAWidgetRole(const String& role)
 
     Vector<String> roleVector;
     role.split(' ', roleVector);
-    unsigned size = roleVector.size();
-    for (unsigned i = 0; i < size; ++i) {
-        String roleName = roleVector[i];
-        if (roleSet->contains(roleName))
+    for (const auto& child : roleVector) {
+        if (roleSet->contains(child))
             return true;
     }
     return false;

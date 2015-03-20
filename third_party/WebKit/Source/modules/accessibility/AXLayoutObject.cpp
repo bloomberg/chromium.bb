@@ -1020,11 +1020,8 @@ void AXLayoutObject::accessibilityChildrenFromAttribute(QualifiedName attr, Acce
     elementsFromAttribute(elements, attr);
 
     AXObjectCacheImpl* cache = axObjectCache();
-    unsigned count = elements.size();
-    for (unsigned k = 0; k < count; ++k) {
-        Element* element = elements[k];
-        AXObject* child = cache->getOrCreate(element);
-        if (child)
+    for (const auto& element : elements) {
+        if (AXObject* child = cache->getOrCreate(element))
             children.append(child);
     }
 }
@@ -1531,9 +1528,9 @@ void AXLayoutObject::addChildren()
     addRemoteSVGChildren();
     addInlineTextBoxChildren(false);
 
-    for (unsigned i = 0; i < m_children.size(); ++i) {
-        if (!m_children[i].get()->cachedParentObject())
-            m_children[i].get()->setParent(this);
+    for (const auto& child : m_children) {
+        if (!child->cachedParentObject())
+            child->setParent(this);
     }
 }
 
@@ -1940,11 +1937,8 @@ void AXLayoutObject::ariaListboxSelectedChildren(AccessibilityChildrenVector& re
 {
     bool isMulti = isMultiSelectable();
 
-    const AccessibilityChildrenVector& childObjects = children();
-    unsigned childrenSize = childObjects.size();
-    for (unsigned k = 0; k < childrenSize; ++k) {
+    for (const auto& child : children()) {
         // Every child should have aria-role option, and if so, check for selected attribute/state.
-        AXObject* child = childObjects[k].get();
         if (child->isSelected() && child->ariaRoleAttribute() == ListBoxOptionRole) {
             result.append(child);
             if (!isMulti)
@@ -2001,9 +1995,7 @@ bool AXLayoutObject::isTabItemSelected() const
     WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
     elementsFromAttribute(elements, aria_controlsAttr);
 
-    unsigned count = elements.size();
-    for (unsigned k = 0; k < count; ++k) {
-        Element* element = elements[k];
+    for (const auto& element : elements) {
         AXObject* tabPanel = axObjectCache()->getOrCreate(element);
 
         // A tab item should only control tab panels.
@@ -2031,11 +2023,9 @@ AXObject* AXLayoutObject::accessibilityImageMapHitTest(HTMLAreaElement* area, co
     if (!parent)
         return 0;
 
-    const AccessibilityChildrenVector& children = parent->children();
-    unsigned count = children.size();
-    for (unsigned k = 0; k < count; ++k) {
-        if (children[k]->elementRect().contains(point))
-            return children[k].get();
+    for (const auto& child : parent->children()) {
+        if (child->elementRect().contains(point))
+            return child.get();
     }
 
     return 0;
@@ -2180,7 +2170,7 @@ void AXLayoutObject::addHiddenChildren()
             // Find out where the last layout sibling is located within m_children.
             if (AXObject* childObject = axObjectCache()->get(child.layoutObject())) {
                 if (childObject->accessibilityIsIgnored()) {
-                    const AccessibilityChildrenVector& children = childObject->children();
+                    const auto& children = childObject->children();
                     childObject = children.size() ? children.last().get() : 0;
                 }
                 if (childObject)
@@ -2287,10 +2277,8 @@ void AXLayoutObject::addRemoteSVGChildren()
     root->setParent(this);
 
     if (root->accessibilityIsIgnored()) {
-        const AccessibilityChildrenVector& children = root->children();
-        unsigned length = children.size();
-        for (unsigned i = 0; i < length; ++i)
-            m_children.append(children[i]);
+        for (const auto& child : root->children())
+            m_children.append(child);
     } else {
         m_children.append(root);
     }
@@ -2316,10 +2304,9 @@ void AXLayoutObject::ariaSelectedRows(AccessibilityChildrenVector& result)
             return;
     }
 
-    unsigned count = allRows.size();
-    for (unsigned k = 0; k < count; ++k) {
-        if (allRows[k]->isSelected()) {
-            result.append(allRows[k]);
+    for (const auto& row : allRows) {
+        if (row->isSelected()) {
+            result.append(row);
             if (!isMulti)
                 break;
         }

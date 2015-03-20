@@ -60,10 +60,7 @@ bool AXARIAGridRow::isARIATreeGridRow() const
 
 void AXARIAGridRow::headerObjectsForRow(AccessibilityChildrenVector& headers)
 {
-    const AccessibilityChildrenVector& rowChildren = children();
-    unsigned childrenCount = rowChildren.size();
-    for (unsigned i = 0; i < childrenCount; i++) {
-        AXObject* cell = rowChildren[i].get();
+    for (const auto& cell : children()) {
         if (cell->roleValue() == RowHeaderRole)
             headers.append(cell);
     }

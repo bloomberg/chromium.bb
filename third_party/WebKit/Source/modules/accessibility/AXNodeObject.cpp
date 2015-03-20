@@ -339,11 +339,8 @@ void AXNodeObject::elementsFromAttribute(WillBeHeapVector<RawPtrWillBeMember<Ele
     Vector<String> idVector;
     idList.split(' ', idVector);
 
-    unsigned size = idVector.size();
-    for (unsigned i = 0; i < size; ++i) {
-        AtomicString idName(idVector[i]);
-        Element* idElement = scope.getElementById(idName);
-        if (idElement)
+    for (const auto& idName : idVector) {
+        if (Element* idElement = scope.getElementById(AtomicString(idName)))
             elements.append(idElement);
     }
 }
@@ -1633,8 +1630,8 @@ void AXNodeObject::addChildren()
     for (Node& child : NodeTraversal::childrenOf(*m_node))
         addChild(axObjectCache()->getOrCreate(&child));
 
-    for (unsigned i = 0; i < m_children.size(); ++i)
-        m_children[i].get()->setParent(this);
+    for (const auto& child : m_children)
+        child->setParent(this);
 }
 
 void AXNodeObject::addChild(AXObject* child)
@@ -1653,7 +1650,7 @@ void AXNodeObject::insertChild(AXObject* child, unsigned index)
     child->clearChildren();
 
     if (child->accessibilityIsIgnored()) {
-        const AccessibilityChildrenVector& children = child->children();
+        const auto& children = child->children();
         size_t length = children.size();
         for (size_t i = 0; i < length; ++i)
             m_children.insert(index + i, children[i]);
@@ -1979,9 +1976,8 @@ void AXNodeObject::ariaLabeledByText(Vector<AccessibilityText>& textOrder) const
         WillBeHeapVector<RawPtrWillBeMember<Element>> elements;
         ariaLabeledByElements(elements);
 
-        unsigned length = elements.size();
-        for (unsigned k = 0; k < length; k++) {
-            RefPtr<AXObject> axElement = axObjectCache()->getOrCreate(elements[k]);
+        for (const auto& element : elements) {
+            RefPtr<AXObject> axElement = axObjectCache()->getOrCreate(element);
             textOrder.append(AccessibilityText(ariaLabeledBy, AlternativeText, axElement));
         }
     }

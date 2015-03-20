@@ -116,7 +116,7 @@ void AXMenuList::didUpdateActiveOption(int optionIndex)
     RefPtrWillBeRawPtr<Document> document(m_layoutObject->document());
     AXObjectCacheImpl* cache = toAXObjectCacheImpl(document->axObjectCache());
 
-    const AccessibilityChildrenVector& childObjects = children();
+    const auto& childObjects = children();
     if (!childObjects.isEmpty()) {
         ASSERT(childObjects.size() == 1);
         ASSERT(childObjects[0]->isMenuListPopup());

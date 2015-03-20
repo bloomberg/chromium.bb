@@ -107,10 +107,8 @@ void AXARIAGrid::addChildren()
 
             // The children of this non-row will contain all non-ignored elements (recursing to find them).
             // This allows the table to dive arbitrarily deep to find the rows.
-            const AccessibilityChildrenVector& children = child->children();
-            size_t length = children.size();
-            for (size_t i = 0; i < length; ++i)
-                addTableCellChild(children[i].get(), appendedRows, columnCount);
+            for (const auto& childObject : child->children())
+                addTableCellChild(childObject.get(), appendedRows, columnCount);
         }
     }
 
