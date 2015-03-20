@@ -805,6 +805,7 @@
               'sources': [
                 'open_from_clipboard/clipboard_recent_content_ios_unittest.mm',
                 'webp_transcode/webp_decoder_unittest.mm',
+                'webp_transcode/webp_network_client_unittest.mm',
               ],
               'sources!': [
                 'metrics/gpu/gpu_metrics_provider_unittest.cc',

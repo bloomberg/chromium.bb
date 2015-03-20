@@ -9,6 +9,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../ios/net/ios_net.gyp:ios_net',
         '../net/net.gyp:net',
         '../third_party/libwebp/libwebp.gyp:libwebp_dec',
       ],
@@ -18,6 +19,10 @@
       'sources': [
         'webp_transcode/webp_decoder.h',
         'webp_transcode/webp_decoder.mm',
+        'webp_transcode/webp_network_client.h',
+        'webp_transcode/webp_network_client.mm',
+        'webp_transcode/webp_network_client_factory.h',
+        'webp_transcode/webp_network_client_factory.mm',
        ],
     },
   ],
