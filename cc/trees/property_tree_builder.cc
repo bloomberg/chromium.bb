@@ -129,11 +129,17 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
 
   Layer* transform_parent = GetTransformParent(data_from_ancestor, layer);
 
-  // May be non-zero if layer is fixed or has a scroll parent.
   gfx::Vector2dF parent_offset;
   if (transform_parent) {
-    // TODO(vollick): This is to mimic existing bugs (crbug.com/441447).
-    if (!is_fixed) {
+    if (layer->scroll_parent()) {
+      gfx::Transform to_parent;
+      Layer* source = layer->parent();
+      parent_offset += source->offset_to_transform_parent();
+      data_from_ancestor.transform_tree->ComputeTransform(
+          source->transform_tree_index(),
+          transform_parent->transform_tree_index(), &to_parent);
+      parent_offset += to_parent.To2dTranslation();
+    } else if (!is_fixed) {
       parent_offset = transform_parent->offset_to_transform_parent();
     } else if (data_from_ancestor.transform_tree_parent !=
                data_from_ancestor.transform_fixed_parent) {
@@ -148,18 +154,6 @@ void AddTransformNodeIfNeeded(const DataForRecursion& data_from_ancestor,
       fixed_offset += parent_to_parent.To2dTranslation();
       parent_offset += fixed_offset;
     }
-
-    gfx::Transform to_parent;
-    Layer* source = data_from_ancestor.transform_tree_parent;
-    if (layer->scroll_parent()) {
-      source = layer->parent();
-      parent_offset += layer->parent()->offset_to_transform_parent();
-    }
-    data_from_ancestor.transform_tree->ComputeTransform(
-        source->transform_tree_index(),
-        transform_parent->transform_tree_index(), &to_parent);
-
-    parent_offset += to_parent.To2dTranslation();
   }
 
   if (layer->IsContainerForFixedPositionLayers() || is_root)

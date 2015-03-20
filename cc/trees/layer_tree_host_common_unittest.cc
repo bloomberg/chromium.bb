@@ -8854,5 +8854,43 @@ TEST_F(LayerTreeHostCommonTest, CombineClipsUsingContentTarget) {
   ExecuteCalculateDrawProperties(root.get());
 }
 
+TEST_F(LayerTreeHostCommonTest, OnlyApplyFixedPositioningOnce) {
+  gfx::Transform identity;
+  gfx::Transform translate_z;
+  translate_z.Translate3d(0, 0, 10);
+
+  scoped_refptr<Layer> root = Layer::Create();
+  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(800, 800), true, false);
+  root->SetIsContainerForFixedPositionLayers(true);
+
+  scoped_refptr<Layer> frame_clip = Layer::Create();
+  SetLayerPropertiesForTesting(frame_clip.get(), translate_z, gfx::Point3F(),
+                               gfx::PointF(500, 100), gfx::Size(100, 100), true,
+                               false);
+  frame_clip->SetMasksToBounds(true);
+
+  scoped_refptr<LayerWithForcedDrawsContent> fixed =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  SetLayerPropertiesForTesting(fixed.get(), identity, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(1000, 1000), true,
+                               false);
+
+  LayerPositionConstraint constraint;
+  constraint.set_is_fixed_position(true);
+  fixed->SetPositionConstraint(constraint);
+
+  root->AddChild(frame_clip);
+  frame_clip->AddChild(fixed);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  gfx::Rect expected(0, 0, 100, 100);
+  EXPECT_EQ(expected, fixed->visible_rect_from_property_trees());
+}
+
 }  // namespace
 }  // namespace cc
