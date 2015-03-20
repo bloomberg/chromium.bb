@@ -1602,18 +1602,26 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     ASSERT(inStyleRecalc());
     ASSERT(documentElement());
 
+    bool didRecalcDocumentElement = false;
     RefPtr<LayoutStyle> documentElementStyle = documentElement()->layoutStyle();
-    if (!documentElementStyle || documentElement()->needsStyleRecalc() || change == Force)
+    if (change == Force)
+        documentElement()->clearAnimationStyleChange();
+    if (!documentElementStyle || documentElement()->needsStyleRecalc() || change == Force) {
         documentElementStyle = ensureStyleResolver().styleForElement(documentElement());
+        didRecalcDocumentElement = true;
+    }
 
     WritingMode rootWritingMode = documentElementStyle->writingMode();
     TextDirection rootDirection = documentElementStyle->direction();
 
     HTMLElement* body = this->body();
     RefPtr<LayoutStyle> bodyStyle;
+
     if (body) {
         bodyStyle = body->layoutStyle();
-        if (!bodyStyle || body->needsStyleRecalc() || documentElement()->needsStyleRecalc() || change == Force)
+        if (didRecalcDocumentElement)
+            body->clearAnimationStyleChange();
+        if (!bodyStyle || body->needsStyleRecalc() || didRecalcDocumentElement)
             bodyStyle = ensureStyleResolver().styleForElement(body, documentElementStyle.get());
         rootWritingMode = bodyStyle->writingMode();
         rootDirection = bodyStyle->direction();

@@ -1733,8 +1733,18 @@ void Element::setAnimationStyleChange(bool animationStyleChange)
 {
     if (animationStyleChange && document().inStyleRecalc())
         return;
+    if (!hasRareData())
+        return;
     if (ElementAnimations* elementAnimations = elementRareData()->elementAnimations())
         elementAnimations->setAnimationStyleChange(animationStyleChange);
+}
+
+void Element::clearAnimationStyleChange()
+{
+    if (!hasRareData())
+        return;
+    if (ElementAnimations* elementAnimations = elementRareData()->elementAnimations())
+        elementAnimations->setAnimationStyleChange(false);
 }
 
 void Element::setNeedsAnimationStyleRecalc()

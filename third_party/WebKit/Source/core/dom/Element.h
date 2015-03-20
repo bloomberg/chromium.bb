@@ -311,6 +311,7 @@ public:
     void recalcStyle(StyleRecalcChange, Text* nextTextSibling = nullptr);
     void pseudoStateChanged(CSSSelector::PseudoType);
     void setAnimationStyleChange(bool);
+    void clearAnimationStyleChange();
     void setNeedsAnimationStyleRecalc();
 
     void setNeedsCompositingUpdate();
