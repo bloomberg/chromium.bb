@@ -84,8 +84,6 @@ protected:
 
     virtual bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutImage || LayoutReplaced::isOfType(type); }
 
-    virtual PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&, const LayoutBoxModelObject&) override;
-
 private:
     virtual bool isImage() const override { return true; }
 
@@ -107,9 +105,6 @@ private:
     void updateIntrinsicSizeIfNeeded(const LayoutSize&);
     // Update the size of the image to be rendered. Object-fit may cause this to be different from the CSS box's content rect.
     void updateInnerContentRect();
-
-    // The given rect is in the local coordinate space of the LayoutImage.
-    bool rectIntersectsVisibleViewport(const LayoutRect&);
 
     // Text to display as long as the image isn't available.
     OwnPtr<LayoutImageResource> m_imageResource;

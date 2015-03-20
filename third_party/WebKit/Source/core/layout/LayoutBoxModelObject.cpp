@@ -264,12 +264,7 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
     // ASSERT(&newPaintInvalidationContainer == containerForPaintInvalidation());
 
     PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
-    if (reason != PaintInvalidationDelayedFull) {
-        clearPaintInvalidationState(paintInvalidationState);
-    } else {
-        // Mark this object as needing paint invalidation again in the next frame, due to the request for delayed paint invalidation.
-        setShouldDoFullPaintInvalidation();
-    }
+    clearPaintInvalidationState(paintInvalidationState);
 
     PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
     if (reason == PaintInvalidationLocationChange)

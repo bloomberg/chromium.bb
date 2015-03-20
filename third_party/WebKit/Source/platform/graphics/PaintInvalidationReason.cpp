@@ -46,8 +46,6 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason)
         return "renderer insertion";
     case PaintInvalidationRendererRemoval:
         return "renderer removal";
-    case PaintInvalidationDelayedFull:
-        return "delayed full";
     }
     ASSERT_NOT_REACHED();
     return "";
