@@ -43,6 +43,7 @@ const size_t kSendBufferSize = 256;
 const int kMinimumClientIdForCards = 16;
 
 // udev key constants.
+#if defined(USE_UDEV)
 const char kSoundClass[] = "sound";
 const char kIdVendor[] = "ID_VENDOR";
 const char kIdVendorEnc[] = "ID_VENDOR_ENC";
@@ -55,6 +56,7 @@ const char kSysattrModel[] = "model";
 const char kIdBus[] = "ID_BUS";
 const char kIdPath[] = "ID_PATH";
 const char kUsbInterfaceNum[] = "ID_USB_INTERFACE_NUM";
+#endif  // defined(USE_UDEV)
 
 // ALSA constants.
 const char kAlsaHw[] = "hw";
