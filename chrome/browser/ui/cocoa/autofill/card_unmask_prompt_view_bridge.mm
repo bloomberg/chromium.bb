@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_controller.h"
@@ -23,6 +25,8 @@ namespace {
 const CGFloat kButtonGap = 6.0f;
 const CGFloat kDialogContentMinWidth = 210.0f;
 const CGFloat kCvcInputWidth = 64.0f;
+const ui::ResourceBundle::FontStyle kProgressFontStyle =
+    chrome_style::kTitleFontStyle;
 
 }  // namespace
 
@@ -38,7 +42,7 @@ CardUnmaskPromptView* CardUnmaskPromptView::CreateAndShow(
 
 CardUnmaskPromptViewBridge::CardUnmaskPromptViewBridge(
     CardUnmaskPromptController* controller)
-    : controller_(controller) {
+    : controller_(controller), weak_ptr_factory_(this) {
   view_controller_.reset(
       [[CardUnmaskPromptViewCocoa alloc] initWithBridge:this]);
 
@@ -61,22 +65,33 @@ void CardUnmaskPromptViewBridge::ControllerGone() {
 }
 
 void CardUnmaskPromptViewBridge::DisableAndWaitForVerification() {
-  [view_controller_ setInputsEnabled:false];
-  [view_controller_ updateVerifyButtonEnabled];
+  [view_controller_ setProgressOverlayText:
+                        l10n_util::GetStringUTF16(
+                            IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS)];
 }
 
 void CardUnmaskPromptViewBridge::GotVerificationResult(
     const base::string16& error_message,
     bool allow_retry) {
-  [view_controller_ setInputsEnabled:true];
-  [view_controller_ updateVerifyButtonEnabled];
+  if (error_message.empty()) {
+    [view_controller_ setProgressOverlayText:
+                          l10n_util::GetStringUTF16(
+                              IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_SUCCESS)];
+
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&CardUnmaskPromptViewBridge::PerformClose,
+                              weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(1));
+  } else {
+    [view_controller_ setProgressOverlayText:base::string16()];
+  }
 }
 
 void CardUnmaskPromptViewBridge::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
-  constrained_window_.reset();
   if (controller_)
     controller_->OnUnmaskDialogClosed();
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 CardUnmaskPromptController* CardUnmaskPromptViewBridge::GetController() {
@@ -98,6 +113,8 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   base::scoped_nsobject<NSButton> verifyButton_;
   base::scoped_nsobject<NSButton> storageCheckbox_;
   base::scoped_nsobject<AutofillTooltipController> storageTooltip_;
+  base::scoped_nsobject<NSView> inputRow_;
+  base::scoped_nsobject<NSTextField> progressOverlayText_;
 
   int monthPopupDefaultIndex_;
   int yearPopupDefaultIndex_;
@@ -145,10 +162,18 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   return self;
 }
 
-- (void)setInputsEnabled:(BOOL)enabled {
-  [cvcInput_ setEnabled:enabled];
-  [monthPopup_ setEnabled:enabled];
-  [yearPopup_ setEnabled:enabled];
+- (void)setProgressOverlayText:(const base::string16&)text {
+  if (!text.empty()) {
+    NSAttributedString* attributedString =
+        constrained_window::GetAttributedLabelString(
+            SysUTF16ToNSString(text), kProgressFontStyle, NSCenterTextAlignment,
+            NSLineBreakByWordWrapping);
+    [progressOverlayText_ setAttributedStringValue:attributedString];
+  }
+
+  [progressOverlayText_ setHidden:text.empty()];
+  [inputRow_ setHidden:!text.empty()];
+  [self updateVerifyButtonEnabled];
 }
 
 - (void)updateVerifyButtonEnabled {
@@ -156,7 +181,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   DCHECK(controller);
 
   BOOL enable =
-      [cvcInput_ isEnabled] &&
+      ![inputRow_ isHidden] &&
       controller->InputCvcIsValid(
           base::SysNSStringToUTF16([cvcInput_ stringValue])) &&
       (!monthPopup_ ||
@@ -238,9 +263,8 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [mainView
       setContentViewMargins:NSMakeSize(chrome_style::kHorizontalPadding, 0)];
 
-  base::scoped_nsobject<NSView> inputRowView(
-      [[NSView alloc] initWithFrame:NSZeroRect]);
-  [mainView addSubview:inputRowView];
+  inputRow_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
+  [mainView addSubview:inputRow_];
 
   base::scoped_nsobject<NSView> storageView(
       [self createStorageViewWithController:controller]);
@@ -298,7 +322,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
         NSUnionRect([monthPopup_ frame], [yearPopup_ frame]);
     expirationFrame.size.width += kButtonGap;
     [expirationView setFrame:expirationFrame];
-    [inputRowView addSubview:expirationView];
+    [inputRow_ addSubview:expirationView];
   }
 
   // CVC text input.
@@ -311,7 +335,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [cvcInput_ sizeToFit];
   [cvcInput_ setFrame:NSMakeRect(NSMaxX([expirationView frame]), 0,
                                  kCvcInputWidth, NSHeight([cvcInput_ frame]))];
-  [inputRowView addSubview:cvcInput_];
+  [inputRow_ addSubview:cvcInput_];
 
   // CVC image.
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -323,7 +347,7 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [cvcImageView setFrameSize:[cvcImage size]];
   [cvcImageView
       setFrameOrigin:NSMakePoint(NSMaxX([cvcInput_ frame]) + kButtonGap, 0)];
-  [inputRowView addSubview:cvcImageView];
+  [inputRow_ addSubview:cvcImageView];
 
   // Cancel button.
   base::scoped_nsobject<NSButton> cancelButton(
@@ -347,13 +371,13 @@ void CardUnmaskPromptViewBridge::PerformClose() {
   [self updateVerifyButtonEnabled];
   [mainView addSubview:verifyButton_];
 
-  // Layout inputRowView.
-  [CardUnmaskPromptViewCocoa sizeToFitView:inputRowView];
-  [CardUnmaskPromptViewCocoa verticallyCenterSubviewsInView:inputRowView];
+  // Layout inputRow_.
+  [CardUnmaskPromptViewCocoa sizeToFitView:inputRow_];
+  [CardUnmaskPromptViewCocoa verticallyCenterSubviewsInView:inputRow_];
 
   // Calculate dialog content width.
   CGFloat contentWidth =
-      std::max(NSWidth([title frame]), NSWidth([inputRowView frame]));
+      std::max(NSWidth([title frame]), NSWidth([inputRow_ frame]));
   contentWidth = std::max(contentWidth, NSWidth([storageView frame]));
   contentWidth = std::max(contentWidth, kDialogContentMinWidth);
 
@@ -374,11 +398,11 @@ void CardUnmaskPromptViewBridge::PerformClose() {
                                  NSMinY([verifyButton_ frame]))];
 
   // Input row.
-  [inputRowView setFrameOrigin:NSMakePoint(0, NSMaxY([cancelButton frame]) +
-                                                  chrome_style::kRowPadding)];
+  [inputRow_ setFrameOrigin:NSMakePoint(0, NSMaxY([cancelButton frame]) +
+                                               chrome_style::kRowPadding)];
 
   // Instruction label.
-  [instructions setFrameOrigin:NSMakePoint(0, NSMaxY([inputRowView frame]) +
+  [instructions setFrameOrigin:NSMakePoint(0, NSMaxY([inputRow_ frame]) +
                                                   chrome_style::kRowPadding)];
   NSSize instructionsSize = [[instructions cell]
       cellSizeForBounds:NSMakeRect(0, 0, contentWidth, CGFLOAT_MAX)];
@@ -393,6 +417,18 @@ void CardUnmaskPromptViewBridge::PerformClose() {
       setFrameSize:NSMakeSize(
                        contentWidth + [mainView contentViewMargins].width * 2.0,
                        NSMaxY([title frame]) + chrome_style::kTitleTopPadding)];
+
+  // Add progress overlay.
+  progressOverlayText_.reset([constrained_window::CreateLabel() retain]);
+  CGFloat progressHeight = ui::ResourceBundle::GetSharedInstance()
+                               .GetFont(kProgressFontStyle)
+                               .GetHeight();
+  // Center the text vertically within inputRow_ frame.
+  [progressOverlayText_ setFrame:NSMakeRect(0, ceil(NSMidY([inputRow_ frame]) -
+                                                    progressHeight / 2.0),
+                                            contentWidth, progressHeight)];
+  [progressOverlayText_ setHidden:YES];
+  [mainView addSubview:progressOverlayText_];
 
   [self setView:mainView];
 }

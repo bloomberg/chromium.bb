@@ -42,6 +42,8 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
 
   // The controller |this| queries for logic and state.
   CardUnmaskPromptController* controller_;
+
+  base::WeakPtrFactory<CardUnmaskPromptViewBridge> weak_ptr_factory_;
 };
 
 }  // autofill
@@ -52,8 +54,7 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
 // Designated initializer. |bridge| must not be NULL.
 - (id)initWithBridge:(autofill::CardUnmaskPromptViewBridge*)bridge;
 
-- (void)setInputsEnabled:(BOOL)enabled;
-- (void)updateVerifyButtonEnabled;
+- (void)setProgressOverlayText:(const base::string16&)text;
 
 @end
 
