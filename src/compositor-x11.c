@@ -904,8 +904,13 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 			return NULL;
 		}
 	} else {
+		/* eglCreatePlatformWindowSurfaceEXT takes a Window*
+		 * but eglCreateWindowSurface takes a Window. */
+		Window xid = (Window) output->window;
+
 		ret = gl_renderer->output_create(&output->base,
 						 (EGLNativeWindowType) output->window,
+						 &xid,
 						 gl_renderer->opaque_attribs,
 						 NULL);
 		if (ret < 0)

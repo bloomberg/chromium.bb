@@ -1627,7 +1627,8 @@ drm_output_init_egl(struct drm_output *output, struct drm_compositor *ec)
 		return -1;
 	}
 
-	if (gl_renderer->output_create(&output->base, output->surface,
+	if (gl_renderer->output_create(&output->base,
+				       output->surface, output->surface,
 				       gl_renderer->opaque_attribs,
 				       &format) < 0) {
 		weston_log("failed to create gl renderer output state\n");

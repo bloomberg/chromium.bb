@@ -568,7 +568,7 @@ fbdev_output_create(struct fbdev_compositor *compositor,
 	} else {
 		setenv("HYBRIS_EGLPLATFORM", "wayland", 1);
 		if (gl_renderer->output_create(&output->base,
-					       (EGLNativeWindowType)NULL,
+					       (EGLNativeWindowType)NULL, NULL,
 					       gl_renderer->opaque_attribs,
 					       NULL) < 0) {
 			weston_log("gl_renderer_output_create failed.\n");

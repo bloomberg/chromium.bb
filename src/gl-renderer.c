@@ -140,6 +140,10 @@ struct gl_renderer {
 	PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC swap_buffers_with_damage;
 #endif
 
+#ifdef EGL_EXT_platform_base
+	PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC create_platform_window;
+#endif
+
 	int has_unpack_subimage;
 
 	PFNEGLBINDWAYLANDDISPLAYWL bind_display;
@@ -1974,7 +1978,8 @@ gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface);
 
 static int
 gl_renderer_output_create(struct weston_output *output,
-			  EGLNativeWindowType window,
+			  EGLNativeWindowType window_for_legacy,
+			  void *window_for_platform,
 			  const EGLint *attribs,
 			  const EGLint *visual_id)
 {
@@ -2001,10 +2006,19 @@ gl_renderer_output_create(struct weston_output *output,
 	if (go == NULL)
 		return -1;
 
-	go->egl_surface =
-		eglCreateWindowSurface(gr->egl_display,
-				       egl_config,
-				       window, NULL);
+#ifdef EGL_EXT_platform_base
+	if (gr->create_platform_window) {
+		go->egl_surface =
+			gr->create_platform_window(gr->egl_display,
+						   egl_config,
+						   window_for_platform,
+						   NULL);
+	} else
+#endif
+		go->egl_surface =
+			eglCreateWindowSurface(gr->egl_display,
+					       egl_config,
+					       window_for_legacy, NULL);
 
 	if (go->egl_surface == EGL_NO_SURFACE) {
 		weston_log("failed to create egl surface\n");
@@ -2122,6 +2136,21 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 	else
 		weston_log("warning: EGL_EXT_swap_buffers_with_damage not "
 			   "supported. Performance could be affected.\n");
+#endif
+
+#ifdef EGL_EXT_platform_base
+	extensions =
+		(const char *) eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+	if (!extensions) {
+		weston_log("Retrieving EGL client extension string failed.\n");
+		return -1;
+	}
+
+	if (strstr(extensions, "EGL_EXT_platform_base"))
+		gr->create_platform_window =
+			(void *) eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
+	else
+		weston_log("warning: EGL_EXT_platform_base not supported.\n");
 #endif
 
 #ifdef EGL_MESA_configless_context
