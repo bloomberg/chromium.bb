@@ -118,11 +118,11 @@ class V8SamplingProfilerTest : public RenderViewTest {
   TraceResultBuffer::SimpleOutput json_output_;
 };
 
-// TODO(alph): Implement on Windows and Android
+// TODO(alph): Implement on Windows, Android and ChromeOS.
 // The SamplingEventForTesting is fired when the framework collected at
 // least one JitCodeAdded event and one sample event.
 
-#if defined(OS_WIN) || defined(OS_ANDROID)
+#if defined(OS_WIN) || defined(OS_ANDROID) || defined(OS_CHROMEOS)
 #define MAYBE(x) DISABLED_##x
 #else
 #define MAYBE(x) x

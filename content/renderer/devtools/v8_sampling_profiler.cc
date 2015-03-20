@@ -445,8 +445,8 @@ void V8SamplingThread::HandleProfilerSignal(int signal,
   mcontext_t& mcontext = ucontext->uc_mcontext;
   v8::RegisterState state;
 
-#if defined(OS_ANDROID)
-  // TODO(alph): Add support for Android
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  // TODO(alph): Add support for Android and ChromeOS
   ALLOW_UNUSED_LOCAL(mcontext);
 
 #elif defined(OS_MACOSX)
