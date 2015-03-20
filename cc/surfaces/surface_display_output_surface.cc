@@ -25,6 +25,7 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
       allocator_(allocator) {
   capabilities_.delegated_rendering = true;
   capabilities_.max_frames_pending = 1;
+  capabilities_.adjust_deadline_for_parent = true;
   capabilities_.can_force_reclaim_resources = true;
 }
 
