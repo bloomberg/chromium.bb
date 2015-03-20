@@ -15,14 +15,6 @@ namespace content {
 
 namespace {
 
-// According to http://www.ietf.org/rfc/rfc2373.txt, Appendix A, page 19.  An
-// address which contains MAC will have its 11th and 12th bytes as FF:FE as well
-// as the U/L bit as 1.
-bool IsMacBasedIPv6Address(const net::IPAddressNumber& ipaddress) {
-  return ((ipaddress[8] & 0x02) && ipaddress[11] == 0xFF &&
-          ipaddress[12] == 0xFE);
-}
-
 rtc::AdapterType ConvertConnectionTypeToAdapterType(
     net::NetworkChangeNotifier::ConnectionType type) {
   switch (type) {
@@ -96,15 +88,16 @@ void IpcNetworkManager::OnNetworkListChanged(
       network->AddIP(rtc::IPAddress(address));
       networks.push_back(network);
     } else if (it->address.size() == net::kIPv6AddressSize) {
+      in6_addr address;
+      memcpy(&address, &it->address[0], sizeof(in6_addr));
+      rtc::InterfaceAddress ip6_addr(address, it->ip_address_attributes);
+
       // Only allow non-deprecated IPv6 addresses which don't contain MAC.
-      if (IsMacBasedIPv6Address(it->address) ||
+      if (rtc::IPIsMacBased(ip6_addr) ||
           (it->ip_address_attributes & net::IP_ADDRESS_ATTRIBUTE_DEPRECATED)) {
         continue;
       }
 
-      in6_addr address;
-      memcpy(&address, &it->address[0], sizeof(in6_addr));
-      rtc::InterfaceAddress ip6_addr(address, it->ip_address_attributes);
       if (!rtc::IPIsPrivate(ip6_addr)) {
         rtc::IPAddress prefix =
             rtc::TruncateIP(rtc::IPAddress(ip6_addr), it->prefix_length);
