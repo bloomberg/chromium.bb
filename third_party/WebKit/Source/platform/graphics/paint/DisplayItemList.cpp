@@ -36,12 +36,10 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
             // Remove the beginning display item of this empty pair.
             m_newPaints.removeLast();
 #if ENABLE(ASSERT)
-            if (RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled()) {
-                // Also remove the index pointing to the removed display item.
-                Vector<size_t>& indices = m_newDisplayItemIndicesByClient.find(displayItem->client())->value;
-                if (!indices.isEmpty() && indices.last() == m_newPaints.size())
-                    indices.removeLast();
-            }
+            // Also remove the index pointing to the removed display item.
+            Vector<size_t>& indices = m_newDisplayItemIndicesByClient.find(displayItem->client())->value;
+            if (!indices.isEmpty() && indices.last() == m_newPaints.size())
+                indices.removeLast();
 #endif
             return;
         }
@@ -51,13 +49,11 @@ void DisplayItemList::add(WTF::PassOwnPtr<DisplayItem> displayItem)
         displayItem->setScope(m_scopeStack.last().client, m_scopeStack.last().id);
 
 #if ENABLE(ASSERT)
-    if (RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled()) {
-        // This will check for duplicated display item ids.
-        appendDisplayItem(m_newPaints, m_newDisplayItemIndicesByClient, displayItem);
-        return;
-    }
-#endif
+    // This will check for duplicated display item ids.
+    appendDisplayItem(m_newPaints, m_newDisplayItemIndicesByClient, displayItem);
+#else
     m_newPaints.append(displayItem);
+#endif
 }
 
 void DisplayItemList::beginScope(DisplayItemClient client)
@@ -99,8 +95,7 @@ void DisplayItemList::invalidateAll()
 
 bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
 {
-    return RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled()
-        && m_cachedDisplayItemIndicesByClient.contains(client)
+    return m_cachedDisplayItemIndicesByClient.contains(client)
         // If the scope is invalid, the client is treated invalid even if it's not invalidated explicitly.
         && (m_scopeStack.isEmpty() || m_scopeStack.last().cacheIsValid);
 }
@@ -186,13 +181,6 @@ void DisplayItemList::updatePaintList()
     m_clientScopeIdMap.clear();
     ASSERT(m_scopeStack.isEmpty());
     m_scopeStack.clear();
-
-    if (!RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled()) {
-        m_paintList.clear();
-        m_paintList.swap(m_newPaints);
-        m_cachedDisplayItemIndicesByClient.clear();
-        return;
-    }
 
     PaintList updatedList;
     DisplayItemIndicesByClientMap newCachedDisplayItemIndicesByClient;

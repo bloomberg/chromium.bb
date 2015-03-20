@@ -19,7 +19,7 @@ SubtreeRecorder::SubtreeRecorder(GraphicsContext* context, const LayoutObject& s
     , m_paintPhase(paintPhase)
     , m_begun(false)
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled() || !RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
 
     ASSERT(m_displayItemList);
@@ -27,7 +27,7 @@ SubtreeRecorder::SubtreeRecorder(GraphicsContext* context, const LayoutObject& s
 
 SubtreeRecorder::~SubtreeRecorder()
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled() || !RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
 
     if (m_begun)
@@ -36,7 +36,7 @@ SubtreeRecorder::~SubtreeRecorder()
 
 void SubtreeRecorder::begin()
 {
-    if (!RuntimeEnabledFeatures::slimmingPaintEnabled() || !RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintEnabled())
         return;
 
     addDisplayItem(BeginSubtreeDisplayItem::create(m_subtreeRoot.displayItemClient(), DisplayItem::paintPhaseToBeginSubtreeType(m_paintPhase)));

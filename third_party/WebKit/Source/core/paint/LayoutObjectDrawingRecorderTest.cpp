@@ -39,7 +39,6 @@ private:
     virtual void TearDown() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(false);
-        RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(false);
     }
 
     LayoutView* m_layoutView;
@@ -87,8 +86,6 @@ TEST_F(LayoutObjectDrawingRecorderTest, Rect)
 
 TEST_F(LayoutObjectDrawingRecorderTest, Cached)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
-
     GraphicsContext context(nullptr, &rootDisplayItemList());
     FloatRect bound = layoutView()->viewRect();
     drawNothing(&context, layoutView(), PaintPhaseBlockBackground, bound);

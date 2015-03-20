@@ -110,7 +110,6 @@ public:
     BLINK_EXPORT static void enableServiceWorker(bool);
 
     BLINK_EXPORT static void enableSlimmingPaint(bool);
-    BLINK_EXPORT static bool slimmingPaintDisplayItemCacheEnabled();
 
     BLINK_EXPORT static void enableTouch(bool);
 

@@ -27,8 +27,7 @@ namespace blink {
 class ViewDisplayListTest : public RenderingTest {
 public:
     ViewDisplayListTest()
-        : m_layoutView(nullptr)
-        , m_originalDisplayItemCacheEnabled(false) { }
+        : m_layoutView(nullptr) { }
 
 protected:
     LayoutView* layoutView() { return m_layoutView; }
@@ -39,7 +38,6 @@ private:
     virtual void SetUp() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(true);
-        m_originalDisplayItemCacheEnabled = RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled();
 
         RenderingTest::SetUp();
         enableCompositing();
@@ -51,11 +49,9 @@ private:
     virtual void TearDown() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintEnabled(false);
-        RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(m_originalDisplayItemCacheEnabled);
     }
 
     LayoutView* m_layoutView;
-    bool m_originalDisplayItemCacheEnabled;
 };
 
 class TestDisplayItem : public DisplayItem {
@@ -382,8 +378,6 @@ TEST_F(ViewDisplayListTest, UpdateClip)
 
 TEST_F(ViewDisplayListTest, CachedDisplayItems)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
-
     setBodyInnerHTML("<div id='first'><div id='second'></div></div>");
     LayoutBoxModelObject* firstRenderer = toLayoutBoxModelObject(document().body()->firstChild()->layoutObject());
     LayoutBoxModelObject* secondRenderer = toLayoutBoxModelObject(document().body()->firstChild()->firstChild()->layoutObject());
@@ -424,45 +418,8 @@ TEST_F(ViewDisplayListTest, CachedDisplayItems)
     EXPECT_FALSE(rootDisplayItemList().clientCacheIsValid(secondRenderer->displayItemClient()));
 }
 
-TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheDisabled)
+TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(false);
-
-    setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
-    document().page()->focusController().setActive(true);
-    document().page()->focusController().setFocused(true);
-    LayoutView* layoutView = document().layoutView();
-    DeprecatedPaintLayer* rootLayer = layoutView->layer();
-    LayoutObject* htmlRenderer = document().documentElement()->layoutObject();
-    Element* div = toElement(document().body()->firstChild());
-    LayoutObject* divRenderer = document().body()->firstChild()->layoutObject();
-    InlineTextBox* textInlineBox = toLayoutText(div->firstChild()->layoutObject())->firstTextBox();
-
-    SkCanvas canvas(800, 600);
-    GraphicsContext context(&canvas, &rootDisplayItemList());
-    DeprecatedPaintLayerPaintingInfo paintingInfo(rootLayer, LayoutRect(0, 0, 800, 600), PaintBehaviorNormal, LayoutSize());
-    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().endNewPaints();
-
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 2,
-        TestDisplayItem(htmlRenderer, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(textInlineBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
-
-    div->focus();
-    document().view()->updateLayoutAndStyleForPainting();
-    DeprecatedPaintLayerPainter(*rootLayer).paintLayerContents(&context, paintingInfo, PaintLayerPaintingCompositingAllPhases);
-    rootDisplayItemList().endNewPaints();
-
-    EXPECT_DISPLAY_LIST(rootDisplayItemList().paintList(), 3,
-        TestDisplayItem(htmlRenderer, DisplayItem::BoxDecorationBackground),
-        TestDisplayItem(textInlineBox->displayItemClient(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)),
-        TestDisplayItem(divRenderer, DisplayItem::Caret));
-}
-
-TEST_F(ViewDisplayListTest, FullDocumentPaintingWithCaret_CacheEnabled)
-{
-    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
-
     setBodyInnerHTML("<div id='div' contentEditable='true' style='outline:none'>XYZ</div>");
     document().page()->focusController().setActive(true);
     document().page()->focusController().setFocused(true);
@@ -572,8 +529,6 @@ TEST_F(ViewDisplayListTest, ComplexUpdateSwapOrder)
 // Enable this when cached subtree flags are ready.
 TEST_F(ViewDisplayListTest, DISABLED_CachedSubtreeSwapOrder)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
-
     setBodyInnerHTML("<div id='container1'><div id='content1'></div></div>"
         "<div id='container2'><div id='content2'></div></div>");
     LayoutObject* container1 = document().body()->firstChild()->layoutObject();
@@ -678,8 +633,6 @@ TEST_F(ViewDisplayListTest, DISABLED_CachedSubtreeSwapOrder)
 
 TEST_F(ViewDisplayListTest, Scope)
 {
-    RuntimeEnabledFeatures::setSlimmingPaintDisplayItemCacheEnabled(true);
-
     setBodyInnerHTML("<div id='multicol'><div id='content'></div></div>");
 
     LayoutObject* multicol = document().body()->firstChild()->layoutObject();

@@ -141,7 +141,6 @@ SessionStorage status=stable
 SharedWorker status=stable
 SlimmingPaint
 SlimmingPaintCompositorLayerization
-SlimmingPaintDisplayItemCache depends_on=SlimmingPaint, status=stable
 SlimmingPaintUnderInvalidationChecking depends_on=SlimmingPaint
 // Do not turn this flag into stable, because many interfaces that should not
 // be shipped would be enabled. Instead, remove the flag from the shipping

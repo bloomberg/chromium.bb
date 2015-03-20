@@ -218,11 +218,6 @@ void WebRuntimeFeatures::enableSlimmingPaint(bool enable)
     RuntimeEnabledFeatures::setSlimmingPaintEnabled(enable);
 }
 
-bool WebRuntimeFeatures::slimmingPaintDisplayItemCacheEnabled()
-{
-    return RuntimeEnabledFeatures::slimmingPaintDisplayItemCacheEnabled();
-}
-
 void WebRuntimeFeatures::enableTouch(bool enable)
 {
     RuntimeEnabledFeatures::setTouchEnabled(enable);
