@@ -446,19 +446,14 @@ void RenderText::SetText(const base::string16& text) {
   if (text_ == text)
     return;
   text_ = text;
+  UpdateStyleLengths();
 
-  // Adjust ranged styles, baselines, and colors to accommodate a new text
-  // length. Clear style ranges as they might break new text graphemes and apply
+  // Clear style ranges as they might break new text graphemes and apply
   // the first style to the whole text instead.
-  const size_t text_length = text_.length();
-  colors_.SetMax(text_length);
+  colors_.SetValue(colors_.breaks().begin()->second);
   baselines_.SetValue(baselines_.breaks().begin()->second);
-  baselines_.SetMax(text_length);
-  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style) {
-    BreakList<bool>& break_list = styles_[style];
-    break_list.SetValue(break_list.breaks().begin()->second);
-    break_list.SetMax(text_length);
-  }
+  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
+    styles_[style].SetValue(styles_[style].breaks().begin()->second);
   cached_bounds_and_offset_valid_ = false;
 
   // Reset selection model. SetText should always followed by SetSelectionModel
@@ -469,6 +464,14 @@ void RenderText::SetText(const base::string16& text) {
   if (directionality_mode_ == DIRECTIONALITY_FROM_TEXT)
     text_direction_ = base::i18n::UNKNOWN_DIRECTION;
 
+  obscured_reveal_index_ = -1;
+  OnTextAttributeChanged();
+}
+
+void RenderText::AppendText(const base::string16& text) {
+  text_ += text;
+  UpdateStyleLengths();
+  cached_bounds_and_offset_valid_ = false;
   obscured_reveal_index_ = -1;
   OnTextAttributeChanged();
 }
@@ -1239,6 +1242,14 @@ size_t RenderText::TextIndexToGivenTextIndex(const base::string16& given_text,
   CHECK_GE(i, 0);
   // Clamp indices to the length of the given layout or display text.
   return std::min<size_t>(given_text.length(), i);
+}
+
+void RenderText::UpdateStyleLengths() {
+  const size_t text_length = text_.length();
+  colors_.SetMax(text_length);
+  baselines_.SetMax(text_length);
+  for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
+    styles_[style].SetMax(text_length);
 }
 
 // static

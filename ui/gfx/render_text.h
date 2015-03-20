@@ -207,6 +207,7 @@ class GFX_EXPORT RenderText {
 
   const base::string16& text() const { return text_; }
   void SetText(const base::string16& text);
+  void AppendText(const base::string16& text);
 
   HorizontalAlignment horizontal_alignment() const {
     return horizontal_alignment_;
@@ -602,6 +603,9 @@ class GFX_EXPORT RenderText {
   // depending on the elide state.
   size_t TextIndexToGivenTextIndex(const base::string16& given_text,
                                    size_t index);
+
+  // Adjust ranged styles to accommodate a new text length.
+  void UpdateStyleLengths();
 
   // A convenience function to check whether the glyph attached to the caret
   // is within the given range.
