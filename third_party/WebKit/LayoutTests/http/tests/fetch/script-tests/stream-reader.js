@@ -75,5 +75,31 @@ sequential_promise_test(function(t) {
       });
   }, 'Setting bodyUsed means the body is locked.');
 
+sequential_promise_test(function(t) {
+    var reader;
+    var read = 0;
+    var original;
+    return fetch('/fetch/resources/progressive.php').then(function(res) {
+        original = res;
+        reader = res.body.getReader();
+        return reader.read();
+      }).then(function(r) {
+        assert_false(r.done);
+        read += r.value.byteLength;
+        // Make sure that we received something but we didn't receive all.
+        assert_not_equals(read, 0);
+        assert_not_equals(read, 190);
+
+        reader.releaseLock();
+        return read_until_end(original.clone().body.getReader());
+      }).then(function(chunks) {
+        for (var chunk of chunks) {
+          read += chunk.byteLength;
+        }
+        // Make sure that we received all data in total.
+        assert_equals(read, 190);
+      });
+  }, 'Clone after reading partially');
+
 sequential_promise_test_done();
 done();

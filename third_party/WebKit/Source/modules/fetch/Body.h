@@ -56,7 +56,7 @@ public:
     bool streamAccessed() const;
 
     // Creates a new BodyStreamBuffer to drain the data from the ReadableStream.
-    BodyStreamBuffer* createDrainingStream(bool* dataLost);
+    BodyStreamBuffer* createDrainingStream();
 
     // ActiveDOMObject override.
     virtual void stop() override;

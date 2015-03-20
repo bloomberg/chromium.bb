@@ -372,14 +372,8 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState, Request* request, Respons
     RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     const ScriptPromise promise = resolver->promise();
     if (BodyStreamBuffer* buffer = response->internalBuffer()) {
-        if (buffer == response->buffer() && response->streamAccessed()) {
-            bool dataLost = false;
-            buffer = response->createDrainingStream(&dataLost);
-            if (dataLost) {
-                resolver->reject(DOMException::create(NotSupportedError, "Storing the Response which .body is partially read is not supported."));
-                return promise;
-            }
-        }
+        if (buffer == response->buffer() && response->streamAccessed())
+            buffer = response->createDrainingStream();
         // If the response body type is stream, read the all data and create the
         // blob handle and dispatch the put batch asynchronously.
         buffer->readAllAndCreateBlobHandle(response->internalContentTypeForBuffer(), new AsyncPutBatch(resolver, this, request, response));
