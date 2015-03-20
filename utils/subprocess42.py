@@ -262,11 +262,18 @@ class Popen(subprocess.Popen):
     self.wait()
 
     # Read all remaining output in the pipes.
+    # There is 3 cases:
+    # - pipes get closed automatically by the calling process before it exits
+    # - pipes are closed automated by the OS
+    # - pipes are kept open due to grand-children processes outliving the
+    #   children process.
     while True:
       ms = maxsize
       if callable(maxsize):
         ms = maxsize()
-      t, data = self.recv_any(maxsize=ms)
+      # timeout=0 is mainly to handle the case where a grand-children process
+      # outlives the process started.
+      t, data = self.recv_any(maxsize=ms, timeout=0)
       if not data:
         break
       yield t, data
