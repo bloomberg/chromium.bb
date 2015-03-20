@@ -639,13 +639,10 @@ void FileSystemChooseEntryFunction::FilesSelected(
     content::WebContents* web_contents = app_window->web_contents();
 
     DCHECK_EQ(paths.size(), 1u);
+    bool non_native_path = false;
 #if defined(OS_CHROMEOS)
-    base::FilePath check_path =
-        file_manager::util::IsUnderNonNativeLocalPath(GetProfile(), paths[0])
-            ? paths[0]
-            : base::MakeAbsoluteFilePath(paths[0]);
-#else
-    base::FilePath check_path = base::MakeAbsoluteFilePath(paths[0]);
+    non_native_path =
+        file_manager::util::IsUnderNonNativeLocalPath(GetProfile(), paths[0]);
 #endif
 
     content::BrowserThread::PostTask(
@@ -654,7 +651,7 @@ void FileSystemChooseEntryFunction::FilesSelected(
         base::Bind(
             &FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread,
             this,
-            check_path,
+            non_native_path,
             paths,
             web_contents));
     return;
@@ -669,9 +666,11 @@ void FileSystemChooseEntryFunction::FileSelectionCanceled() {
 }
 
 void FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread(
-    const base::FilePath& check_path,
+    bool non_native_path,
     const std::vector<base::FilePath>& paths,
     content::WebContents* web_contents) {
+  const base::FilePath check_path =
+      non_native_path ? paths[0] : base::MakeAbsoluteFilePath(paths[0]);
   if (check_path.empty()) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,

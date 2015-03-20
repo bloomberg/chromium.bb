@@ -159,13 +159,13 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
   void FilesSelected(const std::vector<base::FilePath>& path);
   void FileSelectionCanceled();
 
-  // Check if |check_path|, the canonicalized form of the chosen directory
-  // |paths|, is or is an ancestor of a sensitive directory. If so, show a
-  // dialog to confirm that the user wants to open the directory.
-  // Calls OnDirectoryAccessConfirmed if the directory isn't sensitive or the
-  // user chooses to open it. Otherwise, calls FileSelectionCanceled.
+  // Check if the chosen directory is or is an ancestor of a sensitive
+  // directory. If so, show a dialog to confirm that the user wants to open the
+  // directory. Calls OnDirectoryAccessConfirmed if the directory isn't
+  // sensitive or the user chooses to open it. Otherwise, calls
+  // FileSelectionCanceled.
   void ConfirmDirectoryAccessOnFileThread(
-      const base::FilePath& check_path,
+      bool non_native_path,
       const std::vector<base::FilePath>& paths,
       content::WebContents* web_contents);
   void OnDirectoryAccessConfirmed(const std::vector<base::FilePath>& paths);
