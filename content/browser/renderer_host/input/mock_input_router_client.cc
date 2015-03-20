@@ -19,13 +19,13 @@ using blink::WebTouchPoint;
 namespace content {
 
 MockInputRouterClient::MockInputRouterClient()
-  : input_router_(NULL),
-    in_flight_event_count_(0),
-    has_touch_handler_(false),
-    filter_state_(INPUT_EVENT_ACK_STATE_NOT_CONSUMED),
-    filter_input_event_called_(false),
-    did_flush_called_count_(0),
-    set_needs_flush_called_(false) {}
+    : input_router_(NULL),
+      in_flight_event_count_(0),
+      has_touch_handler_(false),
+      filter_state_(INPUT_EVENT_ACK_STATE_NOT_CONSUMED),
+      filter_input_event_called_(false),
+      did_flush_called_count_(0) {
+}
 
 MockInputRouterClient::~MockInputRouterClient() {}
 
@@ -50,16 +50,15 @@ void MockInputRouterClient::OnHasTouchEventHandlers(
   has_touch_handler_ = has_handlers;
 }
 
-void MockInputRouterClient::SetNeedsFlush() {
-  set_needs_flush_called_ = true;
-}
-
 void MockInputRouterClient::DidFlush() {
   ++did_flush_called_count_;
 }
 
 void MockInputRouterClient::DidOverscroll(const DidOverscrollParams& params) {
   overscroll_ = params;
+}
+
+void MockInputRouterClient::DidStopFlinging() {
 }
 
 bool MockInputRouterClient::GetAndResetFilterEventCalled() {

@@ -276,6 +276,10 @@ class InputRouterImplTest : public testing::Test {
     input_router_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
   }
 
+  void NotifyDidStopFlinging() {
+    input_router_->OnMessageReceived(InputHostMsg_DidStopFlinging(0));
+  }
+
   InputRouterImpl* input_router() const {
     return input_router_.get();
   }
@@ -288,8 +292,8 @@ class InputRouterImplTest : public testing::Test {
     return input_router()->touch_event_queue_.IsAckTimeoutEnabled();
   }
 
-  void Flush() const {
-    return input_router_->Flush();
+  void RequestNotificationWhenFlushed() const {
+    return input_router_->RequestNotificationWhenFlushed();
   }
 
   size_t GetAndResetDidFlushCount() {
@@ -1019,6 +1023,7 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
       WebInputEvent::GestureScrollEnd};
   for (size_t i = 0; i < arraysize(eventTypes); ++i) {
     WebInputEvent::Type type = eventTypes[i];
+    SCOPED_TRACE(WebInputEventTraits::GetName(type));
     if (!WebInputEventTraits::IgnoresAckDisposition(GetEventWithType(type))) {
       SimulateGestureEvent(type, blink::WebGestureDeviceTouchscreen);
       EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
@@ -1026,11 +1031,20 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
       EXPECT_EQ(1, client_->in_flight_event_count());
       EXPECT_TRUE(HasPendingEvents());
 
-      SendInputEventACK(type, INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+      SendInputEventACK(type, INPUT_EVENT_ACK_STATE_CONSUMED);
       EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
       EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
       EXPECT_EQ(0, client_->in_flight_event_count());
-      EXPECT_FALSE(HasPendingEvents());
+
+      // A GestureFlingCancel will be dropped unless there's an active
+      // fling, and an active fling is considered a "pending" event. This rather
+      // nasty bookkeeping is necessary to ensure the fling cancel gets properly
+      // dispatched and the pending event expectations are valid.
+      if (type == blink::WebInputEvent::GestureFlingCancel)
+        NotifyDidStopFlinging();
+      if (type != blink::WebInputEvent::GestureFlingStart)
+        EXPECT_FALSE(HasPendingEvents());
+
       continue;
     }
 
@@ -1545,7 +1559,7 @@ TEST_F(InputRouterImplTest, InputFlush) {
   EXPECT_FALSE(HasPendingEvents());
 
   // Flushing an empty router should immediately trigger DidFlush.
-  Flush();
+  RequestNotificationWhenFlushed();
   EXPECT_EQ(1U, GetAndResetDidFlushCount());
   EXPECT_FALSE(HasPendingEvents());
 
@@ -1556,7 +1570,7 @@ TEST_F(InputRouterImplTest, InputFlush) {
   EXPECT_TRUE(HasPendingEvents());
 
   // DidFlush should be called only after the event is ack'ed.
-  Flush();
+  RequestNotificationWhenFlushed();
   EXPECT_EQ(0U, GetAndResetDidFlushCount());
   SendInputEventACK(WebInputEvent::TouchStart,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -1575,11 +1589,11 @@ TEST_F(InputRouterImplTest, InputFlush) {
                        blink::WebGestureDeviceTouchscreen);
   SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
                        blink::WebGestureDeviceTouchscreen);
-  Flush();
+  RequestNotificationWhenFlushed();
   EXPECT_EQ(0U, GetAndResetDidFlushCount());
 
   // Repeated flush calls should have no effect.
-  Flush();
+  RequestNotificationWhenFlushed();
   EXPECT_EQ(0U, GetAndResetDidFlushCount());
 
   // There are still pending gestures.
@@ -1599,6 +1613,47 @@ TEST_F(InputRouterImplTest, InputFlush) {
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(1U, GetAndResetDidFlushCount());
   EXPECT_FALSE(HasPendingEvents());
+}
+
+// Test that the router will call the client's |DidFlush| after all fling
+// animations have completed.
+TEST_F(InputRouterImplTest, InputFlushAfterFling) {
+  EXPECT_FALSE(HasPendingEvents());
+
+  // Simulate a fling.
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       blink::WebGestureDeviceTouchscreen);
+  SimulateGestureEvent(WebInputEvent::GestureFlingStart,
+                       blink::WebGestureDeviceTouchscreen);
+  EXPECT_TRUE(HasPendingEvents());
+
+  // If the fling is unconsumed, the flush is complete.
+  RequestNotificationWhenFlushed();
+  EXPECT_EQ(0U, GetAndResetDidFlushCount());
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       blink::WebGestureDeviceTouchscreen);
+  SendInputEventACK(WebInputEvent::GestureFlingStart,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_FALSE(HasPendingEvents());
+  EXPECT_EQ(1U, GetAndResetDidFlushCount());
+
+  // Simulate a second fling.
+  SimulateGestureEvent(WebInputEvent::GestureFlingStart,
+                       blink::WebGestureDeviceTouchscreen);
+  EXPECT_TRUE(HasPendingEvents());
+
+  // If the fling is consumed, the flush is complete only when the renderer
+  // reports that is has ended.
+  RequestNotificationWhenFlushed();
+  EXPECT_EQ(0U, GetAndResetDidFlushCount());
+  SendInputEventACK(WebInputEvent::GestureFlingStart,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_TRUE(HasPendingEvents());
+  EXPECT_EQ(0U, GetAndResetDidFlushCount());
+
+  // The fling end notification should signal that the router is flushed.
+  NotifyDidStopFlinging();
+  EXPECT_EQ(1U, GetAndResetDidFlushCount());
 }
 
 // Test that GesturePinchUpdate is handled specially for trackpad

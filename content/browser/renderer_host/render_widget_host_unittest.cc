@@ -70,7 +70,6 @@ class MockInputRouter : public InputRouter {
   ~MockInputRouter() override {}
 
   // InputRouter
-  void Flush() override { flush_called_ = true; }
   bool SendInput(scoped_ptr<IPC::Message> message) override {
     send_event_called_ = true;
     return true;
@@ -101,6 +100,7 @@ class MockInputRouter : public InputRouter {
     return NULL;
   }
   void OnViewUpdated(int view_flags) override {}
+  void RequestNotificationWhenFlushed() override {}
   bool HasPendingEvents() const override { return false; }
 
   // IPC::Listener
@@ -109,7 +109,6 @@ class MockInputRouter : public InputRouter {
     return false;
   }
 
-  bool flush_called_;
   bool send_event_called_;
   bool sent_mouse_event_;
   bool sent_wheel_event_;

@@ -253,6 +253,9 @@ IPC_MESSAGE_ROUTED1(InputHostMsg_SetTouchAction,
 IPC_MESSAGE_ROUTED1(InputHostMsg_DidOverscroll,
                     content::DidOverscrollParams /* params */)
 
+// Sent by the compositor when a fling animation is stopped.
+IPC_MESSAGE_ROUTED0(InputHostMsg_DidStopFlinging)
+
 // Acknowledges receipt of a InputMsg_MoveCaret message.
 IPC_MESSAGE_ROUTED0(InputHostMsg_MoveCaret_ACK)
 

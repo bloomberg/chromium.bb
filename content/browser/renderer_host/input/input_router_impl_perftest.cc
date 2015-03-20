@@ -78,8 +78,8 @@ class NullInputRouterClient : public InputRouterClient {
   void DecrementInFlightEventCount() override {}
   void OnHasTouchEventHandlers(bool has_handlers) override {}
   void DidFlush() override {}
-  void SetNeedsFlush() override {}
   void DidOverscroll(const DidOverscrollParams& params) override {}
+  void DidStopFlinging() override {}
 };
 
 class NullIPCSender : public IPC::Sender {

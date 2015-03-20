@@ -445,11 +445,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // suppress_next_char_events_.
   void SuppressNextCharEvents();
 
-  // Called by RenderWidgetHostView in response to OnSetNeedsFlushInput.
+  // Called by the view in response to a flush request.
   void FlushInput();
 
-  // InputRouterClient
-  void SetNeedsFlush() override;
+  // Request a flush signal from the view.
+  void SetNeedsFlush();
 
   // Indicates whether the renderer drives the RenderWidgetHosts's size or the
   // other way around.
@@ -611,7 +611,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnSetTooltipText(const base::string16& tooltip_text,
                         blink::WebTextDirection text_direction_hint);
   bool OnSwapCompositorFrame(const IPC::Message& message);
-  void OnFlingingStopped();
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnQueueSyntheticGesture(const SyntheticGesturePacket& gesture_packet);
   virtual void OnFocus();
@@ -665,6 +664,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnHasTouchEventHandlers(bool has_handlers) override;
   void DidFlush() override;
   void DidOverscroll(const DidOverscrollParams& params) override;
+  void DidStopFlinging() override;
 
   // InputAckHandler
   void OnKeyboardEventAck(const NativeWebKeyboardEvent& event,

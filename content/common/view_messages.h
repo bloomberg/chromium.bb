@@ -1475,9 +1475,6 @@ IPC_MESSAGE_ROUTED3(
     cc::CompositorFrame /* frame */,
     std::vector<IPC::Message> /* messages_to_deliver_with_frame */)
 
-// Sent by the compositor when a flinging animation is stopped.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_DidStopFlinging)
-
 //---------------------------------------------------------------------------
 // Request for cryptographic operation messages:
 // These are messages from the renderer to the browser to perform a

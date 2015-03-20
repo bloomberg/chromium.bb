@@ -83,9 +83,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& msg) override;
 
-  // Called by the host when the input flush has completed.
-  void OnDidFlushInput();
-
   void SetPopupType(blink::WebPopupType popup_type);
 
   blink::WebPopupType GetPopupType();

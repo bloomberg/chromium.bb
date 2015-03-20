@@ -79,8 +79,7 @@ void InputEventFilter::DidOverscroll(int routing_id,
 }
 
 void InputEventFilter::DidStopFlinging(int routing_id) {
-  SendMessage(
-      scoped_ptr<IPC::Message>(new ViewHostMsg_DidStopFlinging(routing_id)));
+  SendMessage(make_scoped_ptr(new InputHostMsg_DidStopFlinging(routing_id)));
 }
 
 void InputEventFilter::OnFilterAdded(IPC::Sender* sender) {

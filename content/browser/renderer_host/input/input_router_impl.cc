@@ -88,11 +88,6 @@ InputRouterImpl::~InputRouterImpl() {
   STLDeleteElements(&pending_select_messages_);
 }
 
-void InputRouterImpl::Flush() {
-  flush_requested_ = true;
-  SignalFlushedIfNecessary();
-}
-
 bool InputRouterImpl::SendInput(scoped_ptr<IPC::Message> message) {
   DCHECK(IPC_MESSAGE_ID_CLASS(message->type()) == InputMsgStart);
   switch (message->type()) {
@@ -162,8 +157,6 @@ void InputRouterImpl::SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
   // handler.
   key_queue_.push_back(key_event);
   LOCAL_HISTOGRAM_COUNTS_100("Renderer.KeyboardQueueSize", key_queue_.size());
-
-  gesture_event_queue_.FlingHasBeenHalted();
 
   // Only forward the non-native portions of our event.
   FilterAndSendWebInputEvent(key_event, latency_info, is_keyboard_shortcut);
@@ -244,6 +237,22 @@ void InputRouterImpl::OnViewUpdated(int view_flags) {
   UpdateTouchAckTimeoutEnabled();
 }
 
+void InputRouterImpl::RequestNotificationWhenFlushed() {
+  flush_requested_ = true;
+  SignalFlushedIfNecessary();
+}
+
+bool InputRouterImpl::HasPendingEvents() const {
+  return !touch_event_queue_.empty() ||
+         !gesture_event_queue_.empty() ||
+         gesture_event_queue_.active_fling_count() ||
+         !key_queue_.empty() ||
+         mouse_move_pending_ ||
+         mouse_wheel_pending_ ||
+         select_message_pending_ ||
+         move_caret_pending_;
+}
+
 bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(InputRouterImpl, message)
@@ -257,6 +266,7 @@ bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
                         OnHasTouchEventHandlers)
     IPC_MESSAGE_HANDLER(InputHostMsg_SetTouchAction,
                         OnSetTouchAction)
+    IPC_MESSAGE_HANDLER(InputHostMsg_DidStopFlinging, OnDidStopFlinging)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -485,6 +495,12 @@ void InputRouterImpl::OnSetTouchAction(TouchAction touch_action) {
   UpdateTouchAckTimeoutEnabled();
 }
 
+void InputRouterImpl::OnDidStopFlinging() {
+  gesture_event_queue_.DidStopFlinging();
+  SignalFlushedIfNecessary();
+  client_->DidStopFlinging();
+}
+
 void InputRouterImpl::ProcessInputEventAck(
     WebInputEvent::Type event_type,
     InputEventAckState ack_result,
@@ -624,16 +640,6 @@ void InputRouterImpl::SignalFlushedIfNecessary() {
 
   flush_requested_ = false;
   client_->DidFlush();
-}
-
-bool InputRouterImpl::HasPendingEvents() const {
-  return !touch_event_queue_.empty() ||
-         !gesture_event_queue_.empty() ||
-         !key_queue_.empty() ||
-         mouse_move_pending_ ||
-         mouse_wheel_pending_ ||
-         select_message_pending_ ||
-         move_caret_pending_;
 }
 
 }  // namespace content

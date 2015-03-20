@@ -24,10 +24,6 @@ class InputRouter : public IPC::Listener {
  public:
   ~InputRouter() override {}
 
-  // Should be called only in response to |SetNeedsFlush| requests made via
-  // the |InputRouterClient|.
-  virtual void Flush() = 0;
-
   // Send and take ownership of the the given InputMsg_*. This should be used
   // only for event types not associated with a WebInputEvent.  Returns true on
   // success and false otherwise.
@@ -59,6 +55,12 @@ class InputRouter : public IPC::Listener {
   };
   virtual void OnViewUpdated(int view_flags) = 0;
 
+  // Request a notification from the input router when all events have been
+  // fully dispatched and there are no longer any pending events.
+  // Note: This may trigger a synchronous notification if the router is empty.
+  virtual void RequestNotificationWhenFlushed() = 0;
+
+  // Whether there are any events pending dispatch to or ack from the renderer.
   virtual bool HasPendingEvents() const = 0;
 };
 

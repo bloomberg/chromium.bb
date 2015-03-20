@@ -394,7 +394,7 @@ void RenderWidgetHostImpl::SuppressNextCharEvents() {
 }
 
 void RenderWidgetHostImpl::FlushInput() {
-  input_router_->Flush();
+  input_router_->RequestNotificationWhenFlushed();
   if (synthetic_gesture_controller_)
     synthetic_gesture_controller_->Flush(base::TimeTicks::Now());
 }
@@ -460,7 +460,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnSetTooltipText)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
                                 OnSwapCompositorFrame(msg))
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopFlinging, OnFlingingStopped)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnBlur)
@@ -1502,11 +1501,6 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   return true;
 }
 
-void RenderWidgetHostImpl::OnFlingingStopped() {
-  if (view_)
-    view_->DidStopFlinging();
-}
-
 void RenderWidgetHostImpl::OnUpdateRect(
     const ViewHostMsg_UpdateRect_Params& params) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::OnUpdateRect");
@@ -1822,13 +1816,16 @@ void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
 void RenderWidgetHostImpl::DidFlush() {
   if (synthetic_gesture_controller_)
     synthetic_gesture_controller_->OnDidFlushInput();
-  if (view_)
-    view_->OnDidFlushInput();
 }
 
 void RenderWidgetHostImpl::DidOverscroll(const DidOverscrollParams& params) {
   if (view_)
     view_->DidOverscroll(params);
+}
+
+void RenderWidgetHostImpl::DidStopFlinging() {
+  if (view_)
+    view_->DidStopFlinging();
 }
 
 void RenderWidgetHostImpl::OnKeyboardEventAck(

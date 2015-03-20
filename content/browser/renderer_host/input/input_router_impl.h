@@ -56,7 +56,6 @@ class CONTENT_EXPORT InputRouterImpl
   ~InputRouterImpl() override;
 
   // InputRouter
-  void Flush() override;
   bool SendInput(scoped_ptr<IPC::Message> message) override;
   void SendMouseEvent(const MouseEventWithLatencyInfo& mouse_event) override;
   void SendWheelEvent(
@@ -69,6 +68,7 @@ class CONTENT_EXPORT InputRouterImpl
   void SendTouchEvent(const TouchEventWithLatencyInfo& touch_event) override;
   const NativeWebKeyboardEvent* GetLastKeyboardEvent() const override;
   void OnViewUpdated(int view_flags) override;
+  void RequestNotificationWhenFlushed() override;
   bool HasPendingEvents() const override;
 
   // IPC::Listener
@@ -130,6 +130,7 @@ private:
   void OnSelectMessageAck();
   void OnHasTouchEventHandlers(bool has_handlers);
   void OnSetTouchAction(TouchAction touch_action);
+  void OnDidStopFlinging();
 
   // Indicates the source of an ack provided to |ProcessInputEventAck()|.
   // The source is tracked by |current_ack_source_|, which aids in ack routing.
@@ -180,8 +181,6 @@ private:
   // If a flush has been requested, signals a completed flush to the client if
   // all events have been dispatched (i.e., |HasPendingEvents()| is false).
   void SignalFlushedIfNecessary();
-
-  bool IsInOverscrollGesture() const;
 
   int routing_id() const { return routing_id_; }
 
