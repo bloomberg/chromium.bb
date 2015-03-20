@@ -9904,6 +9904,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ThrottledNetworkRequestDelay" units="milliseconds">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    The duration by which a network request was delayed while waiting for
+    extension user script load. Recorded once per request that is delayed, at
+    the time the resource resumes loading.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ThrottledNetworkRequests" units="requests">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>kalman@chromium.org</owner>
+  <summary>
+    The total number of network requests that were delayed by extension user
+    script load. Recorded once each time network requests may have been delayed
+    by user script load (i.e., once at the end of each batch of script loads).
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ToolstripLoadTime" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Time taken to load a toolstrip.</summary>
