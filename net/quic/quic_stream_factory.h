@@ -248,8 +248,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int64 GetServerNetworkStatsSmoothedRttInMicroseconds(
       const QuicServerId& server_id) const;
 
-  // Helped methods.
-  bool WasAlternateProtocolRecentlyBroken(const QuicServerId& server_id) const;
+  // Helper methods.
+  bool WasQuicRecentlyBroken(const QuicServerId& server_id) const;
   bool CryptoConfigCacheIsEmpty(const QuicServerId& server_id);
 
   // Initializes the cached state associated with |server_id| in

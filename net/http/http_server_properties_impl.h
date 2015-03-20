@@ -93,18 +93,20 @@ class NET_EXPORT HttpServerPropertiesImpl
   void MaybeForceHTTP11(const HostPortPair& server,
                         SSLConfig* ssl_config) override;
   AlternativeService GetAlternativeService(const HostPortPair& origin) override;
-  void SetAlternateProtocol(const HostPortPair& origin,
-                            uint16 alternate_port,
-                            AlternateProtocol alternate_protocol,
-                            double probability) override;
-  void SetBrokenAlternateProtocol(const HostPortPair& origin) override;
+  void SetAlternativeService(const HostPortPair& origin,
+                             const AlternativeService& alternative_service,
+                             double alternative_probability) override;
+  void MarkAlternativeServiceBroken(
+      const AlternativeService& alternative_service) override;
   void MarkAlternativeServiceRecentlyBroken(
       const AlternativeService& alternative_service) override;
   bool IsAlternativeServiceBroken(
       const AlternativeService& alternative_service) override;
-  bool WasAlternateProtocolRecentlyBroken(const HostPortPair& origin) override;
-  void ConfirmAlternateProtocol(const HostPortPair& origin) override;
-  void ClearAlternateProtocol(const HostPortPair& origin) override;
+  bool WasAlternativeServiceRecentlyBroken(
+      const AlternativeService& alternative_service) override;
+  void ConfirmAlternativeService(
+      const AlternativeService& alternative_service) override;
+  void ClearAlternativeService(const HostPortPair& origin) override;
   const AlternateProtocolMap& alternate_protocol_map() const override;
   void SetAlternateProtocolProbabilityThreshold(double threshold) override;
   const SettingsMap& GetSpdySettings(

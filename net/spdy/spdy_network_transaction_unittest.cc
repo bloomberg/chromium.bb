@@ -76,9 +76,12 @@ void UpdateSpdySessionDependencies(
     SpdySessionDependencies* session_deps) {
   switch (test_params.ssl_type) {
     case SPDYNPN:
-      session_deps->http_server_properties.SetAlternateProtocol(
-          HostPortPair("www.google.com", 80), 443,
-          AlternateProtocolFromNextProto(test_params.protocol), 1);
+      session_deps->http_server_properties.SetAlternativeService(
+          HostPortPair("www.google.com", 80),
+          AlternativeService(
+              AlternateProtocolFromNextProto(test_params.protocol),
+              "www.google.com", 443),
+          1);
       session_deps->use_alternate_protocols = true;
       session_deps->next_protos = SpdyNextProtos();
       break;

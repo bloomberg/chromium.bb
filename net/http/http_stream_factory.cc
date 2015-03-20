@@ -84,7 +84,7 @@ void HttpStreamFactory::ProcessAlternateProtocol(
   }
 
   if (!is_valid || protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
-    http_server_properties->ClearAlternateProtocol(http_host_port_pair);
+    http_server_properties->ClearAlternativeService(http_host_port_pair);
     return;
   }
 
@@ -93,8 +93,9 @@ void HttpStreamFactory::ProcessAlternateProtocol(
   if (mapping_rules)
     mapping_rules->RewriteHost(&host_port);
 
-  http_server_properties->SetAlternateProtocol(
-      host_port, static_cast<uint16>(port), protocol, probability);
+  http_server_properties->SetAlternativeService(
+      host_port, AlternativeService(protocol, "", static_cast<uint16>(port)),
+      probability);
 }
 
 GURL HttpStreamFactory::ApplyHostMappingRules(const GURL& url,

@@ -467,17 +467,18 @@ TEST_F(HttpServerPropertiesManagerTest, GetAlternativeService) {
 
   HostPortPair spdy_server_mail("mail.google.com", 80);
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
-  http_server_props_manager_->SetAlternateProtocol(spdy_server_mail, 443,
-                                                   NPN_SPDY_3, 1.0);
+  AlternativeService alternative_service(NPN_SPDY_3, "mail.google.com", 443);
+  http_server_props_manager_->SetAlternativeService(spdy_server_mail,
+                                                    alternative_service, 1.0);
 
   // Run the task.
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
-  const AlternativeService alternate_protocol =
+  alternative_service =
       http_server_props_manager_->GetAlternativeService(spdy_server_mail);
-  EXPECT_EQ(443, alternate_protocol.port);
-  EXPECT_EQ(NPN_SPDY_3, alternate_protocol.protocol);
+  EXPECT_EQ(443, alternative_service.port);
+  EXPECT_EQ(NPN_SPDY_3, alternative_service.protocol);
 }
 
 TEST_F(HttpServerPropertiesManagerTest, SupportsQuic) {
@@ -523,8 +524,9 @@ TEST_F(HttpServerPropertiesManagerTest, Clear) {
 
   HostPortPair spdy_server_mail("mail.google.com", 443);
   http_server_props_manager_->SetSupportsSpdy(spdy_server_mail, true);
-  http_server_props_manager_->SetAlternateProtocol(spdy_server_mail, 443,
-                                                   NPN_SPDY_3, 1.0);
+  AlternativeService alternative_service(NPN_SPDY_3, "mail.google.com", 443);
+  http_server_props_manager_->SetAlternativeService(spdy_server_mail,
+                                                    alternative_service, 1.0);
   IPAddressNumber actual_address;
   CHECK(ParseIPLiteralToNumber("127.0.0.1", &actual_address));
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
@@ -650,10 +652,12 @@ TEST_F(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   const HostPortPair server_mail("mail.google.com", 80);
 
   // Set alternate protocol.
-  http_server_props_manager_->SetAlternateProtocol(server_www, 443, NPN_SPDY_3,
-                                                   1.0);
-  http_server_props_manager_->SetAlternateProtocol(server_mail, 444,
-                                                   NPN_SPDY_3_1, 0.2);
+  AlternativeService www_altsvc(NPN_SPDY_3, "www.google.com", 443);
+  AlternativeService mail_altsvc(NPN_SPDY_3_1, "mail.google.com", 444);
+  http_server_props_manager_->SetAlternativeService(server_www, www_altsvc,
+                                                    1.0);
+  http_server_props_manager_->SetAlternativeService(server_mail, mail_altsvc,
+                                                    0.2);
 
   // Set ServerNetworkStats.
   ServerNetworkStats stats;

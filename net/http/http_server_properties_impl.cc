@@ -258,20 +258,18 @@ AlternativeService HttpServerPropertiesImpl::GetAlternativeService(
   return uninitialize_alternative_service;
 }
 
-void HttpServerPropertiesImpl::SetAlternateProtocol(
+void HttpServerPropertiesImpl::SetAlternativeService(
     const HostPortPair& origin,
-    uint16 alternate_port,
-    AlternateProtocol alternate_protocol,
-    double alternate_probability) {
-  const AlternativeService alternative_service(alternate_protocol,
-                                               origin.host(), alternate_port);
+    const AlternativeService& alternative_service,
+    double alternative_probability) {
   if (IsAlternativeServiceBroken(alternative_service)) {
     DVLOG(1) << "Ignore alternative service since it is known to be broken.";
     return;
   }
 
-  const AlternateProtocolInfo alternate(alternate_port, alternate_protocol,
-                                        alternate_probability);
+  const AlternateProtocolInfo alternate(alternative_service.port,
+                                        alternative_service.protocol,
+                                        alternative_probability);
   AlternateProtocolMap::const_iterator it =
       GetAlternateProtocolIterator(origin);
   if (it != alternate_protocol_map_.end()) {
@@ -283,12 +281,12 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
                    << " from [Port: " << existing_alternate.port
                    << ", Protocol: " << existing_alternate.protocol
                    << ", Probability: " << existing_alternate.probability
-                   << "] to [Port: " << alternate_port
-                   << ", Protocol: " << alternate_protocol
-                   << ", Probability: " << alternate_probability << "].";
+                   << "] to [Port: " << alternative_service.port
+                   << ", Protocol: " << alternative_service.protocol
+                   << ", Probability: " << alternative_probability << "].";
     }
   } else {
-    if (alternate_probability >= alternate_protocol_probability_threshold_) {
+    if (alternative_probability >= alternate_protocol_probability_threshold_) {
       // TODO(rch): Consider the case where multiple requests are started
       // before the first completes. In this case, only one of the jobs
       // would reach this code, whereas all of them should should have.
@@ -310,9 +308,8 @@ void HttpServerPropertiesImpl::SetAlternateProtocol(
   }
 }
 
-void HttpServerPropertiesImpl::SetBrokenAlternateProtocol(
-    const HostPortPair& origin) {
-  const AlternativeService alternative_service = GetAlternativeService(origin);
+void HttpServerPropertiesImpl::MarkAlternativeServiceBroken(
+    const AlternativeService& alternative_service) {
   if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL) {
     LOG(DFATAL) << "Trying to mark unknown alternate protocol broken.";
     return;
@@ -346,25 +343,23 @@ bool HttpServerPropertiesImpl::IsAlternativeServiceBroken(
   return ContainsKey(broken_alternative_services_, alternative_service);
 }
 
-bool HttpServerPropertiesImpl::WasAlternateProtocolRecentlyBroken(
-    const HostPortPair& origin) {
-  const AlternativeService alternative_service = GetAlternativeService(origin);
+bool HttpServerPropertiesImpl::WasAlternativeServiceRecentlyBroken(
+    const AlternativeService& alternative_service) {
   if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
     return false;
   return ContainsKey(recently_broken_alternative_services_,
                      alternative_service);
 }
 
-void HttpServerPropertiesImpl::ConfirmAlternateProtocol(
-    const HostPortPair& origin) {
-  const AlternativeService alternative_service = GetAlternativeService(origin);
+void HttpServerPropertiesImpl::ConfirmAlternativeService(
+    const AlternativeService& alternative_service) {
   if (alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
     return;
   broken_alternative_services_.erase(alternative_service);
   recently_broken_alternative_services_.erase(alternative_service);
 }
 
-void HttpServerPropertiesImpl::ClearAlternateProtocol(
+void HttpServerPropertiesImpl::ClearAlternativeService(
     const HostPortPair& origin) {
   RemoveCanonicalHost(origin);
 
@@ -548,7 +543,7 @@ void HttpServerPropertiesImpl::ExpireBrokenAlternateProtocolMappings() {
 
     const AlternativeService alternative_service = it->first;
     broken_alternative_services_.erase(it);
-    ClearAlternateProtocol(
+    ClearAlternativeService(
         HostPortPair(alternative_service.host, alternative_service.port));
   }
   ScheduleBrokenAlternateProtocolMappingsExpiration();

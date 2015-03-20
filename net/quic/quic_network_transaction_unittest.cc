@@ -294,8 +294,10 @@ class QuicNetworkTransactionTest
   void AddQuicAlternateProtocolMapping(
       MockCryptoClientStream::HandshakeMode handshake_mode) {
     crypto_client_stream_factory_.set_handshake_mode(handshake_mode);
-    session_->http_server_properties()->SetAlternateProtocol(
-        HostPortPair::FromURL(request_.url), 80, QUIC, 1);
+    HostPortPair host_port_pair = HostPortPair::FromURL(request_.url);
+    AlternativeService alternative_service(QUIC, host_port_pair.host(), 80);
+    session_->http_server_properties()->SetAlternativeService(
+        host_port_pair, alternative_service, 1.0);
   }
 
   void ExpectBrokenAlternateProtocolMapping() {

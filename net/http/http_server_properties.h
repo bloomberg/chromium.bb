@@ -95,6 +95,12 @@ struct NET_EXPORT AlternativeService {
                      uint16 port)
       : protocol(protocol), host(host), port(port) {}
 
+  AlternativeService(AlternateProtocol protocol,
+                     const HostPortPair& host_port_pair)
+      : protocol(protocol),
+        host(host_port_pair.host()),
+        port(host_port_pair.port()) {}
+
   AlternativeService(const AlternativeService& alternative_service) = default;
   AlternativeService& operator=(const AlternativeService& alternative_service) =
       default;
@@ -211,14 +217,16 @@ class NET_EXPORT HttpServerProperties {
   virtual AlternativeService GetAlternativeService(
       const HostPortPair& origin) = 0;
 
-  // Sets the Alternate-Protocol for |server|.
-  virtual void SetAlternateProtocol(const HostPortPair& origin,
-                                    uint16 alternate_port,
-                                    AlternateProtocol alternate_protocol,
-                                    double probability) = 0;
+  // Sets the alternative service for |origin|.
+  // TODO(bnc): alternative_service.host is currently ignored, fix it.
+  virtual void SetAlternativeService(
+      const HostPortPair& origin,
+      const AlternativeService& alternative_service,
+      double alternative_probability) = 0;
 
-  // Sets the Alternate-Protocol for |server| to be BROKEN.
-  virtual void SetBrokenAlternateProtocol(const HostPortPair& origin) = 0;
+  // Marks |alternative_service| as broken.
+  virtual void MarkAlternativeServiceBroken(
+      const AlternativeService& alternative_service) = 0;
 
   // Marks |alternative_service| as recently broken.
   virtual void MarkAlternativeServiceRecentlyBroken(
@@ -228,24 +236,25 @@ class NET_EXPORT HttpServerProperties {
   virtual bool IsAlternativeServiceBroken(
       const AlternativeService& alternative_service) = 0;
 
-  // Returns true if Alternate-Protocol for |server| was recently BROKEN.
-  virtual bool WasAlternateProtocolRecentlyBroken(
-      const HostPortPair& origin) = 0;
+  // Returns true iff |alternative_service| was recently broken.
+  virtual bool WasAlternativeServiceRecentlyBroken(
+      const AlternativeService& alternative_service) = 0;
 
-  // Confirms that Alternate-Protocol for |server| is working.
-  virtual void ConfirmAlternateProtocol(const HostPortPair& origin) = 0;
+  // Confirms that |alternative_service| is working.
+  virtual void ConfirmAlternativeService(
+      const AlternativeService& alternative_service) = 0;
 
-  // Clears the Alternate-Protocol for |server|.
-  virtual void ClearAlternateProtocol(const HostPortPair& origin) = 0;
+  // Clears the alternative service for |origin|.
+  virtual void ClearAlternativeService(const HostPortPair& origin) = 0;
 
   // Returns all Alternate-Protocol mappings.
   virtual const AlternateProtocolMap& alternate_protocol_map() const = 0;
 
-  // Sets the threshold to be used when evaluating Alternate-Protocol
-  // advertisments. Only advertisements with a with a probability
-  // greater than |threshold| will be honored. |threshold| must be
-  // between 0 and 1 inclusive. Hence, a threshold of 0 implies that
-  // all advertisements will be honored.
+  // Sets the threshold to be used when evaluating alternative service
+  // advertisments. Only advertisements with a probability greater than or equal
+  // to |threshold| will be honored. |threshold| must be between 0.0 and 1.0
+  // inclusive. Hence, a threshold of 0.0 implies that all advertisements will
+  // be honored.
   virtual void SetAlternateProtocolProbabilityThreshold(
       double threshold) = 0;
 

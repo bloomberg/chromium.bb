@@ -7840,9 +7840,10 @@ scoped_refptr<HttpNetworkSession> SetupSessionForGroupNameTests(
 
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
-  http_server_properties->SetAlternateProtocol(
-      HostPortPair("host.with.alternate", 80), 443,
-      AlternateProtocolFromNextProto(next_proto), 1.0);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(next_proto), "alternative.host", 443);
+  http_server_properties->SetAlternativeService(
+      HostPortPair("host.with.alternate", 80), alternative_service, 1.0);
 
   return session;
 }
@@ -8785,9 +8786,11 @@ TEST_P(HttpNetworkTransactionTest, EmptyAlternateProtocolHeader) {
   HostPortPair http_host_port_pair("www.google.com", 80);
   HttpServerProperties& http_server_properties =
       *session->http_server_properties();
-  http_server_properties.SetAlternateProtocol(http_host_port_pair, 80, QUIC,
-                                              1.0);
-  AlternativeService alternative_service =
+  AlternativeService alternative_service(QUIC, "", 80);
+  http_server_properties.SetAlternativeService(http_host_port_pair,
+                                               alternative_service, 1.0);
+
+  alternative_service =
       http_server_properties.GetAlternativeService(http_host_port_pair);
   EXPECT_EQ(alternative_service.protocol, QUIC);
 
@@ -8845,9 +8848,11 @@ TEST_P(HttpNetworkTransactionTest,
   const HostPortPair host_port_pair = HostPortPair::FromURL(request.url);
   // Port must be < 1024, or the header will be ignored (since initial port was
   // port 80 (another restricted port).
-  http_server_properties->SetAlternateProtocol(
-      host_port_pair, 666 /* port is ignored by MockConnect anyway */,
-      AlternateProtocolFromNextProto(GetParam()), 1.0);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(GetParam()), "www.google.com",
+      666); /* port is ignored by MockConnect anyway */
+  http_server_properties->SetAlternativeService(host_port_pair,
+                                                alternative_service, 1.0);
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
@@ -8866,7 +8871,7 @@ TEST_P(HttpNetworkTransactionTest,
   ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
   EXPECT_EQ("hello world", response_data);
 
-  const AlternativeService alternative_service =
+  alternative_service =
       http_server_properties->GetAlternativeService(host_port_pair);
   EXPECT_NE(UNINITIALIZED_ALTERNATE_PROTOCOL, alternative_service.protocol);
   EXPECT_TRUE(
@@ -8905,9 +8910,11 @@ TEST_P(HttpNetworkTransactionTest,
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   const int kUnrestrictedAlternatePort = 1024;
-  http_server_properties->SetAlternateProtocol(
-      HostPortPair::FromURL(restricted_port_request.url),
-      kUnrestrictedAlternatePort, AlternateProtocolFromNextProto(GetParam()),
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(GetParam()), "www.google.com",
+      kUnrestrictedAlternatePort);
+  http_server_properties->SetAlternativeService(
+      HostPortPair::FromURL(restricted_port_request.url), alternative_service,
       1.0);
 
   scoped_ptr<HttpTransaction> trans(
@@ -8956,9 +8963,11 @@ TEST_P(HttpNetworkTransactionTest,
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   const int kUnrestrictedAlternatePort = 1024;
-  http_server_properties->SetAlternateProtocol(
-      HostPortPair::FromURL(restricted_port_request.url),
-      kUnrestrictedAlternatePort, AlternateProtocolFromNextProto(GetParam()),
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(GetParam()), "www.google.com",
+      kUnrestrictedAlternatePort);
+  http_server_properties->SetAlternativeService(
+      HostPortPair::FromURL(restricted_port_request.url), alternative_service,
       1.0);
 
   scoped_ptr<HttpTransaction> trans(
@@ -9004,9 +9013,11 @@ TEST_P(HttpNetworkTransactionTest,
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   const int kRestrictedAlternatePort = 80;
-  http_server_properties->SetAlternateProtocol(
-      HostPortPair::FromURL(restricted_port_request.url),
-      kRestrictedAlternatePort, AlternateProtocolFromNextProto(GetParam()),
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(GetParam()), "www.google.com",
+      kRestrictedAlternatePort);
+  http_server_properties->SetAlternativeService(
+      HostPortPair::FromURL(restricted_port_request.url), alternative_service,
       1.0);
 
   scoped_ptr<HttpTransaction> trans(
@@ -9053,9 +9064,11 @@ TEST_P(HttpNetworkTransactionTest,
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   const int kRestrictedAlternatePort = 80;
-  http_server_properties->SetAlternateProtocol(
-      HostPortPair::FromURL(unrestricted_port_request.url),
-      kRestrictedAlternatePort, AlternateProtocolFromNextProto(GetParam()),
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(GetParam()), "www.google.com",
+      kRestrictedAlternatePort);
+  http_server_properties->SetAlternativeService(
+      HostPortPair::FromURL(unrestricted_port_request.url), alternative_service,
       1.0);
 
   scoped_ptr<HttpTransaction> trans(
@@ -9101,9 +9114,11 @@ TEST_P(HttpNetworkTransactionTest,
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   const int kUnrestrictedAlternatePort = 1024;
-  http_server_properties->SetAlternateProtocol(
-      HostPortPair::FromURL(unrestricted_port_request.url),
-      kUnrestrictedAlternatePort, AlternateProtocolFromNextProto(GetParam()),
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(GetParam()), "www.google.com",
+      kUnrestrictedAlternatePort);
+  http_server_properties->SetAlternativeService(
+      HostPortPair::FromURL(unrestricted_port_request.url), alternative_service,
       1.0);
 
   scoped_ptr<HttpTransaction> trans(
@@ -9144,9 +9159,11 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
   base::WeakPtr<HttpServerProperties> http_server_properties =
       session->http_server_properties();
   const int kUnsafePort = 7;
-  http_server_properties->SetAlternateProtocol(
-      HostPortPair::FromURL(request.url), kUnsafePort,
-      AlternateProtocolFromNextProto(GetParam()), 1.0);
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(GetParam()), "www.google.com",
+      kUnsafePort);
+  http_server_properties->SetAlternativeService(
+      HostPortPair::FromURL(request.url), alternative_service, 1.0);
 
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));

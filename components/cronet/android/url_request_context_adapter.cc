@@ -187,11 +187,11 @@ void URLRequestContextAdapter::InitRequestContextOnNetworkThread() {
 
       net::HostPortPair quic_hint_host_port_pair(canon_host,
                                                  quic_hint.port);
-      context_->http_server_properties()->SetAlternateProtocol(
-          quic_hint_host_port_pair,
-          static_cast<uint16>(quic_hint.alternate_port),
-          net::AlternateProtocol::QUIC,
-          1.0f);
+      net::AlternativeService alternative_service(
+          net::AlternateProtocol::QUIC, "",
+          static_cast<uint16>(quic_hint.alternate_port));
+      context_->http_server_properties()->SetAlternativeService(
+          quic_hint_host_port_pair, alternative_service, 1.0f);
     }
   }
   load_disable_cache_ = config_->load_disable_cache;

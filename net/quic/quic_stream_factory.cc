@@ -646,9 +646,9 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
   }
 
   scoped_ptr<Job> job(new Job(this, host_resolver_, host_port_pair, is_https,
-                              WasAlternateProtocolRecentlyBroken(server_id),
-                              privacy_mode, method == "POST" /* is_post */,
-                              quic_server_info, net_log));
+                              WasQuicRecentlyBroken(server_id), privacy_mode,
+                              method == "POST" /* is_post */, quic_server_info,
+                              net_log));
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
@@ -668,8 +668,7 @@ void QuicStreamFactory::CreateAuxilaryJob(const QuicServerId server_id,
                                           bool is_post,
                                           const BoundNetLog& net_log) {
   Job* aux_job = new Job(this, host_resolver_, server_id.host_port_pair(),
-                         server_id.is_https(),
-                         WasAlternateProtocolRecentlyBroken(server_id),
+                         server_id.is_https(), WasQuicRecentlyBroken(server_id),
                          server_id.privacy_mode(), is_post, nullptr, net_log);
   active_jobs_[server_id].insert(aux_job);
   task_runner_->PostTask(FROM_HERE,
@@ -1063,11 +1062,14 @@ int64 QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
   return stats->srtt.InMicroseconds();
 }
 
-bool QuicStreamFactory::WasAlternateProtocolRecentlyBroken(
+bool QuicStreamFactory::WasQuicRecentlyBroken(
     const QuicServerId& server_id) const {
-  return http_server_properties_ &&
-         http_server_properties_->WasAlternateProtocolRecentlyBroken(
-             server_id.host_port_pair());
+  if (!http_server_properties_)
+    return false;
+  const AlternativeService alternative_service(QUIC,
+                                               server_id.host_port_pair());
+  return http_server_properties_->WasAlternativeServiceRecentlyBroken(
+      alternative_service);
 }
 
 bool QuicStreamFactory::CryptoConfigCacheIsEmpty(

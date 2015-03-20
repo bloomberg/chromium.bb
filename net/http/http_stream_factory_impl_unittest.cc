@@ -1324,8 +1324,9 @@ TEST_P(HttpStreamFactoryTest, DISABLED_OrphanedWebSocketStream) {
   request_info.url = GURL("ws://www.google.com:8888");
   request_info.load_flags = 0;
 
-  session->http_server_properties()->SetAlternateProtocol(
-      HostPortPair("www.google.com", 8888), 9999, NPN_SPDY_3, 1.0);
+  session->http_server_properties()->SetAlternativeService(
+      HostPortPair("www.google.com", 8888),
+      AlternativeService(NPN_SPDY_3, "www.google.com", 9999), 1.0);
 
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;

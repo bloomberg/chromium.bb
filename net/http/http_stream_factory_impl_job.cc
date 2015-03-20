@@ -1494,8 +1494,8 @@ void HttpStreamFactoryImpl::Job::MaybeMarkAlternateProtocolBroken() {
     if (job_status_ == STATUS_BROKEN && other_job_status_ == STATUS_SUCCEEDED) {
       HistogramBrokenAlternateProtocolLocation(
           BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB_ALT);
-      session_->http_server_properties()->SetBrokenAlternateProtocol(
-          HostPortPair::FromURL(*original_url_));
+      session_->http_server_properties()->MarkAlternativeServiceBroken(
+          alternative_service_);
     }
     return;
   }
@@ -1503,8 +1503,8 @@ void HttpStreamFactoryImpl::Job::MaybeMarkAlternateProtocolBroken() {
   if (job_status_ == STATUS_SUCCEEDED && other_job_status_ == STATUS_BROKEN) {
     HistogramBrokenAlternateProtocolLocation(
         BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB_MAIN);
-    session_->http_server_properties()->SetBrokenAlternateProtocol(
-        HostPortPair::FromURL(request_info_.url));
+    session_->http_server_properties()->MarkAlternativeServiceBroken(
+        other_job_alternative_service_);
   }
 }
 
