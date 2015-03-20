@@ -18,14 +18,14 @@ html">
         <core-label horizontal layout center>
           <span class="location-label">Download location:</span>
           <cr-input id="downloadsPath" floatingLabel="false"
-              value="{{prefs.settings.download.defaultDirectory}}" readonly for>
+              value="{{prefs.settings.download.default_directory.value}}" readonly for>
           </cr-input>
         </core-label>
         <cr-button id="changeDownloadsPath"
             on-click="{{selectDownloadLocation}}">Change</cr-button>
       </div>
       <core-label horizontal layout>
-        <cr-checkbox checked="{{prefs.settings.download.promptForDownload}}" for>
+        <cr-checkbox checked="{{prefs.settings.download.prompt_for_download.value}}" for>
         </cr-checkbox>
         <span>Ask where to save each file before downloading</span>
       </core-label>

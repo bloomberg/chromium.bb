@@ -16,96 +16,206 @@
  * @group Chrome Settings Elements
  * @element cr-settings-a11y-page
  */
-Polymer('cr-settings-prefs', {
-  publish: {
+(function() {
+  'use strict';
+
+  /**
+   * A list of all pref paths used on all platforms in the UI.
+   * TODO(jlklein): This is a temporary workaround that needs to be removed
+   * once settingsPrivate is implemented with the fetchAll function. We will
+   * not need to tell the settingsPrivate API which prefs to fetch.
+   * @const {!Array<string>}
+   */
+  var PREFS_TO_FETCH = [
+    'download.default_directory',
+    'download.prompt_for_download',
+  ];
+
+  /**
+   * A list of all CrOS-only pref paths used in the UI.
+   * TODO(jlklein): This is a temporary workaround that needs to be removed
+   * once settingsPrivate is implemented with the fetchAll function. We will
+   * not need to tell the settingsPrivate API which prefs to fetch.
+   * @const {!Array<string>}
+   */
+  var CROS_ONLY_PREFS = [
+    'settings.accessibility',
+    'settings.a11y.autoclick',
+    'settings.a11y.autoclick_delay_ms',
+    'settings.a11y.enable_menu',
+    'settings.a11y.high_contrast_enabled',
+    'settings.a11y.large_cursor_enabled',
+    'settings.a11y.screen_magnifier',
+    'settings.a11y.sticky_keys_enabled',
+    'settings.a11y.virtual_keyboard',
+    'settings.touchpad.enable_tap_dragging',
+  ];
+
+  Polymer('cr-settings-prefs', {
+    publish: {
+      /**
+       * Object containing all preferences.
+       *
+       * @attribute settings
+       * @type CrSettingsPrefs.Settings
+       * @default null
+       */
+      settings: null,
+    },
+
+    /** @override */
+    created: function() {
+      this.settings = {};
+      this.fetchSettings_();
+    },
+
     /**
-     * Accessibility preferences state.
-     *
-     * @attribute settings
-     * @type CrSettingsPrefs.Settings
-     * @default null
+     * Fetches all settings from settingsPrivate.
+     * TODO(jlklein): Implement using settingsPrivate when it's available.
+     * @private
      */
-    settings: null,
-  },
+    fetchSettings_: function() {
+      // *Sigh* We need to export the function name to global scope. This is
+      // needed the CoreOptionsHandler can only call a function in the global
+      // scope.
+      var callbackName = 'CrSettingsPrefs_onPrefsFetched';
+      window[callbackName] = this.onPrefsFetched_.bind(this);
+      var prefsToFetch = PREFS_TO_FETCH;
+      if (cr.isChromeOS)
+        prefsToFetch.concat(CROS_ONLY_PREFS);
 
-  /** @override */
-  created: function() {
-    'use strict';
+      chrome.send('fetchPrefs', [callbackName].concat(prefsToFetch));
+    },
 
-    this.settings = {};
-    this.initializeA11y_();
-    this.initializeDownloads_();
-    var observer = new ObjectObserver(this.settings);
-    observer.open(this.propertyChangeCallback_.bind(this, 'settings'));
+    /**
+     * Fetches all settings from settingsPrivate.
+     * @param {!Object} dict Map of fetched property values.
+     * @private
+     */
+    onPrefsFetched_: function(dict) {
+      this.parsePrefDict_('', dict);
+    },
 
-    // For all Object properties of settings, create an ObjectObserver.
-    for (let key in this.settings) {
-      if (typeof this.settings[key] == 'object') {
-        let keyObserver = new ObjectObserver(this.settings[key]);
+    /**
+     * Helper function for parsing the prefs dict and constructing Preference
+     * objects.
+     * @param {string} prefix The namespace prefix of the pref.
+     * @param {!Object} dict Map with preference values.
+     * @private
+     */
+    parsePrefDict_: function(prefix, dict) {
+      for (let prefName in dict) {
+        let prefObj = dict[prefName];
+        if (!this.isPrefObject_(prefObj)) {
+          this.parsePrefDict_(prefix + prefName + '.', prefObj);
+          continue;
+        }
+
+        // prefObj is actually a pref object. Construct the path to pref using
+        // prefix, add the pref to this.settings, and observe changes.
+        let root = this.settings;
+        let pathPieces = prefix.slice(0, -1).split('.');
+        pathPieces.forEach(function(pathPiece) {
+          root[pathPiece] = root[pathPiece] || {};
+          root = root[pathPiece];
+        });
+
+        root[prefName] = prefObj;
+        let keyObserver = new ObjectObserver(prefObj);
         keyObserver.open(
-            this.propertyChangeCallback_.bind(this, 'settings.' + key));
+            this.propertyChangeCallback_.bind(this, prefix + prefName));
       }
-    }
-  },
+    },
 
-  /**
-   * Initializes some defaults for the a11y settings.
-   * @private
-   */
-  initializeA11y_: function() {
-    this.settings.a11y = {
-      enableMenu: true,
-      largeCursorEnabled: false,
-      highContrastEnabled: false,
-      stickyKeysEnabled: false,
-      screenMagnifier: false,
-      enableTapDragging: false,
-      autoclick: false,
-      autoclickDelayMs: 200,
-      virtualKeyboard: false,
-    };
+    /**
+     * Determines whether the passed object is a pref object from Chrome.
+     * @param {*} rawPref The object to check.
+     * @return {boolean} True if the passes object is a pref.
+     * @private
+     */
+    isPrefObject_: function(rawPref) {
+      return rawPref && typeof rawPref == 'object' &&
+          rawPref.hasOwnProperty('value') &&
+          rawPref.hasOwnProperty('disabled');
+    },
 
-    this.settings.touchpad = {
-      enableTapDragging: false,
-    };
+    /**
+     * Called when a property of a pref changes.
+     * @param {string} propertyPath The path before the property names.
+     * @param {!Array<string>} added An array of keys which were added.
+     * @param {!Array<string>} removed An array of keys which were removed.
+     * @param {!Array<string>} changed An array of keys of properties whose
+     *     values changed.
+     * @param {function(string) : *} getOldValueFn A function which takes a
+     *     property name and returns the old value for that property.
+     * @private
+     */
+    propertyChangeCallback_: function(
+        propertyPath, added, removed, changed, getOldValueFn) {
+      for (let property in changed) {
+        // UI should only be able to change the value of a setting for now, not
+        // disabled, etc.
+        assert(property == 'value');
 
-    // ChromeVox is enbaled/disabled via the 'settings.accessibility' boolean
-    // pref.
-    this.settings.accessibility = false;
+        let newValue = changed[property];
+        assert(newValue !== undefined);
 
-    // TODO(jlklein): Actually pull the data out of prefs and initialize.
-  },
+        switch (typeof newValue) {
+          case 'boolean':
+            this.setBooleanPref_(
+                propertyPath, /** @type {boolean} */ (newValue));
+            break;
+          case 'number':
+            this.setNumberPref_(
+                propertyPath, /** @type {number} */ (newValue));
+            break;
+          case 'string':
+            this.setStringPref_(
+                propertyPath, /** @type {string} */ (newValue));
+            break;
+          case 'object':
+            assertInstanceof(newValue, Array);
+            this.setArrayPref_(
+                propertyPath, /** @type {!Array} */ (newValue));
+        }
+      }
+    },
 
-  /**
-   * Initializes some defaults for the downloads settings.
-   * @private
-   */
-  initializeDownloads_: function() {
-    this.settings.download = {
-      downloadLocation: '',
-      promptForDownload: false,
-    };
-  },
+    /**
+     * @param {string} propertyPath The full path of the pref.
+     * @param {boolean} value The new value of the pref.
+     * @private
+     */
+    setBooleanPref_: function(propertyPath, value) {
+      chrome.send('setBooleanPref', [propertyPath, value]);
+    },
 
-  /**
-   * @param {string} propertyPath The path before the property names.
-   * @param {!Array<string>} added An array of keys which were added.
-   * @param {!Array<string>} removed An array of keys which were removed.
-   * @param {!Array<string>} changed An array of keys of properties whose
-   *     values changed.
-   * @param {function(string) : *} getOldValueFn A function which takes a
-   *     property name and returns the old value for that property.
-   * @private
-   */
-  propertyChangeCallback_: function(
-      propertyPath, added, removed, changed, getOldValueFn) {
-    Object.keys(changed).forEach(function(property) {
-      console.log(
-          `${propertyPath}.${property}`,
-          `old : ${getOldValueFn(property)}`,
-          `newValue : ${changed[property]}`);
+    /**
+     * @param {string} propertyPath The full path of the pref.
+     * @param {string} value The new value of the pref.
+     * @private
+     */
+    setStringPref_: function(propertyPath, value) {
+      chrome.send('setStringPref', [propertyPath, value]);
+    },
 
-      // TODO(jlklein): Actually set the changed property back to prefs.
-    });
-   },
-});
+    /**
+     * @param {string} propertyPath The full path of the pref.
+     * @param {number} value The new value of the pref.
+     * @private
+     */
+    setNumberPref_: function(propertyPath, value) {
+      var setFn = value % 1 == 0 ? 'setIntegerPref' : 'setDoublePref';
+      chrome.send(setFn, [propertyPath, value]);
+    },
+
+    /**
+     * @param {string} propertyPath The full path of the pref.
+     * @param {!Array} value The new value of the pref.
+     * @private
+     */
+    setArrayPref_: function(propertyPath, value) {
+      chrome.send('setListPref', [propertyPath, value]);
+    },
+  });
+})();

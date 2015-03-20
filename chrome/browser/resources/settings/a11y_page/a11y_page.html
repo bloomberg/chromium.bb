@@ -14,22 +14,25 @@
     <paper-shadow layout vertical cross-fade>
       <cr-settings-page-header page="{{}}"></cr-settings-page-header>
       <core-label horizontal layout>
-        <cr-checkbox checked="{{prefs.settings.a11y.enableMenu}}" for>
+        <cr-checkbox checked="{{prefs.settings.a11y.enable_menu.value}}" for>
         </cr-checkbox>
         <span>Show accessibility options in the system menu</span>
       </core-label>
       <core-label horizontal layout>
-        <cr-checkbox checked="{{prefs.settings.a11y.largeCursorEnabled}}" for>
+        <cr-checkbox
+            checked="{{prefs.settings.a11y.large_cursor_enabled.value}}" for>
         </cr-checkbox>
         <span>Show large mouse cursor</span>
       </core-label>
       <core-label horizontal layout>
-        <cr-checkbox checked="{{prefs.settings.a11y.highContrastEnabled}}" for>
+        <cr-checkbox
+            checked="{{prefs.settings.a11y.high_contrast_enabled.value}}" for>
         </cr-checkbox>
         <span>Use high contrast mode</span>
       </core-label>
       <core-label horizontal layout>
-        <cr-checkbox checked="{{prefs.settings.a11y.stickyKeysEnabled}}" for>
+        <cr-checkbox
+            checked="{{prefs.settings.a11y.sticky_keys_enabled.value}}" for>
         </cr-checkbox>
         <span>Enable sticky keys</span>
         <span class="sub-label">
@@ -37,7 +40,7 @@
         </span>
       </core-label>
       <core-label horizontal layout>
-        <cr-checkbox checked="{{prefs.settings.accessibility}}" for>
+        <cr-checkbox checked="{{prefs.settings.accessibility.value}}" for>
         </cr-checkbox>
         <span>Enable ChromeVox</span>
         <span class="sub-label">
@@ -45,26 +48,27 @@
         </span>
       </core-label>
       <core-label horizontal layout>
-        <cr-checkbox checked="{{prefs.settings.a11y.screenMagnifier}}" for>
-        </cr-checkbox>
+        <cr-checkbox checked="{{prefs.settings.a11y.screen_magnifier.value}}"
+            for></cr-checkbox>
         <span>Enable screen magnifier</span>
       </core-label>
       <core-label horizontal layout>
-        <cr-checkbox checked="{{prefs.settings.touchpad.enableTapDragging}}" for>
+        <cr-checkbox
+            checked="{{prefs.settings.touchpad.enable_tap_dragging.value}}" for>
         </cr-checkbox>
         <span>Enable tap dragging</span>
       </core-label>
       <core-label horizontal layout>
-        <cr-checkbox checked="{{prefs.settings.a11y.autoclick}}" for>
+        <cr-checkbox checked="{{prefs.settings.a11y.autoclick.value}}" for>
         </cr-checkbox>
         <span>Automatically click when the mouse pointer stops</span>
       </core-label>
       <core-label horizontal layout center class="autoclick-delay-label"
-       hidden?="{{!prefs.settings.a11y.autoclick}}">
+       hidden?="{{!prefs.settings.a11y.autoclick.value}}">
         <span>Delay before click:</span>
         <cr-dropdown-menu class="autoclick-dropdown">
           <core-menu class="menu" valueAttr="value" selectedAttribute=""
-              selected="{{prefs.settings.a11y.autoclickDelayMs}}">
+              selected="{{prefs.settings.a11y.autoclick_delay_ms.value}}">
             <paper-item value="200">extremely short</paper-item>
             <paper-item value="400">very short</paper-item>
             <paper-item value="600">short</paper-item>
@@ -74,7 +78,8 @@
         </cr-dropdown-menu>
       </core-label>
       <core-label horizontal layout>
-        <cr-checkbox checked="{{prefs.settings.a11y.virtualKeyboard}}" for>
+        <cr-checkbox
+            checked="{{prefs.settings.a11y.virtual_keyboard.value}}" for>
         </cr-checkbox>
         <span>Enable on-screen keyboard</span>
       </core-label>
