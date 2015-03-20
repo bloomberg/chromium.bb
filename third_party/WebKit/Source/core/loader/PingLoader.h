@@ -79,6 +79,8 @@ protected:
 
     static void start(LocalFrame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials = AllowStoredCredentials);
 
+    void dispose();
+
 private:
     virtual void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) override;
     virtual void didReceiveData(blink::WebURLLoader*, const char*, int, int) override;
@@ -88,8 +90,6 @@ private:
     void timeout(Timer<PingLoader>*);
 
     void didFailLoading(Page*);
-
-    void dispose();
 
     OwnPtr<blink::WebURLLoader> m_loader;
     Timer<PingLoader> m_timeout;

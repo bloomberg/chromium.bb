@@ -216,7 +216,7 @@ bool CrossOriginAccessControl::isLegalRedirectLocation(const KURL& requestURL, S
     return true;
 }
 
-bool CrossOriginAccessControl::handleRedirect(Resource* resource, SecurityOrigin* securityOrigin, ResourceRequest& request, const ResourceResponse& redirectResponse, ResourceLoaderOptions& options, String& errorMessage)
+bool CrossOriginAccessControl::handleRedirect(SecurityOrigin* securityOrigin, ResourceRequest& request, const ResourceResponse& redirectResponse, StoredCredentials withCredentials, ResourceLoaderOptions& options, String& errorMessage)
 {
     // http://www.w3.org/TR/cors/#redirect-steps terminology:
     const KURL& originalURL = redirectResponse.url();
@@ -233,7 +233,6 @@ bool CrossOriginAccessControl::handleRedirect(Resource* resource, SecurityOrigin
         bool allowRedirect = isLegalRedirectLocation(requestURL, errorDescription);
         if (allowRedirect) {
             // Step 5: perform resource sharing access check.
-            StoredCredentials withCredentials = resource->lastResourceRequest().allowStoredCredentials() ? AllowStoredCredentials : DoNotAllowStoredCredentials;
             allowRedirect = passesAccessControlCheck(redirectResponse, withCredentials, securityOrigin, errorDescription);
             if (allowRedirect) {
                 RefPtr<SecurityOrigin> originalOrigin = SecurityOrigin::create(originalURL);

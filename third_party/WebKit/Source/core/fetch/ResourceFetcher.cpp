@@ -1160,7 +1160,8 @@ bool ResourceFetcher::canAccessRedirect(Resource* resource, ResourceRequest& req
             sourceOrigin = context().securityOrigin();
 
         String errorMessage;
-        if (!CrossOriginAccessControl::handleRedirect(resource, sourceOrigin, request, redirectResponse, options, errorMessage)) {
+        StoredCredentials withCredentials = resource->lastResourceRequest().allowStoredCredentials() ? AllowStoredCredentials : DoNotAllowStoredCredentials;
+        if (!CrossOriginAccessControl::handleRedirect(sourceOrigin, request, redirectResponse, withCredentials, options, errorMessage)) {
             if (resource->type() == Resource::Font)
                 toFontResource(resource)->setCORSFailed();
             context().addConsoleMessage(errorMessage);

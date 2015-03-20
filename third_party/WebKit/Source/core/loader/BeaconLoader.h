@@ -7,6 +7,8 @@
 
 #include "core/loader/PingLoader.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebURLLoaderClient.h"
+#include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -16,6 +18,7 @@ class DOMArrayBufferView;
 class DOMFormData;
 class KURL;
 class LocalFrame;
+class SecurityOrigin;
 
 // Issue asynchronous beacon transmission loads independent of LocalFrame
 // staying alive. PingLoader providing the service.
@@ -23,7 +26,7 @@ class BeaconLoader final : public PingLoader {
     WTF_MAKE_NONCOPYABLE(BeaconLoader);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    virtual ~BeaconLoader() { }
+    ~BeaconLoader() override { }
 
     static bool sendBeacon(LocalFrame*, int, const KURL&, const String&, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, PassRefPtr<DOMArrayBufferView>, int&);
@@ -32,6 +35,13 @@ public:
 
 private:
     class Sender;
+
+    BeaconLoader(LocalFrame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials);
+
+    RefPtr<SecurityOrigin> m_beaconOrigin;
+
+    // WebURLLoaderClient
+    void willSendRequest(WebURLLoader*, WebURLRequest&, const WebURLResponse&) override;
 };
 
 } // namespace blink

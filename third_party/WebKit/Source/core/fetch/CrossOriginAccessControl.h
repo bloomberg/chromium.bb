@@ -45,7 +45,7 @@ class SecurityOrigin;
 class CrossOriginAccessControl {
 public:
     static bool isLegalRedirectLocation(const KURL&, String& errorDescription);
-    static bool handleRedirect(Resource*, SecurityOrigin*, ResourceRequest&, const ResourceResponse&, ResourceLoaderOptions&, String&);
+    static bool handleRedirect(SecurityOrigin*, ResourceRequest&, const ResourceResponse&, StoredCredentials, ResourceLoaderOptions&, String&);
 };
 
 bool isOnAccessControlResponseHeaderWhitelist(const String&);
