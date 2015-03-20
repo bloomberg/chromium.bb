@@ -32,6 +32,13 @@ crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.htm
 
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
+crbug.com/465096 fast/block/basic/quirk-percent-height-table-cell.html [ NeedsRebaseline ]
+crbug.com/465096 fast/table/colspan-with-all-percent-cells.html [ NeedsRebaseline ]
+crbug.com/465096 fast/html/details-writing-mode.html [ NeedsRebaseline ]
+crbug.com/465096 virtual/slimmingpaint/fast/table/colspan-with-all-percent-cells.html [ NeedsRebaseline ]
+crbug.com/465096 virtual/slimmingpaint/fast/html/details-writing-mode.html [ NeedsRebaseline ]
+crbug.com/465096 virtual/slimmingpaint/fast/block/basic/quirk-percent-height-table-cell.html [ NeedsRebaseline ]
+
 crbug.com/456357 virtual/slimmingpaint/fast/overflow/line-clamp.html [ Crash ]
 crbug.com/450725 virtual/slimmingpaint/svg/text/remove-tspan-from-text.html [ ImageOnlyFailure NeedsManualRebaseline ]
 crbug.com/450725 virtual/slimmingpaint/svg/filters/filter-refresh.svg [ Crash NeedsManualRebaseline ]
