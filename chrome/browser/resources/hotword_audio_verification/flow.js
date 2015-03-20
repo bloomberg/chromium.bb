@@ -545,12 +545,15 @@
 
   /**
    * Displays the current step. If the current step is not the first step,
-   * also hides the previous step.
+   * also hides the previous step. Focuses the current step's first button.
    * @private
    */
   Flow.prototype.showStep_ = function() {
-    var currentStep = this.currentFlow_[this.currentStepIndex_];
-    document.getElementById(currentStep).hidden = false;
+    var currentStepId = this.currentFlow_[this.currentStepIndex_];
+    var currentStep = document.getElementById(currentStepId);
+    currentStep.hidden = false;
+
+    cr.ui.setInitialFocus(currentStep);
 
     var previousStep = null;
     if (this.currentStepIndex_ > 0)
