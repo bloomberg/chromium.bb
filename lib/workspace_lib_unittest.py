@@ -148,3 +148,32 @@ class WorkspaceLibTest(cros_test_lib.TempDirTestCase):
     # Ensure all of config is there afterwords.
     config = workspace_lib._ReadLocalConfig(self.workspace_dir)
     self.assertEqual({'version': '1.2.3', 'foo': 'bar'}, config)
+
+  @mock.patch('os.getcwd')
+  @mock.patch.object(cros_build_lib, 'IsInsideChroot', return_value=False)
+  def testPathToLocator(self, _mock_inside, mock_cwd):
+    """Tests the path to locator conversion."""
+    ws = self.workspace_dir
+    mock_cwd.return_value = ws
+
+    foo_path = workspace_lib.PathToLocator(os.path.join(ws, 'foo'))
+    baz_path = workspace_lib.PathToLocator(os.path.join(ws, 'bar', 'foo',
+                                                        'baz'))
+    daisy_path = workspace_lib.PathToLocator(os.path.join(constants.SOURCE_ROOT,
+                                                          'src', 'overlays',
+                                                          'overlay-daisy'))
+    some_path = workspace_lib.PathToLocator(os.path.join(constants.SOURCE_ROOT,
+                                                         'srcs', 'bar'))
+
+    self.assertEqual('//foo', foo_path)
+    self.assertEqual('//bar/foo/baz', baz_path)
+    self.assertEqual('board:daisy', daisy_path)
+    self.assertEqual(None, some_path)
+
+    def assertReversible(loc):
+      path = workspace_lib.LocatorToPath(loc)
+      self.assertEqual(loc, workspace_lib.PathToLocator(path))
+
+    assertReversible('//foo')
+    assertReversible('//foo/bar/baz')
+    assertReversible('board:gizmo')

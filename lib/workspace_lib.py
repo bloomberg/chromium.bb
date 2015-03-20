@@ -34,6 +34,14 @@ WORKSPACE_CONFIG = 'workspace-config.json'
 WORKSPACE_LOCAL_CONFIG = '.local.json'
 WORKSPACE_CHROOT_DIR = '.chroot'
 
+# Prefixes used by locators.
+_BOARD_LOCATOR_PREFIX = 'board:'
+_WORKSPACE_LOCATOR_PREFIX = '//'
+
+
+class LocatorNotResolved(Exception):
+  """Given locator could not be resolved."""
+
 
 def WorkspacePath(workspace_reference_dir=None):
   """Returns the path to the current workspace.
@@ -143,3 +151,88 @@ def _WriteLocalConfig(workspace_path, config):
   # Overwrite the config file, with the new dictionary.
   with open(config_file, 'w') as config_fp:
     json.dump(config, config_fp)
+
+
+def IsLocator(name):
+  """Returns True if name is a specific locator."""
+  if not name:
+    raise ValueError('Locator is empty')
+  return (name.startswith(_WORKSPACE_LOCATOR_PREFIX)
+          or name.startswith(_BOARD_LOCATOR_PREFIX))
+
+
+def LocatorToPath(locator):
+  """Returns the absolute path for this locator.
+
+  Args:
+    locator: a locator.
+
+  Returns:
+    The absolute path defined by this locator.
+
+  Raises:
+    ValueError: If |locator| is invalid.
+    LocatorNotResolved: If |locator| is valid but could not be resolved.
+  """
+  if locator.startswith(_WORKSPACE_LOCATOR_PREFIX):
+    workspace_path = WorkspacePath()
+    if workspace_path is None:
+      raise LocatorNotResolved(
+          'Workspace not found while trying to resolve %s' % locator)
+    return os.path.join(workspace_path,
+                        locator[len(_WORKSPACE_LOCATOR_PREFIX):])
+
+  if locator.startswith(_BOARD_LOCATOR_PREFIX):
+    return os.path.join(constants.SOURCE_ROOT, 'src', 'overlays',
+                        'overlay-%s' % locator[len(_BOARD_LOCATOR_PREFIX):])
+
+  raise ValueError('Invalid locator %s' % locator)
+
+
+def PathToLocator(path):
+  """Converts a path to a locator.
+
+  This does not raise error if the path does not map to a locator. Some valid
+  (legacy) brick path do not map to any locator: chromiumos-overlay,
+  private board overlays, etc...
+
+  Args:
+    path: absolute or relative to CWD path to a workspace object or board
+      overlay.
+
+  Returns:
+    The locator for this path if it exists, None otherwise.
+  """
+  workspace_path = WorkspacePath()
+  path = os.path.abspath(path)
+
+  if workspace_path is None:
+    return None
+
+  # If path is in the current workspace, return the relative path prefixed with
+  # the workspace prefix.
+  if os.path.commonprefix([path, workspace_path]) == workspace_path:
+    return _WORKSPACE_LOCATOR_PREFIX + os.path.relpath(path, workspace_path)
+
+  # If path is in the src directory of the checkout, this is a board overlay.
+  # Encode it as board locator.
+  src_path = os.path.join(constants.SOURCE_ROOT, 'src')
+  if os.path.commonprefix([path, src_path]) == src_path:
+    parts = os.path.split(os.path.relpath(path, src_path))
+    if parts[0] == 'overlays':
+      board_name = '-'.join(parts[1].split('-')[1:])
+      return _BOARD_LOCATOR_PREFIX + board_name
+
+  return None
+
+
+def LocatorToFriendlyName(locator):
+  """Returns a friendly name for a given locator.
+
+  Args:
+    locator: a locator.
+  """
+  if IsLocator(locator) and locator.startswith(_WORKSPACE_LOCATOR_PREFIX):
+    return locator[len(_WORKSPACE_LOCATOR_PREFIX):].replace('/', '.')
+
+  raise ValueError('Not a valid workspace locator.')

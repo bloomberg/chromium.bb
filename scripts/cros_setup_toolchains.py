@@ -12,12 +12,12 @@ import json
 import os
 
 from chromite.cbuildbot import constants
-from chromite.lib import brick_lib
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import toolchain
+from chromite.lib import workspace_lib
 
 # Needs to be after chromite imports.
 import lddtree
@@ -582,7 +582,7 @@ def ShowConfig(name):
   Args:
     name: The board name or brick locator to query.
   """
-  if brick_lib.IsLocator(name):
+  if workspace_lib.IsLocator(name):
     toolchains = toolchain.GetToolchainsForBrick(name)
   else:
     toolchains = toolchain.GetToolchainsForBoard(name)

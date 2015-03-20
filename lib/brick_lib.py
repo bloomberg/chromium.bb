@@ -9,7 +9,6 @@ from __future__ import print_function
 import json
 import os
 
-from chromite.cbuildbot import constants
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import workspace_lib
@@ -19,10 +18,6 @@ _DEFAULT_LAYOUT_CONF = {'profile-formats': 'portage-2',
                         'use-manifests': 'true'}
 
 _CONFIG_JSON = 'config.json'
-
-
-_BOARD_PREFIX = 'board:'
-_WORKSPACE_PREFIX = '//'
 
 _IGNORED_OVERLAYS = ('portage-stable', 'chromiumos', 'eclass-overlay')
 
@@ -37,10 +32,6 @@ class BrickNotFound(Exception):
 
 class BrickFeatureNotSupported(Exception):
   """Attempted feature not supported for this brick."""
-
-
-class BrickLocatorNotResolved(Exception):
-  """Given brick locator could not be resolved."""
 
 
 class Brick(object):
@@ -60,17 +51,17 @@ class Brick(object):
 
     Raises:
       ValueError: If |brick_loc| is invalid.
-      BrickLocatorNotResolved: |brick_loc| is valid but could not be resolved.
+      LocatorNotResolved: |brick_loc| is valid but could not be resolved.
       BrickNotFound: If |brick_loc| does not point to a brick and no initial
         config was provided.
       BrickCreationFailed: when the brick could not be created successfully.
     """
-    if IsLocator(brick_loc):
-      self.brick_dir = _LocatorToPath(brick_loc)
+    if workspace_lib.IsLocator(brick_loc):
+      self.brick_dir = workspace_lib.LocatorToPath(brick_loc)
       self.brick_locator = brick_loc
     else:
       self.brick_dir = brick_loc
-      self.brick_locator = _PathToLocator(brick_loc)
+      self.brick_locator = workspace_lib.PathToLocator(brick_loc)
 
     self.config = None
     self.legacy = False
@@ -116,6 +107,11 @@ class Brick(object):
       self.config = json.loads(osutils.ReadFile(config_json))
     else:
       raise BrickCreationFailed('brick %s already exists.' % self.brick_dir)
+
+    self.friendly_name = None
+    if not self.legacy:
+      self.friendly_name = workspace_lib.LocatorToFriendlyName(
+          self.brick_locator)
 
   def _LayoutConfPath(self):
     """Returns the path to the layout.conf file."""
@@ -177,7 +173,8 @@ class Brick(object):
     self.config = config
     # All objects must be unambiguously referenced. Normalize all the
     # dependencies according to the workspace.
-    self.config['dependencies'] = [d if IsLocator(d) else _PathToLocator(d)
+    self.config['dependencies'] = [d if workspace_lib.IsLocator(d)
+                                   else workspace_lib.PathToLocator(d)
                                    for d in self.config.get('dependencies', [])]
 
     formatted_config = json.dumps(config, sort_keys=True, indent=4,
@@ -245,9 +242,9 @@ class Brick(object):
 
     This name is used as the board name for legacy commands (--board).
     """
-    if self.legacy:
+    if self.friendly_name is None:
       raise BrickFeatureNotSupported()
-    return self.brick_locator[len(_WORKSPACE_PREFIX):].replace('/', '.')
+    return self.friendly_name
 
   def BrickStack(self):
     """Returns the brick stack for this brick.
@@ -267,74 +264,6 @@ class Brick(object):
       return l
 
     return _stack(self)
-
-
-def IsLocator(name):
-  """Returns True if name is a specific locator."""
-  if not name:
-    raise ValueError('Brick locator is empty')
-  return name.startswith(_WORKSPACE_PREFIX) or name.startswith(_BOARD_PREFIX)
-
-
-def _LocatorToPath(locator):
-  """Returns the absolute path for this locator.
-
-  Args:
-    locator: a brick/overlay locator.
-
-  Returns:
-    The absolute path to the brick.
-
-  Raises:
-    ValueError: If |locator| is invalid.
-    BrickLocatorNotResolved: If |locator| is valid but could not be resolved.
-  """
-  if locator.startswith(_WORKSPACE_PREFIX):
-    workspace_path = workspace_lib.WorkspacePath()
-    if workspace_path is None:
-      raise BrickLocatorNotResolved(
-          'Workspace not found while trying to resolve %s' % locator)
-    return os.path.join(workspace_path, locator[len(_WORKSPACE_PREFIX):])
-  if locator.startswith(_BOARD_PREFIX):
-    return os.path.join(constants.SOURCE_ROOT, 'src', 'overlays',
-                        'overlay-%s' % locator[len(_BOARD_PREFIX):])
-  raise ValueError('Invalid brick locator %s' % locator)
-
-
-def _PathToLocator(path):
-  """Converts a path to a brick locator.
-
-  This does not raise error if the path does not map to a locator. Some valid
-  (legacy) brick path do not map to any locator: chromiumos-overlay,
-  private board overlays, etc...
-
-  Args:
-    path: absolute or relative to CWD path to a brick or overlay.
-
-  Returns:
-    The locator for this brick if it exists, None otherwise.
-  """
-  workspace_path = workspace_lib.WorkspacePath()
-  path = os.path.abspath(path)
-
-  if workspace_path is None:
-    return None
-
-  # If path is in the current workspace, return the relative path prefixed with
-  # //.
-  if os.path.commonprefix([path, workspace_path]) == workspace_path:
-    return _WORKSPACE_PREFIX + os.path.relpath(path, workspace_path)
-
-  # If path is in the src directory of the checkout, this is a board overlay.
-  # Return board:board_name
-  src_path = os.path.join(constants.SOURCE_ROOT, 'src')
-  if os.path.commonprefix([path, src_path]) == src_path:
-    parts = os.path.split(os.path.relpath(path, src_path))
-    if parts[0] == 'overlays':
-      board_name = '-'.join(parts[1].split('-')[1:])
-      return _BOARD_PREFIX + board_name
-
-  return None
 
 
 def _FindBrickInOverlays(name, base=None):
