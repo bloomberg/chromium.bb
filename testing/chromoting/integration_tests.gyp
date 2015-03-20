@@ -16,6 +16,7 @@
             '../../chrome/chrome.gyp:browser_tests',
             '../../remoting/remoting.gyp:remoting_webapp_v1',
             '../../remoting/remoting.gyp:remoting_webapp_v2',
+            '../../remoting/webapp/app_remoting/internal/app_remoting_all.gyp:app_remoting_all_apps',
           ],
           'includes': [
             '../../build/isolate.gypi',
