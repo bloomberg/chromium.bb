@@ -22,6 +22,7 @@
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
+#include "net/quic/quic_packet_reader.h"
 #include "net/tools/quic/quic_simple_client_session.h"
 #include "net/tools/quic/quic_simple_client_stream.h"
 
@@ -39,7 +40,8 @@ namespace test {
 class QuicClientPeer;
 }  // namespace test
 
-class QuicSimpleClient : public QuicDataStream::Visitor {
+class QuicSimpleClient : public QuicDataStream::Visitor,
+                         public QuicPacketReader::Visitor {
  public:
   class ResponseListener {
    public:
@@ -113,12 +115,11 @@ class QuicSimpleClient : public QuicDataStream::Visitor {
   // Returns true if there are any outstanding requests.
   bool WaitForEvents();
 
-  // Start the read loop on the socket.
-  void StartReading();
-
-  // Called on reads that complete asynchronously. Dispatches the packet and
-  // calls StartReading() again.
-  void OnReadComplete(int result);
+  // QuicPacketReader::Visitor
+  void OnReadError(int result) override;
+  bool OnPacket(const QuicEncryptedPacket& packet,
+                IPEndPoint local_address,
+                IPEndPoint peer_address) override;
 
   // QuicDataStream::Visitor
   void OnClose(QuicDataStream* stream) override;
@@ -278,17 +279,10 @@ class QuicSimpleClient : public QuicDataStream::Visitor {
   // Body of most recent response.
   std::string latest_response_body_;
 
-  bool read_pending_;
-
-  // The number of iterations of the read loop that have completed synchronously
-  // and without posting a new task to the message loop.
-  int synchronous_read_count_;
-
-  // The target buffer of the current read.
-  scoped_refptr<IOBufferWithSize> read_buffer_;
-
   // The log used for the sockets.
   NetLog net_log_;
+
+  scoped_ptr<QuicPacketReader> packet_reader_;
 
   base::WeakPtrFactory<QuicSimpleClient> weak_factory_;
 

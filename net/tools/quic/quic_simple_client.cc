@@ -21,13 +21,6 @@ using std::vector;
 
 namespace net {
 namespace tools {
-namespace {
-
-// Allocate some extra space so we can send an error if the server goes over
-// the limit.
-const int kReadBufferSize = 2 * kMaxPacketSize;
-
-}  // namespace
 
 QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
                                    const QuicServerId& server_id,
@@ -38,9 +31,6 @@ QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
       helper_(CreateQuicConnectionHelper()),
       initialized_(false),
       supported_versions_(supported_versions),
-      read_pending_(false),
-      synchronous_read_count_(0),
-      read_buffer_(new IOBufferWithSize(kReadBufferSize)),
       weak_factory_(this) {
 }
 
@@ -55,9 +45,6 @@ QuicSimpleClient::QuicSimpleClient(IPEndPoint server_address,
       helper_(CreateQuicConnectionHelper()),
       initialized_(false),
       supported_versions_(supported_versions),
-      read_pending_(false),
-      synchronous_read_count_(0),
-      read_buffer_(new IOBufferWithSize(kReadBufferSize)),
       weak_factory_(this) {
 }
 
@@ -135,8 +122,8 @@ bool QuicSimpleClient::CreateUDPSocket() {
   }
 
   socket_.swap(socket);
-
-  read_pending_ = false;
+  packet_reader_.reset(new QuicPacketReader(socket_.get(), this,
+                                            BoundNetLog()));
 
   if (socket != nullptr) {
     socket->Close();
@@ -147,7 +134,7 @@ bool QuicSimpleClient::CreateUDPSocket() {
 
 bool QuicSimpleClient::Connect() {
   StartConnect();
-  StartReading();
+  packet_reader_->StartReading();
   while (EncryptionBeingEstablished()) {
     WaitForEvents();
   }
@@ -185,8 +172,7 @@ void QuicSimpleClient::Disconnect() {
   }
 
   writer_.reset();
-
-  read_pending_ = false;
+  packet_reader_.reset();
 
   initialized_ = false;
 }
@@ -309,58 +295,20 @@ QuicPacketWriter* QuicSimpleClient::CreateQuicPacketWriter() {
   return new QuicDefaultPacketWriter(socket_.get());
 }
 
-void QuicSimpleClient::StartReading() {
-  if (read_pending_) {
-    return;
-  }
-  read_pending_ = true;
-
-  int result = socket_->Read(
-      read_buffer_.get(),
-      read_buffer_->size(),
-      base::Bind(&QuicSimpleClient::OnReadComplete,
-                 weak_factory_.GetWeakPtr()));
-
-  if (result == ERR_IO_PENDING) {
-    synchronous_read_count_ = 0;
-    return;
-  }
-
-  if (++synchronous_read_count_ > 32) {
-    synchronous_read_count_ = 0;
-    // Schedule the processing through the message loop to 1) prevent infinite
-    // recursion and 2) avoid blocking the thread for too long.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&QuicSimpleClient::OnReadComplete,
-                   weak_factory_.GetWeakPtr(), result));
-  } else {
-    OnReadComplete(result);
-  }
+void QuicSimpleClient::OnReadError(int result) {
+  LOG(ERROR) << "QuicSimpleClient read failed: " << ErrorToString(result);
+  Disconnect();
 }
 
-void QuicSimpleClient::OnReadComplete(int result) {
-  read_pending_ = false;
-  if (result == 0)
-    result = ERR_CONNECTION_CLOSED;
-
-  if (result < 0) {
-    LOG(ERROR) << "QuicSimpleClient read failed: " << ErrorToString(result);
-    Disconnect();
-    return;
-  }
-
-  QuicEncryptedPacket packet(read_buffer_->data(), result);
-  IPEndPoint local_address;
-  IPEndPoint peer_address;
-  socket_->GetLocalAddress(&local_address);
-  socket_->GetPeerAddress(&peer_address);
+bool QuicSimpleClient::OnPacket(const QuicEncryptedPacket& packet,
+                                IPEndPoint local_address,
+                                IPEndPoint peer_address) {
   session_->connection()->ProcessUdpPacket(local_address, peer_address, packet);
   if (!session_->connection()->connected()) {
-    return;
+    return false;
   }
 
-  StartReading();
+  return true;
 }
 
 }  // namespace tools

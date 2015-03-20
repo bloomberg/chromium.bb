@@ -926,6 +926,8 @@
       'quic/quic_packet_creator.h',
       'quic/quic_packet_generator.cc',
       'quic/quic_packet_generator.h',
+      'quic/quic_packet_reader.cc',
+      'quic/quic_packet_reader.h',
       'quic/quic_packet_writer.h',
       'quic/quic_protocol.cc',
       'quic/quic_protocol.h',

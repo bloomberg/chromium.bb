@@ -21,6 +21,7 @@
 #include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_connection_logger.h"
 #include "net/quic/quic_crypto_client_stream.h"
+#include "net/quic/quic_packet_reader.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_reliable_client_stream.h"
 
@@ -40,7 +41,8 @@ namespace test {
 class QuicClientSessionPeer;
 }  // namespace test
 
-class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
+class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase,
+                                             public QuicPacketReader::Visitor {
  public:
   // An interface for observing events on a session.
   class NET_EXPORT_PRIVATE Observer {
@@ -148,6 +150,12 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
   void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
   void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
 
+  // QuicPacketReader::Visitor methods:
+  void OnReadError(int result) override;
+  bool OnPacket(const QuicEncryptedPacket& packet,
+                IPEndPoint local_address,
+                IPEndPoint peer_address) override;
+
   // Performs a crypto handshake with the server.
   int CryptoConnect(bool require_confirmation,
                     const CompletionCallback& callback);
@@ -228,23 +236,20 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicClientSessionBase {
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;
   scoped_ptr<DatagramClientSocket> socket_;
-  scoped_refptr<IOBufferWithSize> read_buffer_;
   TransportSecurityState* transport_security_state_;
   scoped_ptr<QuicServerInfo> server_info_;
   scoped_ptr<CertVerifyResult> cert_verify_result_;
   std::string pinning_failure_log_;
   ObserverSet observers_;
   StreamRequestQueue stream_requests_;
-  bool read_pending_;
   CompletionCallback callback_;
   size_t num_total_streams_;
   base::TaskRunner* task_runner_;
   BoundNetLog net_log_;
+  QuicPacketReader packet_reader_;
   base::TimeTicks dns_resolution_end_time_;
   base::TimeTicks handshake_start_;  // Time the handshake was started.
   scoped_ptr<QuicConnectionLogger> logger_;
-  // Number of packets read in the current read loop.
-  size_t num_packets_read_;
   // True when the session is going away, and streams may no longer be created
   // on this session. Existing stream will continue to be processed.
   bool going_away_;
