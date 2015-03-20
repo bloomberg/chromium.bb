@@ -15,6 +15,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
+#include "components/favicon/content/favicon_url_util.h"
 #include "components/favicon/core/favicon_handler.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon/core/favicon_tab_helper_observer.h"
@@ -283,37 +284,12 @@ void FaviconTabHelper::DidNavigateMainFrame(
   FetchFavicon(url);
 }
 
-// Returns favicon_base::IconType the given icon_type corresponds to.
-// TODO(jif): Move function to /components/favicon_base/content/
-// crbug.com/374281.
-favicon_base::IconType ToChromeIconType(
-    content::FaviconURL::IconType icon_type) {
-  switch (icon_type) {
-    case content::FaviconURL::FAVICON:
-      return favicon_base::FAVICON;
-    case content::FaviconURL::TOUCH_ICON:
-      return favicon_base::TOUCH_ICON;
-    case content::FaviconURL::TOUCH_PRECOMPOSED_ICON:
-      return favicon_base::TOUCH_PRECOMPOSED_ICON;
-    case content::FaviconURL::INVALID_ICON:
-      return favicon_base::INVALID_ICON;
-  }
-  NOTREACHED();
-  return favicon_base::INVALID_ICON;
-}
-
 void FaviconTabHelper::DidUpdateFaviconURL(
     const std::vector<content::FaviconURL>& candidates) {
   DCHECK(!candidates.empty());
   favicon_urls_ = candidates;
-  std::vector<favicon::FaviconURL> favicon_urls;
-  for (size_t i = 0; i < candidates.size(); i++) {
-    const content::FaviconURL& candidate = candidates[i];
-    favicon_urls.push_back(
-        favicon::FaviconURL(candidate.icon_url,
-                            ToChromeIconType(candidate.icon_type),
-                            candidate.icon_sizes));
-  }
+  std::vector<favicon::FaviconURL> favicon_urls =
+      favicon::FaviconURLsFromContentFaviconURLs(candidates);
   favicon_handler_->OnUpdateFaviconURL(favicon_urls);
   if (touch_icon_handler_.get())
     touch_icon_handler_->OnUpdateFaviconURL(favicon_urls);

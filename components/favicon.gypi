@@ -34,4 +34,29 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS!="ios"', {
+      'targets': [
+        {
+          # GN version: //components/favicon/content
+          'target_name': 'favicon_content',
+          'type': 'static_library',
+          'dependencies': [
+            '../content/content.gyp:content_browser',
+            '../content/content.gyp:content_common',
+            'favicon_base',
+            'favicon_core',
+          ],
+          'sources': [
+            # Note: sources list duplicated in GN build.
+            'favicon/content/favicon_url_util.h',
+            'favicon/content/favicon_url_util.cc',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+        },
+      ],
+    }],
+  ],
 }
