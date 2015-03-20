@@ -386,20 +386,26 @@ init_ivi_shell(struct weston_compositor *compositor, struct ivi_shell *shell,
 
 static int
 ivi_shell_setting_create(struct ivi_shell_setting *dest,
-			 struct weston_compositor *compositor)
+			 struct weston_compositor *compositor,
+			 int *argc, char *argv[])
 {
 	int result = 0;
 	struct weston_config *config = compositor->config;
 	struct weston_config_section *section;
 
-	if (NULL == dest)
-		return -1;
+	const struct weston_option ivi_shell_options[] = {
+		{ WESTON_OPTION_STRING, "ivi-module", 0, &dest->ivi_module },
+	};
+
+	parse_options(ivi_shell_options, ARRAY_LENGTH(ivi_shell_options),
+		      argc, argv);
 
 	section = weston_config_get_section(config, "ivi-shell", NULL, NULL);
 
-	if (weston_config_section_get_string(section, "ivi-module",
-					     &dest->ivi_module, NULL) != 0) {
-		weston_log("ivi-shell: No ivi-module set in config\n");
+	if (!dest->ivi_module &&
+	    weston_config_section_get_string(section, "ivi-module",
+					     &dest->ivi_module, NULL) < 0) {
+		weston_log("Error: ivi-shell: No ivi-module set\n");
 		result = -1;
 	}
 
@@ -424,7 +430,7 @@ module_init(struct weston_compositor *compositor,
 	if (shell == NULL)
 		return -1;
 
-	if (ivi_shell_setting_create(&setting, compositor) != 0)
+	if (ivi_shell_setting_create(&setting, compositor, argc, argv) != 0)
 		return -1;
 
 	init_ivi_shell(compositor, shell, &setting);
