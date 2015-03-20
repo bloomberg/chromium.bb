@@ -5,12 +5,13 @@
 #include "config.h"
 #include "core/css/parser/CSSParserToken.h"
 
+#include "core/css/CSSMarkup.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "wtf/HashMap.h"
+#include "wtf/text/StringBuilder.h"
 #include <limits.h>
 
 namespace blink {
-
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type, BlockType blockType)
     : m_type(type)
@@ -108,6 +109,95 @@ CSSPropertyID CSSParserToken::parseAsCSSPropertyID() const
 {
     ASSERT(m_type == IdentToken);
     return cssPropertyID(m_value);
+}
+
+void CSSParserToken::serialize(StringBuilder& builder) const
+{
+    // This is currently only used for @supports CSSOM. To keep our implementation
+    // simple we handle some of the edge cases incorrectly (see comments below).
+    switch (type()) {
+    case IdentToken:
+        return serializeIdentifier(value(), builder);
+    case FunctionToken:
+        serializeIdentifier(value(), builder);
+        return builder.append('(');
+    case AtKeywordToken:
+        builder.append('@');
+        return serializeIdentifier(value(), builder);
+    case HashToken:
+        // This will always serialize as a hash-token with 'id' type instead of
+        // preserving the type of the input.
+        builder.append('#');
+        return serializeIdentifier(value(), builder);
+    case UrlToken:
+        builder.append("url(");
+        serializeIdentifier(value(), builder);
+        return builder.append(")");
+    case DelimiterToken:
+        if (delimiter() == '\\')
+            return builder.append("\\\n");
+        return builder.append(delimiter());
+    case NumberToken:
+        // These won't properly preserve the NumericValueType flag
+        return builder.appendNumber(numericValue());
+    case PercentageToken:
+        builder.appendNumber(numericValue());
+        return builder.append('%');
+    case DimensionToken:
+        // This will incorrectly serialize e.g. 4e3e2 as 4000e2
+        builder.appendNumber(numericValue());
+        return serializeIdentifier(value(), builder);
+    case UnicodeRangeToken:
+        return builder.append(value());
+    case StringToken:
+        return serializeString(value(), builder);
+
+    case IncludeMatchToken:
+        return builder.append("~=");
+    case DashMatchToken:
+        return builder.append("|=");
+    case PrefixMatchToken:
+        return builder.append("^=");
+    case SuffixMatchToken:
+        return builder.append("$=");
+    case SubstringMatchToken:
+        return builder.append("*=");
+    case ColumnToken:
+        return builder.append("||");
+    case CDOToken:
+        return builder.append("<!--");
+    case CDCToken:
+        return builder.append("-->");
+    case BadStringToken:
+        return builder.append("'\n");
+    case BadUrlToken:
+        return builder.append("url(()");
+    case WhitespaceToken:
+        return builder.append(' ');
+    case ColonToken:
+        return builder.append(':');
+    case SemicolonToken:
+        return builder.append(';');
+    case CommaToken:
+        return builder.append(',');
+    case LeftParenthesisToken:
+        return builder.append('(');
+    case RightParenthesisToken:
+        return builder.append(')');
+    case LeftBracketToken:
+        return builder.append('[');
+    case RightBracketToken:
+        return builder.append(']');
+    case LeftBraceToken:
+        return builder.append('{');
+    case RightBraceToken:
+        return builder.append('}');
+
+    case EOFToken:
+    case CommentToken:
+        ASSERT_NOT_REACHED();
+        return;
+    }
 }
 
 } // namespace blink

@@ -329,12 +329,12 @@ PassRefPtrWillBeRawPtr<StyleRuleSupports> CSSParserImpl::consumeSupportsRule(CSS
     CSSSupportsParser::SupportsResult supported = CSSSupportsParser::supportsCondition(prelude, *this);
     if (supported == CSSSupportsParser::Invalid)
         return nullptr; // Parse error, invalid @supports condition
-    // FIXME: Serialize the condition text for the CSSOM
     WillBeHeapVector<RefPtrWillBeMember<StyleRuleBase>> rules;
     consumeRuleList(block, RegularRuleList, [&rules](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) {
         rules.append(rule);
     });
-    return StyleRuleSupports::create(String(""), supported, rules);
+
+    return StyleRuleSupports::create(prelude.serialize().stripWhiteSpace(), supported, rules);
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleViewport> CSSParserImpl::consumeViewportRule(CSSParserTokenRange prelude, CSSParserTokenRange block)

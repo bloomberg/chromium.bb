@@ -61,6 +61,8 @@ public:
             ++m_first;
     }
 
+    String serialize() const;
+
     static void initStaticEOFToken();
 
 private:

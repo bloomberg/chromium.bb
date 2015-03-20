@@ -102,6 +102,8 @@ public:
 
     CSSPropertyID parseAsCSSPropertyID() const;
 
+    void serialize(StringBuilder&) const;
+
 private:
     unsigned m_type : 6; // CSSParserTokenType
     unsigned m_blockType : 2; // BlockType

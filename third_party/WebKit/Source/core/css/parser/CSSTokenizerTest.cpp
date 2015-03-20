@@ -71,6 +71,9 @@ void testTokens(const String& string, const CSSParserToken& token1, const CSSPar
     CSSTokenizer::Scope actualScope(string);
     CSSParserTokenRange actual = actualScope.tokenRange();
 
+    // Just check that serialization doesn't hit any asserts
+    actual.serialize();
+
     while (!expected.atEnd() || !actual.atEnd())
         compareTokens(expected.consume(), actual.consume());
 }

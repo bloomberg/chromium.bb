@@ -6,6 +6,7 @@
 #include "core/css/parser/CSSParserTokenRange.h"
 
 #include "wtf/StaticConstructors.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -56,6 +57,17 @@ void CSSParserTokenRange::consumeComponentValue()
         else if (token.blockType() == CSSParserToken::BlockEnd)
             nestingLevel--;
     } while (nestingLevel && m_first < m_last);
+}
+
+String CSSParserTokenRange::serialize() const
+{
+    // We're supposed to insert comments between certain pairs of token types
+    // as per spec, but since this is currently only used for @supports CSSOM
+    // we just get these cases wrong and avoid the additional complexity.
+    StringBuilder builder;
+    for (const CSSParserToken* it = m_first; it < m_last; ++it)
+        it->serialize(builder);
+    return builder.toString();
 }
 
 } // namespace blink
