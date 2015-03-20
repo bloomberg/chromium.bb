@@ -307,6 +307,30 @@ select[size='1']:hover {
   border-image-slice: 5;
 }
 
+/* Style for <button>s to have similar style with Polymer's <paper-button>. */
+.imitate-paper-button {
+  -webkit-user-select: none;
+  background: transparent;
+  border: 0;
+  border-image: none;
+  border-radius: 3px;
+  box-sizing: border-box;
+  color: inherit;
+  cursor: pointer;
+  display: inline-block;
+  font: inherit;
+  height: auto;
+  margin: 0 0.29em;
+  min-width: 5.14em;
+  outline: none;
+  overflow: hidden;
+  padding: 0.7em 0.57em;
+  position: relative;
+  text-align: center;
+  text-transform: uppercase;
+  z-index: 0;
+}
+
 /* Gray progress bar. */
 .progress-bar {
   background-color: #e6e6e6;

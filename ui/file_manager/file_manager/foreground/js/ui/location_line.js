@@ -14,6 +14,7 @@ function LocationLine(breadcrumbs, volumeManager) {
   this.breadcrumbs_ = breadcrumbs;
   this.volumeManager_ = volumeManager;
   this.entry_ = null;
+  this.components_ = [];
 }
 
 /**
@@ -101,38 +102,69 @@ LocationLine.prototype.getComponents_ = function(entry) {
  * @private
  */
 LocationLine.prototype.update_ = function(components) {
-  this.breadcrumbs_.textContent = '';
-  this.breadcrumbs_.hidden = false;
+  this.components_ = components;
 
-  var doc = this.breadcrumbs_.ownerDocument;
+  // Make the new breadcrumbs temporarily.
+  var newBreadcrumbs = document.createElement('div');
   for (var i = 0; i < components.length; i++) {
     // Add a component.
     var component = components[i];
-    var div = doc.createElement('div');
-    div.classList.add('breadcrumb-path', 'entry-name');
-    div.textContent = component.name;
-    div.tabIndex = 8;
-    div.addEventListener('click', this.execute_.bind(this, div, component));
-    div.addEventListener('keydown', function(div, component, event) {
-      // If the pressed key is either Enter or Space.
-      if (event.keyCode == 13 || event.keyCode == 32)
-        this.execute_(div, component);
-    }.bind(this, div, component));
-    this.breadcrumbs_.appendChild(div);
+    var button = document.createElement('button');
+    button.classList.add(
+        'breadcrumb-path', 'entry-name', 'imitate-paper-button');
+    button.textContent = component.name;
+    button.addEventListener('click', this.onClick_.bind(this, i));
+    newBreadcrumbs.appendChild(button);
+
+    var ripple = document.createElement('paper-ripple');
+    ripple.setAttribute('fit', '');
+    button.appendChild(ripple);
 
     // If this is the last component, break here.
-    if (i === components.length - 1) {
-      div.classList.add('breadcrumb-last');
-      div.tabIndex = -1;
+    if (i === components.length - 1)
       break;
-    }
 
     // Add a separator.
-    var separator = doc.createElement('span');
+    var separator = document.createElement('span');
     separator.classList.add('separator');
-    this.breadcrumbs_.appendChild(separator);
+    newBreadcrumbs.appendChild(separator);
   }
 
+  // Replace the shown breadcrumbs with the new one, keeping the DOMs for common
+  // prefix of the path.
+  // 1. Forward the references to the path element while in the common prefix.
+  var childOriginal = this.breadcrumbs_.firstChild;
+  var childNew = newBreadcrumbs.firstChild;
+  var cnt = 0;
+  while (childOriginal && childNew &&
+         childOriginal.textContent === childNew.textContent) {
+    childOriginal = childOriginal.nextSibling;
+    childNew = childNew.nextSibling;
+    cnt++;
+  }
+  // 2. Remove all elements in original breadcrumbs which are not in the common
+  // prefix.
+  while (childOriginal) {
+    var childToRemove = childOriginal;
+    childOriginal = childOriginal.nextSibling;
+    this.breadcrumbs_.removeChild(childToRemove);
+  }
+  // 3. Append new elements after the common prefix.
+  while (childNew) {
+    var childToAppend = childNew;
+    childNew = childNew.nextSibling;
+    this.breadcrumbs_.appendChild(childToAppend);
+  }
+  // 4. Reset the tab index and class 'breadcrumb-last'.
+  for (var el = this.breadcrumbs_.firstChild; el; el = el.nextSibling) {
+    if (el.classList.contains('breadcrumb-path')) {
+      var isLast = !el.nextSibling;
+      el.tabIndex = isLast ? -1 : 8;
+      el.classList.toggle('breadcrumb-last', isLast);
+    }
+  }
+
+  this.breadcrumbs_.hidden = false;
   this.truncate();
 };
 
@@ -148,6 +180,7 @@ LocationLine.prototype.truncate = function() {
   for (var item = this.breadcrumbs_.firstChild; item; item = item.nextSibling) {
     item.removeAttribute('style');
     item.removeAttribute('collapsed');
+    item.removeAttribute('hidden');
   }
 
   var containerWidth = this.breadcrumbs_.clientWidth;
@@ -179,6 +212,12 @@ LocationLine.prototype.truncate = function() {
   maxPathWidth = Math.min(pathWidth, maxPathWidth);
 
   var parentCrumb = lastSeparator.previousSibling;
+
+  // Pre-calculate the minimum width for crumbs.
+  parentCrumb.setAttribute('collapsed', '');
+  var minCrumbWidth = parentCrumb.clientWidth;
+  parentCrumb.removeAttribute('collapsed');
+
   var collapsedWidth = 0;
   if (parentCrumb && pathWidth - maxPathWidth > parentCrumb.clientWidth) {
     // At least one crumb is hidden completely (or almost completely).
@@ -202,18 +241,28 @@ LocationLine.prototype.truncate = function() {
        item = item.nextSibling) {
     // TODO(serya): Mixing access item.clientWidth and modifying style and
     // attributes could cause multiple layout reflows.
-    if (pathWidth + item.clientWidth <= maxPathWidth) {
-      pathWidth += item.clientWidth;
-    } else if (pathWidth == maxPathWidth) {
-      item.style.width = '0';
-    } else if (item.classList.contains('separator')) {
-      // Do not truncate separator. Instead let the last crumb be longer.
-      item.style.width = '0';
-      maxPathWidth = pathWidth;
+    if (pathWidth === maxPathWidth) {
+      item.setAttribute('hidden', '');
     } else {
-      // Truncate the last visible crumb.
-      item.style.width = (maxPathWidth - pathWidth) + 'px';
-      pathWidth = maxPathWidth;
+      if (item.classList.contains('separator')) {
+        // If the current separator and the following crumb don't fit in the
+        // breadcrumbs area, hide remaining separators and crumbs.
+        if (pathWidth + item.clientWidth + minCrumbWidth > maxPathWidth) {
+          item.setAttribute('hidden', '');
+          maxPathWidth = pathWidth;
+        } else {
+          pathWidth += item.clientWidth;
+        }
+      } else {
+        // If the current crumb doesn't fully fit in the breadcrumbs area,
+        // shorten the crumb and hide remaining separators and crums.
+        if (pathWidth + item.clientWidth > maxPathWidth) {
+          item.style.width = (maxPathWidth - pathWidth) + 'px';
+          pathWidth = maxPathWidth;
+        } else {
+          pathWidth += item.clientWidth;
+        }
+      }
     }
   }
 
@@ -232,16 +281,22 @@ LocationLine.prototype.hide = function() {
 
 /**
  * Execute an element.
- * @param {!Element} element Element to be executed.
- * @param {!LocationLine.PathComponent} pathComponent Path Component object of
- *     the element.
+ * @param {number} index The index of clicked path component.
+ * @param {!Event} event The MouseEvent object.
  * @private
  */
-LocationLine.prototype.execute_ = function(element, pathComponent) {
-  if (!element.classList.contains('breadcrumb-path') ||
-      element.classList.contains('breadcrumb-last'))
+LocationLine.prototype.onClick_ = function(index, event) {
+  if (index >= this.components_.length - 1)
     return;
 
+  // Remove 'focused' state from the clicked button.
+  var button = event.target;
+  while (button && !button.classList.contains('breadcrumb-path'))
+    button = button.parentElement;
+  if (button)
+    button.blur();
+
+  var pathComponent = this.components_[index];
   pathComponent.resolveEntry().then(function(entry) {
     var pathClickEvent = new Event('pathclick');
     pathClickEvent.entry = entry;

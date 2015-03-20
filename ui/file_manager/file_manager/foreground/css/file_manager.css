@@ -294,22 +294,21 @@ body.check-select button:hover {
   width: 32px;
 }
 
-.dialog-header .icon-button paper-ripple {
-  color: black;
+.dialog-header button paper-ripple {
+  color: rgb(40, 40, 40);
 }
 
-body.check-select .dialog-header .icon-button paper-ripple {
-  rgb(90, 90, 90);
+body.check-select .dialog-header button paper-ripple {
+  color: rgb(90, 90, 90);
 }
 
-.dialog-header .icon-button:focus:not(.using-mouse):not([tabindex='-1']),
-.dialog-header .combobutton:focus {
+.dialog-header
+    button:focus:not(.using-mouse):not([tabindex='-1']):not(:active) {
   background-color: rgba(90, 90, 90, 0.15);
 }
 
 body.check-select .dialog-header
-    .icon-button:focus:not(.using-mouse):not([tabindex='-1']),
-body.check-select .dialog-header .combobutton:focus {
+    button:focus:not(.using-mouse):not([tabindex='-1']):not(:active) {
   background-color: rgba(153, 153, 153, 0.20);
 }
 
@@ -792,20 +791,31 @@ body.check-select .breadcrumbs {
 }
 
 .breadcrumbs > [collapsed] {
+  box-sizing: content-box !important;
   width: 1em;
 }
 
 /* A single directory name in the list of path breadcrumbs. */
-.breadcrumb-path {
+.breadcrumbs .breadcrumb-path {
+  box-sizing: border-box;
   cursor: pointer;
   flex: none;
-  overflow: hidden;
+  margin-left: 0;
+  margin-right: 0;
+  min-width: 0;
+  padding-left: 5px;
+  padding-right: 5px;
   text-overflow: ellipsis;
+  text-transform: none;
   white-space: nowrap;
 }
 
+.breadcrumbs .breadcrumb-path:active {
+  color: inherit;
+}
+
 /* The final breadcrumb, representing the current directory. */
-.breadcrumb-path.breadcrumb-last {
+.breadcrumbs .breadcrumb-path.breadcrumb-last {
   cursor: default;
 }
 
@@ -816,7 +826,7 @@ body.check-select .breadcrumbs {
       url(../images/files/ui/2x/arrow_right_white.png) 2x) center no-repeat;
   flex: none;
   height: 16px;
-  width: 26px;
+  width: 16px;
 }
 
 html[dir='rtl'] .breadcrumbs .separator {
