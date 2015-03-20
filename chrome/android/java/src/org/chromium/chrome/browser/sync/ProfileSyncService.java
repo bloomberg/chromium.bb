@@ -336,9 +336,7 @@ public class ProfileSyncService {
      * @return Set of preferred types.
      */
     public Set<ModelType> getPreferredDataTypes() {
-        // TODO(maxbogue): Correct this line to GetPreferredDataTypes once
-        // downstream uses are fixed.
-        long modelTypeSelection = nativeGetActiveDataTypes(mNativeProfileSyncServiceAndroid);
+        long modelTypeSelection = nativeGetPreferredDataTypes(mNativeProfileSyncServiceAndroid);
         return modelTypeSelectionToSet(modelTypeSelection);
     }
 
