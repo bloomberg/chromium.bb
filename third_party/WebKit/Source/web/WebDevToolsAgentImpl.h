@@ -72,7 +72,7 @@ class WebDevToolsAgentImpl final
     , public InspectorFrontendChannel
     , private WebThread::TaskObserver {
 public:
-    WebDevToolsAgentImpl(WebViewImpl*, WebDevToolsAgentClient*, InspectorOverlay*, PassOwnPtrWillBeRawPtr<InspectorInputAgent::Client>);
+    WebDevToolsAgentImpl(WebViewImpl*, WebDevToolsAgentClient*, InspectorOverlay*, PassOwnPtr<InspectorInputAgent::Client>);
     ~WebDevToolsAgentImpl() override;
     void dispose();
     DECLARE_VIRTUAL_TRACE();
@@ -138,7 +138,7 @@ private:
     OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     OwnPtrWillBeMember<InspectorCompositeState> m_state;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
-    OwnPtrWillBeMember<InspectorInputAgent::Client> m_inputClient;
+    OwnPtr<InspectorInputAgent::Client> m_inputClient;
     OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;

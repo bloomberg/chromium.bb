@@ -255,7 +255,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebViewImpl* webViewImpl,
     WebDevToolsAgentClient* client,
     InspectorOverlay* overlay,
-    PassOwnPtrWillBeRawPtr<InspectorInputAgent::Client> inputClient)
+    PassOwnPtr<InspectorInputAgent::Client> inputClient)
     : m_client(client)
     , m_webViewImpl(webViewImpl)
     , m_attached(false)
@@ -360,7 +360,6 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
     visitor->trace(m_injectedScriptManager);
     visitor->trace(m_state);
     visitor->trace(m_overlay);
-    visitor->trace(m_inputClient);
     visitor->trace(m_asyncCallTracker);
     visitor->trace(m_domAgent);
     visitor->trace(m_pageAgent);

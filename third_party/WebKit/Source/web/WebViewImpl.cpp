@@ -389,7 +389,7 @@ void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
 {
     if (devToolsClient) {
         m_inspectorOverlay = InspectorOverlayImpl::create(this);
-        m_devToolsAgent = adoptPtrWillBeNoop(new WebDevToolsAgentImpl(this, devToolsClient, m_inspectorOverlay.get(), adoptPtrWillBeNoop(new InspectorInputClient(this))));
+        m_devToolsAgent = adoptPtrWillBeNoop(new WebDevToolsAgentImpl(this, devToolsClient, m_inspectorOverlay.get(), adoptPtr(new InspectorInputClient(this))));
         m_devToolsAgent->registerAgent(InspectorRenderingAgent::create(this));
         m_devToolsAgent->registerAgent(InspectorEmulationAgent::create(this));
     } else {
