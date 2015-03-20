@@ -40,7 +40,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/filesystem/FileSystemClient.h"
 #include "platform/AsyncFileSystemCallbacks.h"
-#include "platform/PermissionCallbacks.h"
+#include "platform/ContentSettingCallbacks.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
 #include "wtf/Functional.h"
@@ -136,7 +136,7 @@ void LocalFileSystem::requestFileSystemAccessInternal(ExecutionContext* context,
         (*allowed)();
         return;
     }
-    client()->requestFileSystemAccessAsync(context, PermissionCallbacks::create(allowed, denied));
+    client()->requestFileSystemAccessAsync(context, ContentSettingCallbacks::create(allowed, denied));
 }
 
 void LocalFileSystem::fileSystemNotAvailable(

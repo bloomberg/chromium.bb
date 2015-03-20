@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,27 +6,27 @@
 
 #include "public/platform/WebPermissionCallbacks.h"
 
-#include "platform/PermissionCallbacks.h"
+#include "platform/ContentSettingCallbacks.h"
 
 namespace blink {
 
-class WebPermissionCallbacksPrivate : public RefCounted<WebPermissionCallbacksPrivate> {
+class WebContentSettingCallbacksPrivate : public RefCounted<WebContentSettingCallbacksPrivate> {
 public:
-    static PassRefPtr<WebPermissionCallbacksPrivate> create(const PassOwnPtr<PermissionCallbacks>& callbacks)
+    static PassRefPtr<WebContentSettingCallbacksPrivate> create(const PassOwnPtr<ContentSettingCallbacks>& callbacks)
     {
-        return adoptRef(new WebPermissionCallbacksPrivate(callbacks));
+        return adoptRef(new WebContentSettingCallbacksPrivate(callbacks));
     }
 
-    PermissionCallbacks* callbacks() { return m_callbacks.get(); }
+    ContentSettingCallbacks* callbacks() { return m_callbacks.get(); }
 
 private:
-    WebPermissionCallbacksPrivate(const PassOwnPtr<PermissionCallbacks>& callbacks) : m_callbacks(callbacks) { }
-    OwnPtr<PermissionCallbacks> m_callbacks;
+    WebContentSettingCallbacksPrivate(const PassOwnPtr<ContentSettingCallbacks>& callbacks) : m_callbacks(callbacks) { }
+    OwnPtr<ContentSettingCallbacks> m_callbacks;
 };
 
-WebPermissionCallbacks::WebPermissionCallbacks(const PassOwnPtr<PermissionCallbacks>& callbacks)
+WebPermissionCallbacks::WebPermissionCallbacks(const PassOwnPtr<ContentSettingCallbacks>& callbacks)
 {
-    m_private = WebPermissionCallbacksPrivate::create(callbacks);
+    m_private = WebContentSettingCallbacksPrivate::create(callbacks);
 }
 
 void WebPermissionCallbacks::reset()

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PermissionCallbacks_h
-#define PermissionCallbacks_h
+#ifndef ContentSettingCallbacks_h
+#define ContentSettingCallbacks_h
 
 #include "platform/PlatformExport.h"
 #include "wtf/Functional.h"
@@ -13,17 +13,17 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT PermissionCallbacks {
-    WTF_MAKE_NONCOPYABLE(PermissionCallbacks);
+class PLATFORM_EXPORT ContentSettingCallbacks {
+    WTF_MAKE_NONCOPYABLE(ContentSettingCallbacks);
 public:
-    static PassOwnPtr<PermissionCallbacks> create(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied);
-    virtual ~PermissionCallbacks() { }
+    static PassOwnPtr<ContentSettingCallbacks> create(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied);
+    virtual ~ContentSettingCallbacks() { }
 
     void onAllowed() { (*m_allowed)(); }
     void onDenied() { (*m_denied)(); }
 
 private:
-    PermissionCallbacks(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied);
+    ContentSettingCallbacks(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied);
 
     OwnPtr<Closure> m_allowed;
     OwnPtr<Closure> m_denied;
@@ -31,4 +31,4 @@ private:
 
 } // namespace blink
 
-#endif // PermissionCallbacks_h
+#endif // ContentSettingCallbacks_h

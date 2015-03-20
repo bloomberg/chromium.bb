@@ -11,8 +11,8 @@ namespace WTF { template <typename T> class PassOwnPtr; }
 
 namespace blink {
 
-class PermissionCallbacks;
-class WebPermissionCallbacksPrivate;
+class ContentSettingCallbacks;
+class WebContentSettingCallbacksPrivate;
 
 class WebPermissionCallbacks {
 public:
@@ -29,14 +29,14 @@ public:
     BLINK_PLATFORM_EXPORT void assign(const WebPermissionCallbacks&);
 
 #if INSIDE_BLINK
-    BLINK_PLATFORM_EXPORT WebPermissionCallbacks(const WTF::PassOwnPtr<PermissionCallbacks>&);
+    BLINK_PLATFORM_EXPORT WebPermissionCallbacks(const WTF::PassOwnPtr<ContentSettingCallbacks>&);
 #endif
 
     BLINK_PLATFORM_EXPORT void doAllow();
     BLINK_PLATFORM_EXPORT void doDeny();
 
 private:
-    WebPrivatePtr<WebPermissionCallbacksPrivate> m_private;
+    WebPrivatePtr<WebContentSettingCallbacksPrivate> m_private;
 };
 
 } // namespace blink

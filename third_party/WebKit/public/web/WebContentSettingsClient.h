@@ -5,6 +5,8 @@
 #ifndef WebContentSettingsClient_h
 #define WebContentSettingsClient_h
 
+#include "public/platform/WebContentSettingCallbacks.h"
+// TODO(mlamouri): required for Chromium to build, removed in follow-up CL.
 #include "public/platform/WebPermissionCallbacks.h"
 
 namespace blink {
@@ -22,6 +24,12 @@ public:
     virtual bool requestFileSystemAccessSync() { return true; }
 
     // Controls whether access to File System is allowed for this frame.
+    virtual void requestFileSystemAccessAsync(const WebContentSettingCallbacks& callbacks)
+    {
+        requestFileSystemAccessAsync(WebPermissionCallbacks(callbacks));
+    }
+
+    // TODO(mlamouri), required for Chromium to build, removed in follow-up CL.
     virtual void requestFileSystemAccessAsync(const WebPermissionCallbacks& callbacks) { WebPermissionCallbacks permissionCallbacks(callbacks); permissionCallbacks.doAllow(); }
 
     // Controls whether images are allowed for this frame.
