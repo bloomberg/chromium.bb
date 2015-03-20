@@ -382,9 +382,12 @@ TEST_F(ScriptRunnerTest, ShouldYield_AsyncScripts)
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts)
 {
-    OwnPtr<MockScriptLoader> scriptLoaders[20];
+    OwnPtrWillBeRawPtr<MockScriptLoader> scriptLoaders[20];
+    for (int i = 0; i < 20; i++)
+        scriptLoaders[i] = nullptr;
+
     for (int i = 0; i < 20; i++) {
-        scriptLoaders[i] = adoptPtr(new MockScriptLoader(m_element.get()));
+        scriptLoaders[i] = adoptPtrWillBeNoop(new MockScriptLoader(m_element.get()));
         EXPECT_CALL(*scriptLoaders[i], isReady()).WillRepeatedly(Return(true));
 
         m_scriptRunner->queueScriptForExecution(scriptLoaders[i].get(), ScriptRunner::ASYNC_EXECUTION);
