@@ -366,6 +366,9 @@ void EasyUnlockService::SetHardlockState(
   if (user_id.empty())
     return;
 
+  if (state == GetHardlockState())
+    return;
+
   SetHardlockStateForUser(user_id, state);
 }
 

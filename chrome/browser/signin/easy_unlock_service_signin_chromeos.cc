@@ -341,6 +341,18 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     data->devices = devices;
     chromeos::EasyUnlockKeyManager::DeviceDataListToRemoteDeviceList(
         user_id, devices, &data->remote_devices_value);
+
+    // User could have a NO_HARDLOCK state but has no remote devices if
+    // previous user session shuts down before
+    // CheckCryptohomeKeysAndMaybeHardlock finishes. Set NO_PAIRING state
+    // and update UI to remove the confusing spinner in this case.
+    EasyUnlockScreenlockStateHandler::HardlockState hardlock_state;
+    if (devices.empty() &&
+        GetPersistedHardlockState(&hardlock_state) &&
+        hardlock_state == EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
+      SetHardlockStateForUser(user_id,
+                              EasyUnlockScreenlockStateHandler::NO_PAIRING);
+    }
   }
 
   // If the fetched data belongs to the currently focused user, notify the app
