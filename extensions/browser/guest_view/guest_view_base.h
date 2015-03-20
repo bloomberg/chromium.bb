@@ -80,7 +80,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   static GuestViewBase* Create(content::WebContents* owner_web_contents,
                                const std::string& view_type);
 
-  static GuestViewBase* FromWebContents(content::WebContents* web_contents);
+  static GuestViewBase* FromWebContents(
+      const content::WebContents* web_contents);
 
   static GuestViewBase* From(int owner_process_id, int instance_id);
 

@@ -28,7 +28,7 @@ class GuestView : public GuestViewBase {
     return guest->As<T>();
   }
 
-  static T* FromWebContents(content::WebContents* contents) {
+  static T* FromWebContents(const content::WebContents* contents) {
     auto guest = GuestViewBase::FromWebContents(contents);
     return guest ? guest->As<T>() : nullptr;
   }

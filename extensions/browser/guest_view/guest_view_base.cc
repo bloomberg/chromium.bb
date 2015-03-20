@@ -48,7 +48,7 @@ using GuestViewCreationMap =
 static base::LazyInstance<GuestViewCreationMap> guest_view_registry =
     LAZY_INSTANCE_INITIALIZER;
 
-using WebContentsGuestViewMap = std::map<WebContents*, GuestViewBase*>;
+using WebContentsGuestViewMap = std::map<const WebContents*, GuestViewBase*>;
 static base::LazyInstance<WebContentsGuestViewMap> webcontents_guestview_map =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -362,7 +362,7 @@ GuestViewBase* GuestViewBase::Create(
 }
 
 // static
-GuestViewBase* GuestViewBase::FromWebContents(WebContents* web_contents) {
+GuestViewBase* GuestViewBase::FromWebContents(const WebContents* web_contents) {
   WebContentsGuestViewMap* guest_map = webcontents_guestview_map.Pointer();
   auto it = guest_map->find(web_contents);
   return it == guest_map->end() ? nullptr : it->second;
