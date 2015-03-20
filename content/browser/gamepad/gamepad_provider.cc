@@ -171,34 +171,34 @@ bool GamepadProvider::PadState::Match(const WebGamepad& pad) const {
   return connected_ == pad.connected &&
          axes_length_ == pad.axesLength &&
          buttons_length_ == pad.buttonsLength &&
-         memcmp(id_, pad.id, arraysize(id_)) == 0 &&
-         memcmp(mapping_, pad.mapping, arraysize(mapping_)) == 0;
+         memcmp(id_, pad.id, sizeof(id_)) == 0 &&
+         memcmp(mapping_, pad.mapping, sizeof(mapping_)) == 0;
 }
 
 void GamepadProvider::PadState::SetPad(const WebGamepad& pad) {
   connected_ = pad.connected;
   axes_length_ = pad.axesLength;
   buttons_length_ = pad.buttonsLength;
-  memcpy(id_, pad.id, arraysize(id_));
-  memcpy(mapping_, pad.mapping, arraysize(mapping_));
+  memcpy(id_, pad.id, sizeof(id_));
+  memcpy(mapping_, pad.mapping, sizeof(mapping_));
 }
 
 void GamepadProvider::PadState::SetDisconnected() {
   connected_ = false;
   axes_length_ = 0;
   buttons_length_ = 0;
-  memset(id_, 0, arraysize(id_));
-  memset(mapping_, 0, arraysize(mapping_));
+  memset(id_, 0, sizeof(id_));
+  memset(mapping_, 0, sizeof(mapping_));
 }
 
 void GamepadProvider::PadState::AsWebGamepad(WebGamepad* pad) {
   pad->connected = connected_;
   pad->axesLength = axes_length_;
   pad->buttonsLength = buttons_length_;
-  memcpy(pad->id, id_, arraysize(id_));
-  memcpy(pad->mapping, mapping_, arraysize(mapping_));
-  memset(pad->axes, 0, arraysize(pad->axes));
-  memset(pad->buttons, 0, arraysize(pad->buttons));
+  memcpy(pad->id, id_, sizeof(id_));
+  memcpy(pad->mapping, mapping_, sizeof(mapping_));
+  memset(pad->axes, 0, sizeof(pad->axes));
+  memset(pad->buttons, 0, sizeof(pad->buttons));
 }
 
 void GamepadProvider::DoPoll() {
