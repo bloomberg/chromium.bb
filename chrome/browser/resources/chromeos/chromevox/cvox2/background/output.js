@@ -331,19 +331,17 @@ Output.prototype = {
         this.brailleBuffer_.getSpanInstanceOf(Output.SelectionSpan);
     var startIndex = -1, endIndex = -1;
     if (selSpan) {
-      var valueStart = this.brailleBuffer_.getSpanStart(selSpan);
-      var valueEnd = this.brailleBuffer_.getSpanEnd(selSpan);
-      if (valueStart === undefined || valueEnd === undefined) {
-        valueStart = -1;
-        valueEnd = -1;
-      } else {
-        startIndex = valueStart + selSpan.startIndex;
-        endIndex = valueStart + selSpan.endIndex;
-        this.brailleBuffer_.setSpan(new cvox.ValueSpan(valueStart),
-                                    valueStart, valueEnd);
-        this.brailleBuffer_.setSpan(new cvox.ValueSelectionSpan(),
-                                    startIndex, endIndex);
-      }
+      // Casts ok, since the span is known to be in the spannable.
+      var valueStart =
+          /** @type {number} */ (this.brailleBuffer_.getSpanStart(selSpan));
+      var valueEnd =
+          /** @type {number} */ (this.brailleBuffer_.getSpanEnd(selSpan));
+      startIndex = valueStart + selSpan.startIndex;
+      endIndex = valueStart + selSpan.endIndex;
+      this.brailleBuffer_.setSpan(new cvox.ValueSpan(0),
+                                  valueStart, valueEnd);
+      this.brailleBuffer_.setSpan(new cvox.ValueSelectionSpan(),
+                                  startIndex, endIndex);
     }
 
     var output = new cvox.NavBraille({
@@ -432,7 +430,7 @@ Output.prototype = {
           this.addToSpannable_(buff, node.role, options);
         } else if (token == 'value') {
           var text = node.attributes.value;
-          if (text) {
+          if (text !== undefined) {
             var offset = buff.getLength();
             if (node.attributes.textSelStart !== undefined) {
               options.annotation = new Output.SelectionSpan(
