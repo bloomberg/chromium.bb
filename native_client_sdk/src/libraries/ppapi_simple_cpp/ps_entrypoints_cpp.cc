@@ -10,6 +10,7 @@
 #include <ppapi/cpp/module.h>
 
 #include "ppapi_simple/ps_interface.h"
+#include "ppapi_simple/ps_internal.h"
 
 class PSModule : public pp::Module {
  public:
@@ -41,10 +42,6 @@ Module* CreateModule() {
 }  // namespace pp
 
 extern "C" {
-
-// Defined in ps_instance.c.
-const void* PSGetInterfaceImplementation(const char*);
-extern PPB_GetInterface g_ps_get_interface;
 
 // This is defined to allow an executable to force inclusion of this object
 // file. Otherwise PPP_* functions won't be linked in (because they are not

@@ -34,6 +34,7 @@
 #include "nacl_io/nacl_io.h"
 #include "nacl_io/log.h"
 #include "ppapi_simple/ps_interface.h"
+#include "ppapi_simple/ps_internal.h"
 #include "ppapi_simple/ps_main.h"
 
 struct StartInfo {

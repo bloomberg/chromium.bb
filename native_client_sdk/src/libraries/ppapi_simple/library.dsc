@@ -23,6 +23,7 @@
         "ps_event.h",
         "ps_instance.h",
         "ps_interface.h",
+        "ps_internal.h",
         "ps_main.h",
       ],
       'DEST': 'include/ppapi_simple',
