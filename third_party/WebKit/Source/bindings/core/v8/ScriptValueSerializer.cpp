@@ -92,7 +92,7 @@ void SerializedScriptValueWriter::writeBooleanObject(bool value)
     append(value ? TrueObjectTag : FalseObjectTag);
 }
 
-void SerializedScriptValueWriter::writeOneByteString(v8::Handle<v8::String>& string)
+void SerializedScriptValueWriter::writeOneByteString(v8::Local<v8::String>& string)
 {
     int stringLength = string->Length();
     int utf8Length = string->Utf8Length();
@@ -112,7 +112,7 @@ void SerializedScriptValueWriter::writeOneByteString(v8::Handle<v8::String>& str
     m_position += utf8Length;
 }
 
-void SerializedScriptValueWriter::writeUCharString(v8::Handle<v8::String>& string)
+void SerializedScriptValueWriter::writeUCharString(v8::Local<v8::String>& string)
 {
     int length = string->Length();
     ASSERT(length >= 0);
@@ -544,7 +544,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::ObjectState::objectDone
 ScriptValueSerializer::StateBase* ScriptValueSerializer::DenseArrayState::advance(ScriptValueSerializer& serializer)
 {
     while (m_arrayIndex < m_arrayLength) {
-        v8::Handle<v8::Value> value = composite().As<v8::Array>()->Get(m_arrayIndex);
+        v8::Local<v8::Value> value = composite().As<v8::Array>()->Get(m_arrayIndex);
         m_arrayIndex++;
         if (StateBase* newState = serializer.checkException(this))
             return newState;
@@ -569,27 +569,27 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::SparseArrayState::objec
     return serializer.writeSparseArray(numProperties, composite().As<v8::Array>()->Length(), this);
 }
 
-static v8::Handle<v8::Object> toV8Object(MessagePort* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+static v8::Local<v8::Object> toV8Object(MessagePort* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!impl)
-        return v8::Handle<v8::Object>();
-    v8::Handle<v8::Value> wrapper = toV8(impl, creationContext, isolate);
+        return v8::Local<v8::Object>();
+    v8::Local<v8::Value> wrapper = toV8(impl, creationContext, isolate);
     ASSERT(wrapper->IsObject());
     return wrapper.As<v8::Object>();
 }
 
-static v8::Handle<v8::ArrayBuffer> toV8Object(DOMArrayBuffer* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+static v8::Local<v8::ArrayBuffer> toV8Object(DOMArrayBuffer* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!impl)
-        return v8::Handle<v8::ArrayBuffer>();
-    v8::Handle<v8::Value> wrapper = toV8(impl, creationContext, isolate);
+        return v8::Local<v8::ArrayBuffer>();
+    v8::Local<v8::Value> wrapper = toV8(impl, creationContext, isolate);
     ASSERT(wrapper->IsArrayBuffer());
     return wrapper.As<v8::ArrayBuffer>();
 }
 
 // Returns true if the provided object is to be considered a 'host object', as used in the
 // HTML5 structured clone algorithm.
-static bool isHostObject(v8::Handle<v8::Object> object)
+static bool isHostObject(v8::Local<v8::Object> object)
 {
     // If the object has any internal fields, then we won't be able to serialize or deserialize
     // them; conveniently, this is also a quick way to detect DOM wrapper objects, because
@@ -609,14 +609,14 @@ ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer
     , m_blobDataHandles(blobDataHandles)
 {
     ASSERT(!tryCatch.HasCaught());
-    v8::Handle<v8::Object> creationContext = m_scriptState->context()->Global();
+    v8::Local<v8::Object> creationContext = m_scriptState->context()->Global();
     if (messagePorts) {
         for (size_t i = 0; i < messagePorts->size(); i++)
             m_transferredMessagePorts.set(toV8Object(messagePorts->at(i).get(), creationContext, isolate()), i);
     }
     if (arrayBuffers) {
         for (size_t i = 0; i < arrayBuffers->size(); i++)  {
-            v8::Handle<v8::Object> v8ArrayBuffer = toV8Object(arrayBuffers->at(i).get(), creationContext, isolate());
+            v8::Local<v8::Object> v8ArrayBuffer = toV8Object(arrayBuffers->at(i).get(), creationContext, isolate());
             // Coalesce multiple occurences of the same buffer to the first index.
             if (!m_transferredArrayBuffers.contains(v8ArrayBuffer))
                 m_transferredArrayBuffers.set(v8ArrayBuffer, i);
@@ -624,7 +624,7 @@ ScriptValueSerializer::ScriptValueSerializer(SerializedScriptValueWriter& writer
     }
 }
 
-ScriptValueSerializer::Status ScriptValueSerializer::serialize(v8::Handle<v8::Value> value)
+ScriptValueSerializer::Status ScriptValueSerializer::serialize(v8::Local<v8::Value> value)
 {
     v8::HandleScope scope(isolate());
     m_writer.writeVersion();
@@ -634,7 +634,7 @@ ScriptValueSerializer::Status ScriptValueSerializer::serialize(v8::Handle<v8::Va
     return m_status;
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerialize(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerialize(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     m_writer.writeReferenceCount(m_nextObjectReference);
     uint32_t objectReference;
@@ -650,7 +650,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerialize(v8::Handle<
     return 0;
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     uint32_t arrayBufferIndex;
     if (value.IsEmpty())
@@ -683,7 +683,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Ha
     } else if (V8ArrayBuffer::hasInstance(value, isolate()) && m_transferredArrayBuffers.tryGet(value.As<v8::Object>(), &arrayBufferIndex)) {
         return writeTransferredArrayBuffer(value, arrayBufferIndex, next);
     } else {
-        v8::Handle<v8::Object> jsObject = value.As<v8::Object>();
+        v8::Local<v8::Object> jsObject = value.As<v8::Object>();
         if (jsObject.IsEmpty())
             return handleError(DataCloneError, "An object could not be cloned.", next);
         greyObject(jsObject);
@@ -720,7 +720,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeValue(v8::Ha
     return 0;
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeArrayBuffer(v8::Handle<v8::Value> arrayBuffer, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeArrayBuffer(v8::Local<v8::Value> arrayBuffer, ScriptValueSerializer::StateBase* next)
 {
     return doSerialize(arrayBuffer, next);
 }
@@ -768,7 +768,7 @@ bool ScriptValueSerializer::checkComposite(ScriptValueSerializer::StateBase* top
         return false;
     if (!shouldCheckForCycles(m_depth))
         return true;
-    v8::Handle<v8::Value> composite = top->composite();
+    v8::Local<v8::Value> composite = top->composite();
     for (StateBase* state = top->nextState(); state; state = state->nextState()) {
         if (state->composite() == composite)
             return false;
@@ -776,35 +776,35 @@ bool ScriptValueSerializer::checkComposite(ScriptValueSerializer::StateBase* top
     return true;
 }
 
-void ScriptValueSerializer::writeString(v8::Handle<v8::Value> value)
+void ScriptValueSerializer::writeString(v8::Local<v8::Value> value)
 {
-    v8::Handle<v8::String> string = value.As<v8::String>();
+    v8::Local<v8::String> string = value.As<v8::String>();
     if (!string->Length() || string->IsOneByte())
         m_writer.writeOneByteString(string);
     else
         m_writer.writeUCharString(string);
 }
 
-void ScriptValueSerializer::writeStringObject(v8::Handle<v8::Value> value)
+void ScriptValueSerializer::writeStringObject(v8::Local<v8::Value> value)
 {
-    v8::Handle<v8::StringObject> stringObject = value.As<v8::StringObject>();
+    v8::Local<v8::StringObject> stringObject = value.As<v8::StringObject>();
     v8::String::Utf8Value stringValue(stringObject->ValueOf());
     m_writer.writeStringObject(*stringValue, stringValue.length());
 }
 
-void ScriptValueSerializer::writeNumberObject(v8::Handle<v8::Value> value)
+void ScriptValueSerializer::writeNumberObject(v8::Local<v8::Value> value)
 {
-    v8::Handle<v8::NumberObject> numberObject = value.As<v8::NumberObject>();
+    v8::Local<v8::NumberObject> numberObject = value.As<v8::NumberObject>();
     m_writer.writeNumberObject(numberObject->ValueOf());
 }
 
-void ScriptValueSerializer::writeBooleanObject(v8::Handle<v8::Value> value)
+void ScriptValueSerializer::writeBooleanObject(v8::Local<v8::Value> value)
 {
-    v8::Handle<v8::BooleanObject> booleanObject = value.As<v8::BooleanObject>();
+    v8::Local<v8::BooleanObject> booleanObject = value.As<v8::BooleanObject>();
     m_writer.writeBooleanObject(booleanObject->ValueOf());
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::writeBlob(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeBlob(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     Blob* blob = V8Blob::toImpl(value.As<v8::Object>());
     if (!blob)
@@ -820,7 +820,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeBlob(v8::Handle<v8
     return 0;
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFile(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFile(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     File* file = V8File::toImpl(value.As<v8::Object>());
     if (!file)
@@ -838,7 +838,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFile(v8::Handle<v8
     return 0;
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFileList(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFileList(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     FileList* fileList = V8FileList::toImpl(value.As<v8::Object>());
     if (!fileList)
@@ -864,7 +864,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeFileList(v8::Handl
     return 0;
 }
 
-void ScriptValueSerializer::writeImageData(v8::Handle<v8::Value> value)
+void ScriptValueSerializer::writeImageData(v8::Local<v8::Value> value)
 {
     ImageData* imageData = V8ImageData::toImpl(value.As<v8::Object>());
     if (!imageData)
@@ -873,13 +873,13 @@ void ScriptValueSerializer::writeImageData(v8::Handle<v8::Value> value)
     m_writer.writeImageData(imageData->width(), imageData->height(), pixelArray->data(), pixelArray->length());
 }
 
-void ScriptValueSerializer::writeRegExp(v8::Handle<v8::Value> value)
+void ScriptValueSerializer::writeRegExp(v8::Local<v8::Value> value)
 {
-    v8::Handle<v8::RegExp> regExp = value.As<v8::RegExp>();
+    v8::Local<v8::RegExp> regExp = value.As<v8::RegExp>();
     m_writer.writeRegExp(regExp->GetSource(), regExp->GetFlags());
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBufferView(v8::Handle<v8::Object> object, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBufferView(v8::Local<v8::Object> object, ScriptValueSerializer::StateBase* next)
 {
     ASSERT(!object.IsEmpty());
     DOMArrayBufferView* arrayBufferView = V8ArrayBufferView::toImpl(object);
@@ -887,7 +887,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBuffer
         return 0;
     if (!arrayBufferView->buffer())
         return handleError(DataCloneError, "An ArrayBuffer could not be cloned.", next);
-    v8::Handle<v8::Value> underlyingBuffer = toV8(arrayBufferView->buffer(), m_scriptState->context()->Global(), isolate());
+    v8::Local<v8::Value> underlyingBuffer = toV8(arrayBufferView->buffer(), m_scriptState->context()->Global(), isolate());
     if (underlyingBuffer.IsEmpty())
         return handleError(DataCloneError, "An ArrayBuffer could not be cloned.", next);
     StateBase* stateOut = doSerializeArrayBuffer(underlyingBuffer, next);
@@ -908,7 +908,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBuffer
     return 0;
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::writeArrayBuffer(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeArrayBuffer(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
     if (!arrayBuffer)
@@ -920,7 +920,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeArrayBuffer(v8::Ha
     return 0;
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredArrayBuffer(v8::Handle<v8::Value> value, uint32_t index, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredArrayBuffer(v8::Local<v8::Value> value, uint32_t index, ScriptValueSerializer::StateBase* next)
 {
     DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
     if (!arrayBuffer)
@@ -940,7 +940,7 @@ bool ScriptValueSerializer::shouldSerializeDensely(uint32_t length, uint32_t pro
     return 6 * propertyCount >= length;
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::startArrayState(v8::Handle<v8::Array> array, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::startArrayState(v8::Local<v8::Array> array, ScriptValueSerializer::StateBase* next)
 {
     v8::Local<v8::Array> propertyNames;
     if (!array->GetPropertyNames(context()).ToLocal(&propertyNames))
@@ -956,7 +956,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::startArrayState(v8::Han
     return push(new SparseArrayState(array, propertyNames, next, isolate()));
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::startObjectState(v8::Handle<v8::Object> object, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::startObjectState(v8::Local<v8::Object> object, ScriptValueSerializer::StateBase* next)
 {
     m_writer.writeGenerateFreshObject();
     // FIXME: check not a wrapper
@@ -965,7 +965,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::startObjectState(v8::Ha
 
 // Marks object as having been visited by the serializer and assigns it a unique object reference ID.
 // An object may only be greyed once.
-void ScriptValueSerializer::greyObject(const v8::Handle<v8::Object>& object)
+void ScriptValueSerializer::greyObject(const v8::Local<v8::Object>& object)
 {
     ASSERT(!m_objectPool.contains(object));
     uint32_t objectReference = m_nextObjectReference++;
@@ -996,7 +996,7 @@ bool ScriptValueSerializer::appendFileInfo(const File* file, int* index)
     return true;
 }
 
-bool SerializedScriptValueReader::read(v8::Handle<v8::Value>* value, ScriptValueCompositeCreator& creator)
+bool SerializedScriptValueReader::read(v8::Local<v8::Value>* value, ScriptValueCompositeCreator& creator)
 {
     SerializationTag tag;
     if (!readTag(&tag))
@@ -1004,7 +1004,7 @@ bool SerializedScriptValueReader::read(v8::Handle<v8::Value>* value, ScriptValue
     return readWithTag(tag, value, creator);
 }
 
-bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Handle<v8::Value>* value, ScriptValueCompositeCreator& creator)
+bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Local<v8::Value>* value, ScriptValueCompositeCreator& creator)
 {
     switch (tag) {
     case ReferenceCountTag: {
@@ -1266,7 +1266,7 @@ bool SerializedScriptValueReader::readArrayBufferViewSubTag(ArrayBufferViewSubTa
     return true;
 }
 
-bool SerializedScriptValueReader::readString(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readString(v8::Local<v8::Value>* value)
 {
     uint32_t length;
     if (!doReadUint32(&length))
@@ -1278,7 +1278,7 @@ bool SerializedScriptValueReader::readString(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool SerializedScriptValueReader::readUCharString(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readUCharString(v8::Local<v8::Value>* value)
 {
     uint32_t length;
     if (!doReadUint32(&length) || (length & 1))
@@ -1291,9 +1291,9 @@ bool SerializedScriptValueReader::readUCharString(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool SerializedScriptValueReader::readStringObject(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readStringObject(v8::Local<v8::Value>* value)
 {
-    v8::Handle<v8::Value> stringValue;
+    v8::Local<v8::Value> stringValue;
     if (!readString(&stringValue) || !stringValue->IsString())
         return false;
     *value = v8::StringObject::New(stringValue.As<v8::String>());
@@ -1312,7 +1312,7 @@ bool SerializedScriptValueReader::readWebCoreString(String* string)
     return true;
 }
 
-bool SerializedScriptValueReader::readInt32(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readInt32(v8::Local<v8::Value>* value)
 {
     uint32_t rawValue;
     if (!doReadUint32(&rawValue))
@@ -1321,7 +1321,7 @@ bool SerializedScriptValueReader::readInt32(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool SerializedScriptValueReader::readUint32(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readUint32(v8::Local<v8::Value>* value)
 {
     uint32_t rawValue;
     if (!doReadUint32(&rawValue))
@@ -1330,7 +1330,7 @@ bool SerializedScriptValueReader::readUint32(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool SerializedScriptValueReader::readDate(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readDate(v8::Local<v8::Value>* value)
 {
     double numberValue;
     if (!doReadNumber(&numberValue))
@@ -1339,7 +1339,7 @@ bool SerializedScriptValueReader::readDate(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool SerializedScriptValueReader::readNumber(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readNumber(v8::Local<v8::Value>* value)
 {
     double number;
     if (!doReadNumber(&number))
@@ -1348,7 +1348,7 @@ bool SerializedScriptValueReader::readNumber(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool SerializedScriptValueReader::readNumberObject(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readNumberObject(v8::Local<v8::Value>* value)
 {
     double number;
     if (!doReadNumber(&number))
@@ -1357,7 +1357,7 @@ bool SerializedScriptValueReader::readNumberObject(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool SerializedScriptValueReader::readImageData(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readImageData(v8::Local<v8::Value>* value)
 {
     uint32_t width;
     uint32_t height;
@@ -1392,7 +1392,7 @@ PassRefPtr<DOMArrayBuffer> SerializedScriptValueReader::doReadArrayBuffer()
     return DOMArrayBuffer::create(bufferStart, byteLength);
 }
 
-bool SerializedScriptValueReader::readArrayBuffer(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readArrayBuffer(v8::Local<v8::Value>* value)
 {
     RefPtr<DOMArrayBuffer> arrayBuffer = doReadArrayBuffer();
     if (!arrayBuffer)
@@ -1401,13 +1401,13 @@ bool SerializedScriptValueReader::readArrayBuffer(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool SerializedScriptValueReader::readArrayBufferView(v8::Handle<v8::Value>* value, ScriptValueCompositeCreator& creator)
+bool SerializedScriptValueReader::readArrayBufferView(v8::Local<v8::Value>* value, ScriptValueCompositeCreator& creator)
 {
     ArrayBufferViewSubTag subTag;
     uint32_t byteOffset;
     uint32_t byteLength;
     RefPtr<DOMArrayBuffer> arrayBuffer;
-    v8::Handle<v8::Value> arrayBufferV8Value;
+    v8::Local<v8::Value> arrayBufferV8Value;
     if (!readArrayBufferViewSubTag(&subTag))
         return false;
     if (!doReadUint32(&byteOffset))
@@ -1465,7 +1465,7 @@ bool SerializedScriptValueReader::readArrayBufferView(v8::Handle<v8::Value>* val
         || numElements > remainingElements)
         return false;
 
-    v8::Handle<v8::Object> creationContext = m_scriptState->context()->Global();
+    v8::Local<v8::Object> creationContext = m_scriptState->context()->Global();
     switch (subTag) {
     case ByteArrayTag:
         *value = toV8(DOMInt8Array::create(arrayBuffer.release(), byteOffset, numElements), creationContext, isolate());
@@ -1501,9 +1501,9 @@ bool SerializedScriptValueReader::readArrayBufferView(v8::Handle<v8::Value>* val
     return !value->IsEmpty();
 }
 
-bool SerializedScriptValueReader::readRegExp(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReader::readRegExp(v8::Local<v8::Value>* value)
 {
-    v8::Handle<v8::Value> pattern;
+    v8::Local<v8::Value> pattern;
     if (!readString(&pattern))
         return false;
     uint32_t flags;
@@ -1513,7 +1513,7 @@ bool SerializedScriptValueReader::readRegExp(v8::Handle<v8::Value>* value)
     return true;
 }
 
-bool SerializedScriptValueReader::readBlob(v8::Handle<v8::Value>* value, bool isIndexed)
+bool SerializedScriptValueReader::readBlob(v8::Local<v8::Value>* value, bool isIndexed)
 {
     if (m_version < 3)
         return false;
@@ -1545,7 +1545,7 @@ bool SerializedScriptValueReader::readBlob(v8::Handle<v8::Value>* value, bool is
     return true;
 }
 
-bool SerializedScriptValueReader::readFile(v8::Handle<v8::Value>* value, bool isIndexed)
+bool SerializedScriptValueReader::readFile(v8::Local<v8::Value>* value, bool isIndexed)
 {
     File* file = nullptr;
     if (isIndexed) {
@@ -1561,7 +1561,7 @@ bool SerializedScriptValueReader::readFile(v8::Handle<v8::Value>* value, bool is
     return true;
 }
 
-bool SerializedScriptValueReader::readFileList(v8::Handle<v8::Value>* value, bool isIndexed)
+bool SerializedScriptValueReader::readFileList(v8::Local<v8::Value>* value, bool isIndexed)
 {
     if (m_version < 3)
         return false;
@@ -1680,7 +1680,7 @@ PassRefPtr<BlobDataHandle> SerializedScriptValueReader::getOrCreateBlobDataHandl
     return BlobDataHandle::create(uuid, type, size);
 }
 
-v8::Handle<v8::Value> ScriptValueDeserializer::deserialize()
+v8::Local<v8::Value> ScriptValueDeserializer::deserialize()
 {
     v8::Isolate* isolate = m_reader.scriptState()->isolate();
     if (!m_reader.readVersion(m_version) || m_version > SerializedScriptValue::wireFormatVersion)
@@ -1693,7 +1693,7 @@ v8::Handle<v8::Value> ScriptValueDeserializer::deserialize()
     }
     if (stackDepth() != 1 || m_openCompositeReferenceStack.size())
         return v8::Null(isolate);
-    v8::Handle<v8::Value> result = scope.Escape(element(0));
+    v8::Local<v8::Value> result = scope.Escape(element(0));
     return result;
 }
 
@@ -1711,7 +1711,7 @@ bool ScriptValueDeserializer::newDenseArray(uint32_t length)
     return true;
 }
 
-bool ScriptValueDeserializer::consumeTopOfStack(v8::Handle<v8::Value>* object)
+bool ScriptValueDeserializer::consumeTopOfStack(v8::Local<v8::Value>* object)
 {
     if (stackDepth() < 1)
         return false;
@@ -1729,7 +1729,7 @@ bool ScriptValueDeserializer::newObject()
     return true;
 }
 
-bool ScriptValueDeserializer::completeObject(uint32_t numProperties, v8::Handle<v8::Value>* value)
+bool ScriptValueDeserializer::completeObject(uint32_t numProperties, v8::Local<v8::Value>* value)
 {
     v8::Local<v8::Object> object;
     if (m_version > 0) {
@@ -1745,7 +1745,7 @@ bool ScriptValueDeserializer::completeObject(uint32_t numProperties, v8::Handle<
     return initializeObject(object, numProperties, value);
 }
 
-bool ScriptValueDeserializer::completeSparseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>* value)
+bool ScriptValueDeserializer::completeSparseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>* value)
 {
     v8::Local<v8::Array> array;
     if (m_version > 0) {
@@ -1761,7 +1761,7 @@ bool ScriptValueDeserializer::completeSparseArray(uint32_t numProperties, uint32
     return initializeObject(array, numProperties, value);
 }
 
-bool ScriptValueDeserializer::completeDenseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>* value)
+bool ScriptValueDeserializer::completeDenseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>* value)
 {
     v8::Local<v8::Array> array;
     if (m_version > 0) {
@@ -1785,33 +1785,33 @@ bool ScriptValueDeserializer::completeDenseArray(uint32_t numProperties, uint32_
     return true;
 }
 
-void ScriptValueDeserializer::pushObjectReference(const v8::Handle<v8::Value>& object)
+void ScriptValueDeserializer::pushObjectReference(const v8::Local<v8::Value>& object)
 {
     m_objectPool.append(object);
 }
 
-bool ScriptValueDeserializer::tryGetTransferredMessagePort(uint32_t index, v8::Handle<v8::Value>* object)
+bool ScriptValueDeserializer::tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>* object)
 {
     if (!m_transferredMessagePorts)
         return false;
     if (index >= m_transferredMessagePorts->size())
         return false;
-    v8::Handle<v8::Object> creationContext = m_reader.scriptState()->context()->Global();
+    v8::Local<v8::Object> creationContext = m_reader.scriptState()->context()->Global();
     *object = toV8(m_transferredMessagePorts->at(index).get(), creationContext, m_reader.scriptState()->isolate());
     return true;
 }
 
-bool ScriptValueDeserializer::tryGetTransferredArrayBuffer(uint32_t index, v8::Handle<v8::Value>* object)
+bool ScriptValueDeserializer::tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>* object)
 {
     if (!m_arrayBufferContents)
         return false;
     if (index >= m_arrayBuffers.size())
         return false;
-    v8::Handle<v8::Value> result = m_arrayBuffers.at(index);
+    v8::Local<v8::Value> result = m_arrayBuffers.at(index);
     if (result.IsEmpty()) {
         RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::create(m_arrayBufferContents->at(index));
         v8::Isolate* isolate = m_reader.scriptState()->isolate();
-        v8::Handle<v8::Object> creationContext = m_reader.scriptState()->context()->Global();
+        v8::Local<v8::Object> creationContext = m_reader.scriptState()->context()->Global();
         result = toV8(buffer.get(), creationContext, isolate);
         m_arrayBuffers[index] = result;
     }
@@ -1819,7 +1819,7 @@ bool ScriptValueDeserializer::tryGetTransferredArrayBuffer(uint32_t index, v8::H
     return true;
 }
 
-bool ScriptValueDeserializer::tryGetObjectFromObjectReference(uint32_t reference, v8::Handle<v8::Value>* object)
+bool ScriptValueDeserializer::tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>* object)
 {
     if (reference >= m_objectPool.size())
         return false;
@@ -1832,7 +1832,7 @@ uint32_t ScriptValueDeserializer::objectReferenceCount()
     return m_objectPool.size();
 }
 
-bool ScriptValueDeserializer::initializeObject(v8::Handle<v8::Object> object, uint32_t numProperties, v8::Handle<v8::Value>* value)
+bool ScriptValueDeserializer::initializeObject(v8::Local<v8::Object> object, uint32_t numProperties, v8::Local<v8::Value>* value)
 {
     unsigned length = 2 * numProperties;
     if (length > stackDepth())
@@ -1875,7 +1875,7 @@ void ScriptValueDeserializer::openComposite(const v8::Local<v8::Value>& object)
     m_objectPool.append(object);
 }
 
-bool ScriptValueDeserializer::closeComposite(v8::Handle<v8::Value>* object)
+bool ScriptValueDeserializer::closeComposite(v8::Local<v8::Value>* object)
 {
     if (!m_openCompositeReferenceStack.size())
         return false;

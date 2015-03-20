@@ -79,7 +79,7 @@ ScriptValueSerializerForModules::ScriptValueSerializerForModules(SerializedScrip
 {
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::writeDOMFileSystem(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::writeDOMFileSystem(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     DOMFileSystem* fs = V8DOMFileSystem::toImpl(value.As<v8::Object>());
     if (!fs)
@@ -91,7 +91,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::writeDOMFileS
     return 0;
 }
 
-bool ScriptValueSerializerForModules::writeCryptoKey(v8::Handle<v8::Value> value)
+bool ScriptValueSerializerForModules::writeCryptoKey(v8::Local<v8::Value> value)
 {
     CryptoKey* key = V8CryptoKey::toImpl(value.As<v8::Object>());
     if (!key)
@@ -291,11 +291,11 @@ void SerializedScriptValueWriterForModules::doWriteKeyUsages(const WebCryptoKeyU
     doWriteUint32(value);
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::doSerializeValue(v8::Handle<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::doSerializeValue(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     bool isDOMFileSystem = V8DOMFileSystem::hasInstance(value, isolate());
     if (isDOMFileSystem || V8CryptoKey::hasInstance(value, isolate())) {
-        v8::Handle<v8::Object> jsObject = value.As<v8::Object>();
+        v8::Local<v8::Object> jsObject = value.As<v8::Object>();
         if (jsObject.IsEmpty())
             return handleError(DataCloneError, "An object could not be cloned.", next);
         greyObject(jsObject);
@@ -310,7 +310,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::doSerializeVa
     return ScriptValueSerializer::doSerializeValue(value, next);
 }
 
-bool SerializedScriptValueReaderForModules::read(v8::Handle<v8::Value>* value, ScriptValueCompositeCreator& creator)
+bool SerializedScriptValueReaderForModules::read(v8::Local<v8::Value>* value, ScriptValueCompositeCreator& creator)
 {
     SerializationTag tag;
     if (!readTag(&tag))
@@ -332,7 +332,7 @@ bool SerializedScriptValueReaderForModules::read(v8::Handle<v8::Value>* value, S
     return !value->IsEmpty();
 }
 
-bool SerializedScriptValueReaderForModules::readDOMFileSystem(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReaderForModules::readDOMFileSystem(v8::Local<v8::Value>* value)
 {
     uint32_t type;
     String name;
@@ -348,7 +348,7 @@ bool SerializedScriptValueReaderForModules::readDOMFileSystem(v8::Handle<v8::Val
     return true;
 }
 
-bool SerializedScriptValueReaderForModules::readCryptoKey(v8::Handle<v8::Value>* value)
+bool SerializedScriptValueReaderForModules::readCryptoKey(v8::Local<v8::Value>* value)
 {
     uint32_t rawKeyType;
     if (!doReadUint32(&rawKeyType))

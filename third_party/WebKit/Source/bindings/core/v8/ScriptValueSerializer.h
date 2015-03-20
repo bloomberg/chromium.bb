@@ -30,17 +30,17 @@ typedef Vector<WTF::ArrayBufferContents, 1> ArrayBufferContentsArray;
 // this class should be used instead. GCObject must be a subtype of v8::Object.
 // Suggested usage:
 //     V8ObjectMap<v8::Object, int> map;
-//     v8::Handle<v8::Object> obj = ...;
+//     v8::Local<v8::Object> obj = ...;
 //     map.set(obj, 42);
 template<typename GCObject, typename T>
 class V8ObjectMap {
 public:
-    bool contains(const v8::Handle<GCObject>& handle)
+    bool contains(const v8::Local<GCObject>& handle)
     {
         return m_map.contains(*handle);
     }
 
-    bool tryGet(const v8::Handle<GCObject>& handle, T* valueOut)
+    bool tryGet(const v8::Local<GCObject>& handle, T* valueOut)
     {
         typename HandleToT::iterator result = m_map.find(*handle);
         if (result != m_map.end()) {
@@ -50,7 +50,7 @@ public:
         return false;
     }
 
-    void set(const v8::Handle<GCObject>& handle, const T& value)
+    void set(const v8::Local<GCObject>& handle, const T& value)
     {
         m_map.set(*handle, value);
     }
@@ -68,9 +68,9 @@ private:
     // need to rehash after every garbage collection because a key object may have been moved.
     template<typename G>
     struct V8HandlePtrHash {
-        static v8::Handle<G> unsafeHandleFromRawValue(const G* value)
+        static v8::Local<G> unsafeHandleFromRawValue(const G* value)
         {
-            const v8::Handle<G>* handle = reinterpret_cast<const v8::Handle<G>*>(&value);
+            const v8::Local<G>* handle = reinterpret_cast<const v8::Local<G>*>(&value);
             return *handle;
         }
 
@@ -110,8 +110,8 @@ public:
     void writeTrue();
     void writeFalse();
     void writeBooleanObject(bool value);
-    void writeOneByteString(v8::Handle<v8::String>&);
-    void writeUCharString(v8::Handle<v8::String>&);
+    void writeOneByteString(v8::Local<v8::String>&);
+    void writeUCharString(v8::Local<v8::String>&);
     void writeStringObject(const char* data, int length);
     void writeWebCoreString(const String&);
     void writeVersion();
@@ -196,7 +196,7 @@ public:
     v8::Isolate* isolate() { return m_scriptState->isolate(); }
     v8::Local<v8::Context> context() { return isolate()->GetCurrentContext(); }
 
-    Status serialize(v8::Handle<v8::Value>);
+    Status serialize(v8::Local<v8::Value>);
     String errorMessage() { return m_errorMessage; }
 
 protected:
@@ -209,7 +209,7 @@ protected:
         StateBase* nextState() { return m_next; }
 
         // Composite object we're processing in this state.
-        v8::Handle<v8::Value> composite() { return m_composite; }
+        v8::Local<v8::Value> composite() { return m_composite; }
 
         // Serializes (a part of) the current composite and returns
         // the next state to process or null when this is the final
@@ -217,14 +217,14 @@ protected:
         virtual StateBase* advance(ScriptValueSerializer&) = 0;
 
     protected:
-        StateBase(v8::Handle<v8::Value> composite, StateBase* next)
+        StateBase(v8::Local<v8::Value> composite, StateBase* next)
             : m_composite(composite)
             , m_next(next)
         {
         }
 
     private:
-        v8::Handle<v8::Value> m_composite;
+        v8::Local<v8::Value> m_composite;
         StateBase* m_next;
     };
 
@@ -246,10 +246,10 @@ protected:
     template <typename T>
     class State : public StateBase {
     public:
-        v8::Handle<T> composite() { return v8::Handle<T>::Cast(StateBase::composite()); }
+        v8::Local<T> composite() { return v8::Local<T>::Cast(StateBase::composite()); }
 
     protected:
-        State(v8::Handle<T> composite, StateBase* next)
+        State(v8::Local<T> composite, StateBase* next)
             : StateBase(composite, next)
         {
         }
@@ -257,7 +257,7 @@ protected:
 
     class AbstractObjectState : public State<v8::Object> {
     public:
-        AbstractObjectState(v8::Handle<v8::Object> object, StateBase* next)
+        AbstractObjectState(v8::Local<v8::Object> object, StateBase* next)
             : State<v8::Object>(object, next)
             , m_index(0)
             , m_numSerializedProperties(0)
@@ -280,7 +280,7 @@ protected:
 
     class ObjectState final : public AbstractObjectState {
     public:
-        ObjectState(v8::Handle<v8::Object> object, StateBase* next)
+        ObjectState(v8::Local<v8::Object> object, StateBase* next)
             : AbstractObjectState(object, next)
         {
         }
@@ -293,7 +293,7 @@ protected:
 
     class DenseArrayState final : public AbstractObjectState {
     public:
-        DenseArrayState(v8::Handle<v8::Array> array, v8::Handle<v8::Array> propertyNames, StateBase* next, v8::Isolate* isolate)
+        DenseArrayState(v8::Local<v8::Array> array, v8::Local<v8::Array> propertyNames, StateBase* next, v8::Isolate* isolate)
             : AbstractObjectState(array, next)
             , m_arrayIndex(0)
             , m_arrayLength(array->Length())
@@ -313,7 +313,7 @@ protected:
 
     class SparseArrayState final : public AbstractObjectState {
     public:
-        SparseArrayState(v8::Handle<v8::Array> array, v8::Handle<v8::Array> propertyNames, StateBase* next, v8::Isolate* isolate)
+        SparseArrayState(v8::Local<v8::Array> array, v8::Local<v8::Array> propertyNames, StateBase* next, v8::Isolate* isolate)
             : AbstractObjectState(array, next)
         {
             m_propertyNames = v8::Local<v8::Array>::New(isolate, propertyNames);
@@ -326,11 +326,11 @@ protected:
     };
 
     // Functions used by serialization states.
-    virtual StateBase* doSerializeValue(v8::Handle<v8::Value>, StateBase* next);
+    virtual StateBase* doSerializeValue(v8::Local<v8::Value>, StateBase* next);
 
 private:
-    StateBase* doSerialize(v8::Handle<v8::Value>, StateBase* next);
-    StateBase* doSerializeArrayBuffer(v8::Handle<v8::Value> arrayBuffer, StateBase* next);
+    StateBase* doSerialize(v8::Local<v8::Value>, StateBase* next);
+    StateBase* doSerializeArrayBuffer(v8::Local<v8::Value> arrayBuffer, StateBase* next);
     StateBase* checkException(StateBase*);
     StateBase* writeObject(uint32_t numProperties, StateBase*);
     StateBase* writeSparseArray(uint32_t numProperties, uint32_t length, StateBase*);
@@ -353,22 +353,22 @@ private:
     }
 
     bool checkComposite(StateBase* top);
-    void writeString(v8::Handle<v8::Value>);
-    void writeStringObject(v8::Handle<v8::Value>);
-    void writeNumberObject(v8::Handle<v8::Value>);
-    void writeBooleanObject(v8::Handle<v8::Value>);
-    StateBase* writeBlob(v8::Handle<v8::Value>, StateBase* next);
-    StateBase* writeFile(v8::Handle<v8::Value>, StateBase* next);
-    StateBase* writeFileList(v8::Handle<v8::Value>, StateBase* next);
-    void writeImageData(v8::Handle<v8::Value>);
-    void writeRegExp(v8::Handle<v8::Value>);
-    StateBase* writeAndGreyArrayBufferView(v8::Handle<v8::Object>, StateBase* next);
-    StateBase* writeArrayBuffer(v8::Handle<v8::Value>, StateBase* next);
-    StateBase* writeTransferredArrayBuffer(v8::Handle<v8::Value>, uint32_t index, StateBase* next);
+    void writeString(v8::Local<v8::Value>);
+    void writeStringObject(v8::Local<v8::Value>);
+    void writeNumberObject(v8::Local<v8::Value>);
+    void writeBooleanObject(v8::Local<v8::Value>);
+    StateBase* writeBlob(v8::Local<v8::Value>, StateBase* next);
+    StateBase* writeFile(v8::Local<v8::Value>, StateBase* next);
+    StateBase* writeFileList(v8::Local<v8::Value>, StateBase* next);
+    void writeImageData(v8::Local<v8::Value>);
+    void writeRegExp(v8::Local<v8::Value>);
+    StateBase* writeAndGreyArrayBufferView(v8::Local<v8::Object>, StateBase* next);
+    StateBase* writeArrayBuffer(v8::Local<v8::Value>, StateBase* next);
+    StateBase* writeTransferredArrayBuffer(v8::Local<v8::Value>, uint32_t index, StateBase* next);
     static bool shouldSerializeDensely(uint32_t length, uint32_t propertyCount);
 
-    StateBase* startArrayState(v8::Handle<v8::Array>, StateBase* next);
-    StateBase* startObjectState(v8::Handle<v8::Object>, StateBase* next);
+    StateBase* startArrayState(v8::Local<v8::Array>, StateBase* next);
+    StateBase* startObjectState(v8::Local<v8::Object>, StateBase* next);
 
     bool appendBlobInfo(const String& uuid, const String& type, unsigned long long size, int* index);
     bool appendFileInfo(const File*, int* index);
@@ -376,7 +376,7 @@ private:
 protected:
     // Marks object as having been visited by the serializer and assigns it a unique object reference ID.
     // An object may only be greyed once.
-    void greyObject(const v8::Handle<v8::Object>&);
+    void greyObject(const v8::Local<v8::Object>&);
 
     StateBase* handleError(Status errorStatus, const String& message, StateBase*);
 
@@ -407,18 +407,18 @@ public:
     ScriptValueCompositeCreator() { }
     virtual ~ScriptValueCompositeCreator() { }
 
-    virtual bool consumeTopOfStack(v8::Handle<v8::Value>*) = 0;
+    virtual bool consumeTopOfStack(v8::Local<v8::Value>*) = 0;
     virtual uint32_t objectReferenceCount() = 0;
-    virtual void pushObjectReference(const v8::Handle<v8::Value>&) = 0;
-    virtual bool tryGetObjectFromObjectReference(uint32_t reference, v8::Handle<v8::Value>*) = 0;
-    virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Handle<v8::Value>*) = 0;
-    virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Handle<v8::Value>*) = 0;
+    virtual void pushObjectReference(const v8::Local<v8::Value>&) = 0;
+    virtual bool tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>*) = 0;
+    virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) = 0;
+    virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) = 0;
     virtual bool newSparseArray(uint32_t length) = 0;
     virtual bool newDenseArray(uint32_t length) = 0;
     virtual bool newObject() = 0;
-    virtual bool completeObject(uint32_t numProperties, v8::Handle<v8::Value>*) = 0;
-    virtual bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>*) = 0;
-    virtual bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>*) = 0;
+    virtual bool completeObject(uint32_t numProperties, v8::Local<v8::Value>*) = 0;
+    virtual bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) = 0;
+    virtual bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) = 0;
 };
 
 // SerializedScriptValueReader is responsible for deserializing primitive types and
@@ -457,37 +457,37 @@ protected:
     }
 
 public:
-    virtual bool read(v8::Handle<v8::Value>*, ScriptValueCompositeCreator&);
+    virtual bool read(v8::Local<v8::Value>*, ScriptValueCompositeCreator&);
     bool readVersion(uint32_t& version);
     void setVersion(uint32_t);
 
 protected:
-    bool readWithTag(SerializationTag, v8::Handle<v8::Value>*, ScriptValueCompositeCreator&);
+    bool readWithTag(SerializationTag, v8::Local<v8::Value>*, ScriptValueCompositeCreator&);
 
     bool readTag(SerializationTag*);
     bool readWebCoreString(String*);
-    bool readUint32(v8::Handle<v8::Value>*);
+    bool readUint32(v8::Local<v8::Value>*);
 
     bool doReadUint32(uint32_t* value);
 
 private:
     void undoReadTag();
     bool readArrayBufferViewSubTag(ArrayBufferViewSubTag*);
-    bool readString(v8::Handle<v8::Value>*);
-    bool readUCharString(v8::Handle<v8::Value>*);
-    bool readStringObject(v8::Handle<v8::Value>*);
-    bool readInt32(v8::Handle<v8::Value>*);
-    bool readDate(v8::Handle<v8::Value>*);
-    bool readNumber(v8::Handle<v8::Value>*);
-    bool readNumberObject(v8::Handle<v8::Value>*);
-    bool readImageData(v8::Handle<v8::Value>*);
+    bool readString(v8::Local<v8::Value>*);
+    bool readUCharString(v8::Local<v8::Value>*);
+    bool readStringObject(v8::Local<v8::Value>*);
+    bool readInt32(v8::Local<v8::Value>*);
+    bool readDate(v8::Local<v8::Value>*);
+    bool readNumber(v8::Local<v8::Value>*);
+    bool readNumberObject(v8::Local<v8::Value>*);
+    bool readImageData(v8::Local<v8::Value>*);
     PassRefPtr<DOMArrayBuffer> doReadArrayBuffer();
-    bool readArrayBuffer(v8::Handle<v8::Value>*);
-    bool readArrayBufferView(v8::Handle<v8::Value>*, ScriptValueCompositeCreator&);
-    bool readRegExp(v8::Handle<v8::Value>*);
-    bool readBlob(v8::Handle<v8::Value>*, bool isIndexed);
-    bool readFile(v8::Handle<v8::Value>*, bool isIndexed);
-    bool readFileList(v8::Handle<v8::Value>*, bool isIndexed);
+    bool readArrayBuffer(v8::Local<v8::Value>*);
+    bool readArrayBufferView(v8::Local<v8::Value>*, ScriptValueCompositeCreator&);
+    bool readRegExp(v8::Local<v8::Value>*);
+    bool readBlob(v8::Local<v8::Value>*, bool isIndexed);
+    bool readFile(v8::Local<v8::Value>*, bool isIndexed);
+    bool readFileList(v8::Local<v8::Value>*, bool isIndexed);
     File* readFileHelper();
     File* readFileIndexHelper();
 
@@ -534,18 +534,18 @@ public:
     {
     }
 
-    v8::Handle<v8::Value> deserialize();
+    v8::Local<v8::Value> deserialize();
     virtual bool newSparseArray(uint32_t) override;
     virtual bool newDenseArray(uint32_t length) override;
-    virtual bool consumeTopOfStack(v8::Handle<v8::Value>*) override;
+    virtual bool consumeTopOfStack(v8::Local<v8::Value>*) override;
     virtual bool newObject() override;
-    virtual bool completeObject(uint32_t numProperties, v8::Handle<v8::Value>*) override;
-    virtual bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>*) override;
-    virtual bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Handle<v8::Value>*) override;
-    virtual void pushObjectReference(const v8::Handle<v8::Value>&) override;
-    virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Handle<v8::Value>*) override;
-    virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Handle<v8::Value>*) override;
-    virtual bool tryGetObjectFromObjectReference(uint32_t reference, v8::Handle<v8::Value>*) override;
+    virtual bool completeObject(uint32_t numProperties, v8::Local<v8::Value>*) override;
+    virtual bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) override;
+    virtual bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) override;
+    virtual void pushObjectReference(const v8::Local<v8::Value>&) override;
+    virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) override;
+    virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) override;
+    virtual bool tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>*) override;
     virtual uint32_t objectReferenceCount() override;
 
 protected:
@@ -553,7 +553,7 @@ protected:
     virtual bool read(v8::Local<v8::Value>*);
 
 private:
-    bool initializeObject(v8::Handle<v8::Object>, uint32_t numProperties, v8::Handle<v8::Value>*);
+    bool initializeObject(v8::Local<v8::Object>, uint32_t numProperties, v8::Local<v8::Value>*);
     bool doDeserialize();
     void push(v8::Local<v8::Value> value) { m_stack.append(value); };
     void pop(unsigned length)
@@ -565,15 +565,15 @@ private:
 
     v8::Local<v8::Value> element(unsigned index);
     void openComposite(const v8::Local<v8::Value>&);
-    bool closeComposite(v8::Handle<v8::Value>*);
+    bool closeComposite(v8::Local<v8::Value>*);
 
     SerializedScriptValueReader& m_reader;
     Vector<v8::Local<v8::Value>> m_stack;
-    Vector<v8::Handle<v8::Value>> m_objectPool;
+    Vector<v8::Local<v8::Value>> m_objectPool;
     Vector<uint32_t> m_openCompositeReferenceStack;
     RawPtrWillBeMember<MessagePortArray> m_transferredMessagePorts;
     ArrayBufferContentsArray* m_arrayBufferContents;
-    Vector<v8::Handle<v8::Value>> m_arrayBuffers;
+    Vector<v8::Local<v8::Value>> m_arrayBuffers;
     uint32_t m_version;
 };
 

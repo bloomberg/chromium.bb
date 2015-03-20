@@ -48,11 +48,11 @@ public:
     {
     }
 
-    virtual bool read(v8::Handle<v8::Value>*, ScriptValueCompositeCreator&) override;
+    virtual bool read(v8::Local<v8::Value>*, ScriptValueCompositeCreator&) override;
 
 private:
-    bool readDOMFileSystem(v8::Handle<v8::Value>*);
-    bool readCryptoKey(v8::Handle<v8::Value>*);
+    bool readDOMFileSystem(v8::Local<v8::Value>*);
+    bool readCryptoKey(v8::Local<v8::Value>*);
     bool doReadHmacKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
     bool doReadAesKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
     bool doReadRsaHashedKey(WebCryptoKeyAlgorithm&, WebCryptoKeyType&);
@@ -73,10 +73,10 @@ public:
     ScriptValueSerializerForModules(SerializedScriptValueWriter&, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, WebBlobInfoArray*, BlobDataHandleMap& blobDataHandles, v8::TryCatch&, ScriptState*);
 
 private:
-    virtual ScriptValueSerializer::StateBase* doSerializeValue(v8::Handle<v8::Value>, ScriptValueSerializer::StateBase* next) override;
+    virtual ScriptValueSerializer::StateBase* doSerializeValue(v8::Local<v8::Value>, ScriptValueSerializer::StateBase* next) override;
 
-    ScriptValueSerializer::StateBase* writeDOMFileSystem(v8::Handle<v8::Value>, ScriptValueSerializer::StateBase* next);
-    bool writeCryptoKey(v8::Handle<v8::Value>);
+    ScriptValueSerializer::StateBase* writeDOMFileSystem(v8::Local<v8::Value>, ScriptValueSerializer::StateBase* next);
+    bool writeCryptoKey(v8::Local<v8::Value>);
 };
 
 class ScriptValueDeserializerForModules final : public ScriptValueDeserializer {
