@@ -323,7 +323,8 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
       break;
     }
   }
-
+  DCHECK(new_display_state == MULTIPLE_DISPLAY_STATE_HEADLESS ||
+         !size.IsEmpty());
   *framebuffer_size = size;
   return true;
 }
@@ -919,7 +920,17 @@ void DisplayConfigurator::OnConfigured(
   if (success) {
     current_display_state_ = new_display_state;
     current_power_state_ = new_power_state;
-    framebuffer_size_ = framebuffer_size;
+
+    // |framebuffer_size| is empty in software mirroring mode, headless mode,
+    // or all displays are off.
+    DCHECK(!framebuffer_size.IsEmpty() ||
+           mirroring_controller_->SoftwareMirroringEnabled() ||
+           new_display_state == MULTIPLE_DISPLAY_STATE_HEADLESS ||
+           new_power_state == chromeos::DISPLAY_POWER_ALL_OFF);
+
+    if (!framebuffer_size.IsEmpty())
+      framebuffer_size_ = framebuffer_size;
+
     // If the requested power state hasn't changed then make sure that value
     // gets updated as well since the last requested value may have been
     // dependent on certain conditions (ie: if only the internal monitor was

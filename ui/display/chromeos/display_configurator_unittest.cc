@@ -385,6 +385,8 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
           NULL),
       log_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
+  const gfx::Size framebuffer_size = configurator_.framebuffer_size();
+  DCHECK(!framebuffer_size.IsEmpty());
 
   observer_.Reset();
   configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
@@ -392,6 +394,9 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
   EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
+  EXPECT_EQ(framebuffer_size.ToString(),
+            configurator_.framebuffer_size().ToString());
+
   EXPECT_EQ(1, observer_.num_changes());
 
   // Setting MULTIPLE_DISPLAY_STATE_DUAL_MIRROR should try to reconfigure.
@@ -632,7 +637,11 @@ TEST_F(DisplayConfiguratorTest, SuspendAndResume) {
   // No preparation is needed before suspending when the display is already
   // on.  The configurator should still reprobe on resume in case a display
   // was connected while suspended.
+  const gfx::Size framebuffer_size = configurator_.framebuffer_size();
+  DCHECK(!framebuffer_size.IsEmpty());
   configurator_.SuspendDisplays();
+  EXPECT_EQ(framebuffer_size.ToString(),
+            configurator_.framebuffer_size().ToString());
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
   configurator_.ResumeDisplays();
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
@@ -779,6 +788,13 @@ TEST_F(DisplayConfiguratorTest, Headless) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
+  const gfx::Size framebuffer_size = configurator_.framebuffer_size();
+  DCHECK(!framebuffer_size.IsEmpty());
+
+  UpdateOutputs(0, true);
+  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_->GetActionsAndClear());
+  EXPECT_EQ(framebuffer_size.ToString(),
+            configurator_.framebuffer_size().ToString());
 }
 
 TEST_F(DisplayConfiguratorTest, StartWithTwoOutputs) {

@@ -86,8 +86,8 @@ void UpdateDisplayConfigurationTask::EnterState(
     callback.Run(ConfigureDisplaysTask::ERROR);
     return;
   }
-
   if (!requests.empty()) {
+    DCHECK(!framebuffer_size_.IsEmpty());
     delegate_->CreateFrameBuffer(framebuffer_size_);
     configure_task_.reset(
         new ConfigureDisplaysTask(delegate_, requests, callback));
