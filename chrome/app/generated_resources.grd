@@ -3915,7 +3915,7 @@ Even if you have downloaded files from this website before, the website might ha
           Web Worker: <ph name="WORKER_NAME">$1<ex>http://www.domain.com</ex></ph>
         </message>
         <message name="IDS_TASK_MANAGER_UTILITY_PREFIX" desc="The prefix for a utility process row">
-          Utility:
+          Utility: <ph name="UTILITY_TYPE">$1<ex>Image Decoder</ex></ph>
         </message>
         <message name="IDS_TASK_MANAGER_NACL_PREFIX" desc="The prefix for a Task Manager Native Client module row">
           Native Client module: <ph name="NEXE_NAME">$1<ex>Unknown Native Client module</ex></ph>
@@ -3936,6 +3936,10 @@ Even if you have downloaded files from this website before, the website might ha
           Incognito Subframe: <ph name="SUBFRAME_SITE">$1<ex>https://youtube.com/</ex></ph>
         </message>
       </if>
+
+      <message name="IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME" desc="The name of the utility process used for out-of-process V8 proxy resolution.">
+        V8 Proxy Resolver
+      </message>
 
       <if expr="not is_android">
         <!-- Performance Monitor page -->

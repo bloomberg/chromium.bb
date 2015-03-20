@@ -83,6 +83,9 @@ class UtilityProcessHost : public IPC::Sender,
   // Returns the ServiceRegistry for this process. Only valid to call this if
   // the process was started with StartMojoMode().
   virtual ServiceRegistry* GetServiceRegistry() = 0;
+
+  // Set the name of the process to appear in the task manager.
+  virtual void SetName(const std::string& name) = 0;
 };
 
 };  // namespace content

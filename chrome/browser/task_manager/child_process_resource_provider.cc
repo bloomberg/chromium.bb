@@ -172,7 +172,7 @@ base::string16 ChildProcessResource::GetLocalizedTitle() const {
 
   switch (process_type_) {
     case content::PROCESS_TYPE_UTILITY:
-      return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX);
+      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX, title);
     case content::PROCESS_TYPE_GPU:
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_GPU_PREFIX);
     case content::PROCESS_TYPE_PLUGIN:

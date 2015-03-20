@@ -6,11 +6,13 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/service_registry.h"
 #include "net/proxy/mojo_proxy_resolver_factory.h"
+#include "ui/base/l10n/l10n_util.h"
 
 // static
 UtilityProcessMojoProxyResolverFactory*
@@ -37,6 +39,8 @@ void UtilityProcessMojoProxyResolverFactory::CreateProcessAndConnect() {
       content::UtilityProcessHost::Create(
           scoped_refptr<content::UtilityProcessHostClient>(),
           base::MessageLoopProxy::current().get());
+  utility_process_host->SetName(l10n_util::GetStringUTF8(
+      IDS_UTILITY_PROCESS_PROXY_RESOLVER_NAME));
   bool process_started = utility_process_host->StartMojoMode();
   if (process_started) {
     content::ServiceRegistry* service_registry =
