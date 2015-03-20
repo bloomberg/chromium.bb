@@ -93,11 +93,15 @@ remoting.HostSetupFlow.prototype.switchToErrorState = function(error) {
 
 /**
  * @param {remoting.HostController} hostController The HostController
- * responsible for the host daemon.
+ *     responsible for the host daemon.
+ * @param {function(!remoting.Error)} onError Function to call when an error
+ *     occurs.
  * @constructor
  */
-remoting.HostSetupDialog = function(hostController) {
+remoting.HostSetupDialog = function(hostController, onError) {
   this.hostController_ = hostController;
+  this.onError_ = onError;
+
   this.pinEntry_ = document.getElementById('daemon-pin-entry');
   this.pinConfirm_ = document.getElementById('daemon-pin-confirm');
   this.pinErrorDiv_ = document.getElementById('daemon-pin-error-div');
@@ -165,7 +169,7 @@ remoting.HostSetupDialog.prototype.showForStart = function() {
     // case where the refresh token is invalid.
     remoting.identity.getToken().then(
         that.showForStartWithToken_.bind(that, state),
-        remoting.Error.handler(remoting.showErrorMessage));
+        remoting.Error.handler(that.onError_));
   };
 
   this.hostController_.getLocalHostState(onState);

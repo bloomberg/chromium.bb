@@ -96,7 +96,7 @@ remoting.LocalHostSection.prototype.canChangeState = function() {
   // Return false if the host is uninstallable.  The NOT_INSTALLED check is
   // required to handle the special case for Ubuntu, as we report the host as
   // uninstallable on Linux.
-  if (!remoting.isMe2MeInstallable() &&
+  if (!this.isMe2MeInstallable_() &&
       state === remoting.HostController.State.NOT_INSTALLED) {
     return false;
   }
@@ -106,6 +106,24 @@ remoting.LocalHostSection.prototype.canChangeState = function() {
   // chance of a related but hard-to-diagnose future error is high).
   return this.isEnabled_() || !this.hasError_;
 };
+
+/**
+ * Returns true if the current platform is fully supported. It's only used when
+ * we detect that host native messaging components are not installed. In that
+ * case the result of this function determines if the webapp should show the
+ * controls that allow to install and enable Me2Me host.
+ *
+ * @return {boolean}
+ * @private
+ */
+remoting.LocalHostSection.prototype.isMe2MeInstallable_ = function() {
+  // The chromoting host is currently not installable on ChromeOS.
+  // For Linux, we have a install package for Ubuntu but not other distros.
+  // Since we cannot tell from javascript alone the Linux distro the client is
+  // on, we don't show the daemon-control UI for Linux unless the host is
+  // installed.
+  return remoting.platformIsWindows() || remoting.platformIsMac();
+}
 
 /** @private */
 remoting.LocalHostSection.prototype.updateUI_ = function() {

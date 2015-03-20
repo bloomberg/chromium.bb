@@ -26,9 +26,11 @@ var remoting = remoting || {};
  * @param {HTMLElement} loadingIndicator The HTML <span> to update while the
  *     host list is being loaded. The first element of this span should be
  *     the reload button.
+ * @param {function(!remoting.Error)} onError Function to call when an error
+ *     occurs.
  */
 remoting.HostList = function(table, noHosts, errorMsg, errorButton,
-                             loadingIndicator) {
+                             loadingIndicator, onError) {
   /** @private {Element} */
   this.table_ = table;
   /**
@@ -43,6 +45,8 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton,
   this.errorButton_ = errorButton;
   /** @private {HTMLElement} */
   this.loadingIndicator_ = loadingIndicator;
+  this.onError_ = onError;
+
   /** @private {Array<remoting.HostTableEntry>} */
   this.hostTableEntries_ = [];
   /** @private {Array<remoting.Host>} */
@@ -53,7 +57,8 @@ remoting.HostList = function(table, noHosts, errorMsg, errorButton,
   this.localHostSection_ = new remoting.LocalHostSection(
       /** @type {HTMLElement} */ (document.querySelector('.daemon-control')),
       new remoting.LocalHostSection.Controller(
-          this, new remoting.HostSetupDialog(remoting.hostController)));
+          this,
+          new remoting.HostSetupDialog(remoting.hostController, onError)));
 
   /** @private {number} */
   this.webappMajorVersion_ = parseInt(chrome.runtime.getManifest().version, 10);
@@ -295,7 +300,7 @@ remoting.HostList.prototype.deleteHost_ = function(hostTableEntry) {
     this.hostTableEntries_.splice(index, 1);
   }
   remoting.hostListApi.remove(hostTableEntry.host.hostId, base.doNothing,
-                              remoting.showErrorMessage);
+                              this.onError_);
 };
 
 /**
@@ -316,7 +321,7 @@ remoting.HostList.prototype.renameHost = function(hostTableEntry) {
                            hostTableEntry.host.hostName,
                            hostTableEntry.host.publicKey,
                            function() {},
-                           remoting.showErrorMessage);
+                           this.onError_);
 };
 
 /**
@@ -343,7 +348,7 @@ remoting.HostList.prototype.unregisterHostById = function(hostId, opt_onDone) {
       onDone();
     });
   };
-  remoting.hostListApi.remove(hostId, onRemoved, remoting.showErrorMessage);
+  remoting.hostListApi.remove(hostId, onRemoved, this.onError_);
 };
 
 /**

@@ -51,23 +51,6 @@ remoting.initGlobalObjects = function() {
 }
 
 /**
- * Returns true if the current platform is fully supported. It's only used when
- * we detect that host native messaging components are not installed. In that
- * case the result of this function determines if the webapp should show the
- * controls that allow to install and enable Me2Me host.
- *
- * @return {boolean}
- */
-remoting.isMe2MeInstallable = function() {
-  // The chromoting host is currently not installable on ChromeOS.
-  // For Linux, we have a install package for Ubuntu but not other distros.
-  // Since we cannot tell from javascript alone the Linux distro the client is
-  // on, we don't show the daemon-control UI for Linux unless the host is
-  // installed.
-  return remoting.platformIsWindows() || remoting.platformIsMac();
-}
-
-/**
  * @return {string} Information about the current extension.
  */
 remoting.getExtensionInfo = function() {
@@ -79,43 +62,6 @@ remoting.getExtensionInfo = function() {
   } else {
     return 'Failed to get product version. Corrupt manifest?';
   }
-};
-
-/**
- * If an IT2Me client or host is active then prompt the user before closing.
- * If a Me2Me client is active then don't bother, since closing the window is
- * the more intuitive way to end a Me2Me session, and re-connecting is easy.
- */
-remoting.promptClose = function() {
-  var sessionConnector = remoting.app.getSessionConnector();
-  if (sessionConnector &&
-      sessionConnector.getConnectionMode() ===
-          remoting.DesktopConnectedView.Mode.IT2ME) {
-    switch (remoting.currentMode) {
-      case remoting.AppMode.CLIENT_CONNECTING:
-      case remoting.AppMode.HOST_WAITING_FOR_CODE:
-      case remoting.AppMode.HOST_WAITING_FOR_CONNECTION:
-      case remoting.AppMode.HOST_SHARED:
-      case remoting.AppMode.IN_SESSION:
-        return chrome.i18n.getMessage(/*i18n-content*/'CLOSE_PROMPT');
-      default:
-        return null;
-    }
-  }
-};
-
-/**
- * Sign the user out of Chromoting by clearing (and revoking, if possible) the
- * OAuth refresh token.
- *
- * Also clear all local storage, to avoid leaking information.
- */
-remoting.signOut = function() {
-  remoting.oauth2.removeCachedAuthToken().then(function(){
-    chrome.storage.local.clear();
-    remoting.setMode(remoting.AppMode.HOME);
-    window.location.reload();
-  });
 };
 
 /**
@@ -170,49 +116,3 @@ remoting.timestamp = function() {
       pad(now.getSeconds(), 2) + '.' + pad(now.getMilliseconds(), 3);
   return '[' + timestamp + ']';
 };
-
-/**
- * Show an error message, optionally including a short-cut for signing in to
- * Chromoting again.
- *
- * @param {!remoting.Error} error
- * @return {void} Nothing.
- */
-remoting.showErrorMessage = function(error) {
-  l10n.localizeElementFromTag(
-      document.getElementById('token-refresh-error-message'),
-      error.getTag());
-  var auth_failed = (error.hasTag(remoting.Error.Tag.AUTHENTICATION_FAILED));
-  if (auth_failed && base.isAppsV2()) {
-    remoting.handleAuthFailureAndRelaunch();
-  } else {
-    document.getElementById('token-refresh-auth-failed').hidden = !auth_failed;
-    document.getElementById('token-refresh-other-error').hidden = auth_failed;
-    remoting.setMode(remoting.AppMode.TOKEN_REFRESH_FAILED);
-  }
-};
-
-/**
- * Determine whether or not the app is running in a window.
- * @param {function(boolean):void} callback Callback to receive whether or not
- *     the current tab is running in windowed mode.
- */
-function isWindowed_(callback) {
-  /** @param {chrome.Window} win The current window. */
-  var windowCallback = function(win) {
-    callback(win.type == 'popup');
-  };
-  /** @param {chrome.Tab} tab The current tab. */
-  var tabCallback = function(tab) {
-    if (tab.pinned) {
-      callback(false);
-    } else {
-      chrome.windows.get(tab.windowId, null, windowCallback);
-    }
-  };
-  if (chrome.tabs) {
-    chrome.tabs.getCurrent(tabCallback);
-  } else {
-    console.error('chome.tabs is not available.');
-  }
-}

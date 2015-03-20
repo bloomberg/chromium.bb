@@ -84,3 +84,18 @@ remoting.initElementEventHandlers = function() {
   registerEventListeners(host_actions);
   registerEventListeners(auth_actions);
 }
+
+/**
+ * Sign the user out of Chromoting by clearing (and revoking, if possible) the
+ * OAuth refresh token.
+ *
+ * Also clear all local storage, to avoid leaking information.
+ */
+remoting.signOut = function() {
+  remoting.oauth2.removeCachedAuthToken().then(function(){
+    chrome.storage.local.clear();
+    remoting.setMode(remoting.AppMode.HOME);
+    window.location.reload();
+  });
+};
+

@@ -17,7 +17,8 @@ remoting.initHostlist_ = function() {
       document.getElementById('host-list-empty'),
       document.getElementById('host-list-error-message'),
       document.getElementById('host-list-refresh-failed-button'),
-      document.getElementById('host-list-loading-indicator'));
+      document.getElementById('host-list-loading-indicator'),
+      remoting.showErrorMessage);
 
   isHostModeSupported_().then(
       /** @param {Boolean} supported */
@@ -179,6 +180,23 @@ remoting.startDesktopRemotingForTesting = function() {
     remoting.startDesktopRemoting();
   }
 }
+
+/**
+ * @param {!remoting.Error} error The failure reason.
+ */
+remoting.showErrorMessage = function(error) {
+  l10n.localizeElementFromTag(
+      document.getElementById('token-refresh-error-message'),
+      error.getTag());
+  var auth_failed = (error.hasTag(remoting.Error.Tag.AUTHENTICATION_FAILED));
+  if (auth_failed && base.isAppsV2()) {
+    remoting.handleAuthFailureAndRelaunch();
+  } else {
+    document.getElementById('token-refresh-auth-failed').hidden = !auth_failed;
+    document.getElementById('token-refresh-other-error').hidden = auth_failed;
+    remoting.setMode(remoting.AppMode.TOKEN_REFRESH_FAILED);
+  }
+};
 
 
 remoting.startDesktopRemoting = function() {

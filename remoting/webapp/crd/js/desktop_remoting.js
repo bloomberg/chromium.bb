@@ -81,7 +81,8 @@ remoting.DesktopRemoting.prototype.init = function() {
         document.getElementById('session-toolbar'));
     remoting.optionsMenu = remoting.toolbar.createOptionsMenu();
 
-    window.addEventListener('beforeunload', remoting.promptClose, false);
+    window.addEventListener('beforeunload',
+                            this.promptClose_.bind(this), false);
     window.addEventListener('unload',
                             remoting.app.disconnect.bind(remoting.app), false);
   }
@@ -114,7 +115,7 @@ remoting.DesktopRemoting.prototype.init = function() {
         document.getElementById('startup-mode-box-it2me').hidden = false;
       }
     };
-    isWindowed_(onIsWindowed);
+    this.isWindowed_(onIsWindowed);
   }
 
   remoting.ClientPlugin.factory.preloadPlugin();
@@ -322,6 +323,56 @@ remoting.DesktopRemoting.prototype.handleError = function(error) {
  * No cleanup required for desktop remoting.
  */
 remoting.DesktopRemoting.prototype.handleExit = function() {
+};
+
+/**
+ * Determine whether or not the app is running in a window.
+ * @param {function(boolean):void} callback Callback to receive whether or not
+ *     the current tab is running in windowed mode.
+ * @private
+ */
+remoting.DesktopRemoting.prototype.isWindowed_ = function(callback) {
+  /** @param {chrome.Window} win The current window. */
+  var windowCallback = function(win) {
+    callback(win.type == 'popup');
+  };
+  /** @param {chrome.Tab} tab The current tab. */
+  var tabCallback = function(tab) {
+    if (tab.pinned) {
+      callback(false);
+    } else {
+      chrome.windows.get(tab.windowId, null, windowCallback);
+    }
+  };
+  if (chrome.tabs) {
+    chrome.tabs.getCurrent(tabCallback);
+  } else {
+    console.error('chome.tabs is not available.');
+  }
+}
+
+/**
+ * If an IT2Me client or host is active then prompt the user before closing.
+ * If a Me2Me client is active then don't bother, since closing the window is
+ * the more intuitive way to end a Me2Me session, and re-connecting is easy.
+ * @private
+ */
+remoting.DesktopRemoting.prototype.promptClose_ = function() {
+  var sessionConnector = remoting.app.getSessionConnector();
+  if (sessionConnector &&
+      sessionConnector.getConnectionMode() ==
+          remoting.DesktopConnectedView.Mode.IT2ME) {
+    switch (remoting.currentMode) {
+      case remoting.AppMode.CLIENT_CONNECTING:
+      case remoting.AppMode.HOST_WAITING_FOR_CODE:
+      case remoting.AppMode.HOST_WAITING_FOR_CONNECTION:
+      case remoting.AppMode.HOST_SHARED:
+      case remoting.AppMode.IN_SESSION:
+        return chrome.i18n.getMessage(/*i18n-content*/'CLOSE_PROMPT');
+      default:
+        return null;
+    }
+  }
 };
 
 /** @returns {remoting.DesktopConnectedView} */
