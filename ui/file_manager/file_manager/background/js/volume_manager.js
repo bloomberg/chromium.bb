@@ -675,23 +675,23 @@ VolumeManager.prototype.initialize_ = function(callback) {
     // volumes in the volumeMetadataList are mounted. crbug.com/135477.
     this.mountQueue_.run(function(inCallback) {
       // Create VolumeInfo for each volume.
-      Promise.all([
-        volumeMetadataList.map(function(volumeMetadata) {
-          console.debug(
-              'Initializing volume: ' + volumeMetadata.volumeId);
-          return this.addVolumeMetadata_(volumeMetadata).then(
-              function(volumeInfo) {
-                console.debug('Initialized volume: ' + volumeInfo.volumeId);
-              });
-        }.bind(this))
-      ]).then(function() {
-        console.debug('Initialized all volumes.');
-        // Call the callback of the initialize function.
-        callback();
-        // Call the callback of AsyncQueue. Maybe it invokes callbacks
-        // registered by mountCompleted events.
-        inCallback();
-      });
+      Promise.all(
+          volumeMetadataList.map(function(volumeMetadata) {
+            console.debug(
+                'Initializing volume: ' + volumeMetadata.volumeId);
+            return this.addVolumeMetadata_(volumeMetadata).then(
+                function(volumeInfo) {
+                  console.debug('Initialized volume: ' + volumeInfo.volumeId);
+                });
+          }.bind(this)))
+          .then(function() {
+            console.debug('Initialized all volumes.');
+            // Call the callback of the initialize function.
+            callback();
+            // Call the callback of AsyncQueue. Maybe it invokes callbacks
+            // registered by mountCompleted events.
+            inCallback();
+          });
     }.bind(this));
   }.bind(this));
 };
