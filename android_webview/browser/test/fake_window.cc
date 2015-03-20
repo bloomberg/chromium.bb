@@ -5,7 +5,6 @@
 #include "android_webview/browser/test/fake_window.h"
 
 #include "android_webview/browser/browser_view_renderer.h"
-#include "android_webview/public/browser/draw_gl.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -119,8 +118,8 @@ void FakeWindow::OnDrawHardware() {
   DCHECK(on_draw_hardware_pending_);
   on_draw_hardware_pending_ = false;
 
-  hooks_->WillOnDraw();
   view_->PrepareToDraw(gfx::Vector2d(), location_);
+  hooks_->WillOnDraw();
   bool success = view_->OnDrawHardware();
   hooks_->DidOnDraw(success);
   if (success) {
@@ -156,31 +155,10 @@ void FakeWindow::DrawFunctorOnRT(base::WaitableEvent* sync) {
   draw_info.clip_top = location.y();
   draw_info.clip_right = location.x() + location.width();
   draw_info.clip_bottom = location.y() + location.height();
-  draw_info.width = surface_size_.width();
-  draw_info.height = surface_size_.height();
-  draw_info.is_layer = false;
 
-  draw_info.transform[0] = 1.0;
-  draw_info.transform[1] = 0.0;
-  draw_info.transform[2] = 0.0;
-  draw_info.transform[3] = 0.0;
+  if (!hooks_->WillDrawOnRT(functor_, &draw_info))
+    return;
 
-  draw_info.transform[4] = 0.0;
-  draw_info.transform[5] = 1.0;
-  draw_info.transform[6] = 0.0;
-  draw_info.transform[7] = 0.0;
-
-  draw_info.transform[8] = 0.0;
-  draw_info.transform[9] = 0.0;
-  draw_info.transform[10] = 1.0;
-  draw_info.transform[11] = 0.0;
-
-  draw_info.transform[12] = 0.0;
-  draw_info.transform[13] = 0.0;
-  draw_info.transform[14] = 0.0;
-  draw_info.transform[15] = 1.0;
-
-  hooks_->WillDrawOnRT(functor_);
   {
     ScopedMakeCurrent make_current(this);
     functor_->DrawGL(&draw_info);

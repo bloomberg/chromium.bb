@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "android_webview/public/browser/draw_gl.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
@@ -35,7 +36,8 @@ class WindowHooks {
   virtual void DidSyncOnRT(SharedRendererState* functor) = 0;
   virtual void WillProcessOnRT(SharedRendererState* functor) = 0;
   virtual void DidProcessOnRT(SharedRendererState* functor) = 0;
-  virtual void WillDrawOnRT(SharedRendererState* functor) = 0;
+  virtual bool WillDrawOnRT(SharedRendererState* functor,
+                            AwDrawGLInfo* draw_info) = 0;
   virtual void DidDrawOnRT(SharedRendererState* functor) = 0;
 };
 
@@ -51,6 +53,7 @@ class FakeWindow {
   // BrowserViewRendererClient methods.
   void RequestDrawGL(bool wait_for_completion);
   void PostInvalidate();
+  const gfx::Size& surface_size() { return surface_size_; }
 
  private:
   class ScopedMakeCurrent;

@@ -205,6 +205,7 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   transform.matrix().setColMajorf(draw_info->transform);
   transform.Translate(scroll_offset_.x(), scroll_offset_.y());
 
+  viewport_.SetSize(draw_info->width, draw_info->height);
   // Need to post the new transform matrix back to child compositor
   // because there is no onDraw during a Render Thread animation, and child
   // compositor might not have the tiles rasterized as the animation goes on.
@@ -218,7 +219,6 @@ void HardwareRenderer::DrawGL(bool stencil_enabled,
   if (!delegated_layer_.get())
     return;
 
-  viewport_.SetSize(draw_info->width, draw_info->height);
   layer_tree_host_->SetViewportSize(viewport_);
   clip_.SetRect(draw_info->clip_left,
                 draw_info->clip_top,

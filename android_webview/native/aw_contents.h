@@ -205,6 +205,8 @@ class AwContents : public FindHelper::Listener,
                          float min_page_scale_factor,
                          float max_page_scale_factor) override;
   void DidOverscroll(gfx::Vector2d overscroll_delta) override;
+  void ParentDrawConstraintsUpdated(
+      const ParentCompositorDrawConstraints& draw_constraints) override {}
 
   void ClearCache(JNIEnv* env, jobject obj, jboolean include_disk_files);
   void SetPendingWebContentsForPopup(scoped_ptr<content::WebContents> pending);

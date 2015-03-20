@@ -11,6 +11,7 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace android_webview {
+struct ParentCompositorDrawConstraints;
 
 class BrowserViewRendererClient {
  public:
@@ -53,6 +54,12 @@ class BrowserViewRendererClient {
 
   // Handle overscroll.
   virtual void DidOverscroll(gfx::Vector2d overscroll_delta) = 0;
+
+  // Visible for testing
+  // Called when the parent draw constraints in browser view renderer gets
+  // updated.
+  virtual void ParentDrawConstraintsUpdated(
+      const ParentCompositorDrawConstraints& draw_constraints) = 0;
 
  protected:
   virtual ~BrowserViewRendererClient() {}

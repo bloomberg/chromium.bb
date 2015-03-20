@@ -272,6 +272,9 @@ bool BrowserViewRenderer::CompositeHw() {
 
 void BrowserViewRenderer::UpdateParentDrawConstraints() {
   EnsureContinuousInvalidation(true);
+  ParentCompositorDrawConstraints parent_draw_constraints =
+      shared_renderer_state_.GetParentDrawConstraintsOnUI();
+  client_->ParentDrawConstraintsUpdated(parent_draw_constraints);
 }
 
 void BrowserViewRenderer::ReturnUnusedResource(

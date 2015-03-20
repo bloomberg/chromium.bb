@@ -5,6 +5,7 @@
 #include "android_webview/browser/test/rendering_test.h"
 
 #include "android_webview/browser/browser_view_renderer.h"
+#include "android_webview/browser/child_frame.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/test/test_synchronous_compositor_android.h"
 
@@ -63,6 +64,16 @@ void RenderingTest::QuitMessageLoop() {
 
 bool RenderingTest::RequestDrawGL(bool wait_for_completion) {
   window_->RequestDrawGL(wait_for_completion);
+  return true;
+}
+
+bool RenderingTest::WillDrawOnRT(SharedRendererState* functor,
+                                 AwDrawGLInfo* draw_info) {
+  draw_info->width = window_->surface_size().width();
+  draw_info->height = window_->surface_size().height();
+  draw_info->is_layer = false;
+  gfx::Transform transform;
+  transform.matrix().asColMajorf(draw_info->transform);
   return true;
 }
 

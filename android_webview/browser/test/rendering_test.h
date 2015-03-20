@@ -23,6 +23,7 @@ namespace android_webview {
 
 class BrowserViewRenderer;
 class FakeWindow;
+struct ParentCompositorDrawConstraints;
 
 class RenderingTest : public testing::Test,
                       public BrowserViewRendererClient,
@@ -42,7 +43,8 @@ class RenderingTest : public testing::Test,
                          float min_page_scale_factor,
                          float max_page_scale_factor) override {}
   void DidOverscroll(gfx::Vector2d overscroll_delta) override {}
-
+  void ParentDrawConstraintsUpdated(
+      const ParentCompositorDrawConstraints& draw_constraints) override {}
   // WindowHooks overrides.
   void WillOnDraw() override {}
   void DidOnDraw(bool success) override {}
@@ -50,7 +52,8 @@ class RenderingTest : public testing::Test,
   void DidSyncOnRT(SharedRendererState* functor) override {}
   void WillProcessOnRT(SharedRendererState* functor) override {}
   void DidProcessOnRT(SharedRendererState* functor) override {}
-  void WillDrawOnRT(SharedRendererState* functor) override {}
+  bool WillDrawOnRT(SharedRendererState* functor,
+                    AwDrawGLInfo* draw_info) override;
   void DidDrawOnRT(SharedRendererState* functor) override {}
 
  protected:
