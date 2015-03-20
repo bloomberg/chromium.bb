@@ -9,8 +9,11 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "components/history/core/browser/top_sites_database.h"
 #include "sql/connection.h"
 
@@ -99,8 +102,14 @@ void TopSitesBackend::GetMostVisitedThumbnailsOnDBThread(
 }
 
 void TopSitesBackend::UpdateTopSitesOnDBThread(const TopSitesDelta& delta) {
+  TRACE_EVENT0("startup", "history::TopSitesBackend::UpdateTopSitesOnDBThread");
+
   if (!db_)
     return;
+
+  // TODO(yiyaoliu): Remove the histogram and related code when crbug/223430 is
+  // fixed.
+  base::TimeTicks begin_time = base::TimeTicks::Now();
 
   for (size_t i = 0; i < delta.deleted.size(); ++i)
     db_->RemoveURL(delta.deleted[i]);
@@ -110,6 +119,9 @@ void TopSitesBackend::UpdateTopSitesOnDBThread(const TopSitesDelta& delta) {
 
   for (size_t i = 0; i < delta.moved.size(); ++i)
     db_->UpdatePageRank(delta.moved[i].url, delta.moved[i].rank);
+
+  UMA_HISTOGRAM_TIMES("History.UpdateTopSitesOnDBThreadTime",
+                      base::TimeTicks::Now() - begin_time);
 }
 
 void TopSitesBackend::SetPageThumbnailOnDBThread(const MostVisitedURL& url,

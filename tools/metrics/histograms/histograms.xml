@@ -11338,6 +11338,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="History.UpdateTopSitesOnDBThreadTime" units="milliseconds">
+  <owner>yiyaoliu@chromium.org</owner>
+  <summary>
+    The amount of time for function
+    history::TopSitesBackend::UpdateTopSitesOnDBThread to execute. Excludes the
+    case where local TopSitesDatabase db_ is unavailable, i.e. where the update
+    doesn't really happen.
+  </summary>
+</histogram>
+
 <histogram name="HistoryPage.ClickPosition">
   <owner>rpop@google.com</owner>
   <summary>
