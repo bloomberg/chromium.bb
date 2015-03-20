@@ -47,11 +47,10 @@ void LayoutTextTrackContainer::layout()
 
     DeprecatedScheduleStyleRecalcDuringLayout marker(node()->document().lifecycle());
 
-    // Overlay enclosure -> Media controls -> Media element
-    LayoutObject* mediaElementLayoutObject = parent()->parent()->parent();
-    if (!mediaElementLayoutObject || !mediaElementLayoutObject->isVideo())
+    LayoutObject* mediaLayoutObject = parent();
+    if (!mediaLayoutObject || !mediaLayoutObject->isVideo())
         return;
-    if (updateSizes(toLayoutVideo(*mediaElementLayoutObject)))
+    if (updateSizes(toLayoutVideo(*mediaLayoutObject)))
         toElement(node())->setInlineStyleProperty(CSSPropertyFontSize, m_fontSize, CSSPrimitiveValue::CSS_PX);
 }
 

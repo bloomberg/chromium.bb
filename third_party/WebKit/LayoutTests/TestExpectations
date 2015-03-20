@@ -2142,6 +2142,9 @@ crbug.com/445955 [ Mac ] web-animations-api/player-cancel-finishes.html [ Pass F
 
 crbug.com/447425 [ Win Mac Linux ] fast/dynamic/011.html [ Pass Failure ]
 
+crbug.com/448795 media/track/track-cue-rendering-horizontal.html [ NeedsRebaseline ]
+crbug.com/448795 media/track/track-cue-rendering-vertical.html [ NeedsRebaseline ]
+
 crbug.com/448641 [ Debug ] web-animations-api/timeline-updates-players.html [ Crash Pass ]
 crbug.com/448931 permissionclient/image-permissions.html [ Pass Failure ]
 crbug.com/448980 fast/forms/select/styling-option-checked.html [ Pass ImageOnlyFailure ]

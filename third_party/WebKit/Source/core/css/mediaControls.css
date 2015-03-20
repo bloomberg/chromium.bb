@@ -344,9 +344,9 @@ audio::-webkit-media-controls-fullscreen-volume-max-button, video::-webkit-media
 
 video::-webkit-media-text-track-container {
     position: relative;
-    width: 100%;
+    width: inherit;
+    height: inherit;
     overflow: hidden;
-    padding-bottom: 5px;
 
     font: 22px sans-serif;
     text-align: center;
@@ -360,8 +360,6 @@ video::-webkit-media-text-track-container {
     pointer-events: none;
     -webkit-user-select: none;
     word-break: break-word;
-
-    flex: 1 1;
 }
 
 video::cue {

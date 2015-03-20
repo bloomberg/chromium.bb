@@ -68,8 +68,6 @@ public:
     void refreshCastButtonVisibility();
     void showOverlayCastButton();
 
-    TextTrackContainer* textTrackContainer();
-
     void mediaElementFocused();
 
     DECLARE_VIRTUAL_TRACE();
@@ -111,9 +109,6 @@ private:
 
     // Container for the media control elements.
     RawPtrWillBeMember<MediaControlPanelElement> m_panel;
-
-    // Container for the text track cues.
-    RawPtrWillBeMember<TextTrackContainer> m_textTrackContainer;
 
     // Media control elements.
     RawPtrWillBeMember<MediaControlOverlayPlayButtonElement> m_overlayPlayButton;

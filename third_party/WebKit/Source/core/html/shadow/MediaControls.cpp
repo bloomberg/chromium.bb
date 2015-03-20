@@ -51,7 +51,6 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
     : HTMLDivElement(mediaElement.document())
     , m_mediaElement(&mediaElement)
     , m_panel(nullptr)
-    , m_textTrackContainer(nullptr)
     , m_overlayPlayButton(nullptr)
     , m_overlayEnclosure(nullptr)
     , m_playButton(nullptr)
@@ -84,8 +83,6 @@ PassRefPtrWillBeRawPtr<MediaControls> MediaControls::create(HTMLMediaElement& me
 //
 // MediaControls                                       (-webkit-media-controls)
 // +-MediaControlOverlayEnclosureElement               (-webkit-media-controls-overlay-enclosure)
-// | +-TextTrackContainer                              (-webkit-media-text-track-container)
-// | | {when text tracks are enabled}
 // | +-MediaControlOverlayPlayButtonElement            (-webkit-media-controls-overlay-play-button)
 // | | {if mediaControlsOverlayPlayButtonEnabled}
 // | \-MediaControlCastButtonElement                   (-internal-media-controls-overlay-cast-button)
@@ -100,10 +97,6 @@ PassRefPtrWillBeRawPtr<MediaControls> MediaControls::create(HTMLMediaElement& me
 //     +-MediaControlToggleClosedCaptionsButtonElement (-webkit-media-controls-toggle-closed-captions-button)
 //     +-MediaControlCastButtonElement                 (-internal-media-controls-cast-button)
 //     \-MediaControlFullscreenButtonElement           (-webkit-media-controls-fullscreen-button)
-//
-// Most of the structure is built by MediaControls::initializeControls() - the
-// exception being TextTrackContainer which is added on-demand by
-// MediaControls::textTrackContainer().
 void MediaControls::initializeControls()
 {
     RefPtrWillBeRawPtr<MediaControlOverlayEnclosureElement> overlayEnclosure = MediaControlOverlayEnclosureElement::create(*this);
@@ -517,23 +510,10 @@ bool MediaControls::containsRelatedTarget(Event* event)
     return contains(relatedTarget->toNode());
 }
 
-TextTrackContainer* MediaControls::textTrackContainer()
-{
-    if (!m_textTrackContainer) {
-        RefPtrWillBeRawPtr<TextTrackContainer> textTrackContainer = TextTrackContainer::create(mediaElement().document());
-        m_textTrackContainer = textTrackContainer.get();
-
-        // Insert it before (behind) all other control elements.
-        m_overlayEnclosure->insertBefore(textTrackContainer.release(), m_overlayEnclosure->firstChild());
-    }
-    return m_textTrackContainer.get();
-}
-
 DEFINE_TRACE(MediaControls)
 {
     visitor->trace(m_mediaElement);
     visitor->trace(m_panel);
-    visitor->trace(m_textTrackContainer);
     visitor->trace(m_overlayPlayButton);
     visitor->trace(m_overlayEnclosure);
     visitor->trace(m_playButton);

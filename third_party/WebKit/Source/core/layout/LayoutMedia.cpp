@@ -53,32 +53,47 @@ void LayoutMedia::layout()
 
     LayoutImage::layout();
 
-    LayoutBox* controlsRenderer = toLayoutBox(m_children.firstChild());
-    if (!controlsRenderer)
-        return;
-
-    bool controlsNeedLayout = controlsRenderer->needsLayout();
     LayoutSize newSize = contentBoxRect().size();
-    if (newSize == oldSize && !controlsNeedLayout)
-        return;
 
     LayoutState state(*this, locationOffset());
 
-    controlsRenderer->setLocation(LayoutPoint(borderLeft(), borderTop()) + LayoutSize(paddingLeft(), paddingTop()));
-    controlsRenderer->style()->setHeight(Length(newSize.height(), Fixed));
-    controlsRenderer->style()->setWidth(Length(newSize.width(), Fixed));
-    controlsRenderer->forceLayout();
+    for (LayoutObject* child = m_children.firstChild(); child; child = child->nextSibling()) {
+        ASSERT(child->node()->isMediaControls() || child->node()->isTextTrackContainer());
+
+        if (newSize == oldSize && !child->needsLayout())
+            continue;
+
+        LayoutBox* layoutBox = toLayoutBox(child);
+        layoutBox->setLocation(LayoutPoint(borderLeft(), borderTop()) + LayoutSize(paddingLeft(), paddingTop()));
+        // TODO(philipj): Remove the mutableStyleRef() and depend on CSS
+        // width/height: inherit to match the media element size.
+        layoutBox->mutableStyleRef().setHeight(Length(newSize.height(), Fixed));
+        layoutBox->mutableStyleRef().setWidth(Length(newSize.width(), Fixed));
+        layoutBox->forceLayout();
+    }
+
     clearNeedsLayout();
 }
 
 bool LayoutMedia::isChildAllowed(LayoutObject* child, const LayoutStyle&) const
 {
-    // The only allowed child is the media controls. The user agent stylesheet
-    // (mediaControls.css) has ::-webkit-media-controls { display: flex; }. If
-    // author style sets display: inline we would get an inline renderer as a
-    // child of replaced content, which is not supposed to be possible. This
-    // check can be removed if ::-webkit-media-controls is made internal.
-    return child->isFlexibleBox();
+    // Two types of child layout objects are allowed: media controls
+    // and the text track container. Filter children by node type.
+    ASSERT(child->node());
+
+    // The user agent stylesheet (mediaControls.css) has
+    // ::-webkit-media-controls { display: flex; }. If author style
+    // sets display: inline we would get an inline renderer as a child
+    // of replaced content, which is not supposed to be possible. This
+    // check can be removed if ::-webkit-media-controls is made
+    // internal.
+    if (child->node()->isMediaControls())
+        return child->isFlexibleBox();
+
+    if (child->node()->isTextTrackContainer())
+        return true;
+
+    return false;
 }
 
 void LayoutMedia::paintReplaced(const PaintInfo&, const LayoutPoint&)

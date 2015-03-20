@@ -45,7 +45,6 @@ PassRefPtrWillBeRawPtr<TextTrackContainer> TextTrackContainer::create(Document& 
 {
     RefPtrWillBeRawPtr<TextTrackContainer> element = adoptRefWillBeNoop(new TextTrackContainer(document));
     element->setShadowPseudoId(AtomicString("-webkit-media-text-track-container", AtomicString::ConstructFromLiteral));
-    element->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
     return element.release();
 }
 
@@ -74,6 +73,11 @@ void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement)
 
     // 3. Let output be an empty list of absolutely positioned CSS block boxes.
 
+    // Note: This is a layout algorithm, expressed terms of appending CSS block
+    // boxes to output, and the "apply WebVTT cue settings" part is implemented
+    // in LayoutVTTCue. Here we merely create the DOM tree from which the layout
+    // tree is built and append it to this TextTrackContainer.
+
     // 4. If the user agent is exposing a user interface for video, add to
     // output one or more completely transparent positioned CSS block boxes that
     // cover the same region as the user interface.
@@ -82,9 +86,7 @@ void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement)
     // a user interface for video, but now it is, let reset be true. Otherwise,
     // let reset be false.
 
-    // There is nothing to be done explicitly for 4th and 5th steps, as
-    // everything is handled through CSS. The caption box is on top of the
-    // controls box, in a container set with the -webkit-box display property.
+    // TODO(philipj): Implement step 4 and 5.
 
     // 6. Let tracks be the subset of video's list of text tracks that have as
     // their rules for updating the text track rendering these rules for
@@ -119,10 +121,7 @@ void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement)
     }
 
     // 11. Return output.
-    if (hasChildren())
-        removeInlineStyleProperty(CSSPropertyDisplay);
-    else
-        setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+    // See the note for step 3 for why there is no output to return.
 }
 
 } // namespace blink

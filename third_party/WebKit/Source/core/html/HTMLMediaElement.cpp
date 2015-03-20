@@ -3183,10 +3183,43 @@ bool HTMLMediaElement::closedCaptionsVisible() const
     return m_closedCaptionsVisible;
 }
 
+static void assertShadowRootChildren(ShadowRoot& shadowRoot)
+{
+#if ENABLE(ASSERT)
+    // There can be up to two children, either or both of the text
+    // track container and media controls. If both are present, the
+    // text track container must be the first child.
+    unsigned numberOfChildren = shadowRoot.countChildren();
+    ASSERT(numberOfChildren <= 2);
+    Node* firstChild = shadowRoot.firstChild();
+    Node* lastChild = shadowRoot.lastChild();
+    if (numberOfChildren == 1) {
+        ASSERT(firstChild->isTextTrackContainer() || firstChild->isMediaControls());
+    } else if (numberOfChildren == 2) {
+        ASSERT(firstChild->isTextTrackContainer());
+        ASSERT(lastChild->isMediaControls());
+    }
+#endif
+}
+
 TextTrackContainer& HTMLMediaElement::ensureTextTrackContainer()
 {
-    ensureMediaControls();
-    return *mediaControls()->textTrackContainer();
+    ShadowRoot& shadowRoot = ensureClosedShadowRoot();
+    assertShadowRootChildren(shadowRoot);
+
+    Node* firstChild = shadowRoot.firstChild();
+    if (firstChild && firstChild->isTextTrackContainer())
+        return toTextTrackContainer(*firstChild);
+
+    RefPtrWillBeRawPtr<TextTrackContainer> textTrackContainer = TextTrackContainer::create(document());
+
+    // The text track container should be inserted before the media controls,
+    // so that they are rendered behind them.
+    shadowRoot.insertBefore(textTrackContainer, firstChild);
+
+    assertShadowRootChildren(shadowRoot);
+
+    return *textTrackContainer;
 }
 
 void HTMLMediaElement::updateTextTrackDisplay()
@@ -3269,12 +3302,12 @@ void HTMLMediaElement::setShouldDelayLoadEvent(bool shouldDelay)
         document().decrementLoadEventDelayCount();
 }
 
-
 MediaControls* HTMLMediaElement::mediaControls() const
 {
     if (ShadowRoot* shadowRoot = closedShadowRoot()) {
-        // Note that |shadowRoot->firstChild()| may be null.
-        return toMediaControls(shadowRoot->firstChild());
+        Node* lastChild = shadowRoot->lastChild();
+        if (lastChild && lastChild->isMediaControls())
+            return toMediaControls(lastChild);
     }
 
     return nullptr;
@@ -3291,7 +3324,14 @@ void HTMLMediaElement::ensureMediaControls()
     if (isFullscreen())
         mediaControls->enteredFullscreen();
 
-    ensureClosedShadowRoot().appendChild(mediaControls);
+    ShadowRoot& shadowRoot = ensureClosedShadowRoot();
+    assertShadowRootChildren(shadowRoot);
+
+    // The media controls should be inserted after the text track container,
+    // so that they are rendered in front of captions and subtitles.
+    shadowRoot.appendChild(mediaControls);
+
+    assertShadowRootChildren(shadowRoot);
 
     if (!shouldShowControls() || !inDocument())
         mediaControls->hide();
@@ -3347,8 +3387,8 @@ void HTMLMediaElement::configureTextTrackDisplay(VisibilityChangeAssumption assu
     if (!m_haveVisibleTextTrack && !mediaControls())
         return;
 
-    ensureMediaControls();
-    mediaControls()->changedClosedCaptionsVisibility();
+    if (mediaControls())
+        mediaControls()->changedClosedCaptionsVisibility();
 
     cueTimeline().updateActiveCues(currentTime());
 
