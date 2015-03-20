@@ -27,8 +27,6 @@ struct DataForRecursion {
   Layer* render_target;
   int clip_tree_parent;
   int opacity_tree_parent;
-  gfx::Vector2dF offset_to_transform_tree_parent;
-  gfx::Vector2dF offset_to_transform_fixed_parent;
   const Layer* page_scale_layer;
   float page_scale_factor;
   float device_scale_factor;
