@@ -52,6 +52,8 @@
 #include "vaapi-recorder.h"
 #include "presentation_timing-server-protocol.h"
 
+#include <EGL/eglext.h>
+
 #ifndef DRM_CAP_TIMESTAMP_MONOTONIC
 #define DRM_CAP_TIMESTAMP_MONOTONIC 0x6
 #endif
@@ -66,6 +68,10 @@
 
 #ifndef GBM_BO_USE_CURSOR
 #define GBM_BO_USE_CURSOR GBM_BO_USE_CURSOR_64X64
+#endif
+
+#ifndef EGL_PLATFORM_GBM_KHR
+#define EGL_PLATFORM_GBM_KHR 0x31D7
 #endif
 
 static int option_current_mode = 0;
@@ -1396,8 +1402,13 @@ drm_compositor_create_gl_renderer(struct drm_compositor *ec)
 {
 	EGLint format;
 
+	if (!gl_renderer->supports ||
+	    gl_renderer->supports(&ec->base, "gbm") < 0) {
+		return -1;
+	}
+
 	format = ec->format;
-	if (gl_renderer->create(&ec->base, ec->gbm,
+	if (gl_renderer->create(&ec->base, EGL_PLATFORM_GBM_KHR, (void *) ec->gbm,
 			       gl_renderer->opaque_attribs, &format) < 0) {
 		return -1;
 	}

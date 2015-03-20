@@ -53,7 +53,13 @@
 #include "../shared/image-loader.h"
 #include "presentation_timing-server-protocol.h"
 
+#include <EGL/eglext.h>
+
 #define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
+
+#ifndef EGL_PLATFORM_X11_KHR
+#define EGL_PLATFORM_X11_KHR 0x31D5
+#endif
 
 static int option_width;
 static int option_height;
@@ -1487,7 +1493,10 @@ init_gl_renderer(struct x11_compositor *c)
 	if (!gl_renderer)
 		return -1;
 
-	ret = gl_renderer->create(&c->base, (EGLNativeDisplayType) c->dpy,
+	if (!gl_renderer->supports || gl_renderer->supports(&c->base, "x11") < 0)
+		return -1;
+
+	ret = gl_renderer->create(&c->base, EGL_PLATFORM_X11_KHR, (void *) c->dpy,
 				  gl_renderer->opaque_attribs, NULL);
 
 	return ret;

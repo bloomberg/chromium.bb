@@ -166,6 +166,10 @@ struct gl_renderer {
 	struct wl_signal destroy_signal;
 };
 
+#ifdef EGL_EXT_platform_base
+static PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display = NULL;
+#endif
+
 static inline struct gl_output_state *
 get_output_state(struct weston_output *output)
 {
@@ -2148,9 +2152,69 @@ static const EGLint gl_renderer_alpha_attribs[] = {
 	EGL_NONE
 };
 
+/** Checks whether a platform EGL client extension is supported
+ *
+ * \param ec The weston compositor
+ * \param extension_suffix The EGL client extension suffix
+ * \return 1 if supported, 0 if using fallbacks, -1 unsupported
+ *
+ * This function checks whether a specific platform_* extension is supported
+ * by EGL.
+ *
+ * The extension suffix should be the suffix of the platform extension (that
+ * specifies a <platform> argument as defined in EGL_EXT_platform_base). For
+ * example, passing "foo" will check whether either "EGL_KHR_platform_foo",
+ * "EGL_EXT_platform_foo", or "EGL_MESA_platform_foo" is supported.
+ *
+ * The return value is 1:
+ *   - if the supplied EGL client extension is supported.
+ * The return value is 0:
+ *   - if the platform_base client extension isn't supported so will
+ *     fallback to eglGetDisplay and friends.
+ * The return value is -1:
+ *   - if the supplied EGL client extension is not supported.
+ */
 static int
-gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
-	const EGLint *attribs, const EGLint *visual_id)
+gl_renderer_supports(struct weston_compositor *ec,
+		     const char *extension_suffix)
+{
+	static const char *extensions = NULL;
+	char s[64];
+
+	if (!extensions) {
+		extensions = (const char *) eglQueryString(
+			EGL_NO_DISPLAY, EGL_EXTENSIONS);
+
+		if (!extensions)
+			return 0;
+
+		log_extensions("EGL client extensions",
+			       extensions);
+	}
+
+	snprintf(s, sizeof s, "EGL_KHR_platform_%s", extension_suffix);
+	if (strstr(extensions, s))
+		return 1;
+
+	snprintf(s, sizeof s, "EGL_EXT_platform_%s", extension_suffix);
+	if (strstr(extensions, s))
+		return 1;
+
+	snprintf(s, sizeof s, "EGL_MESA_platform_%s", extension_suffix);
+	if (strstr(extensions, s))
+		return 1;
+
+	/* at this point we definitely have some client extensions but
+	 * haven't found the supplied client extension, so chances are it's
+	 * not supported. */
+
+	return -1;
+}
+
+static int
+gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
+	void *native_window, const EGLint *attribs,
+	const EGLint *visual_id)
 {
 	struct gl_renderer *gr;
 	EGLint major, minor;
@@ -2169,7 +2233,26 @@ gl_renderer_create(struct weston_compositor *ec, EGLNativeDisplayType display,
 		gl_renderer_surface_get_content_size;
 	gr->base.surface_copy_content = gl_renderer_surface_copy_content;
 
-	gr->egl_display = eglGetDisplay(display);
+#ifdef EGL_EXT_platform_base
+	if (!get_platform_display) {
+		get_platform_display =
+			(void *) eglGetProcAddress("eglGetPlatformDisplayEXT");
+	}
+
+	if (get_platform_display && platform) {
+		gr->egl_display =
+			get_platform_display(platform, native_window,
+					     NULL);
+	} else {
+#endif
+		weston_log("warning: either no EGL_EXT_platform_base "
+			   "support or specific platform support; "
+			   "falling back to eglGetDisplay.\n");
+		gr->egl_display = eglGetDisplay(native_window);
+#ifdef EGL_EXT_platform_base
+	}
+#endif
+
 	if (gr->egl_display == EGL_NO_DISPLAY) {
 		weston_log("failed to create display\n");
 		goto err_egl;
@@ -2381,6 +2464,7 @@ WL_EXPORT struct gl_renderer_interface gl_renderer_interface = {
 	.opaque_attribs = gl_renderer_opaque_attribs,
 	.alpha_attribs = gl_renderer_alpha_attribs,
 
+	.supports = gl_renderer_supports,
 	.create = gl_renderer_create,
 	.display = gl_renderer_display,
 	.output_create = gl_renderer_output_create,

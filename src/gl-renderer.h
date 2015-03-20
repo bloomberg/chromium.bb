@@ -50,8 +50,12 @@ struct gl_renderer_interface {
 	const EGLint *opaque_attribs;
 	const EGLint *alpha_attribs;
 
+	int (*supports)(struct weston_compositor *ec,
+			const char *extension_suffix);
+
 	int (*create)(struct weston_compositor *ec,
-		      EGLNativeDisplayType display,
+		      EGLenum platform,
+		      void *native_window,
 		      const EGLint *attribs,
 		      const EGLint *visual_id);
 
