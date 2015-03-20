@@ -26,32 +26,27 @@
 #ifndef FrameDestructionObserver_h
 #define FrameDestructionObserver_h
 
+#include "core/frame/LocalFrame.h"
+#include "platform/LifecycleObserver.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class LocalFrame;
+class LocalFrameLifecycleNotifier;
 
-class FrameDestructionObserver : public WillBeGarbageCollectedMixin {
+class FrameDestructionObserver : public LifecycleObserver<LocalFrame, FrameDestructionObserver, LocalFrameLifecycleNotifier> {
 public:
-    virtual void frameDestroyed();
     virtual void willDetachFrameHost();
+    virtual void contextDestroyed()
+    {
+        setContext(nullptr);
+    }
 
-    LocalFrame* frame() const { return m_frame; }
-
-    DECLARE_VIRTUAL_TRACE();
+    LocalFrame* frame() const { return lifecycleContext(); }
 
 protected:
     explicit FrameDestructionObserver(LocalFrame*);
-
-#if !ENABLE(OILPAN)
-    virtual ~FrameDestructionObserver();
-#endif
-
-    void observeFrame(LocalFrame*);
-
-private:
-    RawPtrWillBeMember<LocalFrame> m_frame;
 };
 
 } // namespace blink

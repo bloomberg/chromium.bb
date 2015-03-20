@@ -88,8 +88,7 @@ public:
 
 private:
     explicit TestingObserver(DummyContext* context)
-        : LifecycleObserver<DummyContext, TestingObserver, DummyContext>(context)
-        , m_contextDestroyedCalled(false)
+        : m_contextDestroyedCalled(false)
     {
         setContext(context);
     }

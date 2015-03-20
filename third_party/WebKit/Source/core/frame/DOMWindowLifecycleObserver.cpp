@@ -33,13 +33,8 @@
 namespace blink {
 
 DOMWindowLifecycleObserver::DOMWindowLifecycleObserver(LocalDOMWindow* window)
-    : LifecycleObserver<LocalDOMWindow, DOMWindowLifecycleObserver, DOMWindowLifecycleNotifier>(window)
 {
     setContext(window);
-}
-
-DOMWindowLifecycleObserver::~DOMWindowLifecycleObserver()
-{
 }
 
 } // namespace blink

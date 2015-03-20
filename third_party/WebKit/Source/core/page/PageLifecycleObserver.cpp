@@ -30,18 +30,8 @@
 namespace blink {
 
 PageLifecycleObserver::PageLifecycleObserver(Page* page)
-    : LifecycleObserver<Page, PageLifecycleObserver, PageLifecycleNotifier>(page)
 {
     setContext(page);
-}
-
-PageLifecycleObserver::~PageLifecycleObserver()
-{
-}
-
-Page* PageLifecycleObserver::page() const
-{
-    return static_cast<Page*>(lifecycleContext());
 }
 
 } // namespace blink

@@ -31,42 +31,13 @@
 namespace blink {
 
 FrameDestructionObserver::FrameDestructionObserver(LocalFrame* frame)
-    : m_frame(nullptr)
 {
-    observeFrame(frame);
-}
-
-#if !ENABLE(OILPAN)
-FrameDestructionObserver::~FrameDestructionObserver()
-{
-    observeFrame(nullptr);
-}
-#endif
-
-void FrameDestructionObserver::observeFrame(LocalFrame* frame)
-{
-    if (m_frame)
-        m_frame->removeDestructionObserver(this);
-
-    m_frame = frame;
-
-    if (m_frame)
-        m_frame->addDestructionObserver(this);
-}
-
-void FrameDestructionObserver::frameDestroyed()
-{
-    m_frame = nullptr;
+    setContext(frame);
 }
 
 void FrameDestructionObserver::willDetachFrameHost()
 {
     // Subclasses should override this function to handle this notification.
-}
-
-DEFINE_TRACE(FrameDestructionObserver)
-{
-    visitor->trace(m_frame);
 }
 
 } // namespace blink

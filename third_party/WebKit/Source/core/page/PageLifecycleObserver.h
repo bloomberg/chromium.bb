@@ -41,11 +41,10 @@ public:
     virtual void pageVisibilityChanged() { }
     virtual void didCommitLoad(LocalFrame*) { }
 
-    Page* page() const;
+    Page* page() const { return lifecycleContext(); }
 
 protected:
     explicit PageLifecycleObserver(Page*);
-    virtual ~PageLifecycleObserver();
 };
 
 } // namespace blink

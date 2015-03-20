@@ -150,7 +150,7 @@ bool StorageArea::canAccessStorage(LocalFrame* frame)
         return false;
     bool result = controller->storageClient()->canAccessStorage(frame, m_storageType);
     // Move attention to the new LocalFrame.
-    observeFrame(frame);
+    FrameDestructionObserver::setContext(frame);
     m_canAccessStorageCachedResult = result;
     return result;
 }

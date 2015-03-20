@@ -33,13 +33,8 @@
 namespace blink {
 
 DocumentLifecycleObserver::DocumentLifecycleObserver(Document* document)
-    : LifecycleObserver<Document, DocumentLifecycleObserver, DocumentLifecycleNotifier>(document)
 {
     setContext(document);
-}
-
-DocumentLifecycleObserver::~DocumentLifecycleObserver()
-{
 }
 
 } // namespace blink

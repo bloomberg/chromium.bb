@@ -30,6 +30,8 @@
 
 #include "core/CoreExport.h"
 #include "core/frame/Frame.h"
+#include "core/frame/FrameDestructionObserver.h"
+#include "core/frame/LocalFrameLifecycleNotifier.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/FrameTree.h"
@@ -50,7 +52,6 @@ namespace blink {
     class EventHandler;
     class FloatSize;
     class FrameConsole;
-    class FrameDestructionObserver;
     class FrameSelection;
     class FrameView;
     class HTMLPlugInElement;
@@ -68,7 +69,7 @@ namespace blink {
     class TreeScope;
     class VisiblePosition;
 
-    class CORE_EXPORT LocalFrame : public Frame, public WillBeHeapSupplementable<LocalFrame> {
+    class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public WillBeHeapSupplementable<LocalFrame> {
         WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
     public:
         static PassRefPtrWillBeRawPtr<LocalFrame> create(FrameLoaderClient*, FrameHost*, FrameOwner*);
@@ -92,9 +93,6 @@ namespace blink {
         virtual SecurityContext* securityContext() const override;
         void printNavigationErrorMessage(const Frame&, const char* reason) override;
         bool isLoadingAsChild() const override;
-
-        void addDestructionObserver(FrameDestructionObserver*);
-        void removeDestructionObserver(FrameDestructionObserver*);
 
         void willDetachFrameHost();
 
@@ -193,7 +191,6 @@ namespace blink {
         // The rect is in the coordinate space of the frame.
         PassOwnPtr<DragImage> paintIntoDragImage(DisplayItemClient, DisplayItem::Type, RespectImageOrientationEnum shouldRespectImageOrientation, IntRect paintingRect);
 
-        WillBeHeapHashSet<RawPtrWillBeWeakMember<FrameDestructionObserver>> m_destructionObservers;
         mutable FrameLoader m_loader;
         mutable NavigationScheduler m_navigationScheduler;
 

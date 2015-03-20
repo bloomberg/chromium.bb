@@ -42,7 +42,6 @@ public:
 
 protected:
     explicit DocumentLifecycleObserver(Document*);
-    virtual ~DocumentLifecycleObserver();
 };
 
 } // namespace blink

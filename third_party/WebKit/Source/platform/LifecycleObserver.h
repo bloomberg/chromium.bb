@@ -37,17 +37,17 @@ class LifecycleObserver : public WillBeGarbageCollectedMixin {
 public:
     using Context = T;
 
-    explicit LifecycleObserver(Context* context)
+    LifecycleObserver()
         : m_lifecycleContext(nullptr)
     {
     }
 
+#if !ENABLE(OILPAN)
     virtual ~LifecycleObserver()
     {
-#if !ENABLE(OILPAN)
         dispose();
-#endif
     }
+#endif
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

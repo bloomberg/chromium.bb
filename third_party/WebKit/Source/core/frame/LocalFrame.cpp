@@ -215,7 +215,6 @@ DEFINE_TRACE(LocalFrame)
 {
     visitor->trace(m_instrumentingAgents);
 #if ENABLE(OILPAN)
-    visitor->trace(m_destructionObservers);
     visitor->trace(m_loader);
     visitor->trace(m_navigationScheduler);
     visitor->trace(m_view);
@@ -231,6 +230,7 @@ DEFINE_TRACE(LocalFrame)
     visitor->template registerWeakMembers<LocalFrame, &LocalFrame::clearWeakMembers>(this);
     HeapSupplementable<LocalFrame>::trace(visitor);
 #endif
+    LocalFrameLifecycleNotifier::trace(visitor);
     Frame::trace(visitor);
 }
 
@@ -289,10 +289,7 @@ void LocalFrame::detach()
 
     // Signal frame destruction here rather than in the destructor.
     // Main motivation is to avoid being dependent on its exact timing (Oilpan.)
-    for (const auto& frameDestructionObserver : m_destructionObservers)
-        frameDestructionObserver->frameDestroyed();
-
-    m_destructionObservers.clear();
+    LocalFrameLifecycleNotifier::notifyContextDestroyed();
     m_supplements.clear();
 }
 
@@ -339,21 +336,9 @@ void LocalFrame::disconnectOwnerElement()
     Frame::disconnectOwnerElement();
 }
 
-void LocalFrame::addDestructionObserver(FrameDestructionObserver* observer)
-{
-    m_destructionObservers.add(observer);
-}
-
-void LocalFrame::removeDestructionObserver(FrameDestructionObserver* observer)
-{
-    m_destructionObservers.remove(observer);
-}
-
 void LocalFrame::willDetachFrameHost()
 {
-
-    for (const auto& frameDestructionObserver : m_destructionObservers)
-        frameDestructionObserver->willDetachFrameHost();
+    LocalFrameLifecycleNotifier::notifyWillDetachFrameHost();
 
     // FIXME: Page should take care of updating focus/scrolling instead of Frame.
     // FIXME: It's unclear as to why this is called more than once, but it is,

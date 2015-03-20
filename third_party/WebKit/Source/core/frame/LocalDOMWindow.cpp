@@ -139,10 +139,10 @@ void LocalDOMWindow::WindowFrameObserver::willDetachFrameHost()
     m_window->willDetachFrameHost();
 }
 
-void LocalDOMWindow::WindowFrameObserver::frameDestroyed()
+void LocalDOMWindow::WindowFrameObserver::contextDestroyed()
 {
     m_window->frameDestroyed();
-    FrameDestructionObserver::frameDestroyed();
+    FrameDestructionObserver::contextDestroyed();
 }
 
 class PostMessageTimer final : public NoBaseWillBeGarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {

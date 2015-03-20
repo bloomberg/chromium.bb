@@ -233,7 +233,7 @@ private:
 
         // FrameDestructionObserver overrides:
         void willDetachFrameHost() override;
-        void frameDestroyed() override;
+        void contextDestroyed() override;
 
         RawPtrWillBeMember<LocalDOMWindow> m_window;
     };

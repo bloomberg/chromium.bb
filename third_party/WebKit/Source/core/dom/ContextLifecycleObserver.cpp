@@ -33,14 +33,9 @@
 namespace blink {
 
 ContextLifecycleObserver::ContextLifecycleObserver(ExecutionContext* executionContext, Type type)
-    : LifecycleObserver<ExecutionContext, ContextLifecycleObserver, ContextLifecycleNotifier>(executionContext)
-    , m_observerType(type)
+    : m_observerType(type)
 {
     setContext(executionContext);
-}
-
-ContextLifecycleObserver::~ContextLifecycleObserver()
-{
 }
 
 } // namespace blink

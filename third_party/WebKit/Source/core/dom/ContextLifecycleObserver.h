@@ -49,8 +49,6 @@ public:
 protected:
     explicit ContextLifecycleObserver(ExecutionContext*, Type = GenericType);
 
-    virtual ~ContextLifecycleObserver();
-
 private:
     Type m_observerType;
 };

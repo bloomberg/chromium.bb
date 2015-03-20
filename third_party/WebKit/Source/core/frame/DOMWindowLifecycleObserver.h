@@ -44,7 +44,6 @@ public:
 
 protected:
     explicit DOMWindowLifecycleObserver(LocalDOMWindow*);
-    virtual ~DOMWindowLifecycleObserver();
 };
 
 } // namespace blink
