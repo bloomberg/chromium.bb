@@ -91,19 +91,10 @@ class SessionRestore {
   // Returns true if synchronously restoring a session.
   static bool IsRestoringSynchronously();
 
-  // Register callbacks for session restore events. These callbacks are stored
-  // in |on_session_restored_callbacks_|.
-  // The callback is supplied an integer arg representing a tab count. The exact
-  // meaning and timing depend upon the restore type:
-  // - SessionRestore::SYNCHRONOUS: the parameter is the number of tabs that
-  // were created. Additionally the callback is invoked immediately after the
-  // tabs have been created. That is, the tabs are not necessarily loading.
-  // - For all other restore types the parameter is the number of tabs that were
-  // restored and is sent after all tabs have started loading. Additionally if a
-  // request to restore tabs comes in while a previous request to restore tabs
-  // has not yet completed (loading tabs is throttled), then the callback is
-  // only notified once both sets of tabs have started loading and with the
-  // total number of tabs for both restores.
+  // Registers a callback that is notified every time session restore completes.
+  // Note that 'complete' means all the browsers and tabs have been created but
+  // have not necessarily finished loading. The integer supplied to the callback
+  // indicates the number of tabs that were created.
   static CallbackSubscription RegisterOnSessionRestoredCallback(
       const base::Callback<void(int)>& callback);
 

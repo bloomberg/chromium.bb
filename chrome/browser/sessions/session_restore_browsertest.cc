@@ -156,6 +156,10 @@ class SessionRestoreTest : public InProcessBrowserTest {
           base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
     }
     restore_observer.Wait();
+
+    if (no_memory_pressure)
+      WaitForTabsToLoad(new_browser);
+
     g_browser_process->ReleaseModule();
 
     return new_browser;
@@ -190,6 +194,15 @@ class SessionRestoreTest : public InProcessBrowserTest {
       hosts.Advance();
     }
     return count;
+  }
+
+  void WaitForTabsToLoad(Browser* browser) {
+    for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
+      content::WebContents* contents =
+          browser->tab_strip_model()->GetWebContentsAt(i);
+      contents->GetController().LoadIfNecessary();
+      content::WaitForLoadStop(contents);
+    }
   }
 
   GURL url1_;

@@ -111,11 +111,6 @@ class TabLoader : public content::NotificationObserver,
   // TabLoaderCallback:
   void SetTabLoadingEnabled(bool enable_tab_loading) override;
 
-  void set_on_session_restored_callbacks(
-      SessionRestore::CallbackList* callbacks) {
-    on_session_restored_callbacks_ = callbacks;
-  }
-
  private:
   friend class base::RefCounted<TabLoader>;
 
@@ -210,9 +205,6 @@ class TabLoader : public content::NotificationObserver,
   // Max number of tabs that were loaded in parallel (for metrics).
   size_t max_parallel_tab_loads_;
 
-  // Callback list for sending a session restore notification.
-  SessionRestore::CallbackList* on_session_restored_callbacks_;
-
   // For keeping TabLoader alive while it's loading even if no
   // SessionRestoreImpls reference it.
   scoped_refptr<TabLoader> this_retainer_;
@@ -283,15 +275,14 @@ void TabLoader::SetTabLoadingEnabled(bool enable_tab_loading) {
 
 TabLoader::TabLoader(base::TimeTicks restore_started)
     : memory_pressure_listener_(
-        base::Bind(&TabLoader::OnMemoryPressure, base::Unretained(this))),
+          base::Bind(&TabLoader::OnMemoryPressure, base::Unretained(this))),
       force_load_delay_multiplier_(1),
       loading_enabled_(true),
       got_first_foreground_load_(false),
       got_first_paint_(false),
       tab_count_(0),
       restore_started_(restore_started),
-      max_parallel_tab_loads_(0),
-      on_session_restored_callbacks_(nullptr) {
+      max_parallel_tab_loads_(0) {
 }
 
 TabLoader::~TabLoader() {
@@ -331,12 +322,6 @@ void TabLoader::LoadNextTab() {
 
   if (!tabs_to_load_.empty())
     StartTimer();
-
-  // When the session restore is done synchronously, notification is sent from
-  // SessionRestoreImpl::Restore .
-  if (tabs_to_load_.empty() && !SessionRestore::IsRestoringSynchronously()) {
-    on_session_restored_callbacks_->Notify(tab_count_);
-  }
 }
 
 void TabLoader::StartTimer() {
@@ -660,13 +645,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
         loop.Run();
         quit_closure_for_sync_restore_ = base::Closure();
       }
-      // Count the total number of tabs in |windows_|.
-      int total_num_tabs = 0;
-      for (int i = 0; i < static_cast<int>(windows_.size()); ++i)
-        total_num_tabs += windows_[i]->tabs.size();
-
-      Browser* browser = ProcessSessionWindows(&windows_, active_window_id_);
-      on_session_restored_callbacks_->Notify(total_num_tabs);
+      Browser* browser =
+          ProcessSessionWindowsAndNotify(&windows_, active_window_id_);
       delete this;
       return browser;
     }
@@ -685,6 +665,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       std::vector<const sessions::SessionWindow*>::const_iterator end) {
     StartTabCreation();
     std::vector<Browser*> browsers;
+    std::vector<WebContents*> created_contents;
     // Create a browser instance to put the restored tabs in.
     for (std::vector<const sessions::SessionWindow*>::const_iterator i = begin;
          i != end; ++i) {
@@ -702,12 +683,16 @@ class SessionRestoreImpl : public content::NotificationObserver {
           std::min((*i)->selected_tab_index,
                    static_cast<int>((*i)->tabs.size()) - 1));
       RestoreTabsToBrowser(*(*i), browser, initial_tab_count,
-                           selected_tab_index);
+                           selected_tab_index, &created_contents);
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
     }
 
-    // Always create in a new window
+    // Always create in a new window.
     FinishedTabCreation(true, true);
+
+    on_session_restored_callbacks_->Notify(
+        static_cast<int>(created_contents.size()));
+
     return browsers;
   }
 
@@ -770,6 +755,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // Since FinishedTabCreation() is not called here, |this| will leak if we
     // are not in sychronous mode.
     DCHECK(synchronous_);
+
+    on_session_restored_callbacks_->Notify(1);
+
     return web_contents;
   }
 
@@ -805,8 +793,6 @@ class SessionRestoreImpl : public content::NotificationObserver {
   // Invoked when beginning to create new tabs. Resets the |tab_loader_|.
   void StartTabCreation() {
     tab_loader_ = TabLoader::GetTabLoader(restore_started_);
-    tab_loader_->set_on_session_restored_callbacks(
-        on_session_restored_callbacks_);
   }
 
   // Invoked when done with creating all the tabs/browsers.
@@ -883,11 +869,22 @@ class SessionRestoreImpl : public content::NotificationObserver {
       return;
     }
 
-    ProcessSessionWindows(&windows.get(), active_window_id);
+    ProcessSessionWindowsAndNotify(&windows.get(), active_window_id);
+  }
+
+  Browser* ProcessSessionWindowsAndNotify(
+      std::vector<sessions::SessionWindow*>* windows,
+      SessionID::id_type active_window_id) {
+    std::vector<WebContents*> contents;
+    Browser* result =
+        ProcessSessionWindows(windows, active_window_id, &contents);
+    on_session_restored_callbacks_->Notify(static_cast<int>(contents.size()));
+    return result;
   }
 
   Browser* ProcessSessionWindows(std::vector<sessions::SessionWindow*>* windows,
-                                 SessionID::id_type active_window_id) {
+                                 SessionID::id_type active_window_id,
+                                 std::vector<WebContents*>* created_contents) {
     DVLOG(1) << "ProcessSessionWindows " << windows->size();
     base::TimeDelta time_to_process_sessions =
         base::TimeTicks::Now() - restore_started_;
@@ -984,7 +981,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         browser_to_activate = browser;
 
       RestoreTabsToBrowser(*(*i), browser, initial_tab_count,
-                           selected_tab_index);
+                           selected_tab_index, created_contents);
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
       // This needs to be done after restore because closing the last tab will
       // close the whole window.
@@ -1043,9 +1040,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
   // If there are no existing tabs, the tab at |selected_tab_index| will be
   // selected. Otherwise, the tab selection will remain untouched.
   void RestoreTabsToBrowser(const sessions::SessionWindow& window,
-                           Browser* browser,
-                           int initial_tab_count,
-                           int selected_tab_index) {
+                            Browser* browser,
+                            int initial_tab_count,
+                            int selected_tab_index,
+                            std::vector<WebContents*>* created_contents) {
     DVLOG(1) << "RestoreTabsToBrowser " << window.tabs.size();
     DCHECK(!window.tabs.empty());
     if (initial_tab_count == 0) {
@@ -1061,6 +1059,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
         // RestoreTab can return NULL if |tab| doesn't have valid data.
         if (!restored_tab)
           continue;
+
+        created_contents->push_back(restored_tab);
 
         // If this isn't the selected tab, there's nothing else to do.
         if (!is_selected_tab)
@@ -1084,7 +1084,10 @@ class SessionRestoreImpl : public content::NotificationObserver {
       for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
         const sessions::SessionTab& tab = *(window.tabs[i]);
         // Always schedule loads as we will not be calling ShowBrowser().
-        RestoreTab(tab, tab_index_offset + i, browser, false);
+        WebContents* contents =
+            RestoreTab(tab, tab_index_offset + i, browser, false);
+        if (contents)
+          created_contents->push_back(contents);
       }
     }
   }
