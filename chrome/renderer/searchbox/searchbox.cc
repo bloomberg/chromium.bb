@@ -6,12 +6,15 @@
 
 #include <string>
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/favicon/fallback_icon_url_parser.h"
 #include "chrome/common/favicon/favicon_url_parser.h"
+#include "chrome/common/favicon/large_icon_url_parser.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -49,98 +52,179 @@ bool AreMostVisitedItemsEqual(
   return true;
 }
 
+const char* GetIconTypeUrlHost(SearchBox::ImageSourceType type) {
+  switch (type) {
+    case SearchBox::FAVICON:
+      return "favicon";
+    case SearchBox::LARGE_ICON:
+      return "large-icon";
+    case SearchBox::FALLBACK_ICON:
+      return "fallback-icon";
+    case SearchBox::THUMB:
+      return "thumb";
+    default:
+      NOTREACHED();
+  }
+  return nullptr;
+}
+
+// Given |path| from an image URL, returns starting index of the page URL,
+// depending on |type| of image URL. Returns -1 if parse fails.
+int GetImagePathStartOfPageURL(SearchBox::ImageSourceType type,
+                               const std::string& path) {
+  // TODO(huangs): Refactor this: http://crbug.com/468320.
+  switch (type) {
+    case SearchBox::FAVICON: {
+      chrome::ParsedFaviconPath parsed;
+      return chrome::ParseFaviconPath(
+          path, favicon_base::FAVICON, &parsed) ? parsed.path_index : -1;
+    }
+    case SearchBox::LARGE_ICON: {
+      LargeIconUrlParser parser;
+      return parser.Parse(path) ? parser.path_index() : -1;
+    }
+    case SearchBox::FALLBACK_ICON: {
+      chrome::ParsedFallbackIconPath parser;
+      return parser.Parse(path) ? parser.path_index() : -1;
+    }
+    case SearchBox::THUMB: {
+      return 0;
+    }
+    default: {
+      NOTREACHED();
+      break;
+    }
+  }
+  return -1;
+}
+
+// Helper for SearchBox::GenerateImageURLFromTransientURL().
+class SearchBoxIconURLHelper: public SearchBox::IconURLHelper {
+ public:
+  explicit SearchBoxIconURLHelper(const SearchBox* search_box);
+  ~SearchBoxIconURLHelper() override;
+  int GetViewID() const override;
+  std::string GetURLStringFromRestrictedID(InstantRestrictedID rid) const
+      override;
+
+ private:
+  const SearchBox* search_box_;
+};
+
+SearchBoxIconURLHelper::SearchBoxIconURLHelper(const SearchBox* search_box)
+    : search_box_(search_box) {
+}
+
+SearchBoxIconURLHelper::~SearchBoxIconURLHelper() {
+}
+
+int SearchBoxIconURLHelper::GetViewID() const {
+  return search_box_->render_view()->GetRoutingID();
+}
+
+std::string SearchBoxIconURLHelper::GetURLStringFromRestrictedID(
+    InstantRestrictedID rid) const {
+  InstantMostVisitedItem item;
+  if (!search_box_->GetMostVisitedItemWithID(rid, &item))
+    return std::string();
+
+  return item.url.spec();
+}
+
 }  // namespace
 
 namespace internal {  // for testing
 
-// Parses |path| and fills in |id| with the InstantRestrictedID obtained from
-// the |path|. |render_view_id| is the ID of the associated RenderView.
-//
-// |path| is a pair of |render_view_id| and |restricted_id|, and it is
-// contained in Instant Extended URLs. A valid |path| is in the form:
-// <render_view_id>/<restricted_id>
-//
-// If the |path| is valid, returns true and fills in |id| with restricted_id
-// value. If the |path| is invalid, returns false and |id| is not set.
-bool GetInstantRestrictedIDFromPath(int render_view_id,
-                                    const std::string& path,
-                                    InstantRestrictedID* id) {
+// Parses "<view_id>/<restricted_id>". If successful, assigns
+// |*view_id| := "<view_id>", |*rid| := "<restricted_id>", and returns true.
+bool ParseViewIdAndRestrictedId(const std::string id_part,
+                                int* view_id_out,
+                                InstantRestrictedID* rid_out) {
+  DCHECK(view_id_out);
+  DCHECK(rid_out);
   // Check that the path is of Most visited item ID form.
   std::vector<std::string> tokens;
-  if (Tokenize(path, "/", &tokens) != 2)
+  if (Tokenize(id_part, "/", &tokens) != 2)
     return false;
 
-  int view_id = 0;
-  if (!base::StringToInt(tokens[0], &view_id) || view_id != render_view_id)
+  int view_id;
+  InstantRestrictedID rid;
+  if (!base::StringToInt(tokens[0], &view_id) || view_id < 0 ||
+      !base::StringToInt(tokens[1], &rid) || rid < 0)
     return false;
-  return base::StringToInt(tokens[1], id);
+
+  *view_id_out = view_id;
+  *rid_out = rid;
+  return true;
 }
 
-bool GetRestrictedIDFromFaviconUrl(int render_view_id,
-                                   const GURL& url,
-                                   std::string* favicon_params,
-                                   InstantRestrictedID* rid) {
+// Takes icon |url| of given |type|, e.g., FAVICON looking like
+//
+//   chrome-search://favicon/<view_id>/<restricted_id>
+//   chrome-search://favicon/<parameters>/<view_id>/<restricted_id>
+//
+// If successful, assigns |*param_part| := "" or "<parameters>/" (note trailing
+// slash), |*view_id| := "<view_id>", |*rid| := "rid", and returns true.
+bool ParseIconRestrictedUrl(const GURL& url,
+                            SearchBox::ImageSourceType type,
+                            std::string* param_part,
+                            int* view_id,
+                            InstantRestrictedID* rid) {
+  DCHECK(param_part);
+  DCHECK(view_id);
+  DCHECK(rid);
   // Strip leading slash.
   std::string raw_path = url.path();
   DCHECK_GT(raw_path.length(), (size_t) 0);
   DCHECK_EQ(raw_path[0], '/');
   raw_path = raw_path.substr(1);
 
-  chrome::ParsedFaviconPath parsed;
-  if (!chrome::ParseFaviconPath(raw_path, favicon_base::FAVICON, &parsed))
+  int path_index = GetImagePathStartOfPageURL(type, raw_path);
+  if (path_index < 0)
     return false;
 
-  // The part of the URL which details the favicon parameters should be returned
-  // so the favicon URL can be reconstructed, by replacing the restricted_id
-  // with the actual URL from which the favicon is being requested.
-  *favicon_params = raw_path.substr(0, parsed.path_index);
+  std::string id_part = raw_path.substr(path_index);
+  if (!ParseViewIdAndRestrictedId(id_part, view_id, rid))
+    return false;
 
-  // The part of the favicon URL which is supposed to contain the URL from
-  // which the favicon is being requested (i.e., the page's URL) actually
-  // contains a pair in the format "<view_id>/<restricted_id>". If the page's
-  // URL is not in the expected format then the execution must be stopped,
-  // returning |true|, indicating that the favicon URL should be translated
-  // without the page's URL part, to prevent search providers from spoofing
-  // the user's browsing history. For example, the following favicon URL
-  // "chrome-search://favicon/http://www.secretsite.com" it is not in the
-  // expected format "chrome-search://favicon/<view_id>/<restricted_id>" so
-  // the pages's URL part ("http://www.secretsite.com") should be removed
-  // entirely from the translated URL otherwise the search engine would know
-  // if the user has visited that page (by verifying whether the favicon URL
-  // returns an image for a particular page's URL); the translated URL in this
-  // case would be "chrome-search://favicon/" which would simply return the
-  // default favicon.
-  std::string id_part = raw_path.substr(parsed.path_index);
-  InstantRestrictedID id;
-  if (!GetInstantRestrictedIDFromPath(render_view_id, id_part, &id))
-    return true;
-
-  *rid = id;
+  *param_part = raw_path.substr(0, path_index);
   return true;
 }
 
-// Parses a thumbnail |url| and fills in |id| with the InstantRestrictedID
-// obtained from the |url|. |render_view_id| is the ID of the associated
-// RenderView.
-//
-// Valid |url| forms:
-// chrome-search://thumb/<view_id>/<restricted_id>
-//
-// If the |url| is valid, returns true and fills in |id| with restricted_id
-// value. If the |url| is invalid, returns false and |id| is not set.
-bool GetRestrictedIDFromThumbnailUrl(int render_view_id,
-                                     const GURL& url,
-                                     InstantRestrictedID* id) {
-  // Strip leading slash.
-  std::string path = url.path();
-  DCHECK_GT(path.length(), (size_t) 0);
-  DCHECK_EQ(path[0], '/');
-  path = path.substr(1);
+bool TranslateIconRestrictedUrl(const GURL& transient_url,
+                                SearchBox::ImageSourceType type,
+                                const SearchBox::IconURLHelper& helper,
+                                GURL* url) {
+  std::string params;
+  int view_id = -1;
+  InstantRestrictedID rid = -1;
 
-  return GetInstantRestrictedIDFromPath(render_view_id, path, id);
+  if (!internal::ParseIconRestrictedUrl(
+          transient_url, type, &params, &view_id, &rid) ||
+      view_id != helper.GetViewID()) {
+    if (type == SearchBox::FAVICON) {
+      *url = GURL(base::StringPrintf("chrome-search://%s/",
+                                     GetIconTypeUrlHost(SearchBox::FAVICON)));
+      return true;
+    }
+    return false;
+  }
+
+  std::string item_url = helper.GetURLStringFromRestrictedID(rid);
+  *url = GURL(base::StringPrintf("chrome-search://%s/%s%s",
+                                 GetIconTypeUrlHost(type),
+                                 params.c_str(),
+                                 item_url.c_str()));
+  return true;
 }
 
 }  // namespace internal
+
+SearchBox::IconURLHelper::IconURLHelper() {
+}
+
+SearchBox::IconURLHelper::~IconURLHelper() {
+}
 
 SearchBox::SearchBox(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
@@ -201,40 +285,11 @@ void SearchBox::DeleteMostVisitedItem(
       GetURLForMostVisitedItem(most_visited_item_id)));
 }
 
-bool SearchBox::GenerateFaviconURLFromTransientURL(const GURL& transient_url,
-                                                   GURL* url) const {
-  std::string favicon_params;
-  InstantRestrictedID rid = -1;
-  bool success = internal::GetRestrictedIDFromFaviconUrl(
-      render_view()->GetRoutingID(), transient_url, &favicon_params, &rid);
-  if (!success)
-    return false;
-
-  InstantMostVisitedItem item;
-  std::string item_url;
-  if (rid != -1 && GetMostVisitedItemWithID(rid, &item))
-    item_url = item.url.spec();
-
-  *url = GURL(base::StringPrintf("chrome-search://favicon/%s%s",
-                                 favicon_params.c_str(),
-                                 item_url.c_str()));
-  return true;
-}
-
-bool SearchBox::GenerateThumbnailURLFromTransientURL(const GURL& transient_url,
-                                                     GURL* url) const {
-  InstantRestrictedID rid = 0;
-  if (!internal::GetRestrictedIDFromThumbnailUrl(render_view()->GetRoutingID(),
-                                                 transient_url, &rid)) {
-    return false;
-  }
-
-  GURL most_visited_item_url(GetURLForMostVisitedItem(rid));
-  if (most_visited_item_url.is_empty())
-    return false;
-  *url = GURL(base::StringPrintf("chrome-search://thumb/%s",
-                                 most_visited_item_url.spec().c_str()));
-  return true;
+bool SearchBox::GenerateImageURLFromTransientURL(const GURL& transient_url,
+                                                 ImageSourceType type,
+                                                 GURL* url) const {
+  SearchBoxIconURLHelper helper(this);
+  return internal::TranslateIconRestrictedUrl(transient_url, type, helper, url);
 }
 
 void SearchBox::GetMostVisitedItems(

@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_SEARCHBOX_SEARCHBOX_H_
 #define CHROME_RENDERER_SEARCHBOX_SEARCHBOX_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -25,6 +26,27 @@ class RenderView;
 class SearchBox : public content::RenderViewObserver,
                   public content::RenderViewObserverTracker<SearchBox> {
  public:
+  enum ImageSourceType {
+    NONE = -1,
+    FAVICON,
+    LARGE_ICON,
+    FALLBACK_ICON,
+    THUMB
+  };
+
+  // Helper class for GenerateImageURLFromTransientURL() to adapt SearchBox's
+  // instance, thereby allow mocking for unit tests.
+  class IconURLHelper {
+   public:
+    IconURLHelper();
+    virtual ~IconURLHelper();
+    // Retruns view id for validating icon URL.
+    virtual int GetViewID() const = 0;
+    // Returns the page URL string for |rid|, or empty string for invalid |rid|.
+    virtual std::string GetURLStringFromRestrictedID(InstantRestrictedID rid)
+        const = 0;
+  };
+
   explicit SearchBox(content::RenderView* render_view);
   ~SearchBox() override;
 
@@ -46,27 +68,35 @@ class SearchBox : public content::RenderViewObserver,
   // Sends ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem to the browser.
   void DeleteMostVisitedItem(InstantRestrictedID most_visited_item_id);
 
-  // Generates the favicon URL of the most visited item specified by the
-  // |transient_url|. If the |transient_url| is valid, returns true and fills in
-  // |url|. If the |transient_url| is invalid, returns true and |url| is set to
-  // "chrome-search://favicon/" in order to prevent the invalid URL to be
-  // requested.
+  // Generates the image URL of |type| for the most visited item specified in
+  // |transient_url|. If |transient_url| is valid, |url| with a translated URL
+  // and returns true.  Otherwise it depends on |type|:
+  // - FAVICON: Returns true and renders an URL to display the default favicon.
+  // - LARGE_ICON and FALLBACK_ICON: Returns false.
   //
-  // Valid forms of |transient_url|:
+  // For |type| == FAVICON, valid forms of |transient_url|:
   //    chrome-search://favicon/<view_id>/<restricted_id>
   //    chrome-search://favicon/<favicon_parameters>/<view_id>/<restricted_id>
-  bool GenerateFaviconURLFromTransientURL(const GURL& transient_url,
-                                          GURL* url) const;
-
-  // Generates the thumbnail URL of the most visited item specified by the
-  // |transient_url|. If the |transient_url| is valid, returns true and fills in
-  // |url|. If the |transient_url| is invalid, returns false  and |url| is not
-  // set.
   //
-  // Valid form of |transient_url|:
+  // For |type| == LARGE_ICON, valid form of |transient_url|:
+  //    chrome-search://large-icon/<size>/<view_id>/<restricted_id>
+  //
+  // For |type| == FALLBACK_ICON, valid form of |transient_url|:
+  //    chrome-search://fallback-icon/<icon specs>/<view_id>/<restricted_id>
+  //
+  // For |type| == THUMB, valid form of |transient_url|:
   //    chrome-search://thumb/<render_view_id>/<most_visited_item_id>
-  bool GenerateThumbnailURLFromTransientURL(const GURL& transient_url,
-                                            GURL* url) const;
+  //
+  // We do this to prevent search providers from abusing image URLs and deduce
+  // whether the user has visited a particular page. For example, if
+  // "chrome-search://favicon/http://www.secretsite.com" is accessible, then
+  // the search provider can use its return code to determine whether the user
+  // has visited "http://www.secretsite.com". Therefore we require search
+  // providers to specify URL by "<view_id>/<restricted_id>". We then translate
+  // this to the original |url|, and pass the request to the proper endpoint.
+  bool GenerateImageURLFromTransientURL(const GURL& transient_url,
+                                        ImageSourceType type,
+                                        GURL* url) const;
 
   // Returns the latest most visited items sent by the browser.
   void GetMostVisitedItems(

@@ -1366,10 +1366,17 @@ bool ChromeContentRendererClient::WillSendRequest(
       content::RenderView::FromWebView(frame->view());
   SearchBox* search_box = SearchBox::Get(render_view);
   if (search_box && url.SchemeIs(chrome::kChromeSearchScheme)) {
-    if (url.host() == chrome::kChromeUIThumbnailHost)
-      return search_box->GenerateThumbnailURLFromTransientURL(url, new_url);
-    else if (url.host() == chrome::kChromeUIFaviconHost)
-      return search_box->GenerateFaviconURLFromTransientURL(url, new_url);
+    SearchBox::ImageSourceType type = SearchBox::NONE;
+    if (url.host() == chrome::kChromeUIFaviconHost)
+      type = SearchBox::FAVICON;
+    else if (url.host() == chrome::kChromeUILargeIconHost)
+      type = SearchBox::LARGE_ICON;
+    else if (url.host() == chrome::kChromeUIFallbackIconHost)
+      type = SearchBox::FALLBACK_ICON;
+    else if (url.host() == chrome::kChromeUIThumbnailHost)
+      type = SearchBox::THUMB;
+    if (type != SearchBox::NONE)
+      return search_box->GenerateImageURLFromTransientURL(url, type, new_url);
   }
 
   return false;
