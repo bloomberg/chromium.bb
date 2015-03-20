@@ -178,6 +178,9 @@ cr.define('cr.ui', function() {
       if (this.delegate && this.delegate.onKeydown(this, e))
         return;
 
+      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)
+        return;
+
       var index = -1;
 
       if (e.keyIdentifier == 'Left')
