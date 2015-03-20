@@ -73,11 +73,11 @@ if ! which lsb_release > /dev/null; then
 fi
 
 lsb_release=$(lsb_release --codename --short)
-ubuntu_codenames="(precise|quantal|raring|saucy|trusty|utopic)"
+ubuntu_codenames="(precise|trusty|utopic)"
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
   if [[ ! $lsb_release =~ $ubuntu_codenames ]]; then
-    echo "ERROR: Only Ubuntu 12.04 (precise) through 14.10 (utopic) are"\
-        "currently supported" >&2
+    echo "ERROR: Only Ubuntu 12.04 (precise), 14.04 (trusty) and " \
+        "14.10 (utopic) are currently supported" >&2
     exit 1
   fi
 
@@ -171,8 +171,7 @@ nacl_list="g++-mingw-w64-i686 lib32z1-dev
 # it depends on mesa, and only one version of mesa can exists on the system.
 # Hence we must match the same version or this entire script will fail.
 mesa_variant=""
-for variant in "-lts-quantal" "-lts-raring" "-lts-saucy" "-lts-trusty" \
-               "-lts-utopic"; do
+for variant in "-lts-trusty" "-lts-utopic"; do
   if $(dpkg-query -Wf'${Status}' libgl1-mesa-glx${variant} 2>/dev/null | \
        grep -q " ok installed"); then
     mesa_variant="${variant}"
@@ -357,7 +356,7 @@ if [ 1 -eq "${do_quick_check-0}" ] ; then
 fi
 
 if test "$do_inst_lib32" = "1" || test "$do_inst_nacl" = "1"; then
-  if [[ ! $lsb_release =~ (precise|quantal|raring) ]]; then
+  if [[ ! $lsb_release =~ (precise) ]]; then
     sudo dpkg --add-architecture i386
   fi
 fi
