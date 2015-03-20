@@ -292,7 +292,7 @@ Value RunToolchain(Scope* scope,
   const SourceDir& input_dir = scope->GetSourceDir();
   Label label(input_dir, args[0].string_value());
   if (g_scheduler->verbose_logging())
-    g_scheduler->Log("Definining toolchain", label.GetUserVisibleName(false));
+    g_scheduler->Log("Defining toolchain", label.GetUserVisibleName(false));
 
   // This object will actually be copied into the one owned by the toolchain
   // manager, but that has to be done in the lock.
