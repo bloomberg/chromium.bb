@@ -278,10 +278,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool ShouldPrepareTiles() const;
 
   void AdvanceCurrentFrameNumber();
-  bool HasAnimatedThisFrame() const;
-  bool HasSentBeginMainFrameThisFrame() const;
-  bool HasRequestedSwapThisFrame() const;
-  bool HasSwappedThisFrame() const;
 
   void UpdateStateOnCommit(bool commit_had_no_updates);
   void UpdateStateOnActivation();
@@ -295,6 +291,7 @@ class CC_EXPORT SchedulerStateMachine {
   CommitState commit_state_;
   ForcedRedrawOnTimeoutState forced_redraw_state_;
 
+  // These are used for tracing only.
   int commit_count_;
   int current_frame_number_;
   int last_frame_number_animate_performed_;
@@ -302,11 +299,18 @@ class CC_EXPORT SchedulerStateMachine {
   int last_frame_number_swap_requested_;
   int last_frame_number_begin_main_frame_sent_;
 
+  // These are used to ensure that an action only happens once per frame,
+  // deadline, etc.
+  bool animate_funnel_;
+  bool perform_swap_funnel_;
+  bool request_swap_funnel_;
+  bool send_begin_main_frame_funnel_;
   // prepare_tiles_funnel_ is "filled" each time PrepareTiles is called
   // and "drained" on each BeginImplFrame. If the funnel gets too full,
   // we start throttling ACTION_PREPARE_TILES such that we average one
   // PrepareTiles per BeginImplFrame.
   int prepare_tiles_funnel_;
+
   int consecutive_checkerboard_animations_;
   int max_pending_swaps_;
   int pending_swaps_;
@@ -321,7 +325,6 @@ class CC_EXPORT SchedulerStateMachine {
   bool has_pending_tree_;
   bool pending_tree_is_ready_for_activation_;
   bool active_tree_needs_first_draw_;
-  bool did_commit_after_animating_;
   bool did_create_and_initialize_first_output_surface_;
   bool impl_latency_takes_priority_;
   bool skip_next_begin_main_frame_to_reduce_latency_;
