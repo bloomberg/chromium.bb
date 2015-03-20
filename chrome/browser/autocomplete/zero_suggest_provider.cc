@@ -162,6 +162,7 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
     results_.suggest_results.clear();
     results_.navigation_results.clear();
     current_query_.clear();
+    most_visited_urls_.clear();
   }
 }
 
@@ -177,7 +178,9 @@ void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
 
 void ZeroSuggestProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
   BaseSearchProvider::AddProviderInfo(provider_info);
-  if (!results_.suggest_results.empty() || !results_.navigation_results.empty())
+  if (!results_.suggest_results.empty() ||
+      !results_.navigation_results.empty() ||
+      !most_visited_urls_.empty())
     provider_info->back().set_times_returned_results_in_session(1);
 }
 
