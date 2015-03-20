@@ -262,7 +262,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 #if ENABLE(ASSERT)
     , m_hasBeenDisposed(false)
 #endif
-    , m_instrumentingAgents(webViewImpl->page()->instrumentingAgents())
+    , m_instrumentingAgents(InstrumentingAgents::create())
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(this)))
     , m_overlay(overlay)
@@ -323,6 +323,9 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     m_agents.append(InspectorIndexedDBAgent::create(page));
     m_agents.append(InspectorAccessibilityAgent::create(page));
     m_agents.append(InspectorDOMStorageAgent::create(page));
+
+    if (m_webViewImpl->mainFrameImpl())
+        m_webViewImpl->mainFrameImpl()->frame()->setInstrumentingAgents(m_instrumentingAgents.get());
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
@@ -384,6 +387,10 @@ void WebDevToolsAgentImpl::willBeDestroyed()
     detach();
     m_injectedScriptManager->disconnect();
     m_agents.discardAgents();
+    m_instrumentingAgents->reset();
+
+    if (m_webViewImpl->mainFrameImpl())
+        m_webViewImpl->mainFrameImpl()->frame()->setInstrumentingAgents(nullptr);
 }
 
 void WebDevToolsAgentImpl::initializeDeferredAgents()

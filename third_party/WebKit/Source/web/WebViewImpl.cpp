@@ -393,6 +393,8 @@ void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
         m_devToolsAgent->registerAgent(InspectorRenderingAgent::create(this));
         m_devToolsAgent->registerAgent(InspectorEmulationAgent::create(this));
     } else {
+        m_devToolsAgent->willBeDestroyed();
+        m_devToolsAgent->dispose();
         m_devToolsAgent.clear();
         m_inspectorOverlay.clear();
     }

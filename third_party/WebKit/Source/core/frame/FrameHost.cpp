@@ -75,11 +75,6 @@ UseCounter& FrameHost::useCounter() const
     return m_page->useCounter();
 }
 
-InstrumentingAgents* FrameHost::instrumentingAgents() const
-{
-    return m_page->instrumentingAgents();
-}
-
 float FrameHost::deviceScaleFactor() const
 {
     return m_page->deviceScaleFactor();

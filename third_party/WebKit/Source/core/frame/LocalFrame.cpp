@@ -418,7 +418,7 @@ LocalFrame* LocalFrame::localFrameRoot()
 
 InstrumentingAgents* LocalFrame::instrumentingAgents()
 {
-    return m_instrumentingAgents.get();
+    return localFrameRoot()->m_instrumentingAgents.get();
 }
 
 void LocalFrame::setInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
@@ -790,7 +790,7 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
     , m_pageZoomFactor(parentPageZoomFactor(this))
     , m_textZoomFactor(parentTextZoomFactor(this))
     , m_inViewSourceMode(false)
-    , m_instrumentingAgents(host->instrumentingAgents())
+    , m_instrumentingAgents(nullptr)
     , m_shouldSendDPRHint(false)
     , m_shouldSendRWHint(false)
 {

@@ -40,7 +40,6 @@
 #include "core/frame/RemoteFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/loader/FrameLoader.h"
@@ -123,7 +122,6 @@ Page::Page(PageClients& pageClients)
     , m_contextMenuController(ContextMenuController::create(this, pageClients.contextMenuClient))
     , m_pointerLockController(PointerLockController::create(this))
     , m_undoStack(UndoStack::create())
-    , m_instrumentingAgents(InstrumentingAgents::create())
     , m_mainFrame(nullptr)
     , m_editorClient(pageClients.editorClient)
     , m_spellCheckerClient(pageClients.spellCheckerClient)
@@ -570,7 +568,6 @@ DEFINE_TRACE(Page)
     visitor->trace(m_contextMenuController);
     visitor->trace(m_pointerLockController);
     visitor->trace(m_undoStack);
-    visitor->trace(m_instrumentingAgents);
     visitor->trace(m_mainFrame);
     visitor->trace(m_validationMessageClient);
     visitor->trace(m_multisamplingChangedObservers);
@@ -582,8 +579,6 @@ DEFINE_TRACE(Page)
 
 void Page::willBeDestroyed()
 {
-    m_instrumentingAgents->reset();
-
     RefPtrWillBeRawPtr<Frame> mainFrame = m_mainFrame;
 
     mainFrame->detach();

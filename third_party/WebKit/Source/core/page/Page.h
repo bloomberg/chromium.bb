@@ -55,7 +55,6 @@ class EditorClient;
 class FocusController;
 class Frame;
 class FrameHost;
-class InstrumentingAgents;
 class PluginData;
 class PointerLockController;
 class ScrollingCoordinator;
@@ -139,8 +138,6 @@ public:
     ValidationMessageClient& validationMessageClient() const { return *m_validationMessageClient; }
     void setValidationMessageClient(PassOwnPtrWillBeRawPtr<ValidationMessageClient>);
 
-    InstrumentingAgents* instrumentingAgents() const { return m_instrumentingAgents.get(); }
-
     ScrollingCoordinator* scrollingCoordinator();
 
     String mainThreadScrollingReasonsAsText();
@@ -223,8 +220,6 @@ private:
     const OwnPtrWillBeMember<PointerLockController> m_pointerLockController;
     OwnPtr<ScrollingCoordinator> m_scrollingCoordinator;
     const OwnPtrWillBeMember<UndoStack> m_undoStack;
-
-    RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
 
     // Typically, the main frame and Page should both be owned by the embedder,
     // which must call Page::willBeDestroyed() prior to destroying Page. This
