@@ -380,6 +380,42 @@ TEST_F(ScriptRunnerTest, ShouldYield_AsyncScripts)
     EXPECT_THAT(m_order, ElementsAre(1, 2, 3));
 }
 
+TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts)
+{
+    OwnPtr<MockScriptLoader> scriptLoaders[20];
+    for (int i = 0; i < 20; i++) {
+        scriptLoaders[i] = adoptPtr(new MockScriptLoader(m_element.get()));
+        EXPECT_CALL(*scriptLoaders[i], isReady()).WillRepeatedly(Return(true));
+
+        m_scriptRunner->queueScriptForExecution(scriptLoaders[i].get(), ScriptRunner::ASYNC_EXECUTION);
+
+        if (i > 0) {
+            EXPECT_CALL(*scriptLoaders[i], execute()).WillOnce(Invoke([this, i] {
+                m_order.push_back(i);
+            }));
+        }
+    }
+
+    m_scriptRunner->notifyScriptReady(scriptLoaders[0].get(), ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->notifyScriptReady(scriptLoaders[1].get(), ScriptRunner::ASYNC_EXECUTION);
+    m_scriptRunner->resume();
+
+    EXPECT_CALL(*scriptLoaders[0], execute()).WillOnce(Invoke([&scriptLoaders, this] {
+        for (int i = 2; i < 20; i++)
+            m_scriptRunner->notifyScriptReady(scriptLoaders[i].get(), ScriptRunner::ASYNC_EXECUTION);
+        m_scriptRunner->resume();
+        m_order.push_back(0);
+    }));
+
+    m_platform.runAllTasks();
+
+    int expected[] = {
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
+    };
+
+    EXPECT_THAT(m_order, testing::ElementsAreArray(expected));
+}
+
 TEST_F(ScriptRunnerTest, ShouldYield_InOrderScripts)
 {
     MockScriptLoader scriptLoader1(m_element.get());
@@ -438,6 +474,9 @@ TEST_F(ScriptRunnerTest, ShouldYield_RunsAtLastOneTask_AsyncScripts)
     // We can't safely distruct ScriptRunner with unexecuted MockScriptLoaders (real ScriptLoader is fine) so drain them.
     testing::Mock::VerifyAndClear(&scriptLoader2);
     testing::Mock::VerifyAndClear(&scriptLoader3);
+    EXPECT_CALL(scriptLoader2, execute()).Times(1);
+    EXPECT_CALL(scriptLoader3, execute()).Times(1);
+
     m_platform.runAllTasks();
 }
 
@@ -466,6 +505,8 @@ TEST_F(ScriptRunnerTest, ShouldYield_RunsAtLastOneTask_InOrderScripts)
     // We can't safely distruct ScriptRunner with unexecuted MockScriptLoaders (real ScriptLoader is fine) so drain them.
     testing::Mock::VerifyAndClear(&scriptLoader2);
     testing::Mock::VerifyAndClear(&scriptLoader3);
+    EXPECT_CALL(scriptLoader2, execute()).Times(1);
+    EXPECT_CALL(scriptLoader3, execute()).Times(1);
     EXPECT_CALL(scriptLoader2, isReady()).WillRepeatedly(Return(true));
     EXPECT_CALL(scriptLoader3, isReady()).WillRepeatedly(Return(true));
     m_platform.runAllTasks();

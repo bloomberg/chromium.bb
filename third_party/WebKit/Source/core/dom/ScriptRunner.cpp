@@ -98,6 +98,7 @@ void ScriptRunner::resume()
 
 void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType executionType)
 {
+    RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(scriptLoader);
     switch (executionType) {
     case ASYNC_EXECUTION:
         // RELEASE_ASSERT makes us crash in a controlled way in error cases
@@ -175,29 +176,35 @@ void ScriptRunner::executeScripts()
 {
     RefPtrWillBeRawPtr<Document> protect(m_document.get());
 
-    // New scripts are always appended to m_scriptsToExecuteSoon and m_scriptsToExecuteInOrder (never prepended)
-    // so as long as we keep track of the current totals, we can ensure the order of execution if new scripts
-    // are added while executing the current ones.
-    // NOTE a yield followed by a notifyScriptReady(... ASYNC_EXECUTION) will result in that script executing
-    // before any pre-existing ScriptsToExecuteInOrder.
-    size_t numScriptsToExecuteSoon = m_scriptsToExecuteSoon.size();
-    size_t numScriptsToExecuteInOrder = m_scriptsToExecuteInOrder.size();
-    for (size_t i = 0; i < numScriptsToExecuteSoon; i++) {
-        ASSERT(!m_scriptsToExecuteSoon.isEmpty());
-        m_scriptsToExecuteSoon.takeFirst()->execute();
-        m_document->decrementLoadEventDelayCount();
-        if (yieldForHighPriorityWork())
-            return;
+    WillBeHeapDeque<RawPtrWillBeMember<ScriptLoader>> scriptLoaders;
+    scriptLoaders.swap(m_scriptsToExecuteSoon);
+
+    WillBeHeapHashSet<RawPtrWillBeMember<ScriptLoader>> inorderSet;
+    while (!m_scriptsToExecuteInOrder.isEmpty() && m_scriptsToExecuteInOrder.first()->isReady()) {
+        ScriptLoader* script = m_scriptsToExecuteInOrder.takeFirst();
+        inorderSet.add(script);
+        scriptLoaders.append(script);
     }
 
-    for (size_t i = 0; i < numScriptsToExecuteInOrder; i++) {
-        ASSERT(!m_scriptsToExecuteInOrder.isEmpty());
-        if (!m_scriptsToExecuteInOrder.first()->isReady())
-            break;
-        m_scriptsToExecuteInOrder.takeFirst()->execute();
+    while (!scriptLoaders.isEmpty()) {
+        scriptLoaders.takeFirst()->execute();
         m_document->decrementLoadEventDelayCount();
+
         if (yieldForHighPriorityWork())
-            return;
+            break;
+    }
+
+    // If we have to yield, we must re-enqueue any scriptLoaders back onto the front of
+    // m_scriptsToExecuteInOrder or m_scriptsToExecuteSoon depending on where the script
+    // came from.
+    // NOTE a yield followed by a notifyScriptReady(... ASYNC_EXECUTION) will result in that script executing
+    // before any pre-existing ScriptsToExecuteInOrder.
+    while (!scriptLoaders.isEmpty()) {
+        ScriptLoader* script = scriptLoaders.takeLast();
+        if (inorderSet.contains(script))
+            m_scriptsToExecuteInOrder.prepend(script);
+        else
+            m_scriptsToExecuteSoon.prepend(script);
     }
 }
 
