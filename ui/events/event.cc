@@ -582,6 +582,21 @@ TouchEvent::TouchEvent(EventType type,
   FixRotationAngle();
 }
 
+TouchEvent::TouchEvent(const TouchEvent& copy)
+    : LocatedEvent(copy),
+      touch_id_(copy.touch_id_),
+      unique_event_id_(copy.unique_event_id_),
+      radius_x_(copy.radius_x_),
+      radius_y_(copy.radius_y_),
+      rotation_angle_(copy.rotation_angle_),
+      force_(copy.force_),
+      may_cause_scrolling_(copy.may_cause_scrolling_),
+      should_remove_native_touch_id_mapping_(false) {
+  // Copied events should not remove touch id mapping, as this either causes the
+  // mapping to be lost before the initial event has finished dispatching, or
+  // the copy to attempt to remove the mapping from a null |native_event_|.
+}
+
 TouchEvent::~TouchEvent() {
   // In ctor TouchEvent(native_event) we call GetTouchId() which in X11
   // platform setups the tracking_id to slot mapping. So in dtor here,

@@ -515,6 +515,8 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
              float angle,
              float force);
 
+  TouchEvent(const TouchEvent& copy);
+
   ~TouchEvent() override;
 
   // The id of the pointer this event modifies.

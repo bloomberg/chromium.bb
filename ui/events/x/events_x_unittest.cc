@@ -353,6 +353,26 @@ TEST_F(EventsXTest, TouchEventNotRemovingFromNativeMapping) {
   EXPECT_EQ(-1, GetTouchIdForTrackingId(kTrackingId));
 }
 
+// Copied events should not remove native touch id mappings, as this causes a
+// crash (crbug.com/467102). Copied events do not contain a proper
+// base::NativeEvent and should not attempt to access it.
+TEST_F(EventsXTest, CopiedTouchEventNotRemovingFromNativeMapping) {
+  std::vector<unsigned int> devices;
+  devices.push_back(0);
+  ui::SetUpTouchDevicesForTest(devices);
+  std::vector<Valuator> valuators;
+
+  // Create a release event which has a native touch id mapping.
+  ui::ScopedXI2Event xrelease0;
+  xrelease0.InitTouchEvent(0, XI_TouchEnd, 0, gfx::Point(10, 10), valuators);
+  ui::TouchEvent urelease0(xrelease0);
+  {
+    // When the copy is destructed it should not attempt to remove the mapping.
+    // Exiting this scope should not cause a crash.
+    ui::TouchEvent copy = urelease0;
+  }
+}
+
 TEST_F(EventsXTest, NumpadKeyEvents) {
   XEvent event;
   Display* display = gfx::GetXDisplay();
