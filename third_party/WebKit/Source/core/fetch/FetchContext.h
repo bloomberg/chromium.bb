@@ -56,13 +56,12 @@ enum FetchResourceType {
 class FetchContext : public NoBaseWillBeGarbageCollectedFinalized<FetchContext> {
     WTF_MAKE_NONCOPYABLE(FetchContext);
 public:
-    static PassOwnPtrWillBeRawPtr<FetchContext> create()
-    {
-        return adoptPtrWillBeNoop(new FetchContext);
-    }
+    static FetchContext& nullInstance();
 
     virtual ~FetchContext() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
+
+    virtual bool isLiveContext() { return false; }
 
     virtual void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
     virtual void setFirstPartyForCookies(ResourceRequest&);
