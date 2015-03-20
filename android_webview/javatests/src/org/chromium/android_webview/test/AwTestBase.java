@@ -6,6 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.app.Instrumentation;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.test.ActivityInstrumentationTestCase2;
 import android.util.Log;
 
@@ -16,6 +17,7 @@ import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -291,6 +293,22 @@ public class AwTestBase
             }
         });
         ch.waitForCallback(chCount);
+    }
+
+    // Waits for the pixel at the center of AwContents to color up into expectedColor.
+    // Note that this is a stricter condition that waiting for a visual state callback,
+    // as visual state callback only indicates that *something* has appeared in WebView.
+    public void waitForPixelColorAtCenterOfView(final AwContents awContents,
+            final AwTestContainerView testContainerView, final int expectedColor) throws Exception {
+        pollOnUiThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                Bitmap bitmap = GraphicsTestUtils.drawAwContents(awContents, 2, 2,
+                        -(float) testContainerView.getWidth() / 2,
+                        -(float) testContainerView.getHeight() / 2);
+                return bitmap.getPixel(0, 0) == expectedColor;
+            }
+        });
     }
 
     /**

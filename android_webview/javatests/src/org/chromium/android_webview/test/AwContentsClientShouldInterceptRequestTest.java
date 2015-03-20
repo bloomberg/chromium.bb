@@ -4,8 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
@@ -14,7 +12,6 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -242,21 +239,8 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
         assertEquals(false,
                 mShouldInterceptRequestHelper.getRequestsForUrl(pageWithLinkUrl).hasUserGesture);
 
-        // TODO(mkosiba): Remove this once we have a real API to wait for the page to load and
-        // display.
-        // http://crbug.com/364612
-        //
-        // The code here is waiting for the "link" (which is a full-screen blue div) to appear on
-        // screen.
-        pollOnUiThread(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                Bitmap bitmap = GraphicsTestUtils.drawAwContents(mAwContents, 2, 2,
-                        -(float) mTestContainerView.getWidth() / 2,
-                        -(float) mTestContainerView.getHeight() / 2);
-                return bitmap.getPixel(0, 0) == Color.BLUE;
-            }
-        });
+        waitForPixelColorAtCenterOfView(mAwContents,
+                mTestContainerView, CommonResources.LINK_COLOR);
         callCount = mShouldInterceptRequestHelper.getCallCount();
         AwTestTouchUtils.simulateTouchCenterOfView(mTestContainerView);
         mShouldInterceptRequestHelper.waitForCallback(callCount);

@@ -120,7 +120,8 @@ public class ClientOnReceivedError2Test extends AwTestBase {
         useDefaultTestAwContentsClient();
         final String pageHtml = CommonResources.makeHtmlPageWithSimpleLinkTo(BAD_HTML_URL);
         loadDataAsync(mAwContents, pageHtml, "text/html", false);
-        waitForVisualStateCallback(mAwContents);
+        waitForPixelColorAtCenterOfView(mAwContents,
+                mTestContainerView, CommonResources.LINK_COLOR);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();
@@ -182,7 +183,8 @@ public class ClientOnReceivedError2Test extends AwTestBase {
         final String pageHtml = CommonResources.makeHtmlPageFrom(
                 "", "<iframe style='width:100%;height:100%;' src='" + iframeUrl + "' />");
         loadDataAsync(mAwContents, pageHtml, "text/html", false);
-        waitForVisualStateCallback(mAwContents);
+        waitForPixelColorAtCenterOfView(mAwContents,
+                mTestContainerView, CommonResources.LINK_COLOR);
 
         TestAwContentsClient.OnReceivedError2Helper onReceivedError2Helper =
                 mContentsClient.getOnReceivedError2Helper();

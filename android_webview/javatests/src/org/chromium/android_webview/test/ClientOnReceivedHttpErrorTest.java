@@ -129,7 +129,8 @@ public class ClientOnReceivedHttpErrorTest extends AwTestBase {
                 CommonResources.makeHtmlPageWithSimpleLinkTo(badUrl), null);
         enableJavaScriptOnUiThread(mAwContents);
         loadUrlAsync(mAwContents, pageWithLinkUrl);
-        waitForVisualStateCallback(mAwContents);
+        waitForPixelColorAtCenterOfView(mAwContents,
+                mTestContainerView, CommonResources.LINK_COLOR);
 
         TestAwContentsClient.OnReceivedHttpErrorHelper onReceivedHttpErrorHelper =
                 mContentsClient.getOnReceivedHttpErrorHelper();
