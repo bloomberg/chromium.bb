@@ -831,7 +831,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputMonth) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputPassword) {
+// crbug.com/84250
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+    DISABLED_AccessibilityInputPassword) {
   RunHtmlTest(FILE_PATH_LITERAL("input-password.html"));
 }
 
