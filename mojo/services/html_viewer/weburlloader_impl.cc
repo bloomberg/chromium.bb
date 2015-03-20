@@ -45,6 +45,7 @@ blink::WebURLResponse ToWebURLResponse(const URLResponsePtr& url_response) {
   result.setTextEncodingName(blink::WebString::fromUTF8(url_response->charset));
   result.setHTTPVersion(StatusLineToHTTPVersion(url_response->status_line));
   result.setHTTPStatusCode(url_response->status_code);
+  result.setExpectedContentLength(-1);  // Not available.
 
   // TODO(darin): Initialize timing properly.
   blink::WebURLLoadTiming timing;
