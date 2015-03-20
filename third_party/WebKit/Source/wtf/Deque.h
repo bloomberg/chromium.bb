@@ -43,7 +43,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename Allocator> class DequeConstIterator;
 
     template<typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator>
-    class Deque : public ConditionalDestructor<Deque<T, inlineCapacity, Allocator>, (inlineCapacity == 0) && Allocator::isGarbageCollected> {
+    class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>, (INLINE_CAPACITY == 0) && Allocator::isGarbageCollected> {
         WTF_USE_ALLOCATOR(Deque, Allocator);
     public:
         typedef DequeIterator<T, inlineCapacity, Allocator> iterator;
@@ -118,7 +118,7 @@ namespace WTF {
     private:
         friend class DequeIteratorBase<T, inlineCapacity, Allocator>;
 
-        typedef VectorBuffer<T, inlineCapacity, Allocator> Buffer;
+        typedef VectorBuffer<T, INLINE_CAPACITY, Allocator> Buffer;
         typedef VectorTypeOperations<T> TypeOperations;
         typedef DequeIteratorBase<T, inlineCapacity, Allocator> IteratorBase;
 
@@ -272,7 +272,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename Allocator>
     inline void Deque<T, inlineCapacity, Allocator>::finalize()
     {
-        if (!inlineCapacity && !m_buffer.buffer())
+        if (!INLINE_CAPACITY && !m_buffer.buffer())
             return;
         if (!isEmpty() && !(Allocator::isGarbageCollected && m_buffer.hasOutOfLineBuffer()))
             destroyAll();
