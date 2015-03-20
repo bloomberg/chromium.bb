@@ -4,6 +4,9 @@
 
 #include "ash/system/chromeos/power/tray_power.h"
 
+#include <map>
+#include <string>
+
 #include "ash/ash_switches.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_ptr.h"
@@ -26,14 +29,22 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   // message_center::FakeMessageCenter overrides:
   void AddNotification(scoped_ptr<Notification> notification) override {
     add_count_++;
+    notifications_[notification->id()] = notification.get();
   }
   void RemoveNotification(const std::string& id, bool by_user) override {
     remove_count_++;
+    notifications_.erase(id);
+  }
+
+  Notification* FindVisibleNotificationById(const std::string& id) override {
+    auto it = notifications_.find(id);
+    return it == notifications_.end() ? NULL : it->second;
   }
 
  private:
   int add_count_;
   int remove_count_;
+  std::map<std::string, Notification*> notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMessageCenter);
 };
@@ -72,9 +83,18 @@ class TrayPowerTest : public test::AshTestBase {
     return tray_power_->MaybeShowUsbChargerNotification();
   }
 
-  bool UpdateNotificationState(const PowerSupplyProperties& proto) {
+  void UpdateNotificationState(const PowerSupplyProperties& proto,
+                               TrayPower::NotificationState expected_state,
+                               bool expected_add,
+                               bool expected_remove) {
+    int prev_add = message_center_->add_count();
+    int prev_remove = message_center_->remove_count();
     PowerStatus::Get()->SetProtoForTesting(proto);
-    return tray_power_->UpdateNotificationState();
+    tray_power_->OnPowerStatusChanged();
+    EXPECT_EQ(expected_state, notification_state());
+    EXPECT_EQ(expected_add, message_center_->add_count() == prev_add + 1);
+    EXPECT_EQ(expected_remove,
+              message_center_->remove_count() == prev_remove + 1);
   }
 
   void SetUsbChargerConnected(bool connected) {
@@ -141,14 +161,20 @@ TEST_F(TrayPowerTest, UpdateNotificationState) {
       power_manager::PowerSupplyProperties_ExternalPower_AC);
   no_battery.set_battery_state(
       power_manager::PowerSupplyProperties_BatteryState_NOT_PRESENT);
-  EXPECT_FALSE(UpdateNotificationState(no_battery));
-  EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
+  {
+    SCOPED_TRACE("No notifications when no battery present");
+    UpdateNotificationState(no_battery, TrayPower::NOTIFICATION_NONE, false,
+                            false);
+  }
 
   // No notification when calculating remaining battery time.
   PowerSupplyProperties calculating = DefaultPowerSupplyProperties();
   calculating.set_is_calculating_battery_time(true);
-  EXPECT_FALSE(UpdateNotificationState(calculating));
-  EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
+  {
+    SCOPED_TRACE("No notification when calculating remaining battery time");
+    UpdateNotificationState(calculating, TrayPower::NOTIFICATION_NONE, false,
+                            false);
+  }
 
   // No notification when charging.
   PowerSupplyProperties charging = DefaultPowerSupplyProperties();
@@ -156,66 +182,93 @@ TEST_F(TrayPowerTest, UpdateNotificationState) {
       power_manager::PowerSupplyProperties_ExternalPower_AC);
   charging.set_battery_state(
       power_manager::PowerSupplyProperties_BatteryState_CHARGING);
-  EXPECT_FALSE(UpdateNotificationState(charging));
-  EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
+  {
+    SCOPED_TRACE("No notification when charging");
+    UpdateNotificationState(charging, TrayPower::NOTIFICATION_NONE, false,
+                            false);
+  }
 
   // When the rounded minutes-to-empty are above the threshold, no notification
   // should be shown.
   PowerSupplyProperties low = DefaultPowerSupplyProperties();
   low.set_battery_time_to_empty_sec(TrayPower::kLowPowerMinutes * 60 + 30);
-  EXPECT_FALSE(UpdateNotificationState(low));
-  EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
+  {
+    SCOPED_TRACE("No notification when time to empty above threshold");
+    UpdateNotificationState(low, TrayPower::NOTIFICATION_NONE, false, false);
+  }
 
   // When the rounded value matches the threshold, the notification should
   // appear.
   low.set_battery_time_to_empty_sec(TrayPower::kLowPowerMinutes * 60 + 29);
-  EXPECT_TRUE(UpdateNotificationState(low));
-  EXPECT_EQ(TrayPower::NOTIFICATION_LOW_POWER, notification_state());
+  {
+    SCOPED_TRACE("Notification when time to empty matches threshold");
+    UpdateNotificationState(low, TrayPower::NOTIFICATION_LOW_POWER, true,
+                            false);
+  }
 
   // It should persist at lower values.
   low.set_battery_time_to_empty_sec(TrayPower::kLowPowerMinutes * 60 - 20);
-  EXPECT_FALSE(UpdateNotificationState(low));
-  EXPECT_EQ(TrayPower::NOTIFICATION_LOW_POWER, notification_state());
+  {
+    SCOPED_TRACE("Notification persists at lower values");
+    UpdateNotificationState(low, TrayPower::NOTIFICATION_LOW_POWER, false,
+                            false);
+  }
 
   // The critical low battery notification should be shown when the rounded
   // value is at the lower threshold.
   PowerSupplyProperties critical = DefaultPowerSupplyProperties();
   critical.set_battery_time_to_empty_sec(TrayPower::kCriticalMinutes * 60 + 29);
-  EXPECT_TRUE(UpdateNotificationState(critical));
-  EXPECT_EQ(TrayPower::NOTIFICATION_CRITICAL, notification_state());
+  {
+    SCOPED_TRACE("Critical notification when time to empty is critical");
+    UpdateNotificationState(critical, TrayPower::NOTIFICATION_CRITICAL, true,
+                            true);
+  }
 
   // The notification should be dismissed when the no-warning threshold is
   // reached.
   PowerSupplyProperties safe = DefaultPowerSupplyProperties();
   safe.set_battery_time_to_empty_sec(TrayPower::kNoWarningMinutes * 60 - 29);
-  EXPECT_FALSE(UpdateNotificationState(safe));
-  EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
+  {
+    SCOPED_TRACE("Notification removed when battery not low");
+    UpdateNotificationState(safe, TrayPower::NOTIFICATION_NONE, false, true);
+  }
 
   // Test that rounded percentages are used when a USB charger is connected.
   PowerSupplyProperties low_usb = DefaultPowerSupplyProperties();
   low_usb.set_external_power(
       power_manager::PowerSupplyProperties_ExternalPower_USB);
   low_usb.set_battery_percent(TrayPower::kLowPowerPercentage + 0.5);
-  EXPECT_FALSE(UpdateNotificationState(low_usb));
-  EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
+  {
+    SCOPED_TRACE("No notification for rounded battery percent");
+    UpdateNotificationState(low_usb, TrayPower::NOTIFICATION_NONE, true, false);
+  }
 
   low_usb.set_battery_percent(TrayPower::kLowPowerPercentage + 0.49);
-  EXPECT_TRUE(UpdateNotificationState(low_usb));
-  EXPECT_EQ(TrayPower::NOTIFICATION_LOW_POWER, notification_state());
+  {
+    SCOPED_TRACE("Notification for rounded low power percent");
+    UpdateNotificationState(low_usb, TrayPower::NOTIFICATION_LOW_POWER, true,
+                            false);
+  }
 
   PowerSupplyProperties critical_usb = DefaultPowerSupplyProperties();
   critical_usb.set_external_power(
       power_manager::PowerSupplyProperties_ExternalPower_USB);
   critical_usb.set_battery_percent(TrayPower::kCriticalPercentage + 0.2);
-  EXPECT_TRUE(UpdateNotificationState(critical_usb));
-  EXPECT_EQ(TrayPower::NOTIFICATION_CRITICAL, notification_state());
+  {
+    SCOPED_TRACE("Notification for rounded critical power percent");
+    UpdateNotificationState(critical_usb, TrayPower::NOTIFICATION_CRITICAL,
+                            true, true);
+  }
 
   PowerSupplyProperties safe_usb = DefaultPowerSupplyProperties();
   safe_usb.set_external_power(
       power_manager::PowerSupplyProperties_ExternalPower_USB);
   safe_usb.set_battery_percent(TrayPower::kNoWarningPercentage - 0.1);
-  EXPECT_FALSE(UpdateNotificationState(safe_usb));
-  EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
+  {
+    SCOPED_TRACE("Notification removed for rounded percent above threshold");
+    UpdateNotificationState(safe_usb, TrayPower::NOTIFICATION_NONE, false,
+                            true);
+  }
 }
 
 }  // namespace ash

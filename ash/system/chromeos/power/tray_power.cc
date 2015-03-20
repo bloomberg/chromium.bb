@@ -7,32 +7,23 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
-#include "ash/system/chromeos/power/power_status_view.h"
+#include "ash/system/chromeos/power/battery_notification.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/system_notifier.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/tray_utils.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
-#include "third_party/icu/source/i18n/unicode/fieldpos.h"
-#include "third_party/icu/source/i18n/unicode/fmtable.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
-#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/widget.h"
 
 using message_center::MessageCenter;
 using message_center::Notification;
@@ -75,28 +66,7 @@ class PowerTrayView : public views::ImageView {
   DISALLOW_COPY_AND_ASSIGN(PowerTrayView);
 };
 
-class PowerNotificationView : public TrayNotificationView {
- public:
-  explicit PowerNotificationView(TrayPower* owner)
-      : TrayNotificationView(owner, 0) {
-    power_status_view_ =
-        new PowerStatusView(PowerStatusView::VIEW_NOTIFICATION, true);
-    InitView(power_status_view_);
-  }
-
-  void UpdateStatus() {
-    SetIconImage(PowerStatus::Get()->GetBatteryImage(PowerStatus::ICON_DARK));
-  }
-
- private:
-  PowerStatusView* power_status_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(PowerNotificationView);
-};
-
 }  // namespace tray
-
-using tray::PowerNotificationView;
 
 const int TrayPower::kCriticalMinutes = 5;
 const int TrayPower::kLowPowerMinutes = 15;
@@ -109,7 +79,6 @@ TrayPower::TrayPower(SystemTray* system_tray, MessageCenter* message_center)
     : SystemTrayItem(system_tray),
       message_center_(message_center),
       power_tray_(NULL),
-      notification_view_(NULL),
       notification_state_(NOTIFICATION_NONE),
       usb_charger_was_connected_(false),
       line_power_was_connected_(false) {
@@ -136,26 +105,11 @@ views::View* TrayPower::CreateDefaultView(user::LoginStatus status) {
   return NULL;
 }
 
-views::View* TrayPower::CreateNotificationView(user::LoginStatus status) {
-  CHECK(notification_view_ == NULL);
-  if (!PowerStatus::Get()->IsBatteryPresent())
-    return NULL;
-
-  notification_view_ = new PowerNotificationView(this);
-  notification_view_->UpdateStatus();
-
-  return notification_view_;
-}
-
 void TrayPower::DestroyTrayView() {
   power_tray_ = NULL;
 }
 
 void TrayPower::DestroyDefaultView() {
-}
-
-void TrayPower::DestroyNotificationView() {
-  notification_view_ = NULL;
 }
 
 void TrayPower::UpdateAfterLoginStatusChange(user::LoginStatus status) {
@@ -169,8 +123,6 @@ void TrayPower::OnPowerStatusChanged() {
   bool battery_alert = UpdateNotificationState();
   if (power_tray_)
     power_tray_->UpdateStatus(battery_alert);
-  if (notification_view_)
-    notification_view_->UpdateStatus();
 
   // Factory testing may place the battery into unusual states.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -179,10 +131,18 @@ void TrayPower::OnPowerStatusChanged() {
 
   MaybeShowUsbChargerNotification();
 
-  if (battery_alert)
-    ShowNotificationView();
-  else if (notification_state_ == NOTIFICATION_NONE)
-    HideNotificationView();
+  if (battery_alert) {
+    // Remove any existing notification so it's dismissed before adding a new
+    // one. Otherwise we might update a "low battery" notification to "critical"
+    // without it being shown again.
+    battery_notification_.reset();
+    battery_notification_.reset(
+        new BatteryNotification(message_center_, notification_state_));
+  } else if (notification_state_ == NOTIFICATION_NONE) {
+    battery_notification_.reset();
+  } else if (battery_notification_.get()) {
+    battery_notification_->Update(notification_state_);
+  }
 
   usb_charger_was_connected_ = PowerStatus::Get()->IsUsbChargerConnected();
   line_power_was_connected_ = PowerStatus::Get()->IsLinePowerConnected();

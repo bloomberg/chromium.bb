@@ -64,8 +64,7 @@ class SettingsDefaultView : public ActionableView,
     }
 
     if (PowerStatus::Get()->IsBatteryPresent()) {
-      power_status_view_ = new ash::PowerStatusView(
-          ash::PowerStatusView::VIEW_DEFAULT, power_view_right_align);
+      power_status_view_ = new ash::PowerStatusView(power_view_right_align);
       AddChildView(power_status_view_);
       OnPowerStatusChanged();
     }

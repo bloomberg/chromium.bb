@@ -26,26 +26,14 @@ namespace ash {
 // Padding between battery status text and battery icon on default view.
 const int kPaddingBetweenBatteryStatusAndIcon = 3;
 
-PowerStatusView::PowerStatusView(ViewType view_type,
-                                 bool default_view_right_align)
+PowerStatusView::PowerStatusView(bool default_view_right_align)
     : default_view_right_align_(default_view_right_align),
-      status_label_(NULL),
-      time_label_(NULL),
-      time_status_label_(NULL),
-      percentage_label_(NULL),
-      icon_(NULL),
-      view_type_(view_type) {
+      time_status_label_(new views::Label),
+      percentage_label_(new views::Label),
+      icon_(NULL) {
   PowerStatus::Get()->AddObserver(this);
-  if (view_type == VIEW_DEFAULT) {
-    time_status_label_ = new views::Label;
-    percentage_label_ = new views::Label;
-    percentage_label_->SetEnabledColor(kHeaderTextColorNormal);
-    LayoutDefaultView();
-  } else {
-    status_label_ = new views::Label;
-    time_label_ = new views::Label;
-    LayoutNotificationView();
-  }
+  percentage_label_->SetEnabledColor(kHeaderTextColorNormal);
+  LayoutView();
   OnPowerStatusChanged();
 }
 
@@ -54,8 +42,7 @@ PowerStatusView::~PowerStatusView() {
 }
 
 void PowerStatusView::OnPowerStatusChanged() {
-  view_type_ == VIEW_DEFAULT ?
-      UpdateTextForDefaultView() : UpdateTextForNotificationView();
+  UpdateText();
 
   if (icon_) {
     icon_->SetImage(
@@ -64,7 +51,7 @@ void PowerStatusView::OnPowerStatusChanged() {
   }
 }
 
-void PowerStatusView::LayoutDefaultView() {
+void PowerStatusView::LayoutView() {
   if (default_view_right_align_) {
     views::BoxLayout* layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
@@ -91,17 +78,7 @@ void PowerStatusView::LayoutDefaultView() {
   }
 }
 
-void PowerStatusView::LayoutNotificationView() {
-  SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-  status_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(status_label_);
-
-  time_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(time_label_);
-}
-
-void PowerStatusView::UpdateTextForDefaultView() {
+void PowerStatusView::UpdateText() {
   const PowerStatus& status = *PowerStatus::Get();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   base::string16 battery_percentage;
@@ -146,51 +123,6 @@ void PowerStatusView::UpdateTextForDefaultView() {
   percentage_label_->SetText(battery_percentage);
   time_status_label_->SetVisible(!battery_time_status.empty());
   time_status_label_->SetText(battery_time_status);
-}
-
-void PowerStatusView::UpdateTextForNotificationView() {
-  const PowerStatus& status = *PowerStatus::Get();
-  if (status.IsBatteryFull()) {
-    status_label_->SetText(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_BATTERY_FULL));
-  } else {
-    status_label_->SetText(
-        l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_BATTERY_PERCENT,
-            base::IntToString16(status.GetRoundedBatteryPercent())));
-  }
-
-  const base::TimeDelta time = status.IsBatteryCharging() ?
-      status.GetBatteryTimeToFull() : status.GetBatteryTimeToEmpty();
-
-  if (status.IsUsbChargerConnected()) {
-    time_label_->SetText(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE));
-  } else if (status.IsBatteryTimeBeingCalculated()) {
-    time_label_->SetText(
-        ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-            IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING));
-  } else if (PowerStatus::ShouldDisplayBatteryTime(time) &&
-             !status.IsBatteryDischargingOnLinePower()) {
-    int hour = 0, min = 0;
-    PowerStatus::SplitTimeIntoHoursAndMinutes(time, &hour, &min);
-    if (status.IsBatteryCharging()) {
-      time_label_->SetText(
-          l10n_util::GetStringFUTF16(
-              IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL,
-              base::IntToString16(hour),
-              base::IntToString16(min)));
-    } else {
-      // This is a low battery warning prompting the user in minutes.
-      time_label_->SetText(ui::TimeFormat::Simple(
-          ui::TimeFormat::FORMAT_REMAINING, ui::TimeFormat::LENGTH_LONG,
-          base::TimeDelta::FromMinutes(hour * 60 + min)));
-    }
-  } else {
-    time_label_->SetText(base::string16());
-  }
 }
 
 void PowerStatusView::ChildPreferredSizeChanged(views::View* child) {

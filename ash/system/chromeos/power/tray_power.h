@@ -20,15 +20,16 @@ class MessageCenter;
 }
 
 namespace ash {
+
+class BatteryNotification;
+
 namespace tray {
-class PowerNotificationView;
 class PowerTrayView;
 }
 
 class ASH_EXPORT TrayPower : public SystemTrayItem,
                              public PowerStatus::Observer {
  public:
-  // Visible for testing.
   enum NotificationState {
     NOTIFICATION_NONE,
 
@@ -70,10 +71,8 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   // Overridden from SystemTrayItem.
   views::View* CreateTrayView(user::LoginStatus status) override;
   views::View* CreateDefaultView(user::LoginStatus status) override;
-  views::View* CreateNotificationView(user::LoginStatus status) override;
   void DestroyTrayView() override;
   void DestroyDefaultView() override;
-  void DestroyNotificationView() override;
   void UpdateAfterLoginStatusChange(user::LoginStatus status) override;
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
@@ -91,7 +90,7 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
 
   message_center::MessageCenter* message_center_;  // Not owned.
   tray::PowerTrayView* power_tray_;
-  tray::PowerNotificationView* notification_view_;
+  scoped_ptr<BatteryNotification> battery_notification_;
   NotificationState notification_state_;
 
   // Was a USB charger connected the last time OnPowerStatusChanged() was

@@ -105,6 +105,9 @@
 
       <!-- ChromeOS specific icons -->
       <if expr="chromeos">
+        <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BATTERY_CRITICAL" file="cros/notification/notification_battery_critical_icon.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BATTERY_FLUCTUATING" file="cros/notification/notification_battery_fluctuating_icon.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BATTERY_LOW" file="cros/notification/notification_battery_low_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BLUETOOTH" file="cros/notification/notification_bluetooth_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_DISPLAY" file="cros/notification/display_notification_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER" file="cros/notification/notification_low_power_charger.png" />

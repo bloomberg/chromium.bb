@@ -19,12 +19,7 @@ namespace ash {
 class ASH_EXPORT PowerStatusView : public views::View,
                                    public PowerStatus::Observer {
  public:
-  enum ViewType {
-    VIEW_DEFAULT,
-    VIEW_NOTIFICATION
-  };
-
-  PowerStatusView(ViewType view_type, bool default_view_right_align);
+  PowerStatusView(bool default_view_right_align);
   ~PowerStatusView() override;
 
   // Overridden from views::View.
@@ -36,13 +31,10 @@ class ASH_EXPORT PowerStatusView : public views::View,
   void OnPowerStatusChanged() override;
 
  private:
-  friend class PowerStatusDefaultViewTest;
-  friend class PowerStatusNotificationViewTest;
+  friend class PowerStatusViewTest;
 
-  void LayoutDefaultView();
-  void LayoutNotificationView();
-  void UpdateTextForDefaultView();
-  void UpdateTextForNotificationView();
+  void LayoutView();
+  void UpdateText();
 
   // Overridden from views::View.
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -51,18 +43,11 @@ class ASH_EXPORT PowerStatusView : public views::View,
   // if true; otherwise, layout the UI items on the left side.
   bool default_view_right_align_;
 
-  // Labels used only for VIEW_NOTIFICATION.
-  views::Label* status_label_;
-  views::Label* time_label_;
-
-  // Labels used only for VIEW_DEFAULT.
   views::Label* time_status_label_;
   views::Label* percentage_label_;
 
   // Battery status indicator icon.
   views::ImageView* icon_;
-
-  ViewType view_type_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerStatusView);
 };

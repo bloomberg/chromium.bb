@@ -18,16 +18,16 @@ namespace {
 // See http://dev.chromium.org/chromium-os/chromiumos-design-docs/
 // system-notifications for the reasoning.
 const char* kAlwaysShownNotifierIds[] = {
-  kNotifierDisplay,
-  kNotifierDisplayError,
+    kNotifierBattery,
+    kNotifierDisplay,
+    kNotifierDisplayError,
 #if defined(OS_CHROMEOS)
-  ui::NetworkStateNotifier::kNotifierNetworkError,
+    ui::NetworkStateNotifier::kNotifierNetworkError,
 #endif
-  kNotifierPower,
-  // Note: Order doesn't matter here, so keep this in alphabetic order, don't
-  // just add your stuff at the end!
-  NULL
-};
+    kNotifierPower,
+    // Note: Order doesn't matter here, so keep this in alphabetic order, don't
+    // just add your stuff at the end!
+    NULL};
 
 const char* kAshSystemNotifiers[] = {
   kNotifierBluetooth,
@@ -66,6 +66,7 @@ bool MatchSystemNotifierId(const message_center::NotifierId& notifier_id,
 
 }  // namespace
 
+const char kNotifierBattery[] = "ash.battery";
 const char kNotifierBluetooth[] = "ash.bluetooth";
 const char kNotifierDisplay[] = "ash.display";
 const char kNotifierDisplayError[] = "ash.display.error";
