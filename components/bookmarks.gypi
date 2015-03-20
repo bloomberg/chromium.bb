@@ -96,6 +96,22 @@
       ],
     },
     {
+      # GN version: //components/bookmarks/managed
+      'target_name': 'bookmarks_managed',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'bookmarks_browser',
+        'components_strings.gyp:components_strings',
+      ],
+      'sources': [
+        'bookmarks/managed/managed_bookmarks_tracker.cc',
+        'bookmarks/managed/managed_bookmarks_tracker.h',
+      ],
+    },
+    {
       # GN version: //components/bookmarks/test
       'target_name': 'bookmarks_test_support',
       'type': 'static_library',

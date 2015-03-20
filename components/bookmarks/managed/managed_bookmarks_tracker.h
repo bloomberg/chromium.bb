@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_POLICY_CORE_BROWSER_MANAGED_BOOKMARKS_TRACKER_H_
-#define COMPONENTS_POLICY_CORE_BROWSER_MANAGED_BOOKMARKS_TRACKER_H_
+#ifndef COMPONENTS_BOOKMARKS_MANAGED_MANAGED_BOOKMARKS_TRACKER_H_
+#define COMPONENTS_BOOKMARKS_MANAGED_MANAGED_BOOKMARKS_TRACKER_H_
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
-#include "components/policy/policy_export.h"
 
 class GURL;
 class PrefService;
@@ -19,18 +18,16 @@ class ListValue;
 }
 
 namespace bookmarks {
+
 class BookmarkModel;
 class BookmarkNode;
 class BookmarkPermanentNode;
-}
-
-namespace policy {
 
 // Tracks either the Managed Bookmarks pref (set by policy) or the Supervised
 // Bookmarks pref (set for a supervised user by their custodian) and makes the
 // managed_node()/supervised_node() in the BookmarkModel follow the
 // policy/custodian-defined bookmark tree.
-class POLICY_EXPORT ManagedBookmarksTracker {
+class ManagedBookmarksTracker {
  public:
   typedef base::Callback<std::string()> GetManagementDomainCallback;
 
@@ -91,7 +88,7 @@ class POLICY_EXPORT ManagedBookmarksTracker {
   DISALLOW_COPY_AND_ASSIGN(ManagedBookmarksTracker);
 };
 
-}  // namespace policy
+}  // namespace bookmarks
 
-#endif  // COMPONENTS_POLICY_CORE_BROWSER_MANAGED_BOOKMARKS_TRACKER_H_
+#endif  // COMPONENTS_BOOKMARKS_MANAGED_MANAGED_BOOKMARKS_TRACKER_H_
 

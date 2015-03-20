@@ -15,6 +15,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/managed/managed_bookmarks_tracker.h"
 #include "components/favicon/core/browser/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
@@ -29,6 +30,7 @@
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 using bookmarks::BookmarkPermanentNode;
+using bookmarks::ManagedBookmarksTracker;
 
 namespace {
 
@@ -52,7 +54,7 @@ void LoadInitialContents(BookmarkPermanentNode* node,
   // Load the initial contents of the |node| now, and assign it an unused ID.
   int64 id = *next_node_id;
   node->set_id(id);
-  *next_node_id = policy::ManagedBookmarksTracker::LoadInitial(
+  *next_node_id = ManagedBookmarksTracker::LoadInitial(
       node, initial_bookmarks, id + 1);
   node->set_visible(!node->empty());
 }
@@ -76,13 +78,13 @@ void ChromeBookmarkClient::Init(BookmarkModel* model) {
   model_ = model;
   model_->AddObserver(this);
 
-  managed_bookmarks_tracker_.reset(new policy::ManagedBookmarksTracker(
+  managed_bookmarks_tracker_.reset(new ManagedBookmarksTracker(
       model_,
       profile_->GetPrefs(),
       false,
       base::Bind(&ChromeBookmarkClient::GetManagedBookmarksDomain,
                  base::Unretained(this))));
-  supervised_bookmarks_tracker_.reset(new policy::ManagedBookmarksTracker(
+  supervised_bookmarks_tracker_.reset(new ManagedBookmarksTracker(
       model_,
       profile_->GetPrefs(),
       true,

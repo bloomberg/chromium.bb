@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/browser/managed_bookmarks_tracker.h"
+#include "components/bookmarks/managed/managed_bookmarks_tracker.h"
 
 #include <string>
 
@@ -20,11 +20,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-using bookmarks::BookmarkModel;
-using bookmarks::BookmarkNode;
-using bookmarks::BookmarkPermanentNode;
-
-namespace policy {
+namespace bookmarks {
 
 const char ManagedBookmarksTracker::kName[] = "name";
 const char ManagedBookmarksTracker::kUrl[] = "url";
@@ -90,8 +86,8 @@ void ManagedBookmarksTracker::Init(BookmarkPermanentNode* managed_node) {
 
 // static
 const char* ManagedBookmarksTracker::GetPrefName(bool is_supervised) {
-  return is_supervised ? bookmarks::prefs::kSupervisedBookmarks
-                       : bookmarks::prefs::kManagedBookmarks;
+  return is_supervised ? prefs::kSupervisedBookmarks
+                       : prefs::kManagedBookmarks;
 }
 
 const char* ManagedBookmarksTracker::GetPrefName() const {

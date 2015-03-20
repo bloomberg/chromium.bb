@@ -82,6 +82,7 @@ static_library("browser") {
     "//chrome/common/net",
     "//components/autofill/core/browser",
     "//components/bookmarks/browser",
+    "//components/bookmarks/managed",
     "//components/captive_portal",
     "//components/cloud_devices/common",
     "//components/component_updater",

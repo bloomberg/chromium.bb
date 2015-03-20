@@ -69,6 +69,7 @@
       'bookmarks/browser/bookmark_index_unittest.cc',
       'bookmarks/browser/bookmark_model_unittest.cc',
       'bookmarks/browser/bookmark_utils_unittest.cc',
+      'bookmarks/managed/managed_bookmarks_tracker_unittest.cc',
     ],
     'browser_watcher_unittest_sources': [
       'browser_watcher/endsession_watcher_window_win_unittest.cc',
@@ -329,7 +330,6 @@
       'policy/core/browser/browser_policy_connector_unittest.cc',
       'policy/core/browser/configuration_policy_handler_unittest.cc',
       'policy/core/browser/configuration_policy_pref_store_unittest.cc',
-      'policy/core/browser/managed_bookmarks_tracker_unittest.cc',
       'policy/core/browser/url_blacklist_policy_handler_unittest.cc',
       'policy/core/common/async_policy_provider_unittest.cc',
       'policy/core/common/cloud/cloud_policy_client_unittest.cc',
@@ -658,6 +658,7 @@
             'components.gyp:autofill_core_common',
             'components.gyp:autofill_core_test_support',
             'components.gyp:bookmarks_browser',
+            'components.gyp:bookmarks_managed',
             'components.gyp:bookmarks_test_support',
             'components.gyp:captive_portal_test_support',
             'components.gyp:cloud_devices_common',

@@ -13,14 +13,20 @@
 #include "base/macros.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_client.h"
-#include "components/policy/core/browser/managed_bookmarks_tracker.h"
 
 class GURL;
 class HistoryServiceFactory;
 class Profile;
 
+namespace base {
+class ListValue;
+}
+
 namespace bookmarks {
 class BookmarkModel;
+class BookmarkNode;
+class BookmarkPermanentNode;
+class ManagedBookmarksTracker;
 }
 
 namespace history {
@@ -107,12 +113,12 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient,
   bookmarks::BookmarkModel* model_;
 
   // Managed bookmarks are defined by an enterprise policy.
-  scoped_ptr<policy::ManagedBookmarksTracker> managed_bookmarks_tracker_;
+  scoped_ptr<bookmarks::ManagedBookmarksTracker> managed_bookmarks_tracker_;
   // The top-level managed bookmarks folder.
   bookmarks::BookmarkPermanentNode* managed_node_;
 
   // Supervised bookmarks are defined by the custodian of a supervised user.
-  scoped_ptr<policy::ManagedBookmarksTracker> supervised_bookmarks_tracker_;
+  scoped_ptr<bookmarks::ManagedBookmarksTracker> supervised_bookmarks_tracker_;
   // The top-level supervised bookmarks folder.
   bookmarks::BookmarkPermanentNode* supervised_node_;
 

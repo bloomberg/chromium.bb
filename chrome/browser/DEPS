@@ -20,6 +20,7 @@ include_rules = [
   "+components/autofill/core/common",
   "+components/bookmarks/browser",
   "+components/bookmarks/common",
+  "+components/bookmarks/managed",
   "+components/bookmarks/test",
   "+components/browser_watcher",
   "+components/cdm/browser",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/browser/managed_bookmarks_tracker.h"
+#include "components/bookmarks/managed/managed_bookmarks_tracker.h"
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -24,13 +24,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-using bookmarks::BookmarkModel;
-using bookmarks::BookmarkNode;
-using bookmarks::BookmarkPermanentNode;
 using testing::Mock;
 using testing::_;
 
-namespace policy {
+namespace bookmarks {
 
 class ManagedBookmarksTrackerTest : public testing::Test {
  public:
@@ -52,7 +49,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
   void CreateModel(bool is_supervised) {
     // Simulate the creation of the managed node by the BookmarkClient.
     BookmarkPermanentNode* managed_node = new BookmarkPermanentNode(100);
-    policy::ManagedBookmarksTracker::LoadInitial(
+    ManagedBookmarksTracker::LoadInitial(
         managed_node,
         prefs_.GetList(ManagedBookmarksTracker::GetPrefName(is_supervised)),
         101);
@@ -344,4 +341,4 @@ TEST_F(ManagedBookmarksTrackerTest, RemoveAllUserBookmarksDoesntRemoveManaged) {
   Mock::VerifyAndClearExpectations(&observer_);
 }
 
-}  // namespace policy
+}  // namespace bookmarks
