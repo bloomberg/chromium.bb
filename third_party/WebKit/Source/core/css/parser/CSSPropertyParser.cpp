@@ -4636,7 +4636,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseFontFamily()
 
         if (isCSSWideKeyword(*value) && !inFamily) {
             if (nextValBreaksFont)
-                value = m_valueList->next();
+                return nullptr;
             else if (nextValIsFontName)
                 value = nextValue;
             continue;

@@ -19,20 +19,20 @@
         the keyword "default" as part of a font name.
     </p>
     <p>
-        The next 4 lines should use the default font (same as this line):<br>
+        The next 7 lines should use the default font (same as this line):<br>
         Test 1<br>
         <span style="font-family: default">Test 2</span><br>
         <span style="font-family: default, invalid">Test 3</span><br>
-        <span style="font-family: invalid, default">Test 4</span>
+        <span style="font-family: invalid, default">Test 4</span><br>
+        <span style="font-family: default, arial">Test 5</span><br>
+        <span style="font-family: arial, default">Test 6</span><br>
+        <span style="font-family: invalid, default, arial">Test 7</span>
     </p>
     <p>
-        The next 6 lines should use the font Arial:<br>
+        The next 3 lines should use the font Arial:<br>
         <span style="font-family: arial">Test 1</span><br>
-        <span style="font-family: default, arial">Test 2</span><br>
-        <span style="font-family: default foobar, arial">Test 3</span><br>
-        <span style="font-family: arial, default">Test 4</span><br>
-        <span style="font-family: arial, default foobar">Test 5</span><br>
-        <span style="font-family: invalid, default, arial">Test 6</span>
+        <span style="font-family: default foobar, arial">Test 2</span><br>
+        <span style="font-family: arial, default foobar">Test 3</span>
     </p>
     <p>
         The next 9 lines should use the font Ahem (black boxes):<br>
