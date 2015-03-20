@@ -375,8 +375,26 @@ cr.define('options.network', function() {
       return null;
     },
 
+    /**
+     * Determines if a menu can be updated on the fly. Menus that cannot be
+     * updated are fully regenerated using createMenu. The advantage of
+     * updating a menu is that it can preserve ordering of networks avoiding
+     * entries from jumping around after an update.
+     * @return {boolean} Whether the menu can be updated on the fly.
+     */
     canUpdateMenu: function() {
       return false;
+    },
+
+    /**
+     * Removes the current menu contents, causing it to be regenerated when the
+     * menu is shown the next time. If the menu is showing right now, its
+     * contents are regenerated immediately and the menu remains visible.
+     */
+    refreshMenu: function() {
+      this.menu_ = null;
+      if (activeMenu_ == this.getMenuName())
+        this.showMenu();
     },
 
     /**
@@ -393,7 +411,7 @@ cr.define('options.network', function() {
         rebuild = true;
         var existing = $(this.getMenuName());
         if (existing) {
-          if (this.updateMenu())
+          if (this.canUpdateMenu() && this.updateMenu())
             return;
           closeMenu_();
         }
@@ -497,14 +515,14 @@ cr.define('options.network', function() {
       if (this.data_.key == 'WiFi') {
         addendum.push({
           label: loadTimeData.getString('joinOtherNetwork'),
-          command: createAddConnectionCallback_('WiFi'),
+          command: createAddNonVPNConnectionCallback_('WiFi'),
           data: {}
         });
       } else if (this.data_.key == 'Cellular') {
         if (cellularEnabled_ && cellularSupportsScan_) {
           addendum.push({
             label: loadTimeData.getString('otherCellularNetworks'),
-            command: createAddConnectionCallback_('Cellular'),
+            command: createAddNonVPNConnectionCallback_('Cellular'),
             addClass: ['other-cellulars'],
             data: {}
           });
@@ -531,11 +549,7 @@ cr.define('options.network', function() {
         }
         addendum.push(entry);
       } else if (this.data_.key == 'VPN') {
-        addendum.push({
-          label: loadTimeData.getString('joinOtherNetwork'),
-          command: createAddConnectionCallback_('VPN'),
-          data: {}
-        });
+        addendum = addendum.concat(createAddVPNConnectionEntries_());
       }
 
       var list = this.data.rememberedNetworks;
@@ -634,12 +648,7 @@ cr.define('options.network', function() {
       return menu;
     },
 
-    /**
-     * Determines if a menu can be updated on the fly. Menus that cannot be
-     * updated are fully regenerated using createMenu. The advantage of
-     * updating a menu is that it can preserve ordering of networks avoiding
-     * entries from jumping around after an update.
-     */
+    /** @override */
     canUpdateMenu: function() {
       return this.data_.key == 'WiFi' && activeMenu_ == this.getMenuName();
     },
@@ -650,12 +659,11 @@ cr.define('options.network', function() {
      * preferred ordering as determined by the network library.  If the
      * ordering becomes potentially out of sync, then the updated menu is
      * marked for disposal on close.  Reopening the menu will force a
-     * regeneration, which will in turn fix the ordering.
+     * regeneration, which will in turn fix the ordering. This method must only
+     * be called if canUpdateMenu() returned |true|.
      * @return {boolean} True if successfully updated.
      */
     updateMenu: function() {
-      if (!this.canUpdateMenu())
-        return false;
       var oldMenu = $(this.getMenuName());
       var group = oldMenu.getElementsByClassName('network-menu-group')[0];
       if (!group)
@@ -842,18 +850,7 @@ cr.define('options.network', function() {
       // Wi-Fi control is always visible.
       this.update({key: 'WiFi', networkList: []});
 
-      var entryAddWifi = {
-        label: loadTimeData.getString('addConnectionWifi'),
-        command: createAddConnectionCallback_('WiFi')
-      };
-      var entryAddVPN = {
-        label: loadTimeData.getString('addConnectionVPN'),
-        command: createAddConnectionCallback_('VPN')
-      };
-      this.update({key: 'addConnection',
-                   iconType: 'add-connection',
-                   menu: [entryAddWifi, entryAddVPN]
-                  });
+      this.updateAddConnectionMenuEntries_();
 
       var prefs = options.Preferences.getInstance();
       prefs.addEventListener('cros.signed.data_roaming_enabled',
@@ -861,6 +858,43 @@ cr.define('options.network', function() {
             enableDataRoaming_ = event.value.value;
           });
       this.endBatchUpdates();
+
+      options.VPNProviders.addObserver(this.onVPNProvidersChanged_.bind(this));
+    },
+
+    /**
+     * Called when the list of VPN providers changes. Refreshes the contents of
+     * menus that list VPN providers.
+     * @private
+     */
+    onVPNProvidersChanged_: function() {
+      // Refresh the contents of the VPN menu.
+      var index = this.indexOf('VPN');
+      if (index != undefined)
+        this.getListItemByIndex(index).refreshMenu();
+
+      // Refresh the contents of the "add connection" menu.
+      this.updateAddConnectionMenuEntries_();
+      index = this.indexOf('addConnection');
+      if (index != undefined)
+        this.getListItemByIndex(index).refreshMenu();
+    },
+
+    /**
+     * Updates the entries in the "add connection" menu, based on the VPN
+     * providers currently enabled in the primary user's profile.
+     * @private
+     */
+    updateAddConnectionMenuEntries_: function() {
+      var entries = [{
+        label: loadTimeData.getString('addConnectionWifi'),
+        command: createAddNonVPNConnectionCallback_('WiFi')
+      }];
+      entries = entries.concat(createAddVPNConnectionEntries_());
+      this.update({key: 'addConnection',
+                   iconType: 'add-connection',
+                   menu: entries
+                  });
     },
 
     /**
@@ -1218,19 +1252,59 @@ cr.define('options.network', function() {
   }
 
   /**
-   * Create a callback function that adds a new connection of the given type.
+   * Creates a callback function that adds a new connection of the given type.
+   * This method may be used for all network types except VPN.
    * @param {string} type An ONC network type
    * @return {function()} The created callback.
    * @private
    */
-  function createAddConnectionCallback_(type) {
+  function createAddNonVPNConnectionCallback_(type) {
     return function() {
       if (type == 'WiFi')
         sendChromeMetricsAction('Options_NetworkJoinOtherWifi');
-      else if (type == 'VPN')
-        sendChromeMetricsAction('Options_NetworkJoinOtherVPN');
-      chrome.send('addConnection', [type]);
+      chrome.send('addNonVPNConnection', [type]);
     };
+  }
+
+  /**
+   * Creates a callback function that shows the "add network" dialog for a VPN
+   * provider. If |opt_extensionID| is omitted, the dialog for the built-in
+   * OpenVPN/L2TP provider is shown. Otherwise, |opt_extensionID| identifies the
+   * third-party provider for which the dialog should be shown.
+   * @param {string=} opt_extensionID Extension ID identifying the third-party
+   *     VPN provider for which the dialog should be shown.
+   * @return {function()} The created callback.
+   * @private
+   */
+  function createVPNConnectionCallback_(opt_extensionID) {
+    return function() {
+      sendChromeMetricsAction(opt_extensionID ?
+          'Options_NetworkAddVPNThirdParty' :
+          'Options_NetworkAddVPNBuiltIn');
+      chrome.send('addVPNConnection',
+                  opt_extensionID ? [opt_extensionID] : undefined);
+    };
+  }
+
+  /**
+   * Generates an "add network" entry for each VPN provider currently enabled in
+   * the primary user's profile.
+   * @return {!Array<{label: string, command: function(), data: !Object}>} The
+   *     list of entries.
+   * @private
+   */
+  function createAddVPNConnectionEntries_() {
+    var entries = [];
+    var providers = options.VPNProviders.getProviders();
+    for (var i = 0; i < providers.length; ++i) {
+      entries.push({
+        label: loadTimeData.getStringF('addConnectionVPNTemplate',
+                                       providers[i].name),
+        command: createVPNConnectionCallback_(providers[i].extensionID),
+        data: {}
+      });
+    }
+    return entries;
   }
 
   /**

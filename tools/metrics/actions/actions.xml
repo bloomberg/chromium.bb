@@ -8506,9 +8506,7 @@ should be able to be added at any place in this file.
   <description>
     Captive portal authorization bypass proxy is disabled.
   </description>
-  <obsolete>
-    Deprecated as of 03/2015. Option is removed.
-  </obsolete>
+  <obsolete>Deprecated as of 03/2015. Option is removed.</obsolete>
 </action>
 
 <action name="Options_CaptivePortalBypassProxy_Enable">
@@ -8516,9 +8514,7 @@ should be able to be added at any place in this file.
   <description>
     Captive portal authorization bypass proxy is enabled.
   </description>
-  <obsolete>
-    Deprecated as of 03/2015. Option is removed.
-  </obsolete>
+  <obsolete>Deprecated as of 03/2015. Option is removed.</obsolete>
 </action>
 
 <action name="Options_ChangeDefaultZoomLevel">
@@ -9077,6 +9073,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_NetworkAddVPNBuiltIn">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: VPN dropdown: Show built-in dialog for adding
+    an OpenVPN or L2TP VPN.
+  </description>
+</action>
+
+<action name="Options_NetworkAddVPNThirdParty">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: VPN dropdown: Show &quot;add network&quot;
+    dialog for a third-party VPN provider.
+  </description>
+</action>
+
 <action name="Options_NetworkAutoConnect">
   <owner>stevenjb@chromium.org</owner>
   <description>
@@ -9117,6 +9129,7 @@ should be able to be added at any place in this file.
   <description>
     Settings: Internet connection: VPN dropdown: Join other
   </description>
+  <obsolete>Replaced by Options_NetworkAddVPNBuiltIn.</obsolete>
 </action>
 
 <action name="Options_NetworkJoinOtherWifi">
