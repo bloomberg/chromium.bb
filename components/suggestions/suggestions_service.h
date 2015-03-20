@@ -61,9 +61,6 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
       scoped_ptr<BlacklistStore> blacklist_store);
   ~SuggestionsService() override;
 
-  // Whether this service is enabled.
-  static bool IsEnabled();
-
   // Whether the user is part of a control group.
   static bool IsControlGroup();
 

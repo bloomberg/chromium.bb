@@ -119,12 +119,6 @@ SuggestionsService::SuggestionsService(
 SuggestionsService::~SuggestionsService() {}
 
 // static
-bool SuggestionsService::IsEnabled() {
-  return GetExperimentParam(kSuggestionsFieldTrialStateParam) ==
-      kSuggestionsFieldTrialStateEnabled;
-}
-
-// static
 bool SuggestionsService::IsControlGroup() {
   return GetExperimentParam(kSuggestionsFieldTrialControlParam) ==
       kSuggestionsFieldTrialStateEnabled;
