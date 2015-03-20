@@ -63,6 +63,7 @@ static const char *drivers[] = {
 	"vmwgfx",
 	"exynos",
 	"imx-drm",
+	"rockchip",
 	NULL
 };
 
