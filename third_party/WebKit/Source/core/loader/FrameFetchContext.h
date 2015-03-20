@@ -54,16 +54,11 @@ public:
         return ResourceFetcher::create(adoptPtrWillBeNoop(new FrameFetchContext(loader)));
     }
 
-    static void provideDocumentToContext(FetchContext& context, Document* document)
-    {
-        ASSERT(document);
-        RELEASE_ASSERT(context.isLiveContext());
-        static_cast<FrameFetchContext&>(context).m_document = document;
-    }
-
     ~FrameFetchContext();
 
-    bool isLiveContext() { return true; }
+    Document* document() const { return m_document; } // Can be null
+    void setDocument(Document* document) { m_document = document; }
+    void clearDocumentLoader() { m_documentLoader = nullptr; }
 
     void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType) override;
     void setFirstPartyForCookies(ResourceRequest&) override;
