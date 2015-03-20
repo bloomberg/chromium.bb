@@ -11,6 +11,7 @@
 #include "base/debug/profiler.h"
 #include "base/files/file_util.h"
 #include "base/hash.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
@@ -28,6 +29,7 @@
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
+#include "sandbox/win/src/sandbox_policy_base.h"
 #include "sandbox/win/src/win_utils.h"
 #include "ui/gfx/win/direct_write.h"
 
@@ -725,6 +727,7 @@ base::Process StartSandboxedProcess(
                cmd_line->GetProgram().value().c_str(),
                cmd_line->GetCommandLineString().c_str(),
                policy, &temp_process_info);
+  DWORD last_error = ::GetLastError();
   policy->Release();
   base::win::ScopedProcessInformation target(temp_process_info);
 
@@ -735,6 +738,13 @@ base::Process StartSandboxedProcess(
       DPLOG(ERROR) << "Failed to launch process";
     else
       DLOG(ERROR) << "Failed to launch process. Error: " << result;
+
+    sandbox::PolicyBase* policy_base =
+        static_cast<sandbox::PolicyBase*>(policy);
+    if (policy_base->GetLowBoxSid()) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Lowbox.Launch.Error",
+                                  last_error);
+    }
     return base::Process();
   }
 
