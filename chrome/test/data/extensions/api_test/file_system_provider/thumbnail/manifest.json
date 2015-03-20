@@ -7,6 +7,9 @@
       "Test for chrome.fileSystemProvider.onGetMetadataRequested() for thumbnails.",
   "permissions": [
     "fileSystemProvider",
+    {
+      "fileSystem": ["requestFileSystem", "write"]
+    },
     "fileManagerPrivate",
     "fileBrowserHandler"
   ],

@@ -225,9 +225,9 @@ volumeManagerUtil.validateError = function(error) {
 /**
  * Builds the VolumeInfo data from VolumeMetadata.
  * @param {VolumeMetadata} volumeMetadata Metadata instance for the volume.
- * @param {function(VolumeInfo)} callback Called on completion.
+ * @return {!Promise.<VolumeInfo>} Promise settled with the VolumeInfo instance.
  */
-volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
+volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
   var localizedLabel;
   switch (volumeMetadata.volumeType) {
     case VolumeManagerCommon.VolumeType.DOWNLOADS:
@@ -245,57 +245,98 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
   }
 
   console.debug('Requesting file system.');
-  chrome.fileManagerPrivate.requestFileSystem(
-      volumeMetadata.volumeId,
-      function(fileSystem) {
-        // TODO(mtomasz): chrome.runtime.lastError should have error reason.
-        if (!fileSystem) {
-          console.error('File system not found: ' + volumeMetadata.volumeId);
-          callback(new VolumeInfo(
-              /** @type {VolumeManagerCommon.VolumeType} */
-              (volumeMetadata.volumeType),
-              volumeMetadata.volumeId,
-              null,  // File system is not found.
-              volumeMetadata.mountCondition,
-              volumeMetadata.deviceType,
-              volumeMetadata.devicePath,
-              volumeMetadata.isReadOnly,
-              volumeMetadata.profile,
-              localizedLabel,
-              volumeMetadata.extensionId,
-              volumeMetadata.hasMedia));
-          return;
-        }
-
-        console.debug('File system obtained: ' + volumeMetadata.volumeId);
-        if (volumeMetadata.volumeType ==
-            VolumeManagerCommon.VolumeType.DRIVE) {
-          // After file system is mounted, we "read" drive grand root
-          // entry at first. This triggers full feed fetch on background.
-          // Note: we don't need to handle errors here, because even if
-          // it fails, accessing to some path later will just become
-          // a fast-fetch and it re-triggers full-feed fetch.
-          fileSystem.root.createReader().readEntries(
-              function() { /* do nothing */ },
-              function(error) {
-                console.error(
-                    'Triggering full feed fetch is failed: ' + error.name);
+  return new Promise(
+      function(resolve, reject) {
+        chrome.fileSystem.requestFileSystem(
+            {
+              volumeId: volumeMetadata.volumeId,
+              writable: true
+            },
+            function(isolatedFileSystem) {
+              if (chrome.runtime.lastError)
+                reject(chrome.runtime.lastError.message);
+              else
+                resolve(isolatedFileSystem);
+            });
+      })
+      .then(
+          /**
+           * @param {!FileSystem} isolatedFileSystem
+           */
+          function(isolatedFileSystem) {
+            // Since File System API works on isolated entries only, we need to
+            // convert it back to external one.
+            // TODO(mtomasz): Make Files app work on isolated entries.
+            return new Promise(function(resolve, reject) {
+              chrome.fileManagerPrivate.resolveIsolatedEntries(
+                  [isolatedFileSystem.root],
+                  function(entries) {
+                    if (chrome.runtime.lastError)
+                      reject(chrome.runtime.lastError.message);
+                    else if (!entries[0])
+                      reject('Resolving for external context failed.');
+                    else
+                      resolve(entries[0].filesystem);
+                  });
               });
-        }
-        callback(new VolumeInfo(
-            /** @type {VolumeManagerCommon.VolumeType} */
-            (volumeMetadata.volumeType),
-            volumeMetadata.volumeId,
-            fileSystem,
-            volumeMetadata.mountCondition,
-            volumeMetadata.deviceType,
-            volumeMetadata.devicePath,
-            volumeMetadata.isReadOnly,
-            volumeMetadata.profile,
-            localizedLabel,
-            volumeMetadata.extensionId,
-            volumeMetadata.hasMedia));
-      });
+           })
+      .then(
+          /**
+           * @param {!FileSystem} fileSystem
+           */
+          function(fileSystem) {
+            console.debug('File system obtained: ' + volumeMetadata.volumeId);
+              if (volumeMetadata.volumeType ===
+                  VolumeManagerCommon.VolumeType.DRIVE) {
+                // After file system is mounted, we "read" drive grand root
+                // entry at first. This triggers full feed fetch on background.
+                // Note: we don't need to handle errors here, because even if
+                // it fails, accessing to some path later will just become
+                // a fast-fetch and it re-triggers full-feed fetch.
+                fileSystem.root.createReader().readEntries(
+                    function() { /* do nothing */ },
+                    function(error) {
+                      console.error(
+                          'Triggering full feed fetch is failed: ' +
+                          error.name);
+                    });
+              }
+              return new VolumeInfo(
+                  /** @type {VolumeManagerCommon.VolumeType} */
+                  (volumeMetadata.volumeType),
+                  volumeMetadata.volumeId,
+                  fileSystem,
+                  volumeMetadata.mountCondition,
+                  volumeMetadata.deviceType,
+                  volumeMetadata.devicePath,
+                  volumeMetadata.isReadOnly,
+                  volumeMetadata.profile,
+                  localizedLabel,
+                  volumeMetadata.extensionId,
+                  volumeMetadata.hasMedia);
+      })
+      .catch(
+          /**
+           * @param {*} error
+           */
+          function(error) {
+            console.error('Failed to mount a file system: ' +
+                volumeMetadata.volumeId + ' because of: ' +
+                (error.stack || error));
+            return new VolumeInfo(
+                /** @type {VolumeManagerCommon.VolumeType} */
+                (volumeMetadata.volumeType),
+                volumeMetadata.volumeId,
+                null,  // File system is not found.
+                volumeMetadata.mountCondition,
+                volumeMetadata.deviceType,
+                volumeMetadata.devicePath,
+                volumeMetadata.isReadOnly,
+                volumeMetadata.profile,
+                localizedLabel,
+                volumeMetadata.extensionId,
+                volumeMetadata.hasMedia);
+          });
 };
 
 /**
@@ -637,23 +678,26 @@ VolumeManager.revokeInstanceForTesting = function() {
  * @private
  */
 VolumeManager.prototype.addVolumeMetadata_ = function(volumeMetadata) {
-  return new Promise(function(callback) {
-    volumeManagerUtil.createVolumeInfo(volumeMetadata, callback);
-  }).then(function(volumeInfo) {
-    if (this.volumeInfoList.findIndex(volumeInfo.volumeId) === -1) {
-      this.volumeInfoList.add(volumeInfo);
+  return volumeManagerUtil.createVolumeInfo(volumeMetadata).then(
+      /**
+       * @param {!VolumeInfo} volumeInfo
+       * @return {!VolumeInfo}
+       */
+      function(volumeInfo) {
+        if (this.volumeInfoList.findIndex(volumeInfo.volumeId) === -1) {
+          this.volumeInfoList.add(volumeInfo);
 
-      // Update the network connection status, because until the drive is
-      // initialized, the status is set to not ready.
-      // TODO(mtomasz): The connection status should be migrated into
-      // VolumeMetadata.
-      if (volumeMetadata.volumeType ===
-          VolumeManagerCommon.VolumeType.DRIVE) {
-        this.onDriveConnectionStatusChanged_();
-      }
-    }
-    return volumeInfo;
-  }.bind(this));
+          // Update the network connection status, because until the drive is
+          // initialized, the status is set to not ready.
+          // TODO(mtomasz): The connection status should be migrated into
+          // VolumeMetadata.
+          if (volumeMetadata.volumeType ===
+              VolumeManagerCommon.VolumeType.DRIVE) {
+            this.onDriveConnectionStatusChanged_();
+          }
+        }
+        return volumeInfo;
+      }.bind(this));
 };
 
 /**

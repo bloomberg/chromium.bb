@@ -126,28 +126,37 @@ function initTests(callback) {
       return;
     }
 
-    chrome.fileManagerPrivate.requestFileSystem(
-        driveVolumes[0].volumeId,
+    chrome.fileSystem.requestFileSystem(
+        {
+          volumeId: driveVolumes[0].volumeId,
+          writable: true
+        },
         function(primaryFileSystem) {
           if (!primaryFileSystem) {
             callback(null, 'Failed to acquire the testing volume.');
             return;
           }
 
-          var url = primaryFileSystem.root.toURL().replace(
-              /[^\/]*\/?$/, kSecondaryDriveMountPointName);
+          // Resolving the isolated entry is necessary in order to fetch URL
+          // of an entry from a different profile.
+          chrome.fileManagerPrivate.resolveIsolatedEntries(
+              [primaryFileSystem.root],
+              function(entries) {
+                var url = entries[0].toURL().replace(
+                    /[^\/]*\/?$/, kSecondaryDriveMountPointName);
+                chrome.fileManagerPrivate.grantAccess([url], function() {
+                  webkitResolveLocalFileSystemURL(url, function(entry) {
+                    if (!entry) {
+                      callback(
+                          null,
+                          'Failed to acquire secondary profile\'s volume.');
+                      return;
+                    }
 
-          chrome.fileManagerPrivate.grantAccess([url], function() {
-            webkitResolveLocalFileSystemURL(url, function(entry) {
-              if (!entry) {
-                callback(
-                    null, 'Failed to acquire secondary profile\'s volume.');
-                return;
-              }
-
-              callback(collectTests(primaryFileSystem.root, entry), 'Success.');
-            });
-          });
+                    callback(collectTests(entries[0], entry), 'Success.');
+                  });
+                });
+              });
         });
   });
 }

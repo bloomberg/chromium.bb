@@ -8,6 +8,9 @@
       "Test for chrome.fileSystemProvider.onCreateFileRequested().",
   "permissions": [
     "fileSystemProvider",
+    {
+      "fileSystem": ["requestFileSystem", "write"]
+    },
     "fileManagerPrivate",
     "fileBrowserHandler"
   ],

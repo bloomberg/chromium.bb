@@ -11,7 +11,9 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/common/extensions/api/file_system.h"
+#include "extensions/browser/extension_function.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace extensions {
@@ -238,6 +240,35 @@ class FileSystemGetObservedEntriesFunction
  protected:
   ~FileSystemGetObservedEntriesFunction() override {}
   bool RunSync() override;
+};
+
+// Requests a file system for the specified volume id.
+class FileSystemRequestFileSystemFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileSystem.requestFileSystem",
+                             FILESYSTEM_REQUESTFILESYSTEM)
+  FileSystemRequestFileSystemFunction();
+
+ protected:
+  ~FileSystemRequestFileSystemFunction() override {}
+
+  // AsyncExtensionFunction overrides.
+  ExtensionFunction::ResponseAction Run() override;
+
+ private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
+#if defined(OS_CHROMEOS)
+  // Requests user consent for accessing the volume identified by |name|.
+  void RequestConsent(const std::string& display_name,
+                      bool writable,
+                      const base::Callback<void(bool)>& callback);
+  // Called when a user grants or rejects permissions for the file system
+  // access.
+  void OnConsentReceived(const std::string& volume_id,
+                         bool writable,
+                         bool granted);
+#endif
 };
 
 }  // namespace extensions

@@ -83,7 +83,16 @@ namespace fileSystem {
     boolean? acceptsMultiple;
   };
 
-  // Change to an entry within a tracked directory.
+  dictionary RequestFileSystemOptions {
+    // The ID of the requested volume.
+    DOMString volumeId;
+
+    // Whether the requested file system should be writeable, or read-only.
+    // By default read-only.
+    boolean? writable;
+  };
+
+// Change to an entry within a tracked directory.
   [nodoc] dictionary ChildChange {
     [instanceOf=Entry] object entry;
     ChildChangeType type;
@@ -114,6 +123,8 @@ namespace fileSystem {
   callback IsRestorableCallback = void (boolean isRestorable);
   [nodoc] callback GetObservedEntriesCallback = void (
       [instanceOf=Entry] object[] entries);
+  [nodoc] callback RequestFileSystemCallback = void(
+      [instanceOf=FileSystem] optional object fileSystem);
 
   interface Functions {
     // Get the display path of an Entry object. The display path is based on
@@ -153,6 +164,15 @@ namespace fileSystem {
     // indefinitely. Otherwise, entries are retained only while the app is
     // running and across restarts.
     static DOMString retainEntry([instanceOf=Entry] object entry);
+
+    // Requests access to a file system for a volume represented by <code>
+    // options.volumeId</code>. If <code>options.writable</code> is set to true,
+    // then the file system will be writable. Otherwise, it will be read-only.
+    // The <code>writable</code> option requires the <code>
+    // "fileSystem": {"write"}</code> permission in the manifest. Available to
+    // kiosk apps running in kiosk session only.
+    [nodoc] static void requestFileSystem(RequestFileSystemOptions options,
+                                          RequestFileSystemCallback callback);
 
     // Observes a directory entry. Emits an event if the tracked directory is
     // changed (including the list of files on it), or removed. If <code>

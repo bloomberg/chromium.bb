@@ -58,7 +58,14 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "base/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "components/user_manager/user_manager.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/manifest_handlers/kiosk_mode_info.h"
+#include "url/url_constants.h"
 #endif
 
 using apps::SavedFileEntry;
@@ -76,6 +83,16 @@ const char kRequiresFileSystemDirectoryError[] =
 const char kMultipleUnsupportedError[] =
     "acceptsMultiple: true is not supported for 'saveFile'";
 const char kUnknownIdError[] = "Unknown id";
+
+#if !defined(OS_CHROMEOS)
+const char kNotSupportedOnCurrentPlatformError[] =
+    "Operation not supported on the current platform.";
+#else
+const char kNotSupportedOnNonKioskSessionError[] =
+    "Operation only supported for kiosk apps running in a kiosk session.";
+const char kVolumeNotFoundError[] = "Volume not found.";
+const char kSecurityError[] = "Security error.";
+#endif
 
 namespace file_system = extensions::api::file_system;
 namespace ChooseEntry = file_system::ChooseEntry;
@@ -992,5 +1009,206 @@ bool FileSystemGetObservedEntriesFunction::RunSync() {
   error_ = kUnknownIdError;
   return false;
 }
+
+FileSystemRequestFileSystemFunction::FileSystemRequestFileSystemFunction()
+    : chrome_details_(this) {
+}
+
+ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
+  using extensions::api::file_system::RequestFileSystem::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+#if !defined(OS_CHROMEOS)
+  NOTIMPLEMENTED();
+  return RespondNow(Error(kNotSupportedOnCurrentPlatformError));
+
+#else
+  // Only kiosk apps in kiosk sessions can use this API. Additionally component
+  // extensions and apps, which is not documented though.
+  if ((!user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
+       !KioskModeInfo::IsKioskEnabled(extension())) &&
+      extension()->location() != Manifest::COMPONENT) {
+    return RespondNow(Error(kNotSupportedOnNonKioskSessionError));
+  }
+
+  using file_manager::VolumeManager;
+  using file_manager::VolumeInfo;
+  VolumeManager* const volume_manager =
+      VolumeManager::Get(chrome_details_.GetProfile());
+  DCHECK(volume_manager);
+
+  const bool writable =
+      params->options.writable.get() && *params->options.writable.get();
+  if (writable &&
+      !app_file_handler_util::HasFileSystemWritePermission(extension_.get())) {
+    return RespondNow(Error(kRequiresFileSystemWriteError));
+  }
+
+  VolumeInfo volume_info;
+  if (!volume_manager->FindVolumeInfoById(params->options.volume_id,
+                                          &volume_info)) {
+    return RespondNow(Error(kVolumeNotFoundError));
+  }
+
+  const GURL site = extensions::util::GetSiteForExtensionId(
+      extension_id(), chrome_details_.GetProfile());
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      content::BrowserContext::GetStoragePartitionForSite(
+          chrome_details_.GetProfile(), site)->GetFileSystemContext();
+  storage::ExternalFileSystemBackend* const backend =
+      file_system_context->external_backend();
+  DCHECK(backend);
+
+  base::FilePath virtual_path;
+  if (!backend->GetVirtualPath(volume_info.mount_path, &virtual_path))
+    return RespondNow(Error(kSecurityError));
+
+  if (writable && (volume_info.is_read_only))
+    return RespondNow(Error(kSecurityError));
+
+  chromeos::KioskAppManager::App app_info;
+  chromeos::KioskAppManager::Get()->GetApp(extension_id(), &app_info);
+  const bool is_auto_launched = app_info.was_auto_launched_with_zero_delay;
+  const bool requires_consent =
+      !is_auto_launched && extension()->location() != Manifest::COMPONENT;
+
+  if (!requires_consent) {
+    // Grant the permission without showing the dialog.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&FileSystemRequestFileSystemFunction::OnConsentReceived,
+                   this, volume_info.volume_id, writable, true /* granted */));
+  } else {
+    // TODO(mtomasz): Create a better display name, which is the most meaningful
+    // to the user.
+    const std::string display_name = !volume_info.volume_label.empty()
+                                         ? volume_info.volume_label
+                                         : volume_info.volume_id;
+    RequestConsent(
+        display_name, writable,
+        base::Bind(&FileSystemRequestFileSystemFunction::OnConsentReceived,
+                   this, volume_info.volume_id, writable));
+  }
+
+  return RespondLater();
+#endif
+}
+
+#if defined(OS_CHROMEOS)
+void FileSystemRequestFileSystemFunction::RequestConsent(
+    const std::string& display_name,
+    bool writable,
+    const base::Callback<void(bool)>& callback) {
+  // TODO(mtomasz): Implement the consent dialog.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, false));
+}
+
+void FileSystemRequestFileSystemFunction::OnConsentReceived(
+    const std::string& volume_id,
+    bool writable,
+    bool granted) {
+  using file_manager::VolumeManager;
+  using file_manager::VolumeInfo;
+
+  if (!granted) {
+    SetError(kSecurityError);
+    SendResponse(false);
+    return;
+  }
+
+  // The volume may be unmounted and remounted by the time we reach this logic.
+  // As for now, fetch the volume again, in case it's gone by the time the
+  // permission is granted.
+  // TODO(mtomasz): Add a unique identifier to VolumeInfo to guarantee that the
+  // permissions are granted to exactly that volume which was plugged in when
+  // the dialog was shown.
+  VolumeManager* const volume_manager =
+      VolumeManager::Get(chrome_details_.GetProfile());
+  DCHECK(volume_manager);
+
+  VolumeInfo volume_info;
+  if (!volume_manager->FindVolumeInfoById(volume_id, &volume_info)) {
+    SetError(kVolumeNotFoundError);
+    SendResponse(false);
+    return;
+  }
+
+  const GURL site = extensions::util::GetSiteForExtensionId(
+      extension_id(), chrome_details_.GetProfile());
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      content::BrowserContext::GetStoragePartitionForSite(
+          chrome_details_.GetProfile(), site)->GetFileSystemContext();
+  storage::ExternalFileSystemBackend* const backend =
+      file_system_context->external_backend();
+  DCHECK(backend);
+
+  base::FilePath virtual_path;
+  if (!backend->GetVirtualPath(volume_info.mount_path, &virtual_path)) {
+    SetError(kSecurityError);
+    SendResponse(false);
+    return;
+  }
+
+  storage::IsolatedContext* const isolated_context =
+      storage::IsolatedContext::GetInstance();
+  DCHECK(isolated_context);
+
+  const storage::FileSystemURL original_url =
+      file_system_context->CreateCrackedFileSystemURL(
+          GURL(std::string(extensions::kExtensionScheme) +
+               url::kStandardSchemeSeparator + extension_id()),
+          storage::kFileSystemTypeExternal, virtual_path);
+
+  // Set a fixed register name, as the automatic one would leak the mount point
+  // directory.
+  std::string register_name = "fs";
+  const std::string file_system_id =
+      isolated_context->RegisterFileSystemForPath(
+          storage::kFileSystemTypeNativeForPlatformApp,
+          std::string() /* file_system_id */, original_url.path(),
+          &register_name);
+  if (file_system_id.empty()) {
+    SetError(kSecurityError);
+    SendResponse(false);
+    return;
+  }
+
+  backend->GrantFileAccessToExtension(extension_->id(), virtual_path);
+
+  // Grant file permissions to the renderer hosting component.
+  content::ChildProcessSecurityPolicy* policy =
+      content::ChildProcessSecurityPolicy::GetInstance();
+  DCHECK(policy);
+
+  // Read-only permisisons.
+  policy->GrantReadFile(render_view_host()->GetProcess()->GetID(),
+                        volume_info.mount_path);
+  policy->GrantReadFileSystem(render_view_host()->GetProcess()->GetID(),
+                              file_system_id);
+
+  // Additional write permissions.
+  if (writable) {
+    policy->GrantCreateReadWriteFile(render_view_host()->GetProcess()->GetID(),
+                                     volume_info.mount_path);
+    policy->GrantCopyInto(render_view_host()->GetProcess()->GetID(),
+                          volume_info.mount_path);
+    policy->GrantWriteFileSystem(render_view_host()->GetProcess()->GetID(),
+                                 file_system_id);
+    policy->GrantDeleteFromFileSystem(render_view_host()->GetProcess()->GetID(),
+                                      file_system_id);
+    policy->GrantCreateFileForFileSystem(
+        render_view_host()->GetProcess()->GetID(), file_system_id);
+  }
+
+  base::DictionaryValue* const dict = new base::DictionaryValue();
+  dict->SetString("file_system_id", file_system_id);
+  dict->SetString("file_system_path", register_name);
+
+  SetResult(dict);
+  SendResponse(true);
+}
+#endif
 
 }  // namespace extensions

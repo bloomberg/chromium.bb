@@ -270,17 +270,6 @@ chrome.fileManagerPrivate.addFileWatch = function(fileUrl, callback) {};
 chrome.fileManagerPrivate.removeFileWatch = function(fileUrl, callback) {};
 
 /**
- * Requests access to a file system volume. |volumeId| The ID of the file
- * system volume to request. The volume ID is delivered to JavaScript as
- * part of VolumeMetadata.
- * @param {string} volumeId
- * @param {function(FileSystem)} callback Returns a DOMFileSystem instance
- *     for the requested volume. Null if the caller has no appropriate
- *     permissions.
- */
-chrome.fileManagerPrivate.requestFileSystem = function(volumeId, callback) {};
-
-/**
  * Enables the extenal file scheme necessary to initiate drags to the browser
  * window for files on the external backend.
  */

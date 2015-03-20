@@ -129,9 +129,6 @@ class KioskAppManager : public KioskAppDataDelegate,
   // Returns true if owner/policy enabled auto launch.
   bool IsAutoLaunchEnabled() const;
 
-  // Returns true if current app was auto launched with zero delay.
-  bool IsCurrentAppAutoLaunchedWithZeroDelay() const;
-
   // Enable auto launch setter.
   void SetEnableAutoLaunch(bool value);
 

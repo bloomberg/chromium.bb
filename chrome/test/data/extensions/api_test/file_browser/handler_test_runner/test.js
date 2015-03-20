@@ -146,18 +146,23 @@ function run() {
    * when all the test cases have been resolved, gets file tasks for each of
    * them.
    *
-   * @param {FileEntry} entry The file entry for the test case.
+   * @param {FileEntry} isolatedEntry The file entry for the test case.
    */
-  function onGotEntry(entry) {
-    resolvedEntries.push(entry);
-
-    if (resolvedEntries.length == kTestPaths.length) {
-      resolvedEntries.forEach(function(entry) {
-        chrome.fileManagerPrivate.getFileTasks(
-            [entry.toURL()],
-            onGotNonDefaultTasks.bind(null, entry.toURL()));
-      });
-    }
+  function onGotEntry(isolatedEntry) {
+    // TODO(mtomasz): Remove this hack after migrating chrome.fileManagerPrivate
+    // API to isolated context.
+    chrome.fileManagerPrivate.resolveIsolatedEntries(
+        [isolatedEntry],
+        function(externalEntries) {
+          resolvedEntries.push(externalEntries[0]);
+          if (resolvedEntries.length == kTestPaths.length) {
+            resolvedEntries.forEach(function(entry) {
+              chrome.fileManagerPrivate.getFileTasks(
+                  [entry.toURL()],
+                  onGotNonDefaultTasks.bind(null, entry.toURL()));
+            });
+          }
+        });
   }
 
   /**
@@ -190,8 +195,8 @@ function run() {
       onError('No volumes available, which could be used for testing.');
       return;
     }
-    chrome.fileManagerPrivate.requestFileSystem(
-        sortedVolumeMetadataList[0].volumeId,
+    chrome.fileSystem.requestFileSystem(
+        {volumeId: sortedVolumeMetadataList[0].volumeId},
         function(fileSystem) {
           if (!fileSystem) {
             onError('Failed to acquire the testing volume.');

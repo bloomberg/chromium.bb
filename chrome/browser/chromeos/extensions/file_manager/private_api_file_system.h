@@ -43,43 +43,6 @@ struct HashAndFilePath;
 
 namespace extensions {
 
-// Implements the chrome.fileManagerPrivate.requestFileSystem method.
-class FileManagerPrivateRequestFileSystemFunction
-    : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.requestFileSystem",
-                             FILEMANAGERPRIVATE_REQUESTFILESYSTEM)
-
- protected:
-  ~FileManagerPrivateRequestFileSystemFunction() override {}
-
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
-
- private:
-  void RespondSuccessOnUIThread(const std::string& name,
-                                const GURL& root_url);
-  void RespondFailedOnUIThread(base::File::Error error_code);
-
-  // Called when something goes wrong. Records the error to |error_| per the
-  // error code and reports that the private API function failed.
-  void DidFail(base::File::Error error_code);
-
-  // Sets up file system access permissions to the extension identified by
-  // |child_id|.
-  bool SetupFileSystemAccessPermissions(
-      scoped_refptr<storage::FileSystemContext> file_system_context,
-      int child_id,
-      Profile* profile,
-      scoped_refptr<const extensions::Extension> extension,
-      const base::FilePath& mount_path,
-      const base::FilePath& virtual_path);
-
-  // Called when the entry definition is computed.
-  void OnEntryDefinition(
-      const file_manager::util::EntryDefinition& entry_definition);
-};
-
 // Grant permission to request externalfile scheme. The permission is needed to
 // start drag for external file URL.
 class FileManagerPrivateEnableExternalFileSchemeFunction

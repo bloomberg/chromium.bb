@@ -21,6 +21,9 @@
     "fileSystem",
     "fileBrowserHandler",
     "fileManagerPrivate",
+    {
+      "fileSystem": ["requestFileSystem", "write"]
+    },
     "fullscreen",
     "mediaPlayerPrivate",
     "power",

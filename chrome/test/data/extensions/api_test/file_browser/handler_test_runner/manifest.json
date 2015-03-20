@@ -12,7 +12,10 @@
   },
   "permissions": [
     "fileBrowserHandler",
-    "fileManagerPrivate"
+    "fileManagerPrivate",
+    {
+      "fileSystem": ["requestFileSystem"]
+    }
   ]
 }
 

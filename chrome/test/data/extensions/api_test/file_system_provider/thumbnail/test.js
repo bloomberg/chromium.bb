@@ -161,21 +161,25 @@ function runTests() {
           TESTING_WITH_VALID_THUMBNAIL_FILE.name,
           {create: false},
           chrome.test.callbackPass(function(fileEntry) {
-            chrome.fileManagerPrivate.getEntryProperties(
-                [fileEntry.toURL()],
-                ['thumbnailUrl', 'size', 'modificationTime'],
-                chrome.test.callbackPass(function(fileProperties) {
-                  chrome.test.assertEq(1, fileProperties.length);
-                  chrome.test.assertEq(
-                      TESTING_WITH_VALID_THUMBNAIL_FILE.thumbnail,
-                      fileProperties[0].thumbnailUrl);
-                  chrome.test.assertEq(
-                      TESTING_WITH_VALID_THUMBNAIL_FILE.size,
-                      fileProperties[0].size);
-                  chrome.test.assertEq(
-                      TESTING_WITH_VALID_THUMBNAIL_FILE.modificationTime,
-                      new Date(fileProperties[0].modificationTime));
-                }));
+            test_util.toExternalEntry(fileEntry).then(
+                chrome.test.callbackPass(function(externalEntry) {
+                  chrome.test.assertTrue(!!externalEntry);
+                  chrome.fileManagerPrivate.getEntryProperties(
+                      [externalEntry.toURL()],
+                      ['thumbnailUrl', 'size', 'modificationTime'],
+                      chrome.test.callbackPass(function(fileProperties) {
+                        chrome.test.assertEq(1, fileProperties.length);
+                        chrome.test.assertEq(
+                            TESTING_WITH_VALID_THUMBNAIL_FILE.thumbnail,
+                            fileProperties[0].thumbnailUrl);
+                        chrome.test.assertEq(
+                            TESTING_WITH_VALID_THUMBNAIL_FILE.size,
+                            fileProperties[0].size);
+                        chrome.test.assertEq(
+                            TESTING_WITH_VALID_THUMBNAIL_FILE.modificationTime,
+                            new Date(fileProperties[0].modificationTime));
+                      }));
+                  })).catch(chrome.test.fail);
             }),
             function(error) {
               chrome.test.fail(error.name);
@@ -189,16 +193,20 @@ function runTests() {
           TESTING_WITH_INVALID_THUMBNAIL_FILE.name,
           {create: false},
           chrome.test.callbackPass(function(fileEntry) {
-            chrome.fileManagerPrivate.getEntryProperties(
-                [fileEntry.toURL()],
-                ['thumbnailUrl'],
-                chrome.test.callbackPass(function(fileProperties) {
-                  chrome.test.assertEq(1, fileProperties.length);
-                  // The results for an entry is an empty dictionary in case of
-                  // an error.
-                  chrome.test.assertEq(
-                      0, Object.keys(fileProperties[0]).length);
-                }));
+            test_util.toExternalEntry(fileEntry).then(
+                chrome.test.callbackPass(function(externalEntry) {
+                  chrome.test.assertTrue(!!externalEntry);
+                  chrome.fileManagerPrivate.getEntryProperties(
+                      [externalEntry.toURL()],
+                      ['thumbnailUrl'],
+                      chrome.test.callbackPass(function(fileProperties) {
+                        chrome.test.assertEq(1, fileProperties.length);
+                        // The results for an entry is an empty dictionary in
+                        // case of an error.
+                        chrome.test.assertEq(
+                            0, Object.keys(fileProperties[0]).length);
+                      }));
+                })).catch(chrome.test.fail);
             }),
             function(error) {
               chrome.test.fail(error.name);
@@ -211,17 +219,21 @@ function runTests() {
           TESTING_WITH_VALID_THUMBNAIL_FILE.name,
           {create: false},
           chrome.test.callbackPass(function(fileEntry) {
-            chrome.fileManagerPrivate.getEntryProperties(
-                [fileEntry.toURL()],
-                ['size'],
-                chrome.test.callbackPass(function(fileProperties) {
-                  chrome.test.assertEq(1, fileProperties.length);
-                  chrome.test.assertFalse(
-                      'thumbnailUrl' in fileProperties[0]);
-                  chrome.test.assertEq(
-                      TESTING_WITH_VALID_THUMBNAIL_FILE.size,
-                      fileProperties[0].size);
-                }));
+            test_util.toExternalEntry(fileEntry).then(
+                chrome.test.callbackPass(function(externalEntry) {
+                  chrome.test.assertTrue(!!externalEntry);
+                  chrome.fileManagerPrivate.getEntryProperties(
+                      [externalEntry.toURL()],
+                      ['size'],
+                      chrome.test.callbackPass(function(fileProperties) {
+                        chrome.test.assertEq(1, fileProperties.length);
+                        chrome.test.assertFalse(
+                            'thumbnailUrl' in fileProperties[0]);
+                        chrome.test.assertEq(
+                            TESTING_WITH_VALID_THUMBNAIL_FILE.size,
+                            fileProperties[0].size);
+                      }));
+                })).catch(chrome.test.fail);
             }),
             function(error) {
               chrome.test.fail(error.name);

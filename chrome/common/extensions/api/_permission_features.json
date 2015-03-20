@@ -446,6 +446,12 @@
       "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"   // http://crbug.com/371562
     ]
   }],
+  "fileSystem.requestFileSystem": [{
+    "channel": "dev",
+    "extension_types": ["platform_app"],
+    "location": "component",
+    "platforms": ["chromeos"]
+  }],
   "fileSystemProvider": {
     "channel": "stable",
     "extension_types": ["extension", "platform_app"],

@@ -23,7 +23,9 @@
     "chrome://theme/",
     "fileBrowserHandler",
     "fileManagerPrivate",
-    "fileSystem",
+    {
+      "fileSystem": ["requestFileSystem", "write"]
+    },
     "fullscreen",
     "metricsPrivate",
     "storage",

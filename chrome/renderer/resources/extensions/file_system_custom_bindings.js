@@ -12,6 +12,7 @@ var getFileBindingsForApi =
 var fileBindings = getFileBindingsForApi('fileSystem');
 var bindFileEntryCallback = fileBindings.bindFileEntryCallback;
 var entryIdManager = fileBindings.entryIdManager;
+var fileSystemNatives = requireNative('file_system_natives');
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -77,6 +78,20 @@ binding.registerCustomHook(function(bindingsAPI) {
       // to |callback|.
       return [id, true, callback];
     }
+  });
+
+  apiFunctions.setCustomCallback('requestFileSystem',
+      function(name, request, callback, response) {
+    var fileSystem = null;
+    if (response && response.file_system_id) {
+      fileSystem = fileSystemNatives.GetIsolatedFileSystem(
+          response.file_system_id, response.file_system_path);
+    }
+    sendRequest.safeCallbackApply(
+        'fileSystem.requestFileSystem',
+        request,
+        callback,
+        [fileSystem]);
   });
 
   // TODO(benwells): Remove these deprecated versions of the functions.

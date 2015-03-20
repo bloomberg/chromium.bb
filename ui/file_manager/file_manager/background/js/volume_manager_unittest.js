@@ -12,6 +12,17 @@ loadTimeData.data = {
 function setUp() {
   // Set up mock of chrome.fileManagerPrivate APIs.
   chrome = {
+    runtime: {
+      lastError: undefined
+    },
+    fileSystem: {
+      requestFileSystem: function(options, callback) {
+        if (!(options.volumeId in chrome.fileManagerPrivate.fileSystemMap_)) {
+          chrome.runtime.lastError = {message: 'Not found.'};
+        }
+        callback(chrome.fileManagerPrivate.fileSystemMap_[options.volumeId]);
+      },
+    },
     fileManagerPrivate: {
       mountSourcePath_: null,
       onMountCompletedListeners_: [],
@@ -57,8 +68,9 @@ function setUp() {
       getVolumeMetadataList: function(callback) {
         callback(chrome.fileManagerPrivate.volumeMetadataList_);
       },
-      requestFileSystem: function(volumeId, callback) {
-        callback(chrome.fileManagerPrivate.fileSystemMap_[volumeId]);
+      resolveIsolatedEntries: function(entries, callback) {
+        console.log('*** RESOLVE ISOLATED');
+        callback(entries);
       },
       set driveConnectionState(state) {
         chrome.fileManagerPrivate.driveConnectionState_ = state;

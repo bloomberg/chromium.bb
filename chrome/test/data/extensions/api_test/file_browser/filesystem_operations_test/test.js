@@ -47,7 +47,6 @@ var kFileContentAfterTruncateLong = 'This\0\0';
 function assertEqAndRunCallback(expectedValue, value, errorMessage,
                                 callback, callbackArg) {
   chrome.test.assertEq(expectedValue, value, errorMessage);
-
   callback(callbackArg);
 }
 
@@ -500,8 +499,11 @@ function initTests(callback) {
       return;
     }
 
-    chrome.fileManagerPrivate.requestFileSystem(
-        sortedVolumeMetadataList[0].volumeId,
+    chrome.fileSystem.requestFileSystem(
+        {
+          volumeId: sortedVolumeMetadataList[0].volumeId,
+          writable: !sortedVolumeMetadataList[0].isReadOnly
+        },
         function(fileSystem) {
           if (!fileSystem) {
             callback(null, 'Failed to acquire the testing volume.');

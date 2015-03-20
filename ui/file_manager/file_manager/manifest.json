@@ -27,6 +27,9 @@
     "echoPrivate",
     "fileBrowserHandler",
     "fileManagerPrivate",
+    {
+      "fileSystem": ["requestFileSystem", "write"]
+    },
     "fullscreen",
     "https://*.googleusercontent.com/",
     "https://docs.google.com/",

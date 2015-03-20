@@ -102,8 +102,11 @@ test_util.mountFileSystem = function(callback, opt_options) {
 
         test_util.getVolumeInfo(options.fileSystemId, function(volumeInfo) {
           chrome.test.assertTrue(!!volumeInfo);
-          chrome.fileManagerPrivate.requestFileSystem(
-              volumeInfo.volumeId,
+          chrome.fileSystem.requestFileSystem(
+              {
+                volumeId: volumeInfo.volumeId,
+                writable: true
+              },
               function(inFileSystem) {
                 chrome.test.assertTrue(!!inFileSystem);
                 test_util.fileSystem = inFileSystem;
@@ -251,4 +254,23 @@ test_util.onRemoveWatcherRequested = function(options, onSuccess, onError) {
   }
 
   onError('NOT_FOUND');  // enum ProviderError.
+};
+
+/**
+ * Temporary method for converting an isolated entry to an external one.
+ * TODO(mtomasz): Remove after transition to isolated file systems is completed.
+ *
+ * @param {Entry} entry Isolated entry.
+ * @return {!Promise.<Entry>} Promise with an external entry, or null in case of
+ *     on error.
+ */
+test_util.toExternalEntry = function(entry) {
+  return new Promise(
+      function(fulfill, reject) {
+        chrome.fileManagerPrivate.resolveIsolatedEntries(
+            [entry],
+            function(entries) {
+              fulfill(entries && entries.length ? entries[0] : null);
+            });
+      });
 };

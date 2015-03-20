@@ -488,7 +488,7 @@ class RestrictedFileSystemExtensionApiTest
     VolumeManager::Get(browser()->profile())
         ->AddVolumeInfoForTesting(mount_point_dir_, VOLUME_TYPE_TESTING,
                                   chromeos::DEVICE_TYPE_UNKNOWN,
-                                  false /* read_only */);
+                                  true /* read_only */);
   }
 
  private:

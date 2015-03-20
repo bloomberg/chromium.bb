@@ -245,8 +245,8 @@ function initTests(callback) {
       return;
     }
 
-    chrome.fileManagerPrivate.requestFileSystem(
-        sortedVolumeMetadataList[0].volumeId,
+    chrome.fileSystem.requestFileSystem(
+        {volumeId: sortedVolumeMetadataList[0].volumeId, writable: true},
         function(fileSystem) {
           if (!fileSystem) {
             callback(testParams, 'Failed to acquire the testing volume.');
@@ -287,7 +287,19 @@ function initTests(callback) {
               getFunction = fileSystem.root.getDirectory.bind(fileSystem.root);
             }
 
-            getFunction(testEntry.path, {},
+            // TODO(mtomasz): Remove this hack after migrating watchers to
+            // chrome.fileSystem.
+            var getFunctionAndConvert = function(path, options, callback) {
+              getFunction(path, options, function(isolatedEntry) {
+                chrome.fileManagerPrivate.resolveIsolatedEntries(
+                    [isolatedEntry],
+                    function(externalEntries) {
+                      callback(externalEntries[0]);
+                    });
+              });
+            };
+
+            getFunctionAndConvert(testEntry.path, {},
                 function(entry) {
                   testParams.entries[testEntry.name] = entry;
                   getNextEntry();

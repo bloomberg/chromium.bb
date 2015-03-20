@@ -48323,7 +48323,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="105" label="TERMINALPRIVATE_OPENTERMINALPROCESS"/>
   <int value="106" label="DELETED_SERIAL_CLOSE"/>
   <int value="107" label="CONTEXTMENUS_REMOVE"/>
-  <int value="108" label="FILEMANAGERPRIVATE_REQUESTFILESYSTEM"/>
+  <int value="108" label="FILESYSTEM_REQUESTFILESYSTEM"/>
   <int value="109" label="ECHOPRIVATE_GETREGISTRATIONCODE"/>
   <int value="110" label="TABS_GETCURRENT"/>
   <int value="111" label="FONTSETTINGS_CLEARDEFAULTFIXEDFONTSIZE"/>

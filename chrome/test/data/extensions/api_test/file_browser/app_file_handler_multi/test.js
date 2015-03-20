@@ -22,8 +22,8 @@ function getFileSystem(volumeType) {
     for (var i = 0; i < list.length; i++) {
       if (list[i].volumeType == volumeType) {
         return new Promise(function(fulfill) {
-          chrome.fileManagerPrivate.requestFileSystem(
-              list[i].volumeId, fulfill);
+          chrome.fileSystem.requestFileSystem(
+              {volumeId: list[i].volumeId, writable: true}, fulfill);
         });
       }
     }
@@ -103,59 +103,78 @@ function testPromise(promise) {
 /**
  * Calls the executeTask API with the entries and checks the launch data passed
  * to onLaunched events.
- * @param {entries} entries Entries to be tested.
+ * @param {Array<Entry>} isolatedEntries Entries to be tested.
  * @return {Promise} Promise to be fulfilled on success.
  */
-function launchWithEntries(entries) {
-  var urls = entries.map(function(entry) { return entry.toURL(); });
-  var tasksPromise = new Promise(function(fulfill) {
-    chrome.fileManagerPrivate.getFileTasks(urls, fulfill);
-  }).then(function(tasks) {
-    chrome.test.assertEq(1, tasks.length);
-    chrome.test.assertEq('kidcpjlbjdmcnmccjhjdckhbngnhnepk|app|textAction',
-                         tasks[0].taskId);
-    return tasks[0];
-  });
-  var launchDataPromise = new Promise(function(fulfill) {
-    chrome.app.runtime.onLaunched.addListener(function handler(launchData) {
-      chrome.app.runtime.onLaunched.removeListener(handler);
-      fulfill(launchData);
-    });
-  });
-  var taskExecutedPromise = tasksPromise.then(function(task) {
-    return new Promise(function(fulfill, reject) {
-      chrome.fileManagerPrivate.executeTask(
-          task.taskId,
-          urls,
-          function(result) {
-            if (result)
-              fulfill();
-            else
-              reject();
+function launchWithEntries(isolatedEntries) {
+  // TODO(mtomasz): Remove this hack once chrome.FileManager API can work on
+  // isolated entries.
+  return new Promise(
+      function(fulfill, reject) {
+        chrome.fileManagerPrivate.resolveIsolatedEntries(
+            isolatedEntries,
+            function(entries) {
+              fulfill(entries);
+            });
+      })
+      .then(
+          function(entries) {
+            var urls = entries.map(function(entry) { return entry.toURL(); });
+            var tasksPromise = new Promise(function(fulfill) {
+              chrome.fileManagerPrivate.getFileTasks(urls, fulfill);
+            }).then(function(tasks) {
+              chrome.test.assertEq(1, tasks.length);
+              chrome.test.assertEq(
+                  'kidcpjlbjdmcnmccjhjdckhbngnhnepk|app|textAction',
+                  tasks[0].taskId);
+              return tasks[0];
+            });
+            var launchDataPromise = new Promise(function(fulfill) {
+              chrome.app.runtime.onLaunched.addListener(
+                  function handler(launchData) {
+                    chrome.app.runtime.onLaunched.removeListener(handler);
+                    fulfill(launchData);
+                  });
+            });
+            var taskExecutedPromise = tasksPromise.then(function(task) {
+              return new Promise(function(fulfill, reject) {
+                chrome.fileManagerPrivate.executeTask(
+                    task.taskId,
+                    urls,
+                    function(result) {
+                      if (result)
+                        fulfill();
+                      else
+                        reject();
+                    });
+                });
+            });
+            var resolvedEntriesPromise = launchDataPromise.then(
+                function(launchData) {
+                  var entries = launchData.items.map(
+                      function(item) { return item.entry; });
+                  return new Promise(function(fulfill) {
+                    chrome.fileManagerPrivate.resolveIsolatedEntries(
+                        entries, fulfill);
+                  });
+                });
+            return Promise.all([
+              taskExecutedPromise,
+              launchDataPromise,
+              resolvedEntriesPromise
+            ]).then(function(args) {
+              chrome.test.assertEq(entries.length, args[1].items.length);
+              chrome.test.assertEq(
+                  entries.map(function(entry) { return entry.name; }),
+                  args[1].items.map(function(item) { return item.entry.name; }),
+                  'Wrong entries are passed to the application handler.');
+              chrome.test.assertEq(
+                  entries.map(function(entry) { return entry.toURL(); }),
+                  args[2].map(function(entry) { return entry.toURL(); }),
+                  'Entries passed to the application handler cannot be ' +
+                      'resolved.');
+            })
           });
-      });
-  });
-  var resolvedEntriesPromise = launchDataPromise.then(function(launchData) {
-    var entries = launchData.items.map(function(item) { return item.entry; });
-    return new Promise(function(fulfill) {
-      chrome.fileManagerPrivate.resolveIsolatedEntries(entries, fulfill);
-    });
-  });
-  return Promise.all([
-    taskExecutedPromise,
-    launchDataPromise,
-    resolvedEntriesPromise
-  ]).then(function(args) {
-    chrome.test.assertEq(entries.length, args[1].items.length);
-    chrome.test.assertEq(
-        entries.map(function(entry) { return entry.name; }),
-        args[1].items.map(function(item) { return item.entry.name; }),
-        'Wrong entries are passed to the application handler.');
-    chrome.test.assertEq(
-        entries.map(function(entry) { return entry.toURL(); }),
-        args[2].map(function(entry) { return entry.toURL(); }),
-        'Entries passed to the application handler cannot be resolved.');
-  });
 }
 
 /**

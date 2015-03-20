@@ -20,8 +20,8 @@ function getTestFilesystem() {
             return volume.volumeType === 'testing';
           })[0];
 
-          chrome.fileManagerPrivate.requestFileSystem(
-              testVolume.volumeId,
+          chrome.fileSystem.requestFileSystem(
+              {volumeId: testVolume.volumeId},
               function(fileSystem) {
                 if (!fileSystem) {
                   reject(new Error('Failed to acquire the testing volume.'));
@@ -38,17 +38,39 @@ getTestFilesystem().then(
       chrome.test.runTests([
           // Checks the checksum code using a golden file.
           function testGoldenChecksum() {
-            fileSystem.root.getFile(
-                'test_dir/test_file.txt',
-                {create: false},
-                function(entry) {
-                  chrome.fileManagerPrivate.computeChecksum(
-                      entry.toURL(),
-                      chrome.test.callbackPass(function(result) {
-                        chrome.test.assertEq(kExpectedHash, result);
-                      }));
-                },
-                chrome.test.fail);
+            new Promise(
+                function(fulfill, reject) {
+                  fileSystem.root.getFile(
+                      'test_dir/test_file.txt',
+                      {create: false},
+                      function(entry) {
+                        chrome.test.assertTrue(!!entry);
+                        fulfill(entry);
+                      });
+                  })
+                // TODO(mtomasz): Remove this step once computeChecksum works
+                // on isolated entries.
+                .then(
+                    function(entry) {
+                      return new Promise(function(fulfill, reject) {
+                        chrome.fileManagerPrivate.resolveIsolatedEntries(
+                            [entry],
+                            function(externalEntries) {
+                              chrome.test.assertTrue(!!externalEntries);
+                              chrome.test.assertTrue(!!externalEntries[0]);
+                              fulfill(externalEntries[0]);
+                            });
+                      });
+                    })
+                .then(
+                    function(externalEntry) {
+                      chrome.fileManagerPrivate.computeChecksum(
+                          externalEntry.toURL(),
+                          chrome.test.callbackPass(function(result) {
+                            chrome.test.assertEq(kExpectedHash, result);
+                          }));
+                    })
+                .catch(chrome.test.fail);
           }
       ]);
     });

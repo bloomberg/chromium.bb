@@ -240,121 +240,6 @@ void GetFileMetadataRespondOnUIThread(
 
 }  // namespace
 
-void FileManagerPrivateRequestFileSystemFunction::DidFail(
-    base::File::Error error_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  SetError(base::StringPrintf("File error %d", static_cast<int>(error_code)));
-  SendResponse(false);
-}
-
-bool FileManagerPrivateRequestFileSystemFunction::
-    SetupFileSystemAccessPermissions(
-        scoped_refptr<storage::FileSystemContext> file_system_context,
-        int child_id,
-        Profile* profile,
-        scoped_refptr<const extensions::Extension> extension,
-        const base::FilePath& mount_path,
-        const base::FilePath& virtual_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!extension.get())
-    return false;
-
-  storage::ExternalFileSystemBackend* const backend =
-      file_system_context->external_backend();
-  if (!backend)
-    return false;
-
-  backend->GrantFileAccessToExtension(extension_->id(), virtual_path);
-
-  // Grant R/W file permissions to the renderer hosting component
-  // extension to the mount path of the volume.
-  ChildProcessSecurityPolicy::GetInstance()->GrantCreateReadWriteFile(
-      child_id, mount_path);
-
-  return true;
-}
-
-bool FileManagerPrivateRequestFileSystemFunction::RunAsync() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  using extensions::api::file_manager_private::RequestFileSystem::Params;
-  const scoped_ptr<Params> params(Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  if (!dispatcher() || !render_view_host() || !render_view_host()->GetProcess())
-    return false;
-
-  set_log_on_completion(true);
-
-  using file_manager::VolumeManager;
-  using file_manager::VolumeInfo;
-  VolumeManager* const volume_manager = VolumeManager::Get(GetProfile());
-  if (!volume_manager)
-    return false;
-
-  VolumeInfo volume_info;
-  if (!volume_manager->FindVolumeInfoById(params->volume_id, &volume_info)) {
-    DidFail(base::File::FILE_ERROR_NOT_FOUND);
-    return false;
-  }
-
-  scoped_refptr<storage::FileSystemContext> file_system_context =
-      file_manager::util::GetFileSystemContextForRenderViewHost(
-          GetProfile(), render_view_host());
-
-  FileDefinition file_definition;
-  if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-           GetProfile(),
-           extension_id(),
-           volume_info.mount_path,
-           &file_definition.virtual_path)) {
-    DidFail(base::File::FILE_ERROR_INVALID_OPERATION);
-    return false;
-  }
-  file_definition.is_directory = true;
-
-  // Set up file permission access.
-  const int child_id = render_view_host()->GetProcess()->GetID();
-  if (!SetupFileSystemAccessPermissions(
-          file_system_context, child_id, GetProfile(), extension(),
-          volume_info.mount_path, file_definition.virtual_path)) {
-    DidFail(base::File::FILE_ERROR_SECURITY);
-    return false;
-  }
-
-  file_manager::util::ConvertFileDefinitionToEntryDefinition(
-      GetProfile(),
-      extension_id(),
-      file_definition,
-      base::Bind(
-          &FileManagerPrivateRequestFileSystemFunction::OnEntryDefinition,
-          this));
-  return true;
-}
-
-void FileManagerPrivateRequestFileSystemFunction::OnEntryDefinition(
-    const EntryDefinition& entry_definition) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (entry_definition.error != base::File::FILE_OK) {
-    DidFail(entry_definition.error);
-    return;
-  }
-
-  if (!entry_definition.is_directory) {
-    DidFail(base::File::FILE_ERROR_NOT_A_DIRECTORY);
-    return;
-  }
-
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  SetResult(dict);
-  dict->SetString("name", entry_definition.file_system_name);
-  dict->SetString("root_url", entry_definition.file_system_root_url);
-  dict->SetInteger("error", drive::FILE_ERROR_OK);
-  SendResponse(true);
-}
-
 ExtensionFunction::ResponseAction
 FileManagerPrivateEnableExternalFileSchemeFunction::Run() {
   ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
@@ -798,20 +683,18 @@ bool FileManagerPrivateInternalResolveIsolatedEntriesFunction::RunAsync() {
 
   file_manager::util::FileDefinitionList file_definition_list;
   for (size_t i = 0; i < params->urls.size(); ++i) {
-    FileSystemURL fileSystemUrl =
+    const FileSystemURL file_system_url =
         file_system_context->CrackURL(GURL(params->urls[i]));
-    DCHECK(external_backend->CanHandleType(fileSystemUrl.type()));
-
+    DCHECK(external_backend->CanHandleType(file_system_url.type()));
     FileDefinition file_definition;
     const bool result =
         file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-            GetProfile(),
-            extension_->id(),
-            fileSystemUrl.path(),
+            GetProfile(), extension_->id(), file_system_url.path(),
             &file_definition.virtual_path);
     if (!result)
       continue;
-    // The API only supports isolated files.
+    // The API only supports isolated files. It still works for directories,
+    // as the value is ignored for existing entries.
     file_definition.is_directory = false;
     file_definition_list.push_back(file_definition);
   }

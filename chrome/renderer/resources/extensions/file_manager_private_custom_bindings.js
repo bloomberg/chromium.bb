@@ -23,15 +23,6 @@ var GetExternalFileEntry = fileBrowserHandlerNatives.GetExternalFileEntry;
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  apiFunctions.setCustomCallback('requestFileSystem',
-      function(name, request, callback, response) {
-    var fs = null;
-    if (response && !response.error)
-      fs = GetFileSystem(response.name, response.root_url);
-    if (callback)
-      callback(fs);
-  });
-
   apiFunctions.setCustomCallback('searchDrive',
       function(name, request, callback, response) {
     if (response && !response.error && response.entries) {

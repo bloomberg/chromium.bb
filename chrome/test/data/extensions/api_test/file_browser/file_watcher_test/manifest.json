@@ -12,6 +12,9 @@
   },
   "permissions": [
     "fileBrowserHandler",
-    "fileManagerPrivate"
+    "fileManagerPrivate",
+    {
+      "fileSystem": ["requestFileSystem", "write"]
+    }
   ]
 }

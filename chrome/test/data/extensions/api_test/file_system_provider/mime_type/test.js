@@ -63,17 +63,20 @@ function runTests() {
           TESTING_WITH_MIME_FILE.name,
           {},
           chrome.test.callbackPass(function(entry) {
-            chrome.fileManagerPrivate.getFileTasks(
-                [entry.toURL()],
-                chrome.test.callbackPass(function(tasks) {
-                  chrome.test.assertEq(1, tasks.length);
-                  chrome.test.assertEq(
-                      'pkplfbidichfdicaijlchgnapepdginl|app|magic_handler',
-                      tasks[0].taskId);
-                }));
-            }), function(error) {
-              chrome.test.fail(error.name);
-            });
+            test_util.toExternalEntry(entry).then(function(externalEntry) {
+              chrome.test.assertTrue(!!externalEntry);
+              chrome.fileManagerPrivate.getFileTasks(
+                  [externalEntry.toURL()],
+                  chrome.test.callbackPass(function(tasks) {
+                    chrome.test.assertEq(1, tasks.length);
+                    chrome.test.assertEq(
+                        'pkplfbidichfdicaijlchgnapepdginl|app|magic_handler',
+                        tasks[0].taskId);
+                  }));
+            }).catch(chrome.test.fail);
+          }), function(error) {
+            chrome.test.fail(error.name);
+          });
     },
 
     // Confirm, that executing that task, will actually run an OnLaunched event.
@@ -83,32 +86,38 @@ function runTests() {
           TESTING_WITH_MIME_FILE.name,
           {},
           chrome.test.callbackPass(function(entry) {
-            chrome.fileManagerPrivate.getFileTasks(
-                [entry.toURL()],
-                chrome.test.callbackPass(function(tasks) {
-                  chrome.test.assertEq(1, tasks.length);
-                  chrome.test.assertEq(
-                      'pkplfbidichfdicaijlchgnapepdginl|app|magic_handler',
-                      tasks[0].taskId);
-                  var onLaunched = function(event) {
-                    chrome.test.assertTrue(!!event);
-                    chrome.test.assertEq('magic_handler', event.id);
-                    chrome.test.assertTrue(!!event.items);
-                    chrome.test.assertEq(1, event.items.length);
-                    chrome.test.assertEq(
-                        TESTING_MIME_TYPE, event.items[0].type);
-                    chrome.test.assertEq(
-                        TESTING_WITH_MIME_FILE.name,
-                        event.items[0].entry.name);
-                    chrome.app.runtime.onLaunched.removeListener(onLaunched);
-                  };
-                  chrome.app.runtime.onLaunched.addListener(onLaunched);
-                  chrome.fileManagerPrivate.executeTask(
-                      tasks[0].taskId, [entry.toURL()]);
-                }));
-            }), function(error) {
-              chrome.test.fail(error.name);
-            });
+            test_util.toExternalEntry(entry).then(
+                chrome.test.callbackPass(function(externalEntry) {
+                  chrome.test.assertTrue(!!externalEntry);
+                  chrome.fileManagerPrivate.getFileTasks(
+                      [externalEntry.toURL()],
+                      chrome.test.callbackPass(function(tasks) {
+                        chrome.test.assertEq(1, tasks.length);
+                        chrome.test.assertEq(
+                            'pkplfbidichfdicaijlchgnapepdginl|app|' +
+                                'magic_handler',
+                            tasks[0].taskId);
+                        var onLaunched = function(event) {
+                          chrome.test.assertTrue(!!event);
+                          chrome.test.assertEq('magic_handler', event.id);
+                          chrome.test.assertTrue(!!event.items);
+                          chrome.test.assertEq(1, event.items.length);
+                          chrome.test.assertEq(
+                              TESTING_MIME_TYPE, event.items[0].type);
+                          chrome.test.assertEq(
+                              TESTING_WITH_MIME_FILE.name,
+                              event.items[0].entry.name);
+                          chrome.app.runtime.onLaunched.removeListener(
+                              onLaunched);
+                        };
+                        chrome.app.runtime.onLaunched.addListener(onLaunched);
+                        chrome.fileManagerPrivate.executeTask(
+                            tasks[0].taskId, [entry.toURL()]);
+                      }));
+                })).catch(chrome.test.fail);
+          }), function(error) {
+            chrome.test.fail(error.name);
+          });
     },
 
     // The file without a mime set must not appear on the task list for this
@@ -118,11 +127,15 @@ function runTests() {
           TESTING_WITHOUT_MIME_FILE.name,
           {},
           chrome.test.callbackPass(function(entry) {
-            chrome.fileManagerPrivate.getFileTasks(
-                [entry.toURL()],
-                chrome.test.callbackPass(function(tasks) {
-                  chrome.test.assertEq(0, tasks.length);
-                }));
+            test_util.toExternalEntry(entry).then(
+                chrome.test.callbackPass(function(externalEntry) {
+                  chrome.test.assertTrue(!!externalEntry);
+                  chrome.fileManagerPrivate.getFileTasks(
+                      [externalEntry.toURL()],
+                      chrome.test.callbackPass(function(tasks) {
+                        chrome.test.assertEq(0, tasks.length);
+                      }));
+                })).catch(chrome.test.fail);
           }), function(error) {
             chrome.test.fail(error.name);
           });

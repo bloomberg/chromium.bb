@@ -593,7 +593,7 @@ callback GetProfilesCallback = void(ProfileInfo[] profiles,
 
 // |entryUrl| URL of an entry in a normal file system.
 callback ResolveEntriesCallback =
-    void([instanceOf=FileEntry] object[] entries);
+    void([instanceOf=Entry] object[] entries);
 
 // |checksum| Result checksum.
 callback ComputeChecksumCallback = void(DOMString checksum);
@@ -652,13 +652,6 @@ interface Functions {
   static void removeFileWatch(DOMString fileUrl,
                               RemoveFileWatchCallback callback);
 
-  // Requests access to a file system volume.
-  // |volumeId| The ID of the file system volume to request. The volume ID is
-  //     delivered to JavaScript as part of VolumeMetadata.
-  // |callback|
-  static void requestFileSystem(DOMString volumeId,
-                                RequestFileSystemCallback callback);
-
   // Enables the extenal file scheme necessary to initiate drags to the browser
   // window for files on the external backend.
   static void enableExternalFileScheme();
@@ -710,13 +703,13 @@ interface Functions {
                            boolean pin,
                            optional SimpleCallback callback);
 
-  // Resolves file entries in the isolated file system and returns corresponding
+  // Resolves entries in the isolated file system and returns corresponding
   // entries in the external file system mounted to Chrome OS file manager
   // backend. If resolving entry fails, the entry will be just ignored and the
   // corresponding entry does not appear in the result.
   [nocompile]
   static void resolveIsolatedEntries(
-      [instanceOf=FileEntry] object[] entries,
+      [instanceOf=Entry] object[] entries,
       ResolveEntriesCallback callback);
 
   // Mount a resource or a file.

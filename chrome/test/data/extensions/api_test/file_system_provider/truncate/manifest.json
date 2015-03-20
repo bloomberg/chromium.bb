@@ -7,6 +7,9 @@
       "Test for chrome.fileSystemProvider.onTruncateRequested().",
   "permissions": [
     "fileSystemProvider",
+    {
+      "fileSystem": ["requestFileSystem", "write"]
+    },
     "fileManagerPrivate",
     "fileBrowserHandler"
   ],

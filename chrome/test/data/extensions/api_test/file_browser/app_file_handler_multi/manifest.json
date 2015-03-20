@@ -17,6 +17,9 @@
   "permissions": [
     "fileManagerPrivate",
     "fileBrowserHandler",
+    {
+      "fileSystem": ["requestFileSystem", "write"]
+    },
     "unlimitedStorage"
   ]
 }
