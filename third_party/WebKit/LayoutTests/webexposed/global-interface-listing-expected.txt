@@ -3704,15 +3704,11 @@ interface RangeError
     method constructor
     setter stack
 interface ReadableStream
-    getter closed
     method cancel
     method constructor
     method getReader
 interface ReadableStreamReader
     getter closed
-    getter isActive
-    getter ready
-    getter state
     method cancel
     method constructor
     method read

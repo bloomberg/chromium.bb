@@ -30,7 +30,6 @@ class ReadableStream : public GarbageCollectedFinalized<ReadableStream>, public 
 public:
     enum State {
         Readable,
-        Waiting,
         Closed,
         Errored,
     };
@@ -47,17 +46,13 @@ public:
     State stateInternal() const { return m_state; }
     DOMException* storedException() { return m_exception.get(); }
 
-    // |stateString|, |read| and |ready| are affected by an exclusive lock. Use
-    // |stateInternal|, |readInternal| and |readyInternal| if you want to avoid
-    // that.
-    String stateString() const;
-    ScriptValue read(ScriptState*, ExceptionState&);
-    ScriptPromise ready(ScriptState*);
+    virtual ScriptPromise read(ScriptState*) = 0;
     ScriptPromise cancel(ScriptState*, ScriptValue reason);
-    ScriptPromise closed(ScriptState*);
+    ScriptPromise cancelInternal(ScriptState*, ScriptValue reason);
 
-    virtual ScriptValue readInternal(ScriptState*, ExceptionState&) = 0;
-    ScriptPromise readyInternal(ScriptState*);
+    virtual bool hasPendingReads() const = 0;
+    virtual void resolveAllPendingReadsAsDone() = 0;
+    virtual void rejectAllPendingReads(PassRefPtrWillBeRawPtr<DOMException>) = 0;
 
     void close();
     void error(PassRefPtrWillBeRawPtr<DOMException>);
@@ -77,13 +72,9 @@ public:
     void stop() override;
     DECLARE_VIRTUAL_TRACE();
 
-    // Returns the string representation of the given State.
-    static String stateToString(State);
-
 protected:
     bool enqueuePreliminaryCheck();
     bool enqueuePostAction();
-    void readInternalPreliminaryCheck(ExceptionState&);
     void readInternalPostAction();
 
 private:
@@ -96,15 +87,13 @@ private:
     virtual bool shouldApplyBackpressure() = 0;
 
     void callPullIfNeeded();
+    void closeInternal();
 
     Member<UnderlyingSource> m_source;
     bool m_isStarted;
     bool m_isDraining;
     bool m_isPulling;
     State m_state;
-
-    Member<WaitPromise> m_ready;
-    Member<ClosedPromise> m_closed;
 
     RefPtrWillBeMember<DOMException> m_exception;
     Member<ReadableStreamReader> m_reader;

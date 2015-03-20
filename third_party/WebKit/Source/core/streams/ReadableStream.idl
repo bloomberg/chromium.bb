@@ -8,8 +8,6 @@
     Exposed=(Window,Worker),
     ActiveDOMObject,
 ] interface ReadableStream {
-    [CallWith=ScriptState] Promise cancel(any reason);
     [RaisesException] ReadableStreamReader getReader();
-
-    [CallWith=ScriptState] readonly attribute Promise closed;
+    [CallWith=ScriptState] Promise<void> cancel(any reason);
 };

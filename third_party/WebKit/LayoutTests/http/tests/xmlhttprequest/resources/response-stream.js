@@ -19,19 +19,17 @@ test.step(function() {
 
     function readStream(reader) {
         var chunks = [];
-        function rec(resolve, reject) {
-            while (reader.state === 'readable') {
-                chunks.push(reader.read());
-            }
-            if (reader.state === 'closed') {
-                resolve(chunks);
-                return;
-            }
-            reader.ready.then(function() {
-                rec(resolve, reject);
-            }).catch(reject);
+        function consume() {
+            return reader.read().then(function(result) {
+                if (result.done) {
+                    return chunks;
+                } else {
+                    chunks.push(result.value);
+                    return consume();
+                }
+            });
         }
-        return new Promise(rec);
+        return consume();
     }
     var streamPromise = undefined;
 
@@ -71,7 +69,7 @@ test.step(function() {
                     size += chunks[i].byteLength;
                 }
                 assert_equals(size, 103746, 'response size');
-                return xhr.response.closed;
+                return xhr.response.getReader().closed;
             }).then(function() {
                 test.done();
             }).catch(test.step_func(function(e) {

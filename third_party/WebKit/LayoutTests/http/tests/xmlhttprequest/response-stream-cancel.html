@@ -42,7 +42,7 @@ test.step(function()
 
             assert_equals(xhr.readyState, xhr.UNSENT, 'xhr.readyState after cancel');
             assert_equals(xhr.response, null, 'xhr.response after cancel');
-            stream.closed.then(function(value) {
+            stream.getReader().closed.then(function(value) {
                 assert_equals(value, undefined,
                     'stream.closed should be resolved with undefined');
                 test.done();

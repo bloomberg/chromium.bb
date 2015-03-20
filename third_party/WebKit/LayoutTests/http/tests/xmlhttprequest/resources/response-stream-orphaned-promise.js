@@ -15,7 +15,7 @@ function fetchBody(url) {
             visited = true;
             // Note that all provided urls have empty bodies, so
             // we don't have to read the data.
-            xhr.response.closed.then(resolve, reject);
+            xhr.response.getReader().closed.then(resolve, reject);
         };
         xhr.open('GET', url);
         xhr.send();

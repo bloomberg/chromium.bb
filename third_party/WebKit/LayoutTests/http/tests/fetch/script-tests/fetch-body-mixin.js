@@ -13,38 +13,14 @@ function arrayBufferToString(buffer) {
 }
 
 function readStream(reader, values) {
-  while (reader.state === 'readable') {
-    values.push(reader.read());
-  }
-  if (reader.state === 'waiting') {
-    return reader.ready.then(function() {
+  reader.read().then(function(r) {
+      if (!r.done) {
+        values.push(r.value);
         readStream(reader, values);
-      });
-  }
+      }
+    });
   return reader.closed;
 }
-
-sequential_promise_test(function(test) {
-    var response;
-    var reader;
-    return fetch('/fetch/resources/doctype.html')
-      .then(function(resp) {
-          response = resp;
-          reader = resp.body.getReader();
-          return reader.ready;
-        })
-      .then(function() {
-          if (reader.state !== 'readable') {
-            return Promise.reject(TypeError('stream state get wrong'));
-          } else {
-            reader.releaseLock();
-            return response.text();
-          }
-        })
-      .then(function(text) {
-          assert_equals(text, '<!DOCTYPE html>\n', 'response.body');
-        })
-    }, 'FetchTextAfterStreamGetReadableTest');
 
 sequential_promise_test(function(test) {
     return fetch('/fetch/resources/doctype.html')
@@ -151,35 +127,34 @@ sequential_promise_test(function(test) {
         expectedText += i;
 
     var values = [];
-    function partialReadResponse(response, read_count) {
-      var reader = response.body.getReader();
-      function read(resolve, reject) {
-        while (reader.state === 'readable') {
-          values.push(reader.read());
-          if (values.length > read_count) {
-            reader.releaseLock();
-            resolve();
-            return;
+    function partialReadResponse(reader, read_count) {
+      return Promise.resolve().then(function() {
+          var promise = Promise.resolve();
+          for (var i = 0; i < read_count; ++i) {
+              promise = reader.read().then(function(r) {
+                  if (!r.done) {
+                    values.push(r.value);
+                  }
+                });
           }
-        }
-        if (reader.state === 'closed') {
-          reader.releaseLock();
-          resolve();
-          return;
-        }
-        reader.ready.then(function() {
-            read(resolve, reject);
-          }).catch(reject);
-      }
-      return new Promise(read);
+          return promise;
+        });
     }
     var response;
+    var reader;
     return fetch('/fetch/resources/progressive.php')
       .then(function(res) {
           response = res;
-          return partialReadResponse(response, 10);
+          reader = response.body.getReader();
+          return partialReadResponse(reader, 10);
         })
       .then(function() {
+          return response.text().then(unreached_fulfillment(test), function() {
+              // response.text() should fail because we have a reader.
+            });
+        })
+      .then(function() {
+          reader.releaseLock();
           return Promise.all(
               values.map(arrayBufferToString).concat(response.text()));
         })

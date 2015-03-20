@@ -38,7 +38,7 @@ testInLoadingState.step(function()
             assert_equals(xhr.readyState, xhr.UNSENT, 'xhr.readyState after abort() call');
             assert_equals(xhr.response, null, 'xhr.response after abort() call');
             assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
-            stream.closed.then(testInLoadingState.step_func(assert_unreached), testInLoadingState.done.bind(testInLoadingState));
+            stream.getReader().closed.then(testInLoadingState.step_func(assert_unreached), testInLoadingState.done.bind(testInLoadingState));
             return;
 
         case xhr.DONE:
@@ -57,11 +57,8 @@ testInLoadingState.step(function()
 var testInDoneState = async_test('Test aborting XMLHttpRequest with responseType set to "stream" in DONE state.');
 
 function readUntilDone(reader) {
-    return reader.ready.then(function() {
-        while (reader.state == 'readable') {
-            reader.read();
-        }
-        if (reader.state == 'closed' || reader.state == 'errored') {
+    return reader.read().then(function(r) {
+        if (r.done) {
             return reader.closed;
         } else {
             return readUntilDone(reader);
@@ -103,7 +100,7 @@ testInDoneState.step(function()
                     assert_equals(xhr.response, null, 'xhr.response after abort() call');
 
                     assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
-                    return stream.closed;
+                    return stream.getReader().closed;
                 }).then(function() {
                     testInDoneState.done();
                 }).catch(testInDoneState.step_func(function(e) {

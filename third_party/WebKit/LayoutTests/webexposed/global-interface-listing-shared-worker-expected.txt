@@ -596,15 +596,11 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method constructor
 [Worker]     setter stack
 [Worker] interface ReadableStream
-[Worker]     getter closed
 [Worker]     method cancel
 [Worker]     method constructor
 [Worker]     method getReader
 [Worker] interface ReadableStreamReader
 [Worker]     getter closed
-[Worker]     getter isActive
-[Worker]     getter ready
-[Worker]     getter state
 [Worker]     method cancel
 [Worker]     method constructor
 [Worker]     method read

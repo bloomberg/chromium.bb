@@ -21,9 +21,7 @@ class ExceptionState;
 class ScriptState;
 
 // ReadableStreamReader corresponds to the same-name class in the Streams spec
-// https://streams.spec.whatwg.org/. This class trusts ReadableStream, contrary
-// to the class in the Streams spec, because we only support
-// blink::Readable[Byte]Stream as this reader's customer.
+// https://streams.spec.whatwg.org/.
 class ReadableStreamReader final : public GarbageCollectedFinalized<ReadableStreamReader>, public ScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ReadableStreamReader);
@@ -33,12 +31,10 @@ public:
 
     ScriptPromise closed(ScriptState*);
     bool isActive() const;
-    ScriptPromise ready(ScriptState*);
-    String state() const;
     ScriptPromise cancel(ScriptState*, ScriptValue reason);
-    ScriptValue read(ScriptState*, ExceptionState&);
+    ScriptPromise read(ScriptState*);
+    void releaseLock(ExceptionState&);
     void releaseLock();
-    ScriptPromise released(ScriptState*);
 
     bool hasPendingActivity() const override;
     void stop() override;
@@ -46,15 +42,11 @@ public:
     DECLARE_TRACE();
 
 private:
-    using ReleasedPromise = ScriptPromiseProperty<Member<ReadableStreamReader>, ToV8UndefinedGenerator, ToV8UndefinedGenerator>;
     using ClosedPromise = ScriptPromiseProperty<Member<ReadableStreamReader>, ToV8UndefinedGenerator, RefPtrWillBeMember<DOMException>>;
-    using ReadyPromise = ScriptPromiseProperty<Member<ReadableStreamReader>, ToV8UndefinedGenerator, ToV8UndefinedGenerator>;
 
     const Member<ReadableStream> m_stream;
-    const Member<ReleasedPromise> m_released;
     ReadableStream::State m_stateAfterRelease;
-    Member<ClosedPromise> m_closedAfterRelease;
-    Member<ReadyPromise> m_readyAfterRelease;
+    Member<ClosedPromise> m_closed;
 };
 
 } // namespace blink

@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-enum ReadableStreamState {
-    "readable",
-    "waiting",
-    "closed",
-    "errored"
-};
-
 [
     RuntimeEnabled=ExperimentalStream,
     GarbageCollected,
@@ -17,12 +10,9 @@ enum ReadableStreamState {
 ] interface ReadableStreamReader {
     // FIXME: Add constructor.
 
-    [CallWith=ScriptState] readonly attribute Promise closed;
-    readonly attribute boolean isActive;
-    [CallWith=ScriptState] readonly attribute Promise ready;
-    readonly attribute ReadableStreamState state;
+    [CallWith=ScriptState] readonly attribute Promise<void> closed;
+    [CallWith=ScriptState] Promise<any> read();
 
-    [CallWith=ScriptState] Promise cancel(any reason);
-    [CallWith=ScriptState, RaisesException] any read();
-    void releaseLock();
+    [CallWith=ScriptState] Promise<void> cancel(any reason);
+    [RaisesException] void releaseLock();
 };

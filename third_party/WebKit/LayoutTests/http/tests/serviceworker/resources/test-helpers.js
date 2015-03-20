@@ -27,6 +27,13 @@ function service_worker_unregister_and_done(test, scope) {
     .then(test.done.bind(test));
 }
 
+function unreached_fulfillment(test, prefix) {
+  return test.step_func(function(result) {
+      var error_prefix = prefix || 'unexpected fulfillment';
+      assert_unreached(error_prefix + ': ' + result);
+    });
+}
+
 // Rejection-specific helper that provides more details
 function unreached_rejection(test, prefix) {
   return test.step_func(function(error) {
