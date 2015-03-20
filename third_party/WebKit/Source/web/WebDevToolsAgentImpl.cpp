@@ -255,7 +255,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
     m_agents.append(InspectorInspectorAgent::create(injectedScriptManager));
 
-    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(page, injectedScriptManager, this, m_overlay));
+    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(page, injectedScriptManager, m_overlay));
     m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
@@ -530,11 +530,6 @@ void WebDevToolsAgentImpl::didRemovePageOverlay(const GraphicsLayer* layer)
     m_layerTreeAgent->didRemovePageOverlay(layer);
 }
 
-void WebDevToolsAgentImpl::setTouchEventEmulationEnabled(bool enabled)
-{
-    m_webViewImpl->devToolsEmulator()->setTouchEventEmulationEnabled(enabled);
-}
-
 void WebDevToolsAgentImpl::enableTracing(const String& categoryFilter)
 {
     m_client->enableTracing(categoryFilter);
@@ -600,26 +595,6 @@ void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& point)
     if (!node && page->deprecatedLocalMainFrame()->document())
         node = page->deprecatedLocalMainFrame()->document()->documentElement();
     m_domAgent->inspect(node);
-}
-
-void WebDevToolsAgentImpl::resetScrollAndPageScaleFactor()
-{
-    m_webViewImpl->resetScrollAndScaleState();
-}
-
-float WebDevToolsAgentImpl::minimumPageScaleFactor()
-{
-    return m_webViewImpl->minimumPageScaleFactor();
-}
-
-float WebDevToolsAgentImpl::maximumPageScaleFactor()
-{
-    return m_webViewImpl->maximumPageScaleFactor();
-}
-
-void WebDevToolsAgentImpl::setPageScaleFactor(float pageScaleFactor)
-{
-    m_webViewImpl->setPageScaleFactor(pageScaleFactor);
 }
 
 void WebDevToolsAgentImpl::sendProtocolResponse(int callId, PassRefPtr<JSONObject> message)

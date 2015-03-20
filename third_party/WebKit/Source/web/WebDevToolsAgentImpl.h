@@ -33,7 +33,6 @@
 
 #include "core/inspector/InspectorFrontendChannel.h"
 #include "core/inspector/InspectorInputAgent.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorStateClient.h"
 #include "core/inspector/InspectorTracingAgent.h"
 #include "core/inspector/PageRuntimeAgent.h"
@@ -47,8 +46,10 @@
 
 namespace blink {
 
+class DebuggerTask;
 class GraphicsLayer;
 class InspectorOverlay;
+class InspectorPageAgent;
 class LocalFrame;
 class Page;
 class PlatformGestureEvent;
@@ -60,14 +61,12 @@ class WebInputEvent;
 class WebLocalFrameImpl;
 class WebString;
 class WebViewImpl;
-class DebuggerTask;
 
 class WebDevToolsAgentImpl final
     : public NoBaseWillBeGarbageCollectedFinalized<WebDevToolsAgentImpl>
     , public WebDevToolsAgent
     , public InspectorStateClient
     , public InspectorInputAgent::Client
-    , public InspectorPageAgent::Client
     , public InspectorTracingAgent::Client
     , public PageRuntimeAgent::Client
     , public InspectorFrontendChannel
@@ -109,13 +108,6 @@ private:
     // InspectorInputAgent::Client implementation.
     void dispatchKeyEvent(const PlatformKeyboardEvent&) override;
     void dispatchMouseEvent(const PlatformMouseEvent&) override;
-
-    // InspectorPageAgent::Client implementation.
-    void resetScrollAndPageScaleFactor() override;
-    float minimumPageScaleFactor() override;
-    float maximumPageScaleFactor() override;
-    void setPageScaleFactor(float) override;
-    void setTouchEventEmulationEnabled(bool) override;
 
     // InspectorTracingAgent::Client implementation.
     void enableTracing(const WTF::String& categoryFilter) override;

@@ -90,7 +90,6 @@ namespace blink {
 namespace PageAgentState {
 static const char pageAgentEnabled[] = "pageAgentEnabled";
 static const char pageAgentScriptsToEvaluateOnLoad[] = "pageAgentScriptsToEvaluateOnLoad";
-static const char touchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char showSizeOnResize[] = "showSizeOnResize";
 static const char showGridOnResize[] = "showGridOnResize";
 static const char screencastEnabled[] = "screencastEnabled";
@@ -288,9 +287,9 @@ bool InspectorPageAgent::dataContent(const char* data, unsigned size, const Stri
     return decodeBuffer(data, size, textEncodingName, result);
 }
 
-PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(Page* page, InjectedScriptManager* injectedScriptManager, Client* client, InspectorOverlay* overlay)
+PassOwnPtrWillBeRawPtr<InspectorPageAgent> InspectorPageAgent::create(Page* page, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
 {
-    return adoptPtrWillBeNoop(new InspectorPageAgent(page, injectedScriptManager, client, overlay));
+    return adoptPtrWillBeNoop(new InspectorPageAgent(page, injectedScriptManager, overlay));
 }
 
 void InspectorPageAgent::setDeferredAgents(InspectorDebuggerAgent* debuggerAgent, InspectorCSSAgent* cssAgent)
@@ -378,13 +377,12 @@ TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::cachedResourceTypeJson
     return resourceTypeJson(cachedResourceType(cachedResource));
 }
 
-InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* injectedScriptManager, Client* client, InspectorOverlay* overlay)
+InspectorPageAgent::InspectorPageAgent(Page* page, InjectedScriptManager* injectedScriptManager, InspectorOverlay* overlay)
     : InspectorBaseAgent<InspectorPageAgent, InspectorFrontend::Page>("Page")
     , m_page(page)
     , m_injectedScriptManager(injectedScriptManager)
     , m_debuggerAgent(nullptr)
     , m_cssAgent(nullptr)
-    , m_client(client)
     , m_overlay(overlay)
     , m_lastScriptIdentifier(0)
     , m_enabled(false)
@@ -397,8 +395,6 @@ void InspectorPageAgent::restore()
     if (m_state->getBoolean(PageAgentState::pageAgentEnabled)) {
         ErrorString error;
         enable(&error);
-
-        updateTouchEventEmulationInPage(m_state->getBoolean(PageAgentState::touchEventEmulationEnabled));
     }
 }
 
@@ -433,11 +429,6 @@ void InspectorPageAgent::disable(ErrorString*)
 
     setShowViewportSizeOnResize(0, false, 0);
     stopScreencast(0);
-
-    if (m_state->getBoolean(PageAgentState::touchEventEmulationEnabled)) {
-        updateTouchEventEmulationInPage(false);
-        m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, false);
-    }
 
     finishReload();
 }
@@ -988,20 +979,6 @@ PassRefPtr<TypeBuilder::Page::FrameResourceTree> InspectorPageAgent::buildObject
         childrenArray->addItem(buildObjectForFrameTree(toLocalFrame(child)));
     }
     return result;
-}
-
-void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
-{
-    m_client->setTouchEventEmulationEnabled(enabled);
-}
-
-void InspectorPageAgent::setTouchEmulationEnabled(ErrorString*, bool enabled, const String* configuration)
-{
-    if (m_state->getBoolean(PageAgentState::touchEventEmulationEnabled) == enabled)
-        return;
-
-    m_state->setBoolean(PageAgentState::touchEventEmulationEnabled, enabled);
-    updateTouchEventEmulationInPage(enabled);
 }
 
 bool InspectorPageAgent::compositingEnabled(ErrorString* errorString)

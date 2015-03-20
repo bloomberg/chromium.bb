@@ -60,17 +60,6 @@ typedef String ErrorString;
 class InspectorPageAgent final : public InspectorBaseAgent<InspectorPageAgent, InspectorFrontend::Page>, public InspectorBackendDispatcher::PageCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorPageAgent);
 public:
-    class Client {
-    public:
-        virtual ~Client() { }
-
-        virtual void resetScrollAndPageScaleFactor() { }
-        virtual float minimumPageScaleFactor() { return 1; }
-        virtual float maximumPageScaleFactor() { return 1; }
-        virtual void setPageScaleFactor(float) { }
-        virtual void setTouchEventEmulationEnabled(bool) { }
-    };
-
     enum ResourceType {
         DocumentResource,
         StylesheetResource,
@@ -84,7 +73,7 @@ public:
         OtherResource
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(Page*, InjectedScriptManager*, Client*, InspectorOverlay*);
+    static PassOwnPtrWillBeRawPtr<InspectorPageAgent> create(Page*, InjectedScriptManager*, InspectorOverlay*);
     void setDeferredAgents(InspectorDebuggerAgent*, InspectorCSSAgent*);
 
     static Vector<Document*> importsForFrame(LocalFrame*);
@@ -110,7 +99,6 @@ public:
     void getResourceContent(ErrorString*, const String& frameId, const String& url, PassRefPtrWillBeRawPtr<GetResourceContentCallback>) override;
     void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>>&) override;
     void setDocumentContent(ErrorString*, const String& frameId, const String& html) override;
-    void setTouchEmulationEnabled(ErrorString*, bool enabled, const String* configuration) override;
     void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight) override;
     void stopScreencast(ErrorString*) override;
     void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) override;
@@ -160,7 +148,7 @@ public:
 private:
     class GetResourceContentLoadListener;
 
-    InspectorPageAgent(Page*, InjectedScriptManager*, Client*, InspectorOverlay*);
+    InspectorPageAgent(Page*, InjectedScriptManager*, InspectorOverlay*);
     void updateTouchEventEmulationInPage(bool);
     bool compositingEnabled(ErrorString*);
 
@@ -175,7 +163,6 @@ private:
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     RawPtrWillBeMember<InspectorDebuggerAgent> m_debuggerAgent;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
-    Client* m_client;
     RawPtrWillBeMember<InspectorOverlay> m_overlay;
     long m_lastScriptIdentifier;
     String m_pendingScriptToEvaluateOnLoadOnce;
