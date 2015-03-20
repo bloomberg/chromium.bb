@@ -46,6 +46,9 @@ Wayland shell, desktop, or applications.
 .
 .\" ***************************************************************
 .SH SHELLS
+Each of these shells have its own public protocol interface for clients.
+This means that a client must be specifically written for a shell protocol,
+otherwise it will not work.
 .TP
 Desktop shell
 Desktop shell is like a modern X desktop environment, concentrating
@@ -57,16 +60,20 @@ and the special client
 .B weston-desktop-shell
 which provides the wallpaper, panel, and screen locking dialog.
 .TP
-Tablet shell
-Tablet shell is a graphical user interface aimed for tablet-like
-devices, where usually the only input method is a touch screen.
-It does not support freely floating windows or many other desktop
-features, but intends to provide a natural interface on tablets.
-Tablet shell consists of the shell plugin
-.I tablet-shell.so
-and the special client
-.B weston-tablet-shell
-which provides the basic user interface.
+Fullscreen shell
+Fullscreen shell is intended for a client that needs to take over
+whole outputs, often all outputs. This is primarily intended for
+running another compositor on Weston. The other compositor does not
+need to handle any platform-specifics like DRM/KMS or evdev/libinput.
+The shell consists only of the shell plugin
+.IR fullscreen-shell.so .
+.TP
+IVI-shell
+In-vehicle infotainment shell is a special purpose shell that exposes
+a GENIVI Layer Manager compatible API to controller modules, and a very
+simple shell protocol towards clients. IVI-shell starts with loading
+.IR ivi-shell.so ,
+and then a controller module which may launch helper clients.
 .
 .\" ***************************************************************
 .SH XWAYLAND
