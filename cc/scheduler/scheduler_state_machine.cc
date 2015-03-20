@@ -151,12 +151,12 @@ scoped_refptr<base::trace_event::ConvertableToTraceFormat>
 SchedulerStateMachine::AsValue() const {
   scoped_refptr<base::trace_event::TracedValue> state =
       new base::trace_event::TracedValue();
-  AsValueInto(state.get(), gfx::FrameTime::Now());
+  AsValueInto(state.get());
   return state;
 }
 
-void SchedulerStateMachine::AsValueInto(base::trace_event::TracedValue* state,
-                                        base::TimeTicks now) const {
+void SchedulerStateMachine::AsValueInto(
+    base::trace_event::TracedValue* state) const {
   state->BeginDictionary("major_state");
   state->SetString("next_action", ActionToString(NextAction()));
   state->SetString("begin_impl_frame_state",
@@ -166,31 +166,6 @@ void SchedulerStateMachine::AsValueInto(base::trace_event::TracedValue* state,
                    OutputSurfaceStateToString(output_surface_state_));
   state->SetString("forced_redraw_state",
                    ForcedRedrawOnTimeoutStateToString(forced_redraw_state_));
-  state->EndDictionary();
-
-  state->BeginDictionary("major_timestamps_in_ms");
-  state->SetDouble("0_interval",
-                   begin_impl_frame_args_.interval.InMicroseconds() / 1000.0L);
-  state->SetDouble(
-      "1_now_to_deadline",
-      (begin_impl_frame_args_.deadline - now).InMicroseconds() / 1000.0L);
-  state->SetDouble(
-      "2_frame_time_to_now",
-      (now - begin_impl_frame_args_.frame_time).InMicroseconds() / 1000.0L);
-  state->SetDouble("3_frame_time_to_deadline",
-                   (begin_impl_frame_args_.deadline -
-                    begin_impl_frame_args_.frame_time).InMicroseconds() /
-                       1000.0L);
-  state->SetDouble("4_now",
-                   (now - base::TimeTicks()).InMicroseconds() / 1000.0L);
-  state->SetDouble(
-      "5_frame_time",
-      (begin_impl_frame_args_.frame_time - base::TimeTicks()).InMicroseconds() /
-          1000.0L);
-  state->SetDouble(
-      "6_deadline",
-      (begin_impl_frame_args_.deadline - base::TimeTicks()).InMicroseconds() /
-          1000.0L);
   state->EndDictionary();
 
   state->BeginDictionary("minor_state");
@@ -798,9 +773,8 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   return false;
 }
 
-void SchedulerStateMachine::OnBeginImplFrame(const BeginFrameArgs& args) {
+void SchedulerStateMachine::OnBeginImplFrame() {
   AdvanceCurrentFrameNumber();
-  begin_impl_frame_args_ = args;
   DCHECK_EQ(begin_impl_frame_state_, BEGIN_IMPL_FRAME_STATE_IDLE)
       << AsValue()->ToString();
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING;

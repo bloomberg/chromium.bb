@@ -534,7 +534,7 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
     state_machine_.SetSkipNextBeginMainFrameToReduceLatency();
   }
 
-  state_machine_.OnBeginImplFrame(begin_impl_frame_args_);
+  state_machine_.OnBeginImplFrame();
   devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);
   client_->WillBeginImplFrame(begin_impl_frame_args_);
 
@@ -803,7 +803,7 @@ scoped_refptr<base::trace_event::ConvertableToTraceFormat> Scheduler::AsValue()
 
 void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
   state->BeginDictionary("state_machine");
-  state_machine_.AsValueInto(state, Now());
+  state_machine_.AsValueInto(state);
   state->EndDictionary();
 
   // Only trace frame sources when explicitly enabled - http://crbug.com/420607
@@ -835,6 +835,23 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
                     !advance_commit_state_task_.IsCancelled());
   state->BeginDictionary("begin_impl_frame_args");
   begin_impl_frame_args_.AsValueInto(state);
+  state->EndDictionary();
+
+  base::TimeTicks now = Now();
+  base::TimeTicks frame_time = begin_impl_frame_args_.frame_time;
+  base::TimeTicks deadline = begin_impl_frame_args_.deadline;
+  base::TimeDelta interval = begin_impl_frame_args_.interval;
+  state->BeginDictionary("major_timestamps_in_ms");
+  state->SetDouble("0_interval", interval.InMillisecondsF());
+  state->SetDouble("1_now_to_deadline", (deadline - now).InMillisecondsF());
+  state->SetDouble("2_frame_time_to_now", (now - frame_time).InMillisecondsF());
+  state->SetDouble("3_frame_time_to_deadline",
+                   (deadline - frame_time).InMillisecondsF());
+  state->SetDouble("4_now", (now - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble("5_frame_time",
+                   (frame_time - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble("6_deadline",
+                   (deadline - base::TimeTicks()).InMillisecondsF());
   state->EndDictionary();
 
   state->EndDictionary();

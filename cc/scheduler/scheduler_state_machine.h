@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
@@ -115,8 +114,7 @@ class CC_EXPORT SchedulerStateMachine {
   static const char* ActionToString(Action action);
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
-  void AsValueInto(base::trace_event::TracedValue* dict,
-                   base::TimeTicks now) const;
+  void AsValueInto(base::trace_event::TracedValue* dict) const;
 
   Action NextAction() const;
   void UpdateState(Action action);
@@ -134,7 +132,7 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates that the system has entered and left a BeginImplFrame callback.
   // The scheduler will not draw more than once in a given BeginImplFrame
   // callback nor send more than one BeginMainFrame message.
-  void OnBeginImplFrame(const BeginFrameArgs& args);
+  void OnBeginImplFrame();
   void OnBeginImplFrameDeadlinePending();
   void OnBeginImplFrameDeadline();
   void OnBeginImplFrameIdle();
@@ -296,8 +294,6 @@ class CC_EXPORT SchedulerStateMachine {
   BeginImplFrameState begin_impl_frame_state_;
   CommitState commit_state_;
   ForcedRedrawOnTimeoutState forced_redraw_state_;
-
-  BeginFrameArgs begin_impl_frame_args_;
 
   int commit_count_;
   int current_frame_number_;
