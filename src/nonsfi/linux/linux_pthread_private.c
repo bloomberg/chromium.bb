@@ -9,6 +9,8 @@
 #include "native_client/src/nonsfi/linux/linux_syscall_defines.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
+#include "native_client/src/nonsfi/linux/linux_sys_private.h"
+#include "native_client/src/public/linux_syscalls/sched.h"
 #include "native_client/src/public/linux_syscalls/sys/syscall.h"
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 #include "native_client/src/untrusted/nacl/nacl_thread.h"
@@ -24,14 +26,6 @@ static uint32_t irt_return_call(uintptr_t result) {
 static int nacl_irt_thread_create(void (*start_func)(void), void *stack,
                                   void *thread_ptr) {
   /*
-   * The prototype of clone(2) is
-   *
-   * clone(int flags, void *stack, pid_t *ptid, void *tls, pid_t *ctid);
-   *
-   * See linux_syscall_wrappers.h for syscalls' calling conventions.
-   */
-
-  /*
    * We do not use CLONE_CHILD_CLEARTID as we do not want any
    * non-private futex signaling. Also, NaCl ABI does not require us
    * to signal the futex on stack_flag.
@@ -39,81 +33,14 @@ static int nacl_irt_thread_create(void (*start_func)(void), void *stack,
   int flags = (CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
                CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS);
   /*
-   * Make sure we can access stack[0] and align the stack address to a
-   * 16-byte boundary.
-   * In addition, we reserve 6 * 4 bytes here for syscall(). Our syscall()
-   * implementation reads six 4-byte arguments regardless of its actual
-   * arguments.
+   * linux_clone_wrapper expects start_func's type is "int (*)(void *)".
+   * Although |start_func| has type "void (*)(void)", the type mismatching
+   * will not cause a problem. Passing a dummy |arg| (= 0) does nothing there.
+   * Also, start_func will never return.
    */
-  static const int kStackAlignmentMask = ~15;
-  stack = (void *) (((uintptr_t) stack - sizeof(uintptr_t) * 7) &
-                    kStackAlignmentMask);
-  /* We pass start_func using the stack top. */
-  ((uintptr_t *) stack)[0] = (uintptr_t) start_func;
-
-#if defined(__i386__)
-  uint32_t result;
-  struct linux_user_desc desc = create_linux_user_desc(
-      0 /* allocate_new_entry */, thread_ptr);
-  __asm__ __volatile__("int $0x80\n"
-                       /*
-                        * If the return value of clone is non-zero, we are
-                        * in the parent thread of clone.
-                        */
-                       "cmp $0, %%eax\n"
-                       "jne 0f\n"
-                       /*
-                        * In child thread. Clear the frame pointer to
-                        * prevent debuggers from unwinding beyond this,
-                        * pop the stack to get start_func and call it.
-                        */
-                       "mov $0, %%ebp\n"
-                       "call *(%%esp)\n"
-                       /* start_func never finishes. */
-                       "hlt\n"
-                       "0:\n"
-                       : "=a"(result)
-                       : "a"(__NR_clone), "b"(flags), "c"(stack),
-                         /* We do not use CLONE_PARENT_SETTID. */
-                         "d"(0),
-                         "S"(&desc),
-                         /* We do not use CLONE_CHILD_CLEARTID. */
-                         "D"(0)
-                       : "memory");
-#elif defined(__arm__)
-  register uint32_t result __asm__("r0");
-  register uint32_t sysno __asm__("r7") = __NR_clone;
-  register uint32_t a1 __asm__("r0") = flags;
-  register uint32_t a2 __asm__("r1") = (uint32_t) stack;
-  register uint32_t a3 __asm__("r2") = 0;  /* No CLONE_PARENT_SETTID. */
-  register uint32_t a4 __asm__("r3") = (uint32_t) thread_ptr;
-  register uint32_t a5 __asm__("r4") = 0;  /* No CLONE_CHILD_CLEARTID. */
-  __asm__ __volatile__("svc #0\n"
-                       /*
-                        * If the return value of clone is non-zero, we are
-                        * in the parent thread of clone.
-                        */
-                       "cmp r0, #0\n"
-                       "bne 0f\n"
-                       /*
-                        * In child thread. Clear the frame pointer to
-                        * prevent debuggers from unwinding beyond this,
-                        * load start_func from the stack and call it.
-                        */
-                       "mov fp, #0\n"
-                       "ldr r0, [sp]\n"
-                       "blx r0\n"
-                       /* start_func never finishes. */
-                       "bkpt #0\n"
-                       "0:\n"
-                       : "=r"(result)
-                       : "r"(sysno),
-                         "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5)
-                       : "memory");
-#else
-# error Unsupported architecture
-#endif
-  return irt_return_call(result);
+  return irt_return_call(linux_clone_wrapper(
+      (uintptr_t) start_func, /* arg */ 0, flags, stack,
+      /* ptid */ NULL, thread_ptr, /* ctid */ NULL));
 }
 
 static void nacl_irt_thread_exit(int32_t *stack_flag) {

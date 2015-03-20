@@ -114,3 +114,16 @@ nexe = env.ComponentProgram('nonsfi_syscall_test',
 node = env.CommandSelLdrTestNacl('nonsfi_syscall_test.out', nexe)
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nonsfi_syscall_test')
+
+
+nexe = env.ComponentProgram('clone_test',
+                            'clone_test.cc',
+                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+osenv = None
+if (env.Bit('build_arm') and env.UsingEmulator() and
+    not env.Bit('tests_use_irt')):
+  osenv = ['UNDER_QEMU_ARM=1']
+node = env.CommandSelLdrTestNacl('clone_test.out', nexe, osenv=osenv)
+
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_clone_test')

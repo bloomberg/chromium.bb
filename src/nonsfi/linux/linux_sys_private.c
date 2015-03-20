@@ -28,6 +28,7 @@
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_wrappers.h"
 #include "native_client/src/public/linux_syscalls/poll.h"
+#include "native_client/src/public/linux_syscalls/sched.h"
 #include "native_client/src/public/linux_syscalls/sys/prctl.h"
 #include "native_client/src/public/linux_syscalls/sys/socket.h"
 #include "native_client/src/public/linux_syscalls/sys/syscall.h"
@@ -717,4 +718,149 @@ void *nacl_tls_get(void) {
   __asm__("mrc p15, 0, %0, c13, c0, 3" : "=r"(result));
 #endif
   return result;
+}
+
+int linux_clone_wrapper(uintptr_t fn, uintptr_t arg,
+                        int flags, void *child_stack,
+                        void *ptid, void *thread_ptr, void *ctid) {
+  /*
+   * The prototype of clone(2) is
+   *
+   * clone(int flags, void *stack, pid_t *ptid, void *tls, pid_t *ctid);
+   *
+   * See linux_syscall_wrappers.h for syscalls' calling conventions.
+   */
+
+#if defined(__i386__)
+  /* On i386 architecture, we need to wrap thread_ptr by user_desc. */
+  struct linux_user_desc desc;
+  if (flags & CLONE_SETTLS) {
+    desc = create_linux_user_desc(
+        0 /* allocate_new_entry */, thread_ptr);
+    thread_ptr = &desc;
+  }
+#endif
+
+  /*
+   * This function is called only from clone() below or
+   * nacl_irt_thread_create() defined in linux_pthread_private.c.
+   * In both cases, |child_stack| will never be NULL, although it is allowed
+   * for direct clone() syscall. So, we skip that case's implementation for
+   * simplicity here.
+   *
+   * Here we reserve 6 * 4 bytes for three purposes described below:
+   * 1) At the beginning of the child process, we call fn(arg). To pass
+   *    the function pointer and arguments, we use |stack| for |arg|,
+   *    |stack - 4| for |fn|. Here, we need 4-byte extra memory on top of
+   *    stack for |arg|.
+   * 2) Our syscall() implementation reads six 4-byte arguments regardless
+   *    of its actual arguments.
+   * 3) Similar to 2), our clone() implementation reads three 4-byte arguments
+   *    regardless of its actual arguments.
+   * So, here we need max size of those three cases (= 6 * 4 bytes) on top of
+   * the stack, with 16-byte alignment.
+   */
+  static const int kStackAlignmentMask = ~15;
+  void *stack = (void *) (((uintptr_t) child_stack - sizeof(uintptr_t) * 6) &
+                          kStackAlignmentMask);
+  /* Put |fn| and |arg| on child process's stack. */
+  ((uintptr_t *) stack)[-1] = fn;
+  ((uintptr_t *) stack)[0] = arg;
+
+#if defined(__i386__)
+  uint32_t result;
+  __asm__ __volatile__("int $0x80\n"
+                       /*
+                        * If the return value of clone is non-zero, we are
+                        * in the parent thread of clone.
+                        */
+                       "cmp $0, %%eax\n"
+                       "jne 0f\n"
+                       /*
+                        * In child thread. Clear the frame pointer to
+                        * prevent debuggers from unwinding beyond this.
+                        */
+                       "mov $0, %%ebp\n"
+                       /*
+                        * Call fn(arg). Note that |arg| is already ready on top
+                        * of the stack, here.
+                        */
+                       "call *-4(%%esp)\n"
+                       /* Then call _exit(2) with the return value. */
+                       "mov %%eax, %%ebx\n"
+                       "mov %[exit_sysno], %%eax\n"
+                       "int $0x80\n"
+                       /* _exit(2) will never return. */
+                       "hlt\n"
+                       "0:\n"
+                       : "=a"(result)
+                       : "a"(__NR_clone), "b"(flags), "c"(stack),
+                         "d"(ptid), "S"(&desc), "D"(ctid),
+                         [exit_sysno] "I"(__NR_exit)
+                       : "memory");
+#elif defined(__arm__)
+  register uint32_t result __asm__("r0");
+  register uint32_t sysno __asm__("r7") = __NR_clone;
+  register uint32_t a1 __asm__("r0") = flags;
+  register uint32_t a2 __asm__("r1") = (uint32_t) stack;
+  register uint32_t a3 __asm__("r2") = (uint32_t) ptid;
+  register uint32_t a4 __asm__("r3") = (uint32_t) thread_ptr;
+  register uint32_t a5 __asm__("r4") = (uint32_t) ctid;
+  __asm__ __volatile__("svc #0\n"
+                       /*
+                        * If the return value of clone is non-zero, we are
+                        * in the parent thread of clone.
+                        */
+                       "cmp r0, #0\n"
+                       "bne 0f\n"
+                       /*
+                        * In child thread. Clear the frame pointer to
+                        * prevent debuggers from unwinding beyond this,
+                        * load start_func from the stack and call it.
+                        */
+                       "mov fp, #0\n"
+                       /* Load |arg| to r0 register, then call |fn|. */
+                       "ldr r0, [sp]\n"
+                       "ldr r1, [sp, #-4]\n"
+                       "blx r1\n"
+                       /*
+                        * Then, call _exit(2) with the returned value.
+                        * r0 keeps the return value of |fn(arg)|.
+                        */
+                       "mov r7, %[exit_sysno]\n"
+                       "svc #0\n"
+                       /* _exit(2) will never return. */
+                       "bkpt #0\n"
+                       "0:\n"
+                       : "=r"(result)
+                       : "r"(sysno),
+                         "r"(a1), "r"(a2), "r"(a3), "r"(a4), "r"(a5),
+                         [exit_sysno] "i"(__NR_exit)
+                       : "memory");
+#else
+# error Unsupported architecture
+#endif
+  return result;
+}
+
+int clone(int (*fn)(void *), void *child_stack, int flags, void *arg, ...) {
+  if (child_stack == NULL) {
+    /*
+     * NULL child_stack is not allowed, although it is on direct clone()
+     * syscall.
+     */
+    errno = EINVAL;
+    return -1;
+  }
+
+  /* Read three arguments regardless whether the caller passes it or not. */
+  va_list ap;
+  va_start(ap, arg);
+  void *ptid = va_arg(ap, void *);
+  void *tls = va_arg(ap, void *);
+  void *ctid = va_arg(ap, void *);
+  va_end(ap);
+
+  return errno_value_call(linux_clone_wrapper(
+      (uintptr_t) fn, (uintptr_t) arg, flags, child_stack, ptid, tls, ctid));
 }
