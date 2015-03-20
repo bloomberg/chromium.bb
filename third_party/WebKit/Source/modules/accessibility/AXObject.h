@@ -143,6 +143,7 @@ enum AccessibilityRole {
     ScrollBarRole,
     SeamlessWebAreaRole, // No mapping to ARIA role
     SearchRole,
+    SearchBoxRole,
     SliderRole,
     SliderThumbRole, // No mapping to ARIA role
     SpinButtonPartRole, // No mapping to ARIA role
@@ -150,6 +151,7 @@ enum AccessibilityRole {
     SplitterRole,
     StaticTextRole, // No mapping to ARIA role
     StatusRole,
+    SwitchRole,
     TabGroupRole, // No mapping to ARIA role
     TabListRole,
     TabPanelRole,

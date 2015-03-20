@@ -107,10 +107,12 @@ const RoleEntry roles[] = {
     { "rowheader", RowHeaderRole },
     { "scrollbar", ScrollBarRole },
     { "search", SearchRole },
+    { "searchbox", SearchBoxRole },
     { "separator", SplitterRole },
     { "slider", SliderRole },
     { "spinbutton", SpinButtonRole },
     { "status", StatusRole },
+    { "switch", SwitchRole },
     { "tab", TabRole },
     { "tablist", TabListRole },
     { "tabpanel", TabPanelRole },
@@ -260,7 +262,7 @@ bool AXObject::isDetached() const
 
 bool AXObject::isARIATextControl() const
 {
-    return ariaRoleAttribute() == TextAreaRole || ariaRoleAttribute() == TextFieldRole;
+    return ariaRoleAttribute() == TextAreaRole || ariaRoleAttribute() == TextFieldRole || ariaRoleAttribute() == SearchBoxRole;
 }
 
 bool AXObject::isButton() const
@@ -320,6 +322,7 @@ bool AXObject::isTextControl() const
     case TextAreaRole:
     case TextFieldRole:
     case ComboBoxRole:
+    case SearchBoxRole:
         return true;
     default:
         return false;
@@ -482,6 +485,7 @@ String AXObject::actionVerb() const
     case RadioButtonRole:
         return queryString(WebLocalizedString::AXRadioButtonActionVerb);
     case CheckBoxRole:
+    case SwitchRole:
         return queryString(isChecked() ? WebLocalizedString::AXCheckedCheckBoxActionVerb : WebLocalizedString::AXUncheckedCheckBoxActionVerb);
     case LinkRole:
         return queryString(WebLocalizedString::AXLinkActionVerb);
@@ -506,7 +510,7 @@ AccessibilityButtonState AXObject::checkboxOrRadioValue() const
         return ButtonStateOn;
     if (equalIgnoringCase(result, "mixed")) {
         AccessibilityRole role = ariaRoleAttribute();
-        if (role == RadioButtonRole || role == MenuItemRadioRole)
+        if (role == RadioButtonRole || role == MenuItemRadioRole || role == SwitchRole)
             return ButtonStateOff;
         return ButtonStateMixed;
     }
@@ -1038,7 +1042,7 @@ bool AXObject::isARIAControl(AccessibilityRole ariaRole)
 
 bool AXObject::isARIAInput(AccessibilityRole ariaRole)
 {
-    return ariaRole == RadioButtonRole || ariaRole == CheckBoxRole || ariaRole == TextFieldRole;
+    return ariaRole == RadioButtonRole || ariaRole == CheckBoxRole || ariaRole == TextFieldRole || ariaRole == SwitchRole || ariaRole ==  SearchBoxRole;
 }
 
 AccessibilityRole AXObject::ariaRoleToWebCoreRole(const String& value)

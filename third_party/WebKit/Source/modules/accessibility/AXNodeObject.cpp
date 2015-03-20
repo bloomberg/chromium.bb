@@ -695,14 +695,19 @@ bool AXNodeObject::isChecked() const
     if (isHTMLInputElement(*node))
         return toHTMLInputElement(*node).shouldAppearChecked();
 
-    // Else, if this is an ARIA checkbox or radio OR ARIA role menuitemcheckbox
-    // or menuitemradio, respect the aria-checked attribute
-    AccessibilityRole ariaRole = ariaRoleAttribute();
-    if (ariaRole == RadioButtonRole || ariaRole == CheckBoxRole
-        || ariaRole == MenuItemCheckBoxRole || ariaRole == MenuItemRadioRole) {
+    // Else, if this is an ARIA role checkbox or radio or menuitemcheckbox
+    // or menuitemradio or switch, respect the aria-checked attribute
+    switch (ariaRoleAttribute()) {
+    case CheckBoxRole:
+    case MenuItemCheckBoxRole:
+    case MenuItemRadioRole:
+    case RadioButtonRole:
+    case SwitchRole:
         if (equalIgnoringCase(getAttribute(aria_checkedAttr), "true"))
             return true;
         return false;
+    default:
+        break;
     }
 
     // Otherwise it's not checked
@@ -1421,6 +1426,7 @@ String AXNodeObject::title(TextUnderElementMode mode) const
     case MenuItemCheckBoxRole:
     case MenuItemRadioRole:
     case RadioButtonRole:
+    case SwitchRole:
     case TabRole:
         return textUnderElement(mode);
     // SVGRoots should not use the text under itself as a title. That could include the text of objects like <text>.
@@ -1676,6 +1682,7 @@ bool AXNodeObject::canHaveChildren() const
     case PopUpButtonRole:
     case CheckBoxRole:
     case RadioButtonRole:
+    case SwitchRole:
     case TabRole:
     case ToggleButtonRole:
     case ListBoxOptionRole:

@@ -233,7 +233,7 @@ bool roleAllowsRangeValues(AccessibilityRole role)
 
 bool roleAllowsChecked(AccessibilityRole role)
 {
-    return role == MenuItemCheckBoxRole || role == MenuItemRadioRole || role == RadioButtonRole || role == CheckBoxRole || role == TreeItemRole || role == ListBoxOptionRole;
+    return role == MenuItemCheckBoxRole || role == MenuItemRadioRole || role == RadioButtonRole || role == CheckBoxRole || role == TreeItemRole || role == ListBoxOptionRole || role == SwitchRole;
 }
 
 bool roleAllowsSelected(AccessibilityRole role)

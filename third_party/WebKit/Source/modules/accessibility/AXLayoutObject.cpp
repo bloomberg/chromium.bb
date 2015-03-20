@@ -909,6 +909,7 @@ String AXLayoutObject::actionVerb() const
     case RadioButtonRole:
         return queryString(WebLocalizedString::AXRadioButtonActionVerb);
     case CheckBoxRole:
+    case SwitchRole:
         return queryString(isChecked() ? WebLocalizedString::AXCheckedCheckBoxActionVerb : WebLocalizedString::AXUncheckedCheckBoxActionVerb);
     case LinkRole:
         return queryString(WebLocalizedString::AXLinkActionVerb);
