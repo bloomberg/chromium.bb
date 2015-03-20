@@ -85,14 +85,9 @@ protected:
         EXPECT_EQ(expectedURL.port(), fetchRequest.resourceRequest().url().port());
         EXPECT_EQ(expectedURL.hasPort(), fetchRequest.resourceRequest().url().hasPort());
         EXPECT_EQ(expectedURL.path(), fetchRequest.resourceRequest().url().path());
-
-        bool expectUpgrade = inputURL != expectedURL;
-
-        EXPECT_STREQ(expectUpgrade ? "1" : "",
-            fetchRequest.resourceRequest().httpHeaderField("Upgraded").utf8().data());
     }
 
-    void expectPreferHeader(const char* input, WebURLRequest::FrameType frameType, bool shouldPrefer)
+    void expectHTTPSHeader(const char* input, WebURLRequest::FrameType frameType, bool shouldPrefer)
     {
         KURL inputURL(ParsedURLString, input);
 
@@ -102,8 +97,8 @@ protected:
 
         fetchContext->upgradeInsecureRequest(fetchRequest);
 
-        EXPECT_STREQ(shouldPrefer ? "tls" : "",
-            fetchRequest.resourceRequest().httpHeaderField("Prefer").utf8().data());
+        EXPECT_STREQ(shouldPrefer ? "1" : "",
+            fetchRequest.resourceRequest().httpHeaderField("HTTPS").utf8().data());
     }
 
     KURL secureURL;
@@ -190,18 +185,18 @@ TEST_F(FrameFetchContextUpgradeTest, SendPreferHeader)
         { "http://example.test/page.html", WebURLRequest::FrameTypeNested, true },
         { "http://example.test/page.html", WebURLRequest::FrameTypeNone, false },
         { "http://example.test/page.html", WebURLRequest::FrameTypeTopLevel, true },
-        { "https://example.test/page.html", WebURLRequest::FrameTypeAuxiliary, false },
-        { "https://example.test/page.html", WebURLRequest::FrameTypeNested, false },
+        { "https://example.test/page.html", WebURLRequest::FrameTypeAuxiliary, true },
+        { "https://example.test/page.html", WebURLRequest::FrameTypeNested, true },
         { "https://example.test/page.html", WebURLRequest::FrameTypeNone, false },
-        { "https://example.test/page.html", WebURLRequest::FrameTypeTopLevel, false }
+        { "https://example.test/page.html", WebURLRequest::FrameTypeTopLevel, true }
     };
 
     for (auto test : tests) {
         document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsDoNotUpgrade);
-        expectPreferHeader(test.toRequest, test.frameType, test.shouldPrefer);
+        expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
 
         document->setInsecureRequestsPolicy(SecurityContext::InsecureRequestsUpgrade);
-        expectPreferHeader(test.toRequest, test.frameType, test.shouldPrefer);
+        expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
     }
 }
 

@@ -635,10 +635,10 @@ void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
 
     KURL url = fetchRequest.resourceRequest().url();
 
-    // Tack a 'Prefer' header to outgoing navigational requests, as described in
+    // Tack an 'HTTPS' header to outgoing navigational requests, as described in
     // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
-    if (fetchRequest.resourceRequest().frameType() != WebURLRequest::FrameTypeNone && !SecurityOrigin::isSecure(url))
-        fetchRequest.mutableResourceRequest().addHTTPHeaderField("Prefer", "tls");
+    if (fetchRequest.resourceRequest().frameType() != WebURLRequest::FrameTypeNone)
+        fetchRequest.mutableResourceRequest().addHTTPHeaderField("HTTPS", "1");
 
     if (m_document->insecureRequestsPolicy() == SecurityContext::InsecureRequestsUpgrade && url.protocolIs("http")) {
         ASSERT(m_document->insecureNavigationsToUpgrade());
@@ -658,7 +658,6 @@ void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
             if (url.port() == 80)
                 url.setPort(443);
             fetchRequest.mutableResourceRequest().setURL(url);
-            fetchRequest.mutableResourceRequest().addHTTPHeaderField("Upgraded", "1");
         }
     }
 }
