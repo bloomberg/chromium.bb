@@ -299,13 +299,15 @@ void ServiceWorkerHandler::DispatchProtocolMessage(
 void ServiceWorkerHandler::AgentHostClosed(
     DevToolsAgentHost* host,
     bool replaced_with_another_client) {
-  WorkerDestroyed(static_cast<ServiceWorkerDevToolsAgentHost*>(host));
+  client_->WorkerTerminated(WorkerTerminatedParams::Create()->
+      set_worker_id(host->GetId()));
+  attached_hosts_.erase(host->GetId());
 }
 
 void ServiceWorkerHandler::WorkerCreated(
     ServiceWorkerDevToolsAgentHost* host) {
   auto hosts = GetMatchingServiceWorkers(urls_);
-  if (hosts.find(host->GetId()) != hosts.end())
+  if (hosts.find(host->GetId()) != hosts.end() && !host->IsAttached())
     host->PauseForDebugOnStart();
 }
 
@@ -335,7 +337,7 @@ void ServiceWorkerHandler::ReportWorkerTerminated(
   auto it = attached_hosts_.find(host->GetId());
   if (it == attached_hosts_.end())
     return;
-  it->second->DetachClient();
+  host->DetachClient();
   client_->WorkerTerminated(WorkerTerminatedParams::Create()->
       set_worker_id(host->GetId()));
   attached_hosts_.erase(it);
