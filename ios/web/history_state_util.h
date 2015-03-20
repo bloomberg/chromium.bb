@@ -5,8 +5,6 @@
 #ifndef IOS_WEB_HISTORY_STATE_UTIL_H_
 #define IOS_WEB_HISTORY_STATE_UTIL_H_
 
-#import <Foundation/Foundation.h>
-
 #include <string>
 
 class GURL;

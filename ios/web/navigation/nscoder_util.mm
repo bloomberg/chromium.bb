@@ -16,7 +16,7 @@ void EncodeString(NSCoder* coder, NSString* key, const std::string& string) {
 }
 
 std::string DecodeString(NSCoder* decoder, NSString* key) {
-  NSUInteger length;
+  NSUInteger length = 0;
   const uint8_t* bytes = [decoder decodeBytesForKey:key returnedLength:&length];
   return std::string(reinterpret_cast<const char*>(bytes), length);
 }

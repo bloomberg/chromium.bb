@@ -26,7 +26,7 @@
   return instance;
 }
 
-- (id)init {
+- (instancetype)init {
   self = [super init];
   if (self) {
     _groupCounts.reset([[NSMutableDictionary alloc] init]);
@@ -54,8 +54,7 @@
     DCHECK_GT(count, 0U);
   }
   count += numTasks;
-  [_groupCounts setObject:[NSNumber numberWithUnsignedInteger:count]
-                   forKey:group];
+  [_groupCounts setObject:@(count) forKey:group];
   _totalCount += numTasks;
   if (_totalCount == numTasks) {
     [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
@@ -74,8 +73,7 @@
   if (count == 0) {
     [_groupCounts removeObjectForKey:group];
   } else {
-    [_groupCounts setObject:[NSNumber numberWithUnsignedInteger:count]
-                     forKey:group];
+    [_groupCounts setObject:@(count) forKey:group];
   }
   _totalCount -= numTasks;
   if (_totalCount == 0) {
@@ -110,6 +108,5 @@
   DCHECK(_threadChecker.CalledOnValidThread());
   return _totalCount;
 }
-
 
 @end
