@@ -10,11 +10,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/manifest_constants.h"
 
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/signin/chrome_signin_client.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
-#endif
-
 namespace extensions {
 
 namespace errors = manifest_errors;
@@ -34,29 +29,6 @@ bool BrowserPermissionsPolicyDelegate::CanExecuteScriptOnPage(
     int process_id,
     std::string* error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-#if !defined(OS_CHROMEOS)
-  // NULL in unit tests.
-  if (!g_browser_process->profile_manager())
-    return true;
-
-  // We don't have a Profile in this context. That's OK - for our purposes,
-  // we can just check every Profile for its signin process. If any of them
-  // match, block script access.
-  std::vector<Profile*> profiles =
-      g_browser_process->profile_manager()->GetLoadedProfiles();
-  for (std::vector<Profile*>::iterator profile = profiles.begin();
-       profile != profiles.end(); ++profile) {
-    SigninClient* signin_client =
-        ChromeSigninClientFactory::GetForProfile(*profile);
-    if (signin_client && signin_client->IsSigninProcess(process_id)) {
-      if (error)
-        *error = errors::kCannotScriptSigninPage;
-      return false;
-    }
-  }
-#endif
-
   return true;
 }
 

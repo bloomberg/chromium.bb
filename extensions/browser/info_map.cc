@@ -46,7 +46,7 @@ InfoMap::ExtraData::ExtraData()
 
 InfoMap::ExtraData::~ExtraData() {}
 
-InfoMap::InfoMap() : signin_process_id_(-1) {
+InfoMap::InfoMap() {
 }
 
 void InfoMap::AddExtension(const Extension* extension,
@@ -230,14 +230,6 @@ QuotaService* InfoMap::GetQuotaService() {
   if (!quota_service_)
     quota_service_.reset(new QuotaService());
   return quota_service_.get();
-}
-
-void InfoMap::SetSigninProcess(int process_id) {
-  signin_process_id_ = process_id;
-}
-
-bool InfoMap::IsSigninProcess(int process_id) const {
-  return process_id == signin_process_id_;
 }
 
 void InfoMap::SetNotificationsDisabled(

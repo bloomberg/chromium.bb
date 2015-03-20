@@ -9,13 +9,11 @@
 #include "base/compiler_specific.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_error_controller.h"
-#include "content/public/browser/render_process_host_observer.h"
 
 class CookieSettings;
 class Profile;
 
 class ChromeSigninClient : public SigninClient,
-                           public content::RenderProcessHostObserver,
                            public SigninErrorController::Observer {
  public:
   explicit ChromeSigninClient(
@@ -25,22 +23,6 @@ class ChromeSigninClient : public SigninClient,
   // Utility methods.
   static bool ProfileAllowsSigninCookies(Profile* profile);
   static bool SettingsAllowSigninCookies(CookieSettings* cookie_settings);
-
-  // Tracks the privileged signin process identified by |host_id| so that we
-  // can later ask (via IsSigninProcess) if it is safe to sign the user in from
-  // the current context (see OneClickSigninHelper).  All of this tracking
-  // state is reset once the renderer process terminates.
-  //
-  // N.B. This is the id returned by RenderProcessHost::GetID().
-  // TODO(guohui): Eliminate these APIs once the web-based signin flow is
-  // replaced by a native flow. crbug.com/347247
-  void SetSigninProcess(int host_id) override;
-  void ClearSigninProcess() override;
-  bool IsSigninProcess(int host_id) const override;
-  bool HasSigninProcess() const override;
-
-  // content::RenderProcessHostObserver implementation.
-  void RenderProcessHostDestroyed(content::RenderProcessHost* host) override;
 
   // SigninClient implementation.
   PrefService* GetPrefs() override;
@@ -80,13 +62,6 @@ class ChromeSigninClient : public SigninClient,
   Profile* profile_;
 
   SigninErrorController* signin_error_controller_;
-
-  // See SetSigninProcess. Tracks the currently active signin process
-  // by ID, if there is one.
-  int signin_host_id_;
-
-  // The RenderProcessHosts being observed.
-  std::set<content::RenderProcessHost*> signin_hosts_observed_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSigninClient);
 };

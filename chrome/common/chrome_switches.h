@@ -291,7 +291,6 @@ extern const char kShowSavedCopy[];
 extern const char kEnableShowSavedCopyPrimary[];
 extern const char kEnableShowSavedCopySecondary[];
 extern const char kDisableShowSavedCopy[];
-extern const char kSigninProcess[];
 extern const char kSimulateElevatedRecovery[];
 extern const char kSimulateUpgrade[];
 extern const char kSimulateCriticalUpdate[];

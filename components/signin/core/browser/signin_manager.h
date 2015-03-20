@@ -55,10 +55,6 @@ class SigninManager : public SigninManagerBase,
   // signin. The callback is passed the just-fetched OAuth login refresh token.
   typedef base::Callback<void(const std::string&)> OAuthTokenFetchedCallback;
 
-  // Returns true if |url| is a web signin URL and should be hosted in an
-  // isolated, privileged signin process.
-  static bool IsWebBasedSigninFlowURL(const GURL& url);
-
   // This is used to distinguish URLs belonging to the special web signin flow
   // running in the special signin process from other URLs on the same domain.
   // We do not grant WebUI privilieges / bindings to this process or to URLs of

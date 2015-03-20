@@ -1273,18 +1273,6 @@ bool ChromeContentRendererClient::ShouldFork(blink::WebFrame* frame,
   if (http_method != "GET")
     return false;
 
-  // If this is the Signin process, fork all navigations originating from the
-  // renderer.  The destination page will then be bucketed back to this Signin
-  // process if it is a Signin url, or to another process if not.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSigninProcess)) {
-    // We never want to allow non-signin pages to fork-on-POST to a
-    // signin-related action URL. We'll need to handle this carefully once
-    // http://crbug.com/101395 is fixed. The CHECK ensures we don't forget.
-    CHECK_NE(http_method, "POST");
-    return true;
-  }
-
   // If |url| matches one of the prerendered URLs, stop this navigation and try
   // to swap in the prerendered page on the browser process. If the prerendered
   // page no longer exists by the time the OpenURL IPC is handled, a normal

@@ -88,10 +88,6 @@ class TestSigninClient : public SigninClient {
   }
 
   // SigninClient overrides:
-  void SetSigninProcess(int host_id) override;
-  void ClearSigninProcess() override;
-  bool IsSigninProcess(int host_id) const override;
-  bool HasSigninProcess() const override;
   bool IsFirstRun() const override;
   base::Time GetInstallDate() override;
   bool AreSigninCookiesAllowed() override;
@@ -107,7 +103,6 @@ class TestSigninClient : public SigninClient {
   base::ScopedTempDir temp_dir_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<TokenWebData> database_;
-  int signin_host_id_;
   PrefService* pref_service_;
   bool are_signin_cookies_allowed_;
 

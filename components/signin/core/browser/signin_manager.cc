@@ -23,41 +23,9 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/base/escape.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
 using namespace signin_internals_util;
-
-namespace {
-
-const char kChromiumSyncService[] = "service=chromiumsync";
-
-}  // namespace
-
-// Under the covers, we use a dummy chrome-extension ID to serve the purposes
-// outlined in the .h file comment for this string.
-const char SigninManager::kChromeSigninEffectiveSite[] =
-    "chrome-extension://acfccoigjajmmgbhpfbjnpckhjjegnih";
-
-// static
-bool SigninManager::IsWebBasedSigninFlowURL(const GURL& url) {
-  GURL effective(kChromeSigninEffectiveSite);
-  if (url.SchemeIs(effective.scheme().c_str()) &&
-      url.host() == effective.host()) {
-    return true;
-  }
-
-  GURL service_login(GaiaUrls::GetInstance()->service_login_url());
-  if (url.GetOrigin() != service_login.GetOrigin())
-    return false;
-
-  // Any login UI URLs with signin=chromiumsync should be considered a web
-  // URL (relies on GAIA keeping the "service=chromiumsync" query string
-  // fragment present even when embedding inside a "continue" parameter).
-  return net::UnescapeURLComponent(url.query(),
-                                   net::UnescapeRule::URL_SPECIAL_CHARS)
-             .find(kChromiumSyncService) != std::string::npos;
-}
 
 SigninManager::SigninManager(SigninClient* client,
                              ProfileOAuth2TokenService* token_service,

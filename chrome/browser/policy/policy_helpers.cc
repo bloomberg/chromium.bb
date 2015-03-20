@@ -13,7 +13,6 @@
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_IOS)
-#include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_urls.h"
 #endif
 
@@ -38,10 +37,6 @@ bool OverrideBlacklistForURL(const GURL& url, bool* block, int* reason) {
   static const char kServiceLoginAuth[] = "/ServiceLoginAuth";
 
   *block = false;
-  // Whitelist all the signin flow URLs flagged by the SigninManager.
-  if (SigninManager::IsWebBasedSigninFlowURL(url))
-    return true;
-
   // Additionally whitelist /ServiceLoginAuth.
   if (url.GetOrigin() != GaiaUrls::GetInstance()->gaia_url().GetOrigin())
     return false;

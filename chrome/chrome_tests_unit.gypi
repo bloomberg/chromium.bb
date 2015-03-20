@@ -727,7 +727,6 @@
       'browser/extensions/app_sync_data_unittest.cc',
       'browser/extensions/blacklist_state_fetcher_unittest.cc',
       'browser/extensions/bookmark_app_helper_unittest.cc',
-      'browser/extensions/browser_permissions_policy_delegate_unittest.cc',
       'browser/extensions/chrome_app_sorting_unittest.cc',
       'browser/extensions/chrome_component_extension_resource_manager_unittest.cc',
       'browser/extensions/chrome_info_map_unittest.cc',

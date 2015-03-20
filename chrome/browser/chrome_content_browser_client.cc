@@ -191,13 +191,6 @@
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #endif
 
-#if !defined(OS_CHROMEOS)
-#include "chrome/browser/signin/chrome_signin_client.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/signin/core/browser/signin_manager.h"
-#endif
-
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 #endif
@@ -507,21 +500,6 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
   return -1;
 }
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-
-#if !defined(OS_CHROMEOS)
-GURL GetEffectiveURLForSignin(const GURL& url) {
-  CHECK(SigninManager::IsWebBasedSigninFlowURL(url));
-
-  GURL effective_url(SigninManager::kChromeSigninEffectiveSite);
-  // Copy the path because the argument to SetPathStr must outlive
-  // the Replacements object.
-  const std::string path_copy(url.path());
-  GURL::Replacements replacements;
-  replacements.SetPathStr(path_copy);
-  effective_url = effective_url.ReplaceComponents(replacements);
-  return effective_url;
-}
-#endif
 
 void SetApplicationLocaleOnIOThread(const std::string& locale) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -978,15 +956,6 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
   if (chrome::ShouldAssignURLToInstantRenderer(url, profile))
     return chrome::GetEffectiveURLForInstant(url, profile);
 
-#if !defined(OS_CHROMEOS)
-  // If the input |url| should be assigned to the Signin renderer, make its
-  // effective URL distinct from other URLs on the signin service's domain.
-  // Note that the signin renderer will be allowed to sign the user in to
-  // Chrome.
-  if (SigninManager::IsWebBasedSigninFlowURL(url))
-    return GetEffectiveURLForSignin(url);
-#endif
-
 #if defined(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::GetEffectiveURL(
       profile, url);
@@ -1008,11 +977,6 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
 
   if (chrome::ShouldUseProcessPerSiteForInstantURL(effective_url, profile))
     return true;
-
-#if !defined(OS_CHROMEOS)
-  if (SigninManager::IsWebBasedSigninFlowURL(effective_url))
-    return true;
-#endif
 
 #if defined(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
@@ -1127,13 +1091,6 @@ bool ChromeContentBrowserClient::IsSuitableHost(
       return is_instant_process && should_be_in_instant_process;
   }
 
-#if !defined(OS_CHROMEOS)
-  SigninClient* signin_client =
-      ChromeSigninClientFactory::GetForProfile(profile);
-  if (signin_client && signin_client->IsSigninProcess(process_host->GetID()))
-    return SigninManager::IsWebBasedSigninFlowURL(site_url);
-#endif
-
 #if defined(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::IsSuitableHost(
       profile, process_host, site_url);
@@ -1193,21 +1150,6 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
     if (instant_service)
       instant_service->AddInstantProcess(site_instance->GetProcess()->GetID());
   }
-
-#if !defined(OS_CHROMEOS)
-  // We only expect there to be one signin process as we use process-per-site
-  // for signin URLs. The signin process will be cleared from SigninManager
-  // when the renderer is destroyed.
-  if (SigninManager::IsWebBasedSigninFlowURL(site_instance->GetSiteURL())) {
-    SigninClient* signin_client =
-        ChromeSigninClientFactory::GetForProfile(profile);
-    if (signin_client)
-      signin_client->SetSigninProcess(site_instance->GetProcess()->GetID());
-#if defined(ENABLE_EXTENSIONS)
-    ChromeContentBrowserClientExtensionsPart::SetSigninProcess(site_instance);
-#endif
-  }
-#endif
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->SiteInstanceGotProcess(site_instance);
@@ -1401,13 +1343,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       if (instant_service &&
           instant_service->IsInstantProcess(process->GetID()))
         command_line->AppendSwitch(switches::kInstantProcess);
-
-#if !defined(OS_CHROMEOS)
-      SigninClient* signin_client =
-          ChromeSigninClientFactory::GetForProfile(profile);
-      if (signin_client && signin_client->IsSigninProcess(process->GetID()))
-        command_line->AppendSwitch(switches::kSigninProcess);
-#endif
     }
 
     if (IsAutoReloadEnabled())

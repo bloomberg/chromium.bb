@@ -94,11 +94,6 @@ class SigninClient : public KeyedService {
                             const std::string& username,
                             const std::string& password) {}
 
-  virtual void SetSigninProcess(int host_id) = 0;
-  virtual void ClearSigninProcess() = 0;
-  virtual bool IsSigninProcess(int host_id) const = 0;
-  virtual bool HasSigninProcess() const = 0;
-
   virtual bool IsFirstRun() const = 0;
   virtual base::Time GetInstallDate() = 0;
 

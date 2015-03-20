@@ -88,10 +88,9 @@ bool WebRequestPermissions::HideRequest(
     if (extensions::WebViewRendererState::GetInstance()->IsGuest(process_id))
       return false;
 
-    if (extension_info_map && (
-        extension_info_map->IsSigninProcess(process_id) ||
-        extension_info_map->process_map().Contains(
-            extensions::kWebStoreAppId, process_id))) {
+    if (extension_info_map &&
+        extension_info_map->process_map().Contains(extensions::kWebStoreAppId,
+                                                   process_id)) {
       return true;
     }
   }

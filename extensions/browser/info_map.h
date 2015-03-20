@@ -96,11 +96,6 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
   // Returns the IO thread QuotaService. Creates the instance on first call.
   QuotaService* GetQuotaService();
 
-  // Keep track of the signin process, so we can restrict extension access to
-  // it.
-  void SetSigninProcess(int process_id);
-  bool IsSigninProcess(int process_id) const;
-
   // Notifications can be enabled/disabled in real time by the user.
   void SetNotificationsDisabled(const std::string& extension_id,
                                 bool notifications_disabled);
@@ -132,8 +127,6 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
 
   // Assignment of extensions to renderer processes.
   extensions::ProcessMap process_map_;
-
-  int signin_process_id_;
 
   scoped_refptr<ContentVerifier> content_verifier_;
 };

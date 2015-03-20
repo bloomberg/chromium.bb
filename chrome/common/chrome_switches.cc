@@ -1043,9 +1043,6 @@ const char kEnableShowSavedCopyPrimary[]    = "primary";
 const char kEnableShowSavedCopySecondary[]  = "secondary";
 const char kDisableShowSavedCopy[]          = "disable";
 
-// Marks a renderer as the signin process.
-const char kSigninProcess[]                 = "signin-process";
-
 // Does not show an infobar when an extension attaches to a page using
 // chrome.debugger page. Required to attach to extension background pages.
 const char kSilentDebuggerExtensionAPI[]    = "silent-debugger-extension-api";

@@ -373,20 +373,6 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
   return false;
 }
 
-// static
-void ChromeContentBrowserClientExtensionsPart::SetSigninProcess(
-    content::SiteInstance* site_instance) {
-  Profile* profile =
-      Profile::FromBrowserContext(site_instance->GetBrowserContext());
-  DCHECK(profile);
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&InfoMap::SetSigninProcess,
-                 ExtensionSystem::Get(profile)->info_map(),
-                 site_instance->GetProcess()->GetID()));
-}
-
 void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
   int id = host->GetID();
