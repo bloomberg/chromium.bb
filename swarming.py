@@ -1069,6 +1069,8 @@ def CMDquery(parser, args):
       '-L', '--limit', type='int', default=200,
       help='Limit to enforce on limitless items (like number of tasks); '
            'default=%default')
+  parser.add_option(
+      '--json', help='Path to JSON output file (otherwise prints to stdout)')
   (options, args) = parser.parse_args(args)
   if len(args) != 1:
     parser.error('Must specify only one resource name.')
@@ -1103,8 +1105,12 @@ def CMDquery(parser, args):
     data['items'] = data['items'][:options.limit]
   data.pop('cursor', None)
 
-  json.dump(data, sys.stdout, indent=2, sort_keys=True)
-  sys.stdout.write('\n')
+  if options.json:
+    with open(options.json, 'w') as f:
+      json.dump(data, f)
+  else:
+    json.dump(data, sys.stdout, indent=2, sort_keys=True)
+    sys.stdout.write('\n')
   return 0
 
 
