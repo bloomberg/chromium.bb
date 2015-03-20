@@ -56,6 +56,7 @@ class LocalFrame;
 class KURL;
 class Node;
 class Page;
+class LayoutAnalyzer;
 class LayoutBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
@@ -564,6 +565,8 @@ public:
 
     int viewportWidth() const;
 
+    LayoutAnalyzer* layoutAnalyzer() { return m_analyzer.get(); }
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -706,6 +709,8 @@ private:
 
     ScrollingCoordinator* scrollingCoordinator();
 
+    void prepareAnalyzer();
+
     LayoutSize m_size;
 
     typedef HashSet<RefPtr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -834,6 +839,8 @@ private:
     bool m_shouldDrawPanScrollIcon;
 
     bool m_clipsRepaints;
+
+    OwnPtr<LayoutAnalyzer> m_analyzer;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

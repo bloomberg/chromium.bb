@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/layout/LayoutAnalyzer.h"
 
+#include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/TracedValue.h"
 
@@ -12,7 +13,7 @@ namespace blink {
 
 LayoutAnalyzer::Scope::Scope(const LayoutObject& o)
     : m_layoutObject(o)
-    , m_analyzer(nullptr)
+    , m_analyzer(o.frameView()->layoutAnalyzer())
 {
     if (UNLIKELY(m_analyzer != nullptr))
         m_analyzer->push(o);

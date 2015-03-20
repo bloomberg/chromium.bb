@@ -47,6 +47,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutCounter.h"
 #include "core/layout/LayoutEmbeddedObject.h"
 #include "core/layout/LayoutListBox.h"
@@ -78,6 +79,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
+#include "platform/TracedValue.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -857,11 +859,25 @@ static inline void layoutFromRootObject(LayoutObject& root)
     gatherDebugLayoutRects(root);
 }
 
+void FrameView::prepareAnalyzer()
+{
+    bool isTracing = false;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), &isTracing);
+    if (LIKELY(!isTracing)) {
+        m_analyzer.clear();
+        return;
+    }
+    if (!m_analyzer.get())
+        m_analyzer = adoptPtr(new LayoutAnalyzer());
+    m_analyzer->reset();
+}
+
 void FrameView::performLayout(bool inSubtreeLayout)
 {
     ASSERT(inSubtreeLayout || m_layoutSubtreeRoots.isEmpty());
 
-    TRACE_EVENT0("blink,benchmark", "FrameView::performLayout");
+    TRACE_EVENT_BEGIN0("blink,benchmark", "FrameView::performLayout");
+    prepareAnalyzer();
 
     ScriptForbiddenScope forbidScript;
 
@@ -896,6 +912,8 @@ void FrameView::performLayout(bool inSubtreeLayout)
     ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
 
     lifecycle().advanceTo(DocumentLifecycle::AfterPerformLayout);
+    TRACE_EVENT_END1("blink,benchmark", "FrameView::performLayout",
+        "counters", layoutAnalyzer() ? layoutAnalyzer()->toTracedValue() : TracedValue::create());
 }
 
 void FrameView::scheduleOrPerformPostLayoutTasks()
