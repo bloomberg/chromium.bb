@@ -15,6 +15,10 @@
 #include "content/public/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_MACOSX)
+using std::isnan;
+#endif
+
 namespace content {
 namespace {
 

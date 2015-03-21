@@ -120,7 +120,8 @@ void AudioStreamMonitor::StartMonitoringStreamOnUIThread(
   if (!poll_timer_.IsRunning()) {
     poll_timer_.Start(
         FROM_HERE,
-        base::TimeDelta::FromSeconds(1) / kPowerMeasurementsPerSecond,
+        base::TimeDelta::FromSeconds(1) /
+            static_cast<int>(kPowerMeasurementsPerSecond),
         base::Bind(&AudioStreamMonitor::Poll, base::Unretained(this)));
   }
 }

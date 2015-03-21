@@ -112,7 +112,7 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
 
   static base::TimeDelta one_polling_interval() {
     return base::TimeDelta::FromSeconds(1) /
-           AudioStreamMonitor::kPowerMeasurementsPerSecond;
+           static_cast<int>(AudioStreamMonitor::kPowerMeasurementsPerSecond);
   }
 
   static base::TimeDelta holding_period() {

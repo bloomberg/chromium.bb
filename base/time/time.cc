@@ -97,6 +97,33 @@ int64 TimeDelta::InMicroseconds() const {
   return delta_;
 }
 
+int64 TimeDelta::SaturatedAdd(int64 value) const {
+  CheckedNumeric<int64> rv(delta_);
+  rv += value;
+  return FromCheckedNumeric(rv);
+}
+
+int64 TimeDelta::SaturatedSub(int64 value) const {
+  CheckedNumeric<int64> rv(delta_);
+  rv -= value;
+  return FromCheckedNumeric(rv);
+}
+
+// static
+int64 TimeDelta::FromCheckedNumeric(const CheckedNumeric<int64> value) {
+  if (value.IsValid())
+    return value.ValueUnsafe();
+
+  // We could return max/min but we don't really expose what the maximum delta
+  // is. Instead, return max/(-max), which is something that clients can reason
+  // about.
+  // TODO(rvargas) crbug.com/332611: don't use internal values.
+  int64 limit = std::numeric_limits<int64>::max();
+  if (value.validity() == internal::RANGE_UNDERFLOW)
+    limit = -limit;
+  return value.ValueOrDefault(limit);
+}
+
 std::ostream& operator<<(std::ostream& os, TimeDelta time_delta) {
   return os << time_delta.InSecondsF() << "s";
 }
