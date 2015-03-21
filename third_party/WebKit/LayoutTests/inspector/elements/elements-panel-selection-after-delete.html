@@ -54,7 +54,7 @@ function test()
     function removeElementExternally(element, callback)
     {
         var node = element.node();
-        InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "updateChildren", callback);
+        InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateChildren", callback);
         node.removeNode();
     }
 

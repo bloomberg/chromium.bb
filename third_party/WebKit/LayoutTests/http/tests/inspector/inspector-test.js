@@ -851,8 +851,6 @@ function runTest(enableWatchDogWhileDebugging)
 
         if (testPath.indexOf("layers/") !== -1)
             Runtime.experiments.setEnabled("layersPanel", true);
-        if (testPath.indexOf("shadow-host-display-modes") !== -1)
-            Runtime.experiments.setEnabled("composedShadowDOM", true);
 
         // 2. Show initial panel based on test path.
         var initialPanelByFolder = {

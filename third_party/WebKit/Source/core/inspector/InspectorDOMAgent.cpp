@@ -189,7 +189,6 @@ class InspectorRevalidateDOMTask final : public NoBaseWillBeGarbageCollectedFina
 public:
     explicit InspectorRevalidateDOMTask(InspectorDOMAgent*);
     void scheduleStyleAttrRevalidationFor(Element*);
-    void scheduleContentDistributionRevalidationFor(Element*);
     void reset() { m_timer.stop(); }
     void onTimer(Timer<InspectorRevalidateDOMTask>*);
     DECLARE_TRACE();
@@ -198,7 +197,6 @@ private:
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     Timer<InspectorRevalidateDOMTask> m_timer;
     WillBeHeapHashSet<RefPtrWillBeMember<Element> > m_styleAttrInvalidatedElements;
-    WillBeHeapHashSet<RefPtrWillBeMember<Element> > m_contentDistributionInvalidatedElements;
 };
 
 InspectorRevalidateDOMTask::InspectorRevalidateDOMTask(InspectorDOMAgent* domAgent)
@@ -214,13 +212,6 @@ void InspectorRevalidateDOMTask::scheduleStyleAttrRevalidationFor(Element* eleme
         m_timer.startOneShot(0, FROM_HERE);
 }
 
-void InspectorRevalidateDOMTask::scheduleContentDistributionRevalidationFor(Element* element)
-{
-    m_contentDistributionInvalidatedElements.add(element);
-    if (!m_timer.isActive())
-        m_timer.startOneShot(0, FROM_HERE);
-}
-
 void InspectorRevalidateDOMTask::onTimer(Timer<InspectorRevalidateDOMTask>*)
 {
     // The timer is stopped on m_domAgent destruction, so this method will never be called after m_domAgent has been destroyed.
@@ -228,15 +219,7 @@ void InspectorRevalidateDOMTask::onTimer(Timer<InspectorRevalidateDOMTask>*)
     for (auto& attribute : m_styleAttrInvalidatedElements)
         elements.append(attribute.get());
     m_domAgent->styleAttributeInvalidated(elements);
-
     m_styleAttrInvalidatedElements.clear();
-
-    elements.clear();
-    for (const RefPtrWillBeMember<Element>& it : m_contentDistributionInvalidatedElements)
-        elements.append(it.get());
-    m_domAgent->contentDistributionInvalidated(elements);
-
-    m_contentDistributionInvalidatedElements.clear();
 }
 
 DEFINE_TRACE(InspectorRevalidateDOMTask)
@@ -244,7 +227,6 @@ DEFINE_TRACE(InspectorRevalidateDOMTask)
     visitor->trace(m_domAgent);
 #if ENABLE(OILPAN)
     visitor->trace(m_styleAttrInvalidatedElements);
-    visitor->trace(m_contentDistributionInvalidatedElements);
 #endif
 }
 
@@ -438,7 +420,6 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap)
             child = innerNextSibling(child);
         }
     }
-    m_distributedNodesRequested.remove(id);
     if (nodesMap == m_documentNodeToIdMap.get())
         m_cachedChildCount.remove(id);
 }
@@ -645,7 +626,6 @@ void InspectorDOMAgent::discardFrontendBindings()
     m_idToNodesMap.clear();
     releaseDanglingNodes();
     m_childrenRequested.clear();
-    m_distributedNodesRequested.clear();
     m_cachedChildCount.clear();
     if (m_revalidateTask)
         m_revalidateTask->reset();
@@ -678,64 +658,6 @@ void InspectorDOMAgent::requestChildNodes(ErrorString* errorString, int nodeId, 
     }
 
     pushChildNodesToFrontend(nodeId, sanitizedDepth);
-}
-
-void InspectorDOMAgent::requestShadowHostDistributedNodes(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::DOM::InsertionPointDistribution> >& insertionPointDistributions)
-{
-    Node* shadowHost = assertNode(errorString, nodeId);
-    if (!shadowHost)
-        return;
-
-    ASSERT(!shadowHost->document().childNeedsDistributionRecalc());
-
-    NodeToIdMap* nodeMap = m_idToNodesMap.get(nodeId);
-    ASSERT(nodeMap);
-
-    m_distributedNodesRequested.add(nodeId);
-
-    insertionPointDistributions = TypeBuilder::Array<TypeBuilder::DOM::InsertionPointDistribution>::create();
-    for (ShadowRoot* root = shadowHost->youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint> >& insertionPoints = root->descendantInsertionPoints();
-        for (const auto& it : insertionPoints) {
-            InsertionPoint* insertionPoint = it.get();
-            int insertionPointId = pushNodePathToFrontend(insertionPoint, nodeMap);
-            ASSERT(insertionPointId);
-
-            RefPtr<TypeBuilder::Array<TypeBuilder::DOM::DistributedNode> > distributedNodes = TypeBuilder::Array<TypeBuilder::DOM::DistributedNode>::create();
-            for (size_t i = 0; i < insertionPoint->size(); ++i) {
-                Node* distributedNode = insertionPoint->at(i);
-                if (isWhitespace(distributedNode))
-                    continue;
-
-                int distributedNodeId = pushNodePathToFrontend(distributedNode, nodeMap);
-                ASSERT(distributedNodeId);
-
-                RefPtr<TypeBuilder::DOM::DistributedNode> distributedNodeObject = TypeBuilder::DOM::DistributedNode::create()
-                    .setNodeId(distributedNodeId);
-
-                RefPtr<TypeBuilder::Array<int> > destinationInsertionPointIds = TypeBuilder::Array<int>::create();
-                WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> destinationInsertionPoints;
-                collectDestinationInsertionPoints(*distributedNode, destinationInsertionPoints);
-                // If this node has only one destination insertion point (often), then we already know it and don't need any additional information.
-                if (destinationInsertionPoints.size() != 1) {
-                    for (size_t j = 0; j < destinationInsertionPoints.size(); ++j) {
-                        int destinationInsertionPointId = pushNodePathToFrontend(destinationInsertionPoints.at(j), nodeMap);
-                        ASSERT(destinationInsertionPointId);
-                        destinationInsertionPointIds->addItem(destinationInsertionPointId);
-                    }
-                    distributedNodeObject->setDestinationInsertionPointIds(destinationInsertionPointIds);
-                }
-
-                distributedNodes->addItem(distributedNodeObject);
-            }
-
-            RefPtr<TypeBuilder::DOM::InsertionPointDistribution> insertionPointDistribution = TypeBuilder::DOM::InsertionPointDistribution::create()
-                .setNodeId(insertionPointId)
-                .setDistributedNodes(distributedNodes);
-
-            insertionPointDistributions->addItem(insertionPointDistribution);
-        }
-    }
 }
 
 void InspectorDOMAgent::querySelector(ErrorString* errorString, int nodeId, const String& selectors, int* elementId)
@@ -1432,11 +1354,13 @@ void InspectorDOMAgent::innerHighlightQuad(PassOwnPtr<FloatQuad> quad, const Ref
     m_overlay->highlightQuad(quad, *highlightConfig);
 }
 
-void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSONObject>& highlightInspectorObject, const int* nodeId, const String* objectId)
+void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<JSONObject>& highlightInspectorObject, const int* nodeId, const int* backendNodeId, const String* objectId)
 {
     Node* node = nullptr;
     if (nodeId) {
         node = assertNode(errorString, *nodeId);
+    } else if (backendNodeId) {
+        node = InspectorNodeIds::nodeForId(*backendNodeId);
     } else if (objectId) {
         InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(*objectId);
         node = injectedScript.nodeForObjectId(*objectId);
@@ -1757,6 +1681,12 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
                 forcePushChildren = true;
             }
         }
+
+        if (element->isInsertionPoint()) {
+            value->setDistributedNodes(buildArrayForDistributedNodes(toInsertionPoint(element)));
+            forcePushChildren = true;
+        }
+
     } else if (node->isDocumentNode()) {
         Document* document = toDocument(node);
         value->setDocumentURL(documentURLString(document));
@@ -1876,6 +1806,23 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > InspectorDOMAgent::build
     if (element->pseudoElement(AFTER))
         pseudoElements->addItem(buildObjectForNode(element->pseudoElement(AFTER), 0, nodesMap));
     return pseudoElements.release();
+}
+
+PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::BackendNode>> InspectorDOMAgent::buildArrayForDistributedNodes(InsertionPoint* insertionPoint)
+{
+    RefPtr<TypeBuilder::Array<TypeBuilder::DOM::BackendNode>> distributedNodes = TypeBuilder::Array<TypeBuilder::DOM::BackendNode>::create();
+    for (size_t i = 0; i < insertionPoint->size(); ++i) {
+        Node* distributedNode = insertionPoint->at(i);
+        if (isWhitespace(distributedNode))
+            continue;
+
+        RefPtr<TypeBuilder::DOM::BackendNode> backendNode = TypeBuilder::DOM::BackendNode::create()
+            .setNodeType(distributedNode->nodeType())
+            .setNodeName(distributedNode->nodeName())
+            .setBackendNodeId(InspectorNodeIds::idForNode(distributedNode));
+        distributedNodes->addItem(backendNode.release());
+    }
+    return distributedNodes.release();
 }
 
 Node* InspectorDOMAgent::innerFirstChild(Node* node)
@@ -2080,19 +2027,6 @@ void InspectorDOMAgent::styleAttributeInvalidated(const WillBeHeapVector<RawPtrW
     frontend()->inlineStyleInvalidated(nodeIds.release());
 }
 
-void InspectorDOMAgent::contentDistributionInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element> >& elements)
-{
-    RefPtr<TypeBuilder::Array<int> > nodeIds = TypeBuilder::Array<int>::create();
-    for (const auto& it : elements) {
-        Element* element = it.get();
-        int id = boundNodeId(element);
-        if (!id)
-            continue;
-        nodeIds->addItem(id);
-    }
-    frontend()->shadowHostDistributionInvalidated(nodeIds.release());
-}
-
 void InspectorDOMAgent::characterDataModified(CharacterData* characterData)
 {
     int id = m_documentNodeToIdMap->get(characterData);
@@ -2150,9 +2084,16 @@ void InspectorDOMAgent::didPerformElementShadowDistribution(Element* shadowHost)
     int shadowHostId = m_documentNodeToIdMap->get(shadowHost);
     if (!shadowHostId)
         return;
-    if (!m_distributedNodesRequested.contains(shadowHostId))
-        return;
-    revalidateTask()->scheduleContentDistributionRevalidationFor(shadowHost);
+
+    for (ShadowRoot* root = shadowHost->youngestShadowRoot(); root; root = root->olderShadowRoot()) {
+        const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>>& insertionPoints = root->descendantInsertionPoints();
+        for (const auto& it : insertionPoints) {
+            InsertionPoint* insertionPoint = it.get();
+            int insertionPointId = m_documentNodeToIdMap->get(insertionPoint);
+            if (insertionPointId)
+                frontend()->distributedNodesUpdated(insertionPointId, buildArrayForDistributedNodes(insertionPoint));
+        }
+    }
 }
 
 void InspectorDOMAgent::frameDocumentUpdated(LocalFrame* frame)

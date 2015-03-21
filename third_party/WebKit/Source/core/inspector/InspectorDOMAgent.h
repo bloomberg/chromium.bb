@@ -123,7 +123,6 @@ public:
     virtual void querySelectorAll(ErrorString*, int nodeId, const String& selectors, RefPtr<TypeBuilder::Array<int> >& result) override;
     virtual void getDocument(ErrorString*, RefPtr<TypeBuilder::DOM::Node>& root) override;
     virtual void requestChildNodes(ErrorString*, int nodeId, const int* depth) override;
-    virtual void requestShadowHostDistributedNodes(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::DOM::InsertionPointDistribution> >& insertionPointDistributions) override;
     virtual void setAttributeValue(ErrorString*, int elementId, const String& name, const String& value) override;
     virtual void setAttributesAsText(ErrorString*, int elementId, const String& text, const String* name) override;
     virtual void removeAttribute(ErrorString*, int elementId, const String& name) override;
@@ -146,7 +145,7 @@ public:
     virtual void hideHighlight(ErrorString*) override;
     virtual void highlightRect(ErrorString*, int x, int y, int width, int height, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) override;
     virtual void highlightQuad(ErrorString*, const RefPtr<JSONArray>& quad, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) override;
-    virtual void highlightNode(ErrorString*, const RefPtr<JSONObject>& highlightConfig, const int* nodeId, const String* objectId) override;
+    virtual void highlightNode(ErrorString*, const RefPtr<JSONObject>& highlightConfig, const int* nodeId, const int* backendNodeId, const String* objectId) override;
     virtual void highlightFrame(ErrorString*, const String& frameId, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) override;
 
     virtual void copyTo(ErrorString*, int nodeId, int targetElementId, const int* anchorNodeId, int* newNodeId) override;
@@ -182,7 +181,6 @@ public:
     void didModifyDOMAttr(Element*, const QualifiedName&, const AtomicString& value);
     void didRemoveDOMAttr(Element*, const QualifiedName&);
     void styleAttributeInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element> >& elements);
-    void contentDistributionInvalidated(const WillBeHeapVector<RawPtrWillBeMember<Element> >& elements);
     void characterDataModified(CharacterData*);
     void didInvalidateStyleAttr(Node*);
     void didPushShadowRoot(Element* host, ShadowRoot*);
@@ -251,6 +249,7 @@ private:
     PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap);
     PassRefPtr<TypeBuilder::DOM::EventListener> buildObjectForEventListener(const RegisteredEventListener&, const AtomicString& eventType, Node*, const String* objectGroupId);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::DOM::BackendNode>> buildArrayForDistributedNodes(InsertionPoint*);
 
     Node* nodeForPath(const String& path);
 
