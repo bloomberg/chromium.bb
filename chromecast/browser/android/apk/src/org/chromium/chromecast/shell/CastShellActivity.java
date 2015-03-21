@@ -34,7 +34,7 @@ public class CastShellActivity extends Activity {
     private static final boolean DEBUG = false;
 
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
-    private static final int DEFAULT_HEIGHT_PIXELS = 720;
+    private static final int DEFAULT_HEIGHT_PIXELS = 1080;
     public static final String ACTION_EXTRA_RESOLUTION_HEIGHT =
             "org.chromium.chromecast.shell.intent.extra.RESOLUTION_HEIGHT";
 
