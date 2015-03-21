@@ -73,7 +73,7 @@ VideoDecoderResource::VideoDecoderResource(Connection connection,
       // just testing |decoder_last_error_|.
       decoder_last_error_(PP_ERROR_FAILED) {
   // Clear the decode_ids_ array.
-  memset(decode_ids_, 0, arraysize(decode_ids_));
+  memset(decode_ids_, 0, sizeof(decode_ids_));
   SendCreate(RENDERER, PpapiHostMsg_VideoDecoder_Create());
 }
 
