@@ -363,6 +363,12 @@ namespace developerPrivate {
     long? columnNumber;
   };
 
+  dictionary DeleteExtensionErrorsProperties {
+    DOMString extensionId;
+    long[]? errorIds;
+    ErrorType? type;
+  };
+
   callback VoidCallback = void ();
   callback BooleanCallback = void (boolean result);
   callback ExtensionInfosCallback = void (ExtensionInfo[] result);
@@ -462,6 +468,12 @@ namespace developerPrivate {
     // Open the developer tools to focus on a particular error.
     static void openDevTools(OpenDevToolsProperties properties,
                              optional VoidCallback callback);
+
+    // Delete reported extension erors.
+    // | properties | : The properties specifying the errors to remove.
+    static void deleteExtensionErrors(
+        DeleteExtensionErrorsProperties properties,
+        optional VoidCallback callback);
 
     // Deprecated api methods, retained for compatability.
     [nocompile] static void allowIncognito(DOMString extensionId,

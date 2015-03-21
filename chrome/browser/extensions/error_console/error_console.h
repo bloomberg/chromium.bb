@@ -77,6 +77,9 @@ class ErrorConsole : public content::NotificationObserver,
   // Report an extension error, and add it to the list.
   void ReportError(scoped_ptr<ExtensionError> error);
 
+  // Removes errors from the map according to the given |filter|.
+  void RemoveErrors(const ErrorMap::Filter& filter);
+
   // Get a collection of weak pointers to all errors relating to the extension
   // with the given |extension_id|.
   const ErrorList& GetErrorsForExtension(const std::string& extension_id) const;

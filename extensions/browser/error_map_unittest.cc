@@ -16,6 +16,7 @@
 namespace extensions {
 
 using error_test_util::CreateNewRuntimeError;
+using error_test_util::CreateNewManifestError;
 
 class ErrorMapUnitTest : public testing::Test {
  public:
@@ -44,39 +45,53 @@ TEST_F(ErrorMapUnitTest, AddAndRemoveErrors) {
 
   // There should only be one entry in the map, since errors are stored in lists
   // keyed by extension id.
-  ASSERT_EQ(1u, errors_.size());
+  EXPECT_EQ(1u, errors_.size());
 
-  ASSERT_EQ(kNumTotalErrors, errors_.GetErrorsForExtension(kId).size());
+  EXPECT_EQ(kNumTotalErrors, errors_.GetErrorsForExtension(kId).size());
 
   // Remove the incognito errors; three errors should remain, and all should
   // be from non-incognito contexts.
-  errors_.RemoveIncognitoErrors();
+  errors_.RemoveErrors(ErrorMap::Filter::IncognitoErrors());
   const ErrorList& list = errors_.GetErrorsForExtension(kId);
-  ASSERT_EQ(kNumNonIncognitoErrors, list.size());
+  EXPECT_EQ(kNumNonIncognitoErrors, list.size());
   for (size_t i = 0; i < list.size(); ++i)
-    ASSERT_FALSE(list[i]->from_incognito());
+    EXPECT_FALSE(list[i]->from_incognito());
 
   // Add another error for a different extension id.
   const std::string kSecondId = crx_file::id_util::GenerateId("id2");
-  ASSERT_TRUE(errors_.AddError(CreateNewRuntimeError(kSecondId, "foo")));
+  EXPECT_TRUE(errors_.AddError(CreateNewRuntimeError(kSecondId, "foo")));
 
   // There should be two entries now, one for each id, and there should be one
   // error for the second extension.
-  ASSERT_EQ(2u, errors_.size());
-  ASSERT_EQ(1u, errors_.GetErrorsForExtension(kSecondId).size());
+  EXPECT_EQ(2u, errors_.size());
+  EXPECT_EQ(1u, errors_.GetErrorsForExtension(kSecondId).size());
 
   // Remove all errors for the second id.
-  errors_.Remove(kSecondId);
-  ASSERT_EQ(1u, errors_.size());
-  ASSERT_EQ(0u, errors_.GetErrorsForExtension(kSecondId).size());
+  errors_.RemoveErrors(ErrorMap::Filter::ErrorsForExtension(kSecondId));
+  EXPECT_EQ(0u, errors_.GetErrorsForExtension(kSecondId).size());
   // First extension should be unaffected.
-  ASSERT_EQ(kNumNonIncognitoErrors,
+  EXPECT_EQ(kNumNonIncognitoErrors, errors_.GetErrorsForExtension(kId).size());
+
+  errors_.AddError(CreateNewManifestError(kId, "manifest error"));
+  EXPECT_EQ(kNumNonIncognitoErrors + 1,
             errors_.GetErrorsForExtension(kId).size());
+  errors_.RemoveErrors(ErrorMap::Filter::ErrorsForExtensionWithType(
+      kId, ExtensionError::MANIFEST_ERROR));
+  EXPECT_EQ(kNumNonIncognitoErrors, errors_.GetErrorsForExtension(kId).size());
+
+  const ExtensionError* added_error =
+      errors_.AddError(CreateNewManifestError(kId, "manifest error2"));
+  EXPECT_EQ(kNumNonIncognitoErrors + 1,
+            errors_.GetErrorsForExtension(kId).size());
+  std::set<int> ids;
+  ids.insert(added_error->id());
+  errors_.RemoveErrors(ErrorMap::Filter::ErrorsForExtensionWithIds(kId, ids));
+  EXPECT_EQ(kNumNonIncognitoErrors, errors_.GetErrorsForExtension(kId).size());
 
   // Remove remaining errors.
   errors_.RemoveAllErrors();
-  ASSERT_EQ(0u, errors_.size());
-  ASSERT_EQ(0u, errors_.GetErrorsForExtension(kId).size());
+  EXPECT_EQ(0u, errors_.size());
+  EXPECT_EQ(0u, errors_.GetErrorsForExtension(kId).size());
 }
 
 // Test that if we add enough errors, only the most recent

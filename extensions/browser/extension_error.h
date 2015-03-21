@@ -24,9 +24,9 @@ namespace extensions {
 class ExtensionError {
  public:
   enum Type {
-    MANIFEST_ERROR,
+    MANIFEST_ERROR = 0,
     RUNTIME_ERROR,
-    NUM_ERROR_TYPES  // Put new values above this.
+    NUM_ERROR_TYPES,  // Put new values above this.
   };
 
   virtual ~ExtensionError();
@@ -42,6 +42,8 @@ class ExtensionError {
 
   Type type() const { return type_; }
   const std::string& extension_id() const { return extension_id_; }
+  int id() const { return id_; }
+  void set_id(int id) { id_ = id; }
   bool from_incognito() const { return from_incognito_; }
   logging::LogSeverity level() const { return level_; }
   const base::string16& source() const { return source_; }
@@ -71,6 +73,8 @@ class ExtensionError {
   Type type_;
   // The ID of the extension which caused the error.
   std::string extension_id_;
+  // The id of this particular error. This can be zero if the id is never set.
+  int id_;
   // Whether or not the error was caused while incognito.
   bool from_incognito_;
   // The severity level of the error.

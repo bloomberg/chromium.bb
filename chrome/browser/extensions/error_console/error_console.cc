@@ -102,9 +102,7 @@ void ErrorConsole::SetReportingAllForExtension(
   if (!enabled_ || !crx_file::id_util::IdIsValid(extension_id))
     return;
 
-  int mask = 0;
-  if (enabled)
-    mask = (1 << ExtensionError::NUM_ERROR_TYPES) - 1;
+  int mask = enabled ? (1 << ExtensionError::NUM_ERROR_TYPES) - 1 : 0;
 
   prefs_->UpdateExtensionPref(extension_id,
                               kStoreExtensionErrorsPref,
@@ -140,6 +138,10 @@ void ErrorConsole::ReportError(scoped_ptr<ExtensionError> error) {
 
   const ExtensionError* weak_error = errors_.AddError(error.Pass());
   FOR_EACH_OBSERVER(Observer, observers_, OnErrorAdded(weak_error));
+}
+
+void ErrorConsole::RemoveErrors(const ErrorMap::Filter& filter) {
+  errors_.RemoveErrors(filter);
 }
 
 const ErrorList& ErrorConsole::GetErrorsForExtension(
@@ -228,8 +230,8 @@ void ErrorConsole::OnExtensionInstalled(
   // to keep runtime errors, though, because extensions are reloaded on a
   // refresh of chrome:extensions, and we don't want to wipe our history
   // whenever that happens.
-  errors_.RemoveErrorsForExtensionOfType(extension->id(),
-                                         ExtensionError::MANIFEST_ERROR);
+  errors_.RemoveErrors(ErrorMap::Filter::ErrorsForExtensionWithType(
+      extension->id(), ExtensionError::MANIFEST_ERROR));
   AddManifestErrorsForExtension(extension);
 }
 
@@ -237,7 +239,7 @@ void ErrorConsole::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     extensions::UninstallReason reason) {
-  errors_.Remove(extension->id());
+  errors_.RemoveErrors(ErrorMap::Filter::ErrorsForExtension(extension->id()));
 }
 
 void ErrorConsole::AddManifestErrorsForExtension(const Extension* extension) {
@@ -261,7 +263,7 @@ void ErrorConsole::Observe(int type,
   // If incognito profile which we are associated with is destroyed, also
   // destroy all incognito errors.
   if (profile->IsOffTheRecord() && profile_->IsSameProfile(profile))
-    errors_.RemoveIncognitoErrors();
+    errors_.RemoveErrors(ErrorMap::Filter::IncognitoErrors());
 }
 
 int ErrorConsole::GetMaskForExtension(const std::string& extension_id) const {

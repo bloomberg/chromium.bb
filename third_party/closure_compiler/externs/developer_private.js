@@ -395,6 +395,15 @@ var RequestFileSourceResponse;
 var OpenDevToolsProperties;
 
 /**
+ * @typedef {{
+ *   extensionId: string,
+ *   errorIds: (Array<number>|undefined),
+ *   type: (chrome.developerPrivate.ErrorType|undefined)
+ * }}
+ */
+var DeleteExtensionErrorsProperties;
+
+/**
  * @const
  */
 chrome.developerPrivate = {};
@@ -539,6 +548,14 @@ chrome.developerPrivate.requestFileSource = function(properties, callback) {};
  * @param {OpenDevToolsProperties} properties
  */
 chrome.developerPrivate.openDevTools = function(properties) {};
+
+/**
+ * Delete reported extension erors.
+ * @param {DeleteExtensionErrorsProperties} properties The properties specifying
+ * the errors to remove.
+ * @param {Function=} callback
+ */
+chrome.developerPrivate.deleteExtensionErrors = function(properties, callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.developerPrivate.onItemStateChanged;

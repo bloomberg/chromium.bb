@@ -5,6 +5,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
+#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -19,6 +20,7 @@
 #include "chrome/test/base/test_browser_window.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/test/test_web_contents_factory.h"
+#include "extensions/browser/extension_error_test_util.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -55,10 +57,15 @@ class DeveloperPrivateApiUnitTest : public ExtensionServiceTestBase {
   // it to be reloaded.
   const Extension* LoadUnpackedExtension();
 
+  // Loads an extension with no real directory; this is faster, but means the
+  // extension can't be reloaded.
+  const Extension* LoadSimpleExtension();
+
   // Tests modifying the extension's configuration.
   void TestExtensionPrefSetting(
       bool (*has_pref)(const std::string&, content::BrowserContext*),
-      const std::string& key);
+      const std::string& key,
+      const std::string& extension_id);
 
   testing::AssertionResult TestPackExtensionFunction(
       const base::ListValue& args,
@@ -124,13 +131,28 @@ const Extension* DeveloperPrivateApiUnitTest::LoadUnpackedExtension() {
   return extension;
 }
 
+const Extension* DeveloperPrivateApiUnitTest::LoadSimpleExtension() {
+  const char kName[] = "extension name";
+  const char kVersion[] = "1.0.0.1";
+  std::string id = crx_file::id_util::GenerateId(kName);
+  DictionaryBuilder manifest;
+  manifest.Set("name", kName)
+          .Set("version", kVersion)
+          .Set("manifest_version", 2)
+          .Set("description", "an extension");
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder().SetManifest(manifest)
+                        .SetLocation(Manifest::INTERNAL)
+                        .SetID(id)
+                        .Build();
+  service()->AddExtension(extension.get());
+  return extension.get();
+}
+
 void DeveloperPrivateApiUnitTest::TestExtensionPrefSetting(
     bool (*has_pref)(const std::string&, content::BrowserContext*),
-    const std::string& key) {
-  // Sadly, we need a "real" directory here, because toggling incognito causes
-  // a reload (which needs a path).
-  std::string extension_id = LoadUnpackedExtension()->id();
-
+    const std::string& key,
+    const std::string& extension_id) {
   scoped_refptr<UIThreadExtensionFunction> function(
       new api::DeveloperPrivateUpdateExtensionConfigurationFunction());
 
@@ -218,10 +240,14 @@ TEST_F(DeveloperPrivateApiUnitTest,
        DeveloperPrivateUpdateExtensionConfiguration) {
   FeatureSwitch::ScopedOverride scripts_require_action(
       FeatureSwitch::scripts_require_action(), true);
-  TestExtensionPrefSetting(&util::IsIncognitoEnabled, "incognitoAccess");
-  TestExtensionPrefSetting(&util::AllowFileAccess, "fileAccess");
-  TestExtensionPrefSetting(&util::AllowedScriptingOnAllUrls,
-                           "runOnAllUrls");
+  // Sadly, we need a "real" directory here, because toggling prefs causes
+  // a reload (which needs a path).
+  std::string id = LoadUnpackedExtension()->id();
+
+  TestExtensionPrefSetting(&util::IsIncognitoEnabled, "incognitoAccess", id);
+  TestExtensionPrefSetting(&util::AllowFileAccess, "fileAccess", id);
+  TestExtensionPrefSetting(
+      &util::AllowedScriptingOnAllUrls, "runOnAllUrls", id);
 }
 
 // Test developerPrivate.reload.
@@ -412,20 +438,7 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateRequestFileSource) {
 // Test developerPrivate.getExtensionsInfo.
 TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
   ResetThreadBundle(content::TestBrowserThreadBundle::DEFAULT);
-  const char kName[] = "extension name";
-  const char kVersion[] = "1.0.0.1";
-  std::string id = crx_file::id_util::GenerateId(kName);
-  DictionaryBuilder manifest;
-  manifest.Set("name", kName)
-          .Set("version", kVersion)
-          .Set("manifest_version", 2)
-          .Set("description", "an extension");
-  scoped_refptr<const Extension> extension =
-      ExtensionBuilder().SetManifest(manifest)
-                        .SetLocation(Manifest::INTERNAL)
-                        .SetID(id)
-                        .Build();
-  service()->AddExtension(extension.get());
+  LoadSimpleExtension();
 
   // The test here isn't so much about the generated value (that's tested in
   // ExtensionInfoGenerator's unittest), but rather just to make sure we can
@@ -460,6 +473,63 @@ TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateGetExtensionsInfo) {
   scoped_ptr<api::developer_private::ItemInfo> item_info =
       api::developer_private::ItemInfo::FromValue(*value);
   ASSERT_TRUE(item_info);
+}
+
+// Test developerPrivate.deleteExtensionErrors.
+TEST_F(DeveloperPrivateApiUnitTest, DeveloperPrivateDeleteExtensionErrors) {
+  FeatureSwitch::ScopedOverride error_console_override(
+      FeatureSwitch::error_console(), true);
+  profile()->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+  const Extension* extension = LoadSimpleExtension();
+
+  // Report some errors.
+  ErrorConsole* error_console = ErrorConsole::Get(profile());
+  error_console->SetReportingAllForExtension(extension->id(), true);
+  error_console->ReportError(
+      error_test_util::CreateNewRuntimeError(extension->id(), "foo"));
+  error_console->ReportError(
+      error_test_util::CreateNewRuntimeError(extension->id(), "bar"));
+  error_console->ReportError(
+      error_test_util::CreateNewManifestError(extension->id(), "baz"));
+  EXPECT_EQ(3u, error_console->GetErrorsForExtension(extension->id()).size());
+
+  // Start by removing all errors for the extension of a given type (manifest).
+  std::string type_string = api::developer_private::ToString(
+      api::developer_private::ERROR_TYPE_MANIFEST);
+  scoped_ptr<base::ListValue> args =
+      ListBuilder()
+          .Append(DictionaryBuilder()
+                      .Set("extensionId", extension->id())
+                      .Set("type", type_string))
+          .Build();
+  scoped_refptr<UIThreadExtensionFunction> function =
+      new api::DeveloperPrivateDeleteExtensionErrorsFunction();
+  EXPECT_TRUE(RunFunction(function, *args)) << function->GetError();
+  // Two errors should remain.
+  const ErrorList& error_list =
+      error_console->GetErrorsForExtension(extension->id());
+  ASSERT_EQ(2u, error_list.size());
+
+  // Next remove errors by id.
+  int error_id = error_list[0]->id();
+  args = ListBuilder()
+             .Append(DictionaryBuilder()
+                         .Set("extensionId", extension->id())
+                         .Set("errorIds", ListBuilder().Append(error_id)))
+             .Build();
+  function = new api::DeveloperPrivateDeleteExtensionErrorsFunction();
+  EXPECT_TRUE(RunFunction(function, *args)) << function->GetError();
+  // And then there was one.
+  EXPECT_EQ(1u, error_console->GetErrorsForExtension(extension->id()).size());
+
+  // Finally remove all errors for the extension.
+  args = ListBuilder()
+             .Append(DictionaryBuilder().Set("extensionId", extension->id()))
+             .Build();
+  function = new api::DeveloperPrivateDeleteExtensionErrorsFunction();
+  EXPECT_TRUE(RunFunction(function, *args)) << function->GetError();
+  // No more errors!
+  EXPECT_TRUE(error_console->GetErrorsForExtension(extension->id()).empty());
 }
 
 }  // namespace extensions

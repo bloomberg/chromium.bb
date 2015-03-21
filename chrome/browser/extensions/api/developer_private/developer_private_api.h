@@ -441,6 +441,17 @@ class DeveloperPrivateOpenDevToolsFunction
   ResponseAction Run() override;
 };
 
+class DeveloperPrivateDeleteExtensionErrorsFunction
+    : public DeveloperPrivateAPIFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("developerPrivate.deleteExtensionErrors",
+                             DEVELOPERPRIVATE_DELETEEXTENSIONERRORS);
+
+ protected:
+  ~DeveloperPrivateDeleteExtensionErrorsFunction() override;
+  ResponseAction Run() override;
+};
+
 }  // namespace api
 
 }  // namespace extensions

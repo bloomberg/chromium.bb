@@ -33,6 +33,7 @@ ExtensionError::ExtensionError(Type type,
                                const base::string16& message)
     : type_(type),
       extension_id_(extension_id),
+      id_(0),
       from_incognito_(from_incognito),
       level_(level),
       source_(source),

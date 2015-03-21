@@ -41,6 +41,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/error_map.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -1205,6 +1206,35 @@ DeveloperPrivateOpenDevToolsFunction::Run() {
   TabStripModel* tab_strip = browser->tab_strip_model();
   tab_strip->ActivateTabAt(tab_strip->GetIndexOfWebContents(web_contents),
                            false);  // Not through direct user gesture.
+  return RespondNow(NoArguments());
+}
+
+DeveloperPrivateDeleteExtensionErrorsFunction::
+~DeveloperPrivateDeleteExtensionErrorsFunction() {}
+
+ExtensionFunction::ResponseAction
+DeveloperPrivateDeleteExtensionErrorsFunction::Run() {
+  scoped_ptr<developer::DeleteExtensionErrors::Params> params(
+      developer::DeleteExtensionErrors::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  const developer::DeleteExtensionErrorsProperties& properties =
+      params->properties;
+
+  ErrorConsole* error_console =
+      ErrorConsole::Get(Profile::FromBrowserContext(browser_context()));
+  int type = -1;
+  if (properties.type != developer::ERROR_TYPE_NONE) {
+    type = properties.type == developer::ERROR_TYPE_MANIFEST ?
+        ExtensionError::MANIFEST_ERROR : ExtensionError::RUNTIME_ERROR;
+  }
+  std::set<int> error_ids;
+  if (properties.error_ids) {
+    error_ids.insert(properties.error_ids->begin(),
+                     properties.error_ids->end());
+  }
+  error_console->RemoveErrors(ErrorMap::Filter(
+      properties.extension_id, type, error_ids, false));
+
   return RespondNow(NoArguments());
 }
 

@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <map>
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
@@ -25,19 +26,43 @@ class ErrorMap {
   ErrorMap();
   ~ErrorMap();
 
+  struct Filter {
+    Filter(const std::string& restrict_to_extension_id,
+           int restrict_to_type,
+           const std::set<int>& restrict_to_ids,
+           bool restrict_to_incognito);
+    ~Filter();
+
+    // Convenience methods to get a specific type of filter. Prefer these over
+    // the constructor when possible.
+    static Filter ErrorsForExtension(const std::string& extension_id);
+    static Filter ErrorsForExtensionWithType(const std::string& extension_id,
+                                             ExtensionError::Type type);
+    static Filter ErrorsForExtensionWithIds(const std::string& extension_id,
+                                            const std::set<int>& ids);
+    static Filter ErrorsForExtensionWithTypeAndIds(
+        const std::string& extension_id,
+        ExtensionError::Type type,
+        const std::set<int>& ids);
+    static Filter IncognitoErrors();
+
+    bool Matches(const ExtensionError* error) const;
+
+    const std::string restrict_to_extension_id;
+    const int restrict_to_type;
+    const std::set<int> restrict_to_ids;
+    const bool restrict_to_incognito;
+  };
+
   // Return the list of all errors associated with the given extension.
   const ErrorList& GetErrorsForExtension(const std::string& extension_id) const;
 
   // Add the |error| to the ErrorMap.
   const ExtensionError* AddError(scoped_ptr<ExtensionError> error);
 
-  // Remove an extension from the ErrorMap, deleting all associated errors.
-  void Remove(const std::string& extension_id);
-  // Remove all errors of a given type for an extension.
-  void RemoveErrorsForExtensionOfType(const std::string& extension_id,
-                                      ExtensionError::Type type);
-  // Remove all incognito errors for all extensions.
-  void RemoveIncognitoErrors();
+  // Removes errors that match the given |filter| from the map.
+  void RemoveErrors(const Filter& filter);
+
   // Remove all errors for all extensions, and clear the map.
   void RemoveAllErrors();
 
@@ -46,32 +71,8 @@ class ErrorMap {
  private:
   // An Entry is created for each Extension ID, and stores the errors related to
   // that Extension.
-  class ExtensionEntry {
-   public:
-    ExtensionEntry();
-    ~ExtensionEntry();
-
-    // Delete all errors associated with this extension.
-    void DeleteAllErrors();
-    // Delete all incognito errors associated with this extension.
-    void DeleteIncognitoErrors();
-    // Delete all errors of the given |type| associated with this extension.
-    void DeleteErrorsOfType(ExtensionError::Type type);
-
-    // Add the error to the list, and return a weak reference.
-    const ExtensionError* AddError(scoped_ptr<ExtensionError> error);
-
-    const ErrorList* list() const { return &list_; }
-
-   private:
-    // The list of all errors associated with the extension. The errors are
-    // owned by the Entry (in turn owned by the ErrorMap) and are deleted upon
-    // destruction.
-    ErrorList list_;
-
-    DISALLOW_COPY_AND_ASSIGN(ExtensionEntry);
-  };
-  typedef std::map<std::string, ExtensionEntry*> EntryMap;
+  class ExtensionEntry;
+  using EntryMap = std::map<std::string, ExtensionEntry*>;
 
   // The mapping between Extension IDs and their corresponding Entries.
   EntryMap map_;

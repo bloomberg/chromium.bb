@@ -27,7 +27,8 @@ scoped_ptr<ExtensionError> CreateNewRuntimeError(
 
 // Create a new ManifestError.
 scoped_ptr<ExtensionError> CreateNewManifestError(
-    const std::string& extension_id, const std::string& mnessage);
+    const std::string& extension_id,
+    const std::string& message);
 
 }  // namespace error_test_util
 }  // namespace extensions
