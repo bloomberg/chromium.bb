@@ -55,6 +55,11 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeTest) {
       FILE_PATH_LITERAL("foreground/js/ui/directory_tree_unittest.html")));
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTableTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("foreground/js/ui/file_table_unittest.html")));
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MediaScannerTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("background/js/media_scanner_unittest.html")));

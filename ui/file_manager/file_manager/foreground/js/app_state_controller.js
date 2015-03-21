@@ -9,16 +9,12 @@
  */
 function AppStateController(dialogType) {
   /**
-   * @type {string}
-   * @const
+   * @const {string}
    * @private
    */
   this.viewOptionStorageKey_ = 'file-manager-' + dialogType;
 
-  /**
-   * @type {DirectoryModel}
-   * @private
-   */
+  /** @private {DirectoryModel} */
   this.directoryModel_ = null;
 
   /**
@@ -86,12 +82,9 @@ AppStateController.prototype.initialize = function(ui, directoryModel) {
   this.directoryModel_.getFileList().sort(
       this.viewOptions_.sortField || 'modificationTime',
       this.viewOptions_.sortDirection || 'desc');
-  if (this.viewOptions_.columns) {
-    var cm = this.ui_.listContainer.table.columnModel;
-    for (var i = 0; i < cm.size; i++) {
-      if (this.viewOptions_.columns[i] > 0)
-        cm.setWidth(i, this.viewOptions_.columns[i]);
-    }
+  if (this.viewOptions_.columnConfig) {
+    this.ui_.listContainer.table.columnModel.restoreColumnConfig(
+        this.viewOptions_.columnConfig);
   }
 };
 
@@ -103,13 +96,11 @@ AppStateController.prototype.saveViewOptions = function() {
   var prefs = {
     sortField: sortStatus.field,
     sortDirection: sortStatus.direction,
-    columns: [],
+    columnConfig: {},
     listType: this.ui_.listContainer.currentListType
   };
   var cm = this.ui_.listContainer.table.columnModel;
-  for (var i = 0; i < cm.size; i++) {
-    prefs.columns.push(cm.getWidth(i));
-  }
+  prefs.columnConfig = cm.exportColumnConfig();
   // Save the global default.
   var items = {};
   items[this.viewOptionStorageKey_] = JSON.stringify(prefs);

@@ -219,6 +219,9 @@ function FileManager() {
    */
   this.taskController_ = null;
 
+  /** @private {ColumnVisibilityController} */
+  this.columnVisibilityController_ = null;
+
   // --------------------------------------------------------------------------
   // DOM elements.
 
@@ -256,9 +259,9 @@ function FileManager() {
   /**
    * Indicates whether cloud import is enabled.  This is initialized in
    * #initSettings.
-   * @private {?boolean}
+   * @private {boolean}
    */
-  this.importEnabled_ = null;
+  this.importEnabled_ = true;
 }
 
 FileManager.prototype = /** @struct */ {
@@ -432,12 +435,9 @@ FileManager.prototype = /** @struct */ {
             this.importController_ = new importer.ImportController(
                 new importer.RuntimeControllerEnvironment(
                     this,
-                    /** @type {!FileSelectionHandler} */ (
-                        this.selectionHandler_)),
-                /** @type {!importer.MediaScanner} */ (
-                    this.mediaScanner_),
-                /** @type {!importer.ImportRunner} */ (
-                    this.mediaImportHandler_),
+                    this.selectionHandler_),
+                this.mediaScanner_,
+                this.mediaImportHandler_,
                 new importer.RuntimeCommandWidget(),
                 assert(this.tracker_));
           }
@@ -739,9 +739,6 @@ FileManager.prototype = /** @struct */ {
     FileManagerDialogBase.setFileManager(this);
 
     var table = queryRequiredElement(dom, '.detail-table');
-    // TODO(kenobi): See crbug/460135.  The import status column in table view
-    // is disabled until it works properly.
-    table.importEnabled = false;
     FileTable.decorate(
         table,
         this.metadataModel_,
@@ -772,6 +769,12 @@ FileManager.prototype = /** @struct */ {
 
     // Populate the static localized strings.
     i18nTemplate.process(this.document_, loadTimeData);
+
+    // The cwd is not known at this point.  Hide the import status column before
+    // redrawing, to avoid ugly flashing in the UI, caused when the first redraw
+    // has a visible status column, and then the cwd is later discovered to be
+    // not an import-eligible location.
+    this.ui_.listContainer.table.setImportStatusVisible(false);
 
     // Arrange the file list.
     this.ui_.listContainer.table.normalizeColumns();
@@ -884,6 +887,9 @@ FileManager.prototype = /** @struct */ {
         this.directoryModel_.getFileListSelection();
 
     this.appStateController_.initialize(this.ui_, this.directoryModel_);
+
+    this.columnVisibilityController_ = new ColumnVisibilityController(
+        this.ui_, this.directoryModel_, this.volumeManager_);
 
     // Create metadata update controller.
     this.metadataUpdateController_ = new MetadataUpdateController(

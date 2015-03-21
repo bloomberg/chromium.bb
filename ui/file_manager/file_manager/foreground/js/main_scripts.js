@@ -92,6 +92,7 @@
 //
 //<include src="app_installer.js">
 //<include src="app_state_controller.js">
+//<include src="column_visibility_controller.js">
 //<include src="cws_container_client.js">
 //<include src="dialog_action_controller.js">
 //<include src="dialog_type.js">

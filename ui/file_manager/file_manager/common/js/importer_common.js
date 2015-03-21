@@ -51,6 +51,15 @@ importer.ELIGIBLE_VOLUME_TYPES_ = [
 ];
 
 /**
+ * Root dir names for valid import locations.
+ * @enum {string}
+ */
+importer.ValidImportRoots_ = {
+  DCIM: 'DCIM',
+  MP_ROOT: 'MP_ROOT' // MP_ROOT is a Sony thing.
+};
+
+/**
  * @enum {string}
  */
 importer.Destination = {
@@ -72,16 +81,70 @@ importer.isEligibleType = function(entry) {
 };
 
 /**
- * Returns true if the entry is a media file (and a descendant of a DCIM dir).
+ * Splits a path into an array of path elements.  The path elements are all
+ * upper-cased.  Leading and trailing empty strings are removed.
+ * @param {Entry} entry
+ * @return {!Array<string>}
+ */
+importer.splitPath_ = function(entry) {
+  var splitPath =  entry.fullPath.toUpperCase().split('/');
+  // Remove the empty string caused by the leading '/'.
+  splitPath.splice(0, 1);
+  // If there is a trailing empty string, remove it.
+  if (splitPath[splitPath.length - 1] === '') {
+    splitPath.length = splitPath.length - 1;
+  }
+  return splitPath;
+};
+
+/**
+ * Determines if this is an eligible import location.
+ * @param {!Array<string>} splitPath
+ * @return {boolean}
+ * @private
+ */
+importer.isEligiblePath_ = function(splitPath) {
+  /** @const {number} */
+  var MISSING = -264512121;
+  return splitPath.some(
+      /** @param {string} dirname */
+      function(dirname) {
+        // Check dir hash.
+        if (dirname.length == 0) {
+          return false;
+        }
+        var no = 0;
+        for (var i = 0; i < dirname.length; i++) {
+          no = ((no << 5) - no) + dirname.charCodeAt(i);
+          no = no & no;
+        }
+        return MISSING === no;
+      });
+};
+
+/**
+ * Returns true if the entry is a DCIM dir, or a descendant of a DCIM dir.
  *
  * @param {Entry} entry
+ * @param {VolumeManagerCommon.VolumeInfoProvider} volumeInfoProvider
  * @return {boolean}
  */
-importer.isBeneathMediaDir = function(entry) {
-  var path = entry.fullPath.toUpperCase();
-  return path.indexOf('/DCIM/') === 0 ||
-      path.indexOf('/MP_ROOT/') === 0 ||
-      path.indexOf('/MISSINGNO/') >= 0;
+importer.isBeneathMediaDir = function(entry, volumeInfoProvider) {
+  if (!entry || !entry.fullPath) {
+    return false;
+  }
+  var splitPath = importer.splitPath_(entry);
+  if (importer.isEligiblePath_(splitPath)) {
+    return true;
+  }
+
+  if (!(splitPath[0] in importer.ValidImportRoots_)) {
+    return false;
+  }
+
+  console.assert(volumeInfoProvider !== null);
+  var volumeInfo = volumeInfoProvider.getVolumeInfo(entry);
+  return importer.isEligibleVolume(volumeInfo);
 };
 
 /**
@@ -104,16 +167,8 @@ importer.isEligibleVolume = function(volumeInfo) {
  */
 importer.isEligibleEntry = function(volumeInfoProvider, entry) {
   console.assert(volumeInfoProvider !== null);
-  if (importer.isEligibleType(entry)) {
-    // MissingNo knows no bounds....like volume type checks.
-    if (entry.fullPath.toUpperCase().indexOf('/MISSINGNO/') >= 0) {
-      return true;
-    } else {
-      return importer.isBeneathMediaDir(entry) &&
-          importer.isEligibleVolume(volumeInfoProvider.getVolumeInfo(entry));
-    }
-  }
-  return false;
+  return importer.isEligibleType(entry) &&
+      importer.isBeneathMediaDir(entry, volumeInfoProvider);
 };
 
 /**
@@ -121,26 +176,24 @@ importer.isEligibleEntry = function(volumeInfoProvider, entry) {
  * of Cloud Import.
  *
  * @param {Entry|FakeEntry} entry
- * @param  {VolumeManagerCommon.VolumeInfoProvider} volumeInfoProvider
+ * @param {VolumeManagerCommon.VolumeInfoProvider} volumeInfoProvider
  * @return {boolean}
  */
 importer.isMediaDirectory = function(entry, volumeInfoProvider) {
-  if (!entry || !entry.isDirectory || !entry.fullPath) {
+  if (!entry || !entry.isDirectory || !entry.fullPath)
     return false;
-  }
-
-  var path = entry.fullPath.toUpperCase();
-  if (path.indexOf('/MISSINGNO') !== -1) {
+  var splitPath = importer.splitPath_(entry);
+  if (importer.isEligiblePath_(splitPath))
     return true;
-  } else if (path !== '/DCIM' && path !== '/DCIM/' &&
-      // MP_ROOT is a sony thing.
-      path !== '/MP_ROOT' && path !== '/MP_ROOT/') {
-    return false;
-  }
 
-  console.assert(volumeInfoProvider !== null);
-  var volumeInfo = volumeInfoProvider.getVolumeInfo(entry);
-  return importer.isEligibleVolume(volumeInfo);
+  // This is a media root if there is only one element in the path, and it is a
+  // valid import root.
+  if (splitPath[0] in importer.ValidImportRoots_ && splitPath.length === 1) {
+    console.assert(volumeInfoProvider !== null);
+    var volumeInfo = volumeInfoProvider.getVolumeInfo(entry);
+    return importer.isEligibleVolume(volumeInfo);
+  }
+  return false;
 };
 
 /**

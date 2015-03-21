@@ -43,6 +43,18 @@ FileGrid.decorate = function(
   /** @private {number} */
   self.endIndex_ = 0;
 
+  /**
+   * Reflects the visibility of import status in the UI.  Assumption: import
+   * status is only enabled in import-eligible locations.  See
+   * ImportController#onDirectoryChanged.  For this reason, the code in this
+   * class checks if import status is visible, and if so, assumes that all the
+   * files are in an import-eligible location.
+   * TODO(kenobi): Clean this up once import status is queryable from metadata.
+   *
+   * @private {boolean}
+   */
+  self.importStatusVisible_ = true;
+
   /** @private {function(!Event)} */
   self.onThumbnailLoadedBound_ = self.onThumbnailLoaded_.bind(self);
 
@@ -148,12 +160,7 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
     if (!entry || urls.indexOf(entry.toURL()) === -1)
       continue;
 
-    FileGrid.decorateThumbnailBox_(assertInstanceof(box, HTMLDivElement),
-                                   entry,
-                                   this.metadataModel_,
-                                   this.volumeManager_,
-                                   this.historyLoader_,
-                                   this.listThumbnailLoader_);
+    this.decorateThumbnailBox_(assertInstanceof(box, HTMLDivElement), entry);
   }
 };
 
@@ -180,21 +187,12 @@ FileGrid.prototype.relayoutImmediately_ = function() {
  * Decorates thumbnail.
  * @param {cr.ui.ListItem} li List item.
  * @param {!Entry} entry Entry to render a thumbnail for.
- * @param {!MetadataModel} metadataModel To retrieve metadata.
- * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
- * @param {!importer.HistoryLoader} historyLoader
  * @private
  */
-FileGrid.decorateThumbnail_ = function(
-    li,
-    entry,
-    metadataModel,
-    volumeManager,
-    historyLoader,
-    listThumbnailLoader) {
+FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
   li.className = 'thumbnail-item';
   if (entry)
-    filelist.decorateListItem(li, entry, metadataModel);
+    filelist.decorateListItem(li, entry, this.metadataModel_);
 
   var frame = li.ownerDocument.createElement('div');
   frame.className = 'thumbnail-frame';
@@ -202,13 +200,7 @@ FileGrid.decorateThumbnail_ = function(
 
   var box = li.ownerDocument.createElement('div');
   if (entry) {
-    FileGrid.decorateThumbnailBox_(
-        assertInstanceof(box, HTMLDivElement),
-        entry,
-        metadataModel,
-        volumeManager,
-        historyLoader,
-        listThumbnailLoader);
+    this.decorateThumbnailBox_(assertInstanceof(box, HTMLDivElement), entry);
   }
   frame.appendChild(box);
 
@@ -234,20 +226,17 @@ FileGrid.decorateThumbnail_ = function(
  *
  * @param {!HTMLDivElement} box Box to decorate.
  * @param {Entry} entry Entry which thumbnail is generating for.
- * @param {!MetadataModel} metadataModel To retrieve metadata.
- * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
- * @param {!importer.HistoryLoader} historyLoader
  * @param {function(HTMLImageElement)=} opt_imageLoadCallback Callback called
  *     when the image has been loaded before inserting it into the DOM.
  * @private
  */
-FileGrid.decorateThumbnailBox_ = function(
-    box, entry, metadataModel, volumeManager, historyLoader,
-    listThumbnailLoader, opt_imageLoadCallback) {
+FileGrid.prototype.decorateThumbnailBox_ = function(
+    box, entry, opt_imageLoadCallback) {
   box.className = 'img-container';
 
-  if (importer.isEligibleEntry(volumeManager, entry)) {
-    historyLoader.getHistory().then(
+  if (this.importStatusVisible_ &&
+      importer.isEligibleType(entry)) {
+    this.historyLoader_.getHistory().then(
         FileGrid.applyHistoryBadges_.bind(
             null,
             /** @type {!FileEntry} */ (entry),
@@ -257,7 +246,7 @@ FileGrid.decorateThumbnailBox_ = function(
   if (entry.isDirectory) {
     box.setAttribute('generic-thumbnail', 'folder');
 
-    var shared = !!metadataModel.getCache([entry], ['shared'])[0].shared;
+    var shared = !!this.metadataModel_.getCache([entry], ['shared'])[0].shared;
     box.classList.toggle('shared', shared);
 
     if (opt_imageLoadCallback)
@@ -266,16 +255,24 @@ FileGrid.decorateThumbnailBox_ = function(
   }
 
   // Set thumbnail if it's already in cache.
-  if (listThumbnailLoader &&
-      listThumbnailLoader.getThumbnailFromCache(entry)) {
+  if (this.listThumbnailLoader_ &&
+      this.listThumbnailLoader_.getThumbnailFromCache(entry)) {
     FileGrid.setThumbnailImage_(
         box,
-        listThumbnailLoader.getThumbnailFromCache(entry).dataUrl,
+        this.listThumbnailLoader_.getThumbnailFromCache(entry).dataUrl,
         /* should not animate */ false);
   } else {
     var mediaType = FileType.getMediaType(entry);
     box.setAttribute('generic-thumbnail', mediaType);
   }
+};
+
+/**
+ * Sets the visibility of the cloud import status column.
+ * @param {boolean} visible
+ */
+FileGrid.prototype.setImportStatusVisible = function(visible) {
+  this.importStatusVisible_ = visible;
 };
 
 /**
@@ -376,15 +373,7 @@ Object.defineProperty(FileGrid.Item.prototype, 'label', {
 FileGrid.Item.decorate = function(li, entry, grid) {
   li.__proto__ = FileGrid.Item.prototype;
   li = /** @type {!FileGrid.Item} */ (li);
-  // TODO(mtomasz): Pass the metadata cache and the volume manager directly
-  // instead of accessing private members of grid.
-  FileGrid.decorateThumbnail_(
-      li,
-      entry,
-      grid.metadataModel_,
-      grid.volumeManager_,
-      grid.historyLoader_,
-      grid.listThumbnailLoader_);
+  grid.decorateThumbnail_(li, entry);
 
   // Override the default role 'listitem' to 'option' to match the parent's
   // role (listbox).
