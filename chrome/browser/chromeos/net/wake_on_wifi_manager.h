@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/power/extension_event_observer.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -27,7 +28,8 @@ namespace chromeos {
 // servers and sending that connection information down to shill.  This class is
 // owned by ChromeBrowserMainPartsChromeos.  This class is also NOT thread-safe
 // and should only be called on the UI thread.
-class WakeOnWifiManager : public content::NotificationObserver {
+class WakeOnWifiManager : public content::NotificationObserver,
+                          public NetworkStateHandlerObserver {
  public:
   enum WakeOnWifiFeature {
     WAKE_ON_NONE            = 0x00,
@@ -51,20 +53,37 @@ class WakeOnWifiManager : public content::NotificationObserver {
   // have not yet determined whether wake-on-wifi features are supported.
   bool WakeOnWifiSupported();
 
-  // Callback for getting the Wi-Fi device properties.
-  void GetDevicePropertiesCallback(const std::string& device_path,
-                                   const base::DictionaryValue& properties);
-
   // content::NotificationObserver override.
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // NetworkStateHandlerObserver overrides.
+  void DeviceListChanged() override;
+  void DevicePropertiesUpdated(const DeviceState* device) override;
+
  private:
+  // Sends the user's preference to shill, updates the timer used by the GCM
+  // client to send heartbeats, and tells |extension_event_observer_| to block
+  // (or not block) suspends based on the value of |current_feature_|.
+  void HandleWakeOnWifiFeatureUpdated();
+
+  // Requests all the properties for the wifi device from shill.
+  void GetWifiDeviceProperties();
+
+  // Callback for getting the Wi-Fi device properties.
+  void GetDevicePropertiesCallback(const std::string& device_path,
+                                   const base::DictionaryValue& properties);
+
+  // Called when a Profile is added or destroyed.
   void OnProfileAdded(Profile* profile);
   void OnProfileDestroyed(Profile* profile);
 
   WakeOnWifiFeature current_feature_;
+
+  // Set to true once we have received the properties for the wifi device from
+  // shill.
+  bool wifi_properties_received_;
 
   class WakeOnPacketConnectionObserver;
   base::ScopedPtrHashMap<Profile*, WakeOnPacketConnectionObserver>
