@@ -97,7 +97,8 @@ bool TrayAudio::ShouldShowShelf() const {
   return TrayAudio::ShowAudioDeviceMenu() && !pop_up_volume_view_;
 }
 
-void TrayAudio::OnOutputVolumeChanged() {
+void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
+                                          double /* volume */) {
   float percent =
       static_cast<float>(audio_delegate_->GetOutputVolumeLevel()) / 100.0f;
   if (tray_view())

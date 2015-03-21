@@ -794,18 +794,15 @@
       'browser/api/vpn_provider/vpn_service_factory.h',
     ],
     'extensions_browser_sources_nonchromeos': [
-      'browser/api/document_scan/document_scan_interface_nonchromeos.cc',
-    ],
-    'extensions_browser_sources_nonlinux': [
       'browser/api/audio/audio_service.cc',
+      'browser/api/document_scan/document_scan_interface_nonchromeos.cc',
     ],
     'extensions_browser_sources_win_or_mac': [
       'browser/api/networking_private/networking_private_event_router_nonchromeos.cc',
       'browser/api/networking_private/networking_private_service_client.cc',
       'browser/api/networking_private/networking_private_service_client.h',
     ],
-    'extensions_browser_sources_linux_nonchromeos': [
-      'browser/api/audio/audio_service_linux.cc',
+    'extensions_browser_sources_linux_nonchromeos': [      
       'browser/api/networking_private/network_config_dbus_constants_linux.cc',
       'browser/api/networking_private/network_config_dbus_constants_linux.h',
       'browser/api/networking_private/networking_private_event_router_nonchromeos.cc',

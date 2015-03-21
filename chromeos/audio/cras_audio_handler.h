@@ -5,9 +5,9 @@
 #ifndef CHROMEOS_AUDIO_CRAS_AUDIO_HANDLER_H_
 #define CHROMEOS_AUDIO_CRAS_AUDIO_HANDLER_H_
 
+#include <stdint.h>
 #include <queue>
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -32,18 +32,18 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   typedef std::priority_queue<AudioDevice,
                               std::vector<AudioDevice>,
                               AudioDeviceCompare> AudioDevicePriorityQueue;
-  typedef std::vector<uint64> NodeIdList;
+  typedef std::vector<uint64_t> NodeIdList;
 
   class AudioObserver {
    public:
-    // Called when output volume changed.
-    virtual void OnOutputVolumeChanged();
+    // Called when an active output volume changed.
+    virtual void OnOutputNodeVolumeChanged(uint64_t node_id, int volume);
 
     // Called when output mute state changed.
     virtual void OnOutputMuteChanged();
 
-    // Called when input mute state changed.
-    virtual void OnInputGainChanged();
+    // Called when active input node's gain changed.
+    virtual void OnInputNodeGainChanged(uint64_t node_id, int gain);
 
     // Called when input mute state changed.
     virtual void OnInputMuteChanged();
@@ -92,13 +92,13 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   virtual bool IsOutputMuted();
 
   // Returns true if audio output is muted for a device.
-  virtual bool IsOutputMutedForDevice(uint64 device_id);
+  virtual bool IsOutputMutedForDevice(uint64_t device_id);
 
   // Returns true if audio input is muted.
   virtual bool IsInputMuted();
 
   // Returns true if audio input is muted for a device.
-  virtual bool IsInputMutedForDevice(uint64 device_id);
+  virtual bool IsInputMutedForDevice(uint64_t device_id);
 
   // Returns true if the output volume is below the default mute volume level.
   virtual bool IsOutputVolumeBelowDefaultMuteLevel();
@@ -111,20 +111,20 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   virtual int GetOutputVolumePercent();
 
   // Gets volume level in 0-100% range (0 being pure silence) for a device.
-  virtual int GetOutputVolumePercentForDevice(uint64 device_id);
+  virtual int GetOutputVolumePercentForDevice(uint64_t device_id);
 
   // Gets gain level in 0-100% range (0 being pure silence) for the current
   // active node.
   virtual int GetInputGainPercent();
 
   // Gets volume level in 0-100% range (0 being pure silence) for a device.
-  virtual int GetInputGainPercentForDevice(uint64 device_id);
+  virtual int GetInputGainPercentForDevice(uint64_t device_id);
 
   // Returns node_id of the primary active output node.
-  virtual uint64 GetPrimaryActiveOutputNode() const;
+  virtual uint64_t GetPrimaryActiveOutputNode() const;
 
   // Returns the node_id of the primary active input node.
-  virtual uint64 GetPrimaryActiveInputNode() const;
+  virtual uint64_t GetPrimaryActiveInputNode() const;
 
   // Gets the audio devices back in |device_list|.
   virtual void GetAudioDevices(AudioDeviceList* device_list) const;
@@ -161,10 +161,10 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   virtual void SwitchToDevice(const AudioDevice& device, bool notify);
 
   // Sets volume/gain level for a device.
-  virtual void SetVolumeGainPercentForDevice(uint64 device_id, int value);
+  virtual void SetVolumeGainPercentForDevice(uint64_t device_id, int value);
 
   // Sets the mute for device.
-  virtual void SetMuteForDevice(uint64 device_id, bool mute_on);
+  virtual void SetMuteForDevice(uint64_t device_id, bool mute_on);
 
   // Activates or deactivates keyboard mic if there's one.
   virtual void SetKeyboardMicActive(bool active);
@@ -199,8 +199,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // CrasAudioClient::Observer overrides.
   void AudioClientRestarted() override;
   void NodesChanged() override;
-  void ActiveOutputNodeChanged(uint64 node_id) override;
-  void ActiveInputNodeChanged(uint64 node_id) override;
+  void ActiveOutputNodeChanged(uint64_t node_id) override;
+  void ActiveInputNodeChanged(uint64_t node_id) override;
 
   // AudioPrefObserver overrides.
   void OnAudioPolicyPrefChanged() override;
@@ -210,8 +210,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
 
   // Sets the active audio output/input node to the node with |node_id|.
   // If |notify|, notifies Active*NodeChange.
-  void SetActiveOutputNode(uint64 node_id, bool notify);
-  void SetActiveInputNode(uint64 node_id, bool notify);
+  void SetActiveOutputNode(uint64_t node_id, bool notify);
+  void SetActiveInputNode(uint64_t node_id, bool notify);
 
   // Sets up the audio device state based on audio policy and audio settings
   // saved in prefs.
@@ -219,9 +219,9 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void SetupAudioOutputState();
 
   // Sets up the additional active audio node's state.
-  void SetupAdditionalActiveAudioNodeState(uint64 node_id);
+  void SetupAdditionalActiveAudioNodeState(uint64_t node_id);
 
-  const AudioDevice* GetDeviceFromId(uint64 device_id) const;
+  const AudioDevice* GetDeviceFromId(uint64_t device_id) const;
   const AudioDevice* GetKeyboardMic() const;
 
   // Initializes audio state, which should only be called when CrasAudioHandler
@@ -233,18 +233,18 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   void ApplyAudioPolicy();
 
   // Sets output volume of |node_id| to |volume|.
-  void SetOutputNodeVolume(uint64 node_id, int volume);
+  void SetOutputNodeVolume(uint64_t node_id, int volume);
 
-  void SetOutputNodeVolumePercent(uint64 node_id, int volume_percent);
+  void SetOutputNodeVolumePercent(uint64_t node_id, int volume_percent);
 
   // Sets output mute state to |mute_on| internally, returns true if output mute
   // is set.
   bool SetOutputMuteInternal(bool mute_on);
 
   // Sets input gain of |node_id| to |gain|.
-  void SetInputNodeGain(uint64 node_id, int gain);
+  void SetInputNodeGain(uint64_t node_id, int gain);
 
-  void SetInputNodeGainPercent(uint64 node_id, int gain_percent);
+  void SetInputNodeGainPercent(uint64_t node_id, int gain_percent);
 
   // Sets input mute state to |mute_on| internally.
   void SetInputMuteInternal(bool mute_on);
@@ -259,13 +259,13 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Returns true if *|current_active_node_id| device is changed to
   // |new_active_device|.
   bool ChangeActiveDevice(const AudioDevice& new_active_device,
-                          uint64* current_active_node_id);
+                          uint64_t* current_active_node_id);
 
   // Returns true if the audio nodes change is caused by some non-active
   // audio nodes unplugged.
   bool NonActiveDeviceUnplugged(size_t old_devices_size,
                                 size_t new_device_size,
-                                uint64 current_active_node);
+                                uint64_t current_active_node);
 
   // Returns true if there is any device change for for input or output,
   // specified by |is_input|.
@@ -285,13 +285,13 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // If there is no active node, |node_id| will be switched to become the
   // primary active node. Otherwise, it will be added as an additional active
   // node.
-  void AddActiveNode(uint64 node_id, bool notify);
+  void AddActiveNode(uint64_t node_id, bool notify);
 
   // Adds |node_id| into additional active nodes.
-  void AddAdditionalActiveNode(uint64 node_id, bool notify);
+  void AddAdditionalActiveNode(uint64_t node_id, bool notify);
 
   // Removes |node_id| from additional active nodes.
-  void RemoveActiveNodeInternal(uint64 node_id, bool notify);
+  void RemoveActiveNodeInternal(uint64_t node_id, bool notify);
 
   enum DeviceStatus {
     OLD_DEVICE,
@@ -318,8 +318,8 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   bool input_mute_on_;
   int output_volume_;
   int input_gain_;
-  uint64 active_output_node_id_;
-  uint64 active_input_node_id_;
+  uint64_t active_output_node_id_;
+  uint64_t active_input_node_id_;
   bool has_alternative_input_;
   bool has_alternative_output_;
 

@@ -220,9 +220,9 @@ class SystemTrayDelegateChromeOS
       ui::ime::InputMethodMenuManager* manager) override;
 
   // Overridden from CrasAudioHandler::AudioObserver.
-  void OnOutputVolumeChanged() override;
+  void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;
   void OnOutputMuteChanged() override;
-  void OnInputGainChanged() override;
+  void OnInputNodeGainChanged(uint64_t node_id, int gain) override;
   void OnInputMuteChanged() override;
   void OnAudioNodesChanged() override;
   void OnActiveOutputNodeChanged() override;

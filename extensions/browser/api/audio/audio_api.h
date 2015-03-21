@@ -25,6 +25,7 @@ class AudioAPI : public BrowserContextKeyedAPI, public AudioService::Observer {
 
   // AudioService::Observer implementation.
   void OnDeviceChanged() override;
+  void OnLevelChanged(const std::string& id, int level) override;
 
  private:
   friend class BrowserContextKeyedAPIFactory<AudioAPI>;
@@ -69,7 +70,6 @@ class AudioSetPropertiesFunction : public SyncExtensionFunction {
   ~AudioSetPropertiesFunction() override {}
   bool RunSync() override;
 };
-
 
 }  // namespace extensions
 

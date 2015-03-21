@@ -53,7 +53,7 @@ class TrayAudio : public TrayImageItem,
   bool ShouldShowShelf() const override;
 
   // Overridden from AudioObserver.
-  void OnOutputVolumeChanged() override;
+  void OnOutputNodeVolumeChanged(uint64_t node_id, double volume) override;
   void OnOutputMuteChanged() override;
   void OnAudioNodesChanged() override;
   void OnActiveOutputNodeChanged() override;

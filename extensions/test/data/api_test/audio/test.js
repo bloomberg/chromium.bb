@@ -2,6 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+function verifyGetInfoOutput(outputs) {
+  chrome.test.assertEq("30001", outputs[0].id);
+  chrome.test.assertEq("Jabra Speaker: Jabra Speaker 1", outputs[0].name);
+
+  chrome.test.assertEq("30002", outputs[1].id);
+  chrome.test.assertEq("Jabra Speaker: Jabra Speaker 2", outputs[1].name);
+
+  chrome.test.assertEq("30003", outputs[2].id);
+  chrome.test.assertEq("HDMI output: HDA Intel MID", outputs[2].name);
+}
+
+function verifyGetInfoInput(inputs) {
+  chrome.test.assertEq("40001", inputs[0].id);
+  chrome.test.assertEq("Jabra Mic: Jabra Mic 1", inputs[0].name);
+
+  chrome.test.assertEq("40002", inputs[1].id);
+  chrome.test.assertEq("Jabra Mic: Jabra Mic 2", inputs[1].name);
+
+  chrome.test.assertEq("40003", inputs[2].id);
+  chrome.test.assertEq("Webcam Mic: Logitech Webcam", inputs[2].name);
+}
+
 function verifyActiveDevices(output_id, input_id) {
   chrome.audio.getInfo(
       chrome.test.callbackPass(function(outputInfo, inputInfo) {
@@ -81,6 +103,8 @@ chrome.test.runTests([
   function getInfoTest() {
     chrome.audio.getInfo(
         chrome.test.callbackPass(function(outputInfo, inputInfo) {
+          verifyGetInfoOutput(outputInfo);
+          verifyGetInfoInput(inputInfo);
     }));
   },
 

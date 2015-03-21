@@ -1,0 +1,13 @@
+{
+  "name": "chrome.audio.OnOutputNodeVolumeChanged",
+  "version": "1.0",
+  "description": "browser test for chrome.audio.OnOutputNodeVolumeChanged event",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "audio"
+  ]
+}

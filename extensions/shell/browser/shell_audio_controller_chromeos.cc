@@ -15,7 +15,7 @@ namespace {
 // Returns a pointer to the device in |devices| with ID |node_id|, or NULL if it
 // isn't present.
 const chromeos::AudioDevice* GetDevice(const chromeos::AudioDeviceList& devices,
-                                       uint64 node_id) {
+                                       uint64_t node_id) {
   for (chromeos::AudioDeviceList::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
     if (it->id == node_id)
@@ -35,11 +35,15 @@ ShellAudioController::~ShellAudioController() {
   chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
 }
 
-void ShellAudioController::OnOutputVolumeChanged() {}
+void ShellAudioController::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
+                                                     int /* volume */) {
+}
 
 void ShellAudioController::OnOutputMuteChanged() {}
 
-void ShellAudioController::OnInputGainChanged() {}
+void ShellAudioController::OnInputNodeGainChanged(uint64_t /* node_id */,
+                                                  int /* gain */) {
+}
 
 void ShellAudioController::OnInputMuteChanged() {}
 
@@ -58,7 +62,7 @@ void ShellAudioController::ActivateDevices() {
   handler->GetAudioDevices(&devices);
   sort(devices.begin(), devices.end(), chromeos::AudioDeviceCompare());
 
-  uint64 best_input = 0, best_output = 0;
+  uint64_t best_input = 0, best_output = 0;
   for (chromeos::AudioDeviceList::const_reverse_iterator it = devices.rbegin();
        it != devices.rend() && (!best_input || !best_output); ++it) {
     // TODO(derat): Need to check |plugged_time|?

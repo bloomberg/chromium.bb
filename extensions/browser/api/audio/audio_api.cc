@@ -45,6 +45,15 @@ void AudioAPI::OnDeviceChanged() {
   }
 }
 
+void AudioAPI::OnLevelChanged(const std::string& id, int level) {
+  if (browser_context_ && EventRouter::Get(browser_context_)) {
+    scoped_ptr<base::ListValue> args = audio::OnLevelChanged::Create(id, level);
+    scoped_ptr<Event> event(
+        new Event(audio::OnLevelChanged::kEventName, args.Pass()));
+    EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 bool AudioGetInfoFunction::RunAsync() {
@@ -106,5 +115,7 @@ bool AudioSetPropertiesFunction::RunSync() {
   else
     return true;
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 }  // namespace extensions

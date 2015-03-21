@@ -5,14 +5,18 @@
 #ifndef ASH_SYSTEM_AUDIO_AUDIO_OBSERVER_H_
 #define ASH_SYSTEM_AUDIO_AUDIO_OBSERVER_H_
 
+#include <stdint.h>
+
 namespace ash {
 
 class AudioObserver {
  public:
   virtual ~AudioObserver() {}
 
-  // Called when output volume changed.
-  virtual void OnOutputVolumeChanged() = 0;
+  // Called when an active output device's volume changed.
+  // |node_id|: id of the active node.
+  // |volume|: volume as a percentage, 0.0 -- 100.0.
+  virtual void OnOutputNodeVolumeChanged(uint64_t node_id, double volume) = 0;
 
   // Called when output mute state changed.
   virtual void OnOutputMuteChanged() = 0;

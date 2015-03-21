@@ -1219,15 +1219,17 @@ void SystemTrayDelegateChromeOS::InputMethodMenuItemChanged(
 }
 
 // Overridden from CrasAudioHandler::AudioObserver.
-void SystemTrayDelegateChromeOS::OnOutputVolumeChanged() {
-  GetSystemTrayNotifier()->NotifyAudioOutputVolumeChanged();
+void SystemTrayDelegateChromeOS::OnOutputNodeVolumeChanged(uint64_t node_id,
+                                                           int volume) {
+  GetSystemTrayNotifier()->NotifyAudioOutputVolumeChanged(node_id, volume);
 }
 
 void SystemTrayDelegateChromeOS::OnOutputMuteChanged() {
   GetSystemTrayNotifier()->NotifyAudioOutputMuteChanged();
 }
 
-void SystemTrayDelegateChromeOS::OnInputGainChanged() {
+void SystemTrayDelegateChromeOS::OnInputNodeGainChanged(uint64_t /* node_id */,
+                                                        int /* gain */) {
 }
 
 void SystemTrayDelegateChromeOS::OnInputMuteChanged() {

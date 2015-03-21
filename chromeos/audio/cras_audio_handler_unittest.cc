@@ -114,45 +114,37 @@ const AudioNode kOtherTypeInput(
     0
 );
 
-const AudioNode kBluetoothHeadset (
-    false,
-    kBluetoothHeadsetId,
-    "Bluetooth Headset",
-    "BLUETOOTH",
-    "Bluetooth Headset 1",
-    false,
-    0
-);
+const AudioNode kBluetoothHeadset(false,
+                                  kBluetoothHeadsetId,
+                                  "Bluetooth Headset",
+                                  "BLUETOOTH",
+                                  "Bluetooth Headset 1",
+                                  false,
+                                  0);
 
-const AudioNode kHDMIOutput (
-    false,
-    kHDMIOutputId,
-    "HDMI output",
-    "HDMI",
-    "HDMI output",
-    false,
-    0
-);
+const AudioNode kHDMIOutput(false,
+                            kHDMIOutputId,
+                            "HDMI output",
+                            "HDMI",
+                            "HDMI output",
+                            false,
+                            0);
 
-const AudioNode kUSBHeadphone1 (
-    false,
-    kUSBHeadphoneId1,
-    "USB Headphone",
-    "USB",
-    "USB Headphone 1",
-    false,
-    0
-);
+const AudioNode kUSBHeadphone1(false,
+                               kUSBHeadphoneId1,
+                               "USB Headphone",
+                               "USB",
+                               "USB Headphone 1",
+                               false,
+                               0);
 
-const AudioNode kUSBHeadphone2 (
-    false,
-    kUSBHeadphoneId2,
-    "USB Headphone",
-    "USB",
-    "USB Headphone 1",
-    false,
-    0
-);
+const AudioNode kUSBHeadphone2(false,
+                               kUSBHeadphoneId2,
+                               "USB Headphone",
+                               "USB",
+                               "USB Headphone 1",
+                               false,
+                               0);
 
 const AudioNode kUSBJabraSpeakerOutput1(false,
                                         kUSBJabraSpeakerOutputId1,
@@ -259,9 +251,14 @@ class TestObserver : public chromeos::CrasAudioHandler::AudioObserver {
 
   void OnInputMuteChanged() override { ++input_mute_changed_count_; }
 
-  void OnOutputVolumeChanged() override { ++output_volume_changed_count_; }
+  void OnOutputNodeVolumeChanged(uint64 /* node_id */,
+                                 int /* volume */) override {
+    ++output_volume_changed_count_;
+  }
 
-  void OnInputGainChanged() override { ++input_gain_changed_count_; }
+  void OnInputNodeGainChanged(uint64 /* node_id */, int /* gain */) override {
+    ++input_gain_changed_count_;
+  }
 
  private:
   int active_output_node_changed_count_;
@@ -1811,7 +1808,7 @@ TEST_F(CrasAudioHandlerTest, SetOutputVolumePercent) {
   cras_audio_handler_->SetOutputVolumePercent(60);
 
   // Verify the output volume is changed to the designated value,
-  // OnOutputVolumeChanged event is fired, and the device volume value
+  // OnOutputNodeVolumeChanged event is fired, and the device volume value
   // is saved the preferences.
   const int kVolume = 60;
   EXPECT_EQ(kVolume, cras_audio_handler_->GetOutputVolumePercent());
@@ -1831,7 +1828,7 @@ TEST_F(CrasAudioHandlerTest, SetInputGainPercent) {
   cras_audio_handler_->SetInputGainPercent(60);
 
   // Verify the input gain changed to the designated value,
-  // OnInputGainChanged event is fired, and the device gain value
+  // OnInputNodeGainChanged event is fired, and the device gain value
   // is saved in the preferences.
   const int kGain = 60;
   EXPECT_EQ(kGain, cras_audio_handler_->GetInputGainPercent());

@@ -195,11 +195,6 @@
             '<@(extensions_browser_sources_linux_nonchromeos)',
           ],
         }],
-        ['OS != "linux"', {
-          'sources': [
-            '<@(extensions_browser_sources_nonlinux)',
-          ]
-        }],
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

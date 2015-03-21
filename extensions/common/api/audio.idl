@@ -16,7 +16,7 @@ namespace audio {
     boolean isActive;
     // True if this is muted.
     boolean isMuted;
-    // The output volume ranging from 0.0 to 1.0.
+    // The output volume ranging from 0.0 to 100.0.
     double volume;
   };
 
@@ -29,7 +29,7 @@ namespace audio {
     boolean isActive;
     // True if this is muted.
     boolean isMuted;
-    // The input gain ranging from 0.0 to 1.0.
+    // The input gain ranging from 0.0 to 100.0.
     double gain;
   };
 
@@ -50,10 +50,17 @@ namespace audio {
   callback SetPropertiesCallback = void();
 
   interface Functions {
-    // Get the information of all audio output and input devices.
+    // Gets the information of all audio output and input devices.
     static void getInfo(GetInfoCallback callback);
 
-    // Select a subset of audio devices as active.
+  // Sets the active nodes to the nodes specified by |ids|.
+  // It can pass in the "complete" active node id list of either input
+  // nodes, or output nodes, or both. If only input node ids are passed in,
+  // it will only change the input nodes' active status, output nodes will NOT
+  // be changed; similarly for the case if only output nodes are passed.
+  // If the nodes specified in |new_active_ids| are already active, they will
+  // remain active. Otherwise, the old active nodes will be de-activated before
+  // we activate the new nodes with the same type(input/output).
     static void setActiveDevices(DOMString[] ids,
                                  SetActiveDevicesCallback callback);
 
@@ -61,10 +68,15 @@ namespace audio {
     static void setProperties(DOMString id,
                               DeviceProperties properties,
                               SetPropertiesCallback callback);
-  };
+     };
 
   interface Events {
     // Fired when anything changes to the audio device configuration.
     static void onDeviceChanged();
+
+    // Fired when sound level changes for an active audio node.
+    // |id|: id of the audio node.
+    // |level|: new sound level of the node(volume for output, gain for input).
+    static void OnLevelChanged(DOMString id, long level);
   };
 };
