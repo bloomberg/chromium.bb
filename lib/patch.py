@@ -1036,8 +1036,7 @@ class GitRepoPatch(PatchQuery):
     CQ-DEPEND=10001,10002
     """
     dependencies = []
-    cros_build_lib.Debug('Checking for CQ-DEPEND dependencies for change %s',
-                         self)
+    logging.debug('Checking for CQ-DEPEND dependencies for change %s', self)
 
     # Only fetch the commit message if needed.
     if self.commit_message is None:
@@ -1049,8 +1048,8 @@ class GitRepoPatch(PatchQuery):
       raise BrokenCQDepends(self, str(e))
 
     if dependencies:
-      cros_build_lib.Debug('Found %s Paladin dependencies for change %s',
-                           dependencies, self)
+      logging.debug('Found %s Paladin dependencies for change %s',
+                    dependencies, self)
     return dependencies
 
   def _FindEbuildConflicts(self, git_repo, upstream, inflight=False):

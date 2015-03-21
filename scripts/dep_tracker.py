@@ -27,6 +27,7 @@ import stat
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import filetype
 from chromite.lib import parseelf
 from chromite.lib import portage_util
@@ -279,7 +280,7 @@ def ParseArgs(argv):
 def main(argv):
   """Main function to start the script."""
   opts = ParseArgs(argv)
-  cros_build_lib.Debug('Options are %s', opts)
+  logging.debug('Options are %s', opts)
 
   dt = DepTracker(opts.root, jobs=opts.jobs)
   dt.Init()

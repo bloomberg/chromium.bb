@@ -455,12 +455,11 @@ class BuildData(object):
                                  inferred_number)
           bd.metadata_dict['build-number'] = inferred_number
       if sheets_version is not None:
-        cros_build_lib.Debug('Read %s:\n'
-                             '  build_number=%d, sheets v%d', url,
-                             bd.build_number, sheets_version)
+        logging.debug('Read %s:\n  build_number=%d, sheets v%d', url,
+                      bd.build_number, sheets_version)
       else:
-        cros_build_lib.Debug('Read %s:\n  build_number=%d, ungathered',
-                             url, bd.build_number)
+        logging.debug('Read %s:\n  build_number=%d, ungathered', url,
+                      bd.build_number)
 
       build_data_per_url[url] = bd
 
@@ -498,8 +497,8 @@ class BuildData(object):
         build.MarkGathered(sheets_version)
         json_text = json.dumps(build.gathered_dict.copy())
         gs_ctx.Copy('-', build.gathered_url, input=json_text, print_cmd=False)
-        cros_build_lib.Debug('Marked build_number %d processed for %s.',
-                             build.build_number, log_ver_str)
+        logging.debug('Marked build_number %d processed for %s.',
+                      build.build_number, log_ver_str)
 
       inputs = [[build] for build in builds]
       parallel.RunTasksInProcessPool(_MarkGathered, inputs,

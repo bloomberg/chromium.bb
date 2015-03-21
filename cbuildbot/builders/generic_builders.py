@@ -21,6 +21,7 @@ from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import cidb
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import parallel
 
@@ -86,8 +87,8 @@ class Builder(object):
     else:
       self._run.attrs.release_tag = None
 
-    cros_build_lib.Debug('Saved release_tag value for run: %r',
-                         self._run.attrs.release_tag)
+    logging.debug('Saved release_tag value for run: %r',
+                  self._run.attrs.release_tag)
 
   def _RunStage(self, stage, *args, **kwargs):
     """Wrapper to run a stage.

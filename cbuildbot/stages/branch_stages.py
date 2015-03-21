@@ -301,7 +301,7 @@ class BranchUtilStage(generic_stages.BuilderStage):
     # Use local branch ref.
     branch_ref = git.NormalizeRef(self.branch_name)
 
-    cros_build_lib.Debug('Fixing manifest projects for new branch.')
+    logging.debug('Fixing manifest projects for new branch.')
     for project in constants.MANIFEST_PROJECTS:
       manifest_checkout = repo_manifest.FindCheckout(project)
       manifest_dir = manifest_checkout['local_path']
@@ -335,7 +335,7 @@ class BranchUtilStage(generic_stages.BuilderStage):
           cros_build_lib.Info('Manifest not found: %s', manifest_path)
           continue
 
-        cros_build_lib.Debug('Fixing manifest at %s.', manifest_path)
+        logging.debug('Fixing manifest at %s.', manifest_path)
         included_manifests = self._UpdateManifest(manifest_path)
         pending_manifests += included_manifests
 
@@ -472,8 +472,8 @@ class BranchUtilStage(generic_stages.BuilderStage):
     repo_manifest = git.ManifestCheckout.Cached(self._build_root)
     checkouts = repo_manifest.ListCheckouts()
 
-    cros_build_lib.Debug(
-        'Processing %d checkouts from manifest in parallel.', len(checkouts))
+    logging.debug('Processing %d checkouts from manifest in parallel.',
+                  len(checkouts))
     args = [[repo_manifest, x] for x in checkouts]
     parallel.RunTasksInProcessPool(self._ProcessCheckout, args, processes=16)
 

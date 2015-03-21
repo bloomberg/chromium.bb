@@ -235,13 +235,13 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
         continue
 
       elif debug_file.endswith('.ko.debug'):
-        cros_build_lib.Debug('Skipping kernel module %s', debug_file)
+        logging.debug('Skipping kernel module %s', debug_file)
         continue
 
       elif os.path.islink(debug_file):
         # The build-id stuff is common enough to filter out by default.
         if '/.build-id/' in debug_file:
-          msg = cros_build_lib.Debug
+          msg = logging.debug
         else:
           msg = cros_build_lib.Warning
         msg('Skipping symbolic link %s', debug_file)

@@ -16,6 +16,7 @@ from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gdata_lib
 from chromite.lib import gs
 from chromite.lib import table
@@ -479,7 +480,7 @@ class SSUploader(object):
     cros_build_lib.Info('Uploading stats rows to worksheet "%s" of spreadsheet'
                         ' "%s" now.', self._scomm.ws_name, self._scomm.ss_key)
 
-    cros_build_lib.Debug('Getting cache of current spreadsheet contents.')
+    logging.debug('Getting cache of current spreadsheet contents.')
     id_col = data_table.ID_COL
     ss_id_col = gdata_lib.PrepColNameForSS(id_col)
     ss_row_cache = self._scomm.GetRowCacheByCol(ss_id_col)
@@ -515,15 +516,14 @@ class SSUploader(object):
           row_delta = dict((k, v) for k, v in row_dict.iteritems()
                            if not self._ValsEqual(v, ss_row[k]))
           if row_delta:
-            cros_build_lib.Debug('Updating existing spreadsheet row for %s %s.',
-                                 id_col, id_val)
+            logging.debug('Updating existing spreadsheet row for %s %s.',
+                          id_col, id_val)
             self._scomm.UpdateRowCellByCell(ss_row.ss_row_num, row_delta)
           else:
-            cros_build_lib.Debug('Unchanged existing spreadsheet row for'
-                                 ' %s %s.', id_col, id_val)
+            logging.debug('Unchanged existing spreadsheet row for %s %s.',
+                          id_col, id_val)
         else:
-          cros_build_lib.Debug('Adding spreadsheet row for %s %s.',
-                               id_col, id_val)
+          logging.debug('Adding spreadsheet row for %s %s.', id_col, id_val)
           self._scomm.InsertRow(row_dict)
       except gdata_lib.SpreadsheetError as e:
         cros_build_lib.Error('Failure while uploading spreadsheet row for'
@@ -661,8 +661,8 @@ class StatsManager(object):
   def _UploadBuildsToSheet(self, creds):
     """Upload row-per-build data to adsheet."""
     if not self.TABLE_CLASS:
-      cros_build_lib.Debug('No Spreadsheet uploading configured for %s.',
-                           self.config_target)
+      logging.debug('No Spreadsheet uploading configured for %s.',
+                    self.config_target)
       return
 
     # Filter for builds that need to send data to Sheets (unless overridden

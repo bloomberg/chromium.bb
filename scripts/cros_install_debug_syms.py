@@ -320,7 +320,7 @@ def main(argv):
     parallel.RunTasksInProcessPool(installer.Install, args,
                                    processes=options.jobs)
 
-  cros_build_lib.Debug('installation done, updating packages index file')
+  logging.debug('installation done, updating packages index file')
   packages_dir = os.path.join(sysroot, 'packages')
   packages_file = os.path.join(packages_dir, 'Packages')
   # binpkg will set DEBUG_SYMBOLS automatically if it detects the debug symbols

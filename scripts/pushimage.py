@@ -22,6 +22,7 @@ import textwrap
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import signing
@@ -145,7 +146,7 @@ class InputInsns(object):
     config.write(output)
     data = output.getvalue()
     osutils.WriteFile(output_file, data)
-    cros_build_lib.Debug('generated insns file for %s:\n%s', image_type, data)
+    logging.debug('generated insns file for %s:\n%s', image_type, data)
 
 
 def MarkImageToBeSigned(ctx, tbs_base, insns_path, priority):
@@ -273,7 +274,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
     return 'ChromeOS-%s%s-%s' % (lmid, versionrev, boardpath)
 
   for channel in channels:
-    cros_build_lib.Debug('\n\n#### CHANNEL: %s ####\n', channel)
+    logging.debug('\n\n#### CHANNEL: %s ####\n', channel)
     sect_insns['channel'] = channel
     sub_path = '%s-channel/%s/%s' % (channel, boardpath, version)
     dst_path = '%s/%s' % (gs_base, sub_path)
@@ -329,7 +330,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
 
     # Now go through the subset for signing.
     for keyset in keysets:
-      cros_build_lib.Debug('\n\n#### KEYSET: %s ####\n', keyset)
+      logging.debug('\n\n#### KEYSET: %s ####\n', keyset)
       sect_insns['keyset'] = keyset
       for image_type, dst_name, suffix in files_to_sign:
         dst_archive = '%s%s' % (dst_name, suffix)

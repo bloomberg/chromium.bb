@@ -19,6 +19,7 @@ from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -39,8 +40,8 @@ class SyncChromeStage(generic_stages.BuilderStage,
   def HandleSkip(self):
     """Set run.attrs.chrome_version to chrome version in buildroot now."""
     self._run.attrs.chrome_version = self._run.DetermineChromeVersion()
-    cros_build_lib.Debug('Existing chrome version is %s.',
-                         self._run.attrs.chrome_version)
+    logging.debug('Existing chrome version is %s.',
+                  self._run.attrs.chrome_version)
     self._WriteChromeVersionToMetadata()
     super(SyncChromeStage, self).HandleSkip()
 

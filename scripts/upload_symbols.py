@@ -41,6 +41,7 @@ from chromite.cbuildbot import constants
 from chromite.lib import cache
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -210,8 +211,8 @@ def TestingSymUpload(upload_url, sym_item):
   cmd = ['sym_upload', sym_item.sym_file, upload_url]
   # Randomly fail 80% of the time (the retry logic makes this 80%/3 per file).
   returncode = random.randint(1, 100) <= 80
-  cros_build_lib.Debug('would run (and return %i): %s', returncode,
-                       cros_build_lib.CmdToStr(cmd))
+  logging.debug('would run (and return %i): %s', returncode,
+                cros_build_lib.CmdToStr(cmd))
   if returncode:
     output = 'Failed to send the symbol file.'
   else:
@@ -301,7 +302,7 @@ def UploadSymbol(upload_url, sym_item, file_limit=DEFAULT_FILE_LIMIT,
     # Keeps us from DoS-ing the symbol server.
     time.sleep(sleep)
 
-  cros_build_lib.Debug('uploading %s' % sym_file)
+  logging.debug('uploading %s' % sym_file)
 
   # Ideally there'd be a tempfile.SpooledNamedTemporaryFile that we could use.
   with tempfile.NamedTemporaryFile(prefix='upload_symbols',
@@ -403,9 +404,9 @@ def SymbolDeduplicatorNotify(dedupe_namespace, dedupe_queue):
                                               dedupe_namespace)
     for item in iter(dedupe_queue.get, None):
       with timeout_util.Timeout(DEDUPE_TIMEOUT):
-        cros_build_lib.Debug('sending %s to dedupe server', item.sym_file)
+        logging.debug('sending %s to dedupe server', item.sym_file)
         storage.push(item, item.content(0))
-        cros_build_lib.Debug('sent %s', item.sym_file)
+        logging.debug('sent %s', item.sym_file)
     cros_build_lib.Info('dedupe notification finished; exiting')
   except Exception:
     sym_file = item.sym_file if (item and item.sym_file) else ''

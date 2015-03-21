@@ -34,7 +34,7 @@ To just build a single package:
     super(BuildCommand, self).__init__(options)
     self.chroot_update = options.chroot_update and options.deps
     if options.chroot_update and not options.deps:
-      cros_build_lib.Debug('Skipping chroot update due to --nodeps')
+      logging.debug('Skipping chroot update due to --nodeps')
     self.build_pkgs = None
     self.host = False
     self.board = None

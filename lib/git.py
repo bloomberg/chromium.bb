@@ -1229,7 +1229,7 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
     raise Exception('Was asked to push to a non branch namespace: %s' % (ref,))
 
   push_command = ['push', remote, '%s:%s' % (branch, ref)]
-  cros_build_lib.Debug('Trying to push %s to %s:%s', git_repo, branch, ref)
+  logging.debug('Trying to push %s to %s:%s', git_repo, branch, ref)
 
   if dryrun:
     push_command.append('--dry-run')

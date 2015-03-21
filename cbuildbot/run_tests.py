@@ -171,10 +171,10 @@ def BuildTestSets(tests, chroot_available, network):
       mode = os.stat(test).st_mode
       if stat.S_ISREG(mode):
         if not mode & 0o111:
-          cros_build_lib.Debug('Skipping %s: not executable', test)
+          logging.debug('Skipping %s: not executable', test)
           continue
       else:
-        cros_build_lib.Debug('Skipping %s: not a regular file', test)
+        logging.debug('Skipping %s: not a regular file', test)
         continue
 
     # Build up the final test command.
