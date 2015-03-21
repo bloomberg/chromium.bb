@@ -275,31 +275,27 @@ void MessageLoop::RemoveDestructionObserver(
 void MessageLoop::PostTask(
     const tracked_objects::Location& from_here,
     const Closure& task) {
-  DCHECK(!task.is_null()) << from_here.ToString();
-  incoming_task_queue_->AddToIncomingQueue(from_here, task, TimeDelta(), true);
+  message_loop_proxy_->PostTask(from_here, task);
 }
 
 void MessageLoop::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const Closure& task,
     TimeDelta delay) {
-  DCHECK(!task.is_null()) << from_here.ToString();
-  incoming_task_queue_->AddToIncomingQueue(from_here, task, delay, true);
+  message_loop_proxy_->PostDelayedTask(from_here, task, delay);
 }
 
 void MessageLoop::PostNonNestableTask(
     const tracked_objects::Location& from_here,
     const Closure& task) {
-  DCHECK(!task.is_null()) << from_here.ToString();
-  incoming_task_queue_->AddToIncomingQueue(from_here, task, TimeDelta(), false);
+  message_loop_proxy_->PostNonNestableTask(from_here, task);
 }
 
 void MessageLoop::PostNonNestableDelayedTask(
     const tracked_objects::Location& from_here,
     const Closure& task,
     TimeDelta delay) {
-  DCHECK(!task.is_null()) << from_here.ToString();
-  incoming_task_queue_->AddToIncomingQueue(from_here, task, delay, false);
+  message_loop_proxy_->PostNonNestableDelayedTask(from_here, task, delay);
 }
 
 void MessageLoop::Run() {

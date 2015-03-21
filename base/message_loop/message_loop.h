@@ -155,6 +155,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // DestructionObserver is receiving a notification callback.
   void RemoveDestructionObserver(DestructionObserver* destruction_observer);
 
+  // NOTE: Deprecated; prefer task_runner() and the TaskRunner interfaces.
+  // TODO(skyostil): Remove these functions (crbug.com/465354).
+  //
   // The "PostTask" family of methods call the task's Run method asynchronously
   // from within a message loop at some point in the future.
   //
@@ -300,6 +303,8 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   }
 
   // Gets the TaskRunner associated with this message loop.
+  // TODO(skyostil): Change this to return a const reference to a refptr
+  // once the internal type matches what is being returned (crbug.com/465354).
   scoped_refptr<SingleThreadTaskRunner> task_runner() {
     return message_loop_proxy_;
   }
