@@ -34,6 +34,7 @@
     <bool name="compositor_tab_title_fake_bold_text">true</bool>
 
     <!-- Menu items IDs in Settings -->
+    <item type="id" name="menu_id_help_general" />
     <item type="id" name="menu_id_translate_help" />
     <item type="id" name="menu_id_help_privacy" />
     <item type="id" name="menu_id_contextual_search_learn" />

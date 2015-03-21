@@ -20,6 +20,7 @@ import android.preference.PreferenceFragment.OnPreferenceStartFragmentCallback;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -228,6 +229,25 @@ public abstract class Preferences extends ActionBarActivity implements
     @VisibleForTesting
     public Fragment getFragmentForTest() {
         return getFragmentManager().findFragmentById(android.R.id.content);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        super.onCreateOptionsMenu(menu);
+        // By default, every screen in Settings shows a "Help & feedback" menu item.
+        MenuItem help = menu.add(
+                Menu.NONE, R.id.menu_id_help_general, Menu.NONE, R.string.menu_help);
+        help.setIcon(R.drawable.ic_help_and_feedback);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (menu.size() == 1) {
+            MenuItem item = menu.getItem(0);
+            if (item.getIcon() != null) item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override

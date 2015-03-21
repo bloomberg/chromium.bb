@@ -79,7 +79,9 @@ public class TranslatePreferences extends PreferenceFragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
-        menu.add(Menu.NONE, R.id.menu_id_translate_help, Menu.NONE, R.string.menu_help);
+        MenuItem help = menu.add(
+                Menu.NONE, R.id.menu_id_translate_help, Menu.NONE, R.string.menu_help);
+        help.setIcon(R.drawable.ic_help_and_feedback);
     }
 
     @Override
