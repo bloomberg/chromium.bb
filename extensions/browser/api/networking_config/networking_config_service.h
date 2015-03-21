@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -94,12 +95,21 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
   void SetAuthenticationResult(
       const AuthenticationResult& authentication_result);
 
-  void DispatchPortalDetectedEvent(const std::string& extension_id,
-                                   const std::string& guid);
+  // Sends a PortalDetected event for the network with |guid| to the extension
+  // with |extension_id|.
+  // |authentication_callback| is stored and called if the extension finishes
+  // authentication succesfully. This Service handles at most one portal
+  // detection at a time, i.e. another call to this function or a not successful
+  // authentication will drop a previously provided |authentication_callback|.
+  void DispatchPortalDetectedEvent(
+      const std::string& extension_id,
+      const std::string& guid,
+      const base::Closure& authentication_callback);
 
  private:
   void OnGotProperties(const std::string& extension_id,
                        const std::string& guid,
+                       const base::Closure& authentication_callback,
                        const std::string& service_path,
                        const base::DictionaryValue& onc_network_config);
 
@@ -120,6 +130,7 @@ class NetworkingConfigService : public ExtensionRegistryObserver,
   content::BrowserContext* const browser_context_;
 
   AuthenticationResult authentication_result_;
+  base::Closure authentication_callback_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;

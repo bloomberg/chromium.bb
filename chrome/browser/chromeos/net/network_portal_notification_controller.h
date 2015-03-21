@@ -46,6 +46,9 @@ class NetworkPortalNotificationController
     USER_ACTION_METRIC_COUNT
   };
 
+  static const int kUseExtensionButtonIndex;
+  static const int kOpenPortalButtonIndex;
+
   static const char kNotificationId[];
 
   static const char kNotificationMetric[];
@@ -53,6 +56,16 @@ class NetworkPortalNotificationController
 
   NetworkPortalNotificationController();
   ~NetworkPortalNotificationController();
+
+  // |retry_detection_callback| will be called if the controller learns about a
+  // potential change of the captive portal (e.g. if an extension notifies about
+  // a finished authentication).
+  // |retry_detection_callback| will not be called after this controller is
+  // destroyed.
+  void set_retry_detection_callback(
+      const base::Closure& retry_detection_callback) {
+    retry_detection_callback_ = retry_detection_callback;
+  }
 
   void DefaultNetworkChanged(const NetworkState* network);
 
@@ -68,6 +81,10 @@ class NetworkPortalNotificationController
 
   // NULLifies reference to the active dialog.
   void OnDialogDestroyed(const NetworkPortalWebDialog* dialog);
+
+  // Called if an extension has successfully finished authentication to the
+  // previously detected captive portal.
+  void OnExtensionFinishedAuthentication();
 
   // Ignores "No network" errors in browser tests.
   void SetIgnoreNoNetworkForTesting();
@@ -108,6 +125,10 @@ class NetworkPortalNotificationController
 
   // Do not close Portal Login dialog on "No network" error in browser tests.
   bool ignore_no_network_for_testing_;
+
+  // This is called if the controller learns about a potential change of the
+  // captive portal.
+  base::Closure retry_detection_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalNotificationController);
 };

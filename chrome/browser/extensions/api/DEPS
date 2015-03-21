@@ -5,3 +5,9 @@ include_rules = [
    # Enable remote assistance on Chrome OS
   "+remoting/host",
 ]
+
+specific_include_rules = {
+  ".*test.*": [
+    "+components/captive_portal",
+  ],
+}

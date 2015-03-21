@@ -56,9 +56,6 @@ namespace chromeos {
 
 namespace {
 
-const int kUseExtensionButtonIndex = 0;
-const int kOpenPortalButtonIndex = 1;
-
 bool IsPortalNotificationEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableNetworkPortalNotification);
@@ -193,11 +190,21 @@ void NetworkPortalNotificationControllerDelegate::Click() {
 
 void NetworkPortalNotificationControllerDelegate::ButtonClick(
     int button_index) {
-  if (button_index == kUseExtensionButtonIndex) {
+  if (button_index ==
+      NetworkPortalNotificationController::kUseExtensionButtonIndex) {
     Profile* profile = GetProfileForPrimaryUser();
+    // The user decided to notify the extension to authenticate to the captive
+    // portal. Notify the NetworkingConfigService, which in turn will notify the
+    // extension. OnExtensionFinsihedAuthentication will be called back if the
+    // authentication succeeded.
     extensions::NetworkingConfigServiceFactory::GetForBrowserContext(profile)
-        ->DispatchPortalDetectedEvent(extension_id_, guid_);
-  } else if (button_index == kOpenPortalButtonIndex) {
+        ->DispatchPortalDetectedEvent(
+            extension_id_, guid_,
+            base::Bind(&NetworkPortalNotificationController::
+                           OnExtensionFinishedAuthentication,
+                       controller_));
+  } else if (button_index ==
+             NetworkPortalNotificationController::kOpenPortalButtonIndex) {
     Click();
   }
 }
@@ -209,6 +216,12 @@ gfx::Image& GetImageForNotification() {
 }
 
 }  // namespace
+
+// static
+const int NetworkPortalNotificationController::kUseExtensionButtonIndex = 0;
+
+// static
+const int NetworkPortalNotificationController::kOpenPortalButtonIndex = 1;
 
 // static
 const char NetworkPortalNotificationController::kNotificationId[] =
@@ -238,10 +251,7 @@ void NetworkPortalNotificationController::DefaultNetworkChanged(
       GetNetworkingConfigService(profile);
   if (!networking_config_service)
     return;
-  extensions::NetworkingConfigService::AuthenticationResult
-      authentication_result(std::string(), network->guid(),
-                            extensions::NetworkingConfigService::NOTRY);
-  networking_config_service->SetAuthenticationResult(authentication_result);
+  networking_config_service->ResetAuthenticationResult();
 }
 
 void NetworkPortalNotificationController::OnPortalDetectionCompleted(
@@ -346,7 +356,7 @@ scoped_ptr<message_center::Notification> NetworkPortalNotificationController::
       message_center::NotifierId::SYSTEM_COMPONENT,
       ash::system_notifier::kNotifierNetworkPortalDetector);
 
-  const extensions::NetworkingConfigService::AuthenticationResult&
+  extensions::NetworkingConfigService::AuthenticationResult
       authentication_result =
           networking_config_service->GetAuthenticationResult();
   base::string16 notificationText;
@@ -401,6 +411,11 @@ scoped_ptr<Notification> NetworkPortalNotificationController::GetNotification(
   } else {
     return CreateDefaultCaptivePortalNotification(network);
   }
+}
+
+void NetworkPortalNotificationController::OnExtensionFinishedAuthentication() {
+  if (!retry_detection_callback_.is_null())
+    retry_detection_callback_.Run();
 }
 
 void NetworkPortalNotificationController::SetIgnoreNoNetworkForTesting() {

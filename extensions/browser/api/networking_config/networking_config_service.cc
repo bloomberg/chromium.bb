@@ -114,19 +114,33 @@ NetworkingConfigService::GetAuthenticationResult() const {
 
 void NetworkingConfigService::ResetAuthenticationResult() {
   authentication_result_ = AuthenticationResult();
+  authentication_callback_.Reset();
 }
 
 void NetworkingConfigService::SetAuthenticationResult(
     const AuthenticationResult& authentication_result) {
   authentication_result_ = authentication_result;
+  if (authentication_result.authentication_state != SUCCESS) {
+    LOG(WARNING) << "Captive Portal Authentication failed.";
+    return;
+  }
+
+  if (!authentication_callback_.is_null()) {
+    authentication_callback_.Run();
+    authentication_callback_.Reset();
+  }
 }
 
 void NetworkingConfigService::OnGotProperties(
     const std::string& extension_id,
     const std::string& guid,
+    const base::Closure& authentication_callback,
     const std::string& service_path,
     const base::DictionaryValue& onc_network_config) {
-  EventRouter* eventRouter = EventRouter::Get(browser_context_);
+  authentication_result_ =
+      extensions::NetworkingConfigService::AuthenticationResult(
+          std::string(), guid, extensions::NetworkingConfigService::NOTRY);
+  authentication_callback_ = authentication_callback;
 
   // Try to extract |bssid| field.
   const base::DictionaryValue* wifi_with_state = nullptr;
@@ -140,7 +154,9 @@ void NetworkingConfigService::OnGotProperties(
   } else {
     event = CreatePortalDetectedEventAndDispatch(extension_id, guid, nullptr);
   }
-  eventRouter->DispatchEventToExtension(extension_id, event.Pass());
+
+  EventRouter::Get(browser_context_)
+      ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 void NetworkingConfigService::OnGetPropertiesFailed(
@@ -150,10 +166,10 @@ void NetworkingConfigService::OnGetPropertiesFailed(
     scoped_ptr<base::DictionaryValue> error_data) {
   LOG(WARNING) << "Failed to determine BSSID for network with guid " << guid
                << ": " << error_name;
-  EventRouter* eventRouter = EventRouter::Get(browser_context_);
   scoped_ptr<Event> event =
       CreatePortalDetectedEventAndDispatch(extension_id, guid, nullptr);
-  eventRouter->DispatchEventToExtension(extension_id, event.Pass());
+  EventRouter::Get(browser_context_)
+      ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
 scoped_ptr<Event> NetworkingConfigService::CreatePortalDetectedEventAndDispatch(
@@ -189,7 +205,12 @@ scoped_ptr<Event> NetworkingConfigService::CreatePortalDetectedEventAndDispatch(
 
 void NetworkingConfigService::DispatchPortalDetectedEvent(
     const std::string& extension_id,
-    const std::string& guid) {
+    const std::string& guid,
+    const base::Closure& authentication_callback) {
+  // This dispatch starts a new cycle of portal detection and authentication.
+  // Ensure that any old |authentication_callback_| is dropped.
+  authentication_callback_.Reset();
+
   // Determine |service_path| of network identified by |guid|.
   chromeos::NetworkHandler* network_handler = chromeos::NetworkHandler::Get();
   const chromeos::NetworkState* network =
@@ -200,7 +221,8 @@ void NetworkingConfigService::DispatchPortalDetectedEvent(
 
   network_handler->managed_network_configuration_handler()->GetProperties(
       service_path, base::Bind(&NetworkingConfigService::OnGotProperties,
-                               weak_factory_.GetWeakPtr(), extension_id, guid),
+                               weak_factory_.GetWeakPtr(), extension_id, guid,
+                               authentication_callback),
       base::Bind(&NetworkingConfigService::OnGetPropertiesFailed,
                  weak_factory_.GetWeakPtr(), extension_id, guid));
 }

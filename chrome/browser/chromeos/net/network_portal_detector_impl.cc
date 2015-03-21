@@ -226,13 +226,17 @@ NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
       test_url_(CaptivePortalDetector::kDefaultURL),
       enabled_(false),
       strategy_(PortalDetectorStrategy::CreateById(
-          PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN, this)),
+          PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN,
+          this)),
       last_detection_result_(CAPTIVE_PORTAL_STATUS_UNKNOWN),
       same_detection_result_count_(0),
       no_response_result_count_(0),
       weak_factory_(this) {
   NET_LOG(EVENT) << "NetworkPortalDetectorImpl::NetworkPortalDetectorImpl()";
   captive_portal_detector_.reset(new CaptivePortalDetector(request_context));
+
+  notification_controller_.set_retry_detection_callback(base::Bind(
+      &NetworkPortalDetectorImpl::RetryDetection, base::Unretained(this)));
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
@@ -418,6 +422,11 @@ void NetworkPortalDetectorImpl::StopDetection() {
   captive_portal_detector_->Cancel();
   state_ = STATE_IDLE;
   ResetStrategyAndCounters();
+}
+
+void NetworkPortalDetectorImpl::RetryDetection() {
+  StopDetection();
+  StartDetection();
 }
 
 void NetworkPortalDetectorImpl::ScheduleAttempt(const base::TimeDelta& delay) {
