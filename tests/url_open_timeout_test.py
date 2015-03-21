@@ -118,7 +118,7 @@ class SleepingHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 class UrlOpenTimeoutTest(auto_stub.TestCase):
   def setUp(self):
     super(UrlOpenTimeoutTest, self).setUp()
-    self.mock(net, 'create_authenticator', lambda _: None)
+    self.mock(net, 'OAuthAuthenticator', lambda *_: None)
     self.server = SleepingServer()
     self.server.start()
 

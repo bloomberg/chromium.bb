@@ -5,7 +5,7 @@
 
 """Client tool to perform various authentication related tasks."""
 
-__version__ = '0.3.2'
+__version__ = '0.4'
 
 import logging
 import optparse
@@ -56,30 +56,16 @@ class AuthService(object):
 def add_auth_options(parser):
   """Adds command line options related to authentication."""
   parser.auth_group = optparse.OptionGroup(parser, 'Authentication')
-  parser.auth_group.add_option(
-      '--auth-method',
-      metavar='METHOD',
-      default=net.get_default_auth_config()[0],
-      help='Authentication method to use: %s. [default: %%default]' %
-          ', '.join(name for name, _ in net.AUTH_METHODS))
   parser.add_option_group(parser.auth_group)
   oauth.add_oauth_options(parser)
 
 
 def process_auth_options(parser, options):
   """Configures process-wide authentication parameters based on |options|."""
-  # Validate that authentication method is known.
-  if options.auth_method not in dict(net.AUTH_METHODS):
-    parser.error('Invalid --auth-method value: %s' % options.auth_method)
-
-  # Process the rest of the flags based on actual method used.
-  # Only oauth is configurable now.
-  config = None
-  if options.auth_method == 'oauth':
-    config = oauth.extract_oauth_config_from_options(options)
-
-  # Now configure 'net' globally to use this for every request.
-  net.configure_auth(options.auth_method, config)
+  try:
+    net.set_oauth_config(oauth.extract_oauth_config_from_options(options))
+  except ValueError as exc:
+    parser.error(str(exc))
 
 
 def ensure_logged_in(server_url):
@@ -88,7 +74,8 @@ def ensure_logged_in(server_url):
   Raises:
     ValueError if the server_url is not acceptable.
   """
-  if net.get_auth_method() not in ('cookie', 'oauth'):
+  # It's just a waste of time on a headless bot (it can't do interactive login).
+  if tools.is_headless() or net.get_oauth_config().disabled:
     return None
   server_url = server_url.lower().rstrip('/')
   allowed = (

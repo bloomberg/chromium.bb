@@ -40,9 +40,17 @@ DEFAULT_OAUTH_TOKENS_CACHE = os.path.join(
 # OAuth authentication method configuration, used by utils/net.py.
 # See doc string for 'make_oauth_config' for meaning of fields.
 OAuthConfig = collections.namedtuple('OAuthConfig', [
+  'disabled',
   'tokens_cache',
   'no_local_webserver',
   'webserver_port',
+])
+
+
+# Access token with its expiration time (UTC datetime, or None if not known).
+AccessToken = collections.namedtuple('AccessToken', [
+  'token',
+  'expires_at',
 ])
 
 
@@ -59,7 +67,10 @@ _service_config_cache_lock = threading.Lock()
 
 
 def make_oauth_config(
-    tokens_cache=None, no_local_webserver=None, webserver_port=None):
+    disabled=None,
+    tokens_cache=None,
+    no_local_webserver=None,
+    webserver_port=None):
   """Returns new instance of OAuthConfig.
 
   If some config option is not provided or None, it will be set to a reasonable
@@ -67,32 +78,39 @@ def make_oauth_config(
   values of corresponding command line options.
 
   Args:
+    disabled: True to completely turn off OAuth authentication.
     tokens_cache: path to a file with cached OAuth2 credentials.
     no_local_webserver: if True, do not try to run local web server that
         handles redirects. Use copy-pasted verification code instead.
     webserver_port: port to run local webserver on.
   """
+  if disabled is None:
+    disabled = tools.is_headless()
   if tokens_cache is None:
     tokens_cache = os.environ.get(
         'SWARMING_AUTH_TOKENS_CACHE', DEFAULT_OAUTH_TOKENS_CACHE)
   if no_local_webserver is None:
     no_local_webserver = tools.get_bool_env_var(
         'SWARMING_AUTH_NO_LOCAL_WEBSERVER')
-  # TODO(vadimsh): Add support for "find free port" option.
   if webserver_port is None:
     webserver_port = 8090
-  return OAuthConfig(tokens_cache, no_local_webserver, webserver_port)
+  return OAuthConfig(disabled, tokens_cache, no_local_webserver, webserver_port)
 
 
 def add_oauth_options(parser):
   """Appends OAuth related options to OptionParser."""
   default_config = make_oauth_config()
-  parser.oauth_group = optparse.OptionGroup(
-      parser, 'OAuth options [used if --auth-method=oauth]')
+  parser.oauth_group = optparse.OptionGroup(parser, 'OAuth options')
+  parser.oauth_group.add_option(
+      '--auth-disabled',
+      type=int,
+      default=int(default_config.disabled),
+      help='Set to 1 to disable OAuth and rely only on IP whitelist for '
+           'authentication. Currently used from bots. [default: %default]')
   parser.oauth_group.add_option(
       '--auth-tokens-cache',
       default=default_config.tokens_cache,
-      help='Path to a file to keep OAuth2 tokens cache. It should be a safe '
+      help='Path to a file with oauth2client tokens cache. It should be a safe '
           'location accessible only to a current user: knowing content of this '
           'file is roughly equivalent to knowing account password. Can also be '
           'set with SWARMING_AUTH_TOKENS_CACHE environment variable. '
@@ -119,14 +137,17 @@ def extract_oauth_config_from_options(options):
   OptionParser should be populated with oauth options by 'add_oauth_options'.
   """
   return make_oauth_config(
+      disabled=bool(options.auth_disabled),
       tokens_cache=options.auth_tokens_cache,
       no_local_webserver=options.auth_no_local_webserver,
       webserver_port=options.auth_host_port)
 
 
 def load_access_token(urlhost, config):
-  """Returns cached access token if it is not expired yet."""
+  """Returns cached AccessToken if it is not expired yet."""
   assert isinstance(config, OAuthConfig)
+  if config.disabled:
+    return None
   auth_service_url = _fetch_auth_service_url(urlhost)
   if not auth_service_url:
     return None
@@ -138,7 +159,7 @@ def load_access_token(urlhost, config):
   # Expired?
   if not credentials.access_token or credentials.access_token_expired:
     return None
-  return credentials.access_token
+  return AccessToken(credentials.access_token, credentials.token_expiry)
 
 
 def create_access_token(urlhost, config, allow_user_interaction):
@@ -151,10 +172,12 @@ def create_access_token(urlhost, config, allow_user_interaction):
         flow (return None instead if it is required).
 
   Returns:
-    access_token on success.
+    AccessToken on success.
     None on error or if OAuth2 flow was interrupted.
   """
   assert isinstance(config, OAuthConfig)
+  if config.disabled:
+    return None
   auth_service_url = _fetch_auth_service_url(urlhost)
   if not auth_service_url:
     return None
@@ -180,7 +203,7 @@ def create_access_token(urlhost, config, allow_user_interaction):
   logging.info('OAuth access_token refreshed. Expires in %s.',
       credentials.token_expiry - datetime.datetime.utcnow())
   storage.put(credentials)
-  return credentials.access_token
+  return AccessToken(credentials.access_token, credentials.token_expiry)
 
 
 def purge_access_token(urlhost, config):
@@ -205,8 +228,6 @@ def _fetch_auth_service_url(urlhost):
     * If |urlhost| is not using authentication servier, returns |urlhost|.
     * If there was a error communicating with |urlhost|, returns None.
   """
-  # TODO(vadimsh): Cache {urlhost -> primary_url} mapping locally on disk
-  # to avoid round trip to the server all the time.
   service_config = _fetch_service_config(urlhost)
   if not service_config:
     return None
@@ -261,20 +282,24 @@ def _fetch_service_config(urlhost):
     return _service_config_cache.get(urlhost)
 
 
-# The chunk of code below is based on oauth2client.tools module. Unfortunately
-# 'tools' module itself depends on 'argparse' module unavailable on Python 2.6
-# so it can't be imported directly.
+# The chunk of code below is based on oauth2client.tools module, but adapted for
+# usage of _fetch_service_config, our command line arguments, and so on.
 
 
 def _run_oauth_dance(urlhost, storage, config):
   """Perform full OAuth2 dance with the browser."""
+  def out(s):
+    print s
+  def err(s):
+    print >> sys.stderr, s
+
   # Fetch client_id and client_secret from the service itself.
   service_config = _fetch_service_config(urlhost)
   if not service_config:
-    print 'Couldn\'t fetch OAuth configuration'
+    err('Couldn\'t fetch OAuth configuration')
     return None
   if not service_config.client_id or not service_config.client_secret:
-    print 'OAuth is not configured on the service'
+    err('OAuth is not configured on the service')
     return None
 
   # Appengine expects a token scoped to 'userinfo.email'.
@@ -296,13 +321,12 @@ def _run_oauth_dance(urlhost, storage, config):
       success = True
     use_local_webserver = success
     if not success:
-      print 'Failed to start a local webserver listening on port %d.' % port
-      print 'Please check your firewall settings and locally'
-      print 'running programs that may be blocking or using those ports.'
-      print
-      print 'Falling back to --auth-no-local-webserver and continuing with',
-      print 'authorization.'
-      print
+      out(
+        'Failed to start a local webserver listening on port %d.\n'
+        'Please check your firewall settings and locally running programs that '
+        'may be blocking or using those ports.\n\n'
+        'Falling back to --auth-no-local-webserver and continuing with '
+        'authentication.\n' % port)
 
   if use_local_webserver:
     oauth_callback = 'http://localhost:%s/' % port
@@ -313,45 +337,46 @@ def _run_oauth_dance(urlhost, storage, config):
 
   if use_local_webserver:
     webbrowser.open(authorize_url, new=1, autoraise=True)
-    print 'Your browser has been opened to visit:'
-    print
-    print '    ' + authorize_url
-    print
-    print 'If your browser is on a different machine then exit and re-run this'
-    print 'application with the command-line parameter '
-    print
-    print '  --auth-no-local-webserver'
-    print
+    out(
+      'Your browser has been opened to visit:\n\n'
+      '    %s\n\n'
+      'If your browser is on a different machine then exit and re-run this '
+      'application with the command-line parameter\n\n'
+      '  --auth-no-local-webserver\n' % authorize_url)
   else:
-    print 'Go to the following link in your browser:'
-    print
-    print '    ' + authorize_url
-    print
+    out(
+      'Go to the following link in your browser:\n\n'
+      '    %s\n' % authorize_url)
 
-  code = None
-  if use_local_webserver:
-    httpd.handle_request()
-    if 'error' in httpd.query_params:
-      print 'Authentication request was rejected.'
-      return None
-    if 'code' not in httpd.query_params:
-      print 'Failed to find "code" in the query parameters of the redirect.'
-      print 'Try running with --auth-no-local-webserver.'
-      return None
-    code = httpd.query_params['code']
-  else:
-    code = raw_input('Enter verification code: ').strip()
+  try:
+    code = None
+    if use_local_webserver:
+      httpd.handle_request()
+      if 'error' in httpd.query_params:
+        err('Authentication request was rejected.')
+        return None
+      if 'code' not in httpd.query_params:
+        err(
+          'Failed to find "code" in the query parameters of the redirect.\n'
+          'Try running with --auth-no-local-webserver.')
+        return None
+      code = httpd.query_params['code']
+    else:
+      code = raw_input('Enter verification code: ').strip()
+  except KeyboardInterrupt:
+    err('Canceled.')
+    return None
 
   try:
     credential = flow.step2_exchange(code)
   except client.FlowExchangeError as e:
-    print 'Authentication has failed: %s' % e
+    err('Authentication has failed: %s' % e)
     return None
 
-  print 'Authentication successful.'
+  out('Authentication successful.')
   storage.put(credential)
   credential.set_store(storage)
-  return credential.access_token
+  return AccessToken(credential.access_token, credential.token_expiry)
 
 
 class ClientRedirectServer(BaseHTTPServer.HTTPServer):
