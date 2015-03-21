@@ -18,8 +18,7 @@ import error_filter
 
 
 class Checker(object):
-  """Runs the Closure compiler on a given source file and returns the
-  success/errors."""
+  """Runs the Closure compiler on a given source file to typecheck it."""
 
   _COMMON_CLOSURE_ARGS = [
     "--accept_const_keyword",
@@ -48,7 +47,7 @@ class Checker(object):
     "--source_map_format=V3",
   ]
 
-  # These are the extra flags used when compiling in 'strict' mode.
+  # These are the extra flags used when compiling in strict mode.
   # Flags that are normally disabled are turned on for strict mode.
   _STRICT_CLOSURE_ARGS = [
     "--jscomp_error=reportUnknownTypes",
@@ -72,9 +71,12 @@ class Checker(object):
     "-XX:+TieredCompilation"
   ]
 
-  _found_java = False
-
   def __init__(self, verbose=False, strict=False):
+    """
+    Args:
+      verbose: Whether this class should output diagnostic messages.
+      strict: Whether the Closure Compiler should be invoked more strictly.
+    """
     current_dir = os.path.join(os.path.dirname(__file__))
     self._runner_jar = os.path.join(current_dir, "runner", "runner.jar")
     self._temp_files = []
@@ -83,21 +85,31 @@ class Checker(object):
     self._error_filter = error_filter.PromiseErrorFilter()
 
   def _clean_up(self):
+    """Deletes any temp files this class knows about."""
     if not self._temp_files:
       return
 
-    self._debug("Deleting temporary files: %s" % ", ".join(self._temp_files))
+    self._log_debug("Deleting temp files: %s" % ", ".join(self._temp_files))
     for f in self._temp_files:
       os.remove(f)
     self._temp_files = []
 
-  def _debug(self, msg, error=False):
+  def _log_debug(self, msg, error=False):
+    """Logs |msg| to stdout if --verbose/-v is passed when invoking this script.
+
+    Args:
+      msg: A debug message to log.
+    """
     if self._verbose:
       print "(INFO) %s" % msg
 
-  def _error(self, msg):
+  def _log_error(self, msg):
+    """Logs |msg| to stderr regardless of --flags.
+
+    Args:
+      msg: An error message to log.
+    """
     print >> sys.stderr, "(ERROR) %s" % msg
-    self._clean_up()
 
   def _common_args(self):
     """Returns an array of the common closure compiler args."""
@@ -105,84 +117,128 @@ class Checker(object):
       return self._COMMON_CLOSURE_ARGS + self._STRICT_CLOSURE_ARGS
     return self._COMMON_CLOSURE_ARGS + self._DISABLED_CLOSURE_ARGS
 
-  def _run_command(self, cmd):
-    """Runs a shell command.
+  def _run_jar(self, jar, args):
+    """Runs a .jar from the command line with arguments.
 
     Args:
-        cmd: A list of tokens to be joined into a shell command.
+      jar: A file path to a .jar file
+      args: A list of command line arguments to be passed when running the .jar.
 
     Return:
-        True if the exit code was 0, else False.
+      (exit_code, stderr) The exit code of the command (e.g. 0 for success) and
+          the stderr collected while running |jar| (as a string).
     """
-    cmd_str = " ".join(cmd)
-    self._debug("Running command: %s" % cmd_str)
+    shell_command = " ".join(self._JAR_COMMAND + [jar] + args)
+    self._log_debug("Running jar: %s" % shell_command)
 
     devnull = open(os.devnull, "w")
-    return subprocess.Popen(
-        cmd_str, stdout=devnull, stderr=subprocess.PIPE, shell=True)
+    kwargs = {"stdout": devnull, "stderr": subprocess.PIPE, "shell": True}
+    process = subprocess.Popen(shell_command, **kwargs)
+    _, stderr = process.communicate()
+    return process.returncode, stderr
 
-  def _check_java_path(self):
-    """Checks that `java` is on the system path."""
-    if not self._found_java:
-      proc = self._run_command(["which", "java"])
-      proc.communicate()
-      if proc.returncode == 0:
-        self._found_java = True
-      else:
-        self._error("Cannot find java (`which java` => %s)" % proc.returncode)
+  def _get_line_number(self, match):
+    """When chrome is built, it preprocesses its JavaScript from:
 
-    return self._found_java
+      <include src="blah.js">
+      alert(1);
 
-  def _run_jar(self, jar, args=None):
-    args = args or []
-    self._check_java_path()
-    return self._run_command(self._JAR_COMMAND + [jar] + args)
+    to:
 
-  def _fix_line_number(self, match):
-    """Changes a line number from /tmp/file:300 to /orig/file:100.
+      /* contents of blah.js inlined */
+      alert(1);
+
+    Because Closure Compiler requires this inlining already be done (as
+    <include> isn't valid JavaScript), this script creates temporary files to
+    expand all the <include>s.
+
+    When type errors are hit in temporary files, a developer doesn't know the
+    original source location to fix. This method maps from /tmp/file:300 back to
+    /original/source/file:100 so fixing errors is faster for developers.
 
     Args:
-        match: A re.MatchObject from matching against a line number regex.
+      match: A re.MatchObject from matching against a line number regex.
 
     Returns:
-        The fixed up /file and :line number.
+      The fixed up /file and :line number.
     """
     real_file = self._processor.get_file_from_line(match.group(1))
     return "%s:%d" % (os.path.abspath(real_file.file), real_file.line_number)
 
-  def _fix_up_error(self, error):
-    """Filter out irrelevant errors or fix line numbers.
+  def _filter_errors(self, errors):
+    """Removes some extraneous errors. For example, we ignore:
+
+      Variable x first declared in /tmp/expanded/file
+
+    Because it's just a duplicated error (it'll only ever show up 2+ times).
+    We also ignore Promose-based errors:
+
+      found   : function (VolumeInfo): (Promise<(DirectoryEntry|null)>|null)
+      required: (function (Promise<VolumeInfo>): ?|null|undefined)
+
+    as templates don't work with Promises in all cases yet. See
+    https://github.com/google/closure-compiler/issues/715 for details.
 
     Args:
-        error: A Closure compiler error (2 line string with error and source).
+      errors: A list of string errors extracted from Closure Compiler output.
 
     Return:
-        The fixed up error string (blank if it should be ignored).
+      A slimmer, sleeker list of relevant errors (strings).
     """
-    if " first declared in " in error:
-      # Ignore "Variable x first declared in /same/file".
-      return ""
+    first_declared_in = lambda e: " first declared in " not in e
+    return self._error_filter.filter(filter(first_declared_in, errors))
 
+  def _fix_up_error(self, error):
+    """Reverse the effects that funky <include> preprocessing steps have on
+    errors messages.
+
+    Args:
+      error: A Closure compiler error (2 line string with error and source).
+
+    Return:
+      The fixed up error string.
+    """
     expanded_file = self._expanded_file
-    fixed = re.sub("%s:(\d+)" % expanded_file, self._fix_line_number, error)
+    fixed = re.sub("%s:(\d+)" % expanded_file, self._get_line_number, error)
     return fixed.replace(expanded_file, os.path.abspath(self._file_arg))
 
   def _format_errors(self, errors):
-    """Formats Closure compiler errors to easily spot compiler output."""
-    errors = filter(None, errors)
+    """Formats Closure compiler errors to easily spot compiler output.
+
+    Args:
+      errors: A list of strings extracted from the Closure compiler's output.
+
+    Returns:
+      A formatted output string.
+    """
     contents = "\n## ".join("\n\n".join(errors).splitlines())
     return "## %s" % contents if contents else ""
 
   def _create_temp_file(self, contents):
+    """Creates an owned temporary file with |contents|.
+
+    Args:
+      content: A string of the file contens to write to a temporary file.
+
+    Return:
+      The filepath of the newly created, written, and closed temporary file.
+    """
     with tempfile.NamedTemporaryFile(mode="wt", delete=False) as tmp_file:
       self._temp_files.append(tmp_file.name)
       tmp_file.write(contents)
     return tmp_file.name
 
   def _run_js_check(self, sources, out_file=None, externs=None):
-    if not self._check_java_path():
-      return 1, ""
+    """Check |sources| for type errors.
 
+    Args:
+      sources: Files to check.
+      externs: @extern files that inform the compiler about custom globals.
+
+    Returns:
+      (errors, stderr) A parsed list of errors (strings) found by the compiler
+          and the raw stderr (as a string).
+    """
     args = ["--js=%s" % s for s in sources]
 
     if out_file:
@@ -191,92 +247,92 @@ class Checker(object):
 
     if externs:
       args += ["--externs=%s" % e for e in externs]
+
     args_file_content = " %s" % " ".join(self._common_args() + args)
-    self._debug("Args: %s" % args_file_content.strip())
+    self._log_debug("Args: %s" % args_file_content.strip())
 
     args_file = self._create_temp_file(args_file_content)
-    self._debug("Args file: %s" % args_file)
+    self._log_debug("Args file: %s" % args_file)
 
     runner_args = ["--compiler-args-file=%s" % args_file]
-    runner_cmd = self._run_jar(self._runner_jar, args=runner_args)
-    _, stderr = runner_cmd.communicate()
+    _, stderr = self._run_jar(self._runner_jar, runner_args)
 
     errors = stderr.strip().split("\n\n")
-    self._debug("Summary: %s" % errors.pop())
+    maybe_summary = errors.pop()
 
-    self._clean_up()
+    if re.search(".*error.*warning.*typed", maybe_summary):
+      self._log_debug("Summary: %s" % maybe_summary)
+    else:
+      # Not a summary. Running the jar failed. Bail.
+      self._log_error(stderr)
+      self._clean_up()
+      sys.exit(1)
 
     return errors, stderr
 
   def check(self, source_file, out_file=None, depends=None, externs=None):
-    """Closure compile a file and check for errors.
+    """Closure compiler |source_file| while checking for errors.
 
     Args:
-        source_file: A file to check.
-        out_file: A file where the compiled output is written to.
-        depends: Other files that would be included with a <script> earlier in
-            the page.
-        externs: @extern files that inform the compiler about custom globals.
+      source_file: A file to check.
+      out_file: A file where the compiled output is written to.
+      depends: Files that |source_file| requires to run (e.g. earlier <script>).
+      externs: @extern files that inform the compiler about custom globals.
 
     Returns:
-        (has_errors, output) A boolean indicating if there were errors and the
-            Closure compiler output (as a string).
+      (found_errors, stderr) A boolean indicating whether errors were found and
+          the raw Closure compiler stderr (as a string).
     """
-    depends = depends or []
-    externs = externs or set()
-
-    if not self._check_java_path():
-      return 1, ""
-
-    self._debug("FILE: %s" % source_file)
+    self._log_debug("FILE: %s" % source_file)
 
     if source_file.endswith("_externs.js"):
-      self._debug("Skipping externs: %s" % source_file)
+      self._log_debug("Skipping externs: %s" % source_file)
       return
 
     self._file_arg = source_file
 
-    tmp_dir = tempfile.gettempdir()
-    rel_path = lambda f: os.path.join(os.path.relpath(os.getcwd(), tmp_dir), f)
+    cwd, tmp_dir = os.getcwd(), tempfile.gettempdir()
+    rel_path = lambda f: os.path.join(os.path.relpath(cwd, tmp_dir), f)
 
+    depends = depends or []
     includes = [rel_path(f) for f in depends + [source_file]]
     contents = ['<include src="%s">' % i for i in includes]
     meta_file = self._create_temp_file("\n".join(contents))
-    self._debug("Meta file: %s" % meta_file)
+    self._log_debug("Meta file: %s" % meta_file)
 
     self._processor = processor.Processor(meta_file)
     self._expanded_file = self._create_temp_file(self._processor.contents)
-    self._debug("Expanded file: %s" % self._expanded_file)
+    self._log_debug("Expanded file: %s" % self._expanded_file)
 
     errors, stderr = self._run_js_check([self._expanded_file],
                                         out_file=out_file, externs=externs)
+    filtered_errors = self._filter_errors(errors)
+    fixed_errors = map(self._fix_up_error, filtered_errors)
+    output = self._format_errors(fixed_errors)
 
-    # Filter out false-positive promise chain errors.
-    # See https://github.com/google/closure-compiler/issues/715 for details.
-    errors = self._error_filter.filter(errors);
-
-    output = self._format_errors(map(self._fix_up_error, errors))
-    if errors:
+    if fixed_errors:
       prefix = "\n" if output else ""
-      self._error("Error in: %s%s%s" % (source_file, prefix, output))
+      self._log_error("Error in: %s%s%s" % (source_file, prefix, output))
     elif output:
-      self._debug("Output: %s" % output)
+      self._log_debug("Output: %s" % output)
 
-    return bool(errors), output
+    self._clean_up()
+    return bool(fixed_errors), stderr
 
   def check_multiple(self, sources):
     """Closure compile a set of files and check for errors.
 
     Args:
-        sources: An array of files to check.
+      sources: An array of files to check.
 
     Returns:
-        (has_errors, output) A boolean indicating if there were errors and the
-            Closure compiler output (as a string).
+      (found_errors, stderr) A boolean indicating whether errors were found and
+          the raw Closure Compiler stderr (as a string).
     """
-
-    errors, stderr = self._run_js_check(sources)
+    errors, stderr = self._run_js_check(sources, [])
+    self._clean_up()
     return bool(errors), stderr
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(
@@ -316,20 +372,17 @@ if __name__ == "__main__":
   if opts.single_file:
     for source in opts.sources:
       depends, externs = build.inputs.resolve_recursive_dependencies(
-          source,
-          depends,
-          externs)
-      has_errors, _ = checker.check(source, out_file=opts.out_file,
-                                    depends=depends, externs=externs)
-      if has_errors:
+          source, depends, externs)
+      found_errors, _ = checker.check(source, out_file=opts.out_file,
+                                      depends=depends, externs=externs)
+      if found_errors:
         sys.exit(1)
-
   else:
-    has_errors, errors = checker.check_multiple(opts.sources)
-    if has_errors:
-      print errors
+    found_errors, stderr = checker.check_multiple(opts.sources)
+    if found_errors:
+      print stderr
       sys.exit(1)
 
   if opts.success_stamp:
-    with open(opts.success_stamp, 'w'):
+    with open(opts.success_stamp, "w"):
       os.utime(opts.success_stamp, None)
