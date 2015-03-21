@@ -2478,6 +2478,11 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
 }
 
 void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "467185 Browser::UpdateBookmarkBarState1"));
   BookmarkBar::State state;
   // The bookmark bar is always hidden for Guest Sessions and in fullscreen
   // mode, unless on the new tab page.
@@ -2488,6 +2493,11 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
       !ShouldHideUIForFullscreen()) {
     state = BookmarkBar::SHOW;
   } else {
+    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "467185 Browser::UpdateBookmarkBarState2"));
     WebContents* web_contents = tab_strip_model_->GetActiveWebContents();
     BookmarkTabHelper* bookmark_tab_helper =
         web_contents ? BookmarkTabHelper::FromWebContents(web_contents) : NULL;
@@ -2511,6 +2521,12 @@ void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
     // end up querying state once they process the tab switch.
     return;
   }
+
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "467185 Browser::UpdateBookmarkBarState3"));
 
   bool should_animate = reason == BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE;
   window_->BookmarkBarStateChanged(should_animate ?

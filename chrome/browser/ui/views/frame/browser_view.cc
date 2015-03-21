@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -760,9 +761,19 @@ namespace {
 }
 
 void BrowserView::UpdateTitleBar() {
+  // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185 is
+  // fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION("467185 BrowserView::UpdateTitleBar1"));
   frame_->UpdateWindowTitle();
-  if (ShouldShowWindowIcon() && !loading_animation_timer_.IsRunning())
+  if (ShouldShowWindowIcon() && !loading_animation_timer_.IsRunning()) {
+    // TODO(robliao): Remove ScopedTracker below once https://crbug.com/467185
+    // is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "467185 BrowserView::UpdateTitleBar2"));
     frame_->UpdateWindowIcon();
+  }
 }
 
 void BrowserView::BookmarkBarStateChanged(
