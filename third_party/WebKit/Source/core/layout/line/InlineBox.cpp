@@ -59,6 +59,12 @@ InlineBox::~InlineBox()
 
 #endif
 
+void InlineBox::destroy()
+{
+    m_renderer.invalidateDisplayItemClient(DisplayItemClientData(*this, DisplayItemClientData::NoDebugName));
+    delete this;
+}
+
 void InlineBox::remove(MarkLineBoxes markLineBoxes)
 {
     if (parent())
