@@ -1068,8 +1068,9 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
     return RespondNow(Error(kSecurityError));
 
   chromeos::KioskAppManager::App app_info;
-  chromeos::KioskAppManager::Get()->GetApp(extension_id(), &app_info);
-  const bool is_auto_launched = app_info.was_auto_launched_with_zero_delay;
+  const bool is_auto_launched =
+      chromeos::KioskAppManager::Get()->GetApp(extension_id(), &app_info) &&
+      app_info.was_auto_launched_with_zero_delay;
   const bool requires_consent =
       !is_auto_launched && extension()->location() != Manifest::COMPONENT;
 
