@@ -526,7 +526,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 - (void)ok:(id)sender {
   DCHECK(delegate_);
-  delegate_->Closing();
+  delegate_->Accept();
 }
 
 - (void)onAllow:(id)sender {

@@ -249,7 +249,7 @@ TEST_F(PermissionBubbleControllerTest, OK) {
                forRequests:requests_
               acceptStates:accept_states_];
 
-  EXPECT_CALL(*this, Closing()).Times(1);
+  EXPECT_CALL(*this, Accept()).Times(1);
   [FindButtonWithTitle(IDS_OK) performClick:nil];
 }
 
