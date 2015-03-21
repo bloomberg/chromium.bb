@@ -815,7 +815,13 @@
         <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_MAC_BUTTON_NORMAL_TOP_LEFT" file="mac/avatar_button/sign_in_button_themed_top_left.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_MAC_BUTTON_NORMAL_TOP_RIGHT" file="mac/avatar_button/sign_in_button_themed_top_right.png" />
       </if>
-
+      <!-- Media Router -->
+      <if expr="enable_media_router">
+        <structure type="chrome_scaled_image" name="IDR_MEDIA_ROUTER_ICON" file="common/media_router.png" />
+        <structure type="chrome_scaled_image" name="IDR_MEDIA_ROUTER_ACTIVE_ICON" file="common/media_router_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_MEDIA_ROUTER_ERROR_ICON" file="common/media_router_error.png" />
+        <structure type="chrome_scaled_image" name="IDR_MEDIA_ROUTER_WARNING_ICON" file="common/media_router_warning.png" />
+      </if>
       <if expr="enable_app_list">
         <structure type="chrome_scaled_image" name="IDR_PROFILE_PICTURE_LOADING" file="profile_loading.png" />
       </if>
