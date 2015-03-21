@@ -51,7 +51,8 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       skip_begin_main_frame_to_reduce_latency_(false),
       continuous_painting_(false),
       children_need_begin_frames_(false),
-      defer_commits_(false) {
+      defer_commits_(false),
+      last_commit_had_no_updates_(false) {
 }
 
 const char* SchedulerStateMachine::OutputSurfaceStateToString(
@@ -613,6 +614,7 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_has_no_updates) {
 
   if (continuous_painting_)
     needs_commit_ = true;
+  last_commit_had_no_updates_ = commit_has_no_updates;
 }
 
 void SchedulerStateMachine::UpdateStateOnActivation() {
@@ -766,6 +768,11 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   if (request_swap_funnel_)
     return true;
 
+  // If the last commit was aborted because of early out (no updates), we should
+  // still want a begin frame in case there is a commit coming again.
+  if (last_commit_had_no_updates_)
+    return true;
+
   return false;
 }
 
@@ -774,6 +781,7 @@ void SchedulerStateMachine::OnBeginImplFrame() {
   DCHECK_EQ(begin_impl_frame_state_, BEGIN_IMPL_FRAME_STATE_IDLE)
       << AsValue()->ToString();
   begin_impl_frame_state_ = BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING;
+  last_commit_had_no_updates_ = false;
 }
 
 void SchedulerStateMachine::OnBeginImplFrameDeadlinePending() {

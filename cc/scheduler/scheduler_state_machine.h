@@ -332,6 +332,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool continuous_painting_;
   bool children_need_begin_frames_;
   bool defer_commits_;
+  bool last_commit_had_no_updates_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

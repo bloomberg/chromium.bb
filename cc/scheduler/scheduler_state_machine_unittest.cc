@@ -132,6 +132,8 @@ class StateMachine : public SchedulerStateMachine {
   }
 
   using SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately;
+  using SchedulerStateMachine::ProactiveBeginFrameWanted;
+  using SchedulerStateMachine::UpdateStateOnCommit;
 };
 
 TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
@@ -1829,6 +1831,19 @@ TEST(SchedulerStateMachineTest, TestDeferCommit) {
   state.OnBeginImplFrame();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+}
+
+TEST(SchedulerStateMachineTest, EarlyOutCommitWantsProactiveBeginFrame) {
+  SchedulerSettings settings;
+  StateMachine state(settings);
+  SET_UP_STATE(state);
+
+  EXPECT_FALSE(state.ProactiveBeginFrameWanted());
+  bool commit_has_no_updates = true;
+  state.UpdateStateOnCommit(commit_has_no_updates);
+  EXPECT_TRUE(state.ProactiveBeginFrameWanted());
+  state.OnBeginImplFrame();
+  EXPECT_FALSE(state.ProactiveBeginFrameWanted());
 }
 
 }  // namespace
