@@ -378,6 +378,18 @@ bool OmniboxFieldTrial::HQPFixFrequencyScoringBugs() {
       kHQPFixFrequencyScoringBugsRule) == "true";
 }
 
+size_t OmniboxFieldTrial::HQPNumTitleWordsToAllow() {
+  // The value of the rule is a string that encodes an integer (actually
+  // size_t) containing the number of words.
+  size_t num_title_words;
+  if (!base::StringToSizeT(
+          variations::GetVariationParamValue(kBundledExperimentFieldTrialName,
+                                             kHQPNumTitleWordsRule),
+          &num_title_words))
+    return 10;
+  return num_title_words;
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
@@ -404,6 +416,7 @@ const char OmniboxFieldTrial::kSuggestPollingDelayMsRule[] =
     "SuggestPollingDelayMs";
 const char OmniboxFieldTrial::kHQPFixFrequencyScoringBugsRule[] =
     "HQPFixFrequencyScoringBugs";
+const char OmniboxFieldTrial::kHQPNumTitleWordsRule[] = "HQPNumTitleWords";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";

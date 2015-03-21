@@ -126,6 +126,7 @@ int ScoredHistoryMatch::bookmark_value_ = 1;
 bool ScoredHistoryMatch::fix_frequency_bugs_ = false;
 bool ScoredHistoryMatch::allow_tld_matches_ = false;
 bool ScoredHistoryMatch::allow_scheme_matches_ = false;
+size_t ScoredHistoryMatch::num_title_words_to_allow_ = 10u;
 bool ScoredHistoryMatch::hqp_experimental_scoring_enabled_ = false;
 float ScoredHistoryMatch::topicality_threshold_ = -1;
 std::vector<ScoredHistoryMatch::ScoreMaxRelevance>*
@@ -408,6 +409,7 @@ void ScoredHistoryMatch::Init() {
   fix_frequency_bugs_ = OmniboxFieldTrial::HQPFixFrequencyScoringBugs();
   allow_tld_matches_ = OmniboxFieldTrial::HQPAllowMatchInTLDValue();
   allow_scheme_matches_ = OmniboxFieldTrial::HQPAllowMatchInSchemeValue();
+  num_title_words_to_allow_ = OmniboxFieldTrial::HQPNumTitleWordsToAllow();
 
   InitRawTermScoreToTopicalityScoreArray();
   InitDaysAgoToRecencyScoreArray();
@@ -505,7 +507,7 @@ float ScoredHistoryMatch::GetTopicalityScore(
   // Now do the analogous loop over all matches in the title.
   next_word_starts = word_starts.title_word_starts_.begin();
   end_word_starts = word_starts.title_word_starts_.end();
-  int word_num = 0;
+  size_t word_num = 0;
   title_matches = FilterTermMatchesByWordStarts(
       title_matches, terms_to_word_starts_offsets,
       word_starts.title_word_starts_, 0, std::string::npos);
@@ -519,7 +521,7 @@ float ScoredHistoryMatch::GetTopicalityScore(
       ++next_word_starts;
       ++word_num;
     }
-    if (word_num >= 10)
+    if (word_num >= num_title_words_to_allow_)
       break;  // only count the first ten words
     DCHECK(next_word_starts != end_word_starts);
     DCHECK_EQ(*next_word_starts, title_match.offset + term_offset)

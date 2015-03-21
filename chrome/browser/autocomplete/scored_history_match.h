@@ -170,6 +170,10 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // If true, we allow input terms to match in the scheme (e.g., "http://").
   static bool allow_scheme_matches_;
 
+  // The number of title words examined when computing topicality scores.
+  // Words beyond this number are ignored.
+  static size_t num_title_words_to_allow_;
+
   // True, if hqp experimental scoring is enabled.
   static bool hqp_experimental_scoring_enabled_;
 
