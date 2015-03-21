@@ -163,6 +163,7 @@ if (!is_android) {
       "//cc",
       "//cc:test_support",
       "//skia",
+      "//testing/gmock",
       "//testing/gtest",
       "//ui/base",
       "//ui/gfx",

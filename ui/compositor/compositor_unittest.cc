@@ -3,12 +3,23 @@
 // found in the LICENSE file.
 
 #include "base/test/test_simple_task_runner.h"
+#include "cc/output/begin_frame_args.h"
+#include "cc/test/begin_frame_args_test.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 
+using testing::Mock;
+using testing::_;
+
 namespace ui {
 namespace {
+
+class MockCompositorBeginFrameObserver : public CompositorBeginFrameObserver {
+ public:
+  MOCK_METHOD1(OnSendBeginFrame, void(const cc::BeginFrameArgs&));
+};
 
 // Test fixture for tests that require a ui::Compositor with a real task
 // runner.
@@ -59,6 +70,47 @@ TEST_F(CompositorTest, LocksTimeOut) {
   EXPECT_TRUE(compositor()->IsLocked());
   task_runner()->RunUntilIdle();
   EXPECT_TRUE(compositor()->IsLocked());
+}
+
+TEST_F(CompositorTest, AddAndRemoveBeginFrameObserver) {
+  cc::BeginFrameArgs args =
+    cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE,
+                                       base::TimeTicks::FromInternalValue(33));
+
+  // Simulate to trigger new BeginFrame by using |args|.
+  compositor()->SendBeginFramesToChildren(args);
+
+  // When |missed_begin_frame_args_| is sent, its type is set to MISSED.
+  cc::BeginFrameArgs expected_args(args);
+  expected_args.type = cc::BeginFrameArgs::MISSED;
+
+  MockCompositorBeginFrameObserver test_observer;
+  MockCompositorBeginFrameObserver test_observer2;
+  EXPECT_CALL(test_observer, OnSendBeginFrame(expected_args));
+  EXPECT_CALL(test_observer2, OnSendBeginFrame(expected_args));
+
+  // When new observer is added, Compositor immediately calls OnSendBeginFrame
+  // with |missed_begin_frame_args_|.
+  compositor()->AddBeginFrameObserver(&test_observer);
+  compositor()->AddBeginFrameObserver(&test_observer2);
+  Mock::VerifyAndClearExpectations(&test_observer);
+  Mock::VerifyAndClearExpectations(&test_observer2);
+
+  // When |test_observer2| is removed and added again, it will be called again.
+  EXPECT_CALL(test_observer2, OnSendBeginFrame(expected_args));
+  compositor()->RemoveBeginFrameObserver(&test_observer2);
+  compositor()->AddBeginFrameObserver(&test_observer2);
+  Mock::VerifyAndClearExpectations(&test_observer2);
+
+  // When all observer is removed, |missed_begin_frame_args_| is invalidated.
+  // So, it is not used for newly added observer.
+  EXPECT_CALL(test_observer2, OnSendBeginFrame(_)).Times(0);
+  compositor()->RemoveBeginFrameObserver(&test_observer);
+  compositor()->RemoveBeginFrameObserver(&test_observer2);
+  compositor()->AddBeginFrameObserver(&test_observer2);
+  Mock::VerifyAndClearExpectations(&test_observer2);
+
+  compositor()->RemoveBeginFrameObserver(&test_observer2);
 }
 
 }  // namespace ui

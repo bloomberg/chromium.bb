@@ -156,6 +156,8 @@ Compositor::~Compositor() {
   FOR_EACH_OBSERVER(CompositorObserver, observer_list_,
                     OnCompositingShuttingDown(this));
 
+  DCHECK(begin_frame_observer_list_.empty());
+
   if (root_layer_)
     root_layer_->SetCompositor(NULL);
 
@@ -283,6 +285,33 @@ bool Compositor::HasAnimationObserver(
   return animation_observer_list_.HasObserver(observer);
 }
 
+void Compositor::AddBeginFrameObserver(CompositorBeginFrameObserver* observer) {
+  DCHECK(std::find(begin_frame_observer_list_.begin(),
+                   begin_frame_observer_list_.end(), observer) ==
+         begin_frame_observer_list_.end());
+
+  if (begin_frame_observer_list_.empty())
+    host_->SetChildrenNeedBeginFrames(true);
+
+  if (missed_begin_frame_args_.IsValid())
+    observer->OnSendBeginFrame(missed_begin_frame_args_);
+
+  begin_frame_observer_list_.push_back(observer);
+}
+
+void Compositor::RemoveBeginFrameObserver(
+    CompositorBeginFrameObserver* observer) {
+  auto it = std::find(begin_frame_observer_list_.begin(),
+                      begin_frame_observer_list_.end(), observer);
+  DCHECK(it != begin_frame_observer_list_.end());
+  begin_frame_observer_list_.erase(it);
+
+  if (begin_frame_observer_list_.empty()) {
+    host_->SetChildrenNeedBeginFrames(false);
+    missed_begin_frame_args_ = cc::BeginFrameArgs();
+  }
+}
+
 void Compositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
   FOR_EACH_OBSERVER(CompositorAnimationObserver,
                     animation_observer_list_,
@@ -343,6 +372,14 @@ void Compositor::DidAbortSwapBuffers() {
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingAborted(this));
+}
+
+void Compositor::SendBeginFramesToChildren(const cc::BeginFrameArgs& args) {
+  for (auto observer : begin_frame_observer_list_)
+    observer->OnSendBeginFrame(args);
+
+  missed_begin_frame_args_ = args;
+  missed_begin_frame_args_.type = cc::BeginFrameArgs::MISSED;
 }
 
 const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {

@@ -5,6 +5,7 @@
 #ifndef UI_COMPOSITOR_COMPOSITOR_H_
 #define UI_COMPOSITOR_COMPOSITOR_H_
 
+#include <list>
 #include <string>
 
 #include "base/containers/hash_tables.h"
@@ -13,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
@@ -132,6 +134,13 @@ class COMPOSITOR_EXPORT CompositorLock
   DISALLOW_COPY_AND_ASSIGN(CompositorLock);
 };
 
+// This class observes BeginFrame notification from LayerTreeHost.
+class COMPOSITOR_EXPORT CompositorBeginFrameObserver {
+ public:
+  virtual ~CompositorBeginFrameObserver() {}
+  virtual void OnSendBeginFrame(const cc::BeginFrameArgs& args) = 0;
+};
+
 // Compositor object to take care of GPU painting.
 // A Browser compositor object is responsible for generating the final
 // displayable form of pixels comprising a single widget's contents. It draws an
@@ -227,6 +236,9 @@ class COMPOSITOR_EXPORT Compositor
   void RemoveAnimationObserver(CompositorAnimationObserver* observer);
   bool HasAnimationObserver(const CompositorAnimationObserver* observer) const;
 
+  void AddBeginFrameObserver(CompositorBeginFrameObserver* observer);
+  void RemoveBeginFrameObserver(CompositorBeginFrameObserver* observer);
+
   // Change the timeout behavior for all future locks that are created. Locks
   // should time out if there is an expectation that the compositor will be
   // responsive.
@@ -272,6 +284,7 @@ class COMPOSITOR_EXPORT Compositor
   void DidCommitAndDrawFrame() override;
   void DidCompleteSwapBuffers() override;
   void DidCompletePageScaleAnimation() override {}
+  void SendBeginFramesToChildren(const cc::BeginFrameArgs& args) override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidPostSwapBuffers() override;
@@ -310,6 +323,7 @@ class COMPOSITOR_EXPORT Compositor
 
   ObserverList<CompositorObserver, true> observer_list_;
   ObserverList<CompositorAnimationObserver> animation_observer_list_;
+  std::list<CompositorBeginFrameObserver*> begin_frame_observer_list_;
 
   gfx::AcceleratedWidget widget_;
   scoped_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
@@ -331,6 +345,9 @@ class COMPOSITOR_EXPORT Compositor
   CompositorLock* compositor_lock_;
 
   LayerAnimatorCollection layer_animator_collection_;
+
+  // Used to send to any new CompositorBeginFrameObserver immediately.
+  cc::BeginFrameArgs missed_begin_frame_args_;
 
   base::WeakPtrFactory<Compositor> weak_ptr_factory_;
 

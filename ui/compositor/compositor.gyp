@@ -144,6 +144,7 @@
         '<(DEPTH)/cc/cc.gyp:cc',
         '<(DEPTH)/cc/cc_tests.gyp:cc_test_support',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/ui/base/ui_base.gyp:ui_base',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
