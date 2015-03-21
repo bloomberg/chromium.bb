@@ -18,7 +18,7 @@ PASS decode('utf-16be', '%D8') is ''
 PASS decode('gb2312', '%A3%A0') is 'U+3000'
 PASS decode('gb2312', '%A3') is 'U+FFFD'
 PASS decode('shift_jis', '%82%d0') is 'U+3072'
-PASS decode('shift_jis', '%82') is 'U+001A'
+PASS decode('shift_jis', '%82') is 'U+FFFD'
 PASS decode('windows-949', '%A2%E6') is 'U+20AC'
 PASS decode('windows-949', '%A2') is 'U+FFFD'
 PASS successfullyParsed is true

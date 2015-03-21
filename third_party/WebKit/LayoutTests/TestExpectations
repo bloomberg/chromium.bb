@@ -90,11 +90,6 @@ crbug.com/432129 virtual/slimmingpaint/fast/html/marquee-scroll.html [ Pass Fail
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 crbug.com/421283 virtual/slimmingpaint/fast/html/marquee-scrollamount.html [ Pass Failure ]
 
-# Once ICU with updated converters is rolled in, these will pass. The first
-# one requires rebaselining.
-crbug.com/450312 fast/encoding/char-decoding-truncated.html [ NeedsManualRebaseline ]
-crbug.com/450312 fast/encoding/char-decoding-invalid-trail.html [ Failure ]
-
 crbug.com/437743 virtual/slimmingpaint/fast/block/float/overhanging-tall-block.html [ Skip ]
 
 crbug.com/446356 [ Linux Debug ] fast/svg/whitespace-length-invalid.html [ Failure Timeout ]
