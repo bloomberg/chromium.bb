@@ -7646,6 +7646,55 @@ TEST_F(LayerTreeHostCommonTest, OutOfOrderClippingRequiresRSLLSorting) {
   EXPECT_TRUE(render_surface_layer_list.at(2)->render_surface());
 }
 
+TEST_F(LayerTreeHostCommonTest, FixedPositionWithInterveningRenderSurface) {
+  // Ensures that when we have a render surface between a fixed position layer
+  // and its container, we compute the fixed position layer's draw transform
+  // with respect to that intervening render surface, not with respect to its
+  // container's render target.
+  //
+  // + root
+  //   + render_surface
+  //     + fixed
+  //
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> render_surface =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  scoped_refptr<LayerWithForcedDrawsContent> fixed =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+
+  root->AddChild(render_surface);
+  render_surface->AddChild(fixed);
+
+  root->SetIsContainerForFixedPositionLayers(true);
+  render_surface->SetForceRenderSurface(true);
+
+  LayerPositionConstraint constraint;
+  constraint.set_is_fixed_position(true);
+  fixed->SetPositionConstraint(constraint);
+
+  SetLayerPropertiesForTesting(root.get(), gfx::Transform(), gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false);
+  SetLayerPropertiesForTesting(render_surface.get(), gfx::Transform(),
+                               gfx::Point3F(), gfx::PointF(7.f, 9.f),
+                               gfx::Size(50, 50), true, false);
+  SetLayerPropertiesForTesting(fixed.get(), gfx::Transform(), gfx::Point3F(),
+                               gfx::PointF(10.f, 15.f), gfx::Size(50, 50), true,
+                               false);
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(root);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  gfx::Transform expected_draw_transform;
+  expected_draw_transform.Translate(10.f, 15.f);
+  EXPECT_EQ(expected_draw_transform, fixed->draw_transform());
+
+  gfx::Transform expected_screen_space_transform;
+  expected_screen_space_transform.Translate(17.f, 24.f);
+  EXPECT_EQ(expected_screen_space_transform, fixed->screen_space_transform());
+}
+
 TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
   // This test verifies that a scrolling layer that gets snapped to
   // integer coordinates doesn't move a fixed position child.

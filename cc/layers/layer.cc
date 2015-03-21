@@ -1316,6 +1316,22 @@ gfx::Transform Layer::draw_transform_from_property_trees(
       xform.FlattenTo2d();
     xform.Translate(offset_to_transform_parent().x(),
                     offset_to_transform_parent().y());
+    // A fixed-position layer does not necessarily have the same render target
+    // as its transform node. In particular, its transform node may be an
+    // ancestor of its render target's transform node. For example, given layer
+    // tree R->S->F, suppose F is fixed and S owns a render surface (e.g., say S
+    // has opacity 0.9 and both S and F draw content). Then F's transform node
+    // is the root node, so the target space transform from that node is defined
+    // with respect to the root render surface. But F will render to S's
+    // surface, so must apply a change of basis transform to the target space
+    // transform from its transform node.
+    if (position_constraint_.is_fixed_position()) {
+      gfx::Transform tree_target_to_render_target;
+      tree.ComputeTransform(node->data.content_target_id,
+                            render_target()->transform_tree_index(),
+                            &tree_target_to_render_target);
+      xform.ConcatTransform(tree_target_to_render_target);
+    }
   } else {
     // Surfaces need to apply their sublayer scale.
     xform.Scale(target_node->data.sublayer_scale.x(),
