@@ -25,7 +25,7 @@ StereoPannerNode::StereoPannerNode(AudioContext* context, float sampleRate)
     m_pan = AudioParam::create(context, 0);
 
     addInput();
-    addOutput(AudioNodeOutput::create(this, 2));
+    addOutput(2);
 
     // The node-specific default mixing rules declare that StereoPannerNode
     // can handle mono to stereo and stereo to stereo conversion.

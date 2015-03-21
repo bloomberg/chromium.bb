@@ -38,7 +38,7 @@ AudioBasicProcessorNode::AudioBasicProcessorNode(NodeType nodeType, AudioContext
     : AudioNode(nodeType, context, sampleRate)
 {
     addInput();
-    addOutput(AudioNodeOutput::create(this, 1));
+    addOutput(1);
 
     // The subclass must create m_processor.
 }

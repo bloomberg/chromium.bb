@@ -37,7 +37,7 @@ AudioBasicInspectorNode::AudioBasicInspectorNode(NodeType nodeType, AudioContext
     , m_needAutomaticPull(false)
 {
     addInput();
-    addOutput(AudioNodeOutput::create(this, outputChannelCount));
+    addOutput(outputChannelCount);
 }
 
 // We override pullInputs() as an optimization allowing this node to take advantage of in-place processing,

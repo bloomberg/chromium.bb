@@ -47,7 +47,7 @@ ChannelSplitterNode::ChannelSplitterNode(AudioContext* context, float sampleRate
 
     // Create a fixed number of outputs (able to handle the maximum number of channels fed to an input).
     for (unsigned i = 0; i < numberOfOutputs; ++i)
-        addOutput(AudioNodeOutput::create(this, 1));
+        addOutput(1);
 
     initialize();
 }

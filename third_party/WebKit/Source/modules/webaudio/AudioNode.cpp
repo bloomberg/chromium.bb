@@ -173,9 +173,9 @@ void AudioNode::addInput()
     m_inputs.append(AudioNodeInput::create(*this));
 }
 
-void AudioNode::addOutput(AudioNodeOutput* output)
+void AudioNode::addOutput(unsigned numberOfChannels)
 {
-    m_outputs.append(output);
+    m_outputs.append(AudioNodeOutput::create(this, numberOfChannels));
 }
 
 AudioNodeInput* AudioNode::input(unsigned i)

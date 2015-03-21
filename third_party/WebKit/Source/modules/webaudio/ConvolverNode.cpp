@@ -50,7 +50,7 @@ ConvolverNode::ConvolverNode(AudioContext* context, float sampleRate)
     , m_normalize(true)
 {
     addInput();
-    addOutput(AudioNodeOutput::create(this, 2));
+    addOutput(2);
 
     // Node-specific default mixing rules.
     m_channelCount = 2;

@@ -208,7 +208,7 @@ public:
 protected:
     // Inputs and outputs must be created before the AudioNode is initialized.
     void addInput();
-    void addOutput(AudioNodeOutput*);
+    void addOutput(unsigned numberOfChannels);
 
     // Called by processIfNecessary() to cause all parts of the rendering graph connected to us to process.
     // Each rendering quantum, the audio data for each of the AudioNode's inputs will be available after this method is called.

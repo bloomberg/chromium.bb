@@ -61,7 +61,7 @@ ChannelMergerNode::ChannelMergerNode(AudioContext* context, float sampleRate, un
         addInput();
 
     // Create the output with the requested number of channels.
-    addOutput(AudioNodeOutput::create(this, numberOfInputs));
+    addOutput(numberOfInputs);
 
     initialize();
 }

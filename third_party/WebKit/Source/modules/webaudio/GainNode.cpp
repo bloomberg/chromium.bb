@@ -40,7 +40,7 @@ GainNode::GainNode(AudioContext* context, float sampleRate)
     m_gain = AudioParam::create(context, 1.0);
 
     addInput();
-    addOutput(AudioNodeOutput::create(this, 1));
+    addOutput(1);
 
     initialize();
 }

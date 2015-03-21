@@ -66,7 +66,7 @@ PannerNode::PannerNode(AudioContext* context, float sampleRate)
     listener()->createAndLoadHRTFDatabaseLoader(context->sampleRate());
 
     addInput();
-    addOutput(AudioNodeOutput::create(this, 2));
+    addOutput(2);
 
     // Node-specific default mixing rules.
     m_channelCount = 2;

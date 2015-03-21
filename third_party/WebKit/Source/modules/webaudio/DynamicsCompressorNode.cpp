@@ -40,7 +40,7 @@ DynamicsCompressorNode::DynamicsCompressorNode(AudioContext* context, float samp
     : AudioNode(NodeTypeDynamicsCompressor, context, sampleRate)
 {
     addInput();
-    addOutput(AudioNodeOutput::create(this, defaultNumberOfOutputChannels));
+    addOutput(defaultNumberOfOutputChannels);
 
     m_threshold = AudioParam::create(context, -24);
     m_knee = AudioParam::create(context, 30);

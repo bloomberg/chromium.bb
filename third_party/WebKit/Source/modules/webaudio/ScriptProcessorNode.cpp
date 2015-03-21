@@ -103,7 +103,7 @@ ScriptProcessorNode::ScriptProcessorNode(AudioContext* context, float sampleRate
     ASSERT(numberOfInputChannels <= AudioContext::maxNumberOfChannels());
 
     addInput();
-    addOutput(AudioNodeOutput::create(this, numberOfOutputChannels));
+    addOutput(numberOfOutputChannels);
 
     m_channelCount = numberOfInputChannels;
     m_channelCountMode = Explicit;

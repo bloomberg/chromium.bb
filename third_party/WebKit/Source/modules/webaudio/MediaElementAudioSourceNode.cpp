@@ -50,7 +50,7 @@ MediaElementAudioSourceNode::MediaElementAudioSourceNode(AudioContext* context, 
 {
     // Default to stereo. This could change depending on what the media element
     // .src is set to.
-    addOutput(AudioNodeOutput::create(this, 2));
+    addOutput(2);
 
     initialize();
 }
