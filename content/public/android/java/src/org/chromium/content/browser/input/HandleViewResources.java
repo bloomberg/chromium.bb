@@ -12,6 +12,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
@@ -51,7 +52,8 @@ public class HandleViewResources {
             // If themed resource lookup fails, fall back to using the Context's
             // resources for attribute lookup.
             try {
-                drawable = context.getResources().getDrawable(a.getResourceId(0, 0));
+                drawable = ApiCompatibilityUtils.getDrawable(
+                        context.getResources(), a.getResourceId(0, 0));
             } catch (Resources.NotFoundException e) {
                 // The caller should handle the null return case appropriately.
             }

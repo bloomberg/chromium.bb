@@ -17,6 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 import java.util.List;
@@ -60,7 +61,7 @@ class ShareDialogAdapter extends ArrayAdapter<ResolveInfo> {
             final int iconRes = info.getIconResource();
             if (iconRes != 0) {
                 Resources res = mManager.getResourcesForApplication(info.activityInfo.packageName);
-                Drawable icon = res.getDrawable(iconRes);
+                Drawable icon = ApiCompatibilityUtils.getDrawable(res, iconRes);
                 return icon;
             }
         } catch (NameNotFoundException e) {

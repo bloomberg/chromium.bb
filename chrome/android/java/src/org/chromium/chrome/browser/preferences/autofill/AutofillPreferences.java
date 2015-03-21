@@ -13,6 +13,7 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -72,13 +73,13 @@ public class AutofillPreferences extends PreferenceFragment
     }
 
     private void setPreferenceCategoryIcons() {
-        Drawable plusIcon = getResources().getDrawable(R.drawable.plus);
+        Drawable plusIcon = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.plus);
         plusIcon.mutate();
         plusIcon.setColorFilter(getResources().getColor(R.color.pref_accent_color),
                 PorterDuff.Mode.SRC_IN);
         findPreference(PREF_AUTOFILL_PROFILES).setIcon(plusIcon);
 
-        plusIcon = getResources().getDrawable(R.drawable.plus);
+        plusIcon = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.plus);
         plusIcon.mutate();
         plusIcon.setColorFilter(getResources().getColor(R.color.pref_accent_color),
                 PorterDuff.Mode.SRC_IN);

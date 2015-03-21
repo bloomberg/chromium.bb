@@ -24,6 +24,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 
@@ -58,7 +59,7 @@ public class AddExceptionPreference extends Preference implements OnPreferenceCl
         Resources resources = getContext().getResources();
         mPrefAccentColor = resources.getColor(R.color.pref_accent_color);
 
-        Drawable plusIcon = resources.getDrawable(R.drawable.plus);
+        Drawable plusIcon = ApiCompatibilityUtils.getDrawable(resources, R.drawable.plus);
         plusIcon.mutate();
         plusIcon.setColorFilter(mPrefAccentColor, PorterDuff.Mode.SRC_IN);
         setIcon(plusIcon);

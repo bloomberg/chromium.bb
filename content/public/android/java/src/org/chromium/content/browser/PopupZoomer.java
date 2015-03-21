@@ -29,6 +29,7 @@ import android.view.View;
 import android.view.animation.Interpolator;
 import android.view.animation.OvershootInterpolator;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.content.R;
 
 /**
@@ -147,7 +148,7 @@ class PopupZoomer extends View {
     private static Drawable getOverlayDrawable(Context context) {
         if (sOverlayDrawable == null) {
             try {
-                sOverlayDrawable = context.getResources().getDrawable(
+                sOverlayDrawable = ApiCompatibilityUtils.getDrawable(context.getResources(),
                         R.drawable.ondemand_overlay);
             } catch (Resources.NotFoundException e) {
                 Log.w(LOGTAG, "No drawable resource for PopupZoomer overlay found.");

@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.ui.resources.Resource;
 
 /**
@@ -98,7 +99,7 @@ public class StaticResource implements Resource {
     private static Bitmap decodeDrawable(Resources resources, int resId, int fitWidth,
             int fitHeight) {
         try {
-            Drawable drawable = resources.getDrawable(resId);
+            Drawable drawable = ApiCompatibilityUtils.getDrawable(resources, resId);
             int width = Math.max(drawable.getMinimumWidth(), Math.max(fitWidth, 1));
             int height = Math.max(drawable.getMinimumHeight(), Math.max(fitHeight, 1));
             Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);

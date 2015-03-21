@@ -88,8 +88,7 @@ public class FirstRunIntroRecentsPage extends FirstRunIntroPage {
                 });
 
         mLoupeImageView = new ImageView(view.getContext());
-        mLoupeImageView.setImageDrawable(
-                getResources().getDrawable(R.drawable.fre_new_recents_menu_loupe));
+        mLoupeImageView.setImageResource(R.drawable.fre_new_recents_menu_loupe);
         FrameLayout layout = (FrameLayout) view.findViewById(R.id.image_view_wrapper);
         FrameLayout.LayoutParams params =
                 new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);

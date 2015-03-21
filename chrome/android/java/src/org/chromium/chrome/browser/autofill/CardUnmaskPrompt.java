@@ -245,8 +245,8 @@ public class CardUnmaskPrompt
             mStoreLocallyTooltipPopup.setWindowLayoutMode(
                     LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             mStoreLocallyTooltipPopup.setOutsideTouchable(true);
-            mStoreLocallyTooltipPopup.setBackgroundDrawable(
-                    resources.getDrawable(R.drawable.store_locally_tooltip_background));
+            mStoreLocallyTooltipPopup.setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
+                    resources, R.drawable.store_locally_tooltip_background));
         }
         mStoreLocallyTooltipPopup.showAsDropDown(mStoreLocallyCheckbox,
                 ViewCompat.getPaddingStart(mStoreLocallyCheckbox), 0);

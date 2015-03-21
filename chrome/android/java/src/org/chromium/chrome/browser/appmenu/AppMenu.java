@@ -29,6 +29,7 @@ import android.widget.PopupWindow;
 import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.AnimationFrameTimeHistogram;
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 
@@ -161,10 +162,11 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         // Need to explicitly set the background here.  Relying on it being set in the style caused
         // an incorrectly drawn background.
         if (isByHardwareButton) {
-            mPopup.setBackgroundDrawable(context.getResources().getDrawable(R.drawable.menu_bg));
-        } else {
             mPopup.setBackgroundDrawable(
-                    context.getResources().getDrawable(R.drawable.edge_menu_bg));
+                    ApiCompatibilityUtils.getDrawable(context.getResources(), R.drawable.menu_bg));
+        } else {
+            mPopup.setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
+                    context.getResources(), R.drawable.edge_menu_bg));
             mPopup.setAnimationStyle(R.style.OverflowMenuAnim);
         }
 

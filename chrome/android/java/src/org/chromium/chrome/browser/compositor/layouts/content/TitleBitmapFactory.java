@@ -18,6 +18,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.InflateException;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 /**
@@ -99,7 +100,8 @@ public class TitleBitmapFactory {
                     mFaviconDimension, mFaviconDimension, Bitmap.Config.ARGB_8888);
             Canvas c = new Canvas(b);
             if (favicon == null) {
-                Drawable drawable = context.getResources().getDrawable(mNullFaviconResourceId);
+                Drawable drawable = ApiCompatibilityUtils.getDrawable(
+                        context.getResources(), mNullFaviconResourceId);
                 if (drawable != null && drawable instanceof BitmapDrawable) {
                     favicon = ((BitmapDrawable) drawable).getBitmap();
                 }

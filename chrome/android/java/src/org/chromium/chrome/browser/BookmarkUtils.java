@@ -27,6 +27,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
@@ -158,7 +159,7 @@ public class BookmarkUtils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
             drawable = context.getResources().getDrawableForDensity(id, density);
         } else {
-            drawable = context.getResources().getDrawable(id);
+            drawable = ApiCompatibilityUtils.getDrawable(context.getResources(), id);
         }
 
         if (drawable instanceof BitmapDrawable) {

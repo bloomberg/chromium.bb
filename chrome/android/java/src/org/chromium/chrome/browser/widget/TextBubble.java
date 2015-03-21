@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.ui.base.LocalizationUtils;
 
@@ -260,9 +261,10 @@ public class TextBubble
 
         BubbleBackgroundDrawable(Context context, Bundle res) {
             mUp = (res.containsKey(UP_DOWN) ? res.getBoolean(UP_DOWN) : true);
-            mBubbleContentsDrawable = context.getResources().getDrawable(R.drawable.bubble_white);
-            mBubbleArrowDrawable = (BitmapDrawable) context.getResources().getDrawable(
-                    R.drawable.bubble_point_white);
+            mBubbleContentsDrawable = ApiCompatibilityUtils.getDrawable(context.getResources(),
+                    R.drawable.bubble_white);
+            mBubbleArrowDrawable = (BitmapDrawable) ApiCompatibilityUtils.getDrawable(
+                    context.getResources(), R.drawable.bubble_point_white);
             mTooltipBorderWidth =
                     context.getResources().getDimensionPixelSize(R.dimen.tooltip_border_width);
 

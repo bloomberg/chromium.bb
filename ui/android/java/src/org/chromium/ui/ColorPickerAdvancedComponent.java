@@ -56,9 +56,8 @@ public class ColorPickerAdvancedComponent {
         // Setting the thumb offset means the seek bar thumb can move all the way to each end
         // of the gradient view.
         Context context = rootView.getContext();
-        int offset = context.getResources()
-                            .getDrawable(R.drawable.color_picker_advanced_select_handle)
-                            .getIntrinsicWidth();
+        int offset = ApiCompatibilityUtils.getDrawable(context.getResources(),
+                R.drawable.color_picker_advanced_select_handle).getIntrinsicWidth();
         mSeekBar.setThumbOffset(offset / 2);
     }
 

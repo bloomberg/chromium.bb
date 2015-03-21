@@ -14,6 +14,8 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.Resources.NotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -478,6 +480,18 @@ public class ApiCompatibilityUtils {
                 window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             }
             window.setStatusBarColor(statusBarColor);
+        }
+    }
+
+    /**
+     * @see android.content.res.Resources#getDrawable(int id).
+     */
+    @SuppressWarnings("deprecation")
+    public static Drawable getDrawable(Resources res, int id) throws NotFoundException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return res.getDrawable(id, null);
+        } else {
+            return res.getDrawable(id);
         }
     }
 
