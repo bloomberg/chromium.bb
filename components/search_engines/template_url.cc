@@ -399,30 +399,29 @@ bool TemplateURLRef::IsValid(const SearchTermsData& search_terms_data) const {
 base::string16 TemplateURLRef::DisplayURL(
     const SearchTermsData& search_terms_data) const {
   ParseIfNecessary(search_terms_data);
-  base::string16 result(base::UTF8ToUTF16(GetURL()));
+  std::string result(GetURL());
   if (valid_ && !replacements_.empty()) {
     ReplaceSubstringsAfterOffset(&result, 0,
-                                 base::ASCIIToUTF16(kSearchTermsParameterFull),
-                                 base::ASCIIToUTF16(kDisplaySearchTerms));
+                                 kSearchTermsParameterFull,
+                                 kDisplaySearchTerms);
     ReplaceSubstringsAfterOffset(&result, 0,
-        base::ASCIIToUTF16(kGoogleUnescapedSearchTermsParameterFull),
-        base::ASCIIToUTF16(kDisplayUnescapedSearchTerms));
+                                 kGoogleUnescapedSearchTermsParameterFull,
+                                 kDisplayUnescapedSearchTerms);
   }
-  return result;
+  return base::UTF8ToUTF16(result);
 }
 
 // static
 std::string TemplateURLRef::DisplayURLToURLRef(
     const base::string16& display_url) {
-  base::string16 result = display_url;
+  std::string result = base::UTF16ToUTF8(display_url);
   ReplaceSubstringsAfterOffset(&result, 0,
-                               base::ASCIIToUTF16(kDisplaySearchTerms),
-                               base::ASCIIToUTF16(kSearchTermsParameterFull));
-  ReplaceSubstringsAfterOffset(
-      &result, 0,
-      base::ASCIIToUTF16(kDisplayUnescapedSearchTerms),
-      base::ASCIIToUTF16(kGoogleUnescapedSearchTermsParameterFull));
-  return base::UTF16ToUTF8(result);
+                               kDisplaySearchTerms,
+                               kSearchTermsParameterFull);
+  ReplaceSubstringsAfterOffset(&result, 0,
+                               kDisplayUnescapedSearchTerms,
+                               kGoogleUnescapedSearchTermsParameterFull);
+  return result;
 }
 
 const std::string& TemplateURLRef::GetHost(
