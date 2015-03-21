@@ -47,8 +47,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/base/privacy_mode.h"
 #include "net/cert/cert_verifier.h"
 #include "net/http/http_request_info.h"
@@ -59,7 +57,6 @@
 #include "net/quic/quic_utils.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/tools/quic/quic_simple_client.h"
-#include "net/tools/quic/synchronous_host_resolver.h"
 #include "url/gurl.h"
 
 using base::StringPiece;
@@ -173,18 +170,14 @@ int main(int argc, char *argv[]) {
   // protocol is required in the URL.
   GURL url(urls[0]);
   string host = FLAGS_host;
+  // TODO(rtenneti): get ip_addr from hostname by doing host resolution.
   if (host.empty()) {
-    host = url.host();
+    LOG(ERROR) << "--host must be specified\n";
+    return 1;
   }
   if (!net::ParseIPLiteralToNumber(host, &ip_addr)) {
-    net::AddressList addresses;
-    int rv = net::tools::SynchronousHostResolver::Resolve(host, &addresses);
-    if (rv != net::OK) {
-      LOG(ERROR) << "Unable to resolve '" << host << "' : "
-                 << net::ErrorToString(rv);
-      return 1;
-    }
-    ip_addr = addresses[0].address();
+    LOG(ERROR) << "--host could not be parsed as an IP address\n";
+    return 1;
   }
 
   string host_port = net::IPAddressToStringWithPort(ip_addr, FLAGS_port);
