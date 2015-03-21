@@ -26,6 +26,7 @@
 #include "components/omnibox/suggestion_answer.h"
 #include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -110,6 +111,98 @@ struct TranslationTable {
   { NativeTheme::kColorId_ResultsTableSelectedDivider,
     OmniboxResultView::SELECTED, OmniboxResultView::DIVIDER },
 };
+
+struct TextStyle {
+  ui::ResourceBundle::FontStyle font;
+  ui::NativeTheme::ColorId colors[OmniboxResultView::NUM_STATES];
+  gfx::BaselineStyle baseline;
+} const kTextStyles[] = {
+    // 1  ANSWER_TEXT
+    {ui::ResourceBundle::LargeFont,
+     {NativeTheme::kColorId_ResultsTableNormalText,
+      NativeTheme::kColorId_ResultsTableHoveredText,
+      NativeTheme::kColorId_ResultsTableSelectedText},
+     gfx::NORMAL_BASELINE},
+    // 2  HEADLINE_TEXT
+    {ui::ResourceBundle::LargeFont,
+     {NativeTheme::kColorId_ResultsTableNormalDimmedText,
+      NativeTheme::kColorId_ResultsTableHoveredDimmedText,
+      NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+     gfx::NORMAL_BASELINE},
+    // 3  TOP_ALIGNED_TEXT
+    {ui::ResourceBundle::LargeFont,
+     {NativeTheme::kColorId_ResultsTableNormalDimmedText,
+      NativeTheme::kColorId_ResultsTableHoveredDimmedText,
+      NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+     gfx::SUPERIOR},
+    // 4  DESCRIPTION_TEXT
+    {ui::ResourceBundle::BaseFont,
+     {NativeTheme::kColorId_ResultsTableNormalDimmedText,
+      NativeTheme::kColorId_ResultsTableHoveredDimmedText,
+      NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+     gfx::NORMAL_BASELINE},
+    // 5  DESCRIPTION_TEXT_NEGATIVE
+    {ui::ResourceBundle::LargeFont,
+     {NativeTheme::kColorId_ResultsTableNegativeText,
+      NativeTheme::kColorId_ResultsTableNegativeHoveredText,
+      NativeTheme::kColorId_ResultsTableNegativeSelectedText},
+     gfx::INFERIOR},
+    // 6  DESCRIPTION_TEXT_POSITIVE
+    {ui::ResourceBundle::LargeFont,
+     {NativeTheme::kColorId_ResultsTablePositiveText,
+      NativeTheme::kColorId_ResultsTablePositiveHoveredText,
+      NativeTheme::kColorId_ResultsTablePositiveSelectedText},
+     gfx::INFERIOR},
+    // 7  MORE_INFO_TEXT
+    {ui::ResourceBundle::SmallFont,
+     {NativeTheme::kColorId_ResultsTableNormalDimmedText,
+      NativeTheme::kColorId_ResultsTableHoveredDimmedText,
+      NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+     gfx::NORMAL_BASELINE},
+    // 8  SUGGESTION_TEXT
+    {ui::ResourceBundle::BaseFont,
+     {NativeTheme::kColorId_ResultsTableNormalText,
+      NativeTheme::kColorId_ResultsTableHoveredText,
+      NativeTheme::kColorId_ResultsTableSelectedText},
+     gfx::NORMAL_BASELINE},
+    // 9  SUGGESTION_TEXT_POSITIVE
+    {ui::ResourceBundle::BaseFont,
+     {NativeTheme::kColorId_ResultsTablePositiveText,
+      NativeTheme::kColorId_ResultsTablePositiveHoveredText,
+      NativeTheme::kColorId_ResultsTablePositiveSelectedText},
+     gfx::NORMAL_BASELINE},
+    // 10 SUGGESTION_TEXT_NEGATIVE
+    {ui::ResourceBundle::BaseFont,
+     {NativeTheme::kColorId_ResultsTableNegativeText,
+      NativeTheme::kColorId_ResultsTableNegativeHoveredText,
+      NativeTheme::kColorId_ResultsTableNegativeSelectedText},
+     gfx::NORMAL_BASELINE},
+    // 11 SUGGESTION_LINK_COLOR
+    {ui::ResourceBundle::BaseFont,
+     {NativeTheme::kColorId_ResultsTableNormalUrl,
+      NativeTheme::kColorId_ResultsTableHoveredUrl,
+      NativeTheme::kColorId_ResultsTableSelectedUrl},
+     gfx::NORMAL_BASELINE},
+    // 12 STATUS_TEXT
+    {ui::ResourceBundle::LargeFont,
+     {NativeTheme::kColorId_ResultsTableNormalDimmedText,
+      NativeTheme::kColorId_ResultsTableHoveredDimmedText,
+      NativeTheme::kColorId_ResultsTableSelectedDimmedText},
+     gfx::INFERIOR},
+    // 13 PERSONALIZED_SUGGESTION_TEXT
+    {ui::ResourceBundle::BaseFont,
+     {NativeTheme::kColorId_ResultsTableNormalText,
+      NativeTheme::kColorId_ResultsTableHoveredText,
+      NativeTheme::kColorId_ResultsTableSelectedText},
+     gfx::NORMAL_BASELINE},
+};
+
+const TextStyle& GetTextStyle(size_t type) {
+  if (type > arraysize(kTextStyles))
+    type = 1;
+  // Subtract one because the types are one based (not zero based).
+  return kTextStyles[type - 1];
+}
 
 }  // namespace
 
@@ -605,12 +698,14 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
     if (!description_rendertext_) {
       if (match_.answer) {
         base::string16 text;
-        for (const auto& textfield : match_.answer->second_line().text_fields())
-          text += textfield.text();
         description_rendertext_ = CreateRenderText(text);
-        description_rendertext_->SetFontList(
-            ui::ResourceBundle::GetSharedInstance().GetFontList(
-                ui::ResourceBundle::LargeFont));
+        for (const SuggestionAnswer::TextField& textfield :
+             match_.answer->second_line().text_fields())
+          AppendAnswerText(textfield);
+        if (match_.answer->second_line().additional_text())
+          AppendAnswerText(*match_.answer->second_line().additional_text());
+        if (match_.answer->second_line().status_text())
+          AppendAnswerText(*match_.answer->second_line().status_text());
       } else if (!match_.description.empty()) {
         description_rendertext_ = CreateClassifiedRenderText(
             match_.description, match_.description_class, true);
@@ -648,14 +743,29 @@ void OmniboxResultView::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 int OmniboxResultView::GetAnswerLineHeight() const {
-  // LargeFont is the largest font used and so defines the boundary that
+  // GetTextStyle(1) is the largest font used and so defines the boundary that
   // all the other answer styles fit within.
   return ui::ResourceBundle::GetSharedInstance()
-      .GetFontList(ui::ResourceBundle::LargeFont)
+      .GetFontList(GetTextStyle(1).font)
       .GetHeight();
 }
 
 int OmniboxResultView::GetContentLineHeight() const {
   return std::max(default_icon_size_ + (kMinimumIconVerticalPadding * 2),
                   GetTextHeight() + (kMinimumTextVerticalPadding * 2));
+}
+
+void OmniboxResultView::AppendAnswerText(
+    const SuggestionAnswer::TextField& text_field) {
+  int offset = description_rendertext_->text().length();
+  gfx::Range range(offset, offset + text_field.text().length());
+  description_rendertext_->AppendText(text_field.text());
+  const TextStyle& text_style = GetTextStyle(text_field.type());
+  // TODO(dschuyler): follow up on the problem of different font sizes within
+  // one RenderText.
+  description_rendertext_->SetFontList(
+      ui::ResourceBundle::GetSharedInstance().GetFontList(text_style.font));
+  description_rendertext_->ApplyColor(
+      GetNativeTheme()->GetSystemColor(text_style.colors[GetState()]), range);
+  description_rendertext_->ApplyBaselineStyle(text_style.baseline, range);
 }
