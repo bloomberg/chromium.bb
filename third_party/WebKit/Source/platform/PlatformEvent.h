@@ -83,6 +83,12 @@ public:
         RightButtonDown  = 1 << 8,
     };
 
+    enum RailsMode {
+        RailsModeFree       = 0,
+        RailsModeHorizontal = 1,
+        RailsModeVertical   = 2,
+    };
+
     Type type() const { return static_cast<Type>(m_type); }
 
     bool shiftKey() const { return m_modifiers & ShiftKey; }

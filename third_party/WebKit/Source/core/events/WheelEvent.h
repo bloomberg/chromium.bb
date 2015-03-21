@@ -58,10 +58,10 @@ public:
     static PassRefPtrWillBeRawPtr<WheelEvent> create(const FloatPoint& wheelTicks,
         const FloatPoint& rawDelta, unsigned deltaMode, PassRefPtrWillBeRawPtr<AbstractView> view,
         const IntPoint& screenLocation, const IntPoint& windowLocation,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll, bool hasPreciseScrollingDeltas)
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll, bool hasPreciseScrollingDeltas, RailsMode railsMode)
     {
         return adoptRefWillBeNoop(new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
-            screenLocation, windowLocation, ctrlKey, altKey, shiftKey, metaKey, buttons, canScroll, hasPreciseScrollingDeltas));
+            screenLocation, windowLocation, ctrlKey, altKey, shiftKey, metaKey, buttons, canScroll, hasPreciseScrollingDeltas, railsMode));
     }
 
     double deltaX() const { return m_deltaX; } // Positive when scrolling right.
@@ -75,6 +75,7 @@ public:
     float ticksY() const { return static_cast<float>(m_wheelDelta.y()) / TickMultiplier; }
     bool canScroll() const { return m_canScroll; }
     bool hasPreciseScrollingDeltas() const { return m_hasPreciseScrollingDeltas; }
+    RailsMode railsMode() const { return m_railsMode; }
 
     virtual const AtomicString& interfaceName() const override;
     virtual bool isMouseEvent() const override;
@@ -87,7 +88,7 @@ private:
     WheelEvent(const AtomicString&, const WheelEventInit&);
     WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta,
         unsigned, PassRefPtrWillBeRawPtr<AbstractView>, const IntPoint& screenLocation, const IntPoint& windowLocation,
-        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll, bool hasPreciseScrollingDeltas);
+        bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short buttons, bool canScroll, bool hasPreciseScrollingDeltas, RailsMode);
 
     IntPoint m_wheelDelta;
     double m_deltaX;
@@ -96,6 +97,7 @@ private:
     unsigned m_deltaMode;
     bool m_canScroll;
     bool m_hasPreciseScrollingDeltas;
+    RailsMode m_railsMode;
 };
 
 DEFINE_EVENT_TYPE_CASTS(WheelEvent);

@@ -64,6 +64,7 @@ public:
         , m_granularity(ScrollByPixelWheelEvent)
         , m_hasPreciseScrollingDeltas(false)
         , m_canScroll(true)
+        , m_railsMode(RailsModeFree)
 #if OS(MACOSX)
         , m_phase(PlatformWheelEventPhaseNone)
         , m_momentumPhase(PlatformWheelEventPhaseNone)
@@ -84,6 +85,7 @@ public:
         , m_granularity(granularity)
         , m_hasPreciseScrollingDeltas(false)
         , m_canScroll(true)
+        , m_railsMode(RailsModeFree)
 #if OS(MACOSX)
         , m_phase(PlatformWheelEventPhaseNone)
         , m_momentumPhase(PlatformWheelEventPhaseNone)
@@ -108,6 +110,8 @@ public:
     void setHasPreciseScrollingDeltas(bool b) { m_hasPreciseScrollingDeltas = b; }
     bool canScroll() const { return m_canScroll; }
     void setCanScroll(bool b) { m_canScroll = b; }
+    RailsMode railsMode() const { return m_railsMode; }
+
 #if OS(MACOSX)
     PlatformWheelEventPhase phase() const { return m_phase; }
     PlatformWheelEventPhase momentumPhase() const { return m_momentumPhase; }
@@ -128,6 +132,7 @@ protected:
     PlatformWheelEventGranularity m_granularity;
     bool m_hasPreciseScrollingDeltas;
     bool m_canScroll;
+    RailsMode m_railsMode;
 #if OS(MACOSX)
     PlatformWheelEventPhase m_phase;
     PlatformWheelEventPhase m_momentumPhase;

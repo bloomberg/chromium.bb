@@ -74,8 +74,10 @@ void ScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)
 
 ScrollResult ScrollAnimator::handleWheelEvent(const PlatformWheelEvent& e)
 {
-    bool canScrollX = m_scrollableArea->userInputScrollable(HorizontalScrollbar);
-    bool canScrollY = m_scrollableArea->userInputScrollable(VerticalScrollbar);
+    bool canScrollX = m_scrollableArea->userInputScrollable(HorizontalScrollbar)
+        && e.railsMode() != PlatformEvent::RailsModeVertical;
+    bool canScrollY = m_scrollableArea->userInputScrollable(VerticalScrollbar)
+        && e.railsMode() != PlatformEvent::RailsModeHorizontal;
 
     // Accept the event if we are scrollable in that direction and can still
     // scroll any further.

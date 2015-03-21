@@ -451,9 +451,15 @@ ScrollResult PinchViewport::wheelEvent(const PlatformWheelEvent& event)
 
     // Move the location by the negative of the remaining scroll delta.
     FloatPoint oldOffset = m_offset;
-    FloatPoint locationDelta = viewScrollResult.didScroll ?
-        -FloatPoint(viewScrollResult.unusedScrollDeltaX, viewScrollResult.unusedScrollDeltaY) :
-        -FloatPoint(event.deltaX(), event.deltaY());
+    FloatPoint locationDelta;
+    if (viewScrollResult.didScroll) {
+        locationDelta = -FloatPoint(viewScrollResult.unusedScrollDeltaX, viewScrollResult.unusedScrollDeltaY);
+    } else {
+        if (event.railsMode() != PlatformEvent::RailsModeVertical)
+            locationDelta.setX(-event.deltaX());
+        if (event.railsMode() != PlatformEvent::RailsModeHorizontal)
+            locationDelta.setY(-event.deltaY());
+    }
     move(locationDelta);
 
     FloatPoint usedLocationDelta(m_offset - oldOffset);

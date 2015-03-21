@@ -828,7 +828,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     RefPtrWillBeRawPtr<WheelEvent> event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
         WheelEvent::DOM_DELTA_PAGE, document.get()->domWindow(),  IntPoint(2, 6), IntPoint(10, 30),
-        true, false, false, false, 0, true, true);
+        true, false, false, false, 0, true, true, Event::RailsModeHorizontal);
     WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document.get()->layoutView(), *event);
     EXPECT_EQ(1, webMouseWheel.wheelTicksX);
     EXPECT_EQ(3, webMouseWheel.wheelTicksY);
@@ -841,6 +841,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
     EXPECT_TRUE(webMouseWheel.scrollByPage);
     EXPECT_EQ(WebInputEvent::ControlKey, webMouseWheel.modifiers);
     EXPECT_TRUE(webMouseWheel.canScroll);
+    EXPECT_EQ(WebInputEvent::RailsModeHorizontal, webMouseWheel.railsMode);
 }
 
 TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
@@ -868,15 +869,63 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
         webMouseWheelEvent.modifiers = WebInputEvent::ControlKey;
         webMouseWheelEvent.hasPreciseScrollingDeltas = true;
         webMouseWheelEvent.canScroll = true;
+        webMouseWheelEvent.railsMode = WebInputEvent::RailsModeHorizontal;
 
         PlatformWheelEventBuilder platformWheelBuilder(view, webMouseWheelEvent);
         EXPECT_EQ(0, platformWheelBuilder.position().x());
         EXPECT_EQ(5, platformWheelBuilder.position().y());
         EXPECT_EQ(10, platformWheelBuilder.deltaX());
         EXPECT_EQ(15, platformWheelBuilder.deltaY());
-        EXPECT_EQ(WebInputEvent::ControlKey, platformWheelBuilder.modifiers());
+        EXPECT_EQ(PlatformEvent::CtrlKey, platformWheelBuilder.modifiers());
         EXPECT_TRUE(platformWheelBuilder.hasPreciseScrollingDeltas());
         EXPECT_TRUE(platformWheelBuilder.canScroll());
+        EXPECT_EQ(platformWheelBuilder.railsMode(), PlatformEvent::RailsModeHorizontal);
+    }
+
+    {
+        WebMouseWheelEvent webMouseWheelEvent;
+        webMouseWheelEvent.type = WebInputEvent::MouseWheel;
+        webMouseWheelEvent.x = 5;
+        webMouseWheelEvent.y = 0;
+        webMouseWheelEvent.deltaX = 15;
+        webMouseWheelEvent.deltaY = 10;
+        webMouseWheelEvent.modifiers = WebInputEvent::ShiftKey;
+        webMouseWheelEvent.hasPreciseScrollingDeltas = false;
+        webMouseWheelEvent.canScroll = false;
+        webMouseWheelEvent.railsMode = WebInputEvent::RailsModeFree;
+
+        PlatformWheelEventBuilder platformWheelBuilder(view, webMouseWheelEvent);
+        EXPECT_EQ(5, platformWheelBuilder.position().x());
+        EXPECT_EQ(0, platformWheelBuilder.position().y());
+        EXPECT_EQ(15, platformWheelBuilder.deltaX());
+        EXPECT_EQ(10, platformWheelBuilder.deltaY());
+        EXPECT_EQ(PlatformEvent::ShiftKey, platformWheelBuilder.modifiers());
+        EXPECT_FALSE(platformWheelBuilder.hasPreciseScrollingDeltas());
+        EXPECT_FALSE(platformWheelBuilder.canScroll());
+        EXPECT_EQ(platformWheelBuilder.railsMode(), PlatformEvent::RailsModeFree);
+    }
+
+    {
+        WebMouseWheelEvent webMouseWheelEvent;
+        webMouseWheelEvent.type = WebInputEvent::MouseWheel;
+        webMouseWheelEvent.x = 5;
+        webMouseWheelEvent.y = 0;
+        webMouseWheelEvent.deltaX = 15;
+        webMouseWheelEvent.deltaY = 10;
+        webMouseWheelEvent.modifiers = WebInputEvent::AltKey;
+        webMouseWheelEvent.hasPreciseScrollingDeltas = true;
+        webMouseWheelEvent.canScroll = false;
+        webMouseWheelEvent.railsMode = WebInputEvent::RailsModeVertical;
+
+        PlatformWheelEventBuilder platformWheelBuilder(view, webMouseWheelEvent);
+        EXPECT_EQ(5, platformWheelBuilder.position().x());
+        EXPECT_EQ(0, platformWheelBuilder.position().y());
+        EXPECT_EQ(15, platformWheelBuilder.deltaX());
+        EXPECT_EQ(10, platformWheelBuilder.deltaY());
+        EXPECT_EQ(PlatformEvent::AltKey, platformWheelBuilder.modifiers());
+        EXPECT_TRUE(platformWheelBuilder.hasPreciseScrollingDeltas());
+        EXPECT_FALSE(platformWheelBuilder.canScroll());
+        EXPECT_EQ(platformWheelBuilder.railsMode(), PlatformEvent::RailsModeVertical);
     }
 }
 

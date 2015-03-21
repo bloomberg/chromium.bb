@@ -173,6 +173,15 @@ public:
         IsRight          = 1 << 12,
     };
 
+    // The rail mode for a wheel event specifies the axis on which scrolling is
+    // expected to stick. If this axis is set to Free, then scrolling is not
+    // stuck to any axis.
+    enum RailsMode {
+        RailsModeFree       = 0,
+        RailsModeHorizontal = 1,
+        RailsModeVertical   = 2,
+    };
+
     static const int InputModifiers = ShiftKey | ControlKey | AltKey | MetaKey;
 
     double timeStampSeconds; // Seconds since epoch.
@@ -390,6 +399,8 @@ public:
     // instead of scroll.
     bool canScroll;
 
+    RailsMode railsMode;
+
     WebMouseWheelEvent()
         : WebMouseEvent(sizeof(WebMouseWheelEvent))
         , deltaX(0.0f)
@@ -405,6 +416,7 @@ public:
         , scrollByPage(false)
         , hasPreciseScrollingDeltas(false)
         , canScroll(true)
+        , railsMode(RailsModeFree)
     {
     }
 };

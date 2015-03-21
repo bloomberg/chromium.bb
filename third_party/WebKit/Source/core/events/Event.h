@@ -76,6 +76,12 @@ public:
         CHANGE              = 32768
     };
 
+    enum RailsMode {
+        RailsModeFree       = 0,
+        RailsModeHorizontal = 1,
+        RailsModeVertical   = 2
+    };
+
     static PassRefPtrWillBeRawPtr<Event> create()
     {
         return adoptRefWillBeNoop(new Event);
