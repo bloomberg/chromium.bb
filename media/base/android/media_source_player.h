@@ -145,10 +145,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // since last keyframe. See http://crbug.com/304234.
   void BrowserSeekToCurrentTime();
 
-  // Helper function to determine whether a protected surface is needed for
-  // video playback.
-  bool IsProtectedSurfaceRequired();
-
   // Called when a MediaDecoderJob finishes prefetching data. Once all
   // MediaDecoderJobs have prefetched data, then this method updates
   // |start_time_ticks_| and |start_presentation_timestamp_| so that video can

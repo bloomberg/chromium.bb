@@ -121,15 +121,6 @@ void MediaSourcePlayer::Start() {
 
   playing_ = true;
 
-  bool request_fullscreen = IsProtectedSurfaceRequired();
-#if defined(VIDEO_HOLE)
-  // Skip to request fullscreen when hole-punching is used.
-  request_fullscreen = request_fullscreen &&
-      !manager()->ShouldUseVideoOverlayForEmbeddedEncryptedVideo();
-#endif  // defined(VIDEO_HOLE)
-  if (request_fullscreen)
-    manager()->RequestFullScreen(player_id());
-
   StartInternal();
 }
 
@@ -682,11 +673,6 @@ void MediaSourcePlayer::StartStarvationCallback(
       base::Bind(&MediaSourcePlayer::OnDecoderStarved, weak_this_));
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE, decoder_starvation_callback_.callback(), timeout);
-}
-
-bool MediaSourcePlayer::IsProtectedSurfaceRequired() {
-  return video_decoder_job_->is_content_encrypted() &&
-      drm_bridge_ && drm_bridge_->IsProtectedSurfaceRequired();
 }
 
 void MediaSourcePlayer::OnPrefetchDone() {

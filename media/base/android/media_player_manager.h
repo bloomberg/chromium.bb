@@ -78,12 +78,6 @@ class MEDIA_EXPORT MediaPlayerManager {
 
   // Called by the player to get a hardware protected surface.
   virtual void RequestFullScreen(int player_id) = 0;
-
-#if defined(VIDEO_HOLE)
-  // Returns true if a media player should use video-overlay for the embedded
-  // encrypted video.
-  virtual bool ShouldUseVideoOverlayForEmbeddedEncryptedVideo() = 0;
-#endif  // defined(VIDEO_HOLE)
 };
 
 }  // namespace media

@@ -319,12 +319,6 @@ void BrowserMediaPlayerManager::RequestFullScreen(int player_id) {
 }
 
 #if defined(VIDEO_HOLE)
-bool
-BrowserMediaPlayerManager::ShouldUseVideoOverlayForEmbeddedEncryptedVideo() {
-  RendererPreferences* prefs = web_contents_->GetMutableRendererPrefs();
-  return prefs->use_video_overlay_for_embedded_encrypted_video;
-}
-
 void BrowserMediaPlayerManager::AttachExternalVideoSurface(int player_id,
                                                            jobject surface) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
