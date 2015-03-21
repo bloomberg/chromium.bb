@@ -1,5 +1,5 @@
 CONSOLE ERROR: Error parsing 'integrity' attribute ('yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8='). The value must begin with 'ni:///'.
-CONSOLE ERROR: Error parsing 'integrity' attribute ('ni:///#yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8='). The specified hash algorithm must be one of 'sha256', 'sha384', or 'sha512'.
-CONSOLE ERROR: Error parsing 'integrity' attribute ('yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8='). The value must begin with 'ni:///'.
-CONSOLE ERROR: Error parsing 'integrity' attribute ('ni:///sha1;Ywd5te2RvxmuHLzLzZjYo1_0LMw='). The specified hash algorithm must be one of 'sha256', 'sha384', or 'sha512'.
+CONSOLE ERROR: Error parsing 'integrity' attribute ('ni://yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8='). The value must begin with 'ni:///'.
+CONSOLE ERROR: Error parsing 'integrity' attribute ('ni:///sha256;(yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8=)'). The digest must be a valid, base64-encoded value.
+CONSOLE ERROR: Error parsing 'integrity' attribute ('ni:///sha256:yM5ZyzNsyKfaXRY78zSGapeQKtl0oGdpPpYxgwl8XW8='). The hash algorithm must be followed by a ';' character.
 This test passes if no 'FAIL' alert appears.

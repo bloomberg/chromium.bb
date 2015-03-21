@@ -123,19 +123,19 @@ protected:
         HashAlgorithm algorithm;
         String type;
 
-        EXPECT_TRUE(SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, type, *document));
+        EXPECT_EQ(SubresourceIntegrity::IntegrityParseErrorNone, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, type, *document));
         EXPECT_EQ(expectedDigest, digest);
         EXPECT_EQ(expectedAlgorithm, algorithm);
         EXPECT_EQ(expectedType, type);
     }
 
-    void expectParseFailure(const char* integrityAttribute)
+    void expectParseFailure(const char* integrityAttribute, SubresourceIntegrity::IntegrityParseResult parseResult)
     {
         String digest;
         HashAlgorithm algorithm;
         String type;
 
-        EXPECT_FALSE(SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, type, *document));
+        EXPECT_EQ(parseResult, SubresourceIntegrity::parseIntegrityAttribute(integrityAttribute, digest, algorithm, type, *document));
     }
 
     enum CorsStatus {
@@ -225,13 +225,13 @@ TEST_F(SubresourceIntegrityTest, ParseMimeType)
 
 TEST_F(SubresourceIntegrityTest, Parsing)
 {
-    expectParseFailure("");
-    expectParseFailure("not_really_a_valid_anything");
-    expectParseFailure("foobar:///sha256;abcdefg");
-    expectParseFailure("ni://sha256;abcdefg");
-    expectParseFailure("ni:///not-sha256-at-all;abcdefg");
-    expectParseFailure("ni:///sha256;&&&foobar&&&");
-    expectParseFailure("ni:///sha256;\x01\x02\x03\x04");
+    expectParseFailure("", SubresourceIntegrity::IntegrityParseErrorFatal);
+    expectParseFailure("not_really_a_valid_anything", SubresourceIntegrity::IntegrityParseErrorFatal);
+    expectParseFailure("foobar:///sha256;abcdefg", SubresourceIntegrity::IntegrityParseErrorFatal);
+    expectParseFailure("ni://sha256;abcdefg", SubresourceIntegrity::IntegrityParseErrorFatal);
+    expectParseFailure("ni:///not-sha256-at-all;abcdefg", SubresourceIntegrity::IntegrityParseErrorNonfatal);
+    expectParseFailure("ni:///sha256;&&&foobar&&&", SubresourceIntegrity::IntegrityParseErrorFatal);
+    expectParseFailure("ni:///sha256;\x01\x02\x03\x04", SubresourceIntegrity::IntegrityParseErrorFatal);
 
     expectParse(
         "ni:///sha256;BpfBw7ivV8q2jLiT13fxDYAe2tJllusRSZ273h2nFSE=",
@@ -301,8 +301,8 @@ TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInSecureOrigin)
     // The hash label must match the hash value.
     expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL, secureURL);
 
-    // Unsupported hash functions should fail.
-    expectIntegrityFailure(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL, secureURL);
+    // Unsupported hash functions should succeed.
+    expectIntegrity(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL, secureURL);
 
     // All parameters are fine, and because this is not cross origin, CORS is
     // not needed.
@@ -319,10 +319,10 @@ TEST_F(SubresourceIntegrityTest, CheckSubresourceIntegrityInInsecureOrigin)
     expectIntegrity(kSha384Integrity, kBasicScript, secureURL, insecureURL);
     expectIntegrity(kSha512Integrity, kBasicScript, secureURL, insecureURL);
     expectIntegrityFailure(kSha384IntegrityLabeledAs256, kBasicScript, secureURL, insecureURL);
-    expectIntegrityFailure(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL, insecureURL);
+    expectIntegrity(kUnsupportedHashFunctionIntegrity, kBasicScript, secureURL, insecureURL);
 
     // This check should fail because, unlike in the
-    // CheckSubresourceIntegirtyInSecureOrigin case, this is cross origin
+    // CheckSubresourceIntegrityInSecureOrigin case, this is cross origin
     // (secure origin requesting a resource on an insecure origin)
     expectIntegrityFailure(kSha256Integrity, kBasicScript, secureURL, insecureURL, String(), NoCors);
 }

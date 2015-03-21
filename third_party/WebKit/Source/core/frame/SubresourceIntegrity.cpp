@@ -102,10 +102,13 @@ bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element, con
     HashAlgorithm algorithm;
     String type;
     String attribute = element.fastGetAttribute(HTMLNames::integrityAttr);
-    if (!parseIntegrityAttribute(attribute, integrity, algorithm, type, document)) {
+    IntegrityParseResult integrityParseResult = parseIntegrityAttribute(attribute, integrity, algorithm, type, document);
+    if (integrityParseResult != IntegrityParseErrorNone) {
         // An error is logged to the console during parsing; we don't need to log one here.
         UseCounter::count(document, UseCounter::SRIElementWithUnparsableIntegrityAttribute);
-        return false;
+        // For non-fatal errors, the integrity attribute is treated as
+        // if it weren't present.
+        return integrityParseResult == IntegrityParseErrorNonfatal;
     }
 
     if (!type.isEmpty() && !equalIgnoringCase(type, resourceType)) {
@@ -248,7 +251,7 @@ bool SubresourceIntegrity::parseMimeType(const UChar*& position, const UChar* en
     return true;
 }
 
-bool SubresourceIntegrity::parseIntegrityAttribute(const String& attribute, String& digest, HashAlgorithm& algorithm, String& type, Document& document)
+SubresourceIntegrity::IntegrityParseResult SubresourceIntegrity::parseIntegrityAttribute(const String& attribute, String& digest, HashAlgorithm& algorithm, String& type, Document& document)
 {
     Vector<UChar> characters;
     attribute.stripWhiteSpace().appendTo(characters);
@@ -257,30 +260,34 @@ bool SubresourceIntegrity::parseIntegrityAttribute(const String& attribute, Stri
 
     if (!skipToken<UChar>(position, end, "ni:///")) {
         logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The value must begin with 'ni:///'.", document);
-        return false;
+        return IntegrityParseErrorFatal;
     }
 
+    // Algorithm parsing errors are non-fatal (the subresource should
+    // still be loaded) because strong hash algorithms should be used
+    // without fear of breaking older user agents that don't support
+    // them.
     if (!parseAlgorithm(position, end, algorithm)) {
         logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The specified hash algorithm must be one of 'sha256', 'sha384', or 'sha512'.", document);
-        return false;
+        return IntegrityParseErrorNonfatal;
     }
 
     if (!skipExactly<UChar>(position, end, ';')) {
         logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The hash algorithm must be followed by a ';' character.", document);
-        return false;
+        return IntegrityParseErrorFatal;
     }
 
     if (!parseDigest(position, end, digest)) {
         logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The digest must be a valid, base64-encoded value.", document);
-        return false;
+        return IntegrityParseErrorFatal;
     }
 
     if (!parseMimeType(position, end, type)) {
         logErrorToConsole("Error parsing 'integrity' attribute ('" + attribute + "'). The content type could not be parsed.", document);
-        return false;
+        return IntegrityParseErrorFatal;
     }
 
-    return true;
+    return IntegrityParseErrorNone;
 }
 
 } // namespace blink
