@@ -29,6 +29,7 @@
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/find_in_page/find_in_page_bridge.h"
 #include "chrome/browser/android/foreign_session_helper.h"
+#include "chrome/browser/android/fullscreen/fullscreen_infobar_delegate.h"
 #include "chrome/browser/android/intent_helper.h"
 #include "chrome/browser/android/location_settings_impl.h"
 #include "chrome/browser/android/logo_bridge.h"
@@ -188,6 +189,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"FontSizePrefsAndroid", FontSizePrefsAndroid::Register},
     {"ForeignSessionHelper",
      ForeignSessionHelper::RegisterForeignSessionHelper},
+    {"FullscreenInfoBarDelegate",
+     FullscreenInfoBarDelegate::RegisterFullscreenInfoBarDelegate},
     {"GeneratedPasswordSavedInfoBarDelegate",
      RegisterGeneratedPasswordSavedInfoBarDelegate},
     {"InfoBarContainer", RegisterInfoBarContainer},

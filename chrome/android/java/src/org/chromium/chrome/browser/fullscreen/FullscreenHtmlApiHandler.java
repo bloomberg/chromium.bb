@@ -21,6 +21,8 @@ import android.view.WindowManager;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.Tab;
+import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.FullscreenInfo;
 import org.chromium.chrome.browser.widget.TextBubble;
 import org.chromium.content.browser.ContentViewCore;
 
@@ -48,6 +50,8 @@ public class FullscreenHtmlApiHandler {
 
     private static final int NOTIFICATION_BUBBLE_ALPHA = 252; // 255 * 0.99
 
+    private static final String TAG = "FullscreenHtmlApiHandler";
+
     private static boolean sFullscreenNotificationShown;
 
     private final Window mWindow;
@@ -64,6 +68,7 @@ public class FullscreenHtmlApiHandler {
 
     private TextBubble mNotificationBubble;
     private OnLayoutChangeListener mFullscreenOnLayoutChangeListener;
+    private FullscreenInfoBarDelegate mFullscreenInfoBarDelegate;
 
     /**
      * Delegate that allows embedders to react to fullscreen API requests.
@@ -266,6 +271,10 @@ public class FullscreenHtmlApiHandler {
         };
         contentView.addOnLayoutChangeListener(mFullscreenOnLayoutChangeListener);
         contentViewCore.getWebContents().exitFullscreen();
+        if (mFullscreenInfoBarDelegate != null) {
+            mFullscreenInfoBarDelegate.closeFullscreenInfoBar();
+            mFullscreenInfoBarDelegate = null;
+        }
     }
 
     /**
@@ -318,6 +327,11 @@ public class FullscreenHtmlApiHandler {
         contentView.setSystemUiVisibility(systemUiVisibility);
         mContentViewCoreInFullscreen = contentViewCore;
         mTabInFullscreen = tab;
+        FullscreenInfo fullscreenInfo = new FullscreenInfo(tab.getUrl(), null);
+        ContentSetting fullscreenPermission = fullscreenInfo.getContentSetting();
+        if (fullscreenPermission != ContentSetting.ALLOW) {
+            mFullscreenInfoBarDelegate = FullscreenInfoBarDelegate.create(this, tab);
+        }
     }
 
     /**

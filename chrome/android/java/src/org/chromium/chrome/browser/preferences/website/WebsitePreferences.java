@@ -204,6 +204,8 @@ public class WebsitePreferences extends PreferenceFragment
         } else if (mFilter.showCameraMicSites(mCategoryFilter)) {
             return website.site().getVoiceCapturePermission() == ContentSetting.BLOCK
                     || website.site().getVideoCapturePermission() == ContentSetting.BLOCK;
+        } else if (mFilter.showFullscreenSites(mCategoryFilter)) {
+            return website.site().getFullscreenPermission() == ContentSetting.ASK;
         } else if (mFilter.showGeolocationSites(mCategoryFilter)) {
             return website.site().getGeolocationPermission() == ContentSetting.BLOCK;
         } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
@@ -348,6 +350,8 @@ public class WebsitePreferences extends PreferenceFragment
                 updateThirdPartyCookiesCheckBox();
             } else if (mFilter.showCameraMicSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setCameraMicEnabled((boolean) newValue);
+            } else if (mFilter.showFullscreenSites(mCategoryFilter)) {
+                PrefServiceBridge.getInstance().setFullscreenAllowed((boolean) newValue);
             } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
                 PrefServiceBridge.getInstance().setJavaScriptEnabled((boolean) newValue);
                 if ((boolean) newValue) {
@@ -404,11 +408,12 @@ public class WebsitePreferences extends PreferenceFragment
      */
     private boolean isCategoryManaged() {
         PrefServiceBridge prefs = PrefServiceBridge.getInstance();
+        if (mFilter.showCameraMicSites(mCategoryFilter)) return !prefs.isCameraMicUserModifiable();
         if (mFilter.showCookiesSites(mCategoryFilter)) return prefs.isAcceptCookiesManaged();
+        if (mFilter.showFullscreenSites(mCategoryFilter)) return prefs.isFullscreenManaged();
         if (mFilter.showGeolocationSites(mCategoryFilter)) {
             return !prefs.isAllowLocationUserModifiable();
         }
-        if (mFilter.showCameraMicSites(mCategoryFilter)) return !prefs.isCameraMicUserModifiable();
         if (mFilter.showJavaScriptSites(mCategoryFilter)) return prefs.javaScriptManaged();
         if (mFilter.showPopupSites(mCategoryFilter)) return prefs.isPopupsManaged();
         return false;
@@ -521,6 +526,12 @@ public class WebsitePreferences extends PreferenceFragment
                             LocationSettings.getInstance().isChromeLocationSettingEnabled());
                 } else if (mFilter.showCameraMicSites(mCategoryFilter)) {
                     globalToggle.setChecked(PrefServiceBridge.getInstance().isCameraMicEnabled());
+                } else if (mFilter.showCookiesSites(mCategoryFilter)) {
+                    globalToggle.setChecked(
+                            PrefServiceBridge.getInstance().isAcceptCookiesEnabled());
+                } else if (mFilter.showFullscreenSites(mCategoryFilter)) {
+                    globalToggle.setChecked(
+                            PrefServiceBridge.getInstance().isFullscreenAllowed());
                 } else if (mFilter.showJavaScriptSites(mCategoryFilter)) {
                     globalToggle.setChecked(PrefServiceBridge.getInstance().javaScriptEnabled());
                 } else if (mFilter.showPopupSites(mCategoryFilter)) {
@@ -528,9 +539,6 @@ public class WebsitePreferences extends PreferenceFragment
                 } else if (mFilter.showPushNotificationsSites(mCategoryFilter)) {
                     globalToggle.setChecked(
                             PrefServiceBridge.getInstance().isPushNotificationsEnabled());
-                } else if (mFilter.showCookiesSites(mCategoryFilter)) {
-                    globalToggle.setChecked(
-                            PrefServiceBridge.getInstance().isAcceptCookiesEnabled());
                 }
             }
         }

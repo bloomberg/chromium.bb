@@ -51,4 +51,8 @@
         android:key="use_storage"
         android:title="@string/website_settings_storage"
         android:icon="@drawable/settings_storage" />
+    <!-- Fullscreen -->
+    <Preference
+        android:fragment="org.chromium.chrome.browser.preferences.website.WebsitePreferences"
+        android:key="fullscreen" />
 </PreferenceScreen>

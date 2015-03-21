@@ -361,6 +361,15 @@ public class PrefServiceBridge {
     }
 
     /**
+     * Allow fullscreen without asking user for permission.
+     *
+     * @param allowed Whether to allow fullscreen without user permission.
+     */
+    public void setFullscreenAllowed(boolean allowed) {
+        nativeSetFullscreenAllowed(allowed);
+    }
+
+    /**
      * @return whether Search Suggest is enabled.
      */
     public boolean isSearchSuggestEnabled() {
@@ -479,6 +488,20 @@ public class PrefServiceBridge {
      */
     public boolean canPredictNetworkActions() {
         return nativeCanPredictNetworkActions();
+    }
+
+    /**
+     * @return whether fullscreen is configured by policy.
+     */
+    public boolean isFullscreenManaged() {
+        return nativeGetFullscreenManaged();
+    }
+
+    /**
+     * @return whether fullscreen is allowed.
+     */
+    public boolean isFullscreenAllowed() {
+        return nativeGetFullscreenAllowed();
     }
 
     /**
@@ -845,6 +868,8 @@ public class PrefServiceBridge {
     private native boolean nativeGetJavaScriptManaged();
     private native boolean nativeGetCameraMicUserModifiable();
     private native boolean nativeGetCameraMicManagedByCustodian();
+    private native boolean nativeGetFullscreenAllowed();
+    private native boolean nativeGetFullscreenManaged();
     private native boolean nativeGetTranslateEnabled();
     private native boolean nativeGetTranslateManaged();
     private native boolean nativeGetResolveNavigationErrorEnabled();
@@ -869,6 +894,7 @@ public class PrefServiceBridge {
     private native void nativeSetAllowCookiesEnabled(boolean allow);
     private native void nativeSetBlockThirdPartyCookiesEnabled(boolean enabled);
     private native void nativeSetDoNotTrackEnabled(boolean enabled);
+    private native void nativeSetFullscreenAllowed(boolean allowed);
     private native void nativeSetRememberPasswordsEnabled(boolean allow);
     private native void nativeSetPasswordManagerAutoSigninEnabled(boolean enabled);
     private native void nativeSetProtectedMediaIdentifierEnabled(boolean enabled);

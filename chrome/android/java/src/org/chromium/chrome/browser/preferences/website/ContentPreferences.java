@@ -26,6 +26,7 @@ public class ContentPreferences extends PreferenceFragment
     // The keys for each category shown on the Site Settings page.
     static final String ALL_SITES_KEY = "website_settings";
     static final String COOKIES_KEY = "cookies";
+    static final String FULLSCREEN_KEY = "fullscreen";
     static final String LOCATION_KEY = "device_location";
     static final String CAMERA_AND_MIC_KEY = "use_camera_or_mic";
     static final String JAVASCRIPT_KEY = "javascript";
@@ -52,6 +53,8 @@ public class ContentPreferences extends PreferenceFragment
     private int keyToContentSettingsType(String key) {
         if (COOKIES_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES;
+        } else if (FULLSCREEN_KEY.equals(key)) {
+            return ContentSettingsType.CONTENT_SETTINGS_TYPE_FULLSCREEN;
         } else if (LOCATION_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION;
         } else if (CAMERA_AND_MIC_KEY.equals(key)) {
@@ -85,6 +88,7 @@ public class ContentPreferences extends PreferenceFragment
         }
         websitePrefs.add(COOKIES_KEY);
         websitePrefs.add(CAMERA_AND_MIC_KEY);
+        websitePrefs.add(FULLSCREEN_KEY);
         websitePrefs.add(JAVASCRIPT_KEY);
         websitePrefs.add(PUSH_NOTIFICATIONS_KEY);
         websitePrefs.add(POPUPS_KEY);
@@ -110,6 +114,8 @@ public class ContentPreferences extends PreferenceFragment
                 checked = PrefServiceBridge.getInstance().isPushNotificationsEnabled();
             } else if (POPUPS_KEY.equals(prefName)) {
                 checked = PrefServiceBridge.getInstance().popupsEnabled();
+            } else if (FULLSCREEN_KEY.equals(prefName)) {
+                checked = PrefServiceBridge.getInstance().isFullscreenAllowed();
             }
             p.setTitle(entry.titleResourceId);
             if (COOKIES_KEY.equals(prefName) && checked

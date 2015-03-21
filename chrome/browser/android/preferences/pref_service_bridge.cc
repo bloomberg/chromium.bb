@@ -322,6 +322,17 @@ static jboolean HasSetMetricsReporting(JNIEnv* env, jobject obj) {
   return local_state->HasPrefPath(prefs::kMetricsReportingEnabled);
 }
 
+static jboolean GetFullscreenManaged(JNIEnv* env, jobject obj) {
+  return IsContentSettingManaged(CONTENT_SETTINGS_TYPE_FULLSCREEN);
+}
+
+static jboolean GetFullscreenAllowed(JNIEnv* env, jobject obj) {
+  HostContentSettingsMap* content_settings =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  return content_settings->GetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_FULLSCREEN, NULL) == CONTENT_SETTING_ALLOW;
+}
+
 namespace {
 
 // Redirects a BrowsingDataRemover completion callback back into Java.
@@ -436,6 +447,14 @@ static void SetCameraMicEnabled(JNIEnv* env, jobject obj, jboolean allow) {
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_MEDIASTREAM,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static void SetFullscreenAllowed(JNIEnv* env, jobject obj, jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_FULLSCREEN,
+      allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_ASK);
 }
 
 static void SetPushNotificationsEnabled(JNIEnv* env,

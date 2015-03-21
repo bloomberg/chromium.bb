@@ -111,6 +111,9 @@ static void GetOrigins(JNIEnv* env,
         Java_WebsitePreferenceBridge_insertPushNotificationIntoList(
             env, list, jorigin.obj(), jembedder.obj());
         break;
+      case CONTENT_SETTINGS_TYPE_FULLSCREEN:
+        Java_WebsitePreferenceBridge_insertFullscreenInfoIntoList(
+            env, list, jorigin.obj(), jembedder.obj());
       default:
         DCHECK(false);
         break;
@@ -145,6 +148,7 @@ static void SetSettingForOrigin(JNIEnv* env,
     case 1: setting = CONTENT_SETTING_ALLOW; break;
     case 2: setting = CONTENT_SETTING_BLOCK; break;
     default:
+      // Note: CONTENT_SETTINGS_ASK is not and should not be supported.
       NOTREACHED();
   }
   GetHostContentSettingsMap()->SetContentSetting(
@@ -154,6 +158,26 @@ static void SetSettingForOrigin(JNIEnv* env,
       std::string(),
       setting);
   WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
+}
+
+static void GetFullscreenOrigins(JNIEnv* env,
+                                 jclass clazz,
+                                 jobject list,
+                                 jboolean managedOnly) {
+  GetOrigins(env, CONTENT_SETTINGS_TYPE_FULLSCREEN, list, managedOnly);
+}
+
+static jint GetFullscreenSettingForOrigin(JNIEnv* env, jclass clazz,
+    jstring origin, jstring embedder) {
+  return GetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_FULLSCREEN,
+                             origin, embedder);
+}
+
+static void SetFullscreenSettingForOrigin(JNIEnv* env, jclass clazz,
+    jstring origin, jstring embedder, jint value) {
+  GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
+  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_FULLSCREEN,
+      origin, ContentSettingsPattern::FromURLNoWildcard(embedder_url), value);
 }
 
 static void GetGeolocationOrigins(JNIEnv* env,

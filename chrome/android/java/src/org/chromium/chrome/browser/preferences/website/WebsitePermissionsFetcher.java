@@ -59,6 +59,8 @@ public class WebsitePermissionsFetcher {
         queue.add(new MidiInfoFetcher());
         // Cookies are stored per-origin.
         queue.add(new CookieInfoFetcher());
+        // Fullscreen are stored per-origin.
+        queue.add(new FullscreenInfoFetcher());
         // Local storage info is per-origin.
         queue.add(new LocalStorageInfoFetcher());
         // Website storage is per-host.
@@ -103,6 +105,9 @@ public class WebsitePermissionsFetcher {
         } else if (filterHelper.showStorageSites(filter)) {
             // Local storage info is per-origin.
             queue.add(new LocalStorageInfoFetcher());
+        } else if (filterHelper.showFullscreenSites(filter)) {
+            // Local storage info is per-origin.
+            queue.add(new FullscreenInfoFetcher());
         } else if (filterHelper.showCameraMicSites(filter)) {
             // Voice and Video capture permission is per-origin and per-embedder.
             queue.add(new VoiceAndVideoCaptureInfoFetcher());
@@ -235,6 +240,21 @@ public class WebsitePermissionsFetcher {
                 WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
                 if (address == null) continue;
                 createSiteByOriginAndHost(address).setCookieInfo(info);
+            }
+            queue.next();
+        }
+    }
+
+    /**
+     * Class for fetching the fullscreen information.
+     */
+    private class FullscreenInfoFetcher implements Task {
+        @Override
+        public void run(TaskQueue queue) {
+            for (FullscreenInfo info : WebsitePreferenceBridge.getFullscreenInfo()) {
+                WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
+                if (address == null) continue;
+                createSiteByOriginAndHost(address).setFullscreenInfo(info);
             }
             queue.next();
         }

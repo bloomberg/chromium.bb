@@ -13591,6 +13591,19 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
       </if>
 
+      <!-- Fullscreen infobar -->
+      <if expr="is_android">
+        <message name="IDS_FULLSCREEN_INFOBAR_TEXT" desc="Text to display on the fullscreen infobar when a page enters fullscreen.">
+          <ph name="ORIGIN">$1<ex>https://www.youtube.com</ex></ph> is now fullscreen.
+        </message>
+        <message name="IDS_FULLSCREEN_INFOBAR_EXIT_FULLSCREEN_BUTTON" desc="Label for choosing 'Exit fullscreen' on fullscreen infobar.[CHAR-LIMIT=32]">
+          Exit fullscreen
+        </message>
+        <message name="IDS_FULLSCREEN_INFOBAR_ALLOW_BUTTON" desc="Label for choosing 'Allow' on fullscreen infobar. [CHAR-LIMIT=32]">
+          Allow
+        </message>
+      </if>
+
       <message name="IDS_SAVE_PASSWORD" desc="The title of the save password bubble when a password can be saved.">
         Do you want Google Chrome to save your password for this site?
       </message>

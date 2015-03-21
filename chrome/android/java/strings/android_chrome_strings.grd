@@ -602,6 +602,14 @@ To obtain new licenses, connect to the internet and play your downloaded content
         <ph name="STORAGE_AMOUNT">%1$s<ex>2 MB</ex></ph> stored data
       </message>
 
+      <!-- Fullscreen preferences -->
+      <message name="IDS_WEBSITE_SETTINGS_FULLSCREEN" desc="Title for Fullscreen settings, which control which websites can enter fullscreen without popup alert.">
+        Fullscreen
+      </message>
+      <message name="IDS_FULLSCREEN_PERMISSION_TITLE" desc="Title for the permission of entering fullscreen without popup alert [CHAR-LIMIT=32]">
+        Fullscreen
+      </message>
+
       <!-- Data Saver -->
       <message name="IDS_REDUCE_DATA_USAGE_TITLE" desc="Menu item for reducing data usage.">
         Data Saver

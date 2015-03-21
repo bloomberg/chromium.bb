@@ -404,6 +404,13 @@
         <structure type="chrome_scaled_image" name="IDR_INFOBAR_CRYPTOTOKEN" file="common/infobar_cryptotoken.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_DESKTOP_NOTIFICATIONS" file="common/infobar_desktop_notifications.png" />
+      <if expr="is_android">
+        <!-- The actual image here is not used; this line only exists to
+             reserve a valid ID, so the Android code can map it to the
+             appropriate Android resource.  So we just refer to a random
+             image. -->
+        <structure type="chrome_scaled_image" name="IDR_INFOBAR_FULLSCREEN" file="chromium/product_logo_32.png" />
+      </if>
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_GEOLOCATION" file="common/infobar_geolocation.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MEDIA_STREAM_CAMERA" file="common/infobar_media_stream_camera.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_MEDIA_STREAM_MIC" file="common/infobar_media_stream_mic.png" />

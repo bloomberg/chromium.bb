@@ -212,6 +212,14 @@ public class Website implements Serializable {
                     entry.defaultEnabledValue = ContentSetting.ASK;
                     entry.defaultDisabledValue = ContentSetting.BLOCK;
                     return entry;
+                case ContentSettingsType.CONTENT_SETTINGS_TYPE_FULLSCREEN:
+                    entry = new PermissionDataEntry();
+                    entry.iconResourceId = R.drawable.permission_fullscreen;
+                    entry.titleResourceId = R.string.website_settings_fullscreen;
+                    entry.explanationResourceId = R.string.fullscreen_permission_title;
+                    entry.defaultEnabledValue = ContentSetting.ALLOW;
+                    entry.defaultDisabledValue = ContentSetting.ASK;
+                    return entry;
                 default:
                     return null;
             }
@@ -232,6 +240,7 @@ public class Website implements Serializable {
     private LocalStorageInfo mLocalStorageInfo;
     private final List<StorageInfo> mStorageInfo = new ArrayList<StorageInfo>();
     private int mStorageInfoCallbacksLeft;
+    private FullscreenInfo mFullscreenInfo;
 
     public Website(WebsiteAddress address) {
         mAddress = address;
@@ -602,5 +611,43 @@ public class Website implements Serializable {
             usage += info.getSize();
         }
         return usage;
+    }
+
+    /**
+     * Set fullscreen permission information class.
+     *
+     * @param info Fullscreen information about the website.
+     */
+    public void setFullscreenInfo(FullscreenInfo info) {
+        mFullscreenInfo = info;
+        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
+        if (embedder != null) {
+            mSummary = embedder.getTitle();
+        }
+    }
+
+    /**
+     * @return fullscreen information of the site.
+     */
+    public FullscreenInfo getFullscreenInfo() {
+        return mFullscreenInfo;
+    }
+
+    /**
+     * @return what permission governs fullscreen access.
+     */
+    public ContentSetting getFullscreenPermission() {
+        return mFullscreenInfo != null ? mFullscreenInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Configure fullscreen setting for this site.
+     *
+     * @param value Content setting for fullscreen permission.
+     */
+    public void setFullscreenPermission(ContentSetting value) {
+        if (mFullscreenInfo != null) {
+            mFullscreenInfo.setContentSetting(value);
+        }
     }
 }

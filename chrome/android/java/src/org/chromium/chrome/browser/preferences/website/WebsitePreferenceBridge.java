@@ -203,6 +203,25 @@ public abstract class WebsitePreferenceBridge {
         nativeFetchStorageInfo(callback);
     }
 
+    /**
+     * Get a list of stored fullscreen information.
+     */
+    public static List<FullscreenInfo> getFullscreenInfo() {
+        boolean managedOnly = PrefServiceBridge.getInstance().isFullscreenManaged();
+        ArrayList<FullscreenInfo> list = new ArrayList<FullscreenInfo>();
+        nativeGetFullscreenOrigins(list, managedOnly);
+        return list;
+    }
+
+    /**
+     * Inserts fullscreen information into a list.
+     */
+    @CalledByNative
+    private static void insertFullscreenInfoIntoList(
+            ArrayList<FullscreenInfo> list, String origin, String embedder) {
+        list.add(new FullscreenInfo(origin, embedder));
+    }
+
     private static native void nativeGetGeolocationOrigins(Object list, boolean managedOnly);
     static native int nativeGetGeolocationSettingForOrigin(String origin, String embedder);
     static native void nativeSetGeolocationSettingForOrigin(String origin, String embedder,
@@ -237,4 +256,8 @@ public abstract class WebsitePreferenceBridge {
     private static native void nativeFetchLocalStorageInfo(Object callback);
     private static native void nativeFetchStorageInfo(Object callback);
     static native boolean nativeIsContentSettingsPatternValid(String pattern);
+    private static native void nativeGetFullscreenOrigins(Object list, boolean managedOnly);
+    static native int nativeGetFullscreenSettingForOrigin(String origin, String embedder);
+    static native void nativeSetFullscreenSettingForOrigin(String origin, String embedder,
+            int value);
 }
