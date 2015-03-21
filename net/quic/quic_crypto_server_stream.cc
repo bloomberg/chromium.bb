@@ -26,7 +26,7 @@ void ServerHelloNotifier::OnAckNotification(
 }
 
 QuicCryptoServerStream::QuicCryptoServerStream(
-    const QuicCryptoServerConfig& crypto_config,
+    const QuicCryptoServerConfig* crypto_config,
     QuicSession* session)
     : QuicCryptoStream(session),
       crypto_config_(crypto_config),
@@ -72,7 +72,7 @@ void QuicCryptoServerStream::OnHandshakeMessage(
   }
 
   validate_client_hello_cb_ = new ValidateCallback(this);
-  return crypto_config_.ValidateClientHello(
+  return crypto_config_->ValidateClientHello(
       message,
       session()->connection()->peer_address(),
       session()->connection()->clock(),
@@ -153,7 +153,7 @@ void QuicCryptoServerStream::SendServerConfigUpdate(
   }
 
   CryptoHandshakeMessage server_config_update_message;
-  if (!crypto_config_.BuildServerConfigUpdateMessage(
+  if (!crypto_config_->BuildServerConfigUpdateMessage(
           previous_source_address_tokens_,
           session()->connection()->self_address(),
           session()->connection()->peer_address(),
@@ -225,7 +225,7 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
   }
   previous_source_address_tokens_ = result.info.source_address_tokens;
 
-  return crypto_config_.ProcessClientHello(
+  return crypto_config_->ProcessClientHello(
       result, session()->connection()->connection_id(),
       session()->connection()->self_address(),
       session()->connection()->peer_address(),

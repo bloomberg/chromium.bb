@@ -60,7 +60,7 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
         session_(connection_, DefaultQuicConfig()),
         crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance()),
-        stream_(crypto_config_, &session_),
+        stream_(&crypto_config_, &session_),
         strike_register_client_(nullptr) {
     session_.SetCryptoStream(&stream_);
     // We advance the clock initially because the default time is zero and the
@@ -158,7 +158,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
 
   scoped_ptr<TestSession> server_session(new TestSession(server_conn, config_));
   scoped_ptr<QuicCryptoServerStream> server(
-      new QuicCryptoServerStream(crypto_config_, server_session.get()));
+      new QuicCryptoServerStream(&crypto_config_, server_session.get()));
   server_session->SetCryptoStream(server.get());
 
   CryptoTestUtils::CommunicateHandshakeMessages(
@@ -184,7 +184,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
                                           nullptr, &client_crypto_config));
   client_session->SetCryptoStream(client.get());
 
-  server.reset(new QuicCryptoServerStream(crypto_config_,
+  server.reset(new QuicCryptoServerStream(&crypto_config_,
                                           server_session.get()));
   server_session->SetCryptoStream(server.get());
 

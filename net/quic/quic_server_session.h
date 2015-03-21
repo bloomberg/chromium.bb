@@ -65,7 +65,7 @@ class QuicServerSession : public QuicSession {
 
   ~QuicServerSession() override;
 
-  virtual void InitializeSession(const QuicCryptoServerConfig& crypto_config);
+  virtual void InitializeSession(const QuicCryptoServerConfig* crypto_config);
 
   const QuicCryptoServerStream* crypto_stream() const {
     return crypto_stream_.get();
@@ -90,7 +90,7 @@ class QuicServerSession : public QuicSession {
   virtual bool ShouldCreateIncomingDataStream(QuicStreamId id);
 
   virtual QuicCryptoServerStream* CreateQuicCryptoServerStream(
-      const QuicCryptoServerConfig& crypto_config);
+      const QuicCryptoServerConfig* crypto_config);
 
  private:
   friend class test::QuicServerSessionPeer;

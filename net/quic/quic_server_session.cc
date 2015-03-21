@@ -25,13 +25,13 @@ QuicServerSession::QuicServerSession(const QuicConfig& config,
 QuicServerSession::~QuicServerSession() {}
 
 void QuicServerSession::InitializeSession(
-    const QuicCryptoServerConfig& crypto_config) {
+    const QuicCryptoServerConfig* crypto_config) {
   QuicSession::InitializeSession();
   crypto_stream_.reset(CreateQuicCryptoServerStream(crypto_config));
 }
 
 QuicCryptoServerStream* QuicServerSession::CreateQuicCryptoServerStream(
-    const QuicCryptoServerConfig& crypto_config) {
+    const QuicCryptoServerConfig* crypto_config) {
   return new QuicCryptoServerStream(crypto_config, this);
 }
 

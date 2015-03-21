@@ -195,7 +195,7 @@ int CryptoTestUtils::HandshakeWithFakeServer(
       server_session.connection()->random_generator(),
       server_session.config(), &crypto_config);
 
-  QuicCryptoServerStream server(crypto_config, &server_session);
+  QuicCryptoServerStream server(&crypto_config, &server_session);
   server_session.SetCryptoStream(&server);
 
   // The client's handshake must have been started already.

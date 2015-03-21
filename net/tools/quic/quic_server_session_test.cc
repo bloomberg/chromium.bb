@@ -79,7 +79,7 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
     handshake_message_.reset(crypto_config_.AddDefaultConfig(
         QuicRandom::GetInstance(), &clock,
         QuicCryptoServerConfig::ConfigOptions()));
-    session_->InitializeSession(crypto_config_);
+    session_->InitializeSession(&crypto_config_);
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
   }
 
@@ -281,7 +281,7 @@ TEST_P(QuicServerSessionTest, SetFecProtectionFromConfig) {
 class MockQuicCryptoServerStream : public QuicCryptoServerStream {
  public:
   explicit MockQuicCryptoServerStream(
-      const QuicCryptoServerConfig& crypto_config, QuicSession* session)
+      const QuicCryptoServerConfig* crypto_config, QuicSession* session)
       : QuicCryptoServerStream(crypto_config, session) {}
   ~MockQuicCryptoServerStream() override {}
 
@@ -304,7 +304,7 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
   session_->set_serving_region(serving_region);
 
   MockQuicCryptoServerStream* crypto_stream =
-      new MockQuicCryptoServerStream(crypto_config_, session_.get());
+      new MockQuicCryptoServerStream(&crypto_config_, session_.get());
   QuicServerSessionPeer::SetCryptoStream(session_.get(), crypto_stream);
 
   // Set some initial bandwidth values.
