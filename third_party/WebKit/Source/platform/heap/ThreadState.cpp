@@ -1106,7 +1106,7 @@ void ThreadState::invokePreFinalizers(Visitor& visitor)
 
 void ThreadState::clearHeapAges()
 {
-    memset(m_heapAges, 0, sizeof(int) * NumberOfHeaps);
+    memset(m_heapAges, 0, sizeof(size_t) * NumberOfHeaps);
     memset(m_likelyToBePromptlyFreed.get(), 0, sizeof(int) * likelyToBePromptlyFreedArraySize);
     m_currentHeapAges = 0;
 }
