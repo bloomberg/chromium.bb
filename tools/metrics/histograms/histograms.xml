@@ -53271,6 +53271,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1150622273" label="enable-apps-file-associations"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
   <int value="1181056275" label="enable-cloud-backup"/>
+  <int value="1185424279" label="enable-media-router"/>
   <int value="1196644408" label="performance-monitor-gathering"/>
   <int value="1196834473" label="disable-smart-virtual-keyboard"/>
   <int value="1205849612" label="enable-sync-synced-notifications"/>

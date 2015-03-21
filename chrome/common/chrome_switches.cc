@@ -466,6 +466,9 @@ const char kEnableLinkableEphemeralApps[]   = "enable-linkable-ephemeral-apps";
 // Enables the material design Settings feature.
 const char kEnableMaterialDesignSettings[]  = "enable-md-settings";
 
+// Enables Media Router.
+const char kEnableMediaRouter[]             = "enable-media-router";
+
 // Runs the Native Client inside the renderer process and enables GPU plugin
 // (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";
@@ -1320,6 +1323,16 @@ bool AboutInSettingsEnabled() {
              ::switches::kDisableAboutInSettings);
 }
 
+bool MdSettingsEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableMaterialDesignSettings);
+}
+
+bool MediaRouterEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableMediaRouter);
+}
+
 // Will return true as a default value if the "disable-new-offline-error-page"
 // command-line switch is not available.
 bool NewOfflineErrorPageEnabled() {
@@ -1348,12 +1361,6 @@ bool PdfMaterialUIEnabled() {
 
   // Default.
   return false;
-}
-
-
-bool MdSettingsEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kEnableMaterialDesignSettings);
 }
 
 bool SettingsWindowEnabled() {

@@ -5773,6 +5773,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           XPS enables advanced options for classic printers connected to the Cloud Print with Chrome. Printers must be re-connected after changing this flag.
         </message>
       </if>
+      <message name="IDS_FLAGS_ENABLE_MEDIA_ROUTER_NAME" desc="Title of the flag to enable media router.">
+        Enable Media Router
+      </message>
+      <message name="IDS_FLAGS_ENABLE_MEDIA_ROUTER_DESCRIPTION" desc="Description of the flag to enable media router.">
+        Enables Chrome to access external presentation-type displays and use them for presenting web content.
+      </message>
       <message name="IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_NAME">
         Enable Print Preview Registration Promos
       </message>

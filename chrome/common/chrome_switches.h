@@ -136,6 +136,7 @@ extern const char kEnableFastUnload[];
 extern const char kEnableIPv6[];
 extern const char kEnableLinkableEphemeralApps[];
 extern const char kEnableMaterialDesignSettings[];
+extern const char kEnableMediaRouter[];
 extern const char kEnableNaCl[];
 extern const char kEnableNetBenchmarking[];
 extern const char kEnableNewBookmarkApps[];
@@ -396,6 +397,7 @@ extern const char kFileManagerExtensionPath[];
 
 bool AboutInSettingsEnabled();
 bool MdSettingsEnabled();
+bool MediaRouterEnabled();
 bool NewOfflineErrorPageEnabled();
 bool OutOfProcessPdfEnabled();
 bool PdfMaterialUIEnabled();

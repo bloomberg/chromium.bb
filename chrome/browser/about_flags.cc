@@ -2254,6 +2254,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableFirewallHolePunching)
   },
 #endif  // defined(OS_CHROMEOS)
+  {
+    "enable-media-router",
+    IDS_FLAGS_ENABLE_MEDIA_ROUTER_NAME,
+    IDS_FLAGS_ENABLE_MEDIA_ROUTER_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableMediaRouter)
+  }
 
   // NOTE: Adding new command-line switches requires adding corresponding
   // entries to enum "LoginCustomFlags" in histograms.xml. See note in
