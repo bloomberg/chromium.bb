@@ -27,7 +27,8 @@ This directory contains the source code of ICU 54.1 for C/C++.
 2. Apply the following patch for platform.h for NaCl.
 
  - patches/platform_nacl.patch to add U_PF_NATIVE_CLIENT
-   upstream bug : http://bugs.icu-project.org/trac/ticket/11033
+ - upstream bug (fixed in the upstream 55 RC)
+   http://bugs.icu-project.org/trac/ticket/11033
 
 
 3. Breakiterator patches
@@ -83,10 +84,6 @@ This directory contains the source code of ICU 54.1 for C/C++.
     They're generated with scripts :
       scripts/{eucjp,sjis,big5,single_byte}_gen.sh
 
-  - Add euc-kr-html.ucm along with scripts/euckr_gen.sh, but it's not
-    yet used pending the resolution of http://crbug.com/450312 and the
-    corresponding w3c encoding bug.
-
   - uconv.patch
     a. ISO-2022-JP-[1-4] is dropped.
     b. SCSU, BOCU, ISCII, UTF-7, LMB, ibm42*, ISO-2022-{KR,CN*} and HZ-GB  :
@@ -96,6 +93,9 @@ This directory contains the source code of ICU 54.1 for C/C++.
   - Upstream bugs
     http://www.icu-project.org/trac/ticket/11296 (uconv.patch)
     http://www.icu-project.org/trac/ticket/10303 (html5 encoding tables)
+
+    uconv.patch was landed in the upstream and is in 55 RC with the build
+    config changed to UCONFIG_ONLY_HTML_CONVERSION.
 
 
 5. Locale changes
@@ -168,11 +168,15 @@ This directory contains the source code of ICU 54.1 for C/C++.
      c. Fix 'signed vs unsigned comparison' warning in
         collationfastlatin.cpp. The upstream ToT does not have these lines
         any more.
-     d. Add static_cast to avoid a possible data truncatiion warning 
-        upstream bug: http://bugs.icu-project.org/trac/ticket/11104
+     d. Add static_cast to avoid a possible data truncatiion warning
+        upstream bug (fixed in the upstream 55 RC)
+        http://bugs.icu-project.org/trac/ticket/11104
 
   - patches/data.build.patch :
       Remove unnecessary resources : unames, collator rule source
+  - patches/pkg_gen.patch :
+    upstream bug (fixed in the upstream RC 55)
+      http://bugs.icu-project.org/trac/ticket/10572
   - patches/data.build.win.patch :
       Windows-only data build patch.
   - patches/data_symb.patch :
@@ -237,15 +241,24 @@ This directory contains the source code of ICU 54.1 for C/C++.
 
 10. Apply the following patches for regex
    - patches/regex.patch (a combined patch of 3 revisions below)
-   - upstream bugs (fixed in the upstream ToT) :
+   - upstream bugs (fixed in the upstream 55 RC)
      http://bugs.icu-project.org/trac/ticket/11370 (r36723:36724)
      http://bugs.icu-project.org/trac/ticket/11369 (r36726:36727)
      http://bugs.icu-project.org/trac/ticket/11371 (r36800:36801)
 
-11. Fix a bug in locid (getBaseName is wrong).
+11. Fix bugs in locid (getBaseName / thread safety).
    - patches/locid.patch
-   - upstream bug: http://bugs.icu-project.org/trac/ticket/11421
+   - upstream bugs (fixed in the upstream 55 RC)
+     http://bugs.icu-project.org/trac/ticket/11421
+     http://bugs.icu-project.org/trac/ticket/11547
 
-12. Fix a bug in BiDi
+12. Fix bugs in BiDi
    - patches/bidi.patch
-   - upstream bug: http://bugs.icu-project.org/trac/ticket/11177
+   - upstream bugs (fixed in the upstream 55 RC)
+     http://bugs.icu-project.org/trac/ticket/11177
+     http://bugs.icu-project.org/trac/ticket/11451
+
+13. Fix a data race in cmemory
+   - patches/cmemory.patch
+   - upstream bug (fixed in the upstream 55 RC)
+     http://www.icu-project.org/trac/ticket/11538
