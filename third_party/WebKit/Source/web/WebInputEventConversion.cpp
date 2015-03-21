@@ -488,13 +488,14 @@ static void updateWebMouseEventFromCoreMouseEvent(const MouseRelatedEvent& event
     webEvent.modifiers = getWebInputModifiers(event);
 
     FrameView* view = widget ? toFrameView(widget->parent()) : 0;
-    IntPoint windowPoint = IntPoint(event.absoluteLocation().x(), event.absoluteLocation().y());
+    // FIXME: If view == nullptr, pointInRootFrame will really be pointInRootContent.
+    IntPoint pointInRootFrame = IntPoint(event.absoluteLocation().x(), event.absoluteLocation().y());
     if (view)
-        windowPoint = view->contentsToWindow(windowPoint);
+        pointInRootFrame = view->contentsToRootFrame(pointInRootFrame);
     webEvent.globalX = event.screenX();
     webEvent.globalY = event.screenY();
-    webEvent.windowX = windowPoint.x();
-    webEvent.windowY = windowPoint.y();
+    webEvent.windowX = pointInRootFrame.x();
+    webEvent.windowY = pointInRootFrame.y();
     IntPoint localPoint = convertAbsoluteLocationForLayoutObject(event.absoluteLocation(), layoutObject);
     webEvent.x = localPoint.x();
     webEvent.y = localPoint.y();
@@ -578,14 +579,15 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget, const LayoutObj
 
     // The mouse event co-ordinates should be generated from the co-ordinates of the touch point.
     FrameView* view =  toFrameView(widget->parent());
-    IntPoint windowPoint = roundedIntPoint(touch->absoluteLocation());
+    // FIXME: if view == nullptr, pointInRootFrame will really be pointInRootContent.
+    IntPoint pointInRootFrame = roundedIntPoint(touch->absoluteLocation());
     if (view)
-        windowPoint = view->contentsToWindow(windowPoint);
+        pointInRootFrame = view->contentsToRootFrame(pointInRootFrame);
     IntPoint screenPoint = roundedIntPoint(touch->screenLocation());
     globalX = screenPoint.x();
     globalY = screenPoint.y();
-    windowX = windowPoint.x();
-    windowY = windowPoint.y();
+    windowX = pointInRootFrame.x();
+    windowY = pointInRootFrame.y();
 
     button = WebMouseEvent::ButtonLeft;
     modifiers |= WebInputEvent::LeftButtonDown;

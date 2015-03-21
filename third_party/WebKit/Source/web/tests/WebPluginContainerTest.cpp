@@ -117,19 +117,19 @@ TEST_F(WebPluginContainerTest, WindowToLocalPointTest)
 
     WebPluginContainer* pluginContainerOne = getWebPluginContainer(webView, WebString::fromUTF8("translated-plugin"));
     ASSERT(pluginContainerOne);
-    WebPoint point1 = pluginContainerOne->windowToLocalPoint(WebPoint(10, 10));
+    WebPoint point1 = pluginContainerOne->rootFrameToLocalPoint(WebPoint(10, 10));
     ASSERT_EQ(0, point1.x);
     ASSERT_EQ(0, point1.y);
-    WebPoint point2 = pluginContainerOne->windowToLocalPoint(WebPoint(100, 100));
+    WebPoint point2 = pluginContainerOne->rootFrameToLocalPoint(WebPoint(100, 100));
     ASSERT_EQ(90, point2.x);
     ASSERT_EQ(90, point2.y);
 
     WebPluginContainer* pluginContainerTwo = getWebPluginContainer(webView, WebString::fromUTF8("rotated-plugin"));
     ASSERT(pluginContainerTwo);
-    WebPoint point3 = pluginContainerTwo->windowToLocalPoint(WebPoint(0, 10));
+    WebPoint point3 = pluginContainerTwo->rootFrameToLocalPoint(WebPoint(0, 10));
     ASSERT_EQ(10, point3.x);
     ASSERT_EQ(0, point3.y);
-    WebPoint point4 = pluginContainerTwo->windowToLocalPoint(WebPoint(-10, 10));
+    WebPoint point4 = pluginContainerTwo->rootFrameToLocalPoint(WebPoint(-10, 10));
     ASSERT_EQ(10, point4.x);
     ASSERT_EQ(10, point4.y);
 }
@@ -147,19 +147,19 @@ TEST_F(WebPluginContainerTest, LocalToWindowPointTest)
 
     WebPluginContainer* pluginContainerOne = getWebPluginContainer(webView, WebString::fromUTF8("translated-plugin"));
     ASSERT(pluginContainerOne);
-    WebPoint point1 = pluginContainerOne->localToWindowPoint(WebPoint(0, 0));
+    WebPoint point1 = pluginContainerOne->localToRootFramePoint(WebPoint(0, 0));
     ASSERT_EQ(10, point1.x);
     ASSERT_EQ(10, point1.y);
-    WebPoint point2 = pluginContainerOne->localToWindowPoint(WebPoint(90, 90));
+    WebPoint point2 = pluginContainerOne->localToRootFramePoint(WebPoint(90, 90));
     ASSERT_EQ(100, point2.x);
     ASSERT_EQ(100, point2.y);
 
     WebPluginContainer* pluginContainerTwo = getWebPluginContainer(webView, WebString::fromUTF8("rotated-plugin"));
     ASSERT(pluginContainerTwo);
-    WebPoint point3 = pluginContainerTwo->localToWindowPoint(WebPoint(10, 0));
+    WebPoint point3 = pluginContainerTwo->localToRootFramePoint(WebPoint(10, 0));
     ASSERT_EQ(0, point3.x);
     ASSERT_EQ(10, point3.y);
-    WebPoint point4 = pluginContainerTwo->localToWindowPoint(WebPoint(10, 10));
+    WebPoint point4 = pluginContainerTwo->localToRootFramePoint(WebPoint(10, 10));
     ASSERT_EQ(-10, point4.x);
     ASSERT_EQ(10, point4.y);
 }

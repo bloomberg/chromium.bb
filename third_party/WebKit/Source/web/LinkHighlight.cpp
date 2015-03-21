@@ -140,8 +140,8 @@ static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpace
         }
 
         // FIXME: this does not need to be absolute, just in the paint invalidation container's space.
-        point = targetRenderer->frame()->view()->contentsToWindow(point);
-        point = paintInvalidationContainer->frame()->view()->windowToContents(point);
+        point = targetRenderer->frame()->view()->contentsToRootFrame(point);
+        point = paintInvalidationContainer->frame()->view()->rootFrameToContents(point);
         FloatPoint floatPoint = paintInvalidationContainer->absoluteToLocal(point, UseTransforms);
         DeprecatedPaintLayer::mapPointToPaintBackingCoordinates(paintInvalidationContainer, floatPoint);
 

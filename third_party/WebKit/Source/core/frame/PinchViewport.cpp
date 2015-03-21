@@ -164,6 +164,14 @@ FloatRect PinchViewport::mainViewToViewportCSSPixels(const FloatRect& rect) cons
     return rectInViewport;
 }
 
+FloatPoint PinchViewport::viewportCSSPixelsToRootFrame(const FloatPoint& point) const
+{
+    // Note, this is in CSS Pixels so we don't apply scale.
+    FloatPoint pointInRootFrame = point;
+    pointInRootFrame.moveBy(location());
+    return pointInRootFrame;
+}
+
 void PinchViewport::scrollIntoView(const LayoutRect& rect)
 {
     if (!mainFrame() || !mainFrame()->view())
@@ -620,6 +628,62 @@ FloatPoint PinchViewport::clampOffsetToBoundaries(const FloatPoint& offset)
 void PinchViewport::clampToBoundaries()
 {
     setLocation(m_offset);
+}
+
+FloatRect PinchViewport::viewportToRootFrame(const FloatRect& rectInViewport) const
+{
+    FloatRect rectInRootFrame = rectInViewport;
+    rectInRootFrame.scale(1 / scale());
+    rectInRootFrame.moveBy(location());
+    return rectInRootFrame;
+}
+
+IntRect PinchViewport::viewportToRootFrame(const IntRect& rectInViewport) const
+{
+    // FIXME: How to snap to pixels?
+    return enclosingIntRect(viewportToRootFrame(FloatRect(rectInViewport)));
+}
+
+FloatRect PinchViewport::rootFrameToViewport(const FloatRect& rectInRootFrame) const
+{
+    FloatRect rectInViewport = rectInRootFrame;
+    rectInViewport.moveBy(-location());
+    rectInViewport.scale(scale());
+    return rectInViewport;
+}
+
+IntRect PinchViewport::rootFrameToViewport(const IntRect& rectInRootFrame) const
+{
+    // FIXME: How to snap to pixels?
+    return enclosingIntRect(rootFrameToViewport(FloatRect(rectInRootFrame)));
+}
+
+FloatPoint PinchViewport::viewportToRootFrame(const FloatPoint& pointInViewport) const
+{
+    FloatPoint pointInRootFrame = pointInViewport;
+    pointInRootFrame.scale(1 / scale(), 1 / scale());
+    pointInRootFrame.moveBy(location());
+    return pointInRootFrame;
+}
+
+FloatPoint PinchViewport::rootFrameToViewport(const FloatPoint& pointInRootFrame) const
+{
+    FloatPoint pointInViewport = pointInRootFrame;
+    pointInViewport.moveBy(-location());
+    pointInViewport.scale(scale(), scale());
+    return pointInViewport;
+}
+
+IntPoint PinchViewport::viewportToRootFrame(const IntPoint& pointInViewport) const
+{
+    // FIXME: How to snap to pixels?
+    return flooredIntPoint(FloatPoint(viewportToRootFrame(FloatPoint(pointInViewport))));
+}
+
+IntPoint PinchViewport::rootFrameToViewport(const IntPoint& pointInRootFrame) const
+{
+    // FIXME: How to snap to pixels?
+    return flooredIntPoint(FloatPoint(rootFrameToViewport(FloatPoint(pointInRootFrame))));
 }
 
 String PinchViewport::debugName(const GraphicsLayer* graphicsLayer)

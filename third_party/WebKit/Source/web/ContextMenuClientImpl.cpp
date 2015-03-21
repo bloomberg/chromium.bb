@@ -195,14 +195,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
     LocalFrame* selectedFrame = r.innerNodeFrame();
 
     WebContextMenuData data;
-    IntPoint mousePoint = selectedFrame->view()->contentsToWindow(r.roundedPointInInnerNodeFrame());
-
-    // FIXME(bokan): crbug.com/371902 - We shouldn't be making these scale
-    // related coordinate transformatios in an ad hoc way.
-    PinchViewport& pinchViewport = selectedFrame->host()->pinchViewport();
-    mousePoint -= flooredIntSize(pinchViewport.visibleRect().location());
-    mousePoint.scale(m_webView->pageScaleFactor(), m_webView->pageScaleFactor());
-    data.mousePosition = mousePoint;
+    data.mousePosition = selectedFrame->view()->contentsToViewport(r.roundedPointInInnerNodeFrame());
 
     // Compute edit flags.
     data.editFlags = WebContextMenuData::CanDoNone;

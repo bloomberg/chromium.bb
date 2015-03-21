@@ -590,9 +590,8 @@ private:
 
     void hideSelectPopup();
 
-    // Converts |pos| from window coordinates to contents coordinates and gets
-    // the HitTestResult for it.
-    HitTestResult hitTestResultForWindowPos(const IntPoint&);
+    HitTestResult hitTestResultForRootFramePos(const IntPoint&);
+    HitTestResult hitTestResultForViewportPos(const IntPoint&);
 
     // Consolidate some common code between starting a drag over a target and
     // updating a drag over a target. If we're starting a drag, |isEntering|

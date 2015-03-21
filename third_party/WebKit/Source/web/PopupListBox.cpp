@@ -109,7 +109,7 @@ DEFINE_TRACE(PopupListBox)
 
 bool PopupListBox::handleMouseDownEvent(const PlatformMouseEvent& event)
 {
-    Scrollbar* scrollbar = scrollbarAtWindowPoint(event.position());
+    Scrollbar* scrollbar = scrollbarAtRootFramePoint(event.position());
     if (scrollbar) {
         m_capturingScrollbar = scrollbar;
         m_capturingScrollbar->mouseDown(event);
@@ -129,7 +129,7 @@ bool PopupListBox::handleMouseMoveEvent(const PlatformMouseEvent& event)
         return true;
     }
 
-    Scrollbar* scrollbar = scrollbarAtWindowPoint(event.position());
+    Scrollbar* scrollbar = scrollbarAtRootFramePoint(event.position());
     if (m_lastScrollbarUnderMouse != scrollbar) {
         // Send mouse exited to the old scrollbar.
         if (m_lastScrollbarUnderMouse)
@@ -912,10 +912,10 @@ void PopupListBox::setHasVerticalScrollbar(bool hasBar)
     }
 }
 
-Scrollbar* PopupListBox::scrollbarAtWindowPoint(const IntPoint& windowPoint)
+Scrollbar* PopupListBox::scrollbarAtRootFramePoint(const IntPoint& pointInRootFrame)
 {
     return m_verticalScrollbar && m_verticalScrollbar->frameRect().contains(
-        convertFromContainingWindow(windowPoint)) ? m_verticalScrollbar.get() : 0;
+        convertFromContainingWindow(pointInRootFrame)) ? m_verticalScrollbar.get() : 0;
 }
 
 IntRect PopupListBox::contentsToWindow(const IntRect& contentsRect) const

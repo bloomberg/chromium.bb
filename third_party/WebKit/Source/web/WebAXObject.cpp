@@ -707,15 +707,7 @@ WebAXObject WebAXObject::hitTest(const WebPoint& point) const
     if (isDetached())
         return WebAXObject();
 
-    // FIXME: This is being cleaned up in https://codereview.chromium.org/967213004/ to use
-    // centralized methods to convert between coordinate spaces. However, this is a bug that needs
-    // to be merged back to M42 so it needs an isolated, low-impact fix. This hack will be removed
-    // in the above CL.
-    PinchViewport& pinchViewport = m_private->documentFrameView()->page()->frameHost().pinchViewport();
-    FloatPoint pointInRootFrame(point.x, point.y);
-    pointInRootFrame.moveBy(pinchViewport.location());
-
-    IntPoint contentsPoint = m_private->documentFrameView()->windowToContents(flooredIntPoint(pointInRootFrame));
+    IntPoint contentsPoint = m_private->documentFrameView()->soonToBeRemovedUnscaledViewportToContents(point);
     RefPtr<AXObject> hit = m_private->accessibilityHitTest(contentsPoint);
 
     if (hit)

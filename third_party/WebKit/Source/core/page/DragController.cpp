@@ -360,7 +360,7 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
     }
 
     if ((actionMask & DragDestinationActionEdit) && canProcessDrag(dragData)) {
-        IntPoint point = frameView->windowToContents(dragData->clientPosition());
+        IntPoint point = frameView->rootFrameToContents(dragData->clientPosition());
         Element* element = elementUnderMouse(m_documentUnderMouse.get(), point);
         if (!element)
             return false;
@@ -455,7 +455,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
     if (!m_documentUnderMouse)
         return false;
 
-    IntPoint point = m_documentUnderMouse->view()->windowToContents(dragData->clientPosition());
+    IntPoint point = m_documentUnderMouse->view()->rootFrameToContents(dragData->clientPosition());
     Element* element = elementUnderMouse(m_documentUnderMouse.get(), point);
     if (!element)
         return false;
@@ -540,7 +540,7 @@ bool DragController::canProcessDrag(DragData* dragData)
     if (!dragData->containsCompatibleContent())
         return false;
 
-    IntPoint point = m_page->deprecatedLocalMainFrame()->view()->windowToContents(dragData->clientPosition());
+    IntPoint point = m_page->deprecatedLocalMainFrame()->view()->rootFrameToContents(dragData->clientPosition());
     HitTestResult result = HitTestResult(point);
     if (!m_page->deprecatedLocalMainFrame()->contentRenderer())
         return false;
@@ -858,7 +858,7 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
     const KURL& linkURL = hitTestResult.absoluteLinkURL();
     const KURL& imageURL = hitTestResult.absoluteImageURL();
 
-    IntPoint mouseDraggedPoint = src->view()->windowToContents(dragEvent.position());
+    IntPoint mouseDraggedPoint = src->view()->rootFrameToContents(dragEvent.position());
 
     IntPoint dragLocation;
     IntPoint dragOffset;

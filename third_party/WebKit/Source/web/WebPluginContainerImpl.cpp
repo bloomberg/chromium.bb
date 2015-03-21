@@ -123,14 +123,14 @@ void WebPluginContainerImpl::paint(GraphicsContext* context, const IntRect& rect
     ASSERT(parent()->isFrameView());
     FrameView* view =  toFrameView(parent());
 
-    // The plugin is positioned in window coordinates, so it needs to be painted
-    // in window coordinates.
-    IntPoint origin = view->contentsToWindow(IntPoint(0, 0));
+    // The plugin is positioned in the root frame's coordinates, so it needs to
+    // be painted in them too.
+    IntPoint origin = view->contentsToRootFrame(IntPoint(0, 0));
     context->translate(static_cast<float>(-origin.x()), static_cast<float>(-origin.y()));
 
     WebCanvas* canvas = context->canvas();
 
-    IntRect windowRect = view->contentsToWindow(rect);
+    IntRect windowRect = view->contentsToRootFrame(rect);
     m_webPlugin->paint(canvas, windowRect);
 
     context->restore();
@@ -551,22 +551,22 @@ void WebPluginContainerImpl::setWantsWheelEvents(bool wantsWheelEvents)
     }
 }
 
-WebPoint WebPluginContainerImpl::windowToLocalPoint(const WebPoint& point)
+WebPoint WebPluginContainerImpl::rootFrameToLocalPoint(const WebPoint& pointInRootFrame)
 {
     FrameView* view = toFrameView(parent());
     if (!view)
-        return point;
-    WebPoint windowPoint = view->windowToContents(point);
-    return roundedIntPoint(m_element->layoutObject()->absoluteToLocal(FloatPoint(windowPoint), UseTransforms));
+        return pointInRootFrame;
+    WebPoint pointInContent = view->rootFrameToContents(pointInRootFrame);
+    return roundedIntPoint(m_element->layoutObject()->absoluteToLocal(FloatPoint(pointInContent), UseTransforms));
 }
 
-WebPoint WebPluginContainerImpl::localToWindowPoint(const WebPoint& point)
+WebPoint WebPluginContainerImpl::localToRootFramePoint(const WebPoint& pointInLocal)
 {
     FrameView* view = toFrameView(parent());
     if (!view)
-        return point;
-    IntPoint absolutePoint = roundedIntPoint(m_element->layoutObject()->localToAbsolute(FloatPoint(point), UseTransforms));
-    return view->contentsToWindow(absolutePoint);
+        return pointInLocal;
+    IntPoint absolutePoint = roundedIntPoint(m_element->layoutObject()->localToAbsolute(FloatPoint(pointInLocal), UseTransforms));
+    return view->contentsToRootFrame(absolutePoint);
 }
 
 void WebPluginContainerImpl::didReceiveResponse(const ResourceResponse& response)
@@ -970,7 +970,7 @@ void WebPluginContainerImpl::calculateGeometry(const IntRect& frameRect,
                                                IntRect& clipRect,
                                                Vector<IntRect>& cutOutRects)
 {
-    windowRect = toFrameView(parent())->contentsToWindow(frameRect);
+    windowRect = toFrameView(parent())->contentsToRootFrame(frameRect);
 
     // Calculate a clip-rect so that we don't overlap the scrollbars, etc.
     clipRect = windowClipRect();

@@ -1744,7 +1744,7 @@ void FrameView::contentRectangleForPaintInvalidation(const IntRect& rectInConten
         return;
 
     if (HostWindow* window = hostWindow())
-        window->invalidateRect(contentsToWindow(paintRect));
+        window->invalidateRect(contentsToRootFrame(paintRect));
 }
 
 void FrameView::contentsResized()
@@ -2168,7 +2168,7 @@ IntRect FrameView::windowClipRect(IncludeScrollbarsInRect scrollbarInclusion) co
     ASSERT(m_frame->view() == this);
 
     // Set our clip rect to be our contents.
-    IntRect clipRect = contentsToWindow(visibleContentRect(scrollbarInclusion));
+    IntRect clipRect = contentsToRootFrame(visibleContentRect(scrollbarInclusion));
     if (!m_frame->deprecatedLocalOwner())
         return clipRect;
 
@@ -2198,7 +2198,7 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
     DisableCompositingQueryAsserts disabler;
 
     // Apply the clip from the layer.
-    IntRect clipRect = contentsToWindow(pixelSnappedIntRect(enclosingLayer->clipper().childrenClipRect()));
+    IntRect clipRect = contentsToRootFrame(pixelSnappedIntRect(enclosingLayer->clipper().childrenClipRect()));
     return intersection(clipRect, windowClipRect());
 }
 
@@ -3643,34 +3643,38 @@ IntRect FrameView::contentsToRootFrame(const IntRect& contentsRect) const
     return convertToContainingWindow(rectInFrame);
 }
 
-IntPoint FrameView::windowToContents(const IntPoint& windowPoint) const
-{
-    IntPoint framePoint = convertFromContainingWindow(windowPoint);
-    return frameToContents(framePoint);
-}
-
-FloatPoint FrameView::windowToContents(const FloatPoint& windowPoint) const
+FloatPoint FrameView::rootFrameToContents(const FloatPoint& windowPoint) const
 {
     FloatPoint framePoint = convertFromContainingWindow(windowPoint);
     return frameToContents(framePoint);
 }
 
-IntPoint FrameView::contentsToWindow(const IntPoint& contentsPoint) const
+IntRect FrameView::viewportToContents(const IntRect& rectInViewport) const
 {
-    IntPoint framePoint = contentsToFrame(contentsPoint);
-    return convertToContainingWindow(framePoint);
+    IntRect rectInRootFrame = page()->frameHost().pinchViewport().viewportToRootFrame(rectInViewport);
+    IntRect frameRect = convertFromContainingWindow(rectInRootFrame);
+    return frameToContents(frameRect);
 }
 
-IntRect FrameView::windowToContents(const IntRect& windowRect) const
+IntPoint FrameView::viewportToContents(const IntPoint& pointInViewport) const
 {
-    IntRect rectInFrame = convertFromContainingWindow(windowRect);
-    return frameToContents(rectInFrame);
+    IntPoint pointInRootFrame = page()->frameHost().pinchViewport().viewportToRootFrame(pointInViewport);
+    IntPoint pointInFrame = convertFromContainingWindow(pointInRootFrame);
+    return frameToContents(pointInFrame);
 }
 
-IntRect FrameView::contentsToWindow(const IntRect& contentsRect) const
+IntRect FrameView::contentsToViewport(const IntRect& rectInContents) const
 {
-    IntRect rectInFrame = contentsToFrame(contentsRect);
-    return convertToContainingWindow(rectInFrame);
+    IntRect rectInFrame = contentsToFrame(rectInContents);
+    IntRect rectInRootFrame = convertToContainingWindow(rectInFrame);
+    return page()->frameHost().pinchViewport().rootFrameToViewport(rectInRootFrame);
+}
+
+IntPoint FrameView::contentsToViewport(const IntPoint& pointInContents) const
+{
+    IntPoint pointInFrame = contentsToFrame(pointInContents);
+    IntPoint pointInRootFrame = convertToContainingWindow(pointInFrame);
+    return page()->frameHost().pinchViewport().rootFrameToViewport(pointInRootFrame);
 }
 
 IntRect FrameView::contentsToScreen(const IntRect& rect) const
@@ -3678,7 +3682,21 @@ IntRect FrameView::contentsToScreen(const IntRect& rect) const
     HostWindow* window = hostWindow();
     if (!window)
         return IntRect();
-    return window->viewportToScreen(contentsToWindow(rect));
+    return window->viewportToScreen(contentsToViewport(rect));
+}
+
+IntRect FrameView::soonToBeRemovedContentsToUnscaledViewport(const IntRect& rectInContents) const
+{
+    IntRect rectInFrame = contentsToFrame(rectInContents);
+    IntRect rectInRootFrame = convertToContainingWindow(rectInFrame);
+    return enclosingIntRect(page()->frameHost().pinchViewport().mainViewToViewportCSSPixels(rectInRootFrame));
+}
+
+IntPoint FrameView::soonToBeRemovedUnscaledViewportToContents(const IntPoint& pointInViewport) const
+{
+    IntPoint pointInRootFrame = flooredIntPoint(page()->frameHost().pinchViewport().viewportCSSPixelsToRootFrame(pointInViewport));
+    IntPoint pointInThisFrame = convertFromContainingWindow(pointInRootFrame);
+    return frameToContents(pointInThisFrame);
 }
 
 bool FrameView::containsScrollbarsAvoidingResizer() const
@@ -3720,9 +3738,9 @@ void FrameView::setScrollbarsSuppressed(bool suppressed, bool repaintOnUnsuppres
     }
 }
 
-Scrollbar* FrameView::scrollbarAtWindowPoint(const IntPoint& windowPoint)
+Scrollbar* FrameView::scrollbarAtRootFramePoint(const IntPoint& pointInRootFrame)
 {
-    IntPoint pointInFrame = convertFromContainingWindow(windowPoint);
+    IntPoint pointInFrame = convertFromContainingWindow(pointInRootFrame);
     return scrollbarAtFramePoint(pointInFrame);
 }
 
@@ -3835,7 +3853,7 @@ void FrameView::paintPanScrollIcon(GraphicsContext* context)
     DEFINE_STATIC_REF(Image, panScrollIcon, (Image::loadPlatformResource("panIcon")));
     IntPoint iconGCPoint = m_panScrollIconPoint;
     if (parent())
-        iconGCPoint = toFrameView(parent())->windowToContents(iconGCPoint);
+        iconGCPoint = toFrameView(parent())->rootFrameToContents(iconGCPoint);
     context->drawImage(panScrollIcon, iconGCPoint);
 }
 

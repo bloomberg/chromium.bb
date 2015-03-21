@@ -152,13 +152,13 @@ static bool parseQuad(const RefPtr<JSONArray>& quadArray, FloatQuad* quad)
     return true;
 }
 
-static Node* hoveredNodeForPoint(LocalFrame* frame, const IntPoint& point, bool ignorePointerEventsNone)
+static Node* hoveredNodeForPoint(LocalFrame* frame, const IntPoint& pointInRootFrame, bool ignorePointerEventsNone)
 {
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
     if (ignorePointerEventsNone)
         hitType |= HitTestRequest::IgnorePointerEventsNone;
     HitTestRequest request(hitType);
-    HitTestResult result(frame->view()->windowToContents(point));
+    HitTestResult result(frame->view()->rootFrameToContents(pointInRootFrame));
     frame->contentRenderer()->hitTest(request, result);
     Node* node = result.innerPossiblyPseudoNode();
     while (node && node->nodeType() == Node::TEXT_NODE)

@@ -556,7 +556,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEvent& ev
     // capture because it will interfere with the scrollbar receiving events.
     IntPoint point(event.x, event.y);
     if (event.button == WebMouseEvent::ButtonLeft && m_page->mainFrame()->isLocalFrame()) {
-        point = m_page->deprecatedLocalMainFrame()->view()->windowToContents(point);
+        point = m_page->deprecatedLocalMainFrame()->view()->rootFrameToContents(point);
         HitTestResult result(m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(point));
         result.setToShadowHostIfInClosedShadowRoot();
         Node* hitNode = result.innerNonSharedNode();
@@ -619,7 +619,7 @@ void WebViewImpl::mouseContextMenu(const WebMouseEvent& event)
     PlatformMouseEventBuilder pme(mainFrameImpl()->frameView(), event);
 
     // Find the right target frame. See issue 1186900.
-    HitTestResult result = hitTestResultForWindowPos(pme.position());
+    HitTestResult result = hitTestResultForRootFramePos(pme.position());
     Frame* targetFrame;
     if (result.innerNonSharedNode())
         targetFrame = result.innerNonSharedNode()->document().frame();
@@ -814,22 +814,14 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
         // compositor pipeline and is not being screencasted itself. This leads to bad user experience.
         bool screencastEnabled = m_devToolsAgent && m_devToolsAgent->screencastEnabled();
         if (event.data.tap.width > 0 && !shouldDisableDesktopWorkarounds() && !screencastEnabled) {
-            WebGestureEvent scaledEvent = event;
-            scaledEvent.x = event.x / pageScaleFactor();
-            scaledEvent.y = event.y / pageScaleFactor();
-            scaledEvent.data.tap.width = event.data.tap.width / pageScaleFactor();
-            scaledEvent.data.tap.height = event.data.tap.height / pageScaleFactor();
-            IntRect boundingBox(
-                scaledEvent.x - scaledEvent.data.tap.width / 2,
-                scaledEvent.y - scaledEvent.data.tap.height / 2,
-                scaledEvent.data.tap.width,
-                scaledEvent.data.tap.height);
+            IntRect boundingBox(page()->frameHost().pinchViewport().viewportToRootFrame(IntRect(
+                event.x - event.data.tap.width / 2,
+                event.y - event.data.tap.height / 2,
+                event.data.tap.width,
+                event.data.tap.height)));
 
-            WebSize pinchViewportOffset = pinchVirtualViewportEnabled() ?
-                flooredIntSize(page()->frameHost().pinchViewport().location()) : IntSize();
-
-            // Keep bounding box relative to the main frame.
-            boundingBox.move(pinchViewportOffset);
+            // FIXME: We shouldn't pass details of the PinchViewport offset to render_view_impl.
+            WebSize pinchViewportOffset = flooredIntSize(page()->frameHost().pinchViewport().location());
 
             Vector<IntRect> goodTargets;
             WillBeHeapVector<RawPtrWillBeMember<Node>> highlightNodes;
@@ -1168,13 +1160,13 @@ bool WebViewImpl::handleCharEvent(const WebKeyboardEvent& event)
     return true;
 }
 
-WebRect WebViewImpl::computeBlockBound(const WebPoint& webPoint, bool ignoreClipping)
+WebRect WebViewImpl::computeBlockBound(const WebPoint& pointInRootFrame, bool ignoreClipping)
 {
     if (!mainFrameImpl())
         return WebRect();
 
     // Use the point-based hit test to find the node.
-    IntPoint point = mainFrameImpl()->frameView()->windowToContents(IntPoint(webPoint.x, webPoint.y));
+    IntPoint point = mainFrameImpl()->frameView()->rootFrameToContents(IntPoint(pointInRootFrame.x, pointInRootFrame.y));
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | (ignoreClipping ? HitTestRequest::IgnoreClipping : 0);
     HitTestResult result = mainFrameImpl()->frame()->eventHandler().hitTestResultAtPoint(point, hitType);
     result.setToShadowHostIfInClosedShadowRoot();
@@ -1188,11 +1180,11 @@ WebRect WebViewImpl::computeBlockBound(const WebPoint& webPoint, bool ignoreClip
     while (node && (!node->layoutObject() || node->layoutObject()->isInline()))
         node = NodeRenderingTraversal::parent(*node);
 
-    // Return the bounding box in the window coordinate system.
+    // Return the bounding box in the root frame's coordinate space.
     if (node) {
-        IntRect rect = node->Node::pixelSnappedBoundingBox();
+        IntRect pointInRootFrame = node->Node::pixelSnappedBoundingBox();
         LocalFrame* frame = node->document().frame();
-        return frame->view()->contentsToWindow(rect);
+        return frame->view()->contentsToRootFrame(pointInRootFrame);
     }
     return WebRect();
 }
@@ -1240,12 +1232,12 @@ float WebViewImpl::maximumLegiblePageScale() const
     return m_maximumLegibleScale;
 }
 
-void WebViewImpl::computeScaleAndScrollForBlockRect(const WebPoint& hitPoint, const WebRect& blockRect, float padding, float defaultScaleWhenAlreadyLegible, float& scale, WebPoint& scroll)
+void WebViewImpl::computeScaleAndScrollForBlockRect(const WebPoint& hitPointInRootFrame, const WebRect& blockRectInRootFrame, float padding, float defaultScaleWhenAlreadyLegible, float& scale, WebPoint& scroll)
 {
     scale = pageScaleFactor();
     scroll.x = scroll.y = 0;
 
-    WebRect rect = blockRect;
+    WebRect rect = blockRectInRootFrame;
 
     if (!rect.isEmpty()) {
         float defaultMargin = doubleTapZoomContentDefaultMargin;
@@ -1284,19 +1276,19 @@ void WebViewImpl::computeScaleAndScrollForBlockRect(const WebPoint& hitPoint, co
     } else {
         // Ensure position we're zooming to (+ padding) isn't off the bottom of
         // the screen.
-        rect.y = std::max<float>(rect.y, hitPoint.y + padding - screenHeight);
+        rect.y = std::max<float>(rect.y, hitPointInRootFrame.y + padding - screenHeight);
     } // Otherwise top align the block.
 
     // Do the same thing for horizontal alignment.
     if (rect.width < screenWidth)
         rect.x -= 0.5 * (screenWidth - rect.width);
     else
-        rect.x = std::max<float>(rect.x, hitPoint.x + padding - screenWidth);
+        rect.x = std::max<float>(rect.x, hitPointInRootFrame.x + padding - screenWidth);
     scroll.x = rect.x;
     scroll.y = rect.y;
 
     scale = clampPageScaleFactorToLimits(scale);
-    scroll = mainFrameImpl()->frameView()->windowToContents(scroll);
+    scroll = mainFrameImpl()->frameView()->rootFrameToContents(scroll);
     scroll = clampOffsetAtScale(scroll, scale);
 }
 
@@ -1407,16 +1399,16 @@ void WebViewImpl::enableTapHighlights(WillBeHeapVector<RawPtrWillBeMember<Node>>
     }
 }
 
-void WebViewImpl::animateDoubleTapZoom(const IntPoint& point)
+void WebViewImpl::animateDoubleTapZoom(const IntPoint& pointInRootFrame)
 {
     if (!mainFrameImpl())
         return;
 
-    WebRect blockBounds = computeBlockBound(point, false);
+    WebRect blockBounds = computeBlockBound(pointInRootFrame, false);
     float scale;
     WebPoint scroll;
 
-    computeScaleAndScrollForBlockRect(point, blockBounds, touchPointPadding, minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio, scale, scroll);
+    computeScaleAndScrollForBlockRect(pointInRootFrame, blockBounds, touchPointPadding, minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio, scale, scroll);
 
     bool stillAtPreviousDoubleTapScale = (pageScaleFactor() == m_doubleTapZoomPageScaleFactor
         && m_doubleTapZoomPageScaleFactor != minimumPageScaleFactor())
@@ -1429,7 +1421,7 @@ void WebViewImpl::animateDoubleTapZoom(const IntPoint& point)
 
     if (shouldZoomOut) {
         scale = minimumPageScaleFactor();
-        isAnimating = startPageScaleAnimation(mainFrameImpl()->frameView()->windowToContents(point), true, scale, doubleTapZoomAnimationDurationInSeconds);
+        isAnimating = startPageScaleAnimation(mainFrameImpl()->frameView()->rootFrameToContents(pointInRootFrame), true, scale, doubleTapZoomAnimationDurationInSeconds);
     } else {
         isAnimating = startPageScaleAnimation(scroll, false, scale, doubleTapZoomAnimationDurationInSeconds);
     }
@@ -1440,12 +1432,12 @@ void WebViewImpl::animateDoubleTapZoom(const IntPoint& point)
     }
 }
 
-void WebViewImpl::zoomToFindInPageRect(const WebRect& rect)
+void WebViewImpl::zoomToFindInPageRect(const WebRect& rectInRootFrame)
 {
     if (!mainFrameImpl())
         return;
 
-    WebRect blockBounds = computeBlockBound(WebPoint(rect.x + rect.width / 2, rect.y + rect.height / 2), true);
+    WebRect blockBounds = computeBlockBound(WebPoint(rectInRootFrame.x + rectInRootFrame.width / 2, rectInRootFrame.y + rectInRootFrame.height / 2), true);
 
     if (blockBounds.isEmpty()) {
         // Keep current scale (no need to scroll as x,y will normally already
@@ -1456,12 +1448,12 @@ void WebViewImpl::zoomToFindInPageRect(const WebRect& rect)
     float scale;
     WebPoint scroll;
 
-    computeScaleAndScrollForBlockRect(WebPoint(rect.x, rect.y), blockBounds, nonUserInitiatedPointPadding, minimumPageScaleFactor(), scale, scroll);
+    computeScaleAndScrollForBlockRect(WebPoint(rectInRootFrame.x, rectInRootFrame.y), blockBounds, nonUserInitiatedPointPadding, minimumPageScaleFactor(), scale, scroll);
 
     startPageScaleAnimation(scroll, false, scale, findInPageAnimationDurationInSeconds);
 }
 
-bool WebViewImpl::zoomToMultipleTargetsRect(const WebRect& rect)
+bool WebViewImpl::zoomToMultipleTargetsRect(const WebRect& rectInRootFrame)
 {
     if (!mainFrameImpl())
         return false;
@@ -1469,7 +1461,7 @@ bool WebViewImpl::zoomToMultipleTargetsRect(const WebRect& rect)
     float scale;
     WebPoint scroll;
 
-    computeScaleAndScrollForBlockRect(WebPoint(rect.x, rect.y), rect, nonUserInitiatedPointPadding, minimumPageScaleFactor(), scale, scroll);
+    computeScaleAndScrollForBlockRect(WebPoint(rectInRootFrame.x, rectInRootFrame.y), rectInRootFrame, nonUserInitiatedPointPadding, minimumPageScaleFactor(), scale, scroll);
 
     if (scale <= pageScaleFactor())
         return false;
@@ -2638,23 +2630,8 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
         focus = localFrame->editor().firstRectForRange(range.get());
     }
 
-    IntRect scaledAnchor(localFrame->view()->contentsToWindow(anchor));
-    IntRect scaledFocus(localFrame->view()->contentsToWindow(focus));
-
-    if (pinchVirtualViewportEnabled()) {
-        // FIXME(http://crbug.com/371902) - We shouldn't have to do this
-        // manually, the contentsToWindow methods above should be fixed to do
-        // this.
-        IntPoint pinchViewportOffset =
-            roundedIntPoint(page()->frameHost().pinchViewport().visibleRect().location());
-        scaledAnchor.moveBy(-pinchViewportOffset);
-        scaledFocus.moveBy(-pinchViewportOffset);
-    }
-
-    scaledAnchor.scale(pageScaleFactor());
-    scaledFocus.scale(pageScaleFactor());
-    anchor = scaledAnchor;
-    focus = scaledFocus;
+    anchor = localFrame->view()->contentsToViewport(anchor);
+    focus = localFrame->view()->contentsToViewport(focus);
 
     if (!selection.selection().isBaseFirst())
         std::swap(anchor, focus);
@@ -2980,15 +2957,7 @@ bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rectInViewport)
             ceiledIntPoint(pinchViewport.location()),
             expandedIntSize(pinchViewport.visibleSize()));
 
-        // FIXME: Use viewportToRootFrame when coordinate refactoring CL lands.
-        FloatRect targetRectInRootFrame(
-            rectInViewport.x,
-            rectInViewport.y,
-            rectInViewport.width,
-            rectInViewport.height);
-        targetRectInRootFrame.scale(1 / pinchViewport.scale());
-        targetRectInRootFrame.moveBy(viewportRectInRootFrame.location());
-
+        FloatRect targetRectInRootFrame = pinchViewport.viewportToRootFrame(rectInViewport);
         DoubleSize remainder = frame->view()->scrollElementToRect(element, IntRect(targetRectInRootFrame));
 
         // Scroll the remainder in the pinch viewport.
@@ -3011,7 +2980,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
     focusedNode->document().updateLayoutIgnorePendingStylesheets();
 
     // 'caret' is rect encompassing the blinking cursor.
-    IntRect textboxRect = focusedNode->document().view()->contentsToWindow(pixelSnappedIntRect(focusedNode->Node::boundingBox()));
+    IntRect textboxRectInRootFrame = focusedNode->document().view()->contentsToRootFrame(pixelSnappedIntRect(focusedNode->Node::boundingBox()));
     WebRect caret, unusedEnd;
     selectionBounds(caret, unusedEnd);
     IntRect unscaledCaret = caret;
@@ -3024,7 +2993,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
         // Pick a scale which is reasonably readable. This is the scale at which
         // the caret height will become minReadableCaretHeightForNode (adjusted
         // for dpi and font scale factor).
-        const int minReadableCaretHeightForNode = textboxRect.height() >= 2 * caret.height ? minReadableCaretHeightForTextArea : minReadableCaretHeight;
+        const int minReadableCaretHeightForNode = textboxRectInRootFrame.height() >= 2 * caret.height ? minReadableCaretHeightForTextArea : minReadableCaretHeight;
         newScale = clampPageScaleFactorToLimits(maximumLegiblePageScale() * minReadableCaretHeightForNode / caret.height);
         newScale = std::max(newScale, pageScaleFactor());
     }
@@ -3038,8 +3007,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
         newScale = pageScaleFactor();
 
     // Convert the rects to absolute space in the new scale.
-    IntRect textboxRectInDocumentCoordinates = textboxRect;
-    textboxRectInDocumentCoordinates.move(mainFrame()->scrollOffset());
+    IntRect textboxRectInDocumentCoordinates = mainFrameImpl()->frameView()->frameToContents(textboxRectInRootFrame);
     IntRect caretInDocumentCoordinates = caret;
     caretInDocumentCoordinates.move(mainFrame()->scrollOffset());
 
@@ -3054,7 +3022,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
 
     // If the box is partially offscreen and it's possible to bring it fully
     // onscreen, then animate.
-    if (sizeRect.contains(textboxRectInDocumentCoordinates.width(), textboxRectInDocumentCoordinates.height()) && !sizeRect.contains(textboxRect))
+    if (sizeRect.contains(textboxRectInDocumentCoordinates.width(), textboxRectInDocumentCoordinates.height()) && !sizeRect.contains(textboxRectInRootFrame))
         needAnimation = true;
 
     if (!needAnimation)
@@ -3591,7 +3559,7 @@ void WebViewImpl::resetScrollAndScaleState()
 void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,
                                            const WebPoint& location)
 {
-    HitTestResult result = hitTestResultForWindowPos(location);
+    HitTestResult result = hitTestResultForViewportPos(location);
     RefPtrWillBeRawPtr<Node> node = result.innerNonSharedNode();
     if (!isHTMLVideoElement(*node) && !isHTMLAudioElement(*node))
         return;
@@ -3621,7 +3589,8 @@ void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,
 void WebViewImpl::performPluginAction(const WebPluginAction& action,
                                       const WebPoint& location)
 {
-    HitTestResult result = hitTestResultForWindowPos(location);
+    // FIXME: Location is probably in viewport coordinates
+    HitTestResult result = hitTestResultForRootFramePos(location);
     RefPtrWillBeRawPtr<Node> node = result.innerNonSharedNode();
     if (!isHTMLObjectElement(*node) && !isHTMLEmbedElement(*node))
         return;
@@ -3650,12 +3619,11 @@ WebHitTestResult WebViewImpl::hitTestResultAt(const WebPoint& point)
     return coreHitTestResultAt(point);
 }
 
-HitTestResult WebViewImpl::coreHitTestResultAt(const WebPoint& point)
+HitTestResult WebViewImpl::coreHitTestResultAt(const WebPoint& pointInViewport)
 {
-    FloatPoint scaledPoint(point.x, point.y);
-    scaledPoint.scale(1 / pageScaleFactor(), 1 / pageScaleFactor());
-    scaledPoint.moveBy(pinchViewportOffset());
-    return hitTestResultForWindowPos(flooredIntPoint(scaledPoint));
+    FrameView* view = mainFrameImpl()->frameView();
+    IntPoint pointInRootFrame = view->contentsToFrame(view->viewportToContents(pointInViewport));
+    return hitTestResultForRootFramePos(pointInRootFrame);
 }
 
 void WebViewImpl::copyImageAt(const WebPoint& point)
@@ -3663,7 +3631,7 @@ void WebViewImpl::copyImageAt(const WebPoint& point)
     if (!m_page)
         return;
 
-    HitTestResult result = hitTestResultForWindowPos(point);
+    HitTestResult result = hitTestResultForViewportPos(point);
     if (!isHTMLCanvasElement(result.innerNonSharedNode()) && result.absoluteImageURL().isEmpty()) {
         // There isn't actually an image at these coordinates.  Might be because
         // the window scrolled while the context menu was open or because the page
@@ -3683,7 +3651,7 @@ void WebViewImpl::saveImageAt(const WebPoint& point)
     if (!m_client)
         return;
 
-    Node* node = hitTestResultForWindowPos(point).innerNonSharedNode();
+    Node* node = hitTestResultForViewportPos(point).innerNonSharedNode();
     if (!node || !(isHTMLCanvasElement(*node) || isHTMLImageElement(*node)))
         return;
 
@@ -3954,22 +3922,22 @@ void WebViewImpl::showContextMenu()
     m_contextMenuAllowed = false;
 }
 
-void WebViewImpl::extractSmartClipData(WebRect rect, WebString& clipText, WebString& clipHtml, WebRect& clipRect)
+void WebViewImpl::extractSmartClipData(WebRect rectInViewport, WebString& clipText, WebString& clipHtml, WebRect& clipRectInViewport)
 {
     LocalFrame* localFrame = toLocalFrame(focusedCoreFrame());
     if (!localFrame)
         return;
-    SmartClipData clipData = SmartClip(localFrame).dataForRect(rect);
+    SmartClipData clipData = SmartClip(localFrame).dataForRect(rectInViewport);
     clipText = clipData.clipData();
-    clipRect = clipData.rect();
+    clipRectInViewport = clipData.rectInViewport();
 
     WebLocalFrameImpl* frame = mainFrameImpl();
     if (!frame)
         return;
-    WebPoint startPoint(rect.x, rect.y);
-    WebPoint endPoint(rect.x + rect.width, rect.y + rect.height);
-    VisiblePosition startVisiblePosition = frame->visiblePositionForWindowPoint(startPoint);
-    VisiblePosition endVisiblePosition = frame->visiblePositionForWindowPoint(endPoint);
+    WebPoint startPoint(rectInViewport.x, rectInViewport.y);
+    WebPoint endPoint(rectInViewport.x + rectInViewport.width, rectInViewport.y + rectInViewport.height);
+    VisiblePosition startVisiblePosition = frame->visiblePositionForViewportPoint(startPoint);
+    VisiblePosition endVisiblePosition = frame->visiblePositionForViewportPoint(endPoint);
 
     Position startPosition = startVisiblePosition.deepEquivalent();
     Position endPosition = endVisiblePosition.deepEquivalent();
@@ -4278,11 +4246,17 @@ Element* WebViewImpl::focusedElement() const
     return document->focusedElement();
 }
 
-HitTestResult WebViewImpl::hitTestResultForWindowPos(const IntPoint& pos)
+HitTestResult WebViewImpl::hitTestResultForViewportPos(const IntPoint& posInViewport)
+{
+    IntPoint rootFramePoint(m_page->frameHost().pinchViewport().viewportToRootFrame(posInViewport));
+    return hitTestResultForRootFramePos(rootFramePoint);
+}
+
+HitTestResult WebViewImpl::hitTestResultForRootFramePos(const IntPoint& posInRootFrame)
 {
     if (!m_page->mainFrame()->isLocalFrame())
         return HitTestResult();
-    IntPoint docPoint(m_page->deprecatedLocalMainFrame()->view()->windowToContents(pos));
+    IntPoint docPoint(m_page->deprecatedLocalMainFrame()->view()->rootFrameToContents(posInRootFrame));
     HitTestResult result = m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
     result.setToShadowHostIfInClosedShadowRoot();
     return result;

@@ -676,12 +676,12 @@ VisiblePosition LocalFrame::visiblePositionForPoint(const IntPoint& framePoint)
     return visiblePos;
 }
 
-Document* LocalFrame::documentAtPoint(const IntPoint& point)
+Document* LocalFrame::documentAtPoint(const IntPoint& pointInRootFrame)
 {
     if (!view())
         return nullptr;
 
-    IntPoint pt = view()->windowToContents(point);
+    IntPoint pt = view()->rootFrameToContents(pointInRootFrame);
     HitTestResult result = HitTestResult(pt);
 
     if (contentRenderer())

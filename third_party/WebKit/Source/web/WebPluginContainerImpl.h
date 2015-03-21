@@ -111,8 +111,8 @@ public:
     virtual bool isRectTopmost(const WebRect&) override;
     virtual void requestTouchEventType(TouchEventRequestType) override;
     virtual void setWantsWheelEvents(bool) override;
-    virtual WebPoint windowToLocalPoint(const WebPoint&) override;
-    virtual WebPoint localToWindowPoint(const WebPoint&) override;
+    virtual WebPoint rootFrameToLocalPoint(const WebPoint&) override;
+    virtual WebPoint localToRootFramePoint(const WebPoint&) override;
 
     // This cannot be null.
     virtual WebPlugin* plugin() override { return m_webPlugin; }

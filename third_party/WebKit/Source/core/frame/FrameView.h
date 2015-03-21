@@ -472,19 +472,26 @@ public:
 
     bool drawPanScrollIcon() { return m_shouldDrawPanScrollIcon; }
 
+    // Methods for converting between this frame and other coordinate spaces.
+    // For definitions and an explanation of the varous spaces, please see:
+    // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
     IntPoint rootFrameToContents(const IntPoint&) const;
+    FloatPoint rootFrameToContents(const FloatPoint&) const;
     IntRect rootFrameToContents(const IntRect&) const;
     IntPoint contentsToRootFrame(const IntPoint&) const;
     IntRect contentsToRootFrame(const IntRect&) const;
 
-    // Event coordinates are assumed to be in the coordinate space of a window that contains
-    // the entire widget hierarchy. It is up to the platform to decide what the precise definition
-    // of containing window is. (For example on Mac it is the containing NSWindow.)
-    IntPoint windowToContents(const IntPoint&) const;
-    FloatPoint windowToContents(const FloatPoint&) const;
-    IntPoint contentsToWindow(const IntPoint&) const;
-    IntRect windowToContents(const IntRect&) const;
-    IntRect contentsToWindow(const IntRect&) const;
+    IntRect viewportToContents(const IntRect&) const;
+    IntRect contentsToViewport(const IntRect&) const;
+    IntPoint contentsToViewport(const IntPoint&) const;
+    IntPoint viewportToContents(const IntPoint&) const;
+
+    // FIXME: Some external callers expect to get back a rect that's positioned
+    // in viewport space, but sized in CSS pixels. This is an artifact of the
+    // old pinch-zoom path. These callers should be converted to expect a rect
+    // fully in viewport space. crbug.com/459591.
+    IntRect soonToBeRemovedContentsToUnscaledViewport(const IntRect&) const;
+    IntPoint soonToBeRemovedUnscaledViewportToContents(const IntPoint&) const;
 
     // Methods for converting between Frame and Content (i.e. Document) coordinates.
     // Frame coordinates are relative to the top left corner of the frame and so
@@ -507,7 +514,7 @@ public:
     void windowResizerRectChanged();
 
     // For platforms that need to hit test scrollbars from within the engine's event handlers (like Win32).
-    Scrollbar* scrollbarAtWindowPoint(const IntPoint&);
+    Scrollbar* scrollbarAtRootFramePoint(const IntPoint&);
     Scrollbar* scrollbarAtFramePoint(const IntPoint&);
 
     virtual IntPoint convertChildToSelf(const Widget* child, const IntPoint& point) const override

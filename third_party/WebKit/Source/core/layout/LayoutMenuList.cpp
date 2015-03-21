@@ -381,7 +381,7 @@ bool LayoutMenuList::multiple() const
 
 IntRect LayoutMenuList::elementRectRelativeToViewport() const
 {
-    return selectElement()->document().view()->contentsToWindow(absoluteBoundingBoxRect());
+    return selectElement()->document().view()->contentsToViewport(absoluteBoundingBoxRect());
 }
 
 Element& LayoutMenuList::ownerElement() const

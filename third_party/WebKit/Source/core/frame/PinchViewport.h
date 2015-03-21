@@ -133,6 +133,7 @@ public:
     // in the viewport. The given and returned rects are in CSS pixels, meaning
     // scale isn't applied.
     FloatRect mainViewToViewportCSSPixels(const FloatRect&) const;
+    FloatPoint viewportCSSPixelsToRootFrame(const FloatPoint&) const;
 
     // Scroll the main frame and pinch viewport so that the given rect in the
     // top-level document is centered in the viewport. This method will avoid
@@ -155,6 +156,16 @@ public:
     // Adjust the viewport's offset so that it remains bounded by the outer
     // viepwort.
     void clampToBoundaries();
+
+    FloatRect viewportToRootFrame(const FloatRect&) const;
+    IntRect viewportToRootFrame(const IntRect&) const;
+    FloatRect rootFrameToViewport(const FloatRect&) const;
+    IntRect rootFrameToViewport(const IntRect&) const;
+
+    FloatPoint viewportToRootFrame(const FloatPoint&) const;
+    FloatPoint rootFrameToViewport(const FloatPoint&) const;
+    IntPoint viewportToRootFrame(const IntPoint&) const;
+    IntPoint rootFrameToViewport(const IntPoint&) const;
 private:
     explicit PinchViewport(FrameHost&);
 

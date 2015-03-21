@@ -1244,7 +1244,7 @@ void DeprecatedPaintLayerScrollableArea::resize(const PlatformEvent& evt, const 
 
     float zoomFactor = box().style()->effectiveZoom();
 
-    IntSize newOffset = offsetFromResizeCorner(document.view()->windowToContents(pos));
+    IntSize newOffset = offsetFromResizeCorner(document.view()->rootFrameToContents(pos));
     newOffset.setWidth(newOffset.width() / zoomFactor);
     newOffset.setHeight(newOffset.height() / zoomFactor);
 

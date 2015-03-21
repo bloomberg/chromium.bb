@@ -53,9 +53,9 @@ static LayoutSize contentsScrollOffset(AbstractView* abstractView)
 }
 
 MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> abstractView,
-                                     int detail, const IntPoint& screenLocation, const IntPoint& windowLocation,
-                                     const IntPoint& movementDelta,
-                                     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool isSimulated)
+    int detail, const IntPoint& screenLocation, const IntPoint& rootFrameLocation,
+    const IntPoint& movementDelta,
+    bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool isSimulated)
     : UIEventWithKeyState(eventType, canBubble, cancelable, abstractView, detail, ctrlKey, altKey, shiftKey, metaKey)
     , m_screenLocation(screenLocation)
     , m_movementDelta(movementDelta)
@@ -68,7 +68,7 @@ MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, bool canBubb
     if (frame && !isSimulated) {
         if (FrameView* frameView = frame->view()) {
             scrollPosition = frameView->scrollPosition();
-            adjustedPageLocation = frameView->windowToContents(windowLocation);
+            adjustedPageLocation = frameView->rootFrameToContents(rootFrameLocation);
             float scaleFactor = 1 / frame->pageZoomFactor();
             if (scaleFactor != 1.0f) {
                 adjustedPageLocation.scale(scaleFactor, scaleFactor);

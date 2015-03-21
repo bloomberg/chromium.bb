@@ -431,12 +431,11 @@ public:
 
     virtual WebRange markedRange() const = 0;
 
-    // Returns the frame rectangle in window coordinate space of the given text
-    // range.
+    // Returns the text range rectangle in the viepwort coordinate space.
     virtual bool firstRectForCharacterRange(unsigned location, unsigned length, WebRect&) const = 0;
 
     // Returns the index of a character in the Frame's text stream at the given
-    // point. The point is in the window coordinate space. Will return
+    // point. The point is in the viewport coordinate space. Will return
     // WTF::notFound if the point is invalid.
     virtual size_t characterIndexForPoint(const WebPoint&) const = 0;
 
@@ -473,7 +472,7 @@ public:
 
     virtual void selectRange(const WebRange&) = 0;
 
-    // Move the current selection to the provided window point/points. If the
+    // Move the current selection to the provided viewport point/points. If the
     // current selection is editable, the new selection will be restricted to
     // the root editable element.
     // |TextGranularity| represents character wrapping granularity. If

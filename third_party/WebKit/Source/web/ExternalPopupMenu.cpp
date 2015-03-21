@@ -86,10 +86,7 @@ void ExternalPopupMenu::show(const FloatQuad& controlPosition, const IntSize&, i
     WebLocalFrameImpl* webframe = WebLocalFrameImpl::fromFrame(m_localFrame.get());
     m_webExternalPopupMenu = webframe->client()->createExternalPopupMenu(info, this);
     if (m_webExternalPopupMenu) {
-        // FIXME: Standardize viewport coordinate conversions. crbug.com/371902.
-        IntRect rectInViewport = m_localFrame->view()->contentsToWindow(rect);
-        if (m_webView.pinchVirtualViewportEnabled())
-            rectInViewport.moveBy(-flooredIntPoint(m_webView.page()->frameHost().pinchViewport().location()));
+        IntRect rectInViewport = m_localFrame->view()->soonToBeRemovedContentsToUnscaledViewport(rect);
         m_webExternalPopupMenu->show(rectInViewport);
 #if OS(MACOSX)
         const WebInputEvent* currentEvent = WebViewImpl::currentInputEvent();

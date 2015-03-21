@@ -1195,18 +1195,14 @@ static bool tapElementById(WebView* webView, WebInputEvent::Type type, const Web
         return false;
 
     element->scrollIntoViewIfNeeded();
-    IntPoint center = element->screenRect().center();
 
-    // FIXME: This will be unnecessary since screenRect() will be fixed once crbug.com/371902 lands.
-    PinchViewport& pinchViewport = element->document().frameHost()->pinchViewport();
-    IntPoint centerInViewport = center;
-    centerInViewport.moveBy(-flooredIntPoint(pinchViewport.location()));
-    centerInViewport.scale(pinchViewport.scale(), pinchViewport.scale());
+    // TODO(bokan): Technically incorrect, event positions should be in viewport space. crbug.com/371902.
+    IntPoint center = element->screenRect().center();
 
     WebGestureEvent event;
     event.type = type;
-    event.x = centerInViewport.x();
-    event.y = centerInViewport.y();
+    event.x = center.x();
+    event.y = center.y();
 
     webView->handleInputEvent(event);
     runPendingTasks();

@@ -493,7 +493,7 @@ public:
     virtual bool canBeProgramaticallyScrolled() const;
     virtual void autoscroll(const IntPoint&);
     bool canAutoscroll() const;
-    IntSize calculateAutoscrollDirection(const IntPoint& windowPoint) const;
+    IntSize calculateAutoscrollDirection(const IntPoint& pointInRootFrame) const;
     static LayoutBox* findAutoscrollable(LayoutObject*);
     virtual void stopAutoscroll() { }
     virtual void panScroll(const IntPoint&);

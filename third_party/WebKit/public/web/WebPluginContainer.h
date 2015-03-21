@@ -117,11 +117,11 @@ public:
     // is in use but a scroll bar is not in use).
     virtual void setWantsWheelEvents(bool) = 0;
 
-    // Converts view's window coordinates to plugin's local coordinates.
-    virtual WebPoint windowToLocalPoint(const WebPoint&) = 0;
+    // Converts root frame's coordinates to plugin's local coordinates.
+    virtual WebPoint rootFrameToLocalPoint(const WebPoint&) = 0;
 
-    // Converts plugin's local coordinate to view's window coordinates.
-    virtual WebPoint localToWindowPoint(const WebPoint&) = 0;
+    // Converts plugin's local coordinate to root frame's coordinates.
+    virtual WebPoint localToRootFramePoint(const WebPoint&) = 0;
 
     virtual WebPlugin* plugin() = 0;
     virtual void setPlugin(WebPlugin*) = 0;

@@ -318,7 +318,7 @@ public:
     void invalidateAll() const;
 
     // Returns a hit-tested VisiblePosition for the given point
-    VisiblePosition visiblePositionForWindowPoint(const WebPoint&);
+    VisiblePosition visiblePositionForViewportPoint(const WebPoint&);
 
     void setFrameWidget(WebFrameWidgetImpl*);
     WebFrameWidgetImpl* frameWidget() const;

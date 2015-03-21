@@ -238,7 +238,7 @@ Element& ColorInputType::ownerElement() const
 
 IntRect ColorInputType::elementRectRelativeToViewport() const
 {
-    return element().document().view()->contentsToWindow(element().pixelSnappedBoundingBox());
+    return element().document().view()->contentsToViewport(element().pixelSnappedBoundingBox());
 }
 
 Color ColorInputType::currentColor()

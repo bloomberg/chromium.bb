@@ -46,17 +46,17 @@ public:
 
     SmartClipData(Node* node, IntRect rect, String string)
         : m_isEmpty(!node)
-        , m_rect(rect)
+        , m_rectInViewport(rect)
         , m_string(string)
     {
     }
 
-    IntRect rect() const;
+    IntRect rectInViewport() const;
     const String& clipData() const;
 
 private:
     bool m_isEmpty;
-    IntRect m_rect;
+    IntRect m_rectInViewport;
     String m_string;
 };
 
@@ -76,10 +76,9 @@ private:
     float pageScaleFactor();
 
     Node* minNodeContainsNodes(Node* minNode, Node* newNode);
-    Node* findBestOverlappingNode(Node*, const IntRect& cropRect);
+    Node* findBestOverlappingNode(Node*, const IntRect& cropRectInViewport);
     bool shouldSkipBackgroundImage(Node*);
-    void collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRect, WillBeHeapVector<RawPtrWillBeMember<Node>>& overlappingNodeInfoTable);
-    IntRect convertRectToWindow(const IntRect& nodeRect);
+    void collectOverlappingChildNodes(Node* parentNode, const IntRect& cropRectInViewport, WillBeHeapVector<RawPtrWillBeMember<Node>>& overlappingNodeInfoTable);
     String extractTextFromNode(Node*);
 
     RefPtrWillBeMember<LocalFrame> m_frame;

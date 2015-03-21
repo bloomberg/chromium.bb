@@ -63,7 +63,7 @@ static IntRect boundingBoxForEventNodes(Node* eventNode)
         result.unite(node->pixelSnappedBoundingBox());
         node = NodeTraversal::next(*node, eventNode);
     }
-    return eventNode->document().view()->contentsToWindow(result);
+    return eventNode->document().view()->contentsToRootFrame(result);
 }
 
 static float scoreTouchTarget(IntPoint touchPoint, int padding, IntRect boundingBox)
@@ -86,14 +86,14 @@ struct TouchTargetData {
     float score;
 };
 
-void findGoodTouchTargets(const IntRect& touchBox, LocalFrame* mainFrame, Vector<IntRect>& goodTargets, WillBeHeapVector<RawPtrWillBeMember<Node>>& highlightNodes)
+void findGoodTouchTargets(const IntRect& touchBoxInRootFrame, LocalFrame* mainFrame, Vector<IntRect>& goodTargets, WillBeHeapVector<RawPtrWillBeMember<Node>>& highlightNodes)
 {
     goodTargets.clear();
 
-    int touchPointPadding = ceil(std::max(touchBox.width(), touchBox.height()) * 0.5);
+    int touchPointPadding = ceil(std::max(touchBoxInRootFrame.width(), touchBoxInRootFrame.height()) * 0.5);
 
-    IntPoint touchPoint = touchBox.center();
-    IntPoint contentsPoint = mainFrame->view()->windowToContents(touchPoint);
+    IntPoint touchPoint = touchBoxInRootFrame.center();
+    IntPoint contentsPoint = mainFrame->view()->rootFrameToContents(touchPoint);
 
     HitTestResult result = mainFrame->eventHandler().hitTestResultAtPoint(contentsPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased, LayoutSize(touchPointPadding, touchPointPadding));
     const WillBeHeapListHashSet<RefPtrWillBeMember<Node>>& hitResults = result.listBasedTestResult();

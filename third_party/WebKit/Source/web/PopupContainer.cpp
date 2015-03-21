@@ -406,13 +406,13 @@ void PopupContainer::showInRect(const FloatQuad& controlPosition, const IntSize&
     // Save and convert the controlPosition to main window coords. Each point is converted separately
     // to window coordinates because the control could be in a transformed webview and then each point
     // would be transformed by a different delta.
-    m_controlPosition.setP1(v->contentsToWindow(IntPoint(controlPosition.p1().x(), controlPosition.p1().y())));
-    m_controlPosition.setP2(v->contentsToWindow(IntPoint(controlPosition.p2().x(), controlPosition.p2().y())));
-    m_controlPosition.setP3(v->contentsToWindow(IntPoint(controlPosition.p3().x(), controlPosition.p3().y())));
-    m_controlPosition.setP4(v->contentsToWindow(IntPoint(controlPosition.p4().x(), controlPosition.p4().y())));
+    m_controlPosition.setP1(v->contentsToRootFrame(IntPoint(controlPosition.p1().x(), controlPosition.p1().y())));
+    m_controlPosition.setP2(v->contentsToRootFrame(IntPoint(controlPosition.p2().x(), controlPosition.p2().y())));
+    m_controlPosition.setP3(v->contentsToRootFrame(IntPoint(controlPosition.p3().x(), controlPosition.p3().y())));
+    m_controlPosition.setP4(v->contentsToRootFrame(IntPoint(controlPosition.p4().x(), controlPosition.p4().y())));
 
     FloatRect controlBounds = m_controlPosition.boundingBox();
-    controlBounds.moveBy(-v->page()->frameHost().pinchViewport().location());
+    controlBounds = v->page()->frameHost().pinchViewport().mainViewToViewportCSSPixels(controlBounds);
     m_controlPosition = controlBounds;
 
     m_controlSize = controlSize;

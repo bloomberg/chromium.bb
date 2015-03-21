@@ -1636,4 +1636,41 @@ TEST_F(PinchViewportTest, AccessibilityHitTestWhileZoomedIn)
     EXPECT_EQ(std::string("Target4"), hitNode.title().utf8());
 }
 
+// Tests that the maximum scroll offset of the viewport can be fractional.
+TEST_F(PinchViewportTest, TestCoordinateTransforms)
+{
+    initializeWithAndroidSettings();
+    webViewImpl()->resize(IntSize(800, 600));
+    registerMockedHttpURLLoad("content-width-1000.html");
+    navigateTo(m_baseURL + "content-width-1000.html");
+
+    PinchViewport& pinchViewport = webViewImpl()->page()->frameHost().pinchViewport();
+    FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
+
+    // At scale = 1 the transform should be a no-op.
+    pinchViewport.setScale(1);
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(314, 273), pinchViewport.viewportToRootFrame(FloatPoint(314, 273)));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(314, 273), pinchViewport.rootFrameToViewport(FloatPoint(314, 273)));
+
+    // At scale = 2.
+    pinchViewport.setScale(2);
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(55, 75), pinchViewport.viewportToRootFrame(FloatPoint(110, 150)));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(110, 150), pinchViewport.rootFrameToViewport(FloatPoint(55, 75)));
+
+    // At scale = 2 and with the pinch viewport offset.
+    pinchViewport.setLocation(FloatPoint(10, 12));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(50, 62), pinchViewport.viewportToRootFrame(FloatPoint(80, 100)));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(80, 100), pinchViewport.rootFrameToViewport(FloatPoint(50, 62)));
+
+    // Test points that will cause non-integer values.
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(50.5, 62.4), pinchViewport.viewportToRootFrame(FloatPoint(81, 100.8)));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(81, 100.8), pinchViewport.rootFrameToViewport(FloatPoint(50.5, 62.4)));
+
+
+    // Scrolling the main frame should have no effect.
+    frameView.scrollTo(DoublePoint(100, 120));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(50, 62), pinchViewport.viewportToRootFrame(FloatPoint(80, 100)));
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(80, 100), pinchViewport.rootFrameToViewport(FloatPoint(50, 62)));
+}
+
 } // namespace

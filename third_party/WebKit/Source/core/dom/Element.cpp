@@ -897,13 +897,7 @@ IntRect Element::boundsInViewportSpace()
     for (size_t i = 1; i < quads.size(); ++i)
         result.unite(quads[i].enclosingBoundingBox());
 
-    result = view->contentsToWindow(result);
-
-    // FIXME: Cleanup pinch viewport coordinate translations. crbug.com/371902.
-    PinchViewport& pinchViewport = document().page()->frameHost().pinchViewport();
-    result = enclosingIntRect(pinchViewport.mainViewToViewportCSSPixels(result));
-
-    return result;
+    return view->soonToBeRemovedContentsToUnscaledViewport(result);
 }
 
 PassRefPtrWillBeRawPtr<ClientRectList> Element::getClientRects()

@@ -598,7 +598,7 @@ void WebDevToolsAgentImpl::dispatchMessageFromFrontend(const String& message)
         m_inspectorBackendDispatcher->dispatch(message);
 }
 
-void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& point)
+void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& pointInRootFrame)
 {
     Page* page = m_webViewImpl->page();
     if (!page)
@@ -608,10 +608,10 @@ void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& point)
     HitTestRequest request(hitType);
     WebMouseEvent dummyEvent;
     dummyEvent.type = WebInputEvent::MouseDown;
-    dummyEvent.x = point.x;
-    dummyEvent.y = point.y;
+    dummyEvent.x = pointInRootFrame.x;
+    dummyEvent.y = pointInRootFrame.y;
     IntPoint transformedPoint = PlatformMouseEventBuilder(page->deprecatedLocalMainFrame()->view(), dummyEvent).position();
-    HitTestResult result(page->deprecatedLocalMainFrame()->view()->windowToContents(transformedPoint));
+    HitTestResult result(page->deprecatedLocalMainFrame()->view()->rootFrameToContents(transformedPoint));
     page->deprecatedLocalMainFrame()->contentRenderer()->hitTest(request, result);
     Node* node = result.innerNode();
     if (!node && page->deprecatedLocalMainFrame()->document())

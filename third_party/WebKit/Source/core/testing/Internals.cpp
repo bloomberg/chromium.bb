@@ -977,7 +977,7 @@ DOMPoint* Internals::touchPositionAdjustedToBestClickableNode(long x, long y, lo
     IntPoint point(x + radius.width(), y + radius.height());
 
     EventHandler& eventHandler = document->frame()->eventHandler();
-    IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
+    IntPoint hitTestPoint = document->frame()->view()->rootFrameToContents(point);
     HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased, LayoutSize(radius));
 
     Node* targetNode = 0;
@@ -1004,7 +1004,7 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(long x, long y, long width
     IntPoint point(x + radius.width(), y + radius.height());
 
     EventHandler& eventHandler = document->frame()->eventHandler();
-    IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
+    IntPoint hitTestPoint = document->frame()->view()->rootFrameToContents(point);
     HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased, LayoutSize(radius));
 
     Node* targetNode = 0;
@@ -1027,7 +1027,7 @@ DOMPoint* Internals::touchPositionAdjustedToBestContextMenuNode(long x, long y, 
     IntPoint point(x + radius.width(), y + radius.height());
 
     EventHandler& eventHandler = document->frame()->eventHandler();
-    IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
+    IntPoint hitTestPoint = document->frame()->view()->rootFrameToContents(point);
     HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased, LayoutSize(radius));
 
     Node* targetNode = 0;
@@ -1054,7 +1054,7 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(long x, long y, long wid
     IntPoint point(x + radius.width(), y + radius.height());
 
     EventHandler& eventHandler = document->frame()->eventHandler();
-    IntPoint hitTestPoint = document->frame()->view()->windowToContents(point);
+    IntPoint hitTestPoint = document->frame()->view()->rootFrameToContents(point);
     HitTestResult result = eventHandler.hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ListBased, LayoutSize(radius));
 
     Node* targetNode = 0;

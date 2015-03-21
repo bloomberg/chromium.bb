@@ -1055,7 +1055,7 @@ WebRange WebLocalFrameImpl::markedRange() const
     return frame()->inputMethodController().compositionRange();
 }
 
-bool WebLocalFrameImpl::firstRectForCharacterRange(unsigned location, unsigned length, WebRect& rect) const
+bool WebLocalFrameImpl::firstRectForCharacterRange(unsigned location, unsigned length, WebRect& rectInViewport) const
 {
     if ((location + length < location) && (location + length))
         length = 0;
@@ -1066,17 +1066,17 @@ bool WebLocalFrameImpl::firstRectForCharacterRange(unsigned location, unsigned l
     if (!range)
         return false;
     IntRect intRect = frame()->editor().firstRectForRange(range.get());
-    rect = WebRect(intRect);
-    rect = frame()->view()->contentsToWindow(rect);
+    rectInViewport = WebRect(intRect);
+    rectInViewport = frame()->view()->contentsToViewport(rectInViewport);
     return true;
 }
 
-size_t WebLocalFrameImpl::characterIndexForPoint(const WebPoint& webPoint) const
+size_t WebLocalFrameImpl::characterIndexForPoint(const WebPoint& pointInViewport) const
 {
     if (!frame())
         return kNotFound;
 
-    IntPoint point = frame()->view()->windowToContents(webPoint);
+    IntPoint point = frame()->view()->viewportToContents(pointInViewport);
     HitTestResult result = frame()->eventHandler().hitTestResultAtPoint(point, HitTestRequest::ReadOnly | HitTestRequest::Active);
     RefPtrWillBeRawPtr<Range> range = frame()->rangeForPoint(result.roundedPointInInnerNodeFrame());
     if (!range)
@@ -1219,9 +1219,9 @@ bool WebLocalFrameImpl::selectWordAroundCaret()
     return frame()->selection().selectWordAroundPosition(selection.selection().visibleStart());
 }
 
-void WebLocalFrameImpl::selectRange(const WebPoint& base, const WebPoint& extent)
+void WebLocalFrameImpl::selectRange(const WebPoint& baseInViewport, const WebPoint& extentInViewport)
 {
-    moveRangeSelection(base, extent);
+    moveRangeSelection(baseInViewport, extentInViewport);
 }
 
 void WebLocalFrameImpl::selectRange(const WebRange& webRange)
@@ -1230,29 +1230,32 @@ void WebLocalFrameImpl::selectRange(const WebRange& webRange)
         frame()->selection().setSelectedRange(range.get(), VP_DEFAULT_AFFINITY, FrameSelection::NonDirectional, NotUserTriggered);
 }
 
-void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point, WebFrame::TextGranularity granularity)
+void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& pointInViewport, WebFrame::TextGranularity granularity)
 {
     blink::TextGranularity blinkGranularity = blink::CharacterGranularity;
     if (granularity == WebFrame::WordGranularity)
         blinkGranularity = blink::WordGranularity;
-    frame()->selection().moveRangeSelectionExtent(visiblePositionForWindowPoint(point), blinkGranularity);
+    frame()->selection().moveRangeSelectionExtent(visiblePositionForViewportPoint(pointInViewport), blinkGranularity);
 }
 
-void WebLocalFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent, WebFrame::TextGranularity granularity)
+void WebLocalFrameImpl::moveRangeSelection(const WebPoint& baseInViewport, const WebPoint& extentInViewport, WebFrame::TextGranularity granularity)
 {
     blink::TextGranularity blinkGranularity = blink::CharacterGranularity;
     if (granularity == WebFrame::WordGranularity)
         blinkGranularity = blink::WordGranularity;
-    frame()->selection().moveRangeSelection(visiblePositionForWindowPoint(base), visiblePositionForWindowPoint(extent), blinkGranularity);
+    frame()->selection().moveRangeSelection(
+        visiblePositionForViewportPoint(baseInViewport),
+        visiblePositionForViewportPoint(extentInViewport),
+        blinkGranularity);
 }
 
-void WebLocalFrameImpl::moveCaretSelection(const WebPoint& point)
+void WebLocalFrameImpl::moveCaretSelection(const WebPoint& pointInViewport)
 {
     Element* editable = frame()->selection().rootEditableElement();
     if (!editable)
         return;
 
-    VisiblePosition position = visiblePositionForWindowPoint(point);
+    VisiblePosition position = visiblePositionForViewportPoint(pointInViewport);
     frame()->selection().moveTo(position, UserTriggered);
 }
 
@@ -1291,17 +1294,10 @@ void WebLocalFrameImpl::setCaretVisible(bool visible)
     frame()->selection().setCaretVisible(visible);
 }
 
-VisiblePosition WebLocalFrameImpl::visiblePositionForWindowPoint(const WebPoint& point)
+VisiblePosition WebLocalFrameImpl::visiblePositionForViewportPoint(const WebPoint& pointInViewport)
 {
-    // FIXME(bokan): crbug.com/371902 - These scale/pinch transforms shouldn't
-    // be ad hoc and explicit.
-    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
-    FloatPoint unscaledPoint(point);
-    unscaledPoint.scale(1 / view()->pageScaleFactor(), 1 / view()->pageScaleFactor());
-    unscaledPoint.moveBy(pinchViewport.visibleRect().location());
-
     HitTestRequest request = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::IgnoreClipping;
-    HitTestResult result(frame()->view()->windowToContents(roundedIntPoint(unscaledPoint)));
+    HitTestResult result(frame()->view()->viewportToContents(pointInViewport));
     frame()->document()->layoutView()->layer()->hitTest(request, result);
 
     if (Node* node = result.innerNode())

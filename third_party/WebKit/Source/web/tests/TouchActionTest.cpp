@@ -259,7 +259,7 @@ void TouchActionTest::runTestOnTree(ContainerNode* root, WebView* webView, Touch
             // we intended. This is the easiest way for a test to be broken, but has nothing really
             // to do with touch action.
             // Note that we can't use WebView's hit test API because it doesn't look into shadow DOM.
-            IntPoint docPoint(frameView->windowToContents(clientPoint));
+            IntPoint docPoint(frameView->rootFrameToContents(clientPoint));
             HitTestResult result = frame->eventHandler().hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
             ASSERT_EQ(element, result.innerElement()) << "Unexpected hit test result " << failureContextPos
                 << "  Got element: \"" << result.innerElement()->outerHTML().stripWhiteSpace().left(80).ascii().data() << "\""

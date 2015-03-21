@@ -73,7 +73,7 @@ void ValidationMessageClientImpl::showValidationMessage(const Element& anchor, c
     if (m_currentAnchor)
         hideValidationMessage(*m_currentAnchor);
     m_currentAnchor = &anchor;
-    IntRect anchorInViewport = currentView()->contentsToWindow(anchor.pixelSnappedBoundingBox());
+    IntRect anchorInViewport = currentView()->contentsToViewport(anchor.pixelSnappedBoundingBox());
     m_lastAnchorRectInScreen = currentView()->hostWindow()->viewportToScreen(anchorInViewport);
     m_lastPageScaleFactor = m_webView.pageScaleFactor();
     m_message = message;
@@ -122,7 +122,7 @@ void ValidationMessageClientImpl::checkAnchorStatus(Timer<ValidationMessageClien
 
     // Check the visibility of the element.
     // FIXME: Can we check invisibility by scrollable non-frame elements?
-    IntRect newAnchorRectInViewport = currentView()->contentsToWindow(m_currentAnchor->pixelSnappedBoundingBox());
+    IntRect newAnchorRectInViewport = currentView()->contentsToViewport(m_currentAnchor->pixelSnappedBoundingBox());
 
     // FIXME: This intersection eliminates the part of the rect outside the root view.
     // If this is meant as a visiblity test, intersecting it against the viewport rect

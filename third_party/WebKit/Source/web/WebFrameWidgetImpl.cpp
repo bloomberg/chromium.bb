@@ -570,8 +570,9 @@ bool WebFrameWidgetImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
         focus = localFrame->editor().firstRectForRange(range.get());
     }
 
-    IntRect scaledAnchor(localFrame->view()->contentsToWindow(anchor));
-    IntRect scaledFocus(localFrame->view()->contentsToWindow(focus));
+    // FIXME: This doesn't apply page scale. This should probably be contents to viewport. crbug.com/459293.
+    IntRect scaledAnchor(localFrame->view()->contentsToRootFrame(anchor));
+    IntRect scaledFocus(localFrame->view()->contentsToRootFrame(focus));
 
     anchor = scaledAnchor;
     focus = scaledFocus;
@@ -689,7 +690,7 @@ void WebFrameWidgetImpl::handleMouseDown(LocalFrame& mainFrame, const WebMouseEv
     // capture because it will interfere with the scrollbar receiving events.
     IntPoint point(event.x, event.y);
     if (event.button == WebMouseEvent::ButtonLeft) {
-        point = m_localRoot->frameView()->windowToContents(point);
+        point = m_localRoot->frameView()->rootFrameToContents(point);
         HitTestResult result(m_localRoot->frame()->eventHandler().hitTestResultAtPoint(point));
         result.setToShadowHostIfInClosedShadowRoot();
         Node* hitNode = result.innerNonSharedNode();

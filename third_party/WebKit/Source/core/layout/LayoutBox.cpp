@@ -775,7 +775,7 @@ bool LayoutBox::usesCompositedScrolling() const
     return hasOverflowClip() && hasLayer() && layer()->scrollableArea()->usesCompositedScrolling();
 }
 
-void LayoutBox::autoscroll(const IntPoint& position)
+void LayoutBox::autoscroll(const IntPoint& positionInRootFrame)
 {
     LocalFrame* frame = this->frame();
     if (!frame)
@@ -785,8 +785,8 @@ void LayoutBox::autoscroll(const IntPoint& position)
     if (!frameView)
         return;
 
-    IntPoint currentDocumentPosition = frameView->windowToContents(position);
-    scrollRectToVisible(LayoutRect(currentDocumentPosition, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
+    IntPoint positionInContent = frameView->rootFrameToContents(positionInRootFrame);
+    scrollRectToVisible(LayoutRect(positionInContent, LayoutSize(1, 1)), ScrollAlignment::alignToEdgeIfNeeded, ScrollAlignment::alignToEdgeIfNeeded);
 }
 
 // There are two kinds of renderer that can autoscroll.
@@ -801,7 +801,7 @@ bool LayoutBox::canAutoscroll() const
 
 // If specified point is in border belt, returned offset denotes direction of
 // scrolling.
-IntSize LayoutBox::calculateAutoscrollDirection(const IntPoint& windowPoint) const
+IntSize LayoutBox::calculateAutoscrollDirection(const IntPoint& pointInRootFrame) const
 {
     if (!frame())
         return IntSize();
@@ -812,9 +812,9 @@ IntSize LayoutBox::calculateAutoscrollDirection(const IntPoint& windowPoint) con
 
     IntRect box(absoluteBoundingBoxRect());
     box.move(view()->frameView()->scrollOffset());
-    IntRect windowBox = view()->frameView()->contentsToWindow(box);
+    IntRect windowBox = view()->frameView()->contentsToRootFrame(box);
 
-    IntPoint windowAutoscrollPoint = windowPoint;
+    IntPoint windowAutoscrollPoint = pointInRootFrame;
 
     if (windowAutoscrollPoint.x() < windowBox.x() + autoscrollBeltSize)
         windowAutoscrollPoint.move(-autoscrollBeltSize, 0);
@@ -826,7 +826,7 @@ IntSize LayoutBox::calculateAutoscrollDirection(const IntPoint& windowPoint) con
     else if (windowAutoscrollPoint.y() > windowBox.maxY() - autoscrollBeltSize)
         windowAutoscrollPoint.move(0, autoscrollBeltSize);
 
-    return windowAutoscrollPoint - windowPoint;
+    return windowAutoscrollPoint - pointInRootFrame;
 }
 
 LayoutBox* LayoutBox::findAutoscrollable(LayoutObject* renderer)
