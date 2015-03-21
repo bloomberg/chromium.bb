@@ -1412,32 +1412,8 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
 
 class FlippedScissorAndViewportContext : public TestWebGraphicsContext3D {
  public:
-  FlippedScissorAndViewportContext()
-      : did_call_viewport_(false), did_call_scissor_(false) {}
-  ~FlippedScissorAndViewportContext() override {
-    EXPECT_TRUE(did_call_viewport_);
-    EXPECT_TRUE(did_call_scissor_);
-  }
-
-  void viewport(GLint x, GLint y, GLsizei width, GLsizei height) override {
-    EXPECT_EQ(10, x);
-    EXPECT_EQ(390, y);
-    EXPECT_EQ(100, width);
-    EXPECT_EQ(100, height);
-    did_call_viewport_ = true;
-  }
-
-  void scissor(GLint x, GLint y, GLsizei width, GLsizei height) override {
-    EXPECT_EQ(30, x);
-    EXPECT_EQ(450, y);
-    EXPECT_EQ(20, width);
-    EXPECT_EQ(20, height);
-    did_call_scissor_ = true;
-  }
-
- private:
-  bool did_call_viewport_;
-  bool did_call_scissor_;
+  MOCK_METHOD4(viewport, void(GLint x, GLint y, GLsizei width, GLsizei height));
+  MOCK_METHOD4(scissor, void(GLint x, GLint y, GLsizei width, GLsizei height));
 };
 
 TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
@@ -1447,6 +1423,12 @@ TEST_F(GLRendererTest, ScissorAndViewportWithinNonreshapableSurface) {
   // the glViewport can be at a nonzero origin within the surface.
   scoped_ptr<FlippedScissorAndViewportContext> context_owned(
       new FlippedScissorAndViewportContext);
+
+  // We expect exactly one call to viewport on this context and exactly two
+  // to scissor (one to scissor the clear, one to scissor the quad draw).
+  EXPECT_CALL(*context_owned, viewport(10, 390, 100, 100));
+  EXPECT_CALL(*context_owned, scissor(10, 390, 100, 100));
+  EXPECT_CALL(*context_owned, scissor(30, 450, 20, 20));
 
   FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface(

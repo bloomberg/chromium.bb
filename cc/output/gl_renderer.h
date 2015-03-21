@@ -110,10 +110,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                                 const gfx::Rect& target_rect) override;
   void SetDrawViewport(const gfx::Rect& window_space_viewport) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
-  void DiscardPixels(bool has_external_stencil_test,
-                     bool draw_rect_covers_full_surface) override;
-  void ClearFramebuffer(DrawingFrame* frame,
-                        bool has_external_stencil_test) override;
+  void PrepareSurfaceForPass(DrawingFrame* frame,
+                             SurfaceInitializationMode initialization_mode,
+                             const gfx::Rect& render_pass_scissor) override;
   void DoDrawQuad(DrawingFrame* frame,
                   const class DrawQuad*,
                   const gfx::QuadF* draw_region) override;
@@ -149,6 +148,9 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   friend class GLRendererShaderTest;
 
   static void ToGLMatrix(float* gl_matrix, const gfx::Transform& transform);
+
+  void DiscardPixels();
+  void ClearFramebuffer(DrawingFrame* frame);
 
   void DrawCheckerboardQuad(const DrawingFrame* frame,
                             const CheckerboardDrawQuad* quad,

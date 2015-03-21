@@ -48,10 +48,9 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
                                 const gfx::Rect& target_rect) override;
   void SetDrawViewport(const gfx::Rect& window_space_viewport) override;
   void SetScissorTestRect(const gfx::Rect& scissor_rect) override;
-  void DiscardPixels(bool has_external_stencil_test,
-                     bool draw_rect_covers_full_surface) override;
-  void ClearFramebuffer(DrawingFrame* frame,
-                        bool has_external_stencil_test) override;
+  void PrepareSurfaceForPass(DrawingFrame* frame,
+                             SurfaceInitializationMode initialization_mode,
+                             const gfx::Rect& render_pass_scissor) override;
 
   void DoDrawQuad(DrawingFrame* frame,
                   const DrawQuad* quad,
@@ -74,6 +73,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
 
  private:
   void ClearCanvas(SkColor color);
+  void ClearFramebuffer(DrawingFrame* frame);
   void SetClipRect(const gfx::Rect& rect);
   bool IsSoftwareResource(ResourceProvider::ResourceId resource_id) const;
 

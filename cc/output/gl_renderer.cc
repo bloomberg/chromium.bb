@@ -401,10 +401,8 @@ void GLRenderer::DidChangeVisibility() {
 
 void GLRenderer::ReleaseRenderPassTextures() { render_pass_textures_.clear(); }
 
-void GLRenderer::DiscardPixels(bool has_external_stencil_test,
-                               bool draw_rect_covers_full_surface) {
-  if (has_external_stencil_test || !draw_rect_covers_full_surface ||
-      !capabilities_.using_discard_framebuffer)
+void GLRenderer::DiscardPixels() {
+  if (!capabilities_.using_discard_framebuffer)
     return;
   bool using_default_framebuffer =
       !current_framebuffer_lock_ &&
@@ -415,15 +413,27 @@ void GLRenderer::DiscardPixels(bool has_external_stencil_test,
       GL_FRAMEBUFFER, arraysize(attachments), attachments);
 }
 
-void GLRenderer::ClearFramebuffer(DrawingFrame* frame,
-                                  bool has_external_stencil_test) {
-  // It's unsafe to clear when we have a stencil test because glClear ignores
-  // stencil.
-  if (has_external_stencil_test) {
-    DCHECK(!frame->current_render_pass->has_transparent_background);
-    return;
+void GLRenderer::PrepareSurfaceForPass(
+    DrawingFrame* frame,
+    SurfaceInitializationMode initialization_mode,
+    const gfx::Rect& render_pass_scissor) {
+  switch (initialization_mode) {
+    case SURFACE_INITIALIZATION_MODE_PRESERVE:
+      EnsureScissorTestDisabled();
+      return;
+    case SURFACE_INITIALIZATION_MODE_FULL_SURFACE_CLEAR:
+      EnsureScissorTestDisabled();
+      DiscardPixels();
+      ClearFramebuffer(frame);
+      break;
+    case SURFACE_INITIALIZATION_MODE_SCISSORED_CLEAR:
+      SetScissorTestRect(render_pass_scissor);
+      ClearFramebuffer(frame);
+      break;
   }
+}
 
+void GLRenderer::ClearFramebuffer(DrawingFrame* frame) {
   // On DEBUG builds, opaque render passes are cleared to blue to easily see
   // regions that were not drawn on the screen.
   if (frame->current_render_pass->has_transparent_background)
@@ -2920,9 +2930,6 @@ bool GLRenderer::BindFramebufferToTexture(DrawingFrame* frame,
   DCHECK(gl_->CheckFramebufferStatus(GL_FRAMEBUFFER) ==
              GL_FRAMEBUFFER_COMPLETE ||
          IsContextLost());
-
-  InitializeViewport(
-      frame, target_rect, gfx::Rect(target_rect.size()), target_rect.size());
   return true;
 }
 

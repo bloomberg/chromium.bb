@@ -278,27 +278,32 @@ bool DirectRenderer::NeedDeviceClip(const DrawingFrame* frame) const {
   return !frame->device_clip_rect.Contains(frame->device_viewport_rect);
 }
 
-gfx::Rect DirectRenderer::DeviceClipRectInWindowSpace(const DrawingFrame* frame)
-    const {
+gfx::Rect DirectRenderer::DeviceClipRectInDrawSpace(
+    const DrawingFrame* frame) const {
   gfx::Rect device_clip_rect = frame->device_clip_rect;
-  if (FlippedFramebuffer(frame))
-    device_clip_rect.set_y(current_surface_size_.height() -
-                           device_clip_rect.bottom());
+  device_clip_rect -= current_viewport_rect_.OffsetFromOrigin();
+  device_clip_rect += current_draw_rect_.OffsetFromOrigin();
   return device_clip_rect;
 }
 
-void DirectRenderer::SetScissorStateForQuad(const DrawingFrame* frame,
-                                            const DrawQuad& quad) {
-  if (quad.isClipped()) {
-    SetScissorTestRectInDrawSpace(frame, quad.clipRect());
-    return;
-  }
-  if (NeedDeviceClip(frame)) {
-    SetScissorTestRect(DeviceClipRectInWindowSpace(frame));
-    return;
-  }
+gfx::Rect DirectRenderer::DeviceViewportRectInDrawSpace(
+    const DrawingFrame* frame) const {
+  gfx::Rect device_viewport_rect = frame->device_viewport_rect;
+  device_viewport_rect -= current_viewport_rect_.OffsetFromOrigin();
+  device_viewport_rect += current_draw_rect_.OffsetFromOrigin();
+  return device_viewport_rect;
+}
 
-  EnsureScissorTestDisabled();
+gfx::Rect DirectRenderer::OutputSurfaceRectInDrawSpace(
+    const DrawingFrame* frame) const {
+  if (frame->current_render_pass == frame->root_render_pass) {
+    gfx::Rect output_surface_rect(output_surface_->SurfaceSize());
+    output_surface_rect -= current_viewport_rect_.OffsetFromOrigin();
+    output_surface_rect += current_draw_rect_.OffsetFromOrigin();
+    return output_surface_rect;
+  } else {
+    return frame->current_render_pass->output_rect;
+  }
 }
 
 bool DirectRenderer::ShouldSkipQuad(const DrawQuad& quad,
@@ -315,14 +320,23 @@ bool DirectRenderer::ShouldSkipQuad(const DrawQuad& quad,
   return false;
 }
 
-void DirectRenderer::SetScissorStateForQuadWithRenderPassScissor(
+void DirectRenderer::SetScissorStateForQuad(
     const DrawingFrame* frame,
     const DrawQuad& quad,
-    const gfx::Rect& render_pass_scissor) {
-  gfx::Rect quad_scissor_rect = render_pass_scissor;
-  if (quad.isClipped())
-    quad_scissor_rect.Intersect(quad.clipRect());
-  SetScissorTestRectInDrawSpace(frame, quad_scissor_rect);
+    const gfx::Rect& render_pass_scissor,
+    bool use_render_pass_scissor) {
+  if (use_render_pass_scissor) {
+    gfx::Rect quad_scissor_rect = render_pass_scissor;
+    if (quad.isClipped())
+      quad_scissor_rect.Intersect(quad.clipRect());
+    SetScissorTestRectInDrawSpace(frame, quad_scissor_rect);
+    return;
+  } else if (quad.isClipped()) {
+    SetScissorTestRectInDrawSpace(frame, quad.clipRect());
+    return;
+  }
+
+  EnsureScissorTestDisabled();
 }
 
 void DirectRenderer::SetScissorTestRectInDrawSpace(
@@ -330,8 +344,6 @@ void DirectRenderer::SetScissorTestRectInDrawSpace(
     const gfx::Rect& draw_space_rect) {
   gfx::Rect window_space_rect =
       MoveFromDrawToWindowSpace(frame, draw_space_rect);
-  if (NeedDeviceClip(frame))
-    window_space_rect.Intersect(DeviceClipRectInWindowSpace(frame));
   SetScissorTestRect(window_space_rect);
 }
 
@@ -340,13 +352,9 @@ void DirectRenderer::FinishDrawingQuadList() {}
 void DirectRenderer::DoDrawPolygon(const DrawPolygon& poly,
                                    DrawingFrame* frame,
                                    const gfx::Rect& render_pass_scissor,
-                                   bool using_scissor_as_optimization) {
-  if (using_scissor_as_optimization) {
-    SetScissorStateForQuadWithRenderPassScissor(frame, *poly.original_ref(),
-                                                render_pass_scissor);
-  } else {
-    SetScissorStateForQuad(frame, *poly.original_ref());
-  }
+                                   bool use_render_pass_scissor) {
+  SetScissorStateForQuad(frame, *poly.original_ref(), render_pass_scissor,
+                         use_render_pass_scissor);
 
   // If the poly has not been split, then it is just a normal DrawQuad,
   // and we should save any extra processing that would have to be done.
@@ -365,14 +373,14 @@ void DirectRenderer::DoDrawPolygon(const DrawPolygon& poly,
 void DirectRenderer::FlushPolygons(ScopedPtrDeque<DrawPolygon>* poly_list,
                                    DrawingFrame* frame,
                                    const gfx::Rect& render_pass_scissor,
-                                   bool using_scissor_as_optimization) {
+                                   bool use_render_pass_scissor) {
   if (poly_list->empty()) {
     return;
   }
 
   BspTree bsp_tree(poly_list);
   BspWalkActionDrawPolygon action_handler(this, frame, render_pass_scissor,
-                                          using_scissor_as_optimization);
+                                          use_render_pass_scissor);
   bsp_tree.TraverseWithActionHandler(&action_handler);
   DCHECK(poly_list->empty());
 }
@@ -383,37 +391,52 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
   if (!UseRenderPass(frame, render_pass))
     return;
 
-  bool using_scissor_as_optimization = Capabilities().using_partial_swap;
-  gfx::Rect render_pass_scissor;
-  bool draw_rect_covers_full_surface = true;
-  if (frame->current_render_pass == frame->root_render_pass &&
-      !frame->device_viewport_rect.Contains(
-           gfx::Rect(output_surface_->SurfaceSize())))
-    draw_rect_covers_full_surface = false;
+  const gfx::Rect surface_rect_in_draw_space =
+      OutputSurfaceRectInDrawSpace(frame);
+  gfx::Rect render_pass_scissor_in_draw_space = surface_rect_in_draw_space;
 
-  if (using_scissor_as_optimization) {
-    render_pass_scissor = ComputeScissorRectForRenderPass(frame);
-    SetScissorTestRectInDrawSpace(frame, render_pass_scissor);
-    if (!render_pass_scissor.Contains(frame->current_render_pass->output_rect))
-      draw_rect_covers_full_surface = false;
+  if (frame->current_render_pass == frame->root_render_pass) {
+    render_pass_scissor_in_draw_space.Intersect(
+        DeviceViewportRectInDrawSpace(frame));
   }
 
-  if (frame->current_render_pass != frame->root_render_pass ||
-      settings_->should_clear_root_render_pass) {
-    if (NeedDeviceClip(frame)) {
-      SetScissorTestRect(DeviceClipRectInWindowSpace(frame));
-      draw_rect_covers_full_surface = false;
-    } else if (!using_scissor_as_optimization) {
-      EnsureScissorTestDisabled();
-    }
-
-    bool has_external_stencil_test =
-        output_surface_->HasExternalStencilTest() &&
-        frame->current_render_pass == frame->root_render_pass;
-
-    DiscardPixels(has_external_stencil_test, draw_rect_covers_full_surface);
-    ClearFramebuffer(frame, has_external_stencil_test);
+  if (Capabilities().using_partial_swap) {
+    render_pass_scissor_in_draw_space.Intersect(
+        ComputeScissorRectForRenderPass(frame));
   }
+
+  if (NeedDeviceClip(frame)) {
+    render_pass_scissor_in_draw_space.Intersect(
+        DeviceClipRectInDrawSpace(frame));
+  }
+
+  bool render_pass_is_clipped =
+      !render_pass_scissor_in_draw_space.Contains(surface_rect_in_draw_space);
+  bool is_root_render_pass =
+      frame->current_render_pass == frame->root_render_pass;
+  bool has_external_stencil_test =
+      is_root_render_pass && output_surface_->HasExternalStencilTest();
+  bool should_clear_surface =
+      !has_external_stencil_test &&
+      (!is_root_render_pass || settings_->should_clear_root_render_pass);
+
+  // If |has_external_stencil_test| we can't discard or clear. Make sure we
+  // don't need to.
+  DCHECK_IMPLIES(has_external_stencil_test,
+                 !frame->current_render_pass->has_transparent_background);
+
+  SurfaceInitializationMode mode;
+  if (should_clear_surface && render_pass_is_clipped) {
+    mode = SURFACE_INITIALIZATION_MODE_SCISSORED_CLEAR;
+  } else if (should_clear_surface) {
+    mode = SURFACE_INITIALIZATION_MODE_FULL_SURFACE_CLEAR;
+  } else {
+    mode = SURFACE_INITIALIZATION_MODE_PRESERVE;
+  }
+
+  PrepareSurfaceForPass(
+      frame, mode,
+      MoveFromDrawToWindowSpace(frame, render_pass_scissor_in_draw_space));
 
   const QuadList& quad_list = render_pass->quad_list;
   ScopedPtrDeque<DrawPolygon> poly_list;
@@ -425,15 +448,15 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
     const DrawQuad& quad = **it;
     gfx::QuadF send_quad(quad.visible_rect);
 
-    if (using_scissor_as_optimization &&
-        ShouldSkipQuad(quad, render_pass_scissor)) {
+    if (render_pass_is_clipped &&
+        ShouldSkipQuad(quad, render_pass_scissor_in_draw_space)) {
       continue;
     }
 
     if (last_sorting_context_id != quad.shared_quad_state->sorting_context_id) {
       last_sorting_context_id = quad.shared_quad_state->sorting_context_id;
-      FlushPolygons(&poly_list, frame, render_pass_scissor,
-                    using_scissor_as_optimization);
+      FlushPolygons(&poly_list, frame, render_pass_scissor_in_draw_space,
+                    render_pass_is_clipped);
     }
 
     // This layer is in a 3D sorting context so we add it to the list of
@@ -448,17 +471,13 @@ void DirectRenderer::DrawRenderPass(DrawingFrame* frame,
     }
 
     // We are not in a 3d sorting context, so we should draw the quad normally.
-    if (using_scissor_as_optimization) {
-      SetScissorStateForQuadWithRenderPassScissor(frame, quad,
-                                                  render_pass_scissor);
-    } else {
-      SetScissorStateForQuad(frame, quad);
-    }
+    SetScissorStateForQuad(frame, quad, render_pass_scissor_in_draw_space,
+                           render_pass_is_clipped);
 
     DoDrawQuad(frame, &quad, nullptr);
   }
-  FlushPolygons(&poly_list, frame, render_pass_scissor,
-                using_scissor_as_optimization);
+  FlushPolygons(&poly_list, frame, render_pass_scissor_in_draw_space,
+                render_pass_is_clipped);
   FinishDrawingQuadList();
 }
 
@@ -487,7 +506,14 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
         size, ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER, RGBA_8888);
   DCHECK(texture->id());
 
-  return BindFramebufferToTexture(frame, texture, render_pass->output_rect);
+  if (BindFramebufferToTexture(frame, texture, render_pass->output_rect)) {
+    InitializeViewport(frame, render_pass->output_rect,
+                       gfx::Rect(render_pass->output_rect.size()),
+                       render_pass->output_rect.size());
+    return true;
+  }
+
+  return false;
 }
 
 bool DirectRenderer::HasAllocatedResourcesForTesting(RenderPassId id) const {

@@ -172,10 +172,6 @@ bool SoftwareRenderer::BindFramebufferToTexture(
   current_framebuffer_canvas_ =
       skia::AdoptRef(new SkCanvas(current_framebuffer_lock_->sk_bitmap()));
   current_canvas_ = current_framebuffer_canvas_.get();
-  InitializeViewport(frame,
-                     target_rect,
-                     gfx::Rect(target_rect.size()),
-                     target_rect.size());
   return true;
 }
 
@@ -202,11 +198,7 @@ void SoftwareRenderer::ClearCanvas(SkColor color) {
     current_canvas_->clear(color);
 }
 
-void SoftwareRenderer::DiscardPixels(bool has_external_stencil_test,
-                                     bool draw_rect_covers_full_surface) {}
-
-void SoftwareRenderer::ClearFramebuffer(DrawingFrame* frame,
-                                        bool has_external_stencil_test) {
+void SoftwareRenderer::ClearFramebuffer(DrawingFrame* frame) {
   if (frame->current_render_pass->has_transparent_background) {
     ClearCanvas(SkColorSetARGB(0, 0, 0, 0));
   } else {
@@ -215,6 +207,25 @@ void SoftwareRenderer::ClearFramebuffer(DrawingFrame* frame,
     // to easily see regions that were not drawn on the screen.
     ClearCanvas(SkColorSetARGB(255, 0, 0, 255));
 #endif
+  }
+}
+
+void SoftwareRenderer::PrepareSurfaceForPass(
+    DrawingFrame* frame,
+    SurfaceInitializationMode initialization_mode,
+    const gfx::Rect& render_pass_scissor) {
+  switch (initialization_mode) {
+    case SURFACE_INITIALIZATION_MODE_PRESERVE:
+      EnsureScissorTestDisabled();
+      return;
+    case SURFACE_INITIALIZATION_MODE_FULL_SURFACE_CLEAR:
+      EnsureScissorTestDisabled();
+      ClearFramebuffer(frame);
+      break;
+    case SURFACE_INITIALIZATION_MODE_SCISSORED_CLEAR:
+      SetScissorTestRect(render_pass_scissor);
+      ClearFramebuffer(frame);
+      break;
   }
 }
 

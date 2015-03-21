@@ -5301,8 +5301,8 @@ TEST_F(LayerTreeHostImplTest, PartialSwap) {
   CreateHostImpl(settings, FakeOutputSurface::Create3d(context_owned.Pass()));
   SetupRootLayerImpl(FakeLayerWithQuads::Create(host_impl_->active_tree(), 1));
 
-  // The first frame is not a partially-swapped one.
-  harness.MustSetScissor(0, 0, 10, 10);
+  // The first frame is not a partially-swapped one. No scissor should be set.
+  harness.MustSetNoScissor();
   harness.MustDrawSolidQuad();
   {
     LayerTreeHostImpl::FrameData frame;

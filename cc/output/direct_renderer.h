@@ -63,9 +63,15 @@ class CC_EXPORT DirectRenderer : public Renderer {
   void DoDrawPolygon(const DrawPolygon& poly,
                      DrawingFrame* frame,
                      const gfx::Rect& render_pass_scissor,
-                     bool using_scissor_as_optimization);
+                     bool use_render_pass_scissor);
 
  protected:
+  enum SurfaceInitializationMode {
+    SURFACE_INITIALIZATION_MODE_PRESERVE,
+    SURFACE_INITIALIZATION_MODE_SCISSORED_CLEAR,
+    SURFACE_INITIALIZATION_MODE_FULL_SURFACE_CLEAR,
+  };
+
   DirectRenderer(RendererClient* client,
                  const RendererSettings* settings,
                  OutputSurface* output_surface,
@@ -83,15 +89,16 @@ class CC_EXPORT DirectRenderer : public Renderer {
                                       const gfx::Rect& draw_rect) const;
 
   bool NeedDeviceClip(const DrawingFrame* frame) const;
-  gfx::Rect DeviceClipRectInWindowSpace(const DrawingFrame* frame) const;
+  gfx::Rect DeviceClipRectInDrawSpace(const DrawingFrame* frame) const;
+  gfx::Rect DeviceViewportRectInDrawSpace(const DrawingFrame* frame) const;
+  gfx::Rect OutputSurfaceRectInDrawSpace(const DrawingFrame* frame) const;
   static gfx::Rect ComputeScissorRectForRenderPass(const DrawingFrame* frame);
-  void SetScissorStateForQuad(const DrawingFrame* frame, const DrawQuad& quad);
+  void SetScissorStateForQuad(const DrawingFrame* frame,
+                              const DrawQuad& quad,
+                              const gfx::Rect& render_pass_scissor,
+                              bool use_render_pass_scissor);
   bool ShouldSkipQuad(const DrawQuad& quad,
                       const gfx::Rect& render_pass_scissor);
-  void SetScissorStateForQuadWithRenderPassScissor(
-      const DrawingFrame* frame,
-      const DrawQuad& quad,
-      const gfx::Rect& render_pass_scissor);
   void SetScissorTestRectInDrawSpace(const DrawingFrame* frame,
                                      const gfx::Rect& draw_space_rect);
 
@@ -100,7 +107,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
   void FlushPolygons(ScopedPtrDeque<DrawPolygon>* poly_list,
                      DrawingFrame* frame,
                      const gfx::Rect& render_pass_scissor,
-                     bool using_scissor_as_optimization);
+                     bool use_render_pass_scissor);
   void DrawRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
   bool UseRenderPass(DrawingFrame* frame, const RenderPass* render_pass);
 
@@ -110,10 +117,10 @@ class CC_EXPORT DirectRenderer : public Renderer {
                                         const gfx::Rect& target_rect) = 0;
   virtual void SetDrawViewport(const gfx::Rect& window_space_viewport) = 0;
   virtual void SetScissorTestRect(const gfx::Rect& scissor_rect) = 0;
-  virtual void DiscardPixels(bool has_external_stencil_test,
-                             bool draw_rect_covers_full_surface) = 0;
-  virtual void ClearFramebuffer(DrawingFrame* frame,
-                                bool has_external_stencil_test) = 0;
+  virtual void PrepareSurfaceForPass(
+      DrawingFrame* frame,
+      SurfaceInitializationMode initialization_mode,
+      const gfx::Rect& render_pass_scissor) = 0;
   // clip_region is a (possibly null) pointer to a quad in the same
   // space as the quad. When non-null only the area of the quad that overlaps
   // with clip_region will be drawn.
