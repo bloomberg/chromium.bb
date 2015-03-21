@@ -35,8 +35,13 @@ namespace blink {
 
 const double maximumAllowedDelayTime = 180;
 
-DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& exceptionState)
+DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTime)
     : AudioBasicProcessorNode(NodeTypeDelay, context, sampleRate)
+{
+    m_processor = new DelayProcessor(context, sampleRate, 1, maxDelayTime);
+}
+
+DelayNode* DelayNode::create(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& exceptionState)
 {
     if (maxDelayTime <= 0 || maxDelayTime >= maximumAllowedDelayTime) {
         exceptionState.throwDOMException(
@@ -44,9 +49,9 @@ DelayNode::DelayNode(AudioContext* context, float sampleRate, double maxDelayTim
             "max delay time (" + String::number(maxDelayTime)
             + ") must be between 0 and " + String::number(maximumAllowedDelayTime)
             + ", exclusive.");
-        return;
+        return nullptr;
     }
-    m_processor = new DelayProcessor(context, sampleRate, 1, maxDelayTime);
+    return new DelayNode(context, sampleRate, maxDelayTime);
 }
 
 AudioParam* DelayNode::delayTime()

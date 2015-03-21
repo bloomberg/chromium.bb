@@ -37,15 +37,11 @@ class ExceptionState;
 class DelayNode final : public AudioBasicProcessorNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static DelayNode* create(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& exceptionState)
-    {
-        return new DelayNode(context, sampleRate, maxDelayTime, exceptionState);
-    }
-
+    static DelayNode* create(AudioContext*, float sampleRate, double maxDelayTime, ExceptionState&);
     AudioParam* delayTime();
 
 private:
-    DelayNode(AudioContext*, float sampleRate, double maxDelayTime, ExceptionState&);
+    DelayNode(AudioContext*, float sampleRate, double maxDelayTime);
 
     DelayProcessor* delayProcessor() { return static_cast<DelayProcessor*>(processor()); }
 };
