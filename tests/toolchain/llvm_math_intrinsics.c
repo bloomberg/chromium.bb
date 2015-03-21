@@ -203,10 +203,14 @@ int main(int argc, char* argv[]) {
     print_op1_libm(5, sqrtf, f32[i], no_nan_sign);
     print_op1_builtin(5, sqrtf, f32[i], no_nan_sign);
     print_op1_llvm(5, sqrtf, f32[i], no_nan_sign);
-    print_op1(5, logf, f32[i], nan_sign);
-    print_op1(5, log2f, f32[i], nan_sign);
-    print_op1(5, log10f, f32[i], nan_sign);
-    print_op1(4, expf, f32[i], nan_sign);
+    /*
+     * logf(-snan) produces "-qnan" on X86/ARM, yet it can produce "+qnan"
+     * on MIPS32 platforms. Thus, we can not rely on sign of it for log/exp.
+     */
+    print_op1(5, logf, f32[i], no_nan_sign);
+    print_op1(5, log2f, f32[i], no_nan_sign);
+    print_op1(5, log10f, f32[i], no_nan_sign);
+    print_op1(4, expf, f32[i], no_nan_sign);
     print_op1(4, exp2f, f32[i], nan_sign);
     /* We may want to fix this to be consistent re: nan sign bit.
      * On x86, sin/cos of inf/-inf the functions give -nan,
@@ -227,10 +231,14 @@ int main(int argc, char* argv[]) {
     print_op1_libm(6, sqrt, f64[i], no_nan_sign);
     print_op1_builtin(6, sqrt, f64[i], no_nan_sign);
     print_op1_llvm(6, sqrt, f64[i], no_nan_sign);
-    print_op1(6, log, f64[i], nan_sign);
-    print_op1(6, log2, f64[i], nan_sign);
-    print_op1(6, log10, f64[i], nan_sign);
-    print_op1(6, exp, f64[i], nan_sign);
+    /*
+     * See the comment above: log(-snan) produces result of different sign
+     * on X86/ARM platforms on one side, and MIPS32 on the other.
+     */
+    print_op1(6, log, f64[i], no_nan_sign);
+    print_op1(6, log2, f64[i], no_nan_sign);
+    print_op1(6, log10, f64[i], no_nan_sign);
+    print_op1(6, exp, f64[i], no_nan_sign);
     print_op1(6, exp2, f64[i], nan_sign);
     print_op1(6, sin, f64[i], no_nan_sign);
     print_op1(6, cos, f64[i], no_nan_sign);
