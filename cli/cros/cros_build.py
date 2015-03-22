@@ -6,31 +6,15 @@
 
 from __future__ import print_function
 
-import os
-
-from chromite.cbuildbot import constants
 from chromite.cli import command
 from chromite.lib import blueprint_lib
 from chromite.lib import brick_lib
+from chromite.lib import chroot_util
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
 
-if cros_build_lib.IsInsideChroot():
-  # These import libraries outside chromite. See brbug.com/472.
-  from chromite.scripts import cros_setup_toolchains as toolchain
-  from chromite.scripts import cros_list_modified_packages as workon
-
-_HOST_PKGS = ('virtual/target-sdk', 'world',)
-
-
-def GetToolchainPackages():
-  """Get a list of host toolchain packages."""
-  # Load crossdev cache first for faster performance.
-  toolchain.Crossdev.Load(False)
-  packages = toolchain.GetTargetPackages('host')
-  return [toolchain.GetPortagePackage('host', x) for x in packages]
 
 @command.CommandDecorator('build')
 class BuildCommand(command.CrosCommand):
@@ -124,7 +108,7 @@ To just build a single package:
     Only print the output if this step fails or if we're in debug mode.
     """
     if self.options.deps and not self.host:
-      cmd = self._GetEmergeCommand(self.board)
+      cmd = chroot_util.GetEmergeCommand(board=self.board)
       cmd += ['-pe', '--backtrack=0'] + self.build_pkgs
       try:
         cros_build_lib.RunCommand(cmd, combine_stdout_stderr=True,
@@ -133,88 +117,16 @@ To just build a single package:
         ex.msg += self._BAD_DEPEND_MSG
         raise
 
-  def _GetEmergeCommand(self, board):
-    cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge')]
-    if board is not None:
-      cmd += ['--board=%s' % board]
-    return cmd
-
-  def _Emerge(self, packages, host=False):
-    """Emerge the specified packages to the specified board.
-
-    Args:
-      packages: Packages to emerge.
-      host: If True, emerge to host.
-    """
-    brick, board_name = (None, None) if host else (self.brick, self.board)
-
-    modified_packages = list(workon.ListModifiedWorkonPackages(
-        None if brick else board_name, brick, host))
-
-    cmd = self._GetEmergeCommand(board_name) + [
-        '-uNv',
-        '--reinstall-atoms=%s' % ' '.join(modified_packages),
-        '--usepkg-exclude=%s' % ' '.join(modified_packages),
-    ]
-    cmd.append('--deep' if self.options.deps else '--nodeps')
-    if self.options.binary:
-      cmd += ['-g', '--with-bdeps=y']
-      if host:
-        # Only update toolchains in the chroot when binpkgs are available. The
-        # toolchain rollout process only takes place when the chromiumos sdk
-        # builder finishes a successful build and pushes out binpkgs.
-        cmd += ['--useoldpkg-atoms=%s' % ' '.join(GetToolchainPackages())]
-    if self.options.rebuild_deps:
-      cmd.append('--rebuild-if-unbuilt')
-    if self.options.jobs:
-      cmd.append('--jobs=%d' % self.options.jobs)
-    if self.options.log_level.lower() == 'debug':
-      cmd.append('--show-output')
-    cros_build_lib.SudoRunCommand(cmd + packages)
-
-  def _UpdateChroot(self):
-    """Update the chroot if needed."""
-    if self.chroot_update:
-      # Run chroot update hooks.
-      cmd = [os.path.join(constants.CROSUTILS_DIR, 'run_chroot_version_hooks')]
-      cros_build_lib.RunCommand(cmd, debug_level=logging.DEBUG)
-
-      # Update toolchains.
-      cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_setup_toolchains')]
-      cros_build_lib.SudoRunCommand(cmd, debug_level=logging.DEBUG)
-
-      # Update the host before updating the board.
-      self._Emerge(list(_HOST_PKGS), host=True)
-
-      # Automatically discard all CONFIG_PROTECT'ed files. Those that are
-      # protected should not be overwritten until the variable is changed.
-      # Autodiscard is option "-9" followed by the "YES" confirmation.
-      cros_build_lib.SudoRunCommand(['etc-update'], input='-9\nYES\n',
-                                    debug_level=logging.DEBUG)
-      self.chroot_update = False
-
   def _Build(self):
     """Update the chroot, then merge the requested packages."""
-    self._UpdateChroot()
-    self._Emerge(self.build_pkgs, host=self.host)
+    if self.chroot_update and self.host:
+      chroot_util.UpdateChroot()
 
-  def _SetupBoardIfNeeded(self):
-    """Create the board if it's missing."""
-    if not self.host:
-      cmd = [os.path.join(constants.CROSUTILS_DIR, 'setup_board'),
-             '--skip_toolchain_update', '--skip_chroot_upgrade']
-
-      if self.brick:
-        self.brick.GeneratePortageConfig()
-        cmd.append('--brick=%s' % self.brick.brick_locator)
-      else:
-        cmd.append('--board=%s' % self.board)
-
-      if not self.options.binary:
-        cmd.append('--nousepkg')
-
-      self._UpdateChroot()
-      cros_build_lib.RunCommand(cmd)
+    chroot_util.Emerge(self.build_pkgs, brick=self.brick, board=self.board,
+                       host=self.host, with_deps=self.options.deps,
+                       rebuild_deps=self.options.rebuild_deps,
+                       use_binary=self.options.binary, jobs=self.options.jobs,
+                       debug_output=(self.options.log_level.lower() == 'debug'))
 
   def Run(self):
     """Run cros build."""
@@ -235,5 +147,11 @@ To just build a single package:
     if not self.build_pkgs:
       cros_build_lib.Die('No packages found, nothing to build.')
 
-    self._SetupBoardIfNeeded()
+    # Set up board if not building for host.
+    if not self.host:
+      if self.chroot_update:
+        chroot_util.UpdateChroot()
+      chroot_util.SetupBoard(brick=self.brick, board=self.board,
+                             use_binary=self.options.binary)
+
     parallel.RunParallelSteps([self._CheckDependencies, self._Build])
