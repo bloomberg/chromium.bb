@@ -79,6 +79,7 @@ tests/drmstat
 tests/getclient
 tests/getstats
 tests/getversion
+tests/hash
 tests/lock
 tests/openclose
 tests/setversion

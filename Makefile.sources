@@ -1,6 +1,7 @@
 LIBDRM_FILES := \
 	xf86drm.c \
 	xf86drmHash.c \
+	xf86drmHash.h \
 	xf86drmRandom.c \
 	xf86drmSL.c \
 	xf86drmMode.c \
