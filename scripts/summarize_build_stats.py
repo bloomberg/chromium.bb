@@ -74,10 +74,10 @@ class CLStatsEngine(object):
       try:
         row = rows[str(build_number)]
       except KeyError:
-        self.reasons[build_number] = 'None'
+        self.reasons[build_number] = ['None']
         self.blames[build_number] = []
       else:
-        self.reasons[build_number] = str(row[ss_failure_category])
+        self.reasons[build_number] = [str(row[ss_failure_category])]
         self.blames[build_number] = self.ProcessBlameString(
             str(row[ss_failure_blame]))
 
@@ -90,7 +90,7 @@ class CLStatsEngine(object):
       build_number = b['build_number']
       annotations = annotations_by_builds.get(build_id, [])
       if not annotations:
-        self.reasons[build_number] = 'None'
+        self.reasons[build_number] = ['None']
         self.blames[build_number] = []
       else:
         # TODO(pprabhu) crbug.com/458275
@@ -98,11 +98,12 @@ class CLStatsEngine(object):
         # co-existence with the spreadsheet based logic. Once we've moved off of
         # using the spreadsheet, we should update all uses of the annotations to
         # expect one or more annotations.
-        self.reasons[build_number] = '; '.join(
-            a['failure_category'] for a in annotations)
+        self.reasons[build_number] = [
+            a['failure_category'] for a in annotations]
         self.blames[build_number] = []
         for annotation in annotations:
-          self.blames[build_number] += annotation
+          self.blames[build_number] += self.ProcessBlameString(
+              annotation['blame_url'])
 
   def CollateActions(self, actions):
     """Collates a list of actions into per-patch and per-cl actions.
@@ -400,9 +401,10 @@ class CLStatsEngine(object):
                       if a.action == constants.CL_ACTION_SUBMIT_FAILED]
 
     build_reason_counts = {}
-    for reason in self.reasons.values():
-      if reason != 'None':
-        build_reason_counts[reason] = build_reason_counts.get(reason, 0) + 1
+    for reasons in self.reasons.values():
+      for reason in reasons:
+        if reason != 'None':
+          build_reason_counts[reason] = build_reason_counts.get(reason, 0) + 1
 
     unique_blames = set()
     for blames in self.blames.itervalues():
@@ -465,11 +467,12 @@ class CLStatsEngine(object):
           build = self.builds_by_build_id.get(a.build_id)
           if self.BotType(a) == constants.CQ and build is not None:
             build_number = build['build_number']
-            reason = self.reasons.get(build_number, 'None')
+            reasons = self.reasons.get(build_number, ['None'])
             blames = self.blames.get(build_number, ['None'])
-            patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
-            for blame in blames:
-              patch_blame_counts[blame] = patch_blame_counts.get(blame, 0) + 1
+            for x in reasons:
+              patch_reason_counts[x] = patch_reason_counts.get(x, 0) + 1
+            for x in blames:
+              patch_blame_counts[x] = patch_blame_counts.get(x, 0) + 1
 
     # good_patch_count: The number of good patches.
     # good_patch_rejection_count maps the bot type (CQ or PRE_CQ) to the number
