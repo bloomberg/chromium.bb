@@ -183,7 +183,7 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
         v8::Local<v8::Value> transferrable = transferrables->Get(i);
         // Validation of non-null objects, per HTML5 spec 10.3.3.
         if (isUndefinedOrNull(transferrable)) {
-            exceptionState.throwDOMException(DataCloneError, "Value at index " + String::number(i) + " is an untransferable " + (transferrable->IsUndefined() ? "'undefined'" : "'null'") + " value.");
+            exceptionState.throwTypeError("Value at index " + String::number(i) + " is an untransferable " + (transferrable->IsUndefined() ? "'undefined'" : "'null'") + " value.");
             return false;
         }
         // Validation of Objects implementing an interface, per WebIDL spec 4.1.15.
@@ -203,7 +203,7 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
             }
             arrayBuffers.append(arrayBuffer.release());
         } else {
-            exceptionState.throwDOMException(DataCloneError, "Value at index " + String::number(i) + " does not have a transferable type.");
+            exceptionState.throwTypeError("Value at index " + String::number(i) + " does not have a transferable type.");
             return false;
         }
     }

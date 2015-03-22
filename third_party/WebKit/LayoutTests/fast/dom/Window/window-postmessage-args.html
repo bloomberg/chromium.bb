@@ -24,15 +24,16 @@ function onmessage(evt) {
 window.addEventListener('message', onmessage, false);
 
 function tryPostMessageFunction(postMessageFunction, first, second, third, shouldFail) {
-   try {
-        if (!third)
-            postMessageFunction(first, second);
-        else
-            postMessageFunction(first, second, third);
-        console.innerHTML += (shouldFail ? "FAIL" : "PASS") + ": Posting message ('" + first + "', " + third + ") did not throw an exception<br>";
-   } catch (e) {
-        console.innerHTML += (shouldFail ? "PASS" : "FAIL") + ": Posting message ('" + first + "', " + third + "): threw exception " + e + "<br>";
-   }
+    var pass, reason;
+    try {
+        postMessageFunction(first, second, third);
+        pass = !shouldFail;
+        reason = " did not throw an exception";
+    } catch (e) {
+        pass = shouldFail;
+        reason = ": threw exception " + e;
+    }
+    console.innerHTML += (pass ? "PASS" : "FAIL") + ": Posting message ('" + first + "', " + third + ")" + reason + "<br>";
 }
 
 function tryPostMessage(first, second, third, shouldFail) {
@@ -86,6 +87,10 @@ tryPostMessageFunction(window.postMessage, 'data', '*', [arrayBuffer], true);
 
 tryPostMessageFunction(window.postMessage, int8View, '*', [], true);
 tryPostMessageFunction(window.postMessage, 'data', '*', [int8View], true);
+
+tryPostMessageFunction(window.postMessage, 'data', '*', {length:1}, true);
+tryPostMessageFunction(window.postMessage, 'data', '*', [1,,2], true);
+tryPostMessageFunction(window.postMessage, 'data', '*', [null, window.postMessage], true);
 
 tryPostMessageFunction(window.postMessage, 'done', '*');
 </script>
