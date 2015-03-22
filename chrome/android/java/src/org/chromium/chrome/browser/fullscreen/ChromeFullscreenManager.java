@@ -180,26 +180,6 @@ public class ChromeFullscreenManager
         }
     }
 
-    // TODO(changwan): remove this constructor
-    /**
-     * Creates an instance of the fullscreen mode manager.
-     * @param activity The activity that supports fullscreen.
-     * @param controlContainer Container holding the controls (Toolbar).
-     * @param enabled Whether fullscreen is globally enabled.
-     * @param persistentFullscreenSupported Whether persistent fullscreen mode is supported.
-     * @param modelSelector The model selector providing access to the current tab.
-     * @param resControlContainerHeight The dimension resource ID for the control container height.
-     * @param supportsBrowserOverride Whether we want to disable the token system used by the
-     *                                browser.
-     */
-    public ChromeFullscreenManager(Activity activity, View controlContainer,
-            boolean enabled, boolean persistentFullscreenSupported,
-            TabModelSelector modelSelector, int resControlContainerHeight,
-            boolean supportsBrowserOverride) {
-        this(activity, controlContainer, modelSelector, resControlContainerHeight,
-                supportsBrowserOverride);
-    }
-
     /**
      * Creates an instance of the fullscreen mode manager.
      * @param activity The activity that supports fullscreen.
@@ -228,14 +208,6 @@ public class ChromeFullscreenManager
         mRendererContentOffset = mControlContainerHeight;
         mSupportsBrowserOverride = supportsBrowserOverride;
         updateControlOffset();
-    }
-
-    // TODO(changwan): remove
-    /**
-     * @return Whether or not fullscreen is enabled.
-     */
-    public boolean isEnabled() {
-        return true;
     }
 
     @Override
