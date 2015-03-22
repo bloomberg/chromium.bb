@@ -6,14 +6,14 @@
 #define Spatializer_h
 
 #include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 class AudioBus;
 
 // Abstract base class for spatializing a mono or stereo source.
-class PLATFORM_EXPORT Spatializer : public GarbageCollected<Spatializer> {
+class PLATFORM_EXPORT Spatializer {
 public:
     enum {
         PanningModelEqualPower = 0
@@ -24,7 +24,8 @@ public:
 
     typedef unsigned PanningModel;
 
-    static Spatializer* create(PanningModel, float sampleRate);
+    static PassOwnPtr<Spatializer> create(PanningModel, float sampleRate);
+    virtual ~Spatializer();
 
     // Handle sample-accurate panning by AudioParam automation.
     virtual void panWithSampleAccurateValues(const AudioBus* inputBus, AudioBus* outputBuf, const float* panValues, size_t framesToProcess) = 0;
@@ -35,8 +36,6 @@ public:
     virtual void reset() = 0;
     virtual double tailTime() const = 0;
     virtual double latencyTime() const = 0;
-
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     explicit Spatializer(PanningModel model) { }

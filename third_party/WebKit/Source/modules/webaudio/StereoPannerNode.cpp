@@ -152,7 +152,6 @@ void StereoPannerNode::setChannelCountMode(const String& mode, ExceptionState& e
 
 DEFINE_TRACE(StereoPannerNode)
 {
-    visitor->trace(m_stereoPanner);
     visitor->trace(m_pan);
     AudioNode::trace(visitor);
 }

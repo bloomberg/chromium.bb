@@ -39,7 +39,7 @@ public:
 private:
     StereoPannerNode(AudioContext*, float sampleRate);
 
-    Member<Spatializer> m_stereoPanner;
+    OwnPtr<Spatializer> m_stereoPanner;
     Member<AudioParam> m_pan;
 
     AudioFloatArray m_sampleAccuratePanValues;

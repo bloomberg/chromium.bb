@@ -3,29 +3,26 @@
 // found in the LICENSE file.
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "platform/audio/Spatializer.h"
 
 #include "platform/audio/StereoPanner.h"
 
 namespace blink {
 
-Spatializer* Spatializer::create(PanningModel model, float sampleRate)
+PassOwnPtr<Spatializer> Spatializer::create(PanningModel model, float sampleRate)
 {
-    Spatializer* panner;
-
     switch (model) {
     case PanningModelEqualPower:
-        panner = new StereoPanner(sampleRate);
-        break;
+        return adoptPtr(new StereoPanner(sampleRate));
     default:
         ASSERT_NOT_REACHED();
         return nullptr;
     }
+}
 
-    return panner;
+Spatializer::~Spatializer()
+{
 }
 
 } // namespace blink
