@@ -116,28 +116,28 @@ static void compute_dist(HashTablePtr table)
 }
 
 static void check_table(HashTablePtr table,
-			unsigned long key, unsigned long value)
+			unsigned long key, void * value)
 {
-    unsigned long retval  = 0;
-    int           retcode = drmHashLookup(table, key, &retval);
+    void *retval;
+    int   retcode = drmHashLookup(table, key, &retval);
 
     switch (retcode) {
     case -1:
 	printf("Bad magic = 0x%08lx:"
-	       " key = %lu, expected = %lu, returned = %lu\n",
+	       " key = %lu, expected = %p, returned = %p\n",
 	       table->magic, key, value, retval);
 	break;
     case 1:
-	printf("Not found: key = %lu, expected = %lu returned = %lu\n",
+	printf("Not found: key = %lu, expected = %p, returned = %p\n",
 	       key, value, retval);
 	break;
     case 0:
 	if (value != retval)
-	    printf("Bad value: key = %lu, expected = %lu, returned = %lu\n",
+	    printf("Bad value: key = %lu, expected = %p, returned = %p\n",
 		   key, value, retval);
 	break;
     default:
-	printf("Bad retcode = %d: key = %lu, expected = %lu, returned = %lu\n",
+	printf("Bad retcode = %d: key = %lu, expected = %p, returned = %p\n",
 	       retcode, key, value, retval);
 	break;
     }
@@ -145,52 +145,49 @@ static void check_table(HashTablePtr table,
 
 int main(void)
 {
-    HashTablePtr table;
-    int          i;
+    HashTablePtr  table;
+    unsigned long i;
 
     printf("\n***** 256 consecutive integers ****\n");
     table = drmHashCreate();
-    for (i = 0; i < 256; i++) drmHashInsert(table, i, i);
-    for (i = 0; i < 256; i++) check_table(table, i, i);
-    for (i = 256; i >= 0; i--) check_table(table, i, i);
+    for (i = 0; i < 256; i++) drmHashInsert(table, i, (void *)(i << 16 | i));
+    for (i = 0; i < 256; i++) check_table(table, i, (void *)(i << 16 | i));
     compute_dist(table);
     drmHashDestroy(table);
 
     printf("\n***** 1024 consecutive integers ****\n");
     table = drmHashCreate();
-    for (i = 0; i < 1024; i++) drmHashInsert(table, i, i);
-    for (i = 0; i < 1024; i++) check_table(table, i, i);
-    for (i = 1024; i >= 0; i--) check_table(table, i, i);
+    for (i = 0; i < 1024; i++) drmHashInsert(table, i, (void *)(i << 16 | i));
+    for (i = 0; i < 1024; i++) check_table(table, i, (void *)(i << 16 | i));
     compute_dist(table);
     drmHashDestroy(table);
 
     printf("\n***** 1024 consecutive page addresses (4k pages) ****\n");
     table = drmHashCreate();
-    for (i = 0; i < 1024; i++) drmHashInsert(table, i*4096, i);
-    for (i = 0; i < 1024; i++) check_table(table, i*4096, i);
-    for (i = 1024; i >= 0; i--) check_table(table, i*4096, i);
+    for (i = 0; i < 1024; i++) drmHashInsert(table, i*4096, (void *)(i << 16 | i));
+    for (i = 0; i < 1024; i++) check_table(table, i*4096, (void *)(i << 16 | i));
     compute_dist(table);
     drmHashDestroy(table);
 
     printf("\n***** 1024 random integers ****\n");
     table = drmHashCreate();
     srandom(0xbeefbeef);
-    for (i = 0; i < 1024; i++) drmHashInsert(table, random(), i);
+    for (i = 0; i < 1024; i++) drmHashInsert(table, random(), (void *)(i << 16 | i));
     srandom(0xbeefbeef);
-    for (i = 0; i < 1024; i++) check_table(table, random(), i);
+    for (i = 0; i < 1024; i++) check_table(table, random(), (void *)(i << 16 | i));
     srandom(0xbeefbeef);
-    for (i = 0; i < 1024; i++) check_table(table, random(), i);
+    for (i = 0; i < 1024; i++) check_table(table, random(), (void *)(i << 16 | i));
     compute_dist(table);
     drmHashDestroy(table);
 
     printf("\n***** 5000 random integers ****\n");
     table = drmHashCreate();
     srandom(0xbeefbeef);
-    for (i = 0; i < 5000; i++) drmHashInsert(table, random(), i);
+    for (i = 0; i < 5000; i++) drmHashInsert(table, random(), (void *)(i << 16 | i));
     srandom(0xbeefbeef);
-    for (i = 0; i < 5000; i++) check_table(table, random(), i);
+    for (i = 0; i < 5000; i++) check_table(table, random(), (void *)(i << 16 | i));
     srandom(0xbeefbeef);
-    for (i = 0; i < 5000; i++) check_table(table, random(), i);
+    for (i = 0; i < 5000; i++) check_table(table, random(), (void *)(i << 16 | i));
     compute_dist(table);
     drmHashDestroy(table);
 
