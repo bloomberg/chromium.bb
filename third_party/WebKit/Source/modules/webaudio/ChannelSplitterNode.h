@@ -41,9 +41,6 @@ public:
     virtual void process(size_t framesToProcess) override;
 
 private:
-    virtual double tailTime() const override { return 0; }
-    virtual double latencyTime() const override { return 0; }
-
     ChannelSplitterNode(AudioContext*, float sampleRate, unsigned numberOfOutputs);
 };
 

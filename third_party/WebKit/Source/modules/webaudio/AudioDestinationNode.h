@@ -87,9 +87,6 @@ protected:
         RefPtr<AudioBus> m_sourceBus;
     };
 
-    virtual double tailTime() const override final { return 0; }
-    virtual double latencyTime() const override final { return 0; }
-
     // Counts the number of sample-frames processed by the destination.
     size_t m_currentSampleFrame;
 

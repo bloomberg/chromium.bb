@@ -53,9 +53,6 @@ public:
 private:
     MediaStreamAudioDestinationNode(AudioContext*, size_t numberOfChannels);
 
-    virtual double tailTime() const override { return 0; }
-    virtual double latencyTime() const override { return 0; }
-
     // As an audio source, we will never propagate silence.
     virtual bool propagatesSilence() const override { return false; }
 

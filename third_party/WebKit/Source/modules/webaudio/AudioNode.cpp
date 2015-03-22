@@ -649,6 +649,16 @@ void AudioNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
     input->updateInternalBus();
 }
 
+double AudioNode::tailTime() const
+{
+    return 0;
+}
+
+double AudioNode::latencyTime() const
+{
+    return 0;
+}
+
 bool AudioNode::propagatesSilence() const
 {
     return m_lastNonSilentTime + latencyTime() + tailTime() < context()->currentTime();

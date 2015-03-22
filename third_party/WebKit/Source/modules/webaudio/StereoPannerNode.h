@@ -29,9 +29,6 @@ public:
     virtual void initialize() override;
     virtual void uninitialize() override;
 
-    virtual double tailTime() const override { return 0; }
-    virtual double latencyTime() const override { return 0; }
-
     virtual void setChannelCount(unsigned long, ExceptionState&) final;
     virtual void setChannelCountMode(const String&, ExceptionState&) final;
 

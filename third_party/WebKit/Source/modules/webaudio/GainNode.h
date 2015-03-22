@@ -57,9 +57,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    virtual double tailTime() const override { return 0; }
-    virtual double latencyTime() const override { return 0; }
-
     GainNode(AudioContext*, float sampleRate);
 
     float m_lastGain; // for de-zippering

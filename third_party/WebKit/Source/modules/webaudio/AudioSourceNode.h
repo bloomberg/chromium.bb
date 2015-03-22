@@ -38,9 +38,6 @@ class AudioSourceNode : public AudioNode {
 public:
     AudioSourceNode(NodeType nodeType, AudioContext* context, float sampleRate)
         : AudioNode(nodeType, context, sampleRate) { }
-protected:
-    virtual double tailTime() const override final { return 0; }
-    virtual double latencyTime() const override final { return 0; }
 };
 
 } // namespace blink

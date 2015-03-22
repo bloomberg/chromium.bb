@@ -46,9 +46,6 @@ public:
     virtual void setChannelCountMode(const String&, ExceptionState&) final;
 
 private:
-    virtual double tailTime() const override { return 0; }
-    virtual double latencyTime() const override { return 0; }
-
     ChannelMergerNode(AudioContext*, float sampleRate, unsigned numberOfInputs);
 };
 
