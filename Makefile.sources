@@ -3,6 +3,7 @@ LIBDRM_FILES := \
 	xf86drmHash.c \
 	xf86drmHash.h \
 	xf86drmRandom.c \
+	xf86drmRandom.h \
 	xf86drmSL.c \
 	xf86drmMode.c \
 	xf86atomic.h \

@@ -82,6 +82,7 @@ tests/getversion
 tests/hash
 tests/lock
 tests/openclose
+tests/random
 tests/setversion
 tests/updatedraw
 tests/modeprint/modeprint

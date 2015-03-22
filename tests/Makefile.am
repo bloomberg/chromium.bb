@@ -29,7 +29,8 @@ LDADD = $(top_builddir)/libdrm.la
 
 check_PROGRAMS = \
 	dristat \
-	drmstat
+	drmstat \
+	random
 
 if HAVE_NOUVEAU
 SUBDIRS += nouveau

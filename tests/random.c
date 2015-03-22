@@ -77,62 +77,42 @@
 #include "xf86drm.h"
 #include "xf86drmRandom.h"
 
-#define RANDOM_MAGIC 0xfeedbeef
-#define RANDOM_DEBUG 0
-
-void *drmRandomCreate(unsigned long seed)
+static void check_period(unsigned long seed)
 {
-    RandomState  *state;
-
-    state           = drmMalloc(sizeof(*state));
-    if (!state) return NULL;
-    state->magic    = RANDOM_MAGIC;
-#if 0
-				/* Park & Miller, October 1988 */
-    state->a        = 16807;
-    state->m        = 2147483647;
-    state->check    = 1043618065; /* After 10000 iterations */
-#else
-				/* Park, Miller, and Stockmeyer, July 1993 */
-    state->a        = 48271;
-    state->m        = 2147483647;
-    state->check    = 399268537; /* After 10000 iterations */
-#endif
-    state->q        = state->m / state->a;
-    state->r        = state->m % state->a;
-
-    state->seed     = seed;
-				/* Check for illegal boundary conditions,
-                                   and choose closest legal value. */
-    if (state->seed <= 0)        state->seed = 1;
-    if (state->seed >= state->m) state->seed = state->m - 1;
-
-    return state;
-}
-
-int drmRandomDestroy(void *state)
-{
-    drmFree(state);
-    return 0;
-}
-
-unsigned long drmRandom(void *state)
-{
-    RandomState   *s = (RandomState *)state;
-    unsigned long hi;
-    unsigned long lo;
-
-    hi      = s->seed / s->q;
-    lo      = s->seed % s->q;
-    s->seed = s->a * lo - s->r * hi;
-    if ((s->a * lo) <= (s->r * hi)) s->seed += s->m;
-
-    return s->seed;
-}
-
-double drmRandomDouble(void *state)
-{
-    RandomState *s = (RandomState *)state;
+    unsigned long count = 0;
+    unsigned long initial;
+    void          *state;
     
-    return (double)drmRandom(state)/(double)s->m;
+    state = drmRandomCreate(seed);
+    initial = drmRandom(state);
+    ++count;
+    while (initial != drmRandom(state)) {
+	if (!++count) break;
+    }
+    printf("With seed of %10lu, period = %10lu (0x%08lx)\n",
+	   seed, count, count);
+    drmRandomDestroy(state);
+}
+
+int main(void)
+{
+    RandomState   *state;
+    int           i;
+    unsigned long rand;
+
+    state = drmRandomCreate(1);
+    for (i = 0; i < 10000; i++) {
+	rand = drmRandom(state);
+    }
+    printf("After 10000 iterations: %lu (%lu expected): %s\n",
+	   rand, state->check,
+	   rand - state->check ? "*INCORRECT*" : "CORRECT");
+    drmRandomDestroy(state);
+
+    printf("Checking periods...\n");
+    check_period(1);
+    check_period(2);
+    check_period(31415926);
+    
+    return 0;
 }
