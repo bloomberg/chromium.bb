@@ -1204,6 +1204,15 @@
                 ],
               },
             }],
+            ['use_openssl==0 and clang==1', {
+              'direct_dependent_settings': {
+                'cflags': [
+                  # There is a broken header guard in /usr/include/nss/secmod.h:
+                  # https://bugzilla.mozilla.org/show_bug.cgi?id=884072
+                  '-Wno-header-guard',
+                ],
+              },
+            }],
           ]
         }],
       ],
