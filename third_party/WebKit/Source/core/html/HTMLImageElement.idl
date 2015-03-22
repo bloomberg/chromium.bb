@@ -20,7 +20,7 @@
 
 // https://html.spec.whatwg.org/#htmlimageelement
 
-// FIXME: Most long types in this interfaces should be unsigned long.
+// TODO(philipj): All long types in this interfaces should be unsigned long.
 [
     NamedConstructor=Image(optional long width, optional long height),
     ConstructorCallWith=Document

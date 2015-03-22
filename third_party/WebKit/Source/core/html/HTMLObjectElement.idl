@@ -18,41 +18,56 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlobjectelement
+
 [
     Custom=LegacyCallAsFunction,
 ] interface HTMLObjectElement : HTMLElement {
-    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
-    [Reflect] attribute DOMString code;
-    [Reflect] attribute DOMString align;
-    [Reflect] attribute DOMString archive;
-    [Reflect, TreatNullAs=EmptyString] attribute DOMString border;
-    [Reflect, URL] attribute DOMString codeBase;
-    [Reflect] attribute DOMString codeType;
     [Reflect, URL] attribute DOMString data;
-    [Reflect] attribute boolean declare;
-    [Reflect] attribute DOMString height;
-    [Reflect] attribute long hspace;
-    [Reflect] attribute DOMString name;
-    [Reflect] attribute DOMString standby;
     [Reflect] attribute DOMString type;
+    // TODO(philipj): attribute boolean typeMustMatch;
+    [Reflect] attribute DOMString name;
     [Reflect] attribute DOMString useMap;
-    [Reflect] attribute long vspace;
+    [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
     [Reflect] attribute DOMString width;
+    [Reflect] attribute DOMString height;
+    [CheckSecurity=Node] readonly attribute Document? contentDocument;
+    // TODO(philipj): readonly attribute WindowProxy? contentWindow;
+    [CheckSecurity=Node, RaisesException] Document? getSVGDocument();
+
     readonly attribute boolean willValidate;
     readonly attribute ValidityState validity;
     readonly attribute DOMString validationMessage;
     boolean checkValidity();
     boolean reportValidity();
+    // TODO(philipj):  The error argument should not be nullable.
     void setCustomValidity([TreatUndefinedAs=NullString] DOMString? error);
 
-    // Introduced in DOM Level 2:
-    [CheckSecurity=Node] readonly attribute Document contentDocument;
+    // TODO(philipj): legacycaller any (any... arguments); crbug.com/465009
+
+    // obsolete members
+    // https://html.spec.whatwg.org/#HTMLObjectElement-partial
+    [Reflect] attribute DOMString align;
+    [Reflect] attribute DOMString archive;
+    [Reflect] attribute DOMString code;
+    [Reflect] attribute boolean declare;
+    // TODO(philipj): hspace and vspace should be unsigned long.
+    [Reflect] attribute long hspace;
+    [Reflect] attribute DOMString standby;
+    [Reflect] attribute long vspace;
+    [Reflect, URL] attribute DOMString codeBase;
+    [Reflect] attribute DOMString codeType;
+
+    [Reflect, TreatNullAs=EmptyString] attribute DOMString border;
+
+    // TODO(philipj): These getters and setters are not in the spec.
     [Custom, NotEnumerable] getter boolean (unsigned long index);
     [Custom] setter boolean (unsigned long index, Node value);
     [Custom, NotEnumerable] getter Node (DOMString name);
     [Custom] setter Node (DOMString name, Node value);
 
-    [CheckSecurity=Node, RaisesException] Document getSVGDocument();
-
+    // Subresource Integrity
+    // https://w3c.github.io/webappsec/specs/subresourceintegrity/
+    // TODO(philipj): The spec does not extend HTMLImageElement.
     [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };

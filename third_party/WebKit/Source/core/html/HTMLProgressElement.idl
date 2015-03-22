@@ -17,11 +17,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmlprogresselement
+// https://html.spec.whatwg.org/#htmlprogresselement
 
 interface HTMLProgressElement : HTMLElement {
-             attribute double value;
-             attribute double max;
+    attribute double value;
+    attribute double max;
     readonly attribute double position;
     readonly attribute NodeList labels;
 };

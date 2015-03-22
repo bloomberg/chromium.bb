@@ -22,9 +22,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://html.spec.whatwg.org/#htmloutputelement
+
 interface HTMLOutputElement : HTMLElement {
     [PutForwards=value] readonly attribute DOMSettableTokenList htmlFor;
-    [ImplementedAs=formOwner] readonly attribute HTMLFormElement form;
+    [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
     [Reflect] attribute DOMString name;
 
     readonly attribute DOMString type;
@@ -36,6 +38,7 @@ interface HTMLOutputElement : HTMLElement {
     readonly attribute DOMString validationMessage;
     boolean checkValidity();
     boolean reportValidity();
+    // TODO(philipj):  The error argument should not be nullable.
     void setCustomValidity([TreatUndefinedAs=NullString] DOMString? error);
 
     readonly attribute NodeList labels;

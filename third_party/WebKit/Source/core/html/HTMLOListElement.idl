@@ -17,9 +17,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://html.spec.whatwg.org/#htmlolistelement
+
 interface HTMLOListElement : HTMLElement {
-    [Reflect] attribute boolean compact;
-    attribute long start;
     [Reflect] attribute boolean reversed;
+    attribute long start;
     [Reflect] attribute DOMString type;
+
+    // obsolete members
+    // https://html.spec.whatwg.org/#HTMLOListElement-partial
+    [Reflect] attribute boolean compact;
 };
