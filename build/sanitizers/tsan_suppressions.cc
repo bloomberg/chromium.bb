@@ -68,10 +68,6 @@ char kTSanDefaultSuppressions[] =
 "race:thread_manager\n"
 "race:v8::Locker::Initialize\n"
 
-// http://crbug.com/223352
-"race:uprv_malloc_54\n"
-"race:uprv_realloc_54\n"
-
 // http://crbug.com/239359
 "race:media::TestInputCallback::OnData\n"
 
