@@ -51,7 +51,7 @@ namespace base {
 class BASE_EXPORT StackSamplingProfiler {
  public:
   // Module represents the module (DLL or exe) corresponding to a stack frame.
-  struct Module {
+  struct BASE_EXPORT Module {
     Module();
     ~Module();
 
@@ -70,7 +70,7 @@ class BASE_EXPORT StackSamplingProfiler {
   };
 
   // Frame represents an individual sampled stack frame with module information.
-  struct Frame {
+  struct BASE_EXPORT Frame {
     Frame();
     ~Frame();
 
