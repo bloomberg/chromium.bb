@@ -720,6 +720,8 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 	}
 
 	if (window) {
+		uint32_t values[1];
+
 		if (window->override_redirect)
 			return;
 
@@ -736,6 +738,10 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 
 		xcb_set_input_focus (wm->conn, XCB_INPUT_FOCUS_POINTER_ROOT,
 				     window->id, XCB_TIME_CURRENT_TIME);
+
+		values[0] = XCB_STACK_MODE_ABOVE;
+		xcb_configure_window (wm->conn, window->frame_id,
+				      XCB_CONFIG_WINDOW_STACK_MODE, values);
 	} else {
 		xcb_set_input_focus (wm->conn,
 				     XCB_INPUT_FOCUS_POINTER_ROOT,
