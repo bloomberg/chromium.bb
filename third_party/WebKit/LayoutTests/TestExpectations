@@ -30,6 +30,8 @@ crbug.com/441547 virtual/slimmingpaint/fast/borders/border-antialiasing.html [ I
 
 crbug.com/454365 virtual/slimmingpaint/fast/forms/text/text-appearance-basic.html [ ImageOnlyFailure NeedsManualRebaseline ]
 
+crbug.com/469454 [ Mac ] virtual/slimmingpaint/fast/repaint/fixed-element-repaint-after-compositing-update.html [ Pass Failure ]
+
 crbug.com/434560 [ Mac Win ] virtual/slimmingpaint/fast/table/td-width-fifty-percent-regression.html [ ImageOnlyFailure ]
 
 crbug.com/465096 fast/block/basic/quirk-percent-height-table-cell.html [ NeedsRebaseline ]
