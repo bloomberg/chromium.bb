@@ -818,6 +818,8 @@
         'tools/quic/quic_simple_client_session.h',
         'tools/quic/quic_simple_client_stream.cc',
         'tools/quic/quic_simple_client_stream.h',
+        'tools/quic/synchronous_host_resolver.cc',
+        'tools/quic/synchronous_host_resolver.h',
       ],
     },
   ],
@@ -1274,6 +1276,7 @@
             '../base/base.gyp:base',
             'net',
             'quic_base',
+            'simple_quic_tools',
           ],
           'sources': [
             'tools/quic/quic_client_bin.cc',
