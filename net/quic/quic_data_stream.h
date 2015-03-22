@@ -39,7 +39,7 @@ class SSLInfo;
 class NET_EXPORT_PRIVATE QuicDataStream : public ReliableQuicStream {
  public:
   // Visitor receives callbacks from the stream.
-  class Visitor {
+  class NET_EXPORT_PRIVATE Visitor {
    public:
     Visitor() {}
 

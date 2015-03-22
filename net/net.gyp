@@ -115,6 +115,7 @@
         'net_extras',
         'net_test_support',
         'quic_tools',
+        'simple_quic_tools',
       ],
       'sources': [
         '<@(net_test_sources)',

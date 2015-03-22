@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/quic_client_session.h"
+#include "net/tools/quic/quic_simple_client_session.h"
 
 #include <vector>
 
@@ -12,7 +12,7 @@
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/tools/quic/quic_spdy_client_stream.h"
+#include "net/tools/quic/quic_simple_client_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::test::CryptoTestUtils;
@@ -35,13 +35,14 @@ namespace {
 const char kServerHostname[] = "www.example.org";
 const uint16 kPort = 80;
 
-class ToolsQuicClientSessionTest
+class QuicSimpleClientSessionTest
     : public ::testing::TestWithParam<QuicVersion> {
  protected:
-  ToolsQuicClientSessionTest()
+  QuicSimpleClientSessionTest()
       : connection_(new PacketSavingConnection(Perspective::IS_CLIENT,
                                                SupportedVersions(GetParam()))) {
-    session_.reset(new QuicClientSession(DefaultQuicConfig(), connection_));
+    session_.reset(new QuicSimpleClientSession(DefaultQuicConfig(),
+                                               connection_));
     session_->InitializeSession(
         QuicServerId(kServerHostname, kPort, false, PRIVACY_MODE_DISABLED),
         &crypto_config_);
@@ -56,24 +57,24 @@ class ToolsQuicClientSessionTest
   }
 
   PacketSavingConnection* connection_;
-  scoped_ptr<QuicClientSession> session_;
+  scoped_ptr<QuicSimpleClientSession> session_;
   QuicCryptoClientConfig crypto_config_;
 };
 
-INSTANTIATE_TEST_CASE_P(Tests, ToolsQuicClientSessionTest,
+INSTANTIATE_TEST_CASE_P(Tests, QuicSimpleClientSessionTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
-TEST_P(ToolsQuicClientSessionTest, CryptoConnect) {
+TEST_P(QuicSimpleClientSessionTest, CryptoConnect) {
   CompleteCryptoHandshake();
 }
 
-TEST_P(ToolsQuicClientSessionTest, MaxNumStreams) {
+TEST_P(QuicSimpleClientSessionTest, MaxNumStreams) {
   session_->config()->SetMaxStreamsPerConnection(1, 1);
 
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
 
-  QuicSpdyClientStream* stream = session_->CreateOutgoingDataStream();
+  QuicSimpleClientStream* stream = session_->CreateOutgoingDataStream();
   ASSERT_TRUE(stream);
   EXPECT_FALSE(session_->CreateOutgoingDataStream());
 
@@ -83,7 +84,7 @@ TEST_P(ToolsQuicClientSessionTest, MaxNumStreams) {
   EXPECT_TRUE(stream);
 }
 
-TEST_P(ToolsQuicClientSessionTest, GoAwayReceived) {
+TEST_P(QuicSimpleClientSessionTest, GoAwayReceived) {
   CompleteCryptoHandshake();
 
   // After receiving a GoAway, I should no longer be able to create outgoing
@@ -92,7 +93,7 @@ TEST_P(ToolsQuicClientSessionTest, GoAwayReceived) {
   EXPECT_EQ(nullptr, session_->CreateOutgoingDataStream());
 }
 
-TEST_P(ToolsQuicClientSessionTest, SetFecProtectionFromConfig) {
+TEST_P(QuicSimpleClientSessionTest, SetFecProtectionFromConfig) {
   ValueRestore<bool> old_flag(&FLAGS_enable_quic_fec, true);
 
   // Set FEC config in client's connection options.
@@ -107,13 +108,13 @@ TEST_P(ToolsQuicClientSessionTest, SetFecProtectionFromConfig) {
   // optionally protected.
   EXPECT_EQ(FEC_PROTECT_ALWAYS,
             QuicSessionPeer::GetHeadersStream(session_.get())->fec_policy());
-  QuicSpdyClientStream* stream = session_->CreateOutgoingDataStream();
+  QuicSimpleClientStream* stream = session_->CreateOutgoingDataStream();
   ASSERT_TRUE(stream);
   EXPECT_EQ(FEC_PROTECT_OPTIONAL, stream->fec_policy());
 }
 
 // Regression test for b/17206611.
-TEST_P(ToolsQuicClientSessionTest, InvalidPacketReceived) {
+TEST_P(QuicSimpleClientSessionTest, InvalidPacketReceived) {
   // Create Packet with 0 length.
   QuicEncryptedPacket invalid_packet(nullptr, 0, false);
   IPEndPoint server_address(TestPeerIPAddress(), kTestPort);

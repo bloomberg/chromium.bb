@@ -1310,6 +1310,7 @@ if (!is_android && !is_win && !is_mac) {
       ":http_server",
       ":net",
       ":quic_tools",
+      ":simple_quic_tools",
       ":test_support",
       "//base",
       "//base:i18n",
