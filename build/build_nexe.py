@@ -21,6 +21,7 @@ import StringIO
 import subprocess
 import sys
 import tempfile
+import time
 import traceback
 import urllib2
 
@@ -771,6 +772,30 @@ def SenderProcess(files, num_processes, input_queue):
     input_queue.put(None)
 
 
+def CheckObjectSize(filename):
+  # Here, object file should exist. However, we're seeing the case that
+  # we cannot read the object file on Windows.
+  # When some error happens, we raise an error. However, we'd like to know
+  # that the problem is solved or not after some time passed, so we continue
+  # checking object file size.
+  retry = 0
+  error_messages = []
+
+  while retry < 5:
+    try:
+      st = os.stat(filename)
+      if st.st_size != 0:
+        break
+      error_messages.append(
+          'file size of object %s is 0 (try=%d)' % (filename, retry))
+    except:
+      error_messages.append('failed to stat() for %s' % filename)
+    time.sleep(1)
+    retry += 1
+
+  if error_messages:
+    raise Error('\n'.join(error_messages))
+
 def Main(argv):
   parser = OptionParser()
   parser.add_option('--empty', dest='empty', default=False,
@@ -948,13 +973,23 @@ def Main(argv):
         else:
           raise Error('Unexpected element in CompileProcess output_queue %s' %
                       out)
+
       # Keep the input files ordering consistent for link phase to ensure
       # determinism.
       for filename in files:
         # If input file to build.Compile is something it cannot handle, it
         # returns None.
         if src_to_obj[filename]:
-          objs.append(src_to_obj[filename])
+          obj_name = src_to_obj[filename]
+          objs.append(obj_name)
+          # TODO(shinyak): In goma environement, it turned out archive file
+          # might contain 0 byte size object, however, the object file itself
+          # is not 0 byte. There might be several possibilities:
+          # (1) archiver failed to read object file.
+          # (2) object file was written after archiver opened it.
+          # I don't know what is happening, however, let me check the object
+          # file size here.
+          CheckObjectSize(obj_name)
 
       # Wait until all processes have stopped and verify that there are no more
       # results.
