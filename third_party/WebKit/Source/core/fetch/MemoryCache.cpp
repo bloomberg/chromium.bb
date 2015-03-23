@@ -24,7 +24,6 @@
 #include "core/fetch/MemoryCache.h"
 
 #include "core/fetch/ResourcePtr.h"
-#include "core/frame/FrameView.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"

@@ -27,9 +27,7 @@
 #include "config.h"
 #include "core/fetch/FontResource.h"
 
-#include "core/dom/TagCollection.h"
 #include "core/fetch/ResourceClientWalker.h"
-#include "core/html/parser/TextResourceDecoder.h"
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "platform/fonts/FontPlatformData.h"

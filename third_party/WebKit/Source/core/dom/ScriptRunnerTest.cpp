@@ -6,6 +6,7 @@
 #include "core/dom/ScriptRunner.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/dom/ScriptLoader.h"
 #include "platform/heap/Handle.h"
 #include "platform/scheduler/Scheduler.h"

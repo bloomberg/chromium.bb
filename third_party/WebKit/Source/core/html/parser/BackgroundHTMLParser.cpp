@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/html/parser/BackgroundHTMLParser.h"
 
+#include "core/HTMLNames.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"

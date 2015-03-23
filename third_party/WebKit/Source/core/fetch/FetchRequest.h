@@ -26,7 +26,6 @@
 #ifndef FetchRequest_h
 #define FetchRequest_h
 
-#include "core/dom/Element.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "platform/network/ResourceLoadPriority.h"

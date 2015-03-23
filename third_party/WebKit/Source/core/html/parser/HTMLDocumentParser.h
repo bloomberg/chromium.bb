@@ -57,6 +57,7 @@ class CompactHTMLToken;
 class Document;
 class DocumentEncodingData;
 class DocumentFragment;
+class Element;
 class HTMLDocument;
 class HTMLParserScheduler;
 class HTMLScriptRunner;

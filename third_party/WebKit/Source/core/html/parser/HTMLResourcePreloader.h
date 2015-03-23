@@ -33,6 +33,8 @@
 
 namespace blink {
 
+class Document;
+
 class PreloadRequest {
 public:
     static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType)
