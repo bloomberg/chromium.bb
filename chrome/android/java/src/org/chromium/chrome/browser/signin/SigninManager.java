@@ -25,7 +25,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.child_accounts.ChildAccountService;
-import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.notifications.GoogleServicesNotificationController;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -532,7 +531,8 @@ public class SigninManager {
                 // popup, since the user has not seen the welcome screen where there is easy access
                 // to turn off sync.
                 if (showSignInNotification) {
-                    ((FirstRunActivity) activity).showSignInNotification();
+                    SigninManager.get(activity).getSigninNotificationController()
+                            .showSyncSignInNotification();
                 }
             }
             @Override

@@ -11,9 +11,11 @@ import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromiumApplication;
@@ -136,15 +138,12 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
         mPager = new ViewPager(this);
         mPager.setId(R.id.fre_pager);
         setContentView(mPager);
-        android.util.Log.i("FirstRunActivity", "onCreate: after setContentView");
 
         mProfileDataCache = new ProfileDataCache(FirstRunActivity.this, null);
         mProfileDataCache.setProfile(Profile.getLastUsedProfile());
         new FirstRunFlowSequencer(this, mFreProperties) {
             @Override
             public void onFlowIsKnown(Activity activity, Bundle freProperties) {
-                android.util.Log.i("FirstRunActivity", "in onFlowIsKnown");
-
                 if (freProperties == null) {
                     completeFirstRunExperience();
                     return;
@@ -174,10 +173,8 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
                 mPager.setAdapter(mPagerAdapter);
 
                 skipPagesIfNecessary();
-                android.util.Log.i("FirstRunActivity", "before return from onFlowIsKnown");
             }
         }.start();
-        android.util.Log.i("FirstRunActivity", "onCreate: after starting the sequencer");
     }
 
     @Override
@@ -402,8 +399,21 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
         }
     }
 
-    protected void initializeBrowserProcess() {
-        // TODO(aurimas): implement this once browser process initialization is upstreamed.
+    private void initializeBrowserProcess() {
+        // The Chrome browser process must be started here because this Activity
+        // may be started explicitly for tests cases, from Android notifications or
+        // when the application is restoring a FRE fragment after Chrome being killed.
+        // This should happen before super.onCreate() because it might recreate a fragment,
+        // and a fragment might depend on the native library.
+        try {
+            ((ChromiumApplication) getApplication())
+                    .startBrowserProcessesAndLoadLibrariesSync(this, true);
+            mNativeSideIsInitialized = true;
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "Unable to load native library.", e);
+            abortFirstRunExperience();
+            return;
+        }
     }
 
     /**
@@ -424,10 +434,6 @@ public class FirstRunActivity extends ActionBarActivity implements FirstRunPageD
     @Override
     public void showEmbedContentViewActivity(int title, int url) {
         // TODO(aurimas): implement this once EmbededContentViewActivity is upstreamed.
-    }
-
-    public void showSignInNotification() {
-        // TODO(aurimas): implement this once GoogleServicesManager is upstreamed.
     }
 
     @Override
