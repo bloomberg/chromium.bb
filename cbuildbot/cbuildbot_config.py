@@ -2696,11 +2696,6 @@ _release.add_config('lemmings-release',
   important=True,
 )
 
-_release.add_config('peppy-release',
-  _base_configs['peppy'],
-  important=True,
-)
-
 _release.add_config('samus-release',
   _base_configs['samus'],
   important=True,
@@ -2938,7 +2933,8 @@ _AddGroupConfig('ivybridge-freon', 'stout_freon', (
 # slippy itself is deprecated in favor of the below boards, so we don't bother
 # building it.
 # TODO(dnj): Re-add peppy canary once builders are allocated.
-_AddGroupConfig('slippy', 'falco', (
+_AddGroupConfig('slippy', 'peppy', (
+    'falco',
     'leon',
     'wolf',
 ), (
