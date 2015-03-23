@@ -34,9 +34,9 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
   // to keep content always crisp when possible.
   settings.layer_transforms_should_scale_layer_contents = true;
 
-  cc::SharedBitmapManager* shared_bitmap_manager = NULL;
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = NULL;
-  cc::TaskGraphRunner* task_graph_runner = NULL;
+  cc::SharedBitmapManager* shared_bitmap_manager = nullptr;
+  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = nullptr;
+  cc::TaskGraphRunner* task_graph_runner = nullptr;
 
   layer_tree_host_ =
       cc::LayerTreeHost::CreateThreaded(this,
