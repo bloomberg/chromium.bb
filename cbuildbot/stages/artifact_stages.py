@@ -720,17 +720,6 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
         extra_args=generated_args)
 
 
-# TODO(davidjames): Mark as non-forgiving once this stage is proven.
-class BinhostTestStage(generic_stages.ForgivingBuilderStage):
-  """Stage that verifies Chrome prebuilts."""
-
-  config_name = 'binhost_test'
-
-  def PerformStage(self):
-    # Verify our binhosts.
-    commands.RunBinhostTest(self._build_root)
-
-
 class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
                                generic_stages.ArchivingStageMixin):
   """Upload needed hardware test artifacts."""
