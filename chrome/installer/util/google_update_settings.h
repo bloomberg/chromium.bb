@@ -218,7 +218,8 @@ class GoogleUpdateSettings {
 
   // This method updates the values that report how many profiles are in use
   // and how many of those are signed-in.
-  static void UpdateProfileCounts(int profiles_active, int profiles_signedin);
+  static void UpdateProfileCounts(size_t profiles_active,
+                                  size_t profiles_signedin);
 
   // For system-level installs, we need to be able to communicate the results
   // of the Toast Experiments back to Google Update. The problem is just that
