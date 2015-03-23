@@ -39,18 +39,19 @@ PASS CSS.supports("top", "20") is false
 PASS CSS.supports("dis\nplay", "none") is false
 PASS CSS.supports("display", "rainbow") is false
 PASS CSS.supports("display", "url(rainbow.png)") is false
-PASS CSS.supports(" background   ", "url(rainbow.png)") is true
+PASS CSS.supports(" background   ", "url(rainbow.png)") is false
 PASS CSS.supports("background", "invalid(rainbow.png)") is false
 PASS CSS.supports("background-color", "#000") is true
 PASS CSS.supports("background-color", "rgba(0,0,0,0)") is true
 PASS CSS.supports("background-color", "inherit") is true
-PASS CSS.supports("display", "none !important") is true
-PASS CSS.supports("display", "none!important") is true
+PASS CSS.supports("font-family", "'\n'") is false
+PASS CSS.supports("display", "none !important") is false
+PASS CSS.supports("display", "none!important") is false
 PASS CSS.supports("display", "!important none") is false
 PASS CSS.supports("display", "none !important ! important ") is false
-PASS CSS.supports("display", "none ! important") is true
-PASS CSS.supports("display", "none ! 	important") is true
-PASS CSS.supports("display", "none ! \nimportant") is true
+PASS CSS.supports("display", "none ! important") is false
+PASS CSS.supports("display", "none ! 	important") is false
+PASS CSS.supports("display", "none ! \nimportant") is false
 PASS CSS.supports("", "") is false
 PASS CSS.supports(true, "") is false
 PASS CSS.supports([], "none") is false

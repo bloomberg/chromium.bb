@@ -59,19 +59,20 @@
     shouldBeFalse('CSS.supports("dis\\nplay", "none")');
     shouldBeFalse('CSS.supports("display", "rainbow")');
     shouldBeFalse('CSS.supports("display", "url(rainbow.png)")');
-    shouldBeTrue('CSS.supports(" background   ", "url(rainbow.png)")');
+    shouldBeFalse('CSS.supports(" background   ", "url(rainbow.png)")');
     shouldBeFalse('CSS.supports("background", "invalid(rainbow.png)")');
     shouldBeTrue('CSS.supports("background-color", "#000")');
     shouldBeTrue('CSS.supports("background-color", "rgba(0,0,0,0)")');
     shouldBeTrue('CSS.supports("background-color", "inherit")');
+    shouldBeFalse('CSS.supports("font-family", "\'\\n\'")');
 
-    shouldBeTrue('CSS.supports("display", "none !important")');
-    shouldBeTrue('CSS.supports("display", "none!important")');
+    shouldBeFalse('CSS.supports("display", "none !important")');
+    shouldBeFalse('CSS.supports("display", "none!important")');
     shouldBeFalse('CSS.supports("display", "!important none")');
     shouldBeFalse('CSS.supports("display", "none !important ! important ")');
-    shouldBeTrue('CSS.supports("display", "none ! important")');
-    shouldBeTrue('CSS.supports("display", "none ! \timportant")');
-    shouldBeTrue('CSS.supports("display", "none ! \\nimportant")');
+    shouldBeFalse('CSS.supports("display", "none ! important")');
+    shouldBeFalse('CSS.supports("display", "none ! \timportant")');
+    shouldBeFalse('CSS.supports("display", "none ! \\nimportant")');
 
     shouldBeFalse('CSS.supports("", "")');
     shouldBeFalse('CSS.supports(true, "")');
