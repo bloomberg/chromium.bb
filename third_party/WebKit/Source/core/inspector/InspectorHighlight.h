@@ -33,15 +33,12 @@ public:
     bool showExtensionLines;
 };
 
-class InspectorHighlight : public NoBaseWillBeGarbageCollectedFinalized<InspectorHighlight> {
+class InspectorHighlight {
+    STACK_ALLOCATED();
 public:
+    InspectorHighlight(Node*, const InspectorHighlightConfig&, bool appendElementInfo);
+    InspectorHighlight();
     ~InspectorHighlight();
-
-    static PassOwnPtrWillBeRawPtr<InspectorHighlight> create(Node*, const InspectorHighlightConfig&, bool appendElementInfo);
-    static PassOwnPtrWillBeRawPtr<InspectorHighlight> create()
-    {
-        return adoptPtrWillBeNoop(new InspectorHighlight());
-    }
 
     static bool getBoxModel(Node*, RefPtr<TypeBuilder::DOM::BoxModel>&);
     static InspectorHighlightConfig defaultConfig();
@@ -51,18 +48,16 @@ public:
     void appendEventTargetQuads(Node* eventTargetNode, const InspectorHighlightConfig&);
     PassRefPtr<JSONObject> asJSONObject() const;
 
-    DEFINE_INLINE_TRACE() { }
-
 private:
-    InspectorHighlight();
+    void appendNodeHighlight(Node*, const InspectorHighlightConfig&);
+    void appendPathsForShapeOutside(Node*, const InspectorHighlightConfig&);
 
-    bool m_showRulers;
-    bool m_showExtensionLines;
     RefPtr<JSONObject> m_elementInfo;
     RefPtr<JSONArray> m_highlightPaths;
+    bool m_showRulers;
+    bool m_showExtensionLines;
 };
 
 } // namespace blink
-
 
 #endif // InspectorHighlight_h

@@ -220,53 +220,6 @@ bool buildNodeQuads(LayoutObject* renderer, FloatQuad* content, FloatQuad* paddi
     return true;
 }
 
-void appendPathsForShapeOutside(InspectorHighlight* highlight, const InspectorHighlightConfig& config, Node* node)
-{
-    Shape::DisplayPaths paths;
-    FloatQuad boundsQuad;
-
-    const ShapeOutsideInfo* shapeOutsideInfo = shapeOutsideInfoForNode(node, &paths, &boundsQuad);
-    if (!shapeOutsideInfo)
-        return;
-
-    if (!paths.shape.length()) {
-        highlight->appendQuad(boundsQuad, config.shape);
-        return;
-    }
-
-    highlight->appendPath(ShapePathBuilder::buildPath(*node->document().view(), *node->layoutObject(), *shapeOutsideInfo, paths.shape), config.shape, Color::transparent);
-    if (paths.marginShape.length())
-        highlight->appendPath(ShapePathBuilder::buildPath(*node->document().view(), *node->layoutObject(), *shapeOutsideInfo, paths.marginShape), config.shapeMargin, Color::transparent);
-}
-
-void appendNodeHighlight(InspectorHighlight* highlight, const InspectorHighlightConfig& highlightConfig, Node* node)
-{
-    LayoutObject* renderer = node->layoutObject();
-    if (!renderer)
-        return;
-
-    // LayoutSVGRoot should be highlighted through the isBox() code path, all other SVG elements should just dump their absoluteQuads().
-    if (renderer->node() && renderer->node()->isSVGElement() && !renderer->isSVGRoot()) {
-        Vector<FloatQuad> quads;
-        renderer->absoluteQuads(quads);
-        FrameView* containingView = renderer->frameView();
-        for (size_t i = 0; i < quads.size(); ++i) {
-            if (containingView)
-                contentsQuadToRootFrame(containingView, quads[i]);
-            highlight->appendQuad(quads[i], highlightConfig.content, highlightConfig.contentOutline);
-        }
-        return;
-    }
-
-    FloatQuad content, padding, border, margin;
-    if (!buildNodeQuads(renderer, &content, &padding, &border, &margin))
-        return;
-    highlight->appendQuad(content, highlightConfig.content, highlightConfig.contentOutline);
-    highlight->appendQuad(padding, highlightConfig.padding);
-    highlight->appendQuad(border, highlightConfig.border);
-    highlight->appendQuad(margin, highlightConfig.margin);
-}
-
 PassRefPtr<JSONObject> buildElementInfo(Element* element)
 {
     RefPtr<JSONObject> elementInfo = JSONObject::create();
@@ -318,27 +271,25 @@ PassRefPtr<JSONObject> buildElementInfo(Element* element)
 } // namespace
 
 InspectorHighlight::InspectorHighlight()
-    : m_showRulers(false)
-    , m_showExtensionLines()
-    , m_highlightPaths(JSONArray::create())
+    : m_highlightPaths(JSONArray::create())
+    , m_showRulers(false)
+    , m_showExtensionLines(false)
 {
+}
+
+InspectorHighlight::InspectorHighlight(Node* node, const InspectorHighlightConfig& highlightConfig, bool appendElementInfo)
+    : m_highlightPaths(JSONArray::create())
+    , m_showRulers(highlightConfig.showRulers)
+    , m_showExtensionLines(highlightConfig.showExtensionLines)
+{
+    appendPathsForShapeOutside(node, highlightConfig);
+    appendNodeHighlight(node, highlightConfig);
+    if (appendElementInfo && node->isElementNode())
+        m_elementInfo = buildElementInfo(toElement(node));
 }
 
 InspectorHighlight::~InspectorHighlight()
 {
-}
-
-// static
-PassOwnPtrWillBeRawPtr<InspectorHighlight> InspectorHighlight::create(Node* node, const InspectorHighlightConfig& highlightConfig, bool appendElementInfo)
-{
-    InspectorHighlight* highlight = new InspectorHighlight();
-    highlight->m_showRulers = highlightConfig.showRulers;
-    highlight->m_showExtensionLines = highlightConfig.showExtensionLines;
-    appendPathsForShapeOutside(highlight, highlightConfig, node);
-    appendNodeHighlight(highlight, highlightConfig, node);
-    if (appendElementInfo && node->isElementNode())
-        highlight->m_elementInfo = buildElementInfo(toElement(node));
-    return adoptPtrWillBeNoop(highlight);
 }
 
 void InspectorHighlight::appendQuad(const FloatQuad& quad, const Color& fillColor, const Color& outlineColor)
@@ -366,6 +317,53 @@ void InspectorHighlight::appendEventTargetQuads(Node* eventTargetNode, const Ins
         if (buildNodeQuads(eventTargetNode->layoutObject(), &unused, &unused, &border, &unused))
             appendQuad(border, highlightConfig.eventTarget);
     }
+}
+
+void InspectorHighlight::appendPathsForShapeOutside(Node* node, const InspectorHighlightConfig& config)
+{
+    Shape::DisplayPaths paths;
+    FloatQuad boundsQuad;
+
+    const ShapeOutsideInfo* shapeOutsideInfo = shapeOutsideInfoForNode(node, &paths, &boundsQuad);
+    if (!shapeOutsideInfo)
+        return;
+
+    if (!paths.shape.length()) {
+        appendQuad(boundsQuad, config.shape);
+        return;
+    }
+
+    appendPath(ShapePathBuilder::buildPath(*node->document().view(), *node->layoutObject(), *shapeOutsideInfo, paths.shape), config.shape, Color::transparent);
+    if (paths.marginShape.length())
+        appendPath(ShapePathBuilder::buildPath(*node->document().view(), *node->layoutObject(), *shapeOutsideInfo, paths.marginShape), config.shapeMargin, Color::transparent);
+}
+
+void InspectorHighlight::appendNodeHighlight(Node* node, const InspectorHighlightConfig& highlightConfig)
+{
+    LayoutObject* renderer = node->layoutObject();
+    if (!renderer)
+        return;
+
+    // LayoutSVGRoot should be highlighted through the isBox() code path, all other SVG elements should just dump their absoluteQuads().
+    if (renderer->node() && renderer->node()->isSVGElement() && !renderer->isSVGRoot()) {
+        Vector<FloatQuad> quads;
+        renderer->absoluteQuads(quads);
+        FrameView* containingView = renderer->frameView();
+        for (size_t i = 0; i < quads.size(); ++i) {
+            if (containingView)
+                contentsQuadToRootFrame(containingView, quads[i]);
+            appendQuad(quads[i], highlightConfig.content, highlightConfig.contentOutline);
+        }
+        return;
+    }
+
+    FloatQuad content, padding, border, margin;
+    if (!buildNodeQuads(renderer, &content, &padding, &border, &margin))
+        return;
+    appendQuad(content, highlightConfig.content, highlightConfig.contentOutline);
+    appendQuad(padding, highlightConfig.padding);
+    appendQuad(border, highlightConfig.border);
+    appendQuad(margin, highlightConfig.margin);
 }
 
 PassRefPtr<JSONObject> InspectorHighlight::asJSONObject() const

@@ -2255,8 +2255,8 @@ void InspectorDOMAgent::getHighlightObjectForTest(ErrorString* errorString, int 
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
-    OwnPtrWillBeRawPtr<InspectorHighlight> highlight = InspectorHighlight::create(node, InspectorHighlight::defaultConfig(), true);
-    result = highlight->asJSONObject();
+    InspectorHighlight highlight(node, InspectorHighlight::defaultConfig(), true);
+    result = highlight.asJSONObject();
 }
 
 PassRefPtr<TypeBuilder::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(Node* node, const String& objectGroup)

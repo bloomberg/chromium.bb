@@ -273,10 +273,10 @@ void InspectorOverlayImpl::drawNodeHighlight()
         return;
 
     bool appendElementInfo = m_highlightNode->isElementNode() && !m_omitTooltip && m_nodeHighlightConfig.showInfo && m_highlightNode->layoutObject() && m_highlightNode->document().frame();
-    OwnPtrWillBeRawPtr<InspectorHighlight> highlight = InspectorHighlight::create(m_highlightNode.get(), m_nodeHighlightConfig, appendElementInfo);
+    InspectorHighlight highlight(m_highlightNode.get(), m_nodeHighlightConfig, appendElementInfo);
     if (m_eventTargetNode)
-        highlight->appendEventTargetQuads(m_eventTargetNode.get(), m_nodeHighlightConfig);
-    evaluateInOverlay("drawHighlight", highlight->asJSONObject());
+        highlight.appendEventTargetQuads(m_eventTargetNode.get(), m_nodeHighlightConfig);
+    evaluateInOverlay("drawHighlight", highlight.asJSONObject());
 }
 
 void InspectorOverlayImpl::drawQuadHighlight()
@@ -284,9 +284,9 @@ void InspectorOverlayImpl::drawQuadHighlight()
     if (!m_highlightQuad)
         return;
 
-    OwnPtrWillBeRawPtr<InspectorHighlight> highlight = InspectorHighlight::create();
-    highlight->appendQuad(*m_highlightQuad, m_quadHighlightConfig.content, m_quadHighlightConfig.contentOutline);
-    evaluateInOverlay("drawHighlight", highlight->asJSONObject());
+    InspectorHighlight highlight;
+    highlight.appendQuad(*m_highlightQuad, m_quadHighlightConfig.content, m_quadHighlightConfig.contentOutline);
+    evaluateInOverlay("drawHighlight", highlight.asJSONObject());
 }
 
 void InspectorOverlayImpl::drawPausedInDebuggerMessage()
