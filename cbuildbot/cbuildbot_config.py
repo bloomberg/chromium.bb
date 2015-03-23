@@ -1047,7 +1047,12 @@ class _config(dict):
   def deepcopy(self):
     """Create a deep copy of this object.
 
-    This function is identical to copy.deepcopy(), but faster.
+    This is a specialized version of copy.deepcopy() for _config objects. It
+    speeds up deep copies by 10x because we know in advance what is stored
+    inside a _config object and don't have to do as much introspection.
+    This function is called a lot during setup of the config objects so
+    optimizing it makes a big difference. (It saves seconds off the load time
+    of the cbuildbot_config module!)
     """
     new_config = _config(self)
     for k, v in self.iteritems():
@@ -1110,20 +1115,13 @@ class _config(dict):
     """
     inherits, overrides = args, kwargs
     overrides['name'] = name
+
+    # Add ourselves into the global dictionary, adding in the defaults.
     new_config = self.derive(*inherits, **overrides)
+    config[name] = default.derive(self, new_config)
 
-    # Derive directly from defaults so missing values are added.
-    # Store a dictionary, rather than our derivative- this is
-    # to ensure any far flung consumers of the config dictionary
-    # aren't affected by recent refactorings.
-
-    config_dict = default.derive(self, new_config)
-
-    # TODO(mtennant): This is just confusing.  Some random _config object
-    # (self) can add a new _config object to the global config dict.  Even if
-    # self is itself not a part of the global config dict.
-    config[name] = config_dict
-
+    # Return a _config object without the defaults, so that other objects can
+    # derive from us without inheriting the defaults.
     return new_config
 
   @classmethod

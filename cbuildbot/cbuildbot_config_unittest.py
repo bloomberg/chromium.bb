@@ -129,10 +129,10 @@ class ConfigClassTest(cros_test_lib.TestCase):
       obj2: A true deep copy of obj1 (produced using copy.deepcopy).
       obj3: The purported deep copy of obj1.
     """
-    # Objects that are hashable are guaranteed to be immutable.
-    # If an object is not hashable, it needs to be deeply copied.
+    # Check whether the item was copied by deepcopy. If so, then it
+    # must have been copied by our algorithm as well.
     if obj1 is not obj2:
-      self.assertTrue(obj1 is not obj3, '%r vs. %r' % (obj1, obj3))
+      self.assertIsNot(obj1, obj3)
 
     # Assert the three items are all equal.
     self.assertEqual(obj1, obj2)
@@ -159,8 +159,10 @@ class ConfigClassTest(cros_test_lib.TestCase):
         self.AssertDeepCopy(getattr(obj1, attr), getattr(obj2, attr),
                             getattr(obj3, attr))
     else:
-      # This should be an immutable object.
-      self.assertTrue(obj1 is obj2)
+      # This should be an object that copy.deepcopy didn't copy (probably an
+      # immutable object.) If not, the test needs to be updated to handle this
+      # kind of object.
+      self.assertIs(obj1, obj2)
 
   def testDeepCopy(self):
     """Test that we deep copy correctly."""
