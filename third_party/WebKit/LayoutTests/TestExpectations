@@ -347,8 +347,6 @@ crbug.com/463758 inspector/sources/debugger/debugger-eval-on-call-frame-inside-i
 crbug.com/451577 [ Win ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Slow ]
 crbug.com/451577 [ Win ] inspector/profiler/webgl/webgl-get-resource-state.html [ Slow ]
 
-crbug.com/451577 [ Win ] inspector/elements/edit-dom-actions.html [ Crash Slow ]
-
 crbug.com/451577 [ Win ] inspector-protocol/loading-iframe-document-node.html [ Crash Pass ]
 
 crbug.com/451577 [ Win ] http/tests/inspector/search/sources-search-scope-in-files.html [ Failure Pass Crash ]
@@ -1852,7 +1850,6 @@ crbug.com/305036 fast/multicol/span/span-as-nested-columns-child-dynamic.html [ 
 
 crbug.com/396791 [ Debug ] virtual/threaded/printing/print-close-crash.html [ Pass Crash ]
 
-crbug.com/397244 [ Snowleopard Debug ] inspector/elements/edit-dom-actions.html [ Crash ]
 crbug.com/431172 [ XP ] http/tests/serviceworker/fetch-event.html [ Pass Timeout ]
 
 crbug.com/399507 inspector/tracing/update-layer-tree.html [ Failure Pass ]
@@ -2377,3 +2374,5 @@ crbug.com/467871 [ Mac ] compositing/plugins/composited-plugin.html [ NeedsRebas
 
 # These need a rebaseline after crbug.com/451346
 crbug.com/451346 tables/mozilla/bugs/bug2886-2.html [ NeedsRebaseline ]
+
+crbug.com/469636 [ Debug ] inspector/elements/edit-dom-actions.html [ Pass Failure ]
