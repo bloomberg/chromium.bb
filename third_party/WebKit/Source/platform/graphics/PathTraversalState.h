@@ -58,7 +58,6 @@ public:
     FloatPoint m_start;
 
     float m_totalLength;
-    unsigned m_segmentIndex;
     float m_desiredLength;
 
     // For normal calculations

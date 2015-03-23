@@ -22,17 +22,15 @@
 #define SVGPathTraversalStateBuilder_h
 
 #include "core/svg/SVGPathConsumer.h"
-#include "core/svg/SVGPoint.h"
+#include "platform/graphics/PathTraversalState.h"
 
 namespace blink {
 
-class PathTraversalState;
-
 class SVGPathTraversalStateBuilder final : public SVGPathConsumer {
 public:
-    SVGPathTraversalStateBuilder(PathTraversalState&, float desiredLength = 0);
+    SVGPathTraversalStateBuilder(PathTraversalState::PathTraversalAction, float desiredLength = 0);
 
-    unsigned pathSegmentIndex();
+    unsigned pathSegmentIndex() const { return m_segmentIndex; }
     float totalLength();
     FloatPoint currentPoint();
 
@@ -55,7 +53,8 @@ private:
     virtual void curveToQuadraticSmooth(const FloatPoint&, PathCoordinateMode) override { ASSERT_NOT_REACHED(); }
     virtual void arcTo(float, float, float, bool, bool, const FloatPoint&, PathCoordinateMode) override { ASSERT_NOT_REACHED(); }
 
-    PathTraversalState& m_traversalState;
+    PathTraversalState m_traversalState;
+    unsigned m_segmentIndex;
 };
 
 } // namespace blink

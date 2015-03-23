@@ -21,14 +21,13 @@
  */
 
 #include "config.h"
-#include "platform/graphics/PathTraversalState.h"
-
 #include "core/svg/SVGPathTraversalStateBuilder.h"
 
 namespace blink {
 
-SVGPathTraversalStateBuilder::SVGPathTraversalStateBuilder(PathTraversalState& traversalState, float desiredLength)
-    : m_traversalState(traversalState)
+SVGPathTraversalStateBuilder::SVGPathTraversalStateBuilder(PathTraversalState::PathTraversalAction traversalAction, float desiredLength)
+    : m_traversalState(traversalAction)
+    , m_segmentIndex(0)
 {
     m_traversalState.m_desiredLength = desiredLength;
 }
@@ -61,12 +60,7 @@ bool SVGPathTraversalStateBuilder::continueConsuming()
 
 void SVGPathTraversalStateBuilder::incrementPathSegmentCount()
 {
-    ++m_traversalState.m_segmentIndex;
-}
-
-unsigned SVGPathTraversalStateBuilder::pathSegmentIndex()
-{
-    return m_traversalState.m_segmentIndex;
+    ++m_segmentIndex;
 }
 
 float SVGPathTraversalStateBuilder::totalLength()

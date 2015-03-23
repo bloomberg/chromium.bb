@@ -107,8 +107,7 @@ unsigned getSVGPathSegAtLengthFromSVGPathByteStream(const SVGPathByteStream& str
     if (stream.isEmpty())
         return 0;
 
-    PathTraversalState traversalState(PathTraversalState::TraversalSegmentAtLength);
-    SVGPathTraversalStateBuilder builder(traversalState, length);
+    SVGPathTraversalStateBuilder builder(PathTraversalState::TraversalSegmentAtLength, length);
     SVGPathByteStreamSource source(stream);
     SVGPathParser parser(&source, &builder);
     parser.parsePathDataFromSource(NormalizedParsing);
@@ -120,8 +119,7 @@ float getTotalLengthOfSVGPathByteStream(const SVGPathByteStream& stream)
     if (stream.isEmpty())
         return 0;
 
-    PathTraversalState traversalState(PathTraversalState::TraversalTotalLength);
-    SVGPathTraversalStateBuilder builder(traversalState);
+    SVGPathTraversalStateBuilder builder(PathTraversalState::TraversalTotalLength);
     SVGPathByteStreamSource source(stream);
     SVGPathParser parser(&source, &builder);
     parser.parsePathDataFromSource(NormalizedParsing);
@@ -133,8 +131,7 @@ FloatPoint getPointAtLengthOfSVGPathByteStream(const SVGPathByteStream& stream, 
     if (stream.isEmpty())
         return FloatPoint();
 
-    PathTraversalState traversalState(PathTraversalState::TraversalPointAtLength);
-    SVGPathTraversalStateBuilder builder(traversalState, length);
+    SVGPathTraversalStateBuilder builder(PathTraversalState::TraversalPointAtLength, length);
     SVGPathByteStreamSource source(stream);
     SVGPathParser parser(&source, &builder);
     parser.parsePathDataFromSource(NormalizedParsing);

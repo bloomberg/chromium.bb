@@ -166,7 +166,6 @@ PathTraversalState::PathTraversalState(PathTraversalAction action)
     : m_action(action)
     , m_success(false)
     , m_totalLength(0)
-    , m_segmentIndex(0)
     , m_desiredLength(0)
     , m_normalAngle(0)
 {
