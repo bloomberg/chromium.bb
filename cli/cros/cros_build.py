@@ -17,7 +17,7 @@ from chromite.lib import parallel
 
 
 @command.CommandDecorator('build')
-class BuildCommand(command.CrosCommand):
+class BuildCommand(command.CliCommand):
   """Build the requested packages."""
 
   _BAD_DEPEND_MSG = '\nemerge detected broken ebuilds. See error message above.'

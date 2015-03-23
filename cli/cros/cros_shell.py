@@ -17,7 +17,7 @@ from chromite.lib import remote_access
 
 
 @command.CommandDecorator('shell')
-class ShellCommand(command.CrosCommand):
+class ShellCommand(command.CliCommand):
   """Opens a remote shell over SSH on the target device.
 
   Can be used to start an interactive session or execute a command

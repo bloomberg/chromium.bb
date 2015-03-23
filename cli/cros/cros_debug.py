@@ -16,7 +16,7 @@ from chromite.lib import remote_access
 
 
 @command.CommandDecorator('debug')
-class DebugCommand(command.CrosCommand):
+class DebugCommand(command.CliCommand):
   """Use GDB to debug a process running on the target device.
 
   This command starts a GDB session to debug a remote process running on the

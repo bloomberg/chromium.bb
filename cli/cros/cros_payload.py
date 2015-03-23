@@ -26,7 +26,7 @@ def DisplayValue(key, value):
 
 
 @command.CommandDecorator('payload')
-class PayloadCommand(command.CrosCommand):
+class PayloadCommand(command.CliCommand):
   """Show basic information about an update payload.
 
   This command parses an update payload and displays information from

@@ -13,7 +13,7 @@ from chromite.lib import remote_access
 
 
 @command.CommandDecorator('devices')
-class DevicesCommand(command.CrosCommand):
+class DevicesCommand(command.CliCommand):
   """List and configure Brillo devices connected over USB.
 
   This command takes an optional subcommand: "alias" or "full-reset". If no

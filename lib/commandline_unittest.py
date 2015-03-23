@@ -535,8 +535,8 @@ class ScriptWrapperMainTest(cros_test_lib.MockTestCase):
     rc.assertCommandContains(chroot_args=self.CHROOT_ARGS)
 
 
-class CommandTestRunInsideChroot(cros_test_lib.MockTestCase):
-  """Test CrosCommand.RunInsideChroot"""
+class TestRunInsideChroot(cros_test_lib.MockTestCase):
+  """Test commandline.RunInsideChroot()."""
 
   def setUp(self):
     self.origArgv = sys.argv
@@ -554,7 +554,7 @@ class CommandTestRunInsideChroot(cros_test_lib.MockTestCase):
 
   def _verifyRunInsideChroot(self, expectedCmd, expectedChrootArgs):
     """Run RunInsideChroot, and verify it raises with expected values."""
-    cmd = command.CrosCommand('options')
+    cmd = command.CliCommand('options')
     with self.assertRaises(commandline.ChrootRequiredError) as cm:
       commandline.RunInsideChroot(cmd)
 
@@ -582,5 +582,5 @@ class CommandTestRunInsideChroot(cros_test_lib.MockTestCase):
     self.mockInsideChroot.return_value = True
 
     # Since we are in the chroot, it should return, doing nothing.
-    cmd = command.CrosCommand('options')
+    cmd = command.CliCommand('options')
     commandline.RunInsideChroot(cmd)

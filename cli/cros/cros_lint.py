@@ -151,7 +151,7 @@ def _Dispatcher(errors, output_format, debug, linter, path):
 
 
 @command.CommandDecorator('lint')
-class LintCommand(command.CrosCommand):
+class LintCommand(command.CliCommand):
   """Run lint checks on the specified files."""
 
   EPILOG = """

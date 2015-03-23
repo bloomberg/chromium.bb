@@ -308,7 +308,7 @@ def FindPrivateConfCL(overlay, pkg_dir):
 # The main attraction.
 
 @command.CommandDecorator('pinchrome')
-class PinchromeCommand(command.CrosCommand):
+class PinchromeCommand(command.CliCommand):
   # pylint: disable=docstring-too-many-newlines
   """Pin chrome to an earlier revision.
 

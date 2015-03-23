@@ -783,7 +783,7 @@ def RunInsideChroot(command, auto_detect_brick=False,
   inside the chroot (cwd will have changed).
 
   Args:
-    command: An instance of CrosCommand to be restarted inside the chroot.
+    command: An instance of CliCommand to be restarted inside the chroot.
     auto_detect_brick: If true, sets --brick explicitly.
     auto_detect_workspace: If true, sets up workspace automatically.
   """

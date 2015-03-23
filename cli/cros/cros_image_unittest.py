@@ -22,7 +22,7 @@ class ImageCommandTest(cros_test_lib.TestCase):
     cros_image.ImageCommand.AddParser(image_parser)
 
     options = fake_parser.parse_args(['image'])
-    instance = options.cros_class(options)
+    instance = options.command_class(options)
     self.assertEqual(instance.options.adjust_part, None)
     self.assertEqual(instance.options.board, None)
     self.assertEqual(instance.options.boot_args, None)
@@ -52,7 +52,7 @@ class ImageCommandTest(cros_test_lib.TestCase):
                                       '--enable_serial=ttyS0',
                                       '--kernel_log_level=2',
                                       'dev', 'test'])
-    instance = options.cros_class(options)
+    instance = options.command_class(options)
     self.assertEqual(instance.options.adjust_part, 'PARTX')
     self.assertEqual(instance.options.board, 'fooboard')
     self.assertEqual(instance.options.boot_args, 'bar')
@@ -82,7 +82,7 @@ class ImageCommandTest(cros_test_lib.TestCase):
                                       '--enable_serial=ttyS0',
                                       '--kernel_log_level=7',
                                       'dev', 'test'])
-    instance = options.cros_class(options)
+    instance = options.command_class(options)
     self.assertEqual(instance.options.adjust_part, 'PARTX')
     self.assertEqual(instance.options.board, 'fooboard')
     self.assertEqual(instance.options.boot_args, 'bar')
@@ -106,7 +106,7 @@ class ImageCommandTest(cros_test_lib.TestCase):
                                       '--enable_bootcache=True',
                                       '--enable_rootfs_verification=True',
                                       'dev', 'test'])
-    instance = options.cros_class(options)
+    instance = options.command_class(options)
     self.assertEqual(instance.options.board, 'fooboard')
     self.assertTrue(instance.options.enable_bootcache)
     self.assertTrue(instance.options.enable_rootfs_verification)
@@ -124,7 +124,7 @@ class ImageCommandTest(cros_test_lib.TestCase):
                                       '--enable_bootcache=False',
                                       '--enable_rootfs_verification=False',
                                       'dev', 'test'])
-    instance = options.cros_class(options)
+    instance = options.command_class(options)
     self.assertEqual(instance.options.board, 'fooboard')
     self.assertFalse(instance.options.enable_bootcache)
     self.assertFalse(instance.options.enable_rootfs_verification)
@@ -140,7 +140,7 @@ class ImageCommandTest(cros_test_lib.TestCase):
     options = fake_parser.parse_args(['image',
                                       '--board=fooboard',
                                       'dev', 'test'])
-    instance = options.cros_class(options)
+    instance = options.command_class(options)
     self.assertEqual(instance.options.board, 'fooboard')
     self.assertFalse(instance.options.enable_bootcache)
     self.assertTrue(instance.options.enable_rootfs_verification)

@@ -52,7 +52,7 @@ def GSURLRegexHelper(gsurl):
 
 
 @command.CommandDecorator('stage')
-class StageCommand(command.CrosCommand):
+class StageCommand(command.CliCommand):
   """Remotely stages an image onto a MobLab device or into Google Storage.
 
   The image to be staged may be a local custom image built in the chroot or an

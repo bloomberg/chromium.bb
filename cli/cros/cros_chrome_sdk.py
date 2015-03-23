@@ -386,7 +386,7 @@ class GomaError(Exception):
 
 
 @command.CommandDecorator(COMMAND_NAME)
-class ChromeSDKCommand(command.CrosCommand):
+class ChromeSDKCommand(command.CliCommand):
   """Set up an environment for building Chrome on Chrome OS.
 
   Pulls down SDK components for building and testing Chrome for Chrome OS,

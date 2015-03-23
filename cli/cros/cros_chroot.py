@@ -14,7 +14,7 @@ from chromite.lib import cros_build_lib
 
 
 @command.CommandDecorator('chroot')
-class ChrootCommand(command.CrosCommand):
+class ChrootCommand(command.CliCommand):
   """Enter the chroot."""
 
   # Override base class property to enable stats upload.

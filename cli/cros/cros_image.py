@@ -19,7 +19,7 @@ IMAGE_TYPES = ['base', 'dev', 'test', 'factory_test', 'factory_install', []]
 
 
 @command.CommandDecorator('image')
-class ImageCommand(command.CrosCommand):
+class ImageCommand(command.CliCommand):
   """Create an image
 
   Creates an image from the specified board.

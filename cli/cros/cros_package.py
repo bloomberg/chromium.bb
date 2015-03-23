@@ -52,7 +52,7 @@ src_install() {
 
 
 @command.CommandDecorator('package')
-class PackageCommand(command.CrosCommand):
+class PackageCommand(command.CliCommand):
   """Create and manage packages."""
 
   EPILOG = """

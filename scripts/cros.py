@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""This implements the metacommand cros.
+"""This implements the entry point for CLI toolsets `cros` and `brillo`.
 
-This script is normally invoked via depot_tools/cros which discovers
-where chromite is located and invokes this script.
+This script is invoked by chromite/bin/{cros,brillo}, which sets up the
+proper execution environment and calls this module's main() function.
 
 In turn, this script looks for a subcommand based on how it was invoked. For
-example: cros lint.
+example, `cros lint` will use the cli/cros/cros_lint.py subcommand.
 
-See cros/command/cros_XXX.py for actual command implementations.
+See cli/ for actual command implementations.
 """
 
 from __future__ import print_function
@@ -24,12 +24,12 @@ from chromite.lib import stats
 
 
 def GetOptions(my_commands):
-  """Returns the argparse to use for Cros."""
+  """Returns the argparse to use for commandline parsing."""
   parser = commandline.ArgumentParser(caching=True)
   if not command:
     return parser
 
-  subparsers = parser.add_subparsers(title='cros commands')
+  subparsers = parser.add_subparsers(title='Subcommands')
   for cmd_name, class_def in sorted(my_commands.iteritems(),
                                     key=lambda x: x[0]):
     epilog = getattr(class_def, 'EPILOG', None)
@@ -57,10 +57,10 @@ def main(argv):
       return 1
 
     namespace = parser.parse_args(argv)
-    subcommand = namespace.cros_class(namespace)
+    subcommand = namespace.command_class(namespace)
     with stats.UploadContext() as queue:
       if subcommand.upload_stats:
-        cmd_base = subcommand.options.cros_class.command_name
+        cmd_base = subcommand.options.command_class.command_name
         cmd_stats = stats.Stats.SafeInit(cmd_line=sys.argv, cmd_base=cmd_base)
         if cmd_stats:
           queue.put([cmd_stats, stats.StatsUploader.URL,

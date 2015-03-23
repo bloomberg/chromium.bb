@@ -665,7 +665,7 @@ class RemoteDeviceUpdater(object):
 
 
 @command.CommandDecorator('flash')
-class FlashCommand(command.CrosCommand):
+class FlashCommand(command.CliCommand):
   """Update the device with an image.
 
   This command updates the device with the image

@@ -18,7 +18,7 @@ from chromite.lib import workspace_lib
 
 
 @command.CommandDecorator('sdk')
-class SdkCommand(command.CrosCommand):
+class SdkCommand(command.CliCommand):
   """Manage Project SDK installations."""
 
   @classmethod

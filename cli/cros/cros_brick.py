@@ -14,7 +14,7 @@ from chromite.lib import cros_build_lib
 
 
 @command.CommandDecorator('brick')
-class BrickCommand(command.CrosCommand):
+class BrickCommand(command.CliCommand):
   """Create and manage bricks."""
 
   EPILOG = """

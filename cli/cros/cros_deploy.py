@@ -671,7 +671,7 @@ print(json.dumps(pkg_info))
 
 
 @command.CommandDecorator('deploy')
-class DeployCommand(command.CrosCommand):
+class DeployCommand(command.CliCommand):
   """Deploy the requested packages to the target device.
 
   This command assumes the requested packages are already built in the
