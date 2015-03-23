@@ -14,3 +14,9 @@ copy unsigned.exe signed.exe
 signtool sign /f test.pfx /p password signed.exe
 
 wow_helper.exe: Signed Google Chrome binary from an official build.
+
+The various zipfile*.zip files, used by the SandboxedZipAnalyzerTest, were
+generated with the following commands:
+- zip zipfile_no_binaries.zip simple_exe.cc
+- zip zipfile_one_unsigned_binary.zip unsigned.exe
+- zip zipfile_two_binaries_one_signed.zip unsigned.exe signed.exe
