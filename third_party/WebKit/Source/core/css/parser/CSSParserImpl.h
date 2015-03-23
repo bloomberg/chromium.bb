@@ -18,6 +18,7 @@ namespace blink {
 
 class StyleRule;
 class StyleRuleBase;
+class StyleRuleCharset;
 class StyleRuleFontFace;
 class StyleRuleImport;
 class StyleRuleKeyframe;
@@ -67,13 +68,15 @@ private:
         KeyframesRuleList
     };
 
+    // Returns whether the first encountered rule was valid
     template<typename T>
-    void consumeRuleList(CSSParserTokenRange, RuleListType, T callback);
+    bool consumeRuleList(CSSParserTokenRange, RuleListType, T callback);
 
     // These two functions update the range they're given
     PassRefPtrWillBeRawPtr<StyleRuleBase> consumeAtRule(CSSParserTokenRange&, AllowedRulesType);
     PassRefPtrWillBeRawPtr<StyleRuleBase> consumeQualifiedRule(CSSParserTokenRange&, AllowedRulesType);
 
+    static PassRefPtrWillBeRawPtr<StyleRuleCharset> consumeCharsetRule(CSSParserTokenRange prelude);
     PassRefPtrWillBeRawPtr<StyleRuleImport> consumeImportRule(CSSParserTokenRange prelude);
     PassRefPtrWillBeRawPtr<StyleRuleNamespace> consumeNamespaceRule(CSSParserTokenRange prelude); // This can set m_defaultNamespace
     PassRefPtrWillBeRawPtr<StyleRuleMedia> consumeMediaRule(CSSParserTokenRange prelude, CSSParserTokenRange block);

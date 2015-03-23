@@ -56,6 +56,9 @@ PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSRule* paren
 DEFINE_TRACE(StyleRuleBase)
 {
     switch (type()) {
+    case Charset:
+        toStyleRuleCharset(this)->traceAfterDispatch(visitor);
+        return;
     case Style:
         toStyleRule(this)->traceAfterDispatch(visitor);
         return;
@@ -95,6 +98,9 @@ DEFINE_TRACE(StyleRuleBase)
 void StyleRuleBase::finalizeGarbageCollectedObject()
 {
     switch (type()) {
+    case Charset:
+        toStyleRuleCharset(this)->~StyleRuleCharset();
+        return;
     case Style:
         toStyleRule(this)->~StyleRule();
         return;
@@ -134,6 +140,9 @@ void StyleRuleBase::finalizeGarbageCollectedObject()
 void StyleRuleBase::destroy()
 {
     switch (type()) {
+    case Charset:
+        delete toStyleRuleCharset(this);
+        return;
     case Style:
         delete toStyleRule(this);
         return;
@@ -191,6 +200,7 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> StyleRuleBase::copy() const
         return toStyleRuleKeyframes(this)->copy();
     case Viewport:
         return toStyleRuleViewport(this)->copy();
+    case Charset:
     case Keyframe:
     case Namespace:
     case Unknown:
@@ -232,6 +242,7 @@ PassRefPtrWillBeRawPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet*
         break;
     case Keyframe:
     case Namespace:
+    case Charset:
     case Unknown:
         ASSERT_NOT_REACHED();
         return nullptr;

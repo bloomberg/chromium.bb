@@ -39,6 +39,7 @@ class StyleRuleBase : public RefCountedWillBeGarbageCollectedFinalized<StyleRule
 public:
     enum Type {
         Unknown,
+        Charset,
         Style,
         Import,
         Media,
@@ -53,6 +54,7 @@ public:
 
     Type type() const { return static_cast<Type>(m_type); }
 
+    bool isCharsetRule() const { return type() == Charset; }
     bool isFontFaceRule() const { return type() == FontFace; }
     bool isKeyframesRule() const { return type() == Keyframes; }
     bool isKeyframeRule() const { return type() == Keyframe; }
@@ -253,6 +255,18 @@ private:
     RefPtrWillBeMember<StylePropertySet> m_properties; // Cannot be null
 };
 
+// This should only be used within the CSS Parser
+class StyleRuleCharset : public StyleRuleBase {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+public:
+    static PassRefPtrWillBeRawPtr<StyleRuleCharset> create() { return adoptRefWillBeNoop(new StyleRuleCharset()); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { StyleRuleBase::traceAfterDispatch(visitor); };
+
+private:
+    StyleRuleCharset() : StyleRuleBase(Charset) { }
+};
+
+
 #define DEFINE_STYLE_RULE_TYPE_CASTS(Type) \
     DEFINE_TYPE_CASTS(StyleRule##Type, StyleRuleBase, rule, rule->is##Type##Rule(), rule.is##Type##Rule())
 
@@ -262,6 +276,7 @@ DEFINE_STYLE_RULE_TYPE_CASTS(Page);
 DEFINE_STYLE_RULE_TYPE_CASTS(Media);
 DEFINE_STYLE_RULE_TYPE_CASTS(Supports);
 DEFINE_STYLE_RULE_TYPE_CASTS(Viewport);
+DEFINE_STYLE_RULE_TYPE_CASTS(Charset);
 
 } // namespace blink
 

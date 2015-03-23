@@ -124,6 +124,7 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule)
         return true;
 
     // These should all be impossible to reach:
+    case StyleRule::Charset:
     case StyleRule::Keyframe:
     case StyleRule::Namespace:
     case StyleRule::Style:

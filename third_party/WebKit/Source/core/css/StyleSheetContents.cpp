@@ -462,6 +462,7 @@ static bool childRulesHaveFailedOrCanceledSubresources(const WillBeHeapVector<Re
             if (childRulesHaveFailedOrCanceledSubresources(toStyleRuleMedia(rule)->childRules()))
                 return true;
             break;
+        case StyleRuleBase::Charset:
         case StyleRuleBase::Import:
         case StyleRuleBase::Namespace:
         case StyleRuleBase::Unknown:

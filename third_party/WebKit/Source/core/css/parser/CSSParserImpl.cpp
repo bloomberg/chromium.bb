@@ -124,9 +124,10 @@ void CSSParserImpl::parseStyleSheet(const String& string, const CSSParserContext
 {
     CSSParserImpl parser(context, styleSheet);
     CSSTokenizer::Scope scope(string);
-    parser.consumeRuleList(scope.tokenRange(), TopLevelRuleList, [&styleSheet](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) {
+    bool firstRuleValid = parser.consumeRuleList(scope.tokenRange(), TopLevelRuleList, [&styleSheet](PassRefPtrWillBeRawPtr<StyleRuleBase> rule) {
         styleSheet->parserAppendRule(rule);
     });
+    styleSheet->setHasSyntacticallyValidCSSHeader(firstRuleValid);
 }
 
 PassOwnPtr<Vector<double>> CSSParserImpl::parseKeyframeKeyList(const String& keyList)
@@ -156,7 +157,7 @@ static CSSParserImpl::AllowedRulesType computeNewAllowedRules(CSSParserImpl::All
 }
 
 template<typename T>
-void CSSParserImpl::consumeRuleList(CSSParserTokenRange range, RuleListType ruleListType, const T callback)
+bool CSSParserImpl::consumeRuleList(CSSParserTokenRange range, RuleListType ruleListType, const T callback)
 {
     AllowedRulesType allowedRules = RegularRules;
     switch (ruleListType) {
@@ -173,32 +174,39 @@ void CSSParserImpl::consumeRuleList(CSSParserTokenRange range, RuleListType rule
         ASSERT_NOT_REACHED();
     }
 
+    bool seenRule = false;
+    bool firstRuleValid = false;
     while (!range.atEnd()) {
+        RefPtrWillBeRawPtr<StyleRuleBase> rule;
         switch (range.peek().type()) {
         case WhitespaceToken:
             range.consumeWhitespace();
-            break;
+            continue;
         case AtKeywordToken:
-            if (PassRefPtrWillBeRawPtr<StyleRuleBase> rule = consumeAtRule(range, allowedRules)) {
-                allowedRules = computeNewAllowedRules(allowedRules, rule.get());
-                callback(rule);
-            }
+            rule = consumeAtRule(range, allowedRules);
             break;
         case CDOToken:
         case CDCToken:
             if (ruleListType == TopLevelRuleList) {
                 range.consume();
-                break;
+                continue;
             }
             // fallthrough
         default:
-            if (PassRefPtrWillBeRawPtr<StyleRuleBase> rule = consumeQualifiedRule(range, allowedRules)) {
-                allowedRules = computeNewAllowedRules(allowedRules, rule.get());
-                callback(rule);
-            }
+            rule = consumeQualifiedRule(range, allowedRules);
             break;
         }
+        if (!seenRule) {
+            seenRule = true;
+            firstRuleValid = rule;
+        }
+        if (rule) {
+            allowedRules = computeNewAllowedRules(allowedRules, rule.get());
+            callback(rule.release());
+        }
     }
+
+    return firstRuleValid;
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserTokenRange& range, AllowedRulesType allowedRules)
@@ -213,12 +221,8 @@ PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParserImpl::consumeAtRule(CSSParserToke
 
     if (range.atEnd() || range.peek().type() == SemicolonToken) {
         range.consume();
-        if (allowedRules == AllowCharsetRules && name.equalIgnoringCase("charset")) {
-            // @charset is actually parsed before we get into the CSS parser.
-            // In theory we should validate the prelude is a string, but we don't
-            // have error logging yet so it doesn't matter.
-            return nullptr;
-        }
+        if (allowedRules == AllowCharsetRules && name.equalIgnoringCase("charset"))
+            return consumeCharsetRule(prelude);
         if (allowedRules <= AllowImportRules && name.equalIgnoringCase("import"))
             return consumeImportRule(prelude);
         if (allowedRules <= AllowNamespaceRules && name.equalIgnoringCase("namespace"))
@@ -287,6 +291,15 @@ static AtomicString consumeStringOrURI(CSSParserTokenRange& range)
     if (!contents.atEnd())
         return AtomicString();
     return uri.value();
+}
+
+PassRefPtrWillBeRawPtr<StyleRuleCharset> CSSParserImpl::consumeCharsetRule(CSSParserTokenRange prelude)
+{
+    prelude.consumeWhitespace();
+    const CSSParserToken& string = prelude.consumeIncludingWhitespace();
+    if (string.type() != StringToken || !prelude.atEnd())
+        return nullptr; // Parse error, expected a single string
+    return StyleRuleCharset::create();
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleImport> CSSParserImpl::consumeImportRule(CSSParserTokenRange prelude)
