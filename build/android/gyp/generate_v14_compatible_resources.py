@@ -11,7 +11,7 @@ so we are generating another set of resources by this script.
 
 1. paddingStart attribute can cause a crash on Galaxy Tab 2.
 2. There is a bug that paddingStart does not override paddingLeft on
-   JB-MR1. This is fixed on JB-MR2.
+   JB-MR1. This is fixed on JB-MR2. b/8654490
 
 Therefore, this resource generation script can be removed when
 we drop the support for JB-MR1.
