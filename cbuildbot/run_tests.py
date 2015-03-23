@@ -56,10 +56,10 @@ SKIP = 'skip'
 SPECIAL_TESTS = {
     # Tests that need to run inside the chroot.
     'cbuildbot/stages/test_stages_unittest': INSIDE,
-    'cros/commands/cros_build_unittest': INSIDE,
-    'cros/commands/cros_debug_unittest': INSIDE,
-    'cros/commands/cros_deploy_unittest': INSIDE,
-    'cros/commands/lint_unittest': INSIDE,
+    'cli/cros/cros_build_unittest': INSIDE,
+    'cli/cros/cros_debug_unittest': INSIDE,
+    'cli/cros/cros_deploy_unittest': INSIDE,
+    'cli/cros/lint_unittest': INSIDE,
     'lib/filetype_unittest': INSIDE,
     'lib/upgrade_table_unittest': INSIDE,
     'scripts/cros_install_debug_syms_unittest': INSIDE,
