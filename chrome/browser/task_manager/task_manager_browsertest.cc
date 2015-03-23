@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillTab) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
 }
 
-// Test for http://crbug.com/444722, which is not fixed yet.
+// Test for http://crbug.com/444945, which is not fixed yet.
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
                        DISABLED_NavigateAwayFromHungRenderer) {
   host_resolver()->AddRule("*", "127.0.0.1");
