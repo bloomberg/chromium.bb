@@ -29,7 +29,7 @@ class BitmapCursorFactoryOzone;
 class DrmGpuPlatformSupportHost;
 class DrmWindowHostManager;
 
-class DrmCursor : public CursorDelegateEvdev, public GpuPlatformSupportHost {
+class DrmCursor : public CursorDelegateEvdev {
  public:
   explicit DrmCursor(DrmWindowHostManager* window_manager);
   ~DrmCursor() override;
@@ -62,15 +62,13 @@ class DrmCursor : public CursorDelegateEvdev, public GpuPlatformSupportHost {
   gfx::PointF GetLocation() override;
   gfx::Rect GetCursorConfinedBounds() override;
 
-  // GpuPlatformSupportHost:
+  // IPC.
   void OnChannelEstablished(
       int host_id,
       scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-      const base::Callback<void(IPC::Message*)>& sender) override;
-  void OnChannelDestroyed(int host_id) override;
-
-  // IPC::Listener:
-  bool OnMessageReceived(const IPC::Message& message) override;
+      const base::Callback<void(IPC::Message*)>& sender);
+  void OnChannelDestroyed(int host_id);
+  bool OnMessageReceived(const IPC::Message& message);
 
  private:
   // Set the location (clamps to cursor bounds).
@@ -86,7 +84,7 @@ class DrmCursor : public CursorDelegateEvdev, public GpuPlatformSupportHost {
   void SendCursorMoveLocked();
   void SendLocked(IPC::Message* message);
 
-  DrmWindowHostManager* window_manager_;                  // Not owned.
+  DrmWindowHostManager* window_manager_;  // Not owned.
 
   // Task runner for main thread.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

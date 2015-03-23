@@ -38,9 +38,7 @@ struct OZONE_EXPORT HardwareDisplayPlaneList {
   std::vector<HardwareDisplayPlane*> old_plane_list;
 
   struct PageFlipInfo {
-    PageFlipInfo(uint32_t crtc_id,
-                 uint32_t framebuffer,
-                 CrtcController* crtc);
+    PageFlipInfo(uint32_t crtc_id, uint32_t framebuffer, CrtcController* crtc);
     ~PageFlipInfo();
 
     uint32_t crtc_id;
