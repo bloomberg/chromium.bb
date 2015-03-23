@@ -45,7 +45,7 @@
 #include "private.h"
 
 #ifdef DEBUG
-uint32_t nouveau_debug = 0;
+drm_private uint32_t nouveau_debug = 0;
 
 static void
 debug_init(char *args)

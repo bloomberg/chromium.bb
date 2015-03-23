@@ -33,7 +33,7 @@
 #include "private.h"
 
 
-int
+drm_private int
 abi16_chan_nv04(struct nouveau_object *obj)
 {
 	struct nouveau_device *dev = (struct nouveau_device *)obj->parent;
@@ -54,7 +54,7 @@ abi16_chan_nv04(struct nouveau_object *obj)
 	return 0;
 }
 
-int
+drm_private int
 abi16_chan_nvc0(struct nouveau_object *obj)
 {
 	struct nouveau_device *dev = (struct nouveau_device *)obj->parent;
@@ -75,7 +75,7 @@ abi16_chan_nvc0(struct nouveau_object *obj)
 	return 0;
 }
 
-int
+drm_private int
 abi16_chan_nve0(struct nouveau_object *obj)
 {
 	struct nouveau_device *dev = (struct nouveau_device *)obj->parent;
@@ -101,7 +101,7 @@ abi16_chan_nve0(struct nouveau_object *obj)
 	return 0;
 }
 
-int
+drm_private int
 abi16_engobj(struct nouveau_object *obj)
 {
 	struct drm_nouveau_grobj_alloc req = {
@@ -120,7 +120,7 @@ abi16_engobj(struct nouveau_object *obj)
 	return 0;
 }
 
-int
+drm_private int
 abi16_ntfy(struct nouveau_object *obj)
 {
 	struct nv04_notify *ntfy = obj->data;
@@ -141,7 +141,7 @@ abi16_ntfy(struct nouveau_object *obj)
 	return 0;
 }
 
-void
+drm_private void
 abi16_bo_info(struct nouveau_bo *bo, struct drm_nouveau_gem_info *info)
 {
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
@@ -175,7 +175,7 @@ abi16_bo_info(struct nouveau_bo *bo, struct drm_nouveau_gem_info *info)
 	}
 }
 
-int
+drm_private int
 abi16_bo_init(struct nouveau_bo *bo, uint32_t alignment,
 	      union nouveau_bo_config *config)
 {
