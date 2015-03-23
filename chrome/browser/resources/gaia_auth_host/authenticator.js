@@ -266,7 +266,7 @@ cr.define('cr.login', function() {
     if (history.state && history.state.url != url)
       history.pushState({url: url}, '');
     else
-      history.replaceState({url: url});
+      history.replaceState({url: url}, '');
   };
 
   /**
