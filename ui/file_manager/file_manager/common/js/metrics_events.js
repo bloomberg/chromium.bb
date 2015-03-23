@@ -77,31 +77,31 @@ metrics.event.Builders_ = {
  * @enum {!analytics.EventBuilder}
  */
 metrics.ImportEvents = {
-  STARTED: metrics.event.Builders_.IMPORT
-      .action('Import Started')
-      .dimension(metrics.Dimensions.SESSION_TYPE_IMPORT)
-      .dimension(metrics.Dimensions.CONSUMER_TYPE_IMPORTER),
-
-  CANCELLED: metrics.event.Builders_.IMPORT
-      .action('Import Cancelled'),
+  DEVICE_YANKED: metrics.event.Builders_.IMPORT
+      .action('Device Yanked'),
 
   ERRORS: metrics.event.Builders_.IMPORT
       .action('Import Error Count'),
 
+  FILES_DEDUPLICATED: metrics.event.Builders_.IMPORT
+      .action('Files Deduplicated'),
+
   FILES_IMPORTED: metrics.event.Builders_.IMPORT
       .action('Files Imported'),
+
+  HISTORY_LOADED: metrics.event.Builders_.IMPORT
+      .action('History Loaded'),
+
+  IMPORT_CANCELLED: metrics.event.Builders_.IMPORT
+      .action('Import Cancelled'),
 
   MEGABYTES_IMPORTED: metrics.event.Builders_.IMPORT
       .action('Megabytes Imported'),
 
-  DEVICE_YANKED: metrics.event.Builders_.IMPORT
-      .action('Device Yanked'),
-
-  FILES_DEDUPLICATED: metrics.event.Builders_.IMPORT
-      .action('Files Deduplicated'),
-
-  HISTORY_LOADED: metrics.event.Builders_.IMPORT
-      .action('History Loaded')
+  STARTED: metrics.event.Builders_.IMPORT
+      .action('Import Started')
+      .dimension(metrics.Dimensions.SESSION_TYPE_IMPORT)
+      .dimension(metrics.Dimensions.CONSUMER_TYPE_IMPORTER)
 };
 
 // namespace

@@ -298,7 +298,7 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
     function(destinationDirectory, completionCallback, entry) {
   if (this.canceled_) {
     this.notify(importer.TaskQueue.UpdateType.CANCELED);
-    this.tracker_.send(metrics.ImportEvents.CANCELLED);
+    this.tracker_.send(metrics.ImportEvents.IMPORT_CANCELLED);
     this.sendImportStats_();
     return;
   }

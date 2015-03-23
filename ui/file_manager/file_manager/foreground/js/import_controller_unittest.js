@@ -43,11 +43,6 @@ var MESSAGES = {
 loadTimeData.data = MESSAGES;
 
 function setUp() {
-  // Stub out metrics support.
-  metrics = {
-    recordEnum: function() {}
-  };
-
   new MockChromeStorageAPI();
 
   widget = new importer.TestCommandWidget();
@@ -62,37 +57,24 @@ function setUp() {
   mediaImporter = new TestImportRunner();
 }
 
-function testClickToStartImport(callback) {
-  var controller = createController(
-      VolumeManagerCommon.VolumeType.MTP,
-      'mtp-volume',
-      [
-        '/DCIM/',
-        '/DCIM/photos0/',
-        '/DCIM/photos0/IMG00001.jpg',
-        '/DCIM/photos0/IMG00002.jpg',
-      ],
-      '/DCIM');
+function testClickMainToStartImport(callback) {
+  reportPromise(
+      startImport(importer.ClickSource.MAIN),
+      callback);
+}
 
-  var fileSystem = new MockFileSystem('testFs');
-  // ensure there is some content in the scan so the code that depends
-  // on this state doesn't croak which it finds it missing.
-  mediaScanner.fileEntries.push(
-      new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
+function testClickPanelToStartImport(callback) {
+  reportPromise(
+      startImport(importer.ClickSource.IMPORT),
+      callback);
+}
 
-  // First we need to force the controller into a scanning state.
-  environment.directoryChangedListener_(EMPTY_EVENT);
-
-  var promise = widget.updateResolver.promise.then(
-          function() {
-            widget.resetPromises();
-            mediaScanner.finalizeScans();
-            return widget.updateResolver.promise.then(
-                function() {
-                  widget.resetPromises();
-                  widget.click(importer.ClickSource.MAIN);
-                  return mediaImporter.importResolver.promise;
-                });
+function testClickCancel(callback) {
+  var promise = startImport(importer.ClickSource.IMPORT)
+      .then(
+          function(task) {
+            widget.click(importer.ClickSource.CANCEL);
+            return task.whenCanceled;
           });
 
   reportPromise(promise, callback);
@@ -248,6 +230,21 @@ function testClickDestination_ShowsRootPriorToImport(callback) {
 }
 
 function testClickDestination_ShowsDestinationAfterImportStarted(callback) {
+  var promise = startImport(importer.ClickSource.MAIN)
+      .then(
+          function() {
+            return mediaImporter.importResolver.promise.then(
+                function() {
+                  widget.click(importer.ClickSource.DESTINATION);
+                  return
+                    environment.showImportDestinationResolver.promise;
+                });
+          });
+
+  reportPromise(promise, callback);
+}
+
+function startImport(clickSource) {
   var controller = createController(
       VolumeManagerCommon.VolumeType.MTP,
       'mtp-volume',
@@ -268,24 +265,17 @@ function testClickDestination_ShowsDestinationAfterImportStarted(callback) {
   // First we need to force the controller into a scanning state.
   environment.directoryChangedListener_(EMPTY_EVENT);
 
-  var promise = widget.updateResolver.promise.then(
+  return widget.updateResolver.promise.then(
           function() {
             widget.resetPromises();
             mediaScanner.finalizeScans();
             return widget.updateResolver.promise.then(
                 function() {
                   widget.resetPromises();
-                  widget.click(importer.ClickSource.MAIN);
-                  return mediaImporter.importResolver.promise.then(
-                      function() {
-                        widget.click(importer.ClickSource.DESTINATION);
-                        return
-                          environment.showImportDestinationResolver.promise;
-                      });
+                  widget.click(clickSource);
+                  return mediaImporter.importResolver.promise;
                 });
           });
-
-  reportPromise(promise, callback);
 }
 
 /**
@@ -312,13 +302,24 @@ function TestImportTask(scan, destination, destinationDirectory) {
   /** @private {!importer.Resolver} */
   this.finishedResolver_ = new importer.Resolver();
 
+  /** @private {!importer.Resolver} */
+  this.canceledResolver_ = new importer.Resolver();
+
   /** @public {!Promise} */
   this.whenFinished = this.finishedResolver_.promise;
+
+  /** @public {!Promise} */
+  this.whenCanceled = this.canceledResolver_.promise;
 }
 
 /** @return {!Promise<DirectoryEntry>} */
 TestImportTask.prototype.finish = function() {
   this.finishedResolver_.resolve();
+};
+
+/** @return {!Promise<DirectoryEntry>} */
+TestImportTask.prototype.requestCancel = function() {
+  this.canceledResolver_.resolve();
 };
 
 /**
@@ -590,7 +591,8 @@ function createController(volumeType, volumeId, fileNames, currentDirectory) {
       environment,
       mediaScanner,
       mediaImporter,
-      widget);
+      widget,
+      new TestTracker());
 }
 
 /**

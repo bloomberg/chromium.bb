@@ -481,11 +481,18 @@ body.check-select #gear-button {
   cursor: pointer;
 }
 
-#cloud-import-details paper-button.import {
+#cloud-import-details paper-button {
   align-self: flex-end;
-  background-color: #1BA8F3;
   color: white;
   margin-top: 20px;
+}
+
+#cloud-import-details paper-button.import {
+  background-color: #1BA8F3;
+}
+
+#cloud-import-details paper-button.cancel {
+  background-color: #DB4437;
 }
 
 #files-selected-label {

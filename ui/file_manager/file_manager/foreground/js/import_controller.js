@@ -143,6 +143,7 @@ importer.ImportController.prototype.onScanEvent_ = function(event, scan) {
 importer.ImportController.prototype.onVolumeUnmounted_ = function(volumeId) {
   if (this.activeImport_) {
     this.activeImport_.task.requestCancel();
+    this.finalizeActiveImport_();
     this.tracker_.send(metrics.ImportEvents.DEVICE_YANKED);
   }
   this.scanManager_.reset();
@@ -191,14 +192,22 @@ importer.ImportController.prototype.onSelectionChanged_ = function() {
  * @private
  */
 importer.ImportController.prototype.onImportFinished_ = function(task) {
-  console.assert(!!this.activeImport_,
-      'Cannot finish import when none is running.');
-  this.previousImport_ = this.activeImport_;
-  this.activeImport_ = null;
+  this.finalizeActiveImport_();
   this.scanManager_.reset();
   this.storage_.set(importer.Setting.HAS_COMPLETED_IMPORT, true);
   this.commandWidget_.setDetailsBannerVisible(false);
   this.checkState_();
+};
+
+/**
+ * Does book keeping necessary to finalize the active task.
+ * @private
+ */
+importer.ImportController.prototype.finalizeActiveImport_ = function() {
+  console.assert(!!this.activeImport_,
+      'Cannot finish import when none is running.');
+  this.previousImport_ = this.activeImport_;
+  this.activeImport_ = null;
 };
 
 /**
@@ -210,13 +219,16 @@ importer.ImportController.prototype.onClick_ =
   switch (source) {
     case importer.ClickSource.MAIN:
       if (this.lastActivityState_ === importer.ActivityState.READY) {
-        this.execute();
+        this.execute_();
       } else {
         this.commandWidget_.toggleDetails();
       }
       break;
-    case importer.ClickSource.PANEL:
-      this.execute();
+    case importer.ClickSource.IMPORT:
+      this.execute_();
+      break;
+    case importer.ClickSource.CANCEL:
+      this.cancel_();
       break;
     case importer.ClickSource.DESTINATION:
       if (this.activeImport_) {
@@ -239,8 +251,10 @@ importer.ImportController.prototype.onClick_ =
  * Executes import against the current directory. Should only
  * be called when the current directory has been validated
  * by calling "update" on this class.
+ *
+ * @private
  */
-importer.ImportController.prototype.execute = function() {
+importer.ImportController.prototype.execute_ = function() {
   console.assert(!this.activeImport_,
       'Cannot execute while an import task is already active.');
 
@@ -260,6 +274,19 @@ importer.ImportController.prototype.execute = function() {
   };
   var taskFinished = this.onImportFinished_.bind(this, importTask);
   importTask.whenFinished.then(taskFinished).catch(taskFinished);
+  this.checkState_();
+};
+
+/**
+ * Cancels the active task.
+ * @private
+ */
+importer.ImportController.prototype.cancel_ = function() {
+  this.activeImport_.task.requestCancel();
+  this.finalizeActiveImport_();
+  this.tracker_.send(metrics.ImportEvents.IMPORT_CANCELLED);
+
+  this.scanManager_.reset();
   this.checkState_();
 };
 
@@ -440,9 +467,10 @@ importer.CommandWidget.prototype.setDetailsBannerVisible;
  * @enum {string}
  */
 importer.ClickSource = {
+  CANCEL: 'cancel',
   DESTINATION: 'destination',
+  IMPORT: 'import',
   MAIN: 'main',
-  PANEL: 'panel',
   SIDE: 'side'
 };
 
@@ -484,10 +512,16 @@ importer.RuntimeCommandWidget = function() {
       this, importer.ClickSource.SIDE);
 
   /** @private {Element} */
-  this.panelButton_ =
+  this.importButton_ =
       document.querySelector('#cloud-import-details paper-button.import');
-  this.panelButton_.onclick = this.onButtonClicked_.bind(
-      this, importer.ClickSource.PANEL);
+  this.importButton_.onclick = this.onButtonClicked_.bind(
+      this, importer.ClickSource.IMPORT);
+
+  /** @private {Element} */
+  this.cancelButton_ =
+      document.querySelector('#cloud-import-details paper-button.cancel');
+  this.cancelButton_.onclick = this.onButtonClicked_.bind(
+      this, importer.ClickSource.CANCEL);
 
   /** @private {Element} */
   this.statusContent_ =
@@ -565,7 +599,8 @@ importer.RuntimeCommandWidget.prototype.onButtonClicked_ =
 
   switch (source) {
     case importer.ClickSource.MAIN:
-    case importer.ClickSource.PANEL:
+    case importer.ClickSource.IMPORT:
+    case importer.ClickSource.CANCEL:
       this.clickListener_(source);
       break;
     case importer.ClickSource.DESTINATION:
@@ -644,8 +679,6 @@ importer.RuntimeCommandWidget.prototype.update =
     case importer.ActivityState.HIDDEN:
       this.setDetailsVisible(false);
 
-      this.panelButton_.disabled = true;
-
       this.mainButton_.hidden = true;
       this.sideButton_.hidden = true;
 
@@ -665,11 +698,10 @@ importer.RuntimeCommandWidget.prototype.update =
           'CLOUD_IMPORT_STATUS_IMPORTING',
           opt_scan.getFileEntries().length);
 
-      this.panelButton_.disabled = true;
-
       this.mainButton_.hidden = false;
       this.sideButton_.hidden = false;
-      this.panelButton_.hidden = true;
+      this.importButton_.hidden = true;
+      this.cancelButton_.hidden = false;
 
       this.toolbarIcon_.setAttribute('icon', 'autorenew');
       this.statusIcon_.setAttribute('icon', 'autorenew');
@@ -685,11 +717,10 @@ importer.RuntimeCommandWidget.prototype.update =
           'CLOUD_IMPORT_STATUS_INSUFFICIENT_SPACE',
           opt_scan.getFileEntries().length);
 
-      this.panelButton_.disabled = true;
-
       this.mainButton_.hidden = false;
       this.sideButton_.hidden = false;
-      this.panelButton_.hidden = true;
+      this.importButton_.hidden = true;
+      this.cancelButton_.hidden = true;
 
       this.toolbarIcon_.setAttribute('icon', 'cloud-off');
       this.statusIcon_.setAttribute('icon', 'image:photo');
@@ -701,12 +732,10 @@ importer.RuntimeCommandWidget.prototype.update =
       this.statusContent_.innerHTML = str(
           'CLOUD_IMPORT_STATUS_NO_MEDIA');
 
-      this.panelButton_.disabled = true;
-
       this.mainButton_.hidden = false;
       this.sideButton_.hidden = false;
-      // Hidden for now, since this is also the "done" importing case.
-      this.panelButton_.hidden = true;
+      this.importButton_.hidden = true;
+      this.cancelButton_.hidden = true;
 
       this.toolbarIcon_.setAttribute('icon', 'cloud-done');
       this.statusIcon_.setAttribute('icon', 'cloud-done');
@@ -722,11 +751,10 @@ importer.RuntimeCommandWidget.prototype.update =
           'CLOUD_IMPORT_STATUS_READY',
           opt_scan.getFileEntries().length);
 
-      this.panelButton_.disabled = false;
-
       this.mainButton_.hidden = false;
       this.sideButton_.hidden = false;
-      this.panelButton_.hidden = false;
+      this.importButton_.hidden = false;
+      this.cancelButton_.hidden = true;
 
       this.toolbarIcon_.setAttribute('icon', 'cloud-upload');
       this.statusIcon_.setAttribute('icon', 'image:photo');
@@ -741,11 +769,11 @@ importer.RuntimeCommandWidget.prototype.update =
           'CLOUD_IMPORT_STATUS_SCANNING',
           opt_scan.getFileEntries().length);
 
-      this.panelButton_.disabled = true;
-
       this.mainButton_.hidden = false;
       this.sideButton_.hidden = false;
-      this.panelButton_.hidden = true;
+      this.importButton_.hidden = true;
+      // TODO(smckay): implement cancellation for scanning.
+      this.cancelButton_.hidden = true;
 
       this.toolbarIcon_.setAttribute('icon', 'autorenew');
       this.statusIcon_.setAttribute('icon', 'autorenew');
