@@ -18,19 +18,21 @@ chrome.test.runTests([
               },
               result);
     }));
-    privatePreferences.dataReductionDailyContentLength.get({},
+    dataReductionProxy.dataReductionDailyContentLength.get({},
         chrome.test.callbackPass(function(result) {
           chrome.test.assertEq(
               {
-                'value': []
+                'value': [],
+                'levelOfControl': 'controllable_by_this_extension'
               },
               result);
     }));
-    privatePreferences.dataReductionDailyReceivedLength.get({},
+    dataReductionProxy.dataReductionDailyReceivedLength.get({},
         chrome.test.callbackPass(function(result) {
           chrome.test.assertEq(
               {
-                'value': []
+                'value': [],
+                'levelOfControl': 'controllable_by_this_extension'
               },
               result);
     }));
@@ -44,9 +46,9 @@ chrome.test.runTests([
     }));
   },
   function updateDailyLengths() {
-    privatePreferences.dataReductionDailyContentLength.onChange.addListener(
+    dataReductionProxy.dataReductionDailyContentLength.onChange.addListener(
         confirmDailyContentLength);
-    privatePreferences.dataReductionDailyReceivedLength.onChange.addListener(
+    dataReductionProxy.dataReductionDailyReceivedLength.onChange.addListener(
         confirmRecievedLength);
 
     // Trigger calls to confirmDailyContentLength.onChange and
@@ -60,11 +62,12 @@ chrome.test.runTests([
       expectedDailyLengths[i] = '0';
     }
     function confirmRecievedLength() {
-      privatePreferences.dataReductionDailyReceivedLength.get({},
+      dataReductionProxy.dataReductionDailyReceivedLength.get({},
           chrome.test.callbackPass(function(result) {
             chrome.test.assertEq(
                 {
-                  'value': expectedDailyLengths
+                  'value': expectedDailyLengths ,
+                  'levelOfControl': 'controllable_by_this_extension'
                 },
                 result);
       }));
@@ -78,11 +81,12 @@ chrome.test.runTests([
       }));
     }
     function confirmDailyContentLength() {
-      privatePreferences.dataReductionDailyContentLength.get({},
+      dataReductionProxy.dataReductionDailyContentLength.get({},
         chrome.test.callbackPass(function(result) {
           chrome.test.assertEq(
               {
-                'value': expectedDailyLengths
+                'value': expectedDailyLengths ,
+                'levelOfControl': 'controllable_by_this_extension'
               },
               result);
       }));
