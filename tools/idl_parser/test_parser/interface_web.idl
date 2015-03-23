@@ -323,3 +323,49 @@ interface MyIfaceSetlike {
   readonly setlike<long>;
   setlike<double>;
 };
+
+/* TREE
+ *Interface(MyIfaceSerializer)
+ *  Serializer()
+ *  Serializer()
+ *    Operation(toJSON)
+ *      Arguments()
+ *      Type()
+ *        Any()
+ *  Serializer()
+ *  Serializer()
+ *    Map()
+ *  Serializer()
+ *    Map()
+ *  Serializer()
+ *    Map()
+ *  Serializer()
+ *    Map()
+ *  Serializer()
+ *    Map()
+ *  Serializer()
+ *    Map()
+ *  Serializer()
+ *    Map()
+ *  Serializer()
+ *    List()
+ *  Serializer()
+ *    List()
+ *  Serializer()
+ *    List()
+ */
+interface MyIfaceSerializer {
+  serializer;
+  serializer any toJSON();
+  serializer = name;
+  serializer = {};
+  serializer = { getter };
+  serializer = { attribute };
+  serializer = { inherit, attribute };
+  serializer = { inherit };
+  serializer = { inherit, name1, name2 };
+  serializer = { name1, name2 };
+  serializer = [];
+  serializer = [getter];
+  serializer = [name1, name2];
+};

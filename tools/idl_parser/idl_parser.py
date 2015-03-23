@@ -273,6 +273,7 @@ class IDLParser(object):
   def p_InterfaceMember(self, p):
     """InterfaceMember : Const
                        | Operation
+                       | Serializer
                        | Stringifier
                        | StaticMember
                        | Iterable
@@ -467,7 +468,74 @@ class IDLParser(object):
     p[0] = ListFromConcat(self.BuildAttribute('TYPE', 'float'),
                           self.BuildAttribute('VALUE', val))
 
-  # [30-34] NOT IMPLEMENTED (Serializer)
+  # [30]
+  def p_Serializer(self, p):
+    """Serializer : SERIALIZER SerializerRest"""
+    p[0] = self.BuildProduction('Serializer', p, 1, p[2])
+
+  # [31]
+  # TODO(jl): This adds ReturnType and ';', missing from the spec's grammar.
+  # https://www.w3.org/Bugs/Public/show_bug.cgi?id=20361
+  def p_SerializerRest(self, p):
+    """SerializerRest : ReturnType OperationRest
+                      | '=' SerializationPattern ';'
+                      | ';'"""
+    if len(p) == 3:
+      p[2].AddChildren(p[1])
+      p[0] = p[2]
+    elif len(p) == 4:
+      p[0] = p[2]
+
+  # [32]
+  def p_SerializationPattern(self, p):
+    """SerializationPattern : '{' SerializationPatternMap '}'
+                            | '[' SerializationPatternList ']'
+                            | identifier"""
+    if len(p) > 2:
+      p[0] = p[2]
+    else:
+      p[0] = self.BuildAttribute('ATTRIBUTE', p[1])
+
+  # [33]
+  # TODO(jl): This adds the "ATTRIBUTE" and "INHERIT ',' ATTRIBUTE" variants,
+  # missing from the spec's grammar.
+  # https://www.w3.org/Bugs/Public/show_bug.cgi?id=20361
+  def p_SerializationPatternMap(self, p):
+    """SerializationPatternMap : GETTER
+                               | ATTRIBUTE
+                               | INHERIT ',' ATTRIBUTE
+                               | INHERIT Identifiers
+                               | identifier Identifiers
+                               |"""
+    p[0] = self.BuildProduction('Map', p, 0)
+    if len(p) == 4:
+      p[0].AddChildren(self.BuildTrue('INHERIT'))
+      p[0].AddChildren(self.BuildTrue('ATTRIBUTE'))
+    elif len(p) > 1:
+      if p[1] == 'getter':
+        p[0].AddChildren(self.BuildTrue('GETTER'))
+      elif p[1] == 'attribute':
+        p[0].AddChildren(self.BuildTrue('ATTRIBUTE'))
+      else:
+        if p[1] == 'inherit':
+          p[0].AddChildren(self.BuildTrue('INHERIT'))
+          attributes = p[2]
+        else:
+          attributes = ListFromConcat(p[1], p[2])
+        p[0].AddChildren(self.BuildAttribute('ATTRIBUTES', attributes))
+
+  # [34]
+  def p_SerializationPatternList(self, p):
+    """SerializationPatternList : GETTER
+                                | identifier Identifiers
+                                |"""
+    p[0] = self.BuildProduction('List', p, 0)
+    if len(p) > 1:
+      if p[1] == 'getter':
+        p[0].AddChildren(self.BuildTrue('GETTER'))
+      else:
+        attributes = ListFromConcat(p[1], p[2])
+        p[0].AddChildren(self.BuildAttribute('ATTRIBUTES', attributes))
 
   # [35]
   def p_Stringifier(self, p):
