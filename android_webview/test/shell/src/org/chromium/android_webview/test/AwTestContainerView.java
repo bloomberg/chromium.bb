@@ -384,6 +384,18 @@ public class AwTestContainerView extends FrameLayout {
     }
 
     @Override
+    public boolean onGenericMotionEvent(MotionEvent ev) {
+        super.onGenericMotionEvent(ev);
+        return mAwContents.onGenericMotionEvent(ev);
+    }
+
+    @Override
+    public boolean onHoverEvent(MotionEvent ev) {
+        super.onHoverEvent(ev);
+        return mAwContents.onHoverEvent(ev);
+    }
+
+    @Override
     public void onDraw(Canvas canvas) {
         if (isBackedByHardwareView()) {
             mHardwareView.updateScroll(getScrollX(), getScrollY());
