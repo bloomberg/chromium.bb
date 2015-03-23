@@ -42,14 +42,7 @@ class SecurityOrigin;
 
 class PageRuntimeAgent final : public InspectorRuntimeAgent {
 public:
-    class Client {
-    public:
-        virtual ~Client() { }
-
-        virtual void resumeStartup() { }
-    };
-
-    static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, Client* client, ScriptDebugServer* scriptDebugServer, InspectorPageAgent* pageAgent)
+    static PassOwnPtrWillBeRawPtr<PageRuntimeAgent> create(InjectedScriptManager* injectedScriptManager, InspectorRuntimeAgent::Client* client, ScriptDebugServer* scriptDebugServer, InspectorPageAgent* pageAgent)
     {
         return adoptPtrWillBeNoop(new PageRuntimeAgent(injectedScriptManager, client, scriptDebugServer, pageAgent));
     }
@@ -57,7 +50,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
     virtual void init() override;
     virtual void enable(ErrorString*) override;
-    virtual void run(ErrorString*) override;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
     void didCreateScriptContext(LocalFrame*, ScriptState*, SecurityOrigin*, int worldId);
@@ -73,7 +65,6 @@ private:
     virtual void unmuteConsole() override;
     void reportExecutionContextCreation();
 
-    Client* m_client;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     bool m_mainWorldContextCreated;
     int m_debuggerId;

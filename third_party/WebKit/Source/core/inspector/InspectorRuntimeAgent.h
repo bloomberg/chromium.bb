@@ -49,6 +49,14 @@ typedef String ErrorString;
 class InspectorRuntimeAgent : public InspectorBaseAgent<InspectorRuntimeAgent, InspectorFrontend::Runtime>, public InspectorBackendDispatcher::RuntimeCommandHandler {
     WTF_MAKE_NONCOPYABLE(InspectorRuntimeAgent);
 public:
+    class Client {
+    public:
+        virtual ~Client() { }
+
+        virtual void resumeStartup() { }
+        virtual bool isRunRequired() { return false; }
+    };
+
     virtual ~InspectorRuntimeAgent();
     DECLARE_VIRTUAL_TRACE();
 
@@ -85,7 +93,7 @@ public:
     void restore() override final;
 
 protected:
-    InspectorRuntimeAgent(InjectedScriptManager*, ScriptDebugServer*);
+    InspectorRuntimeAgent(InjectedScriptManager*, ScriptDebugServer*, Client*);
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) = 0;
 
     virtual void muteConsole() = 0;
@@ -102,6 +110,7 @@ protected:
 private:
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     ScriptDebugServer* m_scriptDebugServer;
+    Client* m_client;
 };
 
 } // namespace blink

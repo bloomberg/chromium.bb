@@ -32,6 +32,7 @@
 #define WorkerInspectorController_h
 
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/InspectorRuntimeAgent.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -49,9 +50,10 @@ class InspectorStateClient;
 class InstrumentingAgents;
 class WorkerDebuggerAgent;
 class WorkerGlobalScope;
+class WorkerRuntimeAgent;
 class WorkerScriptDebugServer;
 
-class WorkerInspectorController : public RefCountedWillBeGarbageCollectedFinalized<WorkerInspectorController> {
+class WorkerInspectorController : public RefCountedWillBeGarbageCollectedFinalized<WorkerInspectorController>, public InspectorRuntimeAgent::Client {
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
@@ -64,12 +66,17 @@ public:
     void disconnectFrontend();
     void restoreInspectorStateFromCookie(const String& inspectorCookie);
     void dispatchMessageFromFrontend(const String&);
-    void resume();
     void dispose();
     void interruptAndDispatchInspectorCommands();
 
+    void pauseOnStart();
+
 private:
     friend InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope*);
+
+    // InspectorRuntimeAgent::Client implementation.
+    void resumeStartup() override;
+    bool isRunRequired() override;
 
     RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
     OwnPtr<InspectorStateClient> m_stateClient;
@@ -83,6 +90,8 @@ private:
     RefPtrWillBeMember<InspectorBackendDispatcher> m_backendDispatcher;
     RawPtrWillBeMember<WorkerDebuggerAgent> m_workerDebuggerAgent;
     OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
+    RawPtrWillBeMember<WorkerRuntimeAgent> m_workerRuntimeAgent;
+    bool m_paused;
 };
 
 }

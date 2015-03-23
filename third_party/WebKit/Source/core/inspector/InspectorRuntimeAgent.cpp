@@ -47,11 +47,12 @@ namespace InspectorRuntimeAgentState {
 static const char runtimeEnabled[] = "runtimeEnabled";
 };
 
-InspectorRuntimeAgent::InspectorRuntimeAgent(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer)
+InspectorRuntimeAgent::InspectorRuntimeAgent(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, Client* client)
     : InspectorBaseAgent<InspectorRuntimeAgent, InspectorFrontend::Runtime>("Runtime")
     , m_enabled(false)
     , m_injectedScriptManager(injectedScriptManager)
     , m_scriptDebugServer(scriptDebugServer)
+    , m_client(client)
 {
 }
 
@@ -163,11 +164,12 @@ void InspectorRuntimeAgent::releaseObjectGroup(ErrorString*, const String& objec
 
 void InspectorRuntimeAgent::run(ErrorString*)
 {
+    m_client->resumeStartup();
 }
 
 void InspectorRuntimeAgent::isRunRequired(ErrorString*, bool* out_result)
 {
-    *out_result = false;
+    *out_result = m_client->isRunRequired();
 }
 
 void InspectorRuntimeAgent::setCustomObjectFormatterEnabled(ErrorString*, bool enabled)

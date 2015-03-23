@@ -97,8 +97,11 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     , m_injectedScriptManager(InjectedScriptManager::createForWorker())
     , m_debugServer(WorkerScriptDebugServer::create(workerGlobalScope))
     , m_agents(m_instrumentingAgents.get(), m_state.get())
+    , m_paused(false)
 {
-    m_agents.append(WorkerRuntimeAgent::create(m_injectedScriptManager.get(), m_debugServer.get(), workerGlobalScope));
+    OwnPtrWillBeRawPtr<WorkerRuntimeAgent> workerRuntimeAgent = WorkerRuntimeAgent::create(m_injectedScriptManager.get(), m_debugServer.get(), workerGlobalScope, this);
+    m_workerRuntimeAgent = workerRuntimeAgent.get();
+    m_agents.append(workerRuntimeAgent.release());
 
     OwnPtrWillBeRawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(m_debugServer.get(), workerGlobalScope, m_injectedScriptManager.get());
     m_workerDebuggerAgent = workerDebuggerAgent.get();
@@ -164,14 +167,6 @@ void WorkerInspectorController::dispatchMessageFromFrontend(const String& messag
         m_backendDispatcher->dispatch(message);
 }
 
-void WorkerInspectorController::resume()
-{
-    if (WorkerRuntimeAgent* runtimeAgent = m_instrumentingAgents->workerRuntimeAgent()) {
-        ErrorString unused;
-        runtimeAgent->run(&unused);
-    }
-}
-
 void WorkerInspectorController::dispose()
 {
     m_instrumentingAgents->reset();
@@ -181,6 +176,28 @@ void WorkerInspectorController::dispose()
 void WorkerInspectorController::interruptAndDispatchInspectorCommands()
 {
     m_workerDebuggerAgent->interruptAndDispatchInspectorCommands();
+}
+
+void WorkerInspectorController::resumeStartup()
+{
+    m_paused = false;
+}
+
+bool WorkerInspectorController::isRunRequired()
+{
+    return m_paused;
+}
+
+void WorkerInspectorController::pauseOnStart()
+{
+    m_paused = true;
+    MessageQueueWaitResult result;
+    m_workerGlobalScope->thread()->willEnterNestedLoop();
+    do {
+        result = m_workerGlobalScope->thread()->runDebuggerTask();
+    // Keep waiting until execution is resumed.
+    } while (result == MessageQueueMessageReceived && m_paused);
+    m_workerGlobalScope->thread()->didLeaveNestedLoop();
 }
 
 DEFINE_TRACE(WorkerInspectorController)
@@ -194,6 +211,7 @@ DEFINE_TRACE(WorkerInspectorController)
     visitor->trace(m_agents);
     visitor->trace(m_workerDebuggerAgent);
     visitor->trace(m_asyncCallTracker);
+    visitor->trace(m_workerRuntimeAgent);
 }
 
 } // namespace blink

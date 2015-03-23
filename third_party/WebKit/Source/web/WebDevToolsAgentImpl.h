@@ -33,9 +33,9 @@
 
 #include "core/inspector/InspectorFrontendChannel.h"
 #include "core/inspector/InspectorInputAgent.h"
+#include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/InspectorStateClient.h"
 #include "core/inspector/InspectorTracingAgent.h"
-#include "core/inspector/PageRuntimeAgent.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
@@ -68,7 +68,7 @@ class WebDevToolsAgentImpl final
     , public WebDevToolsAgent
     , public InspectorStateClient
     , public InspectorTracingAgent::Client
-    , public PageRuntimeAgent::Client
+    , public InspectorRuntimeAgent::Client
     , public InspectorFrontendChannel
     , private WebThread::TaskObserver {
 public:
@@ -110,7 +110,7 @@ private:
     void enableTracing(const WTF::String& categoryFilter) override;
     void disableTracing() override;
 
-    // PageRuntimeAgent::Client implementation.
+    // InspectorRuntimeAgent::Client implementation.
     void resumeStartup() override;
 
     // InspectorFrontendChannel implementation.

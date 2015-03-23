@@ -356,9 +356,6 @@ interface InspectorInstrumentation {
     [Worker, PageConsole]
     void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
 
-    [WorkerRuntime]
-    void willEvaluateWorkerScript([Keep] WorkerGlobalScope* context, int workerThreadStartMode);
-
     [Profiler]
     void willProcessTask(WorkerGlobalScope* context);
 

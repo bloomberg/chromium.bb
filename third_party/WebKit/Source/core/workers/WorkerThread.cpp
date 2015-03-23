@@ -347,7 +347,8 @@ void WorkerThread::initialize()
     WorkerScriptController* script = m_workerGlobalScope->script();
     if (!script->isExecutionForbidden())
         script->initializeContextIfNeeded();
-    InspectorInstrumentation::willEvaluateWorkerScript(workerGlobalScope(), startMode);
+    if (startMode == PauseWorkerGlobalScopeOnStart)
+        m_workerGlobalScope->workerInspectorController()->pauseOnStart();
 
     OwnPtr<CachedMetadataHandler> handler(workerGlobalScope()->createWorkerScriptCachedMetadataHandler(scriptURL, cachedMetaData.get()));
     bool success = script->evaluate(ScriptSourceCode(sourceCode, scriptURL), nullptr, handler.get(), v8CacheOptions);

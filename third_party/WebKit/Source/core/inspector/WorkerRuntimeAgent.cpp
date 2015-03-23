@@ -34,36 +34,24 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/inspector/InjectedScript.h"
-#include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/WorkerDebuggerAgent.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerThread.h"
 
 namespace blink {
 
-WorkerRuntimeAgent::WorkerRuntimeAgent(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, WorkerGlobalScope* workerGlobalScope)
-    : InspectorRuntimeAgent(injectedScriptManager, scriptDebugServer)
+WorkerRuntimeAgent::WorkerRuntimeAgent(InjectedScriptManager* injectedScriptManager, ScriptDebugServer* scriptDebugServer, WorkerGlobalScope* workerGlobalScope, InspectorRuntimeAgent::Client* client)
+    : InspectorRuntimeAgent(injectedScriptManager, scriptDebugServer, client)
     , m_workerGlobalScope(workerGlobalScope)
-    , m_paused(false)
 {
 }
 
 WorkerRuntimeAgent::~WorkerRuntimeAgent()
 {
-#if !ENABLE(OILPAN)
-    m_instrumentingAgents->setWorkerRuntimeAgent(0);
-#endif
 }
 
 DEFINE_TRACE(WorkerRuntimeAgent)
 {
     visitor->trace(m_workerGlobalScope);
     InspectorRuntimeAgent::trace(visitor);
-}
-
-void WorkerRuntimeAgent::init()
-{
-    m_instrumentingAgents->setWorkerRuntimeAgent(this);
 }
 
 void WorkerRuntimeAgent::enable(ErrorString* errorString)
@@ -94,31 +82,6 @@ void WorkerRuntimeAgent::muteConsole()
 void WorkerRuntimeAgent::unmuteConsole()
 {
     // We don't need to mute console for workers.
-}
-
-void WorkerRuntimeAgent::run(ErrorString*)
-{
-    m_paused = false;
-}
-
-void WorkerRuntimeAgent::isRunRequired(ErrorString*, bool* out_result)
-{
-    *out_result = m_paused;
-}
-
-void WorkerRuntimeAgent::willEvaluateWorkerScript(WorkerGlobalScope* context, int workerThreadStartMode)
-{
-    if (workerThreadStartMode != PauseWorkerGlobalScopeOnStart)
-        return;
-
-    m_paused = true;
-    MessageQueueWaitResult result;
-    context->thread()->willEnterNestedLoop();
-    do {
-        result = context->thread()->runDebuggerTask();
-    // Keep waiting until execution is resumed.
-    } while (result == MessageQueueMessageReceived && m_paused);
-    context->thread()->didLeaveNestedLoop();
 }
 
 } // namespace blink

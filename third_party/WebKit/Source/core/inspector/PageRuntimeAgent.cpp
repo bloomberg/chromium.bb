@@ -49,8 +49,7 @@ namespace blink {
 static int s_nextDebuggerId = 1;
 
 PageRuntimeAgent::PageRuntimeAgent(InjectedScriptManager* injectedScriptManager, Client* client, ScriptDebugServer* scriptDebugServer, InspectorPageAgent* pageAgent)
-    : InspectorRuntimeAgent(injectedScriptManager, scriptDebugServer)
-    , m_client(client)
+    : InspectorRuntimeAgent(injectedScriptManager, scriptDebugServer, client)
     , m_pageAgent(pageAgent)
     , m_mainWorldContextCreated(false)
     , m_debuggerId(s_nextDebuggerId++)
@@ -87,11 +86,6 @@ void PageRuntimeAgent::enable(ErrorString* errorString)
     // that are expected to be triggered only after the load is committed, see http://crbug.com/131623
     if (m_mainWorldContextCreated)
         reportExecutionContextCreation();
-}
-
-void PageRuntimeAgent::run(ErrorString* errorString)
-{
-    m_client->resumeStartup();
 }
 
 void PageRuntimeAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
