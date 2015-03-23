@@ -282,12 +282,13 @@ void ChildDiscardableSharedMemoryManager::MemoryUsageChanged(
   TRACE_COUNTER2("renderer", "DiscardableMemoryUsage", "allocated",
                  new_bytes_total - new_bytes_free, "free", new_bytes_free);
 
-  static const char kDiscardableMemoryUsageKey[] = "dm-usage";
-  base::debug::SetCrashKeyValue(kDiscardableMemoryUsageKey,
+  static const char kDiscardableMemoryAllocatedKey[] =
+      "discardable-memory-allocated";
+  base::debug::SetCrashKeyValue(kDiscardableMemoryAllocatedKey,
                                 base::Uint64ToString(new_bytes_total));
 
-  static const char kDiscardableMemoryUsageFreeKey[] = "dm-usage-free";
-  base::debug::SetCrashKeyValue(kDiscardableMemoryUsageFreeKey,
+  static const char kDiscardableMemoryFreeKey[] = "discardable-memory-free";
+  base::debug::SetCrashKeyValue(kDiscardableMemoryFreeKey,
                                 base::Uint64ToString(new_bytes_free));
 }
 

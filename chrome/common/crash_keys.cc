@@ -145,14 +145,13 @@ size_t RegisterChromeCrashKeys() {
     { kGPURenderer, kSmallSize },
 #endif
 
-    // base/:
-    { "dm-usage", kSmallSize },
-    { "dm-usage-free", kSmallSize },
-    { "total-dm-usage", kSmallSize },
     // content/:
+    { "discardable-memory-allocated", kSmallSize },
+    { "discardable-memory-free", kSmallSize },
     { kFontKeyName, kSmallSize},
     { "ppapi_path", kMediumSize },
     { "subresource_url", kLargeSize },
+    { "total-discardable-memory-allocated", kSmallSize },
 #if defined(OS_CHROMEOS)
     { kNumberOfUsers, kSmallSize },
 #endif
