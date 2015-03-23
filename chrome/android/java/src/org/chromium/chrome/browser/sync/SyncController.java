@@ -12,8 +12,10 @@ import android.util.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
+import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
+import org.chromium.chrome.browser.sync.ui.PassphraseActivity;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
@@ -50,8 +52,7 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     private final ChromeSigninController mChromeSigninController;
     private final AndroidSyncSettings mAndroidSyncSettings;
     private final ProfileSyncService mProfileSyncService;
-    // TODO(maxbogue): Make final once it's constructed in this class.
-    private SyncNotificationController mSyncNotificationController = null;
+    private final SyncNotificationController mSyncNotificationController;
 
     private SyncController(Context context) {
         mContext = context;
@@ -64,6 +65,9 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         // Set the sessions ID using the generator that was registered for GENERATOR_ID.
         mProfileSyncService.setSessionsId(
                 UniqueIdentificationGeneratorFactory.getInstance(GENERATOR_ID));
+        mSyncNotificationController = new SyncNotificationController(
+                mContext, PassphraseActivity.class, AccountManagementFragment.class);
+        mProfileSyncService.addSyncStateChangedListener(mSyncNotificationController);
     }
 
     /**
@@ -199,13 +203,10 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
      * Sets the SyncNotificationController.
      *
      * This is a temporary method for transferring ownership of SyncNotificationController
-     * upstream. Once all of SNC's dependencies are upstreamed, it will be created in the
-     * SyncController constructor and this method won't exist.
+     * upstream. SNC is now created in the constructor and this method can be removed once
+     * the downstream call from GoogleServicesManager is removed.
      */
     public void setSyncNotificationController(SyncNotificationController snc) {
-        assert mSyncNotificationController == null;
-        mSyncNotificationController = snc;
-        mProfileSyncService.addSyncStateChangedListener(mSyncNotificationController);
     }
 
     /**
