@@ -92,10 +92,6 @@ DEFINE_TRACE(ElementAnimations)
 
 const LayoutStyle* ElementAnimations::baseLayoutStyle() const
 {
-#if !ENABLE(ASSERT)
-    if (isAnimationStyleChange())
-        return m_baseLayoutStyle.get();
-#endif
     return nullptr;
 }
 
@@ -105,10 +101,10 @@ void ElementAnimations::updateBaseLayoutStyle(const LayoutStyle* layoutStyle)
         m_baseLayoutStyle = nullptr;
         return;
     }
-#if ENABLE(ASSERT)
-    if (m_baseLayoutStyle && layoutStyle)
-        ASSERT(*m_baseLayoutStyle == *layoutStyle);
-#endif
+    if (m_baseLayoutStyle && layoutStyle) {
+        RELEASE_ASSERT(*m_baseLayoutStyle == *layoutStyle);
+        return;
+    }
     m_baseLayoutStyle = LayoutStyle::clone(*layoutStyle);
 }
 
