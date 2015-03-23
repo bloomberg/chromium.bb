@@ -30,6 +30,7 @@ enum FloatBlendMode {
     BlendVertical
 };
 
+struct PathSegmentData;
 class SVGPathSource;
 
 class SVGPathBlender : public NoBaseWillBeGarbageCollectedFinalized<SVGPathBlender> {
@@ -43,15 +44,15 @@ public:
     DECLARE_TRACE();
 
 private:
-    bool blendMoveToSegment();
-    bool blendLineToSegment();
-    bool blendLineToHorizontalSegment();
-    bool blendLineToVerticalSegment();
-    bool blendCurveToCubicSegment();
-    bool blendCurveToCubicSmoothSegment();
-    bool blendCurveToQuadraticSegment();
-    bool blendCurveToQuadraticSmoothSegment();
-    bool blendArcToSegment();
+    void blendMoveToSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    void blendLineToSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    void blendLineToHorizontalSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    void blendLineToVerticalSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    void blendCurveToCubicSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    void blendCurveToCubicSmoothSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    void blendCurveToQuadraticSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    void blendCurveToQuadraticSmoothSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
+    void blendArcToSegment(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
 
     float blendAnimatedDimensonalFloat(float, float, FloatBlendMode);
     FloatPoint blendAnimatedFloatPoint(const FloatPoint& from, const FloatPoint& to);

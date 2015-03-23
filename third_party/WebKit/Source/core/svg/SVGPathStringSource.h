@@ -32,22 +32,16 @@ public:
 
 private:
     virtual bool hasMoreData() const override;
-    virtual bool moveToNextToken() override;
-    virtual bool parseSVGSegmentType(SVGPathSegType&) override;
-    virtual SVGPathSegType nextCommand(SVGPathSegType previousCommand) override;
+    virtual SVGPathSegType peekSegmentType() override;
+    virtual PathSegmentData parseSegment() override;
 
-    virtual bool parseMoveToSegment(FloatPoint&) override;
-    virtual bool parseLineToSegment(FloatPoint&) override;
-    virtual bool parseLineToHorizontalSegment(float&) override;
-    virtual bool parseLineToVerticalSegment(float&) override;
-    virtual bool parseCurveToCubicSegment(FloatPoint&, FloatPoint&, FloatPoint&) override;
-    virtual bool parseCurveToCubicSmoothSegment(FloatPoint&, FloatPoint&) override;
-    virtual bool parseCurveToQuadraticSegment(FloatPoint&, FloatPoint&) override;
-    virtual bool parseCurveToQuadraticSmoothSegment(FloatPoint&) override;
-    virtual bool parseArcToSegment(float&, float&, float&, bool&, bool&, FloatPoint&) override;
+    void eatWhitespace();
+    float parseNumberWithError();
+    bool parseArcFlagWithError();
 
     String m_string;
     bool m_is8BitSource;
+    bool m_seenError;
 
     union {
         const LChar* m_character8;
@@ -57,6 +51,8 @@ private:
         const LChar* m_character8;
         const UChar* m_character16;
     } m_end;
+
+    SVGPathSegType m_previousCommand;
 };
 
 } // namespace blink

@@ -22,6 +22,7 @@
 #define SVGPathSeg_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -57,6 +58,37 @@ enum SVGPathSegType {
     PathSegCurveToCubicSmoothRel = 17,
     PathSegCurveToQuadraticSmoothAbs = 18,
     PathSegCurveToQuadraticSmoothRel = 19
+};
+
+static inline SVGPathSegType toAbsolutePathSegType(const SVGPathSegType type)
+{
+    // Clear the LSB to get the absolute command.
+    return type >= PathSegMoveToAbs ? static_cast<SVGPathSegType>(type & ~1u) : type;
+}
+
+static inline bool isAbsolutePathSegType(const SVGPathSegType type)
+{
+    // For commands with an ordinal >= PathSegMoveToAbs, and odd number => relative command.
+    return type < PathSegMoveToAbs || type % 2 == 0;
+}
+
+struct PathSegmentData {
+    PathSegmentData()
+        : command(PathSegUnknown)
+        , arcSweep(false)
+        , arcLarge(false)
+    {
+    }
+
+    const FloatPoint& arcRadii() const { return point1; }
+    float arcAngle() const { return point2.x(); }
+
+    SVGPathSegType command;
+    FloatPoint targetPoint;
+    FloatPoint point1;
+    FloatPoint point2;
+    bool arcSweep;
+    bool arcLarge;
 };
 
 class SVGPropertyBase;

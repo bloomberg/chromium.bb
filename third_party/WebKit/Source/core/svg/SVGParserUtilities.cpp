@@ -251,66 +251,6 @@ bool parseNumberOrPercentage(const String& string, float& number)
     return genericParseNumberOrPercentage(ptr, end, number);
 }
 
-template <typename CharType>
-bool parseFloatPoint(const CharType*& current, const CharType* end, FloatPoint& point)
-{
-    float x;
-    float y;
-    if (!parseNumber(current, end, x)
-        || !parseNumber(current, end, y))
-        return false;
-    point = FloatPoint(x, y);
-    return true;
-}
-
-template bool parseFloatPoint(const LChar*& current, const LChar* end, FloatPoint& point1);
-template bool parseFloatPoint(const UChar*& current, const UChar* end, FloatPoint& point1);
-
-template <typename CharType>
-inline bool parseFloatPoint2(const CharType*& current, const CharType* end, FloatPoint& point1, FloatPoint& point2)
-{
-    float x1;
-    float y1;
-    float x2;
-    float y2;
-    if (!parseNumber(current, end, x1)
-        || !parseNumber(current, end, y1)
-        || !parseNumber(current, end, x2)
-        || !parseNumber(current, end, y2))
-        return false;
-    point1 = FloatPoint(x1, y1);
-    point2 = FloatPoint(x2, y2);
-    return true;
-}
-
-template bool parseFloatPoint2(const LChar*& current, const LChar* end, FloatPoint& point1, FloatPoint& point2);
-template bool parseFloatPoint2(const UChar*& current, const UChar* end, FloatPoint& point1, FloatPoint& point2);
-
-template <typename CharType>
-bool parseFloatPoint3(const CharType*& current, const CharType* end, FloatPoint& point1, FloatPoint& point2, FloatPoint& point3)
-{
-    float x1;
-    float y1;
-    float x2;
-    float y2;
-    float x3;
-    float y3;
-    if (!parseNumber(current, end, x1)
-        || !parseNumber(current, end, y1)
-        || !parseNumber(current, end, x2)
-        || !parseNumber(current, end, y2)
-        || !parseNumber(current, end, x3)
-        || !parseNumber(current, end, y3))
-        return false;
-    point1 = FloatPoint(x1, y1);
-    point2 = FloatPoint(x2, y2);
-    point3 = FloatPoint(x3, y3);
-    return true;
-}
-
-template bool parseFloatPoint3(const LChar*& current, const LChar* end, FloatPoint& point1, FloatPoint& point2, FloatPoint& point3);
-template bool parseFloatPoint3(const UChar*& current, const UChar* end, FloatPoint& point1, FloatPoint& point2, FloatPoint& point3);
-
 static const LChar skewXDesc[] =  {'s', 'k', 'e', 'w', 'X'};
 static const LChar skewYDesc[] =  {'s', 'k', 'e', 'w', 'Y'};
 static const LChar scaleDesc[] =  {'s', 'c', 'a', 'l', 'e'};

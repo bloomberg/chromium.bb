@@ -18,7 +18,6 @@
  */
 
 #include "config.h"
-
 #include "core/svg/SVGPathSegListSource.h"
 
 #include "core/svg/SVGPathElement.h"
@@ -37,121 +36,86 @@ SVGPathSegListSource::SVGPathSegListSource(SVGPathSegList::ConstIterator itBegin
 {
 }
 
-DEFINE_TRACE(SVGPathSegListSource)
-{
-    visitor->trace(m_segment);
-    SVGPathSource::trace(visitor);
-}
-
 bool SVGPathSegListSource::hasMoreData() const
 {
     return m_itCurrent != m_itEnd;
 }
 
-bool SVGPathSegListSource::parseSVGSegmentType(SVGPathSegType& pathSegType)
+SVGPathSegType SVGPathSegListSource::peekSegmentType()
 {
-    m_segment = *m_itCurrent;
-    pathSegType = static_cast<SVGPathSegType>(m_segment->pathSegType());
+    ASSERT(hasMoreData());
+    return static_cast<SVGPathSegType>(m_itCurrent->pathSegType());
+}
+
+PathSegmentData SVGPathSegListSource::parseSegment()
+{
+    ASSERT(hasMoreData());
+    PathSegmentData segment;
+    RefPtrWillBeRawPtr<SVGPathSeg> pathSegment = *m_itCurrent;
+    segment.command = static_cast<SVGPathSegType>(pathSegment->pathSegType());
     ++m_itCurrent;
-    return true;
-}
 
-SVGPathSegType SVGPathSegListSource::nextCommand(SVGPathSegType)
-{
-    m_segment = *m_itCurrent;
-    SVGPathSegType pathSegType = static_cast<SVGPathSegType>(m_segment->pathSegType());
-    ++m_itCurrent;
-    return pathSegType;
-}
-
-bool SVGPathSegListSource::parseMoveToSegment(FloatPoint& targetPoint)
-{
-    ASSERT(m_segment);
-    ASSERT(m_segment->pathSegType() == PathSegMoveToAbs || m_segment->pathSegType() == PathSegMoveToRel);
-    SVGPathSegSingleCoordinate* moveTo = static_cast<SVGPathSegSingleCoordinate*>(m_segment.get());
-    targetPoint = FloatPoint(moveTo->x(), moveTo->y());
-    return true;
-}
-
-bool SVGPathSegListSource::parseLineToSegment(FloatPoint& targetPoint)
-{
-    ASSERT(m_segment);
-    ASSERT(m_segment->pathSegType() == PathSegLineToAbs || m_segment->pathSegType() == PathSegLineToRel);
-    SVGPathSegSingleCoordinate* lineTo = static_cast<SVGPathSegSingleCoordinate*>(m_segment.get());
-    targetPoint = FloatPoint(lineTo->x(), lineTo->y());
-    return true;
-}
-
-bool SVGPathSegListSource::parseLineToHorizontalSegment(float& x)
-{
-    ASSERT(m_segment);
-    ASSERT(m_segment->pathSegType() == PathSegLineToHorizontalAbs || m_segment->pathSegType() == PathSegLineToHorizontalRel);
-    SVGPathSegLinetoHorizontal* horizontal = static_cast<SVGPathSegLinetoHorizontal*>(m_segment.get());
-    x = horizontal->x();
-    return true;
-}
-
-bool SVGPathSegListSource::parseLineToVerticalSegment(float& y)
-{
-    ASSERT(m_segment);
-    ASSERT(m_segment->pathSegType() == PathSegLineToVerticalAbs || m_segment->pathSegType() == PathSegLineToVerticalRel);
-    SVGPathSegLinetoVertical* vertical = static_cast<SVGPathSegLinetoVertical*>(m_segment.get());
-    y = vertical->y();
-    return true;
-}
-
-bool SVGPathSegListSource::parseCurveToCubicSegment(FloatPoint& point1, FloatPoint& point2, FloatPoint& targetPoint)
-{
-    ASSERT(m_segment);
-    ASSERT(m_segment->pathSegType() == PathSegCurveToCubicAbs || m_segment->pathSegType() == PathSegCurveToCubicRel);
-    SVGPathSegCurvetoCubic* cubic = static_cast<SVGPathSegCurvetoCubic*>(m_segment.get());
-    point1 = FloatPoint(cubic->x1(), cubic->y1());
-    point2 = FloatPoint(cubic->x2(), cubic->y2());
-    targetPoint = FloatPoint(cubic->x(), cubic->y());
-    return true;
-}
-
-bool SVGPathSegListSource::parseCurveToCubicSmoothSegment(FloatPoint& point2, FloatPoint& targetPoint)
-{
-    ASSERT(m_segment);
-    ASSERT(m_segment->pathSegType() == PathSegCurveToCubicSmoothAbs || m_segment->pathSegType() == PathSegCurveToCubicSmoothRel);
-    SVGPathSegCurvetoCubicSmooth* cubicSmooth = static_cast<SVGPathSegCurvetoCubicSmooth*>(m_segment.get());
-    point2 = FloatPoint(cubicSmooth->x2(), cubicSmooth->y2());
-    targetPoint = FloatPoint(cubicSmooth->x(), cubicSmooth->y());
-    return true;
-}
-
-bool SVGPathSegListSource::parseCurveToQuadraticSegment(FloatPoint& point1, FloatPoint& targetPoint)
-{
-    ASSERT(m_segment);
-    ASSERT(m_segment->pathSegType() == PathSegCurveToQuadraticAbs || m_segment->pathSegType() == PathSegCurveToQuadraticRel);
-    SVGPathSegCurvetoQuadratic* quadratic = static_cast<SVGPathSegCurvetoQuadratic*>(m_segment.get());
-    point1 = FloatPoint(quadratic->x1(), quadratic->y1());
-    targetPoint = FloatPoint(quadratic->x(), quadratic->y());
-    return true;
-}
-
-bool SVGPathSegListSource::parseCurveToQuadraticSmoothSegment(FloatPoint& targetPoint)
-{
-    ASSERT(m_segment);
-    ASSERT(m_segment->pathSegType() == PathSegCurveToQuadraticSmoothAbs || m_segment->pathSegType() == PathSegCurveToQuadraticSmoothRel);
-    SVGPathSegSingleCoordinate* quadraticSmooth = static_cast<SVGPathSegSingleCoordinate*>(m_segment.get());
-    targetPoint = FloatPoint(quadraticSmooth->x(), quadraticSmooth->y());
-    return true;
-}
-
-bool SVGPathSegListSource::parseArcToSegment(float& rx, float& ry, float& angle, bool& largeArc, bool& sweep, FloatPoint& targetPoint)
-{
-    ASSERT(m_segment);
-    ASSERT(m_segment->pathSegType() == PathSegArcAbs || m_segment->pathSegType() == PathSegArcRel);
-    SVGPathSegArc* arcTo = static_cast<SVGPathSegArc*>(m_segment.get());
-    rx = arcTo->r1();
-    ry = arcTo->r2();
-    angle = arcTo->angle();
-    largeArc = arcTo->largeArcFlag();
-    sweep = arcTo->sweepFlag();
-    targetPoint = FloatPoint(arcTo->x(), arcTo->y());
-    return true;
+    switch (segment.command) {
+    case PathSegMoveToRel:
+    case PathSegMoveToAbs:
+    case PathSegLineToRel:
+    case PathSegLineToAbs:
+    case PathSegCurveToQuadraticSmoothRel:
+    case PathSegCurveToQuadraticSmoothAbs: {
+        SVGPathSegSingleCoordinate* singleCoordinate = static_cast<SVGPathSegSingleCoordinate*>(pathSegment.get());
+        segment.targetPoint = FloatPoint(singleCoordinate->x(), singleCoordinate->y());
+        break;
+    }
+    case PathSegLineToHorizontalRel:
+    case PathSegLineToHorizontalAbs: {
+        SVGPathSegLinetoHorizontal* horizontal = static_cast<SVGPathSegLinetoHorizontal*>(pathSegment.get());
+        segment.targetPoint.setX(horizontal->x());
+        break;
+    }
+    case PathSegLineToVerticalRel:
+    case PathSegLineToVerticalAbs: {
+        SVGPathSegLinetoVertical* vertical = static_cast<SVGPathSegLinetoVertical*>(pathSegment.get());
+        segment.targetPoint.setY(vertical->y());
+        break;
+    }
+    case PathSegClosePath:
+        break;
+    case PathSegCurveToCubicRel:
+    case PathSegCurveToCubicAbs: {
+        SVGPathSegCurvetoCubic* cubic = static_cast<SVGPathSegCurvetoCubic*>(pathSegment.get());
+        segment.point1 = FloatPoint(cubic->x1(), cubic->y1());
+        segment.point2 = FloatPoint(cubic->x2(), cubic->y2());
+        segment.targetPoint = FloatPoint(cubic->x(), cubic->y());
+        break;
+    }
+    case PathSegCurveToCubicSmoothRel:
+    case PathSegCurveToCubicSmoothAbs: {
+        SVGPathSegCurvetoCubicSmooth* cubicSmooth = static_cast<SVGPathSegCurvetoCubicSmooth*>(pathSegment.get());
+        segment.point2 = FloatPoint(cubicSmooth->x2(), cubicSmooth->y2());
+        segment.targetPoint = FloatPoint(cubicSmooth->x(), cubicSmooth->y());
+        break;
+    }
+    case PathSegCurveToQuadraticRel:
+    case PathSegCurveToQuadraticAbs: {
+        SVGPathSegCurvetoQuadratic* quadratic = static_cast<SVGPathSegCurvetoQuadratic*>(pathSegment.get());
+        segment.point1 = FloatPoint(quadratic->x1(), quadratic->y1());
+        segment.targetPoint = FloatPoint(quadratic->x(), quadratic->y());
+        break;
+    }
+    case PathSegArcRel:
+    case PathSegArcAbs: {
+        SVGPathSegArc* arcTo = static_cast<SVGPathSegArc*>(pathSegment.get());
+        segment.point1 = FloatPoint(arcTo->r1(), arcTo->r2());
+        segment.point2.setX(arcTo->angle());
+        segment.arcLarge = arcTo->largeArcFlag();
+        segment.arcSweep = arcTo->sweepFlag();
+        segment.targetPoint = FloatPoint(arcTo->x(), arcTo->y());
+        break;
+    }
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return segment;
 }
 
 }

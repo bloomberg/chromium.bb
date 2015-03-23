@@ -49,13 +49,6 @@ bool parseArcFlag(const LChar*& ptr, const LChar* end, bool& flag);
 bool parseArcFlag(const UChar*& ptr, const UChar* end, bool& flag);
 
 template <typename CharType>
-bool parseFloatPoint(const CharType*& current, const CharType* end, FloatPoint&);
-template <typename CharType>
-bool parseFloatPoint2(const CharType*& current, const CharType* end, FloatPoint&, FloatPoint&);
-template <typename CharType>
-bool parseFloatPoint3(const CharType*& current, const CharType* end, FloatPoint&, FloatPoint&, FloatPoint&);
-
-template <typename CharType>
 inline bool skipOptionalSVGSpaces(const CharType*& ptr, const CharType* end)
 {
     while (ptr < end && isHTMLSpace<CharType>(*ptr))

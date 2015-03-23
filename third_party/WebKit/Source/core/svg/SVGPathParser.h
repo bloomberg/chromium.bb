@@ -48,17 +48,17 @@ public:
     DECLARE_TRACE();
 
 private:
+    bool initialCommandIsMoveTo();
     bool decomposeArcToCubic(float, float, float, const FloatPoint&, const FloatPoint&, bool largeArcFlag, bool sweepFlag);
-    void parseClosePathSegment();
-    bool parseMoveToSegment();
-    bool parseLineToSegment();
-    bool parseLineToHorizontalSegment();
-    bool parseLineToVerticalSegment();
-    bool parseCurveToCubicSegment();
-    bool parseCurveToCubicSmoothSegment();
-    bool parseCurveToQuadraticSegment();
-    bool parseCurveToQuadraticSmoothSegment();
-    bool parseArcToSegment();
+    void emitMoveToSegment(PathSegmentData&);
+    void emitLineToSegment(PathSegmentData&);
+    void emitLineToHorizontalSegment(PathSegmentData&);
+    void emitLineToVerticalSegment(PathSegmentData&);
+    void emitCurveToCubicSegment(PathSegmentData&);
+    void emitCurveToCubicSmoothSegment(PathSegmentData&);
+    void emitCurveToQuadraticSegment(PathSegmentData&);
+    void emitCurveToQuadraticSmoothSegment(PathSegmentData&);
+    void emitArcToSegment(PathSegmentData&);
 
     RawPtrWillBeMember<SVGPathSource> m_source;
     RawPtrWillBeMember<SVGPathConsumer> m_consumer;
