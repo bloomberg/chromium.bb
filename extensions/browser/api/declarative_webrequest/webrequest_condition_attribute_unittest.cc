@@ -98,7 +98,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
 
   net::TestURLRequestContext context;
   scoped_ptr<net::URLRequest> url_request_ok(context.CreateRequest(
-      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL, NULL));
+      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL));
   content::ResourceRequestInfo::AllocateForTesting(
       url_request_ok.get(),
       content::RESOURCE_TYPE_SUB_FRAME,
@@ -114,7 +114,7 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
                                                     ON_BEFORE_REQUEST)));
 
   scoped_ptr<net::URLRequest> url_request_fail(context.CreateRequest(
-      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL, NULL));
+      GURL("http://www.example.com"), net::DEFAULT_PRIORITY, NULL));
   content::ResourceRequestInfo::AllocateForTesting(
       url_request_fail.get(),
       content::RESOURCE_TYPE_MAIN_FRAME,
@@ -144,11 +144,8 @@ TEST(WebRequestConditionAttributeTest, ContentType) {
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  scoped_ptr<net::URLRequest> url_request(
-      context.CreateRequest(test_server.GetURL("/headers.html"),
-                            net::DEFAULT_PRIORITY,
-                            &delegate,
-                            NULL));
+  scoped_ptr<net::URLRequest> url_request(context.CreateRequest(
+      test_server.GetURL("/headers.html"), net::DEFAULT_PRIORITY, &delegate));
   url_request->Start();
   base::MessageLoop::current()->Run();
 
@@ -232,7 +229,7 @@ TEST(WebRequestConditionAttributeTest, ThirdParty) {
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
   scoped_ptr<net::URLRequest> url_request(
-      context.CreateRequest(url_a, net::DEFAULT_PRIORITY, &delegate, NULL));
+      context.CreateRequest(url_a, net::DEFAULT_PRIORITY, &delegate));
 
   for (unsigned int i = 1; i <= kLastActiveStage; i <<= 1) {
     if (!(kActiveStages & i))
@@ -323,7 +320,7 @@ TEST(WebRequestConditionAttributeTest, Stages) {
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
   scoped_ptr<net::URLRequest> url_request(
-      context.CreateRequest(url_empty, net::DEFAULT_PRIORITY, &delegate, NULL));
+      context.CreateRequest(url_empty, net::DEFAULT_PRIORITY, &delegate));
 
   for (size_t i = 0; i < arraysize(active_stages); ++i) {
     EXPECT_FALSE(empty_attribute->IsFulfilled(
@@ -449,9 +446,7 @@ TEST(WebRequestConditionAttributeTest, RequestHeaders) {
   net::TestDelegate delegate;
   scoped_ptr<net::URLRequest> url_request(
       context.CreateRequest(GURL("http://example.com"),  // Dummy URL.
-                            net::DEFAULT_PRIORITY,
-                            &delegate,
-                            NULL));
+                            net::DEFAULT_PRIORITY, &delegate));
   url_request->SetExtraRequestHeaderByName(
       "Custom-header", "custom/value", true /* overwrite */);
   url_request->Start();
@@ -537,11 +532,8 @@ TEST(WebRequestConditionAttributeTest, ResponseHeaders) {
 
   net::TestURLRequestContext context;
   net::TestDelegate delegate;
-  scoped_ptr<net::URLRequest> url_request(
-      context.CreateRequest(test_server.GetURL("/headers.html"),
-                            net::DEFAULT_PRIORITY,
-                            &delegate,
-                            NULL));
+  scoped_ptr<net::URLRequest> url_request(context.CreateRequest(
+      test_server.GetURL("/headers.html"), net::DEFAULT_PRIORITY, &delegate));
   url_request->Start();
   base::MessageLoop::current()->Run();
 

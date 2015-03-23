@@ -195,7 +195,7 @@ class NavigationURLLoaderTest : public testing::Test {
     net::URLRequestContext* request_context =
         browser_context_->GetResourceContext()->GetRequestContext();
     scoped_ptr<net::URLRequest> request(request_context->CreateRequest(
-        url, net::DEFAULT_PRIORITY, &delegate, nullptr));
+        url, net::DEFAULT_PRIORITY, &delegate));
     request->Start();
     base::RunLoop().Run();
 

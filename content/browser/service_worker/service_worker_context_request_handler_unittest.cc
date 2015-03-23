@@ -89,10 +89,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateBefore24Hours) {
   // Conduct a resource fetch for the main script.
   const GURL kScriptUrl("http://host/script.js");
   scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      kScriptUrl,
-      net::DEFAULT_PRIORITY,
-      &url_request_delegate_,
-      nullptr);
+      kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
   scoped_ptr<ServiceWorkerContextRequestHandler> handler(
       new ServiceWorkerContextRequestHandler(
           context()->AsWeakPtr(),
@@ -120,10 +117,7 @@ TEST_F(ServiceWorkerContextRequestHandlerTest, UpdateAfter24Hours) {
   // Conduct a resource fetch for the main script.
   const GURL kScriptUrl("http://host/script.js");
   scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      kScriptUrl,
-      net::DEFAULT_PRIORITY,
-      &url_request_delegate_,
-      nullptr);
+      kScriptUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
   scoped_ptr<ServiceWorkerContextRequestHandler> handler(
       new ServiceWorkerContextRequestHandler(
           context()->AsWeakPtr(),

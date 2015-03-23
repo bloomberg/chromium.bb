@@ -233,7 +233,7 @@ class OffDomainInclusionDetectorTest : public testing::TestWithParam<TestCase> {
       scoped_history_entry.reset(new ScopedHistoryEntry(history_service, url));
 
     scoped_ptr<net::URLRequest> url_request(
-        context_.CreateRequest(url, net::DEFAULT_PRIORITY, NULL, NULL));
+        context_.CreateRequest(url, net::DEFAULT_PRIORITY, NULL));
 
     if (!referrer.empty())
       url_request->SetReferrer(referrer);

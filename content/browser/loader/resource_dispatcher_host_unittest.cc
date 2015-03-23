@@ -1837,7 +1837,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
 TEST_F(ResourceDispatcherHostTest, CalculateApproximateMemoryCost) {
   net::URLRequestContext context;
   scoped_ptr<net::URLRequest> req(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, NULL, NULL));
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, NULL));
   EXPECT_EQ(
       4427,
       ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(req.get()));

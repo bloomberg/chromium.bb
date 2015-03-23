@@ -127,8 +127,7 @@ class Server : public DiscreteTimeSimulation::Actor {
         num_current_tick_queries_(0),
         num_overloaded_ticks_(0),
         max_experienced_queries_per_tick_(0),
-        mock_request_(context_.CreateRequest(
-            GURL(), DEFAULT_PRIORITY, NULL, NULL)) {}
+        mock_request_(context_.CreateRequest(GURL(), DEFAULT_PRIORITY, NULL)) {}
 
   void SetDowntime(const TimeTicks& start_time, const TimeDelta& duration) {
     start_downtime_ = start_time;

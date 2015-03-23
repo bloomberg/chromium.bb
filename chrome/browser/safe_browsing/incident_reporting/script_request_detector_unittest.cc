@@ -56,7 +56,7 @@ class ScriptRequestDetectorTest : public testing::Test {
       const std::string& url,
       content::ResourceType resource_type) const {
     scoped_ptr<net::URLRequest> url_request(
-        context_.CreateRequest(GURL(url), net::DEFAULT_PRIORITY, NULL, NULL));
+        context_.CreateRequest(GURL(url), net::DEFAULT_PRIORITY, NULL));
 
     content::ResourceRequestInfo::AllocateForTesting(
         url_request.get(), resource_type,

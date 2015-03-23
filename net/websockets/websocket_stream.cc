@@ -87,8 +87,8 @@ class StreamRequestImpl : public WebSocketStreamRequest {
       scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate,
       scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper)
       : delegate_(new Delegate(this)),
-        url_request_(context->CreateRequest(url, DEFAULT_PRIORITY,
-                                            delegate_.get(), NULL)),
+        url_request_(
+            context->CreateRequest(url, DEFAULT_PRIORITY, delegate_.get())),
         connect_delegate_(connect_delegate.Pass()),
         create_helper_(create_helper.release()) {
     create_helper_->set_failure_message(&failure_message_);

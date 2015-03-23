@@ -430,7 +430,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void Basic() {
     AppCacheStorage* storage = service_->storage();
     scoped_ptr<net::URLRequest> request(empty_context_->CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, NULL, NULL));
+        GURL("http://blah/"), net::DEFAULT_PRIORITY, NULL));
     scoped_refptr<AppCacheURLRequestJob> job;
 
     // Create an instance and see that it looks as expected.
@@ -453,7 +453,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
   void DeliveryOrders() {
     AppCacheStorage* storage = service_->storage();
     scoped_ptr<net::URLRequest> request(empty_context_->CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, NULL, NULL));
+        GURL("http://blah/"), net::DEFAULT_PRIORITY, NULL));
     scoped_refptr<AppCacheURLRequestJob> job;
 
     // Create an instance, give it a delivery order and see that
@@ -499,8 +499,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     AppCacheStorage* storage = service_->storage();
     request_ = empty_context_->CreateRequest(GURL("http://blah/"),
                                              net::DEFAULT_PRIORITY,
-                                             url_request_delegate_.get(),
-                                             NULL);
+                                             url_request_delegate_.get());
 
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
@@ -536,8 +535,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     AppCacheStorage* storage = service_->storage();
     request_ = empty_context_->CreateRequest(GURL("http://blah/"),
                                              net::DEFAULT_PRIORITY,
-                                             url_request_delegate_.get(),
-                                             NULL);
+                                             url_request_delegate_.get());
 
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
@@ -588,8 +586,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     AppCacheStorage* storage = service_->storage();
     request_ = empty_context_->CreateRequest(GURL("http://blah/"),
                                              net::DEFAULT_PRIORITY,
-                                             url_request_delegate_.get(),
-                                             NULL);
+                                             url_request_delegate_.get());
 
     // Setup to create an AppCacheURLRequestJob with orders to deliver
     // a network response.
@@ -703,8 +700,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     AppCacheStorage* storage = service_->storage();
     request_ = empty_context_->CreateRequest(GURL("http://blah/"),
                                              net::DEFAULT_PRIORITY,
-                                             url_request_delegate_.get(),
-                                             NULL);
+                                             url_request_delegate_.get());
 
     // Request a range, the 3 middle chars out of 'Hello'
     net::HttpRequestHeaders extra_headers;

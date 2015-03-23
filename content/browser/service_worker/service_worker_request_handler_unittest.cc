@@ -90,7 +90,7 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
                               ResourceType resource_type) {
     const GURL kDocUrl(url);
     scoped_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-        kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_, nullptr);
+        kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
     request->set_method(method);
     ServiceWorkerRequestHandler::InitializeHandler(
         request.get(),

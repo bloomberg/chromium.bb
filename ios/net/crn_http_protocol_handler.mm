@@ -679,7 +679,7 @@ void HttpProtocolHandlerCore::Start(id<CRNNetworkClientProtocol> base_client) {
   DCHECK(context);
 
   net_request_ =
-      context->CreateRequest(url, DEFAULT_PRIORITY, this, nullptr).release();
+      context->CreateRequest(url, DEFAULT_PRIORITY, this).release();
   net_request_->set_method(base::SysNSStringToUTF8([request_ HTTPMethod]));
 
   net_request_->set_first_party_for_cookies(

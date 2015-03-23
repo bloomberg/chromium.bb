@@ -71,7 +71,7 @@ void CronetURLRequestAdapter::Start() {
           << initial_url_.possibly_invalid_spec().c_str()
           << " priority: " << RequestPriorityToString(initial_priority_);
   url_request_ = context_->GetURLRequestContext()->CreateRequest(
-      initial_url_, net::DEFAULT_PRIORITY, this, NULL);
+      initial_url_, net::DEFAULT_PRIORITY, this);
   url_request_->SetLoadFlags(load_flags_);
   url_request_->set_method(initial_method_);
   url_request_->SetExtraRequestHeaders(initial_request_headers_);

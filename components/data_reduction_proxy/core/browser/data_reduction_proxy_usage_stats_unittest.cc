@@ -81,15 +81,14 @@ class DataReductionProxyUsageStatsTest : public testing::Test {
                     ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN)
             .WithMockConfig()
             .Build();
-    mock_url_request_ = context_.CreateRequest(GURL(), net::IDLE, &delegate_,
-                                               NULL);
+    mock_url_request_ = context_.CreateRequest(GURL(), net::IDLE, &delegate_);
   }
 
   scoped_ptr<net::URLRequest> CreateURLRequestWithResponseHeaders(
       const GURL& url,
       const std::string& raw_response_headers) {
     scoped_ptr<net::URLRequest> fake_request = context_.CreateRequest(
-        url, net::IDLE, &delegate_, NULL);
+        url, net::IDLE, &delegate_);
 
     // Create a test job that will fill in the given response headers for the
     // |fake_request|.
@@ -622,7 +621,7 @@ class DataReductionProxyUsageStatsEndToEndTest : public testing::Test {
     }
 
     scoped_ptr<net::URLRequest> request(
-        context_.CreateRequest(url, net::IDLE, &delegate_, NULL));
+        context_.CreateRequest(url, net::IDLE, &delegate_));
     request->set_method("GET");
     request->SetLoadFlags(net::LOAD_NORMAL);
     request->Start();

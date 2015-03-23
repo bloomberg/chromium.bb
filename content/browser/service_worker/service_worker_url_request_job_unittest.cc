@@ -192,10 +192,8 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
                    const std::string& expected_status_text,
                    const std::string& expected_response) {
     request_ = url_request_context_.CreateRequest(
-        GURL("http://example.com/foo.html"),
-        net::DEFAULT_PRIORITY,
-        &url_request_delegate_,
-        nullptr);
+        GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
+        &url_request_delegate_);
 
     request_->set_method("GET");
     request_->Start();
@@ -342,10 +340,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
   SetUpWithHelper(new StreamResponder(kProcessID, stream_url));
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("http://example.com/foo.html"),
-      net::DEFAULT_PRIORITY,
-      &url_request_delegate_,
-      nullptr);
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
 
@@ -379,10 +375,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_DelayedRegistration) {
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("http://example.com/foo.html"),
-      net::DEFAULT_PRIORITY,
-      &url_request_delegate_,
-      nullptr);
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
 
@@ -428,10 +422,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_QuickFinalize) {
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("http://example.com/foo.html"),
-      net::DEFAULT_PRIORITY,
-      &url_request_delegate_,
-      nullptr);
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
   EXPECT_FALSE(HasInflightRequests());
@@ -459,10 +451,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Flush) {
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("http://example.com/foo.html"),
-      net::DEFAULT_PRIORITY,
-      &url_request_delegate_,
-      nullptr);
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
   std::string expected_response;
@@ -497,10 +487,8 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("http://example.com/foo.html"),
-      net::DEFAULT_PRIORITY,
-      &url_request_delegate_,
-      nullptr);
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
   EXPECT_FALSE(HasInflightRequests());
@@ -537,10 +525,8 @@ TEST_F(ServiceWorkerURLRequestJobTest,
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   request_ = url_request_context_.CreateRequest(
-      GURL("http://example.com/foo.html"),
-      net::DEFAULT_PRIORITY,
-      &url_request_delegate_,
-      nullptr);
+      GURL("http://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      &url_request_delegate_);
   request_->set_method("GET");
   request_->Start();
   EXPECT_FALSE(HasInflightRequests());

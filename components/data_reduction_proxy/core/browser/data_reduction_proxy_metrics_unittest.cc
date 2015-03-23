@@ -787,7 +787,7 @@ TEST_F(ChromeNetworkDailyDataSavingMetricsTest,
 
     net::TestDelegate delegate;
     scoped_ptr<net::URLRequest> request =
-        context.CreateRequest(test_case.url, net::IDLE, &delegate, nullptr);
+        context.CreateRequest(test_case.url, net::IDLE, &delegate);
     request->SetLoadFlags(test_case.load_flags);
     request->Start();
     test_context->RunUntilIdle();

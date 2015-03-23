@@ -175,7 +175,7 @@ std::string ServiceState::LoginToGoogle(const std::string& service,
   post_body += "&service=" + net::EscapeUrlEncodedData(service, true);
 
   scoped_ptr<net::URLRequest> request(context->CreateRequest(
-      url, net::DEFAULT_PRIORITY, &fetcher_delegate, NULL));
+      url, net::DEFAULT_PRIORITY, &fetcher_delegate));
   int load_flags = request->load_flags();
   load_flags = load_flags | net::LOAD_DO_NOT_SEND_COOKIES;
   load_flags = load_flags | net::LOAD_DO_NOT_SAVE_COOKIES;

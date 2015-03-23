@@ -169,8 +169,7 @@ struct GurlAndString {
 class URLRequestThrottlerEntryTest : public testing::Test {
  protected:
   URLRequestThrottlerEntryTest()
-      : request_(context_.CreateRequest(GURL(), DEFAULT_PRIORITY, NULL, NULL)) {
-  }
+      : request_(context_.CreateRequest(GURL(), DEFAULT_PRIORITY, NULL)) {}
 
   void SetUp() override;
 
@@ -352,8 +351,7 @@ TEST_F(URLRequestThrottlerEntryTest, ExplicitUserRequest) {
 class URLRequestThrottlerManagerTest : public testing::Test {
  protected:
   URLRequestThrottlerManagerTest()
-      : request_(context_.CreateRequest(GURL(), DEFAULT_PRIORITY, NULL, NULL)) {
-  }
+      : request_(context_.CreateRequest(GURL(), DEFAULT_PRIORITY, NULL)) {}
 
   void SetUp() override { request_->SetLoadFlags(0); }
 

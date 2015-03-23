@@ -124,7 +124,7 @@ AppCacheUpdateJob::URLFetcher::URLFetcher(const GURL& url,
       retry_503_attempts_(0),
       buffer_(new net::IOBuffer(kBufferSize)),
       request_(job->service_->request_context()
-                   ->CreateRequest(url, net::DEFAULT_PRIORITY, this, NULL)),
+                   ->CreateRequest(url, net::DEFAULT_PRIORITY, this)),
       result_(UPDATE_OK),
       redirect_response_code_(-1) {}
 
@@ -354,7 +354,7 @@ bool AppCacheUpdateJob::URLFetcher::MaybeRetryRequest() {
   ++retry_503_attempts_;
   result_ = UPDATE_OK;
   request_ = job_->service_->request_context()->CreateRequest(
-      url_, net::DEFAULT_PRIORITY, this, NULL);
+      url_, net::DEFAULT_PRIORITY, this);
   Start();
   return true;
 }

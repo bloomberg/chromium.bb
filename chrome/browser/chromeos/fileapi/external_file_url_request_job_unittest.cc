@@ -242,9 +242,7 @@ class ExternalFileURLRequestJobTest : public testing::Test {
 TEST_F(ExternalFileURLRequestJobTest, NonGetMethod) {
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       GURL("externalfile:drive-test-user-hash/root/File 1.txt"),
-      net::DEFAULT_PRIORITY,
-      test_delegate_.get(),
-      NULL));
+      net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->set_method("POST");  // Set non "GET" method.
   request->Start();
 
@@ -261,7 +259,7 @@ TEST_F(ExternalFileURLRequestJobTest, RegularFile) {
   // For the first time, the file should be fetched from the server.
   {
     scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-        kTestUrl, net::DEFAULT_PRIORITY, test_delegate_.get(), NULL));
+        kTestUrl, net::DEFAULT_PRIORITY, test_delegate_.get()));
     request->Start();
 
     base::RunLoop().Run();
@@ -286,9 +284,7 @@ TEST_F(ExternalFileURLRequestJobTest, RegularFile) {
     test_delegate_.reset(new TestDelegate);
     scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
         GURL("externalfile:drive-test-user-hash/root/File 1.txt"),
-        net::DEFAULT_PRIORITY,
-        test_delegate_.get(),
-        NULL));
+        net::DEFAULT_PRIORITY, test_delegate_.get()));
     request->Start();
 
     base::RunLoop().Run();
@@ -311,9 +307,7 @@ TEST_F(ExternalFileURLRequestJobTest, HostedDocument) {
       GURL(
           "externalfile:drive-test-user-hash/root/Document 1 "
           "excludeDir-test.gdoc"),
-      net::DEFAULT_PRIORITY,
-      test_delegate_.get(),
-      NULL));
+      net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->Start();
 
   base::RunLoop().Run();
@@ -326,10 +320,8 @@ TEST_F(ExternalFileURLRequestJobTest, HostedDocument) {
 
 TEST_F(ExternalFileURLRequestJobTest, RootDirectory) {
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      GURL("externalfile:drive-test-user-hash/root"),
-      net::DEFAULT_PRIORITY,
-      test_delegate_.get(),
-      NULL));
+      GURL("externalfile:drive-test-user-hash/root"), net::DEFAULT_PRIORITY,
+      test_delegate_.get()));
   request->Start();
 
   base::RunLoop().Run();
@@ -341,9 +333,7 @@ TEST_F(ExternalFileURLRequestJobTest, RootDirectory) {
 TEST_F(ExternalFileURLRequestJobTest, Directory) {
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       GURL("externalfile:drive-test-user-hash/root/Directory 1"),
-      net::DEFAULT_PRIORITY,
-      test_delegate_.get(),
-      NULL));
+      net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->Start();
 
   base::RunLoop().Run();
@@ -355,9 +345,7 @@ TEST_F(ExternalFileURLRequestJobTest, Directory) {
 TEST_F(ExternalFileURLRequestJobTest, NonExistingFile) {
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       GURL("externalfile:drive-test-user-hash/root/non-existing-file.txt"),
-      net::DEFAULT_PRIORITY,
-      test_delegate_.get(),
-      NULL));
+      net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->Start();
 
   base::RunLoop().Run();
@@ -367,11 +355,8 @@ TEST_F(ExternalFileURLRequestJobTest, NonExistingFile) {
 }
 
 TEST_F(ExternalFileURLRequestJobTest, WrongFormat) {
-  scoped_ptr<net::URLRequest> request(
-      url_request_context_->CreateRequest(GURL("externalfile:"),
-                                          net::DEFAULT_PRIORITY,
-                                          test_delegate_.get(),
-                                          NULL));
+  scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
+      GURL("externalfile:"), net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->Start();
 
   base::RunLoop().Run();
@@ -383,9 +368,7 @@ TEST_F(ExternalFileURLRequestJobTest, WrongFormat) {
 TEST_F(ExternalFileURLRequestJobTest, Cancel) {
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       GURL("externalfile:drive-test-user-hash/root/File 1.txt"),
-      net::DEFAULT_PRIORITY,
-      test_delegate_.get(),
-      NULL));
+      net::DEFAULT_PRIORITY, test_delegate_.get()));
 
   // Start the request, and cancel it immediately after it.
   request->Start();
@@ -401,7 +384,7 @@ TEST_F(ExternalFileURLRequestJobTest, RangeHeader) {
   const base::FilePath kTestFilePath("drive/root/File 1.txt");
 
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      kTestUrl, net::DEFAULT_PRIORITY, test_delegate_.get(), NULL));
+      kTestUrl, net::DEFAULT_PRIORITY, test_delegate_.get()));
 
   // Set range header.
   request->SetExtraRequestHeaderByName(
@@ -423,7 +406,7 @@ TEST_F(ExternalFileURLRequestJobTest, WrongRangeHeader) {
   const GURL kTestUrl("externalfile:drive-test-user-hash/root/File 1.txt");
 
   scoped_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
-      kTestUrl, net::DEFAULT_PRIORITY, test_delegate_.get(), NULL));
+      kTestUrl, net::DEFAULT_PRIORITY, test_delegate_.get()));
 
   // Set range header.
   request->SetExtraRequestHeaderByName(

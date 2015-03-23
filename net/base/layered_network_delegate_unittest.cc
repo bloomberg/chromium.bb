@@ -185,7 +185,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
   void CallAndVerify() {
     scoped_refptr<AuthChallengeInfo> auth_challenge(new AuthChallengeInfo());
     scoped_ptr<URLRequest> request =
-        context_.CreateRequest(GURL(), IDLE, &delegate_, NULL);
+        context_.CreateRequest(GURL(), IDLE, &delegate_);
     scoped_ptr<HttpRequestHeaders> request_headers(new HttpRequestHeaders());
     scoped_refptr<HttpResponseHeaders> response_headers(
         new HttpResponseHeaders(""));

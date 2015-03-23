@@ -127,7 +127,7 @@ class ProtocolHandlerUtilTest : public testing::Test,
     GURL url(url_string);
 
     scoped_ptr<URLRequest> request(
-        request_context_->CreateRequest(url, DEFAULT_PRIORITY, this, nullptr));
+        request_context_->CreateRequest(url, DEFAULT_PRIORITY, this));
     request->Start();
     base::RunLoop loop;
     loop.RunUntilIdle();
@@ -169,7 +169,7 @@ TEST_F(ProtocolHandlerUtilTest, GetResponseHttpTest) {
   // Create a request.
   GURL url(std::string("http://url"));
   scoped_ptr<URLRequest> request(
-      request_context_->CreateRequest(url, DEFAULT_PRIORITY, this, nullptr));
+      request_context_->CreateRequest(url, DEFAULT_PRIORITY, this));
   request->Start();
   // Create a response from the request.
   NSURLResponse* response = GetNSURLResponseForRequest(request.get());
@@ -196,7 +196,7 @@ TEST_F(ProtocolHandlerUtilTest, BadHttpContentType) {
   // content-type in the test framework.
   GURL url(std::string("http://badcontenttype"));
   scoped_ptr<URLRequest> request(
-      request_context_->CreateRequest(url, DEFAULT_PRIORITY, this, nullptr));
+      request_context_->CreateRequest(url, DEFAULT_PRIORITY, this));
   request->Start();
   // Create a response from the request.
   @try {
@@ -212,7 +212,7 @@ TEST_F(ProtocolHandlerUtilTest, MultipleHttpContentType) {
   // content-type in the test framework.
   GURL url(std::string("http://multiplecontenttype"));
   scoped_ptr<URLRequest> request(
-      request_context_->CreateRequest(url, DEFAULT_PRIORITY, this, nullptr));
+      request_context_->CreateRequest(url, DEFAULT_PRIORITY, this));
   request->Start();
   // Create a response from the request.
   NSURLResponse* response = GetNSURLResponseForRequest(request.get());
@@ -235,7 +235,7 @@ TEST_F(ProtocolHandlerUtilTest, CopyHttpHeaders) {
       @"Foo" : @"bar",
   }];
   scoped_ptr<URLRequest> out_request(
-      request_context_->CreateRequest(url, DEFAULT_PRIORITY, nullptr, nullptr));
+      request_context_->CreateRequest(url, DEFAULT_PRIORITY, nullptr));
   CopyHttpHeaders(in_request, out_request.get());
 
   EXPECT_EQ("referrer", out_request->referrer());
@@ -254,7 +254,7 @@ TEST_F(ProtocolHandlerUtilTest, AddMissingHeaders) {
   base::scoped_nsobject<NSMutableURLRequest> in_request(
       [[NSMutableURLRequest alloc] initWithURL:NSURLWithGURL(url)]);
   scoped_ptr<URLRequest> out_request(
-      request_context_->CreateRequest(url, DEFAULT_PRIORITY, nullptr, nullptr));
+      request_context_->CreateRequest(url, DEFAULT_PRIORITY, nullptr));
   out_request->set_method("POST");
   scoped_ptr<UploadElementReader> reader(
       new UploadBytesElementReader(nullptr, 0));

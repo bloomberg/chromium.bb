@@ -188,8 +188,7 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
     context_.set_network_delegate(&network_delegate_);
     req_ = context_.CreateRequest(GURL("content://foo"),
                                   net::DEFAULT_PRIORITY,
-                                  &url_request_delegate_,
-                                  NULL);
+                                  &url_request_delegate_);
     req_->set_method("GET");
   }
 

@@ -109,7 +109,7 @@ TEST_F(PolicyHeaderServiceTest, TestWithAndWithoutPolicyHeader) {
 
   net::TestURLRequestContext context;
   scoped_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, NULL));
+      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL));
   helper_->AddPolicyHeaders(request->url(), request.get());
   ValidateHeader(request->extra_request_headers(), expected_dmtoken,
                  expected_policy_token);
@@ -119,7 +119,7 @@ TEST_F(PolicyHeaderServiceTest, TestWithAndWithoutPolicyHeader) {
   task_runner_->RunUntilIdle();
 
   scoped_ptr<net::URLRequest> request2(context.CreateRequest(
-      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL, NULL));
+      GURL(kDMServerURL), net::DEFAULT_PRIORITY, NULL));
   helper_->AddPolicyHeaders(request2->url(), request2.get());
   ValidateHeader(request2->extra_request_headers(), "", "");
 }

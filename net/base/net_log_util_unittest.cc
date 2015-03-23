@@ -67,8 +67,9 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsOneContext) {
   for (size_t num_requests = 0; num_requests < 5; ++num_requests) {
     ScopedVector<URLRequest> requests;
     for (size_t i = 0; i < num_requests; ++i) {
-      requests.push_back(context.CreateRequest(
-          GURL("about:life"), DEFAULT_PRIORITY, &delegate, nullptr).release());
+      requests.push_back(context.CreateRequest(GURL("about:life"),
+                                               DEFAULT_PRIORITY,
+                                               &delegate).release());
     }
     std::set<URLRequestContext*> contexts;
     contexts.insert(&context);
@@ -98,8 +99,10 @@ TEST(NetLogUtil, CreateNetLogEntriesForActiveObjectsMultipleContexts) {
       contexts[i]->set_net_log(&net_log);
       contexts[i]->Init();
       context_set.insert(contexts[i]);
-      requests.push_back(contexts[i]->CreateRequest(
-          GURL("about:hats"), DEFAULT_PRIORITY, &delegate, nullptr).release());
+      requests.push_back(
+          contexts[i]
+              ->CreateRequest(GURL("about:hats"), DEFAULT_PRIORITY, &delegate)
+              .release());
     }
     CapturingNetLogObserver capturing_observer;
     CreateNetLogEntriesForActiveObjects(context_set, &capturing_observer);

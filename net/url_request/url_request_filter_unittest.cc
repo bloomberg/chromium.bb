@@ -56,12 +56,12 @@ TEST(URLRequestFilter, BasicMatching) {
   URLRequestFilter* filter = URLRequestFilter::GetInstance();
 
   const GURL kUrl1("http://foo.com/");
-  scoped_ptr<URLRequest> request1(request_context.CreateRequest(
-      kUrl1, DEFAULT_PRIORITY, &delegate, NULL));
+  scoped_ptr<URLRequest> request1(
+      request_context.CreateRequest(kUrl1, DEFAULT_PRIORITY, &delegate));
 
   const GURL kUrl2("http://bar.com/");
-  scoped_ptr<URLRequest> request2(request_context.CreateRequest(
-      kUrl2, DEFAULT_PRIORITY, &delegate, NULL));
+  scoped_ptr<URLRequest> request2(
+      request_context.CreateRequest(kUrl2, DEFAULT_PRIORITY, &delegate));
 
   // Check AddUrlHandler checks for invalid URLs.
   EXPECT_FALSE(filter->AddUrlHandler(GURL(), &FactoryA));

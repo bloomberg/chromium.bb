@@ -127,7 +127,7 @@ void URLLoaderImpl::Start(URLRequestPtr request,
   }
 
   url_request_ = context_->url_request_context()->CreateRequest(
-      GURL(request->url), net::DEFAULT_PRIORITY, this, nullptr);
+      GURL(request->url), net::DEFAULT_PRIORITY, this);
   url_request_->set_method(request->method);
   if (request->headers) {
     net::HttpRequestHeaders headers;

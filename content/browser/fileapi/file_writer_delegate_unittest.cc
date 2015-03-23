@@ -141,7 +141,7 @@ class FileWriterDelegateTest : public PlatformTest {
     file_writer_delegate_.reset(
         CreateWriterDelegate(test_file_path, offset, allowed_growth));
     request_ = empty_context_.CreateRequest(
-        blob_url, net::DEFAULT_PRIORITY, file_writer_delegate_.get(), NULL);
+        blob_url, net::DEFAULT_PRIORITY, file_writer_delegate_.get());
   }
 
   // This should be alive until the very end of this instance.
@@ -369,7 +369,7 @@ TEST_F(FileWriterDelegateTest, WriteSuccessWithoutQuotaLimitConcurrent) {
   // Credate another FileWriterDelegate for concurrent write.
   file_writer_delegate2.reset(CreateWriterDelegate("test2", 0, kint64max));
   request2 = empty_context_.CreateRequest(
-      kBlobURL2, net::DEFAULT_PRIORITY, file_writer_delegate2.get(), NULL);
+      kBlobURL2, net::DEFAULT_PRIORITY, file_writer_delegate2.get());
 
   Result result, result2;
   ASSERT_EQ(0, usage());

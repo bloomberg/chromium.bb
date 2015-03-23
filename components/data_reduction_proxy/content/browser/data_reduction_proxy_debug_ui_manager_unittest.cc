@@ -62,7 +62,7 @@ class DataReductionProxyDebugUIManagerTest
  public:
   DataReductionProxyDebugUIManagerTest()
       : state_(NOT_CALLED),
-        request_(context_.CreateRequest(GURL(), net::IDLE, &delegate_, NULL)) {
+        request_(context_.CreateRequest(GURL(), net::IDLE, &delegate_)) {
     ui_manager_ = new TestDataReductionProxyDebugUIManager(
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::UI),

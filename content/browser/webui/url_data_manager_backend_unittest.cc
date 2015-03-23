@@ -31,7 +31,7 @@ void RunAccessControlAllowOriginTest(
   net::URLRequestContext url_request_context;
   scoped_ptr<net::URLRequest> request = url_request_context.CreateRequest(
       GURL("chrome://resources/polymer/polymer/polymer.js"), net::HIGHEST,
-      nullptr, nullptr);
+      nullptr);
   request->SetExtraRequestHeaderByName("Origin", origin, true);
   scoped_refptr<net::URLRequestJob> job =
       protocol_handler->MaybeCreateJob(request.get(), nullptr);

@@ -217,8 +217,7 @@ TEST_F(PrerenderResourceThrottleTest, RedirectResume) {
   scoped_ptr<net::URLRequest> request(url_request_context.CreateRequest(
       net::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
       net::DEFAULT_PRIORITY,
-      &delegate,
-      NULL));
+      &delegate));
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(),
       content::RESOURCE_TYPE_IMAGE,
@@ -264,8 +263,7 @@ TEST_F(PrerenderResourceThrottleTest, RedirectMainFrame) {
   scoped_ptr<net::URLRequest> request(url_request_context.CreateRequest(
       net::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
       net::DEFAULT_PRIORITY,
-      &delegate,
-      NULL));
+      &delegate));
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(),
       content::RESOURCE_TYPE_MAIN_FRAME,
@@ -309,8 +307,7 @@ TEST_F(PrerenderResourceThrottleTest, RedirectSyncXHR) {
   scoped_ptr<net::URLRequest> request(url_request_context.CreateRequest(
       net::URLRequestMockHTTPJob::GetMockUrl(base::FilePath(kRedirectPath)),
       net::DEFAULT_PRIORITY,
-      &delegate,
-      NULL));
+      &delegate));
   content::ResourceRequestInfo::AllocateForTesting(
       request.get(),
       content::RESOURCE_TYPE_XHR,

@@ -239,7 +239,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
   GURL not_chosen_redirect_url("about:not_chosen");
 
   scoped_ptr<net::URLRequest> request(context_->CreateRequest(
-      GURL("about:blank"), net::DEFAULT_PRIORITY, &delegate_, NULL));
+      GURL("about:blank"), net::DEFAULT_PRIORITY, &delegate_));
   {
     // onBeforeRequest will be dispatched twice initially. The second response -
     // the redirect - should win, since it has a later |install_time|. The
@@ -294,7 +294,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceRedirect) {
 
   // Now test the same thing but the extensions answer in reverse order.
   scoped_ptr<net::URLRequest> request2(context_->CreateRequest(
-      GURL("about:blank"), net::DEFAULT_PRIORITY, &delegate_, NULL));
+      GURL("about:blank"), net::DEFAULT_PRIORITY, &delegate_));
   {
     ExtensionWebRequestEventRouter::EventResponse* response = NULL;
 
@@ -368,7 +368,7 @@ TEST_F(ExtensionWebRequestTest, BlockingEventPrecedenceCancel) {
 
   GURL request_url("about:blank");
   scoped_ptr<net::URLRequest> request(context_->CreateRequest(
-      request_url, net::DEFAULT_PRIORITY, &delegate_, NULL));
+      request_url, net::DEFAULT_PRIORITY, &delegate_));
 
   // onBeforeRequest will be dispatched twice. The second response -
   // the redirect - would win, since it has a later |install_time|, but
@@ -436,7 +436,7 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
 
   GURL request_url("about:blank");
   scoped_ptr<net::URLRequest> request(context_->CreateRequest(
-      request_url, net::DEFAULT_PRIORITY, &delegate_, NULL));
+      request_url, net::DEFAULT_PRIORITY, &delegate_));
 
   ExtensionWebRequestEventRouter::EventResponse* response = NULL;
 
@@ -500,7 +500,7 @@ void ExtensionWebRequestTest::FireURLRequestWithData(
   // The request URL can be arbitrary but must have an HTTP or HTTPS scheme.
   GURL request_url("http://www.example.com");
   scoped_ptr<net::URLRequest> request(context_->CreateRequest(
-      request_url, net::DEFAULT_PRIORITY, &delegate_, NULL));
+      request_url, net::DEFAULT_PRIORITY, &delegate_));
   request->set_method(method);
   if (content_type != NULL) {
     request->SetExtraRequestHeaderByName(net::HttpRequestHeaders::kContentType,
@@ -716,7 +716,7 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
 
   for (size_t i = 0; i < arraysize(kMethods); ++i) {
     scoped_ptr<net::URLRequest> request(context_->CreateRequest(
-        request_url, net::DEFAULT_PRIORITY, &delegate_, NULL));
+        request_url, net::DEFAULT_PRIORITY, &delegate_));
     request->set_method(kMethods[i]);
     ipc_sender_.PushTask(base::Bind(&base::DoNothing));
     request->Start();
@@ -837,7 +837,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
 
   GURL request_url("http://doesnotexist/does_not_exist.html");
   scoped_ptr<net::URLRequest> request(context_->CreateRequest(
-      request_url, net::DEFAULT_PRIORITY, &delegate_, NULL));
+      request_url, net::DEFAULT_PRIORITY, &delegate_));
 
   // Initialize headers available before extensions are notified of the
   // onBeforeSendHeaders event.

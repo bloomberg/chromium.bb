@@ -354,7 +354,7 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HttpsProxyUsed)) {
       AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
   {
     scoped_ptr<URLRequest> request(
-        context_.CreateRequest(http_page, DEFAULT_PRIORITY, &delegate, NULL));
+        context_.CreateRequest(http_page, DEFAULT_PRIORITY, &delegate));
     request->Start();
     // TestDelegate exits the message loop when the request completes by
     // default.
@@ -400,7 +400,7 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsHttpsToWebSocket)) {
   TestDelegate delegate;
   GURL https_page = https_server.GetURL("files/hsts-headers.html");
   scoped_ptr<URLRequest> request(
-      context_.CreateRequest(https_page, DEFAULT_PRIORITY, &delegate, NULL));
+      context_.CreateRequest(https_page, DEFAULT_PRIORITY, &delegate));
   request->Start();
   // TestDelegate exits the message loop when the request completes.
   base::RunLoop().Run();
@@ -433,7 +433,7 @@ TEST_F(WebSocketEndToEndTest, DISABLED_ON_ANDROID(HstsWebSocketToHttps)) {
   GURL http_page =
       ReplaceUrlScheme(https_server.GetURL("files/simple.html"), "http");
   scoped_ptr<URLRequest> request(
-      context_.CreateRequest(http_page, DEFAULT_PRIORITY, &delegate, NULL));
+      context_.CreateRequest(http_page, DEFAULT_PRIORITY, &delegate));
   request->Start();
   // TestDelegate exits the message loop when the request completes.
   base::RunLoop().Run();

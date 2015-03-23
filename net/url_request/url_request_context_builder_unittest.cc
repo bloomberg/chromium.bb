@@ -80,11 +80,8 @@ TEST_F(URLRequestContextBuilderTest, DefaultSettings) {
 
   scoped_ptr<URLRequestContext> context(builder_.Build());
   TestDelegate delegate;
-  scoped_ptr<URLRequest> request(
-      context->CreateRequest(test_server_.GetURL("echoheader?Foo"),
-                             DEFAULT_PRIORITY,
-                             &delegate,
-                             context->cookie_store()));
+  scoped_ptr<URLRequest> request(context->CreateRequest(
+      test_server_.GetURL("echoheader?Foo"), DEFAULT_PRIORITY, &delegate));
   request->set_method("GET");
   request->SetExtraRequestHeaderByName("Foo", "Bar", false);
   request->Start();
@@ -100,9 +97,7 @@ TEST_F(URLRequestContextBuilderTest, UserAgent) {
   TestDelegate delegate;
   scoped_ptr<URLRequest> request(
       context->CreateRequest(test_server_.GetURL("echoheader?User-Agent"),
-                             DEFAULT_PRIORITY,
-                             &delegate,
-                             NULL));
+                             DEFAULT_PRIORITY, &delegate));
   request->set_method("GET");
   request->Start();
   base::MessageLoop::current()->Run();

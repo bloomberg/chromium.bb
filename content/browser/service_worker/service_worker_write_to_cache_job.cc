@@ -171,10 +171,7 @@ void ServiceWorkerWriteToCacheJob::InitNetRequest(
     int extra_load_flags) {
   DCHECK(request());
   net_request_ = request()->context()->CreateRequest(
-      request()->url(),
-      request()->priority(),
-      this,
-      this->GetCookieStore());
+      request()->url(), request()->priority(), this);
   net_request_->set_first_party_for_cookies(
       request()->first_party_for_cookies());
   net_request_->SetReferrer(request()->referrer());

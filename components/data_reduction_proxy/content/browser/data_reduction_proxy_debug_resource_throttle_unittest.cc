@@ -73,7 +73,7 @@ class DataReductionProxyDebugResourceThrottleTest : public testing::Test {
             .WithMockConfig()
             .Build();
     request_ = context_.CreateRequest(GURL("http://www.google.com/"), net::IDLE,
-                                      &delegate_, NULL);
+                                      &delegate_);
     ui_service_.reset(new ContentDataReductionProxyDebugUIService(
         base::Bind(
             &DataReductionProxyDebugResourceThrottleTest::

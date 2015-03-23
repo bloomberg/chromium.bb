@@ -519,13 +519,12 @@ URLRequest::URLRequest(const GURL& url,
                        RequestPriority priority,
                        Delegate* delegate,
                        const URLRequestContext* context,
-                       CookieStore* cookie_store,
                        NetworkDelegate* network_delegate)
     : context_(context),
       network_delegate_(network_delegate ? network_delegate
                                          : context->network_delegate()),
-      net_log_(BoundNetLog::Make(context->net_log(),
-                                 NetLog::SOURCE_URL_REQUEST)),
+      net_log_(
+          BoundNetLog::Make(context->net_log(), NetLog::SOURCE_URL_REQUEST)),
       url_chain_(1, url),
       method_("GET"),
       referrer_policy_(CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
@@ -544,8 +543,7 @@ URLRequest::URLRequest(const GURL& url,
       has_notified_completion_(false),
       received_response_content_length_(0),
       creation_time_(base::TimeTicks::Now()),
-      notified_before_network_start_(false),
-      cookie_store_(cookie_store ? cookie_store : context->cookie_store()) {
+      notified_before_network_start_(false) {
   // Sanity check out environment.
   DCHECK(base::MessageLoop::current())
       << "The current base::MessageLoop must exist";

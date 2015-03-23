@@ -404,8 +404,7 @@ class ResourceLoaderTest : public testing::Test,
         resource_context_.GetRequestContext()->CreateRequest(
             test_url(),
             net::DEFAULT_PRIORITY,
-            NULL /* delegate */,
-            NULL /* cookie_store */));
+            NULL /* delegate */));
     raw_ptr_to_request_ = request.get();
     ResourceRequestInfo::AllocateForTesting(
         request.get(), RESOURCE_TYPE_MAIN_FRAME, &resource_context_,

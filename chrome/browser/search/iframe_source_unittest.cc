@@ -98,7 +98,6 @@ class IframeSourceTest : public testing::Test {
         resource_context_.GetRequestContext()->CreateRequest(
             GURL(url),
             net::DEFAULT_PRIORITY,
-            NULL,
             NULL));
     if (allocate_info) {
       content::ResourceRequestInfo::AllocateForTesting(

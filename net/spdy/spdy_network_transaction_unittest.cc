@@ -2488,11 +2488,8 @@ TEST_P(SpdyNetworkTransactionTest, RedirectGetRequest) {
         GetParam().protocol,
         false  /* force_spdy_over_ssl*/,
         true  /* force_spdy_always */);
-    scoped_ptr<URLRequest> r(
-        spdy_url_request_context.CreateRequest(GURL("http://www.google.com/"),
-                                               DEFAULT_PRIORITY,
-                                               &d,
-                                               NULL));
+    scoped_ptr<URLRequest> r(spdy_url_request_context.CreateRequest(
+        GURL("http://www.google.com/"), DEFAULT_PRIORITY, &d));
     spdy_url_request_context.socket_factory().
         AddSocketDataProvider(&data);
     spdy_url_request_context.socket_factory().
@@ -2583,11 +2580,8 @@ TEST_P(SpdyNetworkTransactionTest, RedirectServerPush) {
       false  /* force_spdy_over_ssl*/,
       true  /* force_spdy_always */);
   {
-    scoped_ptr<URLRequest> r(
-        spdy_url_request_context.CreateRequest(GURL("http://www.google.com/"),
-                                               DEFAULT_PRIORITY,
-                                               &d,
-                                               NULL));
+    scoped_ptr<URLRequest> r(spdy_url_request_context.CreateRequest(
+        GURL("http://www.google.com/"), DEFAULT_PRIORITY, &d));
     spdy_url_request_context.socket_factory().
         AddSocketDataProvider(&data);
 
@@ -2598,12 +2592,8 @@ TEST_P(SpdyNetworkTransactionTest, RedirectServerPush) {
     std::string contents("hello!");
     EXPECT_EQ(contents, d.data_received());
 
-    scoped_ptr<URLRequest> r2(
-        spdy_url_request_context.CreateRequest(
-            GURL("http://www.google.com/foo.dat"),
-            DEFAULT_PRIORITY,
-            &d2,
-            NULL));
+    scoped_ptr<URLRequest> r2(spdy_url_request_context.CreateRequest(
+        GURL("http://www.google.com/foo.dat"), DEFAULT_PRIORITY, &d2));
     spdy_url_request_context.socket_factory().
         AddSocketDataProvider(&data2);
 

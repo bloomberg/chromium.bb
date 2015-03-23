@@ -193,7 +193,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     empty_context_.set_job_factory(job_factory_.get());
 
     request_ = empty_context_.CreateRequest(
-        url, net::DEFAULT_PRIORITY, delegate_.get(), NULL);
+        url, net::DEFAULT_PRIORITY, delegate_.get());
     if (headers)
       request_->SetExtraRequestHeaders(*headers);
 

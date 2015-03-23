@@ -1214,7 +1214,6 @@ content::ResourceThrottle* RequestTestResourceThrottle(
   scoped_ptr<net::URLRequest> url_request(context.CreateRequest(
       GURL("http://foo.example.com/thing.bin"),
       net::DEFAULT_PRIORITY,
-      NULL,
       NULL));
 
   content::ResourceThrottle* rt = GetOnDemandResourceThrottle(cus, crx_id);

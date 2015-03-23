@@ -177,7 +177,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     empty_context_.set_job_factory(job_factory_.get());
 
     request_ = empty_context_.CreateRequest(
-        url, net::DEFAULT_PRIORITY, delegate_.get(), NULL);
+        url, net::DEFAULT_PRIORITY, delegate_.get());
     request_->Start();
     ASSERT_TRUE(request_->is_pending());  // verify that we're starting async
     if (run_to_completion)

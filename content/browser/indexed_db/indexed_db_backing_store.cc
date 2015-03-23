@@ -2374,7 +2374,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
 
     DCHECK(blob_url.is_valid());
     scoped_ptr<net::URLRequest> blob_request(request_context->CreateRequest(
-        blob_url, net::DEFAULT_PRIORITY, delegate.get(), NULL));
+        blob_url, net::DEFAULT_PRIORITY, delegate.get()));
 
     this->file_path_ = file_path;
     this->last_modified_ = last_modified;

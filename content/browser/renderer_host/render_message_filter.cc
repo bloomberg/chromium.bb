@@ -847,7 +847,7 @@ void RenderMessageFilter::DownloadUrl(int render_view_id,
   save_info->prompt_for_save_location = use_prompt;
   scoped_ptr<net::URLRequest> request(
       resource_context_->GetRequestContext()->CreateRequest(
-          url, net::DEFAULT_PRIORITY, NULL, NULL));
+          url, net::DEFAULT_PRIORITY, NULL));
   RecordDownloadSource(INITIATED_BY_RENDERER);
   resource_dispatcher_host_->BeginDownload(
       request.Pass(),

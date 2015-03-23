@@ -144,7 +144,7 @@ void URLRequestAdapter::OnInitiateConnection() {
           << url_.possibly_invalid_spec().c_str()
           << " priority: " << RequestPriorityToString(priority_);
   url_request_ = context_->GetURLRequestContext()->CreateRequest(
-      url_, net::DEFAULT_PRIORITY, this, NULL);
+      url_, net::DEFAULT_PRIORITY, this);
   int flags = net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
   if (context_->load_disable_cache())
     flags |= net::LOAD_DISABLE_CACHE;

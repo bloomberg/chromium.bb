@@ -51,8 +51,7 @@ class URLRequestHttpJobTest : public ::testing::Test {
   URLRequestHttpJobTest()
       : req_(context_.CreateRequest(GURL("http://www.example.com"),
                                     DEFAULT_PRIORITY,
-                                    &delegate_,
-                                    nullptr)) {
+                                    &delegate_)) {
     context_.set_http_transaction_factory(&network_layer_);
   }
 
@@ -211,8 +210,7 @@ class URLRequestHttpJobWebSocketTest
   URLRequestHttpJobWebSocketTest()
       : req_(context_.CreateRequest(GURL("ws://www.example.com"),
                                     DEFAULT_PRIORITY,
-                                    &delegate_,
-                                    nullptr)) {
+                                    &delegate_)) {
     // The TestNetworkDelegate expects a call to NotifyBeforeURLRequest before
     // anything else happens.
     GURL url("ws://localhost/");

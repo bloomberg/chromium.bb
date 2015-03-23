@@ -148,7 +148,7 @@ void URLRequestContentJobTest::RunRequest(const Range* range) {
   context_.set_job_factory(&factory);
 
   scoped_ptr<net::URLRequest> request(context_.CreateRequest(
-      GURL(path.value()), net::DEFAULT_PRIORITY, &delegate_, NULL));
+      GURL(path.value()), net::DEFAULT_PRIORITY, &delegate_));
   int expected_length = file_size;
   if (range) {
     ASSERT_GE(range->start, 0);

@@ -1155,7 +1155,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   // Construct the request.
   scoped_ptr<net::URLRequest> new_request;
   new_request = request_context->CreateRequest(
-      request_data.url, request_data.priority, NULL, NULL);
+      request_data.url, request_data.priority, NULL);
 
   new_request->set_method(request_data.method);
   new_request->set_first_party_for_cookies(
@@ -1592,7 +1592,7 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
   }
 
   scoped_ptr<net::URLRequest> request(
-      request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL, NULL));
+      request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL));
   request->set_method("GET");
   SetReferrerForRequest(request.get(), referrer);
 
@@ -1897,7 +1897,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
 
   scoped_ptr<net::URLRequest> new_request;
   new_request = request_context->CreateRequest(
-      info.common_params.url, net::HIGHEST, nullptr, nullptr);
+      info.common_params.url, net::HIGHEST, nullptr);
 
   new_request->set_method(info.begin_params.method);
   new_request->set_first_party_for_cookies(

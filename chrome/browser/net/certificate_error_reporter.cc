@@ -75,7 +75,7 @@ void CertificateErrorReporter::OnReadCompleted(net::URLRequest* request,
 scoped_ptr<net::URLRequest> CertificateErrorReporter::CreateURLRequest(
     net::URLRequestContext* context) {
   scoped_ptr<net::URLRequest> request =
-      context->CreateRequest(upload_url_, net::DEFAULT_PRIORITY, this, NULL);
+      context->CreateRequest(upload_url_, net::DEFAULT_PRIORITY, this);
   request->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                         net::LOAD_DO_NOT_SAVE_COOKIES);
   return request.Pass();

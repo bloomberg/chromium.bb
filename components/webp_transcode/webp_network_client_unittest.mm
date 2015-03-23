@@ -60,8 +60,7 @@ TEST_F(WebPNetworkClientTest, TestAcceptHeaders) {
       new net::TestURLRequestContext(false));
   for (size_t i = 0; i < arraysize(tests); ++i) {
     scoped_ptr<net::URLRequest> request =
-        request_context->CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
-                                       nullptr).Pass();
+        request_context->CreateRequest(url, net::DEFAULT_PRIORITY, nullptr);
     if (!tests[i].header_in.empty())
       request->SetExtraRequestHeaderByName("Accept", tests[i].header_in, true);
     [webp_client_ didCreateNativeRequest:request.get()];

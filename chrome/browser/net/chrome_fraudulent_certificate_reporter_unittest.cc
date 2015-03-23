@@ -134,7 +134,6 @@ class MockReporter : public CertificateErrorReporter {
       net::URLRequestContext* context) override {
     return context->CreateRequest(GURL(std::string()),
                                   net::DEFAULT_PRIORITY,
-                                  NULL,
                                   NULL);
   }
 };

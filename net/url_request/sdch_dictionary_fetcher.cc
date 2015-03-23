@@ -274,8 +274,7 @@ int SdchDictionaryFetcher::DoSendRequest(int rv) {
   FetchInfo info;
   bool success = fetch_queue_->Pop(&info);
   DCHECK(success);
-  current_request_ =
-      context_->CreateRequest(info.url, IDLE, this, NULL);
+  current_request_ = context_->CreateRequest(info.url, IDLE, this);
   int load_flags = LOAD_DO_NOT_SEND_COOKIES | LOAD_DO_NOT_SAVE_COOKIES;
   if (info.cache_only)
     load_flags |= LOAD_ONLY_FROM_CACHE;

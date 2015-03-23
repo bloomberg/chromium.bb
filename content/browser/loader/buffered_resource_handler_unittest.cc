@@ -176,7 +176,7 @@ bool BufferedResourceHandlerTest::TestStreamIsIntercepted(
     ResourceType request_resource_type) {
   net::URLRequestContext context;
   scoped_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr, nullptr));
+      GURL("http://www.google.com"), net::DEFAULT_PRIORITY, nullptr));
   bool is_main_frame = request_resource_type == RESOURCE_TYPE_MAIN_FRAME;
   ResourceRequestInfo::AllocateForTesting(
       request.get(),

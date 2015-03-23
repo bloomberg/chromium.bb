@@ -127,7 +127,7 @@ void ResourcePrefetcher::SendRequest(Request* request) {
 
   net::URLRequest* url_request =
       delegate_->GetURLRequestContext()->CreateRequest(
-          request->resource_url, net::LOW, this, NULL).release();
+          request->resource_url, net::LOW, this).release();
 
   inflight_requests_[url_request] = request;
   host_inflight_counts_[url_request->original_url().host()] += 1;

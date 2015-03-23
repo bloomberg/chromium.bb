@@ -189,7 +189,7 @@ void URLRequestFileJobEventsTest::RunRequest(const std::string& content,
   context_.set_job_factory(&factory);
 
   scoped_ptr<URLRequest> request(context_.CreateRequest(
-      FilePathToFileURL(path), DEFAULT_PRIORITY, &delegate_, NULL));
+      FilePathToFileURL(path), DEFAULT_PRIORITY, &delegate_));
   if (range) {
     ASSERT_GE(range->start, 0);
     ASSERT_GE(range->end, 0);

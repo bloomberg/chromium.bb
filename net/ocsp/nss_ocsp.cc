@@ -405,8 +405,7 @@ class OCSPRequestSession
       g_ocsp_io_loop.Get().AddRequest(this);
     }
 
-    request_ = url_request_context->CreateRequest(
-        url_, DEFAULT_PRIORITY, this, NULL);
+    request_ = url_request_context->CreateRequest(url_, DEFAULT_PRIORITY, this);
     // To meet the privacy requirements of incognito mode.
     request_->SetLoadFlags(LOAD_DISABLE_CACHE | LOAD_DO_NOT_SAVE_COOKIES |
                            LOAD_DO_NOT_SEND_COOKIES);

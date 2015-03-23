@@ -26,7 +26,6 @@
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_store.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_status.h"
@@ -616,8 +615,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Allow the URLRequestJob class to set our status too
   void set_status(const URLRequestStatus& value) { status_ = value; }
 
-  CookieStore* cookie_store() const { return cookie_store_.get(); }
-
   // Allow the URLRequestJob to redirect this request.  Returns OK if
   // successful, otherwise an error code is returned.
   int Redirect(const RedirectInfo& redirect_info);
@@ -640,13 +637,12 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // URLRequests are always created by calling URLRequestContext::CreateRequest.
   //
-  // If no cookie store or network delegate are passed in, will use the ones
-  // from the URLRequestContext.
+  // If no network delegate is passed in, will use the ones from the
+  // URLRequestContext.
   URLRequest(const GURL& url,
              RequestPriority priority,
              Delegate* delegate,
              const URLRequestContext* context,
-             CookieStore* cookie_store,
              NetworkDelegate* network_delegate);
 
   // Resumes or blocks a request paused by the NetworkDelegate::OnBeforeRequest
@@ -818,9 +814,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // Keeps track of whether or not OnBeforeNetworkStart has been called yet.
   bool notified_before_network_start_;
-
-  // The cookie store to be used for this request.
-  scoped_refptr<CookieStore> cookie_store_;
 
   // The proxy server used for this request, if any.
   HostPortPair proxy_server_;

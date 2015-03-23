@@ -141,7 +141,7 @@ bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
     const WebRequestActionSet* action_set,
     RequestStage stage) {
   scoped_ptr<net::URLRequest> regular_request(context_.CreateRequest(
-      GURL(url_string), net::DEFAULT_PRIORITY, NULL, NULL));
+      GURL(url_string), net::DEFAULT_PRIORITY, NULL));
   std::list<LinkedPtrEventResponseDelta> deltas;
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(""));

@@ -251,8 +251,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
     scoped_ptr<URLRequest> r(context_->CreateRequest(
         GURL("http://www.google.com/"),
         net::DEFAULT_PRIORITY,
-        &d,
-        NULL));
+        &d));
     r->set_method(method);
     r->SetLoadFlags(net::LOAD_NORMAL);
 
@@ -358,7 +357,6 @@ TEST_F(DataReductionProxyProtocolTest, TestIdempotency) {
     scoped_ptr<net::URLRequest> request(
         context.CreateRequest(GURL("http://www.google.com/"),
                               net::DEFAULT_PRIORITY,
-                              NULL,
                               NULL));
     request->set_method(tests[i].method);
     EXPECT_EQ(
@@ -852,8 +850,7 @@ TEST_F(DataReductionProxyProtocolTest,
   scoped_ptr<URLRequest> r(context_->CreateRequest(
       GURL("http://www.google.com/"),
       net::DEFAULT_PRIORITY,
-      &d,
-      NULL));
+      &d));
   r->set_method("GET");
   r->SetLoadFlags(net::LOAD_NORMAL);
 

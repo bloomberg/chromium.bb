@@ -211,7 +211,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithContextWithActiveRequest) {
 
   // URL doesn't matter.  Requests can't fail synchronously.
   scoped_ptr<URLRequest> request(
-      context.CreateRequest(GURL("blah:blah"), IDLE, &delegate, nullptr));
+      context.CreateRequest(GURL("blah:blah"), IDLE, &delegate));
   request->Start();
 
   // Create and destroy a logger.

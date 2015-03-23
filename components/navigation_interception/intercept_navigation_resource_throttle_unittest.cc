@@ -118,8 +118,7 @@ class TestIOThreadState {
         request_(resource_context_.GetRequestContext()->CreateRequest(
                      url,
                      net::DEFAULT_PRIORITY,
-                     NULL /* delegate */,
-                     NULL /* cookie_store */)) {
+                     NULL /* delegate */)) {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     if (render_process_id != MSG_ROUTING_NONE &&
         render_frame_id != MSG_ROUTING_NONE) {

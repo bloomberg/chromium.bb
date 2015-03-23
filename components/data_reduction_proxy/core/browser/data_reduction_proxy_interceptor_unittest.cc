@@ -158,7 +158,7 @@ TEST_F(DataReductionProxyInterceptorTest, TestJobFactoryChaining) {
 
   net::TestDelegate d;
   scoped_ptr<net::URLRequest> req(default_context_->CreateRequest(
-      GURL("http://foo"), net::DEFAULT_PRIORITY, &d, nullptr));
+      GURL("http://foo"), net::DEFAULT_PRIORITY, &d));
 
   req->Start();
   base::RunLoop().Run();
@@ -252,7 +252,7 @@ TEST_F(DataReductionProxyInterceptorWithServerTest, TestBypass) {
   net::TestDelegate delegate;
   scoped_ptr<net::URLRequest> request(
       context().CreateRequest(direct().GetURL("/block10.html"),
-                             net::DEFAULT_PRIORITY, &delegate, NULL));
+                             net::DEFAULT_PRIORITY, &delegate));
   request->Start();
   EXPECT_TRUE(request->is_pending());
   base::RunLoop().Run();
@@ -266,7 +266,7 @@ TEST_F(DataReductionProxyInterceptorWithServerTest, TestNoBypass) {
   net::TestDelegate delegate;
   scoped_ptr<net::URLRequest> request(
       context().CreateRequest(direct().GetURL("/noblock.html"),
-                             net::DEFAULT_PRIORITY, &delegate, NULL));
+                             net::DEFAULT_PRIORITY, &delegate));
   request->Start();
   EXPECT_TRUE(request->is_pending());
   base::RunLoop().Run();
@@ -310,7 +310,7 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
   // it. Returns the created URLRequest.
   scoped_ptr<net::URLRequest> CreateAndExecuteRequest(const GURL& url) {
     scoped_ptr<net::URLRequest> request(
-        context_.CreateRequest(url, net::IDLE, &delegate_, NULL));
+        context_.CreateRequest(url, net::IDLE, &delegate_));
     request->Start();
     drp_test_context_->RunUntilIdle();
     return request.Pass();

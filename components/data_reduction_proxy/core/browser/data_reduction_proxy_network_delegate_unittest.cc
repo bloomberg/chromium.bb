@@ -107,7 +107,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
       const std::string& raw_response_headers,
       int64 response_content_length) {
     scoped_ptr<net::URLRequest> request = context_.CreateRequest(
-        url, net::IDLE, &delegate_, NULL);
+        url, net::IDLE, &delegate_);
 
     // Create a test job that will fill in the given response headers for the
     // |fake_request|.

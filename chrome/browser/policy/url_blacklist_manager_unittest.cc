@@ -644,7 +644,7 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
 
   net::TestURLRequestContext context;
   scoped_ptr<net::URLRequest> request(context.CreateRequest(
-      GURL("http://google.com"), net::DEFAULT_PRIORITY, NULL, NULL));
+      GURL("http://google.com"), net::DEFAULT_PRIORITY, NULL));
 
   int reason = net::ERR_UNEXPECTED;
   // Background requests aren't filtered.

@@ -207,7 +207,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     url_request_context_->set_job_factory(url_request_job_factory_.get());
 
     request_ = url_request_context_->CreateRequest(
-        script_url_, net::DEFAULT_PRIORITY, &url_request_delegate_, nullptr);
+        script_url_, net::DEFAULT_PRIORITY, &url_request_delegate_);
     ServiceWorkerRequestHandler::InitializeHandler(
         request_.get(),
         context_wrapper(),

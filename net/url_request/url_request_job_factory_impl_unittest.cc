@@ -63,7 +63,7 @@ TEST(URLRequestJobFactoryTest, NoProtocolHandler) {
   TestDelegate delegate;
   TestURLRequestContext request_context;
   scoped_ptr<URLRequest> request(request_context.CreateRequest(
-      GURL("foo://bar"), DEFAULT_PRIORITY, &delegate, NULL));
+      GURL("foo://bar"), DEFAULT_PRIORITY, &delegate));
   request->Start();
 
   base::MessageLoop::current()->Run();
@@ -78,7 +78,7 @@ TEST(URLRequestJobFactoryTest, BasicProtocolHandler) {
   request_context.set_job_factory(&job_factory);
   job_factory.SetProtocolHandler("foo", new DummyProtocolHandler);
   scoped_ptr<URLRequest> request(request_context.CreateRequest(
-      GURL("foo://bar"), DEFAULT_PRIORITY, &delegate, NULL));
+      GURL("foo://bar"), DEFAULT_PRIORITY, &delegate));
   request->Start();
 
   base::MessageLoop::current()->Run();

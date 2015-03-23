@@ -103,7 +103,7 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
   // DataReductionProxyNetworkDelegateTest.
    scoped_ptr<net::URLRequest> fake_request =
        context().CreateRequest(
-           GURL("http://www.foo.com/"), net::IDLE, delegate(), NULL);
+           GURL("http://www.foo.com/"), net::IDLE, delegate());
   CountingNetworkDelegate* wrapped_network_delegate =
       new CountingNetworkDelegate();
   scoped_ptr<DataReductionProxyNetworkDelegate> network_delegate =

@@ -83,11 +83,11 @@ class ChromeNetworkDelegateThrottlingTest : public testing::Test {
 
     net::TestURLRequestContext context;
     scoped_ptr<net::URLRequest> extension_request(context.CreateRequest(
-        GURL("http://example.com/"), net::DEFAULT_PRIORITY, NULL, NULL));
+        GURL("http://example.com/"), net::DEFAULT_PRIORITY, NULL));
     extension_request->set_first_party_for_cookies(
         GURL("chrome-extension://abcdef/bingo.html"));
     scoped_ptr<net::URLRequest> web_page_request(context.CreateRequest(
-        GURL("http://example.com/"), net::DEFAULT_PRIORITY, NULL, NULL));
+        GURL("http://example.com/"), net::DEFAULT_PRIORITY, NULL));
     web_page_request->set_first_party_for_cookies(
         GURL("http://example.com/helloworld.html"));
 
@@ -177,7 +177,7 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
     safe_search_util::ClearForceYouTubeSafetyModeCountForTesting();
 
     scoped_ptr<net::URLRequest> request(context_.CreateRequest(
-        GURL("http://anyurl.com"), net::DEFAULT_PRIORITY, &delegate_, NULL));
+        GURL("http://anyurl.com"), net::DEFAULT_PRIORITY, &delegate_));
 
     request->Start();
     base::MessageLoop::current()->RunUntilIdle();
