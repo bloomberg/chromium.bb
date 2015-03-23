@@ -358,8 +358,9 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ =
 /**
  * @param {!FileEntry} entry The file to copy.
  * @param {!DirectoryEntry} destinationDirectory The destination directory.
- * @return {!Promise<!FileEntry>} Resolves to the destination file when the copy
- *     is complete.
+ * @return {!Promise<FileEntry>} Resolves to the destination file when the copy
+ *     is complete.  The FileEntry may be null if the import was cancelled.  The
+ *     promise will reject if an error occurs.
  * @private
  */
 importer.MediaImportHandler.ImportTask.prototype.copy_ =
@@ -416,13 +417,20 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ =
   /** @this {importer.MediaImportHandler.ImportTask} */
   var onError = function(error) {
     this.cancelCallback_ = null;
-    this.errorCount_++;
     // Log the bytes as processed in spite of the error.  This ensures
     // completion of the progress bar.
     this.processedBytes_ -= currentBytes;
     this.processedBytes_ += entry.size;
-    this.notify(importer.TaskQueue.UpdateType.ERROR);
-    resolver.reject(error);
+    if (error.name === util.FileError.ABORT_ERR) {
+      // Task cancellations result in the error callback being triggered with an
+      // ABORT_ERR, but we want to ignore these errors.
+      this.notify(importer.TaskQueue.UpdateType.PROGRESS);
+      resolver.resolve(null);
+    } else {
+      this.errorCount_++;
+      this.notify(importer.TaskQueue.UpdateType.ERROR);
+      resolver.reject(error);
+    }
   };
 
   fileOperationUtil.deduplicatePath(destinationDirectory, entry.name)
