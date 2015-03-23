@@ -64,6 +64,8 @@ namespace chromeos {
 
 namespace {
 
+WallpaperManager* wallpaper_manager = nullptr;
+
 // The amount of delay before starts to move custom wallpapers to the new place.
 const int kMoveCustomWallpaperDelaySeconds = 30;
 
@@ -271,55 +273,32 @@ class WallpaperManager::PendingWallpaper :
   DISALLOW_COPY_AND_ASSIGN(PendingWallpaper);
 };
 
-static WallpaperManager* g_wallpaper_manager = NULL;
-
 // WallpaperManager, public: ---------------------------------------------------
+
+WallpaperManager::~WallpaperManager() {
+  show_user_name_on_signin_subscription_.reset();
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
+  ClearObsoleteWallpaperPrefs();
+  weak_factory_.InvalidateWeakPtrs();
+}
+
+// static
+void WallpaperManager::Initialize() {
+  CHECK(!wallpaper_manager);
+  wallpaper_manager = new WallpaperManager();
+}
 
 // static
 WallpaperManager* WallpaperManager::Get() {
-  if (!g_wallpaper_manager)
-    g_wallpaper_manager = new WallpaperManager();
-  return g_wallpaper_manager;
+  DCHECK(wallpaper_manager);
+  return wallpaper_manager;
 }
 
-WallpaperManager::WallpaperManager()
-    : pending_inactive_(NULL), weak_factory_(this) {
-  wallpaper::WallpaperManagerBase::SetPathIds(
-      chrome::DIR_USER_DATA,
-      chrome::DIR_CHROMEOS_WALLPAPERS,
-      chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS);
-  SetDefaultWallpaperPathsFromCommandLine(
-      base::CommandLine::ForCurrentProcess());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
-                 content::NotificationService::AllSources());
-  sequence_token_ = BrowserThread::GetBlockingPool()->GetNamedSequenceToken(
-      wallpaper::kWallpaperSequenceTokenName);
-  task_runner_ = BrowserThread::GetBlockingPool()->
-      GetSequencedTaskRunnerWithShutdownBehavior(
-          sequence_token_,
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-  wallpaper_loader_ = new UserImageLoader(ImageDecoder::ROBUST_JPEG_CODEC,
-                                          task_runner_);
-
-  user_manager::UserManager::Get()->AddSessionStateObserver(this);
-}
-
-WallpaperManager::~WallpaperManager() {
-  // TODO(bshe): Lifetime of WallpaperManager needs more consideration.
-  // http://crbug.com/171694
-  DCHECK(!show_user_name_on_signin_subscription_);
-
-  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
-
-  ClearObsoleteWallpaperPrefs();
-  weak_factory_.InvalidateWeakPtrs();
+// static
+void WallpaperManager::Shutdown() {
+  CHECK(wallpaper_manager);
+  delete wallpaper_manager;
+  wallpaper_manager = nullptr;
 }
 
 WallpaperManager::WallpaperResolution
@@ -331,10 +310,6 @@ WallpaperManager::GetAppropriateResolution() {
           size.height() > wallpaper::kSmallWallpaperMaxHeight)
              ? WALLPAPER_RESOLUTION_LARGE
              : WALLPAPER_RESOLUTION_SMALL;
-}
-
-void WallpaperManager::Shutdown() {
-  show_user_name_on_signin_subscription_.reset();
 }
 
 void WallpaperManager::AddObservers() {
@@ -746,6 +721,31 @@ void WallpaperManager::SetWallpaperFromImageSkia(
 
 // WallpaperManager, private: --------------------------------------------------
 
+WallpaperManager::WallpaperManager()
+    : pending_inactive_(NULL), weak_factory_(this) {
+  wallpaper::WallpaperManagerBase::SetPathIds(
+      chrome::DIR_USER_DATA, chrome::DIR_CHROMEOS_WALLPAPERS,
+      chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS);
+  SetDefaultWallpaperPathsFromCommandLine(
+      base::CommandLine::ForCurrentProcess());
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
+                 content::NotificationService::AllSources());
+  sequence_token_ = BrowserThread::GetBlockingPool()->GetNamedSequenceToken(
+      wallpaper::kWallpaperSequenceTokenName);
+  task_runner_ =
+      BrowserThread::GetBlockingPool()
+          ->GetSequencedTaskRunnerWithShutdownBehavior(
+              sequence_token_, base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  wallpaper_loader_ =
+      new UserImageLoader(ImageDecoder::ROBUST_JPEG_CODEC, task_runner_);
+
+  user_manager::UserManager::Get()->AddSessionStateObserver(this);
+}
+
 WallpaperManager::PendingWallpaper* WallpaperManager::GetPendingWallpaper(
     const std::string& user_id,
     bool delayed) {
@@ -777,11 +777,14 @@ void WallpaperManager::RemovePendingWallpaperFromList(
 
 void WallpaperManager::ClearObsoleteWallpaperPrefs() {
   PrefService* prefs = g_browser_process->local_state();
-  DictionaryPrefUpdate wallpaper_properties_pref(prefs,
-      wallpaper::kUserWallpapersProperties);
-  wallpaper_properties_pref->Clear();
-  DictionaryPrefUpdate wallpapers_pref(prefs, wallpaper::kUserWallpapers);
-  wallpapers_pref->Clear();
+  // LocalState can be NULL in tests. Skip for tests.
+  if (prefs) {
+    DictionaryPrefUpdate wallpaper_properties_pref(prefs,
+        wallpaper::kUserWallpapersProperties);
+    wallpaper_properties_pref->Clear();
+    DictionaryPrefUpdate wallpapers_pref(prefs, wallpaper::kUserWallpapers);
+    wallpapers_pref->Clear();
+  }
 }
 
 void WallpaperManager::InitializeRegisteredDeviceWallpaper() {

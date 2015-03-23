@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_animator_chromeos.h"
@@ -194,6 +195,7 @@ void MultiUserWindowManagerChromeOSTest::SetUpForThisManyWindows(int windows) {
   chrome::MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_,
         chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
   EXPECT_TRUE(multi_user_window_manager_);
+  chromeos::WallpaperManager::Initialize();
 }
 
 void MultiUserWindowManagerChromeOSTest::TearDown() {
@@ -206,6 +208,7 @@ void MultiUserWindowManagerChromeOSTest::TearDown() {
 
   chrome::MultiUserWindowManager::DeleteInstance();
   AshTestBase::TearDown();
+  chromeos::WallpaperManager::Shutdown();
 }
 
 std::string MultiUserWindowManagerChromeOSTest::GetStatus() {

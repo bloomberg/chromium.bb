@@ -47,6 +47,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -112,12 +113,16 @@ class ProfileManagerTest : public testing::Test {
 #if defined(OS_CHROMEOS)
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
     cl->AppendSwitch(switches::kTestType);
+    chromeos::WallpaperManager::Initialize();
 #endif
   }
 
   void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
     base::RunLoop().RunUntilIdle();
+#if defined(OS_CHROMEOS)
+    chromeos::WallpaperManager::Shutdown();
+#endif
   }
 
   // Helper function to create a profile with |name| for a profile |manager|.
@@ -424,6 +429,7 @@ class ProfileManagerGuestTest : public ProfileManagerTest  {
     cl->AppendSwitch(chromeos::switches::kGuestSession);
     cl->AppendSwitch(::switches::kIncognito);
 
+    chromeos::WallpaperManager::Initialize();
     RegisterUser(chromeos::login::kGuestUserName);
 #endif
   }

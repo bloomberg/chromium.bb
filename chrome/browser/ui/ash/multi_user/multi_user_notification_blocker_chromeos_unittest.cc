@@ -9,6 +9,7 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_notification_blocker_chromeos.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -49,6 +50,8 @@ class MultiUserNotificationBlockerChromeOSTest
             ash::Shell::GetInstance()->session_state_delegate());
     session_state_delegate->AddUser("test2@example.com");
 
+    chromeos::WallpaperManager::Initialize();
+
     // Disable any animations for the test.
     GetMultiUserWindowManager()->SetAnimationSpeedForTest(
         chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_DISABLED);
@@ -60,6 +63,7 @@ class MultiUserNotificationBlockerChromeOSTest
     if (chrome::MultiUserWindowManager::GetInstance())
       chrome::MultiUserWindowManager::DeleteInstance();
     ash::test::AshTestBase::TearDown();
+    chromeos::WallpaperManager::Shutdown();
   }
 
   // message_center::NotificationBlocker::Observer ovverrides:

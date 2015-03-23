@@ -47,7 +47,15 @@ class WallpaperManagerCacheTest : public test::AshTestBase {
 
   FakeChromeUserManager* fake_user_manager() { return fake_user_manager_; }
 
-  void SetUp() override { test::AshTestBase::SetUp(); }
+  void SetUp() override {
+    test::AshTestBase::SetUp();
+    WallpaperManager::Initialize();
+  }
+
+  void TearDown() override {
+    WallpaperManager::Shutdown();
+    test::AshTestBase::TearDown();
+  }
 
   // Creates a test image of size 1x1.
   gfx::ImageSkia CreateTestImage(SkColor color) {

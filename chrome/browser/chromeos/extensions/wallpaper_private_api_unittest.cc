@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_private_api.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "ui/aura/test/test_windows.h"
@@ -203,6 +204,7 @@ class WallpaperPrivateApiMultiUserUnittest
 
 void WallpaperPrivateApiMultiUserUnittest::SetUp() {
   AshTestBase::SetUp();
+  WallpaperManager::Initialize();
   session_state_delegate_ =
       static_cast<ash::test::TestSessionStateDelegate*> (
           ash::Shell::GetInstance()->session_state_delegate());
@@ -213,6 +215,7 @@ void WallpaperPrivateApiMultiUserUnittest::SetUp() {
 void WallpaperPrivateApiMultiUserUnittest::TearDown() {
   chrome::MultiUserWindowManager::DeleteInstance();
   AshTestBase::TearDown();
+  WallpaperManager::Shutdown();
 }
 
 void WallpaperPrivateApiMultiUserUnittest::SetUpMultiUserWindowManager(

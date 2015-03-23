@@ -423,6 +423,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // Add observers for WallpaperManager. This depends on PowerManagerClient,
   // TimezoneSettings and CrosSettings.
+  WallpaperManager::Initialize();
   WallpaperManager::Get()->AddObservers();
 
   base::PostTaskAndReplyWithResult(
@@ -727,7 +728,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // that the UserManager has no URLRequest pending (see
   // http://crbug.com/276659).
   g_browser_process->platform_part()->user_manager()->Shutdown();
-  WallpaperManager::Get()->Shutdown();
+  WallpaperManager::Shutdown();
 
   // Let the DeviceDisablingManager unregister itself as an observer of the
   // CrosSettings singleton before it is destroyed.

@@ -37,18 +37,21 @@ class WallpaperManager :
  public:
   class PendingWallpaper;
 
-  WallpaperManager();
   ~WallpaperManager() override;
 
-  // Get pointer to singleton WallpaperManager instance, create it if necessary.
+  // Creates an instance of Wallpaper Manager. If there is no instance, create
+  // one. Otherwise, returns the existing instance.
+  static void Initialize();
+
+  // Gets pointer to singleton WallpaperManager instance.
   static WallpaperManager* Get();
+
+  // Deletes the existing instance of WallpaperManager. Allows the
+  // WallpaperManager to remove any observers it has registered.
+  static void Shutdown();
 
   // Returns the appropriate wallpaper resolution for all root windows.
   WallpaperResolution GetAppropriateResolution() override;
-
-  // Indicates imminent shutdown, allowing the WallpaperManager to remove any
-  // observers it has registered.
-  void Shutdown() override;
 
   // Adds PowerManagerClient, TimeZoneSettings and CrosSettings observers.
   void AddObservers() override;
@@ -126,6 +129,8 @@ class WallpaperManager :
   friend class WallpaperManagerBrowserTest;
   friend class WallpaperManagerBrowserTestDefaultWallpaper;
   friend class WallpaperManagerPolicyTest;
+
+  WallpaperManager();
 
   // Returns modifiable PendingWallpaper.
   // Returns pending_inactive_ or creates new PendingWallpaper if necessary.

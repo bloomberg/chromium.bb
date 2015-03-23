@@ -239,10 +239,6 @@ class WALLPAPER_EXPORT WallpaperManagerBase
 
   virtual void SetCommandLineForTesting(base::CommandLine* command_line);
 
-  // Indicates imminent shutdown, allowing the WallpaperManager to remove any
-  // observers it has registered.
-  virtual void Shutdown() = 0;
-
   // Adds PowerManagerClient, TimeZoneSettings and CrosSettings observers.
   virtual void AddObservers() = 0;
 
