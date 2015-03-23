@@ -311,7 +311,7 @@ void NetworkPortalNotificationController::OnDialogDestroyed(
     const NetworkPortalWebDialog* dialog) {
   if (dialog == dialog_) {
     dialog_ = nullptr;
-    ProfileHelper::Get()->ClearSigninProfile(base::Closure());
+    ProfileHelper::Get()->ClearSigninProfile(base::Closure(), nullptr);
   }
 }
 

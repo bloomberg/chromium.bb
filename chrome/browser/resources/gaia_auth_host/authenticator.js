@@ -145,11 +145,30 @@ cr.define('cr.login', function() {
   Authenticator.prototype = Object.create(cr.EventTarget.prototype);
 
   /**
+   * Reinitializes authentication parameters so that a failed login attempt
+   * would not result in an infinite loop.
+   */
+  Authenticator.prototype.clearCredentials_ = function() {
+    this.email_ = null;
+    this.gaiaId_ = null;
+    this.password_ = null;
+    this.oauth_code_ = null;
+    this.chooseWhatToSync_ = false;
+    this.skipForNow_ = false;
+    this.sessionIndex_ = null;
+    this.trusted_ = true;
+    this.authFlow = AuthFlow.DEFAULT;
+    this.samlHandler_.reset();
+    this.loaded_ = false;
+  };
+
+  /**
    * Loads the authenticator component with the given parameters.
    * @param {AuthMode} authMode Authorization mode.
    * @param {Object} data Parameters for the authorization flow.
    */
   Authenticator.prototype.load = function(authMode, data) {
+    this.clearCredentials_();
     this.idpOrigin_ = data.gaiaUrl || IDP_ORIGIN;
     this.continueUrl_ = data.continueUrl || CONTINUE_URL;
     this.continueUrlWithoutParams_ =
@@ -160,26 +179,20 @@ cr.define('cr.login', function() {
 
     this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
     this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
-    this.authFlow = AuthFlow.DEFAULT;
-    this.samlHandler_.reset();
     // Don't block insecure content for desktop flow because it lands on
     // http. Otherwise, block insecure content as long as gaia is https.
     this.samlHandler_.blockInsecureContent = authMode != AuthMode.DESKTOP &&
         this.idpOrigin_.indexOf('https://') == 0;
 
     this.webview_.src = this.reloadUrl_;
-
-    this.loaded_ = false;
   };
 
   /**
    * Reloads the authenticator component.
    */
   Authenticator.prototype.reload = function() {
+    this.clearCredentials_();
     this.webview_.src = this.reloadUrl_;
-    this.authFlow = AuthFlow.DEFAULT;
-    this.samlHandler_.reset();
-    this.loaded_ = false;
   };
 
   Authenticator.prototype.constructInitialFrameUrl_ = function(data) {

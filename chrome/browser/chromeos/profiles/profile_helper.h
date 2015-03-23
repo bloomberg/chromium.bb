@@ -22,6 +22,10 @@ namespace base {
 class FilePath;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace extensions {
 class ExtensionGarbageCollectorChromeOSUnitTest;
 }
@@ -100,7 +104,10 @@ class ProfileHelper
 
   // Clears site data (cookies, history, etc) for signin profile.
   // Callback can be empty. Not thread-safe.
-  void ClearSigninProfile(const base::Closure& on_clear_callback);
+  // |webview_contents| is an optional parameter (may be nullptr) that points to
+  // the host of a webview whose storage needs to be cleared as well.
+  void ClearSigninProfile(const base::Closure& on_clear_callback,
+                          content::WebContents* webview_contents);
 
   // Returns profile of the |user| if it is created and fully initialized.
   // Otherwise, returns NULL.

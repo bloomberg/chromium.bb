@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/signin_screen_controller.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -95,7 +96,8 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
   // If this call is made after new user signs in but login screen is still
   // around that would trigger a sign in extension refresh.
   if (is_enabled && (!user_manager::UserManager::Get()->IsUserLoggedIn() ||
-                     ScreenLocker::default_screen_locker())) {
+                     ScreenLocker::default_screen_locker()) &&
+      !StartupUtils::IsWebviewSigninEnabled()) {
     ClearAndEnablePassword();
   }
 

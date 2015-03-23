@@ -693,7 +693,10 @@ void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
     ShowError(IDS_LOGIN_ERROR_WHITELIST, email);
   }
 
-  login_display_->ShowSigninUI(email);
+  if (StartupUtils::IsWebviewSigninEnabled())
+    login_display_->ShowSigninUI("");
+  else
+    login_display_->ShowSigninUI(email);
 
   if (auth_status_consumer_) {
     auth_status_consumer_->OnAuthFailure(

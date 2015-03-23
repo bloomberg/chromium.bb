@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   // The login profile is scrubbed before attempting to show the login screen.
   // Wait for the scrubbing to finish.
   base::RunLoop run_loop;
-  ProfileHelper::Get()->ClearSigninProfile(run_loop.QuitClosure());
+  ProfileHelper::Get()->ClearSigninProfile(run_loop.QuitClosure(), nullptr);
   run_loop.Run();
   base::RunLoop().RunUntilIdle();
 

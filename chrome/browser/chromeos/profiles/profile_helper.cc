@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 
+#include "base/barrier_closure.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
@@ -18,6 +19,10 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/browser/guest_view/guest_view_manager.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 
 namespace chromeos {
 
@@ -47,6 +52,38 @@ class UsernameHashMatcher {
  private:
   const std::string& username_hash;
 };
+
+bool GetWebViewPartition(std::set<content::StoragePartition*>* partition_set,
+                         content::WebContents* web_contents) {
+  extensions::WebViewGuest* view_guest =
+      extensions::WebViewGuest::FromWebContents(web_contents);
+  if (view_guest) {
+    content::StoragePartition* partition =
+        content::BrowserContext::GetStoragePartition(
+            web_contents->GetBrowserContext(), web_contents->GetSiteInstance());
+    partition_set->insert(partition);
+  }
+  return false;
+}
+
+void ClearContentsData(content::WebContents* web_contents,
+                       const base::Closure& on_clear_callback) {
+  content::BrowserContext* context = web_contents->GetBrowserContext();
+  extensions::GuestViewManager* manager =
+      extensions::GuestViewManager::FromBrowserContext(context);
+  std::set<content::StoragePartition*> partition_set;
+  manager->ForEachGuest(web_contents,
+                        base::Bind(&GetWebViewPartition, &partition_set));
+  base::Closure barrier_closure =
+      base::BarrierClosure(partition_set.size(), on_clear_callback);
+  for (const auto& partition : partition_set) {
+    partition->ClearData(
+        content::StoragePartition::REMOVE_DATA_MASK_ALL,
+        content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
+        content::StoragePartition::OriginMatcherFunction(), base::Time(),
+        base::Time::Now(), barrier_closure);
+  }
+}
 
 }  // anonymous namespace
 
@@ -197,8 +234,12 @@ void ProfileHelper::Initialize() {
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 }
 
-void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
-  on_clear_callbacks_.push_back(on_clear_callback);
+void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback,
+                                       content::WebContents* webview_contents) {
+  on_clear_callbacks_.push_back(
+      webview_contents
+          ? base::Bind(&ClearContentsData, webview_contents, on_clear_callback)
+          : on_clear_callback);
   if (signin_profile_clear_requested_)
     return;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -350,7 +391,7 @@ void ProfileHelper::OnSessionRestoreStateChanged(
         chromeos::OAuth2LoginManagerFactory::GetInstance()->
             GetForProfile(user_profile);
     login_manager->RemoveObserver(this);
-    ClearSigninProfile(base::Closure());
+    ClearSigninProfile(base::Closure(), nullptr);
   }
 }
 
