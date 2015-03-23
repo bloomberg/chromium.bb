@@ -602,10 +602,6 @@
     "dependencies": ["permission:proxy"],
     "contexts": ["blessed_extension"]
   },
-  "pushMessaging": {
-    "dependencies": ["permission:pushMessaging"],
-    "contexts": ["blessed_extension"]
-  },
   "imageWriterPrivate": {
     "dependencies": ["permission:imageWriterPrivate"],
     "extension_types": ["platform_app"],

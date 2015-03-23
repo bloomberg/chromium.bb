@@ -29,7 +29,6 @@
     "notifications",
     "pointerLock",
     "power",
-    "pushMessaging",
     "serial",
     "signedInDevices",
     {"socket": ["tcp-connect", "tcp-listen", "udp-send-to", "udp-bind"]},

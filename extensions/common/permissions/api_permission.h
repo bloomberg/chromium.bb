@@ -160,7 +160,6 @@ class APIPermission {
     kPrivacy,
     kProcesses,
     kProxy,
-    kPushMessaging,
     kImageWriterPrivate,
     kReadingListPrivate,
     kRtcPrivate,

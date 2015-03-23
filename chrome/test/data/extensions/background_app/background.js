@@ -22,18 +22,3 @@ chrome.runtime.onInstalled.addListener(function() {
 chrome.runtime.onSuspend.addListener(function() {
   console.log("Background App shutting down");
 });
-
-// Register for push messages.
-// This should be called every time the Push Messaging App starts up.
-function setupPush() {
-  chrome.pushMessaging.onMessage.addListener(messageCallback);
-
-  // Ensure that adding the listener took effect.
-  var listeners = chrome.pushMessaging.onMessage.hasListeners();
-  console.log('registered listener for push messages ' + listeners);
-}
-
-// This callback receives the pushed message from the push server.
-function messageCallback(message) {
-  console.log("push messaging callback seen");
-}

@@ -198,18 +198,6 @@
       }
     ]
   },
-  "pushMessaging": {
-    "Learn More": [
-      {
-        "link": "cloudMessagingV1",
-        "text": "Google Cloud Messaging for Chrome"
-      },
-      {
-        "link": "gcm_server",
-        "text": "API Reference for GCM service"
-      }
-    ]
-  },
   "runtime": {
     "Learn More": [
       {

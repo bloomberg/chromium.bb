@@ -65,7 +65,6 @@
       'page_capture.json',
       'permissions.json',
       'preferences_private.json',
-      'push_messaging.idl',
       'reading_list_private.json',
       'screenlock_private.idl',
       'sessions.json',

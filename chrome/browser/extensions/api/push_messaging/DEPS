@@ -1,4 +1,0 @@
-include_rules = [
-  "+components/invalidation",
-  "+google/cacheinvalidation/types.pb.h",
-]

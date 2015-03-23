@@ -808,10 +808,6 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
-  "pushMessaging": {
-    "channel": "stable",
-    "extension_types": ["extension", "platform_app"]
-  },
   "imageWriterPrivate": {
     "channel": "stable",
     "extension_types": ["platform_app"],

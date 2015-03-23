@@ -135,15 +135,7 @@
                   },
                   {
                     "title": "Client Reference",
-                    "href": "/apps/pushMessaging"
-                  },
-                  {
-                    "title": "Service Reference",
-                    "href": "/apps/gcm_server"
-                  },
-                  {
-                    "title": "Terms of Service",
-                    "href": "/apps/gcm_tos"
+                    "href": "/apps/gcm"
                   }
                 ]
               },
