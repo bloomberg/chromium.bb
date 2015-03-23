@@ -129,11 +129,7 @@ class FrontendDataTypeController : public sync_driver::DataTypeController {
 
  private:
   // Build sync components and associate models.
-  // Return value:
-  //   True - if association was successful. FinishStart should have been
-  //          invoked.
-  //   False - if association failed. StartFailed should have been invoked.
-  virtual bool Associate();
+  virtual void Associate();
 
   void AbortModelLoad();
 

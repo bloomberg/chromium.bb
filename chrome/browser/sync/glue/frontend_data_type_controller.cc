@@ -83,13 +83,9 @@ void FrontendDataTypeController::StartAssociating(
 
   start_callback_ = start_callback;
   state_ = ASSOCIATING;
-  if (!Associate()) {
-    // It's possible StartDone(..) resulted in a Stop() call, or that
-    // association failed, so we just verify that the state has moved forward.
-    DCHECK_NE(state_, ASSOCIATING);
-    return;
-  }
-  DCHECK_EQ(state_, RUNNING);
+
+  base::MessageLoop::current()->PostTask(
+    FROM_HERE, base::Bind(&FrontendDataTypeController::Associate, this));
 }
 
 void FrontendDataTypeController::Stop() {
@@ -187,14 +183,19 @@ void FrontendDataTypeController::RecordUnrecoverableError(
     error_callback_.Run();
 }
 
-bool FrontendDataTypeController::Associate() {
-  DCHECK_EQ(state_, ASSOCIATING);
+void FrontendDataTypeController::Associate() {
+  if (state_ != ASSOCIATING) {
+    // Stop() must have been called while Associate() task have been waiting.
+    DCHECK_EQ(state_, NOT_RUNNING);
+    return;
+  }
+
   syncer::SyncMergeResult local_merge_result(type());
   syncer::SyncMergeResult syncer_merge_result(type());
   CreateSyncComponents();
   if (!model_associator()->CryptoReadyIfNecessary()) {
     StartDone(NEEDS_CRYPTO, local_merge_result, syncer_merge_result);
-    return false;
+    return;
   }
 
   bool sync_has_nodes = false;
@@ -205,7 +206,7 @@ bool FrontendDataTypeController::Associate() {
                             type());
     local_merge_result.set_error(error);
     StartDone(UNRECOVERABLE_ERROR, local_merge_result, syncer_merge_result);
-    return false;
+    return;
   }
 
   // TODO(zea): Have AssociateModels fill the local and syncer merge results.
@@ -219,7 +220,7 @@ bool FrontendDataTypeController::Associate() {
   if (error.IsSet()) {
     local_merge_result.set_error(error);
     StartDone(ASSOCIATION_FAILED, local_merge_result, syncer_merge_result);
-    return false;
+    return;
   }
 
   state_ = RUNNING;
@@ -229,12 +230,6 @@ bool FrontendDataTypeController::Associate() {
   StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK,
             local_merge_result,
             syncer_merge_result);
-  // Return false if we're not in the RUNNING state (due to Stop() being called
-  // from FinishStart()).
-  // TODO(zea/atwilson): Should we maybe move the call to FinishStart() out of
-  // Associate() and into Start(), so we don't need this logic here? It seems
-  // cleaner to call FinishStart() from Start().
-  return state_ == RUNNING;
 }
 
 void FrontendDataTypeController::CleanUpState() {

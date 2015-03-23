@@ -140,6 +140,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
     frontend_dtc_->StartAssociating(
         base::Bind(&StartCallbackMock::Run,
                    base::Unretained(&start_callback_)));
+    PumpLoop();
   }
 
   void PumpLoop() { base::MessageLoop::current()->RunUntilIdle(); }
@@ -178,6 +179,17 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartFirstRun) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   Start();
   EXPECT_EQ(DataTypeController::RUNNING, frontend_dtc_->state());
+}
+
+TEST_F(SyncFrontendDataTypeControllerTest, StartStopBeforeAssociation) {
+  EXPECT_CALL(*dtc_mock_.get(), StartModels()).WillOnce(Return(true));
+  EXPECT_CALL(*dtc_mock_.get(), CleanUpState());
+  EXPECT_CALL(model_load_callback_, Run(_, _));
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&FrontendDataTypeController::Stop, frontend_dtc_));
+  Start();
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }
 
 TEST_F(SyncFrontendDataTypeControllerTest, AbortDuringStartModels) {

@@ -32,7 +32,7 @@ class FrontendDataTypeControllerMock : public FrontendDataTypeController {
 
   // FrontendDataTypeController mocks.
   MOCK_METHOD0(StartModels, bool());
-  MOCK_METHOD0(Associate, bool());
+  MOCK_METHOD0(Associate, void());
   MOCK_METHOD0(CreateSyncComponents, void());
   MOCK_METHOD2(StartFailed, void(ConfigureResult result,
                                  const syncer::SyncError& error));

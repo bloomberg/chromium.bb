@@ -96,10 +96,8 @@ void UIDataTypeController::StartAssociating(
 
   start_callback_ = start_callback;
   state_ = ASSOCIATING;
-  Associate();
-  // It's possible StartDone(..) resulted in a Stop() call, or that association
-  // failed, so we just verify that the state has moved foward.
-  DCHECK_NE(state_, ASSOCIATING);
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&UIDataTypeController::Associate, this));
 }
 
 bool UIDataTypeController::StartModels() {
@@ -110,7 +108,12 @@ bool UIDataTypeController::StartModels() {
 }
 
 void UIDataTypeController::Associate() {
-  DCHECK_EQ(state_, ASSOCIATING);
+  if (state_ != ASSOCIATING) {
+    // Stop() must have been called while Associate() task have been waiting.
+    DCHECK_EQ(state_, NOT_RUNNING);
+    return;
+  }
+
   syncer::SyncMergeResult local_merge_result(type());
   syncer::SyncMergeResult syncer_merge_result(type());
   base::WeakPtrFactory<syncer::SyncMergeResult> weak_ptr_factory(

@@ -74,6 +74,7 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
     search_engine_dtc_->StartAssociating(
         base::Bind(&sync_driver::StartCallbackMock::Run,
                    base::Unretained(&start_callback_)));
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
