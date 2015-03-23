@@ -22,7 +22,8 @@
 namespace blink {
 
 namespace {
-const char* kHistogramName = "WebCore.Scripts.Async.StartedStreaming";
+const char* kStartedStreamingHistogramName = "WebCore.Scripts.Async.StartedStreaming";
+const char* kNotStreamingReasonHistogramName = "WebCore.Scripts.Async.NotStreamingReason";
 }
 
 // For passing data between the main thread (producer) and the streamer thread
@@ -229,7 +230,7 @@ void ScriptStreamer::startStreaming(PendingScript& script, Settings* settings, S
     // sure negative cases here.
     bool startedStreaming = startStreamingInternal(script, settings, scriptState);
     if (!startedStreaming)
-        blink::Platform::current()->histogramEnumeration(kHistogramName, 0, 2);
+        blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 0, 2);
 }
 
 bool ScriptStreamer::convertEncoding(const char* encodingName, v8::ScriptCompiler::StreamedSource::Encoding* encoding)
@@ -323,7 +324,8 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         // from the decoder.
         if (!convertEncoding(decoder->encoding().name(), &m_encoding)) {
             suppressStreaming();
-            blink::Platform::current()->histogramEnumeration(kHistogramName, 0, 2);
+            blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, 4, 8);
+            blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 0, 2);
             return;
         }
         if (ScriptStreamerThread::shared()->isRunningTask()) {
@@ -332,13 +334,15 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             // because the running task can block and wait for data from the
             // network.
             suppressStreaming();
-            blink::Platform::current()->histogramEnumeration(kHistogramName, 0, 2);
+            blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, 5, 8);
+            blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 0, 2);
             return;
         }
 
         if (!m_scriptState->contextIsValid()) {
             suppressStreaming();
-            blink::Platform::current()->histogramEnumeration(kHistogramName, 0, 2);
+            blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, 3, 8);
+            blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 0, 2);
             return;
         }
 
@@ -355,7 +359,8 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             suppressStreaming();
             m_stream = 0;
             m_source.clear();
-            blink::Platform::current()->histogramEnumeration(kHistogramName, 0, 2);
+            blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, 6, 8);
+            blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 0, 2);
             return;
         }
 
@@ -365,7 +370,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         ref();
         ScriptStreamingTask* task = new ScriptStreamingTask(scriptStreamingTask.release(), this);
         ScriptStreamerThread::shared()->postTask(task);
-        blink::Platform::current()->histogramEnumeration(kHistogramName, 1, 2);
+        blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 1, 2);
     }
     if (m_stream)
         m_stream->didReceiveData(this, lengthOfBOM);
@@ -380,7 +385,8 @@ void ScriptStreamer::notifyFinished(Resource* resource)
     // be a "parsing complete" notification either, and we should not wait for
     // it.
     if (!m_haveEnoughDataForStreaming) {
-        blink::Platform::current()->histogramEnumeration(kHistogramName, 0, 2);
+        blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, 7, 8);
+        blink::Platform::current()->histogramEnumeration(kStartedStreamingHistogramName, 0, 2);
         suppressStreaming();
     }
     if (m_stream)
@@ -467,11 +473,16 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, Settings* set
 {
     ASSERT(isMainThread());
     ScriptResource* resource = script.resource();
-    if (resource->isLoaded())
+    if (resource->isLoaded()) {
+        blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, 0, 8);
         return false;
-    if (!resource->url().protocolIsInHTTPFamily())
+    }
+    if (!resource->url().protocolIsInHTTPFamily()) {
+        blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, 1, 8);
         return false;
+    }
     if (resource->resourceToRevalidate()) {
+        blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, 2, 8);
         // This happens e.g., during reloads. We're actually not going to load
         // the current Resource of the PendingScript but switch to another
         // Resource -> don't stream.
@@ -481,8 +492,10 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, Settings* set
     // to arrive: the Content-Length HTTP header is not sent for chunked
     // downloads.
 
-    if (!scriptState->contextIsValid())
+    if (!scriptState->contextIsValid()) {
+        blink::Platform::current()->histogramEnumeration(kNotStreamingReasonHistogramName, 3, 8);
         return false;
+    }
 
     // Decide what kind of cached data we should produce while streaming. By
     // default, we generate the parser cache for streamed scripts, to emulate
