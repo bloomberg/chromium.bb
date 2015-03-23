@@ -151,13 +151,24 @@ html[dir=rtl] .mv-title[style*='direction: rtl'] {
   width: 148px;
 }
 
-.mv-thumb img {
+.mv-thumb img.thumbnail {
   height: auto;
   min-height: 100%;
   width: 100%;
 }
 
-.mv-thumb.failed-img {
+.mv-thumb img.large-icon {
+  height: 48px;
+  left: 50%;
+  margin-left: -24px;
+  margin-top: -24px;
+  position: absolute;
+  top: 50%;
+  width: 48px;
+}
+
+.mv-thumb.failed-img,
+.mv-thumb.large-icon-outer {
   background-color: #fff;
   height: 94px;
   width: 148px;

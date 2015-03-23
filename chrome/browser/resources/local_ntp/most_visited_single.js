@@ -279,12 +279,23 @@ var renderTile = function(data) {
   title.style.direction = data.direction || 'ltr';
 
   var thumb = tile.querySelector('.mv-thumb');
-  if (data.thumbnailUrl) {
+  if (data.largeIconUrl || data.thumbnailUrl) {
     var img = document.createElement('img');
     img.title = data.title;
-    img.src = data.thumbnailUrl;
+    if (data.largeIconUrl) {
+      img.src = data.largeIconUrl;
+      img.classList.add('large-icon');
+    } else {
+      img.src = data.thumbnailUrl;
+      img.classList.add('thumbnail');
+    }
     loadedCounter += 1;
     img.addEventListener('load', countLoad);
+    if (data.largeIconUrl) {
+      img.addEventListener('load', function(ev) {
+        thumb.classList.add('large-icon-outer');
+      });
+    }
     img.addEventListener('error', countLoad);
     img.addEventListener('error', function(ev) {
       thumb.classList.add('failed-img');
