@@ -51,6 +51,9 @@ class QuicInMemoryCache {
    private:
     friend class QuicInMemoryCache;
 
+    void set_response_type(SpecialResponseType response_type) {
+      response_type_ = response_type;
+    }
     void set_headers(const BalsaHeaders& headers) {
       headers_.CopyFrom(headers);
     }
@@ -68,29 +71,28 @@ class QuicInMemoryCache {
   // Returns the singleton instance of the cache.
   static QuicInMemoryCache* GetInstance();
 
-  // Retrieve a response from this cache for a given request.
+  // Retrieve a response from this cache for a given host and path..
   // If no appropriate response exists, nullptr is returned.
-  // Currently, responses are selected based on request URI only.
-  const Response* GetResponse(const BalsaHeaders& request_headers) const;
+  const Response* GetResponse(base::StringPiece host,
+                              base::StringPiece path) const;
 
   // Adds a simple response to the cache.  The response headers will
-  // only contain the "content-length" header with the lenght of |body|.
-  void AddSimpleResponse(base::StringPiece method,
+  // only contain the "content-length" header with the length of |body|.
+  void AddSimpleResponse(base::StringPiece host,
                          base::StringPiece path,
-                         base::StringPiece version,
-                         base::StringPiece response_code,
+                         int response_code,
                          base::StringPiece response_detail,
                          base::StringPiece body);
 
   // Add a response to the cache.
-  void AddResponse(const BalsaHeaders& request_headers,
+  void AddResponse(base::StringPiece host,
+                   base::StringPiece path,
                    const BalsaHeaders& response_headers,
                    base::StringPiece response_body);
 
   // Simulate a special behavior at a particular path.
-  void AddSpecialResponse(base::StringPiece method,
+  void AddSpecialResponse(base::StringPiece host,
                           base::StringPiece path,
-                          base::StringPiece version,
                           SpecialResponseType response_type);
 
  private:
@@ -105,7 +107,13 @@ class QuicInMemoryCache {
 
   void Initialize();
 
-  std::string GetKey(const BalsaHeaders& response_headers) const;
+  void AddResponseImpl(base::StringPiece host,
+                       base::StringPiece path,
+                       SpecialResponseType response_type,
+                       const BalsaHeaders& response_headers,
+                       base::StringPiece response_body);
+
+  std::string GetKey(base::StringPiece host, base::StringPiece path) const;
 
   // Cached responses.
   ResponseMap responses_;

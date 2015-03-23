@@ -14,14 +14,13 @@ using base::FilePath;
 using base::StringPiece;
 using std::string;
 
-// Specifies the directory used during QuicInMemoryCache
-// construction to seed the cache. Cache directory can be
-// generated using `wget -p --save-headers <url>
-
 namespace net {
 namespace tools {
 
-std::string FLAGS_quic_in_memory_cache_dir = "";
+// Specifies the directory used during QuicInMemoryCache
+// construction to seed the cache. Cache directory can be
+// generated using `wget -p --save-headers <url>
+string FLAGS_quic_in_memory_cache_dir = "";
 
 namespace {
 
@@ -59,57 +58,41 @@ QuicInMemoryCache* QuicInMemoryCache::GetInstance() {
 }
 
 const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
-    const BalsaHeaders& request_headers) const {
-  ResponseMap::const_iterator it = responses_.find(GetKey(request_headers));
+    StringPiece host,
+    StringPiece path) const {
+  ResponseMap::const_iterator it = responses_.find(GetKey(host, path));
   if (it == responses_.end()) {
     return nullptr;
   }
   return it->second;
 }
 
-void QuicInMemoryCache::AddSimpleResponse(StringPiece method,
+void QuicInMemoryCache::AddSimpleResponse(StringPiece host,
                                           StringPiece path,
-                                          StringPiece version,
-                                          StringPiece response_code,
+                                          int response_code,
                                           StringPiece response_detail,
                                           StringPiece body) {
-  BalsaHeaders request_headers, response_headers;
-  request_headers.SetRequestFirstlineFromStringPieces(method,
-                                                      path,
-                                                      version);
-  response_headers.SetRequestFirstlineFromStringPieces(version,
-                                                       response_code,
-                                                       response_detail);
+  BalsaHeaders response_headers;
+  response_headers.SetRequestFirstlineFromStringPieces(
+      "HTTP/1.1", base::IntToString(response_code), response_detail);
   response_headers.AppendHeader("content-length",
                                 base::IntToString(body.length()));
 
-  AddResponse(request_headers, response_headers, body);
+  AddResponse(host, path, response_headers, body);
 }
 
-void QuicInMemoryCache::AddResponse(const BalsaHeaders& request_headers,
+void QuicInMemoryCache::AddResponse(StringPiece host,
+                                    StringPiece path,
                                     const BalsaHeaders& response_headers,
                                     StringPiece response_body) {
-  VLOG(1) << "Adding response for: " << GetKey(request_headers);
-  if (ContainsKey(responses_, GetKey(request_headers))) {
-    LOG(DFATAL) << "Response for given request already exists!";
-    return;
-  }
-  Response* new_response = new Response();
-  new_response->set_headers(response_headers);
-  new_response->set_body(response_body);
-  responses_[GetKey(request_headers)] = new_response;
+  AddResponseImpl(host, path, REGULAR_RESPONSE, response_headers,
+                  response_body);
 }
 
-void QuicInMemoryCache::AddSpecialResponse(StringPiece method,
+void QuicInMemoryCache::AddSpecialResponse(StringPiece host,
                                            StringPiece path,
-                                           StringPiece version,
                                            SpecialResponseType response_type) {
-  BalsaHeaders request_headers, response_headers;
-  request_headers.SetRequestFirstlineFromStringPieces(method,
-                                                      path,
-                                                      version);
-  AddResponse(request_headers, response_headers, "");
-  responses_[GetKey(request_headers)]->response_type_ = response_type;
+  AddResponseImpl(host, path, response_type, BalsaHeaders(), "");
 }
 
 QuicInMemoryCache::QuicInMemoryCache() {
@@ -135,11 +118,10 @@ void QuicInMemoryCache::Initialize() {
                                  true,
                                  base::FileEnumerator::FILES);
 
-  FilePath file = file_list.Next();
-  while (!file.empty()) {
+  for (FilePath file = file_list.Next(); !file.empty();
+       file = file_list.Next()) {
     // Need to skip files in .svn directories
-    if (file.value().find("/.svn/") != std::string::npos) {
-      file = file_list.Next();
+    if (file.value().find("/.svn/") != string::npos) {
       continue;
     }
 
@@ -193,18 +175,7 @@ void QuicInMemoryCache::Initialize() {
     if (path[path.length() - 1] == ',') {
       path.remove_suffix(1);
     }
-    // Set up request headers. Assume method is GET and protocol is HTTP/1.1.
-    request_headers.SetRequestFirstlineFromStringPieces("GET",
-                                                        path,
-                                                        "HTTP/1.1");
-    request_headers.ReplaceOrAppendHeader("host", host);
-
-    VLOG(1) << "Inserting 'http://" << GetKey(request_headers)
-            << "' into QuicInMemoryCache.";
-
-    AddResponse(request_headers, response_headers, caching_visitor.body());
-
-    file = file_list.Next();
+    AddResponse(host, path, response_headers, caching_visitor.body());
   }
 }
 
@@ -212,20 +183,27 @@ QuicInMemoryCache::~QuicInMemoryCache() {
   STLDeleteValues(&responses_);
 }
 
-string QuicInMemoryCache::GetKey(const BalsaHeaders& request_headers) const {
-  StringPiece uri = request_headers.request_uri();
-  if (uri.size() == 0) {
-    return "";
+void QuicInMemoryCache::AddResponseImpl(
+    StringPiece host,
+    StringPiece path,
+    SpecialResponseType response_type,
+    const BalsaHeaders& response_headers,
+    StringPiece response_body) {
+  string key = GetKey(host, path);
+  VLOG(1) << "Adding response for: " << key;
+  if (ContainsKey(responses_, key)) {
+    LOG(DFATAL) << "Response for '" << key << "' already exists!";
+    return;
   }
-  StringPiece host;
-  if (uri[0] == '/') {
-    host = request_headers.GetHeader("host");
-  } else if (StringPieceUtils::StartsWithIgnoreCase(uri, "https://")) {
-    uri.remove_prefix(8);
-  } else if (StringPieceUtils::StartsWithIgnoreCase(uri, "http://")) {
-    uri.remove_prefix(7);
-  }
-  return host.as_string() + uri.as_string();
+  Response* new_response = new Response();
+  new_response->set_response_type(response_type);
+  new_response->set_headers(response_headers);
+  new_response->set_body(response_body);
+  responses_[key] = new_response;
+}
+
+string QuicInMemoryCache::GetKey(StringPiece host, StringPiece path) const {
+  return host.as_string() + path.as_string();
 }
 
 }  // namespace tools

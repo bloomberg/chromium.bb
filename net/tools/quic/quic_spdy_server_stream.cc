@@ -9,6 +9,7 @@
 #include "net/spdy/spdy_framer.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/spdy_utils.h"
+#include "url/gurl.h"
 
 using base::StringPiece;
 using std::string;
@@ -90,8 +91,15 @@ void QuicSpdyServerStream::ParseRequestHeaders() {
 
 void QuicSpdyServerStream::SendResponse() {
   // Find response in cache. If not found, send error response.
+  GURL url(headers_.request_uri().as_string());
+  if (!url.is_valid()) {
+    SendErrorResponse();
+    return;
+  }
   const QuicInMemoryCache::Response* response =
-      QuicInMemoryCache::GetInstance()->GetResponse(headers_);
+      QuicInMemoryCache::GetInstance()->GetResponse(
+          url.host(),
+          url.PathForRequest());
   if (response == nullptr) {
     SendErrorResponse();
     return;

@@ -100,21 +100,19 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
   void SetUp() override {
     QuicInMemoryCache* cache = QuicInMemoryCache::GetInstance();
 
-    BalsaHeaders request_headers, response_headers;
+    BalsaHeaders response_headers;
     StringPiece body("Yum");
-    request_headers.SetRequestFirstlineFromStringPieces(
-        "GET",
-        "https://www.google.com/foo",
-        "HTTP/1.1");
     response_headers.SetRequestFirstlineFromStringPieces("HTTP/1.1",
                                                          "200",
                                                          "OK");
     response_headers.AppendHeader("content-length",
                                   base::IntToString(body.length()));
 
+    string host = "";
+    string path = "/foo";
     // Check if response already exists and matches.
     const QuicInMemoryCache::Response* cached_response =
-        cache->GetResponse(request_headers);
+        cache->GetResponse(host, path);
     if (cached_response != nullptr) {
       string cached_response_headers_str, response_headers_str;
       cached_response->headers().DumpToString(&cached_response_headers_str);
@@ -124,7 +122,7 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
       return;
     }
 
-    cache->AddResponse(request_headers, response_headers, body);
+    cache->AddResponse(host, path, response_headers, body);
   }
 
   const string& StreamBody() {

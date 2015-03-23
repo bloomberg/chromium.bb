@@ -212,10 +212,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
         3 * kInitialSessionFlowControlWindowForTest);
 
     QuicInMemoryCachePeer::ResetForTests();
-    AddToCache("GET", "https://www.google.com/foo",
-               "HTTP/1.1", "200", "OK", kFooResponseBody);
-    AddToCache("GET", "https://www.google.com/bar",
-               "HTTP/1.1", "200", "OK", kBarResponseBody);
+    AddToCache("/foo", 200, "OK", kFooResponseBody);
+    AddToCache("/bar", 200, "OK", kBarResponseBody);
   }
 
   ~EndToEndTest() override {
@@ -343,14 +341,12 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     }
   }
 
-  void AddToCache(StringPiece method,
-                  StringPiece path,
-                  StringPiece version,
-                  StringPiece response_code,
+  void AddToCache(StringPiece path,
+                  int response_code,
                   StringPiece response_detail,
                   StringPiece body) {
     QuicInMemoryCache::GetInstance()->AddSimpleResponse(
-        method, path, version, response_code, response_detail, body);
+        "www.google.com", path, response_code, response_detail, body);
   }
 
   void SetPacketLossPercentage(int32 loss) {
@@ -502,9 +498,8 @@ TEST_P(EndToEndTest, MultipleClients) {
 
 TEST_P(EndToEndTest, RequestOverMultiplePackets) {
   // Send a large enough request to guarantee fragmentation.
-  string huge_request =
-      "https://www.google.com/some/path?query=" + string(kMaxPacketSize, '.');
-  AddToCache("GET", huge_request, "HTTP/1.1", "200", "OK", kBarResponseBody);
+  string huge_request = "/some/path?query=" + string(kMaxPacketSize, '.');
+  AddToCache(huge_request, 200, "OK", kBarResponseBody);
 
   ASSERT_TRUE(Initialize());
 
@@ -514,9 +509,8 @@ TEST_P(EndToEndTest, RequestOverMultiplePackets) {
 
 TEST_P(EndToEndTest, MultiplePacketsRandomOrder) {
   // Send a large enough request to guarantee fragmentation.
-  string huge_request =
-      "https://www.google.com/some/path?query=" + string(kMaxPacketSize, '.');
-  AddToCache("GET", huge_request, "HTTP/1.1", "200", "OK", kBarResponseBody);
+  string huge_request = "/some/path?query=" + string(kMaxPacketSize, '.');
+  AddToCache(huge_request, 200, "OK", kBarResponseBody);
 
   ASSERT_TRUE(Initialize());
   SetPacketSendDelay(QuicTime::Delta::FromMilliseconds(2));
@@ -1068,7 +1062,7 @@ TEST_P(EndToEndTest, MaxStreamsUberTest) {
   GenerateBody(&large_body, 10240);
   int max_streams = 100;
 
-  AddToCache("GET", "/large_response", "HTTP/1.1", "200", "OK", large_body);;
+  AddToCache("/large_response", 200, "OK", large_body);;
 
   client_->client()->WaitForCryptoHandshakeConfirmed();
   SetPacketLossPercentage(10);
@@ -1088,7 +1082,7 @@ TEST_P(EndToEndTest, StreamCancelErrorTest) {
   string small_body;
   GenerateBody(&small_body, 256);
 
-  AddToCache("GET", "/small_response", "HTTP/1.1", "200", "OK", small_body);
+  AddToCache("/small_response", 200, "OK", small_body);
 
   client_->client()->WaitForCryptoHandshakeConfirmed();
 

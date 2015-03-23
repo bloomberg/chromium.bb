@@ -158,14 +158,12 @@ class QuicEndToEndTest : public PlatformTest {
 
   // Adds an entry to the cache used by the QUIC server to serve
   // responses.
-  void AddToCache(const StringPiece& method,
-                  const StringPiece& path,
-                  const StringPiece& version,
-                  const StringPiece& response_code,
-                  const StringPiece& response_detail,
-                  const StringPiece& body) {
+  void AddToCache(StringPiece path,
+                  int response_code,
+                  StringPiece response_detail,
+                  StringPiece body) {
     QuicInMemoryCache::GetInstance()->AddSimpleResponse(
-        method, path, version, response_code, response_detail, body);
+        "www.google.com", path, response_code, response_detail, body);
   }
 
   // Populates |request_body_| with |length_| ASCII bytes.
@@ -227,9 +225,7 @@ class QuicEndToEndTest : public PlatformTest {
 TEST_F(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
   std::string response(10 * 1024, 'x');
 
-  AddToCache("GET", request_.url.spec(),
-             "HTTP/1.1", "200", "OK",
-             response);
+  AddToCache(request_.url.PathForRequest(), 200, "OK", response);
 
   TestTransactionConsumer consumer(DEFAULT_PRIORITY,
                                    transaction_factory_.get());
@@ -245,9 +241,7 @@ TEST_F(QuicEndToEndTest, LargeGetWithNoPacketLoss) {
 TEST_F(QuicEndToEndTest, DISABLED_LargePostWithNoPacketLoss) {
   InitializePostRequest(10 * 1024 * 1024);
 
-  AddToCache("POST", request_.url.spec(),
-             "HTTP/1.1", "200", "OK",
-             kResponseBody);
+  AddToCache(request_.url.PathForRequest(), 200, "OK", kResponseBody);
 
   TestTransactionConsumer consumer(DEFAULT_PRIORITY,
                                    transaction_factory_.get());
@@ -264,9 +258,7 @@ TEST_F(QuicEndToEndTest, LargePostWithPacketLoss) {
   InitializePostRequest(1024 * 1024);
 
   const char kResponseBody[] = "some really big response body";
-  AddToCache("POST", request_.url.spec(),
-             "HTTP/1.1", "200", "OK",
-             kResponseBody);
+  AddToCache(request_.url.PathForRequest(), 200, "OK", kResponseBody);
 
   TestTransactionConsumer consumer(DEFAULT_PRIORITY,
                                    transaction_factory_.get());
@@ -282,9 +274,7 @@ TEST_F(QuicEndToEndTest, UberTest) {
   // FLAGS_fake_packet_loss_percentage = 30;
 
   const char kResponseBody[] = "some really big response body";
-  AddToCache("GET", request_.url.spec(),
-             "HTTP/1.1", "200", "OK",
-             kResponseBody);
+  AddToCache(request_.url.PathForRequest(), 200, "OK", kResponseBody);
 
   std::vector<TestTransactionConsumer*> consumers;
   size_t num_requests = 100;
