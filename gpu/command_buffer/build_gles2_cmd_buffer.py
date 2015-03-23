@@ -2680,7 +2680,7 @@ _FUNCTION_INFO = {
   },
   'MapTexSubImage2DCHROMIUM': {
     'gen_cmd': False,
-    'extension': True,
+    'extension': "CHROMIUM_sub_image",
     'chromium': True,
     'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
@@ -3086,7 +3086,7 @@ _FUNCTION_INFO = {
   },
   'UnmapTexSubImage2DCHROMIUM': {
     'gen_cmd': False,
-    'extension': True,
+    'extension': "CHROMIUM_sub_image",
     'chromium': True,
     'client_test': False,
     'pepper_interface': 'ChromiumMapSub',
@@ -3269,6 +3269,7 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'pepper_interface': 'Query',
     'not_shared': 'True',
+    'extension': "occlusion_query_EXT",
   },
   'DeleteQueriesEXT': {
     'type': 'DELn',
@@ -3277,11 +3278,13 @@ _FUNCTION_INFO = {
     'resource_types': 'Queries',
     'unit_test': False,
     'pepper_interface': 'Query',
+    'extension': "occlusion_query_EXT",
   },
   'IsQueryEXT': {
     'gen_cmd': False,
     'client_test': False,
     'pepper_interface': 'Query',
+    'extension': "occlusion_query_EXT",
   },
   'BeginQueryEXT': {
     'type': 'Manual',
@@ -3289,6 +3292,7 @@ _FUNCTION_INFO = {
     'data_transfer_methods': ['shm'],
     'gl_test_func': 'glBeginQuery',
     'pepper_interface': 'Query',
+    'extension': "occlusion_query_EXT",
   },
   'BeginTransformFeedback': {
     'unsafe': True,
@@ -3299,6 +3303,7 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glEndnQuery',
     'client_test': False,
     'pepper_interface': 'Query',
+    'extension': "occlusion_query_EXT",
   },
   'EndTransformFeedback': {
     'unsafe': True,
@@ -3308,12 +3313,14 @@ _FUNCTION_INFO = {
     'client_test': False,
     'gl_test_func': 'glGetQueryiv',
     'pepper_interface': 'Query',
+    'extension': "occlusion_query_EXT",
   },
   'GetQueryObjectuivEXT': {
     'gen_cmd': False,
     'client_test': False,
     'gl_test_func': 'glGetQueryObjectuiv',
     'pepper_interface': 'Query',
+    'extension': "occlusion_query_EXT",
   },
   'BindUniformLocationCHROMIUM': {
     'type': 'GLchar',
@@ -3400,7 +3407,7 @@ _FUNCTION_INFO = {
   'ShallowFlushCHROMIUM': {
     'impl_func': False,
     'gen_cmd': False,
-    'extension': True,
+    'extension': "CHROMIUM_miscellaneous",
     'chromium': True,
     'client_test': False,
   },
@@ -10640,6 +10647,15 @@ def main(argv):
   gen.WriteMojoGLCallVisitorForExtension(
       mojo_gles2_prefix + "_chromium_sync_point_autogen.h",
       "CHROMIUM_sync_point")
+  gen.WriteMojoGLCallVisitorForExtension(
+      mojo_gles2_prefix + "_chromium_sub_image_autogen.h",
+      "CHROMIUM_sub_image")
+  gen.WriteMojoGLCallVisitorForExtension(
+      mojo_gles2_prefix + "_chromium_miscellaneous_autogen.h",
+      "CHROMIUM_miscellaneous")
+  gen.WriteMojoGLCallVisitorForExtension(
+      mojo_gles2_prefix + "_occlusion_query_ext_autogen.h",
+      "occlusion_query_EXT")
 
   Format(gen.generated_cpp_filenames)
 
