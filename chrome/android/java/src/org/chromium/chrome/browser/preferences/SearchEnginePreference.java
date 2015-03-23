@@ -64,7 +64,8 @@ public class SearchEnginePreference extends ChromeBaseListPreference implements 
         }
 
         List<TemplateUrl> searchEngines = templateUrlService.getLocalizedSearchEngines();
-        int currentSearchEngineIndex = templateUrlService.getDefaultSearchEngineIndex();
+        int defaultSearchEngineIndex = templateUrlService.getDefaultSearchEngineIndex();
+        int valueIndex = -1;
 
         Resources resources = getContext().getResources();
         CharSequence[] entries = new CharSequence[searchEngines.size()];
@@ -73,11 +74,12 @@ public class SearchEnginePreference extends ChromeBaseListPreference implements 
             TemplateUrl templateUrl = searchEngines.get(i);
             entries[i] = getSearchEngineNameAndDomain(resources, templateUrl);
             entryValues[i] = Integer.toString(templateUrl.getIndex());
+            if (templateUrl.getIndex() == defaultSearchEngineIndex) valueIndex = i;
         }
 
         setEntries(entries);
         setEntryValues(entryValues);
-        setValueIndex(currentSearchEngineIndex);
+        if (valueIndex != -1) setValueIndex(valueIndex);
         setOnPreferenceChangeListener(this);
     }
 

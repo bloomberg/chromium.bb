@@ -124,7 +124,11 @@ public class TemplateUrlService {
     }
 
     /**
-     * Get the collection of localized search engines.
+     * Returns a list of the prepopulated search engines.
+     *
+     * Warning: TemplateUrl.getIndex() is *not* an index into this list, since this list contains
+     * only prepopulated search engines. E.g. getLocalizedSearchEngines().get(0).getIndex() could
+     * return 3.
      */
     public List<TemplateUrl> getLocalizedSearchEngines() {
         ThreadUtils.assertOnUiThread();
