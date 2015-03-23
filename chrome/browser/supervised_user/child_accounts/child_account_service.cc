@@ -92,7 +92,9 @@ bool ChildAccountService::IsChildAccountDetectionEnabled() {
   if (command_line->HasSwitch(switches::kEnableChildAccountDetection))
     return true;
 
-  return group_name == "Enabled";
+  if (group_name == "Disabled")
+    return false;
+  return true;
 }
 
 void ChildAccountService::RegisterProfilePrefs(
