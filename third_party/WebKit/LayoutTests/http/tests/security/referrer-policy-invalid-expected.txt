@@ -1,4 +1,4 @@
-CONSOLE ERROR: Failed to set referrer policy: The value 'invalid' is not one of 'no-referrer', 'origin', 'no-referrer-when-downgrade', or 'unsafe-url'. Defaulting to 'no-referrer'.
+CONSOLE ERROR: Failed to set referrer policy: The value 'invalid' is not one of 'always', 'default', 'never', 'no-referrer', 'no-referrer-when-downgrade', 'origin', 'origin-when-crossorigin', or 'unsafe-url'. Defaulting to 'no-referrer'.
 This test checks the never referrer policy when navigating from an insecure URL to another insecure URL. The test passes if the printed referrer is empty.
 
 
