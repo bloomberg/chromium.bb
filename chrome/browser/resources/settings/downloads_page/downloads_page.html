@@ -2,11 +2,9 @@
 <link rel="import" href="chrome://resources/polymer/core-label/core-label.html">
 <link rel="import" href="chrome://resources/polymer/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/paper-shadow/paper-shadow.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.
-html">
-<link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.
-html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+<link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 
 <polymer-element name="cr-settings-downloads-page">
   <template>
@@ -24,11 +22,10 @@ html">
         <cr-button id="changeDownloadsPath"
             on-click="{{selectDownloadLocation}}">Change</cr-button>
       </div>
-      <core-label horizontal layout>
-        <cr-checkbox checked="{{prefs.settings.download.prompt_for_download.value}}" for>
-        </cr-checkbox>
-        <span>Ask where to save each file before downloading</span>
-      </core-label>
+      <cr-settings-checkbox
+          pref="{{prefs.settings.download.prompt_for_download}}"
+          label="Ask where to save each file before downloading">
+      </cr-settings-checkbox>
     </paper-shadow>
   </template>
   <script src="downloads_page.js"></script>

@@ -21,6 +21,15 @@
       <structure name="IDR_SETTINGS_A11Y_PAGE_CSS"
                  file="a11y_page/a11y_page.css"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CHECKBOX_HTML"
+                 file="checkbox/checkbox.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CHECKBOX_JS"
+                 file="checkbox/checkbox.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CHECKBOX_CSS"
+                 file="checkbox/checkbox.css"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_DRAWER_CSS"
                  file="settings_drawer/settings_drawer.css"
                  type="chrome_html" />

@@ -2,20 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/**
- * @fileoverview
- * Common styles for Settings pages.
- */
-:host > paper-shadow {
-  -webkit-padding-start: 80px;
-  background-color: white;
-  padding-bottom: 40px;
-  padding-top: 40px;
-}
-
-cr-settings-page-header {
-  margin-bottom: 30px;
-  min-height: 24px;
+#checkbox {
+  -webkit-margin-end: 10px;
 }
 
 core-label {
@@ -25,3 +13,7 @@ core-label {
   margin-top: 10px;
 }
 
+.sub-label {
+  -webkit-margin-start: 10px;
+  color: rgba(0, 0, 0, .5);
+}
