@@ -93,6 +93,11 @@ void ReadableStream::readInternalPostAction()
     callPullIfNeeded();
 }
 
+ScriptPromise ReadableStream::cancel(ScriptState* scriptState)
+{
+    return cancel(scriptState, ScriptValue(scriptState, v8::Undefined(scriptState->isolate())));
+}
+
 ScriptPromise ReadableStream::cancel(ScriptState* scriptState, ScriptValue reason)
 {
     if (m_reader)

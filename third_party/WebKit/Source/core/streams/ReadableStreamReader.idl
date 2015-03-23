@@ -13,6 +13,6 @@
     [CallWith=ScriptState] readonly attribute Promise<void> closed;
     [CallWith=ScriptState] Promise<any> read();
 
-    [CallWith=ScriptState] Promise<void> cancel(any reason);
+    [CallWith=ScriptState] Promise<void> cancel(optional any reason);
     [RaisesException] void releaseLock();
 };

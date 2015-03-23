@@ -40,6 +40,11 @@ bool ReadableStreamReader::isActive() const
     return m_stream->isLockedTo(this);
 }
 
+ScriptPromise ReadableStreamReader::cancel(ScriptState* scriptState)
+{
+    return cancel(scriptState, ScriptValue(scriptState, v8::Undefined(scriptState->isolate())));
+}
+
 ScriptPromise ReadableStreamReader::cancel(ScriptState* scriptState, ScriptValue reason)
 {
     if (isActive())

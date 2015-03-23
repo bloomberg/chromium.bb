@@ -48,6 +48,7 @@ public:
     DOMException* storedException() { return m_exception.get(); }
 
     virtual ScriptPromise read(ScriptState*) = 0;
+    ScriptPromise cancel(ScriptState*);
     ScriptPromise cancel(ScriptState*, ScriptValue reason);
     ScriptPromise cancelInternal(ScriptState*, ScriptValue reason);
 

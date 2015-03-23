@@ -9,5 +9,5 @@
     ActiveDOMObject,
 ] interface ReadableStream {
     [RaisesException] ReadableStreamReader getReader();
-    [CallWith=ScriptState] Promise<void> cancel(any reason);
+    [CallWith=ScriptState] Promise<void> cancel(optional any reason);
 };

@@ -32,6 +32,7 @@ public:
 
     ScriptPromise closed(ScriptState*);
     bool isActive() const;
+    ScriptPromise cancel(ScriptState*);
     ScriptPromise cancel(ScriptState*, ScriptValue reason);
     ScriptPromise read(ScriptState*);
     void releaseLock(ExceptionState&);
