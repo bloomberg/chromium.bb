@@ -11,10 +11,10 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "sync/api/syncable_service.h"
 
 namespace base {
@@ -26,8 +26,10 @@ class PrefRegistrySyncable;
 }
 
 class PrefService;
+class Profile;
 
 class SupervisedUserSyncService : public KeyedService,
+                                  public SigninManagerBase::Observer,
                                   public syncer::SyncableService {
  public:
   // For use with GetSupervisedUsersAsync() below.
@@ -126,9 +128,11 @@ class SupervisedUserSyncService : public KeyedService,
 
   // Use |SupervisedUserSyncServiceFactory::GetForProfile(...)| to get an
   // instance of this service.
-  explicit SupervisedUserSyncService(PrefService* prefs);
+  explicit SupervisedUserSyncService(Profile* profile);
 
-  void OnLastSignedInUsernameChange();
+  // SigninManagerBase::Observer implementation.
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   scoped_ptr<base::DictionaryValue> CreateDictionary(
       const std::string& name,
@@ -151,8 +155,8 @@ class SupervisedUserSyncService : public KeyedService,
 
   void DispatchCallbacks();
 
+  Profile* profile_;
   PrefService* prefs_;
-  PrefChangeRegistrar pref_change_registrar_;
 
   scoped_ptr<syncer::SyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncErrorFactory> error_handler_;

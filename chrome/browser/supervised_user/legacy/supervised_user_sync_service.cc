@@ -12,9 +12,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"
@@ -123,13 +126,9 @@ const char SupervisedUserSyncService::kPasswordEncryptionKey[] =
     "passwordEncryptionKey";
 const int SupervisedUserSyncService::kNoAvatar = -100;
 
-SupervisedUserSyncService::SupervisedUserSyncService(PrefService* prefs)
-    : prefs_(prefs) {
-  pref_change_registrar_.Init(prefs_);
-  pref_change_registrar_.Add(
-      prefs::kGoogleServicesLastUsername,
-      base::Bind(&SupervisedUserSyncService::OnLastSignedInUsernameChange,
-                 base::Unretained(this)));
+SupervisedUserSyncService::SupervisedUserSyncService(Profile* profile)
+    : profile_(profile), prefs_(profile->GetPrefs()) {
+  SigninManagerFactory::GetForProfile(profile_)->AddObserver(this);
 }
 
 SupervisedUserSyncService::~SupervisedUserSyncService() {
@@ -399,6 +398,7 @@ void SupervisedUserSyncService::GetSupervisedUsersAsync(
 
 void SupervisedUserSyncService::Shutdown() {
   NotifySupervisedUsersSyncingStopped();
+  SigninManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
 SyncMergeResult SupervisedUserSyncService::MergeDataAndStartSyncing(
@@ -541,11 +541,13 @@ SyncError SupervisedUserSyncService::ProcessSyncChanges(
   return error;
 }
 
-void SupervisedUserSyncService::OnLastSignedInUsernameChange() {
+void SupervisedUserSyncService::GoogleSignedOut(
+    const std::string& account_id,
+    const std::string& username) {
   DCHECK(!sync_processor_);
 
-  // If the last signed in user changes, we clear all data, to avoid supervised
-  // users from one custodian appearing in another one's profile.
+  // Clear all data on signout, to avoid supervised users from one custodian
+  // appearing in another one's profile.
   prefs_->ClearPref(prefs::kSupervisedUsers);
 }
 
