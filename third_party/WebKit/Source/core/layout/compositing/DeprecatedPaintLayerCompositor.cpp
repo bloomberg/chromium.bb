@@ -894,7 +894,7 @@ void DeprecatedPaintLayerCompositor::updateOverflowControlsLayers()
     // On Mac, main frame scrollbars should always be stuck to the sides of the screen (in overscroll and in pinch-zoom), so
     // make the parent for the scrollbars be the viewport container layer.
 #if OS(MACOSX)
-    if (m_layoutView.frame()->isMainFrame() && m_layoutView.frame()->settings()->pinchVirtualViewportEnabled()) {
+    if (m_layoutView.frame()->isMainFrame()) {
         PinchViewport& pinchViewport = m_layoutView.frameView()->page()->frameHost().pinchViewport();
         controlsParent = pinchViewport.containerLayer();
     }

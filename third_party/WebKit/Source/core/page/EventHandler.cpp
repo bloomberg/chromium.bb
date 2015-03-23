@@ -2584,7 +2584,7 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
     }
 
     // If this is the main frame and it didn't scroll, propagate up to the pinch viewport.
-    if (!m_frame->settings()->pinchVirtualViewportEnabled() || !m_frame->isMainFrame())
+    if (!m_frame->isMainFrame())
         return consumed;
 
     if (scrollAreaOnBothAxes(delta, m_frame->host()->pinchViewport())) {

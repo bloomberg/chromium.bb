@@ -156,7 +156,6 @@ public:
         settings->setJavaScriptEnabled(true);
         settings->setAcceleratedCompositingEnabled(true);
         settings->setPreferCompositingToLCDTextEnabled(true);
-        settings->setPinchVirtualViewportEnabled(true);
     }
 
     static void configureAndroidSettings(WebSettings* settings)

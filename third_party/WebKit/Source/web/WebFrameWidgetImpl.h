@@ -84,12 +84,6 @@ public:
     void setCursorVisibilityState(bool isVisible) override;
     bool hasTouchEventHandlersAt(const WebPoint&) override;
 
-    // FIXME(bokan): Old pinch path only - This should be removed once old pinch
-    // is removed.
-    void applyViewportDeltas(
-        const WebSize& scrollDelta,
-        float pageScaleDelta,
-        float topControlsDelta) override;
     void applyViewportDeltas(
         const WebFloatSize& pinchViewportDelta,
         const WebFloatSize& mainFrameDelta,

@@ -231,7 +231,7 @@ public:
     // Scales a page by a factor of scaleFactor and then sets a scroll position to (x, y).
     // setPageScaleFactor() magnifies and shrinks a page without affecting layout.
     // On the other hand, zooming affects layout of the page.
-    virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) = 0;
+    virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) { setPageScaleFactor(scaleFactor); }
 
     // TODO: Reevaluate if this is needed once all users are converted to using the
     // virtual viewport pinch model.

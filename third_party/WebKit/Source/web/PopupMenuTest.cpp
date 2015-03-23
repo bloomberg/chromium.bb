@@ -187,11 +187,6 @@ private:
     RefPtr<TestWebPopupMenuImpl> m_webPopupMenu;
 };
 
-static void configureSettings(WebSettings* settings)
-{
-    settings->setPinchVirtualViewportEnabled(true);
-}
-
 class SelectPopupMenuTest : public testing::Test {
 public:
     SelectPopupMenuTest()
@@ -202,7 +197,7 @@ public:
 protected:
     virtual void SetUp()
     {
-        m_helper.initialize(false, 0, &m_webviewClient, configureSettings);
+        m_helper.initialize(false, 0, &m_webviewClient);
         m_popupMenu = adoptRefWillBeNoop(new PopupMenuChromium(*mainFrame()->frame(), &m_popupMenuClient));
     }
 

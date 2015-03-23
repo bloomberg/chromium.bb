@@ -102,10 +102,7 @@ void InspectorEmulationAgent::viewportChanged()
     FrameHost& host = m_webViewImpl->page()->frameHost();
     IntSize contentsSize = view->contentsSize();
     FloatPoint scrollOffset;
-    if (host.settings().pinchVirtualViewportEnabled())
-        scrollOffset = host.pinchViewport().visibleRectInDocument().location();
-    else
-        scrollOffset = view->visibleContentRect().location();
+    scrollOffset = host.pinchViewport().visibleRectInDocument().location();
 
     RefPtr<TypeBuilder::Emulation::Viewport> viewport = TypeBuilder::Emulation::Viewport::create()
         .setScrollX(scrollOffset.x())

@@ -84,13 +84,19 @@ public:
         return m_innerViewportScrollLayer.get();
     }
 
-    // Sets the location of the inner viewport relative to the outer viewport. The
+    // Sets the location of the pinch viewport relative to the outer viewport. The
     // coordinates are in partial CSS pixels.
     void setLocation(const FloatPoint&);
     // FIXME: This should be called moveBy
     void move(const FloatPoint&);
     void move(const FloatSize&);
     FloatPoint location() const { return m_offset; }
+
+    // Sets the location of the pinch viewport relative to the document. This
+    // will attempt to scroll the root FrameView such that the pinch viewport
+    // is at the given location. It will then scroll the pinch viewport if
+    // scrolling only the root FrameView couldn't reach the location.
+    void setLocationInDocument(const DoublePoint&);
 
     // Sets the size of the inner viewport when unscaled in CSS pixels.
     void setSize(const IntSize&);

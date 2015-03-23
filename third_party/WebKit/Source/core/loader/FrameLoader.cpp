@@ -189,11 +189,7 @@ void FrameLoader::saveScrollState()
         return;
 
     m_currentItem->setScrollPoint(m_frame->view()->scrollPosition());
-
-    if (m_frame->settings()->pinchVirtualViewportEnabled())
-        m_currentItem->setPinchViewportScrollPoint(m_frame->host()->pinchViewport().visibleRect().location());
-    else
-        m_currentItem->setPinchViewportScrollPoint(FloatPoint(-1, -1));
+    m_currentItem->setPinchViewportScrollPoint(m_frame->host()->pinchViewport().visibleRect().location());
 
     if (m_frame->isMainFrame())
         m_currentItem->setPageScaleFactor(m_frame->page()->pageScaleFactor());
@@ -1013,8 +1009,7 @@ void FrameLoader::restoreScrollPositionAndViewState()
     // page height increases, 3. ignore clamp detection after load completes
     // because that may be because the page will never reach its previous
     // height.
-    float mainFrameScale = m_frame->settings()->pinchVirtualViewportEnabled() ? 1 : m_currentItem->pageScaleFactor();
-    bool canRestoreWithoutClamping = view->clampOffsetAtScale(m_currentItem->scrollPoint(), mainFrameScale) == m_currentItem->scrollPoint();
+    bool canRestoreWithoutClamping = view->clampOffsetAtScale(m_currentItem->scrollPoint(), 1) == m_currentItem->scrollPoint();
     bool canRestoreWithoutAnnoyingUser = !view->wasScrolledByUser() && (canRestoreWithoutClamping || m_frame->document()->loadEventFinished());
     if (!canRestoreWithoutAnnoyingUser)
         return;
@@ -1025,17 +1020,13 @@ void FrameLoader::restoreScrollPositionAndViewState()
 
         m_frame->page()->setPageScaleFactor(m_currentItem->pageScaleFactor(), frameScrollOffset);
 
-        if (m_frame->settings()->pinchVirtualViewportEnabled()) {
-            // If the pinch viewport's offset is (-1, -1) it means the history item
-            // is an old version of HistoryItem so distribute the scroll between
-            // the main frame and the pinch viewport as best as we can.
-            // FIXME(bokan): This legacy distribution can be removed once the virtual viewport
-            // pinch path is enabled on all platforms for at least one release.
-            if (pinchViewportOffset.x() == -1 && pinchViewportOffset.y() == -1)
-                pinchViewportOffset = FloatPoint(frameScrollOffset - view->scrollPosition());
+        // If the pinch viewport's offset is (-1, -1) it means the history item
+        // is an old version of HistoryItem so distribute the scroll between
+        // the main frame and the pinch viewport as best as we can.
+        if (pinchViewportOffset.x() == -1 && pinchViewportOffset.y() == -1)
+            pinchViewportOffset = FloatPoint(frameScrollOffset - view->scrollPosition());
 
-            m_frame->host()->pinchViewport().setLocation(pinchViewportOffset);
-        }
+        m_frame->host()->pinchViewport().setLocation(pinchViewportOffset);
     } else {
         view->setScrollPositionNonProgrammatically(m_currentItem->scrollPoint());
     }

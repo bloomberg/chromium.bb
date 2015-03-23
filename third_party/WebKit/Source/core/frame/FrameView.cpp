@@ -417,9 +417,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
 
     viewportConstrainedVisibleContentSizeChanged(newRect.width() != oldRect.width(), newRect.height() != oldRect.height());
 
-    if (oldRect.size() != newRect.size()
-        && m_frame->isMainFrame()
-        && m_frame->settings()->pinchVirtualViewportEnabled())
+    if (oldRect.size() != newRect.size() && m_frame->isMainFrame())
         page()->frameHost().pinchViewport().mainFrameDidChangeSize();
 }
 
@@ -1298,16 +1296,6 @@ LayoutRect FrameView::viewportConstrainedVisibleContentRect() const
 void FrameView::viewportConstrainedVisibleContentSizeChanged(bool widthChanged, bool heightChanged)
 {
     if (!hasViewportConstrainedObjects())
-        return;
-
-    // If viewport is not enabled, frameRect change will cause layout size change and then layout.
-    // Otherwise, viewport constrained objects need their layout flags set separately to ensure
-    // they are positioned correctly. In the virtual-viewport pinch mode frame rect changes wont
-    // necessarily cause a layout size change so only take this early-out if we're in old-style
-    // pinch.
-    if (m_frame->settings()
-        && !m_frame->settings()->viewportEnabled()
-        && !m_frame->settings()->pinchVirtualViewportEnabled())
         return;
 
     for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
@@ -2289,9 +2277,7 @@ IntSize FrameView::inputEventsOffsetForEmulation() const
 
 float FrameView::inputEventsScaleFactor() const
 {
-    float pageScale = m_frame->settings()->pinchVirtualViewportEnabled()
-        ? m_frame->page()->frameHost().pinchViewport().scale()
-        : visibleContentScaleFactor();
+    float pageScale = m_frame->page()->frameHost().pinchViewport().scale();
     return pageScale * m_inputEventsScaleFactorForEmulation;
 }
 
@@ -2979,9 +2965,6 @@ bool FrameView::isFlippedDocument() const
 
 bool FrameView::scrollbarsDisabled() const
 {
-    if (!m_frame->settings() || !m_frame->settings()->pinchVirtualViewportEnabled())
-        return false;
-
     // FIXME: This decision should be made based on whether or not to use
     // viewport scrollbars for the main frame. This is implicitly just Android,
     // but should be made explicit.
@@ -3195,9 +3178,7 @@ IntRect FrameView::visibleContentRect(IncludeScrollbarsInRect scollbarInclusion)
 
 IntRect FrameView::visualViewportRect() const
 {
-    if (!m_frame->isMainFrame()
-        || !m_frame->settings()
-        || !m_frame->settings()->pinchVirtualViewportEnabled())
+    if (!m_frame->isMainFrame())
         return visibleContentRect();
 
     PinchViewport& pinchViewport = m_frame->page()->frameHost().pinchViewport();

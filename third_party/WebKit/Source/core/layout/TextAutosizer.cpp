@@ -562,9 +562,7 @@ IntSize TextAutosizer::windowSize() const
 {
     Page * page = m_document->page();
     ASSERT(page);
-    return page->settings().pinchVirtualViewportEnabled() ?
-        page->frameHost().pinchViewport().size() :
-        page->deprecatedLocalMainFrame()->view()->unscaledVisibleContentSize(IncludeScrollbars);
+    return page->frameHost().pinchViewport().size();
 }
 
 void TextAutosizer::resetMultipliers()

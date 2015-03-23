@@ -106,14 +106,9 @@ void LayoutFullScreen::updateStyle()
     fullscreenStyle->setPosition(FixedPosition);
     fullscreenStyle->setLeft(Length(0, blink::Fixed));
     fullscreenStyle->setTop(Length(0, blink::Fixed));
-    if (document().page()->settings().pinchVirtualViewportEnabled()) {
-        IntSize viewportSize = document().page()->frameHost().pinchViewport().size();
-        fullscreenStyle->setWidth(Length(viewportSize.width(), blink::Fixed));
-        fullscreenStyle->setHeight(Length(viewportSize.height(), blink::Fixed));
-    } else {
-        fullscreenStyle->setWidth(Length(100.0, Percent));
-        fullscreenStyle->setHeight(Length(100.0, Percent));
-    }
+    IntSize viewportSize = document().page()->frameHost().pinchViewport().size();
+    fullscreenStyle->setWidth(Length(viewportSize.width(), blink::Fixed));
+    fullscreenStyle->setHeight(Length(viewportSize.height(), blink::Fixed));
 
     fullscreenStyle->setBackgroundColor(StyleColor(Color::black));
 

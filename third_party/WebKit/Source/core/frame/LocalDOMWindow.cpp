@@ -1049,7 +1049,7 @@ int LocalDOMWindow::innerHeight() const
             toLocalFrame(parent)->document()->updateLayoutIgnorePendingStylesheets();
     }
 
-    FloatSize viewportSize = host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame()
+    FloatSize viewportSize = frame()->isMainFrame()
         ? host->pinchViewport().visibleRect().size()
         : view->visibleContentRect(IncludeScrollbars).size();
 
@@ -1075,7 +1075,7 @@ int LocalDOMWindow::innerWidth() const
             toLocalFrame(parent)->document()->updateLayoutIgnorePendingStylesheets();
     }
 
-    FloatSize viewportSize = host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame()
+    FloatSize viewportSize = frame()->isMainFrame()
         ? host->pinchViewport().visibleRect().size()
         : view->visibleContentRect(IncludeScrollbars).size();
 
@@ -1127,7 +1127,7 @@ double LocalDOMWindow::scrollX() const
 
     double viewportX = view->scrollableArea()->scrollPositionDouble().x();
 
-    if (host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame())
+    if (frame()->isMainFrame())
         viewportX += host->pinchViewport().location().x();
 
     return adjustScrollForAbsoluteZoom(viewportX, frame()->pageZoomFactor());
@@ -1150,7 +1150,7 @@ double LocalDOMWindow::scrollY() const
 
     double viewportY = view->scrollableArea()->scrollPositionDouble().y();
 
-    if (host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame())
+    if (frame()->isMainFrame())
         viewportY += host->pinchViewport().location().y();
 
     return adjustScrollForAbsoluteZoom(viewportY, frame()->pageZoomFactor());
@@ -1262,7 +1262,7 @@ static void scrollViewportTo(LocalFrame* frame, DoublePoint offset, ScrollBehavi
 
     view->scrollableArea()->setScrollPosition(offset, scrollBehavior);
 
-    if (host->settings().pinchVirtualViewportEnabled() && frame->isMainFrame()) {
+    if (frame->isMainFrame()) {
         PinchViewport& pinchViewport = frame->host()->pinchViewport();
         DoubleSize excessDelta = offset - DoublePoint(pinchViewport.visibleRectInDocument().location());
         pinchViewport.move(FloatPoint(excessDelta.width(), excessDelta.height()));
@@ -1287,7 +1287,7 @@ void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior)
     if (std::isnan(x) || std::isnan(y))
         return;
 
-    DoublePoint currentOffset = host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame()
+    DoublePoint currentOffset = frame()->isMainFrame()
         ? DoublePoint(host->pinchViewport().visibleRectInDocument().location())
         : view->scrollableArea()->scrollPositionDouble();
 
@@ -1340,7 +1340,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
     double scaledX = 0.0;
     double scaledY = 0.0;
 
-    DoublePoint currentOffset = host->settings().pinchVirtualViewportEnabled() && frame()->isMainFrame()
+    DoublePoint currentOffset = frame()->isMainFrame()
         ? DoublePoint(host->pinchViewport().visibleRectInDocument().location())
         : view->scrollableArea()->scrollPositionDouble();
     scaledX = currentOffset.x();

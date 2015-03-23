@@ -80,7 +80,6 @@ public:
         settings->setJavaScriptEnabled(true);
         settings->setAcceleratedCompositingEnabled(true);
         settings->setPreferCompositingToLCDTextEnabled(true);
-        settings->setPinchVirtualViewportEnabled(true);
         // Android settings
         settings->setViewportEnabled(true);
         settings->setViewportMetaEnabled(true);

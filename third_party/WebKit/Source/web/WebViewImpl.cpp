@@ -949,11 +949,13 @@ bool WebViewImpl::endActiveFlingAnimation()
 
 bool WebViewImpl::startPageScaleAnimation(const IntPoint& targetPosition, bool useAnchor, float newScale, double durationInSeconds)
 {
+    PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
     WebPoint clampedPoint = targetPosition;
     if (!useAnchor) {
-        clampedPoint = clampOffsetAtScale(targetPosition, newScale);
+        clampedPoint = pinchViewport.clampDocumentOffsetAtScale(targetPosition, newScale);
         if (!durationInSeconds) {
-            setPageScaleFactor(newScale, clampedPoint);
+            setPageScaleFactor(newScale);
+            pinchViewport.setLocationInDocument(DoublePoint(clampedPoint.x, clampedPoint.y));
             return false;
         }
     }
@@ -1289,7 +1291,7 @@ void WebViewImpl::computeScaleAndScrollForBlockRect(const WebPoint& hitPointInRo
 
     scale = clampPageScaleFactorToLimits(scale);
     scroll = mainFrameImpl()->frameView()->rootFrameToContents(scroll);
-    scroll = clampOffsetAtScale(scroll, scale);
+    scroll = page()->frameHost().pinchViewport().clampDocumentOffsetAtScale(scroll, scale);
 }
 
 static Node* findCursorDefiningAncestor(Node* node, LocalFrame* frame)
@@ -1761,9 +1763,6 @@ WebSize WebViewImpl::size()
 
 void WebViewImpl::resizePinchViewport(const WebSize& newSize)
 {
-    if (!pinchVirtualViewportEnabled())
-        return;
-
     page()->frameHost().pinchViewport().setSize(newSize);
     page()->frameHost().pinchViewport().clampToBoundaries();
 }
@@ -1775,13 +1774,7 @@ void WebViewImpl::performResize()
     updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
     updateMainFrameLayoutSize();
 
-    // If the virtual viewport pinch mode is enabled, the main frame will be resized
-    // after layout so it can be sized to the contentsSize.
-    if (!pinchVirtualViewportEnabled() && mainFrameImpl()->frameView())
-        mainFrameImpl()->frameView()->resize(m_size);
-
-    if (pinchVirtualViewportEnabled())
-        page()->frameHost().pinchViewport().setSize(m_size);
+    page()->frameHost().pinchViewport().setSize(m_size);
 
     if (mainFrameImpl()->frameView()) {
         if (!mainFrameImpl()->frameView()->needsLayout())
@@ -1830,28 +1823,21 @@ void WebViewImpl::didUpdateTopControls()
 
     float topControlsViewportAdjustment = topControls().layoutHeight() - topControls().contentOffset();
 
-    if (!pinchVirtualViewportEnabled()) {
-        // The viewport bounds were adjusted on the compositor by this much due to top controls. Tell
-        // the FrameView about it so it can make correct scroll offset clamping decisions during compositor
-        // commits.
-        view->setTopControlsViewportAdjustment(topControlsViewportAdjustment);
-    } else {
-        PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
+    PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
 
-        if (pinchViewport.visibleRect().isEmpty())
-            return;
+    if (pinchViewport.visibleRect().isEmpty())
+        return;
 
-        pinchViewport.setTopControlsAdjustment(topControlsViewportAdjustment);
+    pinchViewport.setTopControlsAdjustment(topControlsViewportAdjustment);
 
-        // On ChromeOS the pinch viewport can change size independent of the layout viewport due to the
-        // on screen keyboard so we should only set the FrameView adjustment on Android.
-        if (settings() && settings()->mainFrameResizesAreOrientationChanges()) {
-            // Shrink the FrameView by the amount that will maintain the aspect-ratio with the PinchViewport.
-            float aspectRatio = pinchViewport.visibleRect().width() / pinchViewport.visibleRect().height();
-            float newHeight = view->unscaledVisibleContentSize(ExcludeScrollbars).width() / aspectRatio;
-            float adjustment = newHeight - view->unscaledVisibleContentSize(ExcludeScrollbars).height();
-            view->setTopControlsViewportAdjustment(adjustment);
-        }
+    // On ChromeOS the pinch viewport can change size independent of the layout viewport due to the
+    // on screen keyboard so we should only set the FrameView adjustment on Android.
+    if (settings() && settings()->mainFrameResizesAreOrientationChanges()) {
+        // Shrink the FrameView by the amount that will maintain the aspect-ratio with the PinchViewport.
+        float aspectRatio = pinchViewport.visibleRect().width() / pinchViewport.visibleRect().height();
+        float newHeight = view->unscaledVisibleContentSize(ExcludeScrollbars).width() / aspectRatio;
+        float adjustment = newHeight - view->unscaledVisibleContentSize(ExcludeScrollbars).height();
+        view->setTopControlsViewportAdjustment(adjustment);
     }
 }
 
@@ -1905,20 +1891,6 @@ void WebViewImpl::resize(const WebSize& newSize)
     viewportAnchor->restoreToAnchor();
 
     sendResizeEventAndRepaint();
-}
-
-IntRect WebViewImpl::visibleRectInDocument() const
-{
-    if (pinchVirtualViewportEnabled()) {
-        // Inner viewport in the document coordinates
-        return enclosedIntRect(page()->frameHost().pinchViewport().visibleRectInDocument());
-    }
-
-    // Outer viewport in the document coordinates
-    if (page()->mainFrame()->isLocalFrame())
-        return page()->deprecatedLocalMainFrame()->view()->visibleContentRect();
-
-    return IntRect();
 }
 
 void WebViewImpl::willEndLiveResize()
@@ -2228,8 +2200,7 @@ bool WebViewImpl::handleInputEvent(const WebInputEvent& inputEvent)
         if (handleSyntheticWheelFromTouchpadPinchEvent(pinchEvent))
             return true;
 
-        if (pinchVirtualViewportEnabled()
-            && page()->frameHost().pinchViewport().magnifyScaleAroundAnchor(pinchEvent.data.pinchUpdate.scale, FloatPoint(pinchEvent.x, pinchEvent.y)))
+        if (page()->frameHost().pinchViewport().magnifyScaleAroundAnchor(pinchEvent.data.pinchUpdate.scale, FloatPoint(pinchEvent.x, pinchEvent.y)))
             return true;
     }
 
@@ -3130,9 +3101,6 @@ float WebViewImpl::pageScaleFactor() const
     if (!page())
         return 1;
 
-    if (!pinchVirtualViewportEnabled())
-        return page()->pageScaleFactor();
-
     return page()->frameHost().pinchViewport().scale();
 }
 
@@ -3141,41 +3109,15 @@ float WebViewImpl::clampPageScaleFactorToLimits(float scaleFactor) const
     return m_pageScaleConstraintsSet.finalConstraints().clampToConstraints(scaleFactor);
 }
 
-IntPoint WebViewImpl::clampOffsetAtScale(const IntPoint& offset, float scale)
-{
-    FrameView* view = mainFrameImpl()->frameView();
-    if (!view)
-        return offset;
-
-    if (!pinchVirtualViewportEnabled())
-        return view->clampOffsetAtScale(offset, scale);
-
-    return page()->frameHost().pinchViewport().clampDocumentOffsetAtScale(offset, scale);
-}
-
-bool WebViewImpl::pinchVirtualViewportEnabled() const
-{
-    ASSERT(page());
-    return page()->settings().pinchVirtualViewportEnabled();
-}
-
 void WebViewImpl::setPinchViewportOffset(const WebFloatPoint& offset)
 {
     ASSERT(page());
-
-    if (!pinchVirtualViewportEnabled())
-        return;
-
     page()->frameHost().pinchViewport().setLocation(offset);
 }
 
 WebFloatPoint WebViewImpl::pinchViewportOffset() const
 {
     ASSERT(page());
-
-    if (!pinchVirtualViewportEnabled())
-        return WebFloatPoint();
-
     return page()->frameHost().pinchViewport().visibleRect().location();
 }
 
@@ -3183,12 +3125,6 @@ void WebViewImpl::scrollAndRescaleViewports(float scaleFactor,
     const IntPoint& mainFrameOrigin,
     const FloatPoint& pinchViewportOrigin)
 {
-    // Old way
-    if (!pinchVirtualViewportEnabled()) {
-        setPageScaleFactor(scaleFactor, mainFrameOrigin);
-        return;
-    }
-
     if (!page())
         return;
 
@@ -3211,7 +3147,6 @@ void WebViewImpl::scrollAndRescaleViewports(float scaleFactor,
 
 void WebViewImpl::setPageScaleFactorAndLocation(float scaleFactor, const FloatPoint& location)
 {
-    ASSERT(pinchVirtualViewportEnabled());
     ASSERT(page());
 
     page()->frameHost().pinchViewport().setScaleAndLocation(
@@ -3227,37 +3162,12 @@ void WebViewImpl::setPageScaleFactor(float scaleFactor)
     if (scaleFactor == pageScaleFactor())
         return;
 
-    // FIXME(bokan): Old-style pinch path. Remove when we're migrated to
-    // virtual viewport pinch.
-    if (!pinchVirtualViewportEnabled()) {
-        IntPoint scrollOffset(mainFrame()->scrollOffset().width, mainFrame()->scrollOffset().height);
-        setPageScaleFactor(scaleFactor, scrollOffset);
-        return;
-    }
-
     page()->frameHost().pinchViewport().setScale(scaleFactor);
 }
 
 void WebViewImpl::setMainFrameScrollOffset(const WebPoint& origin)
 {
     updateMainFrameScrollPosition(DoublePoint(origin.x, origin.y), false);
-}
-
-void WebViewImpl::setPageScaleFactor(float scaleFactor, const WebPoint& origin)
-{
-    if (!page())
-        return;
-
-    IntPoint newScrollOffset = origin;
-    scaleFactor = clampPageScaleFactorToLimits(scaleFactor);
-    newScrollOffset = clampOffsetAtScale(newScrollOffset, scaleFactor);
-
-    if (pinchVirtualViewportEnabled())
-        setPageScaleFactor(scaleFactor);
-        // Note, we don't set the offset in the new path. This method is going
-        // away for the new pinch model so that's ok.
-    else
-        page()->setPageScaleFactor(scaleFactor, newScrollOffset);
 }
 
 float WebViewImpl::deviceScaleFactor() const
@@ -3376,9 +3286,6 @@ void WebViewImpl::setIgnoreViewportTagScaleLimits(bool ignore)
 
 IntSize WebViewImpl::mainFrameSize()
 {
-    if (!pinchVirtualViewportEnabled())
-        return m_size;
-
     return m_pageScaleConstraintsSet.mainFrameSize();
 }
 
@@ -3537,9 +3444,6 @@ float WebViewImpl::maximumPageScaleFactor() const
 
 void WebViewImpl::resetScrollAndScaleState()
 {
-    // FIXME(bokan): This is done by the pinchViewport().reset() call below and
-    // can be removed when the new pinch path is the only one.
-    setPageScaleFactor(1);
     updateMainFrameScrollPosition(IntPoint(), true);
     page()->frameHost().pinchViewport().reset();
 
@@ -4096,13 +4000,10 @@ void WebViewImpl::resumeTreeViewCommits()
 void WebViewImpl::postLayoutResize(WebLocalFrameImpl* webframe)
 {
     FrameView* view = webframe->frame()->view();
-    if (pinchVirtualViewportEnabled()) {
-        if (webframe == mainFrame()) {
-            view->resize(mainFrameSize());
-        } else {
-            view->resize(webframe->frameView()->layoutSize());
-        }
-    }
+    if (webframe == mainFrame())
+        view->resize(mainFrameSize());
+    else
+        view->resize(webframe->frameView()->layoutSize());
 }
 
 void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
@@ -4218,19 +4119,7 @@ void WebViewImpl::setOverlayLayer(GraphicsLayer* layer)
     if (!m_page->mainFrame()->isLocalFrame())
         return;
 
-    if (pinchVirtualViewportEnabled()) {
-        m_page->deprecatedLocalMainFrame()->view()->layoutView()->compositor()->setOverlayLayer(layer);
-        return;
-    }
-
-    // FIXME(bokan): This path goes away after virtual viewport pinch is enabled everywhere.
-    if (!m_rootTransformLayer)
-        m_rootTransformLayer = m_page->deprecatedLocalMainFrame()->view()->layoutView()->compositor()->ensureRootTransformLayer();
-
-    if (m_rootTransformLayer) {
-        if (layer->parent() != m_rootTransformLayer)
-            m_rootTransformLayer->addChild(layer);
-    }
+    m_page->deprecatedLocalMainFrame()->view()->layoutView()->compositor()->setOverlayLayer(layer);
 }
 
 Element* WebViewImpl::focusedElement() const
@@ -4303,21 +4192,15 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 {
     suppressInvalidations(true);
 
-    if (pinchVirtualViewportEnabled()) {
-        PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
-        pinchViewport.attachToLayerTree(layer, graphicsLayerFactory());
-        if (layer) {
-            m_rootGraphicsLayer = pinchViewport.rootGraphicsLayer();
-            m_rootLayer = pinchViewport.rootGraphicsLayer()->platformLayer();
-            m_rootTransformLayer = pinchViewport.rootGraphicsLayer();
-        } else {
-            m_rootGraphicsLayer = nullptr;
-            m_rootLayer = nullptr;
-            m_rootTransformLayer = nullptr;
-        }
+    PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
+    pinchViewport.attachToLayerTree(layer, graphicsLayerFactory());
+    if (layer) {
+        m_rootGraphicsLayer = pinchViewport.rootGraphicsLayer();
+        m_rootLayer = pinchViewport.rootGraphicsLayer()->platformLayer();
+        m_rootTransformLayer = pinchViewport.rootGraphicsLayer();
     } else {
-        m_rootGraphicsLayer = layer;
-        m_rootLayer = layer ? layer->platformLayer() : 0;
+        m_rootGraphicsLayer = nullptr;
+        m_rootLayer = nullptr;
         m_rootTransformLayer = nullptr;
     }
 
@@ -4330,21 +4213,10 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
             m_layerTreeView->setRootLayer(*m_rootLayer);
             // We register viewport layers here since there may not be a layer
             // tree view prior to this point.
-            if (pinchVirtualViewportEnabled()) {
-                page()->frameHost().pinchViewport().registerLayersWithTreeView(m_layerTreeView);
-            } else {
-                GraphicsLayer* rootScrollLayer = compositor()->scrollLayer();
-                ASSERT(rootScrollLayer);
-                WebLayer* pageScaleLayer = rootScrollLayer->parent() ? rootScrollLayer->parent()->platformLayer() : nullptr;
-                // Note that it is invalid to have 0 as a scroll elasticity layer when using pinch virtual viewport.
-                m_layerTreeView->registerViewportLayers(0, pageScaleLayer, rootScrollLayer->platformLayer(), 0);
-            }
+            page()->frameHost().pinchViewport().registerLayersWithTreeView(m_layerTreeView);
         } else {
             m_layerTreeView->clearRootLayer();
-            if (pinchVirtualViewportEnabled())
-                page()->frameHost().pinchViewport().clearLayersForTreeView(m_layerTreeView);
-            else
-                m_layerTreeView->clearViewportLayers();
+            page()->frameHost().pinchViewport().clearLayersForTreeView(m_layerTreeView);
         }
     }
 
@@ -4495,8 +4367,6 @@ void WebViewImpl::applyViewportDeltas(
     float pageScaleDelta,
     float topControlsShownRatioDelta)
 {
-    ASSERT(pinchVirtualViewportEnabled());
-
     if (!mainFrameImpl())
         return;
     FrameView* frameView = mainFrameImpl()->frameView();
@@ -4516,31 +4386,6 @@ void WebViewImpl::applyViewportDeltas(
 
     updateMainFrameScrollPosition(frameView->scrollableArea()->scrollPositionDouble() +
         DoubleSize(outerViewportDelta.width, outerViewportDelta.height), /* programmaticScroll */ false);
-}
-
-void WebViewImpl::applyViewportDeltas(const WebSize& scrollDelta, float pageScaleDelta, float topControlsShownRatioDelta)
-{
-    if (!mainFrameImpl() || !mainFrameImpl()->frameView())
-        return;
-
-    topControls().setShownRatio(topControls().shownRatio() + topControlsShownRatioDelta);
-
-    if (pageScaleDelta == 1) {
-        TRACE_EVENT_INSTANT2("blink", "WebViewImpl::applyScrollAndScale::scrollBy", "x", scrollDelta.width, "y", scrollDelta.height);
-        WebSize webScrollOffset = mainFrame()->scrollOffset();
-        IntPoint scrollOffset(webScrollOffset.width + scrollDelta.width, webScrollOffset.height + scrollDelta.height);
-        updateMainFrameScrollPosition(scrollOffset, false);
-    } else {
-        // The page scale changed, so apply a scale and scroll in a single
-        // operation.
-        WebSize scrollOffset = mainFrame()->scrollOffset();
-        scrollOffset.width += scrollDelta.width;
-        scrollOffset.height += scrollDelta.height;
-
-        WebPoint scrollPoint(scrollOffset.width, scrollOffset.height);
-        setPageScaleFactor(pageScaleFactor() * pageScaleDelta, scrollPoint);
-        m_doubleTapZoomPending = false;
-    }
 }
 
 void WebViewImpl::updateLayerTreeViewport()
@@ -4574,11 +4419,6 @@ void WebViewImpl::updateRootLayerTransform()
     // or update the transform layer.
     if (!m_rootGraphicsLayer)
         return;
-
-    // FIXME(bokan): m_rootTransformLayer is always set here in pinch virtual viewport. This can go away once
-    // that's default everywhere.
-    if (!m_rootTransformLayer && m_page->mainFrame()->isLocalFrame())
-        m_rootTransformLayer = m_page->deprecatedLocalMainFrame()->view()->layoutView()->compositor()->ensureRootTransformLayer();
 
     if (m_rootTransformLayer) {
         TransformationMatrix transform;

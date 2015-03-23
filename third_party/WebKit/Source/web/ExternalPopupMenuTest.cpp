@@ -153,7 +153,7 @@ public:
 protected:
     virtual void SetUp() override
     {
-        m_helper.initialize(false, &m_webFrameClient, &m_webViewClient, &configureSettings);
+        m_helper.initialize(false, &m_webFrameClient, &m_webViewClient);
         webView()->setUseExternalPopupMenus(true);
     }
     virtual void TearDown() override
@@ -176,11 +176,6 @@ protected:
     WebLocalFrameImpl* mainFrame() const { return m_helper.webViewImpl()->mainFrameImpl(); }
 
 private:
-    static void configureSettings(WebSettings* settings)
-    {
-        settings->setPinchVirtualViewportEnabled(true);
-    }
-
     std::string m_baseURL;
     FrameTestHelpers::TestWebViewClient m_webViewClient;
     ExternalPopupMenuWebFrameClient m_webFrameClient;

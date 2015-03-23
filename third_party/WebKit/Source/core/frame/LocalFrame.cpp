@@ -146,9 +146,6 @@ void LocalFrame::setView(PassRefPtrWillBeRawPtr<FrameView> view)
     eventHandler().clear();
 
     m_view = view;
-
-    if (m_view && isMainFrame() && !settings()->pinchVirtualViewportEnabled())
-        m_view->setVisibleContentScaleFactor(page()->pageScaleFactor());
 }
 
 void LocalFrame::createView(const IntSize& viewportSize, const Color& backgroundColor, bool transparent,

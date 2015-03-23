@@ -125,7 +125,6 @@ public:
     virtual void setPerTilePaintingEnabled(bool) override;
     virtual void setPictographFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
     virtual void setPinchOverlayScrollbarThickness(int) override;
-    virtual void setPinchVirtualViewportEnabled(bool) override;
     virtual void setPluginsEnabled(bool) override;
     virtual void setAvailablePointerTypes(int) override;
     virtual void setPrimaryPointerType(PointerType) override;

@@ -327,15 +327,7 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
     if (scale != viewport.scale()) {
         viewport.setScale(scale);
 
-        if (view && !settings().pinchVirtualViewportEnabled())
-            view->setVisibleContentScaleFactor(scale);
-
         m_chrome->client().pageScaleFactorChanged();
-
-        // FIXME: In virtual-viewport pinch mode, scale doesn't change the fixed-pos viewport;
-        // remove once it's the only pinch mode in town.
-        if (view)
-            view->viewportConstrainedVisibleContentSizeChanged(true, true);
 
         deprecatedLocalMainFrame()->loader().saveScrollState();
     }

@@ -888,7 +888,7 @@ void ChromeClientImpl::xhrSucceeded(LocalFrame* frame)
 
 void ChromeClientImpl::registerViewportLayers() const
 {
-    if (m_webView->rootGraphicsLayer() && m_webView->layerTreeView() && m_webView->pinchVirtualViewportEnabled())
+    if (m_webView->rootGraphicsLayer() && m_webView->layerTreeView())
         m_webView->page()->frameHost().pinchViewport().registerLayersWithTreeView(m_webView->layerTreeView());
 }
 

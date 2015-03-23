@@ -447,11 +447,6 @@ void WebFrameWidgetImpl::applyViewportDeltas(
     // FIXME: To be implemented.
 }
 
-void WebFrameWidgetImpl::applyViewportDeltas(const WebSize& scrollDelta, float pageScaleDelta, float topControlsDelta)
-{
-    // FIXME: To be implemented.
-}
-
 void WebFrameWidgetImpl::mouseCaptureLost()
 {
     TRACE_EVENT_ASYNC_END0("input", "capturing mouse", this);

@@ -210,6 +210,20 @@ void PinchViewport::move(const FloatSize& delta)
     setLocation(m_offset + delta);
 }
 
+void PinchViewport::setLocationInDocument(const DoublePoint& location)
+{
+    if (!mainFrame() || !mainFrame()->view())
+        return;
+
+    FrameView* view = mainFrame()->view();
+
+    DoublePoint currentLocation = visibleRectInDocument().location();
+    view->setScrollPosition(DoublePoint(location - currentLocation));
+
+    currentLocation = visibleRectInDocument().location();
+    move(toFloatSize(location - currentLocation));
+}
+
 void PinchViewport::setScale(float scale)
 {
     setScaleAndLocation(scale, m_offset);

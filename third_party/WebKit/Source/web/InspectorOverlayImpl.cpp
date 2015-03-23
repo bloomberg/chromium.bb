@@ -372,7 +372,9 @@ LocalFrame* InspectorOverlayImpl::overlayMainFrame()
 void InspectorOverlayImpl::reset(const IntSize& viewportSize, int scrollX, int scrollY)
 {
     RefPtr<JSONObject> resetData = JSONObject::create();
-    resetData->setNumber("pageScaleFactor", m_webViewImpl->page()->settings().pinchVirtualViewportEnabled() ? 1 : m_webViewImpl->page()->pageScaleFactor());
+    // TODO(bokan): |pageScaleFactor| was previously used to scale from CSS values but is unnecessary
+    // now that virtual-viewport is enabled. This can probably be removed.
+    resetData->setNumber("pageScaleFactor", 1);
     resetData->setNumber("deviceScaleFactor", m_webViewImpl->page()->deviceScaleFactor());
     resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
     resetData->setNumber("pageZoomFactor", m_webViewImpl->mainFrameImpl()->frame()->pageZoomFactor());

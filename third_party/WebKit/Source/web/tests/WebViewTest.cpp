@@ -435,7 +435,6 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScaleAndPan)
     std::string url = m_baseURL + "specify_size.html?" + "50px" + ":" + "50px";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "specify_size.html");
     WebView* webView = m_webViewHelper.initialize(true);
-    webView->settings()->setPinchVirtualViewportEnabled(true);
     loadFrame(webView->mainFrame(), url);
     webView->resize(WebSize(100, 100));
     WebPoint hitPoint(75, 75);
@@ -495,7 +494,6 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapAreaPageScaleAndPan)
     std::string url = m_baseURL + "hit_test.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(url), "hit_test.html");
     WebView* webView = m_webViewHelper.initialize(true);
-    webView->settings()->setPinchVirtualViewportEnabled(true);
     loadFrame(webView->mainFrame(), url);
     webView->resize(WebSize(100, 100));
     WebPoint hitPoint(55, 55);

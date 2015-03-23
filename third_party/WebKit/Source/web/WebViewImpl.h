@@ -120,12 +120,6 @@ public:
     virtual void setCursorVisibilityState(bool isVisible) override;
     virtual bool hasTouchEventHandlersAt(const WebPoint&) override;
 
-    // FIXME(bokan): Old pinch path only - This should be removed once old pinch
-    // is removed.
-    virtual void applyViewportDeltas(
-        const WebSize& scrollDelta,
-        float pageScaleDelta,
-        float topControlsShownRatioDelta) override;
     virtual void applyViewportDeltas(
         const WebFloatSize& pinchViewportDelta,
         const WebFloatSize& mainFrameDelta,
@@ -516,16 +510,10 @@ public:
     // Returns the bounding box of the block type node touched by the WebPoint.
     WebRect computeBlockBound(const WebPoint&, bool ignoreClipping);
 
-    // FIXME(bokan): Replace with PinchViewport::clampDocumentOffsetAtScale once
-    // old-path is gone.
-    IntPoint clampOffsetAtScale(const IntPoint& offset, float scale);
-
     // Exposed for tests.
     WebVector<WebCompositionUnderline> compositionUnderlines() const;
 
     WebLayerTreeView* layerTreeView() const { return m_layerTreeView; }
-
-    bool pinchVirtualViewportEnabled() const;
 
     bool matchesHeuristicsForGpuRasterizationForTesting() const { return m_matchesHeuristicsForGpuRasterization; }
 
@@ -544,14 +532,9 @@ public:
     PageScaleConstraintsSet& pageScaleConstraintsSet() { return m_pageScaleConstraintsSet; }
 
 private:
-    // TODO(bokan): Remains for legacy pinch. Remove once it's gone. Made private to
-    // prevent external usage
-    virtual void setPageScaleFactor(float scaleFactor, const WebPoint& origin) override;
     void setPageScaleFactorAndLocation(float, const FloatPoint&);
 
     void scrollAndRescaleViewports(float scaleFactor, const IntPoint& mainFrameOrigin, const FloatPoint& pinchViewportOrigin);
-
-    IntRect visibleRectInDocument() const;
 
     float maximumLegiblePageScale() const;
     void refreshPageScaleFactorAfterLayout();

@@ -653,12 +653,6 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
     }
 }
 
-static void setupVirtualViewportPinch(WebSettings* settings)
-{
-    settings->setPinchVirtualViewportEnabled(true);
-    settings->setAcceleratedCompositingEnabled(true);
-}
-
 TEST(WebInputEventConversionTest, PinchViewportOffset)
 {
     const std::string baseURL("http://www.test4.com/");
@@ -666,7 +660,7 @@ TEST(WebInputEventConversionTest, PinchViewportOffset)
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true, 0, 0, setupVirtualViewportPinch);
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true);
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
@@ -758,7 +752,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll)
 
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
     FrameTestHelpers::WebViewHelper webViewHelper;
-    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true, 0, 0, setupVirtualViewportPinch);
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true);
     int pageWidth = 640;
     int pageHeight = 480;
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
