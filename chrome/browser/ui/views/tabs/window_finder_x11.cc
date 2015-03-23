@@ -4,7 +4,22 @@
 
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/screen.h"
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
+
+namespace {
+
+float GetDeviceScaleFactor() {
+  gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  return display.device_scale_factor();
+}
+
+gfx::Point DIPToPixelPoint(const gfx::Point& dip_point) {
+  return ToFlooredPoint(gfx::ScalePoint(dip_point, GetDeviceScaleFactor()));
+}
+
+}  // anonymous namespace
 
 #if defined(USE_ASH)
 gfx::NativeWindow GetLocalProcessWindowAtPointAsh(
@@ -24,5 +39,5 @@ gfx::NativeWindow GetLocalProcessWindowAtPoint(
   // The X11 server is the canonical state of what the window stacking order
   // is.
   views::X11TopmostWindowFinder finder;
-  return finder.FindLocalProcessWindowAt(screen_point, ignore);
+  return finder.FindLocalProcessWindowAt(DIPToPixelPoint(screen_point), ignore);
 }

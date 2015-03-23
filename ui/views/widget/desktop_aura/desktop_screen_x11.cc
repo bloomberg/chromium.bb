@@ -45,6 +45,19 @@ float GetDeviceScaleFactor(int screen_pixels, int screen_mm) {
   return ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(scale));
 }
 
+float GetDeviceScaleFactor() {
+  gfx::Display display = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  return display.device_scale_factor();
+}
+
+gfx::Point PixelToDIPPoint(const gfx::Point& pixel_point) {
+  return ToFlooredPoint(ScalePoint(pixel_point, 1.0f / GetDeviceScaleFactor()));
+}
+
+gfx::Point DIPToPixelPoint(const gfx::Point& dip_point) {
+  return ToFlooredPoint(gfx::ScalePoint(dip_point, GetDeviceScaleFactor()));
+}
+
 std::vector<gfx::Display> GetFallbackDisplayList() {
   ::XDisplay* display = gfx::GetXDisplay();
   ::Screen* screen = DefaultScreenOfDisplay(display);
@@ -130,7 +143,7 @@ gfx::Point DesktopScreenX11::GetCursorScreenPoint() {
                 &win_y,
                 &mask);
 
-  return gfx::Point(root_x, root_y);
+  return PixelToDIPPoint(gfx::Point(root_x, root_y));
 }
 
 gfx::NativeWindow DesktopScreenX11::GetWindowUnderCursor() {
@@ -140,7 +153,8 @@ gfx::NativeWindow DesktopScreenX11::GetWindowUnderCursor() {
 gfx::NativeWindow DesktopScreenX11::GetWindowAtScreenPoint(
     const gfx::Point& point) {
   X11TopmostWindowFinder finder;
-  return finder.FindLocalProcessWindowAt(point, std::set<aura::Window*>());
+  return finder.FindLocalProcessWindowAt(
+      DIPToPixelPoint(point), std::set<aura::Window*>());
 }
 
 int DesktopScreenX11::GetNumDisplays() const {
@@ -177,10 +191,11 @@ gfx::Display DesktopScreenX11::GetDisplayNearestWindow(
 }
 
 gfx::Display DesktopScreenX11::GetDisplayNearestPoint(
-    const gfx::Point& point) const {
+    const gfx::Point& requested_point) const {
+  const gfx::Point point_in_pixel = DIPToPixelPoint(requested_point);
   for (std::vector<gfx::Display>::const_iterator it = displays_.begin();
        it != displays_.end(); ++it) {
-    if (it->bounds().Contains(point))
+    if (it->bounds().Contains(point_in_pixel))
       return *it;
   }
 
