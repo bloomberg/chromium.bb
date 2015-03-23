@@ -164,16 +164,18 @@ def main():
       line = line.replace(PROD_DIR_ID, args.prod_dir)
       LaunchBTCommand(line)
 
+  # All tests completed. Include host-logs in the test results.
+  host_log_contents = ''
+  # There should be only 1 log file, as we delete logs on test completion.
+  # Loop through matching files, just in case there are more.
+  for log_file in glob.glob('/tmp/chrome_remote_desktop_*'):
+    with open(log_file, 'r') as log:
+      host_log_contents += '\nHOST LOG %s\n CONTENTS:\n%s' % (
+          log_file, log.read())
+  print host_log_contents
+
   # Was there any test failure?
   if TEST_FAILURE:
-    # Obtain contents of Chromoting host logs.
-    log_contents = ''
-    # There should be only 1 log file, as we delete logs on test completion.
-    # Loop through matching files, just in case there are more.
-    for log_file in glob.glob('/tmp/chrome_remote_desktop_*'):
-      with open(log_file, 'r') as log:
-        log_contents += '\nHOST LOG %s\n CONTENTS:\n%s' % (log_file, log.read())
-    print log_contents
     raise Exception('At least one test failed.')
 
   # Now, stop host, and cleanup user-profile-dir
