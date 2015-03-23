@@ -28,6 +28,7 @@ namespace cc {
 
 DisplayListRecordingSource::DisplayListRecordingSource()
     : slow_down_raster_scale_factor_for_debug_(0),
+      gather_pixel_refs_(false),
       requires_clear_(false),
       is_solid_color_(false),
       solid_color_(SK_ColorTRANSPARENT),
@@ -133,6 +134,10 @@ void DisplayListRecordingSource::SetEmptyBounds() {
 
 void DisplayListRecordingSource::SetSlowdownRasterScaleFactor(int factor) {
   slow_down_raster_scale_factor_for_debug_ = factor;
+}
+
+void DisplayListRecordingSource::SetGatherPixelRefs(bool gather_pixel_refs) {
+  gather_pixel_refs_ = gather_pixel_refs;
 }
 
 void DisplayListRecordingSource::SetBackgroundColor(SkColor background_color) {

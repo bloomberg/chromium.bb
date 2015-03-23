@@ -10,6 +10,7 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/layer_test_common.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,7 +20,8 @@ namespace {
 
 class TiledLayerImplTest : public testing::Test {
  public:
-  TiledLayerImplTest() : host_impl_(&proxy_, &shared_bitmap_manager_) {}
+  TiledLayerImplTest()
+      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_) {}
 
   scoped_ptr<TiledLayerImpl> CreateLayerNoTiles(
       const gfx::Size& tile_size,
@@ -77,6 +79,7 @@ class TiledLayerImplTest : public testing::Test {
  protected:
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
 };
 

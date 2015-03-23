@@ -6,11 +6,7 @@
 
 #include <algorithm>
 
-#include "base/lazy_instance.h"
-#include "base/strings/stringprintf.h"
-#include "base/threading/simple_thread.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/base/scoped_ptr_deque.h"
 #include "cc/resources/raster_source.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -18,41 +14,6 @@
 
 namespace cc {
 namespace {
-
-base::ThreadPriority g_worker_thread_priority = base::kThreadPriority_Normal;
-
-class TileTaskGraphRunner : public TaskGraphRunner,
-                            public base::DelegateSimpleThread::Delegate {
- public:
-  TileTaskGraphRunner() {
-    size_t num_threads = TileTaskWorkerPool::GetNumWorkerThreads();
-    while (workers_.size() < num_threads) {
-      scoped_ptr<base::DelegateSimpleThread> worker =
-          make_scoped_ptr(new base::DelegateSimpleThread(
-              this, base::StringPrintf(
-                        "CompositorTileWorker%u",
-                        static_cast<unsigned>(workers_.size() + 1)).c_str()));
-      worker->Start();
-      worker->SetThreadPriority(g_worker_thread_priority);
-      workers_.push_back(worker.Pass());
-    }
-  }
-
-  ~TileTaskGraphRunner() override { NOTREACHED(); }
-
- private:
-  // Overridden from base::DelegateSimpleThread::Delegate:
-  void Run() override { TaskGraphRunner::Run(); }
-
-  ScopedPtrDeque<base::DelegateSimpleThread> workers_;
-};
-
-base::LazyInstance<TileTaskGraphRunner>::Leaky g_task_graph_runner =
-    LAZY_INSTANCE_INITIALIZER;
-
-const int kDefaultNumWorkerThreads = 1;
-
-int g_num_worker_threads = 0;
 
 class TaskSetFinishedTaskImpl : public TileTask {
  public:
@@ -104,33 +65,6 @@ TileTaskWorkerPool::TileTaskWorkerPool() {
 }
 
 TileTaskWorkerPool::~TileTaskWorkerPool() {
-}
-
-// static
-void TileTaskWorkerPool::SetNumWorkerThreads(int num_threads) {
-  DCHECK_LT(0, num_threads);
-  DCHECK_EQ(0, g_num_worker_threads);
-
-  g_num_worker_threads = num_threads;
-}
-
-// static
-int TileTaskWorkerPool::GetNumWorkerThreads() {
-  if (!g_num_worker_threads)
-    g_num_worker_threads = kDefaultNumWorkerThreads;
-
-  return g_num_worker_threads;
-}
-
-// static
-void TileTaskWorkerPool::SetWorkerThreadPriority(
-    base::ThreadPriority priority) {
-  g_worker_thread_priority = priority;
-}
-
-// static
-TaskGraphRunner* TileTaskWorkerPool::GetTaskGraphRunner() {
-  return g_task_graph_runner.Pointer();
 }
 
 // static

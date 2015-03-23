@@ -12,6 +12,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,7 +75,8 @@ void EmulateDrawingOneFrame(LayerImpl* root) {
 
 class DamageTrackerTest : public testing::Test {
  public:
-  DamageTrackerTest() : host_impl_(&proxy_, &shared_bitmap_manager_) {}
+  DamageTrackerTest()
+      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_) {}
 
   scoped_ptr<LayerImpl> CreateTestTreeWithOneSurface() {
     scoped_ptr<LayerImpl> root =
@@ -176,6 +178,7 @@ class DamageTrackerTest : public testing::Test {
  protected:
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
 };
 

@@ -36,11 +36,13 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
 
   cc::SharedBitmapManager* shared_bitmap_manager = NULL;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = NULL;
+  cc::TaskGraphRunner* task_graph_runner = NULL;
 
   layer_tree_host_ =
       cc::LayerTreeHost::CreateThreaded(this,
                                         shared_bitmap_manager,
                                         gpu_memory_buffer_manager,
+                                        task_graph_runner,
                                         settings,
                                         base::MessageLoopProxy::current(),
                                         compositor_message_loop_proxy,

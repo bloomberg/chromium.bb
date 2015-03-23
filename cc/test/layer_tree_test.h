@@ -21,6 +21,7 @@ class LayerTreeHost;
 class LayerTreeHostClient;
 class LayerTreeHostImpl;
 class TestContextProvider;
+class TestGpuMemoryBufferManager;
 class TestWebGraphicsContext3D;
 
 // Used by test stubs to notify the test when something interesting happens.
@@ -195,6 +196,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   Proxy* proxy() const {
     return layer_tree_host_ ? layer_tree_host_->proxy() : NULL;
   }
+  TaskGraphRunner* task_graph_runner() const {
+    return task_graph_runner_.get();
+  }
 
   bool TestEnded() const { return ended_; }
 
@@ -234,6 +238,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_ptr<base::Thread> impl_thread_;
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
+  scoped_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  scoped_ptr<TaskGraphRunner> task_graph_runner_;
   base::CancelableClosure timeout_;
   scoped_refptr<TestContextProvider> compositor_contexts_;
   base::WeakPtr<LayerTreeTest> main_thread_weak_ptr_;

@@ -10,6 +10,7 @@
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/test/gfx_util.h"
@@ -24,7 +25,7 @@ float diagonal(float width, float height) {
 class LayerUtilsGetAnimationBoundsTest : public testing::Test {
  public:
   LayerUtilsGetAnimationBoundsTest()
-      : host_impl_(&proxy_, &shared_bitmap_manager_),
+      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_),
         root_(CreateThreeNodeTree(&host_impl_)),
         parent_(root_->children()[0]),
         child_(parent_->children()[0]) {}
@@ -45,6 +46,7 @@ class LayerUtilsGetAnimationBoundsTest : public testing::Test {
 
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   scoped_ptr<LayerImpl> root_;
   LayerImpl* parent_;

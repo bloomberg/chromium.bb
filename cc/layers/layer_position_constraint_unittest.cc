@@ -11,6 +11,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,7 +64,8 @@ void ExecuteCalculateDrawProperties(LayerImpl* root_layer) {
 
 class LayerPositionConstraintTest : public testing::Test {
  public:
-  LayerPositionConstraintTest() : host_impl_(&proxy_, &shared_bitmap_manager_) {
+  LayerPositionConstraintTest()
+      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_) {
     root_ = CreateTreeForTest();
     scroll_ = root_->children()[0];
     fixed_to_top_left_.set_is_fixed_position(true);
@@ -127,6 +129,7 @@ class LayerPositionConstraintTest : public testing::Test {
  protected:
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   scoped_ptr<LayerImpl> root_;
   LayerImpl* scroll_;

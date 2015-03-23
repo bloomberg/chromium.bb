@@ -7,6 +7,7 @@
 
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "content/test/fake_renderer_scheduler.h"
 
@@ -15,6 +16,7 @@ namespace content {
 class FakeCompositorDependencies : public CompositorDependencies {
  public:
   FakeCompositorDependencies();
+  ~FakeCompositorDependencies() override;
 
   // CompositorDependencies implementation.
   bool IsImplSidePaintingEnabled() override;
@@ -39,6 +41,8 @@ class FakeCompositorDependencies : public CompositorDependencies {
   cc::ContextProvider* GetSharedMainThreadContextProvider() override;
   scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
+  cc::TaskGraphRunner* GetTaskGraphRunner() override;
+  bool IsGatherPixelRefsEnabled() override;
 
   void set_use_single_thread_scheduler(bool use) {
     use_single_thread_scheduler_ = use;
@@ -47,6 +51,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
  private:
   cc::TestSharedBitmapManager shared_bitmap_manager_;
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  cc::TestTaskGraphRunner task_graph_runner_;
   FakeRendererScheduler renderer_scheduler_;
   bool use_single_thread_scheduler_;
 

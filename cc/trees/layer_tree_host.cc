@@ -56,6 +56,7 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     LayerTreeHostClient* client,
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    TaskGraphRunner* task_graph_runner,
     const LayerTreeSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
@@ -63,7 +64,8 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
   DCHECK(main_task_runner.get());
   DCHECK(impl_task_runner.get());
   scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(
-      client, shared_bitmap_manager, gpu_memory_buffer_manager, settings));
+      client, shared_bitmap_manager, gpu_memory_buffer_manager,
+      task_graph_runner, settings));
   layer_tree_host->InitializeThreaded(main_task_runner,
                                       impl_task_runner,
                                       external_begin_frame_source.Pass());
@@ -75,11 +77,13 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client,
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    TaskGraphRunner* task_graph_runner,
     const LayerTreeSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_ptr<BeginFrameSource> external_begin_frame_source) {
   scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(
-      client, shared_bitmap_manager, gpu_memory_buffer_manager, settings));
+      client, shared_bitmap_manager, gpu_memory_buffer_manager,
+      task_graph_runner, settings));
   layer_tree_host->InitializeSingleThreaded(single_thread_client,
                                             main_task_runner,
                                             external_begin_frame_source.Pass());
@@ -90,6 +94,7 @@ LayerTreeHost::LayerTreeHost(
     LayerTreeHostClient* client,
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    TaskGraphRunner* task_graph_runner,
     const LayerTreeSettings& settings)
     : micro_benchmark_controller_(this),
       next_ui_resource_id_(1),
@@ -121,6 +126,7 @@ LayerTreeHost::LayerTreeHost(
       next_commit_forces_redraw_(false),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      task_graph_runner_(task_graph_runner),
       surface_id_namespace_(0u),
       next_surface_sequence_(1u) {
   if (settings_.accelerated_animation_enabled)
@@ -430,17 +436,14 @@ void LayerTreeHost::DidFailToInitializeOutputSurface() {
 scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
     LayerTreeHostImplClient* client) {
   DCHECK(proxy_->IsImplThread());
-  scoped_ptr<LayerTreeHostImpl> host_impl =
-      LayerTreeHostImpl::Create(settings_,
-                                client,
-                                proxy_.get(),
-                                rendering_stats_instrumentation_.get(),
-                                shared_bitmap_manager_,
-                                gpu_memory_buffer_manager_,
-                                id_);
+  scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
+      settings_, client, proxy_.get(), rendering_stats_instrumentation_.get(),
+      shared_bitmap_manager_, gpu_memory_buffer_manager_, task_graph_runner_,
+      id_);
   host_impl->SetUseGpuRasterization(UseGpuRasterization());
   shared_bitmap_manager_ = NULL;
   gpu_memory_buffer_manager_ = NULL;
+  task_graph_runner_ = NULL;
   top_controls_manager_weak_ptr_ =
       host_impl->top_controls_manager()->AsWeakPtr();
   input_handler_weak_ptr_ = host_impl->AsWeakPtr();

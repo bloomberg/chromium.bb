@@ -18,6 +18,7 @@
 #include "cc/test/fake_tile_manager_client.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_tile_priorities.h"
 #include "cc/trees/layer_tree_impl.h"
 
@@ -90,7 +91,8 @@ class TileManagerPerfTest : public testing::Test {
         proxy_(base::MessageLoopProxy::current()),
         host_impl_(ImplSidePaintingSettings(10000),
                    &proxy_,
-                   &shared_bitmap_manager_),
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_),
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {}
@@ -407,6 +409,7 @@ class TileManagerPerfTest : public testing::Test {
   GlobalStateThatImpactsTilePriority global_state_;
 
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   TileMemoryLimitPolicy memory_limit_policy_;
   int max_tiles_;
   int id_;

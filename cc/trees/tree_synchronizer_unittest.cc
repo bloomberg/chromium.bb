@@ -556,13 +556,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeAnimations) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHostImpl> host_impl =
-      LayerTreeHostImpl::Create(settings,
-                                NULL,
-                                &proxy,
-                                &stats_instrumentation,
-                                shared_bitmap_manager.get(),
-                                NULL,
-                                0);
+      LayerTreeHostImpl::Create(settings, NULL, &proxy, &stats_instrumentation,
+                                shared_bitmap_manager.get(), NULL, NULL, 0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   host_->SetRootLayer(layer_tree_root);
@@ -595,13 +590,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHostImpl> host_impl =
-      LayerTreeHostImpl::Create(settings,
-                                NULL,
-                                &proxy,
-                                &stats_instrumentation,
-                                shared_bitmap_manager.get(),
-                                NULL,
-                                0);
+      LayerTreeHostImpl::Create(settings, NULL, &proxy, &stats_instrumentation,
+                                shared_bitmap_manager.get(), NULL, NULL, 0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> scroll_parent = Layer::Create();
@@ -668,13 +658,8 @@ TEST_F(TreeSynchronizerTest, SynchronizeClipParent) {
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHostImpl> host_impl =
-      LayerTreeHostImpl::Create(settings,
-                                NULL,
-                                &proxy,
-                                &stats_instrumentation,
-                                shared_bitmap_manager.get(),
-                                NULL,
-                                0);
+      LayerTreeHostImpl::Create(settings, NULL, &proxy, &stats_instrumentation,
+                                shared_bitmap_manager.get(), NULL, NULL, 0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> clip_parent = Layer::Create();

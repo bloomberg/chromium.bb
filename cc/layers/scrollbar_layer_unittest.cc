@@ -21,6 +21,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/mock_occlusion_tracker.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -516,8 +517,9 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
  public:
   ScrollbarLayerSolidColorThumbTest() {
     LayerTreeSettings layer_tree_settings;
-    host_impl_.reset(new FakeLayerTreeHostImpl(
-        layer_tree_settings, &proxy_, &shared_bitmap_manager_));
+    host_impl_.reset(new FakeLayerTreeHostImpl(layer_tree_settings, &proxy_,
+                                               &shared_bitmap_manager_,
+                                               &task_graph_runner_));
 
     const int kThumbThickness = 3;
     const int kTrackStart = 0;
@@ -545,6 +547,7 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
  protected:
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<FakeLayerTreeHostImpl> host_impl_;
   scoped_ptr<SolidColorScrollbarLayerImpl> horizontal_scrollbar_layer_;
   scoped_ptr<SolidColorScrollbarLayerImpl> vertical_scrollbar_layer_;

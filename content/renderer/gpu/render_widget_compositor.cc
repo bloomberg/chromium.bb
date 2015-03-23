@@ -269,6 +269,7 @@ void RenderWidgetCompositor::Initialize() {
   settings.enable_elastic_overscroll =
       compositor_deps_->IsElasticOverscrollEnabled();
   settings.use_image_texture_target = compositor_deps_->GetImageTextureTarget();
+  settings.gather_pixel_refs = compositor_deps_->IsGatherPixelRefsEnabled();
 
   if (cmd->HasSwitch(cc::switches::kTopControlsShowThreshold)) {
       std::string top_threshold_str =
@@ -442,6 +443,8 @@ void RenderWidgetCompositor::Initialize() {
       compositor_deps_->GetSharedBitmapManager();
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       compositor_deps_->GetGpuMemoryBufferManager();
+  cc::TaskGraphRunner* task_graph_runner =
+      compositor_deps_->GetTaskGraphRunner();
 
   scoped_ptr<cc::BeginFrameSource> external_begin_frame_source;
   if (settings.use_external_begin_frame_source) {
@@ -451,13 +454,14 @@ void RenderWidgetCompositor::Initialize() {
 
   if (compositor_thread_task_runner.get()) {
     layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
-        this, shared_bitmap_manager, gpu_memory_buffer_manager, settings,
-        main_thread_compositor_task_runner, compositor_thread_task_runner,
-        external_begin_frame_source.Pass());
+        this, shared_bitmap_manager, gpu_memory_buffer_manager,
+        task_graph_runner, settings, main_thread_compositor_task_runner,
+        compositor_thread_task_runner, external_begin_frame_source.Pass());
   } else {
     layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
-        this, this, shared_bitmap_manager, gpu_memory_buffer_manager, settings,
-        main_thread_compositor_task_runner, external_begin_frame_source.Pass());
+        this, this, shared_bitmap_manager, gpu_memory_buffer_manager,
+        task_graph_runner, settings, main_thread_compositor_task_runner,
+        external_begin_frame_source.Pass());
   }
   DCHECK(layer_tree_host_);
 }

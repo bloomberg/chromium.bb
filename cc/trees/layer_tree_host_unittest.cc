@@ -2209,7 +2209,7 @@ class LayerTreeHostWithProxy : public LayerTreeHost {
   LayerTreeHostWithProxy(FakeLayerTreeHostClient* client,
                          const LayerTreeSettings& settings,
                          scoped_ptr<FakeProxy> proxy)
-      : LayerTreeHost(client, NULL, NULL, settings) {
+      : LayerTreeHost(client, NULL, NULL, NULL, settings) {
     proxy->SetLayerTreeHost(this);
     client->SetLayerTreeHost(this);
     InitializeForTesting(proxy.Pass());
@@ -2281,14 +2281,9 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer) {
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> host =
-      LayerTreeHost::CreateSingleThreaded(&client,
-                                          &client,
-                                          shared_bitmap_manager.get(),
-                                          NULL,
-                                          settings,
-                                          base::MessageLoopProxy::current(),
-                                          nullptr);
+  scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
+      &client, &client, shared_bitmap_manager.get(), NULL, NULL, settings,
+      base::MessageLoopProxy::current(), nullptr);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 
@@ -2305,14 +2300,9 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer) {
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> host =
-      LayerTreeHost::CreateSingleThreaded(&client,
-                                          &client,
-                                          shared_bitmap_manager.get(),
-                                          NULL,
-                                          settings,
-                                          base::MessageLoopProxy::current(),
-                                          nullptr);
+  scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
+      &client, &client, shared_bitmap_manager.get(), NULL, NULL, settings,
+      base::MessageLoopProxy::current(), nullptr);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 
@@ -2329,14 +2319,9 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> host =
-      LayerTreeHost::CreateSingleThreaded(&client,
-                                          &client,
-                                          shared_bitmap_manager.get(),
-                                          NULL,
-                                          settings,
-                                          base::MessageLoopProxy::current(),
-                                          nullptr);
+  scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
+      &client, &client, shared_bitmap_manager.get(), NULL, NULL, settings,
+      base::MessageLoopProxy::current(), nullptr);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 
@@ -2354,14 +2339,9 @@ TEST(LayerTreeHostTest,
 
   scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
-  scoped_ptr<LayerTreeHost> host =
-      LayerTreeHost::CreateSingleThreaded(&client,
-                                          &client,
-                                          shared_bitmap_manager.get(),
-                                          NULL,
-                                          settings,
-                                          base::MessageLoopProxy::current(),
-                                          nullptr);
+  scoped_ptr<LayerTreeHost> host = LayerTreeHost::CreateSingleThreaded(
+      &client, &client, shared_bitmap_manager.get(), NULL, NULL, settings,
+      base::MessageLoopProxy::current(), nullptr);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 

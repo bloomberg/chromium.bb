@@ -7,9 +7,9 @@
 namespace cc {
 FakeLayerTreeHost::FakeLayerTreeHost(FakeLayerTreeHostClient* client,
                                      const LayerTreeSettings& settings)
-    : LayerTreeHost(client, NULL, NULL, settings),
+    : LayerTreeHost(client, NULL, NULL, NULL, settings),
       client_(client),
-      host_impl_(settings, &proxy_, &manager_),
+      host_impl_(settings, &proxy_, &manager_, nullptr),
       needs_commit_(false) {
   client_->SetLayerTreeHost(this);
 }

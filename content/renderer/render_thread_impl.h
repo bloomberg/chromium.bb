@@ -55,6 +55,7 @@ class Thread;
 
 namespace cc {
 class ContextProvider;
+class TaskGraphRunner;
 }
 
 namespace cc_blink {
@@ -200,6 +201,8 @@ class CONTENT_EXPORT RenderThreadImpl
   cc::ContextProvider* GetSharedMainThreadContextProvider() override;
   scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
+  cc::TaskGraphRunner* GetTaskGraphRunner() override;
+  bool IsGatherPixelRefsEnabled() override;
 
   // Synchronously establish a channel to the GPU plugin if not previously
   // established or if it has been lost (for example if the GPU plugin crashed).
@@ -562,6 +565,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // regardless of whether |compositor_thread_| is overriden.
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy_;
 
+  // Threads used by compositor for rasterization.
+  ScopedVector<base::SimpleThread> compositor_raster_threads_;
+
   base::CancelableCallback<void(const IPC::Message&)> main_input_callback_;
   scoped_refptr<IPC::MessageFilter> input_event_filter_;
   scoped_ptr<InputHandlerManager> input_handler_manager_;
@@ -592,6 +598,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   scoped_refptr<ResourceSchedulingFilter> resource_scheduling_filter_;
 
+  scoped_ptr<cc::TaskGraphRunner> compositor_task_graph_runner_;
+
   // Compositor settings.
   bool is_gpu_rasterization_enabled_;
   bool is_gpu_rasterization_forced_;
@@ -604,6 +612,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_one_copy_enabled_;
   bool is_elastic_overscroll_enabled_;
   unsigned use_image_texture_target_;
+  bool is_gather_pixel_refs_enabled_;
 
   class PendingRenderFrameConnect
       : public base::RefCounted<PendingRenderFrameConnect>,

@@ -13,6 +13,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
@@ -87,7 +88,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   // Create a simple LayerImpl tree:
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager, nullptr);
   EXPECT_TRUE(host_impl.InitializeRenderer(FakeOutputSurface::Create3d()));
   scoped_ptr<LayerImpl> root_clip =
       LayerImpl::Create(host_impl.active_tree(), 1);
@@ -250,7 +251,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
 TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager, nullptr);
   EXPECT_TRUE(host_impl.InitializeRenderer(FakeOutputSurface::Create3d()));
   host_impl.active_tree()->SetRootLayer(
       LayerImpl::Create(host_impl.active_tree(), 1));
@@ -368,7 +369,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
 TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager, nullptr);
   EXPECT_TRUE(host_impl.InitializeRenderer(FakeOutputSurface::Create3d()));
   scoped_ptr<LayerImpl> layer = LayerImpl::Create(host_impl.active_tree(), 1);
 
@@ -399,7 +400,7 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
 TEST(LayerImplTest, TransformInvertibility) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager, nullptr);
 
   scoped_ptr<LayerImpl> layer = LayerImpl::Create(host_impl.active_tree(), 1);
   EXPECT_TRUE(layer->transform().IsInvertible());
@@ -429,7 +430,11 @@ TEST(LayerImplTest, TransformInvertibility) {
 class LayerImplScrollTest : public testing::Test {
  public:
   LayerImplScrollTest()
-      : host_impl_(settings(), &proxy_, &shared_bitmap_manager_), root_id_(7) {
+      : host_impl_(settings(),
+                   &proxy_,
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_),
+        root_id_(7) {
     host_impl_.active_tree()->SetRootLayer(
         LayerImpl::Create(host_impl_.active_tree(), root_id_));
     host_impl_.active_tree()->root_layer()->AddChild(
@@ -460,6 +465,7 @@ class LayerImplScrollTest : public testing::Test {
  private:
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   int root_id_;
 };
@@ -771,7 +777,10 @@ class LayerImplScrollbarSyncTest : public testing::Test {
   };
 
   LayerImplScrollbarSyncTest()
-      : host_impl_(settings(), &proxy_, &shared_bitmap_manager_) {
+      : host_impl_(settings(),
+                   &proxy_,
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_) {
     host_impl_.CreatePendingTree();
 
     CreateLayers(host_impl_.pending_tree());
@@ -836,6 +845,7 @@ class LayerImplScrollbarSyncTest : public testing::Test {
  private:
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
 };
 

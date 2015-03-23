@@ -18,6 +18,7 @@
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_tile_priorities.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +39,10 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
         ready_to_activate_(false),
         id_(7),
         proxy_(base::MessageLoopProxy::current()),
-        host_impl_(LowResTilingsSettings(), &proxy_, &shared_bitmap_manager_) {}
+        host_impl_(LowResTilingsSettings(),
+                   &proxy_,
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_) {}
 
   void SetTreePriority(TreePriority tree_priority) {
     GlobalStateThatImpactsTilePriority state;
@@ -137,6 +141,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
   GlobalStateThatImpactsTilePriority global_state_;
 
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   TileMemoryLimitPolicy memory_limit_policy_;
   int max_tiles_;
   bool ready_to_activate_;

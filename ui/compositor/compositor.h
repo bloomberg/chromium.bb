@@ -40,6 +40,7 @@ class LayerTreeHost;
 class RendererSettings;
 class SharedBitmapManager;
 class SurfaceIdAllocator;
+class TaskGraphRunner;
 }
 
 namespace gfx {
@@ -99,6 +100,9 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   // Gets the GPU memory buffer manager.
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
+
+  // Gets the task graph runner.
+  virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
 
   // Creates a Surface ID allocator with a new namespace.
   virtual scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() = 0;

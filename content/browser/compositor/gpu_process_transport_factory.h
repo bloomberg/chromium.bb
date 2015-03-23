@@ -17,6 +17,7 @@
 #include "ui/compositor/compositor.h"
 
 namespace base {
+class SimpleThread;
 class Thread;
 }
 
@@ -53,6 +54,7 @@ class GpuProcessTransportFactory
   uint32 GetImageTextureTarget() override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
+  cc::TaskGraphRunner* GetTaskGraphRunner() override;
   scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
@@ -91,6 +93,8 @@ class GpuProcessTransportFactory
   ObserverList<ImageTransportFactoryObserver> observer_list_;
   scoped_ptr<cc::SurfaceManager> surface_manager_;
   uint32_t next_surface_id_namespace_;
+  scoped_ptr<cc::TaskGraphRunner> task_graph_runner_;
+  scoped_ptr<base::SimpleThread> raster_thread_;
 
   // The contents of this map and its methods may only be used on the compositor
   // thread.

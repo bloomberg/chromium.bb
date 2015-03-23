@@ -170,14 +170,11 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    TaskGraphRunner* task_graph_runner,
     int id) {
-  return make_scoped_ptr(new LayerTreeHostImpl(settings,
-                                               client,
-                                               proxy,
-                                               rendering_stats_instrumentation,
-                                               shared_bitmap_manager,
-                                               gpu_memory_buffer_manager,
-                                               id));
+  return make_scoped_ptr(new LayerTreeHostImpl(
+      settings, client, proxy, rendering_stats_instrumentation,
+      shared_bitmap_manager, gpu_memory_buffer_manager, task_graph_runner, id));
 }
 
 LayerTreeHostImpl::LayerTreeHostImpl(
@@ -187,6 +184,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    TaskGraphRunner* task_graph_runner,
     int id)
     : client_(client),
       proxy_(proxy),
@@ -225,6 +223,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       micro_benchmark_controller_(this),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      task_graph_runner_(task_graph_runner),
       id_(id),
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
@@ -2032,8 +2031,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
         ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
     *tile_task_worker_pool = BitmapTileTaskWorkerPool::Create(
-        task_runner, TileTaskWorkerPool::GetTaskGraphRunner(),
-        resource_provider_.get());
+        task_runner, task_graph_runner_, resource_provider_.get());
     return;
   }
 
@@ -2042,7 +2040,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
         ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
     *tile_task_worker_pool = GpuTileTaskWorkerPool::Create(
-        task_runner, TileTaskWorkerPool::GetTaskGraphRunner(),
+        task_runner, task_graph_runner_,
         static_cast<GpuRasterizer*>(rasterizer_.get()));
     return;
   }
@@ -2066,7 +2064,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
         single_thread_synchronous_task_graph_runner_.reset(new TaskGraphRunner);
         task_graph_runner = single_thread_synchronous_task_graph_runner_.get();
       } else {
-        task_graph_runner = TileTaskWorkerPool::GetTaskGraphRunner();
+        task_graph_runner = task_graph_runner_;
       }
 
       *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
@@ -2082,9 +2080,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
           ResourcePool::Create(resource_provider_.get(), GL_TEXTURE_2D);
 
       *tile_task_worker_pool = OneCopyTileTaskWorkerPool::Create(
-          task_runner, TileTaskWorkerPool::GetTaskGraphRunner(),
-          context_provider, resource_provider_.get(),
-          staging_resource_pool_.get());
+          task_runner, task_graph_runner_, context_provider,
+          resource_provider_.get(), staging_resource_pool_.get());
       return;
     }
   }
@@ -2098,7 +2095,7 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
       resource_provider_.get(), GL_TEXTURE_2D);
 
   *tile_task_worker_pool = PixelBufferTileTaskWorkerPool::Create(
-      task_runner, TileTaskWorkerPool::GetTaskGraphRunner(), context_provider,
+      task_runner, task_graph_runner_, context_provider,
       resource_provider_.get(),
       GetMaxTransferBufferUsageBytes(context_provider->ContextCapabilities(),
                                      settings_.renderer_settings.refresh_rate));

@@ -10,13 +10,15 @@
 namespace cc {
 
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(Proxy* proxy,
-                                             SharedBitmapManager* manager)
+                                             SharedBitmapManager* manager,
+                                             TaskGraphRunner* task_graph_runner)
     : LayerTreeHostImpl(LayerTreeSettings(),
                         &client_,
                         proxy,
                         &stats_instrumentation_,
                         manager,
                         NULL,
+                        task_graph_runner,
                         0) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());
@@ -30,13 +32,15 @@ FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(Proxy* proxy,
 
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
                                              Proxy* proxy,
-                                             SharedBitmapManager* manager)
+                                             SharedBitmapManager* manager,
+                                             TaskGraphRunner* task_graph_runner)
     : LayerTreeHostImpl(settings,
                         &client_,
                         proxy,
                         &stats_instrumentation_,
                         manager,
                         NULL,
+                        task_graph_runner,
                         0) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());

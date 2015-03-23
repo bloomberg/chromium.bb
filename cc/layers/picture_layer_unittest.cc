@@ -62,8 +62,8 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
     DebugScopedSetImplThread impl_thread(&proxy);
 
     TestSharedBitmapManager shared_bitmap_manager;
-    FakeLayerTreeHostImpl host_impl(
-        ImplSidePaintingSettings(), &proxy, &shared_bitmap_manager);
+    FakeLayerTreeHostImpl host_impl(ImplSidePaintingSettings(), &proxy,
+                                    &shared_bitmap_manager, nullptr);
     host_impl.CreatePendingTree();
     scoped_ptr<FakePictureLayerImpl> layer_impl =
         FakePictureLayerImpl::Create(host_impl.pending_tree(), 1);
@@ -130,12 +130,12 @@ TEST(PictureLayerTest, NonMonotonicSourceFrameNumber) {
 
   scoped_ptr<LayerTreeHost> host1 = LayerTreeHost::CreateSingleThreaded(
       &host_client1, &host_client1, shared_bitmap_manager.get(), nullptr,
-      settings, base::MessageLoopProxy::current(), nullptr);
+      nullptr, settings, base::MessageLoopProxy::current(), nullptr);
   host_client1.SetLayerTreeHost(host1.get());
 
   scoped_ptr<LayerTreeHost> host2 = LayerTreeHost::CreateSingleThreaded(
       &host_client2, &host_client2, shared_bitmap_manager.get(), nullptr,
-      settings, base::MessageLoopProxy::current(), nullptr);
+      nullptr, settings, base::MessageLoopProxy::current(), nullptr);
   host_client2.SetLayerTreeHost(host2.get());
 
   // The PictureLayer is put in one LayerTreeHost.

@@ -142,6 +142,7 @@ class CC_EXPORT LayerTreeHostImpl
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      TaskGraphRunner* task_graph_runner,
       int id);
   ~LayerTreeHostImpl() override;
 
@@ -531,6 +532,7 @@ class CC_EXPORT LayerTreeHostImpl
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      TaskGraphRunner* task_graph_runner,
       int id);
 
   // Virtual for testing.
@@ -734,6 +736,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  TaskGraphRunner* task_graph_runner_;
   int id_;
 
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;

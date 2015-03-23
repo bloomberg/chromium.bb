@@ -12,9 +12,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
+#include "cc/resources/task_graph_runner.h"
 #include "cc/surfaces/onscreen_display_client.h"
 #include "cc/surfaces/surface_display_output_surface.h"
 #include "cc/surfaces/surface_manager.h"
@@ -65,6 +67,24 @@ using gpu::gles2::GLES2Interface;
 static const int kNumRetriesBeforeSoftwareFallback = 4;
 
 namespace content {
+namespace {
+
+class RasterThread : public base::SimpleThread {
+ public:
+  RasterThread(cc::TaskGraphRunner* task_graph_runner)
+      : base::SimpleThread("UICompositorWorker"),
+        task_graph_runner_(task_graph_runner) {}
+
+  // Overridden from base::SimpleThread:
+  void Run() override { task_graph_runner_->Run(); }
+
+ private:
+  cc::TaskGraphRunner* task_graph_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(RasterThread);
+};
+
+}  // namespace
 
 struct GpuProcessTransportFactory::PerCompositorData {
   int surface_id;
@@ -77,9 +97,15 @@ struct GpuProcessTransportFactory::PerCompositorData {
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
     : next_surface_id_namespace_(1u),
+      task_graph_runner_(new cc::TaskGraphRunner),
       callback_factory_(this) {
   if (UseSurfacesEnabled())
     surface_manager_ = make_scoped_ptr(new cc::SurfaceManager);
+
+  if (ui::IsUIImplSidePaintingEnabled()) {
+    raster_thread_.reset(new RasterThread(task_graph_runner_.get()));
+    raster_thread_->Start();
+  }
 }
 
 GpuProcessTransportFactory::~GpuProcessTransportFactory() {
@@ -87,6 +113,10 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
 
   // Make sure the lost context callback doesn't try to run during destruction.
   callback_factory_.InvalidateWeakPtrs();
+
+  task_graph_runner_->Shutdown();
+  if (raster_thread_)
+    raster_thread_->Join();
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
@@ -369,6 +399,10 @@ cc::SharedBitmapManager* GpuProcessTransportFactory::GetSharedBitmapManager() {
 gpu::GpuMemoryBufferManager*
 GpuProcessTransportFactory::GetGpuMemoryBufferManager() {
   return BrowserGpuMemoryBufferManager::current();
+}
+
+cc::TaskGraphRunner* GpuProcessTransportFactory::GetTaskGraphRunner() {
+  return task_graph_runner_.get();
 }
 
 ui::ContextFactory* GpuProcessTransportFactory::GetContextFactory() {

@@ -14,10 +14,13 @@ namespace cc {
 
 class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
  public:
-  FakeLayerTreeHostImpl(Proxy* proxy, SharedBitmapManager* manager);
+  FakeLayerTreeHostImpl(Proxy* proxy,
+                        SharedBitmapManager* manager,
+                        TaskGraphRunner* task_graph_runner);
   FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
                         Proxy* proxy,
-                        SharedBitmapManager* manager);
+                        SharedBitmapManager* manager,
+                        TaskGraphRunner* task_graph_runner);
   ~FakeLayerTreeHostImpl() override;
 
   void ForcePrepareToDraw() {

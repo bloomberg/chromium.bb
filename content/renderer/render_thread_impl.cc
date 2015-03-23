@@ -24,6 +24,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/simple_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
@@ -250,6 +251,22 @@ class RenderViewZoomer : public RenderViewVisitor {
   const double zoom_level_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
+};
+
+class CompositorRasterThread : public base::SimpleThread {
+ public:
+  CompositorRasterThread(cc::TaskGraphRunner* task_graph_runner,
+                         const std::string& name_prefix)
+      : base::SimpleThread(name_prefix),
+        task_graph_runner_(task_graph_runner) {}
+
+  // Overridden from base::SimpleThread:
+  void Run() override { task_graph_runner_->Run(); }
+
+ private:
+  cc::TaskGraphRunner* task_graph_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(CompositorRasterThread);
 };
 
 std::string HostToCustomHistogramSuffix(const std::string& host) {
@@ -620,6 +637,10 @@ void RenderThreadImpl::Init() {
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this))));
 
+  compositor_task_graph_runner_.reset(new cc::TaskGraphRunner);
+
+  is_gather_pixel_refs_enabled_ = false;
+
   if (is_impl_side_painting_enabled_) {
     int num_raster_threads = 0;
     std::string string_value =
@@ -629,19 +650,30 @@ void RenderThreadImpl::Init() {
     DCHECK(parsed_num_raster_threads) << string_value;
     DCHECK_GT(num_raster_threads, 0);
 
-    // In single process, browser compositor already initialized and set up
-    // worker threads, can't change the number later for the renderer compistor
-    // in the same process.
-    if (!command_line.HasSwitch(switches::kSingleProcess))
-      cc::TileTaskWorkerPool::SetNumWorkerThreads(num_raster_threads);
+    // Note: Currently, gathering of pixel refs when using a single
+    // raster thread doesn't provide any benefit. This might change
+    // in the future but we avoid it for now to reduce the cost of
+    // Picture::Create.
+    is_gather_pixel_refs_enabled_ = num_raster_threads > 1;
 
+    while (compositor_raster_threads_.size() <
+           static_cast<size_t>(num_raster_threads)) {
+      scoped_ptr<CompositorRasterThread> raster_thread(
+          new CompositorRasterThread(
+              compositor_task_graph_runner_.get(),
+              base::StringPrintf(
+                  "CompositorWorker%u",
+                  static_cast<unsigned>(compositor_raster_threads_.size() + 1))
+                  .c_str()));
+      raster_thread->Start();
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-    if (!command_line.HasSwitch(
-            switches::kUseNormalPriorityForTileTaskWorkerThreads)) {
-      cc::TileTaskWorkerPool::SetWorkerThreadPriority(
-          base::kThreadPriority_Background);
-    }
+      if (!command_line.HasSwitch(
+              switches::kUseNormalPriorityForTileTaskWorkerThreads)) {
+        raster_thread->SetThreadPriority(base::kThreadPriority_Background);
+      }
 #endif
+      compositor_raster_threads_.push_back(raster_thread.Pass());
+    }
   }
 
   // In single process, browser main loop set up the discardable memory
@@ -721,6 +753,14 @@ void RenderThreadImpl::Shutdown() {
   audio_message_filter_ = NULL;
 
   compositor_thread_.reset();
+
+  // Shutdown raster threads.
+  compositor_task_graph_runner_->Shutdown();
+  while (!compositor_raster_threads_.empty()) {
+    compositor_raster_threads_.back()->Join();
+    compositor_raster_threads_.pop_back();
+  }
+  compositor_task_graph_runner_.reset();
 
   main_input_callback_.Cancel();
   input_handler_manager_.reset();
@@ -1391,6 +1431,14 @@ RenderThreadImpl::CreateExternalBeginFrameSource(int routing_id) {
 #endif
   return make_scoped_ptr(new CompositorExternalBeginFrameSource(
       compositor_message_filter_.get(), sync_message_filter(), routing_id));
+}
+
+cc::TaskGraphRunner* RenderThreadImpl::GetTaskGraphRunner() {
+  return compositor_task_graph_runner_.get();
+}
+
+bool RenderThreadImpl::IsGatherPixelRefsEnabled() {
+  return is_gather_pixel_refs_enabled_;
 }
 
 bool RenderThreadImpl::IsMainThread() {

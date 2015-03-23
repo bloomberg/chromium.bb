@@ -27,6 +27,7 @@
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -71,7 +72,10 @@ class PictureLayerImplTest : public testing::Test {
  public:
   PictureLayerImplTest()
       : proxy_(base::MessageLoopProxy::current()),
-        host_impl_(LowResTilingsSettings(), &proxy_, &shared_bitmap_manager_),
+        host_impl_(LowResTilingsSettings(),
+                   &proxy_,
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_),
         root_id_(6),
         id_(7),
         pending_layer_(nullptr),
@@ -82,7 +86,10 @@ class PictureLayerImplTest : public testing::Test {
 
   explicit PictureLayerImplTest(const LayerTreeSettings& settings)
       : proxy_(base::MessageLoopProxy::current()),
-        host_impl_(settings, &proxy_, &shared_bitmap_manager_),
+        host_impl_(settings,
+                   &proxy_,
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_),
         root_id_(6),
         id_(7) {
     host_impl_.SetViewportSize(gfx::Size(10000, 10000));
@@ -309,6 +316,7 @@ class PictureLayerImplTest : public testing::Test {
 
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   int root_id_;
   int id_;

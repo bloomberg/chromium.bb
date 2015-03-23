@@ -9,6 +9,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +21,7 @@ class ScrollbarAnimationControllerThinningTest
       public ScrollbarAnimationControllerClient {
  public:
   ScrollbarAnimationControllerThinningTest()
-      : host_impl_(&proxy_, &shared_bitmap_manager_) {}
+      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_) {}
 
   void StartAnimatingScrollbarAnimationController(
       ScrollbarAnimationController* controller) override {
@@ -74,6 +75,7 @@ class ScrollbarAnimationControllerThinningTest
 
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   scoped_ptr<ScrollbarAnimationControllerThinning> scrollbar_controller_;
   scoped_ptr<LayerImpl> clip_layer_;

@@ -83,6 +83,7 @@ class CC_EXPORT LayerTreeSettings {
   bool record_full_layer;
   bool use_display_lists;
   bool verify_property_trees;
+  bool gather_pixel_refs;
 
   LayerTreeDebugState initial_debug_state;
 

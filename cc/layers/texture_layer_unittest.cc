@@ -24,6 +24,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/test/layer_tree_test.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
@@ -51,7 +52,7 @@ gpu::Mailbox MailboxFromChar(char value) {
 class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
-      : LayerTreeHost(client, nullptr, nullptr, LayerTreeSettings()) {
+      : LayerTreeHost(client, nullptr, nullptr, nullptr, LayerTreeSettings()) {
     InitializeSingleThreaded(client,
                              base::MessageLoopProxy::current(),
                              nullptr);
@@ -172,7 +173,7 @@ class TextureLayerTest : public testing::Test {
   TextureLayerTest()
       : fake_client_(
             FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D)),
-        host_impl_(&proxy_, &shared_bitmap_manager_),
+        host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_),
         test_data_(&shared_bitmap_manager_) {}
 
  protected:
@@ -195,6 +196,7 @@ class TextureLayerTest : public testing::Test {
   FakeImplProxy proxy_;
   FakeLayerTreeHostClient fake_client_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   CommonMailboxObjects test_data_;
 };

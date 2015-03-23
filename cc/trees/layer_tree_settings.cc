@@ -70,7 +70,8 @@ LayerTreeSettings::LayerTreeSettings()
       use_occlusion_for_tile_prioritization(false),
       record_full_layer(false),
       use_display_lists(false),
-      verify_property_trees(false) {
+      verify_property_trees(false),
+      gather_pixel_refs(false) {
 }
 
 LayerTreeSettings::~LayerTreeSettings() {}

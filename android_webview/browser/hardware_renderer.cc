@@ -104,7 +104,7 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
   settings.single_thread_proxy_scheduler = false;
 
   layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
-      this, this, nullptr, nullptr, settings, nullptr, nullptr);
+      this, this, nullptr, nullptr, nullptr, settings, nullptr, nullptr);
   layer_tree_host_->SetRootLayer(root_layer_);
   layer_tree_host_->SetLayerTreeHostClientReady();
   layer_tree_host_->set_has_transparent_background(true);

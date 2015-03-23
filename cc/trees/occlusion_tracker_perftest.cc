@@ -36,13 +36,9 @@ class OcclusionTrackerPerfTest : public testing::Test {
   void CreateHost() {
     LayerTreeSettings settings;
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    host_impl_ = LayerTreeHostImpl::Create(settings,
-                                           &client_,
-                                           &proxy_,
-                                           &stats_,
-                                           shared_bitmap_manager_.get(),
-                                           NULL,
-                                           1);
+    host_impl_ =
+        LayerTreeHostImpl::Create(settings, &client_, &proxy_, &stats_,
+                                  shared_bitmap_manager_.get(), NULL, NULL, 1);
     host_impl_->InitializeRenderer(FakeOutputSurface::Create3d());
 
     scoped_ptr<LayerImpl> root_layer = LayerImpl::Create(active_tree(), 1);

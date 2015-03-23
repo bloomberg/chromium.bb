@@ -95,6 +95,7 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   recording_source_->DidMoveToNewCompositor();
   recording_source_->SetSlowdownRasterScaleFactor(
       host->debug_state().slow_down_raster_scale_factor);
+  recording_source_->SetGatherPixelRefs(host->settings().gather_pixel_refs);
 
   DCHECK(host->settings().raster_enabled);
 }

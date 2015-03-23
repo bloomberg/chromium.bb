@@ -27,6 +27,7 @@
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -142,39 +143,38 @@ class TileTaskWorkerPoolTest
       case TILE_TASK_WORKER_POOL_TYPE_PIXEL_BUFFER:
         Create3dOutputSurfaceAndResourceProvider();
         tile_task_worker_pool_ = PixelBufferTileTaskWorkerPool::Create(
-            base::MessageLoopProxy::current().get(),
-            TileTaskWorkerPool::GetTaskGraphRunner(), context_provider_.get(),
-            resource_provider_.get(), kMaxTransferBufferUsageBytes);
+            base::MessageLoopProxy::current().get(), &task_graph_runner_,
+            context_provider_.get(), resource_provider_.get(),
+            kMaxTransferBufferUsageBytes);
         break;
       case TILE_TASK_WORKER_POOL_TYPE_ZERO_COPY:
         Create3dOutputSurfaceAndResourceProvider();
         tile_task_worker_pool_ = ZeroCopyTileTaskWorkerPool::Create(
-            base::MessageLoopProxy::current().get(),
-            TileTaskWorkerPool::GetTaskGraphRunner(), resource_provider_.get());
+            base::MessageLoopProxy::current().get(), &task_graph_runner_,
+            resource_provider_.get());
         break;
       case TILE_TASK_WORKER_POOL_TYPE_ONE_COPY:
         Create3dOutputSurfaceAndResourceProvider();
         staging_resource_pool_ = ResourcePool::Create(resource_provider_.get(),
                                                       GL_TEXTURE_2D);
         tile_task_worker_pool_ = OneCopyTileTaskWorkerPool::Create(
-            base::MessageLoopProxy::current().get(),
-            TileTaskWorkerPool::GetTaskGraphRunner(), context_provider_.get(),
-            resource_provider_.get(), staging_resource_pool_.get());
+            base::MessageLoopProxy::current().get(), &task_graph_runner_,
+            context_provider_.get(), resource_provider_.get(),
+            staging_resource_pool_.get());
         break;
       case TILE_TASK_WORKER_POOL_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
         rasterizer_ = GpuRasterizer::Create(
             context_provider_.get(), resource_provider_.get(), false, false, 0);
         tile_task_worker_pool_ = GpuTileTaskWorkerPool::Create(
-            base::MessageLoopProxy::current().get(),
-            TileTaskWorkerPool::GetTaskGraphRunner(),
+            base::MessageLoopProxy::current().get(), &task_graph_runner_,
             static_cast<GpuRasterizer*>(rasterizer_.get()));
         break;
       case TILE_TASK_WORKER_POOL_TYPE_BITMAP:
         CreateSoftwareOutputSurfaceAndResourceProvider();
         tile_task_worker_pool_ = BitmapTileTaskWorkerPool::Create(
-            base::MessageLoopProxy::current().get(),
-            TileTaskWorkerPool::GetTaskGraphRunner(), resource_provider_.get());
+            base::MessageLoopProxy::current().get(), &task_graph_runner_,
+            resource_provider_.get());
         break;
     }
 
@@ -331,6 +331,7 @@ class TileTaskWorkerPoolTest
   scoped_ptr<TileTaskWorkerPool> tile_task_worker_pool_;
   TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   base::CancelableClosure timeout_;
   UniqueNotifier all_tile_tasks_finished_;
   int timeout_seconds_;

@@ -16,6 +16,7 @@
 #include "cc/test/layer_test_common.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,7 +42,7 @@ namespace {
 class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
-      : LayerTreeHost(client, nullptr, nullptr, LayerTreeSettings()) {
+      : LayerTreeHost(client, nullptr, nullptr, nullptr, LayerTreeSettings()) {
     InitializeSingleThreaded(client,
                              base::MessageLoopProxy::current(),
                              nullptr);
@@ -60,7 +61,7 @@ class MockLayerPainter : public LayerPainter {
 class LayerTest : public testing::Test {
  public:
   LayerTest()
-      : host_impl_(&proxy_, &shared_bitmap_manager_),
+      : host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_),
         fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
  protected:
@@ -131,6 +132,7 @@ class LayerTest : public testing::Test {
 
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
 
   FakeLayerTreeHostClient fake_client_;
@@ -935,24 +937,16 @@ class LayerTreeHostFactory {
 
   scoped_ptr<LayerTreeHost> Create() {
     return LayerTreeHost::CreateSingleThreaded(
-               &client_,
-               &client_,
-               shared_bitmap_manager_.get(),
-               gpu_memory_buffer_manager_.get(),
-               LayerTreeSettings(),
-               base::MessageLoopProxy::current(),
-               nullptr);
+        &client_, &client_, shared_bitmap_manager_.get(),
+        gpu_memory_buffer_manager_.get(), nullptr, LayerTreeSettings(),
+        base::MessageLoopProxy::current(), nullptr);
   }
 
   scoped_ptr<LayerTreeHost> Create(LayerTreeSettings settings) {
     return LayerTreeHost::CreateSingleThreaded(
-               &client_,
-               &client_,
-               shared_bitmap_manager_.get(),
-               gpu_memory_buffer_manager_.get(),
-               settings,
-               base::MessageLoopProxy::current(),
-               nullptr);
+        &client_, &client_, shared_bitmap_manager_.get(),
+        gpu_memory_buffer_manager_.get(), nullptr, settings,
+        base::MessageLoopProxy::current(), nullptr);
   }
 
  private:

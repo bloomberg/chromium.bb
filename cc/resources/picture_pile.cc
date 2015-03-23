@@ -10,7 +10,6 @@
 
 #include "cc/base/region.h"
 #include "cc/resources/picture_pile_impl.h"
-#include "cc/resources/tile_task_worker_pool.h"
 #include "skia/ext/analysis_canvas.h"
 
 namespace {
@@ -166,6 +165,7 @@ PicturePile::PicturePile(float min_contents_scale,
                          const gfx::Size& tile_grid_size)
     : min_contents_scale_(0),
       slow_down_raster_scale_factor_for_debug_(0),
+      gather_pixel_refs_(false),
       has_any_recordings_(false),
       clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
       requires_clear_(true),
@@ -539,15 +539,9 @@ void PicturePile::CreatePictures(ContentLayerClient* painter,
     int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
     scoped_refptr<Picture> picture;
 
-    // Note: Currently, gathering of pixel refs when using a single
-    // raster thread doesn't provide any benefit. This might change
-    // in the future but we avoid it for now to reduce the cost of
-    // Picture::Create.
-    bool gather_pixel_refs = TileTaskWorkerPool::GetNumWorkerThreads() > 1;
-
     for (int i = 0; i < repeat_count; i++) {
       picture = Picture::Create(padded_record_rect, painter, tile_grid_size_,
-                                gather_pixel_refs, recording_mode);
+                                gather_pixel_refs_, recording_mode);
       // Note the '&&' with previous is-suitable state.
       // This means that once a picture-pile becomes unsuitable for gpu
       // rasterization due to some content, it will continue to be unsuitable
@@ -621,6 +615,10 @@ void PicturePile::SetMinContentsScale(float min_contents_scale) {
 
 void PicturePile::SetSlowdownRasterScaleFactor(int factor) {
   slow_down_raster_scale_factor_for_debug_ = factor;
+}
+
+void PicturePile::SetGatherPixelRefs(bool gather_pixel_refs) {
+  gather_pixel_refs_ = gather_pixel_refs;
 }
 
 void PicturePile::SetBackgroundColor(SkColor background_color) {

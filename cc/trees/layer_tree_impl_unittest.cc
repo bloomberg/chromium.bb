@@ -13,6 +13,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_host_common_test.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -25,8 +26,8 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
     LayerTreeSettings settings;
     settings.layer_transforms_should_scale_layer_contents = true;
     settings.scrollbar_show_scale_threshold = 1.1f;
-    host_impl_.reset(
-        new FakeLayerTreeHostImpl(settings, &proxy_, &shared_bitmap_manager_));
+    host_impl_.reset(new FakeLayerTreeHostImpl(
+        settings, &proxy_, &shared_bitmap_manager_, &task_graph_runner_));
     EXPECT_TRUE(host_impl_->InitializeRenderer(FakeOutputSurface::Create3d()));
   }
 
@@ -40,6 +41,7 @@ class LayerTreeImplTest : public LayerTreeHostCommonTest {
 
  private:
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   FakeImplProxy proxy_;
   scoped_ptr<FakeLayerTreeHostImpl> host_impl_;
 };

@@ -14,6 +14,9 @@ FakeCompositorDependencies::FakeCompositorDependencies()
     : use_single_thread_scheduler_(true) {
 }
 
+FakeCompositorDependencies::~FakeCompositorDependencies() {
+}
+
 bool FakeCompositorDependencies::IsImplSidePaintingEnabled() {
   return true;
 }
@@ -95,6 +98,14 @@ scoped_ptr<cc::BeginFrameSource>
 FakeCompositorDependencies::CreateExternalBeginFrameSource(int routing_id) {
   double refresh_rate = 200.0;
   return make_scoped_ptr(new cc::FakeExternalBeginFrameSource(refresh_rate));
+}
+
+cc::TaskGraphRunner* FakeCompositorDependencies::GetTaskGraphRunner() {
+  return &task_graph_runner_;
+}
+
+bool FakeCompositorDependencies::IsGatherPixelRefsEnabled() {
+  return false;
 }
 
 }  // namespace content

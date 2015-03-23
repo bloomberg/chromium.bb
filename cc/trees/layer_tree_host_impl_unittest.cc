@@ -54,6 +54,7 @@
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
@@ -86,6 +87,7 @@ class LayerTreeHostImplTest : public testing::Test,
         always_main_thread_blocked_(&proxy_),
         shared_bitmap_manager_(new TestSharedBitmapManager),
         gpu_memory_buffer_manager_(new TestGpuMemoryBufferManager),
+        task_graph_runner_(new TestTaskGraphRunner),
         on_can_draw_state_changed_called_(false),
         did_notify_ready_to_activate_(false),
         did_request_commit_(false),
@@ -167,13 +169,10 @@ class LayerTreeHostImplTest : public testing::Test,
 
   virtual bool CreateHostImpl(const LayerTreeSettings& settings,
                               scoped_ptr<OutputSurface> output_surface) {
-    host_impl_ = LayerTreeHostImpl::Create(settings,
-                                           this,
-                                           &proxy_,
-                                           &stats_instrumentation_,
-                                           shared_bitmap_manager_.get(),
-                                           gpu_memory_buffer_manager_.get(),
-                                           0);
+    host_impl_ = LayerTreeHostImpl::Create(
+        settings, this, &proxy_, &stats_instrumentation_,
+        shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
+        task_graph_runner_.get(), 0);
     bool init = host_impl_->InitializeRenderer(output_surface.Pass());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
     return init;
@@ -395,6 +394,7 @@ class LayerTreeHostImplTest : public testing::Test,
 
   scoped_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  scoped_ptr<TestTaskGraphRunner> task_graph_runner_;
   scoped_ptr<LayerTreeHostImpl> host_impl_;
   FakeRenderingStatsInstrumentation stats_instrumentation_;
   bool on_can_draw_state_changed_called_;
@@ -1546,6 +1546,7 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
                           proxy,
                           rendering_stats_instrumentation,
                           manager,
+                          NULL,
                           NULL,
                           0) {}
 
@@ -5046,16 +5047,10 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   // that we can force partial swap enabled.
   LayerTreeSettings settings;
   settings.renderer_settings.partial_swap_enabled = true;
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
   scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl =
-      LayerTreeHostImpl::Create(settings,
-                                this,
-                                &proxy_,
-                                &stats_instrumentation_,
-                                shared_bitmap_manager.get(),
-                                NULL,
-                                0);
+      LayerTreeHostImpl::Create(
+          settings, this, &proxy_, &stats_instrumentation_,
+          shared_bitmap_manager_.get(), NULL, task_graph_runner_.get(), 0);
   layer_tree_host_impl->InitializeRenderer(output_surface.Pass());
   layer_tree_host_impl->SetViewportSize(gfx::Size(500, 500));
 
@@ -5343,7 +5338,7 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   LayerTreeSettings settings;
   settings.renderer_settings.partial_swap_enabled = partial_swap;
   scoped_ptr<LayerTreeHostImpl> my_host_impl = LayerTreeHostImpl::Create(
-      settings, client, proxy, stats_instrumentation, manager, NULL, 0);
+      settings, client, proxy, stats_instrumentation, manager, NULL, NULL, 0);
   my_host_impl->InitializeRenderer(output_surface.Pass());
   my_host_impl->SetViewportSize(gfx::Size(100, 100));
 
@@ -6669,13 +6664,10 @@ TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails) {
 // doesn't support memory management extensions.
 TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
   LayerTreeSettings settings;
-  host_impl_ = LayerTreeHostImpl::Create(settings,
-                                         this,
-                                         &proxy_,
-                                         &stats_instrumentation_,
-                                         shared_bitmap_manager_.get(),
-                                         gpu_memory_buffer_manager_.get(),
-                                         0);
+  host_impl_ = LayerTreeHostImpl::Create(
+      settings, this, &proxy_, &stats_instrumentation_,
+      shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
+      task_graph_runner_.get(), 0);
 
   scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create()));
@@ -6716,7 +6708,7 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   LayerTreeSettings settings;
   settings.gpu_rasterization_enabled = true;
   host_impl_ = LayerTreeHostImpl::Create(
-      settings, this, &proxy_, &stats_instrumentation_, NULL, NULL, 0);
+      settings, this, &proxy_, &stats_instrumentation_, NULL, NULL, NULL, 0);
   host_impl_->SetUseGpuRasterization(true);
   host_impl_->SetVisible(true);
   host_impl_->SetMemoryPolicy(policy1);
@@ -6779,8 +6771,9 @@ class LayerTreeHostImplTestPrepareTiles : public LayerTreeHostImplTest {
     LayerTreeSettings settings;
     settings.impl_side_painting = true;
 
-    fake_host_impl_ = new FakeLayerTreeHostImpl(
-        settings, &proxy_, shared_bitmap_manager_.get());
+    fake_host_impl_ = new FakeLayerTreeHostImpl(settings, &proxy_,
+                                                shared_bitmap_manager_.get(),
+                                                task_graph_runner_.get());
     host_impl_.reset(fake_host_impl_);
     host_impl_->InitializeRenderer(CreateOutputSurface());
     host_impl_->SetViewportSize(gfx::Size(10, 10));

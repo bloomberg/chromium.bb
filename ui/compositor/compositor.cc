@@ -134,12 +134,15 @@ Compositor::Compositor(gfx::AcceleratedWidget widget,
   settings.use_zero_copy = IsUIZeroCopyEnabled();
   settings.use_one_copy = IsUIOneCopyEnabled();
   settings.use_image_texture_target = context_factory_->GetImageTextureTarget();
+  // Note: gathering of pixel refs is only needed when using multiple
+  // raster threads.
+  settings.gather_pixel_refs = false;
 
   base::TimeTicks before_create = base::TimeTicks::Now();
   host_ = cc::LayerTreeHost::CreateSingleThreaded(
       this, this, context_factory_->GetSharedBitmapManager(),
-      context_factory_->GetGpuMemoryBufferManager(), settings, task_runner_,
-      nullptr);
+      context_factory_->GetGpuMemoryBufferManager(),
+      context_factory_->GetTaskGraphRunner(), settings, task_runner_, nullptr);
   UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
                       base::TimeTicks::Now() - before_create);
   host_->SetRootLayer(root_web_layer_);

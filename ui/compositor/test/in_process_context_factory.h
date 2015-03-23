@@ -7,6 +7,7 @@
 
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "ui/compositor/compositor.h"
 
 namespace base {
@@ -47,6 +48,7 @@ class InProcessContextFactory : public ContextFactory {
   uint32 GetImageTextureTarget() override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
+  cc::TaskGraphRunner* GetTaskGraphRunner() override;
   scoped_ptr<cc::SurfaceIdAllocator> CreateSurfaceIdAllocator() override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;
@@ -55,6 +57,7 @@ class InProcessContextFactory : public ContextFactory {
   scoped_refptr<cc::ContextProvider> shared_main_thread_contexts_;
   cc::TestSharedBitmapManager shared_bitmap_manager_;
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  cc::TestTaskGraphRunner task_graph_runner_;
   uint32_t next_surface_id_namespace_;
   bool use_test_surface_;
   bool context_factory_for_test_;

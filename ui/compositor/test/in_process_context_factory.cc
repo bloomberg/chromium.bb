@@ -188,6 +188,10 @@ InProcessContextFactory::GetGpuMemoryBufferManager() {
   return &gpu_memory_buffer_manager_;
 }
 
+cc::TaskGraphRunner* InProcessContextFactory::GetTaskGraphRunner() {
+  return &task_graph_runner_;
+}
+
 scoped_ptr<cc::SurfaceIdAllocator>
 InProcessContextFactory::CreateSurfaceIdAllocator() {
   return make_scoped_ptr(

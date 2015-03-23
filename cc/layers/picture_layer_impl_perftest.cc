@@ -13,6 +13,7 @@
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -41,7 +42,8 @@ class PictureLayerImplPerfTest : public testing::Test {
       : proxy_(base::MessageLoopProxy::current()),
         host_impl_(ImplSidePaintingSettings(),
                    &proxy_,
-                   &shared_bitmap_manager_),
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_),
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {}
@@ -170,6 +172,7 @@ class PictureLayerImplPerfTest : public testing::Test {
 
  protected:
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
   FakePictureLayerImpl* pending_layer_;

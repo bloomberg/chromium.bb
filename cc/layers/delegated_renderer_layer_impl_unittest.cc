@@ -18,6 +18,7 @@
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -37,8 +38,8 @@ class DelegatedRendererLayerImplTest : public testing::Test {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
 
-    host_impl_.reset(
-        new FakeLayerTreeHostImpl(settings, &proxy_, &shared_bitmap_manager_));
+    host_impl_.reset(new FakeLayerTreeHostImpl(
+        settings, &proxy_, &shared_bitmap_manager_, &task_graph_runner_));
     host_impl_->InitializeRenderer(FakeOutputSurface::Create3d());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
   }
@@ -48,6 +49,7 @@ class DelegatedRendererLayerImplTest : public testing::Test {
   DebugScopedSetImplThreadAndMainThreadBlocked
       always_impl_thread_and_main_thread_blocked_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<LayerTreeHostImpl> host_impl_;
 };
 

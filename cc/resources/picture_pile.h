@@ -35,6 +35,7 @@ class CC_EXPORT PicturePile : public RecordingSource {
   gfx::Size GetSize() const final;
   void SetEmptyBounds() override;
   void SetSlowdownRasterScaleFactor(int factor) override;
+  void SetGatherPixelRefs(bool gather_pixel_refs) override;
   void SetBackgroundColor(SkColor background_color) override;
   void SetRequiresClear(bool requires_clear) override;
   bool IsSuitableForGpuRasterization() const override;
@@ -98,6 +99,7 @@ class CC_EXPORT PicturePile : public RecordingSource {
   float min_contents_scale_;
   gfx::Size tile_grid_size_;
   int slow_down_raster_scale_factor_for_debug_;
+  bool gather_pixel_refs_;
   // A hint about whether there are any recordings. This may be a false
   // positive.
   bool has_any_recordings_;

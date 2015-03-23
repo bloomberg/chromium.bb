@@ -61,6 +61,7 @@ class RenderingStatsInstrumentation;
 class ResourceProvider;
 class ResourceUpdateQueue;
 class SharedBitmapManager;
+class TaskGraphRunner;
 class TopControlsManager;
 class UIResourceRequest;
 struct PendingPageScaleAnimation;
@@ -75,6 +76,7 @@ class CC_EXPORT LayerTreeHost {
       LayerTreeHostClient* client,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      TaskGraphRunner* task_graph_runner,
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
@@ -85,6 +87,7 @@ class CC_EXPORT LayerTreeHost {
       LayerTreeHostSingleThreadClient* single_thread_client,
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      TaskGraphRunner* task_graph_runner,
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_ptr<BeginFrameSource> external_begin_frame_source);
@@ -307,6 +310,7 @@ class CC_EXPORT LayerTreeHost {
   LayerTreeHost(LayerTreeHostClient* client,
                 SharedBitmapManager* shared_bitmap_manager,
                 gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                TaskGraphRunner* task_graph_runner,
                 const LayerTreeSettings& settings);
   void InitializeThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -440,6 +444,7 @@ class CC_EXPORT LayerTreeHost {
 
   SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
+  TaskGraphRunner* task_graph_runner_;
 
   ScopedPtrVector<SwapPromise> swap_promise_list_;
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;

@@ -13,6 +13,7 @@
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,7 +38,8 @@ class PictureImageLayerImplTest : public testing::Test {
       : proxy_(base::MessageLoopProxy::current()),
         host_impl_(ImplSidePaintingSettings(),
                    &proxy_,
-                   &shared_bitmap_manager_) {
+                   &shared_bitmap_manager_,
+                   &task_graph_runner_) {
     host_impl_.CreatePendingTree();
     host_impl_.InitializeRenderer(FakeOutputSurface::Create3d());
   }
@@ -82,8 +84,9 @@ class PictureImageLayerImplTest : public testing::Test {
 
  protected:
   FakeImplProxy proxy_;
-  FakeLayerTreeHostImpl host_impl_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  TestTaskGraphRunner task_graph_runner_;
+  FakeLayerTreeHostImpl host_impl_;
 };
 
 TEST_F(PictureImageLayerImplTest, CalculateContentsScale) {

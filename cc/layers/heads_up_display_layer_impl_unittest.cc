@@ -32,7 +32,7 @@ void CheckDrawLayer(HeadsUpDisplayLayerImpl* layer,
 TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
-  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager);
+  FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager, nullptr);
   host_impl.CreatePendingTree();
   host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
   scoped_ptr<HeadsUpDisplayLayerImpl> layer =
