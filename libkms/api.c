@@ -29,9 +29,12 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "libdrm.h"
 #include "internal.h"
 
 int kms_create(int fd, struct kms_driver **out)

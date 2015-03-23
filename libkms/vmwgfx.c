@@ -185,7 +185,7 @@ vmwgfx_bo_destroy(struct kms_bo *_bo)
 	return 0;
 }
 
-int
+drm_private int
 vmwgfx_create(int fd, struct kms_driver **out)
 {
 	struct kms_driver *kms;
