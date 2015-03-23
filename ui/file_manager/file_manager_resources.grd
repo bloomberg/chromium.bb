@@ -58,6 +58,7 @@
       <include name="IDR_FILE_MANAGER_EXIF_PARSER" file="file_manager/foreground/js/metadata/exif_parser.js" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_EXIF_CONSTANTS" file="file_manager/foreground/js/metadata/exif_constants.js" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_MPEG_PARSER" file="file_manager/foreground/js/metadata/mpeg_parser.js" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_IMAGE_ORIENTATION" file="file_manager/foreground/js/metadata/image_orientation.js" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_IMAGE_PARSERS" file="file_manager/foreground/js/metadata/image_parsers.js" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ID3_PARSER" file="file_manager/foreground/js/metadata/id3_parser.js" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_PARALLEL" file="file_manager/foreground/js/metadata/function_parallel.js" type="BINDATA" />
@@ -148,6 +149,7 @@
         <include name="IDR_IMAGE_LOADER_REQUEST_JS" file="image_loader/request.js" type="BINDATA" />
         <include name="IDR_IMAGE_LOADER_BACKGROUND_JS" file="image_loader/background.js" type="BINDATA" />
         <include name="IDR_IMAGE_LOADER_CLIENT_JS" file="image_loader/image_loader_client.js" type="BINDATA" />
+        <include name="IDR_IMAGE_LOADER_PIEX_LOADER_JS" file="image_loader/piex_loader.js" flattenhtml="true" type="BINDATA" />
       </if>
     </includes>
   </release>
