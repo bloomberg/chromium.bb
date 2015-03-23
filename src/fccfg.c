@@ -2227,7 +2227,9 @@ FcConfigAppFontAddFile (FcConfig    *config,
 	FcStrSetDestroy (subdirs);
 	return FcFalse;
     }
-    if ((sublist = FcStrListCreate (subdirs)))
+    if (subdirs->num == 0)
+	ret = FcTrue;
+    else if ((sublist = FcStrListCreate (subdirs)))
     {
 	while ((subdir = FcStrListNext (sublist)))
 	{
