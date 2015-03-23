@@ -8,6 +8,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
+namespace autofill {
+
 namespace {
 
 // Increment this anytime pickle format is modified as well as provide
@@ -48,9 +50,34 @@ bool ReadAsInt(PickleIterator* iter, T* target_value) {
   return true;
 }
 
-}  // namespace
+bool DeserializeCommonSection1(PickleIterator* iter,
+                               FormFieldData* field_data) {
+  return iter->ReadString16(&field_data->label) &&
+         iter->ReadString16(&field_data->name) &&
+         iter->ReadString16(&field_data->value) &&
+         iter->ReadString(&field_data->form_control_type) &&
+         iter->ReadString(&field_data->autocomplete_attribute) &&
+         iter->ReadSizeT(&field_data->max_length) &&
+         iter->ReadBool(&field_data->is_autofilled) &&
+         iter->ReadBool(&field_data->is_checked) &&
+         iter->ReadBool(&field_data->is_checkable) &&
+         iter->ReadBool(&field_data->is_focusable) &&
+         iter->ReadBool(&field_data->should_autocomplete);
+}
 
-namespace autofill {
+bool DeserializeCommonSection2(PickleIterator* iter,
+                               FormFieldData* field_data) {
+  return ReadAsInt(iter, &field_data->text_direction) &&
+         ReadStringVector(iter, &field_data->option_values) &&
+         ReadStringVector(iter, &field_data->option_contents);
+}
+
+bool DeserializeVersion2Specific(PickleIterator* iter,
+                                 FormFieldData* field_data) {
+  return ReadAsInt(iter, &field_data->role);
+}
+
+}  // namespace
 
 FormFieldData::FormFieldData()
     : max_length(0),
@@ -69,23 +96,23 @@ FormFieldData::~FormFieldData() {
 bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   // A FormFieldData stores a value, but the value is not part of the identity
   // of the field, so we don't want to compare the values.
-  return (label == field.label && name == field.name &&
-          form_control_type == field.form_control_type &&
-          autocomplete_attribute == field.autocomplete_attribute &&
-          max_length == field.max_length &&
-          // is_checked and is_autofilled counts as "value" since these change
-          // when we fill things in.
-          is_checkable == field.is_checkable &&
-          is_focusable == field.is_focusable &&
-          should_autocomplete == field.should_autocomplete &&
-          role == field.role && text_direction == field.text_direction);
-          // The option values/contents whith are the list of items in the list
-          // of a drop-down are currently not considered part of the identity of
-          // a form element. This is debatable, since one might base heuristics
-          // on the types of elements that are available. Alternatively, one
-          // could imagine some forms that dynamically change the element
-          // contents (say, insert years starting from the current year) that
-          // should not be considered changes in the structure of the form.
+  return label == field.label && name == field.name &&
+         form_control_type == field.form_control_type &&
+         autocomplete_attribute == field.autocomplete_attribute &&
+         max_length == field.max_length &&
+         // is_checked and is_autofilled counts as "value" since these change
+         // when we fill things in.
+         is_checkable == field.is_checkable &&
+         is_focusable == field.is_focusable &&
+         should_autocomplete == field.should_autocomplete &&
+         role == field.role && text_direction == field.text_direction;
+         // The option values/contents which are the list of items in the list
+         // of a drop-down are currently not considered part of the identity of
+         // a form element. This is debatable, since one might base heuristics
+         // on the types of elements that are available. Alternatively, one
+         // could imagine some forms that dynamically change the element
+         // contents (say, insert years starting from the current year) that
+         // should not be considered changes in the structure of the form.
 }
 
 bool FormFieldData::operator<(const FormFieldData& field) const {
@@ -100,17 +127,15 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
   if (autocomplete_attribute > field.autocomplete_attribute) return false;
   if (max_length < field.max_length) return true;
   if (max_length > field.max_length) return false;
-  // Skip is_checked and is_autofilled as in SameFieldAs.
+  // Skip |is_checked| and |is_autofilled| as in SameFieldAs.
   if (is_checkable < field.is_checkable) return true;
   if (is_checkable > field.is_checkable) return false;
   if (is_focusable < field.is_focusable) return true;
   if (is_focusable > field.is_focusable) return false;
   if (should_autocomplete < field.should_autocomplete) return true;
   if (should_autocomplete > field.should_autocomplete) return false;
-  if (role < field.role)
-    return true;
-  if (role > field.role)
-    return false;
+  if (role < field.role) return true;
+  if (role > field.role) return false;
   if (text_direction < field.text_direction) return true;
   if (text_direction > field.text_direction) return false;
   // See operator== above for why we don't check option_values/contents.
@@ -147,41 +172,17 @@ bool DeserializeFormFieldData(PickleIterator* iter,
 
   switch (version) {
     case 1: {
-      if (!iter->ReadString16(&field_data->label) ||
-          !iter->ReadString16(&field_data->name) ||
-          !iter->ReadString16(&field_data->value) ||
-          !iter->ReadString(&field_data->form_control_type) ||
-          !iter->ReadString(&field_data->autocomplete_attribute) ||
-          !iter->ReadSizeT(&field_data->max_length) ||
-          !iter->ReadBool(&field_data->is_autofilled) ||
-          !iter->ReadBool(&field_data->is_checked) ||
-          !iter->ReadBool(&field_data->is_checkable) ||
-          !iter->ReadBool(&field_data->is_focusable) ||
-          !iter->ReadBool(&field_data->should_autocomplete) ||
-          !ReadAsInt(iter, &field_data->text_direction) ||
-          !ReadStringVector(iter, &field_data->option_values) ||
-          !ReadStringVector(iter, &field_data->option_contents)) {
+      if (!DeserializeCommonSection1(iter, field_data) ||
+          !DeserializeCommonSection2(iter, field_data)) {
         LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
         return false;
       }
       break;
     }
     case 2: {
-      if (!iter->ReadString16(&field_data->label) ||
-          !iter->ReadString16(&field_data->name) ||
-          !iter->ReadString16(&field_data->value) ||
-          !iter->ReadString(&field_data->form_control_type) ||
-          !iter->ReadString(&field_data->autocomplete_attribute) ||
-          !iter->ReadSizeT(&field_data->max_length) ||
-          !iter->ReadBool(&field_data->is_autofilled) ||
-          !iter->ReadBool(&field_data->is_checked) ||
-          !iter->ReadBool(&field_data->is_checkable) ||
-          !iter->ReadBool(&field_data->is_focusable) ||
-          !iter->ReadBool(&field_data->should_autocomplete) ||
-          !ReadAsInt(iter, &field_data->role) ||
-          !ReadAsInt(iter, &field_data->text_direction) ||
-          !ReadStringVector(iter, &field_data->option_values) ||
-          !ReadStringVector(iter, &field_data->option_contents)) {
+      if (!DeserializeCommonSection1(iter, field_data) ||
+          !DeserializeVersion2Specific(iter, field_data) ||
+          !DeserializeCommonSection2(iter, field_data)) {
         LOG(ERROR) << "Could not deserialize FormFieldData from pickle";
         return false;
       }
