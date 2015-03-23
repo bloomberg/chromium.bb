@@ -7,7 +7,9 @@
 
 namespace device {
 
+#if !defined(OS_MACOSX)
 const char kInvalidHidDeviceId[] = "";
+#endif
 
 HidDeviceInfo::HidDeviceInfo(const HidDeviceId& device_id,
                              uint16_t vendor_id,

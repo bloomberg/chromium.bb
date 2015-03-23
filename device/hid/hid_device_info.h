@@ -19,8 +19,13 @@ enum HidBusType {
   kHIDBusTypeBluetooth = 1,
 };
 
+#if defined(OS_MACOSX)
+typedef uint64_t HidDeviceId;
+const uint64_t kInvalidHidDeviceId = -1;
+#else
 typedef std::string HidDeviceId;
 extern const char kInvalidHidDeviceId[];
+#endif
 
 class HidDeviceInfo : public base::RefCountedThreadSafe<HidDeviceInfo> {
  public:

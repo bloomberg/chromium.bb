@@ -23,6 +23,12 @@ using device::HidService;
 using device::HidUsageAndPage;
 using net::IOBuffer;
 
+#if defined(OS_MACOSX)
+const uint64_t kTestDeviceIds[] = {1, 2, 3, 4, 5};
+#else
+const char* kTestDeviceIds[] = {"A", "B", "C", "D", "E"};
+#endif
+
 namespace device {
 
 // These report descriptors define two devices with 8-byte input, output and
@@ -131,13 +137,13 @@ class MockHidService : public HidService {
   }
 
   void LazyFirstEnumeration() {
-    AddDevice("A", 0x18D1, 0x58F0, false);
-    AddDevice("B", 0x18D1, 0x58F0, true);
-    AddDevice("C", 0x18D1, 0x58F1, false);
+    AddDevice(kTestDeviceIds[0], 0x18D1, 0x58F0, false);
+    AddDevice(kTestDeviceIds[1], 0x18D1, 0x58F0, true);
+    AddDevice(kTestDeviceIds[2], 0x18D1, 0x58F1, false);
     FirstEnumerationComplete();
   }
 
-  void AddDevice(const std::string& device_id,
+  void AddDevice(const HidDeviceId& device_id,
                  int vendor_id,
                  int product_id,
                  bool report_id) {
@@ -155,7 +161,7 @@ class MockHidService : public HidService {
                                             report_descriptor));
   }
 
-  void RemoveDevice(const std::string& device_id) {
+  void RemoveDevice(const HidDeviceId& device_id) {
     HidService::RemoveDevice(device_id);
   }
 };
@@ -190,8 +196,8 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceAdded) {
 
   // Add a blocked device first so that the test will fail if a notification is
   // received.
-  hid_service_->AddDevice("D", 0x18D1, 0x58F1, false);
-  hid_service_->AddDevice("E", 0x18D1, 0x58F0, false);
+  hid_service_->AddDevice(kTestDeviceIds[3], 0x18D1, 0x58F1, false);
+  hid_service_->AddDevice(kTestDeviceIds[4], 0x18D1, 0x58F0, false);
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
   EXPECT_EQ("success", result_listener.message());
 }
@@ -206,9 +212,9 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceRemoved) {
 
   // Device C was not returned by chrome.hid.getDevices, the app will not get
   // a notification.
-  hid_service_->RemoveDevice("C");
+  hid_service_->RemoveDevice(kTestDeviceIds[2]);
   // Device A was returned, the app will get a notification.
-  hid_service_->RemoveDevice("A");
+  hid_service_->RemoveDevice(kTestDeviceIds[0]);
   ASSERT_TRUE(result_listener.WaitUntilSatisfied());
   EXPECT_EQ("success", result_listener.message());
 }
