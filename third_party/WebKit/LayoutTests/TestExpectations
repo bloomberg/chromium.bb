@@ -2384,3 +2384,5 @@ crbug.com/469641 [ XP Release ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [ ImageOnly
 
 crbug.com/469657 fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
 crbug.com/469657 virtual/slimmingpaint/fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
+
+crbug.com/469660 inspector/elements/elements-panel-shadow-selection-on-refresh.html [ Pass Failure ]
