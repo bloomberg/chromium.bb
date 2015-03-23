@@ -63,7 +63,6 @@ private:
     RawPtrWillBeMember<SVGPathSource> m_source;
     RawPtrWillBeMember<SVGPathConsumer> m_consumer;
     PathCoordinateMode m_mode;
-    PathParsingMode m_pathParsingMode;
     SVGPathSegType m_lastCommand;
     FloatPoint m_controlPoint;
     FloatPoint m_currentPoint;
