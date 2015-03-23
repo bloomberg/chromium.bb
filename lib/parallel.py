@@ -537,9 +537,10 @@ class _BackgroundTask(multiprocessing.Process):
       except BaseException:
         foreground_except = sys.exc_info()
       finally:
-        # Wait for each step to complete.
         errors = []
-        while bg_tasks:
+        skip_bg_wait = halt_on_error and foreground_except is not None
+        # Wait for each step to complete.
+        while not skip_bg_wait and bg_tasks:
           task = bg_tasks.popleft()
           task_errors = task.Wait()
           if task_errors:
@@ -717,11 +718,16 @@ def BackgroundTaskRunner(task, *args, **kwargs):
     processes: Number of processes to launch.
     onexit: Function to run in each background process after all inputs are
       processed.
+    halt_on_error: After the first exception occurs, halt any running steps, and
+      squelch any further output, including any exceptions that might occur.
+      Halts on exceptions in any of the background processes, or in the
+      foreground process using the BackgroundTaskRunner.
   """
 
   queue = kwargs.pop('queue', None)
   processes = kwargs.pop('processes', None)
   onexit = kwargs.pop('onexit', None)
+  halt_on_error = kwargs.pop('halt_on_error', False)
 
   with cros_build_lib.ContextManagerStack() as stack:
     if queue is None:
@@ -735,7 +741,7 @@ def BackgroundTaskRunner(task, *args, **kwargs):
                               onexit=onexit, task_args=args,
                               task_kwargs=kwargs)
     steps = [child] * processes
-    with _BackgroundTask.ParallelTasks(steps):
+    with _BackgroundTask.ParallelTasks(steps, halt_on_error=halt_on_error):
       try:
         yield queue
       finally:

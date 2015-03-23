@@ -426,12 +426,26 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
       parallel.RunParallelSteps([self._BadPickler], return_values=True)
 
 
+class _TestForegroundException(Exception):
+  """An exception to be raised by the foreground process."""
+
+
 class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
   """Test that child processes are halted when exceptions occur."""
 
   def setUp(self):
     self.failed = multiprocessing.Event()
     self.passed = multiprocessing.Event()
+
+  def _GetKillChildrenTimeout(self):
+    """Return a timeout that is long enough for _BackgroundTask._KillChildren.
+
+    This unittest is not meant to restrict which signal succeeds in killing the
+    background process, so use a long enough timeout whenever asserting that the
+    background process is killed, keeping buffer for slow builders.
+    """
+    return (parallel._BackgroundTask.SIGTERM_TIMEOUT +
+            parallel._BackgroundTask.SIGKILL_TIMEOUT) + 30
 
   def _Pass(self):
     self.passed.set()
@@ -443,8 +457,12 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
     sys.exit(1)
 
   def _Fail(self):
-    self.failed.wait(60)
+    self.failed.wait(self._GetKillChildrenTimeout())
     self.failed.set()
+
+  def _PassEventually(self):
+    self.passed.wait(self._GetKillChildrenTimeout())
+    self.passed.set()
 
   @unittest.skipIf(_SKIP_FLAKY_TESTS, 'Occasionally fails.')
   def testExceptionRaising(self):
@@ -462,6 +480,16 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
     self.assertTrue(self.passed.is_set())
     self.assertEqual(output_str, _GREETING)
     self.assertFalse(self.failed.is_set())
+
+  def testForegroundExceptionRaising(self):
+    """Test that BackgroundTaskRunner halts tasks on a foreground exception."""
+    with self.assertRaises(_TestForegroundException):
+      with parallel.BackgroundTaskRunner(self._PassEventually,
+                                         processes=1,
+                                         halt_on_error=True) as queue:
+        queue.put([])
+        raise _TestForegroundException()
+    self.assertFalse(self.passed.is_set())
 
   @unittest.skipIf(_SKIP_FLAKY_TESTS, 'Occasionally fails.')
   def testTempFileCleanup(self):
