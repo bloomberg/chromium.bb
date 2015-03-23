@@ -463,6 +463,7 @@ cr.define('cr.ui', function() {
       this.domSibling_.showingBubble = true;
 
       var doc = this.ownerDocument;
+      this.eventTracker_.add(doc, 'click', this, true);
       this.eventTracker_.add(doc, 'mousewheel', this, true);
       this.eventTracker_.add(doc, 'scroll', this, true);
       this.eventTracker_.add(doc, 'elementFocused', this, true);
@@ -494,6 +495,7 @@ cr.define('cr.ui', function() {
         // left-click on the bubble's target element (allowing the target to
         // handle the event and close the bubble itself).
         case 'mousedown':
+        case 'click':
           var target = assertInstanceof(event.target, Node);
           if (event.button == 0 && this.anchorNode_.contains(target))
             break;
