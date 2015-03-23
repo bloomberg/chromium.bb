@@ -57,7 +57,7 @@ const char kAuthIframeParentOrigin[] =
 
 const char kGaiaSandboxUrlSwitch[] = "gaia-sandbox-url";
 // TODO(rsorokin): Move this to the proper file.
-const char kMinuteMaidPath[] = "ChromeOsEmbeddedSetup";
+const char kNewGaiaFlowPath[] = "embedded/setup/chromeos";
 
 void UpdateAuthParams(base::DictionaryValue* params,
                       bool has_users,
@@ -245,7 +245,7 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
                      GaiaUrls::GetInstance()->oauth2_chrome_client_id());
     if (!command_line->HasSwitch(switches::kGaiaEndpointChromeOS)) {
       command_line->AppendSwitchASCII(switches::kGaiaEndpointChromeOS,
-                                      kMinuteMaidPath);
+                                      kNewGaiaFlowPath);
     }
   } else {
     params.SetBoolean("useMinuteMaid", false);
