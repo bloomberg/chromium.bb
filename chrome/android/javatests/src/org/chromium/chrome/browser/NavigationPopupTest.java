@@ -50,8 +50,8 @@ public class NavigationPopupTest extends ChromeShellTestBase {
     // Exists solely to expose protected methods to this test.
     private static class TestNavigationEntry extends NavigationEntry {
         public TestNavigationEntry(int index, String url, String virtualUrl, String originalUrl,
-                String title, Bitmap favicon) {
-            super(index, url, virtualUrl, originalUrl, title, favicon);
+                String title, Bitmap favicon, int transition) {
+            super(index, url, virtualUrl, originalUrl, title, favicon, transition);
         }
     }
 
@@ -62,9 +62,9 @@ public class NavigationPopupTest extends ChromeShellTestBase {
         public TestNavigationController() {
             mHistory = new TestNavigationHistory();
             mHistory.addEntry(new TestNavigationEntry(
-                    1, "about:blank", null, null, "About Blank", null));
+                    1, "about:blank", null, null, "About Blank", null, 0));
             mHistory.addEntry(new TestNavigationEntry(
-                    5, UrlUtils.encodeHtmlDataUri("<html>1</html>"), null, null, null, null));
+                    5, UrlUtils.encodeHtmlDataUri("<html>1</html>"), null, null, null, null, 0));
         }
 
         @Override

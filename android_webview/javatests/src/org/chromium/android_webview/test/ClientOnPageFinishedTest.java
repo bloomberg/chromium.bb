@@ -285,7 +285,7 @@ public class ClientOnPageFinishedTest extends AwTestBase {
     public void testOnPageFinishedNotCalledOnDomModificationForBlankWebView() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         try {
-            doTestOnPageFinishedNotCalledOnDomMutation(webServer);
+            doTestOnPageFinishedNotCalledOnDomMutation(webServer, null);
         } finally {
             webServer.shutdown();
         }
@@ -293,20 +293,14 @@ public class ClientOnPageFinishedTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
-    public void testOnPageFinishedCalledOnDomModificationAfterNonCommittedLoad() throws Throwable {
+    public void testOnPageFinishedNotCalledOnDomModificationAfterNonCommittedLoadFromApi()
+            throws Throwable {
         enableJavaScriptOnUiThread(mAwContents);
         TestWebServer webServer = TestWebServer.start();
         try {
             final String noContentUrl = webServer.setResponseWithNoContentStatus("/nocontent.html");
-            TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
-                    mContentsClient.getOnPageFinishedHelper();
-            final int onPageFinishedCallCount = onPageFinishedHelper.getCallCount();
             loadUrlAsync(mAwContents, noContentUrl);
-            // Mutate DOM.
-            executeJavaScriptAndWaitForResult(mAwContents, mContentsClient,
-                    "document.body.innerHTML='Hello, World!'");
-            onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
-            assertEquals("about:blank", onPageFinishedHelper.getUrl());
+            doTestOnPageFinishedNotCalledOnDomMutation(webServer, noContentUrl);
         } finally {
             webServer.shutdown();
         }
@@ -320,7 +314,7 @@ public class ClientOnPageFinishedTest extends AwTestBase {
             final String testUrl =
                     webServer.setResponse("/test.html", CommonResources.ABOUT_HTML, null);
             loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), testUrl);
-            doTestOnPageFinishedNotCalledOnDomMutation(webServer);
+            doTestOnPageFinishedNotCalledOnDomMutation(webServer, null);
         } finally {
             webServer.shutdown();
         }
@@ -334,13 +328,13 @@ public class ClientOnPageFinishedTest extends AwTestBase {
         try {
             loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                     CommonResources.ABOUT_HTML, "text/html", false);
-            doTestOnPageFinishedNotCalledOnDomMutation(webServer);
+            doTestOnPageFinishedNotCalledOnDomMutation(webServer, null);
         } finally {
             webServer.shutdown();
         }
     }
 
-    private void doTestOnPageFinishedNotCalledOnDomMutation(TestWebServer webServer)
+    private void doTestOnPageFinishedNotCalledOnDomMutation(TestWebServer webServer, String syncUrl)
             throws Throwable {
         enableJavaScriptOnUiThread(mAwContents);
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
@@ -353,8 +347,10 @@ public class ClientOnPageFinishedTest extends AwTestBase {
         // we load another valid page. Since callbacks arrive sequentially if the next callback
         // we get is for the synchronizationUrl we know that DOM mutation did not schedule
         // a callback for the iframe.
-        final String syncUrl = webServer.setResponse("/sync.html", "", null);
-        loadUrlAsync(mAwContents, syncUrl);
+        if (syncUrl == null) {
+            syncUrl = webServer.setResponse("/sync.html", "", null);
+            loadUrlAsync(mAwContents, syncUrl);
+        }
         onPageFinishedHelper.waitForCallback(onPageFinishedCallCount);
         assertEquals(syncUrl, onPageFinishedHelper.getUrl());
         assertEquals(onPageFinishedCallCount + 1, onPageFinishedHelper.getCallCount());
