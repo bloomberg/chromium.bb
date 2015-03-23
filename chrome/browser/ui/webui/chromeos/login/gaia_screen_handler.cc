@@ -55,8 +55,6 @@ const char kAuthIframeParentName[] = "signin-frame";
 const char kAuthIframeParentOrigin[] =
     "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/";
 
-// TODO(rsorokin): Get rid of this url before the beta release. Issue tracking
-// that http://crbug/462204.
 const char kGaiaSandboxUrlSwitch[] = "gaia-sandbox-url";
 // TODO(rsorokin): Move this to the proper file.
 const char kMinuteMaidPath[] = "ChromeOsEmbeddedSetup";
