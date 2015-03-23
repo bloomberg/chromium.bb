@@ -59,6 +59,15 @@ importer.MediaImportHandler = function(progressCenter, historyLoader, tracker) {
   this.nextTaskId_ = 0;
 };
 
+// The name of the Drive property used to tag imported files.  Used to look up
+// the property later.
+importer.MediaImportHandler.IMPORTS_TAG_KEY = 'cloud-import';
+
+// The value of the Drive property used to tag imported files.  Cloud import
+// only imports 'media' right now - change this to an enum if other types of
+// files start being imported.
+importer.MediaImportHandler.IMPORTS_TAG_VALUE = 'media';
+
 /** @override */
 importer.MediaImportHandler.prototype.importFromScanResult =
     function(scanResult, destination, directoryPromise) {
@@ -72,6 +81,7 @@ importer.MediaImportHandler.prototype.importFromScanResult =
       this.tracker_);
 
   task.addObserver(this.onTaskProgress_.bind(this, task));
+  task.addObserver(this.onFileImported_.bind(this, task));
 
   this.queue_.queueTask(task);
 
@@ -134,6 +144,37 @@ importer.MediaImportHandler.prototype.onTaskProgress_ =
   }
 
   this.progressCenter_.updateItem(item);
+};
+
+/**
+ * Tags newly-imported files with a Drive property.
+ * @param {!importer.TaskQueue.Task} task
+ * @param {string} updateType
+ * @param {Object=} updateInfo
+ */
+importer.MediaImportHandler.prototype.onFileImported_ =
+    function(task, updateType, updateInfo) {
+  if (updateType !==
+      importer.MediaImportHandler.ImportTask.UpdateType.ENTRY_CHANGED) {
+    return;
+  }
+  // Update info must exist for ENTRY_CHANGED notifications.
+  console.assert(updateInfo && updateInfo.destination);
+  /** @type {!importer.MediaImportHandler.ImportTask.EntryChangedInfo} */
+  var info = updateInfo;
+
+  // Tag the import with a private drive property.
+  chrome.fileManagerPrivate.setEntryTag(
+      info.destination.toURL(),
+      'private',  // Scoped to just this app.
+      importer.MediaImportHandler.IMPORTS_TAG_KEY,
+      importer.MediaImportHandler.IMPORTS_TAG_VALUE,
+      function() {
+        if (chrome.runtime.lastError) {
+          console.error('Unable to tag imported media: ' +
+              chrome.runtime.lastError.message);
+        }
+      });
 };
 
 /**

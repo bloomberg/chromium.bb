@@ -51,6 +51,9 @@ function setUp() {
       releaseKeepAwake: function() {
         chrome.power.requestKeepAwakeStatus = false;
       }
+    },
+    fileManagerPrivate: {
+      setEntryTag: function() {}
     }
   };
 
@@ -309,6 +312,52 @@ function testUpdatesHistoryAfterImport(callback) {
                     copy.source, importer.Destination.GOOGLE_DRIVE);
               });
         }),
+      callback);
+
+  scanResult.finalize();
+}
+
+function testTagsEntriesAfterImport(callback) {
+  var entries = setupFileSystem([
+    '/DCIM/photos0/IMG00001.jpg',
+    '/DCIM/photos1/IMG00003.jpg'
+  ]);
+
+  var scanResult = new TestScanResult(entries);
+  var importTask = mediaImporter.importFromScanResult(
+      scanResult,
+      importer.Destination.GOOGLE_DRIVE,
+      destinationFactory);
+  var whenImportDone = new Promise(
+      function(resolve, reject) {
+        importTask.addObserver(
+            /**
+             * @param {!importer.TaskQueue.UpdateType} updateType
+             * @param {!importer.TaskQueue.Task} task
+             */
+            function(updateType, task) {
+              switch (updateType) {
+                case importer.TaskQueue.UpdateType.COMPLETE:
+                  resolve();
+                  break;
+                case importer.TaskQueue.UpdateType.ERROR:
+                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+                  break;
+              }
+            });
+      });
+
+  var taggedUrls = [];
+  // Replace chrome.fileManagerPrivate.setEntryTag with a listener.
+  chrome.fileManagerPrivate.setEntryTag = function(url) {
+    taggedUrls.push(url);
+  };
+
+  reportPromise(
+      whenImportDone.then(
+          function() {
+            assertEquals(entries.length, taggedUrls.length);
+          }),
       callback);
 
   scanResult.finalize();
