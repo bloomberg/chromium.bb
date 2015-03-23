@@ -374,8 +374,7 @@ class ImageTestStage(generic_stages.BoardSpecificBuilderStage,
                                      chrome_version=chrome_ver)
 
 
-# TODO(davidjames): Mark as non-forgiving once this stage is proven.
-class BinhostTestStage(generic_stages.ForgivingBuilderStage):
+class BinhostTestStage(generic_stages.BuilderStage):
   """Stage that verifies Chrome prebuilts."""
 
   config_name = 'binhost_test'
