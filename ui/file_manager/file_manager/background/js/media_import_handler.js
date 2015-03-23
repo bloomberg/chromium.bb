@@ -160,8 +160,9 @@ importer.MediaImportHandler.prototype.onFileImported_ =
   }
   // Update info must exist for ENTRY_CHANGED notifications.
   console.assert(updateInfo && updateInfo.destination);
-  /** @type {!importer.MediaImportHandler.ImportTask.EntryChangedInfo} */
-  var info = updateInfo;
+  var info =
+      /** @type {!importer.MediaImportHandler.ImportTask.EntryChangedInfo} */ (
+          updateInfo);
 
   // Tag the import with a private drive property.
   chrome.fileManagerPrivate.setEntryTag(
