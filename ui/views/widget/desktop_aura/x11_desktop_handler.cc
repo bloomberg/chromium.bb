@@ -136,6 +136,12 @@ bool X11DesktopHandler::IsActiveWindow(::Window window) const {
 }
 
 void X11DesktopHandler::ProcessXEvent(XEvent* event) {
+  // Ignore focus events in modes other than NotifyNormal (i.e. NotifyGrab), as
+  // they are always sent when the pointer is over our window, even if the
+  // input focus is in a different window.
+  if (event->xfocus.mode != NotifyNormal)
+    return;
+
   switch (event->type) {
     case FocusIn:
       if (current_window_ != event->xfocus.window)
