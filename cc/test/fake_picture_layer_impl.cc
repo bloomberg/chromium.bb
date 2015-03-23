@@ -132,6 +132,7 @@ void FakePictureLayerImpl::SetRasterSourceOnPending(
   DCHECK(layer_tree_impl()->IsPendingTree());
   Region invalidation_temp = invalidation;
   const PictureLayerTilingSet* pending_set = nullptr;
+  set_gpu_raster_max_texture_size(layer_tree_impl()->device_viewport_size());
   UpdateRasterSource(raster_source, &invalidation_temp, pending_set);
 }
 

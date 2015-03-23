@@ -8147,7 +8147,10 @@ TEST_F(LayerTreeHostImplTest, GetPictureLayerImplPairs) {
       gfx::Size(10, 10), gfx::Size(10, 10)));
   Region empty_invalidation;
   const PictureLayerTilingSet* null_tiling_set = nullptr;
+  layer->set_gpu_raster_max_texture_size(host_impl_->device_viewport_size());
   layer->UpdateRasterSource(pile, &empty_invalidation, null_tiling_set);
+  nondraw_layer->set_gpu_raster_max_texture_size(
+      host_impl_->device_viewport_size());
   nondraw_layer->UpdateRasterSource(pile, &empty_invalidation, null_tiling_set);
 
   layer->AddChild(nondraw_layer.Pass());
@@ -8265,7 +8268,10 @@ TEST_F(LayerTreeHostImplTest, GetPictureLayerImplPairsWithNonRSLLMembers) {
       gfx::Size(10, 10), gfx::Size(10, 10)));
   Region empty_invalidation;
   const PictureLayerTilingSet* null_tiling_set = nullptr;
+  layer->set_gpu_raster_max_texture_size(host_impl_->device_viewport_size());
   layer->UpdateRasterSource(pile, &empty_invalidation, null_tiling_set);
+  nondraw_layer->set_gpu_raster_max_texture_size(
+      host_impl_->device_viewport_size());
   nondraw_layer->UpdateRasterSource(pile, &empty_invalidation, null_tiling_set);
 
   layer->AddChild(nondraw_layer.Pass());

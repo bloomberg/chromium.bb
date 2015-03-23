@@ -4950,6 +4950,8 @@ TEST_F(TileSizeTest, TileSizes) {
   // The +2's below are for border texels.
   host_impl_.SetUseGpuRasterization(true);
   host_impl_.SetViewportSize(gfx::Size(2000, 2000));
+
+  layer->set_gpu_raster_max_texture_size(host_impl_.device_viewport_size());
   result = layer->CalculateTileSize(gfx::Size(10000, 10000));
   EXPECT_EQ(result.width(), 2000);
   EXPECT_EQ(result.height(), 500 + 2);
@@ -4957,6 +4959,7 @@ TEST_F(TileSizeTest, TileSizes) {
   // Clamp and round-up, when smaller than viewport.
   // Tile-height doubles to 50% when width shrinks to <= 50%.
   host_impl_.SetViewportSize(gfx::Size(1000, 1000));
+  layer->set_gpu_raster_max_texture_size(host_impl_.device_viewport_size());
   result = layer->CalculateTileSize(gfx::Size(447, 10000));
   EXPECT_EQ(result.width(), 448);
   EXPECT_EQ(result.height(), 500 + 2);

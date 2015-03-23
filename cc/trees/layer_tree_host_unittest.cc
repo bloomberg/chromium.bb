@@ -485,6 +485,86 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSetNeedsRedrawRect);
 
+// Ensure the texture size of the pending and active trees are identical when a
+// layer is not in the viewport and a resize happens on the viewport
+class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestGpuRasterDeviceSizeChanged()
+      : num_draws_(0), bounds_(500, 64), invalid_rect_(10, 10, 20, 20) {}
+
+  void BeginTest() override {
+    client_.set_fill_with_nonsolid_color(true);
+    root_layer_ = FakePictureLayer::Create(&client_);
+    root_layer_->SetIsDrawable(true);
+    gfx::Transform transform;
+    // Translate the layer out of the viewport to force it to not update its
+    // tile size via PushProperties.
+    transform.Translate(10000.0, 10000.0);
+    root_layer_->SetTransform(transform);
+    root_layer_->SetBounds(bounds_);
+    layer_tree_host()->SetRootLayer(root_layer_);
+    layer_tree_host()->SetViewportSize(bounds_);
+
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->gpu_rasterization_enabled = true;
+    settings->gpu_rasterization_forced = true;
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    // Perform 2 commits.
+    if (!num_draws_) {
+      PostSetNeedsRedrawRectToMainThread(invalid_rect_);
+    } else {
+      EndTest();
+    }
+    num_draws_++;
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    if (num_draws_ == 2) {
+      auto pending_tree = host_impl->pending_tree();
+      auto pending_layer_impl =
+          static_cast<FakePictureLayerImpl*>(pending_tree->root_layer());
+      EXPECT_NE(pending_layer_impl, nullptr);
+
+      auto active_tree = host_impl->pending_tree();
+      auto active_layer_impl =
+          static_cast<FakePictureLayerImpl*>(active_tree->root_layer());
+      EXPECT_NE(pending_layer_impl, nullptr);
+
+      auto active_tiling_set = active_layer_impl->picture_layer_tiling_set();
+      auto active_tiling = active_tiling_set->tiling_at(0);
+      auto pending_tiling_set = pending_layer_impl->picture_layer_tiling_set();
+      auto pending_tiling = pending_tiling_set->tiling_at(0);
+      EXPECT_EQ(
+          pending_tiling->TilingDataForTesting().max_texture_size().width(),
+          active_tiling->TilingDataForTesting().max_texture_size().width());
+    }
+  }
+
+  void DidCommitAndDrawFrame() override {
+    // On the second commit, resize the viewport.
+    if (num_draws_ == 1) {
+      layer_tree_host()->SetViewportSize(gfx::Size(400, 64));
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  int num_draws_;
+  const gfx::Size bounds_;
+  const gfx::Rect invalid_rect_;
+  FakeContentLayerClient client_;
+  scoped_refptr<FakePictureLayer> root_layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(
+    LayerTreeHostTestGpuRasterDeviceSizeChanged);
+
 class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
  public:
   void InitializeSettings(LayerTreeSettings* settings) override {
