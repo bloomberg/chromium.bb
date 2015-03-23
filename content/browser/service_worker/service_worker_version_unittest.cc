@@ -438,6 +438,35 @@ TEST_F(ServiceWorkerVersionTest, ListenerAvailability) {
   EXPECT_TRUE(version_->cache_listener_.get());
 }
 
+TEST_F(ServiceWorkerVersionTest, SetDevToolsAttached) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
+
+  ASSERT_EQ(ServiceWorkerVersion::STARTING, version_->running_status());
+
+  ASSERT_TRUE(version_->timeout_timer_.IsRunning());
+  ASSERT_FALSE(version_->start_time_.is_null());
+  ASSERT_FALSE(version_->skip_recording_startup_time_);
+
+  // Simulate DevTools is attached. This should deactivate the timer for start
+  // timeout, but not stop the timer itself.
+  version_->SetDevToolsAttached(true);
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  EXPECT_TRUE(version_->start_time_.is_null());
+  EXPECT_TRUE(version_->skip_recording_startup_time_);
+
+  // Simulate DevTools is detached. This should reactivate the timer for start
+  // timeout.
+  version_->SetDevToolsAttached(false);
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  EXPECT_FALSE(version_->start_time_.is_null());
+  EXPECT_TRUE(version_->skip_recording_startup_time_);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
+}
+
 TEST_F(ServiceWorkerFailToStartTest, RendererCrash) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   version_->StartWorker(

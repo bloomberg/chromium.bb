@@ -304,6 +304,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ScheduleStopWorker);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, KeepAlive);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, ListenerAvailability);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, SetDevToolsAttached);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerFailToStartTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
                            TimeoutStartingWorker);
@@ -395,6 +396,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const StatusCallback& callback,
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& protect);
+  void StartWorkerInternal(bool pause_after_download);
+
   void DidSkipWaiting(int request_id);
   void DidClaimClients(int request_id, ServiceWorkerStatusCode status);
   void DidGetClients(
@@ -470,9 +473,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Holds the time that the outstanding StartWorker() request started.
   base::TimeTicks start_time_;
 
-  bool is_doomed_;
+  bool is_doomed_ = false;
+  bool skip_waiting_ = false;
+  bool skip_recording_startup_time_ = false;
+
   std::vector<int> pending_skip_waiting_requests_;
-  bool skip_waiting_;
   scoped_ptr<net::HttpResponseInfo> main_script_http_info_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;

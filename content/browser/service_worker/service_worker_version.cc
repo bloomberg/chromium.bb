@@ -317,8 +317,6 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       context_(context),
       script_cache_map_(this, context),
       ping_state_(NOT_PINGING),
-      is_doomed_(false),
-      skip_waiting_(false),
       weak_factory_(this) {
   DCHECK(context_);
   DCHECK(registration);
@@ -782,12 +780,18 @@ void ServiceWorkerVersion::Doom() {
 void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
   embedded_worker()->set_devtools_attached(attached);
   if (attached) {
-    // Set to null time so we don't record the startup time metric.
+    // Don't record the startup time metric once DevTools is attached.
     ClearTick(&start_time_);
+    skip_recording_startup_time_ = true;
     return;
   }
-  if (!timeout_timer_.IsRunning())
-    StartTimeoutTimer();
+  if (!start_callbacks_.empty()) {
+    // Reactivate the timer for start timeout.
+    DCHECK(timeout_timer_.IsRunning());
+    DCHECK(running_status() == STARTING || running_status() == STOPPING)
+        << running_status();
+    RestartTick(&start_time_);
+  }
 }
 
 void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
@@ -879,17 +883,8 @@ void ServiceWorkerVersion::OnStopped(
   cache_listener_.reset();
 
   // Restart worker if we have any start callbacks and the worker isn't doomed.
-  if (should_restart) {
-    if (embedded_worker_->devtools_attached())
-      ClearTick(&start_time_);
-    else
-      RestartTick(&start_time_);
-    cache_listener_.reset(new ServiceWorkerCacheListener(this, context_));
-    embedded_worker_->Start(
-        version_id_, scope_, script_url_, false /* pause_after_download */,
-        base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
-                   weak_factory_.GetWeakPtr()));
-  }
+  if (should_restart)
+    StartWorkerInternal(false /* pause_after_download */);
 }
 
 void ServiceWorkerVersion::OnReportException(
@@ -1437,6 +1432,7 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     ServiceWorkerStatusCode status,
     const scoped_refptr<ServiceWorkerRegistration>& protect) {
   if (status != SERVICE_WORKER_OK || is_doomed()) {
+    RecordStartWorkerResult(status);
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
     return;
   }
@@ -1448,20 +1444,29 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
     case STOPPING:
     case STOPPED:
     case STARTING:
-      if (!timeout_timer_.IsRunning())
-        StartTimeoutTimer();
-      // Start callbacks keep the live registration.
-      start_callbacks_.push_back(
-          base::Bind(&RunStartWorkerCallback, callback, protect));
-      if (running_status() == STOPPED) {
-        DCHECK(!cache_listener_.get());
-        cache_listener_.reset(new ServiceWorkerCacheListener(this, context_));
-        embedded_worker_->Start(
-            version_id_, scope_, script_url_, pause_after_download,
-            base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
+      if (start_callbacks_.empty()) {
+        start_callbacks_.push_back(
+            base::Bind(&ServiceWorkerVersion::RecordStartWorkerResult,
                        weak_factory_.GetWeakPtr()));
       }
+      // Keep the live registration while starting the worker.
+      start_callbacks_.push_back(
+          base::Bind(&RunStartWorkerCallback, callback, protect));
+      StartWorkerInternal(pause_after_download);
       return;
+  }
+}
+
+void ServiceWorkerVersion::StartWorkerInternal(bool pause_after_download) {
+  if (!timeout_timer_.IsRunning())
+    StartTimeoutTimer();
+  if (running_status() == STOPPED) {
+    DCHECK(!cache_listener_.get());
+    cache_listener_.reset(new ServiceWorkerCacheListener(this, context_));
+    embedded_worker_->Start(
+        version_id_, scope_, script_url_, pause_after_download,
+        base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -1497,13 +1502,14 @@ void ServiceWorkerVersion::DidGetClients(
 void ServiceWorkerVersion::StartTimeoutTimer() {
   DCHECK(!timeout_timer_.IsRunning());
 
-  if (embedded_worker_->devtools_attached())
+  if (embedded_worker_->devtools_attached()) {
+    // Don't record the startup time metric once DevTools is attached.
     ClearTick(&start_time_);
-  else
+    skip_recording_startup_time_ = true;
+  } else {
     RestartTick(&start_time_);
-  start_callbacks_.push_back(
-      base::Bind(&ServiceWorkerVersion::RecordStartWorkerResult,
-                 weak_factory_.GetWeakPtr()));
+    skip_recording_startup_time_ = false;
+  }
 
   ClearTick(&idle_time_);
   ClearTick(&ping_time_);
@@ -1526,7 +1532,8 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   // Starting a worker hasn't finished within a certain period.
   if (GetTickDuration(start_time_) >
       base::TimeDelta::FromMinutes(kStartWorkerTimeoutMinutes)) {
-    DCHECK_NE(RUNNING, running_status());
+    DCHECK(running_status() == STARTING || running_status() == STOPPING)
+        << running_status();
     scoped_refptr<ServiceWorkerVersion> protect(this);
     RunCallbacks(this, &start_callbacks_, SERVICE_WORKER_ERROR_TIMEOUT);
     if (running_status() == STARTING)
@@ -1620,7 +1627,8 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
 
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status,
                             SERVICE_WORKER_ERROR_MAX_VALUE);
-  if (status == SERVICE_WORKER_OK && !start_time.is_null()) {
+  if (status == SERVICE_WORKER_OK && !start_time.is_null() &&
+      !skip_recording_startup_time_) {
     UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartWorker.Time",
                                GetTickDuration(start_time));
   }
