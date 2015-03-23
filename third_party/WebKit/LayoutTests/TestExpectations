@@ -2148,7 +2148,7 @@ crbug.com/439856 virtual/deferred/fast/images/pixelated-composited.html [ ImageO
 crbug.com/442181 virtual/slimmingpaint/fast/images/pixelated-composited.html [ ImageOnlyFailure ]
 
 crbug.com/444020 fast/dom/shadow/import-rule-in-shadow-tree-needs-document-style-recalc.html [ Pass ImageOnlyFailure ]
-crbug.com/444022 svg/wicd/test-scalable-background-image1.xhtml [ Pass Failure ]
+crbug.com/444022 svg/wicd/test-scalable-background-image1.xhtml [ Pass Failure ImageOnlyFailure ]
 crbug.com/444095 svg/wicd/test-rightsizing-b.xhtml [ Pass Failure ImageOnlyFailure ]
 
 crbug.com/445889 virtual/slimmingpaint/fast/inline/fixed-pos-moves-with-abspos-inline-parent.html [ Pass Failure ]
