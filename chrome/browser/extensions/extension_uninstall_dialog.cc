@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -128,9 +129,20 @@ std::string ExtensionUninstallDialog::GetHeadingText() {
 }
 
 bool ExtensionUninstallDialog::ShouldShowReportAbuseCheckbox() const {
-  // TODO(devlin): Add a field trial for reporting abuse on uninstallation.
-  // See crbug.com/441377.
-  return false;
+  static const char kExperimentName[] = "ExtensionUninstall.ReportAbuse";
+  static const char kDefaultGroupName[] = "Default";
+  static const char kShowCheckboxGroup[] = "ShowCheckbox";
+  // TODO(devlin): Turn on this field trial. See crbug.com/441377.
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          kExperimentName,
+          100,  // Total probability.
+          kDefaultGroupName,
+          2015, 7, 31,  // End date.
+          base::FieldTrial::ONE_TIME_RANDOMIZED,
+          nullptr));
+  int experiment_group = trial->AppendGroup(kShowCheckboxGroup, 0);
+  return base::FieldTrialList::FindValue(kExperimentName) == experiment_group;
 }
 
 void ExtensionUninstallDialog::HandleReportAbuse() {
