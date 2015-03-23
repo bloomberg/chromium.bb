@@ -45,35 +45,35 @@ FileType.types = [
   // Raw
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'ARW',
-    pattern: /\.arw?$/i
+    pattern: /\.arw?$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'CR2',
-    pattern: /\.cr2?$/i
+    pattern: /\.cr2?$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'DNG',
-    pattern: /\.dng?$/i
+    pattern: /\.dng?$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'NEF',
-    pattern: /\.nef?$/i
+    pattern: /\.nef?$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'NRW',
-    pattern: /\.nrw?$/i
+    pattern: /\.nrw?$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'ORW',
-    pattern: /\.orf?$/i
+    pattern: /\.orf?$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'RAF',
-    pattern: /\.raf?$/i
+    pattern: /\.raf?$/i, icon: 'image'
   },
   {
     type: 'raw', name: 'IMAGE_FILE_TYPE', subtype: 'RW2',
-    pattern: /\.rw2?$/i
+    pattern: /\.rw2?$/i, icon: 'image'
   },
 
   // Video
@@ -389,4 +389,3 @@ FileType.getIcon = function(entry) {
   var fileType = FileType.getType(entry);
   return fileType.icon || fileType.type || 'unknown';
 };
-
