@@ -540,13 +540,6 @@ void BrowserView::InitStatusBubble() {
   contents_web_view_->SetStatusBubble(status_bubble_.get());
 }
 
-void BrowserView::InitPermissionBubbleView() {
-  std::string languages =
-      browser_->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  permission_bubble_view_.reset(new PermissionBubbleViewViews(
-      GetLocationBarView()->location_icon_view(), languages));
-}
-
 gfx::Rect BrowserView::GetToolbarBounds() const {
   gfx::Rect toolbar_bounds(toolbar_->bounds());
   if (toolbar_bounds.IsEmpty())
@@ -865,8 +858,11 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
     PermissionBubbleManager::FromWebContents(old_contents)->SetView(nullptr);
 
   if (new_contents && PermissionBubbleManager::FromWebContents(new_contents)) {
+    if (!permission_bubble_.get())
+      permission_bubble_.reset(new PermissionBubbleViewViews(browser_.get()));
+
     PermissionBubbleManager::FromWebContents(new_contents)->SetView(
-        permission_bubble_view_.get());
+        permission_bubble_.get());
   }
 
   UpdateUIForContents(new_contents);
@@ -2051,7 +2047,6 @@ void BrowserView::InitViews() {
   toolbar_->Init();
 
   InitStatusBubble();
-  InitPermissionBubbleView();
 
   // Create do-nothing view for the sake of controlling the z-order of the find
   // bar widget.
@@ -2302,6 +2297,9 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   // order to let the layout occur.
   in_process_fullscreen_ = false;
   ToolbarSizeChanged(false);
+
+  if (permission_bubble_.get())
+    permission_bubble_->UpdateAnchorPosition();
 }
 
 bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {

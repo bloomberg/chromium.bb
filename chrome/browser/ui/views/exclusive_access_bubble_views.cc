@@ -62,7 +62,7 @@ class ButtonView : public views::View {
 
 ButtonView::ButtonView(views::ButtonListener* listener,
                        int between_button_spacing)
-    : accept_button_(NULL), deny_button_(NULL) {
+    : accept_button_(nullptr), deny_button_(nullptr) {
   accept_button_ = new views::LabelButton(listener, base::string16());
   accept_button_->SetStyle(views::Button::STYLE_BUTTON);
   accept_button_->SetFocusable(false);
@@ -126,10 +126,10 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
     const GURL& url,
     ExclusiveAccessBubbleType bubble_type)
     : bubble_(bubble),
-      link_(NULL),
-      mouse_lock_exit_instruction_(NULL),
-      message_label_(NULL),
-      button_view_(NULL),
+      link_(nullptr),
+      mouse_lock_exit_instruction_(nullptr),
+      message_label_(nullptr),
+      button_view_(nullptr),
       browser_fullscreen_exit_accelerator_(accelerator) {
   scoped_ptr<views::BubbleBorder> bubble_border(
       new views::BubbleBorder(views::BubbleBorder::NONE,
@@ -263,7 +263,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
                             url,
                             bubble_type),
       bubble_view_context_(context),
-      popup_(NULL),
+      popup_(nullptr),
       animation_(new gfx::SlideAnimation(this)),
       animated_attribute_(ANIMATED_ATTRIBUTE_BOUNDS) {
   animation_->Reset(1);
@@ -291,11 +291,11 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
   popup_->Init(params);
   gfx::Size size = GetPopupRect(true).size();
   popup_->SetContentsView(view_);
-  // We set layout manager to NULL to prevent the widget from sizing its
+  // We set layout manager to nullptr to prevent the widget from sizing its
   // contents to the same size as itself. This prevents the widget contents from
   // shrinking while we animate the height of the popup to give the impression
   // that it is sliding off the top of the screen.
-  popup_->GetRootView()->SetLayoutManager(NULL);
+  popup_->GetRootView()->SetLayoutManager(nullptr);
   view_->SetBounds(0, 0, size.width(), size.height());
   popup_->ShowInactive();  // This does not activate the popup.
 
@@ -352,6 +352,10 @@ void ExclusiveAccessBubbleViews::UpdateContent(
 void ExclusiveAccessBubbleViews::RepositionIfVisible() {
   if (popup_->IsVisible())
     UpdateBounds();
+}
+
+views::View* ExclusiveAccessBubbleViews::GetView() {
+  return view_;
 }
 
 void ExclusiveAccessBubbleViews::UpdateMouseWatcher() {

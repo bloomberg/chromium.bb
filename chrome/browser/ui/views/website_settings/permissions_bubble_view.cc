@@ -4,10 +4,19 @@
 
 #include "chrome/browser/ui/views/website_settings/permissions_bubble_view.h"
 
+#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -16,6 +25,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -88,7 +98,7 @@ PermissionCombobox::PermissionCombobox(Listener* listener,
                                        int index,
                                        const GURL& url,
                                        ContentSetting setting)
-    : MenuButton(NULL, base::string16(), this, true),
+    : MenuButton(nullptr, base::string16(), this, true),
       index_(index),
       listener_(listener),
       model_(new PermissionMenuModel(
@@ -140,7 +150,8 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
                                       public PermissionCombobox::Listener {
  public:
   PermissionsBubbleDelegateView(
-      views::View* anchor,
+      views::View* anchor_view,
+      views::BubbleBorder::Arrow anchor_arrow,
       PermissionBubbleViewViews* owner,
       const std::string& languages,
       const std::vector<PermissionBubbleRequest*>& requests,
@@ -163,6 +174,11 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
   // PermissionCombobox::Listener:
   void PermissionSelectionChanged(int index, bool allowed) override;
 
+  // Updates the anchor's arrow and view. Also repositions the bubble so it's
+  // displayed in the correct location.
+  void UpdateAnchor(views::View* anchor_view,
+                    views::BubbleBorder::Arrow anchor_arrow);
+
  private:
   PermissionBubbleViewViews* owner_;
   views::Button* allow_;
@@ -176,16 +192,17 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
 };
 
 PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
-    views::View* anchor,
+    views::View* anchor_view,
+    views::BubbleBorder::Arrow anchor_arrow,
     PermissionBubbleViewViews* owner,
     const std::string& languages,
     const std::vector<PermissionBubbleRequest*>& requests,
     const std::vector<bool>& accept_state)
-    : views::BubbleDelegateView(anchor, views::BubbleBorder::TOP_LEFT),
+    : views::BubbleDelegateView(anchor_view, anchor_arrow),
       owner_(owner),
-      allow_(NULL),
-      deny_(NULL),
-      allow_combobox_(NULL) {
+      allow_(nullptr),
+      deny_(nullptr),
+      allow_combobox_(nullptr) {
   DCHECK(!requests.empty());
 
   RemoveAllChildViews(true);
@@ -200,7 +217,8 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
                              languages,
                              net::kFormatUrlOmitUsernamePassword |
                              net::kFormatUrlOmitTrailingSlashOnBareHostname,
-                             net::UnescapeRule::SPACES, NULL, NULL, NULL);
+                             net::UnescapeRule::SPACES,
+                             nullptr, nullptr, nullptr);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   for (size_t index = 0; index < requests.size(); index++) {
@@ -299,7 +317,7 @@ PermissionsBubbleDelegateView::~PermissionsBubbleDelegateView() {
 }
 
 void PermissionsBubbleDelegateView::Close() {
-  owner_ = NULL;
+  owner_ = nullptr;
   GetWidget()->Close();
 }
 
@@ -329,7 +347,7 @@ void PermissionsBubbleDelegateView::OnWidgetDestroying(views::Widget* widget) {
   views::BubbleDelegateView::OnWidgetDestroying(widget);
   if (owner_) {
     owner_->Closing();
-    owner_ = NULL;
+    owner_ = nullptr;
   }
 }
 
@@ -349,20 +367,61 @@ void PermissionsBubbleDelegateView::PermissionSelectionChanged(
   owner_->Toggle(index, allowed);
 }
 
+void PermissionsBubbleDelegateView::UpdateAnchor(
+    views::View* anchor_view,
+    views::BubbleBorder::Arrow anchor_arrow) {
+  if (GetAnchorView() == anchor_view && arrow() == anchor_arrow)
+    return;
+
+  set_arrow(anchor_arrow);
+
+  // Update the border in the bubble: will either add or remove the arrow.
+  views::BubbleFrameView* frame =
+      views::BubbleDelegateView::GetBubbleFrameView();
+  views::BubbleBorder::Arrow adjusted_arrow = anchor_arrow;
+  if (base::i18n::IsRTL())
+    adjusted_arrow = views::BubbleBorder::horizontal_mirror(adjusted_arrow);
+  frame->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
+      new views::BubbleBorder(adjusted_arrow, shadow(), color())));
+
+  // Reposition the bubble based on the updated arrow and view.
+  SetAnchorView(anchor_view);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // PermissionBubbleViewViews
 
-PermissionBubbleViewViews::PermissionBubbleViewViews(
-    views::View* anchor_view,
-    const std::string& languages)
-    : anchor_view_(anchor_view),
-      delegate_(NULL),
-      bubble_delegate_(NULL),
-      languages_(languages) {}
+PermissionBubbleViewViews::PermissionBubbleViewViews(Browser* browser)
+    : browser_(browser),
+      delegate_(nullptr),
+      bubble_delegate_(nullptr) {}
 
 PermissionBubbleViewViews::~PermissionBubbleViewViews() {
   if (delegate_)
-    delegate_->SetView(NULL);
+    delegate_->SetView(nullptr);
+}
+
+views::View* PermissionBubbleViewViews::GetAnchorView() {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+
+  if (browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
+    return browser_view->GetLocationBarView()->location_icon_view();
+
+  if (browser_view->IsFullscreenBubbleVisible())
+    return browser_view->exclusive_access_bubble()->GetView();
+
+  return browser_view->top_container();
+}
+
+views::BubbleBorder::Arrow PermissionBubbleViewViews::GetAnchorArrow() {
+  if (browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
+    return views::BubbleBorder::TOP_LEFT;
+  return views::BubbleBorder::NONE;
+}
+
+void PermissionBubbleViewViews::UpdateAnchorPosition() {
+  if (IsVisible())
+    bubble_delegate_->UpdateAnchor(GetAnchorView(), GetAnchorArrow());
 }
 
 void PermissionBubbleViewViews::SetDelegate(Delegate* delegate) {
@@ -372,12 +431,18 @@ void PermissionBubbleViewViews::SetDelegate(Delegate* delegate) {
 void PermissionBubbleViewViews::Show(
     const std::vector<PermissionBubbleRequest*>& requests,
     const std::vector<bool>& values) {
-  if (bubble_delegate_ != NULL)
+  if (bubble_delegate_)
     bubble_delegate_->Close();
 
   bubble_delegate_ =
-      new PermissionsBubbleDelegateView(anchor_view_, this, languages_,
-                                        requests, values);
+      new PermissionsBubbleDelegateView(
+          GetAnchorView(), GetAnchorArrow(), this,
+          browser_->profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
+          requests, values);
+
+  // Set |parent_window| because some valid anchors can become hidden.
+  bubble_delegate_->set_parent_window(browser_->window()->GetNativeWindow());
+
   views::BubbleDelegateView::CreateBubble(bubble_delegate_)->Show();
   bubble_delegate_->SizeToContents();
 }
@@ -389,17 +454,17 @@ bool PermissionBubbleViewViews::CanAcceptRequestUpdate() {
 void PermissionBubbleViewViews::Hide() {
   if (bubble_delegate_) {
     bubble_delegate_->Close();
-    bubble_delegate_ = NULL;
+    bubble_delegate_ = nullptr;
   }
 }
 
 bool PermissionBubbleViewViews::IsVisible() {
-  return bubble_delegate_ != NULL;
+  return bubble_delegate_ != nullptr;
 }
 
 void PermissionBubbleViewViews::Closing() {
   if (bubble_delegate_)
-    bubble_delegate_ = NULL;
+    bubble_delegate_ = nullptr;
   if (delegate_)
     delegate_->Closing();
 }

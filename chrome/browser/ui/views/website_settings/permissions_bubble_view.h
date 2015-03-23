@@ -10,18 +10,22 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
+#include "ui/views/bubble/bubble_border.h"
 
 namespace views {
 class View;
 }
 
+class Browser;
 class PermissionsBubbleDelegateView;
 
 class PermissionBubbleViewViews : public PermissionBubbleView {
  public:
-  PermissionBubbleViewViews(views::View* anchor_view,
-                            const std::string& languages);
+  explicit PermissionBubbleViewViews(Browser* browser);
   ~PermissionBubbleViewViews() override;
+
+  // Updates anchor on fullscreen changes, etc.
+  void UpdateAnchorPosition();
 
   // PermissionBubbleView:
   void SetDelegate(Delegate* delegate) override;
@@ -37,10 +41,12 @@ class PermissionBubbleViewViews : public PermissionBubbleView {
   void Deny();
 
  private:
-  views::View* anchor_view_;
+  views::View* GetAnchorView();
+  views::BubbleBorder::Arrow GetAnchorArrow();
+
+  Browser* browser_;
   Delegate* delegate_;
   PermissionsBubbleDelegateView* bubble_delegate_;
-  const std::string languages_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleViewViews);
 };

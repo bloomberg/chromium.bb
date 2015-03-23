@@ -124,11 +124,6 @@ class BrowserView : public BrowserWindow,
   // to change some of the bubble's creation parameters.
   void InitStatusBubble();
 
-  // Initializes the permission bubble view. This class is intended to be
-  // created once and then re-used for the life of the browser window. The
-  // bubbles it creates will be associated with a single visible tab.
-  void InitPermissionBubbleView();
-
   // Returns the apparent bounds of the toolbar, in BrowserView coordinates.
   // These differ from |toolbar_.bounds()| in that they match where the toolbar
   // background image is drawn -- slightly outside the "true" bounds
@@ -664,7 +659,7 @@ class BrowserView : public BrowserWindow,
 
   // The permission bubble view is the toolkit-specific implementation of the
   // interface used by the manager to display permissions bubbles.
-  scoped_ptr<PermissionBubbleViewViews> permission_bubble_view_;
+  scoped_ptr<PermissionBubbleViewViews> permission_bubble_;
 
   // A mapping between accelerators and commands.
   std::map<ui::Accelerator, int> accelerator_table_;

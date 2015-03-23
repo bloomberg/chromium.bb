@@ -40,6 +40,8 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
   // Repositions |popup_| if it is visible.
   void RepositionIfVisible();
 
+  views::View* GetView();
+
  private:
   class ExclusiveAccessView;
 
