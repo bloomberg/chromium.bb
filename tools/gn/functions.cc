@@ -341,9 +341,9 @@ const char kDefined_Help[] =
     "\n"
     "  You can also check a named scope:\n"
     "    defined(foo.bar)\n"
-    "  which returns true if both foo is defined and bar is defined on the\n"
-    "  named scope foo. It will throw an error if foo is defined but is not\n"
-    "  a scope.\n"
+    "  which will return true or false depending on whether bar is defined in\n"
+    "  the named scope foo. It will throw an error if foo is not defined or\n"
+    "  is not a scope.\n"
     "\n"
     "Example:\n"
     "\n"
@@ -385,8 +385,10 @@ Value RunDefined(Scope* scope,
     if (accessor->member()) {
       // The base of the accessor must be a scope if it's defined.
       const Value* base = scope->GetValue(accessor->base().value());
-      if (!base)
-        return Value(function, false);
+      if (!base) {
+        *err = Err(accessor, "Undefined identifier");
+        return Value();
+      }
       if (!base->VerifyTypeIs(Value::SCOPE, err))
         return Value();
 
