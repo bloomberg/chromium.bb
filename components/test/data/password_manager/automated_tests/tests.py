@@ -510,9 +510,9 @@ def Tests(environment, tests_to_run=None):
         test_class = disabled_tests[test]
       environment.AddWebsiteTest(test_class)
   else:
-    for _, test in working_tests:
+    for test in working_tests.itervalues():
       environment.AddWebsiteTest(test)
-    for _, test in disabled_tests:
+    for test in disabled_tests.itervalues():
       environment.AddWebsiteTest(test, disabled=True)
 
 
