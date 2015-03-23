@@ -82,6 +82,57 @@
 
   'targets': [
     {
+      'target_name': 'prebuilt_instrumented_libraries',
+      'type': 'none',
+      'variables': {
+        'prune_self_dependency': 1,
+        # Don't add this target to the dependencies of targets with type=none.
+        'link_dependency': 1,
+        'conditions': [
+          ['msan==1', {
+            'conditions': [
+              ['msan_track_origins==2', {
+                'archive_name': 'msan-chained-origins-<(_ubuntu_release)',
+              }, {
+                'archive_name': 'UNSUPPORTED_CONFIGURATION'
+              }],
+          ]}, {
+              'archive_name': 'UNSUPPORTED_CONFIGURATION'
+          }],
+        ],
+      },
+      'actions': [
+        {
+          'action_name': 'unpack_<(archive_name).tgz',
+          'inputs': [
+            'binaries/<(archive_name).tgz',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/instrumented_libraries_prebuilt/<(archive_name).txt',
+          ],
+          'action': [
+            'scripts/unpack_binaries.sh',
+            'binaries/<(archive_name).tgz',
+            '<(PRODUCT_DIR)/instrumented_libraries_prebuilt/',
+            '<(PRODUCT_DIR)/instrumented_libraries_prebuilt/<(archive_name).txt',
+          ],
+        },
+      ],
+      'direct_dependent_settings': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'ldflags': [
+              # Add a relative RPATH entry to Chromium binaries. This puts
+              # instrumented DSOs before system-installed versions in library
+              # search path.
+              '-Wl,-R,\$$ORIGIN/instrumented_libraries_prebuilt/<(_sanitizer_type)/<(_libdir)/',
+              '-Wl,-z,origin',
+            ],
+          }],
+        ],
+      },
+    },
+    {
       'target_name': 'instrumented_libraries',
       'type': 'none',
       'variables': {
@@ -174,7 +225,9 @@
         'target_conditions': [
           ['_toolset=="target"', {
             'ldflags': [
-              # Add RPATH to result binary to make it linking instrumented libraries ($ORIGIN means relative RPATH)
+              # Add a relative RPATH entry to Chromium binaries. This puts
+              # instrumented DSOs before system-installed versions in library
+              # search path.
               '-Wl,-R,\$$ORIGIN/instrumented_libraries/<(_sanitizer_type)/<(_libdir)/',
               '-Wl,-z,origin',
             ],
