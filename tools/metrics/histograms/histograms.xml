@@ -6648,6 +6648,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </details>
 </histogram>
 
+<histogram name="EasyUnlock.BluetoothAvailability"
+    enum="EasyUnlockBluetoothType">
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Reports the type of Bluetooth adapter present in the device.
+  </summary>
+  <details>
+    Statistics about what Bluetooth capabilities are available will determine
+    how the EasyUnlock feature gets developed and deployed across platforms.
+
+    This value is logged only once during the lifetime of the Chrome process,
+    shortly after it starts up.  If a Bluetooth USB adapter is inserted after
+    that point, the change will not be registered until Chrome restarts.
+  </details>
+</histogram>
+
 <histogram name="EasyUnlock.ClickedButton" enum="EasyUnlockButton">
   <owner>joshwoodward@google.com</owner>
   <owner>tbarzic@chromium.org</owner>
@@ -47249,6 +47265,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="17" label="Password entry: Pairing added"/>
   <int value="18" label="Password entry: No screenlock state handler"/>
   <int value="19" label="Password entry: Phone locked and tx power too high"/>
+</enum>
+
+<enum name="EasyUnlockBluetoothType" type="int">
+  <int value="0" label="No adapter"/>
+  <int value="1" label="Normal"/>
+  <int value="2" label="Low energy"/>
 </enum>
 
 <enum name="EasyUnlockButton" type="int">
