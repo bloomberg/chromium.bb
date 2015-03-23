@@ -28,7 +28,6 @@
 #include "core/css/RuleSet.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
-#include "core/css/SiblingTraversalStrategies.h"
 #include "core/css/TreeBoundaryCrossingRules.h"
 #include "core/css/resolver/CSSPropertyPriority.h"
 #include "core/css/resolver/MatchedPropertiesCache.h"

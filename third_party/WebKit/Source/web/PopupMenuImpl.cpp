@@ -7,6 +7,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeLayoutStyle.h"
 #include "core/dom/StyleEngine.h"
 #include "core/frame/FrameView.h"
