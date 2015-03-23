@@ -189,9 +189,6 @@ private:
         InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
     }
 
-    // FIXME: Oilpan: This raw pointer is safe because the PostMessageTimer is
-    // owned by the LocalDOMWindow. Ideally PostMessageTimer should be moved to
-    // the heap and use Member<LocalDOMWindow>.
     RawPtrWillBeMember<LocalDOMWindow> m_window;
     RefPtr<SerializedScriptValue> m_message;
     String m_origin;
