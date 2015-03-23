@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Functions used internally by filename_util, filename_util_icu and
-// filename_util_unsafe.
+// Functions used internally by filename_util, and filename_util_icu.
 
 #ifndef NET_BASE_FILENAME_UTIL_INTERNAL_H_
 #define NET_BASE_FILENAME_UTIL_INTERNAL_H_

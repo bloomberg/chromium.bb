@@ -102,18 +102,11 @@ class NET_EXPORT_PRIVATE FilterContext {
   // Return false if gurl is not present.
   virtual bool GetURL(GURL* gurl) const = 0;
 
-  // What Content-Disposition header came with this data?
-  // Return false if no header was present.
-  virtual bool GetContentDisposition(std::string* disposition) const = 0;
-
   // When was this data requested from a server?
   virtual base::Time GetRequestTime() const = 0;
 
   // Is data supplied from cache, or fresh across the net?
   virtual bool IsCachedContent() const = 0;
-
-  // Is this a download?
-  virtual bool IsDownload() const = 0;
 
   // Was this data flagged as a response to a request with an SDCH dictionary?
   virtual SdchManager::DictionarySet* SdchDictionariesAdvertised() const = 0;

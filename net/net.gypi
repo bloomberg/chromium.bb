@@ -216,8 +216,6 @@
       'base/filename_util.h',
       'base/filename_util_internal.cc',
       'base/filename_util_internal.h',
-      'base/filename_util_unsafe.cc',
-      'base/filename_util_unsafe.h',
       'base/host_mapping_rules.cc',
       'base/host_mapping_rules.h',
       'base/int128.cc',

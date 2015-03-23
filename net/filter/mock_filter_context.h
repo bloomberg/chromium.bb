@@ -24,12 +24,8 @@ class MockFilterContext : public FilterContext {
 
   void SetMimeType(const std::string& mime_type) { mime_type_ = mime_type; }
   void SetURL(const GURL& gurl) { gurl_ = gurl; }
-  void SetContentDisposition(const std::string& disposition) {
-    content_disposition_ = disposition;
-  }
   void SetRequestTime(const base::Time time) { request_time_ = time; }
   void SetCached(bool is_cached) { is_cached_content_ = is_cached; }
-  void SetDownload(bool is_download) { is_download_ = is_download; }
   void SetResponseCode(int response_code) { response_code_ = response_code; }
   void SetSdchResponse(scoped_ptr<SdchManager::DictionarySet> handle) {
     dictionaries_handle_ = handle.Pass();
@@ -49,18 +45,11 @@ class MockFilterContext : public FilterContext {
   // Return false if gurl is not present.
   bool GetURL(GURL* gurl) const override;
 
-  // What Content-Disposition did the server supply for this data?
-  // Return false if Content-Disposition was not present.
-  bool GetContentDisposition(std::string* disposition) const override;
-
   // What was this data requested from a server?
   base::Time GetRequestTime() const override;
 
   // Is data supplied from cache, or fresh across the net?
   bool IsCachedContent() const override;
-
-  // Is this a download?
-  bool IsDownload() const override;
 
   // Handle to dictionaries advertised.
   SdchManager::DictionarySet* SdchDictionariesAdvertised() const override;
@@ -79,11 +68,9 @@ class MockFilterContext : public FilterContext {
 
  private:
   std::string mime_type_;
-  std::string content_disposition_;
   GURL gurl_;
   base::Time request_time_;
   bool is_cached_content_;
-  bool is_download_;
   scoped_ptr<SdchManager::DictionarySet> dictionaries_handle_;
   bool ok_to_call_get_url_;
   int response_code_;

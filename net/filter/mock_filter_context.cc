@@ -10,7 +10,6 @@ namespace net {
 
 MockFilterContext::MockFilterContext()
     : is_cached_content_(false),
-      is_download_(false),
       ok_to_call_get_url_(true),
       response_code_(-1),
       context_(new URLRequestContext()) {
@@ -37,21 +36,12 @@ bool MockFilterContext::GetURL(GURL* gurl) const {
   return true;
 }
 
-bool MockFilterContext::GetContentDisposition(std::string* disposition) const {
-  if (content_disposition_.empty())
-    return false;
-  *disposition = content_disposition_;
-  return true;
-}
-
 // What was this data requested from a server?
 base::Time MockFilterContext::GetRequestTime() const {
   return request_time_;
 }
 
 bool MockFilterContext::IsCachedContent() const { return is_cached_content_; }
-
-bool MockFilterContext::IsDownload() const { return is_download_; }
 
 SdchManager::DictionarySet*
 MockFilterContext::SdchDictionariesAdvertised() const {

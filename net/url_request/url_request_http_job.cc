@@ -62,10 +62,8 @@ class URLRequestHttpJob::HttpFilterContext : public FilterContext {
   // FilterContext implementation.
   bool GetMimeType(std::string* mime_type) const override;
   bool GetURL(GURL* gurl) const override;
-  bool GetContentDisposition(std::string* disposition) const override;
   base::Time GetRequestTime() const override;
   bool IsCachedContent() const override;
-  bool IsDownload() const override;
   SdchManager::DictionarySet* SdchDictionariesAdvertised() const override;
   int64 GetByteReadCount() const override;
   int GetResponseCode() const override;
@@ -103,23 +101,12 @@ bool URLRequestHttpJob::HttpFilterContext::GetURL(GURL* gurl) const {
   return true;
 }
 
-bool URLRequestHttpJob::HttpFilterContext::GetContentDisposition(
-    std::string* disposition) const {
-  HttpResponseHeaders* headers = job_->GetResponseHeaders();
-  void *iter = NULL;
-  return headers->EnumerateHeader(&iter, "Content-Disposition", disposition);
-}
-
 base::Time URLRequestHttpJob::HttpFilterContext::GetRequestTime() const {
   return job_->request() ? job_->request()->request_time() : base::Time();
 }
 
 bool URLRequestHttpJob::HttpFilterContext::IsCachedContent() const {
   return job_->is_cached_content_;
-}
-
-bool URLRequestHttpJob::HttpFilterContext::IsDownload() const {
-  return (job_->request_info_.load_flags & LOAD_IS_DOWNLOAD) != 0;
 }
 
 SdchManager::DictionarySet*

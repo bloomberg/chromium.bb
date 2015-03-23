@@ -17960,6 +17960,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Net.GzipEncodingFixupResult" enum="GzipEncodingFixupResult">
+  <obsolete>
+    Removed around 2015/03/18. The code which implemented Gzip encoding fixup
+    was removed.
+  </obsolete>
   <owner>asanka@chromium.org</owner>
   <summary>
     Resources are sometimes transferred with an incorrect encoding type of gzip.
