@@ -49,14 +49,12 @@ public:
     virtual double tailTime() const override;
     virtual double latencyTime() const override;
 
-    DECLARE_VIRTUAL_TRACE();
-
 private:
     // Given an azimuth angle in the range -180 -> +180, returns the corresponding azimuth index for the database,
     // and azimuthBlend which is an interpolation value from 0 -> 1.
     int calculateDesiredAzimuthIndexAndBlend(double azimuth, double& azimuthBlend);
 
-    Member<HRTFDatabaseLoader> m_databaseLoader;
+    RefPtr<HRTFDatabaseLoader> m_databaseLoader;
 
     float m_sampleRate;
 

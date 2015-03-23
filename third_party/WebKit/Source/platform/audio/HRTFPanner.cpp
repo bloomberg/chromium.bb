@@ -314,12 +314,6 @@ double HRTFPanner::latencyTime() const
     return (fftSize() / 2) / static_cast<double>(sampleRate());
 }
 
-DEFINE_TRACE(HRTFPanner)
-{
-    visitor->trace(m_databaseLoader);
-    Panner::trace(visitor);
-}
-
 } // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

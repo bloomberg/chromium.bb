@@ -54,7 +54,6 @@ AudioListener::~AudioListener()
 DEFINE_TRACE(AudioListener)
 {
     visitor->trace(m_panners);
-    visitor->trace(m_hrtfDatabaseLoader);
 }
 
 void AudioListener::addPanner(PannerNode* panner)

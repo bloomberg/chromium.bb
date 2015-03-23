@@ -581,12 +581,6 @@ void PannerNode::setChannelCountMode(const String& mode, ExceptionState& excepti
         context()->addChangedChannelCountMode(this);
 }
 
-DEFINE_TRACE(PannerNode)
-{
-    visitor->trace(m_panner);
-    AudioNode::trace(visitor);
-}
-
 } // namespace blink
 
 #endif // ENABLE(WEB_AUDIO)

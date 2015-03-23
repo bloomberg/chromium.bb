@@ -109,8 +109,6 @@ public:
     virtual void setChannelCount(unsigned long, ExceptionState&) final;
     virtual void setChannelCountMode(const String&, ExceptionState&) final;
 
-    DECLARE_VIRTUAL_TRACE();
-
 private:
     PannerNode(AudioContext*, float sampleRate);
 
@@ -131,7 +129,7 @@ private:
     bool isDistanceConeGainDirty() const { return m_isDistanceConeGainDirty; }
     bool isDopplerRateDirty() const { return m_isDopplerRateDirty; }
 
-    Member<Panner> m_panner;
+    OwnPtr<Panner> m_panner;
     unsigned m_panningModel;
     unsigned m_distanceModel;
 

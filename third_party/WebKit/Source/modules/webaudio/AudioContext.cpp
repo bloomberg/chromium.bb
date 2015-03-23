@@ -67,6 +67,7 @@
 #include "platform/audio/FFTFrame.h"
 #include "platform/audio/HRTFPanner.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
 #include "wtf/Atomics.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"

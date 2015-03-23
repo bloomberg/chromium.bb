@@ -30,7 +30,7 @@
 #define Panner_h
 
 #include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -39,7 +39,7 @@ class HRTFDatabaseLoader;
 
 // Abstract base class for panning a mono or stereo source.
 
-class PLATFORM_EXPORT Panner : public GarbageCollectedFinalized<Panner> {
+class PLATFORM_EXPORT Panner {
 public:
     enum {
         PanningModelEqualPower = 0,
@@ -48,7 +48,7 @@ public:
 
     typedef unsigned PanningModel;
 
-    static Panner* create(PanningModel, float sampleRate, HRTFDatabaseLoader*);
+    static PassOwnPtr<Panner> create(PanningModel, float sampleRate, HRTFDatabaseLoader*);
 
     virtual ~Panner() { };
 
@@ -60,8 +60,6 @@ public:
 
     virtual double tailTime() const = 0;
     virtual double latencyTime() const = 0;
-
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
     Panner(PanningModel model) : m_panningModel(model) { }

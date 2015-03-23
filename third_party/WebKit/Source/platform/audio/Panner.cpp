@@ -27,9 +27,7 @@
  */
 
 #include "config.h"
-
 #if ENABLE(WEB_AUDIO)
-
 #include "platform/audio/Panner.h"
 
 #include "platform/audio/EqualPowerPanner.h"
@@ -37,25 +35,19 @@
 
 namespace blink {
 
-Panner* Panner::create(PanningModel model, float sampleRate, HRTFDatabaseLoader* databaseLoader)
+PassOwnPtr<Panner> Panner::create(PanningModel model, float sampleRate, HRTFDatabaseLoader* databaseLoader)
 {
-    Panner* panner;
-
     switch (model) {
     case PanningModelEqualPower:
-        panner = new EqualPowerPanner(sampleRate);
-        break;
+        return adoptPtr(new EqualPowerPanner(sampleRate));
 
     case PanningModelHRTF:
-        panner = new HRTFPanner(sampleRate, databaseLoader);
-        break;
+        return adoptPtr(new HRTFPanner(sampleRate, databaseLoader));
 
     default:
         ASSERT_NOT_REACHED();
         return nullptr;
     }
-
-    return panner;
 }
 
 } // namespace blink

@@ -110,7 +110,7 @@ private:
     // and can be referred in audio thread.
     HeapVector<Member<PannerNode>> m_panners;
     // HRTF DB loader for panner node.
-    Member<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
+    RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 };
 
 } // namespace blink
