@@ -64,6 +64,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
       scoped_refptr<content::MessageLoopRunner> runner)
       : CardUnmaskPromptControllerImpl(contents),
         test_unmask_prompt_view_(test_unmask_prompt_view),
+        can_store_locally_(true),
         runner_(runner),
         weak_factory_(this) {}
 
@@ -71,6 +72,9 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
     return test_unmask_prompt_view_;
   }
   void LoadRiskFingerprint() override {}
+  bool CanStoreLocally() const override { return can_store_locally_; }
+
+  void set_can_store_locally(bool can) { can_store_locally_ = can; }
 
   base::WeakPtr<TestCardUnmaskPromptController> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -78,6 +82,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
 
  private:
   TestCardUnmaskPromptView* test_unmask_prompt_view_;
+  bool can_store_locally_;
   scoped_refptr<content::MessageLoopRunner> runner_;
   base::WeakPtrFactory<TestCardUnmaskPromptController> weak_factory_;
 
@@ -294,6 +299,30 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptOut) {
   histogram_tester.ExpectBucketCount(
       "Autofill.UnmaskPrompt.Events",
       AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT, 1);
+}
+
+TEST_F(CardUnmaskPromptControllerImplTest, DontLogForHiddenCheckbox) {
+  controller()->set_can_store_locally(false);
+  controller()->ShowPrompt(CreateCard(), delegate()->GetWeakPtr());
+  base::HistogramTester histogram_tester;
+
+  controller()->OnUnmaskResponse(
+      base::ASCIIToUTF16("123"), base::ASCIIToUTF16("01"),
+      base::ASCIIToUTF16("2015"), false /* should_store_pan */);
+  controller()->OnUnmaskDialogClosed();
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UnmaskPrompt.Events",
+      AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN, 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UnmaskPrompt.Events",
+      AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN, 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UnmaskPrompt.Events",
+      AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT, 0);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.UnmaskPrompt.Events",
+      AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT, 0);
 }
 
 TEST_F(CardUnmaskPromptControllerImplTest, LogRealPanResultSuccess) {

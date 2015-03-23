@@ -141,8 +141,8 @@ void CardUnmaskPromptViews::SetRetriableErrorMessage(
 
 void CardUnmaskPromptViews::SetInputsEnabled(bool enabled) {
   cvc_input_->SetEnabled(enabled);
-  storage_checkbox_->SetEnabled(enabled);
-
+  if (storage_checkbox_)
+    storage_checkbox_->SetEnabled(enabled);
   if (month_input_)
     month_input_->SetEnabled(enabled);
   if (year_input_)
@@ -155,6 +155,9 @@ views::View* CardUnmaskPromptViews::GetContentsView() {
 }
 
 views::View* CardUnmaskPromptViews::CreateFootnoteView() {
+  if (!controller_->CanStoreLocally())
+    return nullptr;
+
   // Local storage checkbox and (?) tooltip.
   views::View* storage_row = new views::View();
   views::BoxLayout* storage_row_layout = new views::BoxLayout(

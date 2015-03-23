@@ -39,6 +39,7 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   base::string16 GetInstructionsMessage() const override;
   int GetCvcImageRid() const override;
   bool ShouldRequestExpirationDate() const override;
+  bool CanStoreLocally() const override;
   bool GetStoreLocallyStartState() const override;
   bool InputCvcIsValid(const base::string16& input_text) const override;
   bool InputExpirationIsValid(const base::string16& month,
@@ -68,7 +69,6 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   AutofillClient::GetRealPanResult unmasking_result_;
   bool unmasking_initial_should_store_pan_;
   int unmasking_number_of_attempts_;
-  bool unmasking_allow_retry_;
 
   CardUnmaskDelegate::UnmaskResponse pending_response_;
 

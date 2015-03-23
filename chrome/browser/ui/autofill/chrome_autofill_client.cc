@@ -107,7 +107,8 @@ PrefService* ChromeAutofillClient::GetPrefs() {
 IdentityProvider* ChromeAutofillClient::GetIdentityProvider() {
   if (!identity_provider_) {
     Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+            ->GetOriginalProfile();
     LoginUIService* login_service = nullptr;
 #if !defined(OS_ANDROID)
     login_service = LoginUIServiceFactory::GetForProfile(profile);

@@ -32,6 +32,7 @@ class CardUnmaskPromptController {
   virtual base::string16 GetInstructionsMessage() const = 0;
   virtual int GetCvcImageRid() const = 0;
   virtual bool ShouldRequestExpirationDate() const = 0;
+  virtual bool CanStoreLocally() const = 0;
   virtual bool GetStoreLocallyStartState() const = 0;
   virtual bool InputCvcIsValid(const base::string16& input_text) const = 0;
   virtual bool InputExpirationIsValid(const base::string16& month,

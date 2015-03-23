@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/risk_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/card_unmask_prompt_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -67,8 +68,8 @@ void CardUnmaskPromptControllerImpl::OnVerificationResult(
   if (!card_unmask_view_)
     return;
 
-  base::string16 error_message;
   unmasking_result_ = result;
+  base::string16 error_message;
   switch (result) {
     case AutofillClient::SUCCESS:
       break;
@@ -93,7 +94,6 @@ void CardUnmaskPromptControllerImpl::OnVerificationResult(
   }
 
   AutofillMetrics::LogRealPanResult(result);
-  unmasking_allow_retry_ = AllowsRetry(result);
   card_unmask_view_->GotVerificationResult(error_message,
                                            AllowsRetry(result));
 }
@@ -111,10 +111,7 @@ void CardUnmaskPromptControllerImpl::LogOnCloseEvents() {
     return;
   }
 
-  bool final_should_store_pan =
-      user_prefs::UserPrefs::Get(web_contents_->GetBrowserContext())
-          ->GetBoolean(prefs::kAutofillWalletImportStorageCheckboxState);
-
+  bool final_should_store_pan = pending_response_.should_store_pan;
   if (unmasking_result_ == AutofillClient::SUCCESS) {
     AutofillMetrics::LogUnmaskPromptEvent(
         unmasking_number_of_attempts_ == 1
@@ -133,20 +130,21 @@ void CardUnmaskPromptControllerImpl::LogOnCloseEvents() {
               ::UNMASK_PROMPT_CLOSED_FAILED_TO_UNMASK_NON_RETRIABLE_FAILURE);
   }
 
-  // Tracking changes in local save preference.
-  AutofillMetrics::UnmaskPromptEvent event;
-  if (unmasking_initial_should_store_pan_ && final_should_store_pan) {
-    event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT;
-  } else if (!unmasking_initial_should_store_pan_
-             && !final_should_store_pan) {
-    event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN;
-  } else if (unmasking_initial_should_store_pan_
-             && !final_should_store_pan) {
-    event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT;
-  } else {
-    event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN;
+  if (CanStoreLocally()) {
+    // Tracking changes in local save preference.
+    AutofillMetrics::UnmaskPromptEvent event;
+    if (unmasking_initial_should_store_pan_ && final_should_store_pan) {
+      event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT;
+    } else if (!unmasking_initial_should_store_pan_ &&
+               !final_should_store_pan) {
+      event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN;
+    } else if (unmasking_initial_should_store_pan_ && !final_should_store_pan) {
+      event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT;
+    } else {
+      event = AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN;
+    }
+    AutofillMetrics::LogUnmaskPromptEvent(event);
   }
-  AutofillMetrics::LogUnmaskPromptEvent(event);
 }
 
 void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
@@ -163,7 +161,13 @@ void CardUnmaskPromptControllerImpl::OnUnmaskResponse(
     pending_response_.exp_month = exp_month;
     pending_response_.exp_year = exp_year;
   }
-  pending_response_.should_store_pan = should_store_pan;
+  if (CanStoreLocally()) {
+    pending_response_.should_store_pan = should_store_pan;
+  } else {
+    DCHECK(!should_store_pan);
+    pending_response_.should_store_pan = false;
+  }
+
   // Remember the last choice the user made (on this device).
   user_prefs::UserPrefs::Get(web_contents_->GetBrowserContext())->SetBoolean(
       prefs::kAutofillWalletImportStorageCheckboxState, should_store_pan);
@@ -206,9 +210,14 @@ bool CardUnmaskPromptControllerImpl::ShouldRequestExpirationDate() const {
   return card_.GetServerStatus() == CreditCard::EXPIRED;
 }
 
+bool CardUnmaskPromptControllerImpl::CanStoreLocally() const {
+  // TODO(estade): Always return false for Linux. See
+  // https://codereview.chromium.org/1012223002/
+  return !Profile::FromBrowserContext(web_contents_->GetBrowserContext())
+              ->IsOffTheRecord();
+}
+
 bool CardUnmaskPromptControllerImpl::GetStoreLocallyStartState() const {
-  // TODO(estade): Don't even offer to save on Linux? Offer to save but
-  // default to false?
   PrefService* prefs =
       user_prefs::UserPrefs::Get(web_contents_->GetBrowserContext());
   return prefs->GetBoolean(prefs::kAutofillWalletImportStorageCheckboxState);
