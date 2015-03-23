@@ -91,13 +91,10 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     // Actual thread id is set when the service worker context gets started.
     render_thread_id_ = kInvalidEmbeddedWorkerThreadId;
   }
-  context_->RegisterProviderHostByClientID(client_uuid_, this);
+  context_->RegisterClientIDForProviderHost(client_uuid_, this);
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
-  if (context_)
-    context_->UnregisterProviderHostByClientID(client_uuid_);
-
   // Clear docurl so the deferred activation of a waiting worker
   // won't associate the new version with a provider being destroyed.
   document_url_ = GURL();
