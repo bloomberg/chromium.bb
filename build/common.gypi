@@ -5973,6 +5973,18 @@
             'ldflags': [
               '-fsanitize=cfi-vptr',
             ],
+            'xcode_settings': {
+              'OTHER_CFLAGS': [
+                '-fsanitize=cfi-vptr',
+              ],
+            },
+          }],
+          ['_toolset=="target" and _type!="static_library"', {
+            'xcode_settings':  {
+              'OTHER_LDFLAGS': [
+                '-fsanitize=cfi-vptr',
+              ],
+            },
           }],
         ],
       },
