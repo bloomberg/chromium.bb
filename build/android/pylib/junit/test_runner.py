@@ -22,9 +22,13 @@ class JavaTestRunner(object):
 
   def RunTest(self, _test):
     """Runs junit tests from |self._test_suite|."""
+
     command = ['java',
+               '-Drobolectric.dependency.dir=%s' %
+                    os.path.join(constants.GetOutDirectory(), 'lib.java'),
                '-jar', os.path.join(constants.GetOutDirectory(), 'lib.java',
                                     '%s.jar' % self._test_suite)]
+
     if self._test_filter:
       command.extend(['-gtest-filter', self._test_filter])
     if self._package_filter:

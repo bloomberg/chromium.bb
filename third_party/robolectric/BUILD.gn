@@ -4,20 +4,20 @@
 
 import("//build/config/android/rules.gni")
 
-# GYP: //third_party/robolectric/robolectric.gyp:android_all_jar
-java_prebuilt("android_all_java") {
+# GYP: //third_party/robolectric/robolectric.gyp:android-all-4.3_r2-robolectric-0
+java_prebuilt("android-all-4.3_r2-robolectric-0") {
   visibility = [ ":*" ]
   jar_path = "lib/android-all-4.3_r2-robolectric-0.jar"
 }
 
-# GYP: //third_party/robolectric/robolectric.gyp:tagsoup_jar
-java_prebuilt("tagsoup_java") {
+# GYP: //third_party/robolectric/robolectric.gyp:tagsoup-1.2
+java_prebuilt("tagsoup-1.2") {
   visibility = [ ":*" ]
   jar_path = "lib/tagsoup-1.2.jar"
 }
 
-# GYP: //third_party/robolectric/robolectric.gyp:json_jar
-java_prebuilt("json_java") {
+# GYP: //third_party/robolectric/robolectric.gyp:json-20080701
+java_prebuilt("json-20080701") {
   visibility = [ ":*" ]
   jar_path = "lib/json-20080701.jar"
 }
@@ -27,8 +27,8 @@ java_prebuilt("robolectric_java") {
   testonly = true
   jar_path = "lib/robolectric-2.4-jar-with-dependencies.jar"
   deps = [
-    ":android_all_java",
-    ":tagsoup_java",
-    ":json_java",
+    ":android-all-4.3_r2-robolectric-0",
+    ":tagsoup-1.2",
+    ":json-20080701",
   ]
 }

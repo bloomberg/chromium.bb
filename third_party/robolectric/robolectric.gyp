@@ -5,8 +5,8 @@
 {
   'targets': [
     {
-      # GN: //third_party/robolectric:android_all_java
-      'target_name': 'android_all_jar',
+      # GN: //third_party/robolectric:android-all-4.3_r2-robolectric-0
+      'target_name': 'android-all-4.3_r2-robolectric-0',
       'type': 'none',
       'variables': {
         'jar_path': 'lib/android-all-4.3_r2-robolectric-0.jar',
@@ -16,8 +16,8 @@
       ]
     },
     {
-      # GN: //third_party/robolectric:tagsoup_java
-      'target_name': 'tagsoup_jar',
+      # GN: //third_party/robolectric:tagsoup-1.2
+      'target_name': 'tagsoup-1.2',
       'type': 'none',
       'variables': {
         'jar_path': 'lib/tagsoup-1.2.jar',
@@ -27,8 +27,8 @@
       ]
     },
     {
-      # GN: //third_party/robolectric:json_java
-      'target_name': 'json_jar',
+      # GN: //third_party/robolectric:json-20080701
+      'target_name': 'json-20080701',
       'type': 'none',
       'variables': {
         'jar_path': 'lib/json-20080701.jar',
@@ -42,9 +42,9 @@
       'target_name': 'robolectric_jar',
       'type': 'none',
       'dependencies': [
-        'android_all_jar',
-        'tagsoup_jar',
-        'json_jar',
+        'android-all-4.3_r2-robolectric-0',
+        'tagsoup-1.2',
+        'json-20080701',
       ],
       'variables': {
         'jar_path': 'lib/robolectric-2.4-jar-with-dependencies.jar',
