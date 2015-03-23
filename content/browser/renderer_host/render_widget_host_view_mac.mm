@@ -2254,8 +2254,9 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     // Allow rubber-banding in both directions.
     bool canRubberbandLeft = true;
     bool canRubberbandRight = true;
-    const WebMouseWheelEvent webEvent = WebInputEventFactory::mouseWheelEvent(
+    WebMouseWheelEvent webEvent = WebInputEventFactory::mouseWheelEvent(
         event, self, canRubberbandLeft, canRubberbandRight);
+    webEvent.railsMode = mouseWheelFilter_.UpdateRailsMode(webEvent);
     renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(webEvent);
   }
 
@@ -2377,8 +2378,9 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (renderWidgetHostView_->render_widget_host_) {
     BOOL canRubberbandLeft = [responderDelegate_ canRubberbandLeft:self];
     BOOL canRubberbandRight = [responderDelegate_ canRubberbandRight:self];
-    const WebMouseWheelEvent webEvent = WebInputEventFactory::mouseWheelEvent(
+    WebMouseWheelEvent webEvent = WebInputEventFactory::mouseWheelEvent(
         event, self, canRubberbandLeft, canRubberbandRight);
+    webEvent.railsMode = mouseWheelFilter_.UpdateRailsMode(webEvent);
     renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(webEvent);
   }
 }

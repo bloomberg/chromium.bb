@@ -497,6 +497,7 @@
       'browser/renderer_host/input/mock_input_ack_handler.h',
       'browser/renderer_host/input/mock_input_router_client.cc',
       'browser/renderer_host/input/mock_input_router_client.h',
+      'browser/renderer_host/input/mouse_wheel_rails_filter_unittest_mac.cc',
       'browser/renderer_host/input/stylus_text_selector_unittest.cc',
       'browser/renderer_host/input/synthetic_gesture_controller_unittest.cc',
       'browser/renderer_host/input/tap_suppression_controller_unittest.cc',

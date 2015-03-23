@@ -332,6 +332,16 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
   InputHandlerProxy::EventDisposition result = DID_NOT_HANDLE;
   cc::InputHandlerScrollResult scroll_result;
 
+  // TODO(ccameron): The rail information should be pushed down into
+  // InputHandler.
+  gfx::Vector2dF scroll_delta(
+      wheel_event.railsMode != WebInputEvent::RailsModeVertical
+          ? -wheel_event.deltaX
+          : 0,
+      wheel_event.railsMode != WebInputEvent::RailsModeHorizontal
+          ? -wheel_event.deltaY
+          : 0);
+
   if (wheel_event.scrollByPage) {
     // TODO(jamesr): We don't properly handle scroll by page in the compositor
     // thread, so punt it to the main thread. http://crbug.com/236639
@@ -342,9 +352,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     result = DID_NOT_HANDLE;
   } else if (smooth_scroll_enabled_) {
     cc::InputHandler::ScrollStatus scroll_status =
-        input_handler_->ScrollAnimated(
-            gfx::Point(wheel_event.x, wheel_event.y),
-            gfx::Vector2dF(-wheel_event.deltaX, -wheel_event.deltaY));
+        input_handler_->ScrollAnimated(gfx::Point(wheel_event.x, wheel_event.y),
+                                       scroll_delta);
     switch (scroll_status) {
       case cc::InputHandler::SCROLL_STARTED:
         result = DID_HANDLE;
@@ -360,12 +369,11 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
         gfx::Point(wheel_event.x, wheel_event.y), cc::InputHandler::WHEEL);
     switch (scroll_status) {
       case cc::InputHandler::SCROLL_STARTED: {
-        TRACE_EVENT_INSTANT2(
-            "input", "InputHandlerProxy::handle_input wheel scroll",
-            TRACE_EVENT_SCOPE_THREAD, "deltaX", -wheel_event.deltaX, "deltaY",
-            -wheel_event.deltaY);
+        TRACE_EVENT_INSTANT2("input",
+                             "InputHandlerProxy::handle_input wheel scroll",
+                             TRACE_EVENT_SCOPE_THREAD, "deltaX",
+                             scroll_delta.x(), "deltaY", scroll_delta.y());
         gfx::Point scroll_point(wheel_event.x, wheel_event.y);
-        gfx::Vector2dF scroll_delta(-wheel_event.deltaX, -wheel_event.deltaY);
         scroll_result = input_handler_->ScrollBy(scroll_point, scroll_delta);
         HandleOverscroll(scroll_point, scroll_result);
         input_handler_->ScrollEnd();

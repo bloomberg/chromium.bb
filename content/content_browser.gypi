@@ -1096,6 +1096,8 @@
       'browser/renderer_host/input/motion_event_android.h',
       'browser/renderer_host/input/motion_event_web.cc',
       'browser/renderer_host/input/motion_event_web.h',
+      'browser/renderer_host/input/mouse_wheel_rails_filter_mac.cc',
+      'browser/renderer_host/input/mouse_wheel_rails_filter_mac.h',
       'browser/renderer_host/input/stylus_text_selector.cc',
       'browser/renderer_host/input/stylus_text_selector.h',
       'browser/renderer_host/input/synthetic_gesture.cc',

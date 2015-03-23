@@ -21,6 +21,7 @@
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/compositor/delegated_frame_host.h"
 #include "content/browser/renderer_host/display_link_mac.h"
+#include "content/browser/renderer_host/input/mouse_wheel_rails_filter_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
@@ -35,6 +36,7 @@
 #include "ui/gfx/display_observer.h"
 
 namespace content {
+class RenderWidgetHostImpl;
 class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;
 class WebContents;
@@ -171,6 +173,10 @@ class Layer;
   // key up events yet.
   // Used for filtering out non-matching NSKeyUp events.
   std::set<unsigned short> keyDownCodes_;
+
+  // The filter used to guide touch events towards a horizontal or vertical
+  // orientation.
+  content::MouseWheelRailsFilterMac mouseWheelFilter_;
 }
 
 @property(nonatomic, readonly) NSRange selectedRange;
@@ -199,7 +205,6 @@ class Layer;
 @end
 
 namespace content {
-class RenderWidgetHostImpl;
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac
