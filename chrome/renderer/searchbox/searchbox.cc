@@ -244,13 +244,19 @@ SearchBox::~SearchBox() {
 }
 
 void SearchBox::LogEvent(NTPLoggingEventType event) {
-  // navigation_start in ms.
-  uint64 start = 1000 * (render_view()->GetMainRenderFrame()->GetWebFrame()->
-      performance().navigationStart());
-  uint64 now =
-      (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch()).InMilliseconds();
-  DCHECK(now >= start);
-  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(now - start);
+  // The main frame for the current RenderView may be out-of-process, in which
+  // case it won't have performance().  Use the default delta of 0 in this
+  // case.
+  base::TimeDelta delta;
+  if (render_view()->GetWebView()->mainFrame()->isWebLocalFrame()) {
+    // navigation_start in ms.
+    uint64 start = 1000 * (render_view()->GetMainRenderFrame()->GetWebFrame()->
+        performance().navigationStart());
+    uint64 now = (base::TimeTicks::Now() - base::TimeTicks::UnixEpoch())
+                     .InMilliseconds();
+    DCHECK(now >= start);
+    delta = base::TimeDelta::FromMilliseconds(now - start);
+  }
   render_view()->Send(new ChromeViewHostMsg_LogEvent(
       render_view()->GetRoutingID(), page_seq_no_, event, delta));
 }
