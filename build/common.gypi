@@ -4419,11 +4419,6 @@
               '<(DEPTH)/third_party/instrumented_libraries/instrumented_libraries.gyp:instrumented_libraries',
             ],
           }],
-          ['use_prebuilt_instrumented_libraries==1', {
-            'dependencies': [
-              '<(DEPTH)/third_party/instrumented_libraries/instrumented_libraries.gyp:prebuilt_instrumented_libraries',
-            ],
-          }],
           ['use_custom_libcxx==1', {
             'dependencies': [
               '<(DEPTH)/buildtools/third_party/libc++/libc++.gyp:libcxx_proxy',
