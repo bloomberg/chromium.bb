@@ -49506,6 +49506,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="68" label="kDocumentScan"/>
   <int value="69" label="kNetworkingConfig"/>
   <int value="70" label="kPlatformKeys"/>
+  <int value="71" label="kMdns"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess" type="int">
