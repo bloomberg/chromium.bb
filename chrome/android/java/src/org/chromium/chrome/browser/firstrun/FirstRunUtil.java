@@ -7,12 +7,8 @@ package org.chromium.chrome.browser.firstrun;
 import android.accounts.Account;
 import android.app.Activity;
 
-import org.chromium.chrome.browser.child_accounts.ChildAccountService;
-import org.chromium.chrome.browser.signin.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
-import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.chrome.browser.sync.SyncController;
 
 /**
  * Helper functions for first run actions.
@@ -55,42 +51,8 @@ public class FirstRunUtil {
             final int signInSync,
             final boolean showSignInNotification,
             final SignInFlowObserver observer) {
-        // The SigninManager handles most of the sign-in flow, and onSigninComplete handles the
-        // Chrome-specific details.
-        SigninManager signinManager = SigninManager.get(activity);
-        final boolean passive = signInType != SIGNIN_TYPE_INTERACTIVE;
-
-        signinManager.startSignIn(activity, account, passive, new SignInFlowObserver() {
-            @Override
-            public void onSigninComplete() {
-                // TODO(acleung): Maybe GoogleServicesManager should have a
-                // sync = true but setSetupInProgress(true) state?
-                ProfileSyncService.get(activity).setSetupInProgress(
-                        signInSync == SIGNIN_SYNC_SETUP_IN_PROGRESS);
-                SyncController.get(activity).start();
-
-                if (observer != null) observer.onSigninComplete();
-
-                if (signInType != SIGNIN_TYPE_INTERACTIVE) {
-                    AccountManagementFragment.setSignOutAllowedPreferenceValue(activity, false);
-                }
-
-                if (signInType == SIGNIN_TYPE_FORCED_CHILD_ACCOUNT) {
-                    ChildAccountService.getInstance(activity).onChildAccountSigninComplete();
-                }
-
-                SigninManager.get(activity).logInSignedInUser();
-                // If Chrome was started from an external intent we should show the sync signin
-                // popup, since the user has not seen the welcome screen where there is easy access
-                // to turn off sync.
-                if (showSignInNotification) {
-                    ((FirstRunActivity) activity).showSignInNotification();
-                }
-            }
-            @Override
-            public void onSigninCancelled() {
-                if (observer != null) observer.onSigninCancelled();
-            }
-        });
+        SigninManager.get(activity).signInToSelectedAccount(activity, account,
+                SigninManager.SIGNIN_TYPE_INTERACTIVE, SigninManager.SIGNIN_SYNC_IMMEDIATELY,
+                false, null);
     }
 }

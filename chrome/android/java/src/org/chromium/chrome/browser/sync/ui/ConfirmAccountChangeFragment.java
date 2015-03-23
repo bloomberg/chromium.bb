@@ -19,8 +19,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.firstrun.FirstRunUtil;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -108,8 +108,8 @@ public class ConfirmAccountChangeFragment extends DialogFragment
         if (activity == null) return;
         Account account = AccountManagerHelper.get(activity).getAccountFromName(accountName);
         if (account == null) return;
-        FirstRunUtil.signInToSelectedAccount(activity, account,
-                FirstRunUtil.SIGNIN_TYPE_INTERACTIVE, FirstRunUtil.SIGNIN_SYNC_IMMEDIATELY,
+        SigninManager.get(activity).signInToSelectedAccount(activity, account,
+                SigninManager.SIGNIN_TYPE_INTERACTIVE, SigninManager.SIGNIN_SYNC_IMMEDIATELY,
                 false, null);
     }
 }

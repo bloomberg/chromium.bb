@@ -81,10 +81,10 @@ public class FirstRunSignInProcessor {
                 mHasChildAccount = hasChildAccount();
                 mSignInManager.onFirstRunCheckDone();
                 mSignInType = mHasChildAccount
-                        ? FirstRunUtil.SIGNIN_TYPE_FORCED_CHILD_ACCOUNT
+                        ? SigninManager.SIGNIN_TYPE_FORCED_CHILD_ACCOUNT
                         : (mIsAndroidEduDevice
-                                ? FirstRunUtil.SIGNIN_TYPE_FORCED_EDU
-                                : FirstRunUtil.SIGNIN_TYPE_INTERACTIVE);
+                                ? SigninManager.SIGNIN_TYPE_FORCED_EDU
+                                : SigninManager.SIGNIN_TYPE_INTERACTIVE);
 
                 // We allow to pass-through without FRE being complete only if
                 // - FRE is disabled, or
@@ -129,12 +129,13 @@ public class FirstRunSignInProcessor {
 
         final Account[] googleAccounts =
                 AccountManagerHelper.get(mActivity).getGoogleAccounts();
+        SigninManager signinManager = SigninManager.get(mActivity.getApplicationContext());
         if (!FeatureUtilities.canAllowSync(mActivity)
-                || !SigninManager.get(mActivity.getApplicationContext()).isSignInAllowed()
+                || !signinManager.isSignInAllowed()
                 || googleAccounts.length != 1) return;
 
-        FirstRunUtil.signInToSelectedAccount(mActivity, googleAccounts[0],
-                mSignInType, FirstRunUtil.SIGNIN_SYNC_IMMEDIATELY, mShowSignInNotification,
+        signinManager.signInToSelectedAccount(mActivity, googleAccounts[0],
+                mSignInType, SigninManager.SIGNIN_SYNC_IMMEDIATELY, mShowSignInNotification,
                 mObserver);
     }
 
@@ -146,8 +147,9 @@ public class FirstRunSignInProcessor {
         assert !getFirstRunFlowSignInComplete(mActivity);
 
         final String accountName = getFirstRunFlowSignInAccountName(mActivity);
+        SigninManager signinManager = SigninManager.get(mActivity.getApplicationContext());
         if (!FeatureUtilities.canAllowSync(mActivity)
-                || !SigninManager.get(mActivity.getApplicationContext()).isSignInAllowed()
+                || !signinManager.isSignInAllowed()
                 || TextUtils.isEmpty(accountName)) {
             setFirstRunFlowSignInComplete(mActivity, true);
             if (mObserver != null) mObserver.onSigninComplete();
@@ -162,8 +164,8 @@ public class FirstRunSignInProcessor {
             return;
         }
 
-        FirstRunUtil.signInToSelectedAccount(mActivity, account,
-                mSignInType, FirstRunUtil.SIGNIN_SYNC_IMMEDIATELY, mShowSignInNotification,
+        signinManager.signInToSelectedAccount(mActivity, account,
+                mSignInType, SigninManager.SIGNIN_SYNC_IMMEDIATELY, mShowSignInNotification,
                 new SignInFlowObserver() {
                     private void completeSignIn() {
                         // Show sync settings if user pressed the "Settings" button.
