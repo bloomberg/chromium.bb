@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_POPUP_BASE_VIEW_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -85,6 +86,9 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
 
   // The focus manager that |this| observes. Weak reference.
   views::FocusManager* focus_manager_;
+
+  // The time when the popup was shown.
+  base::Time show_time_;
 
   base::WeakPtrFactory<AutofillPopupBaseView> weak_ptr_factory_;
 

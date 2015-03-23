@@ -66,6 +66,8 @@ void AutofillPopupBaseView::DoShow() {
 
     // No animation for popup appearance (too distracting).
     widget->SetVisibilityAnimationTransition(views::Widget::ANIMATE_HIDE);
+
+    show_time_ = base::Time::Now();
   }
 
   SetBorder(views::Border::CreateSolidBorder(kPopupBorderThickness,
@@ -143,8 +145,15 @@ void AutofillPopupBaseView::OnMouseExited(const ui::MouseEvent& event) {
 void AutofillPopupBaseView::OnMouseMoved(const ui::MouseEvent& event) {
   // A synthesized mouse move will be sent when the popup is first shown.
   // Don't preview a suggestion if the mouse happens to be hovering there.
+#if defined(OS_WIN)
+  // TODO(rouslan): Use event.time_stamp() and ui::EventTimeForNow() when they
+  // become comparable. http://crbug.com/453559
+  if (base::Time::Now() - show_time_ <= base::TimeDelta::FromMilliseconds(50))
+    return;
+#else
   if (event.flags() & ui::EF_IS_SYNTHESIZED)
     return;
+#endif
 
   if (HitTestPoint(event.location()))
     SetSelection(event.location());
