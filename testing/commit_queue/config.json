@@ -50,9 +50,6 @@
                             ],
                             "linux_chromium_asan_rel_ng": [
                                 "defaulttests"
-                            ],
-                            "linux_chromium_chromeos_ozone_rel_ng": [
-                                "defaulttests"
                             ]
                         },
                         "tryserver.chromium.mac": {
@@ -127,6 +124,9 @@
                         "defaulttests"
                     ],
                     "linux_chromium_chromeos_compile_dbg_ng": [
+                        "defaulttests"
+                    ],
+                    "linux_chromium_chromeos_ozone_rel_ng": [
                         "defaulttests"
                     ],
                     "linux_chromium_chromeos_rel_ng": [
