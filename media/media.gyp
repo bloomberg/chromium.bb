@@ -550,7 +550,6 @@
         'renderers/audio_renderer_impl.h',
         'renderers/default_renderer_factory.cc',
         'renderers/default_renderer_factory.h',
-        'renderers/gpu_video_accelerator_factories.cc',
         'renderers/gpu_video_accelerator_factories.h',
         'renderers/renderer_impl.cc',
         'renderers/renderer_impl.h',

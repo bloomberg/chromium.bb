@@ -203,7 +203,6 @@ component("media") {
     "midi/usb_midi_output_stream.h",
     "renderers/audio_renderer_impl.cc",
     "renderers/audio_renderer_impl.h",
-    "renderers/gpu_video_accelerator_factories.cc",
     "renderers/gpu_video_accelerator_factories.h",
     "renderers/renderer_impl.cc",
     "renderers/renderer_impl.h",

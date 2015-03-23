@@ -70,7 +70,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
 
  protected:
   friend class base::RefCountedThreadSafe<GpuVideoAcceleratorFactories>;
-  virtual ~GpuVideoAcceleratorFactories();
+  virtual ~GpuVideoAcceleratorFactories() {}
 };
 
 }  // namespace media
