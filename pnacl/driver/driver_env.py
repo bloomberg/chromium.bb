@@ -177,6 +177,7 @@ INITIAL_ENV = {
 
   # Native LLVM tools
   'LLVM_PNACL_LLC': '${BASE_LLVM_BIN}/pnacl-llc${EXEC_EXT}',
+  'LLVM_PNACL_SZ':  '${BASE_LLVM_BIN}/pnacl-sz${EXEC_EXT}',
   # llvm-mc is llvm's native assembler
   'LLVM_MC'       : '${BASE_LLVM_BIN}/llvm-mc${EXEC_EXT}',
 
