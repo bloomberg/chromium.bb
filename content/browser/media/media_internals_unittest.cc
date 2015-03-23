@@ -109,14 +109,17 @@ class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
   MediaInternals::UpdateCallback update_cb_;
 };
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 TEST_F(MediaInternalsVideoCaptureDeviceTest,
        AllCaptureApiTypesHaveProperStringRepresentation) {
   typedef media::VideoCaptureDevice::Name VideoCaptureDeviceName;
   typedef std::map<VideoCaptureDeviceName::CaptureApiType, std::string>
       CaptureApiTypeStringMap;
   CaptureApiTypeStringMap m;
-#if defined(OS_WIN)
+#if defined(OS_LINUX)
+  m[VideoCaptureDeviceName::V4L2_SINGLE_PLANE] = "V4L2 SPLANE";
+  m[VideoCaptureDeviceName::V4L2_MULTI_PLANE] = "V4L2 MPLANE";
+#elif defined(OS_WIN)
   m[VideoCaptureDeviceName::MEDIA_FOUNDATION] = "Media Foundation";
   m[VideoCaptureDeviceName::DIRECT_SHOW] = "Direct Show";
   m[VideoCaptureDeviceName::DIRECT_SHOW_WDM_CROSSBAR] =
@@ -172,8 +175,10 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
 #elif defined(OS_WIN)
       media::VideoCaptureDevice::Name("dummy", "dummy",
           media::VideoCaptureDevice::Name::DIRECT_SHOW),
-#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
-      media::VideoCaptureDevice::Name("dummy", "/dev/dummy"),
+#elif defined(OS_LINUX)
+      media::VideoCaptureDevice::Name(
+          "dummy", "/dev/dummy",
+          media::VideoCaptureDevice::Name::V4L2_SINGLE_PLANE),
 #else
       media::VideoCaptureDevice::Name("dummy", "dummy"),
 #endif
@@ -187,7 +192,7 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   // exactly one device_info in the |device_infos|.
   media_internals_->UpdateVideoCaptureDeviceCapabilities(device_infos);
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   ExpectString("id", "/dev/dummy");
 #else
   ExpectString("id", "dummy");
@@ -196,10 +201,12 @@ TEST_F(MediaInternalsVideoCaptureDeviceTest,
   base::ListValue expected_list;
   expected_list.AppendString(format_hd.ToString());
   ExpectListOfStrings("formats", expected_list);
-#if defined(OS_MACOSX)
-  ExpectString("captureApi", "QTKit");
+#if defined(OS_LINUX)
+  ExpectString("captureApi", "V4L2 SPLANE");
 #elif defined(OS_WIN)
   ExpectString("captureApi", "Direct Show");
+#elif defined(OS_MACOSX)
+  ExpectString("captureApi", "QTKit");
 #endif
 }
 

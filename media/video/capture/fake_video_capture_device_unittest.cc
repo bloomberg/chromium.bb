@@ -23,6 +23,16 @@ namespace {
 
 class MockClient : public VideoCaptureDevice::Client {
  public:
+  MOCK_METHOD9(OnIncomingCapturedYuvData,
+               void (const uint8* y_data,
+                     const uint8* u_data,
+                     const uint8* v_data,
+                     size_t y_stride,
+                     size_t u_stride,
+                     size_t v_stride,
+                     const VideoCaptureFormat& frame_format,
+                     int clockwise_rotation,
+                     const base::TimeTicks& timestamp));
   MOCK_METHOD2(ReserveOutputBuffer,
                scoped_refptr<Buffer>(VideoFrame::Format format,
                                      const gfx::Size& dimensions));
@@ -80,6 +90,8 @@ class FakeVideoCaptureDeviceTest : public testing::Test {
   }
 
   void SetUp() override {
+    EXPECT_CALL(*client_, OnIncomingCapturedYuvData(_,_,_,_,_,_,_,_,_))
+               .Times(0);
     EXPECT_CALL(*client_, ReserveOutputBuffer(_,_)).Times(0);
     EXPECT_CALL(*client_, OnIncomingCapturedVideoFrame(_,_,_)).Times(0);
   }

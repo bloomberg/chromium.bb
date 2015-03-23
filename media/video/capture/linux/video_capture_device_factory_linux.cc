@@ -25,7 +25,7 @@
 namespace media {
 
 static bool HasUsableFormats(int fd, uint32 capabilities) {
-  const std::list<int>& usable_fourccs =
+  const std::list<uint32_t>& usable_fourccs =
       VideoCaptureDeviceLinux::GetListOfUsableFourCCs(false);
 
   static const struct {
@@ -48,6 +48,7 @@ static bool HasUsableFormats(int fd, uint32 capabilities) {
       }
     }
   }
+  DLOG(ERROR) << "No usable formats found";
   return false;
 }
 
@@ -182,9 +183,11 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceNames(
          !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT) &&
          !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT_MPLANE)) &&
         HasUsableFormats(fd.get(), cap.capabilities)) {
-      VideoCaptureDevice::Name device_name(base::StringPrintf("%s", cap.card),
-                                           unique_id);
-      device_names->push_back(device_name);
+      device_names->push_back(VideoCaptureDevice::Name(
+          base::StringPrintf("%s", cap.card), unique_id,
+          (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE_MPLANE)
+              ? VideoCaptureDevice::Name::V4L2_MULTI_PLANE
+              : VideoCaptureDevice::Name::V4L2_SINGLE_PLANE));
     }
   }
 }
@@ -200,10 +203,14 @@ void VideoCaptureDeviceFactoryLinux::GetDeviceSupportedFormats(
     return;
   supported_formats->clear();
 
-  const v4l2_buf_type kCaptureTypes[] = {V4L2_BUF_TYPE_VIDEO_CAPTURE,
-                                         V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE};
-  for (const auto& buf_type : kCaptureTypes)
-    GetSupportedFormatsForV4L2BufferType(fd.get(), buf_type, supported_formats);
+  DCHECK_NE(device.capture_api_type(),
+            VideoCaptureDevice::Name::API_TYPE_UNKNOWN);
+  const v4l2_buf_type buf_type =
+      (device.capture_api_type() == VideoCaptureDevice::Name::V4L2_MULTI_PLANE)
+          ? V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE
+          : V4L2_BUF_TYPE_VIDEO_CAPTURE;
+  GetSupportedFormatsForV4L2BufferType(fd.get(), buf_type, supported_formats);
+
   return;
 }
 

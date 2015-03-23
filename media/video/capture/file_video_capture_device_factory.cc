@@ -51,6 +51,11 @@ void FileVideoCaptureDeviceFactory::GetDeviceNames(
       command_line_file_path.value(),
       kFileVideoCaptureDeviceName,
       VideoCaptureDevice::Name::AVFOUNDATION));
+#elif defined(OS_LINUX)
+  device_names->push_back(VideoCaptureDevice::Name(
+      command_line_file_path.value(),
+      kFileVideoCaptureDeviceName,
+      VideoCaptureDevice::Name::V4L2_SINGLE_PLANE));
 #else
   device_names->push_back(VideoCaptureDevice::Name(
       command_line_file_path.value(),
