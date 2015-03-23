@@ -1031,7 +1031,6 @@ public class PostMessageTest extends AwTestBase {
             + "    <script>"
             + "        onmessage = function (e) {"
             + "            e.source.postMessage('" + HELLO + "', '*');"
-            + "            e.ports[0].postMessage();"
             + "            e.ports[0].postMessage(null);"
             + "            e.ports[0].postMessage(undefined);"
             + "            e.ports[0].postMessage(NaN);"
