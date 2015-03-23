@@ -17,6 +17,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/signin/core/common/profile_management_switches.h"
 
 class AvatarMenuButtonTest : public InProcessBrowserTest {
  public:
@@ -24,6 +25,7 @@ class AvatarMenuButtonTest : public InProcessBrowserTest {
   ~AvatarMenuButtonTest() override;
 
  protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override;
   void CreateTestingProfile();
   AvatarMenuButton* GetAvatarMenuButton();
   void StartAvatarMenu();
@@ -36,6 +38,10 @@ AvatarMenuButtonTest::AvatarMenuButtonTest() {
 }
 
 AvatarMenuButtonTest::~AvatarMenuButtonTest() {
+}
+
+void AvatarMenuButtonTest::SetUpCommandLine(base::CommandLine* command_line) {
+  switches::DisableNewAvatarMenuForTesting(command_line);
 }
 
 void AvatarMenuButtonTest::CreateTestingProfile() {

@@ -4,9 +4,12 @@
 
 #include "chrome/test/base/testing_profile_manager.h"
 
+#include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
+#include "chrome/browser/profiles/profile_avatar_downloader.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -97,6 +100,21 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   size_t index = cache.GetIndexOfProfileWithPath(profile_path);
   cache.SetAvatarIconOfProfileAtIndex(index, avatar_id);
   cache.SetSupervisedUserIdOfProfileAtIndex(index, supervised_user_id);
+
+  // Cache a "high res" icon if none exists to avoid a network fetch.
+  size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(index);
+  if (!base::PathExists(profiles::GetPathOfHighResAvatarAtIndex(icon_index))) {
+    ProfileAvatarDownloader avatar_downloader(
+        cache.GetAvatarIconIndexOfProfileAtIndex(index), profile_path, &cache);
+
+    // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(2, 2);
+    bitmap.eraseColor(SK_ColorGREEN);
+    avatar_downloader.OnFetchComplete(
+        GURL("http://www.google.com/avatar.png"), &bitmap);
+  }
+
   // SetNameOfProfileAtIndex may reshuffle the list of profiles, so we do it
   // last.
   cache.SetNameOfProfileAtIndex(index, user_name);

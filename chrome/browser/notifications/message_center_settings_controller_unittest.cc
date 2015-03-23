@@ -40,7 +40,18 @@ class MessageCenterSettingsControllerBaseTest : public testing::Test {
   void SetUp() override { ASSERT_TRUE(testing_profile_manager_.SetUp()); }
 
   virtual TestingProfile* CreateProfile(const std::string& name) {
-    return testing_profile_manager_.CreateTestingProfile(name);
+    TestingProfile* profile =
+        testing_profile_manager_.CreateTestingProfile(name);
+    ProfileInfoCache* cache = testing_profile_manager_.profile_info_cache();
+    // Preload the avatar icon so it's cached for the test's execution. This
+    // test is synchronous, but access of the AvatarIcon during creation of the
+    // ProfileNotifierGroup will post tasks to create the gfx::Image that don't
+    // execute until after NotifierGroups's deleted, meaning the references leak
+    // and cause ASAN errors.
+    cache->GetAvatarIconOfProfileAtIndex(
+        cache->GetIndexOfProfileWithPath(profile->GetPath()));
+    base::MessageLoop::current()->RunUntilIdle();
+    return profile;
   }
 
   void CreateController() {

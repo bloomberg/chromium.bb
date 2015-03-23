@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/profiles/avatar_menu_bubble_controller.h"
 
+#include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_mac.h"
@@ -15,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "testing/gtest_mac.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
@@ -26,6 +28,9 @@ class AvatarMenuBubbleControllerTest : public CocoaTest {
   }
 
   void SetUp() override {
+    switches::DisableNewAvatarMenuForTesting(
+        base::CommandLine::ForCurrentProcess());
+
     CocoaTest::SetUp();
     ASSERT_TRUE(manager_.SetUp());
 
@@ -78,7 +83,7 @@ TEST_F(AvatarMenuBubbleControllerTest, InitialLayout) {
   NSView* contents = [[controller() window] contentView];
   EXPECT_EQ(4U, [[contents subviews] count]);
 
-  // Loop over the itmes and match the viewController views to subviews.
+  // Loop over the items and match the viewController views to subviews.
   NSMutableArray* subviews =
       [NSMutableArray arrayWithArray:[contents subviews]];
   for (AvatarMenuItemController* viewController in [controller() items]) {
