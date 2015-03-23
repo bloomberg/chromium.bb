@@ -250,7 +250,7 @@ FileType.getExtension = function(entry) {
  * if possible, since this method can't recognize directories.
  *
  * @param {string} name Name of the file.
- * @return {Object} The matching file type object or an empty object.
+ * @return {!Object} The matching file type object or an empty object.
  */
 FileType.getTypeForName = function(name) {
   var types = FileType.types;
@@ -260,7 +260,8 @@ FileType.getTypeForName = function(name) {
   }
 
   // Unknown file type.
-  var extension = util.splitExtension(name)[1];
+  var match = /\.[^\/\.]+$/.exec(name);
+  var extension = match ? match[0] : '';
   if (extension === '') {
     return { name: 'NO_EXTENSION_FILE_TYPE', type: 'UNKNOWN', icon: '' };
   }
@@ -274,7 +275,7 @@ FileType.getTypeForName = function(name) {
 /**
  * Gets the file type object for a given file.
  * @param {Entry} entry Reference to the file.
- * @return {Object} The matching file type object or an empty object.
+ * @return {!Object} The matching file type object or an empty object.
  */
 FileType.getType = function(entry) {
   if (entry.isDirectory)
@@ -296,17 +297,6 @@ FileType.getType = function(entry) {
     name: 'GENERIC_FILE_TYPE', type: 'UNKNOWN',
     subtype: extension.substr(1).toUpperCase(), icon: ''
   };
-};
-
-/**
- * @param {Object} fileType Type object returned by FileType.getType().
- * @return {string} Localized string representation of file type.
- */
-FileType.typeToString = function(fileType) {
-  if (fileType.subtype)
-    return strf(fileType.name, fileType.subtype);
-  else
-    return str(fileType.name);
 };
 
 /**

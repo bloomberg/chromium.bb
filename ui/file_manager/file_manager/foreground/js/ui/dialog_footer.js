@@ -134,7 +134,7 @@ DialogFooter.prototype.initFileTypeFilter = function(
     if (!description) {
       // See if all the extensions in the group have the same description.
       for (var j = 0; j !== fileType.extensions.length; j++) {
-        var currentDescription = FileType.typeToString(
+        var currentDescription = FileListModel.getFileTypeString(
             FileType.getTypeForName('.' + fileType.extensions[j]));
         if (!description)  {
           // Set the first time.

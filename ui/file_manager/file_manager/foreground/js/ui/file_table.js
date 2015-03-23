@@ -815,7 +815,7 @@ FileTable.prototype.renderType_ = function(entry, columnId, table) {
   var div = /** @type {!HTMLDivElement} */
       (this.ownerDocument.createElement('div'));
   div.className = 'type';
-  div.textContent = FileType.typeToString(FileType.getType(entry));
+  div.textContent = FileListModel.getFileTypeString(FileType.getType(entry));
   return div;
 };
 

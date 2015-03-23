@@ -424,6 +424,17 @@ function FileListModel(metadataModel) {
   this.isDescendingOrder_ = false;
 }
 
+/**
+ * @param {!Object} fileType Type object returned by FileType.getType().
+ * @return {string} Localized string representation of file type.
+ */
+FileListModel.getFileTypeString = function(fileType) {
+  if (fileType.subtype)
+    return strf(fileType.name, fileType.subtype);
+  else
+    return str(fileType.name);
+};
+
 FileListModel.prototype = {
   __proto__: cr.ui.ArrayDataModel.prototype
 };
@@ -527,8 +538,8 @@ FileListModel.prototype.compareType_ = function(a, b) {
   if (a.isDirectory !== b.isDirectory)
     return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
 
-  var aType = FileType.typeToString(FileType.getType(a));
-  var bType = FileType.typeToString(FileType.getType(b));
+  var aType = FileListModel.getFileTypeString(FileType.getType(a));
+  var bType = FileListModel.getFileTypeString(FileType.getType(b));
 
   var result = util.collator.compare(aType, bType);
   return result !== 0 ? result : util.compareName(a, b);
