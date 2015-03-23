@@ -351,6 +351,7 @@
         'resources/picture_layer_tiling_perftest.cc',
         'resources/picture_pile_impl_perftest.cc',
         'resources/task_graph_runner_perftest.cc',
+        'resources/texture_compressor_perftest.cc',
         'resources/tile_manager_perftest.cc',
         'resources/tile_task_worker_pool_perftest.cc',
         'test/cc_test_suite.cc',
