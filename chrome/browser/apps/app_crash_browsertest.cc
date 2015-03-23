@@ -23,6 +23,9 @@ public:
   }
 };
 
+// Disabling flaky test on ASAN,  crbug.com/469249
+#if !defined(ADDRESS_SANITIZER)
 IN_PROC_BROWSER_TEST_F(AppCrashTest, HiddenWindows) {
   RunAppCrashTest("crashtest_hidden_windows");
 }
+#endif
