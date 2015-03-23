@@ -45,13 +45,6 @@ class SVGGradientElement : public SVGElement,
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGGradientElement);
 public:
-    enum {
-        SVG_SPREADMETHOD_UNKNOWN = SVGSpreadMethodUnknown,
-        SVG_SPREADMETHOD_PAD = SVGSpreadMethodReflect,
-        SVG_SPREADMETHOD_REFLECT = SVGSpreadMethodRepeat,
-        SVG_SPREADMETHOD_REPEAT = SVGSpreadMethodUnknown
-    };
-
     Vector<Gradient::ColorStop> buildStops();
 
     SVGAnimatedTransformList* gradientTransform() { return m_gradientTransform.get(); }
