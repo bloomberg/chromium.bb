@@ -77,9 +77,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // Set if we have seen a SYN_DROPPED and not yet re-synced with the device.
   bool syn_dropped_;
 
-  // Set if this is a type A device (uses SYN_MT_REPORT).
-  bool is_type_a_;
-
   // Pressure values.
   int pressure_min_;
   int pressure_max_;  // Used to normalize pressure values.

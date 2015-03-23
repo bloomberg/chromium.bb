@@ -80,7 +80,6 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
     : EventConverterEvdev(fd, path, id, type),
       dispatcher_(dispatcher),
       syn_dropped_(false),
-      is_type_a_(false),
       touch_points_(0),
       current_slot_(0) {
 }
@@ -255,16 +254,6 @@ void TouchEventConverterEvdev::ProcessSyn(const input_event& input) {
       } else {
         ReportEvents(EventConverterEvdev::TimeDeltaFromInputEvent(input));
       }
-      if (is_type_a_)
-        current_slot_ = 0;
-      break;
-    case SYN_MT_REPORT:
-      // For type A devices, we just get a stream of all current contacts,
-      // in some arbitrary order.
-      events_[current_slot_].type_ = ET_TOUCH_PRESSED;
-      if (events_.size() - 1 > current_slot_)
-        current_slot_++;
-      is_type_a_ = true;
       break;
     case SYN_DROPPED:
       // Some buffer has overrun. We ignore all events up to and
