@@ -19,19 +19,19 @@ template <typename T> class WebVector;
 
 class WebEncryptedMediaRequest {
 public:
-    BLINK_EXPORT WebEncryptedMediaRequest(const WebEncryptedMediaRequest&);
-    BLINK_EXPORT ~WebEncryptedMediaRequest();
+    BLINK_PLATFORM_EXPORT WebEncryptedMediaRequest(const WebEncryptedMediaRequest&);
+    BLINK_PLATFORM_EXPORT ~WebEncryptedMediaRequest();
 
-    BLINK_EXPORT WebString keySystem() const;
-    BLINK_EXPORT const WebVector<WebMediaKeySystemConfiguration>& supportedConfigurations() const;
+    BLINK_PLATFORM_EXPORT WebString keySystem() const;
+    BLINK_PLATFORM_EXPORT const WebVector<WebMediaKeySystemConfiguration>& supportedConfigurations() const;
 
-    BLINK_EXPORT WebSecurityOrigin securityOrigin() const;
+    BLINK_PLATFORM_EXPORT WebSecurityOrigin securityOrigin() const;
 
-    BLINK_EXPORT void requestSucceeded(WebContentDecryptionModuleAccess*);
-    BLINK_EXPORT void requestNotSupported(const WebString& errorMessage);
+    BLINK_PLATFORM_EXPORT void requestSucceeded(WebContentDecryptionModuleAccess*);
+    BLINK_PLATFORM_EXPORT void requestNotSupported(const WebString& errorMessage);
 
-#if BLINK_IMPLEMENTATION
-    explicit WebEncryptedMediaRequest(EncryptedMediaRequest*);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT explicit WebEncryptedMediaRequest(EncryptedMediaRequest*);
 #endif
 
 private:

@@ -26,11 +26,11 @@
 #ifndef WebSpeechRecognitionParams_h
 #define WebSpeechRecognitionParams_h
 
-#include "../platform/WebMediaStreamTrack.h"
-#include "../platform/WebString.h"
-#include "../platform/WebVector.h"
-#include "WebSecurityOrigin.h"
 #include "WebSpeechGrammar.h"
+#include "public/platform/WebMediaStreamTrack.h"
+#include "public/platform/WebSecurityOrigin.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 

@@ -31,10 +31,10 @@
 #include "modules/mediastream/MediaDevicesRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebMediaDeviceInfo.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebDocument.h"
-#include "public/web/WebSecurityOrigin.h"
 #include "wtf/Vector.h"
 
 namespace blink {

@@ -26,9 +26,9 @@
 #ifndef WebMediaDevicesRequest_h
 #define WebMediaDevicesRequest_h
 
-#include "WebSecurityOrigin.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 
 namespace blink {

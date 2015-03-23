@@ -31,15 +31,6 @@
 #ifndef WebSecurityOrigin_h
 #define WebSecurityOrigin_h
 
-// TODO(tasak): WebSecurityOrigin should be in public/platform.
-// However, we could not move this file soon, because
-// content depends on public/web/WebSecurityOrigin. So firstly
-// (1) fix and create another WebSecurityOrigin.h in public/platform,
-// and copy the WebSecurityOrigin.h here.
-// (2) fix content side to use public/platform/WebSecurityOrigin after
-// blink roll.
-// (3) remove this public/web/WebSecurityOrigin.h.
-
 #include "public/platform/WebCommon.h"
 
 #if INSIDE_BLINK

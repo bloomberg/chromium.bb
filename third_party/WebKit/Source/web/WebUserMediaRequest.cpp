@@ -40,9 +40,9 @@
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebMediaStream.h"
 #include "public/platform/WebMediaStreamSource.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebDocument.h"
-#include "public/web/WebSecurityOrigin.h"
 
 namespace blink {
 

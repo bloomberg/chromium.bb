@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "public/web/WebSecurityOrigin.h"
+#include "public/platform/WebSecurityOrigin.h"
 
 #include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/KURL.h"

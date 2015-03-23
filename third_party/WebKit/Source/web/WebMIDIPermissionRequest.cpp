@@ -33,7 +33,7 @@
 
 #include "modules/webmidi/MIDIAccessInitializer.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "public/web/WebSecurityOrigin.h"
+#include "public/platform/WebSecurityOrigin.h"
 
 namespace blink {
 

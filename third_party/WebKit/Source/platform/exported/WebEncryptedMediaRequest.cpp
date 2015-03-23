@@ -6,13 +6,12 @@
 
 #include "public/platform/WebEncryptedMediaRequest.h"
 
-#include "core/dom/ExecutionContext.h"
-#include "modules/encryptedmedia/EncryptedMediaRequest.h"
+#include "platform/EncryptedMediaRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebMediaKeySystemConfiguration.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
-#include "public/web/WebSecurityOrigin.h"
 
 namespace blink {
 

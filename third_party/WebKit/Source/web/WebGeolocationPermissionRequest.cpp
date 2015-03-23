@@ -29,8 +29,8 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/geolocation/Geolocation.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebURL.h"
-#include "public/web/WebSecurityOrigin.h"
 
 namespace blink {
 

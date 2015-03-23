@@ -31,8 +31,8 @@
 #ifndef WebDatabase_h
 #define WebDatabase_h
 
-#include "../platform/WebCommon.h"
-#include "WebSecurityOrigin.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebSecurityOrigin.h"
 
 namespace blink {
 

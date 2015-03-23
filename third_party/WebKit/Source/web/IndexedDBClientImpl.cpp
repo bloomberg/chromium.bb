@@ -33,9 +33,9 @@
 #include "core/dom/Document.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/web/WebContentSettingsClient.h"
 #include "public/web/WebKit.h"
-#include "public/web/WebSecurityOrigin.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WorkerContentSettingsClient.h"
 

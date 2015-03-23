@@ -36,7 +36,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebMediaStreamTrack.h"
-#include "public/web/WebSecurityOrigin.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/web/WebSpeechGrammar.h"
 #include "public/web/WebSpeechRecognitionHandle.h"
 #include "public/web/WebSpeechRecognitionParams.h"
