@@ -761,6 +761,13 @@ hooks = [
               ],
   },
   {
+    # Pull sanitizer-instrumented third-party libraries if requested via
+    # GYP_DEFINES.
+    'name': 'instrumented_libraries',
+    'pattern': '\\.sha1',
+    'action': ['python', 'src/third_party/instrumented_libraries/scripts/download_binaries.py'],
+  },
+  {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     'name': 'gyp',
     'pattern': '.',
