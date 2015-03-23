@@ -388,6 +388,8 @@ Err Tokenizer::GetErrorForInvalidToken(const Location& location) const {
       (input_[cur_ + 1] == '/' || input_[cur_ + 1] == '*')) {
     // Different types of comments.
     help = "Comments should start with # instead";
+  } else if (cur_char() == '\'') {
+    help = "Strings are delimited by \" characters, not apostrophes.";
   } else {
     help = "I have no idea what this is.";
   }
