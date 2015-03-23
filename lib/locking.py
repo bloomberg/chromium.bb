@@ -12,7 +12,7 @@ import fcntl
 import tempfile
 
 from chromite.lib import cros_build_lib
-
+from chromite.lib import cros_logging as logging
 
 class _Lock(cros_build_lib.MasterPidContextManager):
 
@@ -58,7 +58,7 @@ class _Lock(cros_build_lib.MasterPidContextManager):
     if self.description:
       message = '%s: blocking while %s' % (self.description, message)
     if self._verbose:
-      cros_build_lib.Info(message)
+      logging.info(message)
     try:
       fcntl.lockf(self.fd, flags)
     except EnvironmentError as e:

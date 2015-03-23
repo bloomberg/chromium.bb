@@ -143,8 +143,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
     # Move the dumped symbol file to the right place:
     # /build/$BOARD/usr/lib/debug/breakpad/<module-name>/<id>/<module-name>.sym
     header = ReadSymsHeader(temp)
-    cros_build_lib.Info('Dumped %s as %s : %s', elf_file, header.name,
-                        header.id)
+    logging.info('Dumped %s as %s : %s', elf_file, header.name, header.id)
     sym_file = os.path.join(breakpad_dir, header.name, header.id,
                             header.name + '.sym')
     osutils.SafeMakedirs(os.path.dirname(sym_file))
@@ -190,7 +189,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
   if sysroot is None:
     sysroot = cros_build_lib.GetSysroot(board=board)
   if clean_breakpad:
-    cros_build_lib.Info('cleaning out %s first', breakpad_dir)
+    logging.info('cleaning out %s first', breakpad_dir)
     osutils.RmDir(breakpad_dir, ignore_missing=True, sudo=True)
   # Make sure non-root can write out symbols as needed.
   osutils.SafeMakedirs(breakpad_dir, sudo=True)
@@ -203,7 +202,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
     file_list = []
   file_filter = dict.fromkeys([os.path.normpath(x) for x in file_list], False)
 
-  cros_build_lib.Info('generating breakpad symbols using %s', debug_dir)
+  logging.info('generating breakpad symbols using %s', debug_dir)
 
   # Let's locate all the debug_files and elfs first along with the debug file
   # sizes.  This way we can start processing the largest files first in parallel
@@ -212,7 +211,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
   targets = []
   for root, dirs, files in os.walk(debug_dir):
     if root in exclude_paths:
-      cros_build_lib.Info('Skipping excluded dir %s', root)
+      logging.info('Skipping excluded dir %s', root)
       del dirs[:]
       continue
 

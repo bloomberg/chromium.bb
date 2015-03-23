@@ -27,6 +27,7 @@ import urlparse
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import portage_util
@@ -89,9 +90,8 @@ def _GetSpecificVersionUrl(git_url, revision, time_to_wait=600):
     return fh.read() if fh else None
 
   def _wait_msg(_remaining):
-    cros_build_lib.Info(
-        'Repository does not yet have revision %s.  Sleeping...',
-        revision)
+    logging.info('Repository does not yet have revision %s.  Sleeping...',
+                 revision)
 
   content = timeout_util.WaitForSuccess(
       retry_check=lambda x: not bool(x),
@@ -409,7 +409,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_pn,
   # Determine whether this is ebuild is redundant.
   if IsTheNewEBuildRedundant(new_ebuild, stable_candidate):
     msg = 'Previous ebuild with same version found and ebuild is redundant.'
-    cros_build_lib.Info(msg)
+    logging.info(msg)
     os.unlink(new_ebuild_path)
     return None
 
@@ -474,7 +474,7 @@ def main(_argv):
 
     version_to_uprev = _GetTipOfTrunkVersionFile(chrome_root)
     commit_to_use = 'Unknown'
-    cros_build_lib.Info('Using local source, versioning is untrustworthy.')
+    logging.info('Using local source, versioning is untrustworthy.')
   elif chrome_rev == constants.CHROME_REV_SPEC:
     if '.' in options.force_version:
       version_to_uprev = options.force_version
@@ -506,9 +506,9 @@ def main(_argv):
                                               sticky_branch)
 
   if stable_candidate:
-    cros_build_lib.Info('Stable candidate found %s' % stable_candidate)
+    logging.info('Stable candidate found %s' % stable_candidate)
   else:
-    cros_build_lib.Info('No stable candidate found.')
+    logging.info('No stable candidate found.')
 
   tracking_branch = 'remotes/m/%s' % os.path.basename(options.tracking_branch)
   existing_branch = git.GetCurrentBranch(chrome_package_dir)

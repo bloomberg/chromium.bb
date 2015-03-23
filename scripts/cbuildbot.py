@@ -184,8 +184,8 @@ def _IsDistributedBuilder(options, chrome_rev, build_config):
 
 def _RunBuildStagesWrapper(options, build_config):
   """Helper function that wraps RunBuildStages()."""
-  cros_build_lib.Info('cbuildbot was executed with args %s' %
-                      cros_build_lib.CmdToStr(sys.argv))
+  logging.info('cbuildbot was executed with args %s' %
+               cros_build_lib.CmdToStr(sys.argv))
 
   chrome_rev = build_config['chrome_rev']
   if options.chrome_rev:
@@ -813,13 +813,13 @@ def _FinishParsing(options, args):
     # options are implied.
     if options.delete_branch or options.rename_to:
       if not options.branch:
-        cros_build_lib.Info('Automatically enabling sync to branch %s'
-                            ' for this %s flow.', options.branch_name,
-                            constants.BRANCH_UTIL_CONFIG)
+        logging.info('Automatically enabling sync to branch %s for this %s '
+                     'flow.', options.branch_name,
+                     constants.BRANCH_UTIL_CONFIG)
         options.branch = options.branch_name
       if options.bootstrap:
-        cros_build_lib.Info('Automatically disabling bootstrap step for'
-                            ' this %s flow.', constants.BRANCH_UTIL_CONFIG)
+        logging.info('Automatically disabling bootstrap step for this %s flow.',
+                     constants.BRANCH_UTIL_CONFIG)
         options.bootstrap = False
 
   elif any([options.delete_branch, options.rename_to, options.branch_name]):
@@ -868,8 +868,8 @@ def _PostParseCheck(parser, options, args):
   default = os.environ.get('CBUILDBOT_DEFAULT_MODE')
   if (default and not any([options.local, options.buildbot,
                            options.remote, options.remote_trybot])):
-    cros_build_lib.Info('CBUILDBOT_DEFAULT_MODE=%s env var detected, using it.'
-                        % default)
+    logging.info('CBUILDBOT_DEFAULT_MODE=%s env var detected, using it.'
+                 % default)
     default = default.lower()
     if default == 'local':
       options.local = True
@@ -1194,8 +1194,7 @@ def main(argv):
         slave_timeout = slave_timeout + 20
         if options.timeout == 0 or slave_timeout < options.timeout:
           logging.info('Updating slave build timeout to %d seconds enforced '
-                       'by the master',
-                       slave_timeout)
+                       'by the master', slave_timeout)
           options.timeout = slave_timeout
       else:
         logging.warning('Could not get master deadline for master-slave build. '

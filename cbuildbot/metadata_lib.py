@@ -422,8 +422,8 @@ class BuildData(object):
       List of BuildData objects.
     """
     gs_ctx = gs_ctx or gs.GSContext()
-    cros_build_lib.Info('Reading %d metadata URLs using %d processes now.',
-                        len(urls), MAX_PARALLEL)
+    logging.info('Reading %d metadata URLs using %d processes now.', len(urls),
+                 MAX_PARALLEL)
 
     build_data_per_url = {}
     def _ReadMetadataURL(url):
@@ -489,9 +489,8 @@ class BuildData(object):
     builds = [b for b in builds if b.sheets_version != sheets_version]
     if builds:
       log_ver_str = 'Sheets v%d' % sheets_version
-      cros_build_lib.Info('Marking %d builds gathered (for %s) using %d'
-                          ' processes now.', len(builds), log_ver_str,
-                          MAX_PARALLEL)
+      logging.info('Marking %d builds gathered (for %s) using %d processes'
+                   ' now.', len(builds), log_ver_str, MAX_PARALLEL)
 
       def _MarkGathered(build):
         build.MarkGathered(sheets_version)
@@ -770,14 +769,14 @@ def GetLatestMilestone():
   latest_url = LATEST_URL % {'target': constants.CQ_MASTER}
   gs_ctx = gs.GSContext()
 
-  cros_build_lib.Info('Getting latest milestone from %s', latest_url)
+  logging.info('Getting latest milestone from %s', latest_url)
   try:
     content = gs_ctx.Cat(latest_url).strip()
 
     # Expected syntax is like the following: "R35-1234.5.6-rc7".
     assert content.startswith('R')
     milestone = content.split('-')[0][1:]
-    cros_build_lib.Info('Latest milestone determined to be: %s', milestone)
+    logging.info('Latest milestone determined to be: %s', milestone)
     return int(milestone)
 
   except gs.GSNoSuchKey:
@@ -803,8 +802,8 @@ def GetMetadataURLsSince(target, start_date, end_date):
   gs_ctx = gs.GSContext()
   while True:
     base_url = METADATA_URL_GLOB % {'target': target, 'milestone': milestone}
-    cros_build_lib.Info('Getting %s builds for R%d from "%s"',
-                        target, milestone, base_url)
+    logging.info('Getting %s builds for R%d from "%s"', target, milestone,
+                 base_url)
 
     try:
       # Get GS URLs.  We want the datetimes to quickly know when we are done
@@ -812,8 +811,8 @@ def GetMetadataURLsSince(target, start_date, end_date):
       urls = gs_ctx.List(base_url, details=True)
     except gs.GSNoSuchKey:
       # We ran out of metadata to collect.  Stop searching back in time.
-      cros_build_lib.Info('No %s builds found for $%d.  I will not continue'
-                          ' search to older milestones.', target, milestone)
+      logging.info('No %s builds found for $%d.  I will not continue search'
+                   ' to older milestones.', target, milestone)
       break
 
     # Sort by timestamp.
@@ -830,6 +829,6 @@ def GetMetadataURLsSince(target, start_date, end_date):
       break
     else:
       milestone -= 1
-      cros_build_lib.Info('Continuing on to R%d.', milestone)
+      logging.info('Continuing on to R%d.', milestone)
 
   return ret

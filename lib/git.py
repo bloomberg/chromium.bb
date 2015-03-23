@@ -1245,7 +1245,7 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5):
         continue
       raise
 
-  cros_build_lib.Info('Successfully pushed %s to %s:%s', git_repo, branch, ref)
+  logging.info('Successfully pushed %s to %s:%s', git_repo, branch, ref)
 
 
 def CleanAndDetachHead(git_repo):

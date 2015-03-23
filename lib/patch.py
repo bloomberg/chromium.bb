@@ -901,7 +901,7 @@ class GitRepoPatch(PatchQuery):
 
     self.Fetch(git_repo)
 
-    cros_build_lib.Info('Attempting to cherry-pick change %s', self)
+    logging.info('Attempting to cherry-pick change %s', self)
 
     # If the patch branch exists use it, otherwise create it and switch to it.
     if git.DoesCommitExistInRepo(git_repo, constants.PATCH_BRANCH):

@@ -12,7 +12,7 @@ from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 
@@ -141,8 +141,8 @@ class Archive(object):
 
   def SetupArchivePath(self):
     """Create a fresh directory for archiving a build."""
-    cros_build_lib.Info('Preparing local archive directory at "%s".',
-                        self.archive_path)
+    logging.info('Preparing local archive directory at "%s".',
+                 self.archive_path)
     if self._options.buildbot:
       # Buildbot: Clear out any leftover build artifacts, if present, for
       # this particular run.  The Clean stage is responsible for trimming

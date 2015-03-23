@@ -132,8 +132,8 @@ class BranchUtilStage(generic_stages.BuilderStage):
       dst_branch: The remote branch ref to copy to.
       force: If True then execute the copy even if dst_branch exists.
     """
-    cros_build_lib.Info('Creating new branch "%s" for %s.',
-                        dst_branch, src_checkout['name'])
+    logging.info('Creating new branch "%s" for %s.', dst_branch,
+                 src_checkout['name'])
     self._RunPush(src_checkout, src_ref=src_branch, dest_ref=dst_branch,
                   force=force)
 
@@ -144,8 +144,7 @@ class BranchUtilStage(generic_stages.BuilderStage):
       src_checkout: The ProjectCheckout to work in.
       branch: The branch ref to delete.  Must be a remote branch.
     """
-    cros_build_lib.Info('Deleting branch "%s" for %s.',
-                        branch, src_checkout['name'])
+    logging.info('Deleting branch "%s" for %s.', branch, src_checkout['name'])
     self._RunPush(src_checkout, src_ref='', dest_ref=branch)
 
   def _ProcessCheckout(self, src_manifest, src_checkout):
@@ -202,9 +201,9 @@ class BranchUtilStage(generic_stages.BuilderStage):
                           '--force-create to overwrite.'
                           % (checkout_name, dst_branch))
 
-      cros_build_lib.Info('Checkout %s already contains branch %s and it '
-                          'already points to revision %s', checkout_name,
-                          dst_branch, dst_sha1)
+      logging.info('Checkout %s already contains branch %s and it already'
+                   ' points to revision %s', checkout_name, dst_branch,
+                   dst_sha1)
 
     elif self._run.options.delete_branch:
       # Delete the dst_branch, if it exists.
@@ -243,7 +242,7 @@ class BranchUtilStage(generic_stages.BuilderStage):
     new_branch_name = self.rename_to if self.rename_to else self.branch_name
     new_branch_name = git.NormalizeRef(new_branch_name)
 
-    cros_build_lib.Info('Updating manifest for %s', new_branch_name)
+    logging.info('Updating manifest for %s', new_branch_name)
 
     default_nodes = root.findall('default')
     for node in default_nodes:
@@ -260,8 +259,8 @@ class BranchUtilStage(generic_stages.BuilderStage):
         suffix = self._GetBranchSuffix(src_manifest, checkout)
         if suffix:
           node.attrib['revision'] = '%s%s' % (new_branch_name, suffix)
-          cros_build_lib.Info('Pointing project %s at: %s',
-                              node.attrib['name'], node.attrib['revision'])
+          logging.info('Pointing project %s at: %s', node.attrib['name'],
+                       node.attrib['revision'])
         elif not default_nodes:
           # If there isn't a default node we have to add the revision directly.
           node.attrib['revision'] = new_branch_name
@@ -271,14 +270,14 @@ class BranchUtilStage(generic_stages.BuilderStage):
           git_repo = checkout.GetPath(absolute=True)
           repo_head = git.GetGitRepoRevision(git_repo)
           node.attrib['revision'] = repo_head
-          cros_build_lib.Info('Pinning project %s at: %s',
-                              node.attrib['name'], node.attrib['revision'])
+          logging.info('Pinning project %s at: %s', node.attrib['name'],
+                       node.attrib['revision'])
         else:
-          cros_build_lib.Info('Updating project %s', node.attrib['name'])
+          logging.info('Updating project %s', node.attrib['name'])
           # We can't branch this repository. Leave it alone.
           node.attrib['revision'] = checkout['revision']
-          cros_build_lib.Info('Project %s UNPINNED using: %s',
-                              node.attrib['name'], node.attrib['revision'])
+          logging.info('Project %s UNPINNED using: %s', node.attrib['name'],
+                       node.attrib['revision'])
 
         # Can not use the default version of get() here since
         # 'upstream' can be a valid key with a None value.
@@ -332,7 +331,7 @@ class BranchUtilStage(generic_stages.BuilderStage):
         processed_manifests.append(manifest_path)
 
         if not os.path.exists(manifest_path):
-          cros_build_lib.Info('Manifest not found: %s', manifest_path)
+          logging.info('Manifest not found: %s', manifest_path)
           continue
 
         logging.debug('Fixing manifest at %s.', manifest_path)

@@ -267,7 +267,7 @@ class PaygenStage(artifact_stages.ArchivingStage):
     gs_ctx = gs.GSContext(dry_run=self._run.debug)
 
     try:
-      cros_build_lib.Info('Waiting for signer results.')
+      logging.info('Waiting for signer results.')
       timeout_util.WaitForReturnTrue(
           self._CheckForResults,
           func_args=(gs_ctx, instruction_urls_per_channel, channel_notifier),
@@ -284,8 +284,8 @@ class PaygenStage(artifact_stages.ArchivingStage):
       for url, signer_result in url_results.iteritems():
         result_description = os.path.basename(url)
         cros_build_lib.PrintBuildbotStepText(result_description)
-        cros_build_lib.Info('Received results for: %s', result_description)
-        cros_build_lib.Info(json.dumps(signer_result, indent=4))
+        logging.info('Received results for: %s', result_description)
+        logging.info(json.dumps(signer_result, indent=4))
 
         status = self._SigningStatusFromJson(signer_result)
         if status != 'passed':
@@ -377,4 +377,4 @@ class PaygenStage(artifact_stages.ArchivingStage):
         # This means the build was finished by the other process, is already
         # being processed (so the build is locked), or that it's been marked
         # to skip (probably done manually).
-        cros_build_lib.Info('Paygen skipped because: %s', e)
+        logging.info('Paygen skipped because: %s', e)

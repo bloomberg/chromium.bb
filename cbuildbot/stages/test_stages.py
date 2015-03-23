@@ -139,7 +139,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     self._Upload([os.path.basename(image) for image in vm_files])
 
   def _Upload(self, filenames):
-    cros_build_lib.Info('Uploading artifacts to Google Storage...')
+    logging.info('Uploading artifacts to Google Storage...')
     with self.ArtifactUploader(archive=False, strict=False) as queue:
       for filename in filenames:
         queue.put([filename])
@@ -181,7 +181,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     test_basename = constants.VM_TEST_RESULTS % dict(attempt=self._attempt)
     try:
       for test_type in self._run.config.vm_tests:
-        cros_build_lib.Info('Running VM test %s.', test_type)
+        logging.info('Running VM test %s.', test_type)
         with cgroups.SimpleContainChildren('VMTest'):
           with timeout_util.Timeout(self.VM_TEST_TIMEOUT):
             self._RunTest(test_type, test_results_dir)

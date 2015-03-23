@@ -12,6 +12,7 @@ import sys
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -41,7 +42,7 @@ def CleanStalePackages(boards, package_atoms):
     package_atoms: A list of package atoms to unmerge.
   """
   if package_atoms:
-    cros_build_lib.Info('Cleaning up stale packages %s.' % package_atoms)
+    logging.info('Cleaning up stale packages %s.' % package_atoms)
 
   # First unmerge all the packages for a board, then eclean it.
   # We need these two steps to run in order (unmerge/eclean),
@@ -135,7 +136,7 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
     OSError: Error occurred while pushing.
   """
   if not _DoWeHaveLocalCommits(stable_branch, tracking_branch, cwd):
-    cros_build_lib.Info('No work found to push in %s.  Exiting', cwd)
+    logging.info('No work found to push in %s.  Exiting', cwd)
     return
 
   # For the commit queue, our local branch may contain commits that were
@@ -146,7 +147,7 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
 
   # Check whether any local changes remain after the sync.
   if not _DoWeHaveLocalCommits(stable_branch, push_branch, cwd):
-    cros_build_lib.Info('All changes already pushed for %s. Exiting', cwd)
+    logging.info('All changes already pushed for %s. Exiting', cwd)
     return
 
   # Add a failsafe check here.  Only CLs from the 'chrome-bot' user should
@@ -166,7 +167,7 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
       ['log', '--format=format:%s%n%n%b',
        '%s..%s' % (push_branch, stable_branch)]).output
   description = '%s\n\n%s' % (GIT_COMMIT_SUBJECT, description)
-  cros_build_lib.Info('For %s, using description %s', cwd, description)
+  logging.info('For %s, using description %s', cwd, description)
   git.CreatePushBranch(constants.MERGE_BRANCH, cwd)
   git.RunGit(cwd, ['merge', '--squash', stable_branch])
   git.RunGit(cwd, ['commit', '-m', description])
@@ -318,7 +319,7 @@ def main(_argv):
         messages = []
         for ebuild in ebuilds:
           if options.verbose:
-            cros_build_lib.Info('Working on %s', ebuild.package)
+            logging.info('Working on %s', ebuild.package)
           try:
             new_package = ebuild.RevWorkOnEBuild(options.srcroot, manifest)
             if new_package:

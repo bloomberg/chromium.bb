@@ -196,8 +196,8 @@ class CLStatsEngine(object):
           include in the results.
       creds: Login credentials as returned by gather_builder_stats.PrepareCreds.
     """
-    cros_build_lib.Info('Gathering data for %s from %s until %s',
-                        constants.CQ_MASTER, start_date, end_date)
+    logging.info('Gathering data for %s from %s until %s', constants.CQ_MASTER,
+                 start_date, end_date)
     self.builds = self.db.GetBuildHistory(
         constants.CQ_MASTER,
         start_date=start_date,
@@ -205,13 +205,12 @@ class CLStatsEngine(object):
         starting_build_number=starting_build_number,
         num_results=self.db.NUM_RESULTS_NO_LIMIT)
     if self.builds:
-      cros_build_lib.Info('Fetched %d builds (build_id: %d to %d)',
-                          len(self.builds), self.builds[0]['id'],
-                          self.builds[-1]['id'])
+      logging.info('Fetched %d builds (build_id: %d to %d)', len(self.builds),
+                   self.builds[0]['id'], self.builds[-1]['id'])
     else:
-      cros_build_lib.Info('Fetched no builds.')
+      logging.info('Fetched no builds.')
     if sort_by_build_number:
-      cros_build_lib.Info('Sorting by build number.')
+      logging.info('Sorting by build number.')
       self.builds.sort(key=lambda x: x['build_number'])
 
     self.actions = self.db.GetActionHistory(start_date, end_date)
@@ -237,8 +236,8 @@ class CLStatsEngine(object):
       # Patches may be submitted more than once if we mark the patch as
       # submitted when it is still in "SUBMITTING" state and Gerrit later bumps
       # it back to "NEW". This should only happen due to Gerrit bugs.
-      cros_build_lib.Info('Change %s was submitted more than once: %r',
-                          submit[-1].patch, submit)
+      logging.info('Change %s was submitted more than once: %r',
+                   submit[-1].patch, submit)
 
     return submit[-1].patch_number
 
@@ -380,15 +379,14 @@ class CLStatsEngine(object):
       A dictionary summarizing the statistics.
     """
     if self.builds:
-      cros_build_lib.Info('%d total runs included, from build %d to %d.',
-                          len(self.builds), self.builds[-1]['build_number'],
-                          self.builds[0]['build_number'])
+      logging.info('%d total runs included, from build %d to %d.',
+                   len(self.builds), self.builds[-1]['build_number'],
+                   self.builds[0]['build_number'])
       total_passed = len([b for b in self.builds
                           if b['status'] == constants.BUILDER_STATUS_PASSED])
-      cros_build_lib.Info('%d of %d runs passed.',
-                          total_passed, len(self.builds))
+      logging.info('%d of %d runs passed.', total_passed, len(self.builds))
     else:
-      cros_build_lib.Info('No runs included.')
+      logging.info('No runs included.')
 
     (self.per_patch_actions,
      self.per_cl_actions) = self.CollateActions(self.actions)

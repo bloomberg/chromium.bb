@@ -71,7 +71,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       True if artifacts created successfully.
       False otherwise.
     """
-    cros_build_lib.Info('Waiting for recovery image...')
+    logging.info('Waiting for recovery image...')
     status = self._recovery_image_status_queue.get()
     # Put the status back so other SignerTestStage instances don't starve.
     self._recovery_image_status_queue.put(status)
@@ -288,7 +288,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       if config['hwqual'] and autotest_built:
         # Build the full autotest tarball for hwqual image. We don't upload it,
         # as it's fairly large and only needed by the hwqual tarball.
-        cros_build_lib.Info('Archiving full autotest tarball locally ...')
+        logging.info('Archiving full autotest tarball locally ...')
         tarball = commands.BuildFullAutotestTarball(self._build_root,
                                                     self._current_board,
                                                     image_dir)
@@ -443,7 +443,7 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
         self._build_root, self._current_board, self.archive_path,
         self._run.config.archive_build_debug)
     self.UploadArtifact(filename, archive=False)
-    cros_build_lib.Info('Announcing availability of debug tarball now.')
+    logging.info('Announcing availability of debug tarball now.')
     self.board_runattrs.SetParallel('debug_tarball_generated', True)
 
   def UploadSymbols(self, buildroot, board, failed_list):

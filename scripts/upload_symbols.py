@@ -407,7 +407,7 @@ def SymbolDeduplicatorNotify(dedupe_namespace, dedupe_queue):
         logging.debug('sending %s to dedupe server', item.sym_file)
         storage.push(item, item.content(0))
         logging.debug('sent %s', item.sym_file)
-    cros_build_lib.Info('dedupe notification finished; exiting')
+    logging.info('dedupe notification finished; exiting')
   except Exception:
     sym_file = item.sym_file if (item and item.sym_file) else ''
     cros_build_lib.Warning('posting %s to dedupe server failed',
@@ -489,7 +489,7 @@ def SymbolFinder(tempdir, paths):
       # Support globs of filenames.
       ctx = gs.GSContext()
       for p in ctx.LS(p):
-        cros_build_lib.Info('processing files inside %s', p)
+        logging.info('processing files inside %s', p)
         o = urlparse.urlparse(p)
         key = ('%s%s' % (o.netloc, o.path)).split('/')  # pylint: disable=E1101
         # The common cache will not be LRU, removing the need to hold a read
@@ -510,7 +510,7 @@ def SymbolFinder(tempdir, paths):
             yield os.path.join(root, f)
 
     elif IsTarball(p):
-      cros_build_lib.Info('processing files inside %s', p)
+      logging.info('processing files inside %s', p)
       tardir = tempfile.mkdtemp(dir=tempdir)
       cache.Untar(os.path.realpath(p), tardir)
       for p in SymbolFinder(tardir, [tardir]):
@@ -588,7 +588,7 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
     upload_url = server
 
   if sym_paths:
-    cros_build_lib.Info('uploading specified symbols to %s', upload_url)
+    logging.info('uploading specified symbols to %s', upload_url)
   else:
     if breakpad_dir is None:
       if root is None:
@@ -596,8 +596,8 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
       breakpad_dir = os.path.join(
           root,
           cros_generate_breakpad_symbols.FindBreakpadDir(board).lstrip('/'))
-    cros_build_lib.Info('uploading all symbols to %s from %s', upload_url,
-                        breakpad_dir)
+    logging.info('uploading all symbols to %s from %s', upload_url,
+                 breakpad_dir)
     sym_paths = [breakpad_dir]
 
   # We use storage_query to ask the server about existing symbols.  The
@@ -716,7 +716,7 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
     WriteQueueToFile(failed_list, failed_queue, breakpad_dir)
 
   finally:
-    cros_build_lib.Info('finished uploading; joining background process')
+    logging.info('finished uploading; joining background process')
     if dedupe_queue:
       dedupe_queue.put(None)
 
@@ -729,8 +729,8 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
         qsize = str(dedupe_queue.qsize())
       else:
         qsize = '[None]'
-      cros_build_lib.Info('waiting up to %i minutes for ~%s notifications',
-                          wait_minutes, qsize)
+      logging.info('waiting up to %i minutes for ~%s notifications',
+                   wait_minutes, qsize)
       storage_notify_proc.join(60)
       wait_minutes -= 1
 
@@ -769,9 +769,9 @@ def UploadSymbols(board=None, official=False, server=None, breakpad_dir=None,
         cros_build_lib.Warning('draining the notify queue failed; trashing it')
         dedupe_queue.cancel_join_thread()
 
-  cros_build_lib.Info('uploaded %i symbols (%i were deduped) which took: %s',
-                      counters.uploaded_count, counters.deduped_count,
-                      datetime.datetime.now() - start_time)
+  logging.info('uploaded %i symbols (%i were deduped) which took: %s',
+               counters.uploaded_count, counters.deduped_count,
+               datetime.datetime.now() - start_time)
 
   return bg_errors.value
 
@@ -822,7 +822,7 @@ def main(argv):
 
   if opts.testing:
     # TODO(build): Kill off --testing mode once unittests are up-to-snuff.
-    cros_build_lib.Info('running in testing mode')
+    logging.info('running in testing mode')
     # pylint: disable=W0601,W0603
     global INITIAL_RETRY_DELAY, SymUpload, DEFAULT_SLEEP_DELAY
     INITIAL_RETRY_DELAY = DEFAULT_SLEEP_DELAY = 0

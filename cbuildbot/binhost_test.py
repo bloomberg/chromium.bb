@@ -14,6 +14,7 @@ from chromite.cbuildbot import binhost
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
@@ -36,7 +37,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
   @classmethod
   def setUpClass(cls):
     assert cros_build_lib.IsInsideChroot()
-    cros_build_lib.Info('Generating board configs. This takes about 10m...')
+    logging.info('Generating board configs. This takes about 10m...')
     boards = set(key.board for key in binhost.GetAllBoardKeys())
     for board in sorted(boards):
       binhost.GenConfigsForBoard(board, regen=not cls.CACHING,

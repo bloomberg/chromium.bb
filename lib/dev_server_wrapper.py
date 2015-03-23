@@ -443,7 +443,7 @@ class DevServerWrapper(multiprocessing.Process):
     """
     # Wipe the payload cache.
     cls.WipePayloadCache(static_dir=static_dir)
-    cros_build_lib.Info('Cleaning up directory %s', static_dir)
+    logging.info('Cleaning up directory %s', static_dir)
     osutils.RmDir(static_dir, ignore_missing=True, sudo=True)
 
   @classmethod
@@ -454,7 +454,7 @@ class DevServerWrapper(multiprocessing.Process):
       devserver_bin: path to the devserver binary.
       static_dir: path to use as the static directory of the devserver instance.
     """
-    cros_build_lib.Info('Cleaning up previously generated payloads.')
+    logging.info('Cleaning up previously generated payloads.')
     cmd = [devserver_bin, '--clear_cache', '--exit']
     if static_dir:
       cmd.append('--static_dir=%s' % cros_build_lib.ToChrootPath(static_dir))

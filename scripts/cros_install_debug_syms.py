@@ -311,7 +311,7 @@ def main(argv):
                 if ShouldGetSymbols(p, vartree.dbapi, symbols_mapping)]
 
   if not to_install:
-    cros_build_lib.Info('nothing to do, exit')
+    logging.info('nothing to do, exit')
     return
 
   with DebugSymbolsInstaller(vartree, gs_context, sysroot,

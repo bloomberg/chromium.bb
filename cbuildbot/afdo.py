@@ -16,6 +16,7 @@ import re
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
@@ -159,14 +160,14 @@ def CheckAFDOPerfData(arch, cpv, buildroot, gs_context):
                  'version': version_number}
   url = CHROME_PERF_AFDO_URL % chrome_spec
   if not gs_context.Exists(url):
-    cros_build_lib.Info('Could not find AFDO perf data')
+    logging.info('Could not find AFDO perf data')
     return False
   dest_dir = AFDO_BUILDROOT_LOCAL % {'build_root': buildroot}
   dest_path = os.path.join(dest_dir, url.rsplit('/', 1)[1])
   gs_context.Copy(url, dest_path)
 
   UncompressAFDOFile(dest_path, buildroot)
-  cros_build_lib.Info('Found and retrieved AFDO perf data')
+  logging.info('Found and retrieved AFDO perf data')
   return True
 
 
@@ -289,8 +290,8 @@ def UpdateChromeEbuildAFDOFile(board, arch_profiles):
                              ['status', '--porcelain', '--'] + mod_files,
                              capture_output=True, print_cmd=True).output
   if not modifications:
-    cros_build_lib.Info('AFDO info for the Chrome ebuild did not change. '
-                        'Nothing to commit')
+    logging.info('AFDO info for the Chrome ebuild did not change. '
+                 'Nothing to commit')
     return
 
   # If there are changes to ebuild or Manifest, commit them.
@@ -325,8 +326,7 @@ def VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context):
   try:
     latest_detail = gs_context.List(latest_afdo_url, details=True)
   except gs.GSNoSuchKey:
-    cros_build_lib.Info('Could not find latest AFDO info file %s' %
-                        latest_afdo_url)
+    logging.info('Could not find latest AFDO info file %s' % latest_afdo_url)
     return None
 
   # Verify the AFDO profile file is not too stale.
@@ -334,8 +334,8 @@ def VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context):
   curr_date = datetime.datetime.now()
   allowed_stale_days = datetime.timedelta(days=AFDO_ALLOWED_STALE)
   if (curr_date - mod_date) > allowed_stale_days:
-    cros_build_lib.Info('Found latest AFDO info file %s but it is too old' %
-                        latest_afdo_url)
+    logging.info('Found latest AFDO info file %s but it is too old' %
+                 latest_afdo_url)
     return None
 
   # Then get the name of the latest valid AFDO profile file.

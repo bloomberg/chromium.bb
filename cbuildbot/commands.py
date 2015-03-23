@@ -392,7 +392,7 @@ def VerifyBinpkg(buildroot, board, pkg, packages, extra_env=None):
   pattern = r'^\[(ebuild|binary).*%s' % re.escape(pkg)
   m = re.search(pattern, result.output, re.MULTILINE)
   if m and m.group(1) == 'ebuild':
-    cros_build_lib.Info('(output):\n%s', result.output)
+    logging.info('(output):\n%s', result.output)
     msg = 'Cannot find prebuilts for %s on %s' % (pkg, board)
     raise MissingBinpkg(msg)
 
@@ -688,7 +688,7 @@ def ListFailedTests(results_path):
   failed_tests = []
   processed_tests = []
   for report in reports:
-    cros_build_lib.Info('Parsing test report %s', report)
+    logging.info('Parsing test report %s', report)
     # Format used in the report:
     #   /path/to/base/dir/test_harness/all/SimpleTestUpdateAndVerify/ \
     #     2_autotest_tests/results-01-security_OpenSSLBlacklist [  FAILED  ]
@@ -894,8 +894,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     cmd += ['--suite_min_duts', str(suite_min_duts)]
 
   if debug:
-    cros_build_lib.Info('RunHWTestSuite would run: %s',
-                        cros_build_lib.CmdToStr(cmd))
+    logging.info('RunHWTestSuite would run: %s', cros_build_lib.CmdToStr(cmd))
   else:
     if timeout_mins is None:
       result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
@@ -959,8 +958,7 @@ def AbortHWTests(config_type_or_name, version, debug, suite=''):
          '-i', substr,
          '-s', suite]
   if debug:
-    cros_build_lib.Info('AbortHWTests would run: %s',
-                        cros_build_lib.CmdToStr(cmd))
+    logging.info('AbortHWTests would run: %s', cros_build_lib.CmdToStr(cmd))
   else:
     try:
       cros_build_lib.RunCommand(cmd)
@@ -1091,7 +1089,7 @@ def MarkChromeAsStable(buildroot,
   if portage_atom_string:
     chrome_atom = portage_atom_string.splitlines()[-1].partition('=')[-1]
   if not chrome_atom:
-    cros_build_lib.Info('Found nothing to rev.')
+    logging.info('Found nothing to rev.')
     return None
 
   for board in boards:
@@ -1412,7 +1410,7 @@ def PushImages(board, archive_url, dryrun, profile, sign_types=()):
     log_cmd.append('--sign-types=%s' % ' '.join(sign_types))
 
   log_cmd.append(archive_url)
-  cros_build_lib.Info('Running: %s' % cros_build_lib.CmdToStr(log_cmd))
+  logging.info('Running: %s' % cros_build_lib.CmdToStr(log_cmd))
 
   try:
     return pushimage.PushImage(archive_url, board, profile=profile,

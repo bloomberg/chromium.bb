@@ -122,7 +122,7 @@ class SDKPackageStage(generic_stages.BuilderStage):
       sdk_path: Path to the root of the SDK to describe.
       dest_manifest: Path to the manifest that should be generated.
     """
-    cros_build_lib.Info('Generating manifest for new sdk')
+    logging.info('Generating manifest for new sdk')
     package_data = {}
     for key, version in portage_util.ListInstalledPackages(sdk_path):
       package_data.setdefault(key, []).append((version, {}))

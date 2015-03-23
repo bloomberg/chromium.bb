@@ -310,7 +310,7 @@ class EBuild(object):
   def _Print(cls, message):
     """Verbose print function."""
     if cls.VERBOSE:
-      cros_build_lib.Info(message)
+      logging.info(message)
 
   @classmethod
   def _RunCommand(cls, command, **kwargs):

@@ -241,16 +241,16 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
   keysets = list(force_keysets) if force_keysets else input_insns.GetKeysets()
 
   if mock:
-    cros_build_lib.Info('Upload mode: mock; signers will not process anything')
+    logging.info('Upload mode: mock; signers will not process anything')
     tbs_base = gs_base = os.path.join(constants.TRASH_BUCKET, 'pushimage-tests',
                                       getpass.getuser())
   elif TEST_KEYSETS & force_keysets:
-    cros_build_lib.Info('Upload mode: test; signers will process test keys')
+    logging.info('Upload mode: test; signers will process test keys')
     # We need the tbs_base to be in the place the signer will actually scan.
     tbs_base = TEST_SIGN_BUCKET_BASE
     gs_base = os.path.join(tbs_base, getpass.getuser())
   else:
-    cros_build_lib.Info('Upload mode: normal; signers will process the images')
+    logging.info('Upload mode: normal; signers will process the images')
     tbs_base = gs_base = constants.RELEASE_BUCKET
 
   sect_general = {
@@ -263,9 +263,9 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
   sect_insns = {}
 
   if dry_run:
-    cros_build_lib.Info('DRY RUN MODE ACTIVE: NOTHING WILL BE UPLOADED')
-  cros_build_lib.Info('Signing for channels: %s', ' '.join(channels))
-  cros_build_lib.Info('Signing for keysets : %s', ' '.join(keysets))
+    logging.info('DRY RUN MODE ACTIVE: NOTHING WILL BE UPLOADED')
+  logging.info('Signing for channels: %s', ' '.join(channels))
+  logging.info('Signing for keysets : %s', ' '.join(keysets))
 
   instruction_urls = {}
 
@@ -278,7 +278,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
     sect_insns['channel'] = channel
     sub_path = '%s-channel/%s/%s' % (channel, boardpath, version)
     dst_path = '%s/%s' % (gs_base, sub_path)
-    cros_build_lib.Info('Copying images to %s', dst_path)
+    logging.info('Copying images to %s', dst_path)
 
     recovery_base = _ImageNameBase('recovery')
     factory_base = _ImageNameBase('factory')
@@ -340,8 +340,8 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
         # See if the caller has requested we only sign certain types.
         if sign_types:
           if not image_type in sign_types:
-            cros_build_lib.Info('Skipping %s signing as it was not requested',
-                                image_type)
+            logging.info('Skipping %s signing as it was not requested',
+                         image_type)
             continue
         else:
           # In the default/automatic mode, only flag files for signing if the
@@ -355,14 +355,13 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
             cros_build_lib.Error('Unknown error while checking %s',
                                  gs_artifact_path, exc_info=True)
           if not exists:
-            cros_build_lib.Info('%s does not exist.  Nothing to sign.',
-                                gs_artifact_path)
+            logging.info('%s does not exist.  Nothing to sign.',
+                         gs_artifact_path)
             continue
 
         input_insn_path = input_insns.GetInsnFile(image_type)
         if not os.path.exists(input_insn_path):
-          cros_build_lib.Info('%s does not exist.  Nothing to sign.',
-                              input_insn_path)
+          logging.info('%s does not exist.  Nothing to sign.', input_insn_path)
           continue
 
         # Generate the insn file for this artifact that the signer will use,
@@ -392,7 +391,7 @@ def PushImage(src_path, board, versionrev=None, profile=None, priority=50,
             cros_build_lib.Error('Unknown error while marking for signing %s',
                                  gs_insns_path, exc_info=True)
             continue
-          cros_build_lib.Info('Signing %s image %s', image_type, gs_insns_path)
+          logging.info('Signing %s image %s', image_type, gs_insns_path)
           instruction_urls.setdefault(channel, []).append(gs_insns_path)
 
   if unknown_error:

@@ -477,8 +477,8 @@ class SSUploader(object):
       data_table: table.Table object with rows to upload to worksheet.
     """
     self._Connect(ws_name)
-    cros_build_lib.Info('Uploading stats rows to worksheet "%s" of spreadsheet'
-                        ' "%s" now.', self._scomm.ws_name, self._scomm.ss_key)
+    logging.info('Uploading stats rows to worksheet "%s" of spreadsheet "%s" '
+                 'now.', self._scomm.ws_name, self._scomm.ss_key)
 
     logging.debug('Getting cache of current spreadsheet contents.')
     id_col = data_table.ID_COL
@@ -586,12 +586,12 @@ class StatsManager(object):
 
     if sort_by_build_number:
       # Sort runs by build_number, from newest to oldest.
-      cros_build_lib.Info('Sorting by build number now.')
+      logging.info('Sorting by build number now.')
       self.builds = sorted(self.builds, key=lambda b: b.build_number,
                            reverse=True)
     if starting_build_number:
-      cros_build_lib.Info('Filtering to include builds after %s (inclusive).',
-                          starting_build_number)
+      logging.info('Filtering to include builds after %s (inclusive).',
+                   starting_build_number)
       self.builds = [b for b in self.builds
                      if b.build_number >= starting_build_number]
 
@@ -609,17 +609,17 @@ class StatsManager(object):
     Returns:
       A list of of metadata_lib.BuildData objects that were fetched.
     """
-    cros_build_lib.Info('Gathering data for %s from %s until %s',
-                        config_target, start_date, end_date)
+    logging.info('Gathering data for %s from %s until %s', config_target,
+                 start_date, end_date)
     urls = metadata_lib.GetMetadataURLsSince(config_target,
                                              start_date,
                                              end_date)
-    cros_build_lib.Info('Found %d metadata.json URLs to process.\n'
-                        '  From: %s\n  To  : %s', len(urls), urls[0], urls[-1])
+    logging.info('Found %d metadata.json URLs to process.\n  From: %s\n  To  '
+                 ': %s', len(urls), urls[0], urls[-1])
 
     builds = metadata_lib.BuildData.ReadMetadataURLs(
         urls, gs_ctx, get_sheets_version=cls.GET_SHEETS_VERSION)
-    cros_build_lib.Info('Read %d total metadata files.', len(builds))
+    logging.info('Read %d total metadata files.', len(builds))
     return builds
 
   # TODO(akeshet): Return statistics in dictionary rather than just printing
@@ -632,14 +632,13 @@ class StatsManager(object):
       non-empty dictionaries, with summarized statistics.
     """
     if self.builds:
-      cros_build_lib.Info('%d total runs included, from build %d to %d.',
-                          len(self.builds), self.builds[-1].build_number,
-                          self.builds[0].build_number)
+      logging.info('%d total runs included, from build %d to %d.',
+                   len(self.builds), self.builds[-1].build_number,
+                   self.builds[0].build_number)
       total_passed = len([b for b in self.builds if b.Passed()])
-      cros_build_lib.Info('%d of %d runs passed.', total_passed,
-                          len(self.builds))
+      logging.info('%d of %d runs passed.', total_passed, len(self.builds))
     else:
-      cros_build_lib.Info('No runs included.')
+      logging.info('No runs included.')
     return {}
 
   @property
@@ -672,8 +671,8 @@ class StatsManager(object):
     else:
       version = self.sheets_version
       builds = [b for b in self.builds if b.sheets_version < version]
-      cros_build_lib.Info('Found %d builds that need to send Sheets v%d data.',
-                          len(builds), version)
+      logging.info('Found %d builds that need to send Sheets v%d data.',
+                   len(builds), version)
 
     if builds:
       # Fill a data table of type table_class from self.builds.
@@ -942,4 +941,4 @@ def main(argv):
 
     # Warn in the end because this script dumps a lot of stuff on the console.
     SpewDeprecationWarning()
-    cros_build_lib.Info('Finished with %s.\n\n', stats_mgr.config_target)
+    logging.info('Finished with %s.\n\n', stats_mgr.config_target)

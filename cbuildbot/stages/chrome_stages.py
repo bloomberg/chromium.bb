@@ -56,15 +56,13 @@ class SyncChromeStage(generic_stages.BuilderStage,
       if (self._chrome_rev == constants.CHROME_REV_SPEC and
           self._run.options.chrome_version):
         self.chrome_version = self._run.options.chrome_version
-        cros_build_lib.Info(
-            'Using chrome version from options.chrome_version: %s',
-            self.chrome_version)
+        logging.info('Using chrome version from options.chrome_version: %s',
+                     self.chrome_version)
       else:
         self.chrome_version = self._GetChromeVersionFromMetadata()
         if self.chrome_version:
-          cros_build_lib.Info(
-              'Using chrome version from the metadata dictionary: %s',
-              self.chrome_version)
+          logging.info('Using chrome version from the metadata dictionary: %s',
+                       self.chrome_version)
 
       # Perform chrome uprev.
       chrome_atom_to_build = None
@@ -90,7 +88,7 @@ class SyncChromeStage(generic_stages.BuilderStage,
     if (self._chrome_rev and not chrome_atom_to_build and
         self._run.options.buildbot and
         self._run.config.build_type == constants.CHROME_PFQ_TYPE):
-      cros_build_lib.Info('Chrome already uprevved')
+      logging.info('Chrome already uprevved')
       sys.exit(0)
 
   def _WriteChromeVersionToMetadata(self):

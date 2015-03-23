@@ -18,6 +18,7 @@ from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -319,7 +320,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       # successfully, so it is safe to ignore the exception.
       cros_build_lib.Warning('Unable to gather packages under test: %s', e)
     else:
-      cros_build_lib.Info('Recording packages under test')
+      logging.info('Recording packages under test')
       self.board_runattrs.SetParallel('packages_under_test', set(deps.keys()))
 
   def PerformStage(self):

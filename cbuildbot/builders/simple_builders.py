@@ -25,7 +25,7 @@ from chromite.cbuildbot.stages import release_stages
 from chromite.cbuildbot.stages import sdk_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import test_stages
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
 
 
@@ -406,7 +406,7 @@ class DistributedBuilder(SimpleBuilder):
     except SystemExit as ex:
       # If a stage calls sys.exit(0), it's exiting with success, so that means
       # we should mark ourselves as successful.
-      cros_build_lib.Info('Detected sys.exit(%s)', ex.code)
+      logging.info('Detected sys.exit(%s)', ex.code)
       if ex.code == 0:
         was_build_successful = True
       raise

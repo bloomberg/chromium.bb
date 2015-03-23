@@ -15,6 +15,7 @@ import time
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import manifest_version
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import cache
 from chromite.lib import git
 
@@ -84,7 +85,7 @@ class RemoteTryJob(object):
     self.repo_cache = cache.DiskCache(self.options.cache_dir)
     cwd = os.path.dirname(os.path.realpath(__file__))
     self.user_email = git.GetProjectUserEmail(cwd)
-    cros_build_lib.Info('Using email:%s', self.user_email)
+    logging.info('Using email:%s', self.user_email)
     # Name of the job that appears on the waterfall.
     patch_list = options.gerrit_patches + options.local_patches
     self.name = options.remote_description

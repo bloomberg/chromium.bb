@@ -12,6 +12,7 @@ from chromite.cbuildbot import binhost
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 
 
@@ -32,7 +33,7 @@ def main(argv):
   cros_build_lib.AssertInsideChroot()
   opts = _ParseArguments(argv)
 
-  cros_build_lib.Info('Generating board configs. This takes about 2m...')
+  logging.info('Generating board configs. This takes about 2m...')
   for key in sorted(binhost.GetChromePrebuiltConfigs()):
     binhost.GenConfigsForBoard(key.board, regen=opts.regen, error_code_ok=True)
 

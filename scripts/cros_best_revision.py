@@ -182,12 +182,12 @@ class ChromeCommitter(object):
       if not found and latest_url:
         try:
           copy_ctx.Copy(latest_url, url, version=0, acl=acl)
-          cros_build_lib.Info('Copied %s -> %s', latest_url, url)
+          logging.info('Copied %s -> %s', latest_url, url)
         except gs.GSContextPreconditionFailed:
           found = True
 
       if found:
-        cros_build_lib.Info('Found %s', url)
+        logging.info('Found %s', url)
         latest_url = url
 
   def UpdateLatestFiles(self):

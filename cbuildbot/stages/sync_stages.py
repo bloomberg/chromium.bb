@@ -635,7 +635,7 @@ class ManifestVersionedSyncStage(SyncStage):
       next_manifest = self.GetNextManifest()
 
     if not next_manifest:
-      cros_build_lib.Info('Found no work to do.')
+      logging.info('Found no work to do.')
       if self._run.attrs.manifest_manager.DidLastBuildFail():
         raise failures_lib.StepFailure('The previous build failed.')
       else:

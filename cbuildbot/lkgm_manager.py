@@ -503,7 +503,7 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
     # Additional case in case the repo has been removed from the manifest.
     src_path = source_repo.GetRelativePath(rel_src_path)
     if not os.path.exists(src_path):
-      cros_build_lib.Info('Detected repo removed from manifest %s' % project)
+      logging.info('Detected repo removed from manifest %s' % project)
       continue
 
     revision = checkout['revision']

@@ -28,6 +28,7 @@ from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -659,7 +660,7 @@ class BoardSpecificBuilderStage(BuilderStage):
     if pretty_name is None:
       pretty_name = board_attr
 
-    cros_build_lib.Info('Waiting up to %s for %s ...', timeout_str, pretty_name)
+    logging.info('Waiting up to %s for %s ...', timeout_str, pretty_name)
     return self.board_runattrs.GetParallel(board_attr, timeout=timeout)
 
   def GetImageDirSymlink(self, pointer='latest-cbuildbot'):
@@ -864,22 +865,21 @@ class ArchivingStageMixin(object):
     metadata_json = os.path.join(self.archive_path, filename)
 
     # Stages may run in parallel, so we have to do atomic updates on this.
-    cros_build_lib.Info('Writing metadata to %s.', metadata_json)
+    logging.info('Writing metadata to %s.', metadata_json)
     osutils.WriteFile(metadata_json, self._run.attrs.metadata.GetJSON(),
                       atomic=True, makedirs=True)
 
     if upload_queue is not None:
-      cros_build_lib.Info('Adding metadata file %s to upload queue.',
-                          metadata_json)
+      logging.info('Adding metadata file %s to upload queue.', metadata_json)
       upload_queue.put([filename])
     else:
-      cros_build_lib.Info('Uploading metadata file %s now.', metadata_json)
+      logging.info('Uploading metadata file %s now.', metadata_json)
       self.UploadArtifact(filename, archive=False)
 
     build_id, db = self._run.GetCIDBHandle()
     if db:
-      cros_build_lib.Info('Writing updated metadata to database for build_id '
-                          '%s.', build_id)
+      logging.info('Writing updated metadata to database for build_id %s.',
+                   build_id)
       db.UpdateMetadata(build_id, self._run.attrs.metadata)
     else:
-      cros_build_lib.Info('Skipping database update, no database or build_id.')
+      logging.info('Skipping database update, no database or build_id.')

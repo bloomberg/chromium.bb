@@ -14,6 +14,7 @@ import os
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import toolchain
@@ -707,7 +708,7 @@ def _GetFilesForTarget(target, root='/'):
     atom = GetPortagePackage(target, pkg)
     cat, pn = atom.split('/')
     ver = GetInstalledPackageVersions(atom)[0]
-    cros_build_lib.Info('packaging %s-%s', atom, ver)
+    logging.info('packaging %s-%s', atom, ver)
 
     # pylint: disable=E1101
     dblink = portage.dblink(cat, pn + '-' + ver, myroot=root,
@@ -962,7 +963,7 @@ def CreatePackages(targets_wanted, output_dir, root='/'):
     output_dir: The directory to put the packages in.
     root: The root path to pull all packages/files from.
   """
-  cros_build_lib.Info('Writing tarballs to %s', output_dir)
+  logging.info('Writing tarballs to %s', output_dir)
   osutils.SafeMakedirs(output_dir)
   ldpaths = lddtree.LoadLdpaths(root)
   targets = ExpandTargets(targets_wanted)

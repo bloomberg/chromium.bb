@@ -108,7 +108,7 @@ def RunTest(test, cmd, tmpfile, finished, total):
   Returns:
     The exit code of the test.
   """
-  cros_build_lib.Info('Starting %s', test)
+  logging.info('Starting %s', test)
 
   def _Finished(_log_level, _log_msg, result, delta):
     with finished.get_lock():
@@ -117,7 +117,7 @@ def RunTest(test, cmd, tmpfile, finished, total):
         func = cros_build_lib.Error
         msg = 'Failed'
       else:
-        func = cros_build_lib.Info
+        func = logging.info
         msg = 'Finished'
       func('%s [%i/%i] %s (%s)', msg, finished.value, total, test, delta)
 
@@ -155,17 +155,17 @@ def BuildTestSets(tests, chroot_available, network):
     # See if this test requires special consideration.
     status = SPECIAL_TESTS.get(test)
     if status is SKIP:
-      cros_build_lib.Info('Skipping %s', test)
+      logging.info('Skipping %s', test)
       continue
     elif status is INSIDE:
       if not cros_build_lib.IsInsideChroot():
         if not chroot_available:
-          cros_build_lib.Info('Skipping %s: chroot not available', test)
+          logging.info('Skipping %s: chroot not available', test)
           continue
         cmd = ['cros_sdk', '--', os.path.join('..', '..', 'chromite', test)]
     elif status is OUTSIDE:
       if cros_build_lib.IsInsideChroot():
-        cros_build_lib.Info('Skipping %s: must be outside the chroot', test)
+        logging.info('Skipping %s: must be outside the chroot', test)
         continue
     else:
       mode = os.stat(test).st_mode
@@ -234,8 +234,7 @@ def RunTests(tests, jobs=1, chroot_available=True, network=False, dryrun=False,
         ret = 1
         try:
           if dryrun:
-            cros_build_lib.Info('Would have run: %s',
-                                cros_build_lib.CmdToStr(cmd))
+            logging.info('Would have run: %s', cros_build_lib.CmdToStr(cmd))
             ret = 0
           else:
             ret = RunTest(test, cmd, tmpfile, finished, len(testsets))
@@ -430,7 +429,7 @@ def main(argv):
 
     def _Finished(_log_level, _log_msg, result, delta):
       if result:
-        cros_build_lib.Info('All tests succeeded! (%s total)', delta)
+        logging.info('All tests succeeded! (%s total)', delta)
 
     ret = cros_build_lib.TimedCommand(
         RunTests, tests, jobs=jobs, chroot_available=ChrootAvailable(),

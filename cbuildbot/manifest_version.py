@@ -580,7 +580,7 @@ class BuildSpecsManager(object):
       version = version_info.IncrementVersion()
       version_info.UpdateVersionFile(message, dry_run=self.dry_run)
       assert version != self.latest
-      cros_build_lib.Info('Incremented version number to  %s', version)
+      logging.info('Incremented version number to  %s', version)
 
     return version
 

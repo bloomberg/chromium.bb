@@ -326,17 +326,15 @@ class ReportStage(generic_stages.BuilderStage,
           final_status=final_status, counter_name=builder_run.config.name,
           dry_run=self._run.debug)
       verb = 'passed' if streak_value > 0 else 'failed'
-      cros_build_lib.Info('Builder %s has %s %s time(s) in a row.',
-                          builder_run.config.name, verb, abs(streak_value))
+      logging.info('Builder %s has %s %s time(s) in a row.',
+                   builder_run.config.name, verb, abs(streak_value))
       # See if updated streak should trigger a notification email.
       if (builder_run.config.health_alert_recipients and
           builder_run.config.health_threshold > 0 and
           streak_value <= -builder_run.config.health_threshold):
-        cros_build_lib.Info(
-            'Builder failed %i consecutive times, sending health alert email '
-            'to %s.',
-            -streak_value,
-            builder_run.config.health_alert_recipients)
+        logging.info('Builder failed %i consecutive times, sending health '
+                     'alert email to %s.', -streak_value,
+                     builder_run.config.health_alert_recipients)
 
         subject = '%s health alert' % builder_run.config.name
         body = self._HealthAlertMessage(-streak_value)

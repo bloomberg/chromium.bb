@@ -85,12 +85,12 @@ class GerritHelper(object):
     """
     if add:
       if dryrun:
-        cros_build_lib.Info('Would have added %s to "%s"', add, change)
+        logging.info('Would have added %s to "%s"', add, change)
       else:
         gob_util.AddReviewers(self.host, change, add)
     if remove:
       if dryrun:
-        cros_build_lib.Info('Would have removed %s to "%s"', remove, change)
+        logging.info('Would have removed %s to "%s"', remove, change)
       else:
         gob_util.RemoveReviewers(self.host, change, remove)
 
@@ -208,8 +208,8 @@ class GerritHelper(object):
 
     if change and cros_patch.ParseGerritNumber(change) and not query_kwds:
       if dryrun:
-        cros_build_lib.Info('Would have run gob_util.GetChangeDetail(%s, %s)',
-                            self.host, change)
+        logging.info('Would have run gob_util.GetChangeDetail(%s, %s)',
+                     self.host, change)
         return []
       change = self.GetChangeDetail(change)
       if change is None:
@@ -241,10 +241,9 @@ class GerritHelper(object):
                             ' and a "change" search parameter')
 
     if dryrun:
-      cros_build_lib.Info(
-          'Would have run gob_util.QueryChanges(%s, %s, first_param=%s, '
-          'limit=%d)', self.host, repr(query_kwds), change,
-          self._GERRIT_MAX_QUERY_RETURN)
+      logging.info('Would have run gob_util.QueryChanges(%s, %s, '
+                   'first_param=%s, limit=%d)', self.host, repr(query_kwds),
+                   change, self._GERRIT_MAX_QUERY_RETURN)
       return []
 
     start = 0
@@ -338,13 +337,12 @@ class GerritHelper(object):
       return
     if dryrun:
       if msg:
-        cros_build_lib.Info('Would have added message "%s" to change "%s".',
-                            msg, change)
+        logging.info('Would have added message "%s" to change "%s".', msg,
+                     change)
       if labels:
         for key, val in labels.iteritems():
-          cros_build_lib.Info(
-              'Would have set label "%s" to "%s" for change "%s".',
-              key, val, change)
+          logging.info('Would have set label "%s" to "%s" for change "%s".',
+                       key, val, change)
       return
     gob_util.SetReview(self.host, self._to_changenum(change),
                        msg=msg, labels=labels, notify='ALL')
@@ -358,15 +356,14 @@ class GerritHelper(object):
       dryrun: If True, don't actually set the topic.
     """
     if dryrun:
-      cros_build_lib.Info('Would have set topic "%s" for change "%s".',
-                          topic, change)
+      logging.info('Would have set topic "%s" for change "%s".', topic, change)
       return
     gob_util.SetTopic(self.host, self._to_changenum(change), topic=topic)
 
   def RemoveReady(self, change, dryrun=False):
     """Set the 'Commit-Queue' and 'Trybot-Ready' labels on a |change| to '0'."""
     if dryrun:
-      cros_build_lib.Info('Would have reset Commit-Queue label for %s', change)
+      logging.info('Would have reset Commit-Queue label for %s', change)
       return
     gob_util.ResetReviewLabels(self.host, self._to_changenum(change),
                                label='Commit-Queue', notify='OWNER')
@@ -376,7 +373,7 @@ class GerritHelper(object):
   def SubmitChange(self, change, dryrun=False):
     """Land (merge) a gerrit change using the JSON API."""
     if dryrun:
-      cros_build_lib.Info('Would have submitted change %s', change)
+      logging.info('Would have submitted change %s', change)
       return
     gob_util.SubmitChange(self.host, change.gerrit_number, revision=change.sha1)
 
@@ -431,21 +428,21 @@ class GerritHelper(object):
   def AbandonChange(self, change, dryrun=False):
     """Mark a gerrit change as 'Abandoned'."""
     if dryrun:
-      cros_build_lib.Info('Would have abandoned change %s', change)
+      logging.info('Would have abandoned change %s', change)
       return
     gob_util.AbandonChange(self.host, self._to_changenum(change))
 
   def RestoreChange(self, change, dryrun=False):
     """Re-activate a previously abandoned gerrit change."""
     if dryrun:
-      cros_build_lib.Info('Would have restored change %s', change)
+      logging.info('Would have restored change %s', change)
       return
     gob_util.RestoreChange(self.host, self._to_changenum(change))
 
   def DeleteDraft(self, change, dryrun=False):
     """Delete a draft patch set."""
     if dryrun:
-      cros_build_lib.Info('Would have deleted draft patch set %s', change)
+      logging.info('Would have deleted draft patch set %s', change)
       return
     gob_util.DeleteDraft(self.host, self._to_changenum(change))
 

@@ -184,7 +184,7 @@ def Log(msg):
     msg: Message to print
   """
   if verbose:
-    cros_build_lib.Info(msg)
+    logging.info(msg)
 
 
 def Dumper(flag, infile, outfile):
@@ -650,13 +650,12 @@ def WriteFirmware(options):
     cros_build_lib.Die('cros_bundle_firmware failed')
 
   if not dest or not result.returncode:
-    cros_build_lib.Info('Image is available at %s/out/image.bin' % outdir)
+    logging.info('Image is available at %s/out/image.bin' % outdir)
   else:
     if result.returncode:
       cros_build_lib.Die('Failed to write image to board')
     else:
-      cros_build_lib.Info('Image written to board with %s' %
-                          ' '.join(dest + servo))
+      logging.info('Image written to board with %s' % ' '.join(dest + servo))
 
 
 def main(argv):

@@ -169,11 +169,10 @@ class GconvModules(object):
       if not dry_run:
         os.unlink(lib_path)
 
-    cros_build_lib.Info(
-        'Done. Using %d gconv modules. Removed %d unused modules'
-        ' (%.1f KiB) and %d unused dependencies (%.1f KiB)',
-        len(used_modules), len(unused_modules), unused_size / 1024.,
-        len(unused_libdeps), unused_libdeps_size / 1024.)
+    logging.info('Done. Using %d gconv modules. Removed %d unused modules'
+                 ' (%.1f KiB) and %d unused dependencies (%.1f KiB)',
+                 len(used_modules), len(unused_modules), unused_size / 1024.,
+                 len(unused_libdeps), unused_libdeps_size / 1024.)
 
     # Recompute the gconv-modules file with only the included gconv modules.
     result = []
@@ -250,8 +249,8 @@ def GconvStrip(opts):
     cros_build_lib.Die('Found several gconv-modules files.')
 
   gconv_modules_file = gconv_modules_files[0]
-  cros_build_lib.Info('Searching for unused gconv files defined in %s',
-                      gconv_modules_file)
+  logging.info('Searching for unused gconv files defined in %s',
+               gconv_modules_file)
 
   gmods = GconvModules(gconv_modules_file)
   charsets = gmods.Load()
@@ -277,8 +276,8 @@ def GconvStrip(opts):
   # 'IT' charset. Empirical test on ChromeOS images suggests that only 4
   # charsets could fall in category.
   strings = [s + '\0' for s in charsets]
-  cros_build_lib.Info('Will search for %d strings in %d files',
-                      len(strings), len(files))
+  logging.info('Will search for %d strings in %d files', len(strings),
+               len(files))
 
   # Charsets listed in STICKY_MOUDLES are initialized as used. Note that those
   # strings should be listed in the gconv-modules file.

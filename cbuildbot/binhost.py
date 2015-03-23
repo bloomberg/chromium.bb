@@ -14,6 +14,7 @@ import tempfile
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
 
 
@@ -287,7 +288,7 @@ class CompatIdFetcher(object):
       board_keys: A list BoardKey objects to fetch.
     """
     # pylint: disable=method-hidden
-    cros_build_lib.Info('Fetching CompatId objects...')
+    logging.info('Fetching CompatId objects...')
     with parallel.Manager() as manager:
       self.compat_ids = manager.dict()
       parallel.RunTasksInProcessPool(self._FetchCompatId, board_keys)

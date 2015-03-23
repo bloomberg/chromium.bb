@@ -10,6 +10,7 @@ from chromite.cbuildbot import afdo
 from chromite.cbuildbot import constants
 from chromite.lib import alerts
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import portage_util
 from chromite.cbuildbot.stages import generic_stages
@@ -48,8 +49,7 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
         afdo_file = afdo.GenerateAFDOData(cpv, arch, board,
                                           buildroot, gs_context)
         assert afdo_file
-        cros_build_lib.Info('Generated %s AFDO profile %s',
-                            arch, afdo_file)
+        logging.info('Generated %s AFDO profile %s', arch, afdo_file)
       else:
         raise afdo.MissingAFDOData('Could not find current "perf" profile. '
                                    'Master PFQ builder will try to use stale '
@@ -96,8 +96,7 @@ class AFDOUpdateEbuildStage(generic_stages.BuilderStage):
       if not afdo_file:
         raise afdo.MissingAFDOData('Could not find appropriate AFDO profile')
       state = 'current' if version_number in afdo_file else 'previous'
-      cros_build_lib.Info('Found %s %s AFDO profile %s',
-                          state, arch, afdo_file)
+      logging.info('Found %s %s AFDO profile %s', state, arch, afdo_file)
       arch_profiles[arch] = afdo_file
 
     # Now update the Chrome ebuild file with the AFDO profiles we found
