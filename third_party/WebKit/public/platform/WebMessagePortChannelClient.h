@@ -61,8 +61,7 @@ public:
     virtual v8::Local<v8::Context> scriptContextForMessageConversion() = 0;
 
 protected:
-    WebMessagePortChannelClient();
-    ~WebMessagePortChannelClient();
+    ~WebMessagePortChannelClient() { }
 };
 
 } // namespace blink

@@ -5,20 +5,8 @@
 #include "config.h"
 #include "public/platform/WebMessagePortChannelClient.h"
 
-namespace blink {
-
-// The following definitions should not be in WebMessagePortChannelClient.h,
-// because when define as inline a function declared with the
-// dllimport attribute, the function can be expanded but never
-// instantiated. The rule apply to inline functions whose definitions appear
-// within a class definition.
-// c.f. https://msdn.microsoft.com/en-us/library/xa0d9ste.aspx
-WebMessagePortChannelClient::WebMessagePortChannelClient()
-{
-}
-
-WebMessagePortChannelClient::~WebMessagePortChannelClient()
-{
-}
-
-} // namespace blink
+// This WebMessagePortChannelClient.cpp, which includes only config.h and
+// WebMessagePortChannelClient.h, should be in Source/platform/exported,
+// because WebMessagePortChannelClient is not compiled without this cpp.
+// So if we don't have this cpp, we will see unresolved symbol error
+// when constructor/destructor's address is required.
