@@ -7,11 +7,10 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/service_worker/cache_storage_context_impl.h"
 #include "content/browser/service_worker/service_worker_cache.h"
 #include "content/browser/service_worker/service_worker_cache_storage_manager.h"
-#include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/cache_storage_messages.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerCacheError.h"
 
@@ -70,17 +69,12 @@ WebServiceWorkerCacheError CacheErrorToWebServiceWorkerCacheError(
 }  // namespace
 
 ServiceWorkerCacheListener::ServiceWorkerCacheListener(
-    ServiceWorkerVersion* version,
-    base::WeakPtr<ServiceWorkerContextCore> context)
-    : version_(version),
-      context_(context),
-      next_cache_id_(0),
-      weak_factory_(this) {
-  version_->embedded_worker()->AddListener(this);
+    CacheStorageDispatcherHost* dispatcher,
+    CacheStorageContextImpl* context)
+    : dispatcher_(dispatcher), context_(context), weak_factory_(this) {
 }
 
 ServiceWorkerCacheListener::~ServiceWorkerCacheListener() {
-  version_->embedded_worker()->RemoveListener(this);
 }
 
 bool ServiceWorkerCacheListener::OnMessageReceived(
@@ -115,56 +109,59 @@ bool ServiceWorkerCacheListener::OnMessageReceived(
 }
 
 void ServiceWorkerCacheListener::OnCacheStorageHas(
+    int thread_id,
     int request_id,
+    const GURL& origin,
     const base::string16& cache_name) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerCacheListener::OnCacheStorageHas");
   context_->cache_manager()->HasCache(
-      version_->scope().GetOrigin(),
-      base::UTF16ToUTF8(cache_name),
+      origin, base::UTF16ToUTF8(cache_name),
       base::Bind(&ServiceWorkerCacheListener::OnCacheStorageHasCallback,
-                 weak_factory_.GetWeakPtr(),
-                 request_id));
+                 weak_factory_.GetWeakPtr(), thread_id, request_id));
 }
 
 void ServiceWorkerCacheListener::OnCacheStorageOpen(
+    int thread_id,
     int request_id,
+    const GURL& origin,
     const base::string16& cache_name) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerCacheListener::OnCacheStorageOpen");
   context_->cache_manager()->OpenCache(
-      version_->scope().GetOrigin(),
-      base::UTF16ToUTF8(cache_name),
+      origin, base::UTF16ToUTF8(cache_name),
       base::Bind(&ServiceWorkerCacheListener::OnCacheStorageOpenCallback,
-                 weak_factory_.GetWeakPtr(),
-                 request_id));
+                 weak_factory_.GetWeakPtr(), thread_id, request_id));
 }
 
 void ServiceWorkerCacheListener::OnCacheStorageDelete(
+    int thread_id,
     int request_id,
+    const GURL& origin,
     const base::string16& cache_name) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerCacheListener::OnCacheStorageDelete");
   context_->cache_manager()->DeleteCache(
-      version_->scope().GetOrigin(),
-      base::UTF16ToUTF8(cache_name),
+      origin, base::UTF16ToUTF8(cache_name),
       base::Bind(&ServiceWorkerCacheListener::OnCacheStorageDeleteCallback,
-                 weak_factory_.GetWeakPtr(),
-                 request_id));
+                 weak_factory_.GetWeakPtr(), thread_id, request_id));
 }
 
-void ServiceWorkerCacheListener::OnCacheStorageKeys(int request_id) {
+void ServiceWorkerCacheListener::OnCacheStorageKeys(int thread_id,
+                                                    int request_id,
+                                                    const GURL& origin) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerCacheListener::OnCacheStorageKeys");
   context_->cache_manager()->EnumerateCaches(
-      version_->scope().GetOrigin(),
+      origin,
       base::Bind(&ServiceWorkerCacheListener::OnCacheStorageKeysCallback,
-                 weak_factory_.GetWeakPtr(),
-                 request_id));
+                 weak_factory_.GetWeakPtr(), thread_id, request_id));
 }
 
 void ServiceWorkerCacheListener::OnCacheStorageMatch(
+    int thread_id,
     int request_id,
+    const GURL& origin,
     const ServiceWorkerFetchRequest& request,
     const ServiceWorkerCacheQueryParams& match_params) {
   TRACE_EVENT0("ServiceWorker",
@@ -177,27 +174,27 @@ void ServiceWorkerCacheListener::OnCacheStorageMatch(
 
   if (match_params.cache_name.empty()) {
     context_->cache_manager()->MatchAllCaches(
-        version_->scope().GetOrigin(), scoped_request.Pass(),
+        origin, scoped_request.Pass(),
         base::Bind(&ServiceWorkerCacheListener::OnCacheStorageMatchCallback,
-                   weak_factory_.GetWeakPtr(), request_id));
+                   weak_factory_.GetWeakPtr(), thread_id, request_id));
     return;
   }
   context_->cache_manager()->MatchCache(
-      version_->scope().GetOrigin(), base::UTF16ToUTF8(match_params.cache_name),
-      scoped_request.Pass(),
+      origin, base::UTF16ToUTF8(match_params.cache_name), scoped_request.Pass(),
       base::Bind(&ServiceWorkerCacheListener::OnCacheStorageMatchCallback,
-                 weak_factory_.GetWeakPtr(), request_id));
+                 weak_factory_.GetWeakPtr(), thread_id, request_id));
 }
 
 void ServiceWorkerCacheListener::OnCacheMatch(
+    int thread_id,
     int request_id,
     int cache_id,
     const ServiceWorkerFetchRequest& request,
     const ServiceWorkerCacheQueryParams& match_params) {
   IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
   if (it == id_to_cache_map_.end()) {
-    Send(ServiceWorkerMsg_CacheMatchError(
-        request_id, blink::WebServiceWorkerCacheErrorNotFound));
+    Send(new ServiceWorkerMsg_CacheMatchError(
+        thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
     return;
   }
 
@@ -208,57 +205,59 @@ void ServiceWorkerCacheListener::OnCacheMatch(
                                     request.headers,
                                     request.referrer,
                                     request.is_reload));
-  cache->Match(scoped_request.Pass(),
-               base::Bind(&ServiceWorkerCacheListener::OnCacheMatchCallback,
-                          weak_factory_.GetWeakPtr(),
-                          request_id,
-                          cache));
+  cache->Match(
+      scoped_request.Pass(),
+      base::Bind(&ServiceWorkerCacheListener::OnCacheMatchCallback,
+                 weak_factory_.GetWeakPtr(), thread_id, request_id, cache));
 }
 
 void ServiceWorkerCacheListener::OnCacheMatchAll(
+    int thread_id,
     int request_id,
     int cache_id,
     const ServiceWorkerFetchRequest& request,
     const ServiceWorkerCacheQueryParams& match_params) {
   // TODO(gavinp,jkarlin): Implement this method.
-  Send(ServiceWorkerMsg_CacheMatchAllError(
-      request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
+  Send(new ServiceWorkerMsg_CacheMatchAllError(
+      thread_id, request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
 }
 
 void ServiceWorkerCacheListener::OnCacheKeys(
+    int thread_id,
     int request_id,
     int cache_id,
     const ServiceWorkerFetchRequest& request,
     const ServiceWorkerCacheQueryParams& match_params) {
   IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
   if (it == id_to_cache_map_.end()) {
-    Send(ServiceWorkerMsg_CacheKeysError(
-        request_id, blink::WebServiceWorkerCacheErrorNotFound));
+    Send(new ServiceWorkerMsg_CacheKeysError(
+        thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
     return;
   }
 
   scoped_refptr<ServiceWorkerCache> cache = it->second;
 
   cache->Keys(base::Bind(&ServiceWorkerCacheListener::OnCacheKeysCallback,
-                         weak_factory_.GetWeakPtr(),
-                         request_id,
+                         weak_factory_.GetWeakPtr(), thread_id, request_id,
                          cache));
 }
 
 void ServiceWorkerCacheListener::OnCacheBatch(
+    int thread_id,
     int request_id,
     int cache_id,
     const std::vector<ServiceWorkerBatchOperation>& operations) {
   if (operations.size() != 1u) {
-    Send(ServiceWorkerMsg_CacheBatchError(
-        request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
+    Send(new ServiceWorkerMsg_CacheBatchError(
+        thread_id, request_id,
+        blink::WebServiceWorkerCacheErrorNotImplemented));
     return;
   }
 
   IDToCacheMap::iterator it = id_to_cache_map_.find(cache_id);
   if (it == id_to_cache_map_.end()) {
-    Send(ServiceWorkerMsg_CacheBatchError(
-        request_id, blink::WebServiceWorkerCacheErrorNotFound));
+    Send(new ServiceWorkerMsg_CacheBatchError(
+        thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
     return;
   }
 
@@ -273,11 +272,10 @@ void ServiceWorkerCacheListener::OnCacheBatch(
                                     operation.request.is_reload));
 
   if (operation.operation_type == SERVICE_WORKER_CACHE_OPERATION_TYPE_DELETE) {
-    cache->Delete(scoped_request.Pass(),
-                  base::Bind(&ServiceWorkerCacheListener::OnCacheDeleteCallback,
-                             weak_factory_.GetWeakPtr(),
-                             request_id,
-                             cache));
+    cache->Delete(
+        scoped_request.Pass(),
+        base::Bind(&ServiceWorkerCacheListener::OnCacheDeleteCallback,
+                   weak_factory_.GetWeakPtr(), thread_id, request_id, cache));
     return;
   }
 
@@ -293,18 +291,16 @@ void ServiceWorkerCacheListener::OnCacheBatch(
                                   operation.response.blob_uuid,
                                   operation.response.blob_size,
                                   operation.response.stream_url));
-    cache->Put(scoped_request.Pass(),
-               scoped_response.Pass(),
-               base::Bind(&ServiceWorkerCacheListener::OnCachePutCallback,
-                          weak_factory_.GetWeakPtr(),
-                          request_id,
-                          cache));
+    cache->Put(
+        scoped_request.Pass(), scoped_response.Pass(),
+        base::Bind(&ServiceWorkerCacheListener::OnCachePutCallback,
+                   weak_factory_.GetWeakPtr(), thread_id, request_id, cache));
 
     return;
   }
 
-  Send(ServiceWorkerMsg_CacheBatchError(
-      request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
+  Send(new ServiceWorkerMsg_CacheBatchError(
+      thread_id, request_id, blink::WebServiceWorkerCacheErrorNotImplemented));
 }
 
 void ServiceWorkerCacheListener::OnCacheClosed(int cache_id) {
@@ -315,61 +311,65 @@ void ServiceWorkerCacheListener::OnBlobDataHandled(const std::string& uuid) {
   DropBlobDataHandle(uuid);
 }
 
-void ServiceWorkerCacheListener::Send(const IPC::Message& message) {
-  version_->embedded_worker()->SendMessage(message);
+void ServiceWorkerCacheListener::Send(IPC::Message* message) {
+  dispatcher_->Send(message);
 }
 
 void ServiceWorkerCacheListener::OnCacheStorageHasCallback(
+    int thread_id,
     int request_id,
     bool has_cache,
     ServiceWorkerCacheStorage::CacheStorageError error) {
   if (error != ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
-    Send(ServiceWorkerMsg_CacheStorageHasError(
-        request_id, ToWebServiceWorkerCacheError(error)));
+    Send(new ServiceWorkerMsg_CacheStorageHasError(
+        thread_id, request_id, ToWebServiceWorkerCacheError(error)));
     return;
   }
   if (!has_cache) {
-    Send(ServiceWorkerMsg_CacheStorageHasError(
-        request_id,
-        blink::WebServiceWorkerCacheErrorNotFound));
+    Send(new ServiceWorkerMsg_CacheStorageHasError(
+        thread_id, request_id, blink::WebServiceWorkerCacheErrorNotFound));
     return;
   }
-  Send(ServiceWorkerMsg_CacheStorageHasSuccess(request_id));
+  Send(new ServiceWorkerMsg_CacheStorageHasSuccess(thread_id, request_id));
 }
 
 void ServiceWorkerCacheListener::OnCacheStorageOpenCallback(
+    int thread_id,
     int request_id,
     const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCacheStorage::CacheStorageError error) {
   if (error != ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
-    Send(ServiceWorkerMsg_CacheStorageOpenError(
-        request_id, ToWebServiceWorkerCacheError(error)));
+    Send(new ServiceWorkerMsg_CacheStorageOpenError(
+        thread_id, request_id, ToWebServiceWorkerCacheError(error)));
     return;
   }
   CacheID cache_id = StoreCacheReference(cache);
-  Send(ServiceWorkerMsg_CacheStorageOpenSuccess(request_id, cache_id));
+  Send(new ServiceWorkerMsg_CacheStorageOpenSuccess(thread_id, request_id,
+                                                    cache_id));
 }
 
 void ServiceWorkerCacheListener::OnCacheStorageDeleteCallback(
+    int thread_id,
     int request_id,
     bool deleted,
     ServiceWorkerCacheStorage::CacheStorageError error) {
   if (!deleted ||
       error != ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
-    Send(ServiceWorkerMsg_CacheStorageDeleteError(
-        request_id, ToWebServiceWorkerCacheError(error)));
+    Send(new ServiceWorkerMsg_CacheStorageDeleteError(
+        thread_id, request_id, ToWebServiceWorkerCacheError(error)));
     return;
   }
-  Send(ServiceWorkerMsg_CacheStorageDeleteSuccess(request_id));
+  Send(new ServiceWorkerMsg_CacheStorageDeleteSuccess(thread_id, request_id));
 }
 
 void ServiceWorkerCacheListener::OnCacheStorageKeysCallback(
+    int thread_id,
     int request_id,
     const std::vector<std::string>& strings,
     ServiceWorkerCacheStorage::CacheStorageError error) {
   if (error != ServiceWorkerCacheStorage::CACHE_STORAGE_ERROR_NO_ERROR) {
-    Send(ServiceWorkerMsg_CacheStorageKeysError(
-        request_id, ToWebServiceWorkerCacheError(error)));
+    Send(new ServiceWorkerMsg_CacheStorageKeysError(
+        thread_id, request_id, ToWebServiceWorkerCacheError(error)));
     return;
   }
 
@@ -377,52 +377,58 @@ void ServiceWorkerCacheListener::OnCacheStorageKeysCallback(
   for (size_t i = 0, max = strings.size(); i < max; ++i) {
     string16s.push_back(base::UTF8ToUTF16(strings[i]));
   }
-  Send(ServiceWorkerMsg_CacheStorageKeysSuccess(request_id, string16s));
+  Send(new ServiceWorkerMsg_CacheStorageKeysSuccess(thread_id, request_id,
+                                                    string16s));
 }
 
 void ServiceWorkerCacheListener::OnCacheStorageMatchCallback(
+    int thread_id,
     int request_id,
     ServiceWorkerCache::ErrorType error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
   if (error != ServiceWorkerCache::ERROR_TYPE_OK) {
-    Send(ServiceWorkerMsg_CacheStorageMatchError(
-        request_id, CacheErrorToWebServiceWorkerCacheError(error)));
+    Send(new ServiceWorkerMsg_CacheStorageMatchError(
+        thread_id, request_id, CacheErrorToWebServiceWorkerCacheError(error)));
     return;
   }
 
   if (blob_data_handle)
     StoreBlobDataHandle(blob_data_handle.Pass());
 
-  Send(ServiceWorkerMsg_CacheStorageMatchSuccess(request_id, *response));
+  Send(new ServiceWorkerMsg_CacheStorageMatchSuccess(thread_id, request_id,
+                                                     *response));
 }
 
 void ServiceWorkerCacheListener::OnCacheMatchCallback(
+    int thread_id,
     int request_id,
     const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCache::ErrorType error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
   if (error != ServiceWorkerCache::ERROR_TYPE_OK) {
-    Send(ServiceWorkerMsg_CacheMatchError(
-        request_id, CacheErrorToWebServiceWorkerCacheError(error)));
+    Send(new ServiceWorkerMsg_CacheMatchError(
+        thread_id, request_id, CacheErrorToWebServiceWorkerCacheError(error)));
     return;
   }
 
   if (blob_data_handle)
     StoreBlobDataHandle(blob_data_handle.Pass());
 
-  Send(ServiceWorkerMsg_CacheMatchSuccess(request_id, *response));
+  Send(
+      new ServiceWorkerMsg_CacheMatchSuccess(thread_id, request_id, *response));
 }
 
 void ServiceWorkerCacheListener::OnCacheKeysCallback(
+    int thread_id,
     int request_id,
     const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCache::ErrorType error,
     scoped_ptr<ServiceWorkerCache::Requests> requests) {
   if (error != ServiceWorkerCache::ERROR_TYPE_OK) {
-    Send(ServiceWorkerMsg_CacheKeysError(
-        request_id, CacheErrorToWebServiceWorkerCacheError(error)));
+    Send(new ServiceWorkerMsg_CacheKeysError(
+        thread_id, request_id, CacheErrorToWebServiceWorkerCacheError(error)));
     return;
   }
 
@@ -436,32 +442,34 @@ void ServiceWorkerCacheListener::OnCacheKeysCallback(
     out.push_back(request);
   }
 
-  Send(ServiceWorkerMsg_CacheKeysSuccess(request_id, out));
+  Send(new ServiceWorkerMsg_CacheKeysSuccess(thread_id, request_id, out));
 }
 
 void ServiceWorkerCacheListener::OnCacheDeleteCallback(
+    int thread_id,
     int request_id,
     const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCache::ErrorType error) {
   if (error != ServiceWorkerCache::ERROR_TYPE_OK) {
-    Send(ServiceWorkerMsg_CacheBatchError(
-        request_id, CacheErrorToWebServiceWorkerCacheError(error)));
+    Send(new ServiceWorkerMsg_CacheBatchError(
+        thread_id, request_id, CacheErrorToWebServiceWorkerCacheError(error)));
     return;
   }
 
-  Send(ServiceWorkerMsg_CacheBatchSuccess(
-      request_id, std::vector<ServiceWorkerResponse>()));
+  Send(new ServiceWorkerMsg_CacheBatchSuccess(
+      thread_id, request_id, std::vector<ServiceWorkerResponse>()));
 }
 
 void ServiceWorkerCacheListener::OnCachePutCallback(
+    int thread_id,
     int request_id,
     const scoped_refptr<ServiceWorkerCache>& cache,
     ServiceWorkerCache::ErrorType error,
     scoped_ptr<ServiceWorkerResponse> response,
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
   if (error != ServiceWorkerCache::ERROR_TYPE_OK) {
-    Send(ServiceWorkerMsg_CacheBatchError(
-        request_id, CacheErrorToWebServiceWorkerCacheError(error)));
+    Send(new ServiceWorkerMsg_CacheBatchError(
+        thread_id, request_id, CacheErrorToWebServiceWorkerCacheError(error)));
     return;
   }
 
@@ -470,7 +478,8 @@ void ServiceWorkerCacheListener::OnCachePutCallback(
 
   std::vector<ServiceWorkerResponse> responses;
   responses.push_back(*response);
-  Send(ServiceWorkerMsg_CacheBatchSuccess(request_id, responses));
+  Send(
+      new ServiceWorkerMsg_CacheBatchSuccess(thread_id, request_id, responses));
 }
 
 ServiceWorkerCacheListener::CacheID

@@ -15,6 +15,7 @@
 #include "content/browser/media/webrtc_identity_store.h"
 #include "content/browser/navigator_connect/navigator_connect_context_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
+#include "content/browser/service_worker/cache_storage_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/storage_partition.h"
@@ -45,6 +46,8 @@ class StoragePartitionImpl : public StoragePartition {
   storage::DatabaseTracker* GetDatabaseTracker() override;
   DOMStorageContextWrapper* GetDOMStorageContext() override;
   IndexedDBContextImpl* GetIndexedDBContext() override;
+  // TODO(jsbell): Expose this on the public API as well. crbug.com/466371
+  CacheStorageContextImpl* GetCacheStorageContext();
   ServiceWorkerContextWrapper* GetServiceWorkerContext() override;
   GeofencingManager* GetGeofencingManager() override;
   HostZoomMap* GetHostZoomMap() override;
@@ -127,6 +130,7 @@ class StoragePartitionImpl : public StoragePartition {
       storage::DatabaseTracker* database_tracker,
       DOMStorageContextWrapper* dom_storage_context,
       IndexedDBContextImpl* indexed_db_context,
+      CacheStorageContextImpl* cache_storage_context,
       ServiceWorkerContextWrapper* service_worker_context,
       WebRTCIdentityStore* webrtc_identity_store,
       storage::SpecialStoragePolicy* special_storage_policy,
@@ -170,6 +174,7 @@ class StoragePartitionImpl : public StoragePartition {
   scoped_refptr<storage::DatabaseTracker> database_tracker_;
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+  scoped_refptr<CacheStorageContextImpl> cache_storage_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   scoped_refptr<WebRTCIdentityStore> webrtc_identity_store_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;

@@ -11,7 +11,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
-#include "content/browser/service_worker/service_worker_cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_database_task_manager.h"
@@ -126,7 +125,6 @@ bool ServiceWorkerContextCore::ProviderHostIterator::
 
 ServiceWorkerContextCore::ServiceWorkerContextCore(
     const base::FilePath& path,
-    const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
     scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     storage::QuotaManagerProxy* quota_manager_proxy,
@@ -136,10 +134,6 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     : wrapper_(wrapper),
       providers_(new ProcessToProviderMap),
       provider_by_uuid_(new ProviderByClientUUIDMap),
-      cache_manager_(ServiceWorkerCacheStorageManager::Create(
-          path,
-          cache_task_runner.get(),
-          make_scoped_refptr(quota_manager_proxy))),
       next_handle_id_(0),
       next_registration_handle_id_(0),
       observer_list_(observer_list),
@@ -162,8 +156,6 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
     : wrapper_(wrapper),
       providers_(old_context->providers_.release()),
       provider_by_uuid_(old_context->provider_by_uuid_.release()),
-      cache_manager_(ServiceWorkerCacheStorageManager::Create(
-          old_context->cache_manager())),
       next_handle_id_(old_context->next_handle_id_),
       next_registration_handle_id_(old_context->next_registration_handle_id_),
       observer_list_(old_context->observer_list_),
@@ -457,15 +449,6 @@ void ServiceWorkerContextCore::DeleteAndStartOver(
     const StatusCallback& callback) {
   job_coordinator_->AbortAll();
   storage_->DeleteAndStartOver(callback);
-}
-
-void ServiceWorkerContextCore::SetBlobParametersForCache(
-    net::URLRequestContext* request_context,
-    base::WeakPtr<storage::BlobStorageContext> blob_storage_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  cache_manager_->SetBlobParametersForCache(request_context,
-                                            blob_storage_context);
 }
 
 scoped_ptr<ServiceWorkerProviderHost>

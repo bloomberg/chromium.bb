@@ -585,10 +585,9 @@ void StoragePartitionImplMap::PostCreateInitialization(
                        browser_context_->GetSpecialStoragePolicy())));
 
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&ServiceWorkerContextWrapper::SetBlobParametersForCache,
-                   partition->GetServiceWorkerContext(),
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&CacheStorageContextImpl::SetBlobParametersForCache,
+                   partition->GetCacheStorageContext(),
                    make_scoped_refptr(partition->GetURLRequestContext()),
                    make_scoped_refptr(
                        ChromeBlobStorageContext::GetFor(browser_context_))));

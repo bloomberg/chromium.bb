@@ -268,7 +268,6 @@ class ServiceWorkerStorageTest : public testing::Test {
             base::ThreadTaskRunnerHandle::Get()));
     context_.reset(
         new ServiceWorkerContextCore(GetUserDataDirectory(),
-                                     base::ThreadTaskRunnerHandle::Get(),
                                      database_task_manager.Pass(),
                                      base::ThreadTaskRunnerHandle::Get(),
                                      NULL,
@@ -1206,7 +1205,6 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
           base::ThreadTaskRunnerHandle::Get()));
   context_.reset(
       new ServiceWorkerContextCore(GetUserDataDirectory(),
-                                   base::ThreadTaskRunnerHandle::Get(),
                                    database_task_manager.Pass(),
                                    base::ThreadTaskRunnerHandle::Get(),
                                    NULL,

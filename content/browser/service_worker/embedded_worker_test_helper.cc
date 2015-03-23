@@ -27,7 +27,6 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(int mock_render_process_id)
       new MockServiceWorkerDatabaseTaskManager(
           base::MessageLoopProxy::current()));
   wrapper_->InitInternal(base::FilePath(),
-                         base::MessageLoopProxy::current(),
                          database_task_manager.Pass(),
                          base::MessageLoopProxy::current(),
                          NULL,

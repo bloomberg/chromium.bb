@@ -20,10 +20,6 @@ class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace storage {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
@@ -32,7 +28,6 @@ class SpecialStoragePolicy;
 namespace content {
 
 class BrowserContext;
-class ChromeBlobStorageContext;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextObserver;
 class StoragePartitionImpl;
@@ -100,16 +95,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   bool is_incognito() const { return is_incognito_; }
 
-  // The URLRequestContext doesn't exist until after the StoragePartition is
-  // made (which is after this object is made). This function must be called
-  // after this object is created but before any ServiceWorkerCache operations.
-  // It must be called on the IO thread. If either parameter is NULL the
-  // function immediately returns without forwarding to the
-  // ServiceWorkerCacheStorageManager.
-  void SetBlobParametersForCache(
-      net::URLRequestContextGetter* request_context,
-      ChromeBlobStorageContext* blob_storage_context);
-
  private:
   friend class base::RefCountedThreadSafe<ServiceWorkerContextWrapper>;
   friend class EmbeddedWorkerTestHelper;
@@ -120,7 +105,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void InitInternal(
       const base::FilePath& user_data_directory,
-      const scoped_refptr<base::SequencedTaskRunner>& stores_task_runner,
       scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
       const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
       storage::QuotaManagerProxy* quota_manager_proxy,

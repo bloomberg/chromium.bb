@@ -18,7 +18,6 @@
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/public/platform/WebCircularGeofencingRegion.h"
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
-#include "third_party/WebKit/public/platform/WebServiceWorkerCacheError.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
 #include "url/gurl.h"
@@ -74,23 +73,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerResponse)
   IPC_STRUCT_TRAITS_MEMBER(stream_url)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerCacheQueryParams)
-  IPC_STRUCT_TRAITS_MEMBER(ignore_search)
-  IPC_STRUCT_TRAITS_MEMBER(ignore_method)
-  IPC_STRUCT_TRAITS_MEMBER(ignore_vary)
-  IPC_STRUCT_TRAITS_MEMBER(cache_name)
-IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerCacheOperationType,
-                          content::SERVICE_WORKER_CACHE_OPERATION_TYPE_LAST)
-
-IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerBatchOperation)
-  IPC_STRUCT_TRAITS_MEMBER(operation_type)
-  IPC_STRUCT_TRAITS_MEMBER(request)
-  IPC_STRUCT_TRAITS_MEMBER(response)
-  IPC_STRUCT_TRAITS_MEMBER(match_params)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerObjectInfo)
   IPC_STRUCT_TRAITS_MEMBER(handle_id)
   IPC_STRUCT_TRAITS_MEMBER(url)
@@ -123,10 +105,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerClientQueryOptions)
   IPC_STRUCT_TRAITS_MEMBER(client_type)
   IPC_STRUCT_TRAITS_MEMBER(include_uncontrolled)
 IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS_MAX_VALUE(
-    blink::WebServiceWorkerCacheError,
-    blink::WebServiceWorkerCacheErrorLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebGeofencingEventType,
                           blink::WebGeofencingEventTypeLast)
@@ -278,57 +256,6 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SkipWaiting,
 // its scope.
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_ClaimClients,
                     int /* request_id */)
-
-// CacheStorage operations in the browser.
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageHas,
-                    int /* request_id */,
-                    base::string16 /* fetch_store_name */)
-
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageOpen,
-                    int /* request_id */,
-                    base::string16 /* fetch_store_name */)
-
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_CacheStorageDelete,
-                    int /* request_id */,
-                    base::string16 /* fetch_store_name */)
-
-IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_CacheStorageKeys,
-                    int /* request_id */)
-
-IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_CacheStorageMatch,
-                    int /* request_id */,
-                    content::ServiceWorkerFetchRequest,
-                    content::ServiceWorkerCacheQueryParams)
-
-// Cache operations in the browser.
-IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_CacheMatch,
-                    int /* request_id */,
-                    int /* cache_id */,
-                    content::ServiceWorkerFetchRequest,
-                    content::ServiceWorkerCacheQueryParams)
-
-IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_CacheMatchAll,
-                    int /* request_id */,
-                    int /* cache_id */,
-                    content::ServiceWorkerFetchRequest,
-                    content::ServiceWorkerCacheQueryParams)
-
-IPC_MESSAGE_ROUTED4(ServiceWorkerHostMsg_CacheKeys,
-                    int /* request_id */,
-                    int /* cache_id */,
-                    content::ServiceWorkerFetchRequest,
-                    content::ServiceWorkerCacheQueryParams)
-
-IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_CacheBatch,
-                    int /* request_id */,
-                    int /* cache_id */,
-                    std::vector<content::ServiceWorkerBatchOperation>)
-
-IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_CacheClosed,
-                    int /* cache_id */)
-
-IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_BlobDataHandled,
-                    std::string /* uuid */)
 
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.
@@ -512,63 +439,3 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_OpenWindowError,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FocusClientResponse,
                      int /* request_id */,
                      content::ServiceWorkerClientInfo /* client */)
-
-// Sent via EmbeddedWorker at successful completion of CacheStorage operations.
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_CacheStorageHasSuccess,
-                     int /* request_id */)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageOpenSuccess,
-                     int /* request_id */,
-                     int /* fetch_store_id */)
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_CacheStorageDeleteSuccess,
-                     int /* request_id */)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageKeysSuccess,
-                     int /* request_id */,
-                     std::vector<base::string16> /* keys */)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageMatchSuccess,
-                     int /* request_id */,
-                     content::ServiceWorkerResponse)
-
-// Sent via EmbeddedWorker at erroneous completion of CacheStorage operations.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageHasError,
-                     int /* request_id */,
-                     blink::WebServiceWorkerCacheError /* reason */)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageOpenError,
-                     int /* request_id */,
-                     blink::WebServiceWorkerCacheError /* reason */)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageDeleteError,
-                     int /* request_id */,
-                     blink::WebServiceWorkerCacheError /* reason */)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageKeysError,
-                     int /* request_id */,
-                     blink::WebServiceWorkerCacheError /* reason */)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheStorageMatchError,
-                     int /* request_id */,
-                     blink::WebServiceWorkerCacheError)
-
-// Sent via EmbeddedWorker at successful completion of Cache operations.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheMatchSuccess,
-                     int /* request_id */,
-                     content::ServiceWorkerResponse)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheMatchAllSuccess,
-                     int /* request_id */,
-                     std::vector<content::ServiceWorkerResponse>)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheKeysSuccess,
-                     int /* request_id */,
-                     std::vector<content::ServiceWorkerFetchRequest>)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheBatchSuccess,
-                     int /* request_id */,
-                     std::vector<content::ServiceWorkerResponse>)
-
-// Sent via EmbeddedWorker at erroneous completion of CacheStorage operations.
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheMatchError,
-                     int /* request_id */,
-                     blink::WebServiceWorkerCacheError)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheMatchAllError,
-                     int /* request_id */,
-                     blink::WebServiceWorkerCacheError)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheKeysError,
-                     int /* request_id */,
-                     blink::WebServiceWorkerCacheError)
-IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_CacheBatchError,
-                     int /* request_id */,
-                     blink::WebServiceWorkerCacheError)

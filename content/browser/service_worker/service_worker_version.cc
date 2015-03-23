@@ -816,7 +816,6 @@ void ServiceWorkerVersion::OnStarting() {
 
 void ServiceWorkerVersion::OnStarted() {
   DCHECK_EQ(RUNNING, running_status());
-  DCHECK(cache_listener_.get());
   RestartTick(&idle_time_);
 
   // Fire all start callbacks.
@@ -876,11 +875,6 @@ void ServiceWorkerVersion::OnStopped(
   streaming_url_request_jobs_.clear();
 
   FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
-
-  // There should be no more communication from/to a stopped worker. Deleting
-  // the listener prevents any pending completion callbacks from causing
-  // messages to be sent to the stopped worker.
-  cache_listener_.reset();
 
   // Restart worker if we have any start callbacks and the worker isn't doomed.
   if (should_restart)
@@ -1461,8 +1455,6 @@ void ServiceWorkerVersion::StartWorkerInternal(bool pause_after_download) {
   if (!timeout_timer_.IsRunning())
     StartTimeoutTimer();
   if (running_status() == STOPPED) {
-    DCHECK(!cache_listener_.get());
-    cache_listener_.reset(new ServiceWorkerCacheListener(this, context_));
     embedded_worker_->Start(
         version_id_, scope_, script_url_, pause_after_download,
         base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,

@@ -17,8 +17,10 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/renderer/service_worker/service_worker_cache_storage_dispatcher.h"
+#include "content/renderer/service_worker/webserviceworkercachestorage_impl.h"
 #include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerCacheStorage.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientsClaimCallbacks.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerClientsInfo.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
@@ -100,8 +102,9 @@ class ServiceWorkerScriptContext {
   // in the browser process.
   int GetRoutingID() const;
 
-  blink::WebServiceWorkerCacheStorage* cache_storage() {
-    return cache_storage_dispatcher_.get();
+  // TODO(jsbell): Remove when CacheStorage creation is moved. crbug.com/439389
+  blink::WebServiceWorkerCacheStorage* cache_storage() const {
+    return cache_storage_.get();
   }
 
  private:
@@ -152,10 +155,10 @@ class ServiceWorkerScriptContext {
                            const base::string16& message);
   void OnPing();
 
-  scoped_ptr<ServiceWorkerCacheStorageDispatcher> cache_storage_dispatcher_;
-
   // Not owned; embedded_context_ owns this.
   EmbeddedWorkerContextClient* embedded_context_;
+
+  scoped_ptr<WebServiceWorkerCacheStorageImpl> cache_storage_;
 
   // Not owned; this object is destroyed when proxy_ becomes invalid.
   blink::WebServiceWorkerContextProxy* proxy_;

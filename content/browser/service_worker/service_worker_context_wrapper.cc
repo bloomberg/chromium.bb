@@ -15,7 +15,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
@@ -28,8 +27,6 @@
 #include "content/public/browser/service_worker_context.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
@@ -96,12 +93,7 @@ void ServiceWorkerContextWrapper::Init(
       new ServiceWorkerDatabaseTaskManagerImpl(pool));
   scoped_refptr<base::SingleThreadTaskRunner> disk_cache_thread =
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE);
-  scoped_refptr<base::SequencedTaskRunner> cache_task_runner =
-      pool->GetSequencedTaskRunnerWithShutdownBehavior(
-          BrowserThread::GetBlockingPool()->GetSequenceToken(),
-          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   InitInternal(user_data_directory,
-               cache_task_runner,
                database_task_manager.Pass(),
                disk_cache_thread,
                quota_manager_proxy,
@@ -366,21 +358,8 @@ void ServiceWorkerContextWrapper::RemoveObserver(
   observer_list_->RemoveObserver(observer);
 }
 
-void ServiceWorkerContextWrapper::SetBlobParametersForCache(
-    net::URLRequestContextGetter* request_context,
-    ChromeBlobStorageContext* blob_storage_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (context_core_ && request_context && blob_storage_context) {
-    context_core_->SetBlobParametersForCache(
-        request_context->GetURLRequestContext(),
-        blob_storage_context->context()->AsWeakPtr());
-  }
-}
-
 void ServiceWorkerContextWrapper::InitInternal(
     const base::FilePath& user_data_directory,
-    const scoped_refptr<base::SequencedTaskRunner>& stores_task_runner,
     scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager,
     const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
     storage::QuotaManagerProxy* quota_manager_proxy,
@@ -392,7 +371,6 @@ void ServiceWorkerContextWrapper::InitInternal(
         base::Bind(&ServiceWorkerContextWrapper::InitInternal,
                    this,
                    user_data_directory,
-                   stores_task_runner,
                    base::Passed(&database_task_manager),
                    disk_cache_thread,
                    make_scoped_refptr(quota_manager_proxy),
@@ -404,7 +382,6 @@ void ServiceWorkerContextWrapper::InitInternal(
     quota_manager_proxy->RegisterClient(new ServiceWorkerQuotaClient(this));
   }
   context_core_.reset(new ServiceWorkerContextCore(user_data_directory,
-                                                   stores_task_runner,
                                                    database_task_manager.Pass(),
                                                    disk_cache_thread,
                                                    quota_manager_proxy,

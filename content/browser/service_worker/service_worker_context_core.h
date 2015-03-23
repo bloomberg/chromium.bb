@@ -29,10 +29,6 @@ class SequencedTaskRunner;
 class SingleThreadTaskRunner;
 }
 
-namespace net {
-class URLRequestContext;
-}
-
 namespace storage {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
@@ -41,7 +37,6 @@ class SpecialStoragePolicy;
 namespace content {
 
 class EmbeddedWorkerRegistry;
-class ServiceWorkerCacheStorageManager;
 class ServiceWorkerContextObserver;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerDatabaseTaskManager;
@@ -107,7 +102,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // be called on the thread which called AddObserver() of |observer_list|.
   ServiceWorkerContextCore(
       const base::FilePath& user_data_directory,
-      const scoped_refptr<base::SequencedTaskRunner>& cache_task_runner,
       scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_runner_manager,
       const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
       storage::QuotaManagerProxy* quota_manager_proxy,
@@ -136,9 +130,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   ServiceWorkerContextWrapper* wrapper() const { return wrapper_; }
   ServiceWorkerStorage* storage() { return storage_.get(); }
-  ServiceWorkerCacheStorageManager* cache_manager() {
-    return cache_manager_.get();
-  }
   ServiceWorkerProcessManager* process_manager();
   EmbeddedWorkerRegistry* embedded_worker_registry() {
     return embedded_worker_registry_.get();
@@ -208,10 +199,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // in a disabled state until it's done.
   void DeleteAndStartOver(const StatusCallback& callback);
 
-  void SetBlobParametersForCache(
-      net::URLRequestContext* request_context,
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context);
-
   // Methods to support cross site navigations.
   scoped_ptr<ServiceWorkerProviderHost> TransferProviderHostOut(
       int process_id,
@@ -257,7 +244,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   scoped_ptr<ProcessToProviderMap> providers_;
   scoped_ptr<ProviderByClientUUIDMap> provider_by_uuid_;
   scoped_ptr<ServiceWorkerStorage> storage_;
-  scoped_ptr<ServiceWorkerCacheStorageManager> cache_manager_;
   scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
   scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
   std::map<int64, ServiceWorkerRegistration*> live_registrations_;

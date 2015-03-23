@@ -28,7 +28,6 @@ class ServiceWorkerRegistrationTest : public testing::Test {
             base::ThreadTaskRunnerHandle::Get()));
     context_.reset(
         new ServiceWorkerContextCore(base::FilePath(),
-                                     base::ThreadTaskRunnerHandle::Get(),
                                      database_task_manager.Pass(),
                                      base::ThreadTaskRunnerHandle::Get(),
                                      NULL,

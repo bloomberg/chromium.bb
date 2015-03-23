@@ -10,7 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "content/browser/service_worker/embedded_worker_instance.h"
+#include "content/browser/service_worker/cache_storage_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_cache.h"
 #include "content/browser/service_worker/service_worker_cache_storage.h"
 
@@ -19,47 +19,65 @@ namespace content {
 struct ServiceWorkerBatchOperation;
 struct ServiceWorkerCacheQueryParams;
 struct ServiceWorkerFetchRequest;
-class ServiceWorkerVersion;
 
 // This class listens for requests on the Cache APIs, and sends response
 // messages to the renderer process. There is one instance per
-// ServiceWorkerVersion instance.
-class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
+// CacheStorageDispatcherHost instance.
+class ServiceWorkerCacheListener {
  public:
-  ServiceWorkerCacheListener(ServiceWorkerVersion* version,
-                             base::WeakPtr<ServiceWorkerContextCore> context);
-  ~ServiceWorkerCacheListener() override;
+  ServiceWorkerCacheListener(CacheStorageDispatcherHost* dispatcher,
+                             CacheStorageContextImpl* context);
+  ~ServiceWorkerCacheListener();
 
-  // From EmbeddedWorkerInstance::Listener:
-  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message);
 
  private:
   // The message receiver functions for the CacheStorage API:
-  void OnCacheStorageGet(int request_id, const base::string16& cache_name);
-  void OnCacheStorageHas(int request_id, const base::string16& cache_name);
-  void OnCacheStorageCreate(int request_id, const base::string16& cache_name);
-  void OnCacheStorageOpen(int request_id, const base::string16& cache_name);
-  void OnCacheStorageDelete(int request_id,
-                           const base::string16& cache_name);
-  void OnCacheStorageKeys(int request_id);
-  void OnCacheStorageMatch(int request_id,
+  void OnCacheStorageGet(int thread_id,
+                         int request_id,
+                         const GURL& origin,
+                         const base::string16& cache_name);
+  void OnCacheStorageHas(int thread_id,
+                         int request_id,
+                         const GURL& origin,
+                         const base::string16& cache_name);
+  void OnCacheStorageCreate(int thread_id,
+                            int request_id,
+                            const GURL& origin,
+                            const base::string16& cache_name);
+  void OnCacheStorageOpen(int thread_id,
+                          int request_id,
+                          const GURL& origin,
+                          const base::string16& cache_name);
+  void OnCacheStorageDelete(int thread_id,
+                            int request_id,
+                            const GURL& origin,
+                            const base::string16& cache_name);
+  void OnCacheStorageKeys(int thread_id, int request_id, const GURL& origin);
+  void OnCacheStorageMatch(int thread_id,
+                           int request_id,
+                           const GURL& origin,
                            const ServiceWorkerFetchRequest& request,
                            const ServiceWorkerCacheQueryParams& match_params);
 
   // The message receiver functions for the Cache API:
-  void OnCacheMatch(int request_id,
+  void OnCacheMatch(int thread_id,
+                    int request_id,
                     int cache_id,
                     const ServiceWorkerFetchRequest& request,
                     const ServiceWorkerCacheQueryParams& match_params);
-  void OnCacheMatchAll(int request_id,
+  void OnCacheMatchAll(int thread_id,
+                       int request_id,
                        int cache_id,
                        const ServiceWorkerFetchRequest& request,
                        const ServiceWorkerCacheQueryParams& match_params);
-  void OnCacheKeys(int request_id,
+  void OnCacheKeys(int thread_id,
+                   int request_id,
                    int cache_id,
                    const ServiceWorkerFetchRequest& request,
                    const ServiceWorkerCacheQueryParams& match_params);
-  void OnCacheBatch(int request_id,
+  void OnCacheBatch(int thread_id,
+                    int request_id,
                     int cache_id,
                     const std::vector<ServiceWorkerBatchOperation>& operations);
   void OnCacheClosed(int cache_id);
@@ -71,34 +89,41 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
   typedef std::map<std::string, std::list<storage::BlobDataHandle>>
       UUIDToBlobDataHandleList;
 
-  void Send(const IPC::Message& message);
+  void Send(IPC::Message* message);
 
   // CacheStorageManager callbacks
   void OnCacheStorageGetCallback(
+      int thread_id,
       int request_id,
       const scoped_refptr<ServiceWorkerCache>& cache,
       ServiceWorkerCacheStorage::CacheStorageError error);
   void OnCacheStorageHasCallback(
+      int thread_id,
       int request_id,
       bool has_cache,
       ServiceWorkerCacheStorage::CacheStorageError error);
   void OnCacheStorageCreateCallback(
+      int thread_id,
       int request_id,
       const scoped_refptr<ServiceWorkerCache>& cache,
       ServiceWorkerCacheStorage::CacheStorageError error);
   void OnCacheStorageOpenCallback(
+      int thread_id,
       int request_id,
       const scoped_refptr<ServiceWorkerCache>& cache,
       ServiceWorkerCacheStorage::CacheStorageError error);
   void OnCacheStorageDeleteCallback(
+      int thread_id,
       int request_id,
       bool deleted,
       ServiceWorkerCacheStorage::CacheStorageError error);
   void OnCacheStorageKeysCallback(
+      int thread_id,
       int request_id,
       const std::vector<std::string>& strings,
       ServiceWorkerCacheStorage::CacheStorageError error);
   void OnCacheStorageMatchCallback(
+      int thread_id,
       int request_id,
       ServiceWorkerCache::ErrorType error,
       scoped_ptr<ServiceWorkerResponse> response,
@@ -106,19 +131,23 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
 
   // Cache callbacks
   void OnCacheMatchCallback(
+      int thread_id,
       int request_id,
       const scoped_refptr<ServiceWorkerCache>& cache,
       ServiceWorkerCache::ErrorType error,
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> blob_data_handle);
-  void OnCacheKeysCallback(int request_id,
+  void OnCacheKeysCallback(int thread_id,
+                           int request_id,
                            const scoped_refptr<ServiceWorkerCache>& cache,
                            ServiceWorkerCache::ErrorType error,
                            scoped_ptr<ServiceWorkerCache::Requests> requests);
-  void OnCacheDeleteCallback(int request_id,
+  void OnCacheDeleteCallback(int thread_id,
+                             int request_id,
                              const scoped_refptr<ServiceWorkerCache>& cache,
                              ServiceWorkerCache::ErrorType error);
-  void OnCachePutCallback(int request_id,
+  void OnCachePutCallback(int thread_id,
+                          int request_id,
                           const scoped_refptr<ServiceWorkerCache>& cache,
                           ServiceWorkerCache::ErrorType error,
                           scoped_ptr<ServiceWorkerResponse> response,
@@ -136,14 +165,13 @@ class ServiceWorkerCacheListener : public EmbeddedWorkerInstance::Listener {
       scoped_ptr<storage::BlobDataHandle> blob_data_handle);
   void DropBlobDataHandle(std::string uuid);
 
-  // The ServiceWorkerVersion to use for messaging back to the renderer thread.
-  ServiceWorkerVersion* version_;
+  // Pointer to the context that owns this instance.
+  CacheStorageDispatcherHost* dispatcher_;
 
-  // The ServiceWorkerContextCore should always outlive this.
-  base::WeakPtr<ServiceWorkerContextCore> context_;
+  scoped_refptr<CacheStorageContextImpl> context_;
 
   IDToCacheMap id_to_cache_map_;
-  CacheID next_cache_id_;
+  CacheID next_cache_id_ = 0;
 
   UUIDToBlobDataHandleList blob_handle_store_;
 

@@ -19,7 +19,6 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
-#include "content/browser/service_worker/service_worker_cache_listener.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -436,7 +435,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   GURL scope_;
   Status status_;
   scoped_ptr<EmbeddedWorkerInstance> embedded_worker_;
-  scoped_ptr<ServiceWorkerCacheListener> cache_listener_;
   std::vector<StatusCallback> start_callbacks_;
   std::vector<StatusCallback> stop_callbacks_;
   std::vector<base::Closure> status_change_callbacks_;

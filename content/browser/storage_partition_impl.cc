@@ -370,6 +370,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     storage::DatabaseTracker* database_tracker,
     DOMStorageContextWrapper* dom_storage_context,
     IndexedDBContextImpl* indexed_db_context,
+    CacheStorageContextImpl* cache_storage_context,
     ServiceWorkerContextWrapper* service_worker_context,
     WebRTCIdentityStore* webrtc_identity_store,
     storage::SpecialStoragePolicy* special_storage_policy,
@@ -384,6 +385,7 @@ StoragePartitionImpl::StoragePartitionImpl(
       database_tracker_(database_tracker),
       dom_storage_context_(dom_storage_context),
       indexed_db_context_(indexed_db_context),
+      cache_storage_context_(cache_storage_context),
       service_worker_context_(service_worker_context),
       webrtc_identity_store_(webrtc_identity_store),
       special_storage_policy_(special_storage_policy),
@@ -414,6 +416,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 
   if (GetServiceWorkerContext())
     GetServiceWorkerContext()->Shutdown();
+
+  if (GetCacheStorageContext())
+    GetCacheStorageContext()->Shutdown();
 
   if (GetGeofencingManager())
     GetGeofencingManager()->Shutdown();
@@ -472,10 +477,15 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                quota_manager->proxy(),
                                idb_task_runner);
 
+  scoped_refptr<CacheStorageContextImpl> cache_storage_context =
+      new CacheStorageContextImpl(context);
+  cache_storage_context->Init(path, quota_manager->proxy(),
+                              context->GetSpecialStoragePolicy());
+
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
       new ServiceWorkerContextWrapper(context);
-  service_worker_context->Init(
-      path, quota_manager->proxy(), context->GetSpecialStoragePolicy());
+  service_worker_context->Init(path, quota_manager->proxy(),
+                               context->GetSpecialStoragePolicy());
 
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(quota_manager->proxy());
@@ -506,9 +516,10 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
       context, partition_path, quota_manager.get(), appcache_service.get(),
       filesystem_context.get(), database_tracker.get(),
       dom_storage_context.get(), indexed_db_context.get(),
-      service_worker_context.get(), webrtc_identity_store.get(),
-      special_storage_policy.get(), geofencing_manager.get(),
-      host_zoom_level_context.get(), navigator_connect_context.get(),
+      cache_storage_context.get(), service_worker_context.get(),
+      webrtc_identity_store.get(), special_storage_policy.get(),
+      geofencing_manager.get(), host_zoom_level_context.get(),
+      navigator_connect_context.get(),
       platform_notification_context.get());
 
   service_worker_context->set_storage_partition(storage_partition);
@@ -551,6 +562,10 @@ DOMStorageContextWrapper* StoragePartitionImpl::GetDOMStorageContext() {
 
 IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {
   return indexed_db_context_.get();
+}
+
+CacheStorageContextImpl* StoragePartitionImpl::GetCacheStorageContext() {
+  return cache_storage_context_.get();
 }
 
 ServiceWorkerContextWrapper* StoragePartitionImpl::GetServiceWorkerContext() {

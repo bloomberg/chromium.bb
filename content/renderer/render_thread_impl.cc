@@ -104,8 +104,10 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
 #include "content/renderer/scheduler/resource_dispatch_throttler.h"
+#include "content/renderer/service_worker/cache_storage_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
+#include "content/renderer/service_worker/service_worker_cache_storage_dispatcher.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "gin/public/debug.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -495,6 +497,8 @@ void RenderThreadImpl::Init() {
       thread_safe_sender()));
   renderer_scheduler_ = RendererScheduler::Create();
   channel()->SetListenerTaskRunner(renderer_scheduler_->DefaultTaskRunner());
+  main_thread_cache_storage_dispatcher_.reset(
+      new ServiceWorkerCacheStorageDispatcher(thread_safe_sender()));
   embedded_worker_dispatcher_.reset(new EmbeddedWorkerDispatcher());
 
   // Note: This may reorder messages from the ResourceDispatcher with respect to
@@ -546,6 +550,8 @@ void RenderThreadImpl::Init() {
   AddFilter(midi_message_filter_.get());
 
   AddFilter((new IndexedDBMessageFilter(thread_safe_sender()))->GetFilter());
+
+  AddFilter((new CacheStorageMessageFilter(thread_safe_sender()))->GetFilter());
 
   AddFilter((new EmbeddedWorkerContextMessageFilter())->GetFilter());
 

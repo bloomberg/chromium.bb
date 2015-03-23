@@ -411,32 +411,6 @@ TEST_F(ServiceWorkerVersionTest, ScheduleStopWorker) {
   EXPECT_TRUE(version_->timeout_timer_.IsRunning());
 }
 
-TEST_F(ServiceWorkerVersionTest, ListenerAvailability) {
-  // Initially the worker is not running. There should be no cache_listener_.
-  EXPECT_FALSE(version_->cache_listener_.get());
-
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  version_->StartWorker(
-      CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-
-  // A new cache listener should be available once the worker starts.
-  EXPECT_TRUE(version_->cache_listener_.get());
-
-  version_->StopWorker(
-      CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-
-  // Should be destroyed when the worker stops.
-  EXPECT_FALSE(version_->cache_listener_.get());
-
-  version_->StartWorker(
-      CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-
-  // Recreated when the worker starts again.
-  EXPECT_TRUE(version_->cache_listener_.get());
-}
 
 TEST_F(ServiceWorkerVersionTest, SetDevToolsAttached) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;

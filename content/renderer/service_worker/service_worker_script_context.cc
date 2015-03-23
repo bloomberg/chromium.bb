@@ -16,6 +16,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/common/referrer.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
+#include "content/renderer/service_worker/webserviceworkercachestorage_impl.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/WebCrossOriginServiceWorkerClient.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -97,8 +98,10 @@ ToWebServiceWorkerClientInfo(const ServiceWorkerClientInfo& client_info) {
 ServiceWorkerScriptContext::ServiceWorkerScriptContext(
     EmbeddedWorkerContextClient* embedded_context,
     blink::WebServiceWorkerContextProxy* proxy)
-    : cache_storage_dispatcher_(new ServiceWorkerCacheStorageDispatcher(this)),
-      embedded_context_(embedded_context),
+    : embedded_context_(embedded_context),
+      cache_storage_(new WebServiceWorkerCacheStorageImpl(
+          embedded_context->thread_safe_sender(),
+          embedded_context->origin())),
       proxy_(proxy) {
 }
 
@@ -135,11 +138,6 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_Ping, OnPing);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-
-  // TODO(gavinp): Would it be preferable to put an AddListener() method to
-  // EmbeddedWorkerContextClient?
-  if (!handled)
-    handled = cache_storage_dispatcher_->OnMessageReceived(message);
 
   DCHECK(handled);
 }

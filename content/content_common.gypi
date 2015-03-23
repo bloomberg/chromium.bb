@@ -494,6 +494,7 @@
       'common/savable_url_schemes.h',
       'common/screen_orientation_messages.h',
       'common/send_zygote_child_ping_linux.cc',
+      'common/service_worker/cache_storage_messages.h',
       'common/service_worker/embedded_worker_messages.h',
       'common/service_worker/service_worker_client_info.cc',
       'common/service_worker/service_worker_client_info.h',

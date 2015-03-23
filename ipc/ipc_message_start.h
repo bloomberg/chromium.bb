@@ -83,6 +83,7 @@ enum IPCMessageStart {
   LocalDiscoveryMsgStart,
   PowerMonitorMsgStart,
   EncryptedMediaMsgStart,
+  CacheStorageMsgStart,
   ServiceWorkerMsgStart,
   MessagePortMsgStart,
   EmbeddedWorkerMsgStart,

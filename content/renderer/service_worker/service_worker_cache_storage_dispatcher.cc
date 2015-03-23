@@ -8,15 +8,16 @@
 #include <string>
 #include <utility>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/common/service_worker/service_worker_messages.h"
+#include "base/threading/thread_local.h"
+#include "content/child/thread_safe_sender.h"
+#include "content/common/service_worker/cache_storage_messages.h"
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/service_worker/service_worker_script_context.h"
 #include "content/renderer/service_worker/service_worker_type_util.h"
-#include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerCache.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerRequest.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerResponse.h"
@@ -25,10 +26,18 @@ using base::TimeTicks;
 
 namespace content {
 
+using blink::WebServiceWorkerCacheStorage;
 using blink::WebServiceWorkerCacheError;
 using blink::WebServiceWorkerRequest;
 
+static base::LazyInstance<
+    base::ThreadLocalPointer<ServiceWorkerCacheStorageDispatcher>>::Leaky
+    g_cache_storage_dispatcher_tls = LAZY_INSTANCE_INITIALIZER;
+
 namespace {
+
+ServiceWorkerCacheStorageDispatcher* const kHasBeenDeleted =
+    reinterpret_cast<ServiceWorkerCacheStorageDispatcher*>(0x1);
 
 ServiceWorkerFetchRequest FetchRequestFromWebRequest(
     const blink::WebServiceWorkerRequest& web_request) {
@@ -186,9 +195,10 @@ class ServiceWorkerCacheStorageDispatcher::WebCache
 };
 
 ServiceWorkerCacheStorageDispatcher::ServiceWorkerCacheStorageDispatcher(
-    ServiceWorkerScriptContext* script_context)
-    : script_context_(script_context),
-      weak_factory_(this) {}
+    ThreadSafeSender* thread_safe_sender)
+    : thread_safe_sender_(thread_safe_sender), weak_factory_(this) {
+  g_cache_storage_dispatcher_tls.Pointer()->Set(this);
+}
 
 ServiceWorkerCacheStorageDispatcher::~ServiceWorkerCacheStorageDispatcher() {
   ClearCallbacksMapWithErrors(&has_callbacks_);
@@ -201,6 +211,33 @@ ServiceWorkerCacheStorageDispatcher::~ServiceWorkerCacheStorageDispatcher() {
   ClearCallbacksMapWithErrors(&cache_match_all_callbacks_);
   ClearCallbacksMapWithErrors(&cache_keys_callbacks_);
   ClearCallbacksMapWithErrors(&cache_batch_callbacks_);
+
+  g_cache_storage_dispatcher_tls.Pointer()->Set(kHasBeenDeleted);
+}
+
+ServiceWorkerCacheStorageDispatcher*
+ServiceWorkerCacheStorageDispatcher::ThreadSpecificInstance(
+    ThreadSafeSender* thread_safe_sender) {
+  if (g_cache_storage_dispatcher_tls.Pointer()->Get() == kHasBeenDeleted) {
+    NOTREACHED() << "Re-instantiating TLS ServiceWorkerCacheStorageDispatcher.";
+    g_cache_storage_dispatcher_tls.Pointer()->Set(NULL);
+  }
+  if (g_cache_storage_dispatcher_tls.Pointer()->Get())
+    return g_cache_storage_dispatcher_tls.Pointer()->Get();
+
+  ServiceWorkerCacheStorageDispatcher* dispatcher =
+      new ServiceWorkerCacheStorageDispatcher(thread_safe_sender);
+  if (WorkerTaskRunner::Instance()->CurrentWorkerId())
+    WorkerTaskRunner::Instance()->AddStopObserver(dispatcher);
+  return dispatcher;
+}
+
+void ServiceWorkerCacheStorageDispatcher::OnWorkerRunLoopStopped() {
+  delete this;
+}
+
+bool ServiceWorkerCacheStorageDispatcher::Send(IPC::Message* msg) {
+  return thread_safe_sender_->Send(msg);
 }
 
 bool ServiceWorkerCacheStorageDispatcher::OnMessageReceived(
@@ -250,23 +287,28 @@ bool ServiceWorkerCacheStorageDispatcher::OnMessageReceived(
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageHasSuccess(
+    int thread_id,
     int request_id) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Has",
                       TimeTicks::Now() - has_times_[request_id]);
-  CacheStorageCallbacks* callbacks = has_callbacks_.Lookup(request_id);
+  WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks =
+      has_callbacks_.Lookup(request_id);
   callbacks->onSuccess();
   has_callbacks_.Remove(request_id);
   has_times_.erase(request_id);
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageOpenSuccess(
+    int thread_id,
     int request_id,
     int cache_id) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   WebCache* web_cache = new WebCache(weak_factory_.GetWeakPtr(), cache_id);
   web_caches_.AddWithID(web_cache, cache_id);
   UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Open",
                       TimeTicks::Now() - open_times_[request_id]);
-  CacheStorageWithCacheCallbacks* callbacks =
+  WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks* callbacks =
       open_callbacks_.Lookup(request_id);
   callbacks->onSuccess(web_cache);
   open_callbacks_.Remove(request_id);
@@ -274,57 +316,71 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageOpenSuccess(
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageDeleteSuccess(
+    int thread_id,
     int request_id) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Delete",
                       TimeTicks::Now() - delete_times_[request_id]);
-  CacheStorageCallbacks* callbacks = delete_callbacks_.Lookup(request_id);
+  WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks =
+      delete_callbacks_.Lookup(request_id);
   callbacks->onSuccess();
   delete_callbacks_.Remove(request_id);
   delete_times_.erase(request_id);
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageKeysSuccess(
+    int thread_id,
     int request_id,
     const std::vector<base::string16>& keys) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebVector<blink::WebString> webKeys(keys.size());
   for (size_t i = 0; i < keys.size(); ++i)
     webKeys[i] = keys[i];
 
   UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Keys",
                       TimeTicks::Now() - keys_times_[request_id]);
-  CacheStorageKeysCallbacks* callbacks = keys_callbacks_.Lookup(request_id);
+  WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks* callbacks =
+      keys_callbacks_.Lookup(request_id);
   callbacks->onSuccess(&webKeys);
   keys_callbacks_.Remove(request_id);
   keys_times_.erase(request_id);
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageMatchSuccess(
+    int thread_id,
     int request_id,
     const ServiceWorkerResponse& response) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebServiceWorkerResponse web_response;
   PopulateWebResponseFromResponse(response, &web_response);
 
   UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Match",
                       TimeTicks::Now() - match_times_[request_id]);
-  CacheStorageMatchCallbacks* callbacks = match_callbacks_.Lookup(request_id);
+  WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks* callbacks =
+      match_callbacks_.Lookup(request_id);
   callbacks->onSuccess(&web_response);
   match_callbacks_.Remove(request_id);
   match_times_.erase(request_id);
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageHasError(
-      int request_id,
-      blink::WebServiceWorkerCacheError reason) {
-  CacheStorageCallbacks* callbacks = has_callbacks_.Lookup(request_id);
+    int thread_id,
+    int request_id,
+    blink::WebServiceWorkerCacheError reason) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
+  WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks =
+      has_callbacks_.Lookup(request_id);
   callbacks->onError(&reason);
   has_callbacks_.Remove(request_id);
   has_times_.erase(request_id);
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageOpenError(
+    int thread_id,
     int request_id,
     blink::WebServiceWorkerCacheError reason) {
-  CacheStorageWithCacheCallbacks* callbacks =
+  DCHECK_EQ(thread_id, CurrentWorkerId());
+  WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks* callbacks =
       open_callbacks_.Lookup(request_id);
   callbacks->onError(&reason);
   open_callbacks_.Remove(request_id);
@@ -332,35 +388,46 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheStorageOpenError(
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageDeleteError(
-      int request_id,
-      blink::WebServiceWorkerCacheError reason) {
-  CacheStorageCallbacks* callbacks = delete_callbacks_.Lookup(request_id);
+    int thread_id,
+    int request_id,
+    blink::WebServiceWorkerCacheError reason) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
+  WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks =
+      delete_callbacks_.Lookup(request_id);
   callbacks->onError(&reason);
   delete_callbacks_.Remove(request_id);
   delete_times_.erase(request_id);
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageKeysError(
-      int request_id,
-      blink::WebServiceWorkerCacheError reason) {
-  CacheStorageKeysCallbacks* callbacks = keys_callbacks_.Lookup(request_id);
+    int thread_id,
+    int request_id,
+    blink::WebServiceWorkerCacheError reason) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
+  WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks* callbacks =
+      keys_callbacks_.Lookup(request_id);
   callbacks->onError(&reason);
   keys_callbacks_.Remove(request_id);
   keys_times_.erase(request_id);
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheStorageMatchError(
+    int thread_id,
     int request_id,
     blink::WebServiceWorkerCacheError reason) {
-  CacheStorageMatchCallbacks* callbacks = match_callbacks_.Lookup(request_id);
+  DCHECK_EQ(thread_id, CurrentWorkerId());
+  WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks* callbacks =
+      match_callbacks_.Lookup(request_id);
   callbacks->onError(&reason);
   match_callbacks_.Remove(request_id);
   match_times_.erase(request_id);
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheMatchSuccess(
+    int thread_id,
     int request_id,
     const ServiceWorkerResponse& response) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebServiceWorkerResponse web_response;
   PopulateWebResponseFromResponse(response, &web_response);
 
@@ -374,8 +441,10 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheMatchSuccess(
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheMatchAllSuccess(
+    int thread_id,
     int request_id,
     const std::vector<ServiceWorkerResponse>& responses) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebVector<blink::WebServiceWorkerResponse>
       web_responses = WebResponsesFromResponses(responses);
 
@@ -389,8 +458,10 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheMatchAllSuccess(
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheKeysSuccess(
+    int thread_id,
     int request_id,
     const std::vector<ServiceWorkerFetchRequest>& requests) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebVector<blink::WebServiceWorkerRequest>
       web_requests = WebRequestsFromRequests(requests);
 
@@ -404,8 +475,10 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheKeysSuccess(
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheBatchSuccess(
+    int thread_id,
     int request_id,
     const std::vector<ServiceWorkerResponse>& responses) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebVector<blink::WebServiceWorkerResponse>
       web_responses = WebResponsesFromResponses(responses);
 
@@ -419,8 +492,10 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheBatchSuccess(
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheMatchError(
+    int thread_id,
     int request_id,
     blink::WebServiceWorkerCacheError reason) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebServiceWorkerCache::CacheMatchCallbacks* callbacks =
       cache_match_callbacks_.Lookup(request_id);
   callbacks->onError(&reason);
@@ -429,8 +504,10 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheMatchError(
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheMatchAllError(
+    int thread_id,
     int request_id,
     blink::WebServiceWorkerCacheError reason) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebServiceWorkerCache::CacheWithResponsesCallbacks* callbacks =
       cache_match_all_callbacks_.Lookup(request_id);
   callbacks->onError(&reason);
@@ -439,8 +516,10 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheMatchAllError(
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheKeysError(
+    int thread_id,
     int request_id,
     blink::WebServiceWorkerCacheError reason) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebServiceWorkerCache::CacheWithRequestsCallbacks* callbacks =
       cache_keys_callbacks_.Lookup(request_id);
   callbacks->onError(&reason);
@@ -449,8 +528,10 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheKeysError(
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnCacheBatchError(
+    int thread_id,
     int request_id,
     blink::WebServiceWorkerCacheError reason) {
+  DCHECK_EQ(thread_id, CurrentWorkerId());
   blink::WebServiceWorkerCache::CacheWithResponsesCallbacks* callbacks =
       cache_batch_callbacks_.Lookup(request_id);
   callbacks->onError(&reason);
@@ -459,48 +540,53 @@ void ServiceWorkerCacheStorageDispatcher::OnCacheBatchError(
 }
 
 void ServiceWorkerCacheStorageDispatcher::dispatchHas(
-    CacheStorageCallbacks* callbacks,
+    WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks,
+    const GURL& origin,
     const blink::WebString& cacheName) {
   int request_id = has_callbacks_.Add(callbacks);
   has_times_[request_id] = base::TimeTicks::Now();
-  script_context_->Send(new ServiceWorkerHostMsg_CacheStorageHas(
-      script_context_->GetRoutingID(), request_id, cacheName));
+  Send(new ServiceWorkerHostMsg_CacheStorageHas(CurrentWorkerId(), request_id,
+                                                origin, cacheName));
 }
 
 void ServiceWorkerCacheStorageDispatcher::dispatchOpen(
-    CacheStorageWithCacheCallbacks* callbacks,
+    WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks* callbacks,
+    const GURL& origin,
     const blink::WebString& cacheName) {
   int request_id = open_callbacks_.Add(callbacks);
   open_times_[request_id] = base::TimeTicks::Now();
-  script_context_->Send(new ServiceWorkerHostMsg_CacheStorageOpen(
-      script_context_->GetRoutingID(), request_id, cacheName));
+  Send(new ServiceWorkerHostMsg_CacheStorageOpen(CurrentWorkerId(), request_id,
+                                                 origin, cacheName));
 }
 
 void ServiceWorkerCacheStorageDispatcher::dispatchDelete(
-    CacheStorageCallbacks* callbacks,
+    WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks,
+    const GURL& origin,
     const blink::WebString& cacheName) {
   int request_id = delete_callbacks_.Add(callbacks);
   delete_times_[request_id] = base::TimeTicks::Now();
-  script_context_->Send(new ServiceWorkerHostMsg_CacheStorageDelete(
-      script_context_->GetRoutingID(), request_id, cacheName));
+  Send(new ServiceWorkerHostMsg_CacheStorageDelete(
+      CurrentWorkerId(), request_id, origin, cacheName));
 }
 
 void ServiceWorkerCacheStorageDispatcher::dispatchKeys(
-    CacheStorageKeysCallbacks* callbacks) {
+    WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks* callbacks,
+    const GURL& origin) {
   int request_id = keys_callbacks_.Add(callbacks);
   keys_times_[request_id] = base::TimeTicks::Now();
-  script_context_->Send(new ServiceWorkerHostMsg_CacheStorageKeys(
-      script_context_->GetRoutingID(), request_id));
+  Send(new ServiceWorkerHostMsg_CacheStorageKeys(CurrentWorkerId(), request_id,
+                                                 origin));
 }
 
 void ServiceWorkerCacheStorageDispatcher::dispatchMatch(
-    CacheStorageMatchCallbacks* callbacks,
+    WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks* callbacks,
+    const GURL& origin,
     const blink::WebServiceWorkerRequest& request,
     const blink::WebServiceWorkerCache::QueryParams& query_params) {
   int request_id = match_callbacks_.Add(callbacks);
   match_times_[request_id] = base::TimeTicks::Now();
-  script_context_->Send(new ServiceWorkerHostMsg_CacheStorageMatch(
-      script_context_->GetRoutingID(), request_id,
+  Send(new ServiceWorkerHostMsg_CacheStorageMatch(
+      CurrentWorkerId(), request_id, origin,
       FetchRequestFromWebRequest(request),
       QueryParamsFromWebQueryParams(query_params)));
 }
@@ -513,8 +599,8 @@ void ServiceWorkerCacheStorageDispatcher::dispatchMatchForCache(
   int request_id = cache_match_callbacks_.Add(callbacks);
   cache_match_times_[request_id] = base::TimeTicks::Now();
 
-  script_context_->Send(new ServiceWorkerHostMsg_CacheMatch(
-      script_context_->GetRoutingID(), request_id, cache_id,
+  Send(new ServiceWorkerHostMsg_CacheMatch(
+      CurrentWorkerId(), request_id, cache_id,
       FetchRequestFromWebRequest(request),
       QueryParamsFromWebQueryParams(query_params)));
 }
@@ -527,8 +613,8 @@ void ServiceWorkerCacheStorageDispatcher::dispatchMatchAllForCache(
   int request_id = cache_match_all_callbacks_.Add(callbacks);
   cache_match_all_times_[request_id] = base::TimeTicks::Now();
 
-  script_context_->Send(new ServiceWorkerHostMsg_CacheMatchAll(
-      script_context_->GetRoutingID(), request_id, cache_id,
+  Send(new ServiceWorkerHostMsg_CacheMatchAll(
+      CurrentWorkerId(), request_id, cache_id,
       FetchRequestFromWebRequest(request),
       QueryParamsFromWebQueryParams(query_params)));
 }
@@ -541,8 +627,8 @@ void ServiceWorkerCacheStorageDispatcher::dispatchKeysForCache(
   int request_id = cache_keys_callbacks_.Add(callbacks);
   cache_keys_times_[request_id] = base::TimeTicks::Now();
 
-  script_context_->Send(new ServiceWorkerHostMsg_CacheKeys(
-      script_context_->GetRoutingID(), request_id, cache_id,
+  Send(new ServiceWorkerHostMsg_CacheKeys(
+      CurrentWorkerId(), request_id, cache_id,
       request ? FetchRequestFromWebRequest(*request)
               : ServiceWorkerFetchRequest(),
       QueryParamsFromWebQueryParams(query_params)));
@@ -563,14 +649,13 @@ void ServiceWorkerCacheStorageDispatcher::dispatchBatchForCache(
         BatchOperationFromWebBatchOperation(web_operations[i]));
   }
 
-  script_context_->Send(new ServiceWorkerHostMsg_CacheBatch(
-      script_context_->GetRoutingID(), request_id, cache_id, operations));
+  Send(new ServiceWorkerHostMsg_CacheBatch(CurrentWorkerId(), request_id,
+                                           cache_id, operations));
 }
 
 void ServiceWorkerCacheStorageDispatcher::OnWebCacheDestruction(int cache_id) {
   web_caches_.Remove(cache_id);
-  script_context_->Send(new ServiceWorkerHostMsg_CacheClosed(
-      script_context_->GetRoutingID(), cache_id));
+  Send(new ServiceWorkerHostMsg_CacheClosed(cache_id));
 }
 
 void ServiceWorkerCacheStorageDispatcher::PopulateWebResponseFromResponse(
@@ -590,8 +675,7 @@ void ServiceWorkerCacheStorageDispatcher::PopulateWebResponseFromResponse(
     web_response->setBlob(blink::WebString::fromUTF8(response.blob_uuid),
                           response.blob_size);
     // Let the host know that it can release its reference to the blob.
-    script_context_->Send(new ServiceWorkerHostMsg_BlobDataHandled(
-        script_context_->GetRoutingID(), response.blob_uuid));
+    Send(new ServiceWorkerHostMsg_BlobDataHandled(response.blob_uuid));
   }
 }
 

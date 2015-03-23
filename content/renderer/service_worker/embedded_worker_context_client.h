@@ -21,6 +21,7 @@ class TaskRunner;
 namespace blink {
 class WebDataSource;
 class WebServiceWorkerProvider;
+class WebServiceWorkerCacheStorage;
 }
 
 namespace content {
@@ -135,6 +136,11 @@ class EmbeddedWorkerContextClient
     return main_thread_task_runner_.get();
   }
   ThreadSafeSender* thread_safe_sender() { return sender_.get(); }
+
+  // Only needed by ServiceWorkerScriptContext when creating a
+  // WebServiceWorkerCacheStorageImpl
+  // TODO(jsbell): Remove when no longer needed. crbug.com/439389
+  const GURL origin() const { return service_worker_scope_.GetOrigin(); }
 
  private:
   void OnMessageToWorker(int thread_id,

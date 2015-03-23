@@ -97,6 +97,8 @@
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/browser/renderer_host/websocket_dispatcher_host.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
+#include "content/browser/service_worker/cache_storage_context_impl.h"
+#include "content/browser/service_worker/cache_storage_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
@@ -861,6 +863,11 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       base::Bind(&RenderWidgetHelper::GetNextRoutingID,
                  base::Unretained(widget_helper_.get())));
   AddFilter(message_port_message_filter_.get());
+
+  scoped_refptr<CacheStorageDispatcherHost> cache_storage_filter =
+      new CacheStorageDispatcherHost();
+  cache_storage_filter->Init(storage_partition_impl_->GetCacheStorageContext());
+  AddFilter(cache_storage_filter.get());
 
   scoped_refptr<ServiceWorkerDispatcherHost> service_worker_filter =
       new ServiceWorkerDispatcherHost(

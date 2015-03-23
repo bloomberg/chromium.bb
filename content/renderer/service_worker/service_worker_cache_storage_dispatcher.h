@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "content/child/worker_task_runner.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerCache.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerCacheError.h"
@@ -19,76 +20,110 @@
 
 namespace content {
 
-struct ServiceWorkerFetchRequest;
 class ServiceWorkerScriptContext;
+class ThreadSafeSender;
+struct ServiceWorkerFetchRequest;
 struct ServiceWorkerResponse;
 
-// There is one ServiceWorkerCacheStorageDispatcher per
-// ServiceWorkerScriptContext. It handles CacheStorage operations with messages
-// to/from the browser, creating Cache objects (for which it also handles
-// messages) as it goes.
-
-class ServiceWorkerCacheStorageDispatcher
-    : public blink::WebServiceWorkerCacheStorage {
+// Handle the Cache Storage messaging for this context thread. The
+// main thread and each worker thread have their own instances.
+class ServiceWorkerCacheStorageDispatcher : public WorkerTaskRunner::Observer {
  public:
   explicit ServiceWorkerCacheStorageDispatcher(
-      ServiceWorkerScriptContext* script_context);
-  virtual ~ServiceWorkerCacheStorageDispatcher();
+      ThreadSafeSender* thread_safe_sender);
+  ~ServiceWorkerCacheStorageDispatcher() override;
+
+  // |thread_safe_sender| needs to be passed in because if the call leads to
+  // construction it will be needed.
+  static ServiceWorkerCacheStorageDispatcher* ThreadSpecificInstance(
+      ThreadSafeSender* thread_safe_sender);
+
+  // WorkerTaskRunner::Observer implementation.
+  void OnWorkerRunLoopStopped() override;
+
+  bool Send(IPC::Message* msg);
 
   // ServiceWorkerScriptContext calls our OnMessageReceived directly.
   bool OnMessageReceived(const IPC::Message& message);
 
   // Message handlers for CacheStorage messages from the browser process.
-  void OnCacheStorageHasSuccess(int request_id);
-  void OnCacheStorageOpenSuccess(int request_id, int cache_id);
-  void OnCacheStorageDeleteSuccess(int request_id);
-  void OnCacheStorageKeysSuccess(int request_id,
+  void OnCacheStorageHasSuccess(int thread_id, int request_id);
+  void OnCacheStorageOpenSuccess(int thread_id, int request_id, int cache_id);
+  void OnCacheStorageDeleteSuccess(int thread_id, int request_id);
+  void OnCacheStorageKeysSuccess(int thread_id,
+                                 int request_id,
                                  const std::vector<base::string16>& keys);
-  void OnCacheStorageMatchSuccess(int request_id,
+  void OnCacheStorageMatchSuccess(int thread_id,
+                                  int request_id,
                                   const ServiceWorkerResponse& response);
 
-  void OnCacheStorageHasError(int request_id,
+  void OnCacheStorageHasError(int thread_id,
+                              int request_id,
                               blink::WebServiceWorkerCacheError reason);
-  void OnCacheStorageOpenError(int request_id,
+  void OnCacheStorageOpenError(int thread_id,
+                               int request_id,
                                blink::WebServiceWorkerCacheError reason);
-  void OnCacheStorageDeleteError(int request_id,
+  void OnCacheStorageDeleteError(int thread_id,
+                                 int request_id,
                                  blink::WebServiceWorkerCacheError reason);
-  void OnCacheStorageKeysError(int request_id,
+  void OnCacheStorageKeysError(int thread_id,
+                               int request_id,
                                blink::WebServiceWorkerCacheError reason);
-  void OnCacheStorageMatchError(int request_id,
+  void OnCacheStorageMatchError(int thread_id,
+                                int request_id,
                                 blink::WebServiceWorkerCacheError reason);
 
   // Message handlers for Cache messages from the browser process.
-  void OnCacheMatchSuccess(int request_id,
+  void OnCacheMatchSuccess(int thread_id,
+                           int request_id,
                            const ServiceWorkerResponse& response);
   void OnCacheMatchAllSuccess(
+      int thread_id,
       int request_id,
       const std::vector<ServiceWorkerResponse>& response);
   void OnCacheKeysSuccess(
+      int thread_id,
       int request_id,
       const std::vector<ServiceWorkerFetchRequest>& response);
-  void OnCacheBatchSuccess(int request_id,
+  void OnCacheBatchSuccess(int thread_id,
+                           int request_id,
                            const std::vector<ServiceWorkerResponse>& response);
 
-  void OnCacheMatchError(int request_id,
+  void OnCacheMatchError(int thread_id,
+                         int request_id,
                          blink::WebServiceWorkerCacheError reason);
-  void OnCacheMatchAllError(int request_id,
+  void OnCacheMatchAllError(int thread_id,
+                            int request_id,
                             blink::WebServiceWorkerCacheError reason);
-  void OnCacheKeysError(int request_id,
+  void OnCacheKeysError(int thread_id,
+                        int request_id,
                         blink::WebServiceWorkerCacheError reason);
-  void OnCacheBatchError(int request_id,
+  void OnCacheBatchError(int thread_id,
+                         int request_id,
                          blink::WebServiceWorkerCacheError reason);
 
-  // From WebServiceWorkerCacheStorage:
-  virtual void dispatchHas(CacheStorageCallbacks* callbacks,
-                           const blink::WebString& cacheName);
-  virtual void dispatchOpen(CacheStorageWithCacheCallbacks* callbacks,
-                            const blink::WebString& cacheName);
-  virtual void dispatchDelete(CacheStorageCallbacks* callbacks,
-                              const blink::WebString& cacheName);
-  virtual void dispatchKeys(CacheStorageKeysCallbacks* callbacks);
-  virtual void dispatchMatch(
-      CacheStorageMatchCallbacks* callbacks,
+  // TODO(jsbell): These are only called by WebServiceWorkerCacheStorageImpl
+  // and should be renamed to match Chromium conventions. crbug.com/439389
+  void dispatchHas(
+      blink::WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks,
+      const GURL& origin,
+      const blink::WebString& cacheName);
+  void dispatchOpen(
+      blink::WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks*
+          callbacks,
+      const GURL& origin,
+      const blink::WebString& cacheName);
+  void dispatchDelete(
+      blink::WebServiceWorkerCacheStorage::CacheStorageCallbacks* callbacks,
+      const GURL& origin,
+      const blink::WebString& cacheName);
+  void dispatchKeys(
+      blink::WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks* callbacks,
+      const GURL& origin);
+  void dispatchMatch(
+      blink::WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks*
+          callbacks,
+      const GURL& origin,
       const blink::WebServiceWorkerRequest& request,
       const blink::WebServiceWorkerCache::QueryParams& query_params);
 
@@ -120,13 +155,15 @@ class ServiceWorkerCacheStorageDispatcher
  private:
   class WebCache;
 
-  typedef IDMap<CacheStorageCallbacks, IDMapOwnPointer> CallbacksMap;
-  typedef IDMap<CacheStorageWithCacheCallbacks, IDMapOwnPointer>
-      WithCacheCallbacksMap;
-  typedef IDMap<CacheStorageKeysCallbacks, IDMapOwnPointer>
-      KeysCallbacksMap;
-  typedef IDMap<CacheStorageMatchCallbacks, IDMapOwnPointer>
-      StorageMatchCallbacksMap;
+  typedef IDMap<blink::WebServiceWorkerCacheStorage::CacheStorageCallbacks,
+                IDMapOwnPointer> CallbacksMap;
+  typedef IDMap<
+      blink::WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks,
+      IDMapOwnPointer> WithCacheCallbacksMap;
+  typedef IDMap<blink::WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks,
+                IDMapOwnPointer> KeysCallbacksMap;
+  typedef IDMap<blink::WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks,
+                IDMapOwnPointer> StorageMatchCallbacksMap;
 
   typedef base::hash_map<int32, base::TimeTicks> TimeMap;
 
@@ -137,6 +174,10 @@ class ServiceWorkerCacheStorageDispatcher
   typedef IDMap<blink::WebServiceWorkerCache::CacheWithRequestsCallbacks,
                 IDMapOwnPointer> WithRequestsCallbacksMap;
 
+  static int32 CurrentWorkerId() {
+    return WorkerTaskRunner::Instance()->CurrentWorkerId();
+  }
+
   void PopulateWebResponseFromResponse(
       const ServiceWorkerResponse& response,
       blink::WebServiceWorkerResponse* web_response);
@@ -144,8 +185,7 @@ class ServiceWorkerCacheStorageDispatcher
   blink::WebVector<blink::WebServiceWorkerResponse> WebResponsesFromResponses(
       const std::vector<ServiceWorkerResponse>& responses);
 
-  // Not owned. The script context containing this object.
-  ServiceWorkerScriptContext* script_context_;
+  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   CallbacksMap has_callbacks_;
   WithCacheCallbacksMap open_callbacks_;
