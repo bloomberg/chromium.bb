@@ -160,7 +160,7 @@ float FontDescription::effectiveFontSize() const
 {
     // Ensure that the effective precision matches the font-cache precision.
     // This guarantees that the same precision is used regardless of cache status.
-    float computedOrAdjustedSize = adjustedSize() ? adjustedSize() : computedSize();
+    float computedOrAdjustedSize = hasSizeAdjust() ? adjustedSize() : computedSize();
     return floorf(computedOrAdjustedSize * FontCacheKey::precisionMultiplier()) / FontCacheKey::precisionMultiplier();
 }
 

@@ -389,7 +389,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         // enable text zoom rather than Text Autosizing? See http://crbug.com/227545.
         return createFromDouble(style.specifiedFontSize());
     case CSSPropertyFontSizeAdjust:
-        return createFromDouble(style.fontSizeAdjust(), AnimatableDouble::InterpolationIsNonContinuousWithZero);
+        return style.hasFontSizeAdjust() ? createFromDouble(style.fontSizeAdjust()) : AnimatableUnknown::create(CSSValueNone);
     case CSSPropertyFontStretch:
         return createFromFontStretch(style.fontStretch());
     case CSSPropertyFontWeight:

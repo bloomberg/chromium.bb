@@ -221,10 +221,6 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
             fallBackToLegacy = true;
 
         break;
-    case CSSPropertyFontSizeAdjust:
-        // FIXME: Requires special handing for 0.
-        fallBackToLegacy = true;
-        break;
     case CSSPropertyOrphans:
     case CSSPropertyWidows:
     case CSSPropertyZIndex:
@@ -232,6 +228,7 @@ PassRefPtrWillBeRawPtr<Interpolation> StringKeyframe::PropertySpecificKeyframe::
     case CSSPropertyShapeImageThreshold:
     case CSSPropertyFillOpacity:
     case CSSPropertyFloodOpacity:
+    case CSSPropertyFontSizeAdjust:
     case CSSPropertyOpacity:
     case CSSPropertyStopOpacity:
     case CSSPropertyStrokeOpacity:

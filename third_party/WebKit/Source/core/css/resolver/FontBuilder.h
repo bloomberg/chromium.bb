@@ -76,7 +76,7 @@ public:
     static FontFeatureSettings* initialFeatureSettings() { return nullptr; }
     static FontDescription::GenericFamilyType initialGenericFamily() { return FontDescription::StandardFamily; }
     static FontDescription::Size initialSize() { return FontDescription::Size(FontSize::initialKeywordSize(), 0.0f, false); }
-    static float initialSizeAdjust() { return 0; }
+    static float initialSizeAdjust() { return FontSizeAdjustNone; }
     static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
     static FontVariant initialVariant() { return FontVariantNormal; }
     static FontDescription::VariantLigatures initialVariantLigatures() { return FontDescription::VariantLigatures(); }

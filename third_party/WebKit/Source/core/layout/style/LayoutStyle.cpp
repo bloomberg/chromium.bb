@@ -1186,7 +1186,7 @@ float LayoutStyle::specifiedFontSize() const { return fontDescription().specifie
 float LayoutStyle::computedFontSize() const { return fontDescription().computedSize(); }
 int LayoutStyle::fontSize() const { return fontDescription().computedPixelSize(); }
 float LayoutStyle::fontSizeAdjust() const { return fontDescription().sizeAdjust(); }
-bool LayoutStyle::hasFontSizeAdjust() const { return fontDescription().sizeAdjust() > 0; }
+bool LayoutStyle::hasFontSizeAdjust() const { return fontDescription().hasSizeAdjust(); }
 FontWeight LayoutStyle::fontWeight() const { return fontDescription().weight(); }
 FontStretch LayoutStyle::fontStretch() const { return fontDescription().stretch(); }
 

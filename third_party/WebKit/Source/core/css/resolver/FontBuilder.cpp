@@ -329,21 +329,21 @@ void FontBuilder::updateSpecifiedSize(FontDescription& fontDescription, const La
 
 void FontBuilder::updateAdjustedSize(FontDescription& fontDescription, const LayoutStyle& style, FontSelector* fontSelector)
 {
-    const float sizeAdjust = fontDescription.sizeAdjust();
     const float specifiedSize = fontDescription.specifiedSize();
-    if (!sizeAdjust || !specifiedSize)
+    if (!fontDescription.hasSizeAdjust() || !specifiedSize)
         return;
 
     // We need to create a temporal Font to get xHeight of a primary font.
     // The aspect value is based on the xHeight of the font for the computed font size,
-    // so we need to reset the adjustment.
-    fontDescription.setAdjustedSize(0);
+    // so we need to reset the adjustedSize to computedSize. See FontDescription::effectiveFontSize.
+    fontDescription.setAdjustedSize(fontDescription.computedSize());
 
     Font font(fontDescription);
     font.update(fontSelector);
     if (!font.fontMetrics().hasXHeight())
         return;
 
+    const float sizeAdjust = fontDescription.sizeAdjust();
     float aspectValue = font.fontMetrics().xHeight() / specifiedSize;
     float adjustedSize = (sizeAdjust / aspectValue) * specifiedSize;
     adjustedSize = getComputedSizeFromSpecifiedSize(fontDescription, style.effectiveZoom(), adjustedSize);

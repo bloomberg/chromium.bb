@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU Library General Public License
  * along with this library; see the file COPYING.LIother.m_  If not, write to
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA 02110-1301, USm_
+ * Boston, MA 02110-1301, USA.
  *
  */
 
@@ -45,6 +45,8 @@
 
 namespace blink {
 
+const float FontSizeAdjustNone = -1;
+
 class PLATFORM_EXPORT FontDescription {
 public:
     enum GenericFamilyType { NoFamily, StandardFamily, SerifFamily, SansSerifFamily,
@@ -58,7 +60,7 @@ public:
         : m_specifiedSize(0)
         , m_computedSize(0)
         , m_adjustedSize(0)
-        , m_sizeAdjust(0)
+        , m_sizeAdjust(FontSizeAdjustNone)
         , m_letterSpacing(0)
         , m_wordSpacing(0)
         , m_orientation(Horizontal)
@@ -135,6 +137,7 @@ public:
     float computedSize() const { return m_computedSize; }
     float adjustedSize() const { return m_adjustedSize; }
     float sizeAdjust() const { return m_sizeAdjust; }
+    bool hasSizeAdjust() const { return m_sizeAdjust != FontSizeAdjustNone; }
     FontStyle style() const { return static_cast<FontStyle>(m_style); }
     int computedPixelSize() const { return int(m_computedSize + 0.5f); }
     FontVariant variant() const { return static_cast<FontVariant>(m_variant); }
