@@ -3005,12 +3005,6 @@
       ['v8_use_external_startup_data==1', {
        'defines': ['V8_USE_EXTERNAL_STARTUP_DATA'],
       }],
-      ['use_lto==1 and (target_arch=="ia32" or target_arch=="x64")', {
-        # Required for third_party/zlib/crc_folding.c and various other code
-        # that uses SSE. TODO(pcc): Remove this once we properly support
-        # subtarget specific code generation in LLVM.
-        'ldflags': ['-Wl,-plugin-opt,mcpu=corei7-avx'],
-      }],
     ],  # conditions for 'target_defaults'
     'target_conditions': [
       ['<(use_libpci)==1', {
@@ -5936,6 +5930,41 @@
           ['_toolset=="target"', {
             'arflags': [
               '--plugin', '../../<(make_clang_dir)/lib/LLVMgold.so',
+            ],
+          }],
+        ],
+      },
+    }],
+    ['use_lto==1 and clang==1 and (target_arch=="ia32" or target_arch=="x64")', {
+      'target_defaults': {
+        'target_conditions': [
+          # Required for third_party/zlib/crc_folding.c and various other code
+          # that uses SSE. TODO(pcc): Remove this once we properly support
+          # subtarget specific code generation in LLVM.
+          ['_toolset=="target"', {
+            'ldflags': [
+              '-Wl,-plugin-opt,mcpu=corei7-avx',
+            ],
+          }],
+          ['_toolset=="target" and _type!="static_library"', {
+            'xcode_settings':  {
+              'OTHER_LDFLAGS': [
+                '-Wl,-mcpu,corei7-avx',
+              ],
+            },
+          }],
+        ],
+      },
+    }],
+    ['use_lto==1 and clang==1 and target_arch=="arm"', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            # Without this flag, LTO produces a .text section that is larger
+            # than the maximum call displacement, preventing the linker from
+            # relocating calls (http://llvm.org/PR22999).
+            'ldflags': [
+              '-Wl,-plugin-opt,-function-sections',
             ],
           }],
         ],
