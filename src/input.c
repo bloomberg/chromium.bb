@@ -1648,31 +1648,35 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 	if (pointer->focus_serial - serial > UINT32_MAX / 2)
 		return;
 
-	if (surface) {
-		if (weston_surface_set_role(surface, "wl_pointer-cursor",
-					    resource,
-					    WL_POINTER_ERROR_ROLE) < 0)
-			return;
+	if (!surface) {
+		if (pointer->sprite)
+			pointer_unmap_sprite(pointer);
+		return;
 	}
 
 	if (pointer->sprite && pointer->sprite->surface == surface &&
 	    pointer->hotspot_x == x && pointer->hotspot_y == y)
 		return;
 
-	if (pointer->sprite)
-		pointer_unmap_sprite(pointer);
+	if (!pointer->sprite || pointer->sprite->surface != surface) {
+		if (weston_surface_set_role(surface, "wl_pointer-cursor",
+					    resource,
+					    WL_POINTER_ERROR_ROLE) < 0)
+			return;
 
-	if (!surface)
-		return;
+		if (pointer->sprite)
+			pointer_unmap_sprite(pointer);
 
-	wl_signal_add(&surface->destroy_signal,
-		      &pointer->sprite_destroy_listener);
+		wl_signal_add(&surface->destroy_signal,
+			      &pointer->sprite_destroy_listener);
 
-	surface->configure = pointer_cursor_surface_configure;
-	surface->configure_private = pointer;
-	weston_surface_set_label_func(surface,
-				      pointer_cursor_surface_get_label);
-	pointer->sprite = weston_view_create(surface);
+		surface->configure = pointer_cursor_surface_configure;
+		surface->configure_private = pointer;
+		weston_surface_set_label_func(surface,
+					    pointer_cursor_surface_get_label);
+		pointer->sprite = weston_view_create(surface);
+	}
+
 	pointer->hotspot_x = x;
 	pointer->hotspot_y = y;
 
