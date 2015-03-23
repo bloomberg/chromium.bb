@@ -133,6 +133,11 @@ cr.define('extensions', function() {
       // Set the title.
       uber.setTitle(loadTimeData.getString('extensionSettings'));
 
+      var extensionList = new ExtensionList();
+      extensionList.id = 'extension-settings-list';
+      var wrapper = $('extension-list-wrapper');
+      wrapper.insertBefore(extensionList, wrapper.firstChild);
+
       // This will request the data to show on the page and will get a response
       // back in returnExtensionsData.
       chrome.send('extensionSettingsRequestExtensionsData');
@@ -141,7 +146,7 @@ cr.define('extensions', function() {
 
       $('toggle-dev-on').addEventListener('change', function(e) {
         this.updateDevControlsVisibility_(true);
-        $('extension-settings-list').updateFocusableElements();
+        extensionList.updateFocusableElements();
         chrome.send('extensionSettingsToggleDeveloperMode',
                     [$('toggle-dev-on').checked]);
       }.bind(this));
@@ -298,15 +303,6 @@ cr.define('extensions', function() {
    * @param {ExtensionDataResponse} extensionsData
    */
   ExtensionSettings.returnExtensionsData = function(extensionsData) {
-    // We can get called many times in short order, thus we need to
-    // be careful to remove the 'finished loading' timeout.
-    if (this.loadingTimeout_)
-      window.clearTimeout(this.loadingTimeout_);
-    document.documentElement.classList.add('loading');
-    this.loadingTimeout_ = window.setTimeout(function() {
-      document.documentElement.classList.remove('loading');
-    }, 0);
-
     webuiResponded = true;
 
     var supervised = extensionsData.profileIsSupervised;
@@ -324,9 +320,23 @@ cr.define('extensions', function() {
     instance.updateDevControlsVisibility_(false);
 
     $('load-unpacked').disabled = extensionsData.loadUnpackedDisabled;
+    var extensionList = $('extension-settings-list');
+    extensionList.updateExtensionsData(
+        extensionsData.incognitoAvailable,
+        extensionsData.enableAppInfoDialog).then(function() {
+      // We can get called many times in short order, thus we need to
+      // be careful to remove the 'finished loading' timeout.
+      if (this.loadingTimeout_)
+        window.clearTimeout(this.loadingTimeout_);
+      document.documentElement.classList.add('loading');
+      this.loadingTimeout_ = window.setTimeout(function() {
+        document.documentElement.classList.remove('loading');
+      }, 0);
 
-    ExtensionList.prototype.data_ = extensionsData;
-    ExtensionList.decorate($('extension-settings-list'));
+      var hasExtensions = extensionList.getNumExtensions() != 0;
+      $('no-extensions').hidden = hasExtensions;
+      $('extension-list-wrapper').hidden = !hasExtensions;
+    }.bind(this));
   };
 
   /**

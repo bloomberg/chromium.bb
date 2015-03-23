@@ -1,5 +1,5 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language" class="loading">
+<html i18n-values="dir:textdirection;lang:language">
 <head>
 <meta charset="utf-8">
 
@@ -114,20 +114,21 @@
     </div>
   </div>
   <include src="extension_load_error.html">
-  <div id="extension-settings-list" class="empty-extension-list"></div>
-  <div id="no-extensions">
+  <div id="extension-list-wrapper" hidden>
+    <div id="footer-section">
+      <a target="_blank" class="more-extensions-link"
+          i18n-values="href:extensionSettingsGetMoreExtensionsUrl"
+          i18n-content="extensionSettingsGetMoreExtensions"></a>
+      <a is="action-link" class="extension-commands-config"
+          i18n-content="extensionSettingsCommandsLink" hidden></a>
+    </div>
+  </div>
+  <div id="no-extensions" hidden>
     <span id="no-extensions-message"
         i18n-content="extensionSettingsNoExtensions"></span>
     <span id="suggest-gallery" class="more-extensions-link"
         i18n-values=".innerHTML:extensionSettingsSuggestGallery">
     </span>
-  </div>
-  <div id="footer-section">
-    <a target="_blank" class="more-extensions-link"
-        i18n-values="href:extensionSettingsGetMoreExtensionsUrl"
-        i18n-content="extensionSettingsGetMoreExtensions"></a>
-    <a is="action-link" class="extension-commands-config"
-        i18n-content="extensionSettingsCommandsLink" hidden></a>
   </div>
 </div>
 

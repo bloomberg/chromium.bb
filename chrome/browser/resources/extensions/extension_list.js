@@ -140,11 +140,16 @@ cr.define('extensions', function() {
 
   /**
    * Creates a new list of extensions.
-   * @param {Object=} opt_propertyBag Optional properties.
    * @constructor
    * @extends {HTMLDivElement}
    */
-  var ExtensionList = cr.ui.define('div');
+  function ExtensionList() {
+    var div = document.createElement('div');
+    div.__proto__ = ExtensionList.prototype;
+    /** @private {!Array<ExtensionInfo>} */
+    div.extensions_ = [];
+    return div;
+  }
 
   /**
    * @type {Object<string, number>} A map from extension id to last reloaded
@@ -188,27 +193,59 @@ cr.define('extensions', function() {
      */
     butterbarShown_: false,
 
-    decorate: function() {
-      chrome.developerPrivate.getExtensionsInfo(
-          {includeDisabled: true, includeTerminated: true},
-          function(extensions) {
-        // Sort in order of unpacked vs. packed, followed by name, followed by
-        // id.
-        extensions.sort(function(a, b) {
-          function compare(x, y) {
-            return x < y ? -1 : (x > y ? 1 : 0);
-          }
-          function compareLocation(x, y) {
-            return x.location == chrome.developerPrivate.Location.UNPACKED ?
-                -1 : (x.location == y.location ? 0 : 1);
-          }
-          return compareLocation(a, b) ||
-                 compare(a.name.toLowerCase(), b.name.toLowerCase()) ||
-                 compare(a.id, b.id);
-        });
-        this.extensions_ = extensions;
-        this.showExtensionNodes_();
+    /**
+     * Whether or not incognito mode is available.
+     * @private {boolean}
+     */
+    incognitoAvailable_: false,
+
+    /**
+     * Whether or not the app info dialog is enabled.
+     * @private {boolean}
+     */
+    enableAppInfoDialog_: false,
+
+    /**
+     * Updates the extensions on the page.
+     * @param {boolean} incognitoAvailable Whether or not incognito is allowed.
+     * @param {boolean} enableAppInfoDialog Whether or not the app info dialog
+     *     is enabled.
+     * @return {Promise} A promise that is resolved once the extensions data is
+     *     fully updated.
+     */
+    updateExtensionsData: function(incognitoAvailable, enableAppInfoDialog) {
+      // If we start to need more information about the extension configuration,
+      // consider passing in the full object from the ExtensionSettings.
+      this.incognitoAvailable_ = incognitoAvailable;
+      this.enableAppInfoDialog_ = enableAppInfoDialog;
+      return new Promise(function(resolve, reject) {
+        chrome.developerPrivate.getExtensionsInfo(
+            {includeDisabled: true, includeTerminated: true},
+            function(extensions) {
+          // Sort in order of unpacked vs. packed, followed by name, followed by
+          // id.
+          extensions.sort(function(a, b) {
+            function compare(x, y) {
+              return x < y ? -1 : (x > y ? 1 : 0);
+            }
+            function compareLocation(x, y) {
+              return x.location == chrome.developerPrivate.Location.UNPACKED ?
+                  -1 : (x.location == y.location ? 0 : 1);
+            }
+            return compareLocation(a, b) ||
+                   compare(a.name.toLowerCase(), b.name.toLowerCase()) ||
+                   compare(a.id, b.id);
+          });
+          this.extensions_ = extensions;
+          this.showExtensionNodes_();
+          resolve();
+        }.bind(this));
       }.bind(this));
+    },
+
+    /** @return {number} The number of extensions being displayed. */
+    getNumExtensions: function() {
+      return this.extensions_.length;
     },
 
     getIdQueryParam_: function() {
@@ -268,9 +305,6 @@ cr.define('extensions', function() {
       var idToOpenOptions = this.getOptionsQueryParam_();
       if (idToOpenOptions && $(idToOpenOptions))
         this.showEmbeddedExtensionOptions_(idToOpenOptions, true);
-
-      var noExtensions = this.extensions_.length == 0;
-      this.classList.toggle('empty-extension-list', noExtensions);
     },
 
     /** Updates each row's focusable elements without rebuilding the grid. */
@@ -545,7 +579,7 @@ cr.define('extensions', function() {
 
       // The 'allow in incognito' checkbox.
       this.updateVisibility_(row, '.incognito-control',
-                             isActive && this.data_.incognitoAvailable,
+                             isActive && this.incognitoAvailable_,
                              function(item) {
         var incognito = item.querySelector('input');
         incognito.disabled = !extension.incognitoAccess.isEnabled;
@@ -594,7 +628,7 @@ cr.define('extensions', function() {
 
       // The 'View in Web Store/View Web Site' link.
       var siteLinkEnabled = !!extension.homepageUrl &&
-                            !this.data_.enableAppInfoDialog;
+                            !this.enableAppInfoDialog_;
       this.updateVisibility_(row, '.site-link', siteLinkEnabled,
                              function(item) {
         item.href = extension.homepageUrl;
@@ -721,7 +755,7 @@ cr.define('extensions', function() {
           depNode.querySelector('.dep-extension-id').textContent =
               dependentExtension.id;
           dependentList.appendChild(depNode);
-        });
+        }, this);
       });
 
       // The active views.

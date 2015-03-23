@@ -141,6 +141,10 @@ html:not(.focus-outline-visible)
   font-weight: bold;
 }
 
+#no-extensions {
+  margin-top: 3em;
+}
+
 #suggest-gallery {
   -webkit-padding-start: 10px;
 }
@@ -158,17 +162,6 @@ html[dir=rtl] #footer-section {
 #footer-section > a {
   -webkit-margin-start: 42px;
   line-height: 32px;
-}
-
-.empty-extension-list {
-  height: 3em;
-}
-
-.loading #no-extensions,
-.loading #footer-section,
-#extension-settings-list:not(.empty-extension-list) ~ #no-extensions,
-.empty-extension-list ~ #footer-section {
-  display: none;
 }
 
 .extension-list-item-wrapper {
