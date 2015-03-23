@@ -1,15 +1,25 @@
 <!DOCTYPE html>
 <head>
     <title>SRI on cross origin CORS enabled style</title>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script>
+    function styleLoad() {
+        assert_true(true, "Style loaded.");
+    }
+    function styleError() {
+        assert_unreached("Style did not load.");
+    }
+    </script>
     <style>.id1 { background-color: red }</style>
     <link rel="stylesheet"
+          onload="styleLoad()"
+          onerror="styleError();"
           crossorigin
           integrity="ni:///sha256;fy1lC6jbv7rOG6Flb00n5PYLggqe25IcE6QlZf8KtwI="
           href="http://localhost:8000/security/resources/cors-style.php"></link>
 </head>
 <body>
-    <script src="/resources/testharness.js"></script>
-    <script src="/resources/testharnessreport.js"></script>
     <script>
         window.onload = function () {
             var ele = document.getElementById('id1');
