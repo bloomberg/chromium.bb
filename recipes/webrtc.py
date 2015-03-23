@@ -27,6 +27,7 @@ class WebRTC(recipe_util.Recipe):
         },
       ],
       'auto': True,  # Runs git auto-svn as a part of the fetch.
+      'with_branch_heads': True,
     }
 
     if props.get('target_os'):
