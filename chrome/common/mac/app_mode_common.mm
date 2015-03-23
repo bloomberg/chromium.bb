@@ -31,6 +31,7 @@ NSString* const kBundleTypeRoleViewer = @"Viewer";
 
 NSString* const kCFBundleDisplayNameKey = @"CFBundleDisplayName";
 NSString* const kCFBundleShortVersionStringKey = @"CFBundleShortVersionString";
+NSString* const kCrBundleVersionKey = @"CrBundleVersion";
 NSString* const kLSHasLocalizedDisplayNameKey = @"LSHasLocalizedDisplayName";
 NSString* const kBrowserBundleIDKey = @"CrBundleIdentifier";
 NSString* const kCrAppModeShortcutIDKey = @"CrAppModeShortcutID";

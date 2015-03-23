@@ -52,6 +52,7 @@ struct ShortcutInfo {
   gfx::ImageFamily favicon;
   base::FilePath profile_path;
   std::string profile_name;
+  std::string version_for_display;
 };
 
 // This specifies a folder in the system applications menu (e.g the Start Menu

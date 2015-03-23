@@ -218,6 +218,7 @@ ShortcutInfo ShortcutInfoForExtensionAndProfile(
   shortcut_info.profile_path = profile->GetPath();
   shortcut_info.profile_name =
       profile->GetPrefs()->GetString(prefs::kProfileName);
+  shortcut_info.version_for_display = app->GetVersionForDisplay();
   return shortcut_info;
 }
 

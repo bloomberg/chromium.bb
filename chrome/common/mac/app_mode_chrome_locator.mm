@@ -12,6 +12,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/mac/app_mode_common.h"
 
 namespace app_mode {
 
@@ -54,7 +55,12 @@ bool GetChromeBundleInfo(const base::FilePath& chrome_bundle,
       !base::PathExists(base::mac::NSStringToFilePath(cr_versioned_path))) {
     // Read version string.
     NSString* cr_version = ObjCCast<NSString>(
-        [cr_bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"]);
+        [cr_bundle objectForInfoDictionaryKey:app_mode::kCrBundleVersionKey]);
+    if (!cr_version) {
+      // Older bundles have the Chrome version in the following key.
+      cr_version = ObjCCast<NSString>([cr_bundle
+          objectForInfoDictionaryKey:app_mode::kCFBundleShortVersionStringKey]);
+    }
     if (!cr_version)
       return false;
 

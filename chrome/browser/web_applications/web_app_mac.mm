@@ -500,8 +500,13 @@ web_app::ShortcutInfo BuildShortcutInfoFromBundle(
 web_app::ShortcutInfo RecordAppShimErrorAndBuildShortcutInfo(
     const base::FilePath& bundle_path) {
   NSDictionary* plist = ReadPlist(GetPlistPath(bundle_path));
-  base::Version full_version(base::SysNSStringToUTF8(
-      [plist valueForKey:app_mode::kCFBundleShortVersionStringKey]));
+  NSString* version_string = [plist valueForKey:app_mode::kCrBundleVersionKey];
+  if (!version_string) {
+    // Older bundles have the Chrome version in the following key.
+    version_string =
+        [plist valueForKey:app_mode::kCFBundleShortVersionStringKey];
+  }
+  base::Version full_version(base::SysNSStringToUTF8(version_string));
   uint32_t major_version = 0;
   if (full_version.IsValid())
     major_version = full_version.components()[0];
@@ -840,6 +845,10 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
   }
 
   // 2. Fill in other values.
+  [plist setObject:base::SysUTF8ToNSString(chrome::VersionInfo().Version())
+            forKey:app_mode::kCrBundleVersionKey];
+  [plist setObject:base::SysUTF8ToNSString(info_.version_for_display)
+            forKey:app_mode::kCFBundleShortVersionStringKey];
   [plist setObject:base::SysUTF8ToNSString(GetBundleIdentifier())
             forKey:base::mac::CFToNSCast(kCFBundleIdentifierKey)];
   [plist setObject:base::mac::FilePathToNSString(app_data_dir_)

@@ -66,8 +66,17 @@ extern NSString* const kBundleTypeRoleViewer;
 // bundles, this overrides the bundle's file name.
 extern NSString* const kCFBundleDisplayNameKey;
 
-// The Chrome version string in the app shim bundle.
+// When Chrome is built, any app bundles (e.g. the app shim template bundle)
+// will have their CFBundleShortVersionString set to the full version string of
+// that build. Since, this string is used by OSX when displaying an app bundle's
+// version, we override it in app shim bundles to show the app's version
+// instead.
 extern NSString* const kCFBundleShortVersionStringKey;
+
+// Key for the Chrome version that built the app shim bundle. This needs to be
+// added since we override CFBundleShortVersionString with the version of the
+// app.
+extern NSString* const kCrBundleVersionKey;
 
 // The key specifying whether the display name should be localized. This makes
 // Finder look in localization folders in the app bundle for a display name.

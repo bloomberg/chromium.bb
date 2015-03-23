@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #import "chrome/common/mac/app_mode_common.h"
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -67,6 +68,7 @@ web_app::ShortcutInfo GetShortcutInfo() {
   info.url = GURL("http://example.com/");
   info.profile_path = base::FilePath("user_data_dir").Append("Profile 1");
   info.profile_name = "profile name";
+  info.version_for_display = "stable 1.0";
   return info;
 }
 
@@ -130,6 +132,11 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
               [plist objectForKey:app_mode::kCrAppModeShortcutNameKey]);
   EXPECT_NSEQ(base::SysUTF8ToNSString(info_.url.spec()),
               [plist objectForKey:app_mode::kCrAppModeShortcutURLKey]);
+
+  EXPECT_NSEQ(base::SysUTF8ToNSString(chrome::VersionInfo().Version()),
+              [plist objectForKey:app_mode::kCrBundleVersionKey]);
+  EXPECT_NSEQ(base::SysUTF8ToNSString(info_.version_for_display),
+              [plist objectForKey:app_mode::kCFBundleShortVersionStringKey]);
 
   // Make sure all values in the plist are actually filled in.
   for (id key in plist) {
