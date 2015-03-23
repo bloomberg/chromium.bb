@@ -10,6 +10,8 @@ import os
 
 from chromite.cbuildbot import constants
 from chromite.cli import command
+from chromite.lib import brick_lib
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 
 
@@ -26,9 +28,12 @@ class ImageCommand(command.CrosCommand):
   def AddParser(cls, parser):
     super(ImageCommand, cls).AddParser(parser)
     parser.set_defaults(usage='Create an image')
+    target = parser.add_mutually_exclusive_group()
+    target.add_argument('--board', help="The board to build an image for.")
+    target.add_argument('--brick', help='The brick to build an image for.')
+
     parser.add_argument('--adjust_part', help="Adjustments to apply to "
                         "partition table (LABEL:[+-=]SIZE) e.g. ROOT-A:+1G.")
-    parser.add_argument('--board', help="The board to build an image for.")
     parser.add_argument('--boot_args', help="Additional boot arguments to pass "
                         "to the commandline")
     parser.add_argument('--enable_bootcache', default=False, type='bool',
@@ -48,11 +53,17 @@ class ImageCommand(command.CrosCommand):
                         default=None, help="The image types to build.")
 
   def Run(self):
+    commandline.RunInsideChroot(self, auto_detect_brick=True)
+
     self.options.Freeze()
 
     cmd = [os.path.join(constants.CROSUTILS_DIR, 'build_image')]
 
-    if self.options.board:
+    if self.options.brick:
+      brick = brick_lib.Brick(self.options.brick)
+      cmd.append('--extra_packages=%s' % ' '.join(brick.MainPackages()))
+      cmd.append('--board=%s' % brick.FriendlyName())
+    elif self.options.board:
       cmd.append('--board=%s' % self.options.board)
 
     if self.options.adjust_part:
