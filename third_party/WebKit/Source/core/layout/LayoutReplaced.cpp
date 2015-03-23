@@ -25,6 +25,7 @@
 #include "core/layout/LayoutReplaced.h"
 
 #include "core/editing/PositionWithAffinity.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutView.h"
@@ -76,6 +77,7 @@ void LayoutReplaced::styleDidChange(StyleDifference diff, const LayoutStyle* old
 void LayoutReplaced::layout()
 {
     ASSERT(needsLayout());
+    LayoutAnalyzer::Scope analyzer(*this);
 
     LayoutRect oldContentRect = replacedContentRect();
 

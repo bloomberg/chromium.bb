@@ -27,6 +27,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
@@ -161,6 +162,7 @@ LayoutUnit LayoutSVGRoot::computeReplacedLogicalHeight() const
 void LayoutSVGRoot::layout()
 {
     ASSERT(needsLayout());
+    LayoutAnalyzer::Scope analyzer(*this);
 
     bool needsLayout = selfNeedsLayout();
 

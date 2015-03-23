@@ -29,6 +29,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
 #include "core/page/Page.h"
@@ -118,6 +119,7 @@ void LayoutEmbeddedObject::paintReplaced(const PaintInfo& paintInfo, const Layou
 void LayoutEmbeddedObject::layout()
 {
     ASSERT(needsLayout());
+    LayoutAnalyzer::Scope analyzer(*this);
 
     updateLogicalWidth();
     updateLogicalHeight();

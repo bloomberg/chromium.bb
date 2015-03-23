@@ -40,6 +40,7 @@
 #include "core/frame/Settings.h"
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutFlowThread.h"
@@ -1368,6 +1369,7 @@ void LayoutBlock::updateScrollInfoAfterLayout()
 
 void LayoutBlock::layout()
 {
+    LayoutAnalyzer::Scope analyzer(*this);
     OverflowEventDispatcher dispatcher(this);
 
     // Table cells call layoutBlock directly, so don't add any logic here.  Put code into

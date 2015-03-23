@@ -24,6 +24,7 @@
 #include "config.h"
 #include "core/layout/svg/LayoutSVGContainer.h"
 
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
@@ -47,6 +48,7 @@ LayoutSVGContainer::~LayoutSVGContainer()
 void LayoutSVGContainer::layout()
 {
     ASSERT(needsLayout());
+    LayoutAnalyzer::Scope analyzer(*this);
 
     // Allow LayoutSVGViewportContainer to update its viewport.
     calcViewport();

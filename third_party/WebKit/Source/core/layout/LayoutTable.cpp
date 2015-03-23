@@ -31,6 +31,7 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTableCaption.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
@@ -414,6 +415,7 @@ void LayoutTable::simplifiedNormalFlowLayout()
 void LayoutTable::layout()
 {
     ASSERT(needsLayout());
+    LayoutAnalyzer::Scope analyzer(*this);
 
     if (simplifiedLayout())
         return;

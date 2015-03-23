@@ -28,6 +28,7 @@
 #include "core/layout/svg/LayoutSVGImage.h"
 
 #include "core/layout/ImageQualityController.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
@@ -117,6 +118,7 @@ bool LayoutSVGImage::updateImageViewport()
 void LayoutSVGImage::layout()
 {
     ASSERT(needsLayout());
+    LayoutAnalyzer::Scope analyzer(*this);
 
     updateImageViewport();
 

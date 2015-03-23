@@ -20,6 +20,7 @@
 #include "config.h"
 #include "core/layout/svg/LayoutSVGHiddenContainer.h"
 
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 
 namespace blink {
@@ -32,6 +33,7 @@ LayoutSVGHiddenContainer::LayoutSVGHiddenContainer(SVGElement* element)
 void LayoutSVGHiddenContainer::layout()
 {
     ASSERT(needsLayout());
+    LayoutAnalyzer::Scope analyzer(*this);
     SVGLayoutSupport::layoutChildren(this, selfNeedsLayout());
     updateCachedBoundaries();
     clearNeedsLayout();

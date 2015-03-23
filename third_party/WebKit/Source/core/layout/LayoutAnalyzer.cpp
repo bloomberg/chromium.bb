@@ -36,16 +36,31 @@ void LayoutAnalyzer::push(const LayoutObject& o)
 {
     increment(Total);
 
-    if (m_stack.size() != 0) {
+    // This might be a root in a subtree layout, in which case the LayoutObject
+    // has a parent but the stack is empty. If a LayoutObject subclass forgets
+    // to call push() and is a root in a subtree layout, then this
+    // assert would only fail if that LayoutObject instance has any children
+    // that need layout and do call push().
+    // LayoutBlock::layoutPositionedObjects() hoists positioned descendants.
+    // LayoutBlockFlow::layoutInlineChildren() walks through inlines.
+    // LayoutTableSection::layoutRows() walks through rows.
+    if (!o.isPositioned()
+        && !o.isTableCell()
+        && !o.isSVGResourceContainer()
+        && (m_stack.size() != 0)
+        && !(o.parent()->childrenInline()
+            && (o.isReplaced() || o.isFloating() || o.isOutOfFlowPositioned()))) {
         ASSERT(o.parent() == m_stack.peek());
     }
     m_stack.push(&o);
 
-    // This refers to LayoutAnalyzer depth, not layout tree depth or DOM
-    // tree depth. LayoutAnalyzer depth is generally closer to C++ stack
-    // recursion depth.
+    // This refers to LayoutAnalyzer depth, not layout tree depth or DOM tree
+    // depth. LayoutAnalyzer depth is generally closer to C++ stack recursion
+    // depth. See above exceptions for when LayoutAnalyzer depth != layout tree
+    // depth.
     if (m_stack.size() > m_counters[Depth])
         m_counters[Depth] = m_stack.size();
+
 }
 
 void LayoutAnalyzer::pop(const LayoutObject& o)

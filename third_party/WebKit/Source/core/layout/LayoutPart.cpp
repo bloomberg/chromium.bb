@@ -30,6 +30,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/BoxPainter.h"
@@ -203,7 +204,7 @@ void LayoutPart::styleDidChange(StyleDifference diff, const LayoutStyle* oldStyl
 void LayoutPart::layout()
 {
     ASSERT(needsLayout());
-
+    LayoutAnalyzer::Scope analyzer(*this);
     clearNeedsLayout();
 }
 

@@ -29,6 +29,7 @@
 #include "core/layout/svg/LayoutSVGShape.h"
 
 #include "core/layout/HitTestRequest.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGPathData.h"
@@ -131,6 +132,7 @@ void LayoutSVGShape::updateLocalTransform()
 void LayoutSVGShape::layout()
 {
     bool updateCachedBoundariesInParents = false;
+    LayoutAnalyzer::Scope analyzer(*this);
 
     if (m_needsShapeUpdate || m_needsBoundariesUpdate) {
         updateShapeFromElement();

@@ -31,6 +31,7 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/PaintInfo.h"
 #include "core/layout/PointerEventsHitRules.h"
 #include "core/layout/style/ShadowList.h"
@@ -313,6 +314,7 @@ static inline void updateFontInAllDescendants(LayoutObject* start, SVGTextLayout
 void LayoutSVGText::layout()
 {
     ASSERT(needsLayout());
+    LayoutAnalyzer::Scope analyzer(*this);
 
     subtreeStyleDidChange();
 

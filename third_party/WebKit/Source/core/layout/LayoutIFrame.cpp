@@ -30,6 +30,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutView.h"
 
 namespace blink {
@@ -61,6 +62,7 @@ DeprecatedPaintLayerType LayoutIFrame::layerTypeRequired() const
 void LayoutIFrame::layout()
 {
     ASSERT(needsLayout());
+    LayoutAnalyzer::Scope analyzer(*this);
 
     updateLogicalWidth();
     // No kids to layout as a replaced element.

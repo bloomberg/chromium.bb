@@ -28,6 +28,7 @@
 #include "core/HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/html/HTMLTableCellElement.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/PaintInfo.h"
@@ -230,6 +231,7 @@ void LayoutTableCell::setCellLogicalWidth(int tableLayoutLogicalWidth, SubtreeLa
 void LayoutTableCell::layout()
 {
     ASSERT(needsLayout());
+    LayoutAnalyzer::Scope analyzer(*this);
 
     int oldCellBaseline = cellBaselinePosition();
     layoutBlock(cellWidthChanged());

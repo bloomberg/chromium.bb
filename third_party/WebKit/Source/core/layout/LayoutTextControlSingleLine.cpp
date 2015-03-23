@@ -31,6 +31,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/PlatformKeyboardEvent.h"
@@ -92,6 +93,7 @@ LayoutUnit LayoutTextControlSingleLine::computeLogicalHeightLimit() const
 
 void LayoutTextControlSingleLine::layout()
 {
+    LayoutAnalyzer::Scope analyzer(*this);
     SubtreeLayoutScope layoutScope(*this);
 
     // FIXME: This code is madness (https://crbug.com/461117)

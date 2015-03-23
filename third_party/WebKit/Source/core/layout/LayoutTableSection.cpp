@@ -27,6 +27,7 @@
 #include "core/layout/LayoutTableSection.h"
 
 #include "core/layout/HitTestResult.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutTableRow.h"
@@ -777,6 +778,7 @@ int LayoutTableSection::calcRowLogicalHeight()
 void LayoutTableSection::layout()
 {
     ASSERT(needsLayout());
+    LayoutAnalyzer::Scope analyzer(*this);
     ASSERT(!needsCellRecalc());
     ASSERT(!table()->needsSectionRecalc());
 
@@ -927,6 +929,8 @@ void LayoutTableSection::layoutRows()
 #endif
 
     ASSERT(!needsLayout());
+
+    LayoutAnalyzer::Scope analyzer(*this);
 
     // FIXME: Changing the height without a layout can change the overflow so it seems wrong.
 

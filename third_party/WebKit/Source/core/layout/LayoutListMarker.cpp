@@ -26,6 +26,7 @@
 #include "core/layout/LayoutListMarker.h"
 
 #include "core/fetch/ImageResource.h"
+#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/TextRunConstructor.h"
 #include "core/paint/DeprecatedPaintLayer.h"
@@ -1128,6 +1129,7 @@ void LayoutListMarker::paint(const PaintInfo& paintInfo, const LayoutPoint& pain
 void LayoutListMarker::layout()
 {
     ASSERT(needsLayout());
+    LayoutAnalyzer::Scope analyzer(*this);
 
     if (isImage()) {
         updateMarginsAndContent();
