@@ -203,8 +203,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
 // The stream sent from pc3 to pc4 is the stream received on pc1.
 // The stream sent from pc4 to pc3 is cloned from stream the stream received
 // on pc2.
-#if defined(THREAD_SANITIZER)
+#if defined(THREAD_SANITIZER) || defined(OS_WIN)
 // Flaky on TSAN v2. http://crbug.com/373637
+// Flaky on Windows: http://crbug.com/469819
 #define MAYBE_CanForwardRemoteStream DISABLED_CanForwardRemoteStream
 #define MAYBE_CanForwardRemoteStream720p DISABLED_CanForwardRemoteStream720p
 #else
