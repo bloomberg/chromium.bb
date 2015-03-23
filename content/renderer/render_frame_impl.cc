@@ -3221,8 +3221,10 @@ void RenderFrameImpl::didFinishResourceLoad(blink::WebLocalFrame* frame,
     return;
 
   // Do not show error page when DevTools is attached.
-  if (render_view_->devtools_agent_->IsAttached())
+  if (render_view_->devtools_agent_ &&
+      render_view_->devtools_agent_->IsAttached()) {
     return;
+  }
 
   // Display error page, if appropriate.
   std::string error_domain = "http";

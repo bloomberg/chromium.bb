@@ -777,10 +777,12 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 
   // The next group of objects all implement RenderViewObserver, so are deleted
   // along with the RenderView automatically.
-  devtools_agent_ = new DevToolsAgent(main_render_frame_.get());
-  if (RenderWidgetCompositor* rwc = compositor()) {
-    webview()->devToolsAgent()->setLayerTreeId(rwc->GetLayerTreeId());
+  if (!proxy) {
+    devtools_agent_ = new DevToolsAgent(main_render_frame_.get());
+    if (RenderWidgetCompositor* rwc = compositor())
+      webview()->devToolsAgent()->setLayerTreeId(rwc->GetLayerTreeId());
   }
+
   mouse_lock_dispatcher_ = new RenderViewMouseLockDispatcher(this);
 
   history_controller_.reset(new HistoryController(this));
