@@ -19,10 +19,26 @@ class TracedValue;
 class LayoutAnalyzer {
 public:
     enum Counter {
+        BlockRectChanged,
+        BlockRectUnchanged,
+        Columns,
         Depth,
+        Float,
+        Layer,
+        LineBoxes,
+        New,
+        OutOfFlow,
+        PositionedMovement,
+        Roots,
+        SelfNeeds,
+        TableCell,
+        TextComplex,
+        TextComplexChar,
+        TextSimple,
+        TextSimpleChar,
         Total,
     };
-    static const size_t NumCounters = 2;
+    static const size_t NumCounters = 18;
 
     class Scope {
     public:

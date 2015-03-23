@@ -7,6 +7,7 @@
 
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutText.h"
 #include "platform/TracedValue.h"
 
 namespace blink {
@@ -28,13 +29,57 @@ LayoutAnalyzer::Scope::~Scope()
 void LayoutAnalyzer::reset()
 {
     m_counters.resize(NumCounters);
+    m_counters[BlockRectChanged] = 0;
+    m_counters[BlockRectUnchanged] = 0;
+    m_counters[Columns] = 0;
     m_counters[Depth] = 0;
+    m_counters[Float] = 0;
+    m_counters[Layer] = 0;
+    m_counters[LineBoxes] = 0;
+    m_counters[New] = 0;
+    m_counters[OutOfFlow] = 0;
+    m_counters[PositionedMovement] = 0;
+    m_counters[Roots] = 0;
+    m_counters[SelfNeeds] = 0;
+    m_counters[TableCell] = 0;
+    m_counters[TextComplex] = 0;
+    m_counters[TextComplexChar] = 0;
+    m_counters[TextSimple] = 0;
+    m_counters[TextSimpleChar] = 0;
     m_counters[Total] = 0;
 }
 
 void LayoutAnalyzer::push(const LayoutObject& o)
 {
     increment(Total);
+    if (!o.everHadLayout())
+        increment(New);
+    if (o.selfNeedsLayout())
+        increment(SelfNeeds);
+    if (o.needsPositionedMovementLayout())
+        increment(PositionedMovement);
+    if (o.isOutOfFlowPositioned())
+        increment(OutOfFlow);
+    if (o.isTableCell())
+        increment(TableCell);
+    if (o.isFloating())
+        increment(Float);
+    if (o.style()->specifiesColumns())
+        increment(Columns);
+    if (o.hasLayer())
+        increment(Layer);
+    if (o.isLayoutInline() && o.alwaysCreateLineBoxesForLayoutInline())
+        increment(LineBoxes);
+    if (o.isText()) {
+        const LayoutText& t = *toLayoutText(&o);
+        if (t.canUseSimpleFontCodePath()) {
+            increment(TextSimple);
+            increment(TextSimpleChar, t.textLength());
+        } else {
+            increment(TextComplex);
+            increment(TextComplexChar, t.textLength());
+        }
+    }
 
     // This might be a root in a subtree layout, in which case the LayoutObject
     // has a parent but the stack is empty. If a LayoutObject subclass forgets
@@ -82,7 +127,23 @@ PassRefPtr<TracedValue> LayoutAnalyzer::toTracedValue()
 const char* LayoutAnalyzer::nameForCounter(Counter counter) const
 {
     switch (counter) {
+    case BlockRectChanged: return "BlockRectChanged";
+    case BlockRectUnchanged: return "BlockRectUnchanged";
+    case Columns: return "Columns";
     case Depth: return "Depth";
+    case Float: return "Float";
+    case Layer: return "Layer";
+    case LineBoxes: return "LineBoxes";
+    case New: return "New";
+    case OutOfFlow: return "OutOfFlow";
+    case PositionedMovement: return "PositionedMovement";
+    case Roots: return "Roots";
+    case SelfNeeds: return "SelfNeeds";
+    case TableCell: return "TableCell";
+    case TextComplex: return "TextComplex";
+    case TextComplexChar: return "TextComplexChar";
+    case TextSimple: return "TextSimple";
+    case TextSimpleChar: return "TextSimpleChar";
     case Total: return "Total";
     }
     ASSERT_NOT_REACHED();
