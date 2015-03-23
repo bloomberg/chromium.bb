@@ -203,7 +203,7 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
     for (var i = 0; i < messageViews.length; ++i) {
         var element = messageViews[i].contentElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element);
-        result.push(messageText + " " + element.getAttribute("class"));
+        result.push(messageText + " " + messageViews[i].toMessageElement().getAttribute("class") + " > " + element.getAttribute("class"));
     }
     if (sortMessages)
         result.sort();
