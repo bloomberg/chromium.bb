@@ -35,10 +35,9 @@ namespace blink {
 
 inline SVGFEImageElement::SVGFEImageElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feImageTag, document)
+    , SVGURIReference(this)
     , m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create()))
 {
-    SVGURIReference::initialize(this);
-
     addToPropertyMap(m_preserveAspectRatio);
 }
 

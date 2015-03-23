@@ -33,6 +33,7 @@ namespace blink {
 
 inline SVGFilterElement::SVGFilterElement(Document& document)
     : SVGElement(SVGNames::filterTag, document)
+    , SVGURIReference(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(SVGLengthMode::Width), ForbidNegativeLengths))
@@ -41,8 +42,6 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
     , m_primitiveUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::primitiveUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE))
     , m_filterRes(SVGAnimatedIntegerOptionalInteger::create(this, SVGNames::filterResAttr))
 {
-    SVGURIReference::initialize(this);
-
     // Spec: If the x/y attribute is not specified, the effect is as if a value of "-10%" were specified.
     // Spec: If the width/height attribute is not specified, the effect is as if a value of "120%" were specified.
     m_x->setDefaultValueAsString("-10%");

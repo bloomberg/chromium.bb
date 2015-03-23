@@ -29,12 +29,11 @@ namespace blink {
 
 inline SVGCursorElement::SVGCursorElement(Document& document)
     : SVGElement(SVGNames::cursorTag, document)
+    , SVGTests(this)
+    , SVGURIReference(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
 {
-    SVGTests::initialize(this);
-    SVGURIReference::initialize(this);
-
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
 }

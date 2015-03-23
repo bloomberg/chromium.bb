@@ -171,6 +171,7 @@ SVGSMILElement::Condition::Condition(Type type, BeginOrEnd beginOrEnd, const Str
 
 SVGSMILElement::SVGSMILElement(const QualifiedName& tagName, Document& doc)
     : SVGElement(tagName, doc)
+    , SVGTests(this)
     , m_attributeName(anyQName())
     , m_targetElement(nullptr)
     , m_syncBaseConditionsConnected(false)
@@ -190,8 +191,6 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tagName, Document& doc)
     , m_cachedMin(invalidCachedTime)
     , m_cachedMax(invalidCachedTime)
 {
-    SVGTests::initialize(this);
-
     resolveFirstInterval();
 }
 

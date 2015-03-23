@@ -26,10 +26,9 @@ namespace blink {
 
 inline SVGViewElement::SVGViewElement(Document& document)
     : SVGElement(SVGNames::viewTag, document)
+    , SVGFitToViewBox(this)
     , m_viewTarget(SVGStaticStringList::create(this, SVGNames::viewTargetAttr))
 {
-    SVGFitToViewBox::initialize(this);
-
     addToPropertyMap(m_viewTarget);
 }
 

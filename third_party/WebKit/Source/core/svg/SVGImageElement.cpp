@@ -32,6 +32,7 @@ namespace blink {
 
 inline SVGImageElement::SVGImageElement(Document& document)
     : SVGGraphicsElement(SVGNames::imageTag, document)
+    , SVGURIReference(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
     , m_width(SVGAnimatedLength::create(this, SVGNames::widthAttr, SVGLength::create(SVGLengthMode::Width), ForbidNegativeLengths))
@@ -40,8 +41,6 @@ inline SVGImageElement::SVGImageElement(Document& document)
     , m_imageLoader(SVGImageLoader::create(this))
     , m_needsLoaderURIUpdate(true)
 {
-    SVGURIReference::initialize(this);
-
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);

@@ -44,12 +44,11 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGSpreadMe
 
 SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document& document)
     : SVGElement(tagName, document)
+    , SVGURIReference(this)
     , m_gradientTransform(SVGAnimatedTransformList::create(this, SVGNames::gradientTransformAttr, SVGTransformList::create()))
     , m_spreadMethod(SVGAnimatedEnumeration<SVGSpreadMethodType>::create(this, SVGNames::spreadMethodAttr, SVGSpreadMethodPad))
     , m_gradientUnits(SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>::create(this, SVGNames::gradientUnitsAttr, SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX))
 {
-    SVGURIReference::initialize(this);
-
     addToPropertyMap(m_gradientTransform);
     addToPropertyMap(m_spreadMethod);
     addToPropertyMap(m_gradientUnits);

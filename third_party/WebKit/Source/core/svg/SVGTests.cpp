@@ -30,20 +30,12 @@
 
 namespace blink {
 
-SVGTests::SVGTests()
+SVGTests::SVGTests(SVGElement* contextElement)
+    : m_requiredFeatures(SVGStaticStringList::create(contextElement, SVGNames::requiredFeaturesAttr))
+    , m_requiredExtensions(SVGStaticStringList::create(contextElement, SVGNames::requiredExtensionsAttr))
+    , m_systemLanguage(SVGStaticStringList::create(contextElement, SVGNames::systemLanguageAttr))
 {
-}
-
-void SVGTests::initialize(SVGElement* contextElement)
-{
-    ASSERT(!m_requiredFeatures);
-    ASSERT(!m_requiredExtensions);
-    ASSERT(!m_systemLanguage);
     ASSERT(contextElement);
-
-    m_requiredFeatures = SVGStaticStringList::create(contextElement, SVGNames::requiredFeaturesAttr);
-    m_requiredExtensions = SVGStaticStringList::create(contextElement, SVGNames::requiredExtensionsAttr);
-    m_systemLanguage = SVGStaticStringList::create(contextElement, SVGNames::systemLanguageAttr);
 
     contextElement->addToPropertyMap(m_requiredFeatures);
     contextElement->addToPropertyMap(m_requiredExtensions);

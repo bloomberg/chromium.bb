@@ -42,6 +42,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerUn
 
 inline SVGMarkerElement::SVGMarkerElement(Document& document)
     : SVGElement(SVGNames::markerTag, document)
+    , SVGFitToViewBox(this)
     , m_refX(SVGAnimatedLength::create(this, SVGNames::refXAttr, SVGLength::create(SVGLengthMode::Width), AllowNegativeLengths))
     , m_refY(SVGAnimatedLength::create(this, SVGNames::refYAttr, SVGLength::create(SVGLengthMode::Height), AllowNegativeLengths))
     , m_markerWidth(SVGAnimatedLength::create(this, SVGNames::markerWidthAttr, SVGLength::create(SVGLengthMode::Width), ForbidNegativeLengths))
@@ -49,8 +50,6 @@ inline SVGMarkerElement::SVGMarkerElement(Document& document)
     , m_orientAngle(SVGAnimatedAngle::create(this))
     , m_markerUnits(SVGAnimatedEnumeration<SVGMarkerUnitsType>::create(this, SVGNames::markerUnitsAttr, SVGMarkerUnitsStrokeWidth))
 {
-    SVGFitToViewBox::initialize(this);
-
     // Spec: If the markerWidth/markerHeight attribute is not specified, the effect is as if a value of "3" were specified.
     m_markerWidth->setDefaultValueAsString("3");
     m_markerHeight->setDefaultValueAsString("3");

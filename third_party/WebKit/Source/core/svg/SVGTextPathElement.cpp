@@ -49,12 +49,11 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGTextPath
 
 inline SVGTextPathElement::SVGTextPathElement(Document& document)
     : SVGTextContentElement(SVGNames::textPathTag, document)
+    , SVGURIReference(this)
     , m_startOffset(SVGAnimatedLength::create(this, SVGNames::startOffsetAttr, SVGLength::create(SVGLengthMode::Other), AllowNegativeLengths))
     , m_method(SVGAnimatedEnumeration<SVGTextPathMethodType>::create(this, SVGNames::methodAttr, SVGTextPathMethodAlign))
     , m_spacing(SVGAnimatedEnumeration<SVGTextPathSpacingType>::create(this, SVGNames::spacingAttr, SVGTextPathSpacingExact))
 {
-    SVGURIReference::initialize(this);
-
     addToPropertyMap(m_startOffset);
     addToPropertyMap(m_method);
     addToPropertyMap(m_spacing);

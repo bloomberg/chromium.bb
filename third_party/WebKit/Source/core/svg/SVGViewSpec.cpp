@@ -35,11 +35,10 @@ SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
     // This contextElement will be only used for keeping this alive from the tearoff.
     // SVGSVGElement holds a strong-ref to this SVGViewSpec, so this is kept alive as:
     // AnimatedProperty tearoff -(contextElement)-> SVGSVGElement -(RefPtr)-> SVGViewSpec.
-    : m_contextElement(contextElement)
+    : SVGFitToViewBox(contextElement, PropertyMapPolicySkip)
+    , m_contextElement(contextElement)
     , m_transform(SVGAnimatedTransformList::create(contextElement, SVGNames::transformAttr, SVGTransformList::create()))
 {
-    SVGFitToViewBox::initialize(contextElement, PropertyMapPolicySkip);
-
     ASSERT(m_contextElement);
 
     viewBox()->setReadOnly();
