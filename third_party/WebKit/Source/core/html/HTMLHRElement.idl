@@ -18,7 +18,7 @@
  */
 
 
-// https://html.spec.whatwg.org/#htmlhrelement
+// https://html.spec.whatwg.org/#the-hr-element
 
 interface HTMLHRElement : HTMLElement {
     // obsolete members

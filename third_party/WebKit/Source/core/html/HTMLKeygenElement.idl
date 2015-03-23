@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#htmlkeygenelement
+// https://html.spec.whatwg.org/#the-keygen-element
 
 interface HTMLKeygenElement : HTMLElement {
     [Reflect] attribute boolean autofocus;

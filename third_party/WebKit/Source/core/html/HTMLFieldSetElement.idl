@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlfieldsetelement
+// https://html.spec.whatwg.org/#the-fieldset-element
 
 interface HTMLFieldSetElement : HTMLElement {
     [Reflect] attribute boolean disabled;

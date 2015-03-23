@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlappletelement
+// https://html.spec.whatwg.org/#the-applet-element
 
 interface HTMLAppletElement : HTMLElement {
     [Reflect] attribute DOMString align;

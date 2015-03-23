@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#htmlcanvaselement
+// https://html.spec.whatwg.org/#the-canvas-element
 
 typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
 

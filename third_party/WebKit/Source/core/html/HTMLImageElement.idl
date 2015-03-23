@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlimageelement
+// https://html.spec.whatwg.org/#the-img-element
 
 // TODO(philipj): All long types in this interfaces should be unsigned long.
 [

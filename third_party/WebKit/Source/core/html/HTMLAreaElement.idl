@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlareaelement
+// https://html.spec.whatwg.org/#the-area-element
 
 interface HTMLAreaElement : HTMLElement {
     [Reflect] attribute DOMString alt;

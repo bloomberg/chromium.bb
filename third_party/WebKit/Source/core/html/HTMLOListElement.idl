@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlolistelement
+// https://html.spec.whatwg.org/#the-ol-element
 
 interface HTMLOListElement : HTMLElement {
     [Reflect] attribute boolean reversed;

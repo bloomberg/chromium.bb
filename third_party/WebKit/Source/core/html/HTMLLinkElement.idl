@@ -19,7 +19,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmllinkelement
+// https://html.spec.whatwg.org/#the-link-element
 
 interface HTMLLinkElement : HTMLElement {
     // FIXME: The disabled attribute has been removed from the spec:

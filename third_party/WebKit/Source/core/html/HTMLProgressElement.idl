@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlprogresselement
+// https://html.spec.whatwg.org/#the-progress-element
 
 interface HTMLProgressElement : HTMLElement {
     attribute double value;

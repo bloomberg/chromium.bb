@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmlembedelement
+// https://html.spec.whatwg.org/#the-embed-element
 
 [
     Custom=LegacyCallAsFunction,

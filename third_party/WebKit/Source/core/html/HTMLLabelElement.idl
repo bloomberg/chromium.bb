@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmllabelelement
+// https://html.spec.whatwg.org/#the-label-element
 
 interface HTMLLabelElement : HTMLElement {
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;

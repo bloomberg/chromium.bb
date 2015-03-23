@@ -22,7 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/#htmloutputelement
+// https://html.spec.whatwg.org/#the-output-element
 
 interface HTMLOutputElement : HTMLElement {
     [PutForwards=value] readonly attribute DOMSettableTokenList htmlFor;

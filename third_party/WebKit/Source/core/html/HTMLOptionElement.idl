@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// https://html.spec.whatwg.org/#htmloptionelement
+// https://html.spec.whatwg.org/#the-option-element
 
 // TODO(philipj): The constructor arguments default values are not per spec.
 [
