@@ -647,6 +647,9 @@ crbug.com/449949 [ Android ] inspector-protocol/input/dispatchMouseEvent.html [ 
 crbug.com/363280 [ Debug ] inspector-protocol/debugger/debugger-terminate-dedicated-worker-while-paused.html [ Crash Pass ]
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
+crbug.com/309675 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ ImageOnlyFailure ]
+
+crbug.com/469386 virtual/slimmingpaint/compositing/gestures/gesture-tapHighlight-pixel-rotated-div.html [ ImageOnlyFailure ]
 
 # Linux uses the system's NSS library for its WebCrypto implementation, whereas
 # Windows, Mac and Android use a statically-linked BoringSSL.

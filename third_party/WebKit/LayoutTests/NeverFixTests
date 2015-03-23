@@ -95,6 +95,7 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 
 # Link Highlighting is only supported on Windows and Linux
 [ Mac ] compositing/gestures [ WontFix ]
+[ Mac ] virtual/slimmingpaint/compositing/gestures [ WontFix ]
 
 # These tests are specific to Linux.
 [ Mac Win ] editing/selection/linux_selection_color.html [ WontFix ]

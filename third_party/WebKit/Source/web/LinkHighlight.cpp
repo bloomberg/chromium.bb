@@ -44,11 +44,14 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorAnimationCurve.h"
 #include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebFloatAnimationCurve.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSize.h"
 #include "public/web/WebKit.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebSettingsImpl.h"
 #include "web/WebViewImpl.h"
@@ -262,6 +265,18 @@ void LinkHighlight::paintContents(WebCanvas* canvas, const WebRect& webClipRect,
             displayItemListScope.context()->fillPath(m_path);
         }
     }
+}
+
+void LinkHighlight::paintContents(WebDisplayItemList* webDisplayItemList, const WebRect& webClipRect, WebContentLayerClient::PaintingControlSetting paintingControl)
+{
+    if (!m_node || !m_node->layoutObject())
+        return;
+
+    SkPictureRecorder recorder;
+    SkCanvas* canvas = recorder.beginRecording(webClipRect.width, webClipRect.height);
+    canvas->translate(-webClipRect.x, -webClipRect.y);
+    paintContents(canvas, webClipRect, paintingControl);
+    webDisplayItemList->appendDrawingItem(recorder.endRecording());
 }
 
 void LinkHighlight::startHighlightAnimationIfNeeded()
