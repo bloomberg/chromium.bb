@@ -183,7 +183,7 @@ const char kRebasePath_Help[] =
     "  # Typical usage for converting to the build directory for a script.\n"
     "  action(\"myscript\") {\n"
     "    # Don't convert sources, GN will automatically convert these to be\n"
-    "    # relative to the build directory when it contructs the command\n"
+    "    # relative to the build directory when it constructs the command\n"
     "    # line for your script.\n"
     "    sources = [ \"foo.txt\", \"bar.txt\" ]\n"
     "\n"
@@ -194,7 +194,7 @@ const char kRebasePath_Help[] =
     "      rebase_path(\"//mything/data/input.dat\", root_build_dir),\n"
     "      \"--rel\",\n"
     "      rebase_path(\"relative_path.txt\", root_build_dir)\n"
-    "    ] + sources\n"
+    "    ] + rebase_path(sources, root_build_dir)\n"
     "  }\n";
 
 Value RunRebasePath(Scope* scope,
