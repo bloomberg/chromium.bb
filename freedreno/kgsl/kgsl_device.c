@@ -49,7 +49,7 @@ static struct fd_device_funcs funcs = {
 		.destroy = kgsl_device_destroy,
 };
 
-struct fd_device * kgsl_device_new(int fd)
+drm_private struct fd_device * kgsl_device_new(int fd)
 {
 	struct kgsl_device *kgsl_dev;
 	struct fd_device *dev;

@@ -46,7 +46,7 @@ static inline struct msm_device * to_msm_device(struct fd_device *x)
 	return (struct msm_device *)x;
 }
 
-struct fd_device * msm_device_new(int fd);
+drm_private struct fd_device * msm_device_new(int fd);
 
 struct msm_pipe {
 	struct fd_pipe base;
@@ -61,9 +61,10 @@ static inline struct msm_pipe * to_msm_pipe(struct fd_pipe *x)
 	return (struct msm_pipe *)x;
 }
 
-struct fd_pipe * msm_pipe_new(struct fd_device *dev, enum fd_pipe_id id);
+drm_private struct fd_pipe * msm_pipe_new(struct fd_device *dev,
+		enum fd_pipe_id id);
 
-struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
+drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
 		uint32_t size);
 
 struct msm_bo {
@@ -79,9 +80,9 @@ static inline struct msm_bo * to_msm_bo(struct fd_bo *x)
 	return (struct msm_bo *)x;
 }
 
-int msm_bo_new_handle(struct fd_device *dev,
+drm_private int msm_bo_new_handle(struct fd_device *dev,
 		uint32_t size, uint32_t flags, uint32_t *handle);
-struct fd_bo * msm_bo_from_handle(struct fd_device *dev,
+drm_private struct fd_bo * msm_bo_from_handle(struct fd_device *dev,
 		uint32_t size, uint32_t handle);
 
 static inline void get_abs_timeout(struct drm_msm_timespec *tv, uint32_t ms)

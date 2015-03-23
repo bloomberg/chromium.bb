@@ -145,7 +145,7 @@ static void fd_device_del_impl(struct fd_device *dev)
 	dev->funcs->destroy(dev);
 }
 
-void fd_device_del_locked(struct fd_device *dev)
+drm_private void fd_device_del_locked(struct fd_device *dev)
 {
 	if (!atomic_dec_and_test(&dev->refcnt))
 		return;

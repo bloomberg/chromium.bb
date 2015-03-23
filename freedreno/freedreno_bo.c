@@ -81,7 +81,7 @@ static struct fd_bo * bo_from_handle(struct fd_device *dev,
 }
 
 /* Frees older cached buffers.  Called under table_lock */
-void fd_cleanup_bo_cache(struct fd_device *dev, time_t time)
+drm_private void fd_cleanup_bo_cache(struct fd_device *dev, time_t time)
 {
 	int i;
 

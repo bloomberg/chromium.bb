@@ -103,7 +103,8 @@ static uint64_t get_param(struct fd_device *dev, uint32_t pipe, uint32_t param)
 	return req.value;
 }
 
-struct fd_pipe * msm_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
+drm_private struct fd_pipe * msm_pipe_new(struct fd_device *dev,
+		enum fd_pipe_id id)
 {
 	static const uint32_t pipe_id[] = {
 			[FD_PIPE_3D] = MSM_PIPE_3D0,

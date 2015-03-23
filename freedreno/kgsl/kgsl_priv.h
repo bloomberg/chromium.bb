@@ -73,7 +73,7 @@ static inline struct kgsl_pipe * to_kgsl_pipe(struct fd_pipe *x)
 	return (struct kgsl_pipe *)x;
 }
 
-int is_kgsl_pipe(struct fd_pipe *pipe);
+drm_private int is_kgsl_pipe(struct fd_pipe *pipe);
 
 struct kgsl_bo {
 	struct fd_bo base;
@@ -91,25 +91,30 @@ static inline struct kgsl_bo * to_kgsl_bo(struct fd_bo *x)
 }
 
 
-struct fd_device * kgsl_device_new(int fd);
+drm_private struct fd_device * kgsl_device_new(int fd);
 
-int kgsl_pipe_timestamp(struct kgsl_pipe *kgsl_pipe, uint32_t *timestamp);
-void kgsl_pipe_add_submit(struct kgsl_pipe *pipe, struct kgsl_bo *bo);
-void kgsl_pipe_pre_submit(struct kgsl_pipe *pipe);
-void kgsl_pipe_post_submit(struct kgsl_pipe *pipe, uint32_t timestamp);
-void kgsl_pipe_process_pending(struct kgsl_pipe *pipe, uint32_t timestamp);
-struct fd_pipe * kgsl_pipe_new(struct fd_device *dev, enum fd_pipe_id id);
+drm_private int kgsl_pipe_timestamp(struct kgsl_pipe *kgsl_pipe,
+		uint32_t *timestamp);
+drm_private void kgsl_pipe_add_submit(struct kgsl_pipe *pipe,
+		struct kgsl_bo *bo);
+drm_private void kgsl_pipe_pre_submit(struct kgsl_pipe *pipe);
+drm_private void kgsl_pipe_post_submit(struct kgsl_pipe *pipe,
+		uint32_t timestamp);
+drm_private void kgsl_pipe_process_pending(struct kgsl_pipe *pipe,
+		uint32_t timestamp);
+drm_private struct fd_pipe * kgsl_pipe_new(struct fd_device *dev,
+		enum fd_pipe_id id);
 
-struct fd_ringbuffer * kgsl_ringbuffer_new(struct fd_pipe *pipe,
+drm_private struct fd_ringbuffer * kgsl_ringbuffer_new(struct fd_pipe *pipe,
 		uint32_t size);
 
-int kgsl_bo_new_handle(struct fd_device *dev,
+drm_private int kgsl_bo_new_handle(struct fd_device *dev,
 		uint32_t size, uint32_t flags, uint32_t *handle);
-struct fd_bo * kgsl_bo_from_handle(struct fd_device *dev,
+drm_private struct fd_bo * kgsl_bo_from_handle(struct fd_device *dev,
 		uint32_t size, uint32_t handle);
 
-uint32_t kgsl_bo_gpuaddr(struct kgsl_bo *bo, uint32_t offset);
-void kgsl_bo_set_timestamp(struct kgsl_bo *bo, uint32_t timestamp);
-uint32_t kgsl_bo_get_timestamp(struct kgsl_bo *bo);
+drm_private uint32_t kgsl_bo_gpuaddr(struct kgsl_bo *bo, uint32_t offset);
+drm_private void kgsl_bo_set_timestamp(struct kgsl_bo *bo, uint32_t timestamp);
+drm_private uint32_t kgsl_bo_get_timestamp(struct kgsl_bo *bo);
 
 #endif /* KGSL_PRIV_H_ */

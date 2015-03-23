@@ -104,7 +104,7 @@ static struct fd_bo_funcs funcs = {
 };
 
 /* allocate a buffer handle: */
-int msm_bo_new_handle(struct fd_device *dev,
+drm_private int msm_bo_new_handle(struct fd_device *dev,
 		uint32_t size, uint32_t flags, uint32_t *handle)
 {
 	struct drm_msm_gem_new req = {
@@ -124,7 +124,7 @@ int msm_bo_new_handle(struct fd_device *dev,
 }
 
 /* allocate a new buffer object */
-struct fd_bo * msm_bo_from_handle(struct fd_device *dev,
+drm_private struct fd_bo * msm_bo_from_handle(struct fd_device *dev,
 		uint32_t size, uint32_t handle)
 {
 	struct msm_bo *msm_bo;

@@ -199,7 +199,7 @@ static struct fd_ringbuffer_funcs funcs = {
 		.destroy = kgsl_ringbuffer_destroy,
 };
 
-struct fd_ringbuffer * kgsl_ringbuffer_new(struct fd_pipe *pipe,
+drm_private struct fd_ringbuffer * kgsl_ringbuffer_new(struct fd_pipe *pipe,
 		uint32_t size)
 {
 	struct kgsl_ringbuffer *kgsl_ring;

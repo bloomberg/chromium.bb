@@ -92,10 +92,10 @@ struct fd_device {
 	int closefd;        /* call close(fd) upon destruction */
 };
 
-void fd_cleanup_bo_cache(struct fd_device *dev, time_t time);
+drm_private void fd_cleanup_bo_cache(struct fd_device *dev, time_t time);
 
 /* for where @table_lock is already held: */
-void fd_device_del_locked(struct fd_device *dev);
+drm_private void fd_device_del_locked(struct fd_device *dev);
 
 struct fd_pipe_funcs {
 	struct fd_ringbuffer * (*ringbuffer_new)(struct fd_pipe *pipe, uint32_t size);

@@ -318,7 +318,7 @@ static struct fd_ringbuffer_funcs funcs = {
 		.destroy = msm_ringbuffer_destroy,
 };
 
-struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
+drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
 		uint32_t size)
 {
 	struct msm_ringbuffer *msm_ring;

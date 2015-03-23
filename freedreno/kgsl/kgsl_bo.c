@@ -131,7 +131,7 @@ static struct fd_bo_funcs funcs = {
 };
 
 /* allocate a buffer handle: */
-int kgsl_bo_new_handle(struct fd_device *dev,
+drm_private int kgsl_bo_new_handle(struct fd_device *dev,
 		uint32_t size, uint32_t flags, uint32_t *handle)
 {
 	struct drm_kgsl_gem_create req = {
@@ -155,7 +155,7 @@ int kgsl_bo_new_handle(struct fd_device *dev,
 }
 
 /* allocate a new buffer object */
-struct fd_bo * kgsl_bo_from_handle(struct fd_device *dev,
+drm_private struct fd_bo * kgsl_bo_from_handle(struct fd_device *dev,
 		uint32_t size, uint32_t handle)
 {
 	struct kgsl_bo *kgsl_bo;
@@ -218,7 +218,7 @@ fail:
 	return NULL;
 }
 
-uint32_t kgsl_bo_gpuaddr(struct kgsl_bo *kgsl_bo, uint32_t offset)
+drm_private uint32_t kgsl_bo_gpuaddr(struct kgsl_bo *kgsl_bo, uint32_t offset)
 {
 	struct fd_bo *bo = &kgsl_bo->base;
 	if (!kgsl_bo->gpuaddr) {
@@ -267,7 +267,8 @@ uint32_t kgsl_bo_gpuaddr(struct kgsl_bo *kgsl_bo, uint32_t offset)
  * _emit_reloc()..
  */
 
-void kgsl_bo_set_timestamp(struct kgsl_bo *kgsl_bo, uint32_t timestamp)
+drm_private void kgsl_bo_set_timestamp(struct kgsl_bo *kgsl_bo,
+		uint32_t timestamp)
 {
 	struct fd_bo *bo = &kgsl_bo->base;
 	if (bo->name) {
@@ -285,7 +286,7 @@ void kgsl_bo_set_timestamp(struct kgsl_bo *kgsl_bo, uint32_t timestamp)
 	}
 }
 
-uint32_t kgsl_bo_get_timestamp(struct kgsl_bo *kgsl_bo)
+drm_private uint32_t kgsl_bo_get_timestamp(struct kgsl_bo *kgsl_bo)
 {
 	struct fd_bo *bo = &kgsl_bo->base;
 	uint32_t timestamp = 0;
