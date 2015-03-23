@@ -295,7 +295,7 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"cookies_header", IDS_COOKIES_HEADER},
     {"cookiesAllow", IDS_COOKIES_ALLOW_RADIO},
     {"cookiesBlock", IDS_COOKIES_BLOCK_RADIO},
-    {"cookies_session_only", IDS_COOKIES_SESSION_ONLY_RADIO},
+    {"cookiesSession", IDS_COOKIES_SESSION_ONLY_RADIO},
     {"cookies_block_3rd_party", IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX},
     {"cookies_clear_when_close", IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX},
     {"cookies_lso_clear_when_close", IDS_COOKIES_LSO_CLEAR_WHEN_CLOSE_CHKBOX},
