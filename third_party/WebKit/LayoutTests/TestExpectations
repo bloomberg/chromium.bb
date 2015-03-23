@@ -1169,7 +1169,7 @@ crbug.com/453002 [ Win ] fast/css/font-weight-1.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win ] fast/writing-mode/english-lr-text.html [ ImageOnlyFailure Pass ]
 crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/international/vertical-text-glyph-test.html [ ImageOnlyFailure NeedsManualRebaseline Pass ]
 crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/justify-ideograph-vertical.html [ ImageOnlyFailure Pass ]
-crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ ImageOnlyFailure Pass ]
+crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ Failure Pass ]
 crbug.com/453002 [ Win ] virtual/slimmingpaint/fast/css/font-weight-1.html [ ImageOnlyFailure Pass ]
 #crbug.com/453002 [ Win7 ] fast/text/international/text-combine-image-test.html [ ImageOnlyFailure Pass ]
 #crbug.com/453002 [ Win7 ] virtual/antialiasedtext/fast/text/international/text-combine-image-test.html [ ImageOnlyFailure Pass ]
@@ -1182,6 +1182,13 @@ crbug.com/311812 [ Mac XP ] http/tests/security/redirect-BLOCKED-to-localURL.htm
 crbug.com/311469 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
 
 crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass Timeout ]
+
+crbug.com/454159 fast/text/orientation-sideways.html [ NeedsRebaseline ]
+crbug.com/454159 fast/writing-mode/text-orientation-basic.html [ NeedsRebaseline ]
+crbug.com/454159 fast/writing-mode/vertical-align-table-baseline.html [ NeedsRebaseline ]
+crbug.com/454159 fast/writing-mode/vertical-baseline-alignment.html [ NeedsRebaseline ]
+crbug.com/454159 [ Mac Linux ] virtual/antialiasedtext/fast/text/orientation-sideways.html [ NeedsRebaseline ]
+crbug.com/454159 virtual/slimmingpaint/fast/text/orientation-sideways.html [ NeedsRebaseline ]
 
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]

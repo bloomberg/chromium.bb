@@ -445,46 +445,13 @@ FloatWillBeLayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* f
     return logicalLeft;
 }
 
-bool InlineFlowBox::requiresIdeographicBaseline(const GlyphOverflowAndFallbackFontsMap& textBoxDataMap) const
+FontBaseline InlineFlowBox::dominantBaseline() const
 {
-    if (isHorizontal())
-        return false;
-
-    // FIXME: primaryFont should never be 0 here but can be in some
-    // cases. crbug.com/445450
-    RELEASE_ASSERT(layoutObject().style(isFirstLineStyle())->font().primaryFont());
-
-    if (layoutObject().style(isFirstLineStyle())->fontDescription().nonCJKGlyphOrientation() == NonCJKGlyphOrientationUpright
-        || layoutObject().style(isFirstLineStyle())->font().primaryFont()->hasVerticalGlyphs())
-        return true;
-
-    for (InlineBox* curr = firstChild(); curr; curr = curr->nextOnLine()) {
-        if (curr->layoutObject().isOutOfFlowPositioned())
-            continue; // Positioned placeholders don't affect calculations.
-
-        if (curr->isInlineFlowBox()) {
-            if (toInlineFlowBox(curr)->requiresIdeographicBaseline(textBoxDataMap))
-                return true;
-        } else {
-            if (curr->layoutObject().style(isFirstLineStyle())->font().primaryFont()->hasVerticalGlyphs())
-                return true;
-
-            const Vector<const SimpleFontData*>* usedFonts = 0;
-            if (curr->isInlineTextBox()) {
-                GlyphOverflowAndFallbackFontsMap::const_iterator it = textBoxDataMap.find(toInlineTextBox(curr));
-                usedFonts = it == textBoxDataMap.end() ? 0 : &it->value.first;
-            }
-
-            if (usedFonts) {
-                for (size_t i = 0; i < usedFonts->size(); ++i) {
-                    if (usedFonts->at(i)->hasVerticalGlyphs())
-                        return true;
-                }
-            }
-        }
-    }
-
-    return false;
+    // Use "central" (Ideographic) baseline if writing-mode is vertical-* and text-orientation is not sideways-*.
+    // http://dev.w3.org/csswg/css-writing-modes-3/#text-baselines
+    if (!isHorizontal() && layoutObject().style(isFirstLineStyle())->fontDescription().orientation() == Vertical)
+        return IdeographicBaseline;
+    return AlphabeticBaseline;
 }
 
 void InlineFlowBox::adjustMaxAscentAndDescent(int& maxAscent, int& maxDescent, int maxPositionTop, int maxPositionBottom)
