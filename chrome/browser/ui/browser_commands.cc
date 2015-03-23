@@ -1061,6 +1061,12 @@ void ShowAvatarMenu(Browser* browser) {
       signin::ManageAccountsParams());
 }
 
+void ShowFastUserSwitcher(Browser* browser) {
+  browser->window()->ShowAvatarBubbleFromAvatarButton(
+      BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH,
+      signin::ManageAccountsParams());
+}
+
 void OpenUpdateChromeDialog(Browser* browser) {
   if (UpgradeDetector::GetInstance()->is_outdated_install()) {
     content::NotificationService::current()->Notify(

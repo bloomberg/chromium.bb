@@ -456,7 +456,12 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
   DCHECK(sender == new_avatar_button());
-  chrome::ExecuteCommand(browser_view()->browser(), IDC_SHOW_AVATAR_MENU);
+  int command = IDC_SHOW_AVATAR_MENU;
+  if (event.IsMouseEvent() &&
+      static_cast<const ui::MouseEvent&>(event).IsRightMouseButton()) {
+    command = IDC_SHOW_FAST_USER_SWITCHER;
+  }
+  chrome::ExecuteCommand(browser_view()->browser(), command);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
