@@ -122,7 +122,7 @@ class V8SamplingProfilerTest : public RenderViewTest {
 // The SamplingEventForTesting is fired when the framework collected at
 // least one JitCodeAdded event and one sample event.
 
-#if defined(OS_WIN) || defined(OS_ANDROID) || !defined(ARCH_CPU_X86_FAMILY)
+#if defined(OS_WIN)
 #define MAYBE(x) DISABLED_##x
 #else
 #define MAYBE(x) x

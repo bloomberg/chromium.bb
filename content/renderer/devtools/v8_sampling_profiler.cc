@@ -445,11 +445,21 @@ void V8SamplingThread::HandleProfilerSignal(int signal,
   mcontext_t& mcontext = ucontext->uc_mcontext;
   v8::RegisterState state;
 
-#if defined(OS_ANDROID) || !defined(ARCH_CPU_X86_FAMILY)
-  // TODO(alph): Add support for Android and non-x86.
-  ALLOW_UNUSED_LOCAL(mcontext);
+#if defined(ARCH_CPU_ARM_FAMILY)
 
-#elif defined(OS_MACOSX)
+#if ARCH_CPU_64_BITS
+  state.pc = reinterpret_cast<void*>(mcontext.pc);
+  state.sp = reinterpret_cast<void*>(mcontext.sp);
+  state.fp = reinterpret_cast<void*>(mcontext.regs[29]);
+#elif ARCH_CPU_32_BITS
+  state.pc = reinterpret_cast<void*>(mcontext.arm_pc);
+  state.sp = reinterpret_cast<void*>(mcontext.arm_sp);
+  state.fp = reinterpret_cast<void*>(mcontext.arm_fp);
+#endif  // ARCH_CPU_32_BITS
+
+#elif defined(ARCH_CPU_X86_FAMILY)
+
+#if defined(OS_MACOSX)
 #if ARCH_CPU_64_BITS
   state.pc = reinterpret_cast<void*>(mcontext->__ss.__rip);
   state.sp = reinterpret_cast<void*>(mcontext->__ss.__rsp);
@@ -470,7 +480,9 @@ void V8SamplingThread::HandleProfilerSignal(int signal,
   state.sp = reinterpret_cast<void*>(mcontext.gregs[REG_ESP]);
   state.fp = reinterpret_cast<void*>(mcontext.gregs[REG_EBP]);
 #endif  // ARCH_CPU_32_BITS
-#endif
+#endif  // OS_MACOS
+#endif  // ARCH_CPU_X86_FAMILY
+
   Sampler::GetInstance()->DoSample(state);
 }
 #endif
