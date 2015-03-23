@@ -11,15 +11,8 @@ This module can be either run as a stand-alone script to send a request to a
 builder, or imported and used by calling the public functions below.
 """
 
-import getpass
 import json
-import optparse
-import os
-import sys
-import urllib
 import urllib2
-
-import fetch_build
 
 # URL template for fetching JSON data about builds.
 BUILDER_JSON_URL = ('%(server_url)s/json/builders/%(bot_name)s/builds/'
@@ -109,13 +102,13 @@ def _IsBuildSuccessful(build_data):
 
 
 def _FetchBuilderData(builder_url):
-  """Fetches JSON data for the all the builds from the tryserver.
+  """Fetches JSON data for the all the builds from the try server.
 
   Args:
-    builder_url: A tryserver URL to fetch builds information.
+    builder_url: A try server URL to fetch builds information.
 
   Returns:
-    A dictionary with information of all build on the tryserver.
+    A dictionary with information of all build on the try server.
   """
   data = None
   try:
@@ -133,10 +126,10 @@ def _FetchBuilderData(builder_url):
 
 
 def _GetBuildData(buildbot_url):
-  """Gets build information for the given build id from the tryserver.
+  """Gets build information for the given build id from the try server.
 
   Args:
-    buildbot_url: A tryserver URL to fetch build information.
+    buildbot_url: A try server URL to fetch build information.
 
   Returns:
     A dictionary with build information if build exists, otherwise None.
@@ -151,7 +144,7 @@ def GetBuildStatus(build_num, bot_name, server_url):
   """Gets build status from the buildbot status page for a given build number.
 
   Args:
-    build_num: A build number on tryserver to determine its status.
+    build_num: A build number on try server to determine its status.
     bot_name: Name of the bot where the build information is scanned.
     server_url: URL of the buildbot.
 
@@ -188,13 +181,13 @@ def GetBuildNumFromBuilder(build_reason, bot_name, server_url):
 
   This function parses the JSON data from buildbot page and collects basic
   information about the all the builds, and then uniquely identifies the build
-  based on the 'reason' attribute in builds's JSON data.
+  based on the 'reason' attribute in the JSON data about the build.
 
   The 'reason' attribute set is when a build request is posted, and it is used
   to identify the build on status page.
 
   Args:
-    build_reason: A unique build name set to build on tryserver.
+    build_reason: A unique build name set to build on try server.
     bot_name: Name of the bot where the build information is scanned.
     server_url: URL of the buildbot.
 

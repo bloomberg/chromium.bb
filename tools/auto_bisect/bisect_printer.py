@@ -204,7 +204,7 @@ class BisectPrinter(object):
   @staticmethod
   def _GetViewVCLinkFromDepotAndHash(git_revision, depot):
     """Gets link to the repository browser."""
-    if depot and bisect_utils.DEPOT_DEPS_NAME[depot].has_key('viewvc'):
+    if depot and 'viewvc' in bisect_utils.DEPOT_DEPS_NAME[depot]:
       return bisect_utils.DEPOT_DEPS_NAME[depot]['viewvc'] + git_revision
     return ''
 

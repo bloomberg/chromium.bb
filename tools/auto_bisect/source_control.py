@@ -137,10 +137,10 @@ def GetCommitPosition(git_revision, cwd=None):
   Returns:
     Git commit position as integer or None.
   """
-  # Some of the respositories are pure git based, unlike other repositories
+  # Some of the repositories are pure git based, unlike other repositories
   # they doesn't have commit position. e.g., skia, angle.
   cmd = ['footers', '--position-num', git_revision]
-  output, return_code  = bisect_utils.RunGit(cmd, cwd)
+  output, return_code = bisect_utils.RunGit(cmd, cwd)
   if not return_code:
     commit_position = output.strip()
     if bisect_utils.IsStringInt(commit_position):
@@ -230,4 +230,3 @@ def QueryFileRevisionHistory(filename, revision_start, revision_end):
   output = bisect_utils.CheckRunGit(cmd)
   lines = output.split('\n')
   return [o for o in lines if o]
-

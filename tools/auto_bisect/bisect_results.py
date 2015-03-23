@@ -58,7 +58,6 @@ class BisectResults(object):
       runtime_warnings: A list of warnings from the bisect run.
       error: Error message. When error is not None, other arguments are ignored.
     """
-
     self.error = error
     self.abort_reason = abort_reason
     if error is not None or abort_reason is not None:
@@ -66,8 +65,8 @@ class BisectResults(object):
 
     assert (bisect_state is not None and depot_registry is not None and
             opts is not None and runtime_warnings is not None), (
-            'Incorrect use of the BisectResults constructor. When error is '
-            'None, all other arguments are required')
+                'Incorrect use of the BisectResults constructor. '
+                'When error is None, all other arguments are required.')
 
     self.state = bisect_state
 
@@ -113,7 +112,7 @@ class BisectResults(object):
       return
 
     confidence_params = (results_reverted[0]['values'],
-        results_tot[0]['values'])
+                         results_tot[0]['values'])
     confidence = BisectResults.ConfidenceScore(*confidence_params)
 
     self.retest_results_tot = RevisionState('ToT', 'n/a', 0)
@@ -127,7 +126,7 @@ class BisectResults(object):
           'Confidence of re-test with reverted CL is not high.'
           ' Check that the regression hasn\'t already recovered. '
           ' There\'s still a chance this is a regression, as performance of'
-          ' local builds may not match official builds.' )
+          ' local builds may not match official builds.')
 
   @staticmethod
   def _GetResultBasedWarnings(culprit_revisions, opts, confidence):
@@ -218,8 +217,10 @@ class BisectResults(object):
           # mean of the current runs, this local regression is in same
           # direction.
           prev_greater_than_current = mean_of_prev_runs > mean_of_current_runs
-          is_same_direction = (prev_greater_than_current if
-              bad_greater_than_good else not prev_greater_than_current)
+          if bad_greater_than_good:
+            is_same_direction = prev_greater_than_current
+          else:
+            is_same_direction = not prev_greater_than_current
 
           # Only report potential regressions with high confidence.
           if is_same_direction and confidence > 50:

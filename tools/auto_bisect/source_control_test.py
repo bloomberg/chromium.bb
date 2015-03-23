@@ -81,4 +81,3 @@ def _SetMockCheckRunGitBehavior(mock_obj, command_output_map):
 
 if __name__ == '__main__':
   unittest.main()
-

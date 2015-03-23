@@ -235,7 +235,7 @@ class BisectResultsTest(unittest.TestCase):
     revision_states[2].depot = 'webkit'
 
     results = BisectResults(self.mock_bisect_state, self.mock_depot_registry,
-                          self.mock_opts, self.mock_warnings)
+                            self.mock_opts, self.mock_warnings)
 
     self.assertEqual(1, len(results.culprit_revisions))
     self.assertEqual(('b', {'test': 'b'}, 'chromium'),

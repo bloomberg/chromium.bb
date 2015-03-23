@@ -27,7 +27,7 @@ UNEXPECTED_FORMAT_DATA = CLOSED_ISSUE_DATA.replace('issues$state', 'gibberish')
 BROKEN_ISSUE_DATA = "\n<HTML><HEAD><TITLE>Not a JSON Doc</TITLE></HEAD></HTML>"
 
 
-class mockResponse(object):
+class MockResponse(object):
   def __init__(self, result):
     self._result = result
 
@@ -35,45 +35,45 @@ class mockResponse(object):
     return self._result
 
 
-def mockUrlOpen(url):
+def MockUrlOpen(url):
   # Note that these strings DO NOT represent http responses. They are just
   # memorable numeric bug ids to use.
   if '200' in url:
-    return mockResponse(CLOSED_ISSUE_DATA)
+    return MockResponse(CLOSED_ISSUE_DATA)
   elif '201' in url:
-    return mockResponse(OPEN_ISSUE_DATA)
+    return MockResponse(OPEN_ISSUE_DATA)
   elif '300' in url:
-    return mockResponse(UNEXPECTED_FORMAT_DATA)
+    return MockResponse(UNEXPECTED_FORMAT_DATA)
   elif '403' in url:
     raise urllib2.URLError('')
   elif '404' in url:
-    return mockResponse('')
+    return MockResponse('')
   elif '500' in url:
-    return mockResponse(BROKEN_ISSUE_DATA)
+    return MockResponse(BROKEN_ISSUE_DATA)
 
 
 class crbugQueryTest(unittest.TestCase):
-  @mock.patch('urllib2.urlopen',mockUrlOpen)
+  @mock.patch('urllib2.urlopen', MockUrlOpen)
   def testClosedIssueIsClosed(self):
     self.assertTrue(CheckIssueClosed(200))
 
-  @mock.patch('urllib2.urlopen',mockUrlOpen)
+  @mock.patch('urllib2.urlopen', MockUrlOpen)
   def testOpenIssueIsNotClosed(self):
     self.assertFalse(CheckIssueClosed(201))
 
-  @mock.patch('urllib2.urlopen',mockUrlOpen)
+  @mock.patch('urllib2.urlopen', MockUrlOpen)
   def testUnexpectedFormat(self):
     self.assertFalse(CheckIssueClosed(300))
 
-  @mock.patch('urllib2.urlopen',mockUrlOpen)
+  @mock.patch('urllib2.urlopen', MockUrlOpen)
   def testUrlError(self):
     self.assertFalse(CheckIssueClosed(403))
 
-  @mock.patch('urllib2.urlopen',mockUrlOpen)
+  @mock.patch('urllib2.urlopen', MockUrlOpen)
   def testEmptyResponse(self):
     self.assertFalse(CheckIssueClosed(404))
 
-  @mock.patch('urllib2.urlopen',mockUrlOpen)
+  @mock.patch('urllib2.urlopen', MockUrlOpen)
   def testBrokenResponse(self):
     self.assertFalse(CheckIssueClosed(500))
 
