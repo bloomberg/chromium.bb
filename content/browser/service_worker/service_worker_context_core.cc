@@ -28,6 +28,7 @@
 
 namespace content {
 namespace {
+
 void SuccessCollectorCallback(const base::Closure& done_closure,
                               bool* overall_success,
                               ServiceWorkerStatusCode status) {
@@ -45,6 +46,13 @@ void SuccessReportingCallback(
   callback.Run(result ? ServiceWorkerStatusCode::SERVICE_WORKER_OK
                       : ServiceWorkerStatusCode::SERVICE_WORKER_ERROR_FAILED);
 }
+
+bool IsSameOriginClientProviderHost(const GURL& origin,
+                                    ServiceWorkerProviderHost* host) {
+  return host->provider_type() == SERVICE_WORKER_PROVIDER_FOR_CONTROLLEE &&
+         host->document_url().GetOrigin() == origin;
+}
+
 }  // namespace
 
 const base::FilePath::CharType
@@ -66,7 +74,7 @@ void ServiceWorkerContextCore::ProviderHostIterator::Advance() {
 
   // Advance the inner iterator. If an element is reached, we're done.
   provider_host_iterator_->Advance();
-  if (!provider_host_iterator_->IsAtEnd())
+  if (ForwardUntilMatchingProviderHost())
     return;
 
   // Advance the outer iterator until an element is reached, or end is hit.
@@ -76,7 +84,7 @@ void ServiceWorkerContextCore::ProviderHostIterator::Advance() {
       return;
     ProviderMap* provider_map = process_iterator_->GetCurrentValue();
     provider_host_iterator_.reset(new ProviderMap::iterator(provider_map));
-    if (!provider_host_iterator_->IsAtEnd())
+    if (ForwardUntilMatchingProviderHost())
       return;
   }
 }
@@ -87,8 +95,9 @@ bool ServiceWorkerContextCore::ProviderHostIterator::IsAtEnd() {
 }
 
 ServiceWorkerContextCore::ProviderHostIterator::ProviderHostIterator(
-    ProcessToProviderMap* map)
-    : map_(map) {
+    ProcessToProviderMap* map,
+    const ProviderHostPredicate& predicate)
+    : map_(map), predicate_(predicate) {
   DCHECK(map);
   Initialize();
 }
@@ -99,10 +108,20 @@ void ServiceWorkerContextCore::ProviderHostIterator::Initialize() {
   while (!process_iterator_->IsAtEnd()) {
     ProviderMap* provider_map = process_iterator_->GetCurrentValue();
     provider_host_iterator_.reset(new ProviderMap::iterator(provider_map));
-    if (!provider_host_iterator_->IsAtEnd())
+    if (ForwardUntilMatchingProviderHost())
       return;
     process_iterator_->Advance();
   }
+}
+
+bool ServiceWorkerContextCore::ProviderHostIterator::
+    ForwardUntilMatchingProviderHost() {
+  while (!provider_host_iterator_->IsAtEnd()) {
+    if (predicate_.is_null() || predicate_.Run(GetProviderHost()))
+      return true;
+    provider_host_iterator_->Advance();
+  }
+  return false;
 }
 
 ServiceWorkerContextCore::ServiceWorkerContextCore(
@@ -201,20 +220,35 @@ void ServiceWorkerContextCore::RemoveAllProviderHostsForProcess(
 
 scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator>
 ServiceWorkerContextCore::GetProviderHostIterator() {
-  return make_scoped_ptr(new ProviderHostIterator(providers_.get()));
+  return make_scoped_ptr(new ProviderHostIterator(
+      providers_.get(), ProviderHostIterator::ProviderHostPredicate()));
 }
 
-void ServiceWorkerContextCore::RegisterClientIDForProviderHost(
+scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator>
+ServiceWorkerContextCore::GetClientProviderHostIterator(const GURL& origin) {
+  return make_scoped_ptr(new ProviderHostIterator(
+      providers_.get(), base::Bind(IsSameOriginClientProviderHost, origin)));
+}
+
+void ServiceWorkerContextCore::RegisterProviderHostByClientID(
     const std::string& client_uuid,
     ServiceWorkerProviderHost* provider_host) {
   DCHECK(!ContainsKey(*provider_by_uuid_, client_uuid));
   (*provider_by_uuid_)[client_uuid] = provider_host;
 }
 
-void ServiceWorkerContextCore::UnregisterClientIDForProviderHost(
+void ServiceWorkerContextCore::UnregisterProviderHostByClientID(
     const std::string& client_uuid) {
   DCHECK(ContainsKey(*provider_by_uuid_, client_uuid));
   provider_by_uuid_->erase(client_uuid);
+}
+
+ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHostByClientID(
+    const std::string& client_uuid) {
+  auto found = provider_by_uuid_->find(client_uuid);
+  if (found == provider_by_uuid_->end())
+    return nullptr;
+  return found->second;
 }
 
 void ServiceWorkerContextCore::RegisterServiceWorker(
