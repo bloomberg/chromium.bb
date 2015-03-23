@@ -1499,32 +1499,40 @@ crbug.com/361729 fast/multicol/pagination-h-horizontal-tb.html [ Pass Failure ]
 crbug.com/437112 virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Pass Failure ]
 crbug.com/437112 virtual/slimmingpaint/fast/canvas/canvas-scale-drawImage-shadow.html [ Pass Failure ]
 
-# Old multicol tests that currently have no baseline in the virtual test suite
-# for the new multicol implementation.
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/border-padding-pagination.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/column-rules-stacking.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/max-height-columns-block.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/pagination-h-horizontal-bt.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/pagination-h-horizontal-tb.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/pagination-h-vertical-lr.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/pagination-h-vertical-rl.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/pagination-v-horizontal-bt.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/pagination-v-horizontal-tb.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/pagination-v-vertical-lr.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/pagination-v-vertical-rl.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/before-child-anonymous-column-block.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-as-immediate-child-complex-splitting.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-as-immediate-child-generated-content.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-as-immediate-child-property-removal.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-as-immediate-columns-child-dynamic.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-as-immediate-columns-child-removal.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-as-immediate-columns-child.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-as-nested-columns-child-dynamic.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-as-nested-columns-child.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-as-nested-inline-block-child.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/span/span-margin-collapsing.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-lr/border-padding-pagination.html [ Skip ]
-crbug.com/386567 virtual/regionbasedmulticol/fast/multicol/vertical-rl/border-padding-pagination.html [ Skip ]
+# BEGIN - Old multicol tests that should be removed once the old implementation is gone
+# Imperfect column balancing algorithm in the old implementation:
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/border-padding-pagination.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/vertical-lr/border-padding-pagination.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/vertical-rl/border-padding-pagination.html [ Skip ]
+# CR and ED versions of the multicol spec are contradictory. The new implementation follows the ED. The old follows the CR.
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/column-rules-stacking.html [ Skip ]
+# We have enough non-DRT tests for max-height, so no need for this one.
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/max-height-columns-block.html [ Skip ]
+# These don't test anything unique.
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/span/before-child-anonymous-column-block.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/span/span-as-immediate-child-complex-splitting.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/span/span-as-immediate-child-generated-content.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/span/span-as-immediate-child-property-removal.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/span/span-as-immediate-columns-child-dynamic.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/span/span-as-immediate-columns-child-removal.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/span/span-as-immediate-columns-child.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/span/span-as-nested-columns-child-dynamic.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/span/span-as-nested-columns-child.html [ Skip ]
+# Doesn't render according to the pass condition in the old implementation. Rendered idendically in the new one. Doesn't test anything unique.
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/span/span-as-nested-inline-block-child.html [ Skip ]
+# Rendered correctly (i.e. not in accordance with the invalid pass conditions) in both the old and new implementation. Doesn't test anything unique.
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/span/span-margin-collapsing.html [ Skip ]
+# These are superseded by tests in fast/pagination/
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/pagination-h-horizontal-bt.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/pagination-h-horizontal-tb.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/pagination-h-vertical-lr.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/pagination-h-vertical-rl.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/pagination-v-horizontal-bt.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/pagination-v-horizontal-tb.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/pagination-v-vertical-lr.html [ Skip ]
+crbug.com/408123 virtual/regionbasedmulticol/fast/multicol/pagination-v-vertical-rl.html [ Skip ]
+# END - Old multicol tests that should be removed once the old implementation is gone
+
 crbug.com/467477 virtual/regionbasedmulticol/fast/multicol/vertical-rl/nested-columns.html [ ImageOnlyFailure ]
 
 crbug.com/453794 virtual/slimmingpaint/fast/events/touch/gesture/touch-gesture-fling-with-page-scale.html [ Pass Failure ]
