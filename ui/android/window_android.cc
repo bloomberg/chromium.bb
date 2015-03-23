@@ -72,7 +72,10 @@ void WindowAndroid::DetachCompositor() {
 
 void WindowAndroid::RequestVSyncUpdate() {
   JNIEnv* env = AttachCurrentThread();
-  Java_WindowAndroid_requestVSyncUpdate(env, GetJavaObject().obj());
+  ScopedJavaLocalRef<jobject> obj = GetJavaObject();
+  if (obj.is_null())
+    return;
+  Java_WindowAndroid_requestVSyncUpdate(env, obj.obj());
 }
 
 void WindowAndroid::SetNeedsAnimate() {
