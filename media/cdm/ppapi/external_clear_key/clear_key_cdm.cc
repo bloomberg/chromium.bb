@@ -152,7 +152,7 @@ static cdm::Error ConvertException(media::MediaKeys::Exception exception_code) {
     case media::MediaKeys::OUTPUT_ERROR:
       return cdm::kOutputError;
   }
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return cdm::kUnknownError;
 }
 
@@ -166,8 +166,23 @@ static media::MediaKeys::SessionType ConvertSessionType(
     case cdm::kPersistentKeyRelease:
       return media::MediaKeys::PERSISTENT_RELEASE_MESSAGE_SESSION;
   }
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return media::MediaKeys::TEMPORARY_SESSION;
+}
+
+// TODO(jrummell): |init_data_type| should be an enum all the way through
+// Chromium. http://crbug.com/469228
+static std::string ConvertInitDataType(cdm::InitDataType init_data_type) {
+  switch (init_data_type) {
+    case cdm::kCenc:
+      return "cenc";
+    case cdm::kKeyIds:
+      return "keyids";
+    case cdm::kWebM:
+      return "webm";
+  }
+  NOTREACHED();
+  return "keyids";
 }
 
 cdm::KeyStatus ConvertKeyStatus(media::CdmKeyInformation::KeyStatus status) {
@@ -185,7 +200,7 @@ cdm::KeyStatus ConvertKeyStatus(media::CdmKeyInformation::KeyStatus status) {
     case media::CdmKeyInformation::KeyStatus::KEY_STATUS_PENDING:
       return cdm::kStatusPending;
   }
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return cdm::kInternalError;
 }
 
@@ -279,12 +294,18 @@ ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, const std::string& key_system)
 
 ClearKeyCdm::~ClearKeyCdm() {}
 
-void ClearKeyCdm::CreateSessionAndGenerateRequest(uint32 promise_id,
-                                                  cdm::SessionType session_type,
-                                                  const char* init_data_type,
-                                                  uint32 init_data_type_size,
-                                                  const uint8* init_data,
-                                                  uint32 init_data_size) {
+void ClearKeyCdm::Initialize(bool /* allow_distinctive_identifier */,
+                             bool /* allow_persistent_state */) {
+  // Implementation doesn't use distinctive identifier nor save persistent data,
+  // so nothing to do with these values.
+}
+
+void ClearKeyCdm::CreateSessionAndGenerateRequest(
+    uint32 promise_id,
+    cdm::SessionType session_type,
+    cdm::InitDataType init_data_type,
+    const uint8* init_data,
+    uint32 init_data_size) {
   DVLOG(1) << __FUNCTION__;
 
   scoped_ptr<media::NewSessionCdmPromise> promise(
@@ -296,9 +317,8 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(uint32 promise_id,
                      base::Unretained(this),
                      promise_id)));
   decryptor_.CreateSessionAndGenerateRequest(
-      ConvertSessionType(session_type),
-      std::string(init_data_type, init_data_type_size), init_data,
-      init_data_size, promise.Pass());
+      ConvertSessionType(session_type), ConvertInitDataType(init_data_type),
+      init_data, init_data_size, promise.Pass());
 
   if (key_system_ == kExternalClearKeyFileIOTestKeySystem)
     StartFileIOTest();

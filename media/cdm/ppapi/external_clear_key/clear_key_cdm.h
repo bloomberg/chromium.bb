@@ -32,56 +32,53 @@ class FFmpegCdmAudioDecoder;
 class ClearKeyCdm : public ClearKeyCdmInterface {
  public:
   ClearKeyCdm(Host* host, const std::string& key_system);
-  virtual ~ClearKeyCdm();
+  ~ClearKeyCdm() override;
 
   // ContentDecryptionModule implementation.
-  virtual void CreateSessionAndGenerateRequest(uint32 promise_id,
-                                               cdm::SessionType session_type,
-                                               const char* init_data_type,
-                                               uint32 init_data_type_size,
-                                               const uint8* init_data,
-                                               uint32 init_data_size) override;
-  virtual void LoadSession(uint32 promise_id,
-                           cdm::SessionType session_type,
-                           const char* session_id,
-                           uint32_t session_id_length) override;
-  virtual void UpdateSession(uint32 promise_id,
-                             const char* session_id,
-                             uint32_t session_id_length,
-                             const uint8* response,
-                             uint32 response_size) override;
-  virtual void CloseSession(uint32 promise_id,
-                            const char* session_id,
-                            uint32_t session_id_length) override;
-  virtual void RemoveSession(uint32 promise_id,
-                             const char* session_id,
-                             uint32_t session_id_length) override;
-  virtual void SetServerCertificate(
-      uint32 promise_id,
-      const uint8_t* server_certificate_data,
-      uint32_t server_certificate_data_size) override;
-  virtual void TimerExpired(void* context) override;
-  virtual cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
-                              cdm::DecryptedBlock* decrypted_block) override;
-  virtual cdm::Status InitializeAudioDecoder(
+  void Initialize(bool allow_distinctive_identifier,
+                  bool allow_persistent_state) override;
+  void CreateSessionAndGenerateRequest(uint32 promise_id,
+                                       cdm::SessionType session_type,
+                                       cdm::InitDataType init_data_type,
+                                       const uint8* init_data,
+                                       uint32 init_data_size) override;
+  void LoadSession(uint32 promise_id,
+                   cdm::SessionType session_type,
+                   const char* session_id,
+                   uint32_t session_id_length) override;
+  void UpdateSession(uint32 promise_id,
+                     const char* session_id,
+                     uint32_t session_id_length,
+                     const uint8* response,
+                     uint32 response_size) override;
+  void CloseSession(uint32 promise_id,
+                    const char* session_id,
+                    uint32_t session_id_length) override;
+  void RemoveSession(uint32 promise_id,
+                     const char* session_id,
+                     uint32_t session_id_length) override;
+  void SetServerCertificate(uint32 promise_id,
+                            const uint8_t* server_certificate_data,
+                            uint32_t server_certificate_data_size) override;
+  void TimerExpired(void* context) override;
+  cdm::Status Decrypt(const cdm::InputBuffer& encrypted_buffer,
+                      cdm::DecryptedBlock* decrypted_block) override;
+  cdm::Status InitializeAudioDecoder(
       const cdm::AudioDecoderConfig& audio_decoder_config) override;
-  virtual cdm::Status InitializeVideoDecoder(
+  cdm::Status InitializeVideoDecoder(
       const cdm::VideoDecoderConfig& video_decoder_config) override;
-  virtual void DeinitializeDecoder(cdm::StreamType decoder_type) override;
-  virtual void ResetDecoder(cdm::StreamType decoder_type) override;
-  virtual cdm::Status DecryptAndDecodeFrame(
-      const cdm::InputBuffer& encrypted_buffer,
-      cdm::VideoFrame* video_frame) override;
-  virtual cdm::Status DecryptAndDecodeSamples(
-      const cdm::InputBuffer& encrypted_buffer,
-      cdm::AudioFrames* audio_frames) override;
-  virtual void Destroy() override;
-  virtual void OnPlatformChallengeResponse(
+  void DeinitializeDecoder(cdm::StreamType decoder_type) override;
+  void ResetDecoder(cdm::StreamType decoder_type) override;
+  cdm::Status DecryptAndDecodeFrame(const cdm::InputBuffer& encrypted_buffer,
+                                    cdm::VideoFrame* video_frame) override;
+  cdm::Status DecryptAndDecodeSamples(const cdm::InputBuffer& encrypted_buffer,
+                                      cdm::AudioFrames* audio_frames) override;
+  void Destroy() override;
+  void OnPlatformChallengeResponse(
       const cdm::PlatformChallengeResponse& response) override;
-  virtual void OnQueryOutputProtectionStatus(
-      cdm::QueryResult result,
-      uint32_t link_mask,
-      uint32_t output_protection_mask) override;
+  void OnQueryOutputProtectionStatus(cdm::QueryResult result,
+                                     uint32_t link_mask,
+                                     uint32_t output_protection_mask) override;
 
  private:
   // Emulates a session stored for |session_id_for_emulated_loadsession_|. This
